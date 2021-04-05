@@ -77,9 +77,8 @@ export const ProHealthWebView: React.FC<ProHealthWebViewProps> = (props) => {
         onMessage={(event) => {
           const { data } = event.nativeEvent;
           const callBackData = data && JSON.parse(data);
-          const action = callBackData?.action;
           if (callBackData === 'back') {
-            navigation.goBack();
+            handleBack();
           }
         }}
       />
