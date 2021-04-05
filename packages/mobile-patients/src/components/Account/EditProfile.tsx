@@ -53,6 +53,7 @@ import {
   TouchableOpacity,
   View,
   KeyboardAvoidingView,
+  BackHandler,
 } from 'react-native';
 import { Text, Overlay } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
@@ -562,6 +563,13 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     }
   }, [gender]);
 
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', _onPressLeftIcon);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', _onPressLeftIcon);
+    };
+  }, []);
+
   const deleteConfirmation = () => {
     showAphAlert!({
       title: 'Hi!',
@@ -715,10 +723,12 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           navigation.state.params!.goBackCallback(data.data!.addNewProfile.patient);
         } else {
           props.navigation.goBack();
-          props.navigation.state.params!.onNewProfileAdded({
-            added: true,
-            id: data.data!.addNewProfile?.patient?.id,
-          });
+          props.navigation.state.params?.onNewProfileAdded &&
+            props.navigation.state.params?.onNewProfileAdded({
+              added: true,
+              id: data.data!.addNewProfile?.patient?.id,
+              profileData: data?.data?.addNewProfile?.patient,
+            });
         }
         selectUser(data.data!.addNewProfile.patient);
       })
@@ -774,6 +784,13 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     );
   };
 
+  const _onPressLeftIcon = () => {
+    props.navigation.goBack();
+    props.navigation.state.params?.onPressBackButton &&
+      props.navigation.state.params?.onPressBackButton();
+    return true;
+  };
+
   const renderHeader = () => {
     return (
       <Header
@@ -784,7 +801,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         leftIcon={'backArrow'}
         title={isEditProfile ? 'EDIT PROFILE' : 'ADD NEW FAMILY MEMBER'}
         rightComponent={null}
-        onPressLeftIcon={() => props.navigation.goBack()}
+        onPressLeftIcon={_onPressLeftIcon}
       />
     );
   };
@@ -1181,9 +1198,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       <StickyBottomComponent style={styles.stickyBottomStyle} defaultBG>
         <View style={styles.bottonButtonContainer}>
           <Button
-            onPress={() => {
-              props.navigation.goBack();
-            }}
+            onPress={_onPressLeftIcon}
             title={'CANCEL'}
             style={styles.bottomWhiteButtonStyle}
             titleTextStyle={styles.bottomWhiteButtonTextStyle}
