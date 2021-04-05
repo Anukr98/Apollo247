@@ -11,7 +11,7 @@ import {
   GET_INTERNAL_ORDER,
   GET_PATIENT_ADDRESS_BY_ID,
   RESCHEDULE_DIAGNOSTIC_ORDER,
-  GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE
+  GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
@@ -21,7 +21,7 @@ import {
   getDiagnosticOrdersListByMobile,
   getDiagnosticOrdersListByMobileVariables,
   getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile'
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
 import { CANCEL_DIAGNOSTIC_ORDER } from '@aph/mobile-patients/src/graphql/profiles';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -38,7 +38,7 @@ import {
   ScrollView,
   BackHandler,
   Text,
-  Modal
+  Modal,
 } from 'react-native';
 import { Down, Up } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NavigationScreenProps } from 'react-navigation';
@@ -147,9 +147,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [selectedOrder, setSelectedOrder] = useState<
     getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList
   >();
-  const {
-    allCurrentPatients,
-  } = useAllCurrentPatients();
+  const { allCurrentPatients } = useAllCurrentPatients();
   const [error, setError] = useState(false);
   const { getPatientApiCall } = useAuth();
   const client = useApolloClient();
@@ -159,7 +157,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [selectedPaitent, setSelectedPaitent] = useState<string>('All');
   const [selectedPaitentId, setSelectedPaitentId] = useState<string>('');
   const [orderListData, setOrderListData] = useState<(orderListByMobile | null)[] | null>([]);
-  const [filteredOrderList, setFilteredOrderList] = useState<(orderListByMobile | null)[] | null>([]);
+  const [filteredOrderList, setFilteredOrderList] = useState<(orderListByMobile | null)[] | null>(
+    []
+  );
   const [profileArray, setProfileArray] = useState<
     GetCurrentPatients_getCurrentPatients_patients[] | null
   >(allCurrentPatients);
@@ -223,13 +223,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       getPatientApiCall();
     }
   }, [currentPatient]);
-  useEffect(() =>{
+  useEffect(() => {
     if (selectedPaitent == 'All') {
-      setOrders(filteredOrderList)
+      setOrders(filteredOrderList);
     } else {
-      setOrders(fetchFilteredOrder())
+      setOrders(fetchFilteredOrder());
     }
-  }, [selectedPaitent])
+  }, [selectedPaitent]);
   const refetchOrders = async () => {
     fetchOrders(true);
   };
@@ -244,27 +244,24 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             sourceHeaders,
           },
           variables: {
-            mobileNumber: currentPatient && currentPatient.mobileNumber
+            mobileNumber: currentPatient && currentPatient.mobileNumber,
           },
           fetchPolicy: 'no-cache',
         })
         .then((data) => {
           const ordersList = data?.data?.getDiagnosticOrdersListByMobile?.ordersList || [];
-          const filteredOrderList = data?.data?.getDiagnosticOrdersListByMobile?.ordersList || [] ?.filter(
-
-            (item: orderListByMobile) => {
-
-              if (item?.diagnosticOrderLineItems?.length && item?.diagnosticOrderLineItems?.length > 0) {
-
+          const filteredOrderList =
+            data?.data?.getDiagnosticOrdersListByMobile?.ordersList ||
+            []?.filter((item: orderListByMobile) => {
+              if (
+                item?.diagnosticOrderLineItems?.length &&
+                item?.diagnosticOrderLineItems?.length > 0
+              ) {
                 return item;
-
               }
-
-            }
-
-          );
+            });
           setOrders(ordersList);
-          setFilteredOrderList(filteredOrderList)
+          setFilteredOrderList(filteredOrderList);
           setTimeout(() => setLoading!(false), isRefetch ? 1000 : 0);
         })
         .catch((error) => {
@@ -279,13 +276,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   };
   const fetchFilteredOrder = () => {
-    let filteredList = filteredOrderList?.filter(item =>{
+    let filteredList = filteredOrderList?.filter((item) => {
       if (selectedPaitentId === item?.patientId) {
-        return item
+        return item;
       }
-    })
+    });
     return filteredList;
-  }
+  };
   const getAddressDatails = async () => {
     try {
       setLoading!(true);
@@ -537,9 +534,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     return (
       <View style={styles.filterContainer}>
         <Text style={styles.textPaitent}>Patient Name : </Text>
-        <TouchableOpacity style={styles.activeFilterView} onPress={()=>{
-          setIsPaitentList(true)
-        }}>
+        <TouchableOpacity
+          style={styles.activeFilterView}
+          onPress={() => {
+            setIsPaitentList(true);
+          }}
+        >
           <Text style={styles.textPaitent}>{selectedPaitent}</Text>
           <Down />
         </TouchableOpacity>
@@ -1068,11 +1068,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       ) => item?.itemName
     );
     const getPatientName = (patientId: string): string => {
+      const patientSelected = allCurrentPatients?.find(
+        (patient: { id: string }) => patient?.id === patientId
+      );
 
-      const patientSelected = allCurrentPatients?.find((patient: { id: string; }) => patient?.id === patientId);
-  
       return patientSelected ? `${patientSelected?.firstName} ${patientSelected?.lastName}` : '';
-  
     };
     return (
       <OrderTestCard
@@ -1162,16 +1162,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       );
     }
   };
-  const newProfileArray = 
-  [
+  const newProfileArray = [
     {
-      firstName:'All',
-      lastName:'',
-      gender:'',
-      dateOfBirth:''
+      firstName: 'All',
+      lastName: '',
+      gender: '',
+      dateOfBirth: '',
     },
-    ...profileArray?.slice(0,profileArray.length - 1)
-  ]
+    ...profileArray?.slice(0, profileArray.length - 1),
+  ];
   const renderError = () => {
     if (error) {
       return (
@@ -1185,40 +1184,40 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       );
     }
   };
-  const renderModalView = (item:any,index:number) => {
-      return (
-        <TouchableOpacity
-                      onPress={() => {
-                         setSelectedPaitent(item?.firstName == null ? '' : item?.firstName);
-                         setSelectedPaitentId(item?.id)
-                        setIsPaitentList(false);
-                      }}
-                      style={[
-                        styles.paitentItem,
-                        {
-                          backgroundColor: selectedPaitent == item.firstName ? '#00B38E' : 'white',
-                        },
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.paitentText,
-                          { color: selectedPaitent == item.firstName ? 'white' : '#00B38E' },
-                        ]}
-                      >
-                        {item?.firstName}
-                      </Text>
-                      {item?.gender && item?.dateOfBirth ? (
-                        <Text
-                          style={[
-                            styles.paitentSubText,
-                            { color: selectedPaitent == item.firstName ? 'white' : '#00B38E' },
-                          ]}
-                        >{`${item?.gender}, ${moment().diff(item?.dateOfBirth, 'years')}`}</Text>
-                      ) : null}
-                    </TouchableOpacity>
-      )
-  }
+  const renderModalView = (item: any, index: number) => {
+    return (
+      <TouchableOpacity
+        onPress={() => {
+          setSelectedPaitent(item?.firstName == null ? '' : item?.firstName);
+          setSelectedPaitentId(item?.id);
+          setIsPaitentList(false);
+        }}
+        style={[
+          styles.paitentItem,
+          {
+            backgroundColor: selectedPaitent == item.firstName ? '#00B38E' : 'white',
+          },
+        ]}
+      >
+        <Text
+          style={[
+            styles.paitentText,
+            { color: selectedPaitent == item.firstName ? 'white' : '#00B38E' },
+          ]}
+        >
+          {item?.firstName}
+        </Text>
+        {item?.gender && item?.dateOfBirth ? (
+          <Text
+            style={[
+              styles.paitentSubText,
+              { color: selectedPaitent == item.firstName ? 'white' : '#00B38E' },
+            ]}
+          >{`${item?.gender}, ${moment().diff(item?.dateOfBirth, 'years')}`}</Text>
+        ) : null}
+      </TouchableOpacity>
+    );
+  };
   return (
     <View style={{ flex: 1 }}>
       {showDisplaySchedule && renderRescheduleOrderOverlay()}
@@ -1257,7 +1256,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   data={newProfileArray}
                   extraData={selectedPaitent}
                   keyExtractor={(_, index) => `${index}`}
-                  renderItem={({item,index}) => renderModalView(item,index)}
+                  renderItem={({ item, index }) => renderModalView(item, index)}
                 />
               </View>
             </View>
@@ -1364,10 +1363,10 @@ const styles = StyleSheet.create({
   },
   buttonStyle: { width: '85%', alignSelf: 'center' },
   filterContainer: {
-    flexDirection:'row',
+    flexDirection: 'row',
     paddingTop: 10,
-    justifyContent:'space-around',
-    alignItems:'center'
+    justifyContent: 'space-around',
+    alignItems: 'center',
   },
   textHeadingModal: {
     ...theme.viewStyles.text('SB', 17, '#02475b'),
@@ -1380,13 +1379,13 @@ const styles = StyleSheet.create({
   activeFilterView: {
     ...theme.viewStyles.text('SB', 14, '#02475b'),
     backgroundColor: '#F3F3F3',
-    borderWidth:1,
+    borderWidth: 1,
     borderColor: '#BDBDBD',
     borderRadius: 8,
-    width:'55%',
-    flexDirection:'row',
-    justifyContent:'space-between',
-    padding:8
+    width: '55%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 8,
     // border: 1px solid #BDBDBD;
     // box-sizing: border-box;
     // border-radius: 8px;
@@ -1400,32 +1399,32 @@ const styles = StyleSheet.create({
   },
   paitentModalView: {
     backgroundColor: 'white',
-    width:'100%',
-    padding:20,
-    borderTopLeftRadius:10,
-    borderTopRightRadius:10
+    width: '100%',
+    padding: 20,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
   },
   paitentCard: {
     backgroundColor: '#F7F8F5',
-    padding:10,
-    borderRadius: 10,
-    elevation: 2
-  },
-  paitentItem: {
-    flexDirection:'row',
-    justifyContent:'space-between',
-    alignItems:'center',
+    padding: 10,
     borderRadius: 10,
     elevation: 2,
-    backgroundColor:'white',
-    paddingHorizontal:10,
-    paddingVertical:20,
-    margin:5
+  },
+  paitentItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderRadius: 10,
+    elevation: 2,
+    backgroundColor: 'white',
+    paddingHorizontal: 10,
+    paddingVertical: 20,
+    margin: 5,
   },
   paitentText: {
     ...theme.viewStyles.text('R', 16, '#00B38E'),
   },
   paitentSubText: {
     ...theme.viewStyles.text('R', 12, '#00B38E'),
-  }
+  },
 });
