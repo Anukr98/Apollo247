@@ -4721,13 +4721,11 @@ export const GET_APPOINTMENT_INFO = gql`
     getOrderInternal(order_id: $order_id) {
       payment_order_id
       payment_status
-      internal_orders {
-        AppointmentDetails {
-          displayId
-          amountBreakup {
-            actual_price
-            slashed_price
-          }
+      AppointmentDetails {
+        displayId
+        amountBreakup {
+          actual_price
+          slashed_price
         }
       }
     }
