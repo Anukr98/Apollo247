@@ -193,7 +193,9 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const clearCircleSubscriptionData = () => {
-    clearCartInfo && clearCartInfo();
+    if (status !== failure && status !== aborted && status !== 'PAYMENT_PENDING') {
+      clearCartInfo?.();
+    }
     AsyncStorage.removeItem('circlePlanSelected');
     setCircleMembershipCharges && setCircleMembershipCharges(0);
     setIsCircleSubscription && setIsCircleSubscription(false);
@@ -644,26 +646,17 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     ) : null;
   };
 
-  const renderCODButton = () => {
-    return status == failure || status == aborted ? (
-      <View style={{ marginHorizontal: 0.06 * windowWidth, marginBottom: 0.06 * windowWidth }}>
-        <Button
-          style={{ height: 0.06 * windowHeight }}
-          title={`PAY CASH ON DELIVERY`}
-          onPress={() => initiateOrder()}
-          disabled={false}
-        />
-      </View>
-    ) : null;
-  };
-
   const renderRetryPayment = () => {
     return (
       <View style={styles.retryPayment}>
-        <TouchableOpacity onPress={() => handleButton()}>
-          <Text style={styles.clickText}>Click here</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={() => handleButton()}>
+          <Text style={theme.viewStyles.text('SB', 13, '#ffffff', 1, 24)}>RETRY PAYMENT</Text>
         </TouchableOpacity>
-        <Text style={styles.retryText}>{' to retry your payment'}</Text>
+        {!circleMembershipCharges && (
+          <TouchableOpacity style={styles.codButton} onPress={() => initiateOrder()}>
+            <Text style={theme.viewStyles.text('SB', 13, '#fcb716', 1, 24)}>PAY COD</Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   };
@@ -767,9 +760,8 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
                 ? renderCircleSavingsOnPurchase()
                 : null}
               {renderCODNote()}
-              {!circleMembershipCharges && renderCODButton()}
-              {appointmentHeader()}
-              {appointmentCard()}
+              {status != failure && status != aborted && appointmentHeader()}
+              {status != failure && status != aborted && appointmentCard()}
               {renderNote()}
               {status == failure || status == aborted ? renderRetryPayment() : renderButton()}
             </ScrollView>
@@ -935,14 +927,29 @@ const styles = StyleSheet.create({
   },
   retryPayment: {
     flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    marginHorizontal: 10,
+    marginBottom: 13,
+  },
+  retryButton: {
+    ...theme.viewStyles.cardViewStyle,
+    backgroundColor: '#fcb716',
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 13,
+    paddingVertical: 7,
+    width: '40%',
   },
-  clickText: {
-    ...theme.viewStyles.text('SB', 13, '#fcb716', 1, 17, 0.04),
-  },
-  retryText: {
-    ...theme.viewStyles.text('R', 13, '#02475b', 1, 17, 0.04),
+  codButton: {
+    ...theme.viewStyles.cardViewStyle,
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 6,
+    borderColor: '#fcb716',
+    borderWidth: 2,
+    width: '40%',
   },
 });

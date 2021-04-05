@@ -105,6 +105,15 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     justifyContent: 'center',
   },
+  splashLogo: {
+    width: 152,
+    height: 117,
+    ...Platform.select({
+      android: {
+        top: -2,
+      },
+    }),
+  },
 });
 
 export interface SplashScreenProps extends NavigationScreenProps {}
@@ -917,18 +926,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   return (
     <View style={styles.mainView}>
-      <SplashLogo
-        style={{
-          width: 152,
-          height: 117,
-          ...Platform.select({
-            android: {
-              top: -2,
-            },
-          }),
-        }}
-        resizeMode="contain"
-      />
+      <SplashLogo style={styles.splashLogo} resizeMode="contain" />
+
       {showSpinner ? (
         <ActivityIndicator
           animating={showSpinner}

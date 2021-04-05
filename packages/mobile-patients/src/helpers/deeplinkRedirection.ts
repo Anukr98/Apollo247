@@ -445,6 +445,7 @@ export const pushTheView = (
     case 'TestDetails':
       navigateToView(navigation, AppRoutes.TestDetails, {
         itemId: id,
+        movedFrom: 'deeplink',
       });
       break;
     case 'ConsultDetails':
