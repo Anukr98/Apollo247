@@ -296,7 +296,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               if (Platform.OS === 'ios') InitiateAppsFlyer(props.navigation);
               const data = handleOpenURL(url);
               const { routeName, id, isCall, timeout, mediaSource } = data;
-              getData(routeName, id, isCall, timeout, mediaSource);
+              redirectRoute(routeName, id, isCall, timeout, mediaSource);
               fireAppOpenedEvent(url);
             } catch (e) {}
           } else {
@@ -313,44 +313,53 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
           const data = handleOpenURL(event.url);
           const { routeName, id, isCall, timeout, mediaSource } = data;
-          if (routeName === 'ChatRoom_AppointmentData') {
-            getAppointmentDataAndNavigate(id, isCall);
-          } else if (routeName === 'DoctorCall_AppointmentData') {
-            const params = id?.split('+');
-            voipCallType.current = params[1];
-            callPermissions();
-          } else if (routeName === 'DoctorCallRejected') {
-            setLoading!(true);
-            const appointmentId = id?.split('+')?.[0];
-            const config: Pubnub.PubnubConfig = {
-              origin: 'apollo.pubnubapi.com',
-              subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
-              publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
-              ssl: true,
-              restore: true,
-            };
-            const pubnub = new Pubnub(config);
-            pubnub.publish(
-              {
-                message: { message: '^^#PATIENT_REJECTED_CALL' },
-                channel: appointmentId,
-                storeInHistory: true,
-                sendByPost: true,
-              },
-              (status, response) => {
-                setLoading!(false);
-              }
-            );
-          } else {
-            getData(routeName, id, isCall, timeout, mediaSource);
-          }
-
+          redirectRoute(routeName, id, isCall, timeout, mediaSource);
           fireAppOpenedEvent(event.url);
         } catch (e) {}
       });
       AsyncStorage.removeItem('location');
     } catch (error) {
       CommonBugFender('SplashScreen_Linking_URL_try', error);
+    }
+  };
+
+  const redirectRoute = (
+    routeName: string,
+    id?: string,
+    timeout?: boolean,
+    isCall?: boolean,
+    mediaSource?: string
+  ) => {
+    if (routeName === 'ChatRoom_AppointmentData') {
+      getAppointmentDataAndNavigate(id || '', !!isCall);
+    } else if (routeName === 'DoctorCall_AppointmentData') {
+      const params = id?.split('+');
+      voipCallType.current = params[1];
+      callPermissions();
+    } else if (routeName === 'DoctorCallRejected') {
+      setLoading!(true);
+      const appointmentId = id?.split('+')?.[0];
+      const config: Pubnub.PubnubConfig = {
+        origin: 'apollo.pubnubapi.com',
+        subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
+        publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
+        ssl: true,
+        restore: true,
+      };
+      const pubnub = new Pubnub(config);
+      pubnub.publish(
+        {
+          message: { message: '^^#PATIENT_REJECTED_CALL' },
+          channel: appointmentId,
+          storeInHistory: true,
+          sendByPost: true,
+        },
+        (status, response) => {
+          setLoading!(false);
+        }
+      );
+    } else {
+      getData(routeName, id, isCall, timeout, mediaSource);
     }
   };
 
@@ -515,7 +524,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       });
       const appointmentData: any = response.data?.getAppointmentData?.appointmentsHistory?.[0];
       if (appointmentData?.doctorInfo) {
-        getData('ChatRoom', appointmentData, false, isCall);
+        getData('ChatRoom_AppointmentData', appointmentData, false, isCall);
       } else {
         throw new Error('Doctor info is required to process the request.');
       }
@@ -526,7 +535,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         title: string.common.uhOh,
         description: string.appointmentDataError,
         CTAs: [
-          { text: 'CANCEL', onPress: () => hideAphAlert!(), type: 'white-button' },
+          {
+            text: 'CANCEL',
+            onPress: () => {
+              hideAphAlert!();
+              props.navigation.navigate(AppRoutes.ConsultRoom);
+            },
+            type: 'white-button',
+          },
           {
             text: 'RETRY',
             onPress: () => {
