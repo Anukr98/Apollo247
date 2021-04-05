@@ -2740,7 +2740,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             {renderTotalCharges()}
             {cartItems?.length > 0 ? renderAlsoAddItems() : null}
           </View>
-          <View style={{ height: cartItems?.length > 0 ? 120 : 70 }} />
+          <View style={{ height: cartItems?.length > 0 ? 140 : 90 }} />
         </ScrollView>
         {renderTestProceedBar()}
       </SafeAreaView>
