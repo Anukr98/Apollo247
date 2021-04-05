@@ -94,6 +94,7 @@ import {
   Dimensions,
   Platform,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlay';
@@ -324,7 +325,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   useEffect(() => {
     fetchAddresses();
-    checkPatientAge();
     initiateHyperSDK();
   }, [currentPatient]);
 
@@ -395,28 +395,30 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   };
 
-  const checkPatientAge = () => {
-    let age =
-      !!currentPatient?.dateOfBirth || !!selectedPatient?.dateOfBirth
-        ? getAge(currentPatient?.dateOfBirth || selectedPatient?.dateOfBirth)
-        : null;
-    let gender = currentPatient?.gender || selectedPatient?.gender;
+  const checkPatientAge = (_selectedPatient: any, fromNewProfile: boolean = false) => {
+    let age = !!_selectedPatient?.dateOfBirth ? getAge(_selectedPatient?.dateOfBirth) : null;
+    let gender = _selectedPatient?.gender;
     if (age! <= 10 || age == null || gender == null) {
-      renderAlert(
+      setSelectedPatient(null);
+      Alert.alert(
+        string.common.uhOh,
         age == null
           ? string.common.contactCustomerCare1
           : gender == null
           ? string.common.contactCustomerCare2
-          : string.diagnostics.minorAgeText
+          : string.diagnostics.minorAgeText,
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              fromNewProfile && setShowPatientListOverlay(true);
+            },
+          },
+        ]
       );
-      setIsMinor(true);
-      setDeliveryAddressId!('');
-      setDiagnosticAreas!([]);
-      setAreaSelected!({});
-      setselectedTimeSlot(undefined);
-    } else {
-      isMinor && setIsMinor(false);
+      return true;
     }
+    return false;
   };
 
   const handleBack = () => {
@@ -1619,7 +1621,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     cartItems?.length > 0 &&
     forPatientId &&
     !!(
-      (deliveryAddressId &&
+      (selectedPatient &&
+        deliveryAddressId &&
         selectedTimeSlot &&
         selectedTimeSlot?.date &&
         selectedTimeSlot?.slotInfo?.startTime) ||
@@ -2447,9 +2450,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const onNewProfileAdded = (newPatient: any) => {
     if (newPatient?.profileData) {
-      setSelectedPatient(newPatient?.profileData);
-      setShowPatientListOverlay(false);
-      changeCurrentProfile(newPatient?.profileData, false);
+      if (!checkPatientAge(newPatient?.profileData, true)) {
+        setSelectedPatient(newPatient?.profileData);
+        setShowPatientListOverlay(false);
+        changeCurrentProfile(newPatient?.profileData, false);
+      }
     }
   };
 
@@ -2464,9 +2469,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       <PatientListOverlay
         onPressClose={() => setShowPatientListOverlay(false)}
         onPressDone={(_selectedPatient: any) => {
-          setSelectedPatient(_selectedPatient);
-          setShowPatientListOverlay(false);
-          changeCurrentProfile(_selectedPatient, true);
+          if (!checkPatientAge(_selectedPatient)) {
+            setSelectedPatient(_selectedPatient);
+            setShowPatientListOverlay(false);
+            changeCurrentProfile(_selectedPatient, true);
+          }
         }}
         onPressAddNewProfile={() => {
           setShowPatientListOverlay(false);
@@ -2515,7 +2522,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               const profileData = g(data, 'editProfile', 'patient');
               setLoading?.(false);
               getPatientApiCall();
-              changeCurrentProfile(profileData, false);
+              if (!checkPatientAge(profileData, true)) {
+                changeCurrentProfile(profileData, false);
+              }
             })
             .catch((e) => {
               setLoading?.(false);
