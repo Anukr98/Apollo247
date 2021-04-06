@@ -24,6 +24,11 @@ import { DIAGNOSTIC_ORDER_FAILED_STATUS } from '@aph/mobile-patients/src/strings
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
 const screenWidth = Dimensions.get('window').width;
+const SHOW_OTP_ARRAY = [
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
+];
 
 interface OrderTestCardProps {
   orderId: string | number;
@@ -270,7 +275,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
     return (
       <>
-        {!!otpToShow ? (
+        {!!otpToShow && SHOW_OTP_ARRAY.includes(props.orderLevelStatus) ? (
           <View style={styles.otpContainer}>
             <Text style={styles.otpTextStyle}>{'OTP : '}</Text>
             <Text style={styles.otpTextStyle}>{otpToShow}</Text>
