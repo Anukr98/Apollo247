@@ -348,6 +348,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         },
       };
       setSpinning(false);
+      closeModal && closeModal();
       if (data?.data?.createOrderInternal?.success) {
         props.navigation.navigate(AppRoutes.PaymentMethods, {
           paymentId: data?.data?.createOrderInternal?.payment_order_id!,
@@ -790,9 +791,9 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           setDefaultCirclePlan && setDefaultCirclePlan(null);
           setIsCircleSubscription && setIsCircleSubscription(true);
           autoSelectDefaultPlan(membershipPlans);
-          closeModal && closeModal();
           if (buyNow && from !== string.banner_context.PHARMACY_HOME) {
             if (purchaseWithHC) {
+              closeModal && closeModal();
               onPurchasePlanThroughHC();
             } else {
               // props.navigation.navigate(AppRoutes.CircleSubscription, {
@@ -803,6 +804,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
               initiateCirclePurchase();
             }
           } else {
+            closeModal && closeModal();
             setDefaultCirclePlan && setDefaultCirclePlan(null);
           }
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
