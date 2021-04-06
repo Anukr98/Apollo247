@@ -20,6 +20,12 @@ import {
   getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
   getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrdersStatus,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
+import {
+  getDiagnosticOrdersListByMobile,
+  getDiagnosticOrdersListByMobileVariables,
+  getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList,
+  getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
 import { CANCEL_DIAGNOSTIC_ORDER } from '@aph/mobile-patients/src/graphql/profiles';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -130,7 +136,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const { addresses, diagnosticSlot, setDiagnosticSlot } = useDiagnosticsCart();
 
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
 
   const [date, setDate] = useState<Date>(new Date());
@@ -474,7 +480,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const fetchTestReportResult = useCallback(
-    (order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList) => {
+    (order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList) => {
+      setLoading?.(true);
       const getVisitId = order?.visitNo;
       getPatientPrismMedicalRecordsApi(
         client,
@@ -519,7 +526,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const checkIfPreTestingExists = (
-    order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList
+    order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList
   ) => {
     if (order != null) {
       const filterPreTestingData = order?.diagnosticOrderLineItems?.filter((items) =>
@@ -595,7 +602,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         setDiagnosticSlot && setDiagnosticSlot(null);
         setselectedTimeSlot(undefined);
         const noHubSlots = g(e, 'graphQLErrors', '0', 'message') === 'NO_HUB_SLOTS';
-
+        setLoading?.(false);
         if (noHubSlots) {
           showAphAlert!({
             title: string.common.uhOh,
@@ -608,6 +615,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             },
           });
         } else {
+          setLoading?.(false);
           //not trigger
           showAphAlert?.({
             title: string.common.uhOh,
@@ -703,7 +711,17 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const renderRescheduleOrderOverlay = () => {
-    const orderItemId = selectedOrder?.diagnosticOrderLineItems?.map((item) => item?.itemId);
+    const orderItemId = selectedOrder?.diagnosticOrderLineItems?.map((item) =>
+      Number(item?.itemId)
+    );
+    const isCovidItem = orderItemId?.map((item: number) =>
+      AppConfig.Configuration.Covid_Items.includes(item)
+    );
+    const isOrderHasCovidItem = isCovidItem?.find((item) => item === true);
+    const maxDaysToShow = !!isOrderHasCovidItem
+      ? AppConfig.Configuration.Covid_Max_Slot_Days
+      : AppConfig.Configuration.Non_Covid_Max_Slot_Days;
+
     return (
       <View style={{ flex: 1 }}>
         <TestSlotSelectionOverlay
@@ -712,7 +730,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           areaId={String(selectedOrder?.areaId)}
           isTodaySlotUnavailable={todaySlotNotAvailable}
           maxDate={moment()
-            .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS, 'day')
+            .add(maxDaysToShow, 'day')
             .toDate()}
           isVisible={showDisplaySchedule}
           onClose={() => setDisplaySchedule(false)}
@@ -1066,9 +1084,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setLoading?.(false);
     props.navigation.navigate(AppRoutes.TestOrderDetails, {
       orderId: order?.id,
-      setOrders: (orders: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList[]) =>
-        setOrders(orders),
-      selectedTest: selectedTestStatus,
+      setOrders: (
+        orders: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList[]
+      ) => setOrders(orders),
       selectedOrder: order,
       individualTestStatus: updatedItemLevelStatus,
       comingFrom: AppRoutes.YourOrdersTest,
@@ -1128,7 +1146,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     const showReportInclusionLevel = order?.diagnosticOrdersStatus?.find(
       (
         item:
-          | getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrdersStatus
+          | getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus
           | any
       ) => item?.orderStatus == DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED
     );
@@ -1138,7 +1156,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     const showExtraInfo = order?.diagnosticOrdersStatus?.filter(
       (
         item:
-          | getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrdersStatus
+          | getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus
           | any
       ) => item?.orderStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB
     );
@@ -1146,18 +1164,26 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     const sampleRejectedString = showExtraInfo?.map(
       (
         item:
-          | getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrdersStatus
+          | getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus
           | any
       ) => item?.itemName
     );
 
-    return !!phleboOTPData ? (
+    const getPatientName = (patientId: string): string => {
+      const patientSelected = allCurrentPatients?.find(
+        (patient: { id: string }) => patient?.id === patientId
+      );
+
+      return patientSelected ? `${patientSelected?.firstName} ${patientSelected?.lastName}` : '';
+    };
+
+    return (
       <OrderTestCard
         orderId={order?.displayId}
         key={order?.id}
         createdOn={order?.createdDate}
         orderLevelStatus={order?.orderStatus}
-        patientName={patientName}
+        patientName={getPatientName(order?.patientId)}
         gender={currentPatient?.gender == 'FEMALE' ? 'Ms.' : 'Mr.'}
         showAddTest={false}
         ordersData={order?.diagnosticOrderLineItems!}
@@ -1185,7 +1211,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           index == 0 ? { marginTop: 20 } : {},
         ]}
       />
-    ) : null;
+    );
   };
 
   function _onPressAddTest() {

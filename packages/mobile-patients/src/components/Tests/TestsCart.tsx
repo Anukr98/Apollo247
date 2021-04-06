@@ -235,6 +235,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     isDiagnosticCircleSubscription,
     newAddressAddedCartPage,
     setNewAddressAddedCartPage,
+    showSelectPatient,
+    setShowSelectPatient,
   } = useDiagnosticsCart();
   const {
     setAddresses: setMedAddresses,
@@ -395,11 +397,19 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   };
 
+  useEffect(() => {
+    if (showSelectPatient && currentPatient) {
+      setSelectedPatient(currentPatient);
+      setShowPatientListOverlay(false);
+    }
+  }, []);
+
   const checkPatientAge = (_selectedPatient: any, fromNewProfile: boolean = false) => {
     let age = !!_selectedPatient?.dateOfBirth ? getAge(_selectedPatient?.dateOfBirth) : null;
     let gender = _selectedPatient?.gender;
     if (age! <= 10 || age == null || gender == null) {
       setSelectedPatient(null);
+      setShowSelectPatient?.(false);
       Alert.alert(
         string.common.uhOh,
         age == null
@@ -2439,6 +2449,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       return;
     } else if (!_selectedPatient?.dateOfBirth || !_selectedPatient?.gender) {
       setSelectedPatient(_selectedPatient);
+      setShowSelectPatient?.(true);
       setShowPatientDetailsOverlay(_showPatientDetailsOverlay);
       return;
     }
@@ -2452,6 +2463,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     if (newPatient?.profileData) {
       if (!checkPatientAge(newPatient?.profileData, true)) {
         setSelectedPatient(newPatient?.profileData);
+        setShowSelectPatient?.(true);
         setShowPatientListOverlay(false);
         changeCurrentProfile(newPatient?.profileData, false);
       }
@@ -2472,6 +2484,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           if (!checkPatientAge(_selectedPatient)) {
             setSelectedPatient(_selectedPatient);
             setShowPatientListOverlay(false);
+            setShowSelectPatient?.(true);
             changeCurrentProfile(_selectedPatient, true);
           }
         }}

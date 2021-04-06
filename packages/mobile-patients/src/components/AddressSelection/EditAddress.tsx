@@ -1181,7 +1181,9 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
           <ScrollView bounces={false}>
             {renderAddressText()}
             {renderAddress()}
-            {!!source && source == 'Diagnostics Cart' ? null : renderUserName()}
+            {(!!source && source == 'Diagnostics Cart') || (source == 'Tests' && isEdit)
+              ? null
+              : renderUserName()}
             {renderUserNumber()}
             <View style={{ height: Platform.OS == 'ios' ? 60 : 0 }} />
           </ScrollView>

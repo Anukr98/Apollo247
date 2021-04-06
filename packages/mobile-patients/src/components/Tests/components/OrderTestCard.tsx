@@ -21,6 +21,7 @@ import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUti
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DIAGNOSTIC_ORDER_FAILED_STATUS } from '@aph/mobile-patients/src/strings/AppConfig';
+import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -73,9 +74,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       <View style={styles.midViewContainer}>
         {!!props.patientName && (
           <View>
-            <Text style={styles.testForText}>
-              Tests for {props.gender} {props.patientName}
-            </Text>
+            <Text style={styles.testForText}>Tests for {props.patientName}</Text>
           </View>
         )}
         {props.showAddTest ? (
@@ -101,7 +100,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       <>
         {props.ordersData?.map(
           (
-            item: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems,
+            item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems,
             index: number
           ) => (
             <View style={styles.rowStyle}>
@@ -126,7 +125,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         {moreTests &&
           props.ordersData?.map(
             (
-              item: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems,
+              item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems,
               index: number
             ) => (
               <>
