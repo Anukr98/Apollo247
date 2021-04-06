@@ -177,12 +177,15 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   ];
   const [shipmentItems, setShipmentItems] = useState([]);
 
-  const itemsFromMedicineShipment = g(
+  const orderInvoice = g(
     orderDetails,
     'medicineOrderShipments',
     '0' as any,
-    'itemDetails'
+    'medicineOrderInvoice'
   );
+  const itemsFromMedicineShipment = orderInvoice?.length
+    ? g(orderDetails, 'medicineOrderShipments', '0' as any, 'itemDetails')
+    : '';
 
   const item_details_from_shipments = itemsFromMedicineShipment!
     ? JSON.parse(itemsFromMedicineShipment!)
