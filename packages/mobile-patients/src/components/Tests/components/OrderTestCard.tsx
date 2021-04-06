@@ -51,6 +51,7 @@ interface OrderTestCardProps {
   onPressViewDetails: () => void;
   onPressAddTest?: () => void;
   onPressViewReport: () => void;
+  phelboObject?: any;
 }
 
 export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
@@ -263,6 +264,22 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     );
   };
 
+  const showOTPContainer = () => {
+    const phlObj = props?.phelboObject;
+    let otpToShow = !!phlObj && phlObj?.PhelboOTP;
+
+    return (
+      <>
+        {!!otpToShow ? (
+          <View style={styles.otpContainer}>
+            <Text style={styles.otpTextStyle}>{'OTP : '}</Text>
+            <Text style={styles.otpTextStyle}>{otpToShow}</Text>
+          </View>
+        ) : null}
+      </>
+    );
+  };
+
   const renderAdditionalInfoView = () => {
     const isPresent =
       (!!props.additonalRejectedInfo && props.additonalRejectedInfo?.length > 0) ||
@@ -309,6 +326,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         {renderCTAsView()}
       </View>
       {props.showAdditonalView || props.isCancelled ? renderAdditionalInfoView() : null}
+      {showOTPContainer()}
     </TouchableOpacity>
   );
 };
@@ -403,5 +421,20 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     marginTop: 10,
     height: 40,
+  },
+  otpTextStyle: {
+    top: 10,
+    left: 20,
+    color: theme.colors.LIGHT_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(14),
+  },
+  otpContainer: {
+    backgroundColor: '#FCFDDA',
+    justifyContent: 'flex-start',
+    flexDirection: 'row',
+    height: 40,
+    borderBottomLeftRadius: 4,
+    borderBottomRightRadius: 4,
+    borderRadius: 10,
   },
 });

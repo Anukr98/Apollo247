@@ -2089,6 +2089,16 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         visitNo
         paymentType
         paymentOrderId
+        phleboDetailsObj{
+          PhelboOTP
+          PhelbotomistName
+          PhelbotomistMobile
+          PhelbotomistTrackLink
+          TempRecording
+          CheckInTime
+          PhleboLatitude
+          PhleboLongitude
+        }
         diagnosticOrderReschedule{
           rescheduleDate
           rescheduleReason
@@ -4973,6 +4983,26 @@ query getAllProhealthAppointments($patientId: ID!){
       prohealthHospital{
         unitType
         unitName
+      }
+    }
+  }
+}
+`;
+
+export const GET_PHLOBE_DETAILS = gql`
+query getOrderPhleboDetailsBulk($diagnosticOrdersIds: [String]!){
+  getOrderPhleboDetailsBulk(diagnosticOrdersIds:$diagnosticOrdersIds){
+    orderPhleboDetailsBulk {
+      orderPhleboDetails {
+        diagnosticOrdersId
+        diagnosticPhlebotomists {
+          name
+        }
+        phleboOTP
+      },
+      phleboEta {
+        distanceInMetres,
+        estimatedArrivalTime
       }
     }
   }
