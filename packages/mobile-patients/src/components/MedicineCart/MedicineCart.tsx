@@ -575,9 +575,11 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       if (storeItem) {
         const storePrice = Number(cartItem?.mou) * storeItem?.mrp;
         const allowPriceUpdate =
-          updatePrices === 'ByPercentage'
-            ? isPricesWithInSpecifiedRange(cartItem?.price, storePrice, updatePricePercent)
-            : true;
+          cartItem?.price !== storePrice
+            ? updatePrices === 'ByPercentage'
+              ? isPricesWithInSpecifiedRange(cartItem?.price, storePrice, updatePricePercent)
+              : true
+            : false;
         if (storeItem?.mrp != 0 && allowPriceUpdate) {
           showAphAlert!({
             title: `Hi ${currentPatient?.firstName || ''},`,
@@ -1235,7 +1237,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
 
 const isPricesWithInSpecifiedRange = (num1: number, num2: number, percentage: number) => {
   const diffP = ((num1 - num2) / num1) * 100;
-  const result = diffP >= percentage || diffP <= -percentage;
+  const result = diffP <= percentage && diffP >= -percentage;
   return result;
 };
 
