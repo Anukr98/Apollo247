@@ -8,7 +8,6 @@ import {
   Linking,
   AppStateStatus,
   AppState,
-  Text,
   DeviceEventEmitter,
   NativeModules,
   Alert,
@@ -66,6 +65,12 @@ import messaging from '@react-native-firebase/messaging';
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
 import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
+import { Animated, Easing } from 'react-native';
+import {
+  SplashCapsule,
+  SplashSyringe,
+  SplashStethoscope,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 
 (function() {
   /**
@@ -114,6 +119,14 @@ const styles = StyleSheet.create({
       },
     }),
   },
+  loaderContainer: {
+    position: 'absolute',
+    bottom: 50,
+  },
+  loader: {
+    width: 70,
+    height: 70,
+  },
 });
 
 export interface SplashScreenProps extends NavigationScreenProps {}
@@ -133,6 +146,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   const [userLoggedIn, setUserLoggedIn] = useState<any | null>(null);
 
+  const [spinValue, setSpinValue] = useState(new Animated.Value(0));
+  const [animatedValue, setAnimatedValue] = useState(new Animated.Value(0));
+  const [springValue, setSpringAnimation] = useState(new Animated.Value(0));
+  const CONST_SPLASH_LOADER = [string.splash.CAPSULE, string.splash.SYRINGE, string.splash.STETHO];
+  const [selectedAnimationIndex, setSelectedAnimationIndex] = useState(0);
+
   const config: Pubnub.PubnubConfig = {
     origin: 'apollo.pubnubapi.com',
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
@@ -147,7 +166,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   useEffect(() => {
     takeToConsultRoom && getData('ConsultRoom', undefined, false);
+    configureAnimation();
   }, [takeToConsultRoom]);
+
+  useEffect(() => {
+    if (CONST_SPLASH_LOADER[selectedAnimationIndex] == string.splash.SYRINGE) {
+      spinObject();
+    } else if (CONST_SPLASH_LOADER[selectedAnimationIndex] == string.splash.STETHO) {
+      springAnimation();
+    } else {
+      spinObject();
+    }
+  }, [selectedAnimationIndex]);
 
   useEffect(() => {
     prefetchUserMetadata();
@@ -479,6 +509,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             if (mePatient) {
               if (mePatient.firstName !== '') {
                 const isCircleMember: any = await AsyncStorage.getItem('isCircleMember');
+
                 pushTheView(
                   props.navigation,
                   routeName,
@@ -499,6 +530,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             const signUp: any = await AsyncStorage.getItem('signUp');
             const multiSignUp: any = await AsyncStorage.getItem('multiSignUp');
             setshowSpinner(false);
+
             if (signUp == 'true') {
               props.navigation.replace(AppRoutes.SignUp);
             } else if (multiSignUp == 'true') {
@@ -924,17 +956,90 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     });
   };
 
+  const configureAnimation = () => {
+    const randomIndex = Math.floor(Math.random() * CONST_SPLASH_LOADER.length);
+    setSelectedAnimationIndex(randomIndex);
+    logoAnimation();
+  };
+
+  const spinObject = () => {
+    Animated.loop(
+      Animated.timing(spinValue, {
+        toValue: 1,
+        duration: 1000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    ).start();
+  };
+
+  let spin = spinValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  const springAnimation = () => {
+    Animated.loop(
+      Animated.spring(springValue, {
+        toValue: 1.4,
+        friction: 1,
+        useNativeDriver: true,
+      })
+    ).start();
+  };
+
+  const logoAnimation = () => {
+    Animated.timing(animatedValue, {
+      toValue: 1,
+      duration: 1300,
+      useNativeDriver: true,
+    }).start(() => {});
+  };
+
   return (
     <View style={styles.mainView}>
-      <SplashLogo style={styles.splashLogo} resizeMode="contain" />
+      <Animated.View
+        style={{
+          transform: [
+            {
+              scale: animatedValue.interpolate({
+                inputRange: [0, 0.5, 1],
+                outputRange: [1, 1.6, 1],
+              }),
+            },
+          ],
+        }}
+      >
+        <SplashLogo style={styles.splashLogo} resizeMode="contain" />
+      </Animated.View>
 
-      {showSpinner ? (
-        <ActivityIndicator
-          animating={showSpinner}
-          size="large"
-          color="green"
-          style={{ bottom: 60, position: 'absolute' }}
-        />
+      {CONST_SPLASH_LOADER[selectedAnimationIndex] == string.splash.STETHO ? (
+        <Animated.View
+          style={[
+            styles.loaderContainer,
+            {
+              transform: [
+                {
+                  scale: springValue,
+                },
+              ],
+            },
+          ]}
+        >
+          <SplashStethoscope style={styles.loader} />
+        </Animated.View>
+      ) : null}
+
+      {CONST_SPLASH_LOADER[selectedAnimationIndex] == string.splash.CAPSULE ? (
+        <Animated.View style={[styles.loaderContainer, { transform: [{ rotate: spin }] }]}>
+          <SplashCapsule style={styles.loader} />
+        </Animated.View>
+      ) : null}
+
+      {CONST_SPLASH_LOADER[selectedAnimationIndex] == string.splash.SYRINGE ? (
+        <Animated.View style={[styles.loaderContainer, { transform: [{ rotate: spin }] }]}>
+          <SplashSyringe style={styles.loader} />
+        </Animated.View>
       ) : null}
     </View>
   );

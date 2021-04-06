@@ -376,7 +376,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         })
         .catch((error) => {
           CommonBugFender('YourOrdersTests_fetchTestReportsData', error);
-          console.log('Error occured fetchTestReportsResult', { error });
           currentPatient && handleGraphQlError(error);
         })
         .finally(() => setLoading?.(false));
@@ -1013,9 +1012,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     );
   };
 
-  function _onPressAddTest() {
-    console.log('add test pressed');
-  }
+  function _onPressAddTest() {}
 
   function _onPressViewReport(order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList) {
     const visitId = order?.visitNo;

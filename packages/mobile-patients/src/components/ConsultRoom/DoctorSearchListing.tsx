@@ -1605,7 +1605,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           <FamilyDoctorIcon style={{ width: 16.58, height: 24 }} />
           <Text style={styles.doctorOfTheHourTextStyle}>{doctorOfHourText}</Text>
         </View>
-        {console.log('csk doh render', JSON.stringify(platinumDoctor))}
         <DoctorCard
           rowData={platinumDoctor}
           navigation={props.navigation}

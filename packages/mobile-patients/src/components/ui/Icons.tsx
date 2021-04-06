@@ -1708,3 +1708,27 @@ export const CopyIcon: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/copy_white.png')}
   />
 );
+
+export const SplashCapsule: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/ic_splash_capsules.png')}
+  />
+);
+
+export const SplashStethoscope: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/ic_splash_stethoscope.png')}
+  />
+);
+
+export const SplashSyringe: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/ic_splash_syringe.png')}
+  />
+);

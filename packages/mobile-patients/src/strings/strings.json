@@ -1010,5 +1010,10 @@
     "tnc": "By Clicking on this link, you will provide a confirmation to join a recorded Audio/Video meeting on the external platform.",
     "copied_to_clipboard": "Copied ",
     "tryAgainLater": "Something went wrong, please try again after sometime"
+  },
+  "splash":{
+    "CAPSULE":"CAPSULE",
+    "SYRINGE" : "SYRINGE",
+    "STETHO" : "STETHO"
   }
 }

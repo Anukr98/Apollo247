@@ -356,7 +356,6 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                   timeArray={timeArray}
                   date={date}
                   setDate={(date) => {
-                    console.log(date, 'setDate');
                     setDate(date);
                   }}
                   nextAvailableSlot={nextAvailableSlot}
@@ -376,7 +375,6 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                   doctor={props.doctor}
                   clinics={props.clinics}
                   setDate={(date) => {
-                    console.log(date, 'setDate');
                     setDate(date);
                     scrollToSlots(350);
                   }}

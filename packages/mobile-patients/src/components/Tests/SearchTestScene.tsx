@@ -303,14 +303,13 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     } catch (e) {
       CommonBugFender('Tests_fetchPackageInclusion', e);
       setGlobalLoading!(false);
-      console.log('getPackageData Error\n', { e });
       errorAlert();
     }
   };
 
   const showGenericALert = (e: { response: AxiosResponse }) => {
     const error = e && e.response && e.response.data.message;
-    aphConsole.log({ errorResponse: e.response, error }); //remove this line later
+
     showAphAlert!({
       title: string.common.uhOh,
       description: `Something went wrong.`,
@@ -426,9 +425,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     selectedPlan?: any,
     inclusions?: any[]
   ) => {
-    savePastSeacrh(`${itemId}`, itemName).catch((e) => {
-      aphConsole.log({ e });
-    });
+    savePastSeacrh(`${itemId}`, itemName).catch((e) => {});
     postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, 0, 0);
 
     addCartItem!({
