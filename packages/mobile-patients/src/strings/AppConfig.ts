@@ -18,7 +18,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -185,8 +185,8 @@ const appStaticVariables = {
   QA_PROHEALTH_MGMT_HashKey: QA_PROHEALTH_MGMT_CM_KEY,
   Prod_DIABETES_MGMT_HashKey: Prod_DIABETES_MGMT_CM_KEY,
   Prod_PROHEALTH_MGMT_HashKey: Prod_PROHEALTH_MGMT_CM_KEY,
-  DIABETES_MGMT_CM_PROGRAM_ID : 'diabetes_24_7',
-  PROHEALTH_MGMT_CM_PROGRAM_ID : 'prohealth'
+  DIABETES_MGMT_CM_PROGRAM_ID: 'diabetes_24_7',
+  PROHEALTH_MGMT_CM_PROGRAM_ID: 'prohealth',
 };
 
 const DEV_top_specialties = [
@@ -656,8 +656,8 @@ const ConfigurationDev = {
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
   Covid_Items: QA_covid_items,
-  CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL : 'https://auth.play.vitacloud.io',
-  PROHEALTH_BOOKING_URL : 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth'
+  CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
+  PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
 };
 
 // QA
@@ -712,8 +712,8 @@ const ConfigurationQA = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL : 'https://auth.play.vitacloud.io',
-  PROHEALTH_BOOKING_URL : 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth'
+  CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
+  PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
 };
 
 // QA2
@@ -768,8 +768,8 @@ const ConfigurationQA2 = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
-  CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL : 'https://auth.play.vitacloud.io',
-  PROHEALTH_BOOKING_URL : 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth'
+  CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
+  PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
 };
 
 // QA3
@@ -819,11 +819,10 @@ const ConfigurationQA3 = {
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
   Covid_Items: QA_covid_items,
-  CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL : 'https://auth.play.vitacloud.io',
-  PROHEALTH_BOOKING_URL : 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
+  CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
+  PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   APOLLO_PRO_HEALTH_URL:
-  'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
-  
+    'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
 
 // VAPT
@@ -879,8 +878,8 @@ const ConfigurationVAPT = {
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
   Covid_Items: QA_covid_items,
-  CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL : 'https://auth.play.vitacloud.io',
-  PROHEALTH_BOOKING_URL : 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth'
+  CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
+  PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
 };
 //Production
 const ConfigurationProd = {
@@ -935,8 +934,8 @@ const ConfigurationProd = {
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'prod',
   Covid_Items: Prod_covid_items,
-  CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL : 'https://auth.prod.vitacloud.io',
-  PROHEALTH_BOOKING_URL : 'https://www.apollo247.com/apollo-prohealth'
+  CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.prod.vitacloud.io',
+  PROHEALTH_BOOKING_URL: 'https://www.apollo247.com/apollo-prohealth',
 };
 
 //PERFORMANCE
@@ -993,8 +992,8 @@ const ConfigurationPERFORM = {
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
   Covid_Items: QA_covid_items,
-  CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL : 'https://auth.play.vitacloud.io',
-  PROHEALTH_BOOKING_URL : 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth'
+  CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
+  PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
 };
 
 //DevelopmentReplica
@@ -1051,8 +1050,8 @@ const ConfigurationDevReplica = {
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
   Covid_Items: QA_covid_items,
-  CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL : 'https://auth.play.vitacloud.io',
-  PROHEALTH_BOOKING_URL : 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth'
+  CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
+  PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
 };
 
 const Configuration =
