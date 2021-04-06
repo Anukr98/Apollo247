@@ -284,7 +284,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [showInclusions, setShowInclusions] = useState<boolean>(false);
   const [duplicateNameArray, setDuplicateNameArray] = useState([] as any);
   const [showAreaSelection, setShowAreaSelection] = useState<boolean>(false);
-  const [showPatientListOverlay, setShowPatientListOverlay] = useState<boolean>(true);
+  const [showPatientListOverlay, setShowPatientListOverlay] = useState<boolean>(
+    showSelectPatient ? false : true
+  );
   const [showPatientDetailsOverlay, setShowPatientDetailsOverlay] = useState<boolean>(false);
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const [showSelectAreaOverlay, setShowSelectAreaOverlay] = useState<boolean>(false);
