@@ -412,6 +412,7 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
   const dateIsAfter = moment(data.appointmentDateTime).isAfter(
     moment(fifteenMinutesLater.setMinutes(fifteenMinutesLater.getMinutes() + 15))
   );
+  const pastAppointment = moment(new Date()).isAfter(moment(data.appointmentDateTime));
   const [cancelAppointment, setCancelAppointment] = useState<boolean>(false);
   const [showRescheduleCancel, setShowRescheduleCancel] = useState<boolean>(false);
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
@@ -937,7 +938,12 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
   if (data.doctorInfo) {
     const isAwaitingReschedule = data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE;
     const showCancel =
-      dateIsAfter || isAwaitingReschedule ? true : data.status == STATUS.PENDING && minutes <= -30;
+      dateIsAfter || isAwaitingReschedule
+        ? true
+        : pastAppointment
+        ? false
+        : data.status == STATUS.PENDING && minutes <= -30;
+
     return (
       <View
         style={{
