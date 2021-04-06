@@ -3217,13 +3217,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         }
         return;
       }
-      const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
-      const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
-      const userMobNo = g(currentPatient, 'mobileNumber');
-      const openUrl = `${item?.url}?utm_source=mobile_app&utm_mobile_number=${userMobNo}&utm_token=${currentDeviceToken}`;
-      props.navigation.navigate(AppRoutes.CommonWebView, {
-        url: openUrl,
-      });
+      regenerateJWTToken('vaccine', item?.url);
     } catch (e) {}
   };
 
@@ -3614,7 +3608,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               throw error;
             });
             setAuthToken(jwt);
-            source === 'bookings'
+            source == 'vaccine'
+              ? initiateVaccinationWebView(id, jwt)
+              : source === 'bookings'
               ? initiateProHealthWebView(id, jwt, deviceType)
               : initiateOrdersProHealthWebView(id, jwt, deviceType);
           }
@@ -3626,6 +3622,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
     setLoading?.(false);
   };
+
+  function initiateVaccinationWebView(url: any, jwtToken: string) {
+    const userMobNo = g(currentPatient, 'mobileNumber');
+    const openUrl = `${url}?utm_source=mobile_app&utm_mobile_number=${userMobNo}&utm_token=${jwtToken}`;
+    props.navigation.navigate(AppRoutes.CommonWebView, {
+      url: openUrl,
+    });
+  }
 
   function initiateProHealthWebView(hospitalId: string, jwtToken: string, deviceType: string) {
     try {
@@ -3643,7 +3647,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         deviceType
       );
       !!hospitalId && hospitalId != ''
-        ? props.navigation.navigate(AppRoutes.ProHealthWebView, {
+        ? props.navigation.navigate(AppRoutes.CovidScan, {
             covidUrl: finalUrl,
             goBackCallback: webViewGoBack,
           })
