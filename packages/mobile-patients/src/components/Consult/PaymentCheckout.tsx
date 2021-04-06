@@ -136,6 +136,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     circlePlanId,
     hdfcStatus,
     circleStatus,
+    setauthToken,
   } = useAppCommonData();
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
@@ -789,6 +790,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       } else {
         const data = await createOrderInternal(apptmt?.id!, subscriptionId);
         if (data?.data?.createOrderInternal?.success) {
+          setauthToken?.('');
           props.navigation.navigate(AppRoutes.PaymentMethods, {
             paymentId: data?.data?.createOrderInternal?.payment_order_id!,
             amount: amountToPay,

@@ -290,6 +290,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     locationDetails,
     diagnosticServiceabilityData,
     diagnosticLocation,
+    setauthToken,
   } = useAppCommonData();
 
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
@@ -2568,7 +2569,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 'Appointment time': slotStartTime!,
                 'Item ids': cartItemsWithId,
               };
-
+              setauthToken?.('');
               props.navigation.navigate(AppRoutes.PaymentMethods, {
                 paymentId: response?.data?.createOrderInternal?.payment_order_id!,
                 amount: grandTotal,

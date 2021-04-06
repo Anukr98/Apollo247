@@ -65,6 +65,7 @@ import {
   initiateDiagonsticHCOrderPayment,
 } from '@aph/mobile-patients/src/graphql/types/initiateDiagonsticHCOrderPayment';
 import { paymentModeVersionCheck } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const { HyperSdkReact } = NativeModules;
 
@@ -88,10 +89,10 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [isVPAvalid, setisVPAvalid] = useState<boolean>(true);
   const [isCardValid, setisCardValid] = useState<boolean>(true);
   const [availableUPIApps, setAvailableUPIapps] = useState([]);
-  const [authToken, setauthToken] = useState<string>('');
   const paymentActions = ['nbTxn', 'walletTxn', 'upiTxn', 'cardTxn'];
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
+  const { authToken, setauthToken } = useAppCommonData();
   const FailedStatuses = ['AUTHENTICATION_FAILED', 'AUTHORIZATION_FAILED'];
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
@@ -206,17 +207,19 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const initiateOrderPayment = async () => {
     // Api is called to update the order status from Quote to Payment Pending
-    const input: initiateDiagonsticHCOrderPaymentVariables = {
-      diagnosticInitiateOrderPaymentInput: { orderId: orderDetails?.orderId },
-    };
-    const res = await client.mutate<
-      initiateDiagonsticHCOrderPayment,
-      initiateDiagonsticHCOrderPaymentVariables
-    >({
-      mutation: INITIATE_DIAGNOSTIC_ORDER_PAYMENT,
-      variables: input,
-      fetchPolicy: 'no-cache',
-    });
+    try {
+      const input: initiateDiagonsticHCOrderPaymentVariables = {
+        diagnosticInitiateOrderPaymentInput: { orderId: orderDetails?.orderId },
+      };
+      const res = await client.mutate<
+        initiateDiagonsticHCOrderPayment,
+        initiateDiagonsticHCOrderPaymentVariables
+      >({
+        mutation: INITIATE_DIAGNOSTIC_ORDER_PAYMENT,
+        variables: input,
+        fetchPolicy: 'no-cache',
+      });
+    } catch (error) {}
   };
 
   const processCODOrder = () => {
@@ -245,7 +248,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const getClientToken = async () => {
-    if (authToken) {
+    if (!!authToken) {
       return authToken;
     } else {
       setisTxnProcessing(true);
@@ -255,7 +258,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         const { data } = response;
         const { createOrder } = data;
         const token = createOrder?.juspay?.client_auth_token;
-        setauthToken(token);
+        setauthToken?.(token);
         return token;
       } catch (e) {
         setisTxnProcessing(false);
@@ -346,6 +349,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       amount: amount,
       banks: otherBanks,
       orderId: orderDetails?.orderId,
+      businessLine: businessLine,
     });
   };
 
@@ -377,6 +381,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const navigatetoOrderStatus = (isCOD: boolean, paymentStatus: string) => {
+    setauthToken?.('');
     switch (businessLine) {
       case 'diagnostics':
         props.navigation.navigate(AppRoutes.OrderStatus, {
