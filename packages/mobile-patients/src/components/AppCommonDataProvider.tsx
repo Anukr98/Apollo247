@@ -245,6 +245,8 @@ export interface AppCommonDataContextProps {
   pharmacyUserTypeAttribute: PharmacyUserTypeEvent | null;
   cartBankOffer: string;
   setCartBankOffer: ((id: string) => void) | null;
+  authToken: string;
+  setauthToken: ((value: string) => void) | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -338,6 +340,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   pharmacyUserTypeAttribute: null,
   cartBankOffer: '',
   setCartBankOffer: null,
+  authToken: '',
+  setauthToken: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
@@ -455,6 +459,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [phrSession, setPhrSession] = useState<AppCommonDataContextProps['phrSession']>('');
 
   const [doctorJoinedChat, setDoctorJoinedChat] = useState<boolean>(false);
+
+  const [authToken, setauthToken] = useState<AppCommonDataContextProps['authToken']>('');
 
   const setLocationDetails: AppCommonDataContextProps['setLocationDetails'] = (locationDetails) => {
     _setLocationDetails(locationDetails);
@@ -672,6 +678,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         pharmacyUserTypeAttribute,
         cartBankOffer,
         setCartBankOffer,
+        authToken,
+        setauthToken,
       }}
     >
       {props.children}
