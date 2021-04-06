@@ -327,10 +327,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               }
             );
             setOrders(ordersList);
-            setFilteredOrderList(filteredOrderList);
+            setFilteredOrderList(ordersList);
             setTimeout(() => setLoading!(false), isRefetch ? 1000 : 0);
           } else {
             setOrders(ordersList);
+            setFilteredOrderList(ordersList);
             setLoading?.(false);
           }
         })
