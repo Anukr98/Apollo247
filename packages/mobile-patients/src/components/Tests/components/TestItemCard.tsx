@@ -61,7 +61,6 @@ export const TestItemCard: React.FC<TestItemCardProps> = (props) => {
     onPress,
     testId,
   } = props;
-  console.log('props', props);
 
   const renderSpecialDiscountText = (styleObj?: any) => {
     return <SpecialDiscountText isImage={true} text={'TEST 247'} styleObj={styleObj} />;
