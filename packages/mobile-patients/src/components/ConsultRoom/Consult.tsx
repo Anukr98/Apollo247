@@ -1478,7 +1478,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       filterLength > 0
         ? 'You have ' + (filteredAppointmentsList.length || 'no') + ' appointment(s)!'
         : selectedTab === tabs[0].title
-        ? 'You have ' + (activeAppointments.length || 'no') + ' active appointment(s)!ssss'
+        ? 'You have ' + (activeAppointments.length || 'no') + ' active appointment(s)!'
         : selectedTab === tabs[1].title
         ? 'You have ' + (completedAppointments.length || 'no') + ' completed appointment(s)!'
         : 'You have ' + (cancelledAppointments.length || 'no') + ' cancelled appointment(s)!';
