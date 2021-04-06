@@ -548,7 +548,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       packageIds: packageId,
       email: g(currentPatient, 'emailAddress'),
     };
-    console.log('datadata', data);
+
     return new Promise((res, rej) => {
       validateConsultCoupon(data)
         .then((resp: any) => {
@@ -685,7 +685,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     CommonLogEvent(AppRoutes.PaymentCheckout, 'ConsultOverlay onSubmitBookAppointment clicked');
     // again check coupon is valid or not
     verifyCoupon(true);
-    console.log('finalAppointmentInput', finalAppointmentInput);
+
     if (amountToPay == 0) {
       setLoading!(true);
       client
@@ -789,7 +789,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
-        console.log('makeAppointmentPayment', '\n', JSON.stringify(data!.makeAppointmentPayment));
         let eventAttributes = getConsultationBookedEventAttributes(
           paymentDateTime,
           g(data, 'makeAppointmentPayment', 'appointment', 'id')!
@@ -951,7 +950,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
     whatsAppUpdateAPICall(client, optedFor, optedFor, userId ? userId : g(currentPatient, 'id'))
       .then(({ data }: any) => {
-        console.log(data, 'whatsAppUpdateAPICall');
         getPatientApiCall();
       })
       .catch((e: any) => {

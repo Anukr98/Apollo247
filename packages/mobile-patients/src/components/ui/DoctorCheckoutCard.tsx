@@ -172,7 +172,7 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
         </View>
       )}
 
-      <View style={styles.doctorPointers}>
+      <View style={[styles.doctorPointers, { marginTop: -4 }]}>
         <AppointmentCalendarIcon style={styles.doctorPointersImage} />
         <Text style={styles.appointmentTimeStyle}>
           {dateFormatter(appointmentInput?.appointmentDateTime)}
@@ -276,11 +276,11 @@ const styles = StyleSheet.create({
   doctorPointers: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 6,
+    marginTop: 5,
   },
   doctorPointersImage: {
     width: 14,
     height: '100%',
-    marginRight: 4,
+    marginRight: 8,
   },
 });
