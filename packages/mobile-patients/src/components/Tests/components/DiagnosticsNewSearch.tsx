@@ -1,5 +1,5 @@
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { AddIcon, RemoveIcon, TestsIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { AddIcon, RemoveIconOrange, TestsIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
@@ -67,7 +67,7 @@ export const DiagnosticsNewSearch: React.FC<DiagnosticsNewSearchProps> = (
         activeOpacity={1}
         onPress={isAddedToCart ? props.onPressRemoveFromCart : props.onPressAddToCart}
       >
-        {isAddedToCart ? <RemoveIcon /> : <AddIcon />}
+        {isAddedToCart ? <RemoveIconOrange /> : <AddIcon />}
       </TouchableOpacity>
     );
   };
