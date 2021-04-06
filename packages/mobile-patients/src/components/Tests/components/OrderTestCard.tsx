@@ -19,7 +19,7 @@ import { getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOr
 import { InfoIconRed } from '@aph/mobile-patients/src/components/ui/Icons';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DIAGNOSTIC_ORDER_FAILED_STATUS } from '@aph/mobile-patients/src/strings/AppConfig';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
@@ -56,6 +56,7 @@ interface OrderTestCardProps {
 
 export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   const [moreTests, setMoreTests] = useState<boolean>(false);
+
   const bookedOn = moment(props?.createdOn)?.format('Do MMM') || null;
   const renderTopView = () => {
     return (
@@ -263,6 +264,22 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     );
   };
 
+  const showOTPContainer = () => {
+    const phlObj = props?.phelboObject;
+    let otpToShow = !!phlObj && phlObj?.PhelboOTP;
+
+    return (
+      <>
+        {!!otpToShow ? (
+          <View style={styles.otpContainer}>
+            <Text style={styles.otpTextStyle}>{'OTP : '}</Text>
+            <Text style={styles.otpTextStyle}>{otpToShow}</Text>
+          </View>
+        ) : null}
+      </>
+    );
+  };
+
   const renderAdditionalInfoView = () => {
     const isPresent =
       (!!props.additonalRejectedInfo && props.additonalRejectedInfo?.length > 0) ||
@@ -289,23 +306,6 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         ) : null}
       </>
     );
-  };
-
-  const showOTPContainer = () => {
-    const phlObj = props?.phelboObject;
-    let otpToShow = !!phlObj && phlObj?.PhelboOTP;
-
-    return (
-      <>
-        {!!otpToShow ? (
-          <View style={styles.otpContainer}>
-            <Text style={styles.otpTextStyle}>{'OTP : '}</Text>
-            <Text style={styles.otpTextStyle}>{otpToShow}</Text>
-          </View>
-        ) : null}
-      </>
-    );
-    //  })
   };
 
   return (
@@ -335,21 +335,6 @@ const styles = StyleSheet.create({
   containerStyle: {
     ...theme.viewStyles.cardViewStyle,
     margin: 16,
-  },
-  otpTextStyle: {
-    top: 10,
-    left: 20,
-    color: theme.colors.LIGHT_BLUE,
-    ...theme.fonts.IBMPlexSansMedium(14),
-  },
-  otpContainer: {
-    backgroundColor: '#FCFDDA',
-    justifyContent: 'flex-start',
-    flexDirection: 'row',
-    height: 40,
-    borderBottomLeftRadius: 4,
-    borderBottomRightRadius: 4,
-    borderRadius: 10,
   },
   titleStyle: {
     color: theme.colors.SHERPA_BLUE,
@@ -436,5 +421,20 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     marginTop: 10,
     height: 40,
+  },
+  otpTextStyle: {
+    top: 10,
+    left: 20,
+    color: theme.colors.LIGHT_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(14),
+  },
+  otpContainer: {
+    backgroundColor: '#FCFDDA',
+    justifyContent: 'flex-start',
+    flexDirection: 'row',
+    height: 40,
+    borderBottomLeftRadius: 4,
+    borderBottomRightRadius: 4,
+    borderRadius: 10,
   },
 });
