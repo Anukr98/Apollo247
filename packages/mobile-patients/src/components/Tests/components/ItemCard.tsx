@@ -99,10 +99,9 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
         inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
       );
 
-    const getMandatoryParameterCount = getMandatoryParamter?.reduce(
-      (prevVal: any, curr: any) => prevVal + curr?.length,
-      0
-    );
+    const getMandatoryParameterCount =
+      !!getMandatoryParamter &&
+      getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
 
     const isAddedToCart = !!cartItems?.find(
       (items) => Number(items?.id) == Number(getItem?.itemId)

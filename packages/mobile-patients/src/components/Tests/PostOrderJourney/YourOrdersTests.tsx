@@ -46,8 +46,6 @@ import {
   MedicalRecordType,
   RescheduleDiagnosticsInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { TestOrderCard } from '@aph/mobile-patients/src/components/ui/TestOrderCard';
-import { ReasonPopUp } from '@aph/mobile-patients/src/components/ui/ReasonPopUp';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   g,
@@ -112,7 +110,6 @@ import {
   getOrderPhleboDetailsBulk,
   getOrderPhleboDetailsBulkVariables,
 } from '@aph/mobile-patients/src/graphql/types/getOrderPhleboDetailsBulk';
-import { ConsultProgressBar } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultProgressBar';
 const screenHeight = Dimensions.get('window').height;
 
 export interface DiagnosticsOrderList
@@ -181,7 +178,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [selectCancelReason, setSelectCancelReason] = useState<string>('');
   const [cancelReasonComment, setCancelReasonComment] = useState<string>('');
   const [selectRescheduleReason, setSelectRescheduleReason] = useState<string>('');
-  const [phleboOTP, setPhleboOTP] = useState<number>();
   const [selectedReasonForReschedule, setSelectedReasonForReschedule] = useState('');
   const [commentForReschedule, setCommentForReschedule] = useState('');
   const [refundStatusArr, setRefundStatusArr] = useState<any>(null);
@@ -189,7 +185,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList
   >();
   const [error, setError] = useState(false);
-  let oTPText: any;
   const { getPatientApiCall } = useAuth();
   const client = useApolloClient();
   const [orders, setOrders] = useState<any>(props.navigation.getParam('orders'));
@@ -263,7 +258,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const fetchOrders = async (isRefetch: boolean) => {
     try {
-      setLoading!(true);
+      setLoading?.(true);
       client
         .query<getDiagnosticOrdersList, getDiagnosticOrdersListVariables>({
           query: GET_DIAGNOSTIC_ORDER_LIST,
@@ -277,17 +272,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         })
         .then((data) => {
           const ordersList = data?.data?.getDiagnosticOrdersList?.ordersList || [];
-          console.log({ ordersList });
-          const pp = ordersList?.filter(
-            (item: any) =>
-              (item?.phleboDetailsObj == null || item?.phleboDetailsObj?.PhelboOTP == null) &&
-              item?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED
-          );
-          console.log({ pp });
-
-          pp?.length > 0 && getPhlobeOTP(pp);
-          setOrders(ordersList);
-          setTimeout(() => setLoading!(false), isRefetch ? 1000 : 0);
+          const orderIdsArr = ordersList?.map((item: any) => item?.id);
+          getPhlobeOTP(orderIdsArr, ordersList, isRefetch);
         })
         .catch((error) => {
           setLoading!(false);
@@ -298,6 +284,57 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       setLoading!(false);
       setError(true);
       CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrders`, error);
+    }
+  };
+
+  const getPhlobeOTP = (orderIdsArr: any, ordersList: any, isRefetch: boolean) => {
+    try {
+      setLoading?.(true);
+      client
+        .query<getOrderPhleboDetailsBulk, getOrderPhleboDetailsBulkVariables>({
+          query: GET_PHLOBE_DETAILS,
+          context: {
+            sourceHeaders,
+          },
+          variables: {
+            diagnosticOrdersIds: orderIdsArr,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((data) => {
+          if (data?.data?.getOrderPhleboDetailsBulk?.orderPhleboDetailsBulk) {
+            const orderPhleboDetailsBulk =
+              data?.data?.getOrderPhleboDetailsBulk?.orderPhleboDetailsBulk;
+            ordersList?.forEach((order: any) => {
+              const findOrder = orderPhleboDetailsBulk?.find(
+                (phleboDetails: any) =>
+                  phleboDetails?.orderPhleboDetails !== null &&
+                  phleboDetails?.orderPhleboDetails?.diagnosticOrdersId === order?.id
+              );
+              if (findOrder && findOrder.orderPhleboDetails !== null) {
+                if (order.phleboDetailsObj === null) {
+                  order.phleboDetailsObj = {
+                    PhelboOTP: null,
+                    __typename: 'PhleboDetailsObj',
+                  };
+                }
+                order.phleboDetailsObj.PhelboOTP = findOrder?.orderPhleboDetails?.phleboOTP;
+              }
+            });
+            setOrders(ordersList);
+            setTimeout(() => setLoading!(false), isRefetch ? 1000 : 0);
+          } else {
+            setOrders(ordersList);
+            setLoading?.(false);
+          }
+        })
+        .catch((error) => {
+          setLoading!(false);
+          CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchPhleboObject`, error);
+        });
+    } catch (error) {
+      setLoading!(false);
+      CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchPhleboObject`, error);
     }
   };
 
@@ -1060,10 +1097,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       return <View style={{ paddingTop: 4 }} />;
     }
     const getUTCDateTime = order?.slotDateTimeInUTC;
-    //add a check to see if report is generated or not.
-    // if status is partial completed or order compeleted
-    // let phlobeOTP = order?.id;
-    // console.log(order.id, 'Consoling');
     const currentStatus = order?.orderStatus;
     const patientName = g(currentPatient, 'firstName');
     const isPastOrder = moment(getUTCDateTime).diff(moment(), 'minutes') < 0;
@@ -1118,10 +1151,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       ) => item?.itemName
     );
 
-    // const sampleOTP = arrData.map((item) => {
-    //   console.log(item, 'items');
-    // })
-
     return !!phleboOTPData ? (
       <OrderTestCard
         orderId={order?.displayId}
@@ -1149,7 +1178,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPressReschedule={() => _onPressTestReschedule(order)}
         onPressViewDetails={() => _navigateToYourTestDetails(order)}
         onPressViewReport={() => _onPressViewReport(order)}
-        phlobe={otpArray}
+        phelboObject={order?.phleboDetailsObj}
         style={[
           { marginHorizontal: 20 },
           index < orders?.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
@@ -1162,43 +1191,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   function _onPressAddTest() {
     console.log('add test pressed');
   }
-
-  const [otpArray, setOtpArray] = useState([] as any);
-
-  const getPhlobeOTP = (array: any) => {
-    const newArr = array?.map((item: any) => item?.id);
-    console.log('Call Second');
-    try {
-      setLoading!(true);
-      client
-        .query<getOrderPhleboDetailsBulk, getOrderPhleboDetailsBulkVariables>({
-          query: GET_PHLOBE_DETAILS,
-          context: {
-            sourceHeaders,
-          },
-          variables: {
-            diagnosticOrdersIds: newArr,
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then((data) => {
-          setLoading!(false);
-          let response = data?.data?.getOrderPhleboDetailsBulk?.orderPhleboDetailsBulk;
-          console.log({ response });
-          setOtpArray(response);
-          // phleboOTPData()
-        })
-        .catch((error) => {
-          setLoading!(false);
-          console.log(error, 'error1');
-          CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrders`, error);
-        });
-    } catch (error) {
-      setLoading!(false);
-      console.log(error, 'error2');
-      CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrders`, error);
-    }
-  };
 
   function _onPressViewReport(order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList) {
     const visitId = order?.visitNo;

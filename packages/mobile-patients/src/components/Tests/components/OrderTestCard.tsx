@@ -50,7 +50,7 @@ interface OrderTestCardProps {
   onPressViewDetails: () => void;
   onPressAddTest?: () => void;
   onPressViewReport: () => void;
-  phlobe: any;
+  phelboObject?: any;
 }
 
 export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
@@ -292,22 +292,18 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     );
   };
 
-  const otpData = (otpString: number) => {};
-
   const showOTPContainer = () => {
-    const orderStatus = props.orderLevelStatus;
-    const orderId = props.orderId;
-    const phleboOTP = props.phlobe;
-    let otpToShow = !!phleboOTP && phleboOTP?.find((item: any) => console.log(item));
-    console.log({ otpToShow });
+    const phlObj = props?.phelboObject;
+    let otpToShow = !!phlObj && phlObj?.PhelboOTP;
 
-    // phleboOTP && phleboOTP.map((item)=> {
     return (
       <>
-        <View style={styles.otpContainer}>
-          <Text style={styles.otpTextStyle}>{'OTP :'}</Text>
-          <Text style={styles.otpTextStyle}>{String(23)}</Text>
-        </View>
+        {!!otpToShow ? (
+          <View style={styles.otpContainer}>
+            <Text style={styles.otpTextStyle}>{'OTP : '}</Text>
+            <Text style={styles.otpTextStyle}>{otpToShow}</Text>
+          </View>
+        ) : null}
       </>
     );
     //  })
