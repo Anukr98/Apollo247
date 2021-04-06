@@ -143,6 +143,9 @@ export interface DiagnosticsCartContextProps {
   isDiagnosticCircleSubscription: boolean;
   setIsDiagnosticCircleSubscription: ((value: boolean) => void) | null;
 
+  showSelectPatient: boolean;
+  setShowSelectPatient: ((value: boolean) => void) | null;
+
   getUniqueId: string;
   setUniqueId: ((value: string) => void) | null;
 
@@ -230,6 +233,8 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   setDiagnosticAreas: null,
   isDiagnosticCircleSubscription: false,
   setIsDiagnosticCircleSubscription: null,
+  showSelectPatient: false,
+  setShowSelectPatient: null,
   getUniqueId: '',
   setUniqueId: null,
   testListingBreadCrumbs: [],
@@ -365,6 +370,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
 
   const [isDiagnosticCircleSubscription, setIsDiagnosticCircleSubscription] = useState<
     DiagnosticsCartContextProps['isDiagnosticCircleSubscription']
+  >(false);
+
+  const [showSelectPatient, setShowSelectPatient] = useState<
+    DiagnosticsCartContextProps['showSelectPatient']
   >(false);
 
   const addMultipleEPrescriptions: DiagnosticsCartContextProps['addMultipleEPrescriptions'] = (
@@ -565,6 +574,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setDiagnosticAreas([]);
     setNewAddressAddedHomePage('');
     setNewAddressAddedHomePage('');
+    setShowSelectPatient(false);
   };
 
   useEffect(() => {
@@ -688,6 +698,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         setDiagnosticSlot,
         isDiagnosticCircleSubscription,
         setIsDiagnosticCircleSubscription,
+
+        showSelectPatient,
+        setShowSelectPatient,
 
         getUniqueId,
         setUniqueId,
