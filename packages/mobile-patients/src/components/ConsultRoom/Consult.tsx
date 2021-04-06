@@ -937,6 +937,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               prescription: '',
               disableChat: item.doctorInfo && pastAppointmentItem,
             })
+          : item.appointmentType === 'PHYSICAL'
+          ? props.navigation.navigate(AppRoutes.AppointmentDetailsPhysical, {
+              data: item,
+              from: 'Consult',
+            })
           : props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: g(item, 'doctorId') || '',
             });
@@ -1473,7 +1478,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       filterLength > 0
         ? 'You have ' + (filteredAppointmentsList.length || 'no') + ' appointment(s)!'
         : selectedTab === tabs[0].title
-        ? 'You have ' + (activeAppointments.length || 'no') + ' active appointment(s)!'
+        ? 'You have ' + (activeAppointments.length || 'no') + ' active appointment(s)!ssss'
         : selectedTab === tabs[1].title
         ? 'You have ' + (completedAppointments.length || 'no') + ' completed appointment(s)!'
         : 'You have ' + (cancelledAppointments.length || 'no') + ' cancelled appointment(s)!';

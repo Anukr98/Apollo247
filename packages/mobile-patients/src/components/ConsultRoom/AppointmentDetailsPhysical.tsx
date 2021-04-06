@@ -946,7 +946,7 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
       >
         <SafeAreaView style={{ flex: 1, zIndex: -1 }}>
           <Header
-            title="UPCOMING CLINIC VISIT"
+            title="CLINIC VISIT"
             leftIcon="backArrow"
             rightComponent={
               showCancel ? (
