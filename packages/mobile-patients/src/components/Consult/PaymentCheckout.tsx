@@ -406,6 +406,9 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     finalAppointmentInput['patientId'] = onAdd?.id;
     setIsSelectedOnce(onAdd?.added);
     setShowErrorSelect(!onAdd?.added);
+    let patientData = patientProfiles;
+    patientData?.unshift(onAdd?.profileData);
+    setPatientProfiles(patientData);
   };
 
   const onSelectedProfile = (item: any) => {
@@ -1189,9 +1192,11 @@ const styles = StyleSheet.create({
   },
   errorSelectMessage: {
     textAlign: 'center',
-    ...theme.viewStyles.text('B', 12, '#E31E24', 1, 20),
+    ...theme.viewStyles.text('B', 13, '#E31E24', 1, 20),
     marginHorizontal: 5,
     marginBottom: 5,
+    width: '100%',
+    marginTop: 5,
   },
   textViewStyle: {
     marginTop: 8,
