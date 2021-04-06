@@ -1002,9 +1002,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         <SearchInput
           _isSearchFocused={isSearchFocused}
           editable={false}
-          autoFocus={
-            !diagnosticLocation && !pharmacyLocation && !locationDetails ? false : focusSearch!
-          }
+          autoFocus={false}
           onSubmitEditing={() => {
             if (searchText?.length > 2) {
               props.navigation.navigate(AppRoutes.SearchTestScene, {

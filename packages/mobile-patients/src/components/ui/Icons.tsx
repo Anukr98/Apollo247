@@ -281,6 +281,9 @@ export const AddIcon: React.FC<IconProps> = (props) => (
 export const RemoveIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_cross_onorange_small.png')} />
 );
+export const RemoveIconOrange: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/cross_3x.png')} />
+);
 
 export const RadioButtonIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_radio.png')} />

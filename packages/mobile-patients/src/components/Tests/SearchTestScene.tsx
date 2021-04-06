@@ -709,24 +709,26 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               }
             />
           ) : (
-            <View style={styles.viewDefaultContainer}>
-                  <Text style={styles.headingSections}>Popular Tests</Text>
+            <ScrollView showsVerticalScrollIndicator={false} style={styles.viewDefaultContainer}>
+              <Text style={styles.headingSections}>Popular Packages</Text>
                   <View style={styles.defaultContainer}>
                     <FlatList
                       keyExtractor={(_, index) => `${index}`}
-                      data={popularTests}
-                      renderItem={renderPopularDiagnostic}
-                    />
-                  </View>
-                  <Text style={styles.headingSections}>Popular Packages</Text>
-                  <View style={styles.defaultContainer}>
-                    <FlatList
-                      keyExtractor={(_, index) => `${index}`}
+                      scrollEnabled={false}
                       data={popularPackages}
                       renderItem={renderPopularDiagnostic}
                     />
                   </View>
-                </View>
+                  <Text style={styles.headingSections}>Popular Tests</Text>
+                  <View style={styles.defaultContainer}>
+                    <FlatList
+                      keyExtractor={(_, index) => `${index}`}
+                      scrollEnabled={false}
+                      data={popularTests}
+                      renderItem={renderPopularDiagnostic}
+                    />
+                  </View>
+                </ScrollView>
           )
         )}
       </>

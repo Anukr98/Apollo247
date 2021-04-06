@@ -1434,8 +1434,10 @@ const styles = StyleSheet.create({
   },
   paitentText: {
     ...theme.viewStyles.text('R', 16, '#00B38E'),
+    width:'80%',
   },
   paitentSubText: {
     ...theme.viewStyles.text('R', 12, '#00B38E'),
+    width:'20%'
   },
 });
