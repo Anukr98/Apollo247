@@ -197,6 +197,7 @@ import {
   renderCircleShimmer,
   renderBannerShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import { ConsultedDoctorsCard } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultedDoctorsCard';
 import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import {
@@ -1805,10 +1806,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       const membershipPlans = res?.data?.GetPlanDetailsByPlanId?.response?.plan_summary;
       if (membershipPlans) {
         setMembershipPlans(membershipPlans);
-        const defaultPlan = membershipPlans?.filter((item: any) => item.defaultPack === true);
-        if (defaultPlan?.length > 0) {
-          setDefaultCirclePlan(defaultPlan[0]);
-        }
       }
     } catch (error) {
       CommonBugFender('CircleMembershipPlans_GetPlanDetailsByPlanId', error);
@@ -3447,6 +3444,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
+  const renderAllConsultedDoctors = () => {
+    return <ConsultedDoctorsCard navigation={props.navigation} />;
+  };
   const renderProhealthBanner = () => {
     return (
       <TouchableOpacity
@@ -3796,6 +3796,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <View style={{ backgroundColor: '#f0f1ec' }}>
                 {renderListView('Active Appointments', 'normal')}
               </View>
+              <View style={{ backgroundColor: '#f0f1ec' }}>{renderAllConsultedDoctors()}</View>
               {renderCovidMainView()}
             </View>
           </View>
@@ -3860,6 +3861,3 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     </View>
   );
 };
-function setDefaultCirclePlan(arg0: any) {
-  throw new Error('Function not implemented.');
-}
