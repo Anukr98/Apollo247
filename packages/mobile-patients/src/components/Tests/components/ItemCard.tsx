@@ -140,13 +140,16 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
               {name}
             </Text>
           </View>
-          {getMandatoryParameterCount > 0 ? (
-            <Text style={styles.parameterText}>
-              {getMandatoryParameterCount}{' '}
-              {getMandatoryParameterCount == 1 ? 'Parameter' : 'Parameters'} included
-            </Text>
-          ) : null}
+          <View style={{ minHeight: isSmallDevice ? 25 : 30 }}>
+            {getMandatoryParameterCount > 0 ? (
+              <Text style={styles.parameterText}>
+                {getMandatoryParameterCount}{' '}
+                {getMandatoryParameterCount == 1 ? 'Parameter' : 'Parameters'} included
+              </Text>
+            ) : null}
+          </View>
           <Spearator style={styles.horizontalSeparator} />
+
           {renderPricesView(pricesForItem, packageMrpForItem)}
           {renderAddToCart(isAddedToCart, getItem, pricesForItem, packageMrpForItem)}
         </View>

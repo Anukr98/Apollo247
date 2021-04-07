@@ -1150,6 +1150,21 @@ export const getDiagnosticListingWidget = (
   });
 };
 
+export const GetAllUHIDSForNumber_CM = (phoneNumber: string): Promise<AxiosResponse<any>> => {
+  const url = `${config.CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL}/askapollo/user/uhids?phoneNumber=${phoneNumber}`;
+  console.log('GetAllUHIDSForNumber_CM_Url', url);
+  return Axios.get(url);
+};
+
+export const GenrateVitalsToken_CM = (
+  appId: string,
+  userId: string
+): Promise<AxiosResponse<any>> => {
+  const url = `${config.CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL}/vitauser/vitatoken?appId=${appId}&appUserId=${userId}`;
+  console.log('GetAllUHIDSForNumber_CM_Url', url);
+  return Axios.get(url);
+};
+
 export const getDiagnosticCartItemReportGenDetails = (
   itemIds: string
 ): Promise<AxiosResponse<any>> => {

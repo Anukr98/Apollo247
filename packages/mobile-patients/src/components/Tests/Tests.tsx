@@ -412,6 +412,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         setWidgetsData([]);
         setLoading!(false);
         setPageLoading?.(false);
+        setReloadWidget(true);
       }
     } catch (error) {
       CommonBugFender('getHomePageWidgets_Tests', error);
@@ -481,9 +482,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
     } catch (error) {
       CommonBugFender('errorInFetchPricing api__Tests', error);
       setSectionLoading(false);
-      setReloadWidget(true);
       setLoading?.(false);
       setPageLoading?.(false);
+      setReloadWidget(true);
       showAphAlert?.({
         title: string.common.uhOh,
         description: string.common.tryAgainLater,
@@ -1240,9 +1241,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
       return renderBannerShimmer();
 
       return (
-        <View style={[styles.sliderPlaceHolderStyle, { height: imgHeight }]}>
-          <Spinner style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }} />
-        </View>
+        <View
+          style={[styles.sliderPlaceHolderStyle, { height: imgHeight, backgroundColor: '#e3e1e1' }]}
+        ></View>
       );
     } else if (banners?.length > 0) {
       return (
@@ -1259,10 +1260,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
             autoplayInterval={3000}
           />
           <View style={styles.landingBannerInnerView}>
-            {banners.map((_, index) => (index == slideIndex ? renderDot(true) : renderDot(false)))}
+            {banners?.map((_, index) => (index == slideIndex ? renderDot(true) : renderDot(false)))}
           </View>
         </View>
       );
+    } else {
+      return null;
     }
   };
 
@@ -1812,7 +1815,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         <TouchableOpacity
           style={{ alignItems: 'flex-end' }}
           activeOpacity={1}
-          onPress={() => props.navigation.navigate(AppRoutes.MedAndTestCart)}
+          onPress={() => props.navigation.navigate(AppRoutes.TestsCart)}
         >
           <CartIcon />
           {cartItemsCount > 0 && <Badge label={cartItemsCount} />}

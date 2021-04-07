@@ -239,7 +239,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         );
         setLabResults(labResultsData);
         let resultForVisitNo = labResultsData?.find((item: any) => item?.identifier == getVisitId);
-
         !!resultForVisitNo
           ? props.navigation.navigate(AppRoutes.HealthRecordDetails, {
               data: resultForVisitNo,
@@ -253,6 +252,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       })
       .finally(() => setLoading?.(false));
   }, []);
+
   if (!!orderLevelStatus && !_.isEmpty(orderLevelStatus) && refundStatusArr?.length > 0) {
     const getObject = createRefundObject();
     orderStatusList =

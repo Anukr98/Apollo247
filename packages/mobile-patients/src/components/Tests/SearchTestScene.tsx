@@ -58,6 +58,7 @@ import {
   DIAGNOSTIC_GROUP_PLAN,
   getDiagnosticsPopularResults,
   getDiagnosticsSearchResults,
+  PackageInclusion,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -674,25 +675,44 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               null
             }
           />
+        ) : !!searchText && searchText?.length > 2 ? (
+          <FlatList
+            onScroll={() => Keyboard.dismiss()}
+            data={diagnosticResults}
+            renderItem={({ item, index }) => renderTestCard(item, index, diagnosticResults)}
+            keyExtractor={(_, index) => `${index}`}
+            bounces={false}
+            ListHeaderComponent={
+              (diagnosticResults?.length > 0 && (
+                <SectionHeaderComponent
+                  sectionTitle={`Showing search results (${diagnosticResults?.length})`}
+                  style={{ marginBottom: 5 }}
+                />
+              )) ||
+              null
+            }
+          />
         ) : (
-          <View style={styles.viewDefaultContainer}>
-            <Text style={styles.headingSections}>Popular Tests</Text>
-            <View style={styles.defaultContainer}>
-              <FlatList
-                keyExtractor={(_, index) => `${index}`}
-                data={popularTests}
-                renderItem={renderPopularDiagnostic}
-              />
-            </View>
+          <ScrollView showsVerticalScrollIndicator={false} style={styles.viewDefaultContainer}>
             <Text style={styles.headingSections}>Popular Packages</Text>
             <View style={styles.defaultContainer}>
               <FlatList
                 keyExtractor={(_, index) => `${index}`}
+                scrollEnabled={false}
                 data={popularPackages}
                 renderItem={renderPopularDiagnostic}
               />
             </View>
-          </View>
+            <Text style={styles.headingSections}>Popular Tests</Text>
+            <View style={styles.defaultContainer}>
+              <FlatList
+                keyExtractor={(_, index) => `${index}`}
+                scrollEnabled={false}
+                data={popularTests}
+                renderItem={renderPopularDiagnostic}
+              />
+            </View>
+          </ScrollView>
         )}
       </>
     );

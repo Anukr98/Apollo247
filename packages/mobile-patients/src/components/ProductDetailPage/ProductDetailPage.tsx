@@ -152,6 +152,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const [showAddedToCart, setShowAddedToCart] = useState<boolean>(false);
   const [showSubstituteInfo, setShowSubstituteInfo] = useState<boolean>(false);
   const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(false);
+  const [availabilityCalled, setAvailabilityCalled] = useState<string>('no');
 
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
   const [pincode, setpincode] = useState<string>(pharmacyPincode || '');
@@ -186,6 +187,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, [medicineDetails]);
 
   useEffect(() => {
+    if (medicineDetails?.sku && availabilityCalled === 'yes') {
+      postProductPageViewedEvent(pincode, isInStock);
+    }
+  }, [medicineDetails, availabilityCalled]);
+
+  useEffect(() => {
     if (cartItems?.length) {
       const filteredCartItems = cartItems?.filter((item) => item?.id == medicineDetails?.sku);
       setSkuInCart(filteredCartItems);
@@ -193,7 +200,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, [cartItems]);
 
   useEffect(() => {
-    if (axdcCode) {
+    if (axdcCode && medicineDetails?.sku) {
       getMedicineDetails(pincode, axdcCode);
     }
   }, [axdcCode, pincode]);
@@ -338,10 +345,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     }
   };
 
-  const postProductPageViewedEvent = (pincode?: string, isOutOfStock?: boolean) => {
+  const postProductPageViewedEvent = (pincode?: string, isProductInStock?: boolean) => {
     if (movedFrom) {
       const { sku, name, is_in_stock, sell_online } = medicineDetails;
-      const stock_availability = sell_online == 0 ? 'Not for Sale' : !!isOutOfStock ? 'No' : 'Yes';
+      const stock_availability =
+        sell_online == 0 ? 'Not for Sale' : !!isProductInStock ? 'Yes' : 'No';
       const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED] = {
         source: movedFrom,
         ProductId: sku,
@@ -415,7 +423,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       setIsInStock(!outOfStock);
       try {
         const { mrp, exist, qty } = checkAvailabilityRes.data.response[0];
-        !checkButtonClicked && postProductPageViewedEvent(currentPincode, outOfStock);
+        !checkButtonClicked && setAvailabilityCalled('yes');
         const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED] = {
           Source: 'PDP',
           Input_SKU: sku,

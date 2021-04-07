@@ -122,6 +122,7 @@
     "contactCustomerCare1": "We are unable to confirm your order, since dob is missing against this profile. Please contact customer care to get it updated",
     "contactCustomerCare2": "We are unable to confirm your order, since gender is missing against this profile. Please contact customer care to get it updated",
     "somethingWentWrong": "Something went wrong.",
+    "settingProfileTxt": "We’re setting up your profile. Please check back soon!",
     "couldNotLoadText": "Uh oh.. could't load!",
     "lowNetworkText": "We were unable to load the page properly because of low network. Please try again"
   },
@@ -525,7 +526,10 @@
     "valueFeedbackTxt": "We value your feedback! :)",
     "howWasExpTxt": "How was your overall experience -",
     "feedbackSubTxt": "Your feedback has been submitted. Thanks for your time.",
-    "homeHomeCollectionDisclaimerTxt": "Home collection charges of upto ₹100 would be levied in case of order value less than ₹500"
+    "homeHomeCollectionDisclaimerTxt": "Home collection charges of upto ₹100 would be levied in case of order value less than ₹500",
+    "itDoseCancelledText": "Canceled by phlebotomist as per the request",
+    "orderCancelledReasonText": "Order was cancelled -",
+    "wantToReschedule": "• Do you want to Reschedule Appointment ?"
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -1011,9 +1015,9 @@
     "copied_to_clipboard": "Copied ",
     "tryAgainLater": "Something went wrong, please try again after sometime"
   },
-  "splash":{
-    "CAPSULE":"CAPSULE",
-    "SYRINGE" : "SYRINGE",
-    "STETHO" : "STETHO"
+  "splash": {
+    "CAPSULE": "CAPSULE",
+    "SYRINGE": "SYRINGE",
+    "STETHO": "STETHO"
   }
 }

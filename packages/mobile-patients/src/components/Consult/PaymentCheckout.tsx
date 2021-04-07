@@ -142,9 +142,11 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const [notificationAlert, setNotificationAlert] = useState(false);
   const scrollviewRef = useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
-  const [showErrorSelect, setShowErrorSelect] = useState<boolean>(false);
+  const [showErrorSelect, setShowErrorSelect] = useState<boolean>(true); // default needs to be true to show select patient from the list
   const [isSelectedOnce, setIsSelectedOnce] = useState<boolean>(false);
   const [gender, setGender] = useState<string>(currentPatient?.gender);
+  const [patientListYPos, setPatientListYPos] = useState<number>(0);
+  const [patientProfiles, setPatientProfiles] = useState<any>([]);
 
   const circleDoctorDetails = calculateCircleDoctorPricing(
     doctor,
@@ -215,6 +217,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   }, [circlePlanSelected]);
 
   useEffect(() => {
+    setPatientProfiles(moveSelectedToTop());
     fetchUserSpecificCoupon();
   }, []);
 
@@ -316,7 +319,13 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const renderPatient = () => {
     return (
-      <View style={styles.subViewPopup}>
+      <View
+        onLayout={(event) => {
+          const layout = event.nativeEvent.layout;
+          setPatientListYPos(layout?.y);
+        }}
+        style={styles.subViewPopup}
+      >
         <View style={{ paddingHorizontal: 6 }}>
           <Text style={styles.priceBreakupTitle}>PATIENT DETAILS</Text>
         </View>
@@ -337,7 +346,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const renderCTAs = () => (
     <View style={styles.aphAlertCtaViewStyle}>
-      {moveSelectedToTop()?.map((item: any, index: any, array: any) =>
+      {patientProfiles?.map((item: any, index: any, array: any) =>
         item.firstName !== '+ADD MEMBER' ? (
           <TouchableOpacity
             onPress={() => {
@@ -368,7 +377,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
                   : styles.ctaOrangeText2Style
               }
             >
-              {Math.round(moment().diff(item.dateOfBirth || 0, 'years', true))} ,{item.gender}
+              {Math.round(moment().diff(item.dateOfBirth || 0, 'years', true))}, {item.gender}
             </Text>
           </TouchableOpacity>
         ) : null
@@ -400,6 +409,9 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     finalAppointmentInput['patientId'] = onAdd?.id;
     setIsSelectedOnce(onAdd?.added);
     setShowErrorSelect(!onAdd?.added);
+    let patientData = patientProfiles;
+    patientData?.unshift(onAdd?.profileData);
+    setPatientProfiles(patientData);
   };
 
   const onSelectedProfile = (item: any) => {
@@ -620,6 +632,11 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   };
 
   const onPressPay = () => {
+    scrollviewRef.current.scrollTo({
+      x: 0,
+      y: patientListYPos - 10,
+      animated: true,
+    });
     if (isSelectedOnce) {
       // Pay Button Clicked	event
       postWebEngagePayButtonClickedEvent();
@@ -1159,9 +1176,9 @@ const styles = StyleSheet.create({
   },
   errorSelectMessage: {
     textAlign: 'center',
-    ...theme.viewStyles.text('B', 12, '#E31E24', 1, 20),
-    marginHorizontal: 5,
+    ...theme.viewStyles.text('B', 14, '#E31E24', 1, 20),
     marginBottom: 5,
+    width: '100%',
   },
   textViewStyle: {
     marginTop: 8,

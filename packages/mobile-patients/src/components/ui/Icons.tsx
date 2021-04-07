@@ -246,6 +246,9 @@ export const AddIcon: React.FC<IconProps> = (props) => (
 export const RemoveIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_cross_onorange_small.png')} />
 );
+export const RemoveIconOrange: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/cross_3x.png')} />
+);
 
 export const RadioButtonIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_radio.png')} />
@@ -1730,5 +1733,13 @@ export const SplashSyringe: React.FC<IconProps> = (props) => (
     size="sm"
     {...props}
     source={require('@aph/mobile-patients/src/components/ui/icons/ic_splash_syringe.png')}
+  />
+);
+
+export const ProHealthIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="lg"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_icon.png')}
   />
 );
