@@ -182,7 +182,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       setselectedTab(tabs[0].title);
     } else if (props.consultModeSelected === ConsultMode.PHYSICAL && tabs.length > 1) {
       setselectedTab(tabs[1].title);
-    } else if (props.consultModeSelected === ConsultMode.PHYSICAL && tabs.length === 0) {
+    } else if (props.consultModeSelected === ConsultMode.PHYSICAL && tabs.length === 1) {
       setselectedTab(tabs[0].title);
     }
   }, [props.consultModeSelected]);
