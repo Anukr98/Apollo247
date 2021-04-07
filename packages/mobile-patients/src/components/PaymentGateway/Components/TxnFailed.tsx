@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { FailedTxn } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';

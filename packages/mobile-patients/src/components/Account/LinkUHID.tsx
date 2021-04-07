@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
 export interface LinkUHIDProps extends NavigationScreenProps {}
 
 export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
-  const { allCurrentPatients, currentPatient } = useAllCurrentPatients();
+  const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const { loading, setLoading, showAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -235,7 +235,6 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
         setLoading && setLoading(false);
         renderErrorPopup('Something went wrong, please try again after sometime');
         CommonBugFender('LinkUHIDs', e);
-        console.log('Error occured ', e);
       });
   };
 
@@ -251,7 +250,6 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
         setLoading && setLoading(false);
         renderErrorPopup('Something went wrong, please try again after sometime');
         CommonBugFender('LinkUHIDs', e);
-        console.log('Error occured ', e);
       });
   };
 
@@ -524,10 +522,8 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
                 padding: 16,
                 flexDirection: 'row',
                 minHeight: 145,
-                //  marginTop: i === 0 ? 16 : 8,
               },
               { backgroundColor: theme.colors.APP_YELLOW_COLOR },
-              // isSelectedPrimaryUHID ? {backgroundColor: theme.colors.APP_YELLOW_COLOR} : {backgroundColor: colors.WHITE},
               isPrimaryUHID
                 ? { backgroundColor: theme.colors.APP_YELLOW_COLOR }
                 : { backgroundColor: colors.WHITE },
@@ -606,7 +602,6 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
                     source={{
                       uri: profile!.photoUrl,
                     }}
-                    // resizeMode={'contain'}
                   />
                 ) : (
                   <PatientDefaultImage
@@ -616,10 +611,6 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
                     ]}
                   />
                 )}
-                {/* {profile.photoUrl &&
-        profile.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && ( */}
-                {/* <Image style={styles.profileImageStyle} source={profile.image} /> */}
-                {/* )} */}
               </View>
               {isPrimaryUHID && action !== 'firstlink' && (
                 <TouchableOpacity>
@@ -843,9 +834,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
             title="SELECT PRIMARY UHID"
             style={{ flex: 1, marginHorizontal: 50 }}
             onPress={() => {
-              // check if any profile is selected
               if (selectedPrimary) {
-                // shift selected primary uhid to top
                 profiles!.forEach((item, i) => {
                   if (item!.uhid === selectedPrimary) {
                     profiles!.splice(i, 1);

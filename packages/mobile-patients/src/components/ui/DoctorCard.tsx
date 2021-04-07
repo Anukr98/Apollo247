@@ -35,7 +35,6 @@ import {
   nextAvailability,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
-// import { Star } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -229,7 +228,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     physicalConsultMRPPrice,
     onlineConsultMRPPrice,
     onlineConsultSlashedPrice,
-    minDiscountedPrice,
     onlineConsultDiscountedPrice,
     isCircleDoctorOnSelectedConsultMode,
     physicalConsultSlashedPrice,
@@ -268,7 +266,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   useEffect(() => {
     if (!currentPatient) {
-      console.log('No current patients available');
       getPatientApiCall();
     }
   }, [currentPatient]);
@@ -289,26 +286,19 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             saveSearchInput: searchInput,
           },
         })
-        .then(({ data }) => {
-          console.log(data, 'saveSearch result');
-        })
+        .then(({ data }) => {})
         .catch((error) => {
           CommonBugFender('DoctorCard_navigateToDetails', error);
-          console.log('Error occured', { error });
         });
     }
 
     if (isBoth) {
-      props.navigation.navigate(AppRoutes.ConsultTypeScreen, {
-        DoctorName: nameFormater((rowData && rowData.displayName) || '', 'title'),
-        DoctorId: id,
-        nextSlot: rowData ? rowData.slot : null,
-        ConsultType: props.availableModes,
+      props.navigation.navigate(AppRoutes.DoctorDetails, {
+        doctorId: id,
         callSaveSearch: props.callSaveSearch,
-        params: params,
-        availNowText: ctaBannerText?.AVAILABLE_NOW || '',
-        consultNowText: ctaBannerText?.CONSULT_NOW || '',
-        doctorType: rowData?.doctorType,
+        consultModeSelected: ConsultMode.BOTH,
+        externalConnect: null,
+        showBookAppointment: false,
       });
     } else {
       props.navigation.navigate(AppRoutes.DoctorDetails, {

@@ -17,7 +17,6 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   getDiagnosticSlotsCustomized,
@@ -76,7 +75,6 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
       })
       .then(({ data }) => {
         const diagnosticSlots = g(data, 'getDiagnosticSlotsCustomized', 'slots') || [];
-        console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
         const updatedDiagnosticSlots =
           moment(date).format('YYYY-MM-DD') == dt && props.isReschdedule
             ? diagnosticSlots.filter((item) => item?.Timeslot != tm)
@@ -99,7 +97,6 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
           } as TestSlot);
         });
 
-        console.log('ARRAY OF SLOTS', { slotsArray });
         // if slot is empty then refetch it for next date
         const isSameDate = moment().isSame(moment(date), 'date');
         if (isSameDate && uniqueSlots?.length == 0 && isDateAutoSelected) {
@@ -116,7 +113,6 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
         }
       })
       .catch((e) => {
-        console.log('getDiagnosticSlots Error', { e });
         const noHubSlots = g(e, 'graphQLErrors', '0', 'message') === 'NO_HUB_SLOTS';
         if (!noHubSlots) {
           handleGraphQlError(e);
@@ -136,8 +132,6 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
       data: val,
     }));
 
-    console.log('dropDownOptions', { dropDownOptions, uniqueSlots });
-
     const { width } = Dimensions.get('window');
     return (
       <View style={[styles.sectionStyle, { paddingHorizontal: 16 }]}>
@@ -154,14 +148,11 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
             itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b') }}
             selectedTextStyle={{ ...theme.viewStyles.text('M', 16, '#00b38e') }}
             onPress={({ data }) => {
-              console.log('selectedSlot', { data });
-
               const selectedSlot = getTestSlotDetailsByTime(
                 slots,
                 (data as UniqueSlotType).startTime,
                 (data as UniqueSlotType).endTime
               );
-              console.log('selectedSlot\n\n', { selectedSlot });
               setSlotInfo(selectedSlot);
             }}
           >
@@ -216,7 +207,6 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
         source={props.source}
         styles={{ marginBottom: 16 }}
         date={dateToHighlight}
-        // minDate={new Date()}
         minDate={new Date()}
         maxDate={props.maxDate}
         onPressDate={(selectedDate) => {

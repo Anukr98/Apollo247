@@ -367,7 +367,6 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       })
       .catch((error) => {
         setShowSpinner(false);
-        console.log('error getPatientPrismMedicalRecordsApi', error);
         currentPatient && handleGraphQlError(error);
       });
   };
@@ -389,8 +388,6 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       })
       .catch((e) => {
         CommonBugFender('DoctorConsultation_GET_PRISM_AUTH_TOKEN', e);
-        const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
       });
   };
 
@@ -497,7 +494,6 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('DoctorConsultation__searchPHRApiWithAuthToken', error);
-        console.log('searchPHRApiWithAuthToken Error', error);
         getAuthToken();
         setSearchLoading(false);
       });
@@ -709,20 +705,6 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
 
             addMultipleCartItems!(medicines as ShoppingCartItem[]);
 
-            const totalItems = (item.medicinePrescription || []).length;
-            const outOfStockItems = medicines.filter((item) => !item?.isInStock).length;
-            const outOfStockMeds = medicines
-              .filter((item) => !item?.isInStock)
-              .map((item) => `${item?.name}`)
-              .join(', ');
-
-            if (outOfStockItems > 0) {
-              const alertMsg =
-                totalItems == outOfStockItems
-                  ? 'Unfortunately, we do not have any medicines available right now.'
-                  : `Out of ${totalItems} medicines, you are trying to order, following medicine(s) are out of stock.\n\n${outOfStockMeds}\n`;
-            }
-
             const rxMedicinesCount =
               medicines.length == 0
                 ? 0
@@ -779,7 +761,6 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
           })
           .catch((e) => {
             CommonBugFender('DoctorConsultation_getMedicineDetailsApi', e);
-            console.log({ e });
             handleGraphQlError(e);
           })
           .finally(() => {
@@ -817,7 +798,6 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('DoctorConsultation_onFollowUpClick', error);
-        console.log('Error occured', { error });
       });
   };
 

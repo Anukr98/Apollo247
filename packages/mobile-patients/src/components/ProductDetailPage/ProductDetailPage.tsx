@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -44,6 +44,8 @@ import {
   postAppsFlyerAddToCartEvent,
   getCareCashback,
   doRequestAndAccessLocationModified,
+  navigateToHome,
+  navigateToScreenWithEmptyStack,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   MedicineProductDetails,
@@ -249,11 +251,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const homeBreadCrumb: BreadcrumbLink = {
     title: 'Home',
     onPress: () => {
-      const resetAction = StackActions.reset({
-        index: 0,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      });
-      props.navigation.dispatch(resetAction);
+      navigateToHome(props.navigation);
     },
   };
 
@@ -284,29 +282,19 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         breadcrumb.push({
           title: 'Medicines',
           onPress: () => {
-            const resetAction = StackActions.reset({
-              index: 0,
-              actions: [NavigationActions.navigate({ routeName: 'MEDICINES' })],
-            });
-            props.navigation.dispatch(resetAction);
+            navigateToScreenWithEmptyStack(props.navigation, 'MEDICINES');
           },
         });
         breadcrumb.push({
           title: 'Medicine Search',
-          onPress: () => {
-            // props.navigation.navigate(AppRoutes.MedicineListing);
-          },
+          onPress: () => {},
         });
       }
       if (movedFrom === ProductPageViewedSource.CART) {
         breadcrumb.push({
           title: 'Cart',
           onPress: () => {
-            const resetAction = StackActions.reset({
-              index: 0,
-              actions: [NavigationActions.navigate({ routeName: AppRoutes.MedicineCart })],
-            });
-            props.navigation.dispatch(resetAction);
+            navigateToScreenWithEmptyStack(props.navigation, AppRoutes.MedicineCart);
           },
         });
       }
@@ -658,6 +646,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   };
 
   const renderBottomButton = () => {
+    const total = cartItems
+      .reduce((currTotal, currItem) => currTotal + currItem.quantity * currItem.price, 0)
+      .toFixed(2);
     return (
       <StickyBottomComponent style={styles.stickyBottomComponent}>
         <TouchableOpacity

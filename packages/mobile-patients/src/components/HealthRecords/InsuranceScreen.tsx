@@ -204,8 +204,6 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
       })
       .catch((e) => {
         CommonBugFender('InsuranceScreen_GET_PRISM_AUTH_TOKEN', e);
-        const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
       });
   };
 
@@ -240,7 +238,6 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('InsuranceScreen_searchPHRApiWithAuthToken', error);
-        console.log('searchPHRApiWithAuthToken Error', error);
         getAuthToken();
         setSearchLoading(false);
       });
@@ -301,7 +298,6 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         CommonBugFender('InsuranceScreen_getPatientPrismMedicalRecordsApi', error);
         setShowSpinner(false);
         setApiError(true);
-        console.log('error getPatientPrismMedicalRecordsApi', error);
         currentPatient && handleGraphQlError(error);
       });
   };

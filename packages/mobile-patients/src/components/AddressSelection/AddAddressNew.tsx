@@ -40,7 +40,6 @@ const FakeMarker = require('@aph/mobile-patients/src/components/ui/icons/ic-mark
 const icon_gps = require('@aph/mobile-patients/src/components/ui/icons/ic_gps_fixed.png');
 
 const screenHeight = Dimensions.get('window').height;
-const screenWidth = Dimensions.get('window').width;
 
 export type AddressSource =
   | 'My Account'
@@ -50,16 +49,6 @@ export type AddressSource =
   | 'Medicine'
   | 'Tests';
 
-//check this for diff devices.
-//if header is not there...
-// const mapHeight =
-//   screenHeight > 750
-//     ? screenHeight / 1.5
-//     : screenHeight > 650
-//     ? screenHeight / 1.63
-//     : screenHeight / 1.67; //1.8
-
-// (+20) with header
 const mapHeight =
   screenHeight > 750
     ? screenHeight / 1.55
@@ -243,7 +232,6 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
           longitudeDelta: longitudeDelta,
         });
         setAddressString(getAddress);
-        // createLocationResponse(addressDetails);
       } else {
         let newAddressDetails = JSON.parse(JSON.stringify(addressDetails));
         fetchLatLongFromGoogleApi(getAddress, newAddressDetails);
@@ -254,7 +242,6 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
       doRequestAndAccessLocation(true)
         .then((response) => {
           //after getting permission, navigate to map screen
-          console.log({ response });
           //undefined in the case, if user has denied the permission.
           if (response) {
             const address = formatLocalAddress(response);
@@ -279,7 +266,6 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
           }
         })
         .catch((e) => {
-          // renderAlert(e);
           setAddressFromHomepage();
           CommonBugFender('AddAddress_doRequestAndAccessLocation_error', e);
         })
@@ -297,7 +283,6 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
       //call the api to get lat,long + address from pincode.
       getPlaceInfoByPincode(zipcode)
         .then((data) => {
-          console.log({ data });
           const addrComponents = data?.data?.results[0]?.address_components || [];
           const coordinates = data?.data?.results[0]?.geometry?.location || [];
 
@@ -322,7 +307,6 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
           isMapDisabled && setMapDisabled(false);
         })
         .catch((error) => {
-          console.log({ error });
           CommonBugFender('AddAddress_getPlaceInfoByPincode_error', error);
         });
     }
@@ -346,7 +330,6 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
     getLatLongFromAddress(address)
       .then(({ data }) => {
         try {
-          console.log({ data });
           const addrComponents = data?.results[0]?.address_components || [];
           const coordinates = data?.results[0]?.geometry?.location || [];
           setRegion({
@@ -363,14 +346,10 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
           createLocationResponse(addressDetailObject);
         } catch (e) {
           //show current location
-          console.log({ e });
           showCurrentLocation();
         }
       })
-      .catch((error) => {
-        console.log({ error });
-        console.log('error in google locations..' + error);
-      })
+      .catch((error) => {})
       .finally(() => {
         setLoadingContext!(false);
       });
@@ -409,7 +388,6 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
     getPlaceInfoByLatLng(latitude, longitude)
       .then(({ data }) => {
         try {
-          console.log({ data });
           const addrComponents = data?.results[0]?.address_components || [];
           const coordinates = data?.results[0]?.geometry?.location || [];
           const { setMapAddress, formattedLocalAddress } = createAddressToShow(
@@ -421,13 +399,9 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
           setLocationResponse(formattedLocalAddress);
         } catch (e) {
           //show current location
-          console.log({ e });
         }
       })
-      .catch((error) => {
-        console.log('error in fetching address from lat-long');
-        console.log({ error });
-      })
+      .catch((error) => {})
       .finally(() => {
         setLoadingContext!(false);
       });
@@ -495,10 +469,6 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
   };
 
   const renderAlert = (message: string) => {
-    // showAphAlert!({
-    //   title: string.common.uhOh,
-    //   description: message,
-    // });
     setConfirmButtonDisabled(true);
     setMapDisabled(true);
   };
@@ -512,14 +482,10 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
         ref={_map}
         zoomEnabled={true}
         minZoomLevel={5}
-        onMapReady={() => console.log('ready')}
         onRegionChangeComplete={(region) => _onRegionChangeComplete(region)}
         onDoublePress={_setMapDragging}
         onPanDrag={() => setMapDragging(true)}
-        // initialRegion={{latitude: latitude,longitude: longitude,latitudeDelta: latitudeDelta,longitudeDelta: longitudeDelta,}}
-      >
-        {/* {renderBoundaryCircle()} */}
-      </MapView>
+      ></MapView>
     );
   };
 
@@ -529,9 +495,7 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
         <View style={styles.markerTitleView}>
           <Text style={styles.markerText}>{string.addressSelection.MARKER_TEXT}</Text>
         </View>
-        {/* <View style={styles.markerOutline}> */}
         <Image style={styles.markerIcon} source={FakeMarker} />
-        {/* </View> */}
       </View>
     );
   };
@@ -631,7 +595,6 @@ const styles = StyleSheet.create({
   changeButton: {
     top: '5%',
     marginHorizontal: '1%',
-    // marginHorizontal: screenWidth - 110,
     backgroundColor: theme.colors.LIGHT_YELLOW,
     shadowColor: 'transparent',
     elevation: 0,
@@ -680,8 +643,6 @@ const styles = StyleSheet.create({
     height: 35,
     width: 35,
     resizeMode: 'contain',
-    // top: -3,
-    // left: 7,
   },
   markerOutline: {
     width: 58,

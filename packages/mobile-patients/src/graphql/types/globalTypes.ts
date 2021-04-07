@@ -158,6 +158,7 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   PAYMENT_SUCCESSFUL = "PAYMENT_SUCCESSFUL",
   PHLEBO_CHECK_IN = "PHLEBO_CHECK_IN",
   PHLEBO_COMPLETED = "PHLEBO_COMPLETED",
+  PHLEBO_ON_THE_WAY = "PHLEBO_ON_THE_WAY",
   PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
   REPORT_GENERATED = "REPORT_GENERATED",
@@ -1025,28 +1026,6 @@ export interface DeletePatientPrismMedicalRecordInput {
   id?: string | null;
   patientId: string;
   recordType: MedicalRecordType;
-}
-
-export interface DiagnosticBookHomeCollectionInput {
-  patientId: string;
-  patientAddressId: string;
-  slotTimings: string;
-  totalPrice: number;
-  prescriptionUrl: string;
-  diagnosticDate: any;
-  bookingSource?: BOOKINGSOURCE | null;
-  deviceType?: DEVICETYPE | null;
-  paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
-  items?: (DiagnosticLineItem | null)[] | null;
-  slotId: string;
-  areaId: number;
-  homeCollectionCharges: number;
-  uniqueID?: string | null;
-  slotDateTimeInUTC?: any | null;
-  totalPriceExcludingDiscounts?: number | null;
-  userSubscriptionId?: string | null;
-  subscriptionInclusionId?: string | null;
-  attachmentData?: (Attachments | null)[] | null;
 }
 
 export interface DiagnosticInitiateOrderPayment {

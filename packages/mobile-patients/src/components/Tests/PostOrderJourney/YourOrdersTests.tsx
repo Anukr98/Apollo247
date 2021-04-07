@@ -7,17 +7,13 @@ import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
-  GET_DIAGNOSTIC_ORDER_LIST,
   GET_INTERNAL_ORDER,
   GET_PATIENT_ADDRESS_BY_ID,
   RESCHEDULE_DIAGNOSTIC_ORDER,
   GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
   GET_PHLOBE_DETAILS,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
-  getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrdersStatus,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
+import { getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 import {
   getDiagnosticOrdersListByMobile,
   getDiagnosticOrdersListByMobileVariables,
@@ -96,6 +92,7 @@ import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpe
 import { Overlay } from 'react-native-elements';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList as orderListByMobile } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import {
@@ -1181,9 +1178,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     );
   };
 
-  function _onPressAddTest() {
-    console.log('add test pressed');
-  }
+  function _onPressAddTest() {}
 
   function _onPressViewReport(
     order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList
@@ -1498,10 +1493,10 @@ const styles = StyleSheet.create({
   },
   paitentText: {
     ...theme.viewStyles.text('R', 16, '#00B38E'),
-    width:'80%',
+    width: '80%',
   },
   paitentSubText: {
     ...theme.viewStyles.text('R', 12, '#00B38E'),
-    width:'20%'
+    width: '20%',
   },
 });

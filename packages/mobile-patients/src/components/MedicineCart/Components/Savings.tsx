@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { Down, CircleLogo, CouponIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Down, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 
 export interface SavingsProps {}
 

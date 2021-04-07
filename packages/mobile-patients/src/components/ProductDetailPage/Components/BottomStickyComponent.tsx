@@ -45,8 +45,8 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
     deliveryError,
     name,
   } = props;
-  const { cartItems, updateCartItem, circleSubscriptionId } = useShoppingCart();
-  const { showAphAlert, hideAphAlert } = useUIElements();
+  const { cartItems, circleSubscriptionId } = useShoppingCart();
+  const { showAphAlert } = useUIElements();
 
   const renderCartCTA = () => {
     const ctaText = isInStock ? 'ADD TO CART' : 'NOTIFY WHEN IN STOCK';
@@ -81,7 +81,6 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
     const existingCartItem = cartItems.filter((item) => item.id === sku);
     if (existingCartItem.length) {
       existingCartItem[0].quantity = productQuantity;
-      // updateCartItem && updateCartItem({ id: sku, quantity });
     } else {
       onAddCartItem();
     }
@@ -119,16 +118,9 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
             </Text>
           </View>
         )}
-        {/* {!!packSize && !!packForm && !!packFormVariant && renderPackSize()} */}
       </View>
     );
   };
-
-  const renderPackSize = () => (
-    <Text
-      style={theme.viewStyles.text('R', 14, '#02475B', 1, 25, 0.35)}
-    >{`${packForm} of ${packSize}${unit} ${packFormVariant}`}</Text>
-  );
 
   const renderCareCashback = () => {
     const finalPrice = price - specialPrice ? specialPrice : price;

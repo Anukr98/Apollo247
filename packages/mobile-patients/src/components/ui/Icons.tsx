@@ -1,6 +1,5 @@
 import React from 'react';
 import { Image, ImageProps } from 'react-native';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
 
 const getIconStyle = (size?: IconProps['size']) => {
   if (size === 'sm') return { width: 24, height: 24 };
@@ -46,16 +45,8 @@ export const CovidRiskLevel: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/covid_white.png')} />
 );
 
-export const NotifySymbol: React.FC<IconProps> = (props) => (
-  <IconBase size="sm_l" {...props} source={require('./icons/notify_symbol.png')} />
-);
-
 export const NotifySymbolGreen: React.FC<IconProps> = (props) => (
   <IconBase size="sm_l" {...props} source={require('./icons/notify_symbolGreen.png')} />
-);
-
-export const CovidHealthScan: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/covid_ic_psychologist.png')} />
 );
 
 export const CloseCal: React.FC<IconProps> = (props) => (
@@ -64,7 +55,6 @@ export const CloseCal: React.FC<IconProps> = (props) => (
 export const LatestArticle: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_feed_orange.png')} />
 );
-
 export const More: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_more.png')} />
 );
@@ -82,10 +72,6 @@ export const Remove: React.FC<IconProps> = (props) => (
 
 export const Reload: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_reset.png')} />
-);
-
-export const Star: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/ic_star.png')} />
 );
 
 export const ConsultationRoom: React.FC<IconProps> = (props) => (
@@ -145,14 +131,6 @@ export const BackArrow: React.FC<IconProps> = (props) => (
     style={{ height: 16, width: 25 }}
     {...props}
     source={require('./icons/backArrow.png')}
-  />
-);
-
-export const DoctorPlaceholder: React.FC<IconProps> = (props) => (
-  <IconBase
-    style={{ height: 72, width: 72 }}
-    {...props}
-    source={require('./icons/img_illustration_placeholder.png')}
   />
 );
 
@@ -224,10 +202,6 @@ export const CalendarShow: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_calendar_show.png')} />
 );
 
-export const ShareGreen: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/ic_share_green.png')} />
-);
-
 export const ShopByCategoryIcon: React.FC<IconProps> = (props) => (
   <IconBase
     size="sm"
@@ -263,15 +237,6 @@ export const MedicineRxIcon: React.FC<IconProps> = (props) => (
 
 export const SpecialOffers: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_special_offers.png')} />
-);
-
-export const ShoppingBasketIcon: React.FC<IconProps> = (props) => (
-  <IconBase
-    height={20}
-    width={20}
-    {...props}
-    source={require('./icons/shopping_basket_24_px.png')}
-  />
 );
 
 export const AddIcon: React.FC<IconProps> = (props) => (
@@ -375,60 +340,12 @@ export const PhrSearchIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_phr_search.png')} />
 );
 
-export const FrontCameraIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="lg" {...props} source={require('./icons/frontCamera.png')} />
-);
-
-export const BackCameraIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="lg" {...props} source={require('./icons/backCamera.png')} />
-);
-
-export const VideoOffIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="lg" {...props} source={require('./icons/ic_video_off.png')} />
-);
-
-export const VideoOnIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="lg" {...props} source={require('./icons/CallVideoOn.png')} />
-);
-
 export const Online: React.FC<IconProps> = (props) => (
   <IconBase style={{ width: 19, height: 19 }} {...props} source={require('./icons/ic_video.png')} />
 );
 
 export const InPerson: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/fa_solid_hospital.png')} />
-);
-
-export const MuteIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="lg" {...props} source={require('./icons/ic_mute_circle.png')} />
-);
-
-export const UnMuteIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="lg" {...props} source={require('./icons/unMute.png')} />
-);
-
-export const EndCallIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="lg" {...props} source={require('./icons/ic_endcall_big.png')} />
-);
-
-export const PickCallIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="lg" {...props} source={require('./icons/ic_callpick.png')} />
-);
-
-export const DoctorCall: React.FC<IconProps> = (props) => (
-  <IconBase size="lg" {...props} source={require('./icons/doctorcall.png')} />
-);
-
-export const ChatIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="lg" {...props} source={require('./icons/ic_chat_circle.png')} />
-);
-
-export const FullScreenIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="lg" {...props} source={require('./icons/ic_expand_circle.png')} />
-);
-
-export const ChatWithNotification: React.FC<IconProps> = (props) => (
-  <IconBase size="lg" {...props} source={require('./icons/ChatWithNotification.png')} />
 );
 
 export const NotificationIcon: React.FC<IconProps> = (props) => (
@@ -467,17 +384,6 @@ export const CrossYellow: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_cross_onorange_small.png')} />
 );
 
-export const PrescriptionThumbnail: React.FC<IconProps> = (props) => (
-  <IconBase
-    {...props}
-    style={{
-      height: 40,
-      width: 30,
-    }}
-    source={require('./icons/ic_prescription_thumbnail.png')}
-  />
-);
-
 export const Path: React.FC<IconProps> = (props) => (
   <IconBase
     {...props}
@@ -505,6 +411,25 @@ export const PreviousPrescriptionIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" source={require('./icons/previous_prescription_icon.png')} {...props} />
 );
 
+export const CameraIc: React.FC<IconProps> = (props) => (
+  <IconBase size="md" source={require('./icons/camera_ic.png')} {...props} />
+);
+export const GalleryIc: React.FC<IconProps> = (props) => (
+  <IconBase size="md" source={require('./icons/gallery_ic.png')} {...props} />
+);
+export const RxIc: React.FC<IconProps> = (props) => (
+  <IconBase size="md" source={require('./icons/rx_ic.png')} {...props} />
+);
+export const RxPrescriptionCallIc: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" source={require('./icons/rx_prescription_call_ic.png')} {...props} />
+);
+export const RxPrescriptionIc: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" source={require('./icons/rx_prescription_ic.png')} {...props} />
+);
+export const RxPrescriptionLaterIc: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" source={require('./icons/rx_prescription_later_ic.png')} {...props} />
+);
+
 export const ChatCallIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/ChatCall.png')} />
 );
@@ -527,14 +452,6 @@ export const FreeShippingIcon: React.FC<IconProps> = (props) => (
 
 export const UploadHealthRecords: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/upload_records.png')} />
-);
-
-export const PHRHospitalIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/ic_hospital_grey.png')} />
-);
-
-export const PHRSelfUploadIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/self_upload_phr.png')} />
 );
 
 export const PhrNoDataIcon: React.FC<IconProps> = (props) => (
@@ -673,10 +590,6 @@ export const FamilyDoctorIcon: React.FC<IconProps> = (props) => (
   />
 );
 
-export const SmallOrangeCallIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/ic_small_orange_phone.png')} />
-);
-
 export const OrderTrackerSmallIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/ic_tracker_small.png')} />
 );
@@ -698,14 +611,6 @@ export const OnlineConsult: React.FC<IconProps> = (props) => (
     style={{ height: 20, width: 20 }}
     {...props}
     source={require('./icons/ic_onlineconsult.png')}
-  />
-);
-
-export const PrescriptionSkyBlue: React.FC<IconProps> = (props) => (
-  <IconBase
-    style={{ height: 20, width: 20 }}
-    {...props}
-    source={require('./icons/ic_prescription_sky_blue.png')}
   />
 );
 
@@ -773,28 +678,12 @@ export const Download: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_download.png')} />
 );
 
-export const NotificaitonAccounts: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/ic_notificaiton_accounts.png')} />
-);
-
 export const Invoice: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_invoice.png')} />
 );
 
 export const CurrencyIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/rupee.png')} />
-);
-
-export const AddFileIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/ic_addfile.png')} />
-);
-
-export const Minus: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/ic_minus.png')} />
-);
-
-export const Plus: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/ic_plus.png')} />
 );
 
 export const SuccessIcon: React.FC<IconProps> = (props) => (
@@ -854,10 +743,6 @@ export const DoctorPlaceholderImage: React.FC<IconProps> = (props) => (
   />
 );
 
-export const NoData: React.FC<IconProps> = (props) => (
-  <IconBase style={{ height: 80, width: 80 }} {...props} source={require('./icons/no_data.png')} />
-);
-
 export const ToggleOff: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 32, width: 32 }}
@@ -884,14 +769,6 @@ export const PatientDefaultImage: React.FC<IconProps> = (props) => (
     {...props}
     source={require('./icons/no-photo-icon-round.png')}
   />
-);
-
-export const SyrupBottleIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/ic_bottle.png')} />
-);
-
-export const InjectionIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/ic_injection.png')} />
 );
 
 export const SearchSendIcon: React.FC<IconProps> = (props) => (
@@ -991,10 +868,6 @@ export const HomeIcon: React.FC<IconProps> = (props) => (
   <IconBase style={{ height: 32, width: 32 }} {...props} source={require('./icons/ic_home.png')} />
 );
 
-export const Scan: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/Scan.png')} />
-);
-
 export const Success: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/Success.png')} />
 );
@@ -1036,10 +909,6 @@ export const PrescriptionPad: React.FC<IconProps> = (props) => (
 
 export const NotificationBellIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_notification_a.png')} />
-);
-
-export const NotificationCartIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/ic_notification_b.png')} />
 );
 
 export const PrimaryUHIDIconWhite: React.FC<IconProps> = (props) => (
@@ -1240,10 +1109,6 @@ export const ApolloPartnerIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/ApolloPatner.png')} />
 );
 
-export const VideoPlayIcon: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/Play.png')} />
-);
-
 export const KavachIcon: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ width: 24, height: 24 }}
@@ -1263,10 +1128,6 @@ export const ApolloHealthProIcon: React.FC<IconProps> = (props) => (
 
 export const RetryButtonIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/retryButton.png')} resizeMode="contain" />
-);
-
-export const HelpIcon: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/help.png')} />
 );
 
 export const EllipseBulletPoint: React.FC<IconProps> = (props) => (
@@ -1381,10 +1242,6 @@ export const InsurancePhrSearchIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_phr_search_insurance.png')} />
 );
 
-export const ClinicalDocumentPhrSearchIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/ic_phr_search_clinical_document.png')} />
-);
-
 export const CallConnectIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/call_connect.png')} />
 );
@@ -1395,14 +1252,6 @@ export const CallRingIcon: React.FC<IconProps> = (props) => (
 
 export const GroupCallIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/Group_call.png')} />
-);
-
-export const HdfcBankLogoPresents: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/HDFC_logo_presents.png')} />
-);
-
-export const HdfcBankLogo: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/HDFC_logo.png')} />
 );
 
 export const DeleteIconWhite: React.FC<IconProps> = (props) => (
@@ -1505,20 +1354,8 @@ export const CovidOrange: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_covid_orange.png')} />
 );
 
-export const FaqsArticles: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/faq.png')} />
-);
-
 export const VaccineTracker: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/vaccineTracker.png')} />
-);
-
-export const ChatBot: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/chatWithUs.png')} />
-);
-
-export const PhoneDoctor: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/phoneDoctor.png')} />
 );
 
 export const DashedLine: React.FC<IconProps> = (props) => (
@@ -1545,6 +1382,10 @@ export const BlueTick: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_check_blue.png')} />
 );
 
+export const HdfcBankLogo: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/HDFC_logo.png')} />
+);
+
 export const CircleLogo: React.FC<IconProps> = (props) => (
   <IconBase resizeMode="contain" size="sm" {...props} source={require('./icons/circleLogo.png')} />
 );
@@ -1555,10 +1396,6 @@ export const OrderPlacedCheckedIcon: React.FC<IconProps> = (props) => (
 
 export const OrderProcessingIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/process.png')} />
-);
-
-export const CircleBannerNonMember: React.FC<IconProps> = (props) => (
-  <IconBase size="lg" {...props} source={require('./icons/circle_banner.png')} />
 );
 
 export const ExpressDeliveryLogo: React.FC<IconProps> = (props) => (
@@ -1593,14 +1430,6 @@ export const HealthLogo: React.FC<IconProps> = (props) => (
 
 export const EmergencyCall: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/EmergencyCall.png')} />
-);
-
-export const ExpressDelivery: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/ExpressDelivery.png')} />
-);
-
-export const OneApolloLogo: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/oneapollo.png')} />
 );
 
 export const CircleLogoWhite: React.FC<IconProps> = (props) => (
@@ -1836,6 +1665,9 @@ export const CircleBannerExpired: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/Renew_circle_banner.png')} />
 );
 
+export const LowNetworkIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/lowNetworkIcon.png')} />
+);
 export const Truecaller: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/truecaller.png')} resizeMode="contain" />
 );
@@ -1862,14 +1694,52 @@ export const Emergency: React.FC<IconProps> = (props) => (
     source={require('./icons/emergency.png')}
   />
 );
+
+export const ExternalMeetingVideoCall: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/external_meeting_link.png')}
+  />
+);
+
+export const CopyIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 15, height: 16.7, margin: 16 }}
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/copy_white.png')}
+  />
+);
+
+export const SplashCapsule: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/ic_splash_capsules.png')}
+  />
+);
+
+export const SplashStethoscope: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/ic_splash_stethoscope.png')}
+  />
+);
+
+export const SplashSyringe: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/ic_splash_syringe.png')}
+  />
+);
+
 export const ProHealthIcon: React.FC<IconProps> = (props) => (
   <IconBase
     size="lg"
     {...props}
     source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_icon.png')}
   />
-);
-
-export const LowNetworkIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="lg" {...props} source={require('@aph/mobile-patients/src/components/ui/icons/lowNetworkIcon.png')} />
 );

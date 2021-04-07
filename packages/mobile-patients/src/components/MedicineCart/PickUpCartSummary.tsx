@@ -149,7 +149,11 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
 
   const renderAddress = () => {
     return (
-      <SelectedAddress orderType={'StorePickUp'} onPressChange={() => props.navigation.goBack()} />
+      <SelectedAddress
+        orderType={'StorePickUp'}
+        onPressChange={() => props.navigation.goBack()}
+        showChangeAddress={true}
+      />
     );
   };
 

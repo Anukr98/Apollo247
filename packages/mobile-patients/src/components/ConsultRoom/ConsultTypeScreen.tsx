@@ -34,7 +34,6 @@ import {
 import { ConsultMode, DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppRoutes } from '../NavigatorContainer';
 import { useApolloClient } from 'react-apollo-hooks';
-import { useUIElements } from '../UIElementsProvider';
 import { GET_DOCTOR_DETAILS_BY_ID } from '../../graphql/profiles';
 import {
   getDoctorDetailsById,
@@ -214,15 +213,11 @@ type stepsObject = {
 export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
   const DoctorName = props.navigation.getParam('DoctorName');
   const DoctorId = props.navigation.getParam('DoctorId');
-  // const chatDays = props.navigation.getParam('chatDays');
   const nextAppointemntInPresonTime = props.navigation.getParam('nextSlot');
-  // const onlinePrice = props.navigation.getParam('onlinePrice');
-  // const InpersonPrice = props.navigation.getParam('InpersonPrice');
   const ConsultType = props.navigation.getParam('ConsultType');
   const doctorType = props.navigation.getParam('doctorType');
   const isPayrollDoctor = doctorType === DoctorType.PAYROLL;
   const params = props.navigation.getParam('params');
-  const { setLoading } = useUIElements();
   const { currentPatientId, currentPatient } = useAllCurrentPatients();
   const [doctorDetails, setdoctorDetails] = useState<getDoctorDetailsById_getDoctorDetailsById>();
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
@@ -248,7 +243,6 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
     const input = {
       id: doctorId,
     };
-    console.log('input ', input);
 
     client
       .query<getDoctorDetailsById>({
@@ -257,7 +251,6 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
-        console.log(data);
         try {
           if (data && data.getDoctorDetailsById) {
             setdoctorDetails(data.getDoctorDetailsById);
@@ -268,7 +261,6 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
       })
       .catch((e) => {
         CommonBugFender('DoctorDetails_fetchDoctorDetails', e);
-        console.log('Error occured', e);
       });
   };
 
@@ -559,8 +551,6 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
     postWebengaegConsultType('In Person');
   };
 
-  // let ScrollViewRef: any;
-
   return (
     <View style={styles.mainContainer}>
       <SafeAreaView style={styles.mainContainer}>
@@ -570,12 +560,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
           bounces={false}
           style={styles.mainContainer}
           contentContainerStyle={styles.ScrollViewStyle}
-          // ref={(ref) => (ScrollViewRef = ref)}
-          // onScroll={(event) => {
-          //   console.log('event', event.nativeEvent.contentOffset.y);
-          // }}
         >
-          {/* {hideCheckbox ? null : renderCheckbox()} */}
           {[ConsultMode.ONLINE, ConsultMode.BOTH].includes(ConsultType) ? renderOnlineCard() : null}
           {!isPayrollDoctor && [ConsultMode.PHYSICAL, ConsultMode.BOTH].includes(ConsultType)
             ? renderInPersonCard()

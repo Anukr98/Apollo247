@@ -10,18 +10,11 @@ import {
   NightUnselected,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
-import {
-  NEXT_AVAILABLE_SLOT,
-  GET_AVAILABLE_SLOTS,
-} from '@aph/mobile-patients/src/graphql/profiles';
+import { GET_AVAILABLE_SLOTS } from '@aph/mobile-patients/src/graphql/profiles';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
-import {
-  GetDoctorNextAvailableSlot,
-  GetDoctorNextAvailableSlotVariables,
-} from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
-import { useQuery, useApolloClient } from 'react-apollo-hooks';
+import { useApolloClient } from 'react-apollo-hooks';
 import Moment from 'moment';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { CalendarView, CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
@@ -37,7 +30,6 @@ import {
   CommonLogEvent,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 const styles = StyleSheet.create({
   selectedButtonView: {
@@ -154,11 +146,9 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
   }, [NextAvailableSlot, timeArray]);
 
   const setTimeArrayData = async (availableSlots: string[], date: Date) => {
-    console.log(availableSlots, 'setTimeArrayData availableSlots');
     setselectedtiming(timeArray[0].label);
 
     const array = await divideSlots(availableSlots, date);
-    console.log(array, 'array', timeArray, 'timeArray.......');
     if (array !== timeArray) settimeArray(array);
     for (const i in array) {
       if (array[i].time.length > 0) {
@@ -190,7 +180,6 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
             })
             .then(({ data }) => {
               try {
-                console.log(data, 'availableSlots', availableDate);
                 if (
                   data &&
                   data.getDoctorAvailableSlots &&
@@ -206,7 +195,6 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
             .catch((e) => {
               CommonBugFender('ConsultDoctorOnline_fetchSlots', e);
               props.setshowSpinner && props.setshowSpinner(false);
-              console.log('Error occured', e);
             });
         } else {
           props.setshowSpinner && props.setshowSpinner(false);
@@ -223,37 +211,22 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
   const client = useApolloClient();
 
   const checkAvailabilitySlot = () => {
-    console.log('checkAvailabilitySlot consult online');
     props.setshowSpinner && props.setshowSpinner(true);
 
     const todayDate = new Date().toISOString().slice(0, 10);
 
     getNextAvailableSlots(client, props.doctor ? [props.doctor.id] : [], todayDate)
-      // client
-      //   .query<GetDoctorNextAvailableSlot, GetDoctorNextAvailableSlotVariables>({
-      //     query: NEXT_AVAILABLE_SLOT,
-      //     variables: {
-      //       DoctorNextAvailableSlotInput: {
-      //         doctorIds:
-      //         availableDate: todayDate,
-      //       },
-      //     },
-      //     fetchPolicy: 'no-cache',
-      //   })
       .then(({ data }: any) => {
         try {
           props.setshowSpinner && props.setshowSpinner(false);
           if (data[0] && data[0]!.availableSlot && availableInMin === 0) {
             const nextSlot = data[0]!.availableSlot;
-            // const IOSFormat =  `${todayDate}T${nextSlot}:00.000Z`;
             let timeDiff: Number = 0;
             const today: Date = new Date();
             const date2: Date = new Date(nextSlot);
             if (date2 && today) {
               timeDiff = Math.ceil(((date2 as any) - (today as any)) / 60000);
             }
-            console.log(timeDiff, 'timeDiff', nextSlot, date2);
-
             props.setNextAvailableSlot(nextSlot);
             props.setavailableInMin(timeDiff);
             setavailableInMin(timeDiff);
@@ -272,12 +245,10 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
       .catch((e: any) => {
         CommonBugFender('ConsultDoctorOnline_checkAvailabilitySlot', e);
         props.setshowSpinner && props.setshowSpinner(false);
-        console.log('error', e);
       });
   };
 
   const renderTimings = () => {
-    console.log(timeArray, 'timeArray123456789', selectedtiming);
     return (
       <View>
         <TabsComponent
@@ -344,7 +315,6 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
         date={date}
         onPressDate={(selectedDate) => {
           CommonLogEvent('CONSULT_DOCTOR_ONLINE', 'ConsultDoctorOnline_Clicked');
-          console.log('selectedDate', selectedDate !== date, selectedDate, date);
           props.setDate(selectedDate);
           props.setselectedTimeSlot('');
           fetchSlots(selectedDate);

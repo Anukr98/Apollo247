@@ -69,10 +69,9 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState<any>([]);
   const [skuList, setSkuList] = useState<string[]>([]);
-  const NeedHelp = AppConfig.Configuration.NEED_HELP;
 
   useEffect(() => {
     fetchOrders();
@@ -265,13 +264,10 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   };
 
   const onPressHelp = () => {
-    const { category } = NeedHelp[0];
+    const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
     props.navigation.navigate(AppRoutes.NeedHelpPharmacyOrder, {
-      queryCategory: category,
-      breadCrumb: [{ title: string.needHelp }, { title: category }] as BreadcrumbProps['links'],
-      pageTitle: category.toUpperCase(),
-      email: currentPatient?.emailAddress || '',
-      fromOrderFlow: true,
+      queryIdLevel1: helpSectionQueryId.pharmacy,
+      sourcePage: 'My Orders',
     });
   };
 

@@ -58,7 +58,6 @@ export const CovidScan: React.FC<CovidScanProps> = (props) => {
     const homeURL = 'http://www.apollo247.com/';
     const url = data.url;
     setCanGoBack(data?.canGoBack || false);
-    console.log(data);
     if (url && url.indexOf('redirectTo=doctor') > -1 && url.indexOf('#details') < 0) {
       props.navigation.navigate(AppRoutes.DoctorSearch);
     } else if (homeURL === url) {
@@ -70,7 +69,6 @@ export const CovidScan: React.FC<CovidScanProps> = (props) => {
     return (
       <WebView
         ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
-        // onLoadStart={() => setLoading!(true)}
         onLoadEnd={() => setLoading!(false)}
         source={{ uri: props.navigation.getParam('covidUrl') }}
         onNavigationStateChange={(data) => handleResponse(data, WebViewRef)}

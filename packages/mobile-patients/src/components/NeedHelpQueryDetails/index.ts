@@ -1,4 +1,4 @@
-import { Events } from '@aph/mobile-patients/src/components/NeedHelpQueryDetails/Events';
+import * as Events from '@aph/mobile-patients/src/components/NeedHelpQueryDetails/Events';
 import { Helpers, Query } from '@aph/mobile-patients/src/components/NeedHelpQueryDetails/Helpers';
 import {
   NeedHelpQueryDetails,

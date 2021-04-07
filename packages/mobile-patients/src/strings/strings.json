@@ -156,6 +156,7 @@
   "recentConsults": "RECENT CONSULTS",
   "recentOrders": "RECENT ORDERS",
   "pharmacy": "Pharmacy",
+  "consult": "Consult",
   "productDetail": "Product Detail",
   "pleaseProvideMoreDetails": "Please provide more details",
   "chooseFromPreviousConsults": "Choose from previous consultations",
@@ -177,7 +178,7 @@
   "removeUnavailableItems": "REMOVE UNAVAILABLE ITEMS",
   "selectDeliveryAddress": "SELECT DELIVERY ADDRESS",
   "addDeliveryAddress": "ADD DELIVERY ADDRESS",
-  "uploadPrescription": "UPLOAD PRESCRIPTION",
+  "proceed": "PROCEED",
   "proceedToPay": "PROCEED TO PAY",
   "reviewOrder": "REVIEW ORDER",
   "placeOrder": "PLACE ORDER",
@@ -394,7 +395,20 @@
       },
       {
         "label": "Language",
-        "options": ["Hindi", "English", "Telugu", "Punjabi" ,"Bengali" ,"Marathi" ,"Urdu","Gujarati","Tamil","Kannada","Oriya","Persian"]
+        "options": [
+          "Hindi",
+          "English",
+          "Telugu",
+          "Punjabi",
+          "Bengali",
+          "Marathi",
+          "Urdu",
+          "Gujarati",
+          "Tamil",
+          "Kannada",
+          "Oriya",
+          "Persian"
+        ]
       }
     ]
   },
@@ -450,12 +464,12 @@
       "latePhelbo": "Phlebo did not arrive on time",
       "editOrder": "Need to Modify Order Details",
       "userUnavailable": "I am not available right now",
-      "bookedByMistake":"Booked by Mistake",
-      "urgentReport" : "Need Report Urgently",
+      "bookedByMistake": "Booked by Mistake",
+      "urgentReport": "Need Report Urgently",
       "otherReasons": "Others (Please specify)"
     },
     "reasonForReschedule_TestOrder": {
-      "latePhelbo" : "Phlebo did not arrive on time",
+      "latePhelbo": "Phlebo did not arrive on time",
       "unavailable": "I am not available right now",
       "guidelinesNotFollowed": "I did not follow fasting requirement",
       "unableToProvideSample": "Not feeling well to provide sample",
@@ -502,20 +516,20 @@
     "cartPhelboTxt": "Sample collection executive to reach your home within 45 mins of your appointment time",
     "incorrectUserReport": "This report does not belongs to this user.",
     "unableToFetchReport": "We could not fetch your report. Please view report in my order section",
-    "reasonForReschedulingText" : "Reason for Rescheduling",
+    "reasonForReschedulingText": "Reason for Rescheduling",
     "reasonForCancellationText": "Reason for Cancellation",
-    "whatWudLikeText":"What would you like to do?",
-    "rescheduleBookingText":"Reschedule Booking",
+    "whatWudLikeText": "What would you like to do?",
+    "rescheduleBookingText": "Reschedule Booking",
     "cancelBookingText": "Cancel Booking",
-    "sureCancelText":"Are you sure you want to Cancel the booking?",
-    "rateYourExperience":"RATE YOUR DELIVERY EXPERIENCE",
-    "valueFeedbackTxt":"We value your feedback! :)",
-    "howWasExpTxt":"How was your overall experience -",
-    "feedbackSubTxt":"Your feedback has been submitted. Thanks for your time.",
-    "homeHomeCollectionDisclaimerTxt":"Home collection charges of upto ₹100 would be levied in case of order value less than ₹500",
+    "sureCancelText": "Are you sure you want to Cancel the booking?",
+    "rateYourExperience": "RATE YOUR DELIVERY EXPERIENCE",
+    "valueFeedbackTxt": "We value your feedback! :)",
+    "howWasExpTxt": "How was your overall experience -",
+    "feedbackSubTxt": "Your feedback has been submitted. Thanks for your time.",
+    "homeHomeCollectionDisclaimerTxt": "Home collection charges of upto ₹100 would be levied in case of order value less than ₹500",
     "itDoseCancelledText": "Canceled by phlebotomist as per the request",
-    "orderCancelledReasonText" : "Order was cancelled -",
-    "wantToReschedule" : "• Do you want to Reschedule Appointment ?"
+    "orderCancelledReasonText": "Order was cancelled -",
+    "wantToReschedule": "• Do you want to Reschedule Appointment ?"
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -992,6 +1006,18 @@
     "networkProblem": "There is a problem with network connection.",
     "userNotVerified": "User is not verified on truecaller.",
     "appNotInstalledOrUserNotLoggedIn": "Either truecaller app is not installed or user is not logged in.",
+    "tryAgainLater": "Something went wrong, please try again after sometime",
+    "errorTitle": "Uh oh.. :("
+  },
+  "externalMeetingLink": {
+    "click_to_open": "Dr. XYZ is inviting you to join a Zoom meeting. Please click here to join your consultation on the Zoom App or your browser.",
+    "tnc": "By Clicking on this link, you will provide a confirmation to join a recorded Audio/Video meeting on the external platform.",
+    "copied_to_clipboard": "Copied ",
     "tryAgainLater": "Something went wrong, please try again after sometime"
+  },
+  "splash": {
+    "CAPSULE": "CAPSULE",
+    "SYRINGE": "SYRINGE",
+    "STETHO": "STETHO"
   }
 }

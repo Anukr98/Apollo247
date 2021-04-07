@@ -259,13 +259,6 @@ export interface FirebaseEvents {
     BrandID?: string;
     categoryname?: string;
     categoryID?: string;
-    // 'Patient Name': string;
-    // 'Patient UHID': string;
-    // Relation: string;
-    // Age: number;
-    // Gender: string;
-    // 'Mobile Number': string;
-    // 'Customer ID': string;
   };
   [FirebaseEventName.CATEGORY_PAGE_VIEWED]: {
     source: 'home' | 'deeplink' | 'registration';

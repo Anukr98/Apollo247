@@ -14,16 +14,8 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import {
-  Dimensions,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-  Image as ImageNative,
-} from 'react-native';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { SafeAreaView, StyleSheet, Text, View, Image as ImageNative } from 'react-native';
+import { NavigationScreenProps } from 'react-navigation';
 import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import { PackageCard } from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
@@ -34,6 +26,10 @@ import {
   findDiagnosticsWidgetsPricingVariables,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
 import { getDiagnosticListingWidget } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  navigateToHome,
+  navigateToScreenWithEmptyStack,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 export interface TestListingProps
@@ -46,14 +42,12 @@ export interface TestListingProps
 
 export const TestListing: React.FC<TestListingProps> = (props) => {
   const {
-    cartItems,
     setTestListingBreadCrumbs,
     testListingBreadCrumbs,
     isDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
-  const { cartItems: shopCartItems } = useShoppingCart();
 
-  const { diagnosticServiceabilityData, isDiagnosticLocationServiceable } = useAppCommonData();
+  const { isDiagnosticLocationServiceable } = useAppCommonData();
 
   const movedFrom = props.navigation.getParam('movedFrom');
   const dataFromHomePage = props.navigation.getParam('data');
@@ -123,6 +117,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       fetchPolicy: 'no-cache',
     });
 
+  //add try catch.
   const fetchWidgetsPrices = async (widgetsData: any) => {
     const itemIds = widgetsData?.diagnosticWidgetData?.map((item: any) => Number(item?.itemId));
 
@@ -160,11 +155,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const homeBreadCrumb: TestBreadcrumbLink = {
     title: 'Home',
     onPress: () => {
-      const resetAction = StackActions.reset({
-        index: 0,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      });
-      props.navigation.dispatch(resetAction);
+      navigateToHome(props.navigation);
     },
   };
 
@@ -183,11 +174,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         breadcrumb.push({
           title: 'Order Tests',
           onPress: () => {
-            const resetAction = StackActions.reset({
-              index: 0,
-              actions: [NavigationActions.navigate({ routeName: 'TESTS' })],
-            });
-            props.navigation.dispatch(resetAction);
+            navigateToScreenWithEmptyStack(props.navigation, 'TESTS');
           },
         });
         breadcrumb.push({
@@ -201,11 +188,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         breadcrumb.push({
           title: 'Cart',
           onPress: () => {
-            const resetAction = StackActions.reset({
-              index: 0,
-              actions: [NavigationActions.navigate({ routeName: AppRoutes.TestsCart })],
-            });
-            props.navigation.dispatch(resetAction);
+            navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TestsCart);
           },
         });
       }

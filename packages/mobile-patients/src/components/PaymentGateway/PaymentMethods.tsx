@@ -1,15 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
-  Text,
   NativeModules,
   BackHandler,
   NativeEventEmitter,
-  View,
   ScrollView,
 } from 'react-native';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { BookingInfo } from '@aph/mobile-patients/src/components/PaymentGateway/Components/BookingInfo';
@@ -24,7 +22,6 @@ import {
   fetchAvailableUPIApps,
   InitiateNetBankingTxn,
   InitiateWalletTxn,
-  InitiateUPISDKTxn,
   InitiateUPIIntentTxn,
   InitiateVPATxn,
   InitiateCardTxn,
@@ -131,7 +128,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         }
         break;
       default:
-        console.log('Unknown Event', data);
     }
   };
 
@@ -270,13 +266,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   async function onPressUPIApp(app: any) {
     triggerWebengege('Prepaid', 'UPI');
     const token = await getClientToken();
-    // const sdkPresent =
-    //   app?.payment_method_code == 'PHONEPE'
-    //     ? 'ANDROID_PHONEPE'
-    //     : app?.payment_method_code == 'GOOGLEPAY'
-    //     ? 'ANDROID_GOOGLEPAY'
-    //     : '';
-    // InitiateUPISDKTxn(currentPatient?.id, token, paymentId, app?.payment_method_code, sdkPresent);
     InitiateUPIIntentTxn(currentPatient?.id, token, paymentId, app.packageName);
   }
 

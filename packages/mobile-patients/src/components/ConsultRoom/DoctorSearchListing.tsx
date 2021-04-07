@@ -21,7 +21,6 @@ import {
   SearchIcon,
   FamilyDoctorIcon,
   RetryButtonIcon,
-  TickIcon,
   CircleLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -38,17 +37,13 @@ import {
   getPlatinumDoctor,
 } from '@aph/mobile-patients/src/graphql/types/getPlatinumDoctor';
 import {
-  DOCTOR_SPECIALITY_BY_FILTERS,
   GET_DOCTOR_LIST,
   GET_PLATINUM_DOCTOR,
   GET_DOCTORLIST_FILTERS,
   GET_PATIENT_ADDRESS_LIST,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
-  getDoctorsBySpecialtyAndFilters,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors,
-  getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsAvailability,
-  getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_specialty,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
 import { getDoctorList } from '@aph/mobile-patients/src/graphql/types/getDoctorList';
@@ -243,7 +238,6 @@ export type filterDataType = {
 
 export type locationType = { lat: number | string; lng: number | string };
 export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) => {
-  const specialistPluralTerm = props.navigation.getParam('specialistPluralTerm');
   const typeOfConsult = props.navigation.getParam('typeOfConsult');
   const doctorTypeFilter = props.navigation.getParam('doctorType');
   const cityFilter = props.navigation.getParam('city');
@@ -290,9 +284,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
-  const { generalPhysicians, ent, Urology, Dermatology } = useAppCommonData();
   const [showLocations, setshowLocations] = useState<boolean>(false);
-  const [value, setValue] = useState<boolean>(false);
   const [sortValue, setSortValue] = useState<string>('');
   const [searchIconClicked, setSearchIconClicked] = useState<boolean>(false);
   const [careDoctorsSwitch, setCareDoctorsSwitch] = useState<boolean>(false);
@@ -359,19 +351,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     fetchFilter();
   }, []);
   useEffect(() => {
-    AsyncStorage.getItem(SKIP_LOCATION_PROMPT)
-      .then((skipLocationPrompt) => {
-        if (skipLocationPrompt == 'true') {
-          fetchDoctorListByAvailability();
-        } else {
-          checkLocation();
-        }
-      })
-      .catch((error) => {
-        checkLocation();
-        CommonBugFender('DocSearchListing_check_skip_location_prompt', error);
-      });
-
+    fetchDoctorListByAvailability();
     setDeepLinkFilter();
     setDeepLinkDoctorTypeFilter();
     if (!currentPatient) {
@@ -422,9 +402,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       })
       .then(({ data }) => {
         const platinum_doctor = g(data, 'getPlatinumDoctor', 'doctors', '0' as any);
-        console.log('data', data);
         if (platinum_doctor) {
           setPlatinumDoctor(platinum_doctor);
+          postPlatinumDoctorWEGEvents(platinum_doctor, WebEngageEventName.DOH_Viewed, state);
         } else {
           setPlatinumDoctor(null);
         }
@@ -455,7 +435,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         await getDoctorOfTheHour(partnerDoctor, state);
       }
     } catch (error) {
-      console.log(error);
       CommonBugFender('DoctorSearchListing_fetchAddress', error);
     }
   }
@@ -696,7 +675,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       'Location permission': permissionType,
     };
     postWebEngageEvent(WebEngageEventName.LOCATION_PERMISSION, eventAttributes);
-    console.log('check event ', eventAttributes);
   };
 
   const fetchSpecialityFilterData = (
@@ -795,7 +773,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     const FilterInput: FilterDoctorInput = {
       patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
       specialty: props.navigation.getParam('specialityId') || '',
-      // city: SearchData[0].selectedOptions,
       pincode: pinCode || g(locationDetails, 'pincode') || null,
       doctorType:
         brandFilter === undefined || brandFilter === null
@@ -811,7 +788,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       gender: SearchData[5].selectedOptions,
       language: SearchData[6].selectedOptions,
       ...availableNow,
-      // consultMode: filterMode,
       ...specialtyName,
       ...geolocation,
       sort: sort,
@@ -843,21 +819,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           setPartnerDocsNumber(
             data.getDoctorList?.partnerDoctorCount ? data.getDoctorList?.partnerDoctorCount : 0
           ));
-        //log data
-
-        // const doctorInfo =
-        //   data &&
-        //   data.getDoctorsBySpecialtyAndFilters &&
-        //   data.getDoctorsBySpecialtyAndFilters.doctors === null
-        //     ? {}
-        //     : data &&
-        //       data.getDoctorsBySpecialtyAndFilters &&
-        //       data.getDoctorsBySpecialtyAndFilters.doctors &&
-        //       data.getDoctorsBySpecialtyAndFilters.doctors[0];
-        // filterOptions(data.getDoctorsBySpecialtyAndFilters.filters);
-
-        // setBugFenderLog('DOCTOR_FILTER_DATA', JSON.stringify(doctorInfo));
-        //end log data
       })
       .catch((e) => {
         CommonBugFender('DoctorSearchListing_fetchSpecialityFilterData', e);
@@ -1105,7 +1066,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               onPress={() => {
                 setSearchIconClicked(!searchIconClicked);
                 setDoctorSearch('');
-                // filterDoctors(doctorsList, doctorsType, '');
                 if (searchIconClicked) {
                   fetchSpecialityFilterData(
                     filterMode,
@@ -1130,6 +1090,24 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         />
       </View>
     );
+  };
+
+  const postPlatinumDoctorWEGEvents = (
+    doctorData: any,
+    eventName: WebEngageEventName,
+    states: any
+  ) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DOH_Viewed] = {
+      doctorId: doctorData?.id,
+      doctorName: doctorData?.displayName,
+      doctorType: doctorData?.doctorType,
+      specialtyId: props.navigation.getParam('specialityId') || '',
+      specialtyName: props.navigation.getParam('specialityName') || '',
+      zone: states || locationDetails?.state || '',
+      userName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      userPhoneNumber: currentPatient?.mobileNumber,
+    };
+    postWebEngageEvent(eventName, eventAttributes);
   };
 
   const postDoctorClickWEGEvent = (
@@ -1350,7 +1328,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
     return (
       <View style={{ flex: 1 }}>
-        {/* {doctorsType === 'APOLLO' && renderViewCareSwitch()} */}
         {doctorsType === 'APOLLO' && showCarePlanNotification && renderCirclePlanAddedToCartView()}
         {doctors.length > 0 && (
           <FlatList
@@ -1389,7 +1366,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const onEndReached = () => {
-    console.log('end reached');
     let totalDocs = doctorsType == 'APOLLO' ? apolloDocsNumber : partnerDocsNumber;
     if (!fetching && filteredDoctorsList.length < totalDocs) {
       setfetching(true);
@@ -1453,7 +1429,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 false,
                 doctorSearch
               );
-            // !locationDetails && checkLocation();
           }}
         >
           <View
@@ -1621,6 +1596,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     };
     const doctorOfHourText =
       platinumDoctor?.availabilityTitle?.DOCTOR_OF_HOUR || 'Doctor of the Hour!';
+
     return (
       <LinearGradientComponent
         style={[styles.linearGradient, setHeight && { minHeight: 310, flex: undefined }]}
@@ -1642,6 +1618,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           onPressShare={(doctorData) => onClickDoctorShare(doctorData, index + 1)}
           onPress={() => {
             postDoctorClickWEGEvent(platinumDoctor, 'List', true);
+            postPlatinumDoctorWEGEvents(platinumDoctor, WebEngageEventName.DOH_Clicked);
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: platinumDoctor?.id,
               callSaveSearch: callSaveSearch,
@@ -1672,11 +1649,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           doctorShareRank
         );
       } else if (result.action === Share.dismissedAction) {
-        console.log('dismiss');
       }
-    } catch (error) {
-      console.log('onPressShareProfileButton Error', error.message);
-    }
+    } catch (error) {}
   };
 
   const onPressGoBackShareDoctor = (doctorData: any) => {
@@ -1994,7 +1968,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     if (doctorsType != 'APOLLO') {
       postTabBarClickWEGEvent('APOLLO');
       setDoctorsType('APOLLO');
-      // onPressAvailabiltyRadioButton();
       setFilteredDoctorsList([]);
       filterDoctors(doctorsList, 'APOLLO');
       scrollToTop();
@@ -2008,7 +1981,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     if (doctorsType != 'PARTNERS') {
       postTabBarClickWEGEvent('PARTNERS');
       setDoctorsType('PARTNERS');
-      // onPressNearByRadioButton(true);
       setFilteredDoctorsList([]);
       filterDoctors(doctorsList, 'PARTNERS');
       scrollToTop();
@@ -2104,12 +2076,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             renderSearchLoadingView()
           ) : (
             <View style={{ flex: 1 }}>
-              {/* <Text style={styles.consultHeadingText}>
-                {string.doctor_search_listing.consultBest.replace(
-                  '{0}',
-                  specialistPluralTerm || 'Doctors'
-                )}
-              </Text> */}
               {renderDoctorSearches(
                 onlineCheckBox
                   ? physicalCheckBox

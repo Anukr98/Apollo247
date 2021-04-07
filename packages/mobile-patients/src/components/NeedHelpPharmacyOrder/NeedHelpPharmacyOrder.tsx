@@ -1,8 +1,6 @@
-import {
-  Breadcrumb,
-  Props as BreadcrumbProps,
-} from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
+import { Breadcrumb } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { Helpers as NeedHelpHelpers } from '@aph/mobile-patients/src/components/NeedHelp';
 import { OrderCard } from '@aph/mobile-patients/src/components/NeedHelpPharmacyOrder';
 import { AphListItem } from '@aph/mobile-patients/src/components/ui/AphListItem';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -13,6 +11,10 @@ import {
   getMedicineOrdersOMSList,
   getMedicineOrdersOMSListVariables,
 } from '@aph/mobile-patients/src/graphql/types/getMedicineOrdersOMSList';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -22,26 +24,24 @@ import { FlatList, ListRenderItemInfo, SafeAreaView, StyleSheet, Text, View } fr
 import { FacebookLoader } from 'react-native-easy-content-loader';
 import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
-import { NeedHelpEmailPopup } from '@aph/mobile-patients/src/components/NeedHelpPharmacyOrder/NeedHelpEmailPopup';
 
 export interface Props
   extends NavigationScreenProps<{
     pageTitle?: string;
-    breadCrumb: BreadcrumbProps['links'];
-    queryCategory: string;
+    queryIdLevel1: string;
     email: string;
-    fromOrderFlow?: boolean;
+    queries: NeedHelpHelpers.HelpSectionQuery[];
+    sourcePage: WebEngageEvents[WebEngageEventName.HELP_TICKET_SUBMITTED]['Source_Page'];
   }> {}
 
 export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
+  const sourcePage = navigation.getParam('sourcePage');
   const pageTitle = navigation.getParam('pageTitle') || string.pharmacy.toUpperCase();
-  const breadCrumb = navigation.getParam('breadCrumb') || [
-    { title: string.needHelp },
-    { title: string.pharmacy },
-  ];
-  const queryCategory = navigation.getParam('queryCategory') || string.pharmacy;
+  const queryIdLevel1 = navigation.getParam('queryIdLevel1') || '';
   const email = navigation.getParam('email') || '';
-  const isFromOrderFlow = navigation.getParam('fromOrderFlow') || false;
+  const queries = navigation.getParam('queries');
+
+  const breadCrumb = [{ title: string.needHelp }, { title: string.pharmacy }];
 
   const { currentPatient } = useAllCurrentPatients();
   const [displayAll, setDisplayAll] = useState<boolean>(false);
@@ -84,10 +84,10 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
         medicineOrderStatus: item.currentStatus,
         medicineOrderStatusDate: currentStatusDate,
         orderId: item.billNumber || item.orderAutoId,
-        queryCategory,
+        queryIdLevel1,
+        queries,
         email,
-        breadCrumb: [...breadCrumb, { title: string.help }] as BreadcrumbProps['links'],
-        fromOrderFlow: isFromOrderFlow,
+        sourcePage,
       });
     };
     const onPress = (isCancelOrder?: boolean) => {
@@ -95,11 +95,9 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
         orderAutoId: item.orderAutoId,
         billNumber: item.billNumber,
         isCancelOrder: !!isCancelOrder,
-        isOrderHelp: true,
-        queryCategory,
+        queryIdLevel1,
+        queries,
         email,
-        breadCrumb: [...breadCrumb, { title: string.productDetail }] as BreadcrumbProps['links'],
-        fromOrderFlow: isFromOrderFlow,
       });
     };
     return (
@@ -150,10 +148,10 @@ export const NeedHelpPharmacyOrder: React.FC<Props> = ({ navigation }) => {
   const renderIssueNotRelatedToOrder = () => {
     const onPress = () => {
       navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
-        fromOrderFlow: isFromOrderFlow,
-        queryCategory,
+        queryIdLevel1,
+        queries,
         email,
-        breadCrumb: [...breadCrumb, { title: string.help }] as BreadcrumbProps['links'],
+        sourcePage,
       });
     };
     return <AphListItem title={string.otherIssueNotMyOrders} onPress={onPress} />;

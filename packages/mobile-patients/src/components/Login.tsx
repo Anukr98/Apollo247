@@ -10,7 +10,6 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import {
   CommonBugFender,
   CommonLogEvent,
-  CommonSetUserBugsnag,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppSignature } from '@aph/mobile-patients/src/helpers/AppSignature';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
@@ -46,7 +45,6 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
-import HyperLink from 'react-native-hyperlink';
 import WebEngage from 'react-native-webengage';
 import {
   NavigationEventSubscription,
@@ -175,7 +173,6 @@ const styles = StyleSheet.create({
 export interface LoginProps extends NavigationScreenProps {}
 
 const isPhoneNumberValid = (number: string) => {
-  // const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
   const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(number)
     ? !/^(234){1}\d{0,9}$/.test(number)
       ? false
@@ -255,7 +252,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         switch (error.errorCode) {
           case 1: {
             showAphAlert!({
-              title: 'Uh oh.. :(',
+              title: string.truecaller.errorTitle,
               description: string.truecaller.networkProblem,
             });
             errorAttributes = {
@@ -284,7 +281,7 @@ export const Login: React.FC<LoginProps> = (props) => {
           case 4:
           case 10: {
             showAphAlert!({
-              title: 'Uh oh.. :(',
+              title: string.truecaller.errorTitle,
               description: string.truecaller.userNotVerified,
             });
             errorAttributes = {
@@ -304,7 +301,7 @@ export const Login: React.FC<LoginProps> = (props) => {
           }
           case 11: {
             showAphAlert!({
-              title: 'Uh oh.. :(',
+              title: string.truecaller.errorTitle,
               description: string.truecaller.appNotInstalledOrUserNotLoggedIn,
             });
             errorAttributes = {
@@ -375,7 +372,7 @@ export const Login: React.FC<LoginProps> = (props) => {
     oneTimeApiCall.current = true;
     setOpenFillerView(false);
     showAphAlert!({
-      title: 'Uh oh.. :(',
+      title: string.truecaller.errorTitle,
       description: string.truecaller.tryAgainLater,
     });
     const errorAttributes = {
@@ -444,7 +441,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         navigateTo(AppRoutes.MultiSignup);
       } else {
         if (!mePatient?.dateOfBirth) {
-          // New user since we dont get dateOfBirth from truecaller profile and it will always ne null or empty for new user
+          // New user since we dont get dateOfBirth from truecaller profile and it will always be null or empty for new user
           navigateTo(AppRoutes.SignUp, mePatient);
         } else {
           // existing user
@@ -595,7 +592,6 @@ export const Login: React.FC<LoginProps> = (props) => {
                 phoneNumber: phoneNumber,
               });
             } else {
-              CommonSetUserBugsnag(phoneNumber);
               AsyncStorage.setItem('phoneNumber', phoneNumber);
               setShowSpinner(true);
 
@@ -671,7 +667,7 @@ export const Login: React.FC<LoginProps> = (props) => {
       } else {
         setLoading?.(false);
         showAphAlert!({
-          title: 'Uh oh.. :(',
+          title: string.truecaller.errorTitle,
           description: string.truecaller.appNotInstalledOrUserNotLoggedIn,
         });
       }
@@ -703,7 +699,6 @@ export const Login: React.FC<LoginProps> = (props) => {
               style={[
                 {
                   paddingTop: Platform.OS === 'ios' ? 22 : 15,
-                  // flex: 1
                 },
                 phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
               ]}
@@ -736,22 +731,15 @@ export const Login: React.FC<LoginProps> = (props) => {
               marginHorizontal: 16,
             }}
           >
-            <HyperLink
-              linkStyle={styles.hyperlink}
-              linkText={(url) =>
-                url === 'https://www.apollo247.com/TnC.html' ? 'Terms and Conditions' : url
-              }
-              onPress={(url, text) => openWebView()}
+            <Text
+              style={{
+                color: '#02475b',
+                ...fonts.IBMPlexSansMedium(10),
+              }}
             >
-              <Text
-                style={{
-                  color: '#02475b',
-                  ...fonts.IBMPlexSansMedium(10),
-                }}
-              >
-                By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo247
-              </Text>
-            </HyperLink>
+              By signing up, I agree to the{' '}
+              <Text style={styles.hyperlink}>Terms and Conditions</Text> of Apollo247
+            </Text>
           </TouchableOpacity>
         </LoginCard>
         <ScrollView>

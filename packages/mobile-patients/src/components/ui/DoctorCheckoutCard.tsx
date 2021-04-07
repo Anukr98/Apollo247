@@ -7,7 +7,6 @@ import {
   CircleLogo,
   OnlineAppointmentMarkerIcon,
   AppointmentCalendarIcon,
-  PhysicalAppointmentMarkerIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 const { width } = Dimensions.get('window');

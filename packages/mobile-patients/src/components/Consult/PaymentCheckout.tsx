@@ -11,7 +11,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { DoctorCheckoutCard } from '@aph/mobile-patients/src/components/ui/DoctorCheckoutCard';
 import { CareMembershipAdded } from '@aph/mobile-patients/src/components/ui/CareMembershipAdded';
@@ -30,6 +30,8 @@ import {
   postWEGWhatsAppEvent,
   dataSavedUserID,
   postAppsFlyerEvent,
+  apiCallEnums,
+  navigateToHome,
   getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
@@ -53,7 +55,6 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import firebase from 'react-native-firebase';
 import {
   CommonBugFender,
   CommonLogEvent,
@@ -116,6 +117,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     circlePlanId,
     hdfcStatus,
     circleStatus,
+    apisToCall,
+    homeScreenParamsOnPop,
   } = useAppCommonData();
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const doctor = props.navigation.getParam('doctor');
@@ -532,7 +535,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       mobile: g(currentPatient, 'mobileNumber'),
       billAmount: billAmount,
       coupon: coupon,
-      // paymentType: 'CASH', //CASH,NetBanking, CARD, COD
       pinCode: locationDetails?.pincode,
       consultations: [
         {
@@ -548,7 +550,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       packageIds: packageId,
       email: g(currentPatient, 'emailAddress'),
     };
-
     return new Promise((res, rej) => {
       validateConsultCoupon(data)
         .then((resp: any) => {
@@ -590,7 +591,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         })
         .catch((error) => {
           CommonBugFender('validatingConsultCoupon', error);
-          console.log(error);
           rej();
           renderErrorPopup(string.common.tryAgainLater);
         });
@@ -662,7 +662,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const verifyCoupon = async (fromPayment?: boolean) => {
     if (coupon) {
       try {
-        // await validateAndApplyCoupon(coupon, isOnlineConsult, true);
         setLoading!(true);
         await validateCoupon(coupon, true);
         !fromPayment && setLoading!(false);
@@ -685,7 +684,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     CommonLogEvent(AppRoutes.PaymentCheckout, 'ConsultOverlay onSubmitBookAppointment clicked');
     // again check coupon is valid or not
     verifyCoupon(true);
-
     if (amountToPay == 0) {
       setLoading!(true);
       client
@@ -830,23 +828,19 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           if (appointmentData) {
             try {
               if (appointmentData?.[0]?.doctorInfo !== null) {
-                props.navigation.dispatch(
-                  StackActions.reset({
-                    index: 0,
-                    key: null,
-                    actions: [
-                      NavigationActions.navigate({
-                        routeName: AppRoutes.ConsultRoom,
-                        params: {
-                          isFreeConsult: true,
-                          doctorName: doctorName,
-                          appointmentData: appointmentData[0],
-                          skipAutoQuestions: doctor?.skipAutoQuestions,
-                        },
-                      }),
-                    ],
-                  })
-                );
+                // use apiCallsEnum values here in order to make that api call in home screen
+                apisToCall.current = [
+                  apiCallEnums.patientAppointments,
+                  apiCallEnums.patientAppointmentsCount,
+                ];
+                const params = {
+                  isFreeConsult: true,
+                  doctorName: doctorName,
+                  appointmentData: appointmentData[0],
+                  skipAutoQuestions: doctor?.skipAutoQuestions,
+                };
+                homeScreenParamsOnPop.current = params;
+                navigateToHome(props.navigation, params);
               }
             } catch (error) {}
           }
@@ -856,7 +850,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         }
       })
       .catch((e) => {
-        console.log('Error occured while GetDoctorNextAvailableSlot', { e });
         setLoading && setLoading(false);
         props.navigation.navigate('APPOINTMENTS');
       });
@@ -881,7 +874,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const getConsultationBookedEventAttributes = (time: string, id: string) => {
     const localTimeSlot = moment(new Date(time));
     let date = new Date(time);
-    // date = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
     const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
         return item.facility.facilityType === 'HOSPITAL';
@@ -891,7 +883,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       name: g(doctor, 'fullName')!,
       specialisation: g(doctor, 'specialty', 'name')!,
       category: g(doctor, 'doctorType')!, // send doctorType
-      // time: localTimeSlot.format('DD-MM-YYY, hh:mm A'),
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
@@ -933,9 +924,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         'APPOINTMENTS_CONSULTED_WITH_DOCTOR_BEFORE',
         JSON.stringify([...appointmentIds, appointmentId])
       );
-    } catch (error) {
-      console.log({ error });
-    }
+    } catch (error) {}
   };
 
   const whatsappAPICalled = () => {
@@ -954,7 +943,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       })
       .catch((e: any) => {
         CommonBugFender('ConsultOverlay_whatsAppUpdateAPICall_error', e);
-        console.log('error', e);
       });
   };
 
@@ -977,8 +965,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       'Doctor City': g(doctor, 'city')!,
       'Type of Doctor': g(doctor, 'doctorType')!,
       'Doctor Specialty': g(doctor, 'specialty', 'name')!,
-      // 'Appointment Date': localTimeSlot.format('DD-MM-YYYY'),
-      // 'Appointment Time': localTimeSlot.format('hh:mm A'),
       'Actual Price': finalAppointmentInput?.actualAmount,
       'Discount used ?': !!coupon,
       'Discount coupon': coupon,

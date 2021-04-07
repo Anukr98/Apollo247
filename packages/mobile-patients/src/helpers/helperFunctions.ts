@@ -1,11 +1,7 @@
-import {
-  LocationData,
-  useAppCommonData,
-} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { LocationData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import DeviceInfo from 'react-native-device-info';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
-  getPackageData,
   getPlaceInfoByLatLng,
   GooglePlacesType,
   MedicineProduct,
@@ -13,6 +9,7 @@ import {
   medCartItemsDetailsApi,
   MedicineOrderBilledItem,
   availabilityApi247,
+  validateConsultCoupon,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -39,12 +36,10 @@ import { apiRoutes } from './apiRoutes';
 import {
   CommonBugFender,
   setBugFenderLog,
+  CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
-import {
-  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails,
-  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems,
-} from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
+import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
 import {
   getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet,
   getPatientAllAppointments_getPatientAllAppointments_activeAppointments,
@@ -55,10 +50,8 @@ import { saveSearch, saveSearchVariables } from '@aph/mobile-patients/src/graphq
 import {
   searchDiagnosticsByCityID,
   searchDiagnosticsByCityIDVariables,
-  searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import {
-  GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
   SAVE_SEARCH,
   SEARCH_DIAGNOSTICS_BY_CITY_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -82,34 +75,26 @@ import {
   EPrescription,
   useShoppingCart,
   PharmacyCircleEvent,
+  PharmaCoupon,
+  CouponProducts,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { UIElementsContextProps } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getLatestMedicineOrder';
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
-import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
-import { handleUniversalLinks } from './UniversalLinks';
-import {
-  getPincodeServiceability,
-  getPincodeServiceabilityVariables,
-} from '@aph/mobile-patients/src/graphql/types/getPincodeServiceability';
-import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '../graphql/types/getDiagnosticSlotsWithAreaID';
+import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsWithAreaID';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { NavigationScreenProps, NavigationActions, StackActions } from 'react-navigation';
+import { NavigationActions, StackActions } from 'react-navigation';
 import { differenceInYears, parse } from 'date-fns';
 import stripHtml from 'string-strip-html';
 import isLessThan from 'semver/functions/lt';
 import coerce from 'semver/functions/coerce';
 
-const isRegExp = require('lodash/isRegExp');
-const escapeRegExp = require('lodash/escapeRegExp');
-const isString = require('lodash/isString');
 const width = Dimensions.get('window').width;
 
 const { RNAppSignatureHelper } = NativeModules;
-const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 let onInstallConversionDataCanceller: any;
 let onAppOpenAttributionCanceller: any;
 
@@ -479,10 +464,12 @@ export const getSourceName = (
   if (
     labTestSource === 'self' ||
     labTestSource === '247self' ||
+    labTestSource === '247selfConsultation' ||
     siteDisplayName === 'self' ||
     siteDisplayName === '247self' ||
     healthCheckSource === 'self' ||
-    healthCheckSource === '247self'
+    healthCheckSource === '247self' ||
+    healthCheckSource === '247selfConsultation'
   ) {
     return string.common.clicnical_document_text;
   }
@@ -698,7 +685,6 @@ type TimeArray = {
 }[];
 
 export const divideSlots = (availableSlots: string[], date: Date) => {
-  // const todayDate = new Date().toDateString().split('T')[0];
   const todayDate = moment(new Date()).format('YYYY-MM-DD');
 
   const array: TimeArray = [
@@ -729,7 +715,6 @@ export const divideSlots = (availableSlots: string[], date: Date) => {
       todayDate === moment(date).format('YYYY-MM-DD') && //date.toDateString().split('T')[0] &&
       todayDate !== moment(IOSFormat).format('YYYY-MM-DD') //new Date(IOSFormat).toDateString().split('T')[0])
     ) {
-      // console.log('today past');
     } else {
       if (new Date() < new Date(IOSFormat)) {
         if (slotTime.isBetween(nightEndTime, afternoonStartTime)) {
@@ -767,7 +752,6 @@ export const handleGraphQlError = (
   error: any,
   message: string = 'Oops! seems like we are having an issue. Please try again.'
 ) => {
-  console.log({ error });
   Alert.alert('Uh oh.. :(', message);
 };
 
@@ -865,7 +849,6 @@ export function g(obj: any, ...props: string[]) {
 export const getNetStatus = async () => {
   const status = await NetInfo.fetch()
     .then((connectionInfo) => {
-      // console.log(connectionInfo, 'connectionInfo');
       return connectionInfo.isConnected;
     })
     .catch((e) => {
@@ -899,10 +882,10 @@ export const getDiffInMinutes = (doctorAvailableSlots: string) => {
 export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult' = 'Available') => {
   const isValidTime = moment(nextSlot).isValid();
   if (isValidTime) {
-    const d=new Date();
+    const d = new Date();
     const current = moment(d);
-    const hoursPassedToday=d.getHours();
-    const minPassedToday=hoursPassedToday*60 + d.getMinutes();
+    const hoursPassedToday = d.getHours();
+    const minPassedToday = hoursPassedToday * 60 + d.getMinutes();
     const difference = moment.duration(moment(nextSlot).diff(current));
     const differenceMinute = Math.ceil(difference.asMinutes());
     const diffDays = Math.ceil(difference.asDays());
@@ -922,7 +905,7 @@ export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult'
       return 'BOOK APPOINTMENT';
     } else if (differenceMinute >= 60 && !isTomorrow) {
       return `${type} at ${moment(nextSlot).format('hh:mm A')}`;
-    } else if (isTomorrow && differenceMinute<(2880-minPassedToday)) {
+    } else if (isTomorrow && differenceMinute < 2880 - minPassedToday) {
       return `${type} Tomorrow${
         type === 'Available' ? ` at ${moment(nextSlot).format('hh:mm A')}` : ''
       }`;
@@ -992,7 +975,6 @@ export const distanceBwTwoLatLng = (lat1: number, lon1: number, lat2: number, lo
     Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const d = R * c; // Distance in km
-  console.log(`Distance in km(s): ${d}`);
   return d;
 };
 
@@ -1024,7 +1006,6 @@ const getlocationData = (
           const addrComponents =
             g(response, 'data', 'results', '0' as any, 'address_components') || [];
           if (addrComponents.length == 0) {
-            console.log('Unable to get location info using latitude & longitude from Google API.');
             reject('Unable to get location.');
           } else {
             resolve(
@@ -1043,8 +1024,6 @@ const getlocationData = (
         });
     },
     (error) => {
-      console.log('err5', error);
-
       reject('Unable to get location.');
     },
     { enableHighAccuracy: true, timeout: 10000 }
@@ -1204,8 +1183,6 @@ export const reOrderMedicines = async (
   currentPatient: any,
   source: ReorderMedicines['source']
 ) => {
-  // Medicines
-  // use billedItems for delivered orders
   const billedItems = g(
     order,
     'medicineOrderShipments',
@@ -1321,8 +1298,6 @@ export const addTestsToCart = async (
   try {
     const items = testPrescription.filter((val) => val.itemname).map((item) => item.itemname);
 
-    console.log('\n\n\n\n\ntestPrescriptionNames\n', items, '\n\n\n\n\n');
-
     const searchQueries = Promise.all(items.map((item) => searchQuery(item!, '9')));
     const searchQueriesData = (await searchQueries)
       .map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
@@ -1351,7 +1326,6 @@ export const addTestsToCart = async (
       } as DiagnosticsCartItem;
     });
 
-    console.log('\n\n\n\n\n\nfinalArray-testPrescriptionNames\n', finalArray, '\n\n\n\n\n');
     return finalArray;
   } catch (error) {
     CommonBugFender('helperFunctions_addTestsToCart', error);
@@ -1476,12 +1450,8 @@ const webengage = new WebEngage();
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
-    const logContent = `[WebEngage Event] ${eventName}`;
-    console.log(logContent);
     webengage.track(eventName, attributes);
-  } catch (error) {
-    console.log('********* Unable to post WebEngageEvent *********', { error });
-  }
+  } catch (error) {}
 };
 
 export const postwebEngageAddToCartEvent = (
@@ -1652,12 +1622,10 @@ export const postWEGNeedHelpEvent = (
 };
 
 export const postWEGWhatsAppEvent = (whatsAppAllow: boolean) => {
-  console.log(whatsAppAllow, 'whatsAppAllow');
   webengage.user.setAttribute('whatsapp_opt_in', whatsAppAllow); //WhatsApp
 };
 
 export const postWEGReferralCodeEvent = (ReferralCode: string) => {
-  console.log(ReferralCode, 'Referral Code');
   webengage.user.setAttribute('Referral Code', ReferralCode); //Referralcode
 };
 
@@ -1690,8 +1658,6 @@ export const permissionHandler = (
 ) => {
   Permissions.request(permission)
     .then((message) => {
-      console.log(message, 'sdhu');
-
       if (message === 'authorized') {
         doRequest();
       } else if (message === 'denied' || message === 'restricted') {
@@ -1710,7 +1676,7 @@ export const permissionHandler = (
         ]);
       }
     })
-    .catch((e) => console.log(e, 'dsvunacimkl'));
+    .catch((e) => {});
 };
 
 export const callPermissions = (doRequest?: () => void) => {
@@ -1738,11 +1704,8 @@ export const storagePermissions = (doRequest?: () => void) => {
 export const InitiateAppsFlyer = (
   navigation: NavigationScreenProp<NavigationRoute<object>, object>
 ) => {
-  console.log('InitiateAppsFlyer');
   onInstallConversionDataCanceller = appsFlyer.onInstallConversionData((res) => {
     if (JSON.parse(res.data.is_first_launch || 'null') == true) {
-      console.log('res.data', res.data);
-      // if (res.data.af_dp !== undefined) {
       try {
         if (res.data.af_dp !== undefined) {
           AsyncStorage.setItem('deeplink', res.data.af_dp);
@@ -1751,35 +1714,18 @@ export const InitiateAppsFlyer = (
           AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
         }
 
-        console.log('res.data.af_dp', decodeURIComponent(res.data.af_dp));
         setBugFenderLog('APPS_FLYER_DEEP_LINK', res.data.af_dp);
         setBugFenderLog('APPS_FLYER_DEEP_LINK_Referral_Code', res.data.af_sub1);
 
-        // setBugFenderLog('APPS_FLYER_DEEP_LINK_decode', decodeURIComponent(res.data.af_dp));
         setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
       } catch (error) {}
-
-      // } else {
-      //   setBugFenderLog('APPS_FLYER_DEEP_LINK_decode_else');
-      // }
 
       if (res.data.af_status === 'Non-organic') {
         const media_source = res.data.media_source;
         const campaign = res.data.campaign;
-        console.log('media_source', media_source);
-        console.log('campaign', campaign);
-
-        // Alert.alert(
-        //   'This is first launch and a Non-Organic install. Media source: ' +
-        //     media_source +
-        //     ' Campaign: ' +
-        //     campaign
-        // );
       } else if (res.data.af_status === 'Organic') {
-        // Alert.alert('This is first launch and a Organic Install');
       }
     } else {
-      // Alert.alert('This is not first launch');
     }
   });
 
@@ -1789,12 +1735,8 @@ export const InitiateAppsFlyer = (
       isDebug: false,
       appId: Platform.OS === 'ios' ? '1496740273' : '',
     },
-    (result) => {
-      console.log('result', result);
-    },
-    (error) => {
-      console.error('error', error);
-    }
+    (result) => {},
+    (error) => {}
   );
 
   onAppOpenAttributionCanceller = appsFlyer.onAppOpenAttribution(async (res) => {
@@ -1808,7 +1750,6 @@ export const InitiateAppsFlyer = (
           AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
         }
 
-        console.log('res.data.af_dp_onAppOpenAttribution', decodeURIComponent(res.data.af_dp));
         setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK', res.data.af_dp);
         setBugFenderLog(
           'onAppOpenAttribution_APPS_FLYER_DEEP_LINK_Referral_Code',
@@ -1817,33 +1758,21 @@ export const InitiateAppsFlyer = (
 
         setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
       } catch (error) {}
-
-      const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
-      if (userLoggedIn == 'true') {
-        handleUniversalLinks(res.data, navigation);
-      }
     }
   });
 };
 
 export const UnInstallAppsFlyer = (newFirebaseToken: string) => {
-  // console.log('UnInstallAppsFlyer', newFirebaseToken);
-  appsFlyer.updateServerUninstallToken(newFirebaseToken, (success) => {
-    // console.log('UnInstallAppsFlyersuccess', success);
-  });
+  appsFlyer.updateServerUninstallToken(newFirebaseToken, (success) => {});
 };
 
 export const APPStateInActive = () => {
   if (Platform.OS === 'ios') {
-    console.log('APPStateInActive');
-
     appsFlyer.trackAppLaunch();
   }
 };
 
 export const APPStateActive = () => {
-  console.log('APPStateActive');
-
   if (onInstallConversionDataCanceller) {
     onInstallConversionDataCanceller();
     onInstallConversionDataCanceller = null;
@@ -1857,34 +1786,19 @@ export const APPStateActive = () => {
 export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Object) => {
   try {
     const logContent = `[AppsFlyer Event] ${eventName}`;
-    console.log(logContent);
     appsFlyer.trackEvent(
       eventName,
       attributes,
-      (res) => {
-        console.log('AppsFlyerEventSuccess', res);
-      },
-      (err) => {
-        console.error('AppsFlyerEventError', err);
-      }
+      (res) => {},
+      (err) => {}
     );
-  } catch (error) {
-    console.log('********* Unable to post AppsFlyerEvent *********', { error });
-  }
+  } catch (error) {}
 };
 
 export const SetAppsFlyerCustID = (patientId: string) => {
   try {
-    console.log('\n********* SetAppsFlyerCustID Start *********\n');
-    console.log(`SetAppsFlyerCustID ${patientId}`);
-    console.log('\n********* SetAppsFlyerCustID End *********\n');
-
-    appsFlyer.setCustomerUserId(patientId, (res) => {
-      console.log('AppsFlyerEventSuccess', res);
-    });
-  } catch (error) {
-    console.log('********* Unable to post AppsFlyerEvent *********', { error });
-  }
+    appsFlyer.setCustomerUserId(patientId, (res) => {});
+  } catch (error) {}
 };
 
 export const postAppsFlyerAddToCartEvent = (
@@ -1930,12 +1844,8 @@ export const setCrashlyticsAttributes = async (
 
 export const postFirebaseEvent = (eventName: FirebaseEventName, attributes: Object) => {
   try {
-    const logContent = `[Firebase Event] ${eventName}`;
-    console.log(logContent);
     analytics().logEvent(eventName, attributes);
-  } catch (error) {
-    console.log('********* Unable to post FirebaseEvent *********', { error });
-  }
+  } catch (error) {}
 };
 
 export const postFirebaseAddToCartEvent = (
@@ -2125,8 +2035,6 @@ export const addPharmaItemToCart = (
 
   const addToCart = () => {
     addCartItem!(cartItem);
-    console.log('>>>otherInfo?.categoryName', otherInfo?.categoryName);
-
     postwebEngageAddToCartEvent(
       {
         sku: cartItem.id,
@@ -2278,7 +2186,6 @@ export const overlyCallPermissions = (
     };
     Permissions.checkMultiple(['camera', 'microphone'])
       .then((response) => {
-        console.log('Response===>', response);
         const { camera, microphone } = response;
         const cameraNo = camera === 'denied' || camera === 'undetermined';
         const microphoneNo = microphone === 'denied' || microphone === 'undetermined';
@@ -2433,29 +2340,6 @@ export const readableParam = (param: string) => {
     .replace(/-+$/, ''); // Trim - from end of text
 };
 
-const replaceString = (str: string, match: any, fn: any) => {
-  var curCharStart = 0;
-  var curCharLen = 0;
-  if (str === '') {
-    return str;
-  } else if (!str || !isString(str)) {
-    throw new TypeError('First argument to react-string-replace#replaceString must be a string');
-  }
-  var re = match;
-  if (!isRegExp(re)) {
-    re = new RegExp('(' + escapeRegExp(re) + ')', 'gi');
-  }
-  var result = str.split(re);
-  // Apply fn to all odd elements
-  for (var i = 1, length = result.length; i < length; i += 2) {
-    curCharLen = result[i].length;
-    curCharStart += result[i - 1].length;
-    result[i] = fn(result[i], i, curCharStart);
-    curCharStart += curCharLen;
-  }
-  return result;
-};
-
 export const monthDiff = (dateFrom: Date, dateTo: Date) => {
   return (
     dateTo.getMonth() - dateFrom.getMonth() + 12 * (dateTo.getFullYear() - dateFrom.getFullYear())
@@ -2510,6 +2394,79 @@ export const takeToHomePage = (props: any) => {
     })
   );
 };
+
+export const navigateToHome = (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  params?: any,
+  forceRedirect?: boolean
+) => {
+  if (forceRedirect) {
+    goToConsultRoom(navigation, params);
+  } else {
+    const navigate = navigation.popToTop();
+    if (!navigate) {
+      goToConsultRoom(navigation, params);
+    }
+  }
+};
+
+const goToConsultRoom = (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  params?: any
+) => {
+  navigation.dispatch(
+    StackActions.reset({
+      index: 0,
+      key: null,
+      actions: [
+        NavigationActions.navigate({
+          routeName: AppRoutes.ConsultRoom,
+          params,
+        }),
+      ],
+    })
+  );
+};
+
+export const navigateToScreenWithEmptyStack = (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  screenName: string,
+  params?: any
+) => {
+  const navigate = navigation.popToTop({ immediate: true });
+  if (navigate) {
+    setTimeout(() => {
+      navigation.navigate(screenName, params);
+    }, 0);
+  } else {
+    navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [
+          NavigationActions.navigate({
+            routeName: screenName,
+            params,
+          }),
+        ],
+      })
+    );
+  }
+};
+
+export const apiCallEnums = {
+  circleSavings: 'GetCircleSavingsOfUserByMobile',
+  getAllBanners: 'GetAllGroupBannersOfUser',
+  getUserSubscriptions: 'GetSubscriptionsOfUserByStatus',
+  getUserSubscriptionsV2: 'GetAllUserSubscriptionsWithPlanBenefitsV2',
+  oneApollo: 'getOneApolloUser',
+  pharmacyUserType: 'getUserProfileType',
+  getPlans: 'GetPlanDetailsByPlanId',
+  plansCashback: 'GetCashbackDetailsOfPlanById',
+  patientAppointments: 'getPatientPersonalizedAppointments',
+  patientAppointmentsCount: 'getPatientFutureAppointmentCount',
+};
+
 export const isSmallDevice = width < 370;
 
 //customText needs to be shown for itemId = 8
@@ -2616,4 +2573,101 @@ export const paymentModeVersionCheck = (minSupportedVersion: string) => {
     isLessThan(appVersion, minSupportedVersion)
   );
   return versionSupports;
+};
+
+const setCouponFreeProducts = (
+  products: any,
+  setCouponProducts: ((items: CouponProducts[]) => void) | null,
+  cartItems: ShoppingCartItem[]
+) => {
+  const freeProducts = products.filter((product) => {
+    return product.couponFree === 1;
+  });
+  freeProducts.forEach((item, index) => {
+    const filteredProduct = cartItems.filter((product) => {
+      return product.id === item.sku;
+    });
+    if (filteredProduct.length) {
+      item.quantity = filteredProduct[0].quantity;
+    }
+  });
+  setCouponProducts!(freeProducts);
+};
+
+export const validateCoupon = async (
+  coupon: string,
+  message: string | undefined,
+  pharmacyPincode: any,
+  mobileNumber: string,
+  hdfcSubscriptionId: string,
+  circleSubscriptionId: string,
+  setCoupon: ((coupon: PharmaCoupon | null) => void) | null,
+  cartTotal: number,
+  productDiscount: number,
+  cartItems: ShoppingCartItem[],
+  hdfcStatus: string,
+  hdfcPlanId: string,
+  circleStatus: string,
+  circlePlanId: string,
+  setCouponProducts: ((items: CouponProducts[]) => void) | null
+) => {
+  CommonLogEvent(AppRoutes.ApplyCouponScene, 'Apply coupon');
+  let packageId: string[] = [];
+  if (hdfcSubscriptionId && hdfcStatus === 'active') {
+    packageId.push(`HDFC:${hdfcPlanId}`);
+  }
+  if (circleSubscriptionId && circleStatus === 'active') {
+    packageId.push(`APOLLO:${circlePlanId}`);
+  }
+  const data = {
+    mobile: mobileNumber,
+    billAmount: (cartTotal - productDiscount).toFixed(2),
+    coupon: coupon,
+    pinCode: pharmacyPincode,
+    products: cartItems.map((item) => ({
+      sku: item.id,
+      categoryId: item.productType,
+      mrp: item.price,
+      quantity: item.quantity,
+      specialPrice: item.specialPrice !== undefined ? item.specialPrice : item.price,
+    })),
+    packageIds: packageId,
+  };
+  return new Promise(async (res, rej) => {
+    try {
+      const response = await validateConsultCoupon(data);
+      if (response.data.errorCode == 0) {
+        if (response.data.response.valid) {
+          setCoupon!({ ...response?.data?.response, message: message ? message : '' });
+          res('success');
+        } else {
+          rej(response.data.response.reason);
+        }
+
+        // set coupon free products again (in case when price of sku is changed)
+        const products = response?.data?.response?.products;
+        if (products && products.length) {
+          setCouponFreeProducts(products, setCouponProducts, cartItems);
+        }
+      } else {
+        CommonBugFender('validatingPharmaCoupon', response.data.errorMsg);
+        rej(response.data.errorMsg);
+      }
+    } catch (error) {
+      CommonBugFender('validatingPharmaCoupon', error);
+      rej('Sorry, unable to validate coupon right now.');
+    }
+  });
+};
+
+export const setAsyncPharmaLocation = (address: any) => {
+  if (address) {
+    const saveAddress = {
+      pincode: address?.zipcode,
+      id: address?.id,
+      city: address?.city,
+      state: address?.state,
+    };
+    AsyncStorage.setItem('PharmacyLocationPincode', JSON.stringify(saveAddress));
+  }
 };

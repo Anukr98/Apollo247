@@ -9,8 +9,10 @@ import { PAYMENT_METHODS_JUSPAY } from "./globalTypes";
 // GraphQL query operation: getPaymentMethods
 // ====================================================
 
-export interface getPaymentMethods_getPaymentMethods_payment_methods {
-  __typename: "PaymentMethods";
+export interface getPaymentMethods_getPaymentMethods_featured_banks {
+  __typename: "PaymentMethod";
+  bank: string;
+  method: string;
   image_url: string | null;
   payment_method_name: string | null;
   payment_method_code: string | null;
@@ -25,7 +27,11 @@ export interface getPaymentMethods_getPaymentMethods {
 }
 
 export interface getPaymentMethods {
-  getPaymentMethods: (getPaymentMethods_getPaymentMethods | null)[] | null;
+  getPaymentMethods: (getPaymentMethods_getPaymentMethods | null)[];
+}
+
+export interface getPaymentMethodsVariables {
+  is_mobile?: boolean | null;
 }
 
 export interface getPaymentMethodsVariables {

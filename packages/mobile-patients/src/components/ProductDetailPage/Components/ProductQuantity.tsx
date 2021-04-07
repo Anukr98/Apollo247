@@ -43,8 +43,8 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
     productForm,
     deliveryError,
   } = props;
-  const { cartItems, updateCartItem } = useShoppingCart();
-  const { showAphAlert, hideAphAlert } = useUIElements();
+  const { cartItems } = useShoppingCart();
+  const { showAphAlert } = useUIElements();
 
   const renderQuantity = () => {
     let maxQuantity: number = getMaxQtyForMedicineItem(maxOrderQuantity);
@@ -62,7 +62,6 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
           selectedTextStyle={{ ...theme.viewStyles.text('M', 16, '#00b38e') }}
           onPress={(selectedQuantity) => {
             setProductQuantity(selectedQuantity.value as number);
-            // itemAvailable && onUpdateQuantity(selectedQuantity.value as number);
           }}
         >
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -114,7 +113,6 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
     const existingCartItem = cartItems?.filter((item) => item?.id === sku);
     if (existingCartItem?.length) {
       existingCartItem?.[0]?.quantity = productQuantity;
-      // updateCartItem && updateCartItem({ id: sku, quantity });
     } else {
       onAddCartItem();
     }

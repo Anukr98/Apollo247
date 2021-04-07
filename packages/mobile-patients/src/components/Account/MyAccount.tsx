@@ -78,7 +78,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     ...theme.viewStyles.cardViewStyle,
     borderRadius: 0,
-    // marginTop: 160,
   },
   detailsViewStyle: {
     margin: 20,
@@ -104,9 +103,6 @@ const styles = StyleSheet.create({
   editIcon: {
     width: 40,
     height: 40,
-    // bottom: 16,
-    // right: 0,
-    // position: 'absolute',
   },
   editIconstyles: {
     bottom: 16,
@@ -156,17 +152,12 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   const {
     setSavePatientDetails,
     setAppointmentsPersonalized,
-    hdfcUserSubscriptions,
     setHdfcUserSubscriptions,
     setBannerData,
     setCircleSubscription,
     setPhrSession,
   } = useAppCommonData();
-  const {
-    setIsDiagnosticCircleSubscription,
-    isDiagnosticCircleSubscription,
-    clearDiagnoticCartInfo,
-  } = useDiagnosticsCart();
+  const { setIsDiagnosticCircleSubscription, clearDiagnoticCartInfo } = useDiagnosticsCart();
   const {
     setIsCircleSubscription,
     setCircleMembershipCharges,
@@ -183,8 +174,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
 
   const updateCodePushVersioninUi = async () => {
     try {
-      const version = (await codePush.getUpdateMetadata())!.label;
-      setCodePushVersion(version.replace('v', 'H'));
+      const version = (await codePush.getUpdateMetadata())?.label;
+      version && setCodePushVersion(version.replace('v', 'H'));
     } catch (error) {
       CommonBugFender(`${AppRoutes.MyAccount}_codePush.getUpdateMetadata`, error);
     }
@@ -194,7 +185,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     if (!currentPatient) {
       getPatientApiCall();
     }
-    // currentPatient && AsyncStorage.setItem('phoneNumber', currentPatient.mobileNumber.substring(3));
     currentPatient && setprofileDetails(currentPatient);
   }, [currentPatient]);
 
@@ -299,6 +289,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       AsyncStorage.removeItem('deeplinkReferalCode');
       AsyncStorage.removeItem('isCircleMember');
       AsyncStorage.removeItem(LOGIN_PROFILE);
+      AsyncStorage.removeItem('PharmacyLocationPincode');
       AsyncStorage.setItem(SKIP_LOCATION_PROMPT, 'false');
       setSavePatientDetails && setSavePatientDetails('');
       setHdfcUserSubscriptions && setHdfcUserSubscriptions(null);
@@ -337,7 +328,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       deviceToken: currentDeviceToken,
       patientId: currentPatient ? currentPatient && currentPatient.id : '',
     };
-    console.log('deleteDeviceTokenInput', input);
 
     client
       .mutate<deleteDeviceToken, deleteDeviceTokenVariables>({
@@ -346,14 +336,12 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((data: any) => {
-        console.log('deleteDeviceTokendata', data);
         setshowSpinner(false);
         onPressLogout();
       })
       .catch((e) => {
         CommonBugFender('MyAccount_deleteDeviceToken', e);
         try {
-          console.log('deleteDeviceTokenerror', e);
           setshowSpinner(false);
           onPressLogout();
         } catch (err) {
@@ -384,8 +372,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             profileDetails.photoUrl &&
             profileDetails.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) ? (
               <Image
-                // source={require('@aph/mobile-patients/src/components/ui/icons/no-photo-icon-round.png')}
-
                 source={{ uri: profileDetails.photoUrl }}
                 onLoad={(value) => {
                   const { height, width } = value.nativeEvent.source;
@@ -423,7 +409,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   const [scrollOffset, setScrollOffset] = useState<number>(0);
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    // console.log(`scrollOffset, ${event.nativeEvent.contentOffset.y}`);
     setScrollOffset(event.nativeEvent.contentOffset.y);
   };
 
@@ -444,7 +429,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           };
     return (
       <TabHeader
-        // hideHomeIcon={!(scrollOffset > 1)}
         containerStyle={[
           containerStyle,
           { position: 'absolute', top: statusBarHeight(), width: '100%' },
@@ -517,7 +501,10 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           leftIcon={<Invoice />}
           onPress={() => {
             postMyOrdersClicked('My Account', currentPatient);
-            props.navigation.navigate(AppRoutes.MyOrdersScreen);
+            props.navigation.navigate(AppRoutes.MyOrdersScreen, {
+              patientId: currentPatient.id,
+              fromNotification: false,
+            });
             fireProfileAccessedEvent('My Orders');
           }}
         />
@@ -593,12 +580,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           {renderAnimatedHeader()}
           {profileDetails && renderDetails()}
           {renderRows()}
-          {/* <NeedHelpAssistant
-            navigation={props.navigation}
-            onNeedHelpPress={() => {
-              postWEGNeedHelpEvent(currentPatient, 'My Account');
-            }}
-          /> */}
           <View style={{ height: 92, marginBottom: 0 }}>
             <Text
               style={{

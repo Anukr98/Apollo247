@@ -223,7 +223,6 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     }
     fetchCircleSavings();
     getUserSubscriptionsWithBenefits();
-    console.log('showSpinner: ', showSpinner);
   }, []);
 
   const fetchCircleSavings = async () => {
@@ -522,9 +521,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
         setUpgradePlans([...upgradePlans, subscription]);
       }
       return subscription;
-    } catch (e) {
-      console.log('ERROR: ', e);
-    }
+    } catch (e) {}
   };
 
   const getEllipseBulletPoint = (text: string, index: number, isExpired: boolean) => {
@@ -565,6 +562,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
               membershipType: subscriptionName,
               isActive: isActive,
               isExpired: isExpired,
+              comingFrom: 'My Memberships',
             });
           }}
           style={styles.viewMoreText}
@@ -637,6 +635,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             props.navigation.navigate(AppRoutes.MembershipDetails, {
               membershipType: subscriptionName,
               isActive: isActive,
+              comingFrom: 'My Memberships',
             });
           }}
         >
@@ -655,7 +654,6 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
               setShowAvailPopup(true);
             } else if (isRenew) {
               setShowCirclePlans(true);
-              console.log('upgrade in my membership clicked!', showCirclePlans);
             } else {
               props.navigation.navigate(AppRoutes.ConsultRoom, {});
               if (isActive && !isCare) {
@@ -788,9 +786,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
                   {hdfcUpgradeUserSubscriptions.map((subscription: SubscriptionData) => {
                     return renderMembershipCard(subscription, true);
                   })}
-                  {/* {renderMembershipCard(hdfcUpgradeUserSubscriptions[0], true)} */}
                   <View style={{ marginTop: 15 }} />
-                  {/* {canUpgradeMultiplePlans && renderMembershipCard(premiumPlan, true)} */}
                 </View>
               )}
             </View>

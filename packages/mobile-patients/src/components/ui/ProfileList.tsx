@@ -89,7 +89,6 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     setDisplayAddProfile,
     listContainerStyle,
     showProfilePic,
-    // unsetloaderDisplay,
   } = props;
   const addString = '+ADD MEMBER';
   const addBoolen = false;
@@ -174,10 +173,8 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   }, [isUHID]);
 
   useEffect(() => {
-    // AsyncStorage.removeItem('selectUserId');
     const getDataFromTree = async () => {
       const storeVallue = await AsyncStorage.getItem('selectUserId');
-      console.log('storeVallue : uuh', storeVallue, currentPatient);
       if (storeVallue) {
         setCurrentPatientId(storeVallue);
         storeVallue &&
@@ -208,9 +205,6 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
 
   useEffect(() => {
     setProfileArray(addNewProfileText(profileAllPatients!));
-    // if (profileAllPatients) {
-    //   setLoading && setLoading(false);
-    // }
   }, [profileAllPatients]);
 
   useEffect(() => {
