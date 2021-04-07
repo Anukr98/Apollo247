@@ -381,7 +381,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const navigatetoOrderStatus = (isCOD: boolean, paymentStatus: string) => {
-    setauthToken?.('');
     switch (businessLine) {
       case 'diagnostics':
         props.navigation.navigate(AppRoutes.OrderStatus, {
@@ -399,6 +398,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         });
         break;
     }
+    setauthToken?.('');
   };
 
   const renderErrorPopup = () =>
