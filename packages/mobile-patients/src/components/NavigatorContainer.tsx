@@ -136,6 +136,9 @@ import { Maps } from '@aph/mobile-patients/src/components/ui/Maps';
 import { PaymentMethods } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentMethods';
 import { OtherBanks } from '@aph/mobile-patients/src/components/PaymentGateway/OtherBanks';
 import { OrderStatus } from '@aph/mobile-patients/src/components/Tests/OrderStatus';
+import { ProHealthWebView } from '@aph/mobile-patients/src/components/ProHealthWebView';
+import MyOrdersScreen from '@aph/mobile-patients/src/components/MyOrders/MyOrdersScreen';
+
 export enum AppRoutes {
   Login = 'Login',
   ConsultRoom = 'ConsultRoom',
@@ -259,6 +262,8 @@ export enum AppRoutes {
   OtherBanks = 'OtherBanks',
   OrderStatus = 'OrderStatus',
   TestListing = 'TestListing',
+  ProHealthWebView = 'ProHealthWebView',
+  MyOrdersScreen = 'MyOrdersScreen',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -662,6 +667,12 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.TestListing]: {
     screen: TestListing,
+  },
+  [AppRoutes.ProHealthWebView]: {
+    screen: ProHealthWebView,
+  },
+  [AppRoutes.MyOrdersScreen]: {
+    screen: MyOrdersScreen,
   },
 };
 

@@ -27,17 +27,33 @@ export const DiagnosticsSearchSuggestionItem: React.FC<DiagnosticsSearchSuggesti
   const isAddedToCart = !!cartItems?.find(
     (item) => Number(item?.id) == Number(data?.diagnostic_item_id)
   );
-
+  const parameterData = data?.diagnostic_inclusions_test_parameter_data?.filter(
+    (item: { mandatoryValue: boolean }) => {
+      return item?.mandatoryValue == true;
+    }
+  );
   const renderNamePriceAndInStockStatus = () => {
     return (
-      <View style={styles.nameAndPriceViewStyle}>
-        <View style={{ width: '87%' }}>
-          <Text numberOfLines={2} style={styles.testNameText}>
-            {nameFormater(name, 'default')}
+      <View style={styles.detailContainer}>
+        <View style={styles.nameAndPriceViewStyle}>
+          <View style={{ width: '70%'}}>
+            <Text numberOfLines={2} style={styles.testNameText}>
+              {nameFormater(name, 'default')}
+            </Text>
+          </View>
+
+          <Text style={styles.categories}>
+            {data?.diagnostic_inclusions?.length > 1 ? 'in Packages' : 'in Tests'}
           </Text>
         </View>
-
-        <View style={{ alignItems: 'flex-end' }}>{renderAddToCartView()}</View>
+        <View style={styles.nameAndPriceViewStyle}>
+          {parameterData?.length ? (
+            <Text style={styles.numberPlate}>{`${parameterData?.length} ${
+              parameterData?.length > 1 ? `Tests` : `Test`
+            } included`}</Text>
+          ) : <Text></Text>}
+          <View style={styles.cartViewContainer}>{renderAddToCartView()}</View>
+        </View>
       </View>
     );
   };
@@ -65,7 +81,11 @@ export const DiagnosticsSearchSuggestionItem: React.FC<DiagnosticsSearchSuggesti
         activeOpacity={1}
         onPress={isAddedToCart ? props.onPressRemoveFromCart : props.onPressAddToCart}
       >
-        {isAddedToCart ? <RemoveIcon /> : <AddIcon />}
+          {isAddedToCart ? (
+            <Text style={styles.removeCta}>REMOVE</Text>
+          ) : (
+            <Text style={styles.addCta}>ADD TO CART</Text>
+          )}
       </TouchableOpacity>
     );
   };
@@ -79,7 +99,6 @@ export const DiagnosticsSearchSuggestionItem: React.FC<DiagnosticsSearchSuggesti
       <View style={styles.containerStyle} key={data.name}>
         <View style={styles.iconAndDetailsContainerStyle}>
           {renderIconOrImage()}
-          <View style={{ width: 16 }} />
           {renderNamePriceAndInStockStatus()}
         </View>
         {props.showSeparator ? <Spearator /> : null}
@@ -96,14 +115,38 @@ const styles = StyleSheet.create({
     marginVertical: 9.5,
   },
   iconOrImageContainerStyle: {
-    width: 40,
+    width: '10%',
   },
   nameAndPriceViewStyle: {
     flex: 1,
     flexDirection: 'row',
+    justifyContent:'space-between'
+  },
+  detailContainer: {
+    flex: 1,
   },
   flexRow: {
     flexDirection: 'row',
+  },
+  numberPlate: { ...theme.viewStyles.text('R', 10, '#01475b', 1, 18)},
+  addCta: { ...theme.viewStyles.text('B', 14, '#FCA317', 1, 18, 0),
+    textTransform: 'uppercase',
+    textAlign: 'right',
+    width:'auto',
+  },
+  removeCta: { ...theme.viewStyles.text('B', 14, '#FF774B', 1, 18, 0),
+    textTransform: 'uppercase',
+    textAlign: 'right',
+  },
+  categories: {
+    ...theme.viewStyles.text('SB', 12, '#66909C', 1, 20, 0),
+    textAlign:'right',
+    width: '30%',
+    alignSelf: 'flex-start'
+  },
+  cartViewContainer: {
+    alignSelf: 'center',
+    width: '30%'
   },
   testNameText: { ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0), width: '95%' },
   imageIcon: { height: 40, width: 40 },

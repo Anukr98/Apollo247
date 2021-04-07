@@ -29,6 +29,7 @@ import {
   GET_ALL_GROUP_BANNERS_OF_USER,
   GET_PACKAGE_INCLUSIONS,
   UPDATE_PATIENT_APP_VERSION,
+  GET_ALL_PRO_HEALTH_APPOINTMENTS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -129,6 +130,7 @@ import {
 import AsyncStorage from '@react-native-community/async-storage';
 import DeviceInfo from 'react-native-device-info';
 import appsFlyer from 'react-native-appsflyer';
+import { getAllProhealthAppointments, getAllProhealthAppointmentsVariables } from '../graphql/types/getAllProhealthAppointments';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -923,4 +925,27 @@ const notifyAppVersion = async (
       await AsyncStorage.setItem(appsflyerIdKey, appsflyerId!);
     }
   } catch (error) {}
+};
+
+export const getAllProHealthAppointments = (
+  client: ApolloClient<object>,
+  patientId: string
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getAllProhealthAppointments, getAllProhealthAppointmentsVariables>({
+        query: GET_ALL_PRO_HEALTH_APPOINTMENTS,
+        variables: {
+          patientId: patientId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_ getAllProHealthAppointments', e);
+        rej({ error: e });
+      });
+  });
 };

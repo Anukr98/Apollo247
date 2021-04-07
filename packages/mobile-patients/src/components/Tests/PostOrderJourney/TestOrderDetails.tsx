@@ -240,16 +240,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           'response'
         );
         setLabResults(labResultsData);
-        let resultForVisitNo = labResultsData?.filter(
-          (item: any) => item?.identifier == getVisitId
-        );
-        let itemNameResult =
-          resultForVisitNo?.length > 0 &&
-          resultForVisitNo?.find((item: any) => item?.labTestName == selectedTest?.itemName);
-
-        !!itemNameResult
+        let resultForVisitNo = labResultsData?.find((item: any) => item?.identifier == getVisitId);
+        !!resultForVisitNo
           ? props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-              data: itemNameResult,
+              data: resultForVisitNo,
               labResults: true,
             })
           : renderReportError(string.diagnostics.responseUnavailableForReport);
@@ -261,6 +255,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       })
       .finally(() => setLoading?.(false));
   }, []);
+
   if (!!orderLevelStatus && !_.isEmpty(orderLevelStatus) && refundStatusArr?.length > 0) {
     const getObject = createRefundObject();
     orderStatusList =
@@ -597,7 +592,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const renderOrderSummary = () => {
     return (
       !!g(orderDetails, 'totalPrice') && (
-        <TestOrderSummaryView orderDetails={orderDetails} onPressViewReport={() => onPressButton} />
+        <TestOrderSummaryView orderDetails={orderDetails} onPressViewReport={onPressButton} />
       )
     );
   };

@@ -136,6 +136,7 @@ export enum WebEngageEventName {
   BUY_MEDICINES = 'Buy Medicines',
   ORDER_TESTS = 'Order Tests',
   MANAGE_DIABETES = 'Manage Diabetes',
+  PROHEALTH = 'Prohealth',
   TRACK_SYMPTOMS = 'Track Symptoms',
   VIEW_HELATH_RECORDS = 'PHR Click Health records - app',
   LEARN_MORE_ABOUT_CORONAVIRUS = 'Learn more about coronavirus',
@@ -143,6 +144,7 @@ export enum WebEngageEventName {
   APOLLO_PRO_HEALTH = 'Apollo pro health',
   NOTIFICATION_ICON = 'Notification Icon clicked',
   ACTIVE_APPOINTMENTS = 'Active Appointments',
+  ACTIVE_PROHEALTH_APPOINTMENTS = 'PROHEALTH_ACTIVE_APPOINTMENTS',
   NEED_HELP = 'Need Help?',
   TICKET_RAISED = 'Ticket raised',
   MY_ACCOUNT = 'My Account',
@@ -492,6 +494,7 @@ export interface DiagnosticUserInfo {
 
 export interface DiagnosticLandingPage extends DiagnosticUserInfo {
   Serviceability: 'Yes' | 'No';
+  Source?: string;
 }
 
 export interface DiagnosticServiceble {
@@ -768,6 +771,7 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.NOTIFICATION_ICON]: { clicked: true };
   [WebEngageEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
+  [WebEngageEventName.ACTIVE_PROHEALTH_APPOINTMENTS] : {clicked: true};
   [WebEngageEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
   [WebEngageEventName.TICKET_RAISED]: { Category: string; Query: string };
   [WebEngageEventName.MY_ACCOUNT]: PatientInfo;
@@ -1162,7 +1166,7 @@ export interface WebEngageEvents {
     'Section Name': string;
   };
   [WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION]: {
-    Source: 'Full Search' | 'Home Page' | 'Cart Page' | 'Partial Search';
+    Source: 'Full Search' | 'Home Page' | 'Cart Page' | 'Partial Search' | 'Deeplink';
     'Item Name': string;
     'Item Type': string;
     'Item Code': string;

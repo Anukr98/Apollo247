@@ -66,12 +66,19 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
 
   const errorStates = !loading && widgetsData?.length == 0;
+  let deepLinkWidgetName: String;
 
   //handle deeplinks as well here.
   useEffect(() => {
     setLoading?.(true);
     if (!!movedFrom) {
       if (movedFrom === 'deeplink' && !!widgetName) {
+        let pageName;
+        pageName = widgetName?.split('-');
+        if (pageName?.[0] == 'home' || pageName?.[0] == 'listing') {
+          pageName?.shift();
+        }
+        deepLinkWidgetName = pageName?.join(' ');
         fetchWidgets(widgetName!);
       } else if (!!title) {
         fetchWidgets(title);
@@ -205,7 +212,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       breadcrumb.push({
         title:
           movedFrom === 'deeplink' && !!widgetName
-            ? nameFormater(widgetName?.replace(/-/g, ' '), 'title')
+            ? nameFormater(deepLinkWidgetName?.replace(/-/g, ' '), 'title')
             : nameFormater(title, 'title'),
         onPress: () => {},
       });
@@ -254,7 +261,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         {!!actualItemsToShow && actualItemsToShow?.length > 0 ? (
           <View style={{ flex: 1 }}>
             <Text style={styles.headingText}>
-              {widgetsData?.diagnosticWidgetTitle}{' '}
+              {deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle}{' '}
               {actualItemsToShow?.length > 0 && (
                 <Text style={styles.itemCountText}>({actualItemsToShow?.length})</Text>
               )}
