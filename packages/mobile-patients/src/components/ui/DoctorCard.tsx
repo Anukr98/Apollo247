@@ -4,7 +4,6 @@ import {
   DoctorPlaceholderImage,
   InPerson,
   Online,
-  VideoPlayIcon,
   ApolloDoctorIcon,
   ApolloPartnerIcon,
   InfoBlue,
