@@ -600,7 +600,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             setIsPaitentList(true);
           }}
         >
-          <Text style={styles.textPaitent}>{selectedPaitent}</Text>
+          <Text style={styles.textSelectedPaitent}>{selectedPaitent}</Text>
           <Down />
         </TouchableOpacity>
       </View>
@@ -1445,6 +1445,10 @@ const styles = StyleSheet.create({
   textPaitent: {
     ...theme.viewStyles.text('SB', 14, '#02475b'),
     // marginBottom: 5,
+  },
+  textSelectedPaitent: {
+    ...theme.viewStyles.text('SB', 14, '#02475b'),
+    width:'85%'
   },
   activeFilterView: {
     ...theme.viewStyles.text('SB', 14, '#02475b'),
