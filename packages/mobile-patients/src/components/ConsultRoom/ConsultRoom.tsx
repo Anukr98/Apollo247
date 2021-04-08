@@ -1805,10 +1805,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       const membershipPlans = res?.data?.GetPlanDetailsByPlanId?.response?.plan_summary;
       if (membershipPlans) {
         setMembershipPlans(membershipPlans);
-        const defaultPlan = membershipPlans?.filter((item: any) => item.defaultPack === true);
-        if (defaultPlan?.length > 0) {
-          setDefaultCirclePlan(defaultPlan[0]);
-        }
       }
     } catch (error) {
       CommonBugFender('CircleMembershipPlans_GetPlanDetailsByPlanId', error);
@@ -2587,10 +2583,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 postHomeWEGEvent(WebEngageEventName.ACTIVE_PROHEALTH_APPOINTMENTS);
                 //call the jwt token again.
                 regenerateJWTToken('orders', orderIdToShow);
-              } else {
-                postHomeWEGEvent(WebEngageEventName.ACTIVE_APPOINTMENTS);
-                props.navigation.navigate('APPOINTMENTS');
               }
+            } else {
+              postHomeWEGEvent(WebEngageEventName.ACTIVE_APPOINTMENTS);
+              props.navigation.navigate('APPOINTMENTS');
             }
           }}
         />
@@ -3456,7 +3452,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       >
         <ImageBackground
           style={styles.proHealthBannerImage}
-          source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_banner.jpg')}
+          source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_banner.png')}
           resizeMode={'stretch'}
         ></ImageBackground>
       </TouchableOpacity>
@@ -3860,6 +3856,3 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     </View>
   );
 };
-function setDefaultCirclePlan(arg0: any) {
-  throw new Error('Function not implemented.');
-}
