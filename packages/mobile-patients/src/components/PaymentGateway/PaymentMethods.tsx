@@ -399,7 +399,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         });
         break;
     }
-    setauthToken?.('');
   };
 
   const renderErrorPopup = () =>
