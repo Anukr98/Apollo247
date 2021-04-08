@@ -53,7 +53,6 @@ const styles = StyleSheet.create({
   },
   specialpriceTextStyle: {
     ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0),
-    marginLeft: 2,
   },
   mrp: {
     ...theme.viewStyles.text('M', 11, '#02475b', 1, 20, 0),
@@ -83,12 +82,13 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   medicineIconViewStyle: {
-    width: 40,
-    marginRight: 5,
+    paddingTop: 7,
+    alignItems: 'center',
+    alignSelf: 'center',
   },
   medicineIconAndNameViewStyle: {
     flexDirection: 'row',
-    marginBottom: 13,
+    marginTop: 10,
   },
   qtyViewStyle: {
     flexDirection: 'row',
@@ -105,8 +105,8 @@ const styles = StyleSheet.create({
     height: 20,
   },
   imageStyle: {
-    height: 40,
-    width: 40,
+    height: 80,
+    width: 80,
   },
   discountBadgeText: {
     color: 'white',
@@ -116,6 +116,11 @@ const styles = StyleSheet.create({
   },
   discountBadgeIcon: { height: 15, width: 70 },
   discountBadgeView: { position: 'absolute', top: 0 },
+  specialPriceContainer: {
+    flexDirection: 'row',
+    marginBottom: 30,
+    marginTop: -5,
+  },
 });
 
 export interface Props extends MedicineProduct {
@@ -230,7 +235,7 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
     const discount = getDiscountPercentage(price, special_price);
     const off_text = discount ? ' ' + discount + '%off' : '';
     return !isOutOfStock ? (
-      <View style={{ flexDirection: 'row', marginBottom: 20 }}>
+      <View style={styles.specialPriceContainer}>
         {!!special_price && [
           <Text style={styles.specialpriceTextStyle}>
             {'('}
@@ -299,10 +304,8 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
     >
       {!!cashback && !!type_id && renderOfferTag()}
       {is_express === 'Yes' && renderExpressFlag()}
-      <View style={[styles.medicineIconAndNameViewStyle, { marginTop: 10 }]}>
-        {renderMedicineIcon()}
-        {renderTitleAndIcon()}
-      </View>
+      {renderMedicineIcon()}
+      <View style={[styles.medicineIconAndNameViewStyle]}>{renderTitleAndIcon()}</View>
       {!!type_id && renderCareCashback()}
       {renderSpecialPrice()}
       <View style={styles.priceAndAddToCartViewStyle}>
