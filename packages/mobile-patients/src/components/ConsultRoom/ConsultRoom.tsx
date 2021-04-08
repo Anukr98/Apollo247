@@ -3706,7 +3706,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         deviceType
       );
       !!hospitalId && hospitalId != ''
-        ? props.navigation.navigate(AppRoutes.CovidScan, {
+        ? props.navigation.navigate(AppRoutes.ProHealthWebView, {
             covidUrl: finalUrl,
             goBackCallback: webViewGoBack,
           })
@@ -3720,7 +3720,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   function webViewGoBack() {
     //call the api.
-    // getPatientApiCall();
     checkIsProhealthActive(currentPatient); //to show prohealth option
     getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
   }
