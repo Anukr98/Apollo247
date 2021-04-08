@@ -1126,6 +1126,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         hideAphAlert!();
         //if this needs to be done, if location permission is denied or anywhere.
         if (!defaultAddress && !locationDetails && !diagnosticLocation && !pharmacyLocation) {
+          setDeliveryAddressId!('');
           checkIsPinCodeServiceable('500034', undefined, 'noLocation');
         }
       },
@@ -1166,6 +1167,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           onPressApply={(pincode) => {
             if (pincode?.length == 6) {
               hideAphAlert!();
+              setDeliveryAddressId!('');
               checkIsPinCodeServiceable(pincode, 'Manually', 'pincodeManualApply');
             }
           }}
