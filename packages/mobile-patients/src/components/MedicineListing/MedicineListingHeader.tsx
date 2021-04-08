@@ -12,7 +12,7 @@ import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
 
 export interface Props {
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
-  movedFrom?: 'registration' | 'deeplink' | 'home';
+  movedFrom?: 'registration' | 'deeplink' | 'home' | 'productdetail';
 }
 
 export const MedicineListingHeader: React.FC<Props> = ({ navigation, movedFrom }) => {

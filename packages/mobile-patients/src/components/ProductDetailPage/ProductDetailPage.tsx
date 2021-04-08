@@ -84,6 +84,7 @@ import { AccessLocation } from '@aph/mobile-patients/src/components/Medicines/Co
 import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
+import { MedicineListingHeader } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingHeader';
 
 export type ProductPageViewedEventProps = Pick<
   WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED],
@@ -364,26 +365,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
       postFirebaseEvent(FirebaseEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
     }
-  };
-
-  const moveBack = () => {
-    try {
-      if (movedFrom === ProductPageViewedSource.REGISTRATION) {
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [
-              NavigationActions.navigate({
-                routeName: AppRoutes.ConsultRoom,
-              }),
-            ],
-          })
-        );
-      } else {
-        props.navigation.goBack();
-      }
-    } catch (error) {}
   };
 
   const fetchDeliveryTime = async (currentPincode: string, checkButtonClicked?: boolean) => {
@@ -750,34 +731,26 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       showAccessAccessLocationPopup(false);
   };
 
+  const onNotifyMeClick = () => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.NOTIFY_ME] = {
+      'product name': medicineDetails?.name,
+      'product id': medicineDetails?.sku,
+      'category ID': medicineDetails?.category_id,
+      price: medicineDetails?.price,
+      pincode: pincode,
+    };
+    postWebEngageEvent(WebEngageEventName.NOTIFY_ME, eventAttributes);
+    showAphAlert!({
+      title: 'Okay! :)',
+      description: `You will be notified when ${medicineDetails?.name} is back in stock.`,
+    });
+  };
+
   let buttonRef = React.useRef<View>(null);
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.mainContainer}>
-        <Header
-          leftIcon="backArrow"
-          onPressLeftIcon={() => moveBack()}
-          titleStyle={{ marginHorizontal: 10 }}
-          container={{ borderBottomWidth: 0, ...theme.viewStyles.shadowStyle }}
-          rightComponent={
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() =>
-                props.navigation.navigate(
-                  diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.MedicineCart
-                )
-              }
-              style={{ right: 20 }}
-            >
-              <CartIcon style={{}} />
-              {cartItemsCount > 0 && (
-                <View style={styles.badgelabelView}>
-                  <Text style={styles.badgelabelText}>{cartItemsCount}</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-          }
-        />
+        <MedicineListingHeader navigation={props.navigation} movedFrom={'productdetail'} />
         {loading ? (
           <ActivityIndicator
             style={{ flex: 1, alignItems: 'center' }}
@@ -852,7 +825,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 setShowAddedToCart={setShowAddedToCart}
                 isSellOnline={medicineDetails?.sell_online === 1}
                 isBanned={medicineDetails?.banned === 'Yes'}
-                deliveryError={deliveryError}
+                onNotifyMeClick={onNotifyMeClick}
               />
             </View>
             {isPharma && (
@@ -924,16 +897,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               onAddCartItem={onAddCartItem}
               price={medicineDetails?.price}
               specialPrice={medicineDetails?.special_price}
-              packForm={medicineDetails?.pack_form || 'Quantity'}
-              unit={medicineDetails.unit_of_measurement || ''}
-              packSize={medicineDetails?.pack_size}
-              packFormVariant={medicineDetails?.dose_form_variant}
               productQuantity={productQuantity}
               setShowAddedToCart={setShowAddedToCart}
               isBanned={medicineDetails?.banned === 'Yes'}
               cashback={cashback}
-              deliveryError={deliveryError}
-              name={medicineDetails?.name}
+              onNotifyMeClick={onNotifyMeClick}
             />
           )}
         {!loading &&
@@ -995,21 +963,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 };
 
 const styles = StyleSheet.create({
-  badgelabelView: {
-    position: 'absolute',
-    top: -10,
-    right: -8,
-    backgroundColor: '#ff748e',
-    height: 14,
-    width: 14,
-    borderRadius: 7,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  badgelabelText: {
-    ...theme.fonts.IBMPlexSansBold(9),
-    color: theme.colors.WHITE,
-  },
   mainContainer: {
     flex: 1,
     backgroundColor: '#FFFFFF',
