@@ -234,7 +234,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     } else {
       setOrders(fetchFilteredOrder());
     }
-  }, [selectedPaitent]);
+  }, [selectedPaitentId]);
   const refetchOrders = async () => {
     fetchOrders(true);
   };
@@ -604,7 +604,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             setIsPaitentList(true);
           }}
         >
-          <Text style={styles.textPaitent}>{selectedPaitent}</Text>
+          <Text style={styles.textSelectedPaitent}>{selectedPaitent}</Text>
           <Down />
         </TouchableOpacity>
       </View>
@@ -1261,14 +1261,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         style={[
           styles.paitentItem,
           {
-            backgroundColor: selectedPaitent == item.firstName ? '#00B38E' : 'white',
+            backgroundColor: selectedPaitentId == item.id ? '#00B38E' : 'white',
           },
         ]}
       >
         <Text
           style={[
             styles.paitentText,
-            { color: selectedPaitent == item.firstName ? 'white' : '#00B38E' },
+            { color: selectedPaitentId == item.id ? 'white' : '#00B38E' },
           ]}
         >
           {item?.firstName}
@@ -1277,7 +1277,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           <Text
             style={[
               styles.paitentSubText,
-              { color: selectedPaitent == item.firstName ? 'white' : '#00B38E' },
+              { color: selectedPaitentId == item.id ? 'white' : '#00B38E' },
             ]}
           >{`${item?.gender}, ${moment().diff(item?.dateOfBirth, 'years')}`}</Text>
         ) : null}
@@ -1297,7 +1297,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             onPressLeftIcon={() => props.navigation.goBack()}
           />
         )}
-        {!loading && !error && orders?.length == 0 ? null : renderFilterArea()}
+        {renderFilterArea()}
         <ScrollView bounces={false} scrollEventThrottle={1}>
           {renderError()}
           {renderOrders()}
@@ -1320,7 +1320,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               <View style={styles.paitentCard}>
                 <FlatList
                   data={newProfileArray}
-                  extraData={selectedPaitent}
+                  extraData={selectedPaitentId}
                   keyExtractor={(_, index) => `${index}`}
                   renderItem={({ item, index }) => renderModalView(item, index)}
                 />
@@ -1449,6 +1449,10 @@ const styles = StyleSheet.create({
   textPaitent: {
     ...theme.viewStyles.text('SB', 14, '#02475b'),
     // marginBottom: 5,
+  },
+  textSelectedPaitent: {
+    ...theme.viewStyles.text('SB', 14, '#02475b'),
+    width:'85%'
   },
   activeFilterView: {
     ...theme.viewStyles.text('SB', 14, '#02475b'),
