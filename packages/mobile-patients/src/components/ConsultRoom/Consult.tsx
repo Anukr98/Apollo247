@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 16,
     color: theme.colors.SKY_BLUE,
-    ...theme.fonts.IBMPlexSansMedium(isIphone5s() ? 15 : 17),
+    ...theme.fonts.IBMPlexSansMedium(isIphone5s() ? 15 : 16.5),
     lineHeight: 24,
   },
   buttonStyles: {
@@ -389,6 +389,11 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     paddingRight: 3,
     marginTop: 7,
+  },
+  filterIcon: {
+    width: 17,
+    height: 18,
+    marginTop: 10,
   },
 });
 
@@ -718,17 +723,15 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         },
       });
       const appointments = data?.getPatientAllAppointments;
-
-      const activeFollowUpAppointments =
-        appointments?.activeAppointments?.length || appointments?.followUpAppointments?.length
-          ? [
-              { type: 'Active', data: appointments?.activeAppointments! || [] },
-              { type: 'Follow-up Chat', data: appointments?.followUpAppointments! || [] },
-            ]
-          : [];
+      const activeFollowUpAppointments = appointments?.activeAppointments?.length
+        ? [{ type: 'Active', data: appointments?.activeAppointments! || [] }]
+        : [];
       const activeAppointments = appointments?.activeAppointments! || [];
       const followUpAppointments = appointments?.followUpAppointments! || [];
-      const completedAppointments = appointments?.completedAppointments! || [];
+      const completedAppointments = [
+        ...followUpAppointments,
+        ...(appointments?.completedAppointments! || []),
+      ];
       const cancelledAppointments = appointments?.cancelledAppointments! || [];
       const allAppointments = [
         ...activeAppointments,
@@ -1510,13 +1513,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           <TouchableOpacity activeOpacity={1} onPress={() => setIsFilterOpen(true)}>
             {filterLength > 0 ? (
               <>
-                <FilterGreenIcon style={{ width: 17, height: 18, marginTop: 8 }} />
+                <FilterGreenIcon style={styles.filterIcon} />
                 <View style={[styles.badgelabelView]}>
                   <Text style={styles.badgelabelText}>{filterLength}</Text>
                 </View>
               </>
             ) : (
-              <FilterDarkBlueIcon style={{ width: 17, height: 18, marginTop: 8 }} />
+              <FilterDarkBlueIcon style={styles.filterIcon} />
             )}
           </TouchableOpacity>
         </View>
