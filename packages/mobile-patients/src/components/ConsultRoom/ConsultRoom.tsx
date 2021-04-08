@@ -3702,7 +3702,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         deviceType
       );
       !!hospitalId && hospitalId != ''
-        ? props.navigation.navigate(AppRoutes.CovidScan, {
+        ? props.navigation.navigate(AppRoutes.ProHealthWebView, {
             covidUrl: finalUrl,
             goBackCallback: webViewGoBack,
           })

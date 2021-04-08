@@ -1302,7 +1302,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
         // if slot is empty then refetch it for next date
         const isSameDate = moment().isSame(moment(dateToCheck), 'date');
-        if (isSameDate && slotsArray?.length == 0) {
+        if (slotsArray?.length == 0) {
           setTodaySlotNotAvailable(true);
           let changedDate = moment(dateToCheck) //date
             .add(1, 'day')
