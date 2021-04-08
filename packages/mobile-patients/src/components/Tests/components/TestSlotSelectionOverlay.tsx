@@ -99,7 +99,7 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
 
         // if slot is empty then refetch it for next date
         const isSameDate = moment().isSame(moment(date), 'date');
-        if (isSameDate && uniqueSlots?.length == 0 && isDateAutoSelected) {
+        if (uniqueSlots?.length == 0 && isDateAutoSelected) {
           setDate(
             moment(date)
               .add(1, 'day')
