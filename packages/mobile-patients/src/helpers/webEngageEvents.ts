@@ -793,7 +793,7 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.NOTIFICATION_ICON]: { clicked: true };
   [WebEngageEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
-  [WebEngageEventName.ACTIVE_PROHEALTH_APPOINTMENTS] : {clicked: true};
+  [WebEngageEventName.ACTIVE_PROHEALTH_APPOINTMENTS]: { clicked: true };
   [WebEngageEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
   [WebEngageEventName.TICKET_RAISED]: { Category: string; Query: string };
   [WebEngageEventName.HELP_TICKET_SUBMITTED]: {
@@ -908,10 +908,8 @@ export interface WebEngageEvents {
   [WebEngageEventName.NOTIFY_ME]: {
     'product name': string;
     'product id': string; // (SKUID)
-    Brand: string;
-    'Brand ID': string;
-    'category name': string;
     'category ID': string;
+    price: number;
     pincode: string;
   };
 
