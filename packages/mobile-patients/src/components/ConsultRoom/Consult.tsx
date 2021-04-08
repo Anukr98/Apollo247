@@ -726,6 +726,15 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               { type: 'Follow-up Chat', data: appointments?.followUpAppointments! || [] },
             ]
           : [];
+
+      let isOnlineFutureOnly: any = [];
+      isOnlineFutureOnly = appointments?.activeAppointments?.filter(
+        (it) =>
+          moment(it?.appointmentDateTime).isAfter(moment(new Date())) &&
+          it?.appointmentType == 'ONLINE'
+      ).length;
+
+      console.log('csk dat', JSON.stringify(isOnlineFutureOnly));
       const activeAppointments = appointments?.activeAppointments! || [];
       const followUpAppointments = appointments?.followUpAppointments! || [];
       const completedAppointments = appointments?.completedAppointments! || [];
@@ -751,7 +760,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       setLoading(false);
       setPageLoading(false);
 
-      if (activeAppointments?.length || followUpAppointments?.length) {
+      if (isOnlineFutureOnly > 0) {
         if (Platform.OS === 'ios') {
           callPermissions();
         } else {
