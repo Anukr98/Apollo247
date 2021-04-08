@@ -2584,10 +2584,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 postHomeWEGEvent(WebEngageEventName.ACTIVE_PROHEALTH_APPOINTMENTS);
                 //call the jwt token again.
                 regenerateJWTToken('orders', orderIdToShow);
-              } else {
-                postHomeWEGEvent(WebEngageEventName.ACTIVE_APPOINTMENTS);
-                props.navigation.navigate('APPOINTMENTS');
               }
+            } else {
+              postHomeWEGEvent(WebEngageEventName.ACTIVE_APPOINTMENTS);
+              props.navigation.navigate('APPOINTMENTS');
             }
           }}
         />
@@ -3456,7 +3456,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       >
         <ImageBackground
           style={styles.proHealthBannerImage}
-          source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_banner.jpg')}
+          source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_banner.png')}
           resizeMode={'stretch'}
         ></ImageBackground>
       </TouchableOpacity>
