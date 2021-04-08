@@ -112,6 +112,10 @@ export interface YourOrdersTestProps extends NavigationScreenProps {
 export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const RESCHEDULE_REASONS = TestReschedulingReasons.reasons;
   const CANCELLATION_REASONS = TestCancelReasons.reasons;
+  const CANCEL_RESCHEDULE_OPTION = [
+    string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
+    string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
+  ];
 
   const { addresses, diagnosticSlot, setDiagnosticSlot } = useDiagnosticsCart();
 
@@ -646,9 +650,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           setTimeout(() => refetchOrders(), 2000);
           setRescheduleCount(rescheduleResponse?.rescheduleCount);
           setRescheduledTime(dateTimeInUTC);
-          showAphAlert!({
+          showAphAlert?.({
             unDismissable: true,
-            title: 'Hi! :)',
+            title: string.common.hiWithSmiley,
             description: string.diagnostics.orderRescheduleSuccessText.replace(
               '{{dateTime}}',
               dateTimeToShow
@@ -843,17 +847,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             return (
               <>
                 <TouchableOpacity
-                  onPress={() => setSelectCancelReason(item)}
+                  onPress={() => _onPressCancelReason(item)}
                   style={[
                     styles.reasonsTouch,
                     {
                       height:
                         selectCancelReason === item &&
                         selectedOrderRescheduleCount! < 3 &&
-                        (selectCancelReason ===
-                          string.diagnostics.reasonForCancel_TestOrder.latePhelbo ||
-                          selectCancelReason ===
-                            string.diagnostics.reasonForCancel_TestOrder.userUnavailable)
+                        CANCEL_RESCHEDULE_OPTION.includes(selectCancelReason)
                           ? 100
                           : 40,
                     },
@@ -870,17 +871,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
                   {selectCancelReason === item &&
                   selectedOrderRescheduleCount! < 3 &&
-                  (selectCancelReason === string.diagnostics.reasonForCancel_TestOrder.latePhelbo ||
-                    selectCancelReason ===
-                      string.diagnostics.reasonForCancel_TestOrder.userUnavailable) ? (
+                  CANCEL_RESCHEDULE_OPTION.includes(selectCancelReason) ? (
                     <View style={{ marginTop: 10, marginBottom: 5 }}>
                       <Text style={styles.wantToReschedule}>
                         {string.diagnostics.wantToReschedule}
                       </Text>
-                      <TouchableOpacity
-                        activeOpacity={1}
-                        onPress={() => _onPressProceedToReschedule(selectedOrderRescheduleCount!)}
-                      >
+                      <TouchableOpacity activeOpacity={1} onPress={() => _onPressRescheduleNow()}>
                         <Text style={styles.yellowText}>RESCHEDULE NOW</Text>
                       </TouchableOpacity>
                     </View>
@@ -952,6 +948,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                 <Button
                   onPress={() => _onPressProceedToReschedule(selectedOrderRescheduleCount!)}
                   title={'PROCEED TO RESCHEDULE'}
+                  disabled={selectedOrderRescheduleCount == 3}
                 />
               </View>
             )}
@@ -979,6 +976,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     );
   };
 
+  function _onPressCancelReason(item: string) {
+    if (CANCEL_RESCHEDULE_OPTION.includes(item)) {
+      setSelectRescheduleReason(item);
+    }
+    setSelectCancelReason(item);
+  }
+
+  //1. once clicked on proceed to cancel (after selecting the reason...., by default cancel is getting selected.)
+  //
   function _onPressRescheduleNow() {
     setLoading?.(true);
     setShowBottomOverlay(false);
