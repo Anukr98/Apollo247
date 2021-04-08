@@ -142,12 +142,13 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const handleError = (errorMessage: string) => {
+    setisTxnProcessing(false);
     switch (errorMessage) {
       case 'Card number is invalid.':
         setisCardValid(false);
         break;
       default:
-        renderErrorPopup();
+        showTxnFailurePopUP();
     }
   };
 
@@ -398,6 +399,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         });
         break;
     }
+    setauthToken?.('');
   };
 
   const renderErrorPopup = () =>
