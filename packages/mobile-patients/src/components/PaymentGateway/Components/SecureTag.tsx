@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   paytm: {
-    marginRight: 5,
+    marginRight: 7,
     width: 54,
     height: 17,
   },
