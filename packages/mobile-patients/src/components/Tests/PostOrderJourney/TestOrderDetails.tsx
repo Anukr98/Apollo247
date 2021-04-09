@@ -36,17 +36,20 @@ import {
 import { getDiagnosticOrdersListVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 import {
   g,
+  getPatientNameById,
   getTestOrderStatusText,
   handleGraphQlError,
   nameFormater,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import RNFetchBlob from 'rn-fetch-blob';
+import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
-import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity, Platform } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -105,7 +108,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   );
   const [showRateDiagnosticBtn, setShowRateDiagnosticBtn] = useState(false);
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { showAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const [scrollYValue, setScrollYValue] = useState(0);
@@ -532,13 +535,63 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const onPressViewReport = () => {
-    const visitId = selectedOrder?.visitNo;
-    if (visitId) {
+    const visitId = order?.visitNo;
+    const appointmentDetails = !!order?.slotDateTimeInUTC
+      ? order?.slotDateTimeInUTC
+      : order?.diagnosticDate;
+    const appointmentDate = moment(appointmentDetails)?.format('DD MMM YYYY');
+    const patientName = getPatientNameById(allCurrentPatients, order?.patientId)?.replace(
+      / /g,
+      '_'
+    );
+    if (order?.labReportURL && order?.labReportURL != '') {
+      downloadLabTest(order?.labReportURL, appointmentDate, patientName);
+    } else if (visitId) {
       fetchTestReportResult();
     } else {
       props.navigation.navigate(AppRoutes.HealthRecordsHome);
     }
   };
+
+  function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string) {
+    const dirs = RNFetchBlob.fs.dirs;
+    const reportName = `Apollo247_${appointmentDate}_${patientName}.pdf`;
+    const downloadPath =
+      Platform.OS === 'ios'
+        ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + reportName
+        : dirs.DownloadDir + '/' + reportName;
+
+    setLoading && setLoading(true);
+    RNFetchBlob.config({
+      fileCache: true,
+      path: downloadPath,
+      addAndroidDownloads: {
+        title: reportName,
+        useDownloadManager: true,
+        notification: true,
+        path: downloadPath,
+        mime: mimeType(downloadPath),
+        description: 'File downloaded by download manager.',
+      },
+    })
+      .fetch('GET', pdfUrl, {
+        //some headers ..
+      })
+      .then((res) => {
+        setLoading && setLoading(false);
+        Platform.OS === 'ios'
+          ? RNFetchBlob.ios.previewDocument(res.path())
+          : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+      })
+      .catch((err) => {
+        CommonBugFender('TestOrderDetails_ViewReport', err);
+        currentPatient && handleGraphQlError(err);
+        setLoading && setLoading(false);
+      })
+      .finally(() => {
+        setLoading && setLoading(false);
+      });
+  }
 
   const renderReportError = (message: string) => {
     showAphAlert!({

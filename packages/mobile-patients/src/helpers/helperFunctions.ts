@@ -2671,3 +2671,11 @@ export const setAsyncPharmaLocation = (address: any) => {
     AsyncStorage.setItem('PharmacyLocationPincode', JSON.stringify(saveAddress));
   }
 };
+
+export const getPatientNameById = (allCurrentPatients: any, patientId: string) => {
+  const patientSelected = allCurrentPatients?.find(
+    (patient: { id: string }) => patient?.id === patientId
+  );
+
+  return patientSelected ? `${patientSelected?.firstName} ${patientSelected?.lastName}` : '';  
+};

@@ -37,7 +37,10 @@ import {
   BackHandler,
   Text,
   Modal,
+  Platform,
 } from 'react-native';
+import RNFetchBlob from 'rn-fetch-blob';
+import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { Down, Up } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NavigationScreenProps } from 'react-navigation';
 import {
@@ -48,7 +51,12 @@ import {
   RescheduleDiagnosticsInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useApolloClient } from 'react-apollo-hooks';
-import { g, handleGraphQlError, TestSlot } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  getPatientNameById,
+  handleGraphQlError,
+  TestSlot,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DisabledTickIcon, TickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   AppConfig,
@@ -99,11 +107,6 @@ import {
   getOrderPhleboDetailsBulk,
   getOrderPhleboDetailsBulkVariables,
 } from '@aph/mobile-patients/src/graphql/types/getOrderPhleboDetailsBulk';
-export interface DiagnosticsOrderList
-  extends getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList {
-  maxStatus: string;
-  maxTime?: string | undefined | null;
-}
 
 export interface YourOrdersTestProps extends NavigationScreenProps {
   showHeader?: boolean;
@@ -119,7 +122,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const { addresses, diagnosticSlot, setDiagnosticSlot } = useDiagnosticsCart();
 
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [date, setDate] = useState<Date>(new Date());
   const [showDisplaySchedule, setDisplaySchedule] = useState<boolean>(false);
@@ -152,7 +155,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [selectedOrder, setSelectedOrder] = useState<
     getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList
   >();
-  const { allCurrentPatients } = useAllCurrentPatients();
   const [error, setError] = useState(false);
   const { getPatientApiCall } = useAuth();
   const client = useApolloClient();
@@ -1072,16 +1074,16 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     });
   }
 
-  const renderOrder = (order: DiagnosticsOrderList, index: number) => {
+  const renderOrder = (
+    order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList,
+    index: number
+  ) => {
     if (order?.diagnosticOrderLineItems?.length == 0) {
       return <View style={{ paddingTop: 4 }} />;
     }
     const getUTCDateTime = order?.slotDateTimeInUTC;
-    //add a check to see if report is generated or not.
-    // if status is partial completed or order compeleted
 
     const currentStatus = order?.orderStatus;
-    const patientName = g(currentPatient, 'firstName');
     const isPastOrder = moment(getUTCDateTime).diff(moment(), 'minutes') < 0;
     /**
      * show cancel & reschdule if status is something like this.
@@ -1132,20 +1134,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           | any
       ) => item?.itemName
     );
-    const getPatientName = (patientId: string): string => {
-      const patientSelected = allCurrentPatients?.find(
-        (patient: { id: string }) => patient?.id === patientId
-      );
 
-      return patientSelected ? `${patientSelected?.firstName} ${patientSelected?.lastName}` : '';
-    };
     return (
       <OrderTestCard
         orderId={order?.displayId}
         key={order?.id}
         createdOn={order?.createdDate}
         orderLevelStatus={order?.orderStatus}
-        patientName={getPatientName(order?.patientId)}
+        patientName={getPatientNameById(allCurrentPatients, order?.patientId)}
         gender={currentPatient?.gender == 'FEMALE' ? 'Ms.' : 'Mr.'}
         showAddTest={false}
         ordersData={order?.diagnosticOrderLineItems!}
@@ -1188,12 +1184,63 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList
   ) {
     const visitId = order?.visitNo;
+    const appointmentDetails = !!order?.slotDateTimeInUTC
+      ? order?.slotDateTimeInUTC
+      : order?.diagnosticDate;
+    const appointmentDate = moment(appointmentDetails)?.format('DD MMM YYYY');
+    const patientName = getPatientNameById(allCurrentPatients, order?.patientId)?.replace(
+      / /g,
+      '_'
+    );
+
     DiagnosticViewReportClicked();
-    if (visitId) {
+    if (order?.labReportURL && order?.labReportURL != '') {
+      downloadLabTest(order?.labReportURL, appointmentDate, patientName);
+    } else if (visitId) {
       fetchTestReportResult(order);
     } else {
       props.navigation.navigate(AppRoutes.HealthRecordsHome);
     }
+  }
+
+  function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string) {
+    const dirs = RNFetchBlob.fs.dirs;
+    const reportName = `Apollo247_${appointmentDate}_${patientName}.pdf`;
+    const downloadPath =
+      Platform.OS === 'ios'
+        ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + reportName
+        : dirs.DownloadDir + '/' + reportName;
+
+    setLoading && setLoading(true);
+    RNFetchBlob.config({
+      fileCache: true,
+      path: downloadPath,
+      addAndroidDownloads: {
+        title: reportName,
+        useDownloadManager: true,
+        notification: true,
+        path: downloadPath,
+        mime: mimeType(downloadPath),
+        description: 'File downloaded by download manager.',
+      },
+    })
+      .fetch('GET', pdfUrl, {
+        //some headers ..
+      })
+      .then((res) => {
+        setLoading && setLoading(false);
+        Platform.OS === 'ios'
+          ? RNFetchBlob.ios.previewDocument(res.path())
+          : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+      })
+      .catch((err) => {
+        CommonBugFender('YourOrdersTests_ViewReport', err);
+        currentPatient && handleGraphQlError(err);
+        setLoading && setLoading(false);
+      })
+      .finally(() => {
+        setLoading && setLoading(false);
+      });
   }
 
   const renderOrders = () => {
@@ -1452,7 +1499,7 @@ const styles = StyleSheet.create({
   },
   textSelectedPaitent: {
     ...theme.viewStyles.text('SB', 14, '#02475b'),
-    width:'85%'
+    width: '85%',
   },
   activeFilterView: {
     ...theme.viewStyles.text('SB', 14, '#02475b'),

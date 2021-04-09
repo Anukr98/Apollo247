@@ -100,6 +100,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList 
   slotDateTimeInUTC: any | null;
   paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
   visitNo: string | null;
+  labReportURL: string | null;
   diagnosticOrderLineItems: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems | null)[] | null;
   diagnosticOrdersStatus: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrdersStatus | null)[] | null;
 }

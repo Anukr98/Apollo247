@@ -158,7 +158,6 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   PAYMENT_SUCCESSFUL = "PAYMENT_SUCCESSFUL",
   PHLEBO_CHECK_IN = "PHLEBO_CHECK_IN",
   PHLEBO_COMPLETED = "PHLEBO_COMPLETED",
-  PHLEBO_ON_THE_WAY = "PHLEBO_ON_THE_WAY",
   PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
   REPORT_GENERATED = "REPORT_GENERATED",
@@ -238,6 +237,7 @@ export enum HealthRestrictionNature {
 
 export enum LOGIN_TYPE {
   DOCTOR = "DOCTOR",
+  EMAIL = "EMAIL",
   PATIENT = "PATIENT",
 }
 
@@ -1759,6 +1759,7 @@ export interface UpdatePatientInput {
   relation?: Relation | null;
   photoUrl?: string | null;
   deviceCode?: string | null;
+  externalAuthId?: string | null;
   employeeId?: string | null;
   partnerId?: string | null;
   appsflyerId?: string | null;
