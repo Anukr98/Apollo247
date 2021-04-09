@@ -78,6 +78,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_
 export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList {
   __typename: "DiagnosticOrders";
   id: string;
+  patientId: string;
   patientAddressId: string;
   city: string | null;
   slotTimings: string;

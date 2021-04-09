@@ -27,7 +27,7 @@ import Geolocation from 'react-native-geolocation-service';
 import NetInfo from '@react-native-community/netinfo';
 import moment from 'moment';
 import AsyncStorage from '@react-native-community/async-storage';
-import { Alert, Dimensions, Platform, Linking, NativeModules } from 'react-native';
+import { Alert, Dimensions, Platform, Linking, NativeModules, PermissionsAndroid } from 'react-native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import Permissions from 'react-native-permissions';
 import { DiagnosticsCartItem } from '../components/DiagnosticsCartProvider';
@@ -2679,3 +2679,38 @@ export const getPatientNameById = (allCurrentPatients: any, patientId: string) =
 
   return patientSelected ? `${patientSelected?.firstName} ${patientSelected?.lastName}` : '';  
 };
+
+export const requestReadSmsPermission = async () => {
+  try {
+    const resuts = await PermissionsAndroid.requestMultiple([
+      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+      PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+    ]);
+    if (
+      resuts[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] !==
+      PermissionsAndroid.RESULTS.GRANTED
+    ) {
+    }
+    if (
+      resuts[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] !==
+      PermissionsAndroid.RESULTS.GRANTED
+    ) {
+    }
+    if (resuts) {
+      return resuts;
+    }
+  } catch (error) {
+    CommonBugFender('HelperFunction_requestReadSmsPermission_try', error);
+  }
+};
+
+export const storagePermissionsToDownload = (doRequest?: () => void) => {
+  permissionHandler(
+    'storage',
+    'Enable storage from settings for downloading the test report',
+    () => {
+      doRequest && doRequest();
+    }
+  );
+};
+

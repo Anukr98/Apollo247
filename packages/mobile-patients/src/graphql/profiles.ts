@@ -1843,6 +1843,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
     getDiagnosticOrderDetails(diagnosticOrderId: $diagnosticOrderId) {
       ordersList {
         id
+        patientId
         patientAddressId
         city
         slotTimings
