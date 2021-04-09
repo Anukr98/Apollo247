@@ -1452,7 +1452,7 @@ const styles = StyleSheet.create({
   },
   textSelectedPaitent: {
     ...theme.viewStyles.text('SB', 14, '#02475b'),
-    width:'85%'
+    width: '85%',
   },
   activeFilterView: {
     ...theme.viewStyles.text('SB', 14, '#02475b'),
