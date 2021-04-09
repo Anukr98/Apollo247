@@ -4,7 +4,6 @@ import {
   DoctorPlaceholderImage,
   InPerson,
   Online,
-  VideoPlayIcon,
   ApolloDoctorIcon,
   ApolloPartnerIcon,
   InfoBlue,
@@ -29,8 +28,6 @@ import {
 import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import {
   g,
-  mhdMY,
-  nameFormater,
   postWebEngageEvent,
   nextAvailability,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -38,7 +35,7 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Image,
@@ -263,6 +260,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     !selectedConsultMode || isCircleAvailForOnline
       ? onlineConsultDiscountedPrice
       : physicalConsultDiscountedPrice;
+  const ctaTitle = rowData?.doctorCardActiveCTA?.DEFAULT;
 
   useEffect(() => {
     if (!currentPatient) {
@@ -771,8 +769,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                       props.buttonTextStyle,
                     ]}
                   >
-                    {!!ctaBannerText
-                      ? ctaBannerText.CONSULT_NOW
+                    {!!ctaTitle
+                      ? ctaTitle
                       : !!fetchedSlot
                       ? getButtonTitle(fetchedSlot)
                       : getButtonTitle(rowData?.slot)}
