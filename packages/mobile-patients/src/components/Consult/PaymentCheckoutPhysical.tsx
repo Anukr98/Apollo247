@@ -91,6 +91,8 @@ import {
   getAppointmentDataVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { saveConsultationLocation } from '@aph/mobile-patients/src/helpers/clientCalls';
+
 interface PaymentCheckoutPhysicalProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
   tabs: { title: string }[];
@@ -137,7 +139,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   const scrollviewRef = useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [gender, setGender] = useState<string>(currentPatient?.gender);
-  const { apisToCall, homeScreenParamsOnPop } = useAppCommonData();
+  const { apisToCall, homeScreenParamsOnPop, locationDetails } = useAppCommonData();
   const [patientListYPos, setPatientListYPos] = useState<number>(0);
   const [patientProfiles, setPatientProfiles] = useState<any>([]);
 
@@ -644,6 +646,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
                   skipAutoQuestions: doctor?.skipAutoQuestions,
                 };
                 homeScreenParamsOnPop.current = params;
+                locationDetails && saveConsultationLocation(client, appointmentId, locationDetails);
                 navigateToHome(props.navigation, params);
               }
             } catch (error) {}

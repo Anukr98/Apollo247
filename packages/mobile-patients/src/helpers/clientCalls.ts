@@ -30,6 +30,7 @@ import {
   GET_PACKAGE_INCLUSIONS,
   UPDATE_PATIENT_APP_VERSION,
   GET_ALL_PRO_HEALTH_APPOINTMENTS,
+  UPDATE_APPOINTMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -118,7 +119,10 @@ import {
   GetAllGroupBannersOfUser,
   GetAllGroupBannersOfUserVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetAllGroupBannersOfUser';
-import { bannerType } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  bannerType,
+  LocationData,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   getInclusionsOfMultipleItems,
   getInclusionsOfMultipleItemsVariables,
@@ -130,7 +134,14 @@ import {
 import AsyncStorage from '@react-native-community/async-storage';
 import DeviceInfo from 'react-native-device-info';
 import appsFlyer from 'react-native-appsflyer';
-import { getAllProhealthAppointments, getAllProhealthAppointmentsVariables } from '../graphql/types/getAllProhealthAppointments';
+import {
+  getAllProhealthAppointments,
+  getAllProhealthAppointmentsVariables,
+} from '../graphql/types/getAllProhealthAppointments';
+import {
+  updateAppointmentVariables,
+  updateAppointment,
+} from '@aph/mobile-patients/src/graphql/types/updateAppointment';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -912,45 +923,19 @@ const notifyAppVersion = async (
       osType: Platform.OS == 'ios' ? DEVICETYPE.IOS : DEVICETYPE.ANDROID,
       appsflyerId,
     };
-
-    console.log(
-      'checkguf --- notifyAppVersion UpdatePatientAppVersion  savedAppVersion -----',
-      savedAppVersion
-    );
-    console.log(
-      'checkguf --- notifyAppVersion UpdatePatientAppVersion  appVersion -----',
-      appVersion
-    );
-    console.log(
-      'checkguf --- notifyAppVersion UpdatePatientAppVersion  appsflyerSaved -----',
-      appsflyerSaved
-    );
-    console.log(
-      'checkguf --- notifyAppVersion UpdatePatientAppVersion  appsflyerId -----',
-      appsflyerId
-    );
-
     if (savedAppVersion !== appVersion || appsflyerSaved !== appsflyerId) {
-      console.log('checkguf --- notifyAppVersion UpdatePatientAppVersion  called -----');
-
       const res = await client.mutate<UpdatePatientAppVersion, UpdatePatientAppVersionVariables>({
         mutation: UPDATE_PATIENT_APP_VERSION,
         variables,
         fetchPolicy: 'no-cache',
       });
-      console.log('checkguf --- notifyAppVersion res--- ', res);
       await AsyncStorage.setItem(key, appVersion);
       await AsyncStorage.setItem(appsflyerIdKey, appsflyerId!);
     }
-  } catch (error) {
-    console.log('checkguf --- notifyAppVersion--- ', error);
-  }
+  } catch (error) {}
 };
 
-export const getAllProHealthAppointments = (
-  client: ApolloClient<object>,
-  patientId: string
-) => {
+export const getAllProHealthAppointments = (client: ApolloClient<object>, patientId: string) => {
   return new Promise((res, rej) => {
     client
       .query<getAllProhealthAppointments, getAllProhealthAppointmentsVariables>({
@@ -968,4 +953,29 @@ export const getAllProHealthAppointments = (
         rej({ error: e });
       });
   });
+};
+
+export const saveConsultationLocation = async (
+  client: ApolloClient<object>,
+  appointmentId: string,
+  location: LocationData
+) => {
+  try {
+    const query: updateAppointmentVariables = {
+      appointmentInput: {
+        appointmentId,
+        patientLocation: {
+          city: location?.city,
+          pincode: Number(location?.pincode),
+        },
+      },
+    };
+    await client.query<updateAppointment>({
+      query: UPDATE_APPOINTMENT,
+      fetchPolicy: 'no-cache',
+      variables: query,
+    });
+  } catch (error) {
+    CommonBugFender('saveLocationWithConsultation', error);
+  }
 };
