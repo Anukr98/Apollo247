@@ -61,8 +61,8 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
 
   type UniqueSlotType = typeof uniqueSlots[0];
 
-  const fetchSlots = (changedDate?: Date) => {
-    let dateToCheck = !!changedDate ? changedDate : date;
+  const fetchSlots = (updatedDate?: Date) => {
+    let dateToCheck = !!updatedDate ? updatedDate : date;
     setChangedDate(dateToCheck);
     if (!isVisible || !zipCode) return;
     showSpinner(true);
