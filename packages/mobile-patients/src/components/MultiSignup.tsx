@@ -74,6 +74,7 @@ import {
   createOneApolloUser,
   createOneApolloUserVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOneApolloUser';
+import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
 
 const { width, height } = Dimensions.get('window');
 
@@ -525,222 +526,12 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
     } catch (error) {}
   };
 
-  const handleOpenURL = async () => {
+  const handleOpenURLs = async () => {
     try {
       const event: any = await AsyncStorage.getItem('deeplink');
-      if (event !== null) {
-        let route = event.replace('apollopatients://', '');
-
-        const data = route.split('?');
-        route = data[0];
-
-        switch (route) {
-          case 'Consult':
-            pushTheView('Consult', data.length === 2 ? data[1] : undefined);
-            break;
-          case 'Medicine':
-            pushTheView('Medicine', data.length === 2 ? data[1] : undefined);
-            break;
-          case 'Test':
-            pushTheView('Test');
-            break;
-          case 'Speciality':
-            if (data.length === 2) {
-              pushTheView('Speciality', data[1]);
-            } else {
-              pushTheView('ConsultRoom');
-            }
-            break;
-          case 'Doctor':
-            if (data.length === 2) {
-              pushTheView('Doctor', data[1]);
-            } else {
-              pushTheView('ConsultRoom');
-            }
-            break;
-          case 'DoctorSearch':
-            pushTheView('DoctorSearch');
-            break;
-
-          case 'MedicineSearch':
-            pushTheView('MedicineSearch', data.length === 2 ? data[1] : undefined);
-            break;
-
-          case 'MedicineDetail':
-            pushTheView('MedicineDetail', data.length === 2 ? data[1] : undefined);
-            break;
-
-          case 'MedicineCart':
-            pushTheView('MedicineCart');
-            break;
-
-          default:
-            pushTheView('ConsultRoom');
-            break;
-        }
-      } else {
-        pushTheView('ConsultRoom');
-      }
-    } catch (error) {}
-  };
-
-  const pushTheView = (routeName: String, id?: String) => {
-    try {
-      setTimeout(() => {
-        setVerifyingPhoneNumber(false);
-
-        switch (routeName) {
-          case 'Consult':
-            props.navigation.navigate('APPOINTMENTS');
-            break;
-
-          case 'Medicine':
-            props.navigation.navigate('MEDICINES');
-            break;
-
-          case 'MedicineDetail':
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [
-                  NavigationActions.navigate({
-                    routeName: AppRoutes.ProductDetailPage,
-                    params: {
-                      sku: id,
-                      movedFrom: ProductPageViewedSource.REGISTRATION,
-                    },
-                  }),
-                ],
-              })
-            );
-            break;
-
-          case 'Test':
-            props.navigation.navigate('TESTS');
-            break;
-
-          case 'ConsultRoom':
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [
-                  NavigationActions.navigate({
-                    routeName: AppRoutes.ConsultRoom,
-                  }),
-                ],
-              })
-            );
-            break;
-          case 'Speciality':
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [
-                  NavigationActions.navigate({
-                    routeName: AppRoutes.DoctorSearchListing,
-                    params: {
-                      specialityId: id ? id : '',
-                      movedFrom: 'registration',
-                    },
-                  }),
-                ],
-              })
-            );
-            break;
-
-          case 'Doctor':
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [
-                  NavigationActions.navigate({
-                    routeName: AppRoutes.DoctorDetails,
-                    params: {
-                      doctorId: id,
-                      movedFrom: 'registration',
-                    },
-                  }),
-                ],
-              })
-            );
-            break;
-
-          case 'DoctorSearch':
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [
-                  NavigationActions.navigate({
-                    routeName: AppRoutes.DoctorSearch,
-                    params: {
-                      movedFrom: 'registration',
-                    },
-                  }),
-                ],
-              })
-            );
-            break;
-
-          case 'MedicineSearch':
-            if (id) {
-              const [itemId, name] = id.split(',');
-              props.navigation.dispatch(
-                StackActions.reset({
-                  index: 0,
-                  key: null,
-                  actions: [
-                    NavigationActions.navigate({
-                      routeName: AppRoutes.MedicineListing,
-                      params: {
-                        category_id: itemId,
-                        title: `${name ? name : 'Products'}`.toUpperCase(),
-                        movedFrom: 'registration',
-                      },
-                    }),
-                  ],
-                })
-              );
-            } else {
-              props.navigation.dispatch(
-                StackActions.reset({
-                  index: 0,
-                  key: null,
-                  actions: [
-                    NavigationActions.navigate({
-                      routeName: AppRoutes.ConsultRoom,
-                    }),
-                  ],
-                })
-              );
-            }
-            break;
-
-          case 'MedicineCart':
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [
-                  NavigationActions.navigate({
-                    routeName: AppRoutes.MedicineCart,
-                    params: {
-                      movedFrom: 'registration',
-                    },
-                  }),
-                ],
-              })
-            );
-            break;
-
-          default:
-            break;
-        }
-      }, 500);
+      const data = handleOpenURL(event);
+      const { routeName, id, isCall, timeout, mediaSource } = data;
+      pushTheView(props.navigation, routeName, id ? id : undefined, isCall, undefined, mediaSource);
     } catch (error) {}
   };
 
@@ -801,7 +592,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                   AsyncStorage.setItem('multiSignUp', 'false'),
                   AsyncStorage.setItem('gotIt', 'false'),
                   createOneApolloUser(data?.updatePatient?.patient?.id!),
-                  handleOpenURL())
+                  handleOpenURLs())
                 : null}
               {error
                 ? (signOut(),

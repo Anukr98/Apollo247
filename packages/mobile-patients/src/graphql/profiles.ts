@@ -1748,6 +1748,16 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         visitNo
         paymentType
         paymentOrderId
+        phleboDetailsObj {
+          PhelboOTP
+          PhelbotomistName
+          PhelbotomistMobile
+          PhelbotomistTrackLink
+          TempRecording
+          CheckInTime
+          PhleboLatitude
+          PhleboLongitude
+        }
         diagnosticOrderReschedule {
           rescheduleDate
           rescheduleReason
@@ -2161,7 +2171,117 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
     }
   }
 `;
-
+export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
+  query getDiagnosticOrdersListByMobile(
+    $mobileNumber: String
+    $paginated: Boolean
+    $limit: Int
+    $offset: Int
+  ) {
+    getDiagnosticOrdersListByMobile(
+      mobileNumber: $mobileNumber
+      offset: $offset
+      limit: $limit
+      paginated: $paginated
+    ) {
+      ordersList {
+        id
+        isRescheduled
+        rescheduleCount
+        areaId
+        addressLine1
+        addressLine2
+        patientId
+        displayId
+        diagnosticDate
+        diagnosticBranchCode
+        diagnosticEmployeeCode
+        visitNo
+        diagnosticOrdersStatus {
+          id
+          orderStatus
+          statusDate
+          itemId
+          packageId
+          itemName
+          packageName
+          hideStatus
+          statusMessage
+        }
+        diagnosticOrderLineItems {
+          id
+          itemId
+          quantity
+          itemName
+          groupPlan
+          price
+          itemType
+          itemObj {
+            itemType
+            testPreparationData
+            packageCalculatedMrp
+            inclusions
+          }
+          diagnostics {
+            id
+            itemId
+            itemName
+            itemType
+            toAgeInDays
+            canonicalTag
+            fromAgeInDays
+            testDescription
+            inclusions
+            testPreparationData
+            diagnosticPricing {
+              status
+              endDate
+              groupPlan
+              startDate
+            }
+          }
+          testPreparationData
+          packageCalculatedMrp
+        }
+        orderType
+        totalPrice
+        centerName
+        centerState
+        orderStatus
+        createdDate
+        paymentType
+        diagnosticDate
+        centerLocality
+        paymentOrderId
+        paymentOrderId
+        patientAddressId
+        phleboDetailsObj {
+          PhelboOTP
+        }
+        slotTimings
+        slotDateTimeInUTC
+        collectionCharges
+        diagnosticBranchCode
+        diagnosticEmployeeCode
+        diagnosticOrderReschedule {
+          rescheduleDate
+          rescheduleReason
+          comments
+          rescheduleDate
+          rescheduleReason
+          rescheduleDateTimeInUTC
+        }
+        diagnosticOrderCancellation {
+          cancellationReason
+          cancelType
+          cancelByName
+          comments
+        }
+      }
+      ordersCount
+    }
+  }
+`;
 export const GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT = gql`
   query GetMedicineOrderShipmentDetails(
     $patientId: String
@@ -2237,21 +2357,121 @@ export const GET_HELP_SECTION_QUERIES = gql`
         title
         nonOrderQueries
         queriesByOrderStatus
+        content {
+          title
+          text
+          cta {
+            title
+            appRoute
+            webRoute
+            appRouteParams
+            webRouteParams
+          }
+          ctaNonCircle {
+            title
+            appRoute
+            webRoute
+            appRouteParams
+            webRouteParams
+          }
+          ctaCircle {
+            title
+            appRoute
+            webRoute
+            appRouteParams
+            webRouteParams
+          }
+        }
         queries {
           id
           title
           nonOrderQueries
           queriesByOrderStatus
+          content {
+            title
+            text
+            cta {
+              title
+              appRoute
+              webRoute
+              appRouteParams
+              webRouteParams
+            }
+            ctaNonCircle {
+              title
+              appRoute
+              webRoute
+              appRouteParams
+              webRouteParams
+            }
+            ctaCircle {
+              title
+              appRoute
+              webRoute
+              appRouteParams
+              webRouteParams
+            }
+          }
           queries {
             id
             title
             nonOrderQueries
             queriesByOrderStatus
+            content {
+              title
+              text
+              cta {
+                title
+                appRoute
+                webRoute
+                appRouteParams
+                webRouteParams
+              }
+              ctaNonCircle {
+                title
+                appRoute
+                webRoute
+                appRouteParams
+                webRouteParams
+              }
+              ctaCircle {
+                title
+                appRoute
+                webRoute
+                appRouteParams
+                webRouteParams
+              }
+            }
             queries {
               id
               title
               nonOrderQueries
               queriesByOrderStatus
+              content {
+                title
+                text
+                cta {
+                  title
+                  appRoute
+                  webRoute
+                  appRouteParams
+                  webRouteParams
+                }
+                ctaNonCircle {
+                  title
+                  appRoute
+                  webRoute
+                  appRouteParams
+                  webRouteParams
+                }
+                ctaCircle {
+                  title
+                  appRoute
+                  webRoute
+                  appRouteParams
+                  webRouteParams
+                }
+              }
               queries {
                 id
                 title
@@ -4405,6 +4625,83 @@ export const VERIFY_TRUECALLER_PROFILE = gql`
   mutation verifyTrueCallerProfile($profile: TrueCallerProfile!) {
     verifyTrueCallerProfile(profile: $profile) {
       authToken
+    }
+  }
+`;
+
+export const GET_PROHEALTH_CITY_LIST = gql`
+  query getProHealthCities {
+    getProHealthCities {
+      cityList {
+        regionId
+        cityName
+        id
+      }
+    }
+  }
+`;
+
+export const GET_PROHEALTH_HOSPITAL_LIST = gql`
+  query getProHealthHospitalByCityId($cityId: ID!) {
+    getProHealthHospitalByCityId(cityId: $cityId) {
+      hospitals {
+        unitName
+        unitType
+        unitLocationId
+        id
+      }
+    }
+  }
+`;
+
+export const GET_ALL_PRO_HEALTH_APPOINTMENTS = gql`
+  query getAllProhealthAppointments($patientId: ID!) {
+    getAllProhealthAppointments(patientId: $patientId) {
+      appointments {
+        appointmentStartDateTimeUTC
+        appointmentEndDateTimeUTC
+        status
+        displayId
+        packageCategoryId
+        price
+        bookingSource
+        patientObj {
+          firstName
+          lastName
+          emailAddress
+          gender
+          mobileNumber
+          dateOfBirth
+        }
+        prohealthPackage {
+          packageName
+          id
+        }
+        prohealthHospital {
+          unitType
+          unitName
+        }
+      }
+    }
+  }
+`;
+
+export const GET_PHLOBE_DETAILS = gql`
+  query getOrderPhleboDetailsBulk($diagnosticOrdersIds: [String]!) {
+    getOrderPhleboDetailsBulk(diagnosticOrdersIds: $diagnosticOrdersIds) {
+      orderPhleboDetailsBulk {
+        orderPhleboDetails {
+          diagnosticOrdersId
+          diagnosticPhlebotomists {
+            name
+          }
+          phleboOTP
+        }
+        phleboEta {
+          distanceInMetres
+          estimatedArrivalTime
+        }
+      }
     }
   }
 `;

@@ -39,7 +39,6 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
       styles.patientItemViewStyle,
       index === 0 && { marginTop: 12 },
       showGreenBg && { backgroundColor: APP_GREEN },
-      index === allCurrentPatients?.length - 2 && { marginBottom: 20 },
     ];
     return item?.id === '+ADD MEMBER' ? null : (
       <TouchableOpacity
@@ -89,6 +88,7 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
               <View style={styles.patientListCardStyle}>
                 <FlatList
                   bounces={false}
+                  contentContainerStyle={{ paddingBottom: 20 }}
                   keyExtractor={(_, index) => index.toString()}
                   data={allCurrentPatients || []}
                   renderItem={renderPatientListItem}

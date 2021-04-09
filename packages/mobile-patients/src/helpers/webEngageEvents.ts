@@ -139,6 +139,7 @@ export enum WebEngageEventName {
   BUY_MEDICINES = 'Buy Medicines',
   ORDER_TESTS = 'Order Tests',
   MANAGE_DIABETES = 'Manage Diabetes',
+  PROHEALTH = 'Prohealth',
   TRACK_SYMPTOMS = 'Track Symptoms',
   VIEW_HELATH_RECORDS = 'PHR Click Health records - app',
   LEARN_MORE_ABOUT_CORONAVIRUS = 'Learn more about coronavirus',
@@ -146,8 +147,10 @@ export enum WebEngageEventName {
   APOLLO_PRO_HEALTH = 'Apollo pro health',
   NOTIFICATION_ICON = 'Notification Icon clicked',
   ACTIVE_APPOINTMENTS = 'Active Appointments',
+  ACTIVE_PROHEALTH_APPOINTMENTS = 'PROHEALTH_ACTIVE_APPOINTMENTS',
   NEED_HELP = 'Need Help?',
   TICKET_RAISED = 'Ticket raised',
+  HELP_TICKET_SUBMITTED = 'Help_Ticket_Submitted',
   MY_ACCOUNT = 'My Account',
   BOOK_DOCTOR_APPOINTMENT = 'Book Doctor Appointment clicked on homescreen',
   TABBAR_APPOINTMENTS_CLICKED = 'Appointments Clicked on tab bar',
@@ -790,8 +793,15 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.NOTIFICATION_ICON]: { clicked: true };
   [WebEngageEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
+  [WebEngageEventName.ACTIVE_PROHEALTH_APPOINTMENTS]: { clicked: true };
   [WebEngageEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
   [WebEngageEventName.TICKET_RAISED]: { Category: string; Query: string };
+  [WebEngageEventName.HELP_TICKET_SUBMITTED]: {
+    Source_Page: 'My Account' | 'My Orders' | 'Order Details';
+    Reason: string;
+    BU: string; //  Pharmacy / Consult / Diagnostics / ..........
+    Order_Status?: string;
+  };
   [WebEngageEventName.MY_ACCOUNT]: PatientInfo;
   [WebEngageEventName.BOOK_DOCTOR_APPOINTMENT]: {
     'Patient Name': string;
@@ -898,11 +908,10 @@ export interface WebEngageEvents {
   [WebEngageEventName.NOTIFY_ME]: {
     'product name': string;
     'product id': string; // (SKUID)
-    Brand: string;
-    'Brand ID': string;
-    'category name': string;
     'category ID': string;
+    price: number;
     pincode: string;
+    serviceable: YesOrNo;
   };
 
   [WebEngageEventName.CATEGORY_CLICKED]: {
@@ -2156,6 +2165,7 @@ export interface WebEngageEvents {
     'Circle Membership Value': number | null;
     User_Type?: PharmaUserStatus;
     Pincode?: string;
+    serviceable: YesOrNo;
   };
   [WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
     'Patient Name': string;

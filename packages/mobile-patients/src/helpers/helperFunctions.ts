@@ -83,8 +83,7 @@ import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getLatestMedicineOrder';
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
-import { handleUniversalLinks } from './UniversalLinks';
-import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '../graphql/types/getDiagnosticSlotsWithAreaID';
+import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsWithAreaID';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { NavigationActions, StackActions } from 'react-navigation';
@@ -251,6 +250,16 @@ export const getAge = (dob: string) => {
   let age = parse(dob);
   return differenceInYears(now, age);
 };
+
+export function isAddressLatLngInValid(address: any) {
+  let isInvalid =
+    address?.latitude == null ||
+    address?.longitude == null ||
+    address?.latitude == 0 ||
+    address?.longitude == 0;
+
+  return isInvalid;
+}
 
 export const formatAddressBookAddress = (
   address: savePatientAddress_savePatientAddress_patientAddress
@@ -873,10 +882,14 @@ export const getDiffInMinutes = (doctorAvailableSlots: string) => {
 export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult' = 'Available') => {
   const isValidTime = moment(nextSlot).isValid();
   if (isValidTime) {
-    const current = moment(new Date());
+    const d = new Date();
+    const current = moment(d);
+    const hoursPassedToday = d.getHours();
+    const minPassedToday = hoursPassedToday * 60 + d.getMinutes();
     const difference = moment.duration(moment(nextSlot).diff(current));
     const differenceMinute = Math.ceil(difference.asMinutes());
     const diffDays = Math.ceil(difference.asDays());
+
     const isTomorrow = moment(nextSlot).isAfter(
       current
         .add(1, 'd')
@@ -892,7 +905,7 @@ export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult'
       return 'BOOK APPOINTMENT';
     } else if (differenceMinute >= 60 && !isTomorrow) {
       return `${type} at ${moment(nextSlot).format('hh:mm A')}`;
-    } else if (isTomorrow && diffDays < 2) {
+    } else if (isTomorrow && differenceMinute < 2880 - minPassedToday) {
       return `${type} Tomorrow${
         type === 'Available' ? ` at ${moment(nextSlot).format('hh:mm A')}` : ''
       }`;
@@ -1745,11 +1758,6 @@ export const InitiateAppsFlyer = (
 
         setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
       } catch (error) {}
-
-      const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
-      if (userLoggedIn == 'true') {
-        handleUniversalLinks(res.data, navigation);
-      }
     }
   });
 };
@@ -2389,23 +2397,35 @@ export const takeToHomePage = (props: any) => {
 
 export const navigateToHome = (
   navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  params?: any,
+  forceRedirect?: boolean
+) => {
+  if (forceRedirect) {
+    goToConsultRoom(navigation, params);
+  } else {
+    const navigate = navigation.popToTop();
+    if (!navigate) {
+      goToConsultRoom(navigation, params);
+    }
+  }
+};
+
+const goToConsultRoom = (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
   params?: any
 ) => {
-  const navigate = navigation.popToTop();
-  if (!navigate) {
-    navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [
-          NavigationActions.navigate({
-            routeName: AppRoutes.ConsultRoom,
-            params,
-          }),
-        ],
-      })
-    );
-  }
+  navigation.dispatch(
+    StackActions.reset({
+      index: 0,
+      key: null,
+      actions: [
+        NavigationActions.navigate({
+          routeName: AppRoutes.ConsultRoom,
+          params,
+        }),
+      ],
+    })
+  );
 };
 
 export const navigateToScreenWithEmptyStack = (
@@ -2638,4 +2658,16 @@ export const validateCoupon = async (
       rej('Sorry, unable to validate coupon right now.');
     }
   });
+};
+
+export const setAsyncPharmaLocation = (address: any) => {
+  if (address) {
+    const saveAddress = {
+      pincode: address?.zipcode,
+      id: address?.id,
+      city: address?.city,
+      state: address?.state,
+    };
+    AsyncStorage.setItem('PharmacyLocationPincode', JSON.stringify(saveAddress));
+  }
 };

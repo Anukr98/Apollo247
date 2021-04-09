@@ -102,6 +102,7 @@ import {
   postWebEngageEvent,
   productsThumbnailUrl,
   setWebEngageScreenNames,
+  setAsyncPharmaLocation,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -133,6 +134,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  BackHandler,
 } from 'react-native';
 import ContentLoader from 'react-native-easy-content-loader';
 import { Divider, Image, ListItem } from 'react-native-elements';
@@ -146,6 +148,7 @@ import {
   renderMedicineBannerShimmer,
   renderMedicinesShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const styles = StyleSheet.create({
   buyAgain: {
@@ -241,6 +244,7 @@ type Address = savePatientAddress_savePatientAddress_patientAddress;
 export const Medicine: React.FC<MedicineProps> = (props) => {
   const focusSearch = props.navigation.getParam('focusSearch');
   const showRecommendedSection = props.navigation.getParam('showRecommendedSection');
+  const comingFrom = props.navigation.getParam('comingFrom');
   const {
     locationDetails,
     pharmacyLocation,
@@ -314,6 +318,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const defaultAddress = addresses.find((item) => item.defaultAddress);
   const hasLocation = locationDetails || pharmacyLocation || defaultAddress;
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
+  const [asyncPincode, setAsyncPincode] = useState({});
   type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
   const postwebEngageCategoryClickedEvent = (
     categoryId: string,
@@ -337,6 +342,18 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       SectionName: sectionName,
     };
     postFirebaseEvent(FirebaseEventName.CATEGORY_CLICKED, firebaseEventAttributes);
+  };
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
+
+  const handleBack = () => {
+    navigateToHome(props.navigation, {}, comingFrom === 'deeplink');
+    return true;
   };
 
   const WebEngageEventAutoDetectLocation = (pincode: string, serviceable: boolean) => {
@@ -388,21 +405,25 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       };
       CalltheNearestPharmacyEvent();
       globalLoading!(true);
+      setPageLoading!(true);
+
       callToExotelApi(param)
         .then((response) => {
           hideAphAlert!();
           globalLoading!(false);
+          setPageLoading!(false);
         })
         .catch((error) => {
           hideAphAlert!();
           globalLoading!(false);
+          setPageLoading!(false);
           showAphAlert!({
             title: string.common.uhOh,
             description: 'We could not connect to the pharmacy now. Please try later.',
           });
         });
     };
-    setPageLoading!(true);
+
     pinCodeServiceabilityApi247(pincode)
       .then(({ data: { response } }) => {
         const { servicable, axdcCode } = response;
@@ -500,6 +521,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       .catch((e) => {
         CommonBugFender('Medicine_pinCodeServiceabilityApi', e);
         setServiceabilityMsg('Sorry, unable to check serviceability.');
+        setPageLoading!(false);
       });
   };
 
@@ -513,6 +535,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       updateServiceability(pharmacyPincode);
       setPinCode && setPinCode(pharmacyPincode);
     }
+
+    const getAsyncLocationPincode = async () => {
+      const asyncLocationPincode: any = await AsyncStorage.getItem('PharmacyLocationPincode');
+      if (asyncLocationPincode) {
+        setAsyncPincode(JSON.parse(asyncLocationPincode));
+      }
+    };
+    getAsyncLocationPincode();
   }, []);
 
   useEffect(() => {
@@ -687,6 +717,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <AccessLocation
           addresses={addressList}
           onPressSelectAddress={(address) => {
+            setAsyncPharmaLocation(address);
+            setAsyncPincode(saveAddress);
             setDefaultAddress(address);
           }}
           onPressEditAddress={(address) => {
@@ -879,6 +911,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             const addrComponents = data.results[0].address_components || [];
             const latLang = data.results[0].geometry.location || {};
             const response = getFormattedLocation(addrComponents, latLang, pincode);
+            const saveAddress = {
+              pincode: pincode,
+              id: '',
+              city: response?.city,
+              state: response?.state,
+            };
+            setAsyncPharmaLocation(saveAddress);
+            setAsyncPincode(saveAddress);
             setPharmacyLocation!(response);
             setDeliveryAddressId!('');
             updateServiceability(pincode, 'pincode');
@@ -953,16 +993,20 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     const renderDeliverToLocationCTA = () => {
       let deliveryAddress = addresses.find((item) => item.id == deliveryAddressId);
-      const location = !deliveryAddress
+      const location = asyncPincode?.pincode
+        ? `${formatText(asyncPincode?.city || asyncPincode?.state || '', 18)} ${
+            asyncPincode?.pincode
+          }`
+        : !deliveryAddress
         ? pharmacyLocation?.pincode
           ? `${formatText(
               g(pharmacyLocation, 'city') || g(pharmacyLocation, 'state') || '',
               18
             )} ${g(pharmacyLocation, 'pincode')}`
-          : `${formatText(
-              g(locationDetails, 'city') || g(pharmacyLocation, 'state') || '',
-              18
-            )} ${g(locationDetails, 'pincode')}`
+          : `${formatText(g(locationDetails, 'city') || g(locationDetails, 'state') || '', 18)} ${g(
+              locationDetails,
+              'pincode'
+            )}`
         : `${formatText(deliveryAddress?.city || deliveryAddress?.state || '', 18)} ${
             deliveryAddress?.zipcode
           }`;

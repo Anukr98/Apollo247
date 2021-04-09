@@ -382,8 +382,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   }, [showCarePlanNotification]);
 
   useEffect(() => {
-    getDoctorOfTheHour();
-    fetchAddress();
+    if (doctorsType != 'PARTNERS') {
+      getDoctorOfTheHour(false);
+      fetchAddress(false, 'from effect');
+    }
   }, []);
 
   const getDoctorOfTheHour = async (partnerDoctor: boolean = false, state?: string) => {
@@ -413,7 +415,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       });
   };
 
-  async function fetchAddress() {
+  async function fetchAddress(partnerDoctor: boolean = false, from?: string) {
     try {
       if (locationDetails?.state) {
         return;
@@ -430,7 +432,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           ?.addressList as savePatientAddress_savePatientAddress_patientAddress[]) || [];
       const state = addressList?.[0]?.state;
       if (state) {
-        getDoctorOfTheHour(false, state);
+        await getDoctorOfTheHour(partnerDoctor, state);
       }
     } catch (error) {
       CommonBugFender('DoctorSearchListing_fetchAddress', error);
@@ -1603,6 +1605,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           <FamilyDoctorIcon style={{ width: 16.58, height: 24 }} />
           <Text style={styles.doctorOfTheHourTextStyle}>{doctorOfHourText}</Text>
         </View>
+
         <DoctorCard
           rowData={platinumDoctor}
           navigation={props.navigation}
@@ -1970,7 +1973,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       scrollToTop();
       setPlatinumDoctor(null);
       getDoctorOfTheHour();
-      fetchAddress(); // this will get called when locationDetails?.state is null
+      fetchAddress(false, 'from apollo button press'); // this will get called when locationDetails?.state is null
     }
   };
 
@@ -1983,7 +1986,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       scrollToTop();
       setPlatinumDoctor(null);
       getDoctorOfTheHour(true);
-      fetchAddress();
+      fetchAddress(true, 'from partner button press');
     }
   };
 
@@ -2076,7 +2079,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               {renderDoctorSearches(
                 onlineCheckBox
                   ? physicalCheckBox
-                    ? ConsultMode.BOTH
+                    ? undefined
                     : ConsultMode.ONLINE
                   : physicalCheckBox
                   ? ConsultMode.PHYSICAL

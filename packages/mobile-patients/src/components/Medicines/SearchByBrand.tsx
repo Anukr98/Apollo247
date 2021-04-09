@@ -193,7 +193,6 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       })
       .catch((err) => {
         CommonBugFender('SearchByBrand_getProductsByCategoryApi', err);
-        console.log(err, 'errr');
       })
       .finally(() => {
         setIsLoading(false);
@@ -324,7 +323,6 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           try {
             const MoveDoctor = props.navigation.getParam('movedFrom') || '';
 
-            console.log('MoveDoctor', MoveDoctor);
             if (MoveDoctor === 'registration') {
               props.navigation.dispatch(
                 StackActions.reset({

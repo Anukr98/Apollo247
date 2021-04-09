@@ -72,6 +72,7 @@ import { NeedHelp } from '@aph/mobile-patients/src/components/NeedHelp';
 import { NeedHelpPharmacyOrder } from '@aph/mobile-patients/src/components/NeedHelpPharmacyOrder';
 import { NeedHelpConsultOrder } from '@aph/mobile-patients/src/components/NeedHelpConsultOrder';
 import { NeedHelpQueryDetails } from '@aph/mobile-patients/src/components/NeedHelpQueryDetails';
+import { NeedHelpContentView } from '@aph/mobile-patients/src/components/NeedHelpContentView';
 import { ShopByBrand } from '@aph/mobile-patients/src/components/Medicines/ShopByBrand';
 import { ImageSliderScreen } from '@aph/mobile-patients/src/components/ui/ImageSiderScreen';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -129,6 +130,7 @@ import { Maps } from '@aph/mobile-patients/src/components/ui/Maps';
 import { PaymentMethods } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentMethods';
 import { OtherBanks } from '@aph/mobile-patients/src/components/PaymentGateway/OtherBanks';
 import { OrderStatus } from '@aph/mobile-patients/src/components/Tests/OrderStatus';
+import { ProHealthWebView } from '@aph/mobile-patients/src/components/ProHealthWebView';
 import MyOrdersScreen from '@aph/mobile-patients/src/components/MyOrders/MyOrdersScreen';
 
 export enum AppRoutes {
@@ -149,6 +151,7 @@ export enum AppRoutes {
   NeedHelpPharmacyOrder = 'NeedHelpPharmacyOrder',
   NeedHelpConsultOrder = 'NeedHelpConsultOrder',
   NeedHelpQueryDetails = 'NeedHelpQueryDetails',
+  NeedHelpContentView = 'NeedHelpContentView',
   Consult = 'Consult',
   FilterScene = 'FilterScene',
   DoctorDetails = 'DoctorDetails',
@@ -247,6 +250,7 @@ export enum AppRoutes {
   OtherBanks = 'OtherBanks',
   OrderStatus = 'OrderStatus',
   TestListing = 'TestListing',
+  ProHealthWebView = 'ProHealthWebView',
   MyOrdersScreen = 'MyOrdersScreen',
 }
 
@@ -327,6 +331,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.NeedHelpQueryDetails]: {
     screen: NeedHelpQueryDetails,
+  },
+  [AppRoutes.NeedHelpContentView]: {
+    screen: NeedHelpContentView,
   },
   [AppRoutes.Consult]: {
     screen: Consult,
@@ -630,6 +637,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.TestListing]: {
     screen: TestListing,
+  },
+  [AppRoutes.ProHealthWebView]: {
+    screen: ProHealthWebView,
   },
   [AppRoutes.MyOrdersScreen]: {
     screen: MyOrdersScreen,

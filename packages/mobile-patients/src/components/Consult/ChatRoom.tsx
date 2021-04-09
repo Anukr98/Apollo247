@@ -1290,7 +1290,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       moment(appointmentData?.appointmentDateTime).diff(moment(), 'minutes', true)
     );
     setAppointmentDiffMin(diffMin);
-    if (diffMin <= 30 && diffMin >= -10) {
+    if (diffMin <= 30 && diffMin >= -15) {
       appointmentDiffMinTimerId = BackgroundTimer.setInterval(() => {
         const updatedDiffMin = Math.ceil(
           moment(appointmentData?.appointmentDateTime).diff(moment(), 'minutes', true)
@@ -1304,7 +1304,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             doctorWillConnectShortlyAutomatedText();
           }
         }
-        if (updatedDiffMin === -10) {
+        if (updatedDiffMin === -15) {
           const rescheduleOrCancelAppointmnt = insertText.filter((obj: any) => {
             return obj.message === rescheduleOrCancelAppointment;
           });
@@ -2772,7 +2772,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (doctorConnectShortly?.length === 0 && diffMin <= -5) {
       doctorWillConnectShortlyAutomatedText();
     }
-    if (rescheduleOrCancelAppointmnt?.length === 0 && diffMin <= -10) {
+    if (rescheduleOrCancelAppointmnt?.length === 0 && diffMin <= -15) {
       rescheduleOrCancelAppointmentAutomatedText();
     }
   };
@@ -4342,7 +4342,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
               </>
             </View>
-          ) : rowData.message === '^^#startconsultJr' ? (
+          ) : rowData.message === startConsultjr ? (
             <View
               style={{
                 backgroundColor: '#0087ba',
@@ -4379,7 +4379,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 </>
               ) : null}
             </View>
-          ) : rowData.message === '^^#startconsult' ? (
+          ) : rowData.message === startConsultMsg ? (
             <View
               style={{
                 backgroundColor: '#0087ba',
@@ -4912,21 +4912,47 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
     index: number
   ) => {
+    // starts with ^^# (display only known automated messages)
+    const automatedCodesToRender = [
+      transferConsultMsg,
+      followupconsult,
+      rescheduleConsultMsg,
+      consultPatientStartedMsg,
+      doctorAutoResponse,
+      firstMessage,
+      secondMessage,
+      languageQue,
+      jdThankyou,
+      doctorWillConnectShortly,
+      rescheduleOrCancelAppointment,
+      appointmentStartsInFifteenMin,
+      appointmentStartsInTenMin,
+      sectionHeader,
+      followUpChatGuideLines,
+      externalMeetingLink,
+      imageconsult,
+      appointmentComplete,
+      startConsultjr,
+      startConsultMsg,
+      stopConsultJr,
+      exotelCall,
+    ];
+
+    // starts with ^^
+    const callRelatedCodes = [
+      videoCallMsg,
+      audioCallMsg,
+      acceptedCallMsg,
+      endCallMsg,
+      covertAudioMsg,
+      covertVideoMsg,
+    ];
+
     if (
-      rowData.message === typingMsg ||
-      rowData.message === endCallMsg ||
-      rowData.message === audioCallMsg ||
-      rowData.message === videoCallMsg ||
-      rowData.message === patientJoinedMeetingRoom ||
-      rowData.message === covertVideoMsg ||
-      rowData.message === covertAudioMsg ||
-      rowData.message === acceptedCallMsg ||
-      rowData.message === stopConsultMsg ||
-      rowData.message === cancelConsultInitiated ||
-      rowData.message === callAbandonment ||
-      rowData.message === vitalsCompletedByPatient ||
-      rowData.message === patientRejectedCall ||
-      rowData === patientRejectedCall
+      !rowData?.message ||
+      patientRejectedCall === (rowData as any) ||
+      callRelatedCodes.includes(rowData?.message) ||
+      (!automatedCodesToRender.includes(rowData?.message) && rowData?.message?.startsWith('^^#'))
     ) {
       return null;
     }

@@ -144,6 +144,7 @@ export const firePurchaseEvent = (orderId: string, grandTotal: number, cartItems
     items: items,
     transaction_id: orderId,
     af_revenue: Number(grandTotal),
+    af_currency: 'INR',
   };
   postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   postAppsFlyerEvent(AppsFlyerEventName.PURCHASE, appsFlyerAttributes);

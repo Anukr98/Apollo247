@@ -36,6 +36,7 @@ import {
   getDiffInMinutes,
   overlyCallPermissions,
   isPastAppointment,
+  navigateToHome,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -60,6 +61,7 @@ import {
   Platform,
   Dimensions,
   SectionListData,
+  BackHandler,
 } from 'react-native';
 import { FlatList, NavigationEvents, NavigationScreenProps } from 'react-navigation';
 import {
@@ -113,7 +115,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 16,
     color: theme.colors.SKY_BLUE,
-    ...theme.fonts.IBMPlexSansMedium(isIphone5s() ? 15 : 17),
+    ...theme.fonts.IBMPlexSansMedium(isIphone5s() ? 15 : 16.5),
     lineHeight: 24,
   },
   buttonStyles: {
@@ -388,6 +390,11 @@ const styles = StyleSheet.create({
     paddingRight: 3,
     marginTop: 7,
   },
+  filterIcon: {
+    width: 17,
+    height: 18,
+    marginTop: 10,
+  },
 });
 
 export interface ConsultProps extends NavigationScreenProps {
@@ -404,6 +411,7 @@ export interface AppointmentFilterObject {
   availability: string[] | null;
   doctorsList: string[] | null;
   specialtyList: string[] | null;
+  movedFrom?: string;
 }
 
 export type Appointment = getPatientAllAppointments_getPatientAllAppointments_activeAppointments;
@@ -411,6 +419,7 @@ export type Appointment = getPatientAllAppointments_getPatientAllAppointments_ac
 export const Consult: React.FC<ConsultProps> = (props) => {
   const tabs = [{ title: 'Active' }, { title: 'Completed' }, { title: 'Cancelled' }];
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
+  const movedFrom = props.navigation.getParam('movedFrom');
 
   const [allAppointments, setAllAppointments] = useState<Appointment[]>([]);
   const [activeFollowUpAppointments, setActiveFollowUpAppointments] = useState<
@@ -466,6 +475,18 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     }
     currentPatient && setProfile(currentPatient!);
   }, [currentPatient, props.navigation.state.params]);
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
+
+  const handleBack = () => {
+    navigateToHome(props.navigation, {}, movedFrom === 'deeplink');
+    return true;
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -702,17 +723,15 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         },
       });
       const appointments = data?.getPatientAllAppointments;
-
-      const activeFollowUpAppointments =
-        appointments?.activeAppointments?.length || appointments?.followUpAppointments?.length
-          ? [
-              { type: 'Active', data: appointments?.activeAppointments! || [] },
-              { type: 'Follow-up Chat', data: appointments?.followUpAppointments! || [] },
-            ]
-          : [];
+      const activeFollowUpAppointments = appointments?.activeAppointments?.length
+        ? [{ type: 'Active', data: appointments?.activeAppointments! || [] }]
+        : [];
       const activeAppointments = appointments?.activeAppointments! || [];
       const followUpAppointments = appointments?.followUpAppointments! || [];
-      const completedAppointments = appointments?.completedAppointments! || [];
+      const completedAppointments = [
+        ...followUpAppointments,
+        ...(appointments?.completedAppointments! || []),
+      ];
       const cancelledAppointments = appointments?.cancelledAppointments! || [];
       const allAppointments = [
         ...activeAppointments,
@@ -1494,13 +1513,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           <TouchableOpacity activeOpacity={1} onPress={() => setIsFilterOpen(true)}>
             {filterLength > 0 ? (
               <>
-                <FilterGreenIcon style={{ width: 17, height: 18, marginTop: 8 }} />
+                <FilterGreenIcon style={styles.filterIcon} />
                 <View style={[styles.badgelabelView]}>
                   <Text style={styles.badgelabelText}>{filterLength}</Text>
                 </View>
               </>
             ) : (
-              <FilterDarkBlueIcon style={{ width: 17, height: 18, marginTop: 8 }} />
+              <FilterDarkBlueIcon style={styles.filterIcon} />
             )}
           </TouchableOpacity>
         </View>

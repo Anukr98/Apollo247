@@ -122,6 +122,7 @@
     "contactCustomerCare1": "We are unable to confirm your order, since dob is missing against this profile. Please contact customer care to get it updated",
     "contactCustomerCare2": "We are unable to confirm your order, since gender is missing against this profile. Please contact customer care to get it updated",
     "somethingWentWrong": "Something went wrong.",
+    "settingProfileTxt": "We’re setting up your profile. Please check back soon!",
     "couldNotLoadText": "Uh oh.. could't load!",
     "lowNetworkText": "We were unable to load the page properly because of low network. Please try again"
   },
@@ -488,7 +489,7 @@
     "areaText": "AREA",
     "addAddressText": "ADD ADDRESS",
     "totalAmountText": "Total Amount",
-    "timeSlotText": "TIME SLOT",
+    "timeSlotText": "APPOINTMENT TIME",
     "noSlotSelectedText": "No slot selected",
     "selectSlotText": "SELECT SLOT",
     "minorAgeText": "Lab tests cannot be booked for below 10 years",
@@ -512,7 +513,7 @@
     "noSlotAvailable": "Sorry! There are no slots available on {{date}}. Please choose another date.",
     "updateAddressLatLngMessage": "Unable to locate address. Please update.",
     "processingOrder": "We are taking longer than usual to confirm your order. Please check your order status after few minutes",
-    "cartPhelboTxt": "Sample collection executive to reach your home within 30 mins of your appointment time",
+    "cartPhelboTxt": "Sample collection executive to reach your home within 45 mins of your appointment time",
     "incorrectUserReport": "This report does not belongs to this user.",
     "unableToFetchReport": "We could not fetch your report. Please view report in my order section",
     "reasonForReschedulingText": "Reason for Rescheduling",
@@ -525,7 +526,10 @@
     "valueFeedbackTxt": "We value your feedback! :)",
     "howWasExpTxt": "How was your overall experience -",
     "feedbackSubTxt": "Your feedback has been submitted. Thanks for your time.",
-    "homeHomeCollectionDisclaimerTxt": "Home collection charges of upto ₹100 would be levied in case of order value less than ₹500"
+    "homeHomeCollectionDisclaimerTxt": "Home collection charges of upto ₹100 would be levied in case of order value less than ₹500",
+    "itDoseCancelledText": "Canceled by phlebotomist as per the request",
+    "orderCancelledReasonText": "Order was cancelled -",
+    "wantToReschedule": "• Do you want to Reschedule Appointment ?"
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -806,7 +810,8 @@
     "restartSymptomTrackerDiscription": "This will end your symptom tracking and you’ll have to start it again. Do you want to continue tracking your symptoms or go back?",
     "symptomTracker": "Symptom Tracker",
     "addAnotherSymptom": "Would you like to report another symptom?",
-    "removeSelectionPlaceholder": "Remove selection to type your own symptom"
+    "removeSelectionPlaceholder": "Remove selection to type your own symptom",
+    "topSpecialities": "Top Specialities"
   },
   "callRelatedPermissions": {
     "allPermissions": "For a smooth consultation experience with {0} and to ensure that you do not miss out your doctor's call, Apollo 247 needs your camera, microphone and call display permissions.",
@@ -1010,5 +1015,10 @@
     "tnc": "By Clicking on this link, you will provide a confirmation to join a recorded Audio/Video meeting on the external platform.",
     "copied_to_clipboard": "Copied ",
     "tryAgainLater": "Something went wrong, please try again after sometime"
+  },
+  "splash": {
+    "CAPSULE": "CAPSULE",
+    "SYRINGE": "SYRINGE",
+    "STETHO": "STETHO"
   }
 }

@@ -3,7 +3,6 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
@@ -14,17 +13,12 @@ export interface BottomStickyComponentProps {
   specialPrice: number | null;
   sku: string;
   isInStock: boolean;
-  packForm: string | null;
-  packSize: string | null;
-  unit: string;
-  packFormVariant: string | null;
   onAddCartItem: () => void;
   productQuantity: number;
   setShowAddedToCart: (show: boolean) => void;
   isBanned: boolean;
   cashback: number;
-  name: string;
-  deliveryError?: string;
+  onNotifyMeClick: () => void;
 }
 
 export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (props) => {
@@ -34,28 +28,21 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
     price,
     specialPrice,
     sku,
-    packForm,
-    packSize,
-    unit,
-    packFormVariant,
     productQuantity,
     setShowAddedToCart,
     isBanned,
     cashback,
-    deliveryError,
-    name,
+    onNotifyMeClick,
   } = props;
   const { cartItems, circleSubscriptionId } = useShoppingCart();
-  const { showAphAlert } = useUIElements();
 
   const renderCartCTA = () => {
     const ctaText = isInStock ? 'ADD TO CART' : 'NOTIFY WHEN IN STOCK';
-    const productName = name ? name : 'the product';
     return (
       <View>
         <TouchableOpacity
           onPress={() => {
-            isInStock ? onAddToCart() : onNotifyMeClick(productName);
+            isInStock ? onAddToCart() : onNotifyMeClick();
           }}
           activeOpacity={0.7}
           style={isInStock ? styles.addToCartCta : styles.notifyCta}
@@ -64,13 +51,6 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
         </TouchableOpacity>
       </View>
     );
-  };
-
-  const onNotifyMeClick = (name: string) => {
-    showAphAlert!({
-      title: 'Okay! :)',
-      description: `You will be notified when ${name || 'the product'} is back in stock.`,
-    });
   };
 
   const onAddToCart = () => {

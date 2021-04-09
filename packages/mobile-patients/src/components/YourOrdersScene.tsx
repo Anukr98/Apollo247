@@ -69,7 +69,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState<any>([]);
   const [skuList, setSkuList] = useState<string[]>([]);
 
@@ -267,6 +267,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
     props.navigation.navigate(AppRoutes.NeedHelpPharmacyOrder, {
       queryIdLevel1: helpSectionQueryId.pharmacy,
+      sourcePage: 'My Orders',
     });
   };
 

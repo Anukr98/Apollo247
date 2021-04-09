@@ -22,6 +22,9 @@ import {
   getOTPOnCallVariables,
 } from '@aph/mobile-patients/src/graphql/types/getOTPOnCall';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import DeviceInfo from 'react-native-device-info';
+import { Platform } from 'react-native';
+import loggingLink from '@aph/mobile-patients/src/helpers/loggingLink';
 
 const buildApolloClient = (authToken: string, handleUnauthenticated: () => void) => {
   const errorLink = onError((error) => {
@@ -45,7 +48,12 @@ const buildApolloClient = (authToken: string, handleUnauthenticated: () => void)
   const httpLink = createHttpLink({
     uri: apiRoutes.graphql(),
   });
-  const link = errorLink.concat(authLink).concat(httpLink);
+
+  const link = errorLink
+    //.concat(loggingLink) //Uncomment this to enable logging , sequence does matter 
+    .concat(authLink)
+    .concat(httpLink);
+
   const cache = apolloClient ? apolloClient.cache : new InMemoryCache();
   return new ApolloClient({
     link,
@@ -94,6 +102,12 @@ export const verifyOTP = (mobileNumber: string, otp: string) => {
       .query<verifyLoginOtp, verifyLoginOtpVariables>({
         query: VERIFY_LOGIN_OTP,
         fetchPolicy: 'no-cache',
+        context: {
+          headers: {
+            'x-app-OS': Platform.OS,
+            'x-app-version': DeviceInfo.getVersion(),
+          },
+        },
         variables: { otpVerificationInput: inputData },
       })
       .then((data) => {

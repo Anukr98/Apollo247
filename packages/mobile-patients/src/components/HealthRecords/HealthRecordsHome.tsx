@@ -75,6 +75,7 @@ import {
   Platform,
   FlatList,
   Dimensions,
+  BackHandler,
 } from 'react-native';
 import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
 import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
@@ -401,7 +402,9 @@ const heightArray: HeightArray[] = [
   { key: HEIGHT_ARRAY.FT, title: HEIGHT_ARRAY.FT },
 ];
 
-export interface HealthRecordsHomeProps extends NavigationScreenProps {}
+export interface HealthRecordsHomeProps extends NavigationScreenProps {
+  movedFrom?: string;
+}
 
 export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [healthChecksNew, setHealthChecksNew] = useState<
@@ -420,6 +423,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     | undefined
   >([]);
 
+  const movedFrom = props.navigation.getParam('movedFrom');
   const [testAndHealthCheck, setTestAndHealthCheck] = useState<{ type: string; data: any }[]>();
   const { loading, setLoading } = useUIElements();
   const [prismdataLoader, setPrismdataLoader] = useState<boolean>(false);
@@ -472,6 +476,18 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     }
     setPatientHistoryValues();
   }, [currentPatient]);
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
+
+  const handleBack = () => {
+    navigateToHome(props.navigation, {}, movedFrom === 'deeplink');
+    return true;
+  };
 
   useEffect(() => {
     if (currentPatient) {

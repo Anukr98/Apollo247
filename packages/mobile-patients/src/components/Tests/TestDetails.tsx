@@ -379,9 +379,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   useEffect(() => {
     DiagnosticDetailsViewed(
       isDeep == 'deeplink' ? 'Deeplink' : testInfo?.source,
-      testInfo?.ItemName,
+      testInfo?.ItemName || itemId,
       testInfo?.type,
-      testInfo?.ItemID,
+      testInfo?.ItemID || itemId,
       currentPatient,
       testInfo?.Rate,
       pharmacyCircleAttributes

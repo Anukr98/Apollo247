@@ -1,7 +1,10 @@
 import { formatTestSlot, isEmptyObject } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { WhiteChevronRightIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  WhiteChevronRightIcon,
+  TestInfoWhiteIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -82,6 +85,10 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
           </TouchableOpacity>
         </View>
         <Text style={styles.timeTextStyle}>{timeSlotText || ''}</Text>
+        <View style={styles.infoIconViewStyle}>
+          <TestInfoWhiteIcon style={styles.timeIconStyle} />
+          <Text style={styles.infoTextStyle}>{string.diagnostics.cartPhelboTxt}</Text>
+        </View>
       </View>
     );
   };
@@ -158,5 +165,15 @@ const styles = StyleSheet.create({
   },
   timeTextStyle: {
     ...text('R', 14, WHITE, 1, 22),
+  },
+  infoIconViewStyle: { flexDirection: 'row' },
+  timeIconStyle: {
+    width: 12,
+    height: 12,
+    marginTop: 3,
+  },
+  infoTextStyle: {
+    ...text('R', 10, WHITE, 1, 16),
+    marginLeft: 4,
   },
 });
