@@ -492,7 +492,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   congratulationsDescriptionPhysical: {
-    marginHorizontal: 10,
+    marginHorizontal: 24,
     marginTop: 8,
     color: theme.colors.SKY_BLUE,
     ...theme.fonts.IBMPlexSansMedium(17),
