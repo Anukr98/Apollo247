@@ -382,7 +382,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               />
             ) : (
               <Image
-                source={require('@aph/mobile-patients/src/components/ui/icons/no-photo-icon-round.png')}
+                source={require('@aph/mobile-patients/src/components/ui/icons/no-photo-icon-round.webp')}
                 style={{ top: 10, height: 200, width: '100%' }}
                 resizeMode={'contain'}
               />

@@ -142,7 +142,7 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
         <View>
           {isCircleDoctorOnSelectedConsultMode ? (
             <ImageBackground
-              source={require('@aph/mobile-patients/src/components/ui/icons/doctor_ring.png')}
+              source={require('@aph/mobile-patients/src/components/ui/icons/doctor_ring.webp')}
               style={styles.drImageBackground}
               resizeMode="contain"
             >

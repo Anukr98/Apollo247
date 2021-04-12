@@ -1545,7 +1545,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           <View style={{ width: getWidth(20) }} />
           <Image
             style={localStyles.imageStyle}
-            source={require('@aph/mobile-patients/src/images/doctor/doctor_search_filler_img.png')}
+            source={require('@aph/mobile-patients/src/images/doctor/doctor_search_filler_img.webp')}
           />
         </View>
         <Text style={localStyles.pleaseWaitTextStyle}>

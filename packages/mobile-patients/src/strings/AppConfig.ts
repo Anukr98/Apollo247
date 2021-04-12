@@ -1282,17 +1282,17 @@ export const stepsToBookArray = [
   {
     heading: string.diagnostics.bookOnline,
     subtext: string.diagnostics.bookOnlineSubText,
-    image: require('@aph/mobile-patients/src/components/ui/icons/stepsForBooking_1.png'),
+    image: require('@aph/mobile-patients/src/components/ui/icons/stepsForBooking_1.webp'),
   },
   {
     heading: string.diagnostics.hcSample,
     subtext: string.diagnostics.hcSampleSubText,
-    image: require('@aph/mobile-patients/src/components/ui/icons/stepsForBooking_2.png'),
+    image: require('@aph/mobile-patients/src/components/ui/icons/stepsForBooking_2.webp'),
   },
   {
     heading: string.diagnostics.fastReport,
     subtext: string.diagnostics.fastReportSubText,
-    image: require('@aph/mobile-patients/src/components/ui/icons/stepsForBooking_3.png'),
+    image: require('@aph/mobile-patients/src/components/ui/icons/stepsForBooking_3.webp'),
   },
 ];
 
