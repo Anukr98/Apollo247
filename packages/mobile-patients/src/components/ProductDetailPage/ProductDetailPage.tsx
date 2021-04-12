@@ -181,6 +181,20 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      setLoading(true);
+      getMedicineDetails();
+    });
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+      setLoading(true);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      didBlur && didBlur.remove();
+    };
+  });
+
+  useEffect(() => {
     if (cartItems?.length) {
       const filteredCartItems = cartItems?.filter((item) => item?.id == medicineDetails?.sku);
       setSkuInCart(filteredCartItems);
