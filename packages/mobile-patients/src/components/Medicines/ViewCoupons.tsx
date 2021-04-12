@@ -130,6 +130,9 @@ const styles = StyleSheet.create({
 export interface pharma_coupon {
   coupon: string;
   message: string;
+  applicable?: string;
+  textOffer?: string;
+  frontendCategory?: string;
 }
 
 export interface ViewCouponsProps extends NavigationScreenProps {
@@ -145,7 +148,9 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
   const [disableGeneralCouponsList, setDisableGeneralCouponsList] = useState<number[]>([]);
   const [showAllProductOffers, setShowAllProductOffers] = useState<boolean>(false);
   const [showCouponsForYou, setShowCouponsForYou] = useState<boolean>(false);
-  const [couponList, setcouponList] = useState<pharma_coupon[]>([]);
+  const [circleCoupons, setCircleCoupons] = useState<pharma_coupon[]>([]); // circle coupons => applicable === 'APOLLO:Circle...'
+  const [productOffers, setProductOffers] = useState<pharma_coupon[]>([]); // product offer coupons => frontendCategory === 'ProductOffer'
+  const [couponList, setCouponList] = useState<pharma_coupon[]>([]); // normal coupons
   const { currentPatient } = useAllCurrentPatients();
   const {
     setCoupon,
@@ -195,7 +200,21 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     };
     fetchConsultCoupons(data)
       .then((res: any) => {
-        setcouponList(res?.data?.response);
+        const coupons = res?.data?.response || [];
+        const circleCoupons = coupons.filter((coupon: pharma_coupon) =>
+          coupon?.applicable?.includes('APOLLO:Circle')
+        );
+        setCircleCoupons(circleCoupons || []);
+        const nonCircleCoupons = coupons.filter((coupon) => !circleCoupons.includes(coupon)) || [];
+        const productOfferCoupons = nonCircleCoupons?.filter(
+          (coupon: pharma_coupon) => coupon?.frontendCategory === 'ProductOffer'
+        );
+        setProductOffers(productOfferCoupons || []);
+        const nonSpecialOfferCoupons =
+          coupons.filter(
+            (coupon) => !circleCoupons.includes(coupon) && !productOfferCoupons.includes(coupon)
+          ) || [];
+        setCouponList(nonSpecialOfferCoupons || []);
         setShimmerLoading(false);
       })
       .catch((error) => {
@@ -461,14 +480,6 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
       </View>
     );
   };
-  const renderCareDiscountBanner = () => (
-    <View style={styles.careMessageContainer}>
-      <PendingIcon style={styles.pendingIconStyle} />
-      <Text style={styles.careMessage}>
-        You can either use CIRCLE discount or apply a Coupon code
-      </Text>
-    </View>
-  );
 
   return (
     <View style={{ flex: 1 }}>
@@ -479,10 +490,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
           container={{ borderBottomWidth: 0 }}
           onPressLeftIcon={() => props.navigation.goBack()}
         />
-        <ScrollView bounces={false}>
-          {(isCircleSubscription || !!circleMembershipCharges) && renderCareDiscountBanner()}
-          {renderCouponCard()}
-        </ScrollView>
+        <ScrollView bounces={false}>{renderCouponCard()}</ScrollView>
       </SafeAreaView>
     </View>
   );
