@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Dimensions, Platform } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
@@ -7,7 +7,7 @@ import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFu
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
-
+const { width } = Dimensions.get('window');
 export interface BottomStickyComponentProps {
   price: number;
   specialPrice: number | null;
@@ -20,7 +20,6 @@ export interface BottomStickyComponentProps {
   cashback: number;
   onNotifyMeClick: () => void;
 }
-
 export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (props) => {
   const {
     isInStock,
@@ -35,7 +34,8 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
     onNotifyMeClick,
   } = props;
   const { cartItems, circleSubscriptionId } = useShoppingCart();
-
+  const isCircleMember = !!circleSubscriptionId && !!cashback;
+  const isIos = Platform.OS === 'ios';
   const renderCartCTA = () => {
     const ctaText = isInStock ? 'ADD TO CART' : 'NOTIFY WHEN IN STOCK';
     return (
@@ -52,7 +52,6 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
       </View>
     );
   };
-
   const onAddToCart = () => {
     setShowAddedToCart(true);
     setTimeout(() => {
@@ -65,17 +64,10 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
       onAddCartItem();
     }
   };
-
   const renderProductPrice = () => {
     const discountPercent = getDiscountPercentage(price, specialPrice);
     return (
-      <View
-        style={{
-          flexDirection: 'column',
-          justifyContent: 'center',
-          marginTop: !!cashback && !!circleSubscriptionId ? 0 : 17,
-        }}
-      >
+      <View>
         {!!specialPrice ? (
           <View style={styles.flexRow}>
             <Text style={styles.value}>
@@ -101,7 +93,6 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
       </View>
     );
   };
-
   const renderCareCashback = () => {
     const finalPrice = price - specialPrice ? specialPrice : price;
     return (
@@ -122,27 +113,38 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
       </>
     );
   };
-
   return (
-    <StickyBottomComponent style={styles.stickyBottomComponent}>
-      <View>
-        {renderProductPrice()}
-        {!!circleSubscriptionId && !!cashback && renderCareCashback()}
+    <StickyBottomComponent
+      style={[styles.stickyBottomComponent, isIos ? { height: isCircleMember ? 95 : 85 } : {}]}
+    >
+      <View style={[styles.innerContainer, isIos ? { paddingTop: isCircleMember ? 15 : 12 } : {}]}>
+        <View>
+          {renderProductPrice()}
+          {isCircleMember && renderCareCashback()}
+        </View>
+        {!isBanned && renderCartCTA()}
       </View>
-      {!isBanned && renderCartCTA()}
     </StickyBottomComponent>
   );
 };
-
 const styles = StyleSheet.create({
   stickyBottomComponent: {
-    ...theme.viewStyles.shadowStyle,
+    ...theme.viewStyles.cardViewStyle,
     backgroundColor: theme.colors.WHITE,
-    flexDirection: 'row',
     borderTopWidth: 0.6,
     borderStyle: 'dashed',
     position: 'absolute',
     top: 56,
+    paddingHorizontal: 0,
+    height: 70,
+  },
+  innerContainer: {
+    backgroundColor: 'white',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: width,
+    paddingHorizontal: 20,
+    alignItems: 'center',
   },
   flexRow: {
     flexDirection: 'row',
@@ -152,7 +154,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FCB716',
     paddingVertical: 7,
     paddingHorizontal: 30,
-    marginTop: 6,
   },
   addToCartText: {
     ...theme.viewStyles.text('B', 14, '#FFFFFF', 1, 25, 0.35),
@@ -163,7 +164,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#FCB716',
-    paddingVertical: 7,
     marginVertical: 10,
     paddingHorizontal: 10,
   },
