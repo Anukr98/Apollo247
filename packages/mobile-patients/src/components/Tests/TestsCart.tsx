@@ -333,6 +333,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     initiateHyperSDK();
   }, [currentPatient]);
 
+  useEffect(() => {
+    if (showSelectPatient && currentPatient) {
+      setSelectedPatient(currentPatient);
+      setShowPatientListOverlay(false);
+    }
+  }, []);
+
   const fetchTestReportGenDetails = async (_cartItemId: string | number[]) => {
     try {
       const removeSpaces =
