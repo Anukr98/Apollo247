@@ -7,8 +7,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Keyboard,
+  BackHandler,
 } from 'react-native';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 
 import {
   ProductPageViewedSource,
@@ -23,10 +24,8 @@ import {
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-
-import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { CartIcon, WhiteTickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { WhiteTickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Breadcrumb } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -178,7 +177,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     if (!_deliveryError) {
       fetchDeliveryTime(pincode, false);
     }
+    BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
+    };
   }, []);
+
+  const onPressHardwareBack = () => props.navigation.goBack();
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
