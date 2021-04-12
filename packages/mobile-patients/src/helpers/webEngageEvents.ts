@@ -911,6 +911,7 @@ export interface WebEngageEvents {
     'category ID': string;
     price: number;
     pincode: string;
+    serviceable: YesOrNo;
   };
 
   [WebEngageEventName.CATEGORY_CLICKED]: {
@@ -2164,6 +2165,7 @@ export interface WebEngageEvents {
     'Circle Membership Value': number | null;
     User_Type?: PharmaUserStatus;
     Pincode?: string;
+    serviceable: YesOrNo;
   };
   [WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
     'Patient Name': string;

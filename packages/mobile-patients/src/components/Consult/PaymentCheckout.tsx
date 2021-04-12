@@ -94,6 +94,7 @@ import {
   getAppointmentData,
   getAppointmentDataVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
+import { saveConsultationLocation } from '@aph/mobile-patients/src/helpers/clientCalls';
 
 interface PaymentCheckoutProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
@@ -840,6 +841,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
                   skipAutoQuestions: doctor?.skipAutoQuestions,
                 };
                 homeScreenParamsOnPop.current = params;
+                locationDetails && saveConsultationLocation(client, appointmentId, locationDetails);
                 navigateToHome(props.navigation, params);
               }
             } catch (error) {}

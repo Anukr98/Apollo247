@@ -103,6 +103,7 @@ import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextI
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { userLocationConsultWEBEngage } from '@aph/mobile-patients/src/helpers/CommonEvents';
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { saveConsultationLocation } from '@aph/mobile-patients/src/helpers/clientCalls';
 
 export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
@@ -961,26 +962,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
   const saveLocationWithConsultation = async (location: LocationData) => {
     setLoading?.(true);
-    try {
-      const query: updateAppointmentVariables = {
-        appointmentInput: {
-          appointmentId: orderId,
-          patientLocation: {
-            city: location?.city,
-            pincode: Number(location?.pincode),
-          },
-        },
-      };
-      await client.query<updateAppointment>({
-        query: UPDATE_APPOINTMENT,
-        fetchPolicy: 'no-cache',
-        variables: query,
-      });
-      setLoading?.(false);
-    } catch (error) {
-      setLoading?.(false);
-      CommonBugFender('ConsultRoom_getUserSubscriptionsByStatus', error);
-    }
+    await saveConsultationLocation(client, orderId, location);
+    setLoading?.(false);
   };
 
   const renderSearchManualLocation = () => {
