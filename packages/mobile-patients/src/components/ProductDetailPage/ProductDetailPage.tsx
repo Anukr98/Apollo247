@@ -374,6 +374,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         ...pharmacyCircleAttributes,
         ...pharmacyUserTypeAttribute,
         Pincode: pincode,
+        serviceable: notServiceable ? 'No' : 'Yes',
       };
       postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
@@ -752,6 +753,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       'category ID': medicineDetails?.category_id,
       price: medicineDetails?.price,
       pincode: pincode,
+      serviceable: notServiceable ? 'No' : 'Yes',
     };
     postWebEngageEvent(WebEngageEventName.NOTIFY_ME, eventAttributes);
     showAphAlert!({
