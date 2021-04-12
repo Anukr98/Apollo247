@@ -114,6 +114,7 @@ export enum WebEngageEventName {
   TRUECALLER_EVENT_ERRORS = 'Truecaller event errors',
   TRUECALLER_APOLLO247_LOGIN_ERRORS = 'Apollo247 truecaller login errors',
   LOGIN_WITH_TRUECALLER_CLICKED = 'Login with truecaller clicked',
+  MY_CONSULTED_DOCTORS_CLICKED = 'My doctor clicked',
 
   //Doctor Share Events
   SHARE_CLICK_DOC_LIST_SCREEN = 'Share clicked doc list screen',
@@ -2507,4 +2508,26 @@ export interface WebEngageEvents {
     Error: any;
   };
   [WebEngageEventName.LOGIN_WITH_TRUECALLER_CLICKED]: {};
+  [WebEngageEventName.MY_CONSULTED_DOCTORS_CLICKED]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    User_Type: string;
+    'Doctor Name': string;
+    'Doctor Id': string;
+    'Doctor Speciality': string;
+    'Previous consult Details': {
+      'Consult Date & Time': Date | string;
+      'Display ID': string;
+      'Appointment Id': string;
+      'Hospital Id': string;
+      'Hospital Name': string;
+      _247_Flag: boolean | undefined;
+      'Consult Mode': string;
+    };
+  };
 }

@@ -447,7 +447,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [loading, setLoading] = useState(false);
-  const [pageLoading, setPageLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
 
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [appointmentItem, setAppoinmentItem] = useState<Appointment | null>();
