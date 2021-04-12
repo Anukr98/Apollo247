@@ -607,6 +607,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setLoginSection,
     setCovidVaccineCtaV2,
     setCartBankOffer,
+    setUploadPrescriptionOptions,
   } = useAppCommonData();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -747,6 +748,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_FollowUp_Chat_Limit',
       PROD: 'FollowUp_Chat_Limit',
     },
+    uploadPrescription_Options: {
+      QA: 'QA_UploadPrescription_Options',
+      PROD: 'UploadPrescription_Options',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -821,6 +826,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         config.getString(key)
       );
       bankOfferText && setCartBankOffer!(bankOfferText);
+
+      const uploadPrescriptionOptions = getRemoteConfigValue(
+        'uploadPrescription_Options',
+        (key) => JSON.parse(config.getString(key)) || []
+      );
+      uploadPrescriptionOptions && setUploadPrescriptionOptions!(uploadPrescriptionOptions);
 
       setAppConfig(
         'Min_Value_For_Pharmacy_Free_Delivery',

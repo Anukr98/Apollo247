@@ -25,7 +25,7 @@ import {
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Image,
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(14),
   },
   textStyle: {
-    ...theme.fonts.IBMPlexSansMedium(11),
+    ...theme.fonts.IBMPlexSansMedium(13),
     lineHeight: 14,
     color: '#979797',
   },
@@ -148,7 +148,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const source = props.navigation.getParam('source') || '';
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const { pharmacyUserType } = useAppCommonData();
+  const { pharmacyUserType, uploadPrescriptionOptions } = useAppCommonData();
   const type = props.navigation.getParam('type') || '';
   const isPhysicalPresciptionProps = !!phyPrescriptionsProp.length;
   const isEPresciptionProps = !!ePrescriptionsProp.length;
@@ -215,6 +215,8 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     props.navigation.getParam('showOptions') != undefined
       ? props.navigation.getParam('showOptions')
       : true;
+
+  const scrollviewRef = useRef<any>(null);
 
   useEffect(() => {
     fetchAddress();
@@ -742,6 +744,9 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   };
 
   const renderMedicineDetailOptions = () => {
+    const prescriptionOptions = uploadPrescriptionOptions?.length
+      ? uploadPrescriptionOptions
+      : medicineDetailOptions;
     return (
       <View style={styles.prescriptionCardStyle}>
         <View>{renderLabel('Choose a suitable option below', true)}</View>
@@ -755,7 +760,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
             margin: 16,
           }}
         >
-          {medicineDetailOptions.map((item, index, array) => {
+          {prescriptionOptions?.map((item, index, array) => {
             return (
               <RadioSelectionItem
                 key={item.id}
@@ -774,6 +779,9 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                       ? 'All Medicine'
                       : CALL_ME;
                   if (optionSelected === CALL_ME) {
+                    setTimeout(() => {
+                      scrollviewRef.current.scrollToEnd({ animated: true });
+                    }, 300);
                     setPrescriptionOption(CALL_ME);
                   } else if (optionSelected === 'All Medicine') {
                     setPrescriptionOption(SPECIFIED_DURATION);
@@ -1144,7 +1152,11 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
             }
           }}
         />
-        <ScrollView bounces={false} contentContainerStyle={{ paddingBottom: 150 }}>
+        <ScrollView
+          ref={scrollviewRef}
+          bounces={false}
+          contentContainerStyle={{ paddingBottom: 150 }}
+        >
           {renderPhysicalPrescriptions()}
           {renderEPrescriptions()}
           <Text

@@ -132,9 +132,13 @@ export interface TotalCircleSavings {
   callsUsed: number;
 }
 
-export type PharmaUserStatus = 'NEW' | 'REPEAT' | '';
-export type UploadPrescSource = 'Cart' | 'Upload Flow' | 'Re-Upload' | 'Non-cart' | 'Consult Flow';
+export interface UploadPrescriptionOptions {
+  id: string;
+  titile: string;
+  subTitle: string;
+}
 
+export type PharmaUserStatus = 'NEW' | 'REPEAT' | '';
 export type UploadPrescSource = 'Cart' | 'Upload Flow' | 'Re-Upload' | 'Non-cart' | 'Consult Flow';
 
 export interface PharmacyUserTypeEvent {
@@ -246,6 +250,8 @@ export interface AppCommonDataContextProps {
   homeScreenParamsOnPop: any;
   cartBankOffer: string;
   setCartBankOffer: ((id: string) => void) | null;
+  uploadPrescriptionOptions: UploadPrescriptionOptions[];
+  setUploadPrescriptionOptions: ((prescription: UploadPrescriptionOptions[]) => void) | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -341,6 +347,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   homeScreenParamsOnPop: null,
   cartBankOffer: '',
   setCartBankOffer: null,
+  uploadPrescriptionOptions: [],
+  setUploadPrescriptionOptions: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
@@ -512,6 +520,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
     AsyncStorage.setItem('diagnosticLocation', JSON.stringify(diagnosticLocation)).catch(() => {});
   };
 
+  const [uploadPrescriptionOptions, setUploadPrescriptionOptions] = useState<
+    AppCommonDataContextProps['uploadPrescriptionOptions']
+  >([]);
+
   const [axdcCode, setAxdcCode] = useState<AppCommonDataContextProps['axdcCode']>('');
   const [circlePlanId, setCirclePlanId] = useState<AppCommonDataContextProps['circlePlanId']>('');
   const [healthCredits, setHealthCredits] = useState<AppCommonDataContextProps['healthCredits']>(
@@ -659,6 +671,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         homeScreenParamsOnPop,
         cartBankOffer,
         setCartBankOffer,
+        uploadPrescriptionOptions,
+        setUploadPrescriptionOptions,
       }}
     >
       {props.children}
