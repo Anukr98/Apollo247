@@ -192,7 +192,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       didFocus && didFocus.remove();
       didBlur && didBlur.remove();
     };
-  });
+  }, [props.navigation]);
 
   useEffect(() => {
     if (cartItems?.length) {
