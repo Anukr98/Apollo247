@@ -36,11 +36,7 @@ import {
   BackHandler,
   Text,
   Modal,
-  Platform,
-  PermissionsAndroid,
 } from 'react-native';
-import RNFetchBlob from 'rn-fetch-blob';
-import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { Down, Up } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NavigationScreenProps } from 'react-navigation';
 import {
@@ -52,11 +48,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
+  downloadDiagnosticReport,
   g,
   getPatientNameById,
   handleGraphQlError,
-  requestReadSmsPermission,
-  storagePermissionsToDownload,
   TestSlot,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DisabledTickIcon, TickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -1161,7 +1156,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         showRescheduleCancel={
           showReschedule && order?.orderStatus != DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED
         }
-        showReportOption={showReport}
+        showReportOption={
+          showReport || order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED
+        }
         showAdditonalView={!!showExtraInfo && showExtraInfo?.length > 0}
         additonalRejectedInfo={sampleRejectedString}
         price={order?.totalPrice}
@@ -1207,72 +1204,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string) {
     setLoading?.(true);
-    let result = Platform.OS === 'android' && (await requestReadSmsPermission());
     try {
-      if (
-        (result &&
-          Platform.OS == 'android' &&
-          result?.[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] ===
-            PermissionsAndroid.RESULTS.GRANTED &&
-          result?.[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] ===
-            PermissionsAndroid.RESULTS.GRANTED) ||
-        Platform.OS == 'ios'
-      ) {
-        const dirs = RNFetchBlob.fs.dirs;
-        const reportName = `Apollo247_${appointmentDate}_${patientName}.pdf`;
-        const downloadPath =
-          Platform.OS === 'ios'
-            ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + reportName
-            : dirs.DownloadDir + '/' + reportName;
-
-        RNFetchBlob.config({
-          fileCache: true,
-          path: downloadPath,
-          addAndroidDownloads: {
-            title: reportName,
-            useDownloadManager: true,
-            notification: true,
-            path: downloadPath,
-            mime: mimeType(downloadPath),
-            description: 'File downloaded by download manager.',
-          },
-        })
-          .fetch('GET', pdfUrl, {
-          })
-          .then((res) => {
-            setLoading?.(false);
-            Platform.OS === 'ios'
-              ? RNFetchBlob.ios.previewDocument(res.path())
-              : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
-          })
-          .catch((err) => {
-            CommonBugFender('TestOrderDetails_ViewReport', err);
-            currentPatient && handleGraphQlError(err);
-            setLoading?.(false);
-          })
-          .finally(() => {
-            setLoading?.(false);
-          });
-      } else {
-        if (
-          result &&
-          Platform.OS == 'android' &&
-          result?.[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] !==
-            PermissionsAndroid.RESULTS.DENIED &&
-          result?.[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] !==
-            PermissionsAndroid.RESULTS.DENIED
-        ) {
-          storagePermissionsToDownload(() => {
-            downloadLabTest(pdfUrl, appointmentDate, patientName);
-          });
-        } else {
-          downloadLabTest(pdfUrl, appointmentDate, patientName);
-        }
-      }
+      await downloadDiagnosticReport(pdfUrl, appointmentDate, patientName);
     } catch (error) {
-      console.log({ error });
       setLoading?.(false);
       CommonBugFender('YourOrderTests_downloadLabTest', error);
+    } finally {
+      setLoading?.(false);
     }
   }
 

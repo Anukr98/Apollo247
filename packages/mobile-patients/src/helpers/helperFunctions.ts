@@ -91,6 +91,8 @@ import { differenceInYears, parse } from 'date-fns';
 import stripHtml from 'string-strip-html';
 import isLessThan from 'semver/functions/lt';
 import coerce from 'semver/functions/coerce';
+import RNFetchBlob from 'rn-fetch-blob';
+import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 
 const width = Dimensions.get('window').width;
 
@@ -2686,16 +2688,6 @@ export const requestReadSmsPermission = async () => {
       PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
       PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
     ]);
-    if (
-      resuts[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] !==
-      PermissionsAndroid.RESULTS.GRANTED
-    ) {
-    }
-    if (
-      resuts[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] !==
-      PermissionsAndroid.RESULTS.GRANTED
-    ) {
-    }
     if (resuts) {
       return resuts;
     }
@@ -2713,4 +2705,75 @@ export const storagePermissionsToDownload = (doRequest?: () => void) => {
     }
   );
 };
+
+export async function downloadDiagnosticReport(pdfUrl: string, appointmentDate: string, patientName: string) {
+  let result = Platform.OS === 'android' && (await requestReadSmsPermission());
+  try {
+    if (
+      (result &&
+        Platform.OS == 'android' &&
+        result?.[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] ===
+          PermissionsAndroid.RESULTS.GRANTED &&
+        result?.[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] ===
+          PermissionsAndroid.RESULTS.GRANTED) ||
+      Platform.OS == 'ios'
+    ) {
+      const dirs = RNFetchBlob.fs.dirs;
+      const reportName = `Apollo247_${appointmentDate}_${patientName}.pdf`;
+      const downloadPath =
+        Platform.OS === 'ios'
+          ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + reportName
+          : dirs.DownloadDir + '/' + reportName;
+
+      RNFetchBlob.config({
+        fileCache: true,
+        path: downloadPath,
+        addAndroidDownloads: {
+          title: reportName,
+          useDownloadManager: true,
+          notification: true,
+          path: downloadPath,
+          mime: mimeType(downloadPath),
+          description: 'File downloaded by download manager.',
+        },
+      })
+        .fetch('GET',pdfUrl, {
+        })
+        .then((res) => {
+          Platform.OS === 'ios'
+            ? RNFetchBlob.ios.previewDocument(res.path())
+            : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+        })
+        .catch((err) => {
+          CommonBugFender('TestOrderDetails_ViewReport', err);
+          handleGraphQlError(err);
+          throw new Error('Something went wrong');
+        })
+       
+        
+    } else {
+      if (
+        result &&
+        Platform.OS == 'android' &&
+        result?.[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] !==
+          PermissionsAndroid.RESULTS.DENIED &&
+        result?.[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] !==
+          PermissionsAndroid.RESULTS.DENIED
+      ) {
+        storagePermissionsToDownload(() => {
+          downloadDiagnosticReport(pdfUrl, appointmentDate, patientName);
+        });
+      } 
+    }
+  } catch (error) {
+    CommonBugFender('YourOrderTests_downloadLabTest', error);
+    throw new Error('Something went wrong');
+  }
+}
+
+
+
+
+
+
 
