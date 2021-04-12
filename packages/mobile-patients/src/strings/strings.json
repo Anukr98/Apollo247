@@ -1020,5 +1020,9 @@
     "CAPSULE": "CAPSULE",
     "SYRINGE": "SYRINGE",
     "STETHO": "STETHO"
+  },
+  "consultModeTab": {
+    "CONSULT_ONLINE": "Consult Online",
+    "MEET_IN_PERSON": "Meet In Person"
   }
 }

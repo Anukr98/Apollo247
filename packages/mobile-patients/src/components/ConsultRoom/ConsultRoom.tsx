@@ -205,6 +205,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getProHealthHospitalByCityId';
 import { AuthContextProps } from '@aph/mobile-patients/src/components/AuthProvider';
 import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
+import { ConsultedDoctorsCard } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultedDoctorsCard';
 
 const { Vitals } = NativeModules;
 
@@ -3747,6 +3748,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       CommonBugFender('opening_ProHealthwebView_ConsultRoom', e);
     }
   }
+  const renderAllConsultedDoctors = () => {
+    return <ConsultedDoctorsCard navigation={props.navigation} />;
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
@@ -3792,6 +3796,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <View style={{ backgroundColor: '#f0f1ec' }}>
                 {renderListView('Active Appointments', 'normal')}
               </View>
+              <View style={{ backgroundColor: '#f0f1ec' }}>{renderAllConsultedDoctors()}</View>
               {renderCovidMainView()}
             </View>
           </View>

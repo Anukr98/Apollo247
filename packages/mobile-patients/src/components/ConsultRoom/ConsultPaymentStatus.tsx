@@ -798,7 +798,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     const params = {
       isFreeConsult: navigateToChatRoom ? false : true,
       doctorName: doctorName,
-      appointmentData: appointmentData[0],
+      appointmentData: appointmentData?.[0],
       skipAutoQuestions: doctor?.skipAutoQuestions,
     };
     if (!navigateToChatRoom) {
