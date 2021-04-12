@@ -1260,6 +1260,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     comingFrom?: string,
     _itemIds?: number[]
   ) => {
+    const isCovidItem = cartItemsWithId?.map((item) =>
+      AppConfig.Configuration.Covid_Items.includes(item)
+    );
+    const isCartHasCovidItem = isCovidItem?.find((item) => item === true);
+    const maxDaysToShow = !!isCartHasCovidItem
+      ? AppConfig.Configuration.Covid_Max_Slot_Days
+      : AppConfig.Configuration.Non_Covid_Max_Slot_Days;
+
     let dateToCheck = !!changedDate && comingFrom != '' ? changedDate : date;
     setLoading?.(true);
     const selectedAddressIndex = addresses?.findIndex(
@@ -1302,7 +1310,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
         // if slot is empty then refetch it for next date
         const isSameDate = moment().isSame(moment(dateToCheck), 'date');
-        if (slotsArray?.length == 0) {
+        const hasReachedEnd = moment(dateToCheck).isAfter(moment(maxDaysToShow), 'date');
+        if (!hasReachedEnd && slotsArray?.length == 0) {
           setTodaySlotNotAvailable(true);
           let changedDate = moment(dateToCheck) //date
             .add(1, 'day')

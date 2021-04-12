@@ -39,12 +39,13 @@ export interface TestSlotSelectionOverlayProps extends AphOverlayProps {
 }
 
 export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> = (props) => {
-  const { isTodaySlotUnavailable } = props;
+  const { isTodaySlotUnavailable, maxDate } = props;
   const { cartItems } = useDiagnosticsCart();
 
   const [slotInfo, setSlotInfo] = useState<TestSlot | undefined>(props.slotInfo);
   const [slots, setSlots] = useState<TestSlot[]>(props.slots);
   const [date, setDate] = useState<Date>(props.date);
+  const [changedDate, setChangedDate] = useState<Date>(props.date);
   const [calendarType, setCalendarType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.MONTH);
   const [isDateAutoSelected, setIsDateAutoSelected] = useState(true);
   const client = useApolloClient();
@@ -60,7 +61,9 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
 
   type UniqueSlotType = typeof uniqueSlots[0];
 
-  const fetchSlots = () => {
+  const fetchSlots = (updatedDate?: Date) => {
+    let dateToCheck = !!updatedDate ? updatedDate : date;
+    setChangedDate(dateToCheck);
     if (!isVisible || !zipCode) return;
     showSpinner(true);
     client
@@ -68,7 +71,7 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
         query: GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
         fetchPolicy: 'no-cache',
         variables: {
-          selectedDate: moment(date).format('YYYY-MM-DD'),
+          selectedDate: moment(dateToCheck).format('YYYY-MM-DD'),
           areaID: Number(props.areaId!),
           itemIds: props.isReschdedule ? itemId! : cartItemsWithId,
         },
@@ -76,7 +79,7 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
       .then(({ data }) => {
         const diagnosticSlots = g(data, 'getDiagnosticSlotsCustomized', 'slots') || [];
         const updatedDiagnosticSlots =
-          moment(date).format('YYYY-MM-DD') == dt && props.isReschdedule
+          moment(dateToCheck).format('YYYY-MM-DD') == dt && props.isReschdedule
             ? diagnosticSlots.filter((item) => item?.Timeslot != tm)
             : diagnosticSlots;
 
@@ -92,20 +95,19 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
               startTime: item?.Timeslot!,
               slot: item?.TimeslotID,
             },
-            date: date,
+            date: dateToCheck,
             diagnosticBranchCode: 'apollo_route',
           } as TestSlot);
         });
-
         // if slot is empty then refetch it for next date
         const isSameDate = moment().isSame(moment(date), 'date');
-        if (uniqueSlots?.length == 0 && isDateAutoSelected) {
-          setDate(
-            moment(date)
-              .add(1, 'day')
-              .toDate()
-          );
-          showSpinner(true);
+        const hasReachedEnd = moment(dateToCheck).isAfter(moment(maxDate), 'date');
+        if (!hasReachedEnd && slotsArray?.length == 0 && isDateAutoSelected) {
+          let changedDate = moment(dateToCheck) //date
+            .add(1, 'day')
+            .toDate();
+
+          fetchSlots(changedDate);
         } else {
           setSlots(slotsArray);
           slotsArray?.length && setSlotInfo(slotsArray?.[0]);
@@ -206,7 +208,7 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
       <CalendarView
         source={props.source}
         styles={{ marginBottom: 16 }}
-        date={dateToHighlight}
+        date={changedDate}
         minDate={new Date()}
         maxDate={props.maxDate}
         onPressDate={(selectedDate) => {
