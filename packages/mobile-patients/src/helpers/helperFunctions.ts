@@ -27,7 +27,7 @@ import Geolocation from 'react-native-geolocation-service';
 import NetInfo from '@react-native-community/netinfo';
 import moment from 'moment';
 import AsyncStorage from '@react-native-community/async-storage';
-import { Alert, Dimensions, Platform, Linking, NativeModules } from 'react-native';
+import { Alert, Dimensions, Platform, Linking, NativeModules, PermissionsAndroid } from 'react-native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import Permissions from 'react-native-permissions';
 import { DiagnosticsCartItem } from '../components/DiagnosticsCartProvider';
@@ -91,6 +91,8 @@ import { differenceInYears, parse } from 'date-fns';
 import stripHtml from 'string-strip-html';
 import isLessThan from 'semver/functions/lt';
 import coerce from 'semver/functions/coerce';
+import RNFetchBlob from 'rn-fetch-blob';
+import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 
 const width = Dimensions.get('window').width;
 
@@ -2671,3 +2673,107 @@ export const setAsyncPharmaLocation = (address: any) => {
     AsyncStorage.setItem('PharmacyLocationPincode', JSON.stringify(saveAddress));
   }
 };
+
+export const getPatientNameById = (allCurrentPatients: any, patientId: string) => {
+  const patientSelected = allCurrentPatients?.find(
+    (patient: { id: string }) => patient?.id === patientId
+  );
+
+  return patientSelected ? `${patientSelected?.firstName} ${patientSelected?.lastName}` : '';  
+};
+
+export const requestReadSmsPermission = async () => {
+  try {
+    const resuts = await PermissionsAndroid.requestMultiple([
+      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+      PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+    ]);
+    if (resuts) {
+      return resuts;
+    }
+  } catch (error) {
+    CommonBugFender('HelperFunction_requestReadSmsPermission_try', error);
+  }
+};
+
+export const storagePermissionsToDownload = (doRequest?: () => void) => {
+  permissionHandler(
+    'storage',
+    'Enable storage from settings for downloading the test report',
+    () => {
+      doRequest && doRequest();
+    }
+  );
+};
+
+export async function downloadDiagnosticReport(pdfUrl: string, appointmentDate: string, patientName: string) {
+  let result = Platform.OS === 'android' && (await requestReadSmsPermission());
+  try {
+    if (
+      (result &&
+        Platform.OS == 'android' &&
+        result?.[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] ===
+          PermissionsAndroid.RESULTS.GRANTED &&
+        result?.[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] ===
+          PermissionsAndroid.RESULTS.GRANTED) ||
+      Platform.OS == 'ios'
+    ) {
+      const dirs = RNFetchBlob.fs.dirs;
+      const reportName = `Apollo247_${appointmentDate}_${patientName}.pdf`;
+      const downloadPath =
+        Platform.OS === 'ios'
+          ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + reportName
+          : dirs.DownloadDir + '/' + reportName;
+
+      RNFetchBlob.config({
+        fileCache: true,
+        path: downloadPath,
+        addAndroidDownloads: {
+          title: reportName,
+          useDownloadManager: true,
+          notification: true,
+          path: downloadPath,
+          mime: mimeType(downloadPath),
+          description: 'File downloaded by download manager.',
+        },
+      })
+        .fetch('GET',pdfUrl, {
+        })
+        .then((res) => {
+          Platform.OS === 'ios'
+            ? RNFetchBlob.ios.previewDocument(res.path())
+            : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+        })
+        .catch((err) => {
+          CommonBugFender('TestOrderDetails_ViewReport', err);
+          handleGraphQlError(err);
+          throw new Error('Something went wrong');
+        })
+       
+        
+    } else {
+      if (
+        result &&
+        Platform.OS == 'android' &&
+        result?.[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] !==
+          PermissionsAndroid.RESULTS.DENIED &&
+        result?.[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] !==
+          PermissionsAndroid.RESULTS.DENIED
+      ) {
+        storagePermissionsToDownload(() => {
+          downloadDiagnosticReport(pdfUrl, appointmentDate, patientName);
+        });
+      } 
+    }
+  } catch (error) {
+    CommonBugFender('YourOrderTests_downloadLabTest', error);
+    throw new Error('Something went wrong');
+  }
+}
+
+
+
+
+
+
+

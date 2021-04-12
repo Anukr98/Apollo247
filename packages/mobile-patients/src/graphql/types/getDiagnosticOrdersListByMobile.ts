@@ -103,6 +103,7 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   diagnosticBranchCode: string;
   diagnosticEmployeeCode: string;
   visitNo: string | null;
+  labReportURL: string | null;
   diagnosticOrdersStatus: (getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus | null)[] | null;
   diagnosticOrderLineItems: (getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems | null)[] | null;
   orderType: string;
@@ -123,10 +124,18 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   diagnosticOrderCancellation: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderCancellation | null;
 }
 
+export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_membersDetails {
+  __typename: "membersDetails";
+  id: string | null;
+  firstName: string | null;
+  lastName: string | null;
+}
+
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile {
   __typename: "DiagnosticOrdersResultMemberDetails";
   ordersList: (getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList | null)[] | null;
   ordersCount: number | null;
+  membersDetails: (getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_membersDetails | null)[] | null;
 }
 
 export interface getDiagnosticOrdersListByMobile {

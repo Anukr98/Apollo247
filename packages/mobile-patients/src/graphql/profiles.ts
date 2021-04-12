@@ -1843,6 +1843,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
     getDiagnosticOrderDetails(diagnosticOrderId: $diagnosticOrderId) {
       ordersList {
         id
+        patientId
         patientAddressId
         city
         slotTimings
@@ -1865,6 +1866,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         slotDateTimeInUTC
         paymentType
         visitNo
+        labReportURL
         diagnosticOrderLineItems {
           id
           itemId
@@ -2197,6 +2199,7 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         diagnosticBranchCode
         diagnosticEmployeeCode
         visitNo
+        labReportURL
         diagnosticOrdersStatus {
           id
           orderStatus
@@ -2279,6 +2282,11 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         }
       }
       ordersCount
+      membersDetails{
+        id
+        firstName
+        lastName
+      }
     }
   }
 `;
