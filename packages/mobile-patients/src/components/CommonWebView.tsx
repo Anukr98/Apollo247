@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { SafeAreaView, View, ActivityIndicator, NavState, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { SafeAreaView, View, ActivityIndicator, NavState, BackHandler } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { WebView } from 'react-native-webview';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -24,6 +24,8 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
   const isCallback = props.navigation.getParam('isCallback');
   const isGoBack = props.navigation.getParam('isGoBack');
+  const [canGoBack, setCanGoBack] = useState<boolean>(false);
+  let WebViewRef: any;
   const { currentPatient } = useAllCurrentPatients();
   const {
     setCirclePlanSelected,
@@ -43,14 +45,35 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
     source == ('Pharma' || 'Product Detail' || 'Pharma Cart') &&
       postWebEngageEvent(WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED, CircleEventAttributes);
   };
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleAndroidBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleAndroidBack);
+    };
+  }, [canGoBack]);
+
+  const handleAndroidBack = async () => {
+    if (canGoBack && WebViewRef) {
+      WebViewRef?.goBack();
+      return true;
+    } else {
+      handleBack();
+    }
+  };
+
+  const handleResponse = (data: NavState) => {
+    setCanGoBack(data?.canGoBack || false);
+  };
+
   const renderWebView = () => {
-    let WebViewRef: any;
     return (
       <WebView
         ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
         onLoadEnd={() => setLoading!(false)}
         source={{ uri: props.navigation.getParam('url') }}
         renderError={(errorCode) => renderError(WebViewRef)}
+        onNavigationStateChange={(data) => handleResponse(data)}
         onMessage={(event) => {
           const { data } = event.nativeEvent;
           const callBackData = data && JSON.parse(data); //gives entire result

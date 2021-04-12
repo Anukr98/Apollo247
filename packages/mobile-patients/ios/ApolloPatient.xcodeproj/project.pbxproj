@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0260856BC5729521804BAC2D /* Pods_NotificationService.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B30F74A3238991E29786503 /* Pods_NotificationService.framework */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
 		13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB11A68108700A75B9A /* LaunchScreen.xib */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
@@ -15,7 +14,7 @@
 		4929325025C1959C000A9EBF /* join_sound.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4929324E25C1959C000A9EBF /* join_sound.mp3 */; };
 		492AFA5125C2A4A500330A9C /* left_sound.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 492AFA4F25C2A4A500330A9C /* left_sound.mp3 */; };
 		6717258923016EF10088EE92 /* OTInstall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6717258823016EF10088EE92 /* OTInstall.swift */; };
-		94831E89D21338EFBCAD4B1B /* Pods_NotificationViewController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 659CDBC4CD4BACBA3CB9B04F /* Pods_NotificationViewController.framework */; };
+		93DD224FC8ADE4940A1E3263 /* Pods_NotificationViewController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CFA32A75C8CCAEF9FAE5996B /* Pods_NotificationViewController.framework */; };
 		970ECE9323CB50040022FE84 /* VitalsBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 970ECE9123CB50030022FE84 /* VitalsBridge.m */; };
 		970ECE9423CB50040022FE84 /* Vitals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 970ECE9223CB50040022FE84 /* Vitals.swift */; };
 		977C7CF82369AEFB008DA5C8 /* OTScreenCapturer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 977C7CF72369AEFB008DA5C8 /* OTScreenCapturer.swift */; };
@@ -41,7 +40,6 @@
 		97B123D924E53C1600B9D379 /* callkitAppIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 97B123D724E53C1600B9D379 /* callkitAppIcon.png */; };
 		97D79A1C24924D410029DE31 /* main.jsbundle in Resources */ = {isa = PBXBuildFile; fileRef = 97D79A1A24924D410029DE31 /* main.jsbundle */; };
 		97EA49A623D5B006001B575B /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 97EA49A523D5B006001B575B /* HealthKit.framework */; };
-		97EEE82D249A5F9F003A4ECF /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 97EEE82C249A5F9F003A4ECF /* assets */; };
 		97FA066823E55F4A006A4294 /* ApolloVitalsFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 97FFBDB423E4843800E55E34 /* ApolloVitalsFramework.framework */; };
 		97FA066923E55F4A006A4294 /* ApolloVitalsFramework.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 97FFBDB423E4843800E55E34 /* ApolloVitalsFramework.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		97FFBDE523E4887B00E55E34 /* NSDate+Comparison.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97FFBDD523E4887A00E55E34 /* NSDate+Comparison.swift */; };
@@ -57,6 +55,7 @@
 		97FFBDEF23E4887B00E55E34 /* rrule.js in Resources */ = {isa = PBXBuildFile; fileRef = 97FFBDE223E4887A00E55E34 /* rrule.js */; };
 		97FFBDF023E4887B00E55E34 /* nlp.js in Resources */ = {isa = PBXBuildFile; fileRef = 97FFBDE323E4887A00E55E34 /* nlp.js */; };
 		97FFBDF123E4887B00E55E34 /* JavaScriptBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97FFBDE423E4887A00E55E34 /* JavaScriptBridge.swift */; };
+		B91FB7BEDF1C6380DEA1F97C /* Pods_NotificationService.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 70F7689C8F6CE10AA3085632 /* Pods_NotificationService.framework */; };
 		BB8190F124F8C26C00AD66C6 /* AIRDummyView.m in Sources */ = {isa = PBXBuildFile; fileRef = BB8190BB24F8C26C00AD66C6 /* AIRDummyView.m */; };
 		BB8190F224F8C26C00AD66C6 /* AIRGoogleMapUrlTile.m in Sources */ = {isa = PBXBuildFile; fileRef = BB8190BF24F8C26C00AD66C6 /* AIRGoogleMapUrlTile.m */; };
 		BB8190F324F8C26C00AD66C6 /* AIRGoogleMapPolygonManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BB8190C224F8C26C00AD66C6 /* AIRGoogleMapPolygonManager.m */; };
@@ -194,15 +193,14 @@
 		4929324E25C1959C000A9EBF /* join_sound.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = join_sound.mp3; sourceTree = "<group>"; };
 		492AFA4F25C2A4A500330A9C /* left_sound.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = left_sound.mp3; sourceTree = "<group>"; };
 		534D05559BD207D7C46A5934 /* Pods-ApolloPatient-NotificationViewController.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloPatient-NotificationViewController.release.xcconfig"; path = "Target Support Files/Pods-ApolloPatient-NotificationViewController/Pods-ApolloPatient-NotificationViewController.release.xcconfig"; sourceTree = "<group>"; };
-		659CDBC4CD4BACBA3CB9B04F /* Pods_NotificationViewController.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NotificationViewController.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6717258723016EF00088EE92 /* ApolloPatient-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ApolloPatient-Bridging-Header.h"; sourceTree = "<group>"; };
 		6717258823016EF10088EE92 /* OTInstall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTInstall.swift; sourceTree = "<group>"; };
 		6790F2152317D9880037D908 /* RSKImageCropper.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RSKImageCropper.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		70F7689C8F6CE10AA3085632 /* Pods_NotificationService.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NotificationService.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		72F617656E6541D1F4092240 /* Pods_ApolloPatient.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ApolloPatient.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8097225873FF04AEF5DA2ED7 /* Pods-NotificationViewController.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NotificationViewController.release.xcconfig"; path = "Target Support Files/Pods-NotificationViewController/Pods-NotificationViewController.release.xcconfig"; sourceTree = "<group>"; };
 		80EAA264D827BADB6794E6F4 /* Pods-ApolloPatient.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloPatient.debug.xcconfig"; path = "Target Support Files/Pods-ApolloPatient/Pods-ApolloPatient.debug.xcconfig"; sourceTree = "<group>"; };
 		836CC23D25E3A67B27683734 /* Pods-ApolloPatient-NotificationService.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloPatient-NotificationService.release.xcconfig"; path = "Target Support Files/Pods-ApolloPatient-NotificationService/Pods-ApolloPatient-NotificationService.release.xcconfig"; sourceTree = "<group>"; };
-		8B30F74A3238991E29786503 /* Pods_NotificationService.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NotificationService.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D81C5135BEDE9E60C222C45 /* Pods-NotificationService.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NotificationService.debug.xcconfig"; path = "Target Support Files/Pods-NotificationService/Pods-NotificationService.debug.xcconfig"; sourceTree = "<group>"; };
 		970ECE9023CB50030022FE84 /* VitalsBridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VitalsBridge.h; sourceTree = "<group>"; };
 		970ECE9123CB50030022FE84 /* VitalsBridge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VitalsBridge.m; sourceTree = "<group>"; };
@@ -241,7 +239,6 @@
 		97B123D724E53C1600B9D379 /* callkitAppIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = callkitAppIcon.png; sourceTree = "<group>"; };
 		97D79A1A24924D410029DE31 /* main.jsbundle */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = main.jsbundle; sourceTree = "<group>"; };
 		97EA49A523D5B006001B575B /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
-		97EEE82C249A5F9F003A4ECF /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
 		97FFBDB423E4843800E55E34 /* ApolloVitalsFramework.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ApolloVitalsFramework.framework; sourceTree = "<group>"; };
 		97FFBDD523E4887A00E55E34 /* NSDate+Comparison.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSDate+Comparison.swift"; sourceTree = "<group>"; };
 		97FFBDD623E4887A00E55E34 /* ExclusionDate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExclusionDate.swift; sourceTree = "<group>"; };
@@ -384,6 +381,7 @@
 		BBA1D00724F4D25800C77819 /* GMUClusterItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GMUClusterItem.h; sourceTree = "<group>"; };
 		BBA1D00824F4D25800C77819 /* GMSMarker+GMUClusteritem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GMSMarker+GMUClusteritem.m"; sourceTree = "<group>"; };
 		BC164DC10808B8284C771748 /* Pods-ApolloPatient.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloPatient.release.xcconfig"; path = "Target Support Files/Pods-ApolloPatient/Pods-ApolloPatient.release.xcconfig"; sourceTree = "<group>"; };
+		CFA32A75C8CCAEF9FAE5996B /* Pods_NotificationViewController.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NotificationViewController.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED2971642150620600B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.0.sdk/System/Library/Frameworks/JavaScriptCore.framework; sourceTree = DEVELOPER_DIR; };
 		F1B3D75522B8D37100521684 /* IBMPlexSans-SemiBoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "IBMPlexSans-SemiBoldItalic.ttf"; sourceTree = "<group>"; };
@@ -418,7 +416,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0260856BC5729521804BAC2D /* Pods_NotificationService.framework in Frameworks */,
+				B91FB7BEDF1C6380DEA1F97C /* Pods_NotificationService.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -428,7 +426,7 @@
 			files = (
 				9797AC2A2420DFD500AD397F /* UserNotificationsUI.framework in Frameworks */,
 				9797AC292420DFD500AD397F /* UserNotifications.framework in Frameworks */,
-				94831E89D21338EFBCAD4B1B /* Pods_NotificationViewController.framework in Frameworks */,
+				93DD224FC8ADE4940A1E3263 /* Pods_NotificationViewController.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -475,8 +473,8 @@
 				72F617656E6541D1F4092240 /* Pods_ApolloPatient.framework */,
 				978157C32420C86800749029 /* UserNotifications.framework */,
 				978157C52420C86800749029 /* UserNotificationsUI.framework */,
-				8B30F74A3238991E29786503 /* Pods_NotificationService.framework */,
-				659CDBC4CD4BACBA3CB9B04F /* Pods_NotificationViewController.framework */,
+				70F7689C8F6CE10AA3085632 /* Pods_NotificationService.framework */,
+				CFA32A75C8CCAEF9FAE5996B /* Pods_NotificationViewController.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -494,7 +492,6 @@
 				BB8190BA24F8C26C00AD66C6 /* AirGoogleMaps */,
 				BBA1CF5024F4D21400C77819 /* Google-Maps-iOS-Utils */,
 				97B123D724E53C1600B9D379 /* callkitAppIcon.png */,
-				97EEE82C249A5F9F003A4ECF /* assets */,
 				97FFBDB423E4843800E55E34 /* ApolloVitalsFramework.framework */,
 				6717258823016EF10088EE92 /* OTInstall.swift */,
 				977C7CF72369AEFB008DA5C8 /* OTScreenCapturer.swift */,
@@ -1015,7 +1012,6 @@
 				978D136323D1EE0B002841C4 /* OpenSans-ExtraBold.ttf in Resources */,
 				F1B3D79622B8D37200521684 /* IBMPlexSans-Italic.ttf in Resources */,
 				978D136623D1EE0B002841C4 /* Comfortaa_Regular.ttf in Resources */,
-				97EEE82D249A5F9F003A4ECF /* assets in Resources */,
 				492AFA5125C2A4A500330A9C /* left_sound.mp3 in Resources */,
 				97A7C9D4249B430A00EDDFC0 /* incallmanager_ringtone.mp3 in Resources */,
 				978D136823D1EE0B002841C4 /* OpenSans-Bold.ttf in Resources */,
@@ -1483,7 +1479,7 @@
 				CODE_SIGN_ENTITLEMENTS = ApolloPatient/ApolloPatient.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
@@ -1511,7 +1507,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MARKETING_VERSION = 5.4.0;
+				MARKETING_VERSION = 5.4.8;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lc++",
@@ -1536,7 +1532,7 @@
 				CODE_SIGN_ENTITLEMENTS = ApolloPatient/ApolloPatient.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1563,7 +1559,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MARKETING_VERSION = 5.4.0;
+				MARKETING_VERSION = 5.4.8;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lc++",
@@ -1692,7 +1688,7 @@
 				CODE_SIGN_ENTITLEMENTS = NotificationService/NotificationService.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
@@ -1700,7 +1696,7 @@
 				INFOPLIST_FILE = NotificationService/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 5.4.0;
+				MARKETING_VERSION = 5.4.8;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247.NotificationService;
@@ -1725,7 +1721,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
@@ -1733,7 +1729,7 @@
 				INFOPLIST_FILE = NotificationService/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 5.4.0;
+				MARKETING_VERSION = 5.4.8;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1756,7 +1752,7 @@
 				CODE_SIGN_ENTITLEMENTS = NotificationViewController/NotificationViewController.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
@@ -1764,7 +1760,7 @@
 				INFOPLIST_FILE = NotificationViewController/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 5.4.0;
+				MARKETING_VERSION = 5.4.8;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247.NotificationViewController;
@@ -1789,7 +1785,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
@@ -1797,7 +1793,7 @@
 				INFOPLIST_FILE = NotificationViewController/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 5.4.0;
+				MARKETING_VERSION = 5.4.8;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247.NotificationViewController;
 				PRODUCT_NAME = "$(TARGET_NAME)";

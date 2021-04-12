@@ -153,7 +153,7 @@ export const CardInfo = (sixdigits: string) => {
   return Axios.get(url);
 };
 
-export const InitiateUPIIntentTxn = (
+export const InitiateUPISDKTxn = (
   requestId: string,
   clientAuthToken: string,
   paymentOrderId: string,
@@ -225,5 +225,41 @@ export const isPhonePeReady = () => {
     },
   };
   console.log('payload >>', payload);
+  HyperSdkReact.process(JSON.stringify(payload));
+};
+
+export const fetchAvailableUPIApps = (requestId: string) => {
+  const payload = {
+    requestId: requestId,
+    service: AppConfig.Configuration.jusPayService,
+    payload: {
+      action: 'upiTxn',
+      orderId: requestId,
+      getAvailableApps: true,
+      showLoader: false,
+    },
+  };
+  HyperSdkReact.process(JSON.stringify(payload));
+};
+
+export const InitiateUPIIntentTxn = (
+  requestId: string,
+  clientAuthToken: string,
+  paymentOrderId: string,
+  packageName: string
+) => {
+  const payload = {
+    requestId: requestId,
+    service: AppConfig.Configuration.jusPayService,
+    payload: {
+      action: 'upiTxn',
+      orderId: paymentOrderId,
+      upiSdkPresent: true,
+      showLoader: false,
+      payWithApp: packageName,
+      displayNote: 'Payment to Apollo247',
+      clientAuthToken: clientAuthToken,
+    },
+  };
   HyperSdkReact.process(JSON.stringify(payload));
 };

@@ -98,7 +98,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
       <View style={[styles.inStockContainer, { backgroundColor: '#890000' }]}>
         <Text style={styles.stockText}>Not for Sale</Text>
       </View>
-    ) : isInStock && !deliveryError ? (
+    ) : isInStock ? (
       <View style={styles.inStockContainer}>
         <Text style={styles.stockText}>In Stock</Text>
       </View>

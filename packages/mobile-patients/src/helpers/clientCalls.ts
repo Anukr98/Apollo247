@@ -28,6 +28,8 @@ import {
   GET_MEDICAL_PRISM_RECORD_V2,
   GET_ALL_GROUP_BANNERS_OF_USER,
   GET_PACKAGE_INCLUSIONS,
+  UPDATE_PATIENT_APP_VERSION,
+  GET_ALL_PRO_HEALTH_APPOINTMENTS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -80,7 +82,7 @@ import {
   DEVICETYPE,
   MedicalRecordType,
   UserState,
-  BannerDisplayType
+  BannerDisplayType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { insertMessageVariables } from '@aph/mobile-patients/src/graphql/types/insertMessage';
 import {
@@ -117,7 +119,18 @@ import {
   GetAllGroupBannersOfUserVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetAllGroupBannersOfUser';
 import { bannerType } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { getInclusionsOfMultipleItems, getInclusionsOfMultipleItemsVariables } from '@aph/mobile-patients/src/graphql/types/getInclusionsOfMultipleItems';
+import {
+  getInclusionsOfMultipleItems,
+  getInclusionsOfMultipleItemsVariables,
+} from '@aph/mobile-patients/src/graphql/types/getInclusionsOfMultipleItems';
+import {
+  UpdatePatientAppVersion,
+  UpdatePatientAppVersionVariables,
+} from '@aph/mobile-patients/src/graphql/types/UpdatePatientAppVersion';
+import AsyncStorage from '@react-native-community/async-storage';
+import DeviceInfo from 'react-native-device-info';
+import appsFlyer from 'react-native-appsflyer';
+import { getAllProhealthAppointments, getAllProhealthAppointmentsVariables } from '../graphql/types/getAllProhealthAppointments';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -357,7 +370,8 @@ export const phrNotificationCountApi = (client: ApolloClient<object>, patientId:
 export const getPatientPrismMedicalRecordsApi = (
   client: ApolloClient<object>,
   patientId: string,
-  records: MedicalRecordType[]
+  records: MedicalRecordType[],
+  comingFrom?: string
 ) => {
   return new Promise((res, rej) => {
     client
@@ -365,7 +379,7 @@ export const getPatientPrismMedicalRecordsApi = (
         query: GET_MEDICAL_PRISM_RECORD_V2,
         context: {
           headers: {
-            callingsource: 'healthRecords',
+            callingsource: comingFrom == 'Diagnostics' ? "" : 'healthRecords',
           },
         },
         variables: {
@@ -805,7 +819,7 @@ export const getUserBannersList = (
   client: ApolloClient<object>,
   currentPatient: any,
   banner_context: string,
-  banner_display_type:any[]=[BannerDisplayType.banner]
+  banner_display_type: any[] = [BannerDisplayType.banner]
 ) => {
   return new Promise((res, rej) => {
     const mobile_number = g(currentPatient, 'mobileNumber');
@@ -817,7 +831,7 @@ export const getUserBannersList = (
             mobile_number,
             banner_context: banner_context,
             user_state: UserState.LOGGED_IN,
-            banner_display_type:banner_display_type
+            banner_display_type: banner_display_type,
           },
           fetchPolicy: 'no-cache',
         })
@@ -848,10 +862,7 @@ export const getUserBannersList = (
   });
 };
 
-export const getPackageInclusions = (
-  client: ApolloClient<object>,
-  itemId: any,
-) => {
+export const getPackageInclusions = (client: ApolloClient<object>, itemId: any) => {
   const input = {
     itemID: itemId,
   };
@@ -867,6 +878,74 @@ export const getPackageInclusions = (
       })
       .catch((e) => {
         rej(e);
+      });
+  });
+};
+
+export const updatePatientAppVersion = async (
+  client: ApolloClient<object>,
+  currentPatient: any
+) => {
+  try {
+    appsFlyer.getAppsFlyerUID((error, appsFlyerUID) => {
+      if (appsFlyerUID) {
+        notifyAppVersion(client, currentPatient, appsFlyerUID);
+      } else {
+        notifyAppVersion(client, currentPatient);
+        CommonBugFender('getAppsFlyerUID', error);
+      }
+    });
+  } catch (error) {}
+};
+
+const notifyAppVersion = async (
+  client: ApolloClient<object>,
+  currentPatient: any,
+  appsflyerId?: string
+) => {
+  try {
+    const key = `${currentPatient?.id}-appVersion`;
+    const savedAppVersion = await AsyncStorage.getItem(key);
+    const appVersion = DeviceInfo.getVersion();
+    const appsflyerIdKey = `${currentPatient?.id}-appsflyerId`;
+    const appsflyerSaved = await AsyncStorage.getItem(appsflyerIdKey);
+    const variables = {
+      appVersion,
+      patientId: currentPatient?.id,
+      osType: Platform.OS == 'ios' ? DEVICETYPE.IOS : DEVICETYPE.ANDROID,
+      appsflyerId,
+    };
+    if (savedAppVersion !== appVersion || appsflyerSaved !== appsflyerId) {
+      const res = await client.mutate<UpdatePatientAppVersion, UpdatePatientAppVersionVariables>({
+        mutation: UPDATE_PATIENT_APP_VERSION,
+        variables,
+        fetchPolicy: 'no-cache',
+      });
+      await AsyncStorage.setItem(key, appVersion);
+      await AsyncStorage.setItem(appsflyerIdKey, appsflyerId!);
+    }
+  } catch (error) {}
+};
+
+export const getAllProHealthAppointments = (
+  client: ApolloClient<object>,
+  patientId: string
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getAllProhealthAppointments, getAllProhealthAppointmentsVariables>({
+        query: GET_ALL_PRO_HEALTH_APPOINTMENTS,
+        variables: {
+          patientId: patientId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_ getAllProHealthAppointments', e);
+        rej({ error: e });
       });
   });
 };

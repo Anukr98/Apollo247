@@ -15,10 +15,18 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Bank } from '@aph/mobile-patients/src/components/PaymentGateway/Components/Bank';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { useApolloClient } from 'react-apollo-hooks';
-import { CREATE_ORDER } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  CREATE_ORDER,
+  INITIATE_DIAGNOSTIC_ORDER_PAYMENT,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { InitiateNetBankingTxn } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import {
+  initiateDiagonsticHCOrderPaymentVariables,
+  initiateDiagonsticHCOrderPayment,
+} from '@aph/mobile-patients/src/graphql/types/initiateDiagonsticHCOrderPayment';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 export interface OtherBanksProps extends NavigationScreenProps {}
 
@@ -26,11 +34,28 @@ export const OtherBanks: React.FC<OtherBanksProps> = (props) => {
   const paymentId = props.navigation.getParam('paymentId');
   const amount = props.navigation.getParam('amount');
   const banks = props.navigation.getParam('banks');
+  const orderId = props.navigation.getParam('orderId');
   const [selectedBank, setSelectedBank] = useState<string>('');
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
+  const [isTxnProcessing, setisTxnProcessing] = useState<boolean>(false);
 
   const onPressBank = (bank: any) => setSelectedBank(bank);
+
+  const initiateOrderPayment = async () => {
+    // Api is called to update the order status from Quote to Payment Pending
+    const input: initiateDiagonsticHCOrderPaymentVariables = {
+      diagnosticInitiateOrderPaymentInput: { orderId: orderId },
+    };
+    const res = await client.mutate<
+      initiateDiagonsticHCOrderPayment,
+      initiateDiagonsticHCOrderPaymentVariables
+    >({
+      mutation: INITIATE_DIAGNOSTIC_ORDER_PAYMENT,
+      variables: input,
+      fetchPolicy: 'no-cache',
+    });
+  };
 
   const createJusPayOrder = (paymentMode: 'PREPAID' | 'COD') => {
     const orderInput = {
@@ -47,17 +72,23 @@ export const OtherBanks: React.FC<OtherBanksProps> = (props) => {
   };
 
   async function onPressPay(bank: any) {
-    const response = await createJusPayOrder('PREPAID');
-    const { data } = response;
-    const { createOrder } = data;
-    console.log('createOrder >>', createOrder);
-    InitiateNetBankingTxn(
-      currentPatient?.id,
-      createOrder?.juspay?.client_auth_token,
-      paymentId,
-      bank?.paymentMethod
-    );
-    props.navigation.goBack();
+    setisTxnProcessing(true);
+    try {
+      initiateOrderPayment();
+      const response = await createJusPayOrder('PREPAID');
+      const { data } = response;
+      const { createOrder } = data;
+      InitiateNetBankingTxn(
+        currentPatient?.id,
+        createOrder?.juspay?.client_auth_token,
+        paymentId,
+        bank?.paymentMethod
+      );
+      props.navigation.goBack();
+    } catch (e) {
+      setisTxnProcessing(false);
+      props.navigation.goBack();
+    }
   }
 
   const renderHeader = () => {
@@ -103,6 +134,7 @@ export const OtherBanks: React.FC<OtherBanksProps> = (props) => {
           {renderBanksList()}
         </ScrollView>
         {renderPaySecurely()}
+        {isTxnProcessing && <Spinner />}
       </SafeAreaView>
     </>
   );

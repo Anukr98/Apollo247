@@ -14,12 +14,11 @@ import {
   PhysicalPrescription,
   EPrescription,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { PrescriptionIcon, GreenTickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { EPrescriptionCard } from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
 import { PhysicalPrescriptionCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/PhysicalPrescriptionCard';
 export interface PrescriptionsProps {
-  onPressUploadMore?: () => void;
-  hideHeader?: boolean;
-  isPlainStyle?: boolean;
+  onPressUploadMore: () => void;
   screen?: string;
   style?: StyleProp<ViewStyle>;
 }
@@ -31,21 +30,20 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
     removeEPrescription,
     removePhysicalPrescription,
   } = useShoppingCart();
-  const { onPressUploadMore, screen, style, hideHeader, isPlainStyle } = props;
+  const { onPressUploadMore, screen, style } = props;
 
   const renderHeader = () => {
     return (
-      !hideHeader && (
-        <View style={styles.Header}>
-          <Text style={styles.HeaderText}>UPLOAD PRESCRIPTION</Text>
-        </View>
-      )
+      <View style={styles.Header}>
+        <Text style={styles.HeaderText}>UPLOAD PRESCRIPTION</Text>
+      </View>
     );
   };
-  const renderLabel = (label: string, mediumFont?: boolean) => {
+  const renderLabel = (label: string, rightText?: string) => {
     return (
       <View style={styles.labelView}>
-        <Text style={[styles.labelTextStyle, mediumFont && styles.mediumFontStyle]}>{label}</Text>
+        <Text style={styles.labelTextStyle}>{label}</Text>
+        {rightText && <Text style={styles.labelTextStyle}>{rightText}</Text>}
       </View>
     );
   };
@@ -75,7 +73,7 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
   const renderPhysicalPrescriptions = () => {
     return (
       <View style={{ flex: 1 }}>
-        {renderLabel(`Physical Prescription${physicalPrescriptions.length == 1 ? '' : 's'}`, true)}
+        {renderLabel(`Physical Prescription${physicalPrescriptions.length == 1 ? '' : 's'}`)}
         <ScrollView>
           {physicalPrescriptions.map((item, index, array) => {
             return PhysicalPrescription(item, index, array.length);
@@ -107,7 +105,7 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
   const renderEprescriptions = () => {
     return (
       <View style={{ flex: 1 }}>
-        {renderLabel(`My Prescription${ePrescriptions.length == 1 ? '' : 's'}`, true)}
+        {renderLabel(`Prescription${ePrescriptions.length == 1 ? '' : 's'} From Health Records`)}
         <ScrollView>
           {ePrescriptions.map((item, index, array) => {
             return EPrescription(item, index, array.length);
@@ -119,11 +117,9 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
 
   const renderUploadMore = () => {
     return (
-      !!onPressUploadMore && (
-        <TouchableOpacity onPress={onPressUploadMore}>
-          <Text style={styles.upload}>UPLOAD MORE</Text>
-        </TouchableOpacity>
-      )
+      <TouchableOpacity onPress={onPressUploadMore}>
+        <Text style={styles.upload}>UPLOAD MORE</Text>
+      </TouchableOpacity>
     );
   };
 
@@ -134,7 +130,7 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
   return showPresritionCard() ? (
     <View style={[styles.container, style]}>
       {renderHeader()}
-      <View style={isPlainStyle ? null : styles.card}>
+      <View style={styles.card}>
         {physicalPrescriptions.length > 0 && renderPhysicalPrescriptions()}
         {ePrescriptions.length > 0 && renderEprescriptions()}
         {renderUploadMore()}
@@ -156,7 +152,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderColor: 'rgba(2,71,91, 0.3)',
     marginHorizontal: 20,
-    marginBottom: 15,
   },
   HeaderText: {
     color: theme.colors.FILTER_CARD_LABEL,
@@ -179,6 +174,7 @@ const styles = StyleSheet.create({
   },
   card: {
     ...theme.viewStyles.cardViewStyle,
+    marginTop: 15,
     marginHorizontal: 13,
     borderRadius: 10,
     marginBottom: 9,
@@ -206,7 +202,8 @@ const styles = StyleSheet.create({
     color: theme.colors.FILTER_CARD_LABEL,
     ...theme.fonts.IBMPlexSansBold(13),
   },
-  mediumFontStyle: {
-    ...theme.fonts.IBMPlexSansMedium(13),
+  yellowTextStyle: {
+    ...theme.viewStyles.yellowTextStyle,
+    padding: 16,
   },
 });

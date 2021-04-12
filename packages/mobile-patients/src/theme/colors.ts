@@ -109,6 +109,14 @@ const Common = {
   DISCOUNT_LIGHT_BLUE: light_blue,
   DISCOUNT_BLUE_COLOR: blue_color,
   REMOVE_RED: '#E31E24',
+  PURPLE: '#393487',
+  TRUECALLER_THEME: '#3780F6',
+  FAILURE_STATUS_TEXT: '#BF2600',
+  FAILURE_STATUS_BGK: '#FFEBE6',
+  COMPLETE_STATUS_TEXT: '#006644',
+  COMPLETE_STATUS_BGK: '#E3FCEF',
+  INTERMITTENT_STATUS_BGK: '#FFF0B3',
+  TEST_CARD_BUTTOM_BG: '#FCFDDA',
 };
 
 const Header = {
@@ -149,6 +157,7 @@ const TextInput = {
   INPUT_FAILURE_TEXT: '#890000',
   INPUT_INFO: tangerine_yellow,
   placeholderTextColor: 'rgba(1,48,91, 0.3)',
+  searchAreaPlaceholderTextColor: 'rgba(1,71,91,0.6)',
   light_label: '#658f9b',
 };
 

@@ -5,6 +5,9 @@ import {
   DoctorPlaceholderImage,
   Location,
   CircleLogo,
+  OnlineAppointmentMarkerIcon,
+  AppointmentCalendarIcon,
+  PhysicalAppointmentMarkerIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 const { width } = Dimensions.get('window');
@@ -132,11 +135,10 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
             {doctor?.specialty?.name || ''} | {doctor?.experience} YR
             {Number(doctor?.experience) != 1 ? 'S Exp.' : ' Exp.'}
           </Text>
-          <Text style={styles.regularText}>
-            {isOnlineConsult
-              ? string.common.optedForOnlineConsultation
-              : string.common.optedForClinicConsultation}
-          </Text>
+          <View style={styles.doctorPointers}>
+            <OnlineAppointmentMarkerIcon style={styles.doctorPointersImage} />
+            <Text style={styles.appointmentTimeStyle}>Online Consultation</Text>
+          </View>
         </View>
         <View>
           {isCircleDoctorOnSelectedConsultMode ? (
@@ -169,9 +171,13 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
           </View>
         </View>
       )}
-      <Text style={styles.appointmentTimeStyle}>
-        {dateFormatter(appointmentInput?.appointmentDateTime)}
-      </Text>
+
+      <View style={styles.doctorPointers}>
+        <AppointmentCalendarIcon style={styles.doctorPointersImage} />
+        <Text style={styles.appointmentTimeStyle}>
+          {dateFormatter(appointmentInput?.appointmentDateTime)}
+        </Text>
+      </View>
       <View style={styles.seperatorLine} />
       <View style={[styles.rowContainer, { marginTop: 9 }]}>
         <Text style={[styles.regularText, { marginTop: 0 }]}>{string.common.amountToPay}</Text>
@@ -223,8 +229,7 @@ const styles = StyleSheet.create({
   },
   appointmentTimeStyle: {
     ...theme.fonts.IBMPlexSansMedium(16),
-    color: theme.colors.SKY_BLUE,
-    marginTop: 10,
+    color: '#02475B',
   },
   seperatorLine: {
     marginTop: 14,
@@ -267,5 +272,15 @@ const styles = StyleSheet.create({
     height: 95,
     width: 95,
     justifyContent: 'center',
+  },
+  doctorPointers: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  doctorPointersImage: {
+    width: 14,
+    height: '100%',
+    marginRight: 4,
   },
 });

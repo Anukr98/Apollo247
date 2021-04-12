@@ -41,8 +41,6 @@ const styles = StyleSheet.create({
     height: 'auto',
     backgroundColor: '#fff',
     borderRadius: 8,
-    paddingHorizontal: 20,
-    paddingTop: 20,
     paddingBottom: 14,
   },
   containerRow: {
@@ -89,6 +87,20 @@ const styles = StyleSheet.create({
   },
   centerIcons: {
     alignSelf: 'center',
+  },
+  header: {
+    padding: 12,
+    ...theme.viewStyles.cardViewStyle,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+  },
+  headerTitle: {
+    ...theme.viewStyles.text('SB', 18, '#01475B'),
+    textAlign: 'center',
+  },
+  subtitle: {
+    ...theme.viewStyles.text('R', 12, '#02475B', 1, 20, 0.35),
+    textAlign: 'center',
   },
 });
 
@@ -190,21 +202,30 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
           <View style={styles.stepsContainer}>
             <CallConnectIcon style={styles.centerIcons} />
             <Text style={styles.stepsText}>{`Answer the call from ${helplineNumber ||
-              '040-482-17258'} to connect.`}</Text>
+              '040-482-17258'}.`}</Text>
           </View>
           <View style={styles.stepsContainer}>
             <CallRingIcon style={styles.callIcon} />
-            <Text style={styles.stepsText}>The same call will connect to the Doctor.</Text>
+            <Text style={styles.stepsText}>
+              {isVaccineDocOnCall
+                ? 'Select the required option on the IVR'
+                : 'The same call will connect to the Doctor.'}
+            </Text>
           </View>
         </View>
         <View style={[styles.containerRow, { marginTop: 8, alignItems: 'flex-end' }]}>
           <View style={styles.stepsContainer}>
             <GroupCallIcon style={styles.callIcon} />
-            <Text style={styles.stepsText}>Wait for the Doctor to connect over the call.</Text>
+            <Text style={styles.stepsText}>
+              {isVaccineDocOnCall
+                ? 'Wait for the Apollo experts to connect'
+                : 'Wait for the Doctor to connect over the call.'}
+            </Text>
           </View>
           <View style={styles.lastStepContainer}>
             <Text style={styles.stepsText}>
-              *Note: Your personal phone number will not be shared.
+              <Text style={theme.viewStyles.text('B', 12, '#00B38E', 1, 20, 0.35)}>*Note:</Text>{' '}
+              Your personal phone number will not be shared.
             </Text>
           </View>
         </View>
@@ -251,12 +272,16 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
       <View style={styles.popupContainerView}>
         <View />
         <View style={styles.popupView}>
-          <Text style={theme.viewStyles.text('SB', 18, '#01475B')}>Connect to the Doctor</Text>
-          <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 20, 0.35)}>
-            Please follow the steps to connect to Doctor
-          </Text>
-          {renderConnectSteps()}
-          {renderButtons()}
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>
+              {isVaccineDocOnCall ? 'Covid-19 Vaccination Helpdesk' : 'Connect to the doctor'}
+            </Text>
+            <Text style={styles.subtitle}>Please follow the below steps to connect</Text>
+          </View>
+          <View style={{ paddingHorizontal: 20, paddingTop: 20 }}>
+            {renderConnectSteps()}
+            {renderButtons()}
+          </View>
         </View>
       </View>
     </View>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { NavigationScreenProps } from 'react-navigation';
 import {
   View,
@@ -27,8 +27,10 @@ import { ChooseAddress } from '@aph/mobile-patients/src/components/MedicineCart/
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { CartItemsList } from '@aph/mobile-patients/src/components/MedicineCart/Components/CartItemsList';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { TatCardwithoutAddress } from '@aph/mobile-patients/src/components/MedicineCart/Components/TatCardwithoutAddress';
+import { UploadPrescription } from '@aph/mobile-patients/src/components/MedicineCart/Components/UploadPrescription';
 import { Prescriptions } from '@aph/mobile-patients/src/components/MedicineCart/Components/Prescriptions';
 import { ProceedBar } from '@aph/mobile-patients/src/components/MedicineCart/Components/ProceedBar';
 import {
@@ -43,6 +45,7 @@ import {
   GetTatResponse247,
   TatApiInput247,
   getDeliveryTAT247,
+  validateConsultCoupon,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
@@ -79,7 +82,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     deliveryAddressId,
     setDeliveryAddressId,
     uploadPrescriptionRequired,
-    prescriptionType,
     physicalPrescriptions,
     ePrescriptions,
     setCartItems,
@@ -92,12 +94,30 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     circleSubscriptionId,
     isCircleSubscription,
     setOrders,
+    coupon,
+    setCoupon,
+    cartTotal,
+    hdfcSubscriptionId,
+    productDiscount,
+    pinCode,
+    setCouponProducts,
   } = useShoppingCart();
-  const { setPharmacyLocation, setAxdcCode, pharmacyUserTypeAttribute } = useAppCommonData();
+  const {
+    setPharmacyLocation,
+    setAxdcCode,
+    pharmacyUserTypeAttribute,
+    hdfcStatus,
+    hdfcPlanId,
+    circleStatus,
+    circlePlanId,
+    pharmacyLocation,
+    locationDetails,
+  } = useAppCommonData();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
+  const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [storeType, setStoreType] = useState<string | undefined>(
     props.navigation.getParam('tatType') || ''
   );
@@ -114,6 +134,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   );
   const [appState, setappState] = useState<string>('');
   const shoppingCart = useShoppingCart();
+  const pharmacyPincode =
+    selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
 
   useEffect(() => {
     hasUnserviceableproduct();
@@ -210,6 +232,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           unserviceable: unserviceableSkus.indexOf(item.id) != -1,
         }));
         setCartItems!(updatedCartItems);
+        validatePharmaCoupon();
 
         const serviceableItems = updatedCartItems
           .filter((item) => !item.unserviceable)
@@ -233,21 +256,17 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
             inventoryData = inventoryData.concat(order?.items);
           });
           setloading!(false);
-          if (inventoryData?.length) {
-            addressSelectedEvent(selectedAddress, response[0]?.tat, response);
-            updatePricesAfterTat(inventoryData, updatedCartItems);
-            if (unserviceableSkus.length) {
-              props.navigation.goBack();
-            }
-          } else {
-            handleTatApiFailure(selectedAddress, {});
+          addressSelectedEvent(selectedAddress, response[0]?.tat, response);
+          updatePricesAfterTat(inventoryData, updatedCartItems);
+          if (unserviceableSkus.length) {
+            props.navigation.goBack();
           }
         } catch (error) {
           handleTatApiFailure(selectedAddress, error);
         }
-      } catch (error) {
-        handleTatApiFailure(selectedAddress, error);
-      }
+      } catch (error) {}
+    } else {
+      validatePharmaCoupon();
     }
   }
 
@@ -265,6 +284,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     setdeliveryTime?.(genericServiceableDate);
     postTatResponseFailureEvent(cartItems, selectedAddress.zipcode || '', error);
     setloading(false);
+    validatePharmaCoupon();
   }
 
   function addressSelectedEvent(
@@ -305,6 +325,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       pharmacyCircleAttributes!,
       moment(tatDate).diff(moment(), 'h'),
       pharmacyUserTypeAttribute!,
+      JSON.stringify(cartItems),
       orderSelected?.length > 1,
       splitOrderDetails
     );
@@ -329,6 +350,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       Items.push(object);
     });
     setCartItems!(Items);
+    validatePharmaCoupon();
     console.log(loading);
   }
   const onFinishUpload = () => {
@@ -393,29 +415,37 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     }
   }
 
-  function onPressProceedtoPay() {
+  async function onPressProceedtoPay() {
+    if (coupon && cartTotal > 0) {
+      try {
+        await validateCoupon(coupon.coupon, coupon.message);
+      } catch (error) {
+        return;
+      }
+    }
+    let splitOrderDetails: any = {};
+    if (orders?.length > 1) {
+      orders?.forEach((order: any, index: number) => {
+        splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
+          getShipmentPrice(order?.items, cartItems) +
+          (order?.deliveryCharge || 0) +
+          (order?.packingCharges || 0);
+        splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
+      });
+    }
     props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
       deliveryTime,
       storeDistance: storeDistance,
       tatType: storeType,
       shopId: shopId,
     });
-    let splitOrderDetails: any = {};
-    if (orders?.length > 1) {
-      orders?.forEach((order: any, index: number) => {
-        splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
-          getShipmentPrice(order?.items) +
-          (order?.deliveryCharge || 0) +
-          (order?.packingCharges || 0);
-        splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
-      });
-    }
     postwebEngageProceedToPayEvent(
       shoppingCart,
       false,
       deliveryTime,
       pharmacyCircleAttributes!,
       pharmacyUserTypeAttribute!,
+      JSON.stringify(cartItems),
       orders?.length > 1,
       splitOrderDetails
     );
@@ -499,24 +529,38 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     return <Shipments setloading={setloading} />;
   };
 
-  const renderPrescriptions = () => {
+  const renderuploadPrescriptionPopup = () => {
     return (
-      <Prescriptions
-        onPressUploadMore={() => props.navigation.navigate(AppRoutes.MedicineCartPrescription)}
-        screen={'summary'}
+      <UploadPrescription
+        showPopUp={showPopUp}
+        onClickClose={() => setshowPopUp(false)}
+        navigation={props.navigation}
+        type={'Cart'}
       />
     );
   };
 
+  const renderPrescriptions = () => {
+    return <Prescriptions onPressUploadMore={() => setshowPopUp(true)} screen={'summary'} />;
+  };
+
+  function isPrescriptionRequired() {
+    if (uploadPrescriptionRequired) {
+      return physicalPrescriptions.length > 0 || ePrescriptions.length > 0 ? false : true;
+    } else {
+      return false;
+    }
+  }
+
   const renderButton = () => {
-    return !prescriptionType ? (
+    return isPrescriptionRequired() ? (
       <View style={styles.buttonContainer}>
         <Button
           disabled={false}
           title={'UPLOAD PRESCRIPTION'}
           onPress={() => {
             uploadPrescriptionClickedEvent(currentPatient?.id);
-            props.navigation.navigate(AppRoutes.MedicineCartPrescription);
+            setshowPopUp(true);
           }}
           titleTextStyle={{ fontSize: 13, lineHeight: 24, marginVertical: 8 }}
           style={{ borderRadius: 10 }}
@@ -532,6 +576,112 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     );
   };
 
+  async function validatePharmaCoupon() {
+    if (coupon && cartTotal > 0) {
+      try {
+        await validateCoupon(coupon.coupon, coupon.message);
+      } catch (error) {
+        return;
+      }
+    }
+  }
+
+  const showAlert = (message: string) => {
+    try {
+      showAphAlert!({
+        title: 'Hi :)',
+        description: message,
+        unDismissable: true,
+        CTAs: [
+          {
+            text: 'Okay',
+            type: 'orange-button',
+            onPress: () => {
+              hideAphAlert && hideAphAlert();
+              props.navigation.goBack();
+            },
+          },
+        ],
+      });
+    } catch (error) {}
+  };
+
+  const removeCouponWithAlert = (message: string) => {
+    setCoupon!(null);
+    showAlert(message);
+  };
+
+  const setCouponFreeProducts = (products: any) => {
+    const freeProducts = products.filter((product) => {
+      return product.couponFree === 1;
+    });
+    freeProducts.forEach((item, index) => {
+      const filteredProduct = cartItems.filter((product) => {
+        return product.id === item.sku;
+      });
+      if (filteredProduct.length) {
+        item.quantity = filteredProduct[0].quantity;
+      }
+    });
+    setCouponProducts!(freeProducts);
+  };
+
+  const validateCoupon = (coupon: string, message: string | undefined, autoApply?: boolean) => {
+    CommonLogEvent(AppRoutes.ApplyCouponScene, 'Apply coupon');
+    setloading!(true);
+    let packageId: string[] = [];
+    if (hdfcSubscriptionId && hdfcStatus === 'active') {
+      packageId.push(`HDFC:${hdfcPlanId}`);
+    }
+    if (circleSubscriptionId && circleStatus === 'active') {
+      packageId.push(`APOLLO:${circlePlanId}`);
+    }
+    const data = {
+      mobile: g(currentPatient, 'mobileNumber'),
+      billAmount: (cartTotal - productDiscount).toFixed(2),
+      coupon: coupon,
+      pinCode: pharmacyPincode,
+      products: cartItems.map((item) => ({
+        sku: item.id,
+        categoryId: item.productType,
+        mrp: item.price,
+        quantity: item.quantity,
+        specialPrice: item.specialPrice !== undefined ? item.specialPrice : item.price,
+      })),
+      packageIds: packageId,
+    };
+    return new Promise(async (res, rej) => {
+      try {
+        const response = await validateConsultCoupon(data);
+        setloading!(false);
+        if (response.data.errorCode == 0) {
+          if (response.data.response.valid) {
+            setCoupon!({ ...g(response.data, 'response')!, message: message ? message : '' });
+            res();
+          } else {
+            !autoApply && removeCouponWithAlert(g(response.data, 'response', 'reason'));
+            rej(response.data.response.reason);
+          }
+
+          // set coupon free products again (in case when price of sku is changed)
+          const products = g(response.data, 'response', 'products');
+          if (products && products.length) {
+            setCouponFreeProducts(products);
+          }
+        } else {
+          CommonBugFender('validatingPharmaCoupon', response.data.errorMsg);
+          !autoApply && removeCouponWithAlert(g(response.data, 'errorMsg'));
+          rej(response.data.errorMsg);
+        }
+      } catch (error) {
+        CommonBugFender('validatingPharmaCoupon', error);
+        !autoApply && removeCouponWithAlert('Sorry, unable to validate coupon right now.');
+        setloading!(false);
+        rej('Sorry, unable to validate coupon right now.');
+      }
+    });
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -543,6 +693,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           {renderCartItems()}
           {uploadPrescriptionRequired && renderPrescriptions()}
         </ScrollView>
+        {renderuploadPrescriptionPopup()}
         {renderButton()}
         {loading && <Spinner />}
       </SafeAreaView>

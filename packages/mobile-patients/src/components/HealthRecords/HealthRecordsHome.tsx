@@ -799,6 +799,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           }, 1800);
         })
         .catch((e) => {
+          CommonBugFender('HealthRecordsHome_UPDATE_PATIENT_MEDICAL_PARAMETERS', e);
           setShowUpdateProfilePopup(false);
           setOverlaySpinner(false);
           loading && setLoading!(false);
@@ -852,11 +853,11 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       return <View style={styles.separatorLineStyle} />;
     };
 
-    const patientTextView = (text: string) => {
+    const patientTextView = (text: string, style: any = {}) => {
       return (
         <Text
           numberOfLines={1}
-          style={[styles.userHeightTextStyle, text === '-' && { paddingRight: 50 }]}
+          style={[styles.userHeightTextStyle, text === '-' && { paddingRight: 50 }, style]}
         >
           {text}
         </Text>
@@ -924,7 +925,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                       currentPatient?.patientMedicalHistory?.height?.includes('’') ||
                         currentPatient?.patientMedicalHistory?.height?.includes("'")
                         ? currentPatient?.patientMedicalHistory?.height
-                        : currentPatient?.patientMedicalHistory?.height + ' cms'
+                        : currentPatient?.patientMedicalHistory?.height + ' cms',
+                      { paddingLeft: 7 }
                     )
                   : patientTextView('-')}
               </View>
@@ -1535,6 +1537,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         }
       })
       .catch((error) => {
+        CommonBugFender('HealthRecordsHome_searchPHRApiWithAuthToken', error);
         console.log('searchPHRApiWithAuthToken Error', error);
         getAuthToken();
         setSearchLoading(false);
@@ -1560,7 +1563,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         return;
       }
       setSearchLoading(true);
-      const search = _.debounce(onSearchHealthRecords, 300);
+      const search = _.debounce(onSearchHealthRecords, 500);
       search(value);
     }
   };

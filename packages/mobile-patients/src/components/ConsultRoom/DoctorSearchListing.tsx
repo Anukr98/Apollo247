@@ -86,7 +86,7 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   BackHandler,
@@ -123,6 +123,7 @@ import {
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { DoctorShareComponent } from '@aph/mobile-patients/src/components/ConsultRoom/Components/DoctorShareComponent';
 import { SKIP_LOCATION_PROMPT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
+import { userLocationConsultWEBEngage } from '@aph/mobile-patients/src/helpers/CommonEvents';
 
 const searchFilters = require('@aph/mobile-patients/src/strings/filters');
 const { width: screenWidth } = Dimensions.get('window');
@@ -253,7 +254,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [currentLocation, setcurrentLocation] = useState<string>('');
   const [locationSearchText, setLocationSearchText] = useState<string>('');
   const [showCarePlanNotification, setShowCarePlanNotification] = useState<boolean>(false);
-
+  const fireLocationEvent = useRef<boolean>(false);
   const [
     platinumDoctor,
     setPlatinumDoctor,
@@ -401,8 +402,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   }, [showCarePlanNotification]);
 
   useEffect(() => {
-    getDoctorOfTheHour();
-    fetchAddress();
+    if (doctorsType != 'PARTNERS') {
+      getDoctorOfTheHour(false);
+      fetchAddress(false, 'from effect');
+    }
   }, []);
 
   const getDoctorOfTheHour = async (partnerDoctor: boolean = false, state?: string) => {
@@ -432,7 +435,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       });
   };
 
-  async function fetchAddress() {
+  async function fetchAddress(partnerDoctor: boolean = false, from?: string) {
     try {
       if (locationDetails?.state) {
         return;
@@ -449,7 +452,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           ?.addressList as savePatientAddress_savePatientAddress_patientAddress[]) || [];
       const state = addressList?.[0]?.state;
       if (state) {
-        getDoctorOfTheHour(false, state);
+        await getDoctorOfTheHour(partnerDoctor, state);
       }
     } catch (error) {
       console.log(error);
@@ -628,6 +631,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               style={{ flex: 1, marginRight: 16 }}
               title={'ENTER MANUALLY'}
               onPress={() => {
+                fireLocationEvent.current = true;
                 hideAphAlert!();
                 setshowLocationpopup(true);
                 fireLocationPermissionEvent('Enter Manually');
@@ -642,6 +646,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 setLoadingContext!(true);
                 doRequestAndAccessLocationModified()
                   .then((response) => {
+                    fireLocationEvent.current = true;
+                    locationWebEngageEvent(response, 'Auto Detect');
                     response && setLocationDetails!(response);
                     response && setcurrentLocation(response.displayName);
                     response && setLocationSearchText(response.displayName);
@@ -976,6 +982,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                   pincode: findAddrComponents('postal_code', addrComponents),
                   lastUpdated: new Date().getTime(),
                 });
+                const locationAttribute = {
+                  ...locationData,
+                  pincode: findAddrComponents('postal_code', addrComponents),
+                };
+                locationWebEngageEvent(locationAttribute, 'Manual entry');
               }
             })
             .catch((error) => {
@@ -1429,6 +1440,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             elevation: 15,
           }}
           onPress={() => {
+            locationWebEngageEvent(undefined, 'Manual entry');
             setshowLocationpopup(false);
             setshowSpinner(false);
             !doctorsList?.length &&
@@ -1523,6 +1535,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
+  const locationWebEngageEvent = (location: any, type: 'Auto Detect' | 'Manual entry') => {
+    if (fireLocationEvent.current) {
+      userLocationConsultWEBEngage(currentPatient, location, 'Doctor list', type);
+    }
+    fireLocationEvent.current = false;
+  };
+
   const renderSearchLoadingView = () => {
     const getWidth = (percentage: number) => screenWidth * (percentage / 100);
     const localStyles = StyleSheet.create({
@@ -1610,6 +1629,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           <FamilyDoctorIcon style={{ width: 16.58, height: 24 }} />
           <Text style={styles.doctorOfTheHourTextStyle}>{doctorOfHourText}</Text>
         </View>
+
         <DoctorCard
           rowData={platinumDoctor}
           navigation={props.navigation}
@@ -1980,7 +2000,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       scrollToTop();
       setPlatinumDoctor(null);
       getDoctorOfTheHour();
-      fetchAddress(); // this will get called when locationDetails?.state is null
+      fetchAddress(false, 'from apollo button press'); // this will get called when locationDetails?.state is null
     }
   };
 
@@ -1994,7 +2014,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       scrollToTop();
       setPlatinumDoctor(null);
       getDoctorOfTheHour(true);
-      fetchAddress();
+      fetchAddress(true, 'from partner button press');
     }
   };
 

@@ -55,7 +55,7 @@ import {
   findDiagnosticsByItemIDsAndCityIDVariables,
   findDiagnosticsByItemIDsAndCityID,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsByItemIDsAndCityID';
-import { AppConfig, COVID_NOTIFICATION_ITEMID } from '@aph/mobile-patients/src/strings/AppConfig';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
 import {
@@ -93,7 +93,7 @@ const screenWidth = Dimensions.get('window').width;
 export interface TestPackageForDetails extends TestPackage {
   collectionType: TEST_COLLECTION_TYPE;
   preparation: string;
-  source: 'Home Page' | 'Full Search' | 'Cart Page' | 'Partial Search';
+  source: 'Home Page' | 'Full Search' | 'Cart Page' | 'Partial Search' | 'Deeplink';
   type: string;
   specialPrice?: string | number;
   circleRate?: string | number;
@@ -143,6 +143,7 @@ export interface TestDetailsProps
     source?: string;
     comingFrom?: string;
     itemName?: string;
+    movedFrom?: string;
   }> {}
 
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
@@ -174,6 +175,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const { setLoading: setLoadingContext } = useUIElements();
 
   const movedFrom = props.navigation.getParam('comingFrom');
+  const isDeep = props.navigation.getParam('movedFrom');
   const itemId =
     movedFrom == AppRoutes.TestsCart ? testDetails?.ItemID : props.navigation.getParam('itemId');
   const source = props.navigation.getParam('source');
@@ -419,10 +421,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   useEffect(() => {
     DiagnosticDetailsViewed(
-      testInfo?.source,
+      isDeep == 'deeplink' ? 'Deeplink' : testInfo?.source,
       testInfo?.ItemName,
       testInfo?.type,
-      testInfo?.ItemID,
+      testInfo?.ItemID || itemId,
       currentPatient,
       testInfo?.Rate,
       pharmacyCircleAttributes
@@ -488,20 +490,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     const sampleTypeArray = [...new Set(array)];
     return sampleTypeArray;
   }
-
-  const renderNotification = () => {
-    if (!COVID_NOTIFICATION_ITEMID.includes(testInfo.ItemID)) {
-      return null;
-    }
-    return (
-      <View style={styles.notificationCard}>
-        <PendingIcon style={styles.pendingIconStyle} />
-        <Text style={[styles.personDetailStyles, { marginTop: 0, marginLeft: 4, marginRight: 6 }]}>
-          {string.diagnostics.priceNotificationForCovidText}
-        </Text>
-      </View>
-    );
-  };
 
   const renderDescriptionCard = () => {
     const sampleType =
@@ -807,6 +795,14 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       cmsTestDetails?.diagnosticInclusionName?.length > 0;
     const inclusions = isInclusionPrsent && cmsTestDetails?.diagnosticInclusionName;
 
+    const getMandatoryParamter = cmsTestDetails?.diagnosticInclusionName?.map((inclusion: any) =>
+      inclusion?.TestObservation?.filter((item: any) => item?.mandatoryValue === '1')
+    );
+    const getMandatoryParameterCount = getMandatoryParamter?.reduce(
+      (prevVal: any, curr: any) => prevVal + curr?.length,
+      0
+    );
+
     return (
       <>
         <View style={{ width: '75%' }}>
@@ -820,7 +816,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         <View style={styles.inclusionsView}>
           {isInclusionPrsent ? (
             <Text style={styles.testIncludedText}>
-              Tests included : {cmsTestDetails?.diagnosticInclusionName?.length}
+              Total tests included :{' '}
+              {getMandatoryParameterCount || cmsTestDetails?.diagnosticInclusionName?.length}
             </Text>
           ) : null}
           {isInclusionPrsent &&
@@ -889,10 +886,13 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
 
   const renderParamterData = (item: any, inclusions: any, index: number, showOption: boolean) => {
+    const getMandatoryParameters =
+      item?.TestObservation?.length > 0 &&
+      item?.TestObservation?.filter((obs: any) => obs?.mandatoryValue === '1');
     return (
       <>
-        {item?.TestObservation?.length > 0 ? (
-          item?.TestObservation?.map((para: any, pIndex: number, array: any) => (
+        {!!getMandatoryParameters && getMandatoryParameters?.length > 0 ? (
+          getMandatoryParameters.map((para: any, pIndex: number, array: any) => (
             <View style={[styles.rowStyle, { marginHorizontal: '10%', width: '88%' }]}>
               <Text style={[styles.inclusionsBullet, { fontSize: 4 }]}>{'\u2B24'}</Text>
               <Text style={styles.parameterText}>

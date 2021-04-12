@@ -7,6 +7,8 @@ import { CartItemCard2 } from '@aph/mobile-patients/src/components/MedicineCart/
 import { ShoppingCartItem } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { postwebEngageProductRemovedEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { SpecialOffers } from '@aph/mobile-patients/src/components/ui/Icons';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export interface CartItemsListProps {
   screen: 'cart' | 'summary';
@@ -18,6 +20,7 @@ export const CartItemsList: React.FC<CartItemsListProps> = (props) => {
   const { cartItems, updateCartItem, removeCartItem } = useShoppingCart();
   const { screen, onPressProduct, setloading } = props;
   const { currentPatient } = useAllCurrentPatients();
+  const { cartBankOffer } = useAppCommonData();
 
   const renderCartItemsHeader = () => {
     const itemsCount =
@@ -63,9 +66,17 @@ export const CartItemsList: React.FC<CartItemsListProps> = (props) => {
     );
   };
 
+  const renderCartBankOfferBanner = () => (
+    <View style={styles.bankOfferView}>
+      <SpecialOffers style={styles.offerIcon} />
+      <Text style={styles.bankOfferText}>{cartBankOffer}</Text>
+    </View>
+  );
+
   return (
     <View>
       {renderCartItemsHeader()}
+      {!!cartBankOffer && renderCartBankOfferBanner()}
       {renderCartItems()}
     </View>
   );
@@ -85,4 +96,20 @@ const styles = StyleSheet.create({
     color: theme.colors.FILTER_CARD_LABEL,
     ...theme.fonts.IBMPlexSansBold(13),
   },
+  bankOfferView: {
+    flexDirection: 'row',
+    borderRadius: 5,
+    marginTop: 10,
+    marginHorizontal: 18,
+    backgroundColor: theme.colors.WHITE,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+  },
+  bankOfferText: {
+    ...theme.fonts.IBMPlexSansRegular(16),
+    lineHeight: 22,
+    color: '#02475B',
+    paddingRight: 25,
+  },
+  offerIcon: { marginRight: 7, marginTop: 5, resizeMode: 'contain', width: 35, height: 35 },
 });

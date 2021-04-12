@@ -49,7 +49,7 @@ import { MultiSignup } from '@aph/mobile-patients/src/components/MultiSignup';
 import { OrderDetailsScene } from '@aph/mobile-patients/src/components/OrderDetailsScene';
 import { OrderModifiedScreen } from '@aph/mobile-patients/src/components/OrderModifiedScreen';
 import { OTPVerification } from '@aph/mobile-patients/src/components/OTPVerification';
-import { SignUp } from '@aph/mobile-patients/src/components/SignUp';
+import SignUp from '@aph/mobile-patients/src/components/SignUp';
 import { SplashScreen } from '@aph/mobile-patients/src/components/SplashScreen';
 import { TabBar } from '@aph/mobile-patients/src/components/TabBar';
 import { YourOrdersScene } from '@aph/mobile-patients/src/components/YourOrdersScene';
@@ -85,10 +85,10 @@ import { MedAndTestCart } from '@aph/mobile-patients/src/components/Tests/MedAnd
 import { TestDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 
 import { SearchTestScene } from '@aph/mobile-patients/src/components/Tests/SearchTestScene';
-import { YourOrdersTest } from '@aph/mobile-patients/src/components/Tests/YourOrdersTests';
-import { OrderedTestStatus } from '@aph/mobile-patients/src/components/Tests/OrderedTestStatus';
-import { TestOrderDetails } from '@aph/mobile-patients/src/components/Tests/TestOrderDetails';
-import { TestOrderDetailsSummary } from '@aph/mobile-patients/src/components/Tests/TestOrderDetailsSummary';
+import { YourOrdersTest } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/YourOrdersTests';
+import { OrderedTestStatus } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/OrderedTestStatus';
+import { TestOrderDetails } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/TestOrderDetails';
+import { TestOrderDetailsSummary } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/TestOrderDetailsSummary';
 import { ClinicSelection } from '@aph/mobile-patients/src/components/Tests/ClinicSelection';
 import {
   CommonLogEvent,
@@ -121,7 +121,6 @@ import { ConsultTypeScreen } from './ConsultRoom/ConsultTypeScreen';
 import { CommonWebView } from '@aph/mobile-patients/src/components/CommonWebView';
 import { RefundStatus } from '@aph/mobile-patients/src/components/RefundStatus';
 import { MedicineCart } from '@aph/mobile-patients/src/components/MedicineCart/MedicineCart';
-import { MedicineCartPrescription } from '@aph/mobile-patients/src/components/MedicineCartPrescription';
 import { CartSummary } from '@aph/mobile-patients/src/components/MedicineCart/CartSummary';
 import { StorePickup } from '@aph/mobile-patients/src/components/MedicineCart/StorePickup';
 import { PickUpCartSummary } from '@aph/mobile-patients/src/components/MedicineCart/PickUpCartSummary';
@@ -137,6 +136,9 @@ import { Maps } from '@aph/mobile-patients/src/components/ui/Maps';
 import { PaymentMethods } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentMethods';
 import { OtherBanks } from '@aph/mobile-patients/src/components/PaymentGateway/OtherBanks';
 import { OrderStatus } from '@aph/mobile-patients/src/components/Tests/OrderStatus';
+import { ProHealthWebView } from '@aph/mobile-patients/src/components/ProHealthWebView';
+import MyOrdersScreen from '@aph/mobile-patients/src/components/MyOrders/MyOrdersScreen';
+
 export enum AppRoutes {
   Login = 'Login',
   ConsultRoom = 'ConsultRoom',
@@ -242,7 +244,6 @@ export enum AppRoutes {
   CommonWebView = 'CommonWebView',
   RefundStatus = 'RefundStatus',
   MedicineCart = 'MedicineCart',
-  MedicineCartPrescription = 'MedicineCartPrescription',
   CartSummary = 'CartSummary',
   StorePickup = 'StorePickup',
   PickUpCartSummary = 'PickUpCartSummary',
@@ -261,6 +262,8 @@ export enum AppRoutes {
   OtherBanks = 'OtherBanks',
   OrderStatus = 'OrderStatus',
   TestListing = 'TestListing',
+  ProHealthWebView = 'ProHealthWebView',
+  MyOrdersScreen = 'MyOrdersScreen',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -611,9 +614,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.MedicineCart]: {
     screen: MedicineCart,
   },
-  [AppRoutes.MedicineCartPrescription]: {
-    screen: MedicineCartPrescription,
-  },
   [AppRoutes.CartSummary]: {
     screen: CartSummary,
   },
@@ -667,6 +667,12 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.TestListing]: {
     screen: TestListing,
+  },
+  [AppRoutes.ProHealthWebView]: {
+    screen: ProHealthWebView,
+  },
+  [AppRoutes.MyOrdersScreen]: {
+    screen: MyOrdersScreen,
   },
 };
 

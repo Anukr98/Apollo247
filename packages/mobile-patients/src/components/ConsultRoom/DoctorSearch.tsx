@@ -45,6 +45,7 @@ import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   postWebEngageEvent,
+  getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -442,6 +443,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(currentPatient),
     };
     postWebEngageEvent(WebEngageEventName.DOCTOR_SEARCH, eventAttributes);
 
@@ -992,7 +994,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         <View style={{ alignItems: 'center', marginVertical: 15 }}>
           <Text style={styles.specialityText}>Start your care now by choosing from</Text>
           <Text style={styles.specialityText}>
-            over 2000 doctors and {SpecialitiesList.length + 6} specialities
+            over 4000 doctors and {SpecialitiesList.length + 6} specialities
           </Text>
         </View>
       );
@@ -1319,6 +1321,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Customer ID': g(currentPatient, 'id'),
       'Speciality Name': speciality,
       'Speciality ID': specialityId,
+      User_Type: getUserType(currentPatient),
     };
     postWebEngageEvent(WebEngageEventName.SPECIALITY_CLICKED, eventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.SPECIALITY_CLICKED, eventAttributes);
@@ -1763,7 +1766,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             </>
           )
         ) : null}
-        {showProfilePopUp && renderProfileListView()}
       </SafeAreaView>
       {showSpinner && <Spinner />}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}

@@ -30,6 +30,7 @@ export interface getPatientByMobileNumber_getPatientByMobileNumber_patients {
   firstName: string | null;
   lastName: string | null;
   mobileNumber: string;
+  isConsulted: boolean | null;
   dateOfBirth: any | null;
   emailAddress: string | null;
   gender: Gender | null;

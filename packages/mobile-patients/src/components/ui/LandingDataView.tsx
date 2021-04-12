@@ -1,112 +1,95 @@
-import { StyleSheet, View, Image, Text, ImageSourcePropType, StyleProp, ImageStyle } from 'react-native';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
+import { StyleSheet, View, Image, Text, Dimensions, FlatList } from 'react-native';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
-    anytime_imageStyle: {
-        width: 112,
-        height: 84,
-    },
-    doorstep_imageStyle: {
-        width: 96,
-        height: 72,
-    },
-    healthrecord_imageStyle: {
-        width: 95,
-        height: 71,
-    },
-    titleStyle: {
-        ...theme.fonts.IBMPlexSansMedium(15),
-        lineHeight: 24,
-        color: theme.colors.CARD_HEADER,
-    },
-    descriptionStyle: {
-        ...theme.fonts.IBMPlexSansRegular(12),
-        lineHeight: 16,
-        color: theme.colors.BLACK_COLOR,
-        opacity: 0.5,
-    },
-    topText: {
-        color: theme.colors.CARD_HEADER,
-        ...theme.fonts.IBMPlexSansSemiBold(16),
-        textAlign: 'left',
-    },
+  titleStyle: {
+    ...theme.fonts.IBMPlexSansSemiBold(14),
+    lineHeight: 24,
+    color: theme.colors.CARD_HEADER,
+    flexWrap: 'wrap',
+  },
+  descriptionStyle: {
+    ...theme.fonts.IBMPlexSansRegular(12),
+    lineHeight: 16,
+    color: theme.colors.GRAY,
+    flexWrap: 'wrap',
+  },
+  topText: {
+    color: theme.colors.CARD_HEADER,
+    ...theme.fonts.IBMPlexSansSemiBold(18),
+    textAlign: 'left',
+    marginBottom: 10,
+  },
+  container: {
+    flex: 1,
+    marginTop: 20,
+  },
+  iconStyle: {
+    width: 80,
+    height: 60,
+    marginRight: 6,
+  },
+  innerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+    marginHorizontal: 20,
+  },
+  bannerUrl: {
+    marginTop: 3,
+    width: '100%',
+    marginBottom: 20,
+  },
 });
 
-interface landingText {
-    id: number,
-    title: string,
-    description: string,
-    image?: ImageSourcePropType,
-    imageStyle?: StyleProp<ImageStyle>;
-}
+interface LandingDataViewProps {}
 
-interface LandingDataViewProps { }
-export const LandingDataView: React.FC<LandingDataViewProps> = (props) => {
-    const landingData: landingText[] = [
-        {
-            id: 1,
-            title: 'Apollo Doctor @ Home',
-            description:
-                'Over 20000 successful consults completed this month by 2000+ Apollo doctors across 51 specialities. Consultation from home on Video, Audio and Chat.',
-            image: require('@aph/mobile-patients/src/images/onboard/img_onboarding_anytime.png'),
-            imageStyle: styles.anytime_imageStyle,
-        },
-        {
-            id: 2,
-            title: 'Apollo Pharmacy @ Home',
-            description:
-                'We fulfill 5,00,000 Medicine order daily across India. 10% discount on chronic medicines and FREE home delivery.',
-            image: require('@aph/mobile-patients/src/images/onboard/img_onboarding_doorstep.png'),
-            imageStyle: styles.doorstep_imageStyle,
-        },
-        {
-            id: 3,
-            title: 'Apollo Medical Tests @ Home',
-            description:
-                'FREE home sample collection for medical tests at Apollo centers. Great packages and reports on App.',
-            image: require('@aph/mobile-patients/src/images/onboard/img_onboarding_healthrecord.png'),
-            imageStyle: styles.healthrecord_imageStyle,
-        },
-        {
-            id: 3,
-            title: '… and so much more!',
-            description: '',
-            image: {},
-            imageStyle: {},
-        },
-    ];
+const LandingDataView: React.FC<LandingDataViewProps> = (props) => {
+  const { loginSection } = useAppCommonData();
+  const bigScreenDevice = height >= 812 || width >= 812;
 
+  const renderItem = (item: any, index: number) => {
     return (
-        <View style={{ paddingLeft: 20, paddingRight: 20, marginTop: 20 }}>
-            <View style={{ marginBottom: 17, marginLeft: 13 }}>
-                <Text style={styles.topText}>Wondering what’s in store for you?</Text>
-            </View>
-            {landingData.map((item, index) => {
-                return (
-                    <View
-                        style={{
-                            flexDirection: 'row',
-                            // margin: 16,
-                        }}
-                    >
-                        <View style={{ alignItems: 'flex-start', justifyContent: 'flex-start', width: 120 }}>
-                            <Image source={item.image} style={item.imageStyle} resizeMode="cover" />
-                        </View>
-                        <View style={{ alignItems: 'flex-start', justifyContent: 'center', flex: 1 }}>
-                            <Text
-                                style={[
-                                    styles.titleStyle,
-                                    index == landingData.length - 1 ? { marginTop: 20 } : { marginTop: 14, marginBottom: 6 },
-                                ]}
-                            >
-                                {item.title}
-                            </Text>
-                            <Text style={styles.descriptionStyle}>{item.description}</Text>
-                        </View>
-                    </View>
-                );
-            })}
+      <View style={styles.innerContainer} key={index}>
+        <Image source={{ uri: item?.iconUrl }} style={styles.iconStyle} resizeMode="contain" />
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.titleStyle]}>{item?.title}</Text>
+          <Text style={styles.descriptionStyle}>{item?.description}</Text>
         </View>
+      </View>
     );
+  };
+
+  const renderHeaderComponent = () => {
+    return (
+      <View style={{ marginHorizontal: 20 }}>
+        <Image
+          source={{ uri: loginSection?.bannerUrl }}
+          style={[
+            styles.bannerUrl,
+            {
+              height: bigScreenDevice ? 164 : 148,
+            },
+          ]}
+          resizeMode="stretch"
+        />
+        <Text style={styles.topText}>{loginSection?.mainTitle}</Text>
+      </View>
+    );
+  };
+
+  return (
+    <FlatList
+      style={styles.container}
+      data={loginSection?.data}
+      keyExtractor={(_, index: Number) => `${index}`}
+      renderItem={({ item, index }) => renderItem(item, index)}
+      ListHeaderComponent={renderHeaderComponent}
+    />
+  );
 };
+
+export default React.memo(LandingDataView);

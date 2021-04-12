@@ -61,14 +61,14 @@ export const ProductCard: React.FC<Props> = ({
   const discount = getDiscountPercentage(price, special_price);
 
   const renderPrice = () => {
-    const strikeOffPrice = `(${string.common.Rs} ${convertNumberToDecimal(price)})`;
-    const mrp = 'MRP  ';
+    const mrp = 'MRP ';
+    const strikeOffPrice = `(${mrp}${string.common.Rs}${convertNumberToDecimal(price)})`;
     const finalPrice = `${string.common.Rs}${convertNumberToDecimal(
       discount ? special_price : price
-    )}`;
+    )} `;
     return (
       <View style={styles.priceContainer}>
-        <Text style={styles.finalPrice}>{mrp}</Text>
+        {!discount && <Text style={styles.finalPrice}>{mrp}</Text>}
         <Text style={styles.finalPrice}>{finalPrice}</Text>
         {!!discount && (
           <View style={styles.specialPriceContainer}>

@@ -1133,49 +1133,48 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           });
         }
       };
-      if(item.appointmentType==='PHYSICAL'){
-      return (
-        <View style={{ flexDirection: 'row' }}>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={{ flex: 1 }}
-            onPress={()=>{
-            props.navigation.navigate(AppRoutes.AppointmentDetailsPhysical,
-            {data: item,from: 'Consult'})
-            }}>
-            <Text style={styles.prepareForConsult}>
-            VIEW DETAILS
-            </Text>
-          </TouchableOpacity>
-        </View>
-      );
-
-      }
-      else
-      return (
-        <View style={{ flexDirection: 'row' }}>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={{ flex: 1 }}
-            onPress={onPressActiveUpcomingButtons}
-          >
-            <Text
-              style={[
-                styles.prepareForConsult,
-                {
-                  opacity: 1,
-                  paddingBottom: 0,
-                },
-              ]}
+      if (item.appointmentType === 'PHYSICAL') {
+        return (
+          <View style={{ flexDirection: 'row' }}>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={{ flex: 1 }}
+              onPress={() => {
+                props.navigation.navigate(AppRoutes.AppointmentDetailsPhysical, {
+                  data: item,
+                  from: 'Consult',
+                });
+              }}
             >
-              {item.isConsultStarted
-                ? string.common.continueConsult
-                : string.common.prepareForConsult}
-            </Text>
-            <Text style={styles.fillVitalsForConsult}>{getConsultationSubTexts()}</Text>
-          </TouchableOpacity>
-        </View>
-      );
+              <Text style={styles.prepareForConsult}>VIEW DETAILS</Text>
+            </TouchableOpacity>
+          </View>
+        );
+      } else
+        return (
+          <View style={{ flexDirection: 'row' }}>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={{ flex: 1 }}
+              onPress={onPressActiveUpcomingButtons}
+            >
+              <Text
+                style={[
+                  styles.prepareForConsult,
+                  {
+                    opacity: 1,
+                    paddingBottom: 0,
+                  },
+                ]}
+              >
+                {item.isConsultStarted
+                  ? string.common.continueConsult
+                  : string.common.prepareForConsult}
+              </Text>
+              <Text style={styles.fillVitalsForConsult}>{getConsultationSubTexts()}</Text>
+            </TouchableOpacity>
+          </View>
+        );
     };
 
     const renderPickAnotherButton = () => {
@@ -1208,7 +1207,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     };
 
     const onPressDoctorCardClick = () => {
-    console.log("csk item",item.appointmentType);
       postConsultCardEvents('Card Click', item);
       CommonLogEvent(AppRoutes.Consult, `Consult ${item.appointmentType} clicked`);
       if (item.doctorInfo && !pastAppointmentItem) {
@@ -1217,15 +1215,15 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               data: item,
               from: 'Consult',
             })
-          : item.appointmentType === 'PHYSICAL'?
-          (props.navigation.navigate(AppRoutes.AppointmentDetailsPhysical, {
-                        data: item,
-                        from: 'Consult',
-                      }))
-          :(props.navigation.navigate(AppRoutes.AppointmentDetails, {
+          : item.appointmentType === 'PHYSICAL'
+          ? props.navigation.navigate(AppRoutes.AppointmentDetailsPhysical, {
               data: item,
               from: 'Consult',
-            }));
+            })
+          : props.navigation.navigate(AppRoutes.AppointmentDetails, {
+              data: item,
+              from: 'Consult',
+            });
       }
     };
 

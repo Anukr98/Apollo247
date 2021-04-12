@@ -345,10 +345,17 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         route = data[0];
 
         let linkId = '';
-
+        let attributes = {
+          media_source: 'not set',
+        };
         try {
-          if (data.length >= 2) {
-            linkId = data[1].split('&');
+          if (data?.length >= 2) {
+            linkId = data[1]?.split('&');
+            const params = data[1]?.split('&');
+            const utmParams = params?.map((item: any) => item.split('='));
+            utmParams?.forEach(
+              (item: any) => item?.length == 2 && (attributes?.[item?.[0]] = item?.[1])
+            );
             if (linkId.length > 0) {
               linkId = linkId[0];
               setBugFenderLog('DEEP_LINK_SPECIALITY_ID', linkId);
@@ -358,63 +365,78 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         console.log(linkId, 'linkId');
 
         switch (route) {
+          case 'consult':
           case 'Consult':
             console.log('Consult');
             getData('Consult', data.length === 2 ? linkId : undefined);
             break;
 
+          case 'medicine':
           case 'Medicine':
             console.log('Medicine');
             getData('Medicine', data.length === 2 ? linkId : undefined);
             break;
 
+          case 'uploadprescription':
           case 'UploadPrescription':
             getData('UploadPrescription', data.length === 2 ? linkId : undefined);
             break;
 
+          case 'medicinerecommendedsection':
           case 'MedicineRecommendedSection':
             getData('MedicineRecommendedSection');
             break;
 
+          case 'test':
           case 'Test':
             console.log('Test');
             getData('Test');
             break;
 
+          case 'speciality':
           case 'Speciality':
             console.log('Speciality handleopen');
             if (data.length === 2) getData('Speciality', linkId);
+            else getData('DoctorSearch');
             break;
 
+          case 'doctor':
           case 'Doctor':
             console.log('Doctor handleopen');
-            if (data.length === 2) getData('Doctor', linkId);
+            if (data.length === 2)
+              getData('Doctor', linkId, undefined, undefined, attributes?.media_source);
             break;
 
+          case 'doctorsearch':
           case 'DoctorSearch':
             console.log('DoctorSearch handleopen');
             getData('DoctorSearch');
             break;
 
+          case 'medicinesearch':
           case 'MedicineSearch':
             console.log('MedicineSearch handleopen');
             getData('MedicineSearch', data.length === 2 ? linkId : undefined);
             break;
 
+          case 'medicinedetail':
           case 'MedicineDetail':
             console.log('MedicineDetail handleopen');
             getData('MedicineDetail', data.length === 2 ? linkId : undefined);
             break;
 
+          case 'medicinecart':
           case 'MedicineCart':
             console.log('MedicineCart handleopen');
             getData('MedicineCart', data.length === 2 ? linkId : undefined);
             break;
 
+          case 'chatroom':
           case 'ChatRoom':
             if (data.length === 2) getAppointmentDataAndNavigate(linkId, false);
             break;
 
+          case 'doctorcall':
           case 'DoctorCall':
             if (data.length === 2 && getCurrentRoute() !== AppRoutes.ChatRoom) {
               const params = linkId.split('+');
@@ -424,6 +446,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             }
             break;
 
+          case 'doctorcallrejected':
           case 'DoctorCallRejected':
             {
               setLoading!(true);
@@ -450,52 +473,78 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             }
             break;
 
+          case 'order':
           case 'Order':
             if (data.length === 2) getData('Order', linkId);
             break;
 
+          case 'myorders':
           case 'MyOrders':
             getData('MyOrders');
             break;
 
           case 'webview':
-            if (data.length === 2) {
+            if (data.length >= 1) {
               let url = data[1].replace('param=', '');
               getData('webview', url);
             }
             break;
+
+          case 'finddoctors':
           case 'FindDoctors':
             if (data.length === 2) getData('FindDoctors', linkId);
             break;
 
+          case 'healthrecordshome':
           case 'HealthRecordsHome':
             console.log('HealthRecordsHome handleopen');
             getData('HealthRecordsHome');
             break;
 
+          case 'manageprofile':
           case 'ManageProfile':
             console.log('ManageProfile handleopen');
             getData('ManageProfile');
             break;
 
+          case 'oneapollomembership':
           case 'OneApolloMembership':
             getData('OneApolloMembership');
             break;
 
+          case 'testdetails':
           case 'TestDetails':
             getData('TestDetails', data.length === 2 ? linkId : undefined);
             break;
 
+          case 'consultdetails':
           case 'ConsultDetails':
             getData('ConsultDetails', data.length === 2 ? linkId : undefined);
             break;
 
+          case 'circlemembershipdetails':
           case 'CircleMembershipDetails':
             getData('CircleMembershipDetails');
             break;
 
+          case 'symptomtracker':
+          case 'SymptomTracker':
+            getData('SymptomTracker');
+            break;
+
+          case 'testlisting':
           case 'TestListing':
             getData('TestListing', data?.length === 2 ? linkId : undefined);
+            break;
+
+          case 'testreport':
+          case 'TestReport':
+            getData('TestReport', data?.length === 2 ? linkId : undefined);
+            break;
+
+          case 'mytestorders':
+          case 'MyTestOrders':
+            getData('MyTestOrders');
             break;
 
           default:
@@ -607,7 +656,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
     }
   }
-  const getData = (routeName: String, id?: String, timeout?: boolean, isCall?: boolean) => {
+  const getData = (
+    routeName: string,
+    id?: string,
+    timeout?: boolean,
+    isCall?: boolean,
+    mediaSource?: string
+  ) => {
     async function fetchData() {
       // const onboarding = await AsyncStorage.getItem('onboarding');
       const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
@@ -657,7 +712,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               if (mePatient.firstName !== '') {
                 callPhrNotificationApi(currentPatient);
                 setCrashlyticsAttributes(mePatient);
-                pushTheView(routeName, id ? id : undefined, isCall, isCircleMember === 'yes');
+                pushTheView(
+                  routeName,
+                  id ? id : undefined,
+                  isCall,
+                  isCircleMember === 'yes',
+                  mediaSource
+                );
               } else {
                 props.navigation.replace(AppRoutes.Login);
               }
@@ -727,7 +788,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
   };
 
-  const pushTheView = (routeName: String, id?: any, isCall?: boolean, isCircleMember?: boolean) => {
+  const pushTheView = (
+    routeName: string,
+    id?: any,
+    isCall?: boolean,
+    isCircleMember?: boolean,
+    mediaSource?: string
+  ) => {
     console.log('pushTheView', routeName);
     setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
     switch (routeName) {
@@ -762,7 +829,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       case 'Test':
         console.log('Test');
-        props.navigation.navigate('TESTS');
+        props.navigation.navigate('TESTS', {
+          movedFrom: 'deeplink',
+        });
         break;
 
       case 'ConsultRoom':
@@ -804,6 +873,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         props.navigation.navigate(AppRoutes.DoctorDetails, {
           doctorId: id,
           fromDeeplink: true,
+          mediaSource: mediaSource,
         });
         break;
 
@@ -870,6 +940,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'TestDetails':
         props.navigation.navigate(AppRoutes.TestDetails, {
           itemId: id,
+          movedFrom: 'deeplink',
         });
         break;
 
@@ -891,7 +962,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         fetchSpecialities(id);
         break;
       case 'DoctorByNameId':
-        const docId = id.slice(-36);
+        const docId = (id?.split('?')?.[0] || id)?.slice(-36);
         props.navigation.navigate(AppRoutes.DoctorDetails, {
           doctorId: docId,
         });
@@ -908,13 +979,22 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         }
         break;
 
-      case 'testlisting':
       case 'TestListing':
-        console.log('TestListing');
         props.navigation.navigate(AppRoutes.TestListing, {
           movedFrom: 'deeplink',
           widgetName: id,
         });
+        break;
+
+      case 'TestReport':
+        props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+          movedFrom: 'deeplink',
+          id: id,
+        });
+        break;
+
+      case 'MyTestOrders':
+        props.navigation.navigate(AppRoutes.YourOrdersTest);
         break;
 
       default:
@@ -968,6 +1048,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setNeedHelpToContactInMessage,
     setNeedHelpReturnPharmaOrderSuccessMessage,
     setSavePatientDetails,
+    setCovidVaccineCta,
+    setLoginSection,
+    setCovidVaccineCtaV2,
+    setCartBankOffer,
   } = useAppCommonData();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -1073,6 +1157,38 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Need_Help_Return_Pharma_Order_Success_Message: {
       PROD: 'Need_Help_Return_Pharma_Order_Success_Message',
     },
+    Covid_Vaccine_Cta_Key: {
+      QA: 'Covid_Vaccine_CTA_QA',
+      PROD: 'Covid_Vaccine_CTA',
+    },
+    Login_Section_Key: {
+      QA: 'Login_Section_QA',
+      PROD: 'Login_Section',
+    },
+    Covid_Vaccine_Cta_Key_V2: {
+      QA: 'Covid_Vaccine_CTA_V2_QA',
+      PROD: 'Covid_Vaccine_CTA_V2',
+    },
+    Covid_Items: {
+      QA: 'QA_Covid_Items',
+      PROD: 'Covid_Items',
+    },
+    Covid_Max_Slot_Days: {
+      QA: 'QA_Covid_Max_Slot_Days',
+      PROD: 'Covid_Max_Slot_Days',
+    },
+    Non_Covid_Max_Slot_Days: {
+      QA: 'QA_Non_Covid_Max_Slot_Days',
+      PROD: 'Non_Covid_Max_Slot_Days',
+    },
+    Cart_Bank_Offer_Text: {
+      QA: 'QA_CART_BANK_OFFER_TEXT',
+      PROD: 'CART_BANK_OFFER_TEXT',
+    },
+    followUp_Chat: {
+      QA: 'QA_FollowUp_Chat_Limit',
+      PROD: 'FollowUp_Chat_Limit',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1109,15 +1225,32 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const checkForVersionUpdate = async () => {
     try {
       // Note: remote config values will be cached for the specified duration in development mode, update below value if necessary.
-      const minimumFetchIntervalMillis = __DEV__ ? 43200000 : 0;
+      const minimumFetchIntervalMillis = __DEV__ ? 0 : 0;
       await remoteConfig().setConfigSettings({ minimumFetchIntervalMillis });
       await remoteConfig().fetchAndActivate();
       const config = remoteConfig();
-
       const needHelpToContactInMessage = getRemoteConfigValue('Need_Help_To_Contact_In', (key) =>
         config.getString(key)
       );
       needHelpToContactInMessage && setNeedHelpToContactInMessage!(needHelpToContactInMessage);
+
+      const covidVaccineCta = getRemoteConfigValue(
+        'Covid_Vaccine_Cta_Key',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.COVID_VACCINE_SECTION
+      );
+      covidVaccineCta && setCovidVaccineCta!(covidVaccineCta);
+
+      const covidVaccineCtaV2 = getRemoteConfigValue(
+        'Covid_Vaccine_Cta_Key_V2',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.COVID_VACCINE_SECTION
+      );
+      covidVaccineCtaV2 && setCovidVaccineCtaV2!(covidVaccineCtaV2);
+
+      const loginSection = getRemoteConfigValue(
+        'Login_Section_Key',
+        (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.LOGIN_SECTION
+      );
+      loginSection && setLoginSection!(loginSection);
 
       const needHelpReturnPharmaOrderSuccessMessage = getRemoteConfigValue(
         'Need_Help_Return_Pharma_Order_Success_Message',
@@ -1125,6 +1258,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
       needHelpReturnPharmaOrderSuccessMessage &&
         setNeedHelpReturnPharmaOrderSuccessMessage!(needHelpReturnPharmaOrderSuccessMessage);
+
+      const bankOfferText = getRemoteConfigValue('Cart_Bank_Offer_Text', (key) =>
+        config.getString(key)
+      );
+      bankOfferText && setCartBankOffer!(bankOfferText);
 
       setAppConfig(
         'Min_Value_For_Pharmacy_Free_Delivery',
@@ -1176,6 +1314,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       setAppConfig('Enable_Conditional_Management', 'ENABLE_CONDITIONAL_MANAGEMENT', (key) =>
         config.getBoolean(key)
       );
+
+      setAppConfig('Covid_Items', 'Covid_Items', (key) => config.getString(key));
+      setAppConfig('Covid_Max_Slot_Days', 'Covid_Max_Slot_Days', (key) => config.getNumber(key));
+      setAppConfig('Non_Covid_Max_Slot_Days', 'Non_Covid_Max_Slot_Days', (key) =>
+        config.getNumber(key)
+      );
+      setAppConfig('followUp_Chat', 'FollowUp_Chat_Limit', (key) => config.getNumber(key));
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';

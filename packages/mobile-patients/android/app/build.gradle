@@ -137,8 +137,8 @@ android {
         applicationId "com.apollo.patientapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 83
-        versionName "5.4.0"
+        versionCode 93
+        versionName "5.4.8"
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
@@ -253,8 +253,10 @@ dependencies {
 
     // Note, other modules you are using may required play-services-base to be installed.
     // implementation "com.google.android.gms:play-services-base:16.1.0"
-    implementation  "com.google.android.gms:play-services-fitness:18.0.0"
-    implementation 'com.google.android.gms:play-services-auth:17.0.0'
+    implementation "com.google.android.gms:play-services-location:18.0.0" // <-- added for activity recognition of google fit
+    implementation  "com.google.android.gms:play-services-fitness:18.0.0" 
+    implementation 'com.google.android.gms:play-services-auth:19.0.0' //17.0.0
+     implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.20.0" // for serialization error
     implementation 'me.leolin:ShortcutBadger:1.1.21@aar' // <-- Add this line if you wish to use badge on Android
 
     //maps dependencies
@@ -309,7 +311,7 @@ dependencies {
     kapt("com.github.bumptech.glide:compiler:4.9.0")
 
 // Room components
-    implementation("androidx.room:room-runtime:2.1.0")
+    implementation("androidx.room:room-runtime:2.2.0") //2.1.0 => 2.2.0
     kapt("androidx.room:room-compiler:2.2.0")
     implementation("androidx.room:room-ktx:2.2.0")
     implementation("androidx.room:room-rxjava2:2.2.0")
@@ -351,7 +353,7 @@ dependencies {
     implementation("joda-time:joda-time:2.9.7")
     implementation("com.opencsv:opencsv:4.1")
 // Twilio
-    implementation("com.twilio:chat-android:4.0.2")
+    implementation("com.twilio:chat-android:4.2.3") //4.0.2 => 4.2.3
 // ToolTip
     implementation("com.github.sephiroth74:android-target-tooltip:2.0.4")
 // Work Manager

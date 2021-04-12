@@ -27,6 +27,7 @@ import {
   g,
   doRequestAndAccessLocationModified,
   checkPermissions,
+  getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   autoCompletePlaceSearch,
@@ -38,12 +39,12 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string, { Payment } from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
@@ -100,6 +101,7 @@ import {
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { userLocationConsultWEBEngage } from '@aph/mobile-patients/src/helpers/CommonEvents';
 
 export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
@@ -140,6 +142,9 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     []
   );
   const [showLocations, setshowLocations] = useState<boolean>(false);
+  const fireLocationEvent = useRef<boolean>(false);
+  const userChangedLocation = useRef<boolean>(false);
+  const { getPatientApiCall } = useAuth();
 
   const [
     amountBreakup,
@@ -175,6 +180,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         {
           text: 'ENTER MANUALLY',
           onPress: () => {
+            fireLocationEvent.current = true;
             hideAphAlert?.();
             setlocationSearchList([]);
             setShowLocationPopup(true);
@@ -184,11 +190,13 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         {
           text: 'ALLOW AUTO DETECT',
           onPress: () => {
+            fireLocationEvent.current = true;
             hideAphAlert!();
             setLoading?.(true);
             doRequestAndAccessLocationModified()
               .then((response) => {
                 setLoading?.(false);
+                locationWebEngageEvent(response, 'Auto Detect');
                 response && setLocationDetails?.(response);
                 saveLocationWithConsultation(response);
               })
@@ -209,9 +217,30 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     });
   };
 
+  const locationWebEngageEvent = (location: any, type: 'Auto Detect' | 'Manual entry') => {
+    if (fireLocationEvent.current) {
+      const doctorDetails = {
+        name: doctorName,
+        id: doctorID,
+        'Speciality Name': g(doctor, 'specialty', 'name')!,
+      };
+      userLocationConsultWEBEngage(
+        currentPatient,
+        location,
+        'Pay confirm',
+        type,
+        doctorDetails,
+        userChangedLocation.current
+      );
+    }
+    userChangedLocation.current = false;
+    fireLocationEvent.current = false;
+  };
+
   useEffect(() => {
     // getTxnStatus(orderId)
     console.log(webEngageEventAttributes['Consult Mode']);
+
     client
       .query({
         query: GET_TRANSACTION_STATUS,
@@ -233,6 +262,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         } catch (error) {}
         console.log(res.data);
         if (res.data.paymentTransactionStatus.appointment.paymentStatus == success) {
+          locationDetails && saveLocationWithConsultation(locationDetails);
+
           const amountBreakup = res?.data?.paymentTransactionStatus?.appointment?.amountBreakup;
           if (isCircleDoctor && amountBreakup?.slashed_price) {
             setAmountBreakup(res?.data?.paymentTransactionStatus?.appointment?.amountBreakup);
@@ -241,11 +272,13 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           try {
             let eventAttributes = webEngageEventAttributes;
             eventAttributes['Display ID'] = res.data.paymentTransactionStatus.appointment.displayId;
+            eventAttributes['User_Type'] = getUserType(currentPatient);
             postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, appsflyerEventAttributes);
             postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
             firePurchaseEvent(amountBreakup);
             eventAttributes['Dr of hour appointment'] = !!isDoctorsOfTheHourStatus ? 'Yes' : 'No';
             postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
+            if (!currentPatient?.isConsulted) getPatientApiCall();
           } catch (error) {}
           checkPermissions(['camera', 'microphone']).then((response: any) => {
             const { camera, microphone } = response;
@@ -964,7 +997,12 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           <View style={styles.currentLocationView}>
             <View style={[styles.spaceRow, { marginTop: 0 }]}>
               <Text style={styles.currentLocationText}>Current Location</Text>
-              <TouchableOpacity onPress={() => setShowLocationPopup(false)}>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowLocationPopup(false);
+                  locationWebEngageEvent(undefined, 'Manual entry');
+                }}
+              >
                 <Remove />
               </TouchableOpacity>
             </View>
@@ -1062,6 +1100,11 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
                   lastUpdated: new Date().getTime(),
                 };
                 saveLocationWithConsultation(locationInput);
+                const locationAttribute = {
+                  ...locationData,
+                  pincode: findAddrComponents('postal_code', addrComponents),
+                };
+                locationWebEngageEvent(locationAttribute, 'Manual entry');
               }
             })
             .catch((error) => {
@@ -1090,6 +1133,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           </View>
           <TouchableOpacity
             onPress={() => {
+              fireLocationEvent.current = true;
+              userChangedLocation.current = true;
               setlocationSearchList([]);
               setShowLocationPopup(true);
             }}

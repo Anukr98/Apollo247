@@ -301,10 +301,10 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
         ? 'Prescription Upload'
         : 'Not Applicable',
     };
-    postWebEngageEvent(
-      WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED,
-      pharmaCheckoutEventAttributes
-    );
+    postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, {
+      ...pharmaCheckoutEventAttributes,
+      'Cart Items': JSON.stringify(cartItems),
+    });
     postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, appsflyerEventAttributes);
     firePurchaseEvent();
   };

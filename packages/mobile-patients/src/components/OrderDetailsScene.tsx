@@ -992,14 +992,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             ? `Your order #${orderAutoId} has been dispatched via ${shipmentTrackingProvider}, AWB #${shipmentTrackingNumber}.`
             : '',
         ],
-        [MEDICINE_ORDER_STATUS.CONSULT_PENDING]: [
-          '',
-          `Doctor Consult Booked! You will receive a call soon.  Doctor Name: ${
-            order?.consultInfo?.doctorName
-          }, Slot time: ${moment(order?.consultInfo?.appointmentDateTime).format(
-            'DD MMM YYYY, hh:mm A'
-          )}`,
-        ],
+
         [MEDICINE_ORDER_STATUS.DELIVERED]: [
           '',
           `If you have any issues with your delivered order, please talk to us on our official WhatsApp (8:00 am-8.30 pm) ${AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK}`,
@@ -1018,11 +1011,15 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         [MEDICINE_ORDER_STATUS.ON_HOLD]: ['Order On-Hold : ', `${reasonForOnHold?.displayText}`],
         [MEDICINE_ORDER_STATUS.RETURN_PICKUP]: [
           '',
-          `Your order items have been successfully returned, we will be processing for a refund shortly.`,
+          `Your Returned item(s) have been picked up and your refund will be processed shortly.`,
         ],
-        [MEDICINE_ORDER_STATUS.RETURN_REQUESTED]: [
+        [MEDICINE_ORDER_STATUS.RETURN_INITIATED]: [
           '',
-          `Your return has been initiated, a return pick-up partner will be assigned soon`,
+          `Your Order is being sent back as we could not deliver your order`,
+        ],
+        [MEDICINE_ORDER_STATUS.RETURN_REQUEST_CREATED]: [
+          '',
+          `Our Customer support team may reach out to you for any clarification regarding your return request`,
         ],
         [MEDICINE_ORDER_STATUS.DELIVERY_ATTEMPTED]: [
           '',
@@ -1030,7 +1027,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         ],
         [MEDICINE_ORDER_STATUS.RVP_ASSIGNED]: [
           '',
-          `Our rider or courier partner will collect the item from you shortly, please be reachable on phone`,
+          `Rider/Courier partner has been assigned to pickup your return items, the Rider may call you before he reaches your place`,
         ],
       };
 
@@ -1547,6 +1544,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const renderUploadPrescriptionPopUp = () => {
     return (
       <UploadPrescriprionPopup
+        type={'Re-Upload'}
         isVisible={showPrescriptionPopup}
         disabledOption="NONE"
         heading={'Re-Upload Prescription(s)'}

@@ -16,6 +16,7 @@ export interface AvailabilityCapsuleProps {
 
 export const AvailabilityCapsule: React.FC<AvailabilityCapsuleProps> = (props) => {
   const timeDiff: Number = timeDiffFromNow(props.availableTime);
+
   if (props.availableTime && moment(props.availableTime).isValid())
     return (
       <CapsuleView

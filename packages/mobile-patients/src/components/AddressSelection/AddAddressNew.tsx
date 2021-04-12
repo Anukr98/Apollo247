@@ -446,8 +446,6 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
         region?.latitude + latitudeDelta,
         region?.longitude + longitudeDelta
       );
-
-      console.log(region.latitude + latitudeDelta, region.longitude + longitudeDelta);
     }
 
     if (!isMapDragging && Platform.OS == 'android') {

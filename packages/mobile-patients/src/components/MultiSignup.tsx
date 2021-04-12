@@ -502,9 +502,11 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
         'Customer ID': currentPatient ? currentPatient.id : '',
         'Customer First Name': (firstName || '')!.trim(),
         'Customer Last Name': (lastName || '')!.trim(),
-        'Date of Birth': date ? moment(date, 'DD/MM/YYYY').toDate() : '',
+        'Date of Birth':
+          currentPatient?.dateOfBirth || date ? moment(date, 'DD/MM/YYYY').toDate() : '',
         Gender: gender!,
         Email: (email || '').trim(),
+        'Mobile Number': currentPatient?.mobileNumber,
       };
       if (referral) {
         // only send if referral has a value
@@ -815,53 +817,42 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                 Keyboard.dismiss();
                 let trimReferral = referral;
                 if (profiles) {
-                  const result = profiles.filter((obj) => {
-                    return obj.relation == Relation['ME'];
-                  });
-                  if (result.length === 0) {
-                    Alert.alert('Apollo', 'There should be 1 profile with relation set as Me');
-                    CommonLogEvent(
-                      AppRoutes.MultiSignup,
-                      'There should be 1 profile with relation set as Me'
-                    );
-                  } else {
-                    if (referral !== '') {
-                      trimReferral = trimReferral.trim();
-                    }
-                    setVerifyingPhoneNumber(true);
-
-                    profiles.forEach(async (profile: updatePatient_updatePatient_patient) => {
-                      const patientsDetails: UpdatePatientInput = {
-                        id: profile.id,
-                        relation: Relation[profile.relation!], // profile ? profile.relation!.toUpperCase() : '',
-                        referralCode: (profile.relation == Relation.ME && trimReferral) || null,
-                        deviceCode: deviceToken,
-                      };
-                      console.log('patientsDetails', { patientsDetails });
-                      CommonLogEvent(AppRoutes.MultiSignup, 'Update API clicked');
-                      mutate({
-                        variables: {
-                          patientInput: patientsDetails,
-                        },
-                      }).then((_data) => {
-                        try {
-                          const { data } = _data as { data: updatePatient };
-                          const patient = g(data, 'updatePatient', 'patient')!;
-                          if (patient.relation == Relation.ME) {
-                            setCurrentPatientId(patient.id);
-                            AsyncStorage.setItem('selectUserId', patient.id);
-                            AsyncStorage.setItem('selectUserUHId', patient.uhid!);
-                            _postWebEngageEvent(patient);
-                          }
-                        } catch (error) {
-                          CommonLogEvent(
-                            AppRoutes.MultiSignup,
-                            `Error occured while sending webEngage event (${WebEngageEventName.REGISTRATION_DONE}) for PRISM profiles.`
-                          );
-                        }
-                      });
-                    });
+                  if (referral !== '') {
+                    trimReferral = trimReferral.trim();
                   }
+                  setVerifyingPhoneNumber(true);
+
+                  profiles.forEach(async (profile: updatePatient_updatePatient_patient) => {
+                    const patientsDetails: UpdatePatientInput = {
+                      id: profile.id,
+                      relation: Relation[profile.relation!], // profile ? profile.relation!.toUpperCase() : '',
+                      referralCode: (profile.relation == Relation.ME && trimReferral) || null,
+                      deviceCode: deviceToken,
+                    };
+                    console.log('patientsDetails', { patientsDetails });
+                    CommonLogEvent(AppRoutes.MultiSignup, 'Update API clicked');
+                    mutate({
+                      variables: {
+                        patientInput: patientsDetails,
+                      },
+                    }).then((_data) => {
+                      try {
+                        const { data } = _data as { data: updatePatient };
+                        const patient = g(data, 'updatePatient', 'patient')!;
+                        if (patient.relation == Relation.ME) {
+                          setCurrentPatientId(patient.id);
+                          AsyncStorage.setItem('selectUserId', patient.id);
+                          AsyncStorage.setItem('selectUserUHId', patient.uhid!);
+                          _postWebEngageEvent(patient);
+                        }
+                      } catch (error) {
+                        CommonLogEvent(
+                          AppRoutes.MultiSignup,
+                          `Error occured while sending webEngage event (${WebEngageEventName.REGISTRATION_DONE}) for PRISM profiles.`
+                        );
+                      }
+                    });
+                  });
                 }
               }}
             >

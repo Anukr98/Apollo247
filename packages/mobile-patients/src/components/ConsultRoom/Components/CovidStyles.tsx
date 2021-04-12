@@ -9,6 +9,8 @@ import {
   View,
   StyleProp,
   ViewStyle,
+  Image,
+  ImageStyle,
 } from 'react-native';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 
@@ -18,24 +20,32 @@ interface Props {
   onPress: () => void;
   title: string;
   iconBase: IconBase;
+  iconUrl?: string;
   buttonStyle?: StyleProp<ViewStyle>;
-  iconStyle?: StyleProp<ViewStyle>;
+  iconStyle?: StyleProp<ViewStyle | ImageStyle>;
   btnTitleStyle?: StyleProp<ViewStyle>;
 }
-const CovidButton = (props: Props) => (
-  <TouchableOpacity
-    style={[styles.buttonStyle, props.buttonStyle]}
-    activeOpacity={0.5}
-    onPress={props.onPress}
-  >
-    <View style={styles.viewStyle}>
-      <props.iconBase style={[styles.iconStyle, props.iconStyle]} />
-    </View>
-    <View style={styles.viewSubContainer}>
-      <Text style={[styles.titleStyle, props.btnTitleStyle]}>{props.title}</Text>
-    </View>
-  </TouchableOpacity>
-);
+const CovidButton = (props: Props) => {
+  const iconStyle = [styles.iconStyle, props.iconStyle];
+  return (
+    <TouchableOpacity
+      style={[styles.buttonStyle, props.buttonStyle]}
+      activeOpacity={0.5}
+      onPress={props.onPress}
+    >
+      <View style={styles.viewStyle}>
+        {props.iconUrl ? (
+          <Image source={{ uri: props.iconUrl }} style={iconStyle} />
+        ) : (
+          <props.iconBase style={iconStyle} />
+        )}
+      </View>
+      <View style={styles.viewSubContainer}>
+        <Text style={[styles.titleStyle, props.btnTitleStyle]}>{props.title}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+};
 
 const styles = StyleSheet.create({
   buttonStyle: {

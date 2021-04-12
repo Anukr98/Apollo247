@@ -99,6 +99,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList 
   collectionCharges: number | null;
   slotDateTimeInUTC: any | null;
   paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
+  visitNo: string | null;
   diagnosticOrderLineItems: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems | null)[] | null;
   diagnosticOrdersStatus: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrdersStatus | null)[] | null;
 }

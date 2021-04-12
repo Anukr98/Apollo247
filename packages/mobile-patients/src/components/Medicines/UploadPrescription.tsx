@@ -253,6 +253,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         (data.getPatientAddressList
           .addressList as savePatientAddress_savePatientAddress_patientAddress[]) || [];
       setAddresses!(addressList);
+      const deliveryAddress = addressList.find(({ defaultAddress }) => defaultAddress === true);
+      if (deliveryAddress && !deliveryAddressId) {
+        setDeliveryAddressId && setDeliveryAddressId(deliveryAddress?.id);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -1189,7 +1193,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       {renderPrescriptionModal()}
       <UploadPrescriprionPopup
         isVisible={ShowPopop}
-        type={isComingFromReUpload ? undefined : 'nonCartFlow'}
+        type={isComingFromReUpload ? 'Re-Upload' : 'Upload Flow'}
         heading={isComingFromReUpload ? 'Re-Upload Prescription(s)' : 'Upload Prescription(s)'}
         instructionHeading={'Instructions For Uploading Prescriptions'}
         instructions={[

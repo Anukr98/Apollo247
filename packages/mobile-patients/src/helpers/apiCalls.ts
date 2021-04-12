@@ -725,11 +725,14 @@ export const trackTagalysEvent = (
   });
 };
 
+let cancelGetMedicineSearchSuggestionsApi: Canceler | undefined;
 export const getMedicineSearchSuggestionsApi = (
   searchText: string,
   axdcCode?: string | null,
   pincode?: string | null
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
+  const CancelToken = Axios.CancelToken;
+  cancelGetMedicineSearchSuggestionsApi && cancelGetMedicineSearchSuggestionsApi();
   return Axios({
     url: config.MED_SEARCH_SUGGESTION[0],
     method: 'POST',
@@ -741,6 +744,9 @@ export const getMedicineSearchSuggestionsApi = (
     headers: {
       Authorization: config.MED_SEARCH_SUGGESTION[1],
     },
+    cancelToken: new CancelToken((c) => {
+      cancelGetMedicineSearchSuggestionsApi = c;
+    }),
   });
 };
 
@@ -1100,6 +1106,17 @@ export const getDiagnosticsSearchResults = (
     },
   });
 };
+export const getDiagnosticsPopularResults = (
+  pageName: string,
+): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getSearchResults = `${baseurl}/${pageName}/popular-test-search`;
+  return Axios.get(getSearchResults, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};
 
 export const getDiagnosticHomePageWidgets = (pageName: string): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
@@ -1133,10 +1150,40 @@ export const getDiagnosticTestDetails = (
   });
 };
 
-export const getDiagnosticListingWidget = (pageName: string, widgetName: string): Promise<AxiosResponse<any>> => {
+export const getDiagnosticListingWidget = (
+  pageName: string,
+  widgetName: string
+): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
   const getWidgets = `${baseurl}/${pageName}/${widgetName}`;
   return Axios.get(getWidgets, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};
+
+export const GetAllUHIDSForNumber_CM = (phoneNumber: string): Promise<AxiosResponse<any>> => {
+  const url = `${config.CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL}/askapollo/user/uhids?phoneNumber=${phoneNumber}`;
+  console.log('GetAllUHIDSForNumber_CM_Url', url);
+  return Axios.get(url);
+};
+
+export const GenrateVitalsToken_CM = (
+  appId: string,
+  userId: string
+): Promise<AxiosResponse<any>> => {
+  const url = `${config.CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL}/vitauser/vitatoken?appId=${appId}&appUserId=${userId}`;
+  console.log('GetAllUHIDSForNumber_CM_Url', url);
+  return Axios.get(url);
+};
+
+export const getDiagnosticCartItemReportGenDetails = (
+  itemIds: string
+): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getReportGenDetails = `${baseurl}/diagnostic/cart-items?itemId=${itemIds}`;
+  return Axios.get(getReportGenDetails, {
     headers: {
       Authorization: config.DRUPAL_CONFIG[1],
     },

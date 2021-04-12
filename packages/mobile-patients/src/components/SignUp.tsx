@@ -42,7 +42,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
 import { default as Moment, default as moment } from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Mutation } from 'react-apollo';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -72,6 +72,9 @@ import {
   createOneApolloUser,
   createOneApolloUserVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOneApolloUser';
+import { getPatientByMobileNumber_getPatientByMobileNumber_patients } from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
+import _ from 'lodash';
+import { LOGIN_PROFILE } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
 
 const { height } = Dimensions.get('window');
 
@@ -150,8 +153,11 @@ const GenderOptions: genderOptions[] = [
 
 let backPressCount = 0;
 
-export interface SignUpProps extends NavigationScreenProps {}
-export const SignUp: React.FC<SignUpProps> = (props) => {
+export interface SignUpProps extends NavigationScreenProps {
+  patient?: getPatientByMobileNumber_getPatientByMobileNumber_patients;
+}
+const SignUp: React.FC<SignUpProps> = (props) => {
+  const patient = props.navigation.getParam('patient');
   const [gender, setGender] = useState<string>('');
   const [date, setDate] = useState<string>('');
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
@@ -168,11 +174,35 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const [deviceToken, setDeviceToken] = useState<string>('');
   const [showReferralCode, setShowReferralCode] = useState<boolean>(false);
   const [oneApolloRegistrationCalled, setoneApolloRegistrationCalled] = useState<boolean>(false);
+  const isOneTimeUpdate = useRef<boolean>(false);
 
   useEffect(() => {
     const isValidReferralCode = /^[a-zA-Z]{4}[0-9]{4}$/.test(referral);
     setValidReferral(isValidReferralCode);
   }, [referral]);
+
+  const checkPatientData = async () => {
+    const storedPatient = await AsyncStorage.getItem(LOGIN_PROFILE);
+    const parsedPatient = storedPatient && JSON.parse(storedPatient);
+    if (!isOneTimeUpdate.current && (patient || parsedPatient)) {
+      isOneTimeUpdate.current = true;
+      setFirstName(patient?.firstName || parsedPatient?.firstName);
+      setLastName(patient?.lastName || parsedPatient?.lastName);
+      const email = patient?.emailAddress || parsedPatient?.emailAddress;
+      const trimmedValue = (email || '').trim();
+      setEmail(trimmedValue);
+      setEmailValidation(isSatisfyEmailRegex(trimmedValue));
+      const patientGender = patient?.gender || parsedPatient?.gender || '';
+      patientGender?.toUpperCase() !== Gender.OTHER?.toUpperCase() &&
+        setGender(_.capitalize(patientGender));
+      if (patient?.dateOfBirth || parsedPatient?.dateOfBirth) {
+        const formatDate = Moment(patient?.dateOfBirth || parsedPatient?.dateOfBirth).format(
+          'DD/MM/YYYY'
+        );
+        setDate(formatDate);
+      }
+    }
+  };
 
   const isSatisfyingNameRegex = (value: string) =>
     value == ' '
@@ -214,6 +244,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   };
 
   useEffect(() => {
+    checkPatientData();
     getDeviceCountAPICall();
     getPrefillReferralCode();
   }, []);
@@ -271,10 +302,14 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
     AsyncStorage.setItem('signUp', 'true');
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
       try {
-        if (backPressCount === 1) {
-          BackHandler.exitApp();
+        if (patient) {
+          props.navigation.goBack();
         } else {
-          backPressCount++;
+          if (backPressCount === 1) {
+            BackHandler.exitApp();
+          } else {
+            backPressCount++;
+          }
         }
         return true;
       } catch (e) {
@@ -477,7 +512,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
         'Customer ID': currentPatient ? currentPatient.id : '',
         'Customer First Name': firstName.trim(),
         'Customer Last Name': lastName.trim(),
-        'Date of Birth': Moment(date, 'DD/MM/YYYY').toDate(),
+        'Date of Birth': currentPatient?.dateOfBirth || Moment(date, 'DD/MM/YYYY').toDate(),
         Gender:
           gender === 'Female'
             ? Gender['FEMALE']
@@ -485,6 +520,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             ? Gender['MALE']
             : Gender['OTHER'],
         Email: email.trim(),
+        'Mobile Number': currentPatient?.mobileNumber,
       };
       if (referral) {
         // only send if referral has a value
@@ -888,7 +924,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                       _postWebEngageEvent(),
                       AsyncStorage.setItem('userLoggedIn', 'true'),
                       AsyncStorage.setItem('signUp', 'false'),
-                      AsyncStorage.setItem('gotIt', 'false'),
+                      AsyncStorage.setItem('gotIt', patient ? 'true' : 'false'),
                       createOneApolloUser(data?.updatePatient?.patient?.id!),
                       handleOpenURL())
                     : null}
@@ -927,3 +963,5 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
     </View>
   );
 };
+
+export default React.memo(SignUp);

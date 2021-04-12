@@ -23,6 +23,7 @@ import {
   Gender,
   DIAGNOSTIC_ORDER_STATUS,
   REFUND_STATUSES,
+  MedicalRecordType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from 'react-native-geolocation-service';
@@ -97,7 +98,11 @@ import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from 
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { NavigationScreenProps, NavigationActions, StackActions } from 'react-navigation';
+import { differenceInYears, parse } from 'date-fns';
 import stripHtml from 'string-strip-html';
+import isLessThan from 'semver/functions/lt';
+import coerce from 'semver/functions/coerce';
+
 const isRegExp = require('lodash/isRegExp');
 const escapeRegExp = require('lodash/escapeRegExp');
 const isString = require('lodash/isString');
@@ -137,6 +142,12 @@ export interface TestSlotWithArea {
 export enum EDIT_DELETE_TYPE {
   EDIT = 'Edit Details',
   DELETE = 'Delete Data',
+  DELETE_PRESCRIPTION = 'Delete Prescription',
+  DELETE_TEST_REPORT = 'Delete Test Report',
+  DELETE_DISCHARGE_SUMMARY = 'Delete Discharge Summary',
+  DELETE_HEALTH_CONDITION = 'Delete Health Condition',
+  DELETE_BILL = 'Delete Bill',
+  DELETE_INSURANCE = 'Delete Insurance',
 }
 
 type EditDeleteArray = {
@@ -228,12 +239,12 @@ export const formatAddressWithLandmark = (
   address: savePatientAddress_savePatientAddress_patientAddress
 ) => {
   const addrLine1 = removeConsecutiveComma(
-    [address.addressLine1, address.addressLine2].filter((v) => v).join(', ')
+    [address?.addressLine1, address?.addressLine2].filter((v) => v).join(', ')
   );
-  const landmark = [address.landmark];
+  const landmark = [address?.landmark];
   // to handle state value getting twice
   const addrLine2 = removeConsecutiveComma(
-    [address.city, address.state]
+    [address?.city, address?.state]
       .filter((v) => v)
       .join(', ')
       .split(',')
@@ -241,13 +252,29 @@ export const formatAddressWithLandmark = (
       .filter((item, idx, array) => array.indexOf(item) === idx)
       .join(', ')
   );
-  const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
-  if (address.landmark != '') {
+  const formattedZipcode = address?.zipcode ? ` - ${address?.zipcode}` : '';
+  if (address?.landmark != '') {
     return `${addrLine1},\nLandmark: ${landmark}\n${addrLine2}${formattedZipcode}`;
   } else {
     return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
   }
 };
+
+export const getAge = (dob: string) => {
+  const now = new Date();
+  let age = parse(dob);
+  return differenceInYears(now, age);
+};
+
+export function isAddressLatLngInValid(address: any) {
+  let isInvalid =
+    address?.latitude == null ||
+    address?.longitude == null ||
+    address?.latitude == 0 ||
+    address?.longitude == 0;
+
+  return isInvalid;
+}
 
 export const formatAddressBookAddress = (
   address: savePatientAddress_savePatientAddress_patientAddress
@@ -344,9 +371,66 @@ const sortByDays = (
   return dataArray;
 };
 
-export const editDeleteData = () => {
-  return ConsultRxEditDeleteArray.map((i) => {
-    return { key: i.key, value: i.title };
+export const editDeleteData = (recordType: MedicalRecordType) => {
+  let editDeleteArray: EditDeleteArray[] = [];
+  switch (recordType) {
+    case MedicalRecordType.PRESCRIPTION:
+      editDeleteArray = [
+        { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
+        {
+          key: EDIT_DELETE_TYPE.DELETE_PRESCRIPTION,
+          title: EDIT_DELETE_TYPE.DELETE_PRESCRIPTION,
+        },
+      ];
+      break;
+    case MedicalRecordType.TEST_REPORT:
+      editDeleteArray = [
+        { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
+        {
+          key: EDIT_DELETE_TYPE.DELETE_TEST_REPORT,
+          title: EDIT_DELETE_TYPE.DELETE_TEST_REPORT,
+        },
+      ];
+      break;
+    case MedicalRecordType.HOSPITALIZATION:
+      editDeleteArray = [
+        { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
+        {
+          key: EDIT_DELETE_TYPE.DELETE_DISCHARGE_SUMMARY,
+          title: EDIT_DELETE_TYPE.DELETE_DISCHARGE_SUMMARY,
+        },
+      ];
+      break;
+    case MedicalRecordType.ALLERGY:
+      editDeleteArray = [
+        { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
+        {
+          key: EDIT_DELETE_TYPE.DELETE_HEALTH_CONDITION,
+          title: EDIT_DELETE_TYPE.DELETE_HEALTH_CONDITION,
+        },
+      ];
+      break;
+    case MedicalRecordType.MEDICALBILL:
+      editDeleteArray = [
+        { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
+        {
+          key: EDIT_DELETE_TYPE.DELETE_BILL,
+          title: EDIT_DELETE_TYPE.DELETE_BILL,
+        },
+      ];
+      break;
+    case MedicalRecordType.MEDICALINSURANCE:
+      editDeleteArray = [
+        { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
+        {
+          key: EDIT_DELETE_TYPE.DELETE_INSURANCE,
+          title: EDIT_DELETE_TYPE.DELETE_INSURANCE,
+        },
+      ];
+      break;
+  }
+  return editDeleteArray?.map((i) => {
+    return { key: i?.key, value: i?.title };
   });
 };
 
@@ -551,7 +635,7 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
       statusString = 'Order Delivered';
       break;
     case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
-      statusString = 'Order Dispatched';
+      statusString = 'Out for Delivery';
       break;
     case MEDICINE_ORDER_STATUS.ORDER_BILLED:
       statusString = 'Order Billed and Packed';
@@ -562,20 +646,11 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
     case MEDICINE_ORDER_STATUS.READY_AT_STORE:
       statusString = 'Order Ready at Store';
       break;
-    case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
-      statusString = 'Order Delivered';
-      break;
-    case MEDICINE_ORDER_STATUS.RETURN_REQUESTED:
-      statusString = 'Return In-Process';
-      break;
     case MEDICINE_ORDER_STATUS.DELIVERY_ATTEMPTED:
       statusString = 'Delivery Attempted';
       break;
     case MEDICINE_ORDER_STATUS.RVP_ASSIGNED:
-      statusString = 'Pick-up Assigned';
-      break;
-    case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
-      statusString = 'Order Delivered';
+      statusString = 'Return Pickup Assigned';
       break;
     case MEDICINE_ORDER_STATUS.RETURN_PICKUP:
       statusString = 'Return Successful';
@@ -824,10 +899,14 @@ export const getDiffInMinutes = (doctorAvailableSlots: string) => {
 export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult' = 'Available') => {
   const isValidTime = moment(nextSlot).isValid();
   if (isValidTime) {
-    const current = moment(new Date());
+    const d=new Date();
+    const current = moment(d);
+    const hoursPassedToday=d.getHours();
+    const minPassedToday=hoursPassedToday*60 + d.getMinutes();
     const difference = moment.duration(moment(nextSlot).diff(current));
     const differenceMinute = Math.ceil(difference.asMinutes());
     const diffDays = Math.ceil(difference.asDays());
+
     const isTomorrow = moment(nextSlot).isAfter(
       current
         .add(1, 'd')
@@ -843,7 +922,7 @@ export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult'
       return 'BOOK APPOINTMENT';
     } else if (differenceMinute >= 60 && !isTomorrow) {
       return `${type} at ${moment(nextSlot).format('hh:mm A')}`;
-    } else if (isTomorrow && diffDays < 2) {
+    } else if (isTomorrow && differenceMinute<(2880-minPassedToday)) {
       return `${type} Tomorrow${
         type === 'Available' ? ` at ${moment(nextSlot).format('hh:mm A')}` : ''
       }`;
@@ -1107,6 +1186,17 @@ export const extractUrlFromString = (text: string): string | undefined => {
   return (text.match(urlRegex) || [])[0];
 };
 
+export const getUserType = (currentPatient: any) => {
+  const user: string =
+    currentPatient?.isConsulted === undefined
+      ? 'undefined'
+      : currentPatient?.isConsulted
+      ? 'Repeat'
+      : 'New';
+
+  return user;
+};
+
 export const reOrderMedicines = async (
   order:
     | getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails
@@ -1332,61 +1422,6 @@ export const formatTestSlotWithBuffer = (slotTime: string) => {
 
   const newSlot = [startTime, endTime];
   return newSlot.map((item) => moment(item.trim(), 'hh:mm').format('hh:mm A')).join(' - ');
-};
-
-export const isValidTestSlot = (
-  slot: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo,
-  date: Date
-) => {
-  return (
-    slot.status != 'booked' &&
-    (moment(date)
-      .format('DMY')
-      .toString() ===
-    moment()
-      .format('DMY')
-      .toString()
-      ? moment(slot.startTime!.trim(), 'HH:mm').isSameOrAfter(
-          moment(new Date()).add(
-            AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES,
-            'minutes'
-          )
-        )
-      : true) &&
-    moment(slot.endTime!.trim(), 'HH:mm').isSameOrBefore(
-      moment(AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(), 'HH:mm')
-    )
-  );
-};
-
-export const isValidTestSlotWithArea = (
-  slot: getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots,
-  date: Date,
-  customSlot?: boolean
-) => {
-  return (
-    (moment(date)
-      .format('DMY')
-      .toString() ===
-    moment()
-      .format('DMY')
-      .toString()
-      ? moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrAfter(
-          moment(new Date()).add(
-            AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES,
-            'minutes'
-          )
-        )
-      : true) &&
-    moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrBefore(
-      moment(
-        customSlot
-          ? AppConfig.Configuration.DIAGNOSTIC_COVID_MAX_SLOT_TIME.trim()
-          : AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(),
-        'HH:mm'
-      )
-    )
-  );
 };
 
 export const getTestSlotDetailsByTime = (slots: TestSlot[], startTime: string, endTime: string) => {
@@ -2074,8 +2109,10 @@ export const addPharmaItemToCart = (
     categoryId?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category ID'];
     categoryName?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category name'];
   },
+  itemsInCart?: string,
   onComplete?: () => void,
-  pharmacyCircleAttributes?: PharmacyCircleEvent
+  pharmacyCircleAttributes?: PharmacyCircleEvent,
+  onAddedSuccessfully?: () => void
 ) => {
   const outOfStockMsg = 'Sorry, this item is out of stock in your area.';
 
@@ -2162,8 +2199,10 @@ export const addPharmaItemToCart = (
           Response_Exist: exist ? 'Yes' : 'No',
           Response_MRP: mrp,
           Response_Qty: qty,
+          'Cart Items': JSON.stringify(itemsInCart) || '',
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
+        onAddedSuccessfully?.();
       } catch (error) {}
     })
     .catch(() => {
@@ -2440,11 +2479,14 @@ export const filterHtmlContent = (content: string = '') => {
   return content
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
+    .replace(/&gt;rnt/g, '>')
     .replace(/&gt;rn/g, '>')
     .replace(/&gt;r/g, '>')
     .replace(/&gt;/g, '>')
     .replace(/&nbsp;/g, '</>')
-    .replace(/\.t/g, '.');
+    .replace(/\.t/g, '.')
+    .replace(/.rn/gi, '. ')
+    .replace(/<\/>/gi, '');
 };
 export const isProductInStock = (product: MedicineProduct) => {
   const { dc_availability, is_in_contract } = product;
@@ -2499,7 +2541,9 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
     case DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED_REQUEST:
       statusString = 'Order rescheduled';
       break;
+    //first status has been added
     //last two status => report awaited (need not show in ui, so showing previous)
+    case DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED:
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED:
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB:
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB:
@@ -2536,6 +2580,9 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
     case REFUND_STATUSES.MANUAL_REVIEW:
       statusString = 'Refund initiated';
       break;
+    case DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED:
+      statusString = 'Partial Order Completed';
+      break;
     default:
       statusString = status || '';
       statusString?.replace(/[_]/g, ' ');
@@ -2557,4 +2604,16 @@ export const getShipmentPrice = (shipmentItems: any, cartItems: any) => {
     });
   }
   return total;
+};
+
+export const paymentModeVersionCheck = (minSupportedVersion: string) => {
+  const { iOS_Version, Android_Version } = AppConfig.Configuration;
+  const isIOS = Platform.OS === 'ios';
+  const appVersion = coerce(isIOS ? iOS_Version : Android_Version)?.version;
+  const versionSupports = !(
+    appVersion &&
+    minSupportedVersion &&
+    isLessThan(appVersion, minSupportedVersion)
+  );
+  return versionSupports;
 };

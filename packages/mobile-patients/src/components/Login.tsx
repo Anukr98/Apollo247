@@ -1,9 +1,8 @@
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { timeOutDataType } from '@aph/mobile-patients/src/components/OTPVerification';
-import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ArrowDisabled, ArrowYellow } from '@aph/mobile-patients/src/components/ui/Icons';
-import { LandingDataView } from '@aph/mobile-patients/src/components/ui/LandingDataView';
+import LandingDataView from '@aph/mobile-patients/src/components/ui/LandingDataView';
 import { LoginCard } from '@aph/mobile-patients/src/components/ui/LoginCard';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -20,6 +19,7 @@ import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   postWebEngageEvent,
+  SetAppsFlyerCustID,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { loginAPI } from '@aph/mobile-patients/src/helpers/loginCalls';
 import {
@@ -31,7 +31,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   Dimensions,
   EmitterSubscription,
@@ -42,14 +42,43 @@ import {
   Text,
   TextInput,
   View,
+  ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
-import { ScrollView } from 'react-native-gesture-handler';
 import HyperLink from 'react-native-hyperlink';
 import WebEngage from 'react-native-webengage';
-import { WebView } from 'react-native-webview';
-import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
+import {
+  NavigationEventSubscription,
+  NavigationScreenProps,
+  NavigationActions,
+  StackActions,
+} from 'react-navigation';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { AuthButton } from '@aph/mobile-patients/src/components/ui/AuthButton';
+import { VERIFY_TRUECALLER_PROFILE } from '@aph/mobile-patients/src/graphql/profiles';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  verifyTrueCallerProfile,
+  verifyTrueCallerProfileVariables,
+} from '@aph/mobile-patients/src/graphql/types/verifyTrueCallerProfile';
+import { FetchingDetails } from '@aph/mobile-patients/src/components/ui/FetchingDetails';
+import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { LOGIN_PROFILE } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
+import {
+  saveTokenDevice,
+  phrNotificationCountApi,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
+import { truecallerWEBEngage } from '@aph/mobile-patients/src/helpers/CommonEvents';
+
+let TRUECALLER: any;
+
+if (Platform.OS === 'android') {
+  TRUECALLER = require('react-native-truecaller-sdk').default;
+}
 
 const { height, width } = Dimensions.get('window');
 
@@ -77,7 +106,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     flexDirection: 'row',
     alignItems: 'center',
-    width: '82%',
+    width: width - 135,
     paddingBottom: 0,
   },
   inputView: {
@@ -85,7 +114,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     flexDirection: 'row',
     alignItems: 'center',
-    width: '82%',
+    width: width - 135,
     paddingBottom: 0,
   },
   bottomDescription: {
@@ -117,6 +146,30 @@ const styles = StyleSheet.create({
     bottom: 0,
     elevation: 20,
   },
+  hyperlink: {
+    color: theme.colors.PURPLE,
+    ...fonts.IBMPlexSansBold(10),
+    textDecorationLine: 'underline',
+  },
+  leftSeperatorLine: {
+    width: '40%',
+    height: 0.5,
+    backgroundColor: theme.colors.BORDER_BOTTOM_COLOR,
+  },
+  rightSeperatorLine: {
+    width: '43%',
+    height: 0.5,
+    backgroundColor: theme.colors.BORDER_BOTTOM_COLOR,
+  },
+  authContainer: {
+    marginTop: 25,
+    marginHorizontal: 20,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
 });
 
 export interface LoginProps extends NavigationScreenProps {}
@@ -137,17 +190,23 @@ let didBlurSubscription: NavigationEventSubscription;
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
-  const { signOut } = useAuth();
+  const { signOut, getFirebaseToken, getPatientApiCall, getPatientByPrism, sendOtp } = useAuth();
   const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
-  const [onClickOpen, setonClickOpen] = useState<boolean>(false);
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [appSign, setAppSign] = useState<string>('');
+  const isAndroid = Platform.OS === 'android';
+  const client = useApolloClient();
+  const [openFillerView, setOpenFillerView] = useState<boolean>(false);
+  const { setPhrNotificationData } = useAppCommonData();
 
-  const { setLoading } = useUIElements();
+  const { setLoading, showAphAlert } = useUIElements();
   const webengage = new WebEngage();
+  const oneTimeApiCall = useRef<boolean>(true);
 
   useEffect(() => {
+    isAndroid && initializeTruecaller();
+    isAndroid && truecallerEventListeners();
     const eventAttributes: WebEngageEvents[WebEngageEventName.MOBILE_ENTRY] = {};
     postWebEngageEvent(WebEngageEventName.MOBILE_ENTRY, eventAttributes);
     postFirebaseEvent(FirebaseEventName.MOBILE_ENTRY, eventAttributes);
@@ -158,7 +217,7 @@ export const Login: React.FC<LoginProps> = (props) => {
     try {
       fireBaseFCM();
       setLoading && setLoading(false);
-      if (Platform.OS === 'android') {
+      if (isAndroid) {
         AppSignature.getAppSignature().then((sign: string[]) => {
           setAppSign(sign[0] || '');
         });
@@ -167,6 +226,276 @@ export const Login: React.FC<LoginProps> = (props) => {
       CommonBugFender('Login_useEffect_try', error);
     }
   }, []);
+
+  const initializeTruecaller = () => {
+    TRUECALLER.initializeClient(
+      'CONSENT_MODE_POPUP',
+      'SDK_CONSENT_TITLE_LOG_IN',
+      'FOOTER_TYPE_SKIP'
+    );
+  };
+
+  const truecallerEventListeners = () => {
+    // For handling the success event
+    TRUECALLER.on('profileSuccessReponse', (profile: any) => {
+      setLoading?.(false);
+      // add other logic here related to login/sign-up as per your use-case.
+      oneTimeApiCall.current && verifyTrueCallerProfile(profile);
+    });
+
+    // For handling the reject event
+    TRUECALLER.on('profileErrorReponse', (error: any) => {
+      setLoading?.(false);
+      if (error && error.errorCode) {
+        let errorAttributes: any = {
+          'Error Code': error?.errorCode,
+        };
+
+        oneTimeApiCall.current = true;
+        switch (error.errorCode) {
+          case 1: {
+            showAphAlert!({
+              title: 'Uh oh.. :(',
+              description: string.truecaller.networkProblem,
+            });
+            errorAttributes = {
+              ...errorAttributes,
+              'Error Message': 'Network Failure',
+            };
+            truecallerWEBEngage(null, 'sdk error', errorAttributes);
+            break;
+          }
+          case 2: {
+            errorAttributes = {
+              ...errorAttributes,
+              'Error Message': 'User pressed back button',
+            };
+            truecallerWEBEngage(null, 'sdk error', errorAttributes);
+            break;
+          }
+          case 3: {
+            errorAttributes = {
+              ...errorAttributes,
+              'Error Message': 'Incorrect Partner Key',
+            };
+            truecallerWEBEngage(null, 'sdk error', errorAttributes);
+            break;
+          }
+          case 4:
+          case 10: {
+            showAphAlert!({
+              title: 'Uh oh.. :(',
+              description: string.truecaller.userNotVerified,
+            });
+            errorAttributes = {
+              ...errorAttributes,
+              'Error Message': string.truecaller.userNotVerified,
+            };
+            truecallerWEBEngage(null, 'sdk error', errorAttributes);
+            break;
+          }
+          case 5: {
+            errorAttributes = {
+              ...errorAttributes,
+              'Error Message': 'Truecaller App Internal Error',
+            };
+            truecallerWEBEngage(null, 'sdk error', errorAttributes);
+            break;
+          }
+          case 11: {
+            showAphAlert!({
+              title: 'Uh oh.. :(',
+              description: string.truecaller.appNotInstalledOrUserNotLoggedIn,
+            });
+            errorAttributes = {
+              ...errorAttributes,
+              'Error Message': string.truecaller.appNotInstalledOrUserNotLoggedIn,
+            };
+            truecallerWEBEngage(null, 'sdk error', errorAttributes);
+            break;
+          }
+          case 13: {
+            errorAttributes = {
+              ...errorAttributes,
+              'Error Message': 'User pressed back while verification in process',
+            };
+            truecallerWEBEngage(null, 'sdk error', errorAttributes);
+            break;
+          }
+          case 14: {
+            errorAttributes = {
+              ...errorAttributes,
+              'Error Message': 'User pressed SKIP or USE ANOTHER NUMBER',
+            };
+            truecallerWEBEngage(null, 'sdk error', errorAttributes);
+            break;
+          }
+          default:
+            errorAttributes = {
+              ...errorAttributes,
+              'Error Message': 'Unknown Error',
+            };
+            truecallerWEBEngage(null, 'sdk error', errorAttributes);
+            break;
+        }
+      }
+    });
+  };
+
+  const verifyTrueCallerProfile = async (profile: any) => {
+    oneTimeApiCall.current = false;
+    AsyncStorage.setItem('phoneNumber', profile?.phoneNumber?.substring(3)); // to ignore +91
+    setOpenFillerView(true);
+    try {
+      const res = await client.mutate<verifyTrueCallerProfile, verifyTrueCallerProfileVariables>({
+        mutation: VERIFY_TRUECALLER_PROFILE,
+        variables: {
+          profile,
+        },
+        fetchPolicy: 'no-cache',
+      });
+      const authToken = res?.data?.verifyTrueCallerProfile?.authToken;
+      if (authToken) {
+        sendOtp(authToken)
+          .then(() => {
+            getAuthToken();
+          })
+          .catch((e) => {
+            showLoginError('signInWithCustomToken', e);
+            CommonBugFender('OTPVerification_sendOtp', e);
+          });
+      }
+    } catch (error) {
+      showLoginError('verifyTrueCallerProfile', error);
+      CommonBugFender('Login_verifyTrueCallerProfile', error);
+    }
+  };
+
+  const showLoginError = (apiName: string, error: any) => {
+    oneTimeApiCall.current = true;
+    setOpenFillerView(false);
+    showAphAlert!({
+      title: 'Uh oh.. :(',
+      description: string.truecaller.tryAgainLater,
+    });
+    const errorAttributes = {
+      'Api Name': apiName,
+      Error: error,
+    };
+    truecallerWEBEngage(null, 'login error', errorAttributes);
+  };
+
+  const getAuthToken = async () => {
+    try {
+      const res = await getFirebaseToken?.();
+      if (res) {
+        getOTPPatientApiCall();
+      }
+    } catch (error) {
+      CommonBugFender('Login_getFirebaseToken', error);
+      showLoginError('getFirebaseToken', error);
+    }
+  };
+
+  const getOTPPatientApiCall = async () => {
+    try {
+      const res = await getPatientApiCall();
+      AsyncStorage.setItem('currentPatient', JSON.stringify(res));
+      AsyncStorage.setItem('callByPrism', 'false');
+      dataFetchFromMobileNumber(res);
+    } catch (error) {
+      CommonBugFender('OTPVerification_getOTPPatientApiCall', error);
+      showLoginError('getPatientByMobileNumber', error);
+    }
+  };
+
+  const dataFetchFromMobileNumber = async (data: any) => {
+    const profileData = data?.data?.getPatientByMobileNumber?.patients;
+    if (profileData && profileData.length === 0) {
+      try {
+        const res = await getPatientByPrism();
+        if (res) {
+          const allPatients = res?.data?.getCurrentPatients?.patients || null;
+          const mePatient =
+            allPatients?.find((patient: any) => patient?.relation === Relation.ME) ||
+            allPatients[0] ||
+            null;
+          moveScreenForward(mePatient);
+        }
+      } catch (error) {
+        showLoginError('GetCurrentPatients', error);
+      }
+    } else {
+      const mePatient =
+        profileData?.find((patient: any) => patient?.relation === Relation.ME) ||
+        profileData[0] ||
+        null;
+      moveScreenForward(mePatient);
+    }
+  };
+
+  const moveScreenForward = async (mePatient: any) => {
+    AsyncStorage.setItem('logginHappened', 'true');
+    SetAppsFlyerCustID(mePatient.primaryPatientId);
+    mePatient && (await AsyncStorage.setItem(LOGIN_PROFILE, JSON.stringify(mePatient)));
+    if (mePatient && mePatient.uhid && mePatient.uhid !== '') {
+      if (mePatient.relation == null) {
+        // prism user
+        navigateTo(AppRoutes.MultiSignup);
+      } else {
+        if (!mePatient?.dateOfBirth) {
+          // New user since we dont get dateOfBirth from truecaller profile and it will always ne null or empty for new user
+          navigateTo(AppRoutes.SignUp, mePatient);
+        } else {
+          // existing user
+          AsyncStorage.setItem('userLoggedIn', 'true');
+          deviceTokenAPI(mePatient?.id);
+          callPhrNotificationApi(mePatient?.id);
+          truecallerWEBEngage(mePatient, 'login');
+          props.navigation.dispatch(
+            StackActions.reset({
+              index: 0,
+              key: null,
+              actions: [
+                NavigationActions.navigate({
+                  routeName: AppRoutes.ConsultRoom,
+                }),
+              ],
+            })
+          );
+        }
+      }
+    } else {
+      navigateTo(AppRoutes.SignUp);
+    }
+  };
+
+  const callPhrNotificationApi = async (currentPatient: any) => {
+    phrNotificationCountApi(client, currentPatient || '')
+      .then((newRecordsCount) => {
+        if (newRecordsCount) {
+          setPhrNotificationData &&
+            setPhrNotificationData(
+              newRecordsCount! as getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount
+            );
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('SplashcallPhrNotificationApi', error);
+      });
+  };
+
+  const deviceTokenAPI = async (patientId: string) => {
+    const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
+    const deviceToken2 = deviceToken ? JSON.parse(deviceToken) : '';
+    saveTokenDevice(client, deviceToken2, patientId);
+  };
+
+  const navigateTo = (routeName: AppRoutes, patient?: any) => {
+    oneTimeApiCall.current = true;
+    props.navigation.navigate(routeName, { patient });
+    setOpenFillerView(false);
+  };
 
   const fireBaseFCM = async () => {
     try {
@@ -223,7 +552,6 @@ export const Login: React.FC<LoginProps> = (props) => {
             const dif = t1.getTime() - t2.getTime();
 
             const seconds = Math.round(dif / 1000);
-            console.log(seconds, 'seconds');
             if (obj.invalidAttems === 3) {
               if (seconds < 900) {
                 isNoBlocked = true;
@@ -234,7 +562,6 @@ export const Login: React.FC<LoginProps> = (props) => {
       }
     } catch (error) {
       CommonBugFender('Login_getTimerData_try', error);
-      console.log(error.message);
     }
     return isNoBlocked;
   };
@@ -274,7 +601,6 @@ export const Login: React.FC<LoginProps> = (props) => {
 
               loginAPI('+91' + phoneNumber, appSign)
                 .then((confirmResult: any) => {
-                  console.log(confirmResult, 'confirmResult');
                   setShowSpinner(false);
 
                   const eventAttributes: FirebaseEvents[FirebaseEventName.LOGIN] = {
@@ -282,7 +608,6 @@ export const Login: React.FC<LoginProps> = (props) => {
                   };
                   postFirebaseEvent(FirebaseEventName.LOGIN, eventAttributes);
 
-                  console.log('confirmResult login', confirmResult);
                   try {
                     signOut();
                   } catch (error) {}
@@ -294,7 +619,6 @@ export const Login: React.FC<LoginProps> = (props) => {
                   });
                 })
                 .catch((error: Error) => {
-                  console.log(error, 'error');
                   setShowSpinner(false);
 
                   CommonLogEvent('OTP_SEND_FAIL', error.message);
@@ -313,47 +637,45 @@ export const Login: React.FC<LoginProps> = (props) => {
   const openWebView = () => {
     CommonLogEvent(AppRoutes.Login, 'Terms  Conditions clicked');
     Keyboard.dismiss();
+    props.navigation.navigate(AppRoutes.CommonWebView, {
+      url: AppConfig.Configuration.APOLLO_TERMS_CONDITIONS,
+      isGoBack: true,
+    });
+  };
+
+  const renderTruecallerButton = () => {
     return (
-      <View style={styles.viewWebStyles}>
-        <Header
-          title={'Terms & Conditions'}
-          leftIcon="close"
-          container={{
-            borderBottomWidth: 0,
-          }}
-          onPressLeftIcon={() => setonClickOpen(false)}
-        />
-        <View
-          style={{
-            flex: 1,
-            overflow: 'hidden',
-            backgroundColor: 'white',
-          }}
-        >
-          <WebView
-            source={{
-              uri: 'https://www.apollo247.com/terms',
-            }}
-            style={{
-              flex: 1,
-              backgroundColor: 'white',
-            }}
-            onLoadStart={() => {
-              console.log('onLoadStart');
-              setShowSpinner(true);
-            }}
-            onLoadEnd={() => {
-              console.log('onLoadEnd');
-              setShowSpinner(false);
-            }}
-            onLoad={() => {
-              console.log('onLoad');
-              setShowSpinner(false);
-            }}
-          />
+      <View style={styles.authContainer}>
+        <View style={styles.row}>
+          <View style={styles.leftSeperatorLine} />
+          <Text style={{ ...theme.viewStyles.text('R', 10, theme.colors.BORDER_BOTTOM_COLOR) }}>
+            Or
+          </Text>
+          <View style={styles.rightSeperatorLine} />
         </View>
+        <AuthButton onPress={loginWithTruecaller} />
       </View>
     );
+  };
+
+  const loginWithTruecaller = () => {
+    setLoading?.(true);
+    /**
+     * If you are checking in local, then you need to change truecaller_appkey(debug key) from strings.xml file
+     */
+    postWebEngageEvent(WebEngageEventName.LOGIN_WITH_TRUECALLER_CLICKED, {});
+    TRUECALLER.isUsable((result: boolean) => {
+      if (result) {
+        // Authenticate via truecaller flow can be used
+        TRUECALLER.requestTrueProfile();
+      } else {
+        setLoading?.(false);
+        showAphAlert!({
+          title: 'Uh oh.. :(',
+          description: string.truecaller.appNotInstalledOrUserNotLoggedIn,
+        });
+      }
+    });
   };
 
   return (
@@ -365,7 +687,6 @@ export const Login: React.FC<LoginProps> = (props) => {
         <View style={{ height: 16 }} />
         <LoginCard
           cardContainer={{ marginTop: 0, paddingBottom: 12 }}
-          heading={string.login.hello_login}
           description={string.login.please_enter_no}
           buttonIcon={
             phoneNumberIsValid && phoneNumber.replace(/^0+/, '').length === 10 ? (
@@ -409,42 +730,38 @@ export const Login: React.FC<LoginProps> = (props) => {
               : string.login.wrong_number}
           </Text>
 
-          <View
+          <TouchableOpacity
+            onPress={() => openWebView()}
             style={{
               marginHorizontal: 16,
             }}
           >
             <HyperLink
-              linkStyle={{
-                color: '#02475b',
-                ...fonts.IBMPlexSansBold(10),
-                lineHeight: 16,
-                letterSpacing: 0.4,
-              }}
+              linkStyle={styles.hyperlink}
               linkText={(url) =>
                 url === 'https://www.apollo247.com/TnC.html' ? 'Terms and Conditions' : url
               }
-              onPress={(url, text) => setonClickOpen(true)}
+              onPress={(url, text) => openWebView()}
             >
               <Text
                 style={{
                   color: '#02475b',
                   ...fonts.IBMPlexSansMedium(10),
-                  lineHeight: 16,
-                  letterSpacing: 0,
                 }}
               >
                 By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo247
               </Text>
             </HyperLink>
-          </View>
+          </TouchableOpacity>
         </LoginCard>
-        <ScrollView bounces={false}>
+        <ScrollView>
+          {/** Truecaller integration will come in next phase */}
+          {isAndroid && renderTruecallerButton()}
           <LandingDataView />
         </ScrollView>
-        {onClickOpen && openWebView()}
       </SafeAreaView>
       {showSpinner ? <Spinner /> : null}
+      {openFillerView && <FetchingDetails />}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
     </View>
   );

@@ -38,6 +38,7 @@ export interface Props extends Omit<ListProps, 'renderItem'> {
   movedFrom: ProductPageViewedSource;
   productPageViewedEventProps?: ProductPageViewedEventProps;
   sectionName?: string;
+  onAddedSuccessfully?: () => void;
 }
 
 export const ProductList: React.FC<Props> = ({
@@ -61,16 +62,26 @@ export const ProductList: React.FC<Props> = ({
     updateCartItem,
     removeCartItem,
     pharmacyCircleAttributes,
+    cartItems,
   } = useShoppingCart();
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
 
   const onPress = (sku: string) => {
-    navigation.push(AppRoutes.ProductDetailPage, {
-      sku,
-      movedFrom,
-      sectionName,
-      productPageViewedEventProps,
-    });
+    if (movedFrom === ProductPageViewedSource.SIMILAR_PRODUCTS) {
+      navigation.replace(AppRoutes.ProductDetailPage, {
+        sku,
+        movedFrom,
+        sectionName,
+        productPageViewedEventProps,
+      });
+    } else {
+      navigation.push(AppRoutes.ProductDetailPage, {
+        sku,
+        movedFrom,
+        sectionName,
+        productPageViewedEventProps,
+      });
+    }
   };
 
   const onPressNotify = (name: string) => {
@@ -81,6 +92,7 @@ export const ProductList: React.FC<Props> = ({
   };
 
   const onPressAddToCart = (item: MedicineProduct) => {
+    const { onAddedSuccessfully } = restOfProps;
     addPharmaItemToCart(
       formatToCartItem(item),
       pharmacyPincode!,
@@ -95,8 +107,10 @@ export const ProductList: React.FC<Props> = ({
         categoryName: productPageViewedEventProps?.CategoryName,
         section: productPageViewedEventProps?.SectionName,
       },
+      JSON.stringify(cartItems),
       () => {},
-      pharmacyCircleAttributes!
+      pharmacyCircleAttributes!,
+      onAddedSuccessfully ? onAddedSuccessfully : () => {}
     );
   };
 

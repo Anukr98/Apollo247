@@ -77,8 +77,8 @@ const styles = StyleSheet.create({
   },
   labelView: {
     position: 'absolute',
-    top: -3,
-    right: -3,
+    top: -10,
+    right: -8,
     backgroundColor: '#ff748e',
     height: 14,
     width: 14,

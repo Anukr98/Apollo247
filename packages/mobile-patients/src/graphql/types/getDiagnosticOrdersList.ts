@@ -9,6 +9,33 @@ import { DIAGNOSTIC_ORDER_STATUS, DIAGNOSTIC_ORDER_PAYMENT_TYPE, DIAGNOSTICS_TYP
 // GraphQL query operation: getDiagnosticOrdersList
 // ====================================================
 
+export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_phleboDetailsObj {
+  __typename: "PhleboDetailsObj";
+  PhelboOTP: number | null;
+  PhelbotomistName: string;
+  PhelbotomistMobile: string;
+  PhelbotomistTrackLink: string;
+  TempRecording: string | null;
+  CheckInTime: any | null;
+  PhleboLatitude: number | null;
+  PhleboLongitude: number | null;
+}
+
+export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderReschedule {
+  __typename: "DiagnosticOrderReschedule";
+  rescheduleDate: any | null;
+  rescheduleReason: string | null;
+  comments: string | null;
+}
+
+export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderCancellation {
+  __typename: "DiagnosticOrderCancellation";
+  cancellationReason: string | null;
+  cancelType: string | null;
+  cancelByName: string | null;
+  comments: string | null;
+}
+
 export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrdersStatus {
   __typename: "DiagnosticOrdersStatus";
   id: string;
@@ -102,6 +129,9 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList {
   visitNo: string | null;
   paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
   paymentOrderId: string | null;
+  phleboDetailsObj: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_phleboDetailsObj | null;
+  diagnosticOrderReschedule: (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderReschedule | null)[] | null;
+  diagnosticOrderCancellation: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderCancellation | null;
   diagnosticOrdersStatus: (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrdersStatus | null)[] | null;
   diagnosticOrderLineItems: (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems | null)[] | null;
 }

@@ -9,5 +9,13 @@
 
     <string moduleConfig="true" name="CodePushDeploymentKey">ncBcxm590r0jEGT4BjQFTAW0_rkHKvF5xYUDX</string>
     <string name="default_notification_channel_name">fcm_FirebaseNotifiction_default_channel_name</string>
+    <!-- debug mode key -->
+    <!-- Uncomment this for debug mode(if needed to make any changes or to debug anything) -->
+    <!-- <string name="truecaller_appkey">ktGEl0c35c53a83c543f59216ac9f6b303d4a</string> -->
+    
+    <!-- release mode key -->
+    <!-- <string name="truecaller_appkey">IZ1oT03fb161e4b594117ab8b7220fd9aed97</string> -->
 
+    <!-- play store key -->
+    <string name="truecaller_appkey">ZI9TSf24b50579dfd4a39bfd1156b07189ac2</string>
 </resources>

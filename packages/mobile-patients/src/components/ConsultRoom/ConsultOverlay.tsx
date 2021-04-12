@@ -97,16 +97,26 @@ export interface ConsultOverlayProps extends NavigationScreenProps {
   isDoctorsOfTheHourStatus?: boolean;
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
+  const { doctor } = props;
+  const { availableModes } = doctor;
+
   const client = useApolloClient();
   const { circleSubscriptionId } = useShoppingCart();
+  const isOnline = availableModes?.filter(
+    (consultMode: ConsultMode) => consultMode === ConsultMode.ONLINE
+  );
+  const isBoth = availableModes?.filter(
+    (consultMode: ConsultMode) => consultMode === ConsultMode.BOTH
+  );
   const tabs =
-    props.doctor!.doctorType !== DoctorType.PAYROLL
-      ? props.availableMode === ConsultMode.BOTH
+    props.doctor?.doctorType !== DoctorType.PAYROLL
+      ? isBoth?.length > 0
         ? [{ title: 'Consult Online' }, { title: 'Meet In Person' }]
-        : props.availableMode === ConsultMode.ONLINE
+        : isOnline?.length > 0
         ? [{ title: 'Consult Online' }]
-        : [{ title: 'Visit Clinic' }]
+        : [{ title: 'Meet In Person' }]
       : [{ title: 'Consult Online' }];
+
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');
 
@@ -172,6 +182,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       setselectedTab(tabs[0].title);
     } else if (props.consultModeSelected === ConsultMode.PHYSICAL && tabs.length > 1) {
       setselectedTab(tabs[1].title);
+    } else if (props.consultModeSelected === ConsultMode.PHYSICAL && tabs.length === 0) {
+      setselectedTab(tabs[0].title);
     }
   }, [props.consultModeSelected]);
 
@@ -499,7 +511,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                 />
               ) : null}
 
-              {selectedTab !== tabs[0].title && renderFootNote()}
+              {selectedTab === 'Meet In Person' && renderFootNote()}
               <View style={{ height: 70 }} />
             </ScrollView>
             {props.doctor && renderBottomButton()}
