@@ -88,6 +88,8 @@ const DetailsCard: FC<DetailsCardProps> = (props) => {
         appointmentRefunds,
         appointmentPaymentOrders,
       } = item;
+      const { refund } = appointmentPaymentOrders;
+      const refundInfo = refund?.length ? refund : appointmentRefunds;
       const paymentInfo = Object.keys(appointmentPaymentOrders).length
         ? appointmentPaymentOrders
         : appointmentPayments[0];
@@ -96,7 +98,7 @@ const DetailsCard: FC<DetailsCardProps> = (props) => {
       } else {
         statusType = paymentInfo?.paymentStatus;
       }
-      if (appointmentRefunds.length) {
+      if (refundInfo.length) {
         return (
           <View style={styles.upperContainerRefundStyle}>
             <View>

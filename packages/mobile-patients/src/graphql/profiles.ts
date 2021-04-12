@@ -4194,10 +4194,15 @@ export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
           paymentStatus
           amountPaid
         }
-        appointmentPaymentOrders {
+        PaymentOrders {
           paymentRefId
           paymentStatus
           amountPaid
+          refund {
+            refundAmount
+            refundStatus
+            refundId
+          }
         }
         doctor {
           name

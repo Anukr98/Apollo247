@@ -50,6 +50,8 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
         appointmentType,
         appointmentRefunds,
       } = item;
+      const { refund } = appointmentPaymentOrders;
+      const refundInfo = refund?.length ? refund : appointmentRefunds;
       leftHeaderText = 'Dr. ' + doctor.name;
       type = appointmentType === 'ONLINE' ? 'Online Consult' : 'Clinic Visit';
       aptType = appointmentType;
@@ -65,7 +67,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
           status: status,
           aptType: aptType,
         };
-      } else if (appointmentRefunds.length) {
+      } else if (refundInfo.length) {
         status = 'TXN_REFUND';
         return {
           leftHeaderText: leftHeaderText,
@@ -200,8 +202,10 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
     const { status } = statusItemValues();
     const { buttonTitle } = getTitle();
     if (paymentFor === 'consult') {
-      const { appointmentRefunds } = item;
-      if ((status === SUCCESS || status === FAILED) && appointmentRefunds.length < 1) {
+      const { appointmentRefunds, appointmentPaymentOrders } = item;
+      const { refund } = appointmentPaymentOrders;
+      const refundInfo = refund?.length ? refund : appointmentRefunds;
+      if ((status === SUCCESS || status === FAILED) && refundInfo.length < 1) {
         return <CardFooterButton buttonTitle={buttonTitle} onPressAction={navigateTo} />;
       } else {
         return null;
