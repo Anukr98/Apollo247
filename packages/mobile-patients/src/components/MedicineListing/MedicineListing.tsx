@@ -25,7 +25,7 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, SafeAreaView, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, SafeAreaView, StyleSheet, Text, BackHandler } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
@@ -110,7 +110,13 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         CategoryName: pageTitle.toUpperCase(),
       });
     }
+    BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
+    };
   }, []);
+
+  const onPressHardwareBack = () => navigation.goBack();
 
   const searchProducts = async (
     searchText: string,
