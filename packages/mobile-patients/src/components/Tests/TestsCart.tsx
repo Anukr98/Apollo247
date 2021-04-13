@@ -353,21 +353,23 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         const result = g(res, 'data', 'data');
         const widgetsData = g(res, 'data', 'widget_data', '0', 'diagnosticWidgetData');
         setReportGenDetails(result || []);
-        const _itemIds = widgetsData?.map((item) => Number(item?.itemId));
+        const _itemIds = widgetsData?.map((item: any) => Number(item?.itemId));
+        const _filterItemIds = _itemIds?.filter((val: any) => !cartItemsWithId?.includes(val));
+
         client
           .query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
             query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
             context: {
               sourceHeaders,
             },
-            variables: { cityID: Number(addressCityId) || 9, itemIDs: _itemIds },
+            variables: { cityID: Number(addressCityId) || 9, itemIDs: _filterItemIds },
             fetchPolicy: 'no-cache',
           })
           .then(({ data }) => {
             const diagnosticItems =
               g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
             let _diagnosticWidgetData: any = [];
-            widgetsData?.forEach((_widget) => {
+            widgetsData?.forEach((_widget: any) => {
               diagnosticItems?.forEach((_diagItems) => {
                 if (_widget?.itemId == _diagItems?.itemId) {
                   _diagnosticWidgetData?.push({
@@ -538,7 +540,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         fetchTestReportGenDetails(cartItemsWithId);
       }
     }
-  }, [cartItems?.length]);
+  }, [cartItems?.length, addressCityId]);
 
   useEffect(() => {
     setPatientId!(currentPatientId!);
