@@ -678,6 +678,10 @@ export const Download: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_download.png')} />
 );
 
+export const WhiteDownloadIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_white_download.png')} />
+);
+
 export const Invoice: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_invoice.png')} />
 );
