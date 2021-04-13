@@ -126,6 +126,23 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: theme.colors.SHERPA_BLUE,
   },
+  textContainerStyle: {
+    padding: 20,
+    borderRadius: 10,
+    borderBottomColor: 'black',
+    marginTop: -20,
+    marginBottom: 20,
+  },
+  userCommentTextBoxStyle: {
+    ...theme.fonts.IBMPlexSansMedium(13),
+    borderWidth: 1,
+    padding: 10,
+    borderBottomWidth: 1,
+    borderRadius: 8,
+    borderColor: 'rgba(2,71,91, 0.3)',
+    backgroundColor: theme.colors.WHITE,
+    flexWrap: 'wrap',
+  },
 });
 
 export interface UploadPrescriptionProps
@@ -217,6 +234,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       : true;
 
   const scrollviewRef = useRef<any>(null);
+  const [userComment, setUserComment] = useState<string>('');
 
   useEffect(() => {
     fetchAddress();
@@ -356,6 +374,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         .map((item) => item?.prismPrescriptionFileId)
         .filter((i) => i);
       const days = durationDays ? parseInt(durationDays) : null;
+      const optionSelected =
+        selectedMedicineOption === CALL_ME && !!userComment
+          ? `${prescriptionOption}, ${userComment}`?.trim()
+          : prescriptionOption;
 
       const prescriptionMedicineInput: savePrescriptionMedicineOrderOMSVariables = {
         prescriptionMedicineOMSInput: {
@@ -370,7 +392,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           // Values for chennai order
           bookingSource: BOOKING_SOURCE.MOBILE,
           deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
-          prescriptionOptionSelected: prescriptionOption,
+          prescriptionOptionSelected: optionSelected,
           durationDays: prescriptionOption === 'duration' ? days : null,
           appVersion: DeviceInfo.getVersion(),
         },
@@ -1007,6 +1029,21 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     return selectedMedicineOption === CALL_ME ? <ExpectCall /> : null;
   };
 
+  const renderUserCommentBox = () =>
+    selectedMedicineOption === CALL_ME ? (
+      <TextInputComponent
+        conatinerstyles={styles.textContainerStyle}
+        inputStyle={styles.userCommentTextBoxStyle}
+        value={`${userComment}`}
+        onChangeText={(userComment) => setUserComment(userComment)}
+        placeholder={'Start typing ...'}
+        label={'Please type your medicine needs below (optional)'}
+        numberOfLines={3}
+        multiline={true}
+        maxLength={150}
+      />
+    ) : null;
+
   const onPressProceed = () => {
     if (isPhysicalPresciptionProps) {
       setPhysicalPrescriptionsProps([...phyPrescriptionsProp]);
@@ -1183,6 +1220,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           </Text>
           {showMedicineDescription && renderMedicineDetailOptions()}
           {showMedicineDescription && renderExpectCall()}
+          {showMedicineDescription && renderUserCommentBox()}
         </ScrollView>
       </SafeAreaView>
       {isComingFromReUpload ? renderReUploadSubmitPrescription() : renderProceedBar()}
