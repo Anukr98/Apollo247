@@ -1194,6 +1194,7 @@ export const GET_PLATINUM_DOCTOR = gql`
         qualification
         experience
         photoUrl
+        profile_deeplink
         slot
         thumbnailUrl
         availabilityTitle {
@@ -2282,7 +2283,7 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         }
       }
       ordersCount
-      membersDetails{
+      membersDetails {
         id
         firstName
         lastName
