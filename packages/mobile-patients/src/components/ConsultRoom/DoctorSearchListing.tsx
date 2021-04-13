@@ -21,7 +21,6 @@ import {
   SearchIcon,
   FamilyDoctorIcon,
   RetryButtonIcon,
-  CircleLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
@@ -109,7 +108,6 @@ import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEven
 import { getValuesArray } from '@aph/mobile-patients/src/utils/commonUtils';
 import _ from 'lodash';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { Switch } from '@aph/mobile-patients/src/components/ui/Switch';
 import { CirclePlanAddedToCart } from '@aph/mobile-patients/src/components/ui/CirclePlanAddedToCart';
 import {
   getPatientAddressList,
@@ -2044,24 +2042,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       'Customer ID': g(currentPatient, 'id'),
     };
     postWebEngageEvent(WebEngageEventName.VC_CIRCLE_FILTER, eventAttributes);
-  };
-
-  const renderViewCareSwitch = () => {
-    return (
-      <View style={styles.rowContainer}>
-        <Text style={styles.careHeadingText}>View</Text>
-        <CircleLogo style={styles.careLogo} />
-        <Text style={[styles.careHeadingText, { marginLeft: 0 }]}>Doctors</Text>
-        <Switch
-          onChange={(value) => {
-            setCareDoctorsSwitch(value);
-            setFilterActionTaken(true);
-            filterCircleWebEngage();
-          }}
-          value={careDoctorsSwitch}
-        />
-      </View>
-    );
   };
 
   return (
