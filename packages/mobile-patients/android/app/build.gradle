@@ -197,6 +197,19 @@ android {
     }
     packagingOptions {
         pickFirst '**/libc++_shared.so'
+
+        exclude 'META-INF/DEPENDENCIES.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+
+        exclude 'META-INF/APOLLOPA.SF'
+        exclude 'base/root/okhttp3/internal/publicsuffix/publicsuffixes.gz'
+        exclude 'base/root/org/jsoup/nodes/entities-full.properties'
+        exclude 'base/root/META-INF/CHANGES'
+        exclude 'base/root/com/appsflyer/internal/b-'
+
     }
 
 }
