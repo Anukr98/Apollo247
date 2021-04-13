@@ -19,6 +19,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  BackHandler,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 
@@ -84,7 +85,13 @@ export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
     } else {
       fetchAllBrands();
     }
+    BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
+    };
   }, []);
+
+  const onPressHardwareBack = () => props.navigation.goBack();
 
   const fetchAllBrands = () => {
     getAllBrands()

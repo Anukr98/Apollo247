@@ -9,7 +9,7 @@ import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEng
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View, BackHandler } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { AddedToCartToast } from '@aph/mobile-patients/src/components/ui/AddedToCartToast';
 
@@ -31,7 +31,13 @@ export const MedicineBuyAgain: React.FC<Props> = ({ navigation }) => {
   useEffect(() => {
     fetchProducts();
     buyAgainPageViewed({});
+    BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
+    };
   }, []);
+
+  const onPressHardwareBack = () => navigation.goBack();
 
   const fetchProducts = async () => {
     try {
