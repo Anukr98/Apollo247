@@ -205,14 +205,16 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
           coupon?.applicable?.includes('APOLLO:Circle')
         );
         setCircleCoupons(circleCoupons || []);
-        const nonCircleCoupons = coupons.filter((coupon) => !circleCoupons.includes(coupon)) || [];
+        const nonCircleCoupons =
+          coupons.filter((coupon: pharma_coupon) => !circleCoupons.includes(coupon)) || [];
         const productOfferCoupons = nonCircleCoupons?.filter(
           (coupon: pharma_coupon) => coupon?.frontendCategory === 'ProductOffer'
         );
         setProductOffers(productOfferCoupons || []);
         const nonSpecialOfferCoupons =
           coupons.filter(
-            (coupon) => !circleCoupons.includes(coupon) && !productOfferCoupons.includes(coupon)
+            (coupon: pharma_coupon) =>
+              !circleCoupons.includes(coupon) && !productOfferCoupons.includes(coupon)
           ) || [];
         setCouponList(nonSpecialOfferCoupons || []);
         setShimmerLoading(false);
