@@ -39,6 +39,7 @@ export interface getPlatinumDoctor_getPlatinumDoctor_doctors {
   qualification: string | null;
   experience: number | null;
   photoUrl: string | null;
+  profile_deeplink: string | null;
   slot: string | null;
   thumbnailUrl: string | null;
   availabilityTitle: getPlatinumDoctor_getPlatinumDoctor_doctors_availabilityTitle | null;
