@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 0.6,
     borderStyle: 'dashed',
     position: 'absolute',
-    top: 56,
+    top: 0,
     paddingHorizontal: 0,
     height: 70,
   },
