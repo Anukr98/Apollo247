@@ -170,9 +170,10 @@ export const handleOpenURL = (event: any) => {
       case 'ChatRoom':
         if (data.length === 2) {
           return {
-            routeName: 'ChatRoom_AppointmentData',
+            routeName: 'ChatRoom',
             id: linkId,
             isCall: false,
+            data: data,
           };
         }
         break;
@@ -181,9 +182,10 @@ export const handleOpenURL = (event: any) => {
       case 'DoctorCall':
         if (data.length === 2 && getCurrentRoute() !== AppRoutes.ChatRoom) {
           return {
-            routeName: 'DoctorCall_AppointmentData',
+            routeName: 'DoctorCall',
             id: linkId,
             isCall: false,
+            data: data,
           };
         }
         break;
@@ -410,8 +412,8 @@ export const pushTheView = (
         movedFrom: 'splashscreen',
       });
       break;
-    case 'ChatRoom_AppointmentData':
-    case 'DoctorCall_AppointmentData':
+    case 'ChatRoom':
+    case 'DoctorCall':
       navigateToView(navigation, AppRoutes.ChatRoom, {
         data: id,
         callType: voipCallType ? voipCallType?.toUpperCase() : '',

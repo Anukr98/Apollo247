@@ -335,7 +335,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               if (Platform.OS === 'ios') InitiateAppsFlyer(props.navigation);
               const data = handleOpenURL(url);
               const { routeName, id, isCall, timeout, mediaSource } = data;
-              redirectRoute(routeName, id, isCall, timeout, mediaSource);
+              redirectRoute(routeName, id, isCall, timeout, mediaSource, data?.data);
               fireAppOpenedEvent(url);
             } catch (e) {}
           } else {
@@ -352,7 +352,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
           const data = handleOpenURL(event.url);
           const { routeName, id, isCall, timeout, mediaSource } = data;
-          redirectRoute(routeName, id, isCall, timeout, mediaSource);
+          redirectRoute(routeName, id, isCall, timeout, mediaSource, data?.data);
           fireAppOpenedEvent(event.url);
         } catch (e) {}
       });
@@ -367,14 +367,20 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     id?: string,
     timeout?: boolean,
     isCall?: boolean,
-    mediaSource?: string
+    mediaSource?: string,
+    data?: any
   ) => {
-    if (routeName === 'ChatRoom_AppointmentData') {
-      getAppointmentDataAndNavigate(id || '', !!isCall);
-    } else if (routeName === 'DoctorCall_AppointmentData') {
+    if (routeName === 'ChatRoom' && data?.length === 2) {
+      getAppointmentDataAndNavigate(id!, false);
+    } else if (
+      routeName === 'DoctorCall' &&
+      data?.length === 2 &&
+      getCurrentRoute() !== AppRoutes.ChatRoom
+    ) {
       const params = id?.split('+');
-      voipCallType.current = params[1];
+      voipCallType.current = params?.[1]!;
       callPermissions();
+      getAppointmentDataAndNavigate(params?.[0]!, true);
     } else if (routeName === 'DoctorCallRejected') {
       setLoading!(true);
       const appointmentId = id?.split('+')?.[0];
@@ -565,7 +571,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       });
       const appointmentData: any = response.data?.getAppointmentData?.appointmentsHistory?.[0];
       if (appointmentData?.doctorInfo) {
-        getData('ChatRoom_AppointmentData', appointmentData, false, isCall);
+        getData('ChatRoom', appointmentData, false, isCall);
       } else {
         throw new Error('Doctor info is required to process the request.');
       }
