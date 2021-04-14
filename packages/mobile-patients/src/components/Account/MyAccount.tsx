@@ -151,7 +151,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   const { signOut, getPatientApiCall } = useAuth();
   const {
     setSavePatientDetails,
-    setAppointmentsPersonalized,
     setHdfcUserSubscriptions,
     setBannerData,
     setCircleSubscription,
@@ -294,7 +293,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       setSavePatientDetails && setSavePatientDetails('');
       setHdfcUserSubscriptions && setHdfcUserSubscriptions(null);
       setBannerData && setBannerData([]);
-      setAppointmentsPersonalized && setAppointmentsPersonalized([]);
       setIsCircleSubscription && setIsCircleSubscription(false);
       setCircleMembershipCharges && setCircleMembershipCharges(0);
       setCircleSubscription && setCircleSubscription(null);

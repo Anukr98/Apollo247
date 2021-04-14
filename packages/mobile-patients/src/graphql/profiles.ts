@@ -4116,32 +4116,6 @@ export const UPDATE_SAVE_EXTERNAL_CONNECT = gql`
   }
 `;
 
-export const GET_PERSONALIZED_APPOITNMENTS = gql`
-  query getPatientPersonalizedAppointments($patientUhid: String!) {
-    getPatientPersonalizedAppointments(patientUhid: $patientUhid) {
-      appointmentDetails {
-        id
-        hospitalLocation
-        appointmentDateTime
-        appointmentType
-        doctorId
-        doctorDetails {
-          id
-          firstName
-          experience
-          photoUrl
-          displayName
-          specialty {
-            id
-            name
-            userFriendlyNomenclature
-          }
-        }
-      }
-    }
-  }
-`;
-
 export const GET_APPOINTMENT_RESCHEDULE_DETAILS = gql`
   query getAppointmentRescheduleDetails($appointmentId: String!) {
     getAppointmentRescheduleDetails(appointmentId: $appointmentId) {

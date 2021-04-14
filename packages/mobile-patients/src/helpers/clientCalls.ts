@@ -9,7 +9,6 @@ import {
   GET_CALL_DETAILS,
   GET_DEVICE_TOKEN_COUNT,
   GET_PATIENT_APPOINTMENTS,
-  GET_PERSONALIZED_APPOITNMENTS,
   INSERT_MESSAGE,
   LINK_UHID,
   NEXT_AVAILABLE_SLOT,
@@ -65,10 +64,6 @@ import {
   getPastAppointmentsCount,
   getPastAppointmentsCountVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPastAppointmentsCount';
-import {
-  getPatientPersonalizedAppointments,
-  getPatientPersonalizedAppointmentsVariables,
-} from '@aph/mobile-patients/src/graphql/types/getPatientPersonalizedAppointments';
 import { getPatinetAppointments } from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
 import {
   ConsultQueueInput,
@@ -682,29 +677,6 @@ export const getPastAppoinmentCount = (
       })
       .catch((e) => {
         CommonBugFender('clientCalls_getPastAppoinmentCount', e);
-        rej({ error: e });
-      });
-  });
-};
-
-export const getPatientPersonalizedAppointmentList = (
-  client: ApolloClient<object>,
-  patientUhid: string
-) => {
-  return new Promise((res, rej) => {
-    client
-      .query<getPatientPersonalizedAppointments, getPatientPersonalizedAppointmentsVariables>({
-        query: GET_PERSONALIZED_APPOITNMENTS,
-        variables: {
-          patientUhid: patientUhid,
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((data: any) => {
-        res({ data });
-      })
-      .catch((e) => {
-        CommonBugFender('clientCalls_getPatientPersonalizedAppointmentList', e);
         rej({ error: e });
       });
   });
