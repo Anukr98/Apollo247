@@ -649,7 +649,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         setConsultType(ConsultMode.PHYSICAL);
         setOnlineSelected(false);
         set_follow_up_chat_message_visibility(false);
-        console.log('csk only physical', set_follow_up_chat_message_visibility);
       } else {
         setConsultType(ConsultMode.BOTH);
       }
