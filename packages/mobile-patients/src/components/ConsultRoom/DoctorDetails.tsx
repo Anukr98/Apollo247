@@ -42,6 +42,7 @@ import {
   setWebEngageScreenNames,
   nextAvailability,
   getDoctorShareMessage,
+  getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -345,7 +346,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [doctorId, setDoctorId] = useState<string>(
     props.navigation.state.params ? props.navigation.state.params.doctorId : ''
   );
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [scrollY] = useState(new Animated.Value(0));
   const [availableInMin, setavailableInMin] = useState<number>();
@@ -626,6 +627,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Speciality Name': g(doctorDetails, 'specialty', 'name')!,
       'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
       'Media Source': mediaSource,
+      User_Type: getUserType(allCurrentPatients),
     };
     postWebEngageEvent(WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK, eventAttributes);
   };
@@ -1459,6 +1461,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Secretary Name': g(secretaryData, 'name'),
       'Secretary Mobile Number': g(secretaryData, 'mobileNumber'),
       'Doctor Mobile Number': g(doctorDetails, 'mobileNumber')!,
+      User_Type: getUserType(allCurrentPatients),
     };
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
     const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.BOOK_APPOINTMENT] = {
