@@ -412,7 +412,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
-      User_Type: getUserType(currentPatient),
+      User_Type: getUserType(allCurrentPatients),
     };
     postWebEngageEvent(WebEngageEventName.DOCTOR_SEARCH, eventAttributes);
 
@@ -555,6 +555,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       Symptoms: symptomsList?.join(', '),
       Specialities: specialitiesList?.join(', '),
       Procedures: proceduresList?.join(', '),
+      User_Type: getUserType(allCurrentPatients),
     };
     if (clickedItem) {
       // search suggestions clicked event
@@ -1278,7 +1279,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Customer ID': g(currentPatient, 'id'),
       'Speciality Name': speciality,
       'Speciality ID': specialityId,
-      User_Type: getUserType(currentPatient),
+      User_Type: getUserType(allCurrentPatients),
     };
     postWebEngageEvent(WebEngageEventName.SPECIALITY_CLICKED, eventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.SPECIALITY_CLICKED, eventAttributes);
@@ -1310,6 +1311,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       Fee: Number(doctorDetails?.fee),
       'Doctor Speciality': doctorDetails?.specialtydisplayName,
       Rank: doctorDetails?.rowId,
+      User_Type: getUserType(allCurrentPatients),
     };
 
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {

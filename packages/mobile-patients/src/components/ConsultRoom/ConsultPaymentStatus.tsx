@@ -130,7 +130,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const client = useApolloClient();
   const { success, failure, pending, aborted } = Payment;
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [notificationAlert, setNotificationAlert] = useState(false);
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const [showEmailInput, setshowEmailInput] = useState<boolean>(false);
@@ -275,7 +275,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           try {
             let eventAttributes = webEngageEventAttributes;
             eventAttributes['Display ID'] = res.data.paymentTransactionStatus.appointment.displayId;
-            eventAttributes['User_Type'] = getUserType(currentPatient);
+            eventAttributes['User_Type'] = getUserType(allCurrentPatients);
             postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, appsflyerEventAttributes);
             postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
             firePurchaseEvent(amountBreakup);

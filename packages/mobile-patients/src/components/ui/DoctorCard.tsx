@@ -30,6 +30,7 @@ import {
   g,
   postWebEngageEvent,
   nextAvailability,
+  getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -211,7 +212,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const rowData = props.rowData;
   const { selectedConsultMode } = props;
   const ctaBannerText = rowData?.availabilityTitle;
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const isOnlineConsultSelected =
     selectedConsultMode === ConsultMode.ONLINE || selectedConsultMode === ConsultMode.BOTH;
@@ -536,6 +537,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               ),
               'Patient Gender': currentPatient.gender,
               'Customer ID': currentPatient.id,
+              User_Type: getUserType(allCurrentPatients),
             };
             if (props.rowId) {
               eventAttributes['Rank'] = props.rowId;
@@ -735,6 +737,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                         ),
                         'Patient Gender': currentPatient.gender,
                         'Customer ID': currentPatient.id,
+                        User_Type: getUserType(allCurrentPatients),
                       };
                       if (props.rowId) {
                         eventAttributes['Rank'] = props.rowId;
