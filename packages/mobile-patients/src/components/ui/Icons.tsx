@@ -174,6 +174,19 @@ export const Location: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_location.webp')} />
 );
 
+export const LocationOutline: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/pin.png')} />
+);
+export const StarEmpty: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/star.png')} />
+);
+export const StarEmptyGreen: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/emptystar.png')} />
+);
+export const StarFillGreen: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/fillstar.png')} />
+);
+
 export const LocationOn: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_location_on.webp')} />
 );
@@ -621,6 +634,12 @@ export const OnlineConsult: React.FC<IconProps> = (props) => (
 export const Down: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_accordion_down.webp')} />
 );
+export const DownO: React.FC<IconProps> = (props) => (
+  <IconBase size='sm' {...props} source={require('./icons/chevron-bottom3x.png')} />
+);
+export const UserOutline: React.FC<IconProps> = (props) => (
+  <IconBase size='sm' {...props} source={require('./icons/user.png')} />
+);
 
 export const Up: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_accordion_up.webp')} />
@@ -705,6 +724,12 @@ export const RefundIcon: React.FC<IconProps> = (props) => (
 );
 export const PendingIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_exclamation.webp')} />
+);
+export const WhiteProfile: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/profile_circle.png')} />
+);
+export const OrangeCall: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/call_orange_circle.png')} />
 );
 
 export const OneApollo: React.FC<IconProps> = (props) => (

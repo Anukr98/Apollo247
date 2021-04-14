@@ -37,7 +37,7 @@ import {
   Text,
   Modal,
 } from 'react-native';
-import { Down, Up } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Down, Up, DownO } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NavigationScreenProps } from 'react-navigation';
 import {
   CancellationDiagnosticsInput,
@@ -53,6 +53,7 @@ import {
   getPatientNameById,
   handleGraphQlError,
   TestSlot,
+  nameFormater
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DisabledTickIcon, TickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
@@ -1164,6 +1165,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPressViewDetails={() => _navigateToYourTestDetails(order, true)}
         onPressViewReport={() => _onPressViewReport(order)}
         phelboObject={order?.phleboDetailsObj}
+        onPressRatingStar={(star)=>{
+          props.navigation.navigate(AppRoutes.TestRatingScreen, {
+            ratingStar:star
+          });
+        }}
         style={[
           { marginHorizontal: 20 },
           index < orders?.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
@@ -1210,6 +1216,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   }
 
+  const renderLoadMore = () => {
+    return (
+        <TouchableOpacity style={styles.loadMoreView}>
+          <Text style={styles.textLoadMore}>{nameFormater('load more', 'upper')}</Text>
+          <DownO size="sm_l" style={styles.downArrow}/>
+        </TouchableOpacity>
+    );
+  }
   const renderOrders = () => {
     return (
       <FlatList
@@ -1217,6 +1231,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         data={orders}
         renderItem={({ item, index }) => renderOrder(item, index)}
         ListEmptyComponent={renderNoOrders()}
+        ListFooterComponent={renderLoadMore()}
       />
     );
   };
@@ -1452,9 +1467,23 @@ const styles = StyleSheet.create({
   buttonStyle: { width: '85%', alignSelf: 'center' },
   filterContainer: {
     flexDirection: 'row',
-    paddingTop: 10,
+    paddingVertical: 10,
     justifyContent: 'space-around',
     alignItems: 'center',
+  },
+  loadMoreView:{
+    flexDirection:'row',
+    justifyContent: 'center',
+    width:'100%',
+    paddingBottom:10,
+  },
+  textLoadMore:{
+    ...theme.viewStyles.text('SB', 15, '#FC9916'),
+    paddingHorizontal:8,
+    alignSelf:'flex-start',
+  },
+  downArrow: {
+    alignSelf:'flex-end',
   },
   textHeadingModal: {
     ...theme.viewStyles.text('SB', 17, '#02475b'),

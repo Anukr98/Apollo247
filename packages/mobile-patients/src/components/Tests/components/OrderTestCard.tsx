@@ -7,6 +7,7 @@ import {
   StyleProp,
   ViewStyle,
   TouchableOpacity,
+  Linking,
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { isSmallDevice, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -16,7 +17,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components/StatusCard';
 import { getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
-import { InfoIconRed } from '@aph/mobile-patients/src/components/ui/Icons';
+import { InfoIconRed, WhiteProfile, OrangeCall, LocationOutline, StarEmpty } from '@aph/mobile-patients/src/components/ui/Icons';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -57,6 +58,7 @@ interface OrderTestCardProps {
   onPressAddTest?: () => void;
   onPressViewReport: () => void;
   phelboObject?: any;
+  onPressRatingStar: (star: number) => void;
 }
 
 export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
@@ -271,19 +273,65 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
   const showOTPContainer = () => {
     const phlObj = props?.phelboObject;
-    let otpToShow = !!phlObj && phlObj?.PhelboOTP;
-
+    let otpToShow = '5645';//!!phlObj && phlObj?.PhelboOTP;
+    let phoneNumber = '8319098165'
     return (
       <>
-        {!!otpToShow && SHOW_OTP_ARRAY.includes(props.orderLevelStatus) ? (
-          <View style={styles.otpContainer}>
-            <Text style={styles.otpTextStyle}>{'OTP : '}</Text>
-            <Text style={styles.otpTextStyle}>{otpToShow}</Text>
+        {/* {!!otpToShow && SHOW_OTP_ARRAY.includes(props.orderLevelStatus) ? ( */}
+
+        <View style={styles.otpCallContainer}>
+          <View style={styles.detailContainer}>
+              <TouchableOpacity style={styles.callContainer}
+               onPress={()=>{
+                 Linking.openURL(`tel:${phoneNumber}`)
+               }}
+              >
+                <WhiteProfile/>
+                <OrangeCall size='sm' style={styles.profileCircle}/>
+              </TouchableOpacity>
+            <View style={styles.nameContainer}>
+              <Text style={styles.nameTextHeadingStyles}>Phlebotomist Details</Text>
+              <Text style={styles.nameTextStyles}>Ramkumar Verma</Text>
+            </View>
           </View>
-        ) : null}
+          <View style={styles.otpBoxConatiner}>
+            <Text style={styles.otpBoxTextStyle}>{'OTP'}</Text>
+            <Text style={styles.otpBoxTextStyle}>{otpToShow}</Text>
+          </View>
+        </View>
+
+        <View style={styles.otpContainer}>
+          <View style={styles.etaContainer}>
+               <LocationOutline style={styles.locationIcon}/>
+            <Text style={styles.otpTextStyle}>{'Phlebo will arrive in 15 minutes '}</Text>
+          </View>
+          <TouchableOpacity>
+            <Text style={styles.trackStyle}>{nameFormater('track Phlebo', 'upper')}</Text>
+          </TouchableOpacity>
+          </View>
+
+        {/* ) : null} */}
       </>
     );
   };
+
+  const showRatingView = () => {
+    const starCount = [1,2,3,4,5];
+    return (
+      <View style={styles.ratingContainer}>
+        <Text style={styles.ratingTextStyle}>How was your Experience with Phlebo</Text>
+        <View style={styles.startContainer}>
+          {starCount.map((item) => (
+            <TouchableOpacity onPress={()=>{
+              props.onPressRatingStar(item)
+            }}>
+              <StarEmpty style={{ margin: 5 }} />
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+    );
+  }
 
   const renderAdditionalInfoView = () => {
     const isPresent =
@@ -331,7 +379,8 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         {renderCTAsView()}
       </View>
       {props.showAdditonalView || props.isCancelled ? renderAdditionalInfoView() : null}
-      {showOTPContainer()}
+      {/* {showOTPContainer()} */}
+      {showRatingView()}
     </TouchableOpacity>
   );
 };
@@ -428,18 +477,97 @@ const styles = StyleSheet.create({
     height: 40,
   },
   otpTextStyle: {
-    top: 10,
-    left: 20,
+    alignSelf:'center',
+    paddingHorizontal:10,
     color: theme.colors.LIGHT_BLUE,
-    ...theme.fonts.IBMPlexSansMedium(14),
+    ...theme.fonts.IBMPlexSansRegular(10),
   },
   otpContainer: {
     backgroundColor: '#FCFDDA',
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between',
     flexDirection: 'row',
     height: 40,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    borderRadius: 10,
+    padding:10
+  },
+  locationIcon: {
+    width:15,
+    height:15,
+    alignSelf:'center'
+  },
+  otpCallContainer: {
+    backgroundColor: 'white',
+    justifyContent: 'space-between',
+    alignItems:'center',
+    flexDirection: 'row',
+    borderTopWidth:0.5,
+    borderColor:'#000000',
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    borderRadius: 10,
+    paddingHorizontal:10
+  },
+  detailContainer: {
+    flexDirection:'row',
+    width:'80%',
     borderBottomLeftRadius: 4,
     borderBottomRightRadius: 4,
+  },
+  profileCircle: {
+    position:'absolute',
+    bottom:0,
+    right:0
+  },
+  callContainer: {
+    margin:8
+  },
+  nameContainer: {
+    justifyContent:'flex-start',
+    alignContent:'center',
+    padding:10,
+    width:'80%',
+  },
+  nameTextHeadingStyles: {
+    ...theme.viewStyles.text('SB', 13, colors.SHERPA_BLUE, 1, 18),
+  },
+  nameTextStyles: {
+    ...theme.viewStyles.text('R', 13, colors.SHERPA_BLUE, 1, 18),
+  },
+  otpBoxConatiner:{
+    width:45,
+    height:40,
+    justifyContent:'center',
+    alignItems:'center',
+    padding:5,
+    borderRadius:4,
+    borderWidth:1,
+    borderColor:'#000000'
+  },
+  otpBoxTextStyle: {
+    ...theme.viewStyles.text('SB', 13, colors.SHERPA_BLUE, 1, 18),
+  },
+  etaContainer: {
+    flexDirection:'row',
+    justifyContent:'center',
+    alignItems:'center'
+  },
+  trackStyle: {
+    ...theme.viewStyles.text('SB', 13, colors.APP_YELLOW, 1, 18),
+  },
+  ratingContainer: {
+    backgroundColor: '#FCFDDA',
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
     borderRadius: 10,
+    padding:10
+  },
+  startContainer: {
+    flexDirection:'row',
+    margin:5
+  },
+  ratingTextStyle: {
+    ...theme.viewStyles.text('R', 12, colors.SHERPA_BLUE, 1, 18),
   },
 });

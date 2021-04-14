@@ -319,3 +319,21 @@ export const findAddrComponents = (
 export const isPhysicalConsultation = (consultMode: string) => {
   return consultMode === 'Visit Clinic' || consultMode === 'Meet In Person';
 };
+
+export const getReviewTag = (star: number) => {
+  switch (star) {
+    case 1:
+      return 'TERRIBLE';
+    case 2:
+      return 'BAD';
+    case 3:
+      return 'AVERAGE';
+    case 4:
+      return 'GOOD';
+    case 5:
+      return 'EXCELLENT';
+    default:
+      return ''
+      break;
+  }
+};
