@@ -390,6 +390,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       currentPatient,
       !!isPharmacyLocationServiceable,
       { source: 'Pharmacy Full Search', categoryId: category_id },
+      JSON.stringify(cartItems),
       suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined,
       pharmacyCircleAttributes!
     );
@@ -839,7 +840,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
                       })
                       .catch((err) => {
                         CommonBugFender('SearchByBrand_getProductsByCategoryApi', err);
-                        console.log(err, 'errr');
                       })
                       .finally(() => {
                         setIsLoading(false);

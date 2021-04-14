@@ -15,7 +15,7 @@ import {
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   FlatList,
   FlatListProps,
@@ -62,6 +62,7 @@ export const ProductList: React.FC<Props> = ({
     updateCartItem,
     removeCartItem,
     pharmacyCircleAttributes,
+    cartItems,
   } = useShoppingCart();
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
 
@@ -106,6 +107,7 @@ export const ProductList: React.FC<Props> = ({
         categoryName: productPageViewedEventProps?.CategoryName,
         section: productPageViewedEventProps?.SectionName,
       },
+      JSON.stringify(cartItems),
       () => {},
       pharmacyCircleAttributes!,
       onAddedSuccessfully ? onAddedSuccessfully : () => {}
@@ -119,7 +121,7 @@ export const ProductList: React.FC<Props> = ({
     });
   };
 
-  const renderItem = (info: ListRenderItemInfo<MedicineProduct>) => {
+  const renderItem = useCallback((info: ListRenderItemInfo<MedicineProduct>) => {
     const { item, index } = info;
     const id = item.sku;
     const qty = getCartItemQty(id);
@@ -154,21 +156,25 @@ export const ProductList: React.FC<Props> = ({
     ) : Component ? (
       <Component {...props} />
     ) : null;
-  };
+  }, []);
 
-  const renderItemSeparator = () => <View style={styles.itemSeparator} />;
+  const keyExtractor = useCallback(({ sku }) => `${sku}`, []);
+
+  const renderItemSeparator = useCallback(() => <View style={styles.itemSeparator} />, []);
 
   return (
     <FlatList
       data={data}
       renderItem={renderItem}
-      keyExtractor={({ sku }) => `${sku}`}
+      keyExtractor={keyExtractor}
       bounces={false}
       horizontal
       showsHorizontalScrollIndicator={false}
       removeClippedSubviews={true}
       ItemSeparatorComponent={renderItemSeparator}
       contentContainerStyle={[styles.flatListContainer, contentContainerStyle]}
+      maxToRenderPerBatch={4}
+      updateCellsBatchingPeriod={800}
       {...restOfProps}
     />
   );

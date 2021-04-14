@@ -2,7 +2,6 @@ import React from 'react';
 import { StyleSheet, Text, FlatList, View } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { CartItemCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/CartItemCard';
 import { CartItemCard2 } from '@aph/mobile-patients/src/components/MedicineCart/Components/CartItemCard2';
 import { ShoppingCartItem } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { postwebEngageProductRemovedEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
@@ -16,7 +15,7 @@ export interface ShipmentsProps {
 
 export const Shipments: React.FC<ShipmentsProps> = (props) => {
   const { cartItems, updateCartItem, removeCartItem, orders } = useShoppingCart();
-  const { onPressProduct, setloading } = props;
+  const { setloading } = props;
   const { currentPatient } = useAllCurrentPatients();
   const isSplitCart: boolean = orders?.length > 1 ? true : false;
 
@@ -47,7 +46,7 @@ export const Shipments: React.FC<ShipmentsProps> = (props) => {
   };
 
   const renderCartItems = (items: any) => {
-    const sku = items.map((item: any) => item?.sku);
+    const sku = items.map((item: any) => item?.sku || item?.id);
     const products = cartItems.filter((item) => sku.includes(item?.id));
     return (
       <View style={{}}>
@@ -70,20 +69,29 @@ export const Shipments: React.FC<ShipmentsProps> = (props) => {
   };
 
   const renderOrders = () => {
-    return orders?.map((order: any, index: any) => {
+    if (orders?.length) {
+      return orders?.map((order: any, index: any) => {
+        return (
+          <View>
+            {renderCartItemsHeader(index, order?.items || cartItems)}
+            {isSplitCart && (
+              <TatCardwithoutAddress
+                style={{ marginTop: 13, marginBottom: 10 }}
+                deliveryDate={order?.tat}
+              />
+            )}
+            {renderCartItems(order?.items)}
+          </View>
+        );
+      });
+    } else {
       return (
         <View>
-          {renderCartItemsHeader(index, order?.items || [])}
-          {isSplitCart && (
-            <TatCardwithoutAddress
-              style={{ marginTop: 13, marginBottom: 10 }}
-              deliveryDate={order?.tat}
-            />
-          )}
-          {renderCartItems(order?.items)}
+          {renderCartItemsHeader(0, cartItems)}
+          {renderCartItems(cartItems)}
         </View>
       );
-    });
+    }
   };
 
   return <View>{renderOrders()}</View>;

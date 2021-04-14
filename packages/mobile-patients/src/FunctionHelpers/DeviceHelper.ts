@@ -24,10 +24,7 @@ export const CommonLogEvent = async (title: string, data?: any) => {
     phoneNumber = phoneNumber || (await AsyncStorage.getItem('phoneNumber')) || '';
     crashlytics().setUserId(phoneNumber);
     crashlytics().log(`${title} - ${JSON.stringify(data)}`);
-    console.log(`[Crashlytics Log] ${title} - ${data}`);
-  } catch (error) {
-    console.log('Failed to report logs to remote service.', error);
-  }
+  } catch (error) {}
 };
 
 export const CommonBugFender = async (stringName: string, errorValue: Error) => {
@@ -36,10 +33,7 @@ export const CommonBugFender = async (stringName: string, errorValue: Error) => 
     crashlytics().setUserId(phoneNumber);
     crashlytics().log(stringName);
     crashlytics().recordError(errorValue);
-    console.log(`[Crashlytics Error] ${stringName}`);
-  } catch (error) {
-    console.log('Failed to report non-fatal error to remote service.', error);
-  }
+  } catch (error) {}
 };
 
 export const setBugFenderLog = CommonLogEvent;

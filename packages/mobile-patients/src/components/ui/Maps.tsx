@@ -1,4 +1,3 @@
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
@@ -12,13 +11,11 @@ import {
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   PatientAddressInput,
-  PATIENT_ADDRESS_TYPE,
   UpdatePatientAddressInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   savePatientAddress,
   savePatientAddressVariables,
-  savePatientAddress_savePatientAddress,
   savePatientAddress_savePatientAddress_patientAddress,
 } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
@@ -31,11 +28,9 @@ import {
   postWebEngageEvent,
   doRequestAndAccessLocationModified,
   distanceBwTwoLatLng,
-  removeConsecutiveComma,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   getLatLongFromAddress,
-  getPlaceInfoByLatLng,
   pinCodeServiceabilityApi247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -52,19 +47,18 @@ import {
   Platform,
 } from 'react-native';
 import { useApolloClient } from 'react-apollo-hooks';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { getPatientAddressList_getPatientAddressList_addressList } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
-import MapView, { Marker, PROVIDER_GOOGLE, Coordinate, MapEvent, Circle } from 'react-native-maps';
+import MapView, { PROVIDER_GOOGLE, Circle } from 'react-native-maps';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Location } from './Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { colors } from 'react-native-elements';
 
-const FakeMarker = require('../ui/icons/ic-marker.png');
-const icon_gps = require('../ui/icons/ic_gps_fixed.png');
+const FakeMarker = require('../ui/icons/ic-marker.webp');
+const icon_gps = require('../ui/icons/ic_gps_fixed.webp');
 
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
@@ -132,8 +126,6 @@ const styles = StyleSheet.create({
     height: 35,
     width: 35,
     resizeMode: 'contain',
-    // top: -3,
-    // left: 7,
   },
   markerOutline: {
     width: 58,
@@ -237,7 +229,6 @@ export const Maps: React.FC<MapProps> = (props) => {
     setDeliveryAddressId: setDiagnosticAddressId,
     setAddresses: setTestAddresses,
   } = useDiagnosticsCart();
-  const { locationDetails, pharmacyLocation } = useAppCommonData();
   const _map = useRef(null);
   const _circleRef = useRef(null);
 
@@ -250,7 +241,6 @@ export const Maps: React.FC<MapProps> = (props) => {
 
   const client = useApolloClient();
   const [address, setAddress] = useState<string>('');
-  const [mapBoundaries, setMapBoundaries] = useState<any>(null);
 
   /**
    *  call the google api service, which finds lat-long from address
@@ -379,7 +369,6 @@ export const Maps: React.FC<MapProps> = (props) => {
         stateCode: addressObject?.stateCode,
         name: addressObject?.name,
       };
-      console.log(updateaddressInput, 'updateaddressInput');
       setshowSpinner(true);
       client
         .mutate<updatePatientAddress, updatePatientAddressVariables>({
@@ -389,7 +378,6 @@ export const Maps: React.FC<MapProps> = (props) => {
         .then((_data: any) => {
           try {
             setshowSpinner(false);
-            console.log('updateapicalled', _data);
             _navigateToScreens(_data.data.updatePatientAddress.patientAddress);
           } catch (error) {
             CommonBugFender('AddAddress_onConfirmLocation_try', error);
@@ -540,7 +528,6 @@ export const Maps: React.FC<MapProps> = (props) => {
         setRegion(region);
         setLatitude(region.latitude);
         setLongitude(region.longitude);
-        console.log(region.latitude, region.longitude);
       }
 
       if (!isMapDragging && Platform.OS == 'android') {
@@ -571,66 +558,10 @@ export const Maps: React.FC<MapProps> = (props) => {
             setLatitude(response.latitude);
             setLongitude(response.longitude);
           }
-          // createAddressFromCurrentPos(response?.latitude,response?.longitude)
         }
       })
       .catch((e) => {
         CommonBugFender('MapAddress_doRequestAndAccessLocationModified', e);
-      });
-  };
-
-  const createAddressFromCurrentPos = (lat: number, long: number) => {
-    getPlaceInfoByLatLng(lat, long)
-      .then((obj) => {
-        try {
-          if (obj.data.results.length > 0 && obj.data.results[0].address_components.length > 0) {
-            const addrComponents = obj.data.results[0].address_components || [];
-            const _pincode = (
-              addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
-            ).long_name;
-            const currPinCode = _pincode != undefined ? _pincode : '';
-            const _areaDetail1 = (
-              addrComponents.find(
-                (item: any) =>
-                  item.types.indexOf('street') > -1 ||
-                  item.types.indexOf('sublocality_level_2') > -1 ||
-                  item.types.indexOf('route') > -1
-              ) || {}
-            ).long_name;
-            const currAreaDetail1 = _areaDetail1 != undefined ? _areaDetail1 : '';
-            const _areaDetail2 = (
-              addrComponents.find(
-                (item: any) =>
-                  item.types.indexOf('sublocality_level_1') > -1 ||
-                  item.types.indexOf('administrative_area_level_2') > -1
-              ) || {}
-            ).long_name;
-            const currAreaDetail2 = _areaDetail2 != undefined ? _areaDetail2 : '';
-            const _city = (
-              addrComponents.find((item: any) => item.types.indexOf('locality') > -1) || {}
-            ).long_name;
-            const currCity = _city != undefined ? _city : '';
-            const _state = (
-              addrComponents.find(
-                (item: any) => item.types.indexOf('administrative_area_level_1') > -1
-              ) || {}
-            ).long_name;
-            const currState = _state != undefined ? _state : '';
-
-            //set the new address frm the current location
-            setAddress(obj.data.results[0].formatted_address);
-            setpincode(currPinCode);
-            setstate(currState);
-            setCity(currCity);
-            setaddressLine2(currAreaDetail2);
-            setaddressLine1(currAreaDetail1);
-          }
-        } catch (e) {
-          CommonBugFender('Maps_createAddressFromLatLong', e);
-        }
-      })
-      .catch((error) => {
-        CommonBugFender('Maps_createAddressFromLatLong', error);
       });
   };
 
@@ -657,11 +588,9 @@ export const Maps: React.FC<MapProps> = (props) => {
         ref={_map}
         zoomEnabled={true}
         minZoomLevel={10}
-        onMapReady={() => console.log('ready')}
         onRegionChangeComplete={(region) => _onRegionChangeComplete(region)}
         onDoublePress={_setMapDragging}
         onPanDrag={() => setMapDragging(true)}
-        // initialRegion={{latitude: latitude,longitude: longitude,latitudeDelta: latitudeDelta,longitudeDelta: longitudeDelta,}}
       >
         {renderBoundaryCircle()}
       </MapView>
@@ -675,9 +604,7 @@ export const Maps: React.FC<MapProps> = (props) => {
         <View style={styles.markerTitleView}>
           <Text style={styles.markerText}>MOVE MAP TO ADJUST</Text>
         </View>
-        {/* <View style={styles.markerOutline}> */}
         <Image style={styles.markerIcon} source={FakeMarker} />
-        {/* </View> */}
       </View>
     );
   };

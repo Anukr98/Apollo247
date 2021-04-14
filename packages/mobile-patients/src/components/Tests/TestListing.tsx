@@ -14,16 +14,8 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import {
-  Dimensions,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-  Image as ImageNative,
-} from 'react-native';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { SafeAreaView, StyleSheet, Text, View, Image as ImageNative } from 'react-native';
+import { NavigationScreenProps } from 'react-navigation';
 import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import { PackageCard } from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
@@ -34,6 +26,11 @@ import {
   findDiagnosticsWidgetsPricingVariables,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
 import { getDiagnosticListingWidget } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  navigateToHome,
+  navigateToScreenWithEmptyStack,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 export interface TestListingProps
   extends NavigationScreenProps<{
@@ -45,14 +42,12 @@ export interface TestListingProps
 
 export const TestListing: React.FC<TestListingProps> = (props) => {
   const {
-    cartItems,
     setTestListingBreadCrumbs,
     testListingBreadCrumbs,
     isDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
-  const { cartItems: shopCartItems } = useShoppingCart();
 
-  const { diagnosticServiceabilityData, isDiagnosticLocationServiceable } = useAppCommonData();
+  const { isDiagnosticLocationServiceable } = useAppCommonData();
 
   const movedFrom = props.navigation.getParam('movedFrom');
   const dataFromHomePage = props.navigation.getParam('data');
@@ -65,12 +60,19 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
 
   const errorStates = !loading && widgetsData?.length == 0;
+  let deepLinkWidgetName: String;
 
   //handle deeplinks as well here.
   useEffect(() => {
     setLoading?.(true);
     if (!!movedFrom) {
       if (movedFrom === 'deeplink' && !!widgetName) {
+        let pageName;
+        pageName = widgetName?.split('-');
+        if (pageName?.[0] == 'home' || pageName?.[0] == 'listing') {
+          pageName?.shift();
+        }
+        deepLinkWidgetName = pageName?.join(' ');
         fetchWidgets(widgetName!);
       } else if (!!title) {
         fetchWidgets(title);
@@ -86,11 +88,17 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const fetchWidgets = async (title: string) => {
     const createTitle = title?.replace(/ /g, '-')?.toLowerCase();
     const widgetName = movedFrom == AppRoutes.Tests ? `home-${createTitle}` : `${createTitle}`;
-    const result: any = await getDiagnosticListingWidget('diagnostic-list', widgetName);
-    if (result?.data?.success && result?.data?.data?.diagnosticWidgetData?.length > 0) {
-      const getWidgetsData = result?.data?.data;
-      fetchWidgetsPrices(getWidgetsData);
-    } else {
+    try {
+      const result: any = await getDiagnosticListingWidget('diagnostic-list', widgetName);
+      if (result?.data?.success && result?.data?.data?.diagnosticWidgetData?.length > 0) {
+        const getWidgetsData = result?.data?.data;
+        fetchWidgetsPrices(getWidgetsData);
+      } else {
+        setWidgetsData([]);
+        setLoading?.(false);
+      }
+    } catch (error) {
+      CommonBugFender('fetchWidgets_TestListing', error);
       setWidgetsData([]);
       setLoading?.(false);
     }
@@ -117,36 +125,37 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       itemIds?.map((item: any) => fetchPricesForCityId(Number(cityId) || 9, item))
     );
 
-    const response = (await res).map((item: any) =>
-      g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics')
-    );
-
-    let newWidgetsData = widgetsData;
-
-    for (let i = 0; i < newWidgetsData?.diagnosticWidgetData?.length; i++) {
-      const findIndex = newWidgetsData?.diagnosticWidgetData?.findIndex(
-        (item: any) => Number(item?.itemId) === Number(response?.[i]?.[0]?.itemId)
+    try {
+      const response = (await res).map((item: any) =>
+        g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics')
       );
-      if (findIndex !== -1) {
-        (newWidgetsData.diagnosticWidgetData[findIndex].packageCalculatedMrp =
-          response?.[i]?.[0]?.packageCalculatedMrp),
-          (newWidgetsData.diagnosticWidgetData[findIndex].diagnosticPricing =
-            response?.[i]?.[0]?.diagnosticPricing);
-      }
-    }
 
-    setWidgetsData(newWidgetsData);
-    setLoading?.(false);
+      let newWidgetsData = widgetsData;
+
+      for (let i = 0; i < newWidgetsData?.diagnosticWidgetData?.length; i++) {
+        const findIndex = newWidgetsData?.diagnosticWidgetData?.findIndex(
+          (item: any) => Number(item?.itemId) === Number(response?.[i]?.[0]?.itemId)
+        );
+        if (findIndex !== -1) {
+          (newWidgetsData.diagnosticWidgetData[findIndex].packageCalculatedMrp =
+            response?.[i]?.[0]?.packageCalculatedMrp),
+            (newWidgetsData.diagnosticWidgetData[findIndex].diagnosticPricing =
+              response?.[i]?.[0]?.diagnosticPricing);
+        }
+      }
+
+      setWidgetsData(newWidgetsData);
+      setLoading?.(false);
+    } catch (error) {
+      CommonBugFender('errorInFetchPricing api__Tests', error);
+      setLoading?.(false);
+    }
   };
 
   const homeBreadCrumb: TestBreadcrumbLink = {
     title: 'Home',
     onPress: () => {
-      const resetAction = StackActions.reset({
-        index: 0,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      });
-      props.navigation.dispatch(resetAction);
+      navigateToHome(props.navigation);
     },
   };
 
@@ -165,11 +174,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         breadcrumb.push({
           title: 'Order Tests',
           onPress: () => {
-            const resetAction = StackActions.reset({
-              index: 0,
-              actions: [NavigationActions.navigate({ routeName: 'TESTS' })],
-            });
-            props.navigation.dispatch(resetAction);
+            navigateToScreenWithEmptyStack(props.navigation, 'TESTS');
           },
         });
         breadcrumb.push({
@@ -183,18 +188,14 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         breadcrumb.push({
           title: 'Cart',
           onPress: () => {
-            const resetAction = StackActions.reset({
-              index: 0,
-              actions: [NavigationActions.navigate({ routeName: AppRoutes.TestsCart })],
-            });
-            props.navigation.dispatch(resetAction);
+            navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TestsCart);
           },
         });
       }
       breadcrumb.push({
         title:
           movedFrom === 'deeplink' && !!widgetName
-            ? nameFormater(widgetName?.replace(/-/g, ' '), 'title')
+            ? nameFormater(deepLinkWidgetName?.replace(/-/g, ' '), 'title')
             : nameFormater(title, 'title'),
         onPress: () => {},
       });
@@ -243,7 +244,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         {!!actualItemsToShow && actualItemsToShow?.length > 0 ? (
           <View style={{ flex: 1 }}>
             <Text style={styles.headingText}>
-              {widgetsData?.diagnosticWidgetTitle}{' '}
+              {deepLinkWidgetName! || widgetsData?.diagnosticWidgetTitle}{' '}
               {actualItemsToShow?.length > 0 && (
                 <Text style={styles.itemCountText}>({actualItemsToShow?.length})</Text>
               )}

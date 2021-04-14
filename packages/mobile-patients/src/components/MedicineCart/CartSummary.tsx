@@ -28,7 +28,6 @@ import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobil
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { TatCardwithoutAddress } from '@aph/mobile-patients/src/components/MedicineCart/Components/TatCardwithoutAddress';
-import { UploadPrescription } from '@aph/mobile-patients/src/components/MedicineCart/Components/UploadPrescription';
 import { Prescriptions } from '@aph/mobile-patients/src/components/MedicineCart/Components/Prescriptions';
 import { ProceedBar } from '@aph/mobile-patients/src/components/MedicineCart/Components/ProceedBar';
 import {
@@ -58,7 +57,10 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import moment from 'moment';
 import { AmountCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/AmountCard';
 import { Shipments } from '@aph/mobile-patients/src/components/MedicineCart/Components/Shipments';
-import { MedicineOrderShipmentInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  MedicineOrderShipmentInput,
+  PrescriptionType,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 export interface CartSummaryProps extends NavigationScreenProps {}
 
@@ -68,8 +70,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     addresses,
     deliveryAddressId,
     uploadPrescriptionRequired,
+    prescriptionType,
     physicalPrescriptions,
-    ePrescriptions,
     setCartItems,
     setPhysicalPrescriptions,
     deliveryTime,
@@ -81,26 +83,25 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     setOrders,
     coupon,
     setCoupon,
-    hdfcSubscriptionId,
     cartTotal,
+    hdfcSubscriptionId,
     productDiscount,
-    setCouponProducts,
     pinCode,
+    setCouponProducts,
   } = useShoppingCart();
   const {
-    pharmacyLocation,
-    locationDetails,
     pharmacyUserTypeAttribute,
-    hdfcPlanId,
     hdfcStatus,
+    hdfcPlanId,
     circleStatus,
     circlePlanId,
+    pharmacyLocation,
+    locationDetails,
   } = useAppCommonData();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
-  const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [storeType, setStoreType] = useState<string | undefined>(
     props.navigation.getParam('tatType') || ''
   );
@@ -164,7 +165,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       const selectedAddress: any = addresses.find((item) => item.id == id);
       try {
         const response = await availabilityApi247(selectedAddress.zipcode || '', skus.join(','));
-        console.log('in summary >>', response.data);
         const items = g(response, 'data', 'response') || [];
         const unserviceableSkus = items.filter(({ exist }) => exist == false).map(({ sku }) => sku);
         const updatedCartItems = cartItems.map((item) => ({
@@ -172,7 +172,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           unserviceable: unserviceableSkus.indexOf(item.id) != -1,
         }));
         setCartItems!(updatedCartItems);
-
         const serviceableItems = updatedCartItems
           .filter((item) => !item.unserviceable)
           .map((item) => {
@@ -195,21 +194,15 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
             inventoryData = inventoryData.concat(order?.items);
           });
           setloading!(false);
-          if (inventoryData?.length) {
-            addressSelectedEvent(selectedAddress, response[0]?.tat, response);
-            updatePricesAfterTat(inventoryData, updatedCartItems);
-            if (unserviceableSkus.length) {
-              props.navigation.goBack();
-            }
-          } else {
-            handleTatApiFailure(selectedAddress, {});
+          addressSelectedEvent(selectedAddress, response[0]?.tat, response);
+          updatePricesAfterTat(inventoryData, updatedCartItems);
+          if (unserviceableSkus.length) {
+            props.navigation.goBack();
           }
         } catch (error) {
           handleTatApiFailure(selectedAddress, error);
         }
-      } catch (error) {
-        handleTatApiFailure(selectedAddress, error);
-      }
+      } catch (error) {}
     }
   }
 
@@ -267,6 +260,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       pharmacyCircleAttributes!,
       moment(tatDate).diff(moment(), 'h'),
       pharmacyUserTypeAttribute!,
+      JSON.stringify(cartItems),
       orderSelected?.length > 1,
       splitOrderDetails
     );
@@ -291,7 +285,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       Items.push(object);
     });
     setCartItems!(Items);
-    console.log(loading);
   }
   const onFinishUpload = () => {
     if (isPhysicalUploadComplete) {
@@ -398,18 +391,25 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     if (orders?.length > 1) {
       orders?.forEach((order: any, index: number) => {
         splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
-          getShipmentPrice(order?.items) +
+          getShipmentPrice(order?.items, cartItems) +
           (order?.deliveryCharge || 0) +
           (order?.packingCharges || 0);
         splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
       });
     }
+    props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
+      deliveryTime,
+      storeDistance: storeDistance,
+      tatType: storeType,
+      shopId: shopId,
+    });
     postwebEngageProceedToPayEvent(
       shoppingCart,
       false,
       deliveryTime,
       pharmacyCircleAttributes!,
       pharmacyUserTypeAttribute!,
+      JSON.stringify(cartItems),
       orders?.length > 1,
       splitOrderDetails
     );
@@ -452,7 +452,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   };
   const renderTatCard = () => {
     return orders?.length > 1 ? null : (
-      <TatCardwithoutAddress style={{ marginTop: 22 }} deliveryDate={orders?.[0]?.tat} />
+      <TatCardwithoutAddress style={{ marginTop: 10 }} deliveryDate={orders?.[0]?.tat} />
     );
   };
 
@@ -460,38 +460,27 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     return <Shipments setloading={setloading} />;
   };
 
-  const renderuploadPrescriptionPopup = () => {
+  const renderPrescriptions = () => {
     return (
-      <UploadPrescription
-        showPopUp={showPopUp}
-        onClickClose={() => setshowPopUp(false)}
-        navigation={props.navigation}
-        type={'Cart'}
+      <Prescriptions
+        onPressUploadMore={() => {
+          shoppingCart.setPrescriptionType(null);
+          props.navigation.navigate(AppRoutes.MedicineCartPrescription);
+        }}
+        showSelectedOption
       />
     );
   };
 
-  const renderPrescriptions = () => {
-    return <Prescriptions onPressUploadMore={() => setshowPopUp(true)} screen={'summary'} />;
-  };
-
-  function isPrescriptionRequired() {
-    if (uploadPrescriptionRequired) {
-      return physicalPrescriptions.length > 0 || ePrescriptions.length > 0 ? false : true;
-    } else {
-      return false;
-    }
-  }
-
   const renderButton = () => {
-    return isPrescriptionRequired() ? (
+    return uploadPrescriptionRequired && !prescriptionType ? (
       <View style={styles.buttonContainer}>
         <Button
           disabled={false}
           title={'UPLOAD PRESCRIPTION'}
           onPress={() => {
             uploadPrescriptionClickedEvent(currentPatient?.id);
-            setshowPopUp(true);
+            props.navigation.navigate(AppRoutes.MedicineCartPrescription);
           }}
           titleTextStyle={{ fontSize: 13, lineHeight: 24, marginVertical: 8 }}
           style={{ borderRadius: 10 }}
@@ -514,11 +503,15 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
           {renderAddress()}
           {renderAmountSection()}
+          {uploadPrescriptionRequired &&
+            prescriptionType !== PrescriptionType.UPLOADED &&
+            renderPrescriptions()}
           {renderTatCard()}
           {renderCartItems()}
-          {uploadPrescriptionRequired && renderPrescriptions()}
+          {uploadPrescriptionRequired &&
+            prescriptionType === PrescriptionType.UPLOADED &&
+            renderPrescriptions()}
         </ScrollView>
-        {renderuploadPrescriptionPopup()}
         {renderButton()}
         {loading && <Spinner />}
       </SafeAreaView>

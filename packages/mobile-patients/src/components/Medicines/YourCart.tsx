@@ -455,7 +455,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       })
       .catch((e) => {
         setLoading && setLoading(false);
-        console.log({ e });
       });
   };
 
@@ -864,7 +863,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const fetchUserSpecificCoupon = () => {
     userSpecificCoupon(g(currentPatient, 'mobileNumber'))
       .then((resp: any) => {
-        console.log(resp.data);
         if (resp.data.errorCode == 0) {
           let couponList = resp.data.response;
           if (typeof couponList != null && couponList.length) {
@@ -883,7 +881,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     setLoading!(true);
     const data = {
       mobile: g(currentPatient, 'mobileNumber'),
-      billAmount: cartTotal.toFixed(2),
+      billAmount: (cartTotal - productDiscount).toFixed(2),
       coupon: coupon,
       pinCode: locationDetails && locationDetails.pincode,
       products: cartItems.map((item) => ({
@@ -1049,7 +1047,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const renderItemsInCart = () => {
-    // console.log('cartItems >>', cartItems);
     const cartItemsCount =
       cartItems.length > 10 || cartItems.length == 0
         ? `${cartItems.length}`
@@ -2084,12 +2081,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     const userId = await dataSavedUserID('selectedProfileId');
 
     whatsAppUpdateAPICall(client, optedFor, optedFor, userId ? userId : g(currentPatient, 'id'))
-      .then(({ data }: any) => {
-        console.log(data, 'whatsAppUpdateAPICall');
-      })
+      .then(({ data }: any) => {})
       .catch((e: any) => {
         CommonBugFender('YourCart_whatsAppUpdateAPICall_error', e);
-        console.log('error', e);
       });
   };
 

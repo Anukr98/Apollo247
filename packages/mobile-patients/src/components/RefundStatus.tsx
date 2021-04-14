@@ -1,10 +1,9 @@
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Refund } from '@aph/mobile-patients/src/components/ui/Icons';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   BackHandler,
   Dimensions,
@@ -15,9 +14,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { PaymentModes } from '@aph/mobile-patients/src/strings/strings.json';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -173,17 +173,7 @@ export const RefundStatus: React.FC<RefundStatusProps> = (props) => {
     const { navigation } = props;
     const { navigate } = navigation;
 
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [
-          NavigationActions.navigate({
-            routeName: AppRoutes.ConsultRoom,
-          }),
-        ],
-      })
-    );
+    navigateToHome(props.navigation);
   };
 
   const renderButton = () => {

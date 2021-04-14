@@ -30,13 +30,17 @@ function createPatientAttributes(currentPatient: any) {
 
 export function DiagnosticLandingPageViewedEvent(
   currentPatient: any,
-  isServiceable: boolean | undefined
+  isServiceable: boolean | undefined,
+  source?: string | undefined
 ) {
   const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED] = {
     ...getPatientAttributes,
     Serviceability: isServiceable ? 'Yes' : 'No',
   };
+  if (!!source) {
+    eventAttributes['Source'] = source;
+  }
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, eventAttributes);
 }
 
@@ -135,20 +139,19 @@ export const firePurchaseEvent = (orderId: string, grandTotal: number, cartItems
     value: Number(grandTotal),
     LOB: 'Diagnostics',
   };
-  console.log('eventAttributes >>', eventAttributes);
   const appsFlyerAttributes: AppsFlyerEvents[AppsFlyerEventName.PURCHASE] = {
     currency: 'INR',
     items: items,
     transaction_id: orderId,
     af_revenue: Number(grandTotal),
+    af_currency: 'INR',
   };
-  console.log('appsFlyerAttributes >>', appsFlyerAttributes);
   postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
   postAppsFlyerEvent(AppsFlyerEventName.PURCHASE, appsFlyerAttributes);
 };
 
 export function DiagnosticDetailsViewed(
-  source: 'Full Search' | 'Home Page' | 'Cart Page' | 'Partial Search',
+  source: 'Full Search' | 'Home Page' | 'Cart Page' | 'Partial Search' | 'Deeplink',
   itemName: string,
   itemType: string,
   itemCode: string,

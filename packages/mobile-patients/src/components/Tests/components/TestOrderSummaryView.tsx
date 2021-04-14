@@ -13,12 +13,16 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
-import { DIAGNOSTIC_ORDER_PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  DIAGNOSTIC_ORDER_PAYMENT_TYPE,
+  DIAGNOSTIC_ORDER_STATUS,
+  REFUND_STATUSES,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components/StatusCard';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
-  DIAGNOSTIC_ONLINE_PAYMENT_STATUS,
   DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY,
+  DIAGNOSTIC_STATUS_BEFORE_SUBMITTED,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -34,11 +38,11 @@ const isSmallDevice = width < 370;
 export interface TestOrderSummaryViewProps {
   orderDetails: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList;
   onPressViewReport?: () => void;
+  refundDetails?: any;
 }
 
 export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props) => {
-  const { orderDetails } = props;
-
+  const { orderDetails, refundDetails } = props;
   const isPrepaid = orderDetails?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
 
   const { currentPatient } = useAllCurrentPatients();
@@ -187,18 +191,18 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     return (
       <View style={{ justifyContent: 'space-between', flexDirection: 'row' }}>
         <View style={{ flex: 0.8 }}>
-          <Text style={{ ...theme.viewStyles.text('M', 13, colors.SHERPA_BLUE, 1, 18) }}>
-            Order ID #{orderDetails?.displayId}
-          </Text>
-          <Text style={{ ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 0.5, 14) }}>
-            Booked on {bookedOn}
-          </Text>
+          <Text style={styles.orderId}>Order ID #{orderDetails?.displayId}</Text>
+          <Text style={styles.bookedOn}>Booked on {bookedOn}</Text>
         </View>
         <View>
           <StatusCard titleText={orderDetails?.orderStatus} />
         </View>
       </View>
     );
+  };
+
+  const getSlotStartTime = (slot: string /*07:00-07:30 */) => {
+    return moment((slot?.split('-')[0] || '').trim(), 'hh:mm').format('hh:mm A');
   };
 
   const renderSlotView = () => {
@@ -214,10 +218,10 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
         : getSlotStartTime(orderDetails?.slotTimings);
 
     return (
-      <View style={{ justifyContent: 'space-between', flexDirection: 'row', marginTop: '6%' }}>
+      <View style={styles.testSlotContainer}>
         {(!!bookedForTime || !!bookedForDate) && (
           <View>
-            <Text style={styles.headingText}>Test Slot</Text>
+            <Text style={styles.headingText}>Appointment Time</Text>
             {!!bookedForTime ? <Text style={styles.slotText}>{bookedForTime}</Text> : null}
             {!!bookedForDate ? <Text style={styles.slotText}>{bookedForDate}</Text> : null}
           </View>
@@ -257,7 +261,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           return (
             <View style={styles.commonTax}>
               <View style={{ width: '65%' }}>
-                <Text style={styles.commonText}>{item?.itemName}</Text>
+                <Text style={styles.commonText}>
+                  {!!item?.itemName ? item?.itemName : item?.diagnostics?.itemName}
+                </Text>
                 {!!item?.itemObj?.inclusions && (
                   <Text style={styles.inclusionsText}>
                     Inclusions : {item?.itemObj?.inclusions?.length}
@@ -284,7 +290,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     return (
       <Button
         title={'VIEW REPORT'}
-        style={{ width: '40%', marginBottom: 5, alignSelf: 'flex-start', marginTop: 10 }}
+        style={styles.viewReport}
         titleTextStyle={{
           ...theme.viewStyles.text('SB', isIphone5s() ? 12 : 14, theme.colors.BUTTON_TEXT),
         }}
@@ -355,14 +361,23 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   };
 
   const renderPaymentCard = () => {
+    const txtToShow = isPrepaid
+      ? 'Amount Paid Online'
+      : DIAGNOSTIC_STATUS_BEFORE_SUBMITTED.includes(orderDetails?.orderStatus)
+      ? 'Amount to be collected in Cash'
+      : 'Amount collected in Cash';
+    const refundText =
+      isPrepaid &&
+      refundDetails?.length > 0 &&
+      refundDetails?.[0]?.status === REFUND_STATUSES.SUCCESS &&
+      'Amount Refunded';
+
     return (
       <View>
         {renderHeading('Payment Mode')}
         <View style={styles.orderSummaryView}>
-          {renderPrices(
-            isPrepaid ? 'Amount Paid Online' : 'Amount Collected in Cash',
-            orderDetails?.totalPrice
-          )}
+          {renderPrices(txtToShow, orderDetails?.totalPrice)}
+          {!!refundText && renderPrices(refundText, refundDetails?.[0]?.amount)}
         </View>
       </View>
     );
@@ -376,7 +391,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
         {renderHeading(`Tests for ${currentPatient?.firstName}`)}
         {renderItemsCard()}
         {renderPricesCard()}
-        {renderPaymentCard()}
+        {orderDetails?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED && !isPrepaid
+          ? null
+          : renderPaymentCard()}
       </View>
     </ScrollView>
   );
@@ -505,7 +522,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   headingText: {
-    ...theme.viewStyles.text('M', 13, colors.SHERPA_BLUE, 1, 18),
+    ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18),
     letterSpacing: 0.3,
     marginBottom: '2%',
   },
@@ -521,7 +538,8 @@ const styles = StyleSheet.create({
   inclusionsText: {
     ...theme.viewStyles.text('R', 11, colors.SHERPA_BLUE, 1, 15),
   },
+  viewReport: { width: '40%', marginBottom: 5, alignSelf: 'flex-start', marginTop: 10 },
+  orderId: { ...theme.viewStyles.text('M', 13, colors.SHERPA_BLUE, 1, 18) },
+  bookedOn: { ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 0.5, 14) },
+  testSlotContainer: { justifyContent: 'space-between', flexDirection: 'row', marginTop: '6%' },
 });
-function getSlotStartTime(slotTimings: string) {
-  throw new Error('Function not implemented.');
-}

@@ -15,7 +15,6 @@
 #import <React/RCTLinkingManager.h>
 #import <WebEngage/WebEngage.h>
 @import AppsFlyerLib;
-#import <FBSDKCoreKit/FBSDKCoreKit.h>
 #import <CodePush/CodePush.h>
 
 #if __has_include(<AppsFlyerLib/AppsFlyerTracker.h>) // from Pod
@@ -46,7 +45,7 @@
   rootViewController.view = rootView;
   self.window.rootViewController = rootViewController;
   [self.window makeKeyAndVisible];
-  //  [RNSplashScreen show];  // here
+  // [RNSplashScreen show];  // here
   [RNSplashScreen showSplash:@"LaunchScreen" inRootView:rootView];
   
   if ([FIRApp defaultApp] == nil) {
@@ -72,8 +71,6 @@
   }];
   
   [[WebEngage sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
-  [[FBSDKApplicationDelegate sharedInstance] application:application
-                           didFinishLaunchingWithOptions:launchOptions];
   
   return YES;
 }
@@ -224,10 +221,6 @@ API_AVAILABLE(ios(10.0)){
                            openURL:url
                  sourceApplication:options[UIApplicationOpenURLOptionsSourceApplicationKey]
                         annotation:options[UIApplicationOpenURLOptionsAnnotationKey]];
-    
-    if ([[FBSDKApplicationDelegate sharedInstance] application:application openURL:url options:options]) {
-      return YES;
-    }
   } @catch (NSException *exception) {
     NSLog(@"%@",exception );
   }

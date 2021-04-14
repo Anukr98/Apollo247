@@ -19,15 +19,13 @@ import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobil
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { useQuery } from 'react-apollo-hooks';
-import { BackHandler, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   nameFormater,
   formatAddressBookAddress,
   handleGraphQlError,
-  g,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
@@ -125,14 +123,10 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
             setshowSpinner(false);
             setAddresses && setAddresses(addressList);
             setAdd && setAdd(addressList);
-          } else {
-            console.log('no result');
           }
         }
       })
-      .catch((error) => {
-        console.log('error', error);
-      });
+      .catch((error) => {});
   };
 
   const client = useApolloClient();
@@ -176,7 +170,6 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
       })
       .catch((e) => {
         CommonBugFender('AddressBook_DELETE_PATIENT_ADDRESS', e);
-        console.log('Error occured while render Delete address', { e });
         handleGraphQlError(e);
       })
       .finally(() => setshowSpinner(false));

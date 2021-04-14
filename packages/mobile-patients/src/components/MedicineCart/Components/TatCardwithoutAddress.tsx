@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, StyleProp, ViewStyle, Text, View, Image } from 'react-native';
+import React from 'react';
+import { StyleSheet, StyleProp, ViewStyle, Text, View } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { DeliveryIcon } from '@aph/mobile-patients/src/components/ui/Icons';
-import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
 import { format } from 'date-fns';
 import moment from 'moment';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';

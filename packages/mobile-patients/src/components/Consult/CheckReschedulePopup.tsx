@@ -32,16 +32,15 @@ import {
   bookRescheduleAppointmentVariables,
 } from '@aph/mobile-patients/src/graphql/types/bookRescheduleAppointment';
 import { BOOK_APPOINTMENT_RESCHEDULE } from '@aph/mobile-patients/src/graphql/profiles';
-import { StackActions, NavigationActions } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
   cancelAppointment,
   cancelAppointmentVariables,
 } from '@aph/mobile-patients/src/graphql/types/cancelAppointment';
-import string from '@aph/mobile-patients/src/strings/strings.json';
 import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const { width, height } = Dimensions.get('window');
 
@@ -257,21 +256,11 @@ export const CheckReschedulePopup: React.FC<CheckRescheduleProps> = (props) => {
       .then((res: any) => {
         rescheduleSuccessCallback();
         setLoading!(false);
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [
-              NavigationActions.navigate({
-                routeName: AppRoutes.TabBar,
-                params: {
-                  Data: res?.data?.bookRescheduleAppointment?.appointmentDetails,
-                  DoctorName: data?.doctorInfo?.fullName,
-                },
-              }),
-            ],
-          })
-        );
+        const params = {
+          Data: res?.data?.bookRescheduleAppointment?.appointmentDetails,
+          DoctorName: data?.doctorInfo?.fullName,
+        };
+        navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar, params);
       })
       .catch((e) => {
         CommonBugFender('AppointmentOnlineDetails_rescheduleAPI', e);
@@ -303,13 +292,7 @@ export const CheckReschedulePopup: React.FC<CheckRescheduleProps> = (props) => {
         cancelSuccessCallback();
         setLoading!(false);
         showAppointmentCancellSuccessAlert();
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-          })
-        );
+        navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar);
       })
       .catch((e: any) => {
         CommonBugFender('AppointmentOnlineDetails_cancelAppointmentApi', e);

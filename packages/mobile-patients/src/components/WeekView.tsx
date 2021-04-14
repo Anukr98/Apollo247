@@ -73,7 +73,6 @@ export const WeekView: ForwardRefExoticComponent<PropsWithoutRef<WeekViewProps> 
     }));
 
     const renderDayComponent = (item: Date) => {
-      // const days = ['S', 'M', 'T ', 'W', 'T', 'F', 'S'];
       const isHighlitedDate =
         props.date.getDate() == item.getDate() &&
         props.date.getMonth() == item.getMonth() &&
@@ -134,8 +133,6 @@ export const WeekView: ForwardRefExoticComponent<PropsWithoutRef<WeekViewProps> 
       velocityThreshold: 0.3,
       directionalOffsetThreshold: 80,
     };
-    console.log(props.date, 'props.date weekview', props.maxDate);
-
     return (
       <GestureRecognizer onSwipeLeft={onSwipeLeft} onSwipeRight={onSwipeRight} config={config}>
         <CalendarStrip
@@ -146,7 +143,6 @@ export const WeekView: ForwardRefExoticComponent<PropsWithoutRef<WeekViewProps> 
             props.onTapDate(date);
           }}
           selectedDate={props.date}
-          // onWeekChanged={(date) => props.onWeekChanged(date)}
           style={styles.calendarStripStyle}
           ref={(ref) => {
             calendarStripRef.current = ref as CalendarStripRefType;

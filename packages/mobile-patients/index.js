@@ -3,9 +3,10 @@ import 'react-native-gesture-handler';
 import { AppRegistry, YellowBox } from 'react-native';
 import { name as appName } from './app.json';
 import AppContainer from '@aph/mobile-patients/src/components/AppContainer';
+import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 if (__DEV__) {
-  import('./ReactotronConfig').then(() => console.log('Reactotron Configured'));
+  import('./ReactotronConfig').then(() => aphConsole.log('Reactotron Configured'));
 }
 
 YellowBox.ignoreWarnings([

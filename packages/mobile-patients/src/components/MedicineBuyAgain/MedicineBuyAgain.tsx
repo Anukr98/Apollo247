@@ -3,7 +3,6 @@ import { MedicineListingHeader } from '@aph/mobile-patients/src/components/Medic
 import { MedicineListingProducts } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingProducts';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { medCartItemsDetailsApi, MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';

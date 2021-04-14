@@ -23,12 +23,6 @@
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>fb215389816346094</string>
-			</array>
-		</dict>
-		<dict>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
@@ -57,10 +51,6 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>CodePushDeploymentKey</key>
 	<string>N9LT5oUoB9DUv394XXz05Tywn3LKgHsugfl3i</string>
-	<key>FacebookAppID</key>
-	<string>215389816346094</string>
-	<key>FacebookDisplayName</key>
-	<string>Apollo 247</string>
 	<key>FirebaseScreenReportingEnabled</key>
 	<false/>
 	<key>ITSAppUsesNonExemptEncryption</key>
@@ -69,21 +59,6 @@
 	<string>1496740273</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
-		<string>fbapi</string>
-		<string>fbapi20130214</string>
-		<string>fbapi20130410</string>
-		<string>fbapi20130702</string>
-		<string>fbapi20131010</string>
-		<string>fbapi20131219</string>
-		<string>fbapi20140410</string>
-		<string>fbapi20140116</string>
-		<string>fbapi20150313</string>
-		<string>fbapi20150629</string>
-		<string>fbapi20160328</string>
-		<string>fbauth</string>
-		<string>fb-messenger-share-api</string>
-		<string>fbauth2</string>
-		<string>fbshareextension</string>
 		<string>whatsapp</string>
 	</array>
 	<key>LSRequiresIPhoneOS</key>
@@ -131,27 +106,10 @@
 	<string>$(PRODUCT_NAME)  would like to access speech recognition. Speech data from this app will be sent to Apple to process your requests. This will also help Apple improve its speech recognition technology.</string>
 	<key>UIAppFonts</key>
 	<array>
-		<string>MaterialIcons-Regular.ttf</string>
-		<string>IBMPlexSans-ThinItalic.ttf</string>
-		<string>IBMPlexSans-Thin.ttf</string>
-		<string>IBMPlexSans-SemiBoldItalic.ttf</string>
 		<string>IBMPlexSans-SemiBold.ttf</string>
 		<string>IBMPlexSans-Regular.ttf</string>
-		<string>IBMPlexSans-MediumItalic.ttf</string>
 		<string>IBMPlexSans-Medium.ttf</string>
-		<string>IBMPlexSans-LightItalic.ttf</string>
-		<string>IBMPlexSans-Light.ttf</string>
-		<string>IBMPlexSans-Italic.ttf</string>
-		<string>IBMPlexSans-ExtraLightItalic.ttf</string>
-		<string>IBMPlexSans-ExtraLight.ttf</string>
 		<string>IBMPlexSans-Bold.ttf</string>
-		<string>IBMPlexSans-BoldItalic.ttf</string>
-		<string>Comfortaa_Regular.ttf</string>
-		<string>OpenSans-Bold.ttf</string>
-		<string>OpenSans-ExtraBold.ttf</string>
-		<string>OpenSans-Light.ttf</string>
-		<string>OpenSans-Regular.ttf</string>
-		<string>OpenSans-Semibold.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

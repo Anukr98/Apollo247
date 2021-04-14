@@ -48,7 +48,6 @@ import {
 import {
   g,
   handleGraphQlError,
-  formatAddress,
   getFormattedLocation,
   isValidPhoneNumber,
   postWebEngageEvent,
@@ -74,11 +73,9 @@ import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { getPatientAddressList_getPatientAddressList_addressList } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
-import { useFirstInstallTime } from 'react-native-device-info';
 
 const { height, width } = Dimensions.get('window');
 const setCharLen = width < 380 ? 25 : 30; //smaller devices like se, nexus 5
-const key = AppConfig.Configuration.GOOGLE_API_KEY;
 const { isIphoneX } = DeviceHelper();
 
 export type AddressSource =
@@ -119,7 +116,6 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
   const isEdit = props.navigation.getParam('KeyName') === 'Update';
   const source = props.navigation.getParam('source');
   const sourceScreenName = props.navigation.getParam('ComingFrom');
-  const updateLatLng = props.navigation.getParam('updateLatLng');
   const locationResponse = props.navigation.getParam('locationDetails');
   const [deleteProfile, setDeleteProfile] = useState<boolean>(false);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
@@ -226,7 +222,6 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
       }
     } else {
       if (locationResponse) {
-        console.log({ locationResponse });
         setaddressLine1('');
         setareaDetails(locationResponse?.area || locationResponse?.displayName || '');
         setstate(locationResponse?.state || '');
@@ -257,12 +252,10 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
   const client = useApolloClient();
   const isAddressValid =
     userName &&
-    // userName.length > 1 &&
     phoneNumber &&
     phoneNumber.length >= 10 &&
     addressLine1 &&
     areaDetails &&
-    // addressLine1.length > 1 &&
     pincode &&
     pincode.length === 6 &&
     city &&
@@ -294,12 +287,10 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         isCityEdit && setCityEditable(false);
         setcity(response?.city! || city);
       } else {
-        console.log({ pincodeResult });
         pincodeCheck.includes(city) ? setCityEditable(true) : false;
       }
       setshowSpinner!(false);
     } catch (error) {
-      console.log(error);
       setshowSpinner!(false);
     }
   };
@@ -451,8 +442,6 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
           props.navigation.getParam('KeyName') == 'Update' ? (
             <TouchableOpacity
               onPress={() => {
-                // console.log(addressData.id);
-                // setdisplayoverlay(true);
                 setDeleteProfile(true);
               }}
             >
@@ -497,7 +486,6 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
               state as keyof typeof AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING
             ] || stateCode;
 
-          // setcity(formatCityStateDisplay(city, state)); //[city,state] format
           setcity(city || '');
           setstate(state || '');
           setStateCode(finalStateCode);
@@ -592,7 +580,6 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
           stateCode: finalStateCode,
           name: userName,
         };
-        console.log({ updateaddressInputForEdit });
         setshowSpinner(true);
         client
           .mutate<updatePatientAddress, updatePatientAddressVariables>({
@@ -602,7 +589,6 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
           .then((_data: any) => {
             try {
               setshowSpinner(false);
-              console.log('updateapicalled', _data);
               _navigateToScreen(_data.data.updatePatientAddress.patientAddress, 'fromUpdate');
             } catch (error) {
               CommonBugFender('EditAddress_onSavePress_try', error);
@@ -613,9 +599,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
             setshowSpinner(false);
             handleGraphQlError(e);
           });
-        //props.navigation.goBack();
       } else {
-        // props.navigation.goBack();
         props.navigation.pop(2, { immediate: true });
       }
     }
@@ -1120,7 +1104,6 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
                     fetchPolicy: 'no-cache',
                   })
                   .then((_data: any) => {
-                    console.log(('dat', _data));
                     setDeliveryAddressId!('');
                     setNewAddressAdded!('');
                     setDiagnosticAddressId!('');
@@ -1128,7 +1111,6 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
                   })
                   .catch((e) => {
                     CommonBugFender('EditAddress_DELETE_PATIENT_ADDRESS', e);
-                    console.log('Error occured while render Delete MedicalOrder', { e });
                     handleGraphQlError(e);
                   })
                   .finally(() => setshowSpinner(false));
@@ -1186,7 +1168,9 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
           <ScrollView bounces={false}>
             {renderAddressText()}
             {renderAddress()}
-            {!!source && source == 'Diagnostics Cart' ? null : renderUserName()}
+            {(!!source && source == 'Diagnostics Cart') || (source == 'Tests' && isEdit)
+              ? null
+              : renderUserName()}
             {renderUserNumber()}
             <View style={{ height: Platform.OS == 'ios' ? 60 : 0 }} />
           </ScrollView>
@@ -1209,7 +1193,6 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
               disabled={!isAddressValid}
             ></Button>
           </View>
-          {/* </StickyBottomComponent> */}
         </KeyboardAvoidingView>
       </SafeAreaView>
       {showSpinner && <Spinner />}

@@ -32,7 +32,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import Pdf from 'react-native-pdf';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Image } from 'react-native-elements';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -64,6 +64,7 @@ import {
   getDiagnosticOrderDetailsByDisplayID,
   getDiagnosticOrderDetailsByDisplayIDVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetailsByDisplayID';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -290,6 +291,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         let resultForVisitNo = labResultsData?.find((item: any) => item?.identifier == visitId);
         if (!!resultForVisitNo) {
           setData(resultForVisitNo);
+          setLoading?.(false);
         } else {
           setLoading?.(false);
           renderError(string.diagnostics.responseUnavailableForReport, false);
@@ -297,7 +299,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       })
       .catch((error) => {
         CommonBugFender('OrderedTestStatus_fetchTestReportsData', error);
-        console.log('Error occured fetchTestReportsResult', { error });
         currentPatient && handleGraphQlError(error);
       })
       .finally(() => setLoading?.(false));
@@ -323,7 +324,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       }
     } catch (error) {
       CommonBugFender('RecordDetails_requestReadSmsPermission_try', error);
-      console.log('error', error);
     }
   };
 
@@ -446,7 +446,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         .catch((error) => {
           setApiError(true);
           CommonBugFender('HealthRecordsHome_fetchTestData', error);
-          console.log('Error occured', { error });
           currentPatient && handleGraphQlError(error);
         })
         .finally(() => setLoading && setLoading(false));
@@ -519,7 +518,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
           }
         })
         .catch((e: any) => {
-          console.log(e);
           setLoading?.(false);
           currentPatient && handleGraphQlError(e, 'Report is yet not available');
         });
@@ -534,7 +532,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       : prescriptions
       ? data?.source !== '247selfConsultation'
         ? 'PRESCRIPTION'
-        : 'FILE'
+        : 'MEDICAL FILE'
       : medicalBill
       ? 'BILLS'
       : medicalInsurance
@@ -800,15 +798,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             <View style={{ marginHorizontal: 20, marginBottom: 15, marginTop: 30 }}>
               <Pdf
                 key={data.fileUrl}
-                onLoadComplete={(numberOfPages, filePath) => {
-                  console.log(`number of pages: ${numberOfPages}, fb:${filePath}`);
-                }}
-                onPageChanged={(page, numberOfPages) => {
-                  console.log(`current page: ${page}`);
-                }}
-                onError={(error) => {
-                  console.log(error);
-                }}
                 source={{ uri: data.fileUrl }}
                 style={{
                   height: 425,
@@ -1109,7 +1098,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       })
       .catch((err) => {
         CommonBugFender('ConsultDetails_renderFollowUp', err);
-        console.log('error ', err);
         currentPatient && handleGraphQlError(err);
         setLoading && setLoading(false);
       })
@@ -1129,17 +1117,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
 
   const onGoBack = () => {
     if (movedFrom == 'deeplink') {
-      props.navigation.dispatch(
-        StackActions.reset({
-          index: 0,
-          key: null,
-          actions: [
-            NavigationActions.navigate({
-              routeName: AppRoutes.ConsultRoom,
-            }),
-          ],
-        })
-      );
+      navigateToHome(props.navigation);
     } else {
       props.navigation.state.params?.onPressBack && props.navigation.state.params?.onPressBack();
       props.navigation.goBack();

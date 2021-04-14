@@ -20,9 +20,15 @@ import { InfoIconRed } from '@aph/mobile-patients/src/components/ui/Icons';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { DIAGNOSTIC_ORDER_FAILED_STATUS } from '@aph/mobile-patients/src/strings/AppConfig';
+import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
-const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
+const SHOW_OTP_ARRAY = [
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
+];
 
 interface OrderTestCardProps {
   orderId: string | number;
@@ -50,6 +56,7 @@ interface OrderTestCardProps {
   onPressViewDetails: () => void;
   onPressAddTest?: () => void;
   onPressViewReport: () => void;
+  phelboObject?: any;
 }
 
 export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
@@ -73,9 +80,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       <View style={styles.midViewContainer}>
         {!!props.patientName && (
           <View>
-            <Text style={styles.testForText}>
-              Tests for {props.gender} {props.patientName}
-            </Text>
+            <Text style={styles.testForText}>Tests for {props.patientName}</Text>
           </View>
         )}
         {props.showAddTest ? (
@@ -101,7 +106,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       <>
         {props.ordersData?.map(
           (
-            item: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems,
+            item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems,
             index: number
           ) => (
             <View style={styles.rowStyle}>
@@ -109,7 +114,11 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                 <>
                   <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
                   <Text style={styles.testName}>
-                    {!!item?.itemName ? nameFormater(item?.itemName!, 'title') : ''}{' '}
+                    {!!item?.itemName
+                      ? nameFormater(item?.itemName!, 'title')
+                      : !!item?.diagnostics?.itemName
+                      ? nameFormater(item?.diagnostics?.itemName!, 'title')
+                      : ''}{' '}
                     {index == 1 &&
                       props.ordersData?.length - 2 > 0 &&
                       renderShowMore(props.ordersData, item?.itemName!)}
@@ -122,7 +131,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         {moreTests &&
           props.ordersData?.map(
             (
-              item: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems,
+              item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems,
               index: number
             ) => (
               <>
@@ -171,13 +180,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     return (
       <Button
         title={'VIEW REPORT'}
-        style={{
-          width: '40%',
-          marginBottom: 5,
-          alignSelf: 'flex-start',
-          marginTop: 10,
-          height: 40,
-        }}
+        style={styles.viewReport}
         titleTextStyle={{
           ...theme.viewStyles.text('SB', isIphone5s() ? 12 : 14, theme.colors.BUTTON_TEXT),
         }}
@@ -221,7 +224,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       <View style={styles.bottomContainer}>
         {(!!bookedForTime || !!bookedForDate) && (
           <View>
-            <Text style={styles.headingText}>Test Slot</Text>
+            <Text style={styles.headingText}>Appointment Time</Text>
             {!!bookedForTime ? <Text style={styles.slotText}>{bookedForTime}</Text> : null}
             {!!bookedForDate ? <Text style={styles.slotText}>{bookedForDate}</Text> : null}
           </View>
@@ -266,6 +269,22 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     );
   };
 
+  const showOTPContainer = () => {
+    const phlObj = props?.phelboObject;
+    let otpToShow = !!phlObj && phlObj?.PhelboOTP;
+
+    return (
+      <>
+        {!!otpToShow && SHOW_OTP_ARRAY.includes(props.orderLevelStatus) ? (
+          <View style={styles.otpContainer}>
+            <Text style={styles.otpTextStyle}>{'OTP : '}</Text>
+            <Text style={styles.otpTextStyle}>{otpToShow}</Text>
+          </View>
+        ) : null}
+      </>
+    );
+  };
+
   const renderAdditionalInfoView = () => {
     const isPresent =
       (!!props.additonalRejectedInfo && props.additonalRejectedInfo?.length > 0) ||
@@ -273,9 +292,11 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     const consRejectedString = isPresent && props.additonalRejectedInfo?.join(', ');
     let textToShow =
       props.isCancelled && props.cancelledReason != null
-        ? `Order was cancelled because of ${
+        ? `${string.diagnostics.orderCancelledReasonText} ${
             !!props.cancelledReason?.comments && props.cancelledReason?.comments != ''
               ? props.cancelledReason?.comments
+              : props.cancelledReason.cancellationReason === 'DIAGNOSTIC_STATUS_UPDATED_FROM_ITDOSE'
+              ? string.diagnostics.itDoseCancelledText
               : props.cancelledReason?.cancellationReason
           }`
         : `Sample for ${consRejectedString} ${
@@ -304,10 +325,13 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         {renderMidView()}
         {!!props.ordersData && props.ordersData?.length > 0 ? renderTestListView() : null}
         {!!props.ordersData && props.ordersData?.length > 0 ? renderPreparationData() : null}
-        {renderBottomView()}
+        {!!props.orderLevelStatus && DIAGNOSTIC_ORDER_FAILED_STATUS.includes(props.orderLevelStatus)
+          ? null
+          : renderBottomView()}
         {renderCTAsView()}
       </View>
       {props.showAdditonalView || props.isCancelled ? renderAdditionalInfoView() : null}
+      {showOTPContainer()}
     </TouchableOpacity>
   );
 };
@@ -324,9 +348,9 @@ const styles = StyleSheet.create({
   },
   bulletStyle: {
     color: '#007C9D',
-    fontSize: 4,
+    fontSize: 5,
     textAlign: 'center',
-    paddingTop: 5,
+    alignSelf: 'center',
   },
   testName: {
     ...theme.viewStyles.text('M', isSmallDevice ? 11.5 : 12, '#007C9D', 1, 17),
@@ -348,7 +372,7 @@ const styles = StyleSheet.create({
   },
   infoIconStyle: { resizeMode: 'contain', height: 18, width: 18 },
   headingText: {
-    ...theme.viewStyles.text('M', 13, colors.SHERPA_BLUE, 1, 18),
+    ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18),
     letterSpacing: 0.3,
     marginBottom: '2%',
   },
@@ -396,4 +420,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   bottomContainer: { justifyContent: 'space-between', flexDirection: 'row', marginTop: '6%' },
+  viewReport: {
+    width: '40%',
+    marginBottom: 5,
+    alignSelf: 'flex-start',
+    marginTop: 10,
+    height: 40,
+  },
+  otpTextStyle: {
+    top: 10,
+    left: 20,
+    color: theme.colors.LIGHT_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(14),
+  },
+  otpContainer: {
+    backgroundColor: '#FCFDDA',
+    justifyContent: 'flex-start',
+    flexDirection: 'row',
+    height: 40,
+    borderBottomLeftRadius: 4,
+    borderBottomRightRadius: 4,
+    borderRadius: 10,
+  },
 });

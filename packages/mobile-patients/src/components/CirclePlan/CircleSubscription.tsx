@@ -1,13 +1,11 @@
 import React, { useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Alert, BackHandler, SafeAreaView } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { PaymentOptions } from '@aph/mobile-patients/src/components/ui/PaymentOptions';
 import { CircleTotalBill } from '@aph/mobile-patients/src/components/ui/CircleTotalBill';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import string from '@aph/mobile-patients/src/strings/strings.json';
-
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 interface CirclePaymentProps extends NavigationScreenProps {
   action?: string;
   selectedPlan?: any;
@@ -33,14 +31,7 @@ export const CircleSubscription: React.FC<CirclePaymentProps> = (props) => {
         text: 'Yes',
         onPress: () => {
           if (action === 'PAY') {
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-              })
-            );
-            // props.navigation.navigate('TESTS');
+            navigateToHome(props.navigation);
           } else {
             props.navigation.goBack();
           }

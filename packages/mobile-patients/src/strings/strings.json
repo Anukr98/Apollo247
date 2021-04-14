@@ -119,8 +119,10 @@
     "pastSearches": "Past Searches",
     "topSpecialities": "Top Specialities",
     "HdfcHealthLifeText": "Explore HDFC HealthyLife",
-    "contactCustomerCare": "Something went wrong, please contact customer support",
+    "contactCustomerCare1": "We are unable to confirm your order, since dob is missing against this profile. Please contact customer care to get it updated",
+    "contactCustomerCare2": "We are unable to confirm your order, since gender is missing against this profile. Please contact customer care to get it updated",
     "somethingWentWrong": "Something went wrong.",
+    "settingProfileTxt": "We’re setting up your profile. Please check back soon!",
     "couldNotLoadText": "Uh oh.. could't load!",
     "lowNetworkText": "We were unable to load the page properly because of low network. Please try again"
   },
@@ -154,6 +156,7 @@
   "recentConsults": "RECENT CONSULTS",
   "recentOrders": "RECENT ORDERS",
   "pharmacy": "Pharmacy",
+  "consult": "Consult",
   "productDetail": "Product Detail",
   "pleaseProvideMoreDetails": "Please provide more details",
   "chooseFromPreviousConsults": "Choose from previous consultations",
@@ -175,7 +178,7 @@
   "removeUnavailableItems": "REMOVE UNAVAILABLE ITEMS",
   "selectDeliveryAddress": "SELECT DELIVERY ADDRESS",
   "addDeliveryAddress": "ADD DELIVERY ADDRESS",
-  "uploadPrescription": "UPLOAD PRESCRIPTION",
+  "proceed": "PROCEED",
   "proceedToPay": "PROCEED TO PAY",
   "reviewOrder": "REVIEW ORDER",
   "placeOrder": "PLACE ORDER",
@@ -461,12 +464,12 @@
       "latePhelbo": "Phlebo did not arrive on time",
       "editOrder": "Need to Modify Order Details",
       "userUnavailable": "I am not available right now",
-      "bookedByMistake":"Booked by Mistake",
-      "urgentReport" : "Need Report Urgently",
+      "bookedByMistake": "Booked by Mistake",
+      "urgentReport": "Need Report Urgently",
       "otherReasons": "Others (Please specify)"
     },
     "reasonForReschedule_TestOrder": {
-      "latePhelbo" : "Phlebo did not arrive on time",
+      "latePhelbo": "Phlebo did not arrive on time",
       "unavailable": "I am not available right now",
       "guidelinesNotFollowed": "I did not follow fasting requirement",
       "unableToProvideSample": "Not feeling well to provide sample",
@@ -486,7 +489,7 @@
     "areaText": "AREA",
     "addAddressText": "ADD ADDRESS",
     "totalAmountText": "Total Amount",
-    "timeSlotText": "TIME SLOT",
+    "timeSlotText": "APPOINTMENT TIME",
     "noSlotSelectedText": "No slot selected",
     "selectSlotText": "SELECT SLOT",
     "minorAgeText": "Lab tests cannot be booked for below 10 years",
@@ -510,21 +513,23 @@
     "noSlotAvailable": "Sorry! There are no slots available on {{date}}. Please choose another date.",
     "updateAddressLatLngMessage": "Unable to locate address. Please update.",
     "processingOrder": "We are taking longer than usual to confirm your order. Please check your order status after few minutes",
+    "cartPhelboTxt": "Sample collection executive to reach your home within 45 mins of your appointment time",
     "incorrectUserReport": "This report does not belongs to this user.",
     "unableToFetchReport": "We could not fetch your report. Please view report in my order section",
-    "cartPhelboTxt": "The phlebotomist will reach within 30 mins",
-    "reasonForReschedulingText" : "Reason for Rescheduling",
+    "reasonForReschedulingText": "Reason for Rescheduling",
     "reasonForCancellationText": "Reason for Cancellation",
-    "whatWudLikeText":"What would you like to do?",
-    "rescheduleBookingText":"Reschedule Booking",
+    "whatWudLikeText": "What would you like to do?",
+    "rescheduleBookingText": "Reschedule Booking",
     "cancelBookingText": "Cancel Booking",
-    "sureCancelText":"Are you sure you want to Cancel the booking?",
-    "rateYourExperience":"RATE YOUR DELIVERY EXPERIENCE",
-    "valueFeedbackTxt":"We value your feedback! :)",
-    "howWasExpTxt":"How was your overall experience -",
-    "feedbackSubTxt":"Your feedback has been submitted. Thanks for your time."
-
-
+    "sureCancelText": "Are you sure you want to Cancel the booking?",
+    "rateYourExperience": "RATE YOUR DELIVERY EXPERIENCE",
+    "valueFeedbackTxt": "We value your feedback! :)",
+    "howWasExpTxt": "How was your overall experience -",
+    "feedbackSubTxt": "Your feedback has been submitted. Thanks for your time.",
+    "homeHomeCollectionDisclaimerTxt": "Home collection charges of upto ₹100 would be levied in case of order value less than ₹500",
+    "itDoseCancelledText": "Canceled by phlebotomist as per the request",
+    "orderCancelledReasonText": "Order was cancelled -",
+    "wantToReschedule": "• Do you want to Reschedule Appointment ?"
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -1003,5 +1008,20 @@
     "appNotInstalledOrUserNotLoggedIn": "Either truecaller app is not installed or user is not logged in.",
     "tryAgainLater": "Something went wrong, please try again after sometime",
     "errorTitle": "Uh oh.. :("
+  },
+  "externalMeetingLink": {
+    "click_to_open": "Dr. XYZ is inviting you to join a Zoom meeting. Please click here to join your consultation on the Zoom App or your browser.",
+    "tnc": "By Clicking on this link, you will provide a confirmation to join a recorded Audio/Video meeting on the external platform.",
+    "copied_to_clipboard": "Copied ",
+    "tryAgainLater": "Something went wrong, please try again after sometime"
+  },
+  "splash": {
+    "CAPSULE": "CAPSULE",
+    "SYRINGE": "SYRINGE",
+    "STETHO": "STETHO"
+  },
+  "consultModeTab": {
+    "CONSULT_ONLINE": "Consult Online",
+    "MEET_IN_PERSON": "Meet In Person"
   }
 }

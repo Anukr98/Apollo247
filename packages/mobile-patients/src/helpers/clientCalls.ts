@@ -29,6 +29,7 @@ import {
   GET_ALL_GROUP_BANNERS_OF_USER,
   GET_PACKAGE_INCLUSIONS,
   UPDATE_PATIENT_APP_VERSION,
+  GET_ALL_PRO_HEALTH_APPOINTMENTS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -129,6 +130,7 @@ import {
 import AsyncStorage from '@react-native-community/async-storage';
 import DeviceInfo from 'react-native-device-info';
 import appsFlyer from 'react-native-appsflyer';
+import { getAllProhealthAppointments, getAllProhealthAppointmentsVariables } from '../graphql/types/getAllProhealthAppointments';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -160,7 +162,6 @@ export const getNextAvailableSlots = (
       })
       .catch((e) => {
         CommonBugFender('clientCalls_getNextAvailableSlots', e);
-        console.log('Error occured while searching Doctor', e);
         rej({ error: e });
       });
   });
@@ -377,7 +378,7 @@ export const getPatientPrismMedicalRecordsApi = (
         query: GET_MEDICAL_PRISM_RECORD_V2,
         context: {
           headers: {
-            callingsource: comingFrom == 'Diagnostics' ? "" : 'healthRecords',
+            callingsource: comingFrom == 'Diagnostics' ? '' : 'healthRecords',
           },
         },
         variables: {
@@ -601,7 +602,6 @@ export const whatsAppUpdateAPICall = (
       patientId: patientId,
     };
 
-    console.log('whatsAppUpdate', inputVariables);
     client
       .mutate<updateWhatsAppStatus>({
         mutation: UPDATE_WHATSAPP_STATUS,
@@ -633,7 +633,6 @@ export const updateExternalConnect = (
       appointmentId: appointmentID,
     };
 
-    console.log('inputVariables', inputVariables);
     client
       .mutate<updateSaveExternalConnect, updateSaveExternalConnectVariables>({
         mutation: UPDATE_SAVE_EXTERNAL_CONNECT,
@@ -756,7 +755,6 @@ export const saveTokenDevice = (client: ApolloClient<object>, token: any, patien
     deviceOS: '',
     patientId: patientId,
   };
-  console.log('input', input);
   return client.mutate<saveDeviceToken, saveDeviceTokenVariables>({
     mutation: SAVE_DEVICE_TOKEN,
     variables: {
@@ -907,20 +905,67 @@ const notifyAppVersion = async (
     const appVersion = DeviceInfo.getVersion();
     const appsflyerIdKey = `${currentPatient?.id}-appsflyerId`;
     const appsflyerSaved = await AsyncStorage.getItem(appsflyerIdKey);
+
     const variables = {
       appVersion,
       patientId: currentPatient?.id,
       osType: Platform.OS == 'ios' ? DEVICETYPE.IOS : DEVICETYPE.ANDROID,
       appsflyerId,
     };
+
+    console.log(
+      'checkguf --- notifyAppVersion UpdatePatientAppVersion  savedAppVersion -----',
+      savedAppVersion
+    );
+    console.log(
+      'checkguf --- notifyAppVersion UpdatePatientAppVersion  appVersion -----',
+      appVersion
+    );
+    console.log(
+      'checkguf --- notifyAppVersion UpdatePatientAppVersion  appsflyerSaved -----',
+      appsflyerSaved
+    );
+    console.log(
+      'checkguf --- notifyAppVersion UpdatePatientAppVersion  appsflyerId -----',
+      appsflyerId
+    );
+
     if (savedAppVersion !== appVersion || appsflyerSaved !== appsflyerId) {
+      console.log('checkguf --- notifyAppVersion UpdatePatientAppVersion  called -----');
+
       const res = await client.mutate<UpdatePatientAppVersion, UpdatePatientAppVersionVariables>({
         mutation: UPDATE_PATIENT_APP_VERSION,
         variables,
         fetchPolicy: 'no-cache',
       });
+      console.log('checkguf --- notifyAppVersion res--- ', res);
       await AsyncStorage.setItem(key, appVersion);
       await AsyncStorage.setItem(appsflyerIdKey, appsflyerId!);
     }
-  } catch (error) {}
+  } catch (error) {
+    console.log('checkguf --- notifyAppVersion--- ', error);
+  }
+};
+
+export const getAllProHealthAppointments = (
+  client: ApolloClient<object>,
+  patientId: string
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getAllProhealthAppointments, getAllProhealthAppointmentsVariables>({
+        query: GET_ALL_PRO_HEALTH_APPOINTMENTS,
+        variables: {
+          patientId: patientId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_ getAllProHealthAppointments', e);
+        rej({ error: e });
+      });
+  });
 };

@@ -52,7 +52,6 @@ export interface ConsultPersonalizedCardProps {
 
 export const ConsultPersonalizedCard: React.FC<ConsultPersonalizedCardProps> = (props) => {
   const rowData = props.rowData;
-  // console.log('ConsultPersonalizedCard', rowData);
 
   const renderAppointmentsScreen = () => {
     const item: any = rowData && rowData;

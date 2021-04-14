@@ -1,8 +1,6 @@
 <resources>
     <string name="app_name">Apollo 247</string>
     <string name="default_notification_channel_id" translatable="false">fcm_FirebaseNotifiction_default_channel</string>
-    <string name="facebook_app_id">215389816346094</string>
-    <string name="fb_login_protocol_scheme">fb215389816346094</string>
 
     <string name="incoming_call">Apollo 247 Incoming Call</string>
     <string name="unlock_text">Unlock screen to receive call</string>
@@ -14,5 +12,8 @@
     <!-- <string name="truecaller_appkey">ktGEl0c35c53a83c543f59216ac9f6b303d4a</string> -->
     
     <!-- release mode key -->
-    <string name="truecaller_appkey">IZ1oT03fb161e4b594117ab8b7220fd9aed97</string>
+    <!-- <string name="truecaller_appkey">IZ1oT03fb161e4b594117ab8b7220fd9aed97</string> -->
+
+    <!-- play store key -->
+    <string name="truecaller_appkey">ZI9TSf24b50579dfd4a39bfd1156b07189ac2</string>
 </resources>

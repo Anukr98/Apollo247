@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -44,6 +44,8 @@ import {
   postAppsFlyerAddToCartEvent,
   getCareCashback,
   doRequestAndAccessLocationModified,
+  navigateToHome,
+  navigateToScreenWithEmptyStack,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   MedicineProductDetails,
@@ -115,6 +117,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     pdpBreadCrumbs,
     setPdpBreadCrumbs,
     addresses,
+    productDiscount,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
@@ -149,6 +152,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const [showAddedToCart, setShowAddedToCart] = useState<boolean>(false);
   const [showSubstituteInfo, setShowSubstituteInfo] = useState<boolean>(false);
   const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(false);
+  const [availabilityCalled, setAvailabilityCalled] = useState<string>('no');
 
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
   const [pincode, setpincode] = useState<string>(pharmacyPincode || '');
@@ -183,6 +187,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, [medicineDetails]);
 
   useEffect(() => {
+    if (medicineDetails?.sku && availabilityCalled === 'yes') {
+      postProductPageViewedEvent(pincode, isInStock);
+    }
+  }, [medicineDetails, availabilityCalled]);
+
+  useEffect(() => {
     if (cartItems?.length) {
       const filteredCartItems = cartItems?.filter((item) => item?.id == medicineDetails?.sku);
       setSkuInCart(filteredCartItems);
@@ -190,7 +200,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, [cartItems]);
 
   useEffect(() => {
-    if (axdcCode) {
+    if (axdcCode && medicineDetails?.sku) {
       getMedicineDetails(pincode, axdcCode);
     }
   }, [axdcCode, pincode]);
@@ -241,11 +251,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const homeBreadCrumb: BreadcrumbLink = {
     title: 'Home',
     onPress: () => {
-      const resetAction = StackActions.reset({
-        index: 0,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      });
-      props.navigation.dispatch(resetAction);
+      navigateToHome(props.navigation);
     },
   };
 
@@ -276,29 +282,19 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         breadcrumb.push({
           title: 'Medicines',
           onPress: () => {
-            const resetAction = StackActions.reset({
-              index: 0,
-              actions: [NavigationActions.navigate({ routeName: 'MEDICINES' })],
-            });
-            props.navigation.dispatch(resetAction);
+            navigateToScreenWithEmptyStack(props.navigation, 'MEDICINES');
           },
         });
         breadcrumb.push({
           title: 'Medicine Search',
-          onPress: () => {
-            // props.navigation.navigate(AppRoutes.MedicineListing);
-          },
+          onPress: () => {},
         });
       }
       if (movedFrom === ProductPageViewedSource.CART) {
         breadcrumb.push({
           title: 'Cart',
           onPress: () => {
-            const resetAction = StackActions.reset({
-              index: 0,
-              actions: [NavigationActions.navigate({ routeName: AppRoutes.MedicineCart })],
-            });
-            props.navigation.dispatch(resetAction);
+            navigateToScreenWithEmptyStack(props.navigation, AppRoutes.MedicineCart);
           },
         });
       }
@@ -349,10 +345,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     }
   };
 
-  const postProductPageViewedEvent = (pincode?: string) => {
+  const postProductPageViewedEvent = (pincode?: string, isProductInStock?: boolean) => {
     if (movedFrom) {
       const { sku, name, is_in_stock, sell_online } = medicineDetails;
-      const stock_availability = !sell_online ? 'Not for Sale' : !!is_in_stock ? 'Yes' : 'No';
+      const stock_availability =
+        sell_online == 0 ? 'Not for Sale' : !!isProductInStock ? 'Yes' : 'No';
       const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED] = {
         source: movedFrom,
         ProductId: sku,
@@ -426,7 +423,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       setIsInStock(!outOfStock);
       try {
         const { mrp, exist, qty } = checkAvailabilityRes.data.response[0];
-        !checkButtonClicked && postProductPageViewedEvent(currentPincode);
+        !checkButtonClicked && setAvailabilityCalled('yes');
         const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED] = {
           Source: 'PDP',
           Input_SKU: sku,
@@ -436,6 +433,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           Response_Exist: exist ? 'Yes' : 'No',
           Response_MRP: mrp,
           Response_Qty: qty,
+          'Cart Items': JSON.stringify(cartItems),
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
       } catch (error) {}
@@ -663,7 +661,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           <Text style={styles.bottomCtaText}>
             {`Proceed to Checkout (${cartItems?.length} items) ${
               string.common.Rs
-            }${convertNumberToDecimal(total)}`}
+            }${convertNumberToDecimal(cartTotal - productDiscount)}`}
           </Text>
         </TouchableOpacity>
       </StickyBottomComponent>
@@ -935,6 +933,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               isBanned={medicineDetails?.banned === 'Yes'}
               cashback={cashback}
               deliveryError={deliveryError}
+              name={medicineDetails?.name}
             />
           )}
         {!loading &&

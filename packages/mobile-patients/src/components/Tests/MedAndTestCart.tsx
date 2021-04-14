@@ -32,7 +32,6 @@ type ArrayTest = {
   title: string;
   descripiton: string;
   image: Element;
-  // ImageSourcePropType;
   cartCount: number;
 };
 

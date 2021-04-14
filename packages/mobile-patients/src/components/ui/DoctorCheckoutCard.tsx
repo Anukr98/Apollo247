@@ -7,7 +7,6 @@ import {
   CircleLogo,
   OnlineAppointmentMarkerIcon,
   AppointmentCalendarIcon,
-  PhysicalAppointmentMarkerIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 const { width } = Dimensions.get('window');
@@ -143,7 +142,7 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
         <View>
           {isCircleDoctorOnSelectedConsultMode ? (
             <ImageBackground
-              source={require('@aph/mobile-patients/src/components/ui/icons/doctor_ring.png')}
+              source={require('@aph/mobile-patients/src/components/ui/icons/doctor_ring.webp')}
               style={styles.drImageBackground}
               resizeMode="contain"
             >
@@ -172,7 +171,7 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
         </View>
       )}
 
-      <View style={styles.doctorPointers}>
+      <View style={[styles.doctorPointers, { marginTop: -1 }]}>
         <AppointmentCalendarIcon style={styles.doctorPointersImage} />
         <Text style={styles.appointmentTimeStyle}>
           {dateFormatter(appointmentInput?.appointmentDateTime)}
@@ -276,11 +275,11 @@ const styles = StyleSheet.create({
   doctorPointers: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 6,
+    marginTop: 5,
   },
   doctorPointersImage: {
     width: 14,
     height: '100%',
-    marginRight: 4,
+    marginRight: 8,
   },
 });

@@ -41,8 +41,6 @@ const paymentGatewayBaseUrl: string =
 
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
-const pharmaTokencTf = 'cTfznn4yhybBR7WSrNJn1g==';
-const pharmaTokendp5 = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
 const tatTokenDev = 'GWjKtviqHa4r4kiQmcVH';
 const tatTokenProd = '8nBs8ucvbqlCGShwDr7oHv0mePqwhE';
 const apolloProdBaseUrl = 'https://magento.apollo247.com';
@@ -114,10 +112,14 @@ const covidVaccineSection = {
   ],
 };
 
-const QA_covid_items = [2596, 2598, 2462, 2388, 2419, 2411, 2410, 2539, 2446, 2614, 2462, 2613 ]; 
+const QA_covid_items = [2596, 2598, 2462, 2388, 2419, 2411, 2410, 2539, 2446, 2614, 2462, 2613];
 const Prod_covid_items = [2539, 2446, 2410, 2411, 2419, 2613];
-const covidMaxSlotDays = 6;
-const nonCovidMaxSlotDays = 3;
+const covidMaxSlotDays = 7;
+const nonCovidMaxSlotDays = 4;
+const QA_DIABETES_MGMT_CM_KEY = '7729FD68-C552-4C90-B31E-98AA6C84FEBF~247Android';
+const Prod_DIABETES_MGMT_CM_KEY = '4d4efe1a-cec8-4647-939f-09c25492721e~Apollo247';
+const QA_PROHEALTH_MGMT_CM_KEY = '85bb5f00-5f45-464b-8965-1f0a7e331d29~AskApolloAndroid';
+const Prod_PROHEALTH_MGMT_CM_KEY = '85bb5f00-5f45-464b-8965-1f0a7e331d29~AskApolloAndroid';
 
 const appStaticVariables = {
   iOS_Version: DeviceInfo.getVersion(),
@@ -129,7 +131,6 @@ const appStaticVariables = {
   TAT_API_RESPONSE_DATE_FORMAT: 'DD-MMM-YYYY HH:mm',
   CASESHEET_PRESCRIPTION_DATE_FORMAT: 'DD MMM YYYY',
   CASESHEET_PRESCRIPTION_TIME_FORMAT: 'hh:mm A',
-  DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS: 2, // slots can be booked upto this period
   TAT_UNSERVICEABLE_DAY_COUNT: 10, // no. of days upto which cart item is considered as serviceable
   TAT_API_TIMEOUT_IN_SEC: 10,
   DOCTOR_PARTNER_TEXT: 'Doctor Partners',
@@ -155,10 +156,15 @@ const appStaticVariables = {
   Doctors_Page_Size: 25,
   CUSTOMER_CARE_HELP_TEXT: string.common.customerCareHelpText,
   CUSTOMER_CARE_NUMBER: string.common.customerCareNumber,
-  PRODUCT_SUGGESTIONS_CATEGORYID: '41920',
   CIRCLE_PLAN_ID: 'CIRCLEPlan',
   CIRCLE_STATIC_MONTHLY_SAVINGS: '848',
   PRODUCT_SUGGESTIONS_COUNT: 15,
+  HELP_SECTION_CUSTOM_QUERIES: {
+    pharmacy: '5df80ade-4eba-4ad3-9caf-e1169fcaeb32',
+    consult: 'd70e6ee8-ecf1-4c75-ae00-2f968641f260',
+    returnOrder: 'e2fc95ff-3ef5-4a9d-8fed-31609e426cbc',
+    deliveryStatus: '3df5b586-ce39-478a-a5ec-1e525f5dc42a',
+  },
   MED_ORDER_NON_CART_CALL_ME_OPTION_WHATSAPP_LINK:
     'https://api.whatsapp.com/send?phone=914041894343&text=I%20want%20to%20inform%20the%20pharmacist%20regarding%20my%20medicines',
   MED_ORDER_ON_HOLD_ORDER_WHATSAPP_LINK:
@@ -179,10 +185,33 @@ const appStaticVariables = {
   APOLLO_TERMS_CONDITIONS: 'https://www.apollo247.com/terms?isMobile=true',
   LOGIN_SECTION: loginSection,
   COVID_VACCINE_SECTION: covidVaccineSection,
+  CART_PRESCRIPTION_OPTIONS: [
+    {
+      id: 'havePrescription',
+      title: 'I have a Prescription',
+      visible: true,
+    },
+    {
+      id: 'sharePrescriptionLater',
+      title: 'Share Prescription later',
+      visible: true,
+    },
+    {
+      id: 'noPrescriptionDoConsult',
+      title: 'I don’t have a Prescription',
+      visible: true,
+    },
+  ],
   FollowUp_Chat_Limit: 4,
-  Covid_Items : QA_covid_items,
-  Covid_Max_Slot_Days : covidMaxSlotDays,
-  Non_Covid_Max_Slot_Days : nonCovidMaxSlotDays
+  Covid_Items: QA_covid_items,
+  Covid_Max_Slot_Days: covidMaxSlotDays,
+  Non_Covid_Max_Slot_Days: nonCovidMaxSlotDays,
+  QA_DIABETES_MGMT_HashKey: QA_DIABETES_MGMT_CM_KEY,
+  QA_PROHEALTH_MGMT_HashKey: QA_PROHEALTH_MGMT_CM_KEY,
+  Prod_DIABETES_MGMT_HashKey: Prod_DIABETES_MGMT_CM_KEY,
+  Prod_PROHEALTH_MGMT_HashKey: Prod_PROHEALTH_MGMT_CM_KEY,
+  DIABETES_MGMT_CM_PROGRAM_ID: 'diabetes_24_7',
+  PROHEALTH_MGMT_CM_PROGRAM_ID: 'prohealth',
 };
 
 const DEV_top_specialties = [
@@ -369,149 +398,6 @@ export const ReturnOrderSubReason = [
   },
 ];
 
-export const NeedHelp = [
-  {
-    category: 'Pharmacy',
-    id: 'pharmacy',
-    orderRelatedIndices: [0, 1, 2, 3, 4, 5, 6, 7, 8],
-    options: [
-      'I want to return my order',
-      'I would like to cancel the order!',
-      'I would like to know the Delivery status of my order.',
-      'I need to know why my order was cancelled',
-      'I have issues in order delivered!',
-      'Excess amount was charged to me by Delivery Executive',
-      'Inappropriate attitude & behaviour of Delivery Executive',
-      'I need to know my refund status',
-      'I have prescription related queries (Invalid/ Order cancelled)',
-      'I was not able to place the order due to technical errors',
-      'My money got deducted but no order confirmation received',
-    ],
-  },
-  {
-    category: 'Virtual/Online Consult',
-    id: 'virtualOnlineConsult',
-    orderRelatedIndices: [0, 1, 2, 3, 4, 5, 6, 7],
-    options: [
-      'The doctor did not start the consultation call on time',
-      'I faced technical issues during/after booking an appointment',
-      'I want to reschedule/cancel my appointment ',
-      'I haven’t received the prescription',
-      'Improper behaviour/attitude of doctor or staff',
-      'I need to know my refund status',
-      'I did not recieve invoice/ receipt of my appointment',
-      'Consultation ended, Doctor has not replied to my query over 24 hours',
-      'I am unable to book an appointment (slot not available/ Doctor not listed)',
-      'My money got deducted but no confirmation on the doctor appointment',
-    ],
-  },
-  {
-    category: 'Health Records',
-    id: 'healthRecords',
-    options: [
-      'Add multiple UHID’s linked to other mobile numbers',
-      'Delay in responses to queries',
-      'Incomplete health records',
-      'Issues in downloading the records',
-      'No / Wrong UHID',
-      'No records available for linked UHID',
-      'Personal details are not editable',
-      'Unable to see my reports',
-      'Unable to add family members',
-    ],
-  },
-  {
-    category: 'Physical Consult',
-    id: 'physicalConsult',
-    options: [
-      'App appointment dishonored at confirmed time slot',
-      'Application issues(bandwidth & payment errors)',
-      'Behavior and attitude of the doctor',
-      "Can't find doctor’s name in respective list",
-      'Delayed prescription',
-      'Doctor not available',
-      'Long waiting time for physical consult',
-      'No past / upcoming consultation details',
-      'No updates on delays, reschedules or cancellations of the consult',
-      'Payment issues',
-      'Require reschedule',
-      'Refund required',
-      'Discount / Promotions / Voucher issues',
-    ],
-  },
-  {
-    category: 'Feedback',
-    id: 'feedback',
-    options: [
-      'Feedback on app',
-      'Feedback on consultation',
-      'Feedback on health records',
-      'Feedback on medicine deliver',
-    ],
-  },
-  {
-    category: 'Diagnostics',
-    id: 'diagnostics',
-    options: [
-      'Excess amount related',
-      'Issues in order confirmation',
-      'Payment issues while ordering',
-      'Pickup cancelled without any information',
-      'Pickup cancelled, no refund',
-      'Report not received',
-      'Require reschedule',
-      'Sample pick up related',
-      'Sample pick up staff related',
-      'Wrong report received',
-    ],
-  },
-  {
-    category: 'Unsubscribe',
-    id: 'unsubscribe',
-    options: ['Marketing SMSes', 'Marketing Push Notifications', 'Both'],
-  },
-  {
-    category: 'HealthyLife (HDFC)',
-    id: 'healthyLifeHdfc',
-    options: [
-      'Coupon related',
-      'Concierge Services',
-      'Digitization of Health Records',
-      'Covid Services',
-      'OneApollo Membership',
-      'Doctor on Call',
-      'Early Access to Offers & Sampling of New health products',
-      'Free Delivery',
-      'Base Diabetes Management Program',
-      'Advanced Diabetes Management Program Trial',
-      'Activating Membership',
-      'Membership Upgrade',
-      'Membership Downgrade',
-    ],
-  },
-  {
-    category: 'Circle Membership',
-    id: 'circleMembership',
-    options: [
-      'Details about Circle Membership',
-      'Regarding Circle Benefits',
-      'Plans available for Circle Membership',
-      'Signing Up for Circle Membership',
-      'Buying Circle Membership using OneApollo Health Credits',
-      'About Circle Cashback',
-      'How to use Circle Cashback',
-      'Membership Cancellation',
-      'Changing Membership Plan',
-      'How to get free delivery with Circle',
-      'Covid Care Benefit with Circle',
-      'Regarding Digitization of Patient Health Records',
-      'Regarding Doctor on Call',
-      'Regarding Advanced Diabetes Management Program',
-      'Special Offers and Discounts with Circle Membership',
-    ],
-  },
-];
-
 const PharmaApiConfig = {
   dev: {
     TRACK_EVENT: [`${tagalysBaseUrl}/analytics/events/track`],
@@ -630,7 +516,6 @@ const ConfigurationDev = {
   ...appStaticVariables,
   ...Apollo247Config.dev,
   ...ServiceabiltyAvailabilityConfig.dev,
-  NEED_HELP: NeedHelp,
   RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
@@ -650,6 +535,9 @@ const ConfigurationDev = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
+  Covid_Items: QA_covid_items,
+  CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
+  PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
 };
 
 // QA
@@ -683,7 +571,6 @@ const ConfigurationQA = {
   ...appStaticVariables,
   ...Apollo247Config.dev,
   ...ServiceabiltyAvailabilityConfig.dev,
-  NEED_HELP: NeedHelp,
   RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
@@ -703,6 +590,8 @@ const ConfigurationQA = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
+  CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
+  PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
 };
 
 // QA2
@@ -736,7 +625,6 @@ const ConfigurationQA2 = {
   ...appStaticVariables,
   ...Apollo247Config.dev,
   ...ServiceabiltyAvailabilityConfig.dev,
-  NEED_HELP: NeedHelp,
   RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
@@ -756,6 +644,8 @@ const ConfigurationQA2 = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
+  CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
+  PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
 };
 
 // QA3
@@ -789,7 +679,6 @@ const ConfigurationQA3 = {
   ...appStaticVariables,
   ...Apollo247Config.dev,
   ...ServiceabiltyAvailabilityConfig.dev,
-  NEED_HELP: NeedHelp,
   RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
@@ -803,6 +692,11 @@ const ConfigurationQA3 = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
+  Covid_Items: QA_covid_items,
+  CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
+  PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
+  APOLLO_PRO_HEALTH_URL:
+    'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
 
 // VAPT
@@ -836,7 +730,6 @@ const ConfigurationVAPT = {
   ...appStaticVariables,
   ...Apollo247Config.dev,
   ...ServiceabiltyAvailabilityConfig.dev,
-  NEED_HELP: NeedHelp,
   RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   COVID_RISK_LEVEL_URL: 'https://staging.patients.apollo247.com/covid19/scan?utm_source=mobile_app',
@@ -856,6 +749,9 @@ const ConfigurationVAPT = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
+  Covid_Items: QA_covid_items,
+  CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
+  PROHEALTH_BOOKING_URL: 'https://stagingpatients.apollo247.com//apollo-prohealth',
 };
 //Production
 const ConfigurationProd = {
@@ -888,7 +784,6 @@ const ConfigurationProd = {
   ...appStaticVariables,
   ...Apollo247Config.prod,
   ...ServiceabiltyAvailabilityConfig.prod,
-  NEED_HELP: NeedHelp,
   RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
@@ -908,7 +803,9 @@ const ConfigurationProd = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'prod',
-  Covid_Items : Prod_covid_items,
+  Covid_Items: Prod_covid_items,
+  CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.prod.vitacloud.io',
+  PROHEALTH_BOOKING_URL: 'https://www.apollo247.com/apollo-prohealth',
 };
 
 //PERFORMANCE
@@ -942,7 +839,6 @@ const ConfigurationPERFORM = {
   ...appStaticVariables,
   ...Apollo247Config.dev,
   ...ServiceabiltyAvailabilityConfig.dev,
-  NEED_HELP: NeedHelp,
   RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   COVID_RISK_LEVEL_URL:
@@ -963,6 +859,9 @@ const ConfigurationPERFORM = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
+  Covid_Items: QA_covid_items,
+  CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
+  PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
 };
 
 //DevelopmentReplica
@@ -996,7 +895,6 @@ const ConfigurationDevReplica = {
   ...appStaticVariables,
   ...Apollo247Config.dev,
   ...ServiceabiltyAvailabilityConfig.dev,
-  NEED_HELP: NeedHelp,
   RETURN_ORDER_SUB_REASON: ReturnOrderSubReason,
   CONDITIONAL_MANAGENET_BASE_URL: paymentGatewayBaseUrl,
   COVID_RISK_LEVEL_URL:
@@ -1017,6 +915,9 @@ const ConfigurationDevReplica = {
   HDFC_HEALTHY_LIFE_URL: 'https://www.apollo247.com/partners/hdfc',
   PROCEDURE_SYMPTOMS_SEARCH_URL: 'https://sympai.apollo247.com/api/v1/clinicalsearch',
   jusPayenvironment: 'sandbox',
+  Covid_Items: QA_covid_items,
+  CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
+  PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
 };
 
 const Configuration =
@@ -1218,8 +1119,6 @@ export const DIAGNOSTIC_VERTICAL_STATUS_TO_SHOW = [
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB,
-  // DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
-  // DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
   DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
@@ -1266,6 +1165,27 @@ export const DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY = [
   DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
+];
+
+export const DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY = [
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
+];
+
+export const DIAGNOSTIC_STATUS_BEFORE_SUBMITTED = [
+  DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED,
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
 ];
 
 export const TestsNewFeedbackData = {
@@ -1345,7 +1265,6 @@ export const TestReschedulingReasons = {
     string.diagnostics.reasonForReschedule_TestOrder.guidelinesNotFollowed,
     string.diagnostics.reasonForReschedule_TestOrder.unableToProvideSample,
     string.diagnostics.reasonForReschedule_TestOrder.slotMistake,
-
   ],
 };
 
@@ -1363,17 +1282,17 @@ export const stepsToBookArray = [
   {
     heading: string.diagnostics.bookOnline,
     subtext: string.diagnostics.bookOnlineSubText,
-    image: require('@aph/mobile-patients/src/components/ui/icons/stepsForBooking_1.png'),
+    image: require('@aph/mobile-patients/src/components/ui/icons/stepsForBooking_1.webp'),
   },
   {
     heading: string.diagnostics.hcSample,
     subtext: string.diagnostics.hcSampleSubText,
-    image: require('@aph/mobile-patients/src/components/ui/icons/stepsForBooking_2.png'),
+    image: require('@aph/mobile-patients/src/components/ui/icons/stepsForBooking_2.webp'),
   },
   {
     heading: string.diagnostics.fastReport,
     subtext: string.diagnostics.fastReportSubText,
-    image: require('@aph/mobile-patients/src/components/ui/icons/stepsForBooking_3.png'),
+    image: require('@aph/mobile-patients/src/components/ui/icons/stepsForBooking_3.webp'),
   },
 ];
 
@@ -1420,8 +1339,8 @@ export const BLACK_LIST_RESCHEDULE_STATUS_ARRAY = [
 export const DIAGNOSTIC_ONLINE_PAYMENT_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
-  DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL
-]
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
+];
 
 type SpecialitiesType = {
   [key: string]: string[];

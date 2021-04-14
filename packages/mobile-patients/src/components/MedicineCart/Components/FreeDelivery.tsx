@@ -4,7 +4,6 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { FreeShippingIcon } from '@aph/mobile-patients/src/components/ui/Icons';
-import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 
 export interface FreeDeliveryProps {}
 
@@ -58,16 +57,6 @@ export const FreeDelivery: React.FC<FreeDeliveryProps> = (props) => {
   }
 
   return showCard() || circleMembershipCharges ? renderFreeDeliveryCard() : null;
-};
-
-const renderCareCashback = () => {
-  return (
-    <CareCashbackBanner
-      bannerText={`You are now eligible for FREE DELIVERY`}
-      textStyle={styles.careCashbackText}
-      logoStyle={styles.careCashbackLogo}
-    />
-  );
 };
 
 const styles = StyleSheet.create({

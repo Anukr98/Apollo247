@@ -7,8 +7,8 @@ import {
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { Dimensions, Platform, Text, TouchableOpacity, View, Alert } from 'react-native';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { Dimensions, Platform, Text, TouchableOpacity, View } from 'react-native';
+import { NavigationScreenProps } from 'react-navigation';
 import { getNetStatus, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
@@ -18,6 +18,7 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { APPOINTMENT_STATE, STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const { width, height } = Dimensions.get('window');
 
@@ -58,13 +59,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
   });
   const networkBack = () => {
     setNetworkStatus(false);
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-      })
-    );
+    navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar);
   };
 
   const acceptChange = () => {
@@ -150,36 +145,6 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
               </Text>
             </View>
             <View>
-              {/* {props.data.rescheduleCount >= 3 ? (
-                <Text
-                  style={{
-                    color: '#01475b',
-                    ...theme.fonts.IBMPlexSansMedium(14),
-                    lineHeight: 20,
-                    letterSpacing: 0.35,
-                    paddingTop: 20,
-                    paddingHorizontal: 16,
-                  }}
-                >
-                  {`Since you hace already rescheduled ${
-                    props.data.rescheduleCount
-                  } times with Dr. ${props.doctor &&
-                    props.doctor.firstName}, we will consider this a new paid appointment.`}
-                </Text>
-              ) : (
-                <Text
-                  style={{
-                    color: '#01475b',
-                    ...theme.fonts.IBMPlexSansMedium(14),
-                    lineHeight: 20,
-                    letterSpacing: 0.35,
-                    paddingTop: 20,
-                    paddingHorizontal: 16,
-                  }}
-                >
-                  {`We’re sorry that you have to reschedule.\nYou can reschedule up to ${props.data.rescheduleCount}  times for free.`}
-                </Text>
-              )} */}
               {props.isbelowthree || props.data.appointmentState === 'AWAITING_RESCHEDULE' ? (
                 <Text
                   style={{
@@ -209,9 +174,6 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                   }}
                 >
                   {`You have reached limit of rescheduling the same appointment for 3 times, please confirm if you want to proceed with Cancelling this appointment`}
-                  {/* {`Since you hace already rescheduled ${props.rescheduleCount -
-                    1} times with Dr. ${props.doctor &&
-                    props.doctor.firstName}, we will consider this a new paid appointment.`} */}
                 </Text>
               )}
               {props.isbelowthree || props.data.appointmentState === 'AWAITING_RESCHEDULE' ? (
@@ -299,13 +261,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                               props.setdisplayoverlay();
                             else {
                               setBottompopup(true);
-                              //props.setResheduleoverlay(false);
-                              // Alert.alert(
-                              //   'Appointment cannot be rescheduled once it is past the scheduled time'
-                              // );
                             }
-                            //dateIsAfter ? props.setdisplayoverlay() : null;
-                            // props.setdisplayoverlay();
                           } else {
                             setNetworkStatus(true);
                             setshowSpinner(false);
@@ -321,10 +277,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                     style={{ flex: 0.5, marginRight: 20, marginLeft: 8 }}
                     onPress={() => {
                       CommonLogEvent('RESCHDULE_POPUP', 'RESCHDULE_POPUP_CLICKED');
-                      console.log('appointmentdate', moment(props.appadatetime));
-                      console.log('today', moment(new Date()));
                       const dateIsAfter = moment(props.appadatetime).isAfter(moment(new Date()));
-                      console.log('changeslotbuttonconstion', dateIsAfter);
 
                       if (
                         props.data.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
@@ -333,21 +286,8 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                       )
                         acceptChange();
                       else {
-                        // Alert.alert(
-                        //   'Appointment cannot be rescheduled once it is past the scheduled time'
-                        // );
                         setBottompopup(true);
                       }
-                      // try {
-                      //   props.reschduleDateTime &&
-                      //   props.reschduleDateTime.getDoctorNextAvailableSlot &&
-                      //   props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
-                      //   props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
-                      //     .availableSlot
-                      //     ? props.acceptChange()
-                      //     : null;
-                      // } catch (error) {}
-                      //props.acceptChange();
                     }}
                     titleTextStyle={{
                       color: '#ffffff',

@@ -74,6 +74,18 @@ export enum BloodGroups {
   OPositive = "OPositive",
 }
 
+export enum BookingSource {
+  Apollo247_Android = "Apollo247_Android",
+  Apollo247_Ios = "Apollo247_Ios",
+  Apollo247_Web = "Apollo247_Web",
+}
+
+export enum BookingStatus {
+  COMPLETED = "COMPLETED",
+  FAILED = "FAILED",
+  INPROGRESS = "INPROGRESS",
+}
+
 export enum CODCity {
   CHENNAI = "CHENNAI",
 }
@@ -199,6 +211,13 @@ export enum FEEDBACKTYPE {
   PHARMACY = "PHARMACY",
 }
 
+export enum GENDER {
+  ALL = "ALL",
+  FEMALE = "FEMALE",
+  MALE = "MALE",
+  OTHER = "OTHER",
+}
+
 export enum Gender {
   FEMALE = "FEMALE",
   MALE = "MALE",
@@ -267,6 +286,49 @@ export enum MEDICINE_ORDER_PAYMENT_TYPE {
 export enum MEDICINE_ORDER_STATUS {
   CANCELLED = "CANCELLED",
   CANCEL_REQUEST = "CANCEL_REQUEST",
+  CONSULT_CANCELLED = "CONSULT_CANCELLED",
+  CONSULT_COMPLETED = "CONSULT_COMPLETED",
+  CONSULT_PENDING = "CONSULT_PENDING",
+  DELIVERED = "DELIVERED",
+  DELIVERY_ATTEMPTED = "DELIVERY_ATTEMPTED",
+  ITEMS_RETURNED = "ITEMS_RETURNED",
+  ON_HOLD = "ON_HOLD",
+  ORDER_BILLED = "ORDER_BILLED",
+  ORDER_CONFIRMED = "ORDER_CONFIRMED",
+  ORDER_FAILED = "ORDER_FAILED",
+  ORDER_INITIATED = "ORDER_INITIATED",
+  ORDER_PLACED = "ORDER_PLACED",
+  ORDER_VERIFIED = "ORDER_VERIFIED",
+  OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY",
+  PAYMENT_ABORTED = "PAYMENT_ABORTED",
+  PAYMENT_FAILED = "PAYMENT_FAILED",
+  PAYMENT_PENDING = "PAYMENT_PENDING",
+  PAYMENT_SUCCESS = "PAYMENT_SUCCESS",
+  PICKEDUP = "PICKEDUP",
+  PRESCRIPTION_CART_READY = "PRESCRIPTION_CART_READY",
+  PRESCRIPTION_UPLOADED = "PRESCRIPTION_UPLOADED",
+  PURCHASED_IN_STORE = "PURCHASED_IN_STORE",
+  QUOTE = "QUOTE",
+  READY_AT_STORE = "READY_AT_STORE",
+  READY_FOR_VERIFICATION = "READY_FOR_VERIFICATION",
+  READY_TO_SHIP = "READY_TO_SHIP",
+  RETURN_ACCEPTED = "RETURN_ACCEPTED",
+  RETURN_INITIATED = "RETURN_INITIATED",
+  RETURN_PENDING = "RETURN_PENDING",
+  RETURN_PICKUP = "RETURN_PICKUP",
+  RETURN_REQUESTED = "RETURN_REQUESTED",
+  RETURN_REQUEST_CREATED = "RETURN_REQUEST_CREATED",
+  RETURN_RTO = "RETURN_RTO",
+  RETURN_TO_ORIGIN = "RETURN_TO_ORIGIN",
+  RVP_ASSIGNED = "RVP_ASSIGNED",
+  SHIPPED = "SHIPPED",
+  VERIFICATION_DONE = "VERIFICATION_DONE",
+}
+
+export enum MEDICINE_ORDER_STATUS_CONSULT {
+  CANCELLED = "CANCELLED",
+  CANCEL_REQUEST = "CANCEL_REQUEST",
+  CONSULT_CANCELLED = "CONSULT_CANCELLED",
   CONSULT_COMPLETED = "CONSULT_COMPLETED",
   CONSULT_PENDING = "CONSULT_PENDING",
   DELIVERED = "DELIVERED",
@@ -625,6 +687,11 @@ export enum USER_TYPE {
   PATIENT = "PATIENT",
 }
 
+export enum UnitTypes {
+  CLINIC = "CLINIC",
+  HOSPITAL = "HOSPITAL",
+}
+
 export enum UserState {
   LOGGED_IN = "LOGGED_IN",
   LOGGED_OUT = "LOGGED_OUT",
@@ -961,28 +1028,6 @@ export interface DeletePatientPrismMedicalRecordInput {
   recordType: MedicalRecordType;
 }
 
-export interface DiagnosticBookHomeCollectionInput {
-  patientId: string;
-  patientAddressId: string;
-  slotTimings: string;
-  totalPrice: number;
-  prescriptionUrl: string;
-  diagnosticDate: any;
-  bookingSource?: BOOKINGSOURCE | null;
-  deviceType?: DEVICETYPE | null;
-  paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
-  items?: (DiagnosticLineItem | null)[] | null;
-  slotId: string;
-  areaId: number;
-  homeCollectionCharges: number;
-  uniqueID?: string | null;
-  slotDateTimeInUTC?: any | null;
-  totalPriceExcludingDiscounts?: number | null;
-  userSubscriptionId?: string | null;
-  subscriptionInclusionId?: string | null;
-  attachmentData?: (Attachments | null)[] | null;
-}
-
 export interface DiagnosticInitiateOrderPayment {
   orderId?: string | null;
 }
@@ -1233,6 +1278,7 @@ export interface MedicineCartOMSItem {
   mou?: number | null;
   isMedicine: string;
   specialPrice: number;
+  subCategory?: string | null;
 }
 
 export interface MedicineOrderCancelOMSInput {

@@ -178,7 +178,7 @@ export interface SamplePrescriptionProps extends NavigationScreenProps {}
 export const SamplePrescription: React.FC<SamplePrescriptionProps> = (props) => {
   const _carousel = useRef(null);
   const [slideIndex, setSlideIndex] = useState(0);
-  const samplePrescriptionImage = require('@aph/mobile-patients/src/components/ui/icons/Sample_Prescription.png');
+  const samplePrescriptionImage = require('@aph/mobile-patients/src/components/ui/icons/Sample_Prescription.webp');
 
   const renderSliderItem = ({ item, index }: { item: any; index: number }) => {
     return (
@@ -220,8 +220,6 @@ export const SamplePrescription: React.FC<SamplePrescriptionProps> = (props) => 
           loop={false}
           autoplay={false}
           ref={_carousel}
-          // activeSlideOffset={100}
-          // inactiveSlideShift={0}
         />
         {slideIndex !== 0 && renderLeftArrow()}
         {slideIndex !== dataLength - 1 && renderRightArrow()}

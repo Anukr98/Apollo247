@@ -233,9 +233,7 @@ export interface ConsultDetailsProps
     DoctorInfo:
       | getDoctorDetailsById_getDoctorDetailsById
       | getAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo;
-    // PatientId: any;
     appointmentType: APPOINTMENT_TYPE | AppointmentType;
-    // appointmentDate: any;
     DisplayId: any;
     Displayoverlay: any;
     isFollowcount: any;
@@ -255,7 +253,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const appointmentType = props.navigation.getParam('appointmentType');
   const appointmentId = props.navigation.getParam('CaseSheet');
 
-  // const [loading, setLoading && setLoading] = useState<boolean>(true);
   const { loading, setLoading } = useUIElements();
 
   const client = useApolloClient();
@@ -317,7 +314,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         CommonBugFender('ConsultDetails_GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS', error);
         setLoading && setLoading(false);
         const errorMessage = error && error.message.split(':')[1].trim();
-        console.log(errorMessage, 'err');
         if (errorMessage === 'NO_CASESHEET_EXIST') {
           setshowNotExistAlert(true);
         }
@@ -464,7 +460,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       </>
     );
   };
-  const { addMultipleCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
+  const { setEPrescriptions } = useShoppingCart();
   const {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
@@ -523,7 +519,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         const unAvailableItemsArray = testPrescription.filter(
           (item) => !tests.find((val) => val?.name!.toLowerCase() == item?.itemname!.toLowerCase())
         );
-        console.log({ unAvailableItemsArray });
         const unAvailableItems = unAvailableItemsArray.map((item) => item.itemname).join(', ');
 
         if (tests.length) {
@@ -562,64 +557,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         type == MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
       ? 7
       : 1;
-  };
-
-  const getQuantity = (
-    medicineUnit: MEDICINE_UNIT | null,
-    medicineTimings: (MEDICINE_TIMINGS | null)[] | null,
-    medicineDosage: string | null,
-    medicineCustomDosage: string | null /** E.g: (1-0-1/2-0.5), (1-0-2\3-3) etc.*/,
-    medicineConsumptionDurationInDays: string | null,
-    medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null,
-    mou: number // how many tablets per strip
-  ) => {
-    if (medicineUnit == MEDICINE_UNIT.TABLET || medicineUnit == MEDICINE_UNIT.CAPSULE) {
-      const medicineDosageMapping = medicineCustomDosage
-        ? medicineCustomDosage.split('-').map((item) => {
-            if (item.indexOf('/') > -1) {
-              const dosage = item.split('/').map((item) => Number(item));
-              return (dosage[0] || 1) / (dosage[1] || 1);
-            } else if (item.indexOf('\\') > -1) {
-              const dosage = item.split('\\').map((item) => Number(item));
-              return (dosage[0] || 1) / (dosage[1] || 1);
-            } else {
-              return Number(item);
-            }
-          })
-        : medicineDosage
-        ? Array.from({ length: 4 }).map(() => Number(medicineDosage))
-        : [1, 1, 1, 1];
-
-      const medicineTimingsPerDayCount =
-        (medicineTimings || []).reduce(
-          (currTotal, currItem) =>
-            currTotal +
-            (currItem == MEDICINE_TIMINGS.MORNING
-              ? medicineDosageMapping[0]
-              : currItem == MEDICINE_TIMINGS.NOON
-              ? medicineDosageMapping[1]
-              : currItem == MEDICINE_TIMINGS.EVENING
-              ? medicineDosageMapping[2]
-              : currItem == MEDICINE_TIMINGS.NIGHT
-              ? medicineDosageMapping[3]
-              : (medicineDosage && Number(medicineDosage)) || 1),
-          0
-        ) || 1;
-
-      console.log({ medicineTimingsPerDayCount });
-
-      const totalTabletsNeeded =
-        medicineTimingsPerDayCount *
-        Number(medicineConsumptionDurationInDays || '1') *
-        getDaysCount(medicineConsumptionDurationUnit);
-
-      console.log({ totalTabletsNeeded });
-
-      return Math.ceil(totalTabletsNeeded / mou);
-    } else {
-      // 1 for other than tablet or capsule
-      return 1;
-    }
   };
 
   const onAddToCart = () => {
@@ -831,48 +768,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           renderNoData('No diagnosis')
         )}
       </>
-    );
-  };
-
-  const renderReferral = () => {
-    return (
-      <View>
-        <CollapseCard
-          heading={`Referral`}
-          collapse={showReferral}
-          onPress={() => setShowReferral(!showReferral)}
-        >
-          <View style={[styles.cardViewStyle, styles.bottomPaddingTwelve]}>
-            {!!caseSheetDetails?.referralSpecialtyName ? (
-              <View>
-                <Text style={styles.labelStyle}>{caseSheetDetails!.referralSpecialtyName}</Text>
-                {!!caseSheetDetails?.referralDescription && (
-                  <Text style={styles.dataTextStyle}>{caseSheetDetails!.referralDescription}</Text>
-                )}
-                <TouchableOpacity
-                  style={{ marginTop: 12 }}
-                  onPress={() => {
-                    props.navigation.navigate(AppRoutes.DoctorSearch);
-                  }}
-                >
-                  <Text
-                    style={[
-                      theme.viewStyles.yellowTextStyle,
-                      { textAlign: 'right', paddingBottom: 16 },
-                    ]}
-                  >
-                    {strings.common.book_apointment}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View>
-                <Text style={styles.labelStyle}>No referral</Text>
-              </View>
-            )}
-          </View>
-        </CollapseCard>
-      </View>
     );
   };
 
@@ -1097,7 +992,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         })
         .catch((err) => {
           CommonBugFender('ConsultDetails_renderFollowUp', err);
-          console.log('error ', err);
           setLoading && setLoading(false);
         });
     }
