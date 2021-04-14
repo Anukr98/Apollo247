@@ -4727,3 +4727,51 @@ export const GET_PHLOBE_DETAILS = gql`
     }
   }
 `;
+
+export const GET_PATIENT_LATEST_PRESCRIPTION = gql `
+  query getPatientLatestPrescriptions($patientId: String!, $limit: Int!, $cityId: Int!){
+    getPatientLatestPrescriptions(patientId: $patientId, limit: $limit, cityId: $cityId){
+      doctorName
+      doctorCredentials
+      patientName
+      prescriptionDateTime
+      numberOfTests
+      orderCount
+      caseSheet{
+        id
+        blobName
+        diagnosticPrescription{
+          itemId
+          itemname
+          testInstruction
+        }
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_OPEN_ORDERS_LIST = gql `
+  query getDiagnosticOpenOrdersList($patientId: String!, $skip: Int!, $take: Int!){
+    getDiagnosticOpenOrdersList(patientId: #patientId, skip: $skip, take: $take){
+      id
+      patientId
+      paymentOrderId
+      orderStatus
+      slotDateTimeInUTC
+      labReportUrl     
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_CLOSED_ORDERS_LIST = gql `
+  query getDiagnosticClosedOrdersList($patientId: String!, $skip: Int!, $take: Int!){
+    getDiagnosticClosedOrdersList(patientId: #patientId, skip: $skip, take: $take){
+      id
+      patientId
+      paymentOrderId
+      orderStatus
+      slotDateTimeInUTC
+      labReportUrl     
+    }
+  }
+`;
