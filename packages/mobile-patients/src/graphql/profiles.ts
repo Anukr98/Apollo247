@@ -1209,6 +1209,11 @@ export const GET_PLATINUM_DOCTOR = gql`
           mrp
           appointment_type
         }
+        doctorCardActiveCTA {
+          ONLINE
+          PHYSICAL
+          DEFAULT
+        }
       }
     }
   }
