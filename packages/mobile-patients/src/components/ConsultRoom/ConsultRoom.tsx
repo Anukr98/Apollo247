@@ -3717,7 +3717,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   function webViewGoBack() {
     //call the api.
-    // getPatientApiCall();
+    getPatientApiCall(); //to check if new user is added
     checkIsProhealthActive(currentPatient); //to show prohealth option
     getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
   }
