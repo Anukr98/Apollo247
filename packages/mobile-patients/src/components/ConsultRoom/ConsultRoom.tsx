@@ -2298,7 +2298,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       CommonBugFender('getTokenForProhealthCM_error_ConsultRoom', error);
       setProHealthActive(false);
       setshowSpinner(false);
-      console.log({ error });
     }
   };
 
@@ -2348,7 +2347,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         CommonBugFender('ProHealth_checkIsProhealthActive_error_ConsultRoom', error);
         setProHealthActive(false);
         setshowSpinner(false);
-        console.log({ error });
       }
     } else {
       setshowSpinner(false);
@@ -3407,7 +3405,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       }
       setLoading?.(false);
     } catch (error) {
-      console.log({ error });
       setLoading?.(false);
       CommonBugFender('_navigateProHealth_ConsultPage', error);
     }
@@ -3687,7 +3684,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               {renderMenuOptions()}
 
               {circleDataLoading && renderCircleShimmer()}
-              {circleDataLoading && renderCovidVaccinationShimmer()}
+              {!covidVaccineCtaV2?.data && renderCovidVaccinationShimmer()}
               {hdfcLoading && renderBannerShimmer()}
 
               <View style={{ backgroundColor: '#f0f1ec' }}>
