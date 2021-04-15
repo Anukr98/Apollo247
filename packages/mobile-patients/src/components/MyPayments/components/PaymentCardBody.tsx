@@ -46,15 +46,15 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
     if (paymentFor === 'consult') {
       const {
         appointmentPayments,
-        appointmentPaymentOrders,
+        PaymentOrders,
         actualAmount,
         discountedAmount,
         appointmentRefunds,
       } = item;
-      const { refund } = appointmentPaymentOrders;
+      const { refund } = PaymentOrders;
       const refundInfo = refund?.length ? refund : appointmentRefunds;
-      const paymentInfo = Object.keys(appointmentPaymentOrders).length
-        ? appointmentPaymentOrders
+      const paymentInfo = Object.keys(PaymentOrders).length
+        ? PaymentOrders
         : appointmentPayments[0];
       if (!paymentInfo) {
         status = 'PENDING';

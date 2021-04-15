@@ -82,16 +82,11 @@ const DetailsCard: FC<DetailsCardProps> = (props) => {
   const getUpperHeaderText = () => {
     if (paymentFor === 'consult') {
       let statusType = 'PENDING';
-      const {
-        appointmentDateTime,
-        appointmentPayments,
-        appointmentRefunds,
-        appointmentPaymentOrders,
-      } = item;
-      const { refund } = appointmentPaymentOrders;
+      const { appointmentDateTime, appointmentPayments, appointmentRefunds, PaymentOrders } = item;
+      const { refund } = PaymentOrders;
       const refundInfo = refund?.length ? refund : appointmentRefunds;
-      const paymentInfo = Object.keys(appointmentPaymentOrders).length
-        ? appointmentPaymentOrders
+      const paymentInfo = Object.keys(PaymentOrders).length
+        ? PaymentOrders
         : appointmentPayments[0];
       if (!paymentInfo) {
         statusType = 'PENDING';
