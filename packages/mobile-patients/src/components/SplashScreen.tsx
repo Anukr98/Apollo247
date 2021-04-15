@@ -370,11 +370,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     mediaSource?: string,
     data?: any
   ) => {
-    if (routeName === 'ChatRoom' && data?.length === 2) {
+    if (routeName === 'ChatRoom' && data?.length >= 1) {
       getAppointmentDataAndNavigate(id!, false);
     } else if (
       routeName === 'DoctorCall' &&
-      data?.length === 2 &&
+      data?.length >= 1 &&
       getCurrentRoute() !== AppRoutes.ChatRoom
     ) {
       const params = id?.split('+');
