@@ -367,6 +367,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const circleDoctorDetails = calculateCircleDoctorPricing(doctorDetails);
   const [showDoctorSharePopup, setShowDoctorSharePopup] = useState<boolean>(false);
+  const consultModeSelected = props.navigation.getParam('consultModeSelected');
   const {
     isCircleDoctor,
     physicalConsultMRPPrice,
@@ -634,20 +635,17 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const setAvailableModes = (availabilityMode: any) => {
     const modeOfConsult = availabilityMode.availableModes;
-
     try {
       if (modeOfConsult.includes(ConsultMode.BOTH)) {
         setConsultType(ConsultMode.BOTH);
-        setOnlineSelected(true);
       } else if (modeOfConsult.includes(ConsultMode.ONLINE)) {
         setConsultType(ConsultMode.ONLINE);
-        setOnlineSelected(true);
       } else if (modeOfConsult.includes(ConsultMode.PHYSICAL)) {
         setConsultType(ConsultMode.PHYSICAL);
-        setOnlineSelected(false);
       } else {
         setConsultType(ConsultMode.BOTH);
       }
+      setOnlineSelected(consultModeSelected === ConsultMode.ONLINE);
     } catch (error) {}
   };
 
