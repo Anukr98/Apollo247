@@ -818,7 +818,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [voipDeviceToken, setVoipDeviceToken] = useState<string>('');
   const [profileChange, setProfileChange] = useState<boolean>(false);
   const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
-  const [hdfcLoading, setHdfcLoading] = useState<boolean>(false);
+  const [bannerLoading, setBannerLoading] = useState<boolean>(false);
   let circleActivated = props.navigation.getParam('circleActivated');
   const circleActivatedRef = useRef<boolean>(circleActivated);
 
@@ -1472,7 +1472,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const getUserSubscriptionsWithBenefits = () => {
-    setHdfcLoading(true);
     const mobile_number = g(currentPatient, 'mobileNumber');
     mobile_number &&
       client
@@ -1485,7 +1484,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then((data) => {
-          setHdfcLoading(false);
           const groupPlans = g(
             data,
             'data',
@@ -1524,7 +1522,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           }
         })
         .catch((e) => {
-          setHdfcLoading(false);
           CommonBugFender('ConsultRoom_getUserSubscriptionsWithBenefits', e);
         });
   };
@@ -1848,13 +1845,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const getUserBanners = async () => {
-    setHdfcLoading(true);
+    setBannerLoading(true);
     const res: any = await getUserBannersList(client, currentPatient, string.banner_context.HOME, [
       BannerDisplayType.banner,
       BannerDisplayType.card,
     ]);
 
-    setHdfcLoading(false);
+    setBannerLoading(false);
     if (res) {
       setBannerDataHome && setBannerDataHome(res);
       setBannerData && setBannerData(res);
@@ -1883,7 +1880,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setCircleCashback && setCircleCashback(cashback);
       })
       .catch((e) => {
-        setHdfcLoading(false);
         CommonBugFender('ConsultRoom_GetCashbackDetailsOfPlanById', e);
       });
   };
@@ -2970,13 +2966,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
         {cardlist?.length > 0 ? (
           <View style={[styles.circleRowsContainer, { paddingRight: 10 }]}>
-            {circleDataLoading && (
-              <Spinner
-                style={{ backgroundColor: 'transparent' }}
-                spinnerProps={{ size: 'small' }}
-              />
-            )}
-
             <View style={styles.circleButtonLeft}>
               <ImageBackground
                 style={styles.circleButtonImage}
@@ -3684,17 +3673,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               {renderMenuOptions()}
 
               {circleDataLoading && renderCircleShimmer()}
-              {!covidVaccineCtaV2?.data && renderCovidVaccinationShimmer()}
-              {hdfcLoading && renderBannerShimmer()}
-
               <View style={{ backgroundColor: '#f0f1ec' }}>
-                {isCircleMember === 'yes' && renderCircle()}
+                {isCircleMember === 'yes' && !circleDataLoading && renderCircle()}
               </View>
               {showCirclePlans && renderCircleSubscriptionPlans()}
               {showCircleActivationcr && renderCircleActivation()}
+              {!covidVaccineCtaV2?.data && renderCovidVaccinationShimmer()}
               <View style={{ backgroundColor: '#f0f1ec' }}>
                 {covidVaccineCtaV2?.data?.length > 0 && renderCovidContainer()}
               </View>
+              {bannerLoading && renderBannerShimmer()}
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
               {/**added prohealth banner */}
               {proActiveAppointments?.length == 0 && (
