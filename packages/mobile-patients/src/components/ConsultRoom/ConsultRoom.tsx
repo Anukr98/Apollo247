@@ -2175,7 +2175,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const patientUHID = patientDetails ? (patientDetails.uhid ? patientDetails.uhid : '') : '';
 
     if (patientUHID) {
-      setshowSpinner(true);
+      setLoading?.(true);
 
       GenerateTokenforCM(
         patientDetails ? patientDetails.uhid : '',
@@ -2186,7 +2186,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       )
         .then((token: any) => {
           async function fetchTokenData() {
-            setshowSpinner(false);
+            setLoading?.(false);
 
             const tokenValue = token.data.vitaToken; //await AsyncStorage.getItem('token');
             const buildSpecify = buildName();
@@ -2226,10 +2226,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         })
         .catch((e) => {
           CommonBugFender('ConsultRoom_getTokenforCM', e);
-          setshowSpinner(false);
+          setLoading?.(false);
         });
     } else {
-      setshowSpinner(false);
+      setLoading?.(false);
       showAphAlert &&
         showAphAlert({
           title: string.common.hiWithSmiley,
@@ -2243,7 +2243,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
     const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
     try {
-      setshowSpinner(true);
+      setLoading?.(true);
       let vitaTokenResponse = await GenrateVitalsToken_CM('ask_apollo', currentPatient?.uhid);
       if (vitaTokenResponse?.data && vitaTokenResponse?.data?.message.includes('Successfully')) {
         let vitaToken = vitaTokenResponse?.data?.vitaToken;
@@ -2259,7 +2259,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         } else {
           keyHash = AppConfig.Configuration.Prod_PROHEALTH_MGMT_HashKey;
         }
-        setshowSpinner(false);
+        setLoading?.(false);
         //call the sdk.
         if (Platform.OS === 'ios') {
           if (vitaToken) {
@@ -2286,7 +2286,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             );
         }
       } else {
-        setshowSpinner(false);
+        setLoading?.(false);
         setProHealthActive(false);
         showAphAlert &&
           showAphAlert({
@@ -2297,7 +2297,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     } catch (error) {
       CommonBugFender('getTokenForProhealthCM_error_ConsultRoom', error);
       setProHealthActive(false);
-      setshowSpinner(false);
+      setLoading?.(false);
     }
   };
 
