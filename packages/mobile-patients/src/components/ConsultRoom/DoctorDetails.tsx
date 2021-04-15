@@ -1510,9 +1510,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const getTitle = () => {
     const consultNowText = ctaBannerText?.CONSULT_NOW || '';
     const time = onlineSelected ? availableTime : physicalAvailableTime;
-    const activeCTA = doctorDetails?.doctorCardActiveCTA;
+    const activeCTA = doctorDetails?.doctorCardActiveCTA?.DEFAULT;
     return activeCTA
-      ? activeCTA?.DEFAULT
+      ? activeCTA
       : consultNowText || (time && moment(time).isValid())
       ? nextAvailability(time, 'Consult')
       : string.common.book_apointment;
