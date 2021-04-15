@@ -129,6 +129,8 @@ import {
   setCircleMembershipType,
   apiCallEnums,
   getUserType,
+  persistHealthCredits,
+  getHealthCredits,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -1821,6 +1823,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
   const fetchHealthCredits = async () => {
+    var cachedHealthCredit: any = await getHealthCredits();
+
+    if (cachedHealthCredit != null) {
+      setHealthCredits && setHealthCredits(cachedHealthCredit.healthCredit);
+      return; // no need to call api
+    }
+
     try {
       const res = await client.query({
         query: GET_ONEAPOLLO_USER,
@@ -1829,9 +1838,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         },
         fetchPolicy: 'no-cache',
       });
-      const credits = res?.data?.getOneApolloUser?.availableHC;
 
+      const credits = res?.data?.getOneApolloUser?.availableHC;
       setHealthCredits && setHealthCredits(credits);
+      persistHealthCredits(credits);
     } catch (error) {
       CommonBugFender('MyMembership_fetchCircleSavings', error);
     }

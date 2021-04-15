@@ -51,6 +51,8 @@ import {
   formatAddress,
   postAppsFlyerEvent,
   postFirebaseEvent,
+  getHealthCredits,
+  persistHealthCredits,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -249,7 +251,13 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     return () => {};
   }, []);
 
-  const fetchHealthCredits = () => {
+  const fetchHealthCredits = async () => {
+    var cachedHealthCredit: any = await getHealthCredits();
+    if (cachedHealthCredit != null) {
+      setAvailableHC(cachedHealthCredit.healthCredit);
+      return; // no need to call api
+    }
+
     client
       .query({
         query: GET_ONEAPOLLO_USER,
@@ -261,6 +269,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       .then((res) => {
         if (res.data.getOneApolloUser) {
           setAvailableHC(res.data.getOneApolloUser.availableHC);
+          persistHealthCredits(res.data.getOneApolloUser.availableHC);
         }
       })
       .catch((error) => {
