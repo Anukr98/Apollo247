@@ -345,16 +345,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   useEffect(() => {
-    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+    if (comingFrom === 'deeplink') {
       BackHandler.addEventListener('hardwareBackPress', handleBack);
-    });
-    const didBlur = props.navigation.addListener('didBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    });
-    return () => {
-      didFocus && didFocus.remove();
-      didBlur && didBlur.remove();
-    };
+      return () => {
+        BackHandler.removeEventListener('hardwareBackPress', handleBack);
+      };
+    }
   }, []);
 
   const handleBack = () => {
