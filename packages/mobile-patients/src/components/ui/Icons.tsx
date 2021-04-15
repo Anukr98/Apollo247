@@ -246,6 +246,9 @@ export const AddIcon: React.FC<IconProps> = (props) => (
 export const RemoveIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_cross_onorange_small.png')} />
 );
+export const RemoveIconOrange: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/cross_3x.png')} />
+);
 
 export const RadioButtonIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_radio.png')} />
@@ -673,6 +676,10 @@ export const FileBig: React.FC<IconProps> = (props) => (
 
 export const Download: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_download.png')} />
+);
+
+export const WhiteDownloadIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_white_download.png')} />
 );
 
 export const Invoice: React.FC<IconProps> = (props) => (
@@ -1706,5 +1713,37 @@ export const CopyIcon: React.FC<IconProps> = (props) => (
     size="sm"
     {...props}
     source={require('@aph/mobile-patients/src/components/ui/icons/copy_white.png')}
+  />
+);
+
+export const SplashCapsule: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/ic_splash_capsules.png')}
+  />
+);
+
+export const SplashStethoscope: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/ic_splash_stethoscope.png')}
+  />
+);
+
+export const SplashSyringe: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/ic_splash_syringe.png')}
+  />
+);
+
+export const ProHealthIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="lg"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_icon.png')}
   />
 );

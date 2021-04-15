@@ -58,6 +58,7 @@ import {
   DIAGNOSTIC_GROUP_PLAN,
   getDiagnosticsPopularResults,
   getDiagnosticsSearchResults,
+  PackageInclusion,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -303,14 +304,13 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     } catch (e) {
       CommonBugFender('Tests_fetchPackageInclusion', e);
       setGlobalLoading!(false);
-      console.log('getPackageData Error\n', { e });
       errorAlert();
     }
   };
 
   const showGenericALert = (e: { response: AxiosResponse }) => {
     const error = e && e.response && e.response.data.message;
-    aphConsole.log({ errorResponse: e.response, error }); //remove this line later
+
     showAphAlert!({
       title: string.common.uhOh,
       description: `Something went wrong.`,
@@ -426,9 +426,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     selectedPlan?: any,
     inclusions?: any[]
   ) => {
-    savePastSeacrh(`${itemId}`, itemName).catch((e) => {
-      aphConsole.log({ e });
-    });
+    savePastSeacrh(`${itemId}`, itemName).catch((e) => {});
     postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, 0, 0);
 
     addCartItem!({
@@ -677,25 +675,44 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               null
             }
           />
+        ) : !!searchText && searchText?.length > 2 ? (
+          <FlatList
+            onScroll={() => Keyboard.dismiss()}
+            data={diagnosticResults}
+            renderItem={({ item, index }) => renderTestCard(item, index, diagnosticResults)}
+            keyExtractor={(_, index) => `${index}`}
+            bounces={false}
+            ListHeaderComponent={
+              (diagnosticResults?.length > 0 && (
+                <SectionHeaderComponent
+                  sectionTitle={`Showing search results (${diagnosticResults?.length})`}
+                  style={{ marginBottom: 5 }}
+                />
+              )) ||
+              null
+            }
+          />
         ) : (
-          <View style={styles.viewDefaultContainer}>
-            <Text style={styles.headingSections}>Popular Tests</Text>
-            <View style={styles.defaultContainer}>
-              <FlatList
-                keyExtractor={(_, index) => `${index}`}
-                data={popularTests}
-                renderItem={renderPopularDiagnostic}
-              />
-            </View>
+          <ScrollView showsVerticalScrollIndicator={false} style={styles.viewDefaultContainer}>
             <Text style={styles.headingSections}>Popular Packages</Text>
             <View style={styles.defaultContainer}>
               <FlatList
                 keyExtractor={(_, index) => `${index}`}
+                scrollEnabled={false}
                 data={popularPackages}
                 renderItem={renderPopularDiagnostic}
               />
             </View>
-          </View>
+            <Text style={styles.headingSections}>Popular Tests</Text>
+            <View style={styles.defaultContainer}>
+              <FlatList
+                keyExtractor={(_, index) => `${index}`}
+                scrollEnabled={false}
+                data={popularTests}
+                renderItem={renderPopularDiagnostic}
+              />
+            </View>
+          </ScrollView>
         )}
       </>
     );

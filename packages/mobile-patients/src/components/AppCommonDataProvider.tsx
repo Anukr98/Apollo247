@@ -132,9 +132,13 @@ export interface TotalCircleSavings {
   callsUsed: number;
 }
 
-export type PharmaUserStatus = 'NEW' | 'REPEAT' | '';
-export type UploadPrescSource = 'Cart' | 'Upload Flow' | 'Re-Upload' | 'Non-cart' | 'Consult Flow';
+export interface UploadPrescriptionOptions {
+  id: string;
+  titile: string;
+  subTitle: string;
+}
 
+export type PharmaUserStatus = 'NEW' | 'REPEAT' | '';
 export type UploadPrescSource = 'Cart' | 'Upload Flow' | 'Re-Upload' | 'Non-cart' | 'Consult Flow';
 
 export interface PharmacyUserTypeEvent {
@@ -213,12 +217,6 @@ export interface AppCommonDataContextProps {
   setisSelected: ((arg0: any[]) => void) | null;
   isUHID: string[];
   setisUHID: ((arg0: string[]) => void) | null;
-  appointmentsPersonalized: getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails[];
-  setAppointmentsPersonalized:
-    | ((
-        items: getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails[]
-      ) => void)
-    | null;
   savePatientDetails: any;
   setSavePatientDetails: ((items: any) => void) | null;
   savePatientDetailsWithHistory: any;
@@ -246,6 +244,8 @@ export interface AppCommonDataContextProps {
   homeScreenParamsOnPop: any;
   cartBankOffer: string;
   setCartBankOffer: ((id: string) => void) | null;
+  uploadPrescriptionOptions: UploadPrescriptionOptions[];
+  setUploadPrescriptionOptions: ((prescription: UploadPrescriptionOptions[]) => void) | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -275,8 +275,6 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setMedicinePageAPiResponse: null,
   diagnosticsCities: [],
   setDiagnosticsCities: null,
-  appointmentsPersonalized: [],
-  setAppointmentsPersonalized: null,
   locationForDiagnostics: null,
   diagnosticServiceabilityData: null,
   setDiagnosticServiceabilityData: null,
@@ -341,6 +339,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   homeScreenParamsOnPop: null,
   cartBankOffer: '',
   setCartBankOffer: null,
+  uploadPrescriptionOptions: [],
+  setUploadPrescriptionOptions: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
@@ -406,10 +406,6 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [isDiagnosticLocationServiceable, setDiagnosticLocationServiceable] = useState<
     AppCommonDataContextProps['isDiagnosticLocationServiceable']
   >();
-
-  const [appointmentsPersonalized, setAppointmentsPersonalized] = useState<
-    AppCommonDataContextProps['appointmentsPersonalized']
-  >([]);
 
   const [savePatientDetails, setSavePatientDetails] = useState<
     AppCommonDataContextProps['savePatientDetails']
@@ -511,6 +507,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
     _setDiagnosticLocation(diagnosticLocation);
     AsyncStorage.setItem('diagnosticLocation', JSON.stringify(diagnosticLocation)).catch(() => {});
   };
+
+  const [uploadPrescriptionOptions, setUploadPrescriptionOptions] = useState<
+    AppCommonDataContextProps['uploadPrescriptionOptions']
+  >([]);
 
   const [axdcCode, setAxdcCode] = useState<AppCommonDataContextProps['axdcCode']>('');
   const [circlePlanId, setCirclePlanId] = useState<AppCommonDataContextProps['circlePlanId']>('');
@@ -630,8 +630,6 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setisSelected,
         isUHID,
         setisUHID,
-        appointmentsPersonalized,
-        setAppointmentsPersonalized,
         savePatientDetails,
         setSavePatientDetails,
         doctorJoinedChat,
@@ -659,6 +657,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         homeScreenParamsOnPop,
         cartBankOffer,
         setCartBankOffer,
+        uploadPrescriptionOptions,
+        setUploadPrescriptionOptions,
       }}
     >
       {props.children}

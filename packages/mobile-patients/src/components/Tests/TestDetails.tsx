@@ -381,7 +381,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       isDeep == 'deeplink' ? 'Deeplink' : testInfo?.source,
       testInfo?.ItemName || itemId,
       testInfo?.type,
-      testInfo?.ItemID,
+      testInfo?.ItemID || itemId,
       currentPatient,
       testInfo?.Rate,
       pharmacyCircleAttributes

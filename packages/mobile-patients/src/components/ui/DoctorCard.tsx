@@ -4,7 +4,6 @@ import {
   DoctorPlaceholderImage,
   InPerson,
   Online,
-  VideoPlayIcon,
   ApolloDoctorIcon,
   ApolloPartnerIcon,
   InfoBlue,
@@ -29,16 +28,15 @@ import {
 import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import {
   g,
-  mhdMY,
-  nameFormater,
   postWebEngageEvent,
   nextAvailability,
+  getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Image,
@@ -214,7 +212,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const rowData = props.rowData;
   const { selectedConsultMode } = props;
   const ctaBannerText = rowData?.availabilityTitle;
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const isOnlineConsultSelected =
     selectedConsultMode === ConsultMode.ONLINE || selectedConsultMode === ConsultMode.BOTH;
@@ -263,6 +261,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     !selectedConsultMode || isCircleAvailForOnline
       ? onlineConsultDiscountedPrice
       : physicalConsultDiscountedPrice;
+  const ctaTitle = rowData?.doctorCardActiveCTA?.DEFAULT;
 
   useEffect(() => {
     if (!currentPatient) {
@@ -538,6 +537,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               ),
               'Patient Gender': currentPatient.gender,
               'Customer ID': currentPatient.id,
+              User_Type: getUserType(allCurrentPatients),
             };
             if (props.rowId) {
               eventAttributes['Rank'] = props.rowId;
@@ -737,6 +737,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                         ),
                         'Patient Gender': currentPatient.gender,
                         'Customer ID': currentPatient.id,
+                        User_Type: getUserType(allCurrentPatients),
                       };
                       if (props.rowId) {
                         eventAttributes['Rank'] = props.rowId;
@@ -771,8 +772,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                       props.buttonTextStyle,
                     ]}
                   >
-                    {!!ctaBannerText
-                      ? ctaBannerText.CONSULT_NOW
+                    {!!ctaTitle
+                      ? ctaTitle
                       : !!fetchedSlot
                       ? getButtonTitle(fetchedSlot)
                       : getButtonTitle(rowData?.slot)}

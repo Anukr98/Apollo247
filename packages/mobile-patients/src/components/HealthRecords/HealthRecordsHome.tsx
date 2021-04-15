@@ -873,7 +873,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
     const renderProfileNameView = () => {
       if (pageLoading) {
-        return renderHealthRecordShimmer(35);
+        return renderHealthRecordShimmer();
       } else {
         return (
           <View style={styles.profileNameViewStyle}>
@@ -1142,17 +1142,14 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const renderHealthCategoriesView = () => {
     return (
       <View style={{ marginTop: 54, marginHorizontal: 20, marginBottom: 25 }}>
-        {pageLoading ? (
-          renderHealthRecordShimmer(20)
-        ) : (
-          <Text style={{ ...theme.viewStyles.text('B', 18, theme.colors.LIGHT_BLUE, 1, 21) }}>
-            {'Health Categories'}
-          </Text>
-        )}
-
+        <Text style={{ ...theme.viewStyles.text('B', 18, theme.colors.LIGHT_BLUE, 1, 21) }}>
+          {'Health Categories'}
+        </Text>
         <View style={styles.listItemCardStyle}>
-          {renderListItemView('Doctor Consultations', 1)}
-          {renderListItemView('Test Reports', 2)}
+          {pageLoading
+            ? renderHealthRecordShimmer()
+            : renderListItemView('Doctor Consultations', 1)}
+          {pageLoading ? renderHealthRecordShimmer() : renderListItemView('Test Reports', 2)}
           {renderListItemView('Hospitalization', 3)}
           {renderListItemView('Health Conditions', 4)}
         </View>

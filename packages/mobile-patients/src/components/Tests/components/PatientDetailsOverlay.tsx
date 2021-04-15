@@ -140,7 +140,10 @@ export const PatientDetailsOverlay: React.FC<PatientDetailsOverlayProps> = (prop
       overlayStyle={styles.phrOverlayStyle}
     >
       <View style={{ flex: 1 }}>
-        <TouchableOpacity style={{ flex: 1 }} onPress={onPressClose} />
+        <TouchableOpacity
+          style={{ flex: 1 }}
+          onPress={() => (!date || !gender ? {} : onPressClose())}
+        />
         <View style={styles.overlayViewStyle}>
           <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
             <View style={styles.mainViewStyle}>

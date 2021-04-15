@@ -52,6 +52,7 @@ import {
   EDIT_PROFILE,
   GET_DIAGNOSTIC_NEAREST_AREA,
   GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
+  EDIT_PROFILE,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticsHCChargesVariables,
@@ -94,6 +95,7 @@ import {
   Dimensions,
   Platform,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlay';
@@ -150,6 +152,14 @@ import {
   DiagnosticProceedToPay,
   DiagnosticRemoveFromCartClicked,
 } from '@aph/mobile-patients/src/components/Tests/Events';
+import {
+  getNearestArea,
+  getNearestAreaVariables,
+} from '@aph/mobile-patients/src/graphql/types/getNearestArea';
+import {
+  getDiagnosticSlotsCustomized,
+  getDiagnosticSlotsCustomizedVariables,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsCustomized';
 import { PatientListOverlay } from '@aph/mobile-patients/src/components/Tests/components/PatientListOverlay';
 import { PatientDetailsOverlay } from '@aph/mobile-patients/src/components/Tests/components/PatientDetailsOverlay';
 import { TestProceedBar } from '@aph/mobile-patients/src/components/Tests/components/TestProceedBar';
@@ -162,14 +172,6 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/editProfile';
 import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import AsyncStorage from '@react-native-community/async-storage';
-import {
-  getNearestArea,
-  getNearestAreaVariables,
-} from '@aph/mobile-patients/src/graphql/types/getNearestArea';
-import {
-  getDiagnosticSlotsCustomized,
-  getDiagnosticSlotsCustomizedVariables,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsCustomized';
 const { width: screenWidth } = Dimensions.get('window');
 
 export interface areaObject {
@@ -234,6 +236,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     isDiagnosticCircleSubscription,
     newAddressAddedCartPage,
     setNewAddressAddedCartPage,
+    showSelectPatient,
+    setShowSelectPatient,
   } = useDiagnosticsCart();
   const {
     setAddresses: setMedAddresses,
@@ -280,10 +284,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [orderDetails, setOrderDetails] = useState<orderDetails>();
   const [showInclusions, setShowInclusions] = useState<boolean>(false);
   const [duplicateNameArray, setDuplicateNameArray] = useState([] as any);
-  const [showPatientListOverlay, setShowPatientListOverlay] = useState<boolean>(true);
+  const [showAreaSelection, setShowAreaSelection] = useState<boolean>(false);
+  const [showPatientListOverlay, setShowPatientListOverlay] = useState<boolean>(
+    showSelectPatient ? false : true
+  );
   const [showPatientDetailsOverlay, setShowPatientDetailsOverlay] = useState<boolean>(false);
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
-  const [showAreaSelection, setShowAreaSelection] = useState<boolean>(false);
   const [showSelectAreaOverlay, setShowSelectAreaOverlay] = useState<boolean>(false);
   const [reportGenDetails, setReportGenDetails] = useState<any>([]);
   const [alsoAddListData, setAlsoAddListData] = useState<any>([]);
@@ -324,9 +330,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   useEffect(() => {
     fetchAddresses();
-    checkPatientAge();
     initiateHyperSDK();
   }, [currentPatient]);
+
+  useEffect(() => {
+    if (showSelectPatient && currentPatient) {
+      setSelectedPatient(currentPatient);
+      setShowPatientListOverlay(false);
+    }
+  }, []);
 
   const fetchTestReportGenDetails = async (_cartItemId: string | number[]) => {
     try {
@@ -341,21 +353,23 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         const result = g(res, 'data', 'data');
         const widgetsData = g(res, 'data', 'widget_data', '0', 'diagnosticWidgetData');
         setReportGenDetails(result || []);
-        const _itemIds = widgetsData?.map((item) => Number(item?.itemId));
+        const _itemIds = widgetsData?.map((item: any) => Number(item?.itemId));
+        const _filterItemIds = _itemIds?.filter((val: any) => !cartItemsWithId?.includes(val));
+
         client
           .query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
             query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
             context: {
               sourceHeaders,
             },
-            variables: { cityID: Number(addressCityId) || 9, itemIDs: _itemIds },
+            variables: { cityID: Number(addressCityId) || 9, itemIDs: _filterItemIds },
             fetchPolicy: 'no-cache',
           })
           .then(({ data }) => {
             const diagnosticItems =
               g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
             let _diagnosticWidgetData: any = [];
-            widgetsData?.forEach((_widget) => {
+            widgetsData?.forEach((_widget: any) => {
               diagnosticItems?.forEach((_diagItems) => {
                 if (_widget?.itemId == _diagItems?.itemId) {
                   _diagnosticWidgetData?.push({
@@ -395,28 +409,31 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   };
 
-  const checkPatientAge = () => {
-    let age =
-      !!currentPatient?.dateOfBirth || !!selectedPatient?.dateOfBirth
-        ? getAge(currentPatient?.dateOfBirth || selectedPatient?.dateOfBirth)
-        : null;
-    let gender = currentPatient?.gender || selectedPatient?.gender;
+  const checkPatientAge = (_selectedPatient: any, fromNewProfile: boolean = false) => {
+    let age = !!_selectedPatient?.dateOfBirth ? getAge(_selectedPatient?.dateOfBirth) : null;
+    let gender = _selectedPatient?.gender;
     if (age! <= 10 || age == null || gender == null) {
-      renderAlert(
+      setSelectedPatient(null);
+      setShowSelectPatient?.(false);
+      Alert.alert(
+        string.common.uhOh,
         age == null
           ? string.common.contactCustomerCare1
           : gender == null
           ? string.common.contactCustomerCare2
-          : string.diagnostics.minorAgeText
+          : string.diagnostics.minorAgeText,
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              fromNewProfile && setShowPatientListOverlay(true);
+            },
+          },
+        ]
       );
-      setIsMinor(true);
-      setDeliveryAddressId!('');
-      setDiagnosticAreas!([]);
-      setAreaSelected!({});
-      setselectedTimeSlot(undefined);
-    } else {
-      isMinor && setIsMinor(false);
+      return true;
     }
+    return false;
   };
 
   const handleBack = () => {
@@ -523,7 +540,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         fetchTestReportGenDetails(cartItemsWithId);
       }
     }
-  }, [cartItems?.length]);
+  }, [cartItems?.length, addressCityId]);
 
   useEffect(() => {
     setPatientId!(currentPatientId!);
@@ -1252,6 +1269,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     comingFrom?: string,
     _itemIds?: number[]
   ) => {
+    const isCovidItem = cartItemsWithId?.map((item) =>
+      AppConfig.Configuration.Covid_Items.includes(item)
+    );
+    const isCartHasCovidItem = isCovidItem?.find((item) => item === true);
+    const maxDaysToShow = !!isCartHasCovidItem
+      ? AppConfig.Configuration.Covid_Max_Slot_Days
+      : AppConfig.Configuration.Non_Covid_Max_Slot_Days;
+
     let dateToCheck = !!changedDate && comingFrom != '' ? changedDate : date;
     setLoading?.(true);
     const selectedAddressIndex = addresses?.findIndex(
@@ -1294,13 +1319,17 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
         // if slot is empty then refetch it for next date
         const isSameDate = moment().isSame(moment(dateToCheck), 'date');
-        if (isSameDate && slotsArray?.length == 0) {
+        let lastDate = moment()
+          .add(maxDaysToShow, 'day')
+          .toDate();
+        const hasReachedEnd = moment(dateToCheck).isAfter(moment(lastDate), 'date');
+        if (!hasReachedEnd && slotsArray?.length == 0) {
           setTodaySlotNotAvailable(true);
           let changedDate = moment(dateToCheck) //date
             .add(1, 'day')
             .toDate();
           setDate(changedDate);
-          checkSlotSelection(item, changedDate);
+          checkSlotSelection(item, changedDate, undefined);
         } else {
           setSlots(slotsArray);
           todaySlotNotAvailable && setTodaySlotNotAvailable(false);
@@ -1316,9 +1345,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             diagnosticEmployeeCode: slotDetails?.employeeCode,
             city: selectedAddr ? selectedAddr?.city! : '', // not using city from this in order place API
           });
-          if (slotDetails == undefined) {
-            setDisplaySchedule(true);
-          }
           setLoading?.(false);
         }
 
@@ -1614,7 +1640,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     cartItems?.length > 0 &&
     forPatientId &&
     !!(
-      (deliveryAddressId &&
+      (selectedPatient &&
+        deliveryAddressId &&
         selectedTimeSlot &&
         selectedTimeSlot?.date &&
         selectedTimeSlot?.slotInfo?.startTime) ||
@@ -2239,8 +2266,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             showAreaSelection
           )
         : getAreas();
+      let removedItems = removedTestItemId?.join(', ');
       DiagnosticRemoveFromCartClicked(
-        removedTestItemId,
+        removedItems,
         removedTest,
         addresses?.[selectedAddressIndex]?.zipcode!,
         'Automated'
@@ -2418,6 +2446,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       return;
     } else if (!_selectedPatient?.dateOfBirth || !_selectedPatient?.gender) {
       setSelectedPatient(_selectedPatient);
+      setShowSelectPatient?.(true);
       setShowPatientDetailsOverlay(_showPatientDetailsOverlay);
       return;
     }
@@ -2429,9 +2458,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const onNewProfileAdded = (newPatient: any) => {
     if (newPatient?.profileData) {
-      setSelectedPatient(newPatient?.profileData);
-      setShowPatientListOverlay(false);
-      changeCurrentProfile(newPatient?.profileData, false);
+      if (!checkPatientAge(newPatient?.profileData, true)) {
+        setSelectedPatient(newPatient?.profileData);
+        setShowSelectPatient?.(true);
+        setShowPatientListOverlay(false);
+        changeCurrentProfile(newPatient?.profileData, false);
+      }
     }
   };
 
@@ -2446,9 +2478,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       <PatientListOverlay
         onPressClose={() => setShowPatientListOverlay(false)}
         onPressDone={(_selectedPatient: any) => {
-          setSelectedPatient(_selectedPatient);
-          setShowPatientListOverlay(false);
-          changeCurrentProfile(_selectedPatient, true);
+          if (!checkPatientAge(_selectedPatient)) {
+            setSelectedPatient(_selectedPatient);
+            setShowPatientListOverlay(false);
+            setShowSelectPatient?.(true);
+            changeCurrentProfile(_selectedPatient, true);
+          }
         }}
         onPressAddNewProfile={() => {
           setShowPatientListOverlay(false);
@@ -2497,7 +2532,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               const profileData = g(data, 'editProfile', 'patient');
               setLoading?.(false);
               getPatientApiCall();
-              changeCurrentProfile(profileData, false);
+              if (!checkPatientAge(profileData, true)) {
+                changeCurrentProfile(profileData, false);
+              }
             })
             .catch((e) => {
               setLoading?.(false);
@@ -2880,6 +2917,49 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     padding: 16,
     marginTop: 6,
+  },
+  patientDetailsViewStyle: {
+    flex: 1,
+    marginBottom: 6,
+  },
+  patientNameMainViewStyle: {
+    flex: 1,
+    paddingHorizontal: 20,
+    backgroundColor: WHITE,
+    paddingVertical: 8,
+    marginBottom: 8,
+  },
+  patientNameViewStyle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'space-between',
+    marginBottom: 2,
+  },
+  patientNameTextStyle: {
+    ...text('R', 12, SHERPA_BLUE, 1, 20),
+  },
+  changeTextStyle: {
+    ...text('B', 13, APP_YELLOW, 1, 20),
+  },
+  patientDetailsTextStyle: {
+    ...text('SB', 14, SHERPA_BLUE, 1, 18),
+  },
+  testReportMsgStyle: {
+    ...text('R', 10, SHERPA_BLUE, 0.7, 14),
+    marginTop: 4,
+  },
+  dashedBannerViewStyle: {
+    ...cardViewStyle,
+    marginHorizontal: 20,
+    marginBottom: 0,
+    padding: 16,
+    marginTop: 10,
+    flexDirection: 'row',
+    borderColor: theme.colors.APP_GREEN,
+    borderWidth: 2,
+    borderRadius: 5,
+    borderStyle: 'dashed',
   },
   alsoAddListHeaderTextStyle: {
     ...text('B', 13, SHERPA_BLUE, 1, 16.9),

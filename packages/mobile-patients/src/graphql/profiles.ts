@@ -1194,6 +1194,7 @@ export const GET_PLATINUM_DOCTOR = gql`
         qualification
         experience
         photoUrl
+        profile_deeplink
         slot
         thumbnailUrl
         availabilityTitle {
@@ -1207,6 +1208,11 @@ export const GET_PLATINUM_DOCTOR = gql`
           status
           mrp
           appointment_type
+        }
+        doctorCardActiveCTA {
+          ONLINE
+          PHYSICAL
+          DEFAULT
         }
       }
     }
@@ -1748,6 +1754,16 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         visitNo
         paymentType
         paymentOrderId
+        phleboDetailsObj {
+          PhelboOTP
+          PhelbotomistName
+          PhelbotomistMobile
+          PhelbotomistTrackLink
+          TempRecording
+          CheckInTime
+          PhleboLatitude
+          PhleboLongitude
+        }
         diagnosticOrderReschedule {
           rescheduleDate
           rescheduleReason
@@ -1833,6 +1849,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
     getDiagnosticOrderDetails(diagnosticOrderId: $diagnosticOrderId) {
       ordersList {
         id
+        patientId
         patientAddressId
         city
         slotTimings
@@ -1855,6 +1872,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         slotDateTimeInUTC
         paymentType
         visitNo
+        labReportURL
         diagnosticOrderLineItems {
           id
           itemId
@@ -2161,7 +2179,123 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
     }
   }
 `;
-
+export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
+  query getDiagnosticOrdersListByMobile(
+    $mobileNumber: String
+    $paginated: Boolean
+    $limit: Int
+    $offset: Int
+  ) {
+    getDiagnosticOrdersListByMobile(
+      mobileNumber: $mobileNumber
+      offset: $offset
+      limit: $limit
+      paginated: $paginated
+    ) {
+      ordersList {
+        id
+        isRescheduled
+        rescheduleCount
+        areaId
+        addressLine1
+        addressLine2
+        patientId
+        displayId
+        diagnosticDate
+        diagnosticBranchCode
+        diagnosticEmployeeCode
+        visitNo
+        labReportURL
+        diagnosticOrdersStatus {
+          id
+          orderStatus
+          statusDate
+          itemId
+          packageId
+          itemName
+          packageName
+          hideStatus
+          statusMessage
+        }
+        diagnosticOrderLineItems {
+          id
+          itemId
+          quantity
+          itemName
+          groupPlan
+          price
+          itemType
+          itemObj {
+            itemType
+            testPreparationData
+            packageCalculatedMrp
+            inclusions
+          }
+          diagnostics {
+            id
+            itemId
+            itemName
+            itemType
+            toAgeInDays
+            canonicalTag
+            fromAgeInDays
+            testDescription
+            inclusions
+            testPreparationData
+            diagnosticPricing {
+              status
+              endDate
+              groupPlan
+              startDate
+            }
+          }
+          testPreparationData
+          packageCalculatedMrp
+        }
+        orderType
+        totalPrice
+        centerName
+        centerState
+        orderStatus
+        createdDate
+        paymentType
+        diagnosticDate
+        centerLocality
+        paymentOrderId
+        paymentOrderId
+        patientAddressId
+        phleboDetailsObj {
+          PhelboOTP
+        }
+        slotTimings
+        slotDateTimeInUTC
+        collectionCharges
+        diagnosticBranchCode
+        diagnosticEmployeeCode
+        diagnosticOrderReschedule {
+          rescheduleDate
+          rescheduleReason
+          comments
+          rescheduleDate
+          rescheduleReason
+          rescheduleDateTimeInUTC
+        }
+        diagnosticOrderCancellation {
+          cancellationReason
+          cancelType
+          cancelByName
+          comments
+        }
+      }
+      ordersCount
+      membersDetails {
+        id
+        firstName
+        lastName
+      }
+    }
+  }
+`;
 export const GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT = gql`
   query GetMedicineOrderShipmentDetails(
     $patientId: String
@@ -3982,32 +4116,6 @@ export const UPDATE_SAVE_EXTERNAL_CONNECT = gql`
   }
 `;
 
-export const GET_PERSONALIZED_APPOITNMENTS = gql`
-  query getPatientPersonalizedAppointments($patientUhid: String!) {
-    getPatientPersonalizedAppointments(patientUhid: $patientUhid) {
-      appointmentDetails {
-        id
-        hospitalLocation
-        appointmentDateTime
-        appointmentType
-        doctorId
-        doctorDetails {
-          id
-          firstName
-          experience
-          photoUrl
-          displayName
-          specialty {
-            id
-            name
-            userFriendlyNomenclature
-          }
-        }
-      }
-    }
-  }
-`;
-
 export const GET_APPOINTMENT_RESCHEDULE_DETAILS = gql`
   query getAppointmentRescheduleDetails($appointmentId: String!) {
     getAppointmentRescheduleDetails(appointmentId: $appointmentId) {
@@ -4505,6 +4613,105 @@ export const VERIFY_TRUECALLER_PROFILE = gql`
   mutation verifyTrueCallerProfile($profile: TrueCallerProfile!) {
     verifyTrueCallerProfile(profile: $profile) {
       authToken
+    }
+  }
+`;
+
+export const GET_PROHEALTH_CITY_LIST = gql`
+  query getProHealthCities {
+    getProHealthCities {
+      cityList {
+        regionId
+        cityName
+        id
+      }
+    }
+  }
+`;
+
+export const GET_PROHEALTH_HOSPITAL_LIST = gql`
+  query getProHealthHospitalByCityId($cityId: ID!) {
+    getProHealthHospitalByCityId(cityId: $cityId) {
+      hospitals {
+        unitName
+        unitType
+        unitLocationId
+        id
+      }
+    }
+  }
+`;
+
+export const GET_ALL_PRO_HEALTH_APPOINTMENTS = gql`
+  query getAllProhealthAppointments($patientId: ID!) {
+    getAllProhealthAppointments(patientId: $patientId) {
+      appointments {
+        appointmentStartDateTimeUTC
+        appointmentEndDateTimeUTC
+        status
+        displayId
+        packageCategoryId
+        price
+        bookingSource
+        patientObj {
+          firstName
+          lastName
+          emailAddress
+          gender
+          mobileNumber
+          dateOfBirth
+        }
+        prohealthPackage {
+          packageName
+          id
+        }
+        prohealthHospital {
+          unitType
+          unitName
+        }
+      }
+    }
+  }
+`;
+
+export const GET_PHLOBE_DETAILS = gql`
+  query getOrderPhleboDetailsBulk($diagnosticOrdersIds: [String]!) {
+    getOrderPhleboDetailsBulk(diagnosticOrdersIds: $diagnosticOrdersIds) {
+      orderPhleboDetailsBulk {
+        orderPhleboDetails {
+          diagnosticOrdersId
+          diagnosticPhlebotomists {
+            name
+          }
+          phleboOTP
+        }
+        phleboEta {
+          distanceInMetres
+          estimatedArrivalTime
+        }
+      }
+    }
+  }
+`;
+
+export const GET_PATIENT_PAST_CONSULTED_DOCTORS = gql`
+  query getPatientPastConsultedDoctors($patientMobile: String, $offset: Int, $limit: Int) {
+    getPatientPastConsultedDoctors(patientMobile: $patientMobile, offset: $offset, limit: $limit) {
+      id
+      fullName
+      thumbnailUrl
+      specialty {
+        name
+      }
+      consultDetails {
+        consultDateTime
+        displayId
+        appointmentId
+        hospitalId
+        hospitalName
+        consultMode
+        _247_Flag
+      }
     }
   }
 `;

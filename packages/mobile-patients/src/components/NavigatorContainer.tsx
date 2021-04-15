@@ -111,7 +111,6 @@ import { NotificationScreen } from '@aph/mobile-patients/src/components/Account/
 import { ChennaiNonCartOrderForm } from '@aph/mobile-patients/src/components/Medicines/ChennaiNonCartOrderForm';
 import MyPaymentsScreen from '@aph/mobile-patients/src/components/MyPayments/MyPaymentsScreen';
 import PaymentStatusScreen from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/PaymentStatusScreen';
-import { ConsultTypeScreen } from './ConsultRoom/ConsultTypeScreen';
 import { CommonWebView } from '@aph/mobile-patients/src/components/CommonWebView';
 import { RefundStatus } from '@aph/mobile-patients/src/components/RefundStatus';
 import { MedicineCart } from '@aph/mobile-patients/src/components/MedicineCart/MedicineCart';
@@ -130,6 +129,7 @@ import { Maps } from '@aph/mobile-patients/src/components/ui/Maps';
 import { PaymentMethods } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentMethods';
 import { OtherBanks } from '@aph/mobile-patients/src/components/PaymentGateway/OtherBanks';
 import { OrderStatus } from '@aph/mobile-patients/src/components/Tests/OrderStatus';
+import { ProHealthWebView } from '@aph/mobile-patients/src/components/ProHealthWebView';
 import MyOrdersScreen from '@aph/mobile-patients/src/components/MyOrders/MyOrdersScreen';
 
 export enum AppRoutes {
@@ -227,7 +227,6 @@ export enum AppRoutes {
   MyPaymentsScreen = 'MyPaymentsScreen',
   PaymentStatusScreen = 'PaymentStatusScreen',
   OneApolloMembership = 'OneApolloMembership',
-  ConsultTypeScreen = 'ConsultTypeScreen',
   CommonWebView = 'CommonWebView',
   RefundStatus = 'RefundStatus',
   MedicineCart = 'MedicineCart',
@@ -249,6 +248,7 @@ export enum AppRoutes {
   OtherBanks = 'OtherBanks',
   OrderStatus = 'OrderStatus',
   TestListing = 'TestListing',
+  ProHealthWebView = 'ProHealthWebView',
   MyOrdersScreen = 'MyOrdersScreen',
 }
 
@@ -570,9 +570,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
     screen: OneApolloMembership,
     path: 'OneApolloPage',
   },
-  [AppRoutes.ConsultTypeScreen]: {
-    screen: ConsultTypeScreen,
-  },
   [AppRoutes.CommonWebView]: {
     screen: CommonWebView,
   },
@@ -635,6 +632,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.TestListing]: {
     screen: TestListing,
+  },
+  [AppRoutes.ProHealthWebView]: {
+    screen: ProHealthWebView,
   },
   [AppRoutes.MyOrdersScreen]: {
     screen: MyOrdersScreen,

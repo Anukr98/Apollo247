@@ -21,6 +21,7 @@ import {
   timeTo12HrFormat,
   g,
   postWebEngageEvent,
+  getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -133,7 +134,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
   const [availableInMin, setavailableInMin] = useState<number>(0);
   const [NextAvailableSlot, setNextAvailableSlot] = useState<string>('');
   const [checkingAvailability, setCheckingAvailability] = useState<boolean>(false);
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
 
   useEffect(() => {
     if (date !== props.date) {
@@ -280,6 +281,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
       ),
       'Patient Gender': g(currentPatient, 'gender'),
       'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
     };
 
     if (type == 'now') {

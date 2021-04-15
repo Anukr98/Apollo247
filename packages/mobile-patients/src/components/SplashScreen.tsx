@@ -8,7 +8,6 @@ import {
   Linking,
   AppStateStatus,
   AppState,
-  Text,
   DeviceEventEmitter,
   NativeModules,
   Alert,
@@ -66,6 +65,12 @@ import messaging from '@react-native-firebase/messaging';
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
 import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
+import { Animated, Easing } from 'react-native';
+import {
+  SplashCapsule,
+  SplashSyringe,
+  SplashStethoscope,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 
 (function() {
   /**
@@ -114,6 +119,14 @@ const styles = StyleSheet.create({
       },
     }),
   },
+  loaderContainer: {
+    position: 'absolute',
+    bottom: 50,
+  },
+  loader: {
+    width: 70,
+    height: 70,
+  },
 });
 
 export interface SplashScreenProps extends NavigationScreenProps {}
@@ -133,6 +146,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   const [userLoggedIn, setUserLoggedIn] = useState<any | null>(null);
 
+  const [spinValue, setSpinValue] = useState(new Animated.Value(0));
+  const [animatedValue, setAnimatedValue] = useState(new Animated.Value(0));
+  const [springValue, setSpringAnimation] = useState(new Animated.Value(0));
+  const CONST_SPLASH_LOADER = [string.splash.CAPSULE, string.splash.SYRINGE, string.splash.STETHO];
+  const [selectedAnimationIndex, setSelectedAnimationIndex] = useState(0);
+
   const config: Pubnub.PubnubConfig = {
     origin: 'apollo.pubnubapi.com',
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
@@ -147,7 +166,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   useEffect(() => {
     takeToConsultRoom && getData('ConsultRoom', undefined, false);
+    configureAnimation();
   }, [takeToConsultRoom]);
+
+  useEffect(() => {
+    if (CONST_SPLASH_LOADER[selectedAnimationIndex] == string.splash.SYRINGE) {
+      spinObject();
+    } else if (CONST_SPLASH_LOADER[selectedAnimationIndex] == string.splash.STETHO) {
+      springAnimation();
+    } else {
+      spinObject();
+    }
+  }, [selectedAnimationIndex]);
 
   useEffect(() => {
     prefetchUserMetadata();
@@ -305,7 +335,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               if (Platform.OS === 'ios') InitiateAppsFlyer(props.navigation);
               const data = handleOpenURL(url);
               const { routeName, id, isCall, timeout, mediaSource } = data;
-              redirectRoute(routeName, id, isCall, timeout, mediaSource);
+              redirectRoute(routeName, id, isCall, timeout, mediaSource, data?.data);
               fireAppOpenedEvent(url);
             } catch (e) {}
           } else {
@@ -322,7 +352,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
           const data = handleOpenURL(event.url);
           const { routeName, id, isCall, timeout, mediaSource } = data;
-          redirectRoute(routeName, id, isCall, timeout, mediaSource);
+          redirectRoute(routeName, id, isCall, timeout, mediaSource, data?.data);
           fireAppOpenedEvent(event.url);
         } catch (e) {}
       });
@@ -337,14 +367,20 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     id?: string,
     timeout?: boolean,
     isCall?: boolean,
-    mediaSource?: string
+    mediaSource?: string,
+    data?: any
   ) => {
-    if (routeName === 'ChatRoom_AppointmentData') {
-      getAppointmentDataAndNavigate(id || '', !!isCall);
-    } else if (routeName === 'DoctorCall_AppointmentData') {
+    if (routeName === 'ChatRoom' && data?.length >= 1) {
+      getAppointmentDataAndNavigate(id!, false);
+    } else if (
+      routeName === 'DoctorCall' &&
+      data?.length >= 1 &&
+      getCurrentRoute() !== AppRoutes.ChatRoom
+    ) {
       const params = id?.split('+');
-      voipCallType.current = params[1];
+      voipCallType.current = params?.[1]!;
       callPermissions();
+      getAppointmentDataAndNavigate(params?.[0]!, true);
     } else if (routeName === 'DoctorCallRejected') {
       setLoading!(true);
       const appointmentId = id?.split('+')?.[0];
@@ -479,6 +515,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             if (mePatient) {
               if (mePatient.firstName !== '') {
                 const isCircleMember: any = await AsyncStorage.getItem('isCircleMember');
+
                 pushTheView(
                   props.navigation,
                   routeName,
@@ -499,6 +536,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             const signUp: any = await AsyncStorage.getItem('signUp');
             const multiSignUp: any = await AsyncStorage.getItem('multiSignUp');
             setshowSpinner(false);
+
             if (signUp == 'true') {
               props.navigation.replace(AppRoutes.SignUp);
             } else if (multiSignUp == 'true') {
@@ -533,7 +571,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       });
       const appointmentData: any = response.data?.getAppointmentData?.appointmentsHistory?.[0];
       if (appointmentData?.doctorInfo) {
-        getData('ChatRoom_AppointmentData', appointmentData, false, isCall);
+        getData('ChatRoom', appointmentData, false, isCall);
       } else {
         throw new Error('Doctor info is required to process the request.');
       }
@@ -575,6 +613,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setLoginSection,
     setCovidVaccineCtaV2,
     setCartBankOffer,
+    setUploadPrescriptionOptions,
   } = useAppCommonData();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -715,6 +754,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_FollowUp_Chat_Limit',
       PROD: 'FollowUp_Chat_Limit',
     },
+    uploadPrescription_Options: {
+      QA: 'QA_UploadPrescription_Options',
+      PROD: 'UploadPrescription_Options',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -789,6 +832,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         config.getString(key)
       );
       bankOfferText && setCartBankOffer!(bankOfferText);
+
+      const uploadPrescriptionOptions = getRemoteConfigValue(
+        'uploadPrescription_Options',
+        (key) => JSON.parse(config.getString(key)) || []
+      );
+      uploadPrescriptionOptions && setUploadPrescriptionOptions!(uploadPrescriptionOptions);
 
       setAppConfig(
         'Min_Value_For_Pharmacy_Free_Delivery',
@@ -924,17 +973,90 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     });
   };
 
+  const configureAnimation = () => {
+    const randomIndex = Math.floor(Math.random() * CONST_SPLASH_LOADER.length);
+    setSelectedAnimationIndex(randomIndex);
+    logoAnimation();
+  };
+
+  const spinObject = () => {
+    Animated.loop(
+      Animated.timing(spinValue, {
+        toValue: 1,
+        duration: 1000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    ).start();
+  };
+
+  let spin = spinValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  const springAnimation = () => {
+    Animated.loop(
+      Animated.spring(springValue, {
+        toValue: 1.4,
+        friction: 1,
+        useNativeDriver: true,
+      })
+    ).start();
+  };
+
+  const logoAnimation = () => {
+    Animated.timing(animatedValue, {
+      toValue: 1,
+      duration: 1300,
+      useNativeDriver: true,
+    }).start(() => {});
+  };
+
   return (
     <View style={styles.mainView}>
-      <SplashLogo style={styles.splashLogo} resizeMode="contain" />
+      <Animated.View
+        style={{
+          transform: [
+            {
+              scale: animatedValue.interpolate({
+                inputRange: [0, 0.5, 1],
+                outputRange: [1, 1.6, 1],
+              }),
+            },
+          ],
+        }}
+      >
+        <SplashLogo style={styles.splashLogo} resizeMode="contain" />
+      </Animated.View>
 
-      {showSpinner ? (
-        <ActivityIndicator
-          animating={showSpinner}
-          size="large"
-          color="green"
-          style={{ bottom: 60, position: 'absolute' }}
-        />
+      {CONST_SPLASH_LOADER[selectedAnimationIndex] == string.splash.STETHO ? (
+        <Animated.View
+          style={[
+            styles.loaderContainer,
+            {
+              transform: [
+                {
+                  scale: springValue,
+                },
+              ],
+            },
+          ]}
+        >
+          <SplashStethoscope style={styles.loader} />
+        </Animated.View>
+      ) : null}
+
+      {CONST_SPLASH_LOADER[selectedAnimationIndex] == string.splash.CAPSULE ? (
+        <Animated.View style={[styles.loaderContainer, { transform: [{ rotate: spin }] }]}>
+          <SplashCapsule style={styles.loader} />
+        </Animated.View>
+      ) : null}
+
+      {CONST_SPLASH_LOADER[selectedAnimationIndex] == string.splash.SYRINGE ? (
+        <Animated.View style={[styles.loaderContainer, { transform: [{ rotate: spin }] }]}>
+          <SplashSyringe style={styles.loader} />
+        </Animated.View>
       ) : null}
     </View>
   );

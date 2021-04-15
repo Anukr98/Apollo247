@@ -14,6 +14,7 @@ import { createShimmerPlaceholder } from 'react-native-shimmer-placeholder';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CovidOrange } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { cardWidth } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultedDoctorsCard';
 
 const { width, height } = Dimensions.get('window');
 const ShimmerPlaceHolder = createShimmerPlaceholder(LinearGradient);
@@ -236,6 +237,16 @@ const styles = StyleSheet.create({
     width: '70%',
     marginTop: -35,
     marginHorizontal: 50,
+  },
+  consultedDoctors: {
+    marginTop: 10,
+    ...theme.viewStyles.cardViewStyle,
+    height: 58,
+    width: cardWidth,
+    marginBottom: 20,
+    marginLeft: 20,
+    borderRadius: 10,
+    justifyContent: 'center',
   },
 });
 
@@ -465,7 +476,7 @@ export const renderHealthRecordShimmer = () => {
       <ShimmerPlaceHolder
         shimmerColors={[theme.colors.LIGHT_GRAY, theme.colors.TEXT_LIGHT_BLUE]}
         LinearGradient={LinearGradient}
-        shimmerStyle={[styles.healthRecordLine, { width: 120 }]}
+        shimmerStyle={[styles.healthRecordLine, { width: '80%' }]}
       />
     </View>
   );
@@ -507,5 +518,32 @@ export const renderOneApolloMembershipShimmer = () => {
         shimmerStyle={styles.oneApolloMemebershipCardFooter}
       />
     </View>
+  );
+};
+
+export const renderConsultedDoctorsShimmer = () => {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.consultedDoctors}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={[theme.colors.LIGHT_GRAY, theme.colors.WHITE]}
+        LinearGradient={LinearGradient}
+        shimmerStyle={[styles.consultedDoctors, { marginLeft: 10 }]}
+      />
+    </View>
+  );
+};
+
+export const renderConsultedDoctorsTitleShimmer = () => {
+  return (
+    <ShimmerPlaceHolder
+      shimmerColors={shimmerColors}
+      LinearGradient={LinearGradient}
+      shimmerStyle={{ paddingHorizontal: 20, width: 130 }}
+    />
   );
 };

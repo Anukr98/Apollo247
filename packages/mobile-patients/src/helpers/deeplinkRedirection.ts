@@ -64,10 +64,11 @@ export const handleOpenURL = (event: any) => {
         }
       }
     } catch (error) {}
+    route = route ? route?.toLowerCase() : '';
 
     switch (route) {
       case 'consult':
-      case 'Consult':
+      case 'consults':
         return {
           routeName: 'Consult',
           id: data.length === 2 ? linkId : undefined,
@@ -75,7 +76,6 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'medicine':
-      case 'Medicine':
         return {
           routeName: 'Medicine',
           id: data.length === 2 ? linkId : undefined,
@@ -83,7 +83,6 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'uploadprescription':
-      case 'UploadPrescription':
         return {
           routeName: 'UploadPrescription',
           id: data.length === 2 ? linkId : undefined,
@@ -98,14 +97,13 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'test':
-      case 'Test':
+      case 'tests':
         return {
           routeName: 'Test',
         };
         break;
 
       case 'speciality':
-      case 'Speciality':
         if (data.length === 2) {
           return {
             routeName: 'Speciality',
@@ -119,7 +117,6 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'doctor':
-      case 'Doctor':
         if (data.length === 2) {
           return {
             routeName: 'Doctor',
@@ -136,14 +133,12 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'doctorsearch':
-      case 'DoctorSearch':
         return {
           routeName: 'DoctorSearch',
         };
         break;
 
       case 'medicinesearch':
-      case 'MedicineSearch':
         return {
           routeName: 'MedicineSearch',
           id: data.length === 2 ? linkId : undefined,
@@ -151,7 +146,6 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'medicinedetail':
-      case 'MedicineDetail':
         return {
           routeName: 'MedicineDetail',
           id: data.length === 2 ? linkId : undefined,
@@ -159,7 +153,6 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'medicinecart':
-      case 'MedicineCart':
         return {
           routeName: 'MedicineCart',
           id: data.length === 2 ? linkId : undefined,
@@ -167,29 +160,28 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'chatroom':
-      case 'ChatRoom':
         if (data.length === 2) {
           return {
-            routeName: 'ChatRoom_AppointmentData',
+            routeName: 'ChatRoom',
             id: linkId,
             isCall: false,
+            data: data,
           };
         }
         break;
 
       case 'doctorcall':
-      case 'DoctorCall':
         if (data.length === 2 && getCurrentRoute() !== AppRoutes.ChatRoom) {
           return {
-            routeName: 'DoctorCall_AppointmentData',
+            routeName: 'DoctorCall',
             id: linkId,
             isCall: false,
+            data: data,
           };
         }
         break;
 
       case 'doctorcallrejected':
-      case 'DoctorCallRejected':
         return {
           routeName: 'DoctorCallRejected',
           id: linkId,
@@ -197,7 +189,6 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'order':
-      case 'Order':
         if (data.length === 2) {
           return {
             routeName: 'Order',
@@ -207,7 +198,6 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'myorders':
-      case 'MyOrders':
         return {
           routeName: 'MyOrders',
         };
@@ -216,6 +206,10 @@ export const handleOpenURL = (event: any) => {
       case 'webview':
         if (data.length >= 1) {
           let url = data[1].replace('param=', '');
+          // attach url parameters to url
+          if (data?.[2]) {
+            url += `?${data?.[2]}`;
+          }
           return {
             routeName: 'webview',
             id: url,
@@ -224,7 +218,6 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'finddoctors':
-      case 'FindDoctors':
         if (data.length === 2) {
           return {
             routeName: 'FindDoctors',
@@ -234,28 +227,24 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'healthrecordshome':
-      case 'HealthRecordsHome':
         return {
           routeName: 'HealthRecordsHome',
         };
         break;
 
       case 'manageprofile':
-      case 'ManageProfile':
         return {
           routeName: 'ManageProfile',
         };
         break;
 
       case 'oneapollomembership':
-      case 'OneApolloMembership':
         return {
           routeName: 'OneApolloMembership',
         };
         break;
 
       case 'testdetails':
-      case 'TestDetails':
         return {
           routeName: 'TestDetails',
           id: data.length === 2 ? linkId : undefined,
@@ -263,7 +252,6 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'consultdetails':
-      case 'ConsultDetails':
         return {
           routeName: 'ConsultDetails',
           id: data.length === 2 ? linkId : undefined,
@@ -271,14 +259,12 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'circlemembershipdetails':
-      case 'CircleMembershipDetails':
         return {
           routeName: 'CircleMembershipDetails',
         };
         break;
 
       case 'testlisting':
-      case 'TestListing':
         return {
           routeName: 'TestListing',
           id: data?.length === 2 ? linkId : undefined,
@@ -286,7 +272,6 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'testreport':
-      case 'TestReport':
         return {
           routeName: 'TestReport',
           id: data?.length === 2 ? linkId : undefined,
@@ -294,7 +279,6 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'mytestorders':
-      case 'MyTestOrders':
         return {
           routeName: 'MyTestOrders',
         };
@@ -340,10 +324,7 @@ export const pushTheView = (
       navigation.navigate('MEDICINES', { comingFrom: 'deeplink' });
       break;
     case 'UploadPrescription':
-      navigation.navigate('MEDICINES', {
-        showUploadPrescriptionPopup: true,
-        comingFrom: 'deeplink',
-      });
+      navigateToView(navigation, AppRoutes.UploadPrescriptionView);
       break;
     case 'MedicineRecommendedSection':
       navigation.navigate('MEDICINES', { showRecommendedSection: true, comingFrom: 'deeplink' });
@@ -405,8 +386,8 @@ export const pushTheView = (
         movedFrom: 'splashscreen',
       });
       break;
-    case 'ChatRoom_AppointmentData':
-    case 'DoctorCall_AppointmentData':
+    case 'ChatRoom':
+    case 'DoctorCall':
       navigateToView(navigation, AppRoutes.ChatRoom, {
         data: id,
         callType: voipCallType ? voipCallType?.toUpperCase() : '',

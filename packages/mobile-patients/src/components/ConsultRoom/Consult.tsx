@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 16,
     color: theme.colors.SKY_BLUE,
-    ...theme.fonts.IBMPlexSansMedium(isIphone5s() ? 15 : 17),
+    ...theme.fonts.IBMPlexSansMedium(isIphone5s() ? 15 : 16.5),
     lineHeight: 24,
   },
   buttonStyles: {
@@ -390,6 +390,11 @@ const styles = StyleSheet.create({
     paddingRight: 3,
     marginTop: 7,
   },
+  filterIcon: {
+    width: 17,
+    height: 18,
+    marginTop: 10,
+  },
 });
 
 export interface ConsultProps extends NavigationScreenProps {
@@ -442,7 +447,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [loading, setLoading] = useState(false);
-  const [pageLoading, setPageLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
 
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [appointmentItem, setAppoinmentItem] = useState<Appointment | null>();
@@ -472,9 +477,15 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   }, [currentPatient, props.navigation.state.params]);
 
   useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', handleBack);
-    return () => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      didBlur && didBlur.remove();
     };
   }, []);
 
@@ -718,17 +729,15 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         },
       });
       const appointments = data?.getPatientAllAppointments;
-
-      const activeFollowUpAppointments =
-        appointments?.activeAppointments?.length || appointments?.followUpAppointments?.length
-          ? [
-              { type: 'Active', data: appointments?.activeAppointments! || [] },
-              { type: 'Follow-up Chat', data: appointments?.followUpAppointments! || [] },
-            ]
-          : [];
+      const activeFollowUpAppointments = appointments?.activeAppointments?.length
+        ? [{ type: 'Active', data: appointments?.activeAppointments! || [] }]
+        : [];
       const activeAppointments = appointments?.activeAppointments! || [];
       const followUpAppointments = appointments?.followUpAppointments! || [];
-      const completedAppointments = appointments?.completedAppointments! || [];
+      const completedAppointments = [
+        ...followUpAppointments,
+        ...(appointments?.completedAppointments! || []),
+      ];
       const cancelledAppointments = appointments?.cancelledAppointments! || [];
       const allAppointments = [
         ...activeAppointments,
@@ -1510,13 +1519,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           <TouchableOpacity activeOpacity={1} onPress={() => setIsFilterOpen(true)}>
             {filterLength > 0 ? (
               <>
-                <FilterGreenIcon style={{ width: 17, height: 18, marginTop: 8 }} />
+                <FilterGreenIcon style={styles.filterIcon} />
                 <View style={[styles.badgelabelView]}>
                   <Text style={styles.badgelabelText}>{filterLength}</Text>
                 </View>
               </>
             ) : (
-              <FilterDarkBlueIcon style={{ width: 17, height: 18, marginTop: 8 }} />
+              <FilterDarkBlueIcon style={styles.filterIcon} />
             )}
           </TouchableOpacity>
         </View>

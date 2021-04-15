@@ -195,7 +195,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       breadcrumb.push({
         title:
           movedFrom === 'deeplink' && !!widgetName
-            ? nameFormater(deepLinkWidgetName!?.replace(/-/g, ' '), 'title')
+            ? nameFormater(deepLinkWidgetName?.replace(/-/g, ' '), 'title')
             : nameFormater(title, 'title'),
         onPress: () => {},
       });

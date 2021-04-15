@@ -74,6 +74,18 @@ export enum BloodGroups {
   OPositive = "OPositive",
 }
 
+export enum BookingSource {
+  Apollo247_Android = "Apollo247_Android",
+  Apollo247_Ios = "Apollo247_Ios",
+  Apollo247_Web = "Apollo247_Web",
+}
+
+export enum BookingStatus {
+  COMPLETED = "COMPLETED",
+  FAILED = "FAILED",
+  INPROGRESS = "INPROGRESS",
+}
+
 export enum CODCity {
   CHENNAI = "CHENNAI",
 }
@@ -146,7 +158,6 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   PAYMENT_SUCCESSFUL = "PAYMENT_SUCCESSFUL",
   PHLEBO_CHECK_IN = "PHLEBO_CHECK_IN",
   PHLEBO_COMPLETED = "PHLEBO_COMPLETED",
-  PHLEBO_ON_THE_WAY = "PHLEBO_ON_THE_WAY",
   PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
   REPORT_GENERATED = "REPORT_GENERATED",
@@ -199,6 +210,13 @@ export enum FEEDBACKTYPE {
   PHARMACY = "PHARMACY",
 }
 
+export enum GENDER {
+  ALL = "ALL",
+  FEMALE = "FEMALE",
+  MALE = "MALE",
+  OTHER = "OTHER",
+}
+
 export enum Gender {
   FEMALE = "FEMALE",
   MALE = "MALE",
@@ -219,6 +237,7 @@ export enum HealthRestrictionNature {
 
 export enum LOGIN_TYPE {
   DOCTOR = "DOCTOR",
+  EMAIL = "EMAIL",
   PATIENT = "PATIENT",
 }
 
@@ -267,6 +286,7 @@ export enum MEDICINE_ORDER_PAYMENT_TYPE {
 export enum MEDICINE_ORDER_STATUS {
   CANCELLED = "CANCELLED",
   CANCEL_REQUEST = "CANCEL_REQUEST",
+  CONSULT_CANCELLED = "CONSULT_CANCELLED",
   CONSULT_COMPLETED = "CONSULT_COMPLETED",
   CONSULT_PENDING = "CONSULT_PENDING",
   DELIVERED = "DELIVERED",
@@ -665,6 +685,11 @@ export enum USER_STATUS {
 export enum USER_TYPE {
   DOCTOR = "DOCTOR",
   PATIENT = "PATIENT",
+}
+
+export enum UnitTypes {
+  CLINIC = "CLINIC",
+  HOSPITAL = "HOSPITAL",
 }
 
 export enum UserState {
@@ -1253,6 +1278,7 @@ export interface MedicineCartOMSItem {
   mou?: number | null;
   isMedicine: string;
   specialPrice: number;
+  subCategory?: string | null;
 }
 
 export interface MedicineOrderCancelOMSInput {
@@ -1733,6 +1759,7 @@ export interface UpdatePatientInput {
   relation?: Relation | null;
   photoUrl?: string | null;
   deviceCode?: string | null;
+  externalAuthId?: string | null;
   employeeId?: string | null;
   partnerId?: string | null;
   appsflyerId?: string | null;

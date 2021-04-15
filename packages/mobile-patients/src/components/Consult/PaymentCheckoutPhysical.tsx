@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   SafeAreaView,
@@ -91,6 +91,8 @@ import {
   getAppointmentDataVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { saveConsultationLocation } from '@aph/mobile-patients/src/helpers/clientCalls';
+
 interface PaymentCheckoutPhysicalProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
   tabs: { title: string }[];
@@ -127,7 +129,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   const isPhysicalConsult = isPhysicalConsultation(selectedTab);
   const [doctorDiscountedFees, setDoctorDiscountedFees] = useState<number>(0);
   const [showList, setShowList] = useState<boolean>(false);
-  const [showErrorSelect, setShowErrorSelect] = useState<boolean>(false);
+  const [showErrorSelect, setShowErrorSelect] = useState<boolean>(true); // default needs to be true to show select patient from the list
   const [isSelectedOnce, setIsSelectedOnce] = useState<boolean>(false);
   const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
   const [showProfilePopUp, setShowProfilePopUp] = useState<boolean>(false);
@@ -137,7 +139,9 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   const scrollviewRef = useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [gender, setGender] = useState<string>(currentPatient?.gender);
-  const { apisToCall, homeScreenParamsOnPop } = useAppCommonData();
+  const { apisToCall, homeScreenParamsOnPop, locationDetails } = useAppCommonData();
+  const [patientListYPos, setPatientListYPos] = useState<number>(0);
+  const [patientProfiles, setPatientProfiles] = useState<any>([]);
 
   const circleDoctorDetails = calculateCircleDoctorPricing(
     doctor,
@@ -189,6 +193,10 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   const circleDiscount =
     (circleSubscriptionId || circlePlanSelected) && discountedPrice ? discountedPrice : 0;
 
+  useEffect(() => {
+    setPatientProfiles(moveSelectedToTop());
+  }, []);
+
   const renderPrice = () => {
     return (
       <View>
@@ -211,7 +219,13 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
 
   const renderPatient = () => {
     return (
-      <View style={styles.subViewPopup}>
+      <View
+        onLayout={(event) => {
+          const layout = event.nativeEvent.layout;
+          setPatientListYPos(layout?.y);
+        }}
+        style={styles.subViewPopup}
+      >
         <View style={{ paddingHorizontal: 16 }}>
           <Text style={styles.priceBreakupTitle}>PATIENT DETAILS</Text>
         </View>
@@ -336,7 +350,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
 
   const renderCTAs = () => (
     <View style={styles.aphAlertCtaViewStyle}>
-      {moveSelectedToTop()?.map((item: any, index: any, array: any) =>
+      {patientProfiles?.map((item: any, index: any, array: any) =>
         item.firstName !== '+ADD MEMBER' ? (
           <TouchableOpacity
             onPress={() => {
@@ -367,7 +381,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
                   : styles.ctaOrangeText2Style
               }
             >
-              {Math.round(moment().diff(item.dateOfBirth || 0, 'years', true))} ,{item.gender}
+              {Math.round(moment().diff(item.dateOfBirth || 0, 'years', true))}, {item.gender}
             </Text>
           </TouchableOpacity>
         ) : null
@@ -401,6 +415,9 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     finalAppointmentInput['patientId'] = onAdd?.id;
     setIsSelectedOnce(onAdd?.added);
     setShowErrorSelect(!onAdd?.added);
+    let patientData = patientProfiles;
+    patientData?.unshift(onAdd?.profileData);
+    setPatientProfiles(patientData);
   };
   const onSelectedProfile = (item: any) => {
     setshowSpinner(true);
@@ -442,6 +459,11 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   };
 
   const onPressPay = () => {
+    scrollviewRef.current.scrollTo({
+      x: 0,
+      y: patientListYPos + 5,
+      animated: true,
+    });
     // Pay Button Clicked	event
     if (isSelectedOnce) {
       postWebEngagePayButtonClickedEvent();
@@ -572,7 +594,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           g(data, 'makeAppointmentPayment', 'appointment', 'id')!
         );
         eventAttributes['Display ID'] = displayID;
-        eventAttributes['User_Type'] = getUserType(currentPatient);
+        eventAttributes['User_Type'] = getUserType(allCurrentPatients);
         postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
         postAppsFlyerEvent(
           AppsFlyerEventName.CONSULTATION_BOOKED,
@@ -624,6 +646,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
                   skipAutoQuestions: doctor?.skipAutoQuestions,
                 };
                 homeScreenParamsOnPop.current = params;
+                locationDetails && saveConsultationLocation(client, appointmentId, locationDetails);
                 navigateToHome(props.navigation, params);
               }
             } catch (error) {}
@@ -694,7 +717,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       af_currency: 'INR',
       'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
       'Circle discount': circleDiscount,
-      User_Type: getUserType(currentPatient),
+      User_Type: getUserType(allCurrentPatients),
     };
     return eventAttributes;
   };
@@ -772,7 +795,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         doctorClinics?.length > 0 && doctor?.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics?.[0].facility?.city}`
           : '',
-      User_Type: getUserType(currentPatient),
+      User_Type: getUserType(allCurrentPatients),
     };
     postWebEngageEvent(WebEngageEventName.PAY_BUTTON_CLICKED, eventAttributes);
     postFirebaseEvent(FirebaseEventName.PAY_BUTTON_CLICKED, eventAttributes);
@@ -1053,9 +1076,9 @@ const styles = StyleSheet.create({
   },
   errorSelectMessage: {
     textAlign: 'center',
-    ...theme.viewStyles.text('B', 12, '#E31E24', 1, 20),
-    marginHorizontal: 5,
+    ...theme.viewStyles.text('B', 14, '#E31E24', 1, 20),
     marginBottom: 5,
+    width: '100%',
   },
   ctaOrangeText2Style: {
     ...theme.viewStyles.text('R', 10, '#fc9916', 1, 20),

@@ -331,9 +331,11 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     }
     let data = getQueryDataByOrderStatus(subQueriesData, isOrderRelatedIssue, medicineOrderStatus);
     const showReturnOrder =
+      MEDICINE_ORDER_STATUS.DELIVERED &&
       !!medicineOrderStatusDate &&
       moment(new Date()).diff(moment(medicineOrderStatusDate), 'hours') <= 48;
-    if (showReturnOrder && medicineOrderStatus === MEDICINE_ORDER_STATUS.DELIVERED) {
+
+    if (!showReturnOrder) {
       data = data.filter((item) => item.id !== helpSectionQueryId.returnOrder);
     }
 

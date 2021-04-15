@@ -103,6 +103,7 @@ import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextI
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { userLocationConsultWEBEngage } from '@aph/mobile-patients/src/helpers/CommonEvents';
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { saveConsultationLocation } from '@aph/mobile-patients/src/helpers/clientCalls';
 
 export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
@@ -129,7 +130,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const client = useApolloClient();
   const { success, failure, pending, aborted } = Payment;
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [notificationAlert, setNotificationAlert] = useState(false);
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const [showEmailInput, setshowEmailInput] = useState<boolean>(false);
@@ -274,7 +275,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           try {
             let eventAttributes = webEngageEventAttributes;
             eventAttributes['Display ID'] = res.data.paymentTransactionStatus.appointment.displayId;
-            eventAttributes['User_Type'] = getUserType(currentPatient);
+            eventAttributes['User_Type'] = getUserType(allCurrentPatients);
             postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, appsflyerEventAttributes);
             postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
             firePurchaseEvent(amountBreakup);
@@ -797,7 +798,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     const params = {
       isFreeConsult: navigateToChatRoom ? false : true,
       doctorName: doctorName,
-      appointmentData: appointmentData[0],
+      appointmentData: appointmentData?.[0],
       skipAutoQuestions: doctor?.skipAutoQuestions,
     };
     if (!navigateToChatRoom) {
@@ -961,26 +962,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
   const saveLocationWithConsultation = async (location: LocationData) => {
     setLoading?.(true);
-    try {
-      const query: updateAppointmentVariables = {
-        appointmentInput: {
-          appointmentId: orderId,
-          patientLocation: {
-            city: location?.city,
-            pincode: Number(location?.pincode),
-          },
-        },
-      };
-      await client.query<updateAppointment>({
-        query: UPDATE_APPOINTMENT,
-        fetchPolicy: 'no-cache',
-        variables: query,
-      });
-      setLoading?.(false);
-    } catch (error) {
-      setLoading?.(false);
-      CommonBugFender('ConsultRoom_getUserSubscriptionsByStatus', error);
-    }
+    await saveConsultationLocation(client, orderId, location);
+    setLoading?.(false);
   };
 
   const renderSearchManualLocation = () => {
