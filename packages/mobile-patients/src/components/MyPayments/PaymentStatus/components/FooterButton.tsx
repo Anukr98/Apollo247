@@ -22,12 +22,14 @@ const FooterButton: FC<FooterButtonProps> = (props) => {
     let orderID = 0;
     if (paymentFor === 'consult') {
       const { appointmentPayments, appointmentRefunds, appointmentPaymentOrders } = item;
+      const { refund } = appointmentPaymentOrders;
+      const refundInfo = refund?.length ? refund : appointmentRefunds;
       const paymentInfo = Object.keys(appointmentPaymentOrders).length
         ? appointmentPaymentOrders
         : appointmentPayments[0];
       if (!paymentInfo) {
         status = 'PENDING';
-      } else if (appointmentRefunds.length) {
+      } else if (refundInfo.length) {
         status = REFUND;
       } else {
         status = paymentInfo?.paymentStatus;
