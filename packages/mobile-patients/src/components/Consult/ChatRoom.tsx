@@ -1309,7 +1309,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             return obj.message === rescheduleOrCancelAppointment;
           });
           if (rescheduleOrCancelAppointmnt?.length === 0) {
-            rescheduleOrCancelAppointmentAutomatedText();
+            // rescheduleOrCancelAppointmentAutomatedText();
           }
           BackgroundTimer.clearInterval(appointmentDiffMinTimerId);
         }
@@ -2773,7 +2773,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       doctorWillConnectShortlyAutomatedText();
     }
     if (rescheduleOrCancelAppointmnt?.length === 0 && diffMin <= -15) {
-      rescheduleOrCancelAppointmentAutomatedText();
+      // rescheduleOrCancelAppointmentAutomatedText();
     }
   };
 
