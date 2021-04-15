@@ -100,6 +100,7 @@ import isLessThan from 'semver/functions/lt';
 import coerce from 'semver/functions/coerce';
 import RNFetchBlob from 'rn-fetch-blob';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
+import { HEALTH_CREDIT_EXPIRATION_TIME, HEALTH_CREDITS } from '../utils/AsyncStorageKey';
 import { getPatientByMobileNumber_getPatientByMobileNumber_patients } from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
 
 const width = Dimensions.get('window').width;
@@ -2777,3 +2778,39 @@ export async function downloadDiagnosticReport(
     throw new Error('Something went wrong');
   }
 }
+
+export const persistHealthCredits = (healthCredit: number) => {
+  var healthCreditObj = {
+    healthCredit: healthCredit,
+    age: new Date().getTime(),
+  };
+  AsyncStorage.setItem(HEALTH_CREDITS, JSON.stringify(healthCreditObj));
+};
+
+export const getHealthCredits = async () => {
+  try {
+    var healthCreditObj: any = await AsyncStorage.getItem(HEALTH_CREDITS);
+    if (healthCreditObj != null) {
+      var healthCredit = JSON.parse?.(healthCreditObj);
+
+      if (healthCredit !== null) {
+        var age = healthCredit.age;
+        var ageDate = moment(age);
+        var nowDate = moment(new Date());
+        var duration = moment.duration(nowDate.diff(ageDate)).asMinutes();
+
+        if (duration < 0 || duration > HEALTH_CREDIT_EXPIRATION_TIME) {
+          return null; //Expired
+        } else {
+          return healthCredit;
+        }
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  } catch (error) {
+    return null;
+  }
+};
