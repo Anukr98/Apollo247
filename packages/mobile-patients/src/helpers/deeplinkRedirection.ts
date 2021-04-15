@@ -372,17 +372,12 @@ export const pushTheView = (
     case 'FindDoctors':
       const cityBrandFilter = id ? handleEncodedURI(id) : '';
       navigateToView(navigation, AppRoutes.DoctorSearchListing, {
-        specialityId: cityBrandFilter[0] ? cityBrandFilter[0] : '',
+        specialityId: cityBrandFilter?.[0] ? cityBrandFilter?.[0] : '',
         city:
-          cityBrandFilter.length > 1 && !isUpperCase(cityBrandFilter[1])
-            ? cityBrandFilter[1]
+          cityBrandFilter?.length > 1 && !isUpperCase(cityBrandFilter?.[1])
+            ? cityBrandFilter?.[1]
             : null,
-        brand:
-          cityBrandFilter.length > 2
-            ? cityBrandFilter[2]
-            : isUpperCase(cityBrandFilter[1])
-            ? cityBrandFilter[1]
-            : null,
+        brand: cityBrandFilter?.length > 2 ? cityBrandFilter?.[2] : null,
       });
       break;
     case 'Doctor':
