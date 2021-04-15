@@ -61,6 +61,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 const styles = StyleSheet.create({
   doctorView: {
     flex: 1,
@@ -173,6 +174,10 @@ const styles = StyleSheet.create({
     paddingTop: 35,
     justifyContent: 'space-between',
     flex: 1,
+  },
+  BORButtonTextStyle: {
+    ...theme.viewStyles.text('B', 13, '#FC9916', 1, 24),
+    textTransform: 'uppercase',
   },
 });
 
@@ -691,92 +696,120 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   props.buttonViewStyle,
                 ]}
               >
-                <TouchableOpacity
-                  activeOpacity={1}
-                  style={[
-                    {
-                      backgroundColor:
-                        rowData.doctorType !== 'DOCTOR_CONNECT'
-                          ? theme.colors.BUTTON_BG
-                          : theme.colors.WHITE,
-                      shadowColor:
-                        rowData.doctorType === 'DOCTOR_CONNECT'
-                          ? theme.colors.SHADOW_GRAY
-                          : theme.colors.WHITE,
-                      shadowOffset:
-                        rowData.doctorType === 'DOCTOR_CONNECT'
-                          ? { width: 0, height: 2 }
-                          : { width: 0, height: 0 },
-                      shadowOpacity: rowData.doctorType === 'DOCTOR_CONNECT' ? 0.4 : 0,
-                      shadowRadius: rowData.doctorType === 'DOCTOR_CONNECT' ? 8 : 0,
-                      elevation: rowData.doctorType === 'DOCTOR_CONNECT' ? 4 : 0,
-                      height: 44,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderRadius: rowData.doctorType === 'DOCTOR_CONNECT' ? 10 : 0,
-                    },
-                    props.buttonStyle,
-                  ]}
-                  onPress={() => {
-                    try {
-                      const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK] = {
-                        'Patient Name': currentPatient.firstName,
-                        'Doctor ID': rowData.id,
-                        'Speciality ID': rowData?.specialty?.id,
-                        'Doctor Speciality': rowData?.specialty?.name,
-                        'Doctor Experience': Number(rowData?.experience),
-                        'Hospital Name': rowData?.doctorHospital?.[0]?.facility?.name,
-                        'Hospital City': rowData?.doctorHospital?.[0]?.facility?.city,
-                        'Availability Minutes': getTimeDiff(rowData?.slot),
-                        Source: 'List',
-                        'Patient UHID': currentPatient.uhid,
-                        Relation: currentPatient?.relation,
-                        'Patient Age': Math.round(
-                          moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)
-                        ),
-                        'Patient Gender': currentPatient.gender,
-                        'Customer ID': currentPatient.id,
-                      };
-                      if (props.rowId) {
-                        eventAttributes['Rank'] = props.rowId;
-                      }
-                      postWebEngageEvent(
-                        WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK,
-                        eventAttributes
-                      );
-                    } catch (error) {}
-
-                    props.onPressConsultNowOrBookAppointment &&
-                      props.onPressConsultNowOrBookAppointment(
-                        rowData.slot && moment(rowData.slot).isValid()
-                          ? 'consult-now'
-                          : 'book-appointment'
-                      );
-                    CommonLogEvent(AppRoutes.DoctorSearchListing, 'Consult now clicked');
-                    navigateToDetails(rowData.id ? rowData.id : '', {
-                      showBookAppointment: true,
-                    });
-                  }}
-                >
-                  <Text
+                {props?.rowId != 2 && (
+                  <TouchableOpacity
+                    activeOpacity={1}
                     style={[
-                      styles.buttonText,
                       {
-                        color:
+                        backgroundColor:
                           rowData.doctorType !== 'DOCTOR_CONNECT'
-                            ? theme.colors.BUTTON_TEXT
-                            : theme.colors.BUTTON_BG,
+                            ? theme.colors.BUTTON_BG
+                            : theme.colors.WHITE,
+                        shadowColor:
+                          rowData.doctorType === 'DOCTOR_CONNECT'
+                            ? theme.colors.SHADOW_GRAY
+                            : theme.colors.WHITE,
+                        shadowOffset:
+                          rowData.doctorType === 'DOCTOR_CONNECT'
+                            ? { width: 0, height: 2 }
+                            : { width: 0, height: 0 },
+                        shadowOpacity: rowData.doctorType === 'DOCTOR_CONNECT' ? 0.4 : 0,
+                        shadowRadius: rowData.doctorType === 'DOCTOR_CONNECT' ? 8 : 0,
+                        elevation: rowData.doctorType === 'DOCTOR_CONNECT' ? 4 : 0,
+                        height: 44,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: rowData.doctorType === 'DOCTOR_CONNECT' ? 10 : 0,
                       },
-                      props.buttonTextStyle,
+                      props.buttonStyle,
                     ]}
+                    onPress={() => {
+                      try {
+                        const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK] = {
+                          'Patient Name': currentPatient.firstName,
+                          'Doctor ID': rowData.id,
+                          'Speciality ID': rowData?.specialty?.id,
+                          'Doctor Speciality': rowData?.specialty?.name,
+                          'Doctor Experience': Number(rowData?.experience),
+                          'Hospital Name': rowData?.doctorHospital?.[0]?.facility?.name,
+                          'Hospital City': rowData?.doctorHospital?.[0]?.facility?.city,
+                          'Availability Minutes': getTimeDiff(rowData?.slot),
+                          Source: 'List',
+                          'Patient UHID': currentPatient.uhid,
+                          Relation: currentPatient?.relation,
+                          'Patient Age': Math.round(
+                            moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)
+                          ),
+                          'Patient Gender': currentPatient.gender,
+                          'Customer ID': currentPatient.id,
+                        };
+                        if (props.rowId) {
+                          eventAttributes['Rank'] = props.rowId;
+                        }
+                        postWebEngageEvent(
+                          WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK,
+                          eventAttributes
+                        );
+                      } catch (error) {}
+
+                      props.onPressConsultNowOrBookAppointment &&
+                        props.onPressConsultNowOrBookAppointment(
+                          rowData.slot && moment(rowData.slot).isValid()
+                            ? 'consult-now'
+                            : 'book-appointment'
+                        );
+                      CommonLogEvent(AppRoutes.DoctorSearchListing, 'Consult now clicked');
+                      navigateToDetails(rowData.id ? rowData.id : '', {
+                        showBookAppointment: true,
+                      });
+                    }}
                   >
-                    {!!ctaBannerText
-                      ? ctaBannerText.CONSULT_NOW
-                      : !!fetchedSlot
-                      ? getButtonTitle(fetchedSlot)
-                      : getButtonTitle(rowData?.slot)}
-                  </Text>
-                </TouchableOpacity>
+                    <Text
+                      style={[
+                        styles.buttonText,
+                        {
+                          color:
+                            rowData.doctorType !== 'DOCTOR_CONNECT'
+                              ? theme.colors.BUTTON_TEXT
+                              : theme.colors.BUTTON_BG,
+                        },
+                        props.buttonTextStyle,
+                      ]}
+                    >
+                      {!!ctaBannerText
+                        ? ctaBannerText.CONSULT_NOW
+                        : !!fetchedSlot
+                        ? getButtonTitle(fetchedSlot)
+                        : getButtonTitle(rowData?.slot)}
+                      asad
+                      {console.log('csk count', props?.key, props?.rowId)}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+
+                {props?.rowId === 2 && (
+                  <View>
+                    <TouchableOpacity
+                      activeOpacity={1}
+                      style={{}}
+                      onPress={() => console.log('csk booking on request pressed')}
+                    >
+                      <Text>Booking On Request</Text>
+                    </TouchableOpacity>
+
+                    <Button
+                      style={{
+                        width: '90%',
+                        margin: 20,
+                        backgroundColor: theme.colors.WHITE,
+                        shadowOffset: { width: 2, height: 4 },
+                      }}
+                      titleTextStyle={styles.BORButtonTextStyle}
+                      title={'Request Appointment'}
+                      onPress={() => console.log('csk booking on request button pressed')}
+                    />
+                  </View>
+                )}
               </View>
             )}
           </View>
