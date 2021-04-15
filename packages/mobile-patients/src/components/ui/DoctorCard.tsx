@@ -290,24 +290,18 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           CommonBugFender('DoctorCard_navigateToDetails', error);
         });
     }
-
-    if (isBoth) {
-      props.navigation.navigate(AppRoutes.DoctorDetails, {
-        doctorId: id,
-        callSaveSearch: props.callSaveSearch,
-        consultModeSelected: ConsultMode.BOTH,
-        externalConnect: null,
-        showBookAppointment: false,
-      });
-    } else {
-      props.navigation.navigate(AppRoutes.DoctorDetails, {
-        doctorId: id,
-        consultModeSelected: isOnline ? ConsultMode.ONLINE : ConsultMode.PHYSICAL,
-        externalConnect: null,
-        callSaveSearch: props.callSaveSearch,
-        ...params,
-      });
-    }
+    const onlineConsult = selectedConsultMode
+      ? isOnlineConsultSelected
+      : isBoth || isOnline
+      ? true
+      : false;
+    props.navigation.navigate(AppRoutes.DoctorDetails, {
+      doctorId: id,
+      consultModeSelected: onlineConsult ? ConsultMode.ONLINE : ConsultMode.PHYSICAL,
+      externalConnect: null,
+      callSaveSearch: props.callSaveSearch,
+      ...params,
+    });
   };
 
   const calculatefee = (rowData: any, consultTypeBoth: boolean, consultTypeOnline: boolean) => {
