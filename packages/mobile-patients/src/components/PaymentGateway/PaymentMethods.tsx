@@ -8,6 +8,7 @@ import {
   NativeEventEmitter,
   View,
   ScrollView,
+  Platform,
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -92,18 +93,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const paymentActions = ['nbTxn', 'walletTxn', 'upiTxn', 'cardTxn'];
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
-  const upiApps = [
-    // {
-    //   bank: 'Google Pay',
-    //   method: 'GOOGLEPAY',
-    //   source: require('@aph/mobile-patients/src/components/ui/icons/GPay.png'),
-    // },
-    {
-      bank: 'Phone Pe',
-      method: 'PHONEPE',
-      source: require('@aph/mobile-patients/src/components/ui/icons/PhonePe.png'),
-    },
-  ];
   const FailedStatuses = ['AUTHENTICATION_FAILED', 'AUTHORIZATION_FAILED'];
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
@@ -113,9 +102,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     fecthPaymentOptions();
     fetchTopBanks();
     isPhonePeReady();
-    setTimeout(() => {
-      isGooglePayReady();
-    }, 1000);
+    isGooglePayReady();
     return () => eventListener.remove();
   }, []);
 
@@ -133,7 +120,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     switch (event) {
       case 'process_result':
         var payload = data.payload || {};
-        console.log('payload >>', JSON.stringify(payload));
         let status = payload?.payload?.status;
         if (payload?.payload?.action == 'getPaymentMethods' && !payload?.error) {
           const banks = payload?.payload?.paymentMethods?.filter(
@@ -144,11 +130,10 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         } else if (paymentActions.indexOf(payload?.payload?.action) != -1 && status) {
           status == 'CHARGED' && navigatetoOrderStatus(false, 'success');
           status == 'PENDING_VBV' && handlePaymentPending(payload?.errorCode);
-          FailedStatuses.includes(payload?.payload?.status) && showTxnFailurePopUP();
+          FailedStatuses.includes(status) && showTxnFailurePopUP();
         } else if (payload?.payload?.action == 'isDeviceReady') {
-          console.log(payload);
-          payload?.requestId == 'phonePe' && payload?.payload?.status && setphonePeReady(true);
-          payload?.requestId == 'googlePay' && payload?.payload?.status && setGooglePayReady(true);
+          payload?.requestId == 'phonePe' && status && setphonePeReady(true);
+          payload?.requestId == 'googlePay' && status && setGooglePayReady(true);
         } else if (payload?.payload?.action == 'upiTxn' && !payload?.error && !status) {
           setAvailableUPIapps(payload?.payload?.availableApps || []);
         } else if (payload?.error) {
@@ -166,13 +151,16 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         setisCardValid(false);
         break;
       default:
-        renderErrorPopup();
+        showTxnFailurePopUP();
     }
   };
 
   const handlePaymentPending = (errorCode: string) => {
     switch (errorCode) {
-      case ('JP_002', 'JP_005', 'JP_009', 'JP_012'):
+      case 'JP_002':
+      case 'JP_005':
+      case 'JP_009':
+      case 'JP_012':
         // User aborted txn or no Internet or user had exceeded the limit of incorrect OTP submissions or txn failed at PG end
         showTxnFailurePopUP();
         break;
@@ -295,14 +283,16 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   async function onPressUPIApp(app: any) {
     triggerWebengege('Prepaid', 'UPI');
     const token = await getClientToken();
-    // const sdkPresent =
-    //   app?.payment_method_code == 'PHONEPE'
-    //     ? 'ANDROID_PHONEPE'
-    //     : app?.payment_method_code == 'GOOGLEPAY'
-    //     ? 'ANDROID_GOOGLEPAY'
-    //     : '';
-    // InitiateUPISDKTxn(currentPatient?.id, token, paymentId, app?.payment_method_code, sdkPresent);
-    InitiateUPIIntentTxn(currentPatient?.id, token, paymentId, app.packageName);
+    const paymentCode = app?.payment_method_code;
+    const sdkPresent =
+      paymentCode == 'PHONEPE' && phonePeReady
+        ? 'ANDROID_PHONEPE'
+        : // : paymentCode == 'GOOGLEPAY' && googlePayReady
+          // ? 'ANDROID_GOOGLEPAY'
+          '';
+    sdkPresent
+      ? InitiateUPISDKTxn(currentPatient?.id, token, paymentId, paymentCode, sdkPresent)
+      : InitiateUPIIntentTxn(currentPatient?.id, token, paymentId, app.packageName);
   }
 
   async function onPressVPAPay(VPA: string) {
@@ -362,25 +352,33 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const filterUPIApps = () => {
-    if (availableUPIApps?.length) {
-      const available = availableUPIApps?.map((item: any) => item?.appName);
-      const UPIApps = paymentMethods?.find((item: any) => item?.name == 'UPI')?.payment_methods;
-      const apps = UPIApps?.map((app: any) => {
-        if (
-          available.includes(app?.payment_method_name) &&
-          paymentModeVersionCheck(app?.minimum_supported_version)
-        ) {
-          let object = app;
-          const packageName = availableUPIApps?.find(
-            (item: any) => item?.appName == app.payment_method_name
-          )?.['packageName'];
-          object['packageName'] = packageName;
-          return object;
-        }
-      }).filter((value: any) => value);
-      return apps;
+    if (Platform.OS == 'android') {
+      if (availableUPIApps?.length) {
+        const available = availableUPIApps?.map((item: any) => item?.appName);
+        const UPIApps = paymentMethods?.find((item: any) => item?.name == 'UPI')?.payment_methods;
+        const apps = UPIApps?.map((app: any) => {
+          if (
+            available.includes(app?.payment_method_name) &&
+            paymentModeVersionCheck(app?.minimum_supported_version)
+          ) {
+            let object = app;
+            const packageName = availableUPIApps?.find(
+              (item: any) => item?.appName == app.payment_method_name
+            )?.['packageName'];
+            object['packageName'] = packageName;
+            return object;
+          }
+        }).filter((value: any) => value);
+        return apps;
+      } else {
+        return [];
+      }
     } else {
-      return [];
+      const UPIApps = paymentMethods?.find((item: any) => item?.name == 'UPI')?.payment_methods;
+      const apps = UPIApps?.filter(
+        (item: any) => item?.payment_method_code == 'PHONEPE' && phonePeReady
+      );
+      return apps;
     }
   };
 
