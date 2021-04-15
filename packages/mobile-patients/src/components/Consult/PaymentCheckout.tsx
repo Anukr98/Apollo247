@@ -40,6 +40,8 @@ import {
   PLAN,
   OrderCreate,
   OrderVerticals,
+  PAYMENT_MODE,
+  OrderInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   calculateCircleDoctorPricing,
@@ -81,6 +83,7 @@ import {
 import {
   BOOK_APPOINTMENT,
   BOOK_APPOINTMENT_WITH_SUBSCRIPTION,
+  CREATE_ORDER,
   CREATE_USER_SUBSCRIPTION,
   CREATE_INTERNAL_ORDER,
   MAKE_APPOINTMENT_PAYMENT,
@@ -113,7 +116,10 @@ import {
   PaymentStatus,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-
+import {
+  createOrder,
+  createOrderVariables,
+} from '@aph/mobile-patients/src/graphql/types/createOrder';
 interface PaymentCheckoutProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
   tabs: { title: string }[];
@@ -311,6 +317,20 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     return client.mutate<createOrderInternal, createOrderInternalVariables>({
       mutation: CREATE_INTERNAL_ORDER,
       variables: { order: orderInput },
+    });
+  };
+
+  const createJusPayOrder = (paymentId: string) => {
+    const orderInput: OrderInput = {
+      payment_order_id: paymentId,
+      payment_mode: PAYMENT_MODE.PREPAID,
+      is_mobile_sdk: true,
+      return_url: AppConfig.Configuration.returnUrl,
+    };
+    return client.mutate<createOrder, createOrderVariables>({
+      mutation: CREATE_ORDER,
+      variables: { order_input: orderInput },
+      fetchPolicy: 'no-cache',
     });
   };
 
@@ -780,7 +800,9 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           saveSearchSpeciality(client, doctor?.specialty?.id, patientId);
         }
       } catch (error) {}
+      const data = await createOrderInternal(apptmt?.id!, subscriptionId);
       if (amountToPay == 0) {
+        const res = await createJusPayOrder(data?.data?.createOrderInternal?.payment_order_id!);
         makePayment(
           apptmt?.id!,
           Number(amountToPay),
@@ -788,7 +810,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           `${apptmt?.displayId!}`
         );
       } else {
-        const data = await createOrderInternal(apptmt?.id!, subscriptionId);
         if (data?.data?.createOrderInternal?.success) {
           setauthToken?.('');
           props.navigation.navigate(AppRoutes.PaymentMethods, {
@@ -878,31 +899,23 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         variables: {
           paymentInput: {
             amountPaid: amountPaid,
-            paymentRefId: '',
             paymentStatus: 'TXN_SUCCESS',
             paymentDateTime: paymentDateTime,
             responseCode: coupon,
             responseMessage: 'Coupon applied',
-            bankTxnId: '',
             orderId: id,
           },
         },
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
-        let eventAttributes = getConsultationBookedEventAttributes(
-          paymentDateTime,
-          g(data, 'makeAppointmentPayment', 'appointment', 'id')!
-        );
+        let eventAttributes = getConsultationBookedEventAttributes(paymentDateTime, id);
         eventAttributes['Display ID'] = displayID;
         eventAttributes['User_Type'] = getUserType(currentPatient);
         postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
         postAppsFlyerEvent(
           AppsFlyerEventName.CONSULTATION_BOOKED,
-          getConsultationBookedAppsFlyerEventAttributes(
-            g(data, 'makeAppointmentPayment', 'appointment', 'id')!,
-            displayID
-          )
+          getConsultationBookedAppsFlyerEventAttributes(id, displayID)
         );
         setLoading!(false);
         if (!currentPatient?.isConsulted) getPatientApiCall();
