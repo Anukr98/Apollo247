@@ -249,20 +249,10 @@ export const BOOK_APPOINTMENT_WITH_SUBSCRIPTION = gql`
 `;
 
 export const MAKE_APPOINTMENT_PAYMENT = gql`
-  mutation makeAppointmentPayment($paymentInput: AppointmentPaymentInput) {
-    makeAppointmentPayment(paymentInput: $paymentInput) {
+  mutation makeAppointmentPaymentV2($paymentInput: AppointmentPaymentInputV2) {
+    makeAppointmentPaymentV2(paymentInput: $paymentInput) {
       appointment {
         id
-        amountPaid
-        paymentRefId
-        paymentDateTime
-        responseCode
-        responseMessage
-        bankTxnId
-        orderId
-        appointment {
-          id
-        }
       }
     }
   }
