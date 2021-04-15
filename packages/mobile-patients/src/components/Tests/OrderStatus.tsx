@@ -58,6 +58,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       apiCallEnums.circleSavings,
       apiCallEnums.getAllBanners,
       apiCallEnums.plansCashback,
+      apiCallEnums.getUserSubscriptions,
     ];
     navigateToHome(props.navigation);
   };
