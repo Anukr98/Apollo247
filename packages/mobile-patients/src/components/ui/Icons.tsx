@@ -731,6 +731,22 @@ export const WhiteProfile: React.FC<IconProps> = (props) => (
 export const OrangeCall: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/call_orange_circle.png')} />
 );
+export const Emoticon1: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/emoticons_5.png')} />
+);
+export const Emoticon2: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/emoticons_7.png')} />
+);
+export const Emoticon3: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/emoticons_9.png')} />
+);
+export const Emoticon4: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/emoticons_11.png')} />
+);
+export const Emoticon5: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/emoticons_13.png')} />
+);
+
 
 export const OneApollo: React.FC<IconProps> = (props) => (
   <IconBase

@@ -546,7 +546,7 @@
   "orders": {
     "urOrders": "MY ORDERS",
     "ratingHeader": "FEEDBACK",
-    "ratingDetailHeader":"Rate your Experience with our Phlebotomist",
+    "ratingDetailHeader": "Rate your Experience with our Phlebotomist",
     "trackOrder": "Track Order",
     "viewBill": "Order Summary",
     "call_us": "CALL US",
@@ -554,6 +554,14 @@
     "test_prec_req": "This test requires doctor’s prescription",
     "test_prec_not_req": "This test doesn't requires doctor’s prescription"
   },
+  "defaultReasonList": [
+    { "title": "Arrived very Late" },
+    { "title": "Did not seem Well-Trained" },
+    { "title": "Phlebo was not Polite" },
+    { "title": "Didn’t Wear the PPE Kit or Gloves" },
+    { "title": "I have other Feedback" }
+  ],
+  "positiveReasonList": [{ "title": "I have Positive Feedback" }],
   "OrderSummery": {
     "total": "Total",
     "order": "ORDER",
