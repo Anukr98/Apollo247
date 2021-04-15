@@ -2266,8 +2266,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             showAreaSelection
           )
         : getAreas();
+      let removedItems = removedTestItemId?.join(', ');
       DiagnosticRemoveFromCartClicked(
-        removedTestItemId,
+        removedItems,
         removedTest,
         addresses?.[selectedAddressIndex]?.zipcode!,
         'Automated'
