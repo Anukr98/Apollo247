@@ -22,7 +22,6 @@ import CovidButton from '@aph/mobile-patients/src/components/ConsultRoom/Compone
 import firebaseAuth from '@react-native-firebase/auth';
 
 import {
-  ApolloHealthProIcon,
   CartIcon,
   ConsultationRoom,
   CovidOrange,
@@ -93,7 +92,6 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/GetAllUserSubscriptionsWithPlanBenefitsV2';
 import { GetCashbackDetailsOfPlanById } from '@aph/mobile-patients/src/graphql/types/GetCashbackDetailsOfPlanById';
 import { getUserProfileType } from '@aph/mobile-patients/src/graphql/types/getUserProfileType';
-import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
 import {
   GetSubscriptionsOfUserByStatus,
@@ -110,7 +108,6 @@ import {
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 import {
   getAllProHealthAppointments,
-  getPatientPersonalizedAppointmentList,
   getUserBannersList,
   saveTokenDevice,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
@@ -175,8 +172,6 @@ import {
   addVoipPushToken,
   addVoipPushTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/addVoipPushToken';
-import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '@aph/mobile-patients/src/graphql/types/getPatientPersonalizedAppointments';
-import { ConsultPersonalizedCard } from '@aph/mobile-patients/src/components/ui/ConsultPersonalizedCard';
 import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 import {
   preFetchSDK,
@@ -746,8 +741,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     notificationCount,
     setNotificationCount,
     setAllNotifications,
-    appointmentsPersonalized,
-    setAppointmentsPersonalized,
     setHdfcUserSubscriptions,
     hdfcUserSubscriptions,
     bannerDataHome,
@@ -805,7 +798,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [menuViewOptions, setMenuViewOptions] = useState<number[]>([]);
   const [currentAppointments, setCurrentAppointments] = useState<string>('0');
@@ -815,8 +808,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [isWEGFired, setWEGFired] = useState(false);
   const [serviceable, setserviceable] = useState<String>('');
-  const [personalizedData, setPersonalizedData] = useState<any>([]);
-  const [isPersonalizedCard, setisPersonalizedCard] = useState(false);
   const [renewNow, setRenewNow] = useState<String>('');
   const [isCircleMember, setIsCircleMember] = useState<String>('');
   const [circleSavings, setCircleSavings] = useState<number>(-1);
@@ -1079,7 +1070,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     apisToCall?.current?.forEach((item: any) => {
       const {
         circleSavings,
-        patientAppointments,
         patientAppointmentsCount,
         getAllBanners,
         getUserSubscriptions,
@@ -1092,9 +1082,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       switch (item) {
         case circleSavings:
           fetchCircleSavings();
-          break;
-        case patientAppointments:
-          getPersonalizesAppointments();
           break;
         case patientAppointmentsCount:
           getAppointmentsCount();
@@ -1246,7 +1233,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
-      User_Type: getUserType(currentPatient),
+      User_Type: getUserType(allCurrentPatients),
     };
     if (
       source &&
@@ -2054,7 +2041,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     } else {
       AsyncStorage.setItem('selectedProfileId', JSON.stringify(currentPatient.id));
       if (selectedProfile !== currentPatient.id) {
-        getPersonalizesAppointments();
         getAppointmentsCount();
         setSelectedProfile(currentPatient.id);
       }
@@ -2400,48 +2386,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         CommonBugFender('inside the getProHealthAppointemnt', e);
         setProHealthActiveAppointmentCount('0');
         setProHealthActiveAppointment([]);
-      });
-  };
-
-  const getPersonalizesAppointments = async () => {
-    const storedUhid: any = await AsyncStorage.getItem('selectUserUHId');
-    const selectedUHID = storedUhid ? storedUhid : g(currentPatient, 'uhid');
-    const uhidSelected = await AsyncStorage.getItem('UHIDused');
-
-    if (uhidSelected !== null) {
-      if (uhidSelected === selectedUHID) {
-        if (Object.keys(appointmentsPersonalized)?.length != 0) {
-          setPersonalizedData(appointmentsPersonalized as any);
-          setisPersonalizedCard(true);
-        }
-      } else {
-        setPersonalizedData([]);
-        setisPersonalizedCard(false);
-      }
-    }
-
-    getPatientPersonalizedAppointmentList(client, selectedUHID)
-      .then((data: any) => {
-        const appointmentsdata =
-          g(data, 'data', 'data', 'getPatientPersonalizedAppointments', 'appointmentDetails') || [];
-        AsyncStorage.setItem('UHIDused', selectedUHID);
-
-        if (appointmentsdata.doctorId !== null) {
-          setPersonalizedData(appointmentsdata as any);
-          setisPersonalizedCard(true);
-          setAppointmentsPersonalized &&
-            setAppointmentsPersonalized(
-              appointmentsdata as getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails[]
-            );
-        } else {
-          setPersonalizedData([]);
-          setisPersonalizedCard(false);
-          setAppointmentsPersonalized && setAppointmentsPersonalized([]);
-        }
-      })
-      .catch((e) => {
-        setPersonalizedData([]);
-        setisPersonalizedCard(false);
       });
   };
 
@@ -3411,39 +3355,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const renderAppointmentWidget = () => {
-    return (
-      <View>
-        <ConsultPersonalizedCard
-          rowData={personalizedData}
-          onClickButton={() => {
-            const { doctorDetails } = personalizedData;
-            const eventAttributes: WebEngageEvents[WebEngageEventName.HOMEPAGE_WIDGET_FOLLOWUP_CLICK] = {
-              'Doctor ID': personalizedData.doctorId,
-              'Speciality ID': doctorDetails.specialty.id,
-              'Hospital City': personalizedData.hospitalLocation,
-              'Consult Mode': personalizedData.appointmentType,
-              'Doctor Speciality': doctorDetails.specialty.name,
-              'Customer ID': currentPatient.id,
-              'Patient Name': currentPatient.firstName,
-              'Patient Age': Math.round(
-                moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-              ),
-              'Patient Gender': currentPatient.gender,
-              'Patient UHID': currentPatient.uhid,
-            };
-            postWebEngageEvent(WebEngageEventName.HOMEPAGE_WIDGET_FOLLOWUP_CLICK, eventAttributes);
-            props.navigation.navigate(AppRoutes.DoctorDetails, {
-              doctorId: personalizedData ? personalizedData.doctorDetails.id : '',
-              showBookAppointment: true,
-              consultedWithDoctorBefore: true,
-            });
-          }}
-        />
-      </View>
-    );
-  };
-
   const renderProhealthBanner = () => {
     return (
       <TouchableOpacity
@@ -3763,7 +3674,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               {renderTopIcons()}
               <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
               <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text>
-              {isPersonalizedCard && renderAppointmentWidget()}
               {renderMenuOptions()}
 
               {circleDataLoading && renderCircleShimmer()}

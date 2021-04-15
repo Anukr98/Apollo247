@@ -71,6 +71,7 @@ import {
   setWebEngageScreenNames,
   getDoctorShareMessage,
   postDoctorShareWEGEvents,
+  getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -280,7 +281,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [filterMode, setfilterMode] = useState<ConsultMode>(ConsultMode.BOTH);
   const [searchQuery, setSearchQuery] = useState({});
 
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const [showLocations, setshowLocations] = useState<boolean>(false);
   const [sortValue, setSortValue] = useState<string>('');
@@ -1124,6 +1125,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       'Doctor Speciality': doctorDetails?.specialtydisplayName,
       Rank: doctorDetails?.rowId,
       Is_TopDoc: !!isTopDoc ? 'Yes' : 'No',
+      User_Type: getUserType(allCurrentPatients),
     };
 
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {

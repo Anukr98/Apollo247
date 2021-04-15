@@ -477,9 +477,15 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   }, [currentPatient, props.navigation.state.params]);
 
   useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', handleBack);
-    return () => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      didBlur && didBlur.remove();
     };
   }, []);
 

@@ -27,7 +27,14 @@ import Geolocation from 'react-native-geolocation-service';
 import NetInfo from '@react-native-community/netinfo';
 import moment from 'moment';
 import AsyncStorage from '@react-native-community/async-storage';
-import { Alert, Dimensions, Platform, Linking, NativeModules, PermissionsAndroid } from 'react-native';
+import {
+  Alert,
+  Dimensions,
+  Platform,
+  Linking,
+  NativeModules,
+  PermissionsAndroid,
+} from 'react-native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import Permissions from 'react-native-permissions';
 import { DiagnosticsCartItem } from '../components/DiagnosticsCartProvider';
@@ -93,6 +100,7 @@ import isLessThan from 'semver/functions/lt';
 import coerce from 'semver/functions/coerce';
 import RNFetchBlob from 'rn-fetch-blob';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
+import { getPatientByMobileNumber_getPatientByMobileNumber_patients } from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
 
 const width = Dimensions.get('window').width;
 
@@ -1167,15 +1175,13 @@ export const extractUrlFromString = (text: string): string | undefined => {
   return (text.match(urlRegex) || [])[0];
 };
 
-export const getUserType = (currentPatient: any) => {
-  const user: string =
-    currentPatient?.isConsulted === undefined
-      ? 'undefined'
-      : currentPatient?.isConsulted
-      ? 'Repeat'
-      : 'New';
-
-  return user;
+export const getUserType = (allCurrentPatients: any) => {
+  const isConsulted = allCurrentPatients?.filter(
+    (patient: getPatientByMobileNumber_getPatientByMobileNumber_patients) =>
+      patient?.isConsulted === true
+  );
+  const userType: string = isConsulted?.length > 0 ? 'Repeat' : 'New';
+  return userType;
 };
 
 export const reOrderMedicines = async (
@@ -2679,7 +2685,7 @@ export const getPatientNameById = (allCurrentPatients: any, patientId: string) =
     (patient: { id: string }) => patient?.id === patientId
   );
 
-  return patientSelected ? `${patientSelected?.firstName} ${patientSelected?.lastName}` : '';  
+  return patientSelected ? `${patientSelected?.firstName} ${patientSelected?.lastName}` : '';
 };
 
 export const requestReadSmsPermission = async () => {
@@ -2706,7 +2712,11 @@ export const storagePermissionsToDownload = (doRequest?: () => void) => {
   );
 };
 
-export async function downloadDiagnosticReport(pdfUrl: string, appointmentDate: string, patientName: string) {
+export async function downloadDiagnosticReport(
+  pdfUrl: string,
+  appointmentDate: string,
+  patientName: string
+) {
   let result = Platform.OS === 'android' && (await requestReadSmsPermission());
   try {
     if (
@@ -2737,8 +2747,7 @@ export async function downloadDiagnosticReport(pdfUrl: string, appointmentDate: 
           description: 'File downloaded by download manager.',
         },
       })
-        .fetch('GET',pdfUrl, {
-        })
+        .fetch('GET', pdfUrl, {})
         .then((res) => {
           Platform.OS === 'ios'
             ? RNFetchBlob.ios.previewDocument(res.path())
@@ -2748,9 +2757,7 @@ export async function downloadDiagnosticReport(pdfUrl: string, appointmentDate: 
           CommonBugFender('TestOrderDetails_ViewReport', err);
           handleGraphQlError(err);
           throw new Error('Something went wrong');
-        })
-       
-        
+        });
     } else {
       if (
         result &&
@@ -2763,17 +2770,10 @@ export async function downloadDiagnosticReport(pdfUrl: string, appointmentDate: 
         storagePermissionsToDownload(() => {
           downloadDiagnosticReport(pdfUrl, appointmentDate, patientName);
         });
-      } 
+      }
     }
   } catch (error) {
     CommonBugFender('YourOrderTests_downloadLabTest', error);
     throw new Error('Something went wrong');
   }
 }
-
-
-
-
-
-
-
