@@ -728,24 +728,24 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           itemId={orderItemId}
           slotBooked={selectedOrder?.slotDateTimeInUTC}
           onSchedule={(date1: Date, slotInfo: TestSlot) => {
-            rescheduleDate = date1;
+            rescheduleDate = slotInfo?.date;
             rescheduleSlotObject = {
               slotStartTime: slotInfo?.slotInfo?.startTime!,
               slotEndTime: slotInfo?.slotInfo?.endTime!,
-              date: date1?.getTime(),
+              date: slotInfo?.date?.getTime(),
               employeeSlotId: slotInfo?.slotInfo?.slot!,
               diagnosticBranchCode: slotInfo?.diagnosticBranchCode,
               diagnosticEmployeeCode: slotInfo?.employeeCode,
               city: '', // not using city from this in order place API
             };
 
-            setDate(date1);
+            // setDate(slotInfo?.date);
             setselectedTimeSlot(slotInfo);
 
             setDiagnosticSlot!({
               slotStartTime: slotInfo?.slotInfo?.startTime!,
               slotEndTime: slotInfo?.slotInfo?.endTime!,
-              date: date1.getTime(),
+              date: slotInfo?.date?.getTime(),
               employeeSlotId: slotInfo?.slotInfo?.slot!,
               diagnosticBranchCode: slotInfo?.diagnosticBranchCode,
               diagnosticEmployeeCode: slotInfo?.employeeCode,
