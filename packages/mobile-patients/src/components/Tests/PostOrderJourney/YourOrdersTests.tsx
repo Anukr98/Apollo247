@@ -739,7 +739,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               city: '', // not using city from this in order place API
             };
 
-            // setDate(slotInfo?.date);
+            setDate(date1);
             setselectedTimeSlot(slotInfo);
 
             setDiagnosticSlot!({
