@@ -1846,16 +1846,20 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const getUserBanners = async () => {
     setBannerLoading(true);
-    const res: any = await getUserBannersList(client, currentPatient, string.banner_context.HOME, [
-      BannerDisplayType.banner,
-      BannerDisplayType.card,
-    ]);
-
-    setBannerLoading(false);
-    if (res) {
-      setBannerDataHome && setBannerDataHome(res);
-      setBannerData && setBannerData(res);
-    } else {
+    try {
+      const res: any = await getUserBannersList(
+        client,
+        currentPatient,
+        string.banner_context.HOME,
+        [BannerDisplayType.banner, BannerDisplayType.card]
+      );
+      setBannerLoading(false);
+      if (res) {
+        setBannerDataHome && setBannerDataHome(res);
+        setBannerData && setBannerData(res);
+      }
+    } catch (error) {
+      setBannerLoading(false);
       setBannerDataHome && setBannerDataHome([]);
       setBannerData && setBannerData([]);
     }

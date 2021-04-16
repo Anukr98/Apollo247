@@ -591,14 +591,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, []);
 
   const getUserBanners = async () => {
-    const res: any = await getUserBannersList(
-      client,
-      currentPatient,
-      string.banner_context.PHARMACY_HOME
-    );
-    if (res) {
-      setBannerData && setBannerData(res);
-    } else {
+    try {
+      const res: any = await getUserBannersList(
+        client,
+        currentPatient,
+        string.banner_context.PHARMACY_HOME
+      );
+      if (res) {
+        setBannerData && setBannerData(res);
+      }
+    } catch (error) {
       setBannerData && setBannerData([]);
     }
   };

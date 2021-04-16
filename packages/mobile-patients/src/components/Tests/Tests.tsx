@@ -426,14 +426,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const getUserBanners = async () => {
-    const res: any = await getUserBannersList(
-      client,
-      currentPatient,
-      string.banner_context.DIAGNOSTIC_HOME
-    );
-    if (res) {
-      setBannerData && setBannerData(res);
-    } else {
+    try {
+      const res: any = await getUserBannersList(
+        client,
+        currentPatient,
+        string.banner_context.DIAGNOSTIC_HOME
+      );
+      if (res) {
+        setBannerData && setBannerData(res);
+      }
+    } catch (error) {
       setBannerData && setBannerData([]);
     }
   };
