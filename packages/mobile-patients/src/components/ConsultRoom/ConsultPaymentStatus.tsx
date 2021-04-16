@@ -794,7 +794,17 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
   const moveToHome = (navigateToChatRoom?: boolean, appointmentData?: any) => {
     // use apiCallsEnum values here in order to make that api call in home screen
-    apisToCall.current = [apiCallEnums.patientAppointments, apiCallEnums.patientAppointmentsCount];
+
+    apisToCall.current = !!circleSubscriptionId
+      ? [apiCallEnums.patientAppointments, apiCallEnums.patientAppointmentsCount]
+      : [
+          apiCallEnums.patientAppointments,
+          apiCallEnums.patientAppointmentsCount,
+          apiCallEnums.circleSavings,
+          apiCallEnums.getAllBanners,
+          apiCallEnums.getUserSubscriptions,
+          apiCallEnums.getUserSubscriptionsV2,
+        ];
     const params = {
       isFreeConsult: navigateToChatRoom ? false : true,
       doctorName: doctorName,
