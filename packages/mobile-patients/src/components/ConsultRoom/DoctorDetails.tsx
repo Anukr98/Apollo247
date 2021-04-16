@@ -638,14 +638,17 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     try {
       if (modeOfConsult.includes(ConsultMode.BOTH)) {
         setConsultType(ConsultMode.BOTH);
+        setOnlineSelected(true);
       } else if (modeOfConsult.includes(ConsultMode.ONLINE)) {
         setConsultType(ConsultMode.ONLINE);
+        setOnlineSelected(true);
       } else if (modeOfConsult.includes(ConsultMode.PHYSICAL)) {
         setConsultType(ConsultMode.PHYSICAL);
+        setOnlineSelected(false);
       } else {
         setConsultType(ConsultMode.BOTH);
       }
-      setOnlineSelected(consultModeSelected === ConsultMode.ONLINE);
+      consultModeSelected && setOnlineSelected(consultModeSelected === ConsultMode.ONLINE);
     } catch (error) {}
   };
 
