@@ -273,12 +273,14 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
   const showOTPContainer = () => {
     const phlObj = props?.phelboObject;
-    let otpToShow = '5645';//!!phlObj && phlObj?.PhelboOTP;
-    let phoneNumber = '8319098165'
+    console.log('object :>> ', phlObj);
+    let otpToShow = !!phlObj && phlObj?.PhelboOTP;
+    let phoneNumber = !!phlObj && phlObj?.diagnosticPhlebotomists?.mobile;
+    let name = !!phlObj && phlObj?.diagnosticPhlebotomists?.name;
     return (
       <>
-        {/* {!!otpToShow && SHOW_OTP_ARRAY.includes(props.orderLevelStatus) ? ( */}
-
+        {!!otpToShow && SHOW_OTP_ARRAY.includes(props.orderLevelStatus) ? (
+          <>
         <View style={styles.otpCallContainer}>
           <View style={styles.detailContainer}>
               <TouchableOpacity style={styles.callContainer}
@@ -291,7 +293,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
               </TouchableOpacity>
             <View style={styles.nameContainer}>
               <Text style={styles.nameTextHeadingStyles}>Phlebotomist Details</Text>
-              <Text style={styles.nameTextStyles}>Ramkumar Verma</Text>
+              <Text style={styles.nameTextStyles}>{name}</Text>
             </View>
           </View>
           <View style={styles.otpBoxConatiner}>
@@ -309,8 +311,8 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
             <Text style={styles.trackStyle}>{nameFormater('track Phlebo', 'upper')}</Text>
           </TouchableOpacity>
           </View>
-
-        {/* ) : null} */}
+            </>
+     ) : null}
       </>
     );
   };
@@ -379,7 +381,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         {renderCTAsView()}
       </View>
       {props.showAdditonalView || props.isCancelled ? renderAdditionalInfoView() : null}
-      {/* {showOTPContainer()} */}
+      {showOTPContainer()}
       {showRatingView()}
     </TouchableOpacity>
   );

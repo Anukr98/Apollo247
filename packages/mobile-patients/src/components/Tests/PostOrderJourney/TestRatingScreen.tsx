@@ -139,7 +139,6 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
   useEffect(() => {
     getEmoticon(ratingStar);
     getReviewTag(ratingStar);
-    console.log('TestRatingScreen :>> ', ratingStar, ratedStarsArray, unRatedStarsArray, );
   }, [ratingStar]);
   const renderStars = (star: number) => {
     return <StarFillGreen />;
@@ -254,7 +253,6 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
           <Button 
             title={'SUBMIT FEEDBACK'}
             onPress={()=>{
-              console.log(`Submit pressed`, userInput)
               props.navigation.navigate(AppRoutes.YourOrdersScene);
             }}
             disabled={checkDisability()}
