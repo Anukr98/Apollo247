@@ -101,7 +101,7 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
         });
         // if slot is empty then refetch it for next date
         const isSameDate = moment().isSame(moment(date), 'date');
-        const hasReachedEnd = moment(dateToCheck).isAfter(moment(maxDate), 'date');
+        const hasReachedEnd = moment(dateToCheck).isSameOrAfter(moment(maxDate), 'date');
         if (!hasReachedEnd && slotsArray?.length == 0 && isDateAutoSelected) {
           let changedDate = moment(dateToCheck) //date
             .add(1, 'day')
@@ -144,8 +144,8 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
             selectedText={slotInfo && `${formatTestSlot(slotInfo.slotInfo.startTime!)}`}
             menuContainerStyle={{
               alignItems: 'flex-end',
-              marginTop: 24,
-              marginLeft: width / 2 - 110,
+              marginTop: -40,
+              marginLeft: width / 2 - 90,
             }}
             itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b') }}
             selectedTextStyle={{ ...theme.viewStyles.text('M', 16, '#00b38e') }}
