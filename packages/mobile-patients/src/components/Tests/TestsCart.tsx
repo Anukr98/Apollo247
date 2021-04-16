@@ -1277,7 +1277,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       ? AppConfig.Configuration.Covid_Max_Slot_Days
       : AppConfig.Configuration.Non_Covid_Max_Slot_Days;
 
-    let dateToCheck = !!changedDate && comingFrom != '' ? changedDate : date;
+    let dateToCheck = !!changedDate && comingFrom != '' ? changedDate : new Date();
     setLoading?.(true);
     const selectedAddressIndex = addresses?.findIndex(
       (address) => address?.id == deliveryAddressId
