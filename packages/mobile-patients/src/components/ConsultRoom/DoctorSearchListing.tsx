@@ -1211,11 +1211,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         numberOfLines={numberOfLines}
         availableModes={rowData.consultMode}
         callSaveSearch={callSaveSearch}
-        onPress={() => {
+        onPress={(id: string, onlineConsult: boolean) => {
           postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List');
           props.navigation.navigate(AppRoutes.DoctorDetails, {
             doctorId: rowData.id,
             callSaveSearch: callSaveSearch,
+            consultModeSelected: onlineConsult ? ConsultMode.ONLINE : ConsultMode.PHYSICAL,
           });
         }}
         onPressShare={(doctorData) => onClickDoctorShare(doctorData, index + 1)}
@@ -1616,13 +1617,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           buttonStyle={buttonStyle}
           buttonTextStyle={buttonTextStyle}
           onPressShare={(doctorData) => onClickDoctorShare(doctorData, index + 1)}
-          onPress={() => {
+          onPress={(id: string, onlineConsult: boolean) => {
             postDoctorClickWEGEvent(platinumDoctor, 'List', true);
             postPlatinumDoctorWEGEvents(platinumDoctor, WebEngageEventName.DOH_Clicked);
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: platinumDoctor?.id,
               callSaveSearch: callSaveSearch,
               platinumDoctor: true,
+              consultModeSelected: onlineConsult ? ConsultMode.ONLINE : ConsultMode.PHYSICAL,
             });
           }}
           onPressConsultNowOrBookAppointment={(type) => {

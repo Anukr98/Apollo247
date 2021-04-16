@@ -183,7 +183,7 @@ export interface DoctorCardProps extends NavigationScreenProps {
     | getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor
     | any
     | null;
-  onPress?: (doctorId: string) => void;
+  onPress?: (doctorId: string, onlineConsult: boolean) => void;
   onPressConsultNowOrBookAppointment?: (type: 'consult-now' | 'book-appointment') => void;
   displayButton?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -262,6 +262,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       ? onlineConsultDiscountedPrice
       : physicalConsultDiscountedPrice;
   const ctaTitle = rowData?.doctorCardActiveCTA?.DEFAULT;
+  const onlineConsult = selectedConsultMode
+    ? isOnlineConsultSelected
+    : isBoth || isOnline
+    ? true
+    : false;
 
   useEffect(() => {
     if (!currentPatient) {
@@ -290,11 +295,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           CommonBugFender('DoctorCard_navigateToDetails', error);
         });
     }
-    const onlineConsult = selectedConsultMode
-      ? isOnlineConsultSelected
-      : isBoth || isOnline
-      ? true
-      : false;
     props.navigation.navigate(AppRoutes.DoctorDetails, {
       doctorId: id,
       consultModeSelected: onlineConsult ? ConsultMode.ONLINE : ConsultMode.PHYSICAL,
@@ -539,7 +539,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             postWebEngageEvent(WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK, eventAttributes);
           } catch (error) {}
 
-          props.onPress ? props.onPress(rowData.id!) : navigateToDetails(rowData.id!);
+          props.onPress
+            ? props.onPress(rowData.id!, onlineConsult)
+            : navigateToDetails(rowData.id!);
         }}
       >
         <View style={{ borderRadius: 10, flex: 1, zIndex: 1 }}>
