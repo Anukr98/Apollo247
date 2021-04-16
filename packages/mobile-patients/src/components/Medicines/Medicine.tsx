@@ -722,6 +722,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           addresses={addressList}
           onPressSelectAddress={(address) => {
             setAsyncPharmaLocation(address);
+            const saveAddress = {
+              pincode: address?.zipcode,
+              id: address?.id,
+              city: address?.city,
+              state: address?.state,
+            };
             setAsyncPincode(saveAddress);
             setDefaultAddress(address);
           }}
