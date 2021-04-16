@@ -1322,7 +1322,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         let lastDate = moment()
           .add(maxDaysToShow, 'day')
           .toDate();
-        const hasReachedEnd = moment(dateToCheck).isAfter(moment(lastDate), 'date');
+        const hasReachedEnd = moment(dateToCheck).isSameOrAfter(moment(lastDate), 'date');
         if (!hasReachedEnd && slotsArray?.length == 0) {
           setTodaySlotNotAvailable(true);
           let changedDate = moment(dateToCheck) //date
