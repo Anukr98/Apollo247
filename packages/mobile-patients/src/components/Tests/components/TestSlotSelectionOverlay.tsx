@@ -37,7 +37,7 @@ export interface TestSlotSelectionOverlayProps extends AphOverlayProps {
   itemId?: any[];
   source?: string;
 }
-
+const { width } = Dimensions.get('window');
 export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> = (props) => {
   const { isTodaySlotUnavailable, maxDate } = props;
   const { cartItems } = useDiagnosticsCart();
@@ -134,7 +134,6 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
       data: val,
     }));
 
-    const { width } = Dimensions.get('window');
     return (
       <View style={[styles.sectionStyle, { paddingHorizontal: 16 }]}>
         <Text style={{ ...theme.viewStyles.text('M', 14, '#02475b'), marginTop: 16 }}>Slot</Text>
@@ -142,11 +141,7 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
           <MaterialMenu
             options={dropDownOptions}
             selectedText={slotInfo && `${formatTestSlot(slotInfo.slotInfo.startTime!)}`}
-            menuContainerStyle={{
-              alignItems: 'flex-end',
-              marginTop: -40,
-              marginLeft: width / 2 - 90,
-            }}
+            menuContainerStyle={styles.menuStyle}
             itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b') }}
             selectedTextStyle={{ ...theme.viewStyles.text('M', 16, '#00b38e') }}
             onPress={({ data }) => {
@@ -283,5 +278,10 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.cardContainer,
     backgroundColor: theme.colors.CARD_BG,
     marginBottom: 16,
+  },
+  menuStyle: {
+    alignItems: 'flex-end',
+    marginTop: -40,
+    marginLeft: width / 2 - 90,
   },
 });
