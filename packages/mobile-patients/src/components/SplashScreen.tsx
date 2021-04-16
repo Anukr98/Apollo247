@@ -758,6 +758,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_UploadPrescription_Options',
       PROD: 'UploadPrescription_Options',
     },
+    Health_Credit_Expiration_Time: {
+      QA: 'Health_Credit_Expiration_Time_QA',
+      PROD: 'Health_Credit_Expiration_Time_Prod',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -897,6 +901,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       setAppConfig('Enable_Conditional_Management', 'ENABLE_CONDITIONAL_MANAGEMENT', (key) =>
         config.getBoolean(key)
+      );
+
+      setAppConfig('Health_Credit_Expiration_Time', 'Health_Credit_Expiration_Time', (key) =>
+        config.getNumber(key)
       );
 
       setAppConfig('Covid_Items', 'Covid_Items', (key) => config.getString(key));

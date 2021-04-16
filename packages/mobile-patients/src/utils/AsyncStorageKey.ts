@@ -9,4 +9,3 @@ export const SKIP_LOCATION_PROMPT = 'SKIP_LOCATION_PROMPT';
 export const LOGIN_PROFILE = 'LOGIN_PROFILE';
 
 export const HEALTH_CREDITS = 'HEALTH_CREDITS';
-export const HEALTH_CREDIT_EXPIRATION_TIME = 60;// health credit cache expires after 60 mins

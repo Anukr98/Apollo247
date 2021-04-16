@@ -1820,12 +1820,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
   const fetchHealthCredits = async () => {
-    var cachedHealthCredit: any = await getHealthCredits();
 
+    var cachedHealthCredit: any = await getHealthCredits();
     if (cachedHealthCredit != null) {
       setHealthCredits && setHealthCredits(cachedHealthCredit.healthCredit);
       return; // no need to call api
-    }
+    } 
 
     try {
       const res = await client.query({
