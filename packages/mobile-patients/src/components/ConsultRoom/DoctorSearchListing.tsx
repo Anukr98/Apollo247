@@ -1213,10 +1213,17 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         callSaveSearch={callSaveSearch}
         onPress={() => {
           postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List');
-          props.navigation.navigate(AppRoutes.DoctorDetails, {
-            doctorId: rowData.id,
-            callSaveSearch: callSaveSearch,
-          });
+          if (index != 3) {
+            props.navigation.navigate(AppRoutes.DoctorDetails, {
+              doctorId: rowData.id,
+              callSaveSearch: callSaveSearch,
+            });
+          } else {
+            props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
+              doctorId: rowData.id,
+              callSaveSearch: callSaveSearch,
+            });
+          }
         }}
         onPressShare={(doctorData) => onClickDoctorShare(doctorData, index + 1)}
         onPressConsultNowOrBookAppointment={(type) => {

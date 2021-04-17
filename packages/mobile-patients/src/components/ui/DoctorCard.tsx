@@ -696,7 +696,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   props.buttonViewStyle,
                 ]}
               >
-                {props?.rowId != 2 && (
+                {props?.rowId != 4 && (
                   <TouchableOpacity
                     activeOpacity={1}
                     style={[
@@ -781,34 +781,22 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                         : !!fetchedSlot
                         ? getButtonTitle(fetchedSlot)
                         : getButtonTitle(rowData?.slot)}
-                      asad
-                      {console.log('csk count', props?.key, props?.rowId)}
                     </Text>
                   </TouchableOpacity>
                 )}
 
-                {props?.rowId === 2 && (
-                  <View>
-                    <TouchableOpacity
-                      activeOpacity={1}
-                      style={{}}
-                      onPress={() => console.log('csk booking on request pressed')}
-                    >
-                      <Text>Booking On Request</Text>
-                    </TouchableOpacity>
-
-                    <Button
-                      style={{
-                        width: '90%',
-                        margin: 20,
-                        backgroundColor: theme.colors.WHITE,
-                        shadowOffset: { width: 2, height: 4 },
-                      }}
-                      titleTextStyle={styles.BORButtonTextStyle}
-                      title={'Request Appointment'}
-                      onPress={() => console.log('csk booking on request button pressed')}
-                    />
-                  </View>
+                {props?.rowId === 4 && (
+                  <Button
+                    style={{
+                      width: '90%',
+                      margin: 20,
+                      backgroundColor: theme.colors.WHITE,
+                      shadowOffset: { width: 2, height: 4 },
+                    }}
+                    titleTextStyle={styles.BORButtonTextStyle}
+                    title={'Request Appointment'}
+                    onPress={() => console.log('csk booking on request button pressed')}
+                  />
                 )}
               </View>
             )}
