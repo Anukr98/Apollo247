@@ -377,6 +377,16 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     justifyContent: 'space-between',
   },
+  BORButtonStyle: {
+    width: '90%',
+    margin: 20,
+    backgroundColor: theme.colors.WHITE,
+    shadowOffset: { width: 2, height: 4 },
+  },
+  BORButtonTextStyle: {
+    ...theme.viewStyles.text('B', 13, '#FC9916', 1, 24),
+    textTransform: 'uppercase',
+  },
 });
 type Appointments = {
   date: string;
@@ -709,22 +719,6 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
         consultNowText={'asad now'}
       />
     );
-  };
-
-  const openConsultPopup = (consultType: ConsultMode) => {
-    postBookAppointmentWEGEvent();
-    getNetStatus()
-      .then((status) => {
-        if (status) {
-          setdisplayoverlay(true);
-          setConsultMode(consultType);
-        } else {
-          setshowOfflinePopup(true);
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('DoctorDetails_getNetStatus', e);
-      });
   };
 
   const openCircleWebView = () => {
@@ -1255,44 +1249,33 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
     props.navigation.goBack();
   };
 
-  const postWebengaegConsultType = (consultType: 'Online' | 'In Person') => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_TYPE_SELECTION] = {
-      'Consult Type': consultType,
-      'Doctor ID': doctorId,
-      'Doctor Name': doctorDetails?.fullName || '',
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient UHID': g(currentPatient, 'uhid'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Customer ID': g(currentPatient, 'id'),
-    };
-    postWebEngageEvent(WebEngageEventName.CONSULT_TYPE_SELECTION, eventAttributes);
-  };
-
   const renderConsultNow = () => {
     return (
       <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
         <Button
-          style={{}}
-          titleTextStyle={styles.buttonTextStyle}
-          title={getTitle()}
-          onPress={() => onPressConsultNow()}
+          style={styles.BORButtonStyle}
+          titleTextStyle={styles.BORButtonTextStyle}
+          title={'REQUEST APPOINTMENT'}
+          onPress={() => onPressRequestAppointment()}
         />
       </StickyBottomComponent>
     );
   };
 
-  const onPressConsultNow = () => {
-    onlineSelected
-      ? (postWebengaegConsultType('Online'), openConsultPopup(ConsultMode.ONLINE))
-      : (postWebengaegConsultType('In Person'), openConsultPopup(ConsultMode.PHYSICAL));
-  };
-
-  const getTitle = () => {
-    const consultNowText = ctaBannerText?.CONSULT_NOW || '';
-    const time = onlineSelected ? availableTime : physicalAvailableTime;
-    return consultNowText || (time && moment(time).isValid())
-      ? nextAvailability(time, 'Consult')
-      : string.common.book_apointment;
+  const onPressRequestAppointment = () => {
+    postBookAppointmentWEGEvent();
+    getNetStatus()
+      .then((status) => {
+        if (status) {
+          setdisplayoverlay(true);
+          setConsultMode(ConsultMode.ONLINE);
+        } else {
+          setshowOfflinePopup(true);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('DoctorDetailsBookingOnRequest_getNetStatus', e);
+      });
   };
 
   return (
