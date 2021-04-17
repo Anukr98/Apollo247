@@ -130,6 +130,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(12),
     color: theme.colors.SEARCH_EDUCATION_COLOR,
     letterSpacing: 0.3,
+    width: width - 120,
   },
   separatorStyle: {
     borderBottomWidth: 0.5,
@@ -365,6 +366,16 @@ const styles = StyleSheet.create({
     height: 160,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  apolloDocIcon: {
+    marginVertical: 12,
+    width: 80,
+    height: 32,
+  },
+  docLocationViewHolder: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
   },
 });
 type Appointments = {
@@ -811,34 +822,21 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
                   : ''}
               </Text>
               <View style={styles.separatorStyle} />
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'flex-start',
-                  justifyContent: 'space-between',
-                }}
-              >
+              <View style={styles.docLocationViewHolder}>
                 <View>
                   {!!clinicAddress && (
-                    <Text style={[styles.doctorLocation, { paddingTop: 11, width: width - 120 }]}>
-                      {clinicAddress}
-                    </Text>
+                    <Text style={[styles.doctorLocation, { paddingTop: 11 }]}>{clinicAddress}</Text>
                   )}
                   {doctorDetails.languages ? (
-                    <Text
-                      style={[
-                        styles.doctorLocation,
-                        { paddingBottom: 11, paddingTop: 4, width: width - 120 },
-                      ]}
-                    >
+                    <Text style={[styles.doctorLocation, { paddingBottom: 11, paddingTop: 4 }]}>
                       {doctorDetails.languages.split(',').join(' | ')}
                     </Text>
                   ) : null}
                 </View>
                 {doctorDetails.doctorType !== 'DOCTOR_CONNECT' ? (
-                  <ApolloDoctorIcon style={{ marginVertical: 12, width: 80, height: 32 }} />
+                  <ApolloDoctorIcon style={styles.apolloDocIcon} />
                 ) : (
-                  <ApolloPartnerIcon style={{ marginVertical: 12, width: 80, height: 32 }} />
+                  <ApolloPartnerIcon style={styles.apolloDocIcon} />
                 )}
               </View>
               <View style={styles.separatorStyle} />
