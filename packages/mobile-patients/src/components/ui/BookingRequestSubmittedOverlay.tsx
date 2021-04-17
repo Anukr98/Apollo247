@@ -113,14 +113,7 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
   const consultOnlineTab = string.consultModeTab.CONSULT_ONLINE;
   const consultPhysicalTab = string.consultModeTab.MEET_IN_PERSON;
 
-  const tabs =
-    props.doctor?.doctorType !== DoctorType.PAYROLL
-      ? isBoth?.length > 0
-        ? [{ title: consultOnlineTab }, { title: 'Request Submitted' }]
-        : isOnline?.length > 0
-        ? [{ title: consultOnlineTab }]
-        : [{ title: 'Request Submitted' }]
-      : [{ title: consultOnlineTab }];
+  const tabs = [{ title: 'Request Submitted' }];
 
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');
@@ -509,17 +502,6 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
           </View>
         </View>
       </View>
-      {notificationAlert && (
-        <NotificationPermissionAlert
-          onPressOutside={() => setNotificationAlert(false)}
-          onButtonPress={() => {
-            setNotificationAlert(false);
-            Linking.openSettings();
-          }}
-        />
-      )}
-      {showSpinner && <Spinner />}
-      {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
     </View>
   );
 };
