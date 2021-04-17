@@ -309,9 +309,9 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.cardViewStyle,
     marginHorizontal: 8,
     shadowRadius: 2,
-    width: '85%',
+    width: width - 40,
     marginVertical: 8,
-    alignItems: 'center',
+    alignSelf: 'center',
     justifyContent: 'center',
   },
   clinicImageBlueText: {
@@ -326,7 +326,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     height: 160,
     width: '100%',
-    top: statusBarHeight(),
     justifyContent: 'flex-end',
     flexDirection: 'column',
   },
@@ -338,7 +337,6 @@ const styles = StyleSheet.create({
   headerContainer: {
     zIndex: 3,
     position: 'absolute',
-    top: statusBarHeight(),
     left: 0,
     right: 0,
     height: 56,
@@ -1336,6 +1334,7 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
           {
             backgroundColor: headColor,
             transform: [{ translateY: headMov }],
+            top: statusBarHeight(),
           },
         ]}
       >
@@ -1373,7 +1372,7 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
         </View>
       </Animated.View>
       <Header
-        container={styles.headerContainer}
+        container={[styles.headerContainer, { top: statusBarHeight() }]}
         leftIcon="backArrow"
         onPressLeftIcon={() => moveBack()}
       />

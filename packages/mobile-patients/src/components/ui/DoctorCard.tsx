@@ -179,6 +179,12 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('B', 13, '#FC9916', 1, 24),
     textTransform: 'uppercase',
   },
+  BORButtonStyle: {
+    width: '90%',
+    margin: 20,
+    backgroundColor: theme.colors.WHITE,
+    shadowOffset: { width: 2, height: 4 },
+  },
 });
 
 export interface DoctorCardProps extends NavigationScreenProps {
@@ -787,12 +793,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
                 {props?.rowId === 4 && (
                   <Button
-                    style={{
-                      width: '90%',
-                      margin: 20,
-                      backgroundColor: theme.colors.WHITE,
-                      shadowOffset: { width: 2, height: 4 },
-                    }}
+                    style={styles.BORButtonStyle}
                     titleTextStyle={styles.BORButtonTextStyle}
                     title={'Request Appointment'}
                     onPress={() => console.log('csk booking on request button pressed')}
