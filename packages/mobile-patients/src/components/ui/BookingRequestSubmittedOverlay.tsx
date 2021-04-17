@@ -76,6 +76,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  headerTextStyle: {
+    margin: 18,
+  },
 });
 
 export interface BookingRequestSubmittedOverlayProps extends NavigationScreenProps {
@@ -175,179 +178,6 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
       scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: top, animated: true });
     }
   };
-  useEffect(() => {
-    if (props.consultModeSelected === ConsultMode.ONLINE) {
-      setselectedTab(consultOnlineTab);
-    } else if (props.consultModeSelected === ConsultMode.PHYSICAL) {
-      setselectedTab(consultPhysicalTab);
-    }
-  }, [props.consultModeSelected]);
-
-  useEffect(() => {
-    const todayDate = new Date().toISOString().slice(0, 10);
-    getNextAvailableSlots(client, props.doctor ? [props.doctor.id] : [], todayDate)
-      .then(({ data }: any) => {
-        try {
-          const nextSlot = data[0] ? data[0]!.availableSlot : '';
-          if (!nextSlot && data[0]!.physicalAvailableSlot) {
-            tabs.length > 1 && setselectedTab(consultPhysicalTab);
-          }
-        } catch (e) {
-          CommonBugFender('ConsultOverlay_getNextAvailableSlots_try', e);
-        }
-      })
-      .catch((e: any) => {
-        CommonBugFender('ConsultOverlay_getNextAvailableSlots', e);
-      });
-  }, []);
-
-  const onPressCheckout = async () => {
-    CommonLogEvent(AppRoutes.DoctorDetails, 'ConsultOverlay onSubmitBookAppointment clicked');
-    const timeSlot =
-      consultOnlineTab === selectedTab &&
-      isConsultOnline &&
-      availableInMin! <= 60 &&
-      0 < availableInMin!
-        ? nextAvailableSlot
-        : selectedTimeSlot;
-
-    const doctorClinics = props.clinics.filter((item) => {
-      if (item && item.facility && item.facility.facilityType)
-        return item.facility.facilityType === 'HOSPITAL';
-    });
-
-    const hospitalId = isConsultOnline
-      ? doctorClinics.length > 0 && doctorClinics[0].facility
-        ? doctorClinics[0].facility.id
-        : ''
-      : selectedClinic
-      ? selectedClinic.facility.id
-      : '';
-    const externalConnectParam =
-      props.externalConnect !== null ? { externalConnect: props.externalConnect } : {};
-    const appointmentInput: BookAppointmentInput = {
-      patientId: props.patientId,
-      doctorId: props.doctor ? props.doctor.id : '',
-      appointmentDateTime: timeSlot, //appointmentDate,
-      appointmentType:
-        selectedTab === consultOnlineTab ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
-      hospitalId,
-      bookingSource: BOOKINGSOURCE.MOBILE,
-      deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
-      ...externalConnectParam,
-      actualAmount: actualPrice,
-      pinCode: locationDetails && locationDetails.pincode,
-      subscriptionDetails:
-        circleSubscriptionId && isCircleDoctorOnSelectedConsultMode
-          ? {
-              userSubscriptionId: circleSubscriptionId,
-              plan: PLAN.CARE_PLAN,
-            }
-          : null,
-    };
-
-    consultOnlineTab === selectedTab
-      ? props.navigation.navigate(AppRoutes.PaymentCheckout, {
-          doctor: props.doctor,
-          tabs: tabs,
-          selectedTab: selectedTab,
-          price: actualPrice,
-          appointmentInput: appointmentInput,
-          couponApplied: coupon == '' ? false : true,
-          consultedWithDoctorBefore: props.consultedWithDoctorBefore,
-          patientId: props.patientId,
-          callSaveSearch: props.callSaveSearch,
-          availableInMin: availableInMin,
-          nextAvailableSlot: nextAvailableSlot,
-          selectedTimeSlot: selectedTimeSlot,
-          followUp: props.FollowUp,
-          whatsAppUpdate: whatsAppUpdate,
-          isDoctorsOfTheHourStatus: props.isDoctorsOfTheHourStatus,
-        })
-      : props.navigation.navigate(AppRoutes.PaymentCheckoutPhysical, {
-          doctor: props.doctor,
-          tabs: tabs,
-          selectedTab: selectedTab,
-          price: actualPrice,
-          appointmentInput: appointmentInput,
-          couponApplied: coupon == '' ? false : true,
-          consultedWithDoctorBefore: props.consultedWithDoctorBefore,
-          patientId: props.patientId,
-          callSaveSearch: props.callSaveSearch,
-          availableInMin: availableInMin,
-          nextAvailableSlot: nextAvailableSlot,
-          selectedTimeSlot: selectedTimeSlot,
-          followUp: props.FollowUp,
-          whatsAppUpdate: whatsAppUpdate,
-          isDoctorsOfTheHourStatus: props.isDoctorsOfTheHourStatus,
-        });
-  };
-
-  const renderBottomButton = () => {
-    return (
-      <StickyBottomComponent
-        defaultBG
-        style={{
-          paddingHorizontal: 16,
-          height: 66,
-          marginTop: 10,
-        }}
-      >
-        <Button
-          title={'PROCEED'}
-          disabled={
-            disablePay
-              ? true
-              : consultOnlineTab === selectedTab &&
-                isConsultOnline &&
-                availableInMin! <= 60 &&
-                0 < availableInMin!
-              ? false
-              : selectedTimeSlot === ''
-              ? true
-              : false
-          }
-          onPress={() => {
-            onPressCheckout();
-          }}
-        />
-      </StickyBottomComponent>
-    );
-  };
-
-  const updateCouponDiscountOnChangeTab = (isOnlineConsult: boolean) => {
-    // this function will reset coupon discount on change in consultation type
-    setCoupon('');
-    setDoctorDiscountedFees(0);
-  };
-
-  const [slotsSelected, setSlotsSelected] = useState<string[]>([]);
-
-  const postSlotSelectedEvent = (slot: string) => {
-    if (!slot) {
-      return;
-    }
-    // to avoid duplicate events
-    if (!slotsSelected.find((val) => val == slot)) {
-      const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
-        if (item && item.facility && item.facility.facilityType)
-          return item.facility.facilityType === 'HOSPITAL';
-      });
-      const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_SLOT_SELECTED] = {
-        doctorName: g(props.doctor, 'fullName')!,
-        specialisation: g(props.doctor, 'specialty', 'name')!,
-        experience: Number(g(props.doctor, 'experience')!),
-        'language known': g(props.doctor, 'languages')! || 'NA',
-        'Consult Mode': consultOnlineTab === selectedTab ? 'Online' : 'Physical',
-        'Doctor ID': g(props.doctor, 'id')!,
-        'Speciality ID': g(props.doctor, 'specialty', 'id')!,
-        'Patient UHID': g(currentPatient, 'uhid'),
-        'Consult Date Time': moment(slot).toDate(),
-      };
-      postWebEngageEvent(WebEngageEventName.CONSULT_SLOT_SELECTED, eventAttributes);
-      setSlotsSelected([...slotsSelected, slot]);
-    }
-  };
 
   return (
     <View
@@ -374,14 +204,14 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
               props.setdisplayoverlay(false);
             }}
             style={{
-              marginTop: Platform.OS === 'ios' ? 38 : 14,
+              marginTop: Platform.OS === 'ios' ? 100 : 80,
               backgroundColor: 'white',
               height: 28,
               width: 28,
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: 14,
-              marginRight: showSpinner ? 20 : 0,
+              marginRight: -1,
             }}
           >
             <CrossPopup />
@@ -393,21 +223,18 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
           }}
         >
           <View style={[styles.mainViewStyle, props.mainContainerStyle]}>
-            <TabsComponent
+            <View
               style={{
                 ...theme.viewStyles.cardViewStyle,
-                borderRadius: 0,
+                borderRadius: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
-              data={tabs}
-              onChange={(_selectedTab: string) => {
-                setDate(new Date());
-                setselectedTab(_selectedTab);
-                setselectedTimeSlot('');
-                setisConsultOnline(_selectedTab === consultOnlineTab);
-                updateCouponDiscountOnChangeTab(_selectedTab === consultOnlineTab);
-              }}
-              selectedTab={selectedTab}
-            />
+            >
+              <Text style={[styles.headerTextStyle, theme.viewStyles.text('M', 16, '#02475B')]}>
+                {tabs[0].title}
+              </Text>
+            </View>
 
             <ConsultOnline
               source={props.navigation.getParam('showBookAppointment') ? 'List' : 'Profile'}
@@ -433,8 +260,6 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
             />
 
             <View style={{ height: 50 }} />
-
-            {props.doctor && renderBottomButton()}
           </View>
         </View>
       </View>
