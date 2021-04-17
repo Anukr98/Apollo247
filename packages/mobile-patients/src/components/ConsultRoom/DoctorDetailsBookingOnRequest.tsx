@@ -703,6 +703,7 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
   };
 
   const renderConsultType = () => {
+    console.log('csk props bor card', 'here', props);
     return (
       <BookingRequestSubmitted
         isOnlineSelected={onlineSelected}

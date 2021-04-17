@@ -156,17 +156,10 @@ export const BookingRequestSubmitted: React.FC<BookingRequestSubmittedProps> = (
   const {
     onOnlinePress,
     onPhysicalPress,
-    isOnlineSelected,
-    DoctorName,
     nextAppointemntInPresonTime,
     circleDoctorDetails,
     availNowText,
   } = props;
-
-  const { showCircleSubscribed } = useShoppingCart();
-
-  const [consultDoctorName, setConsultDocotrName] = useState<string>(DoctorName ? DoctorName : '');
-  const { isCircleDoctor, onlineConsultMRPPrice, physicalConsultMRPPrice } = circleDoctorDetails;
 
   const renderCard = (
     headingImage: Element,
@@ -175,6 +168,7 @@ export const BookingRequestSubmitted: React.FC<BookingRequestSubmittedProps> = (
     time: string | null,
     steps: stepsObject[]
   ) => {
+    console.log('csk props bor card', props);
     return (
       <View style={styles.cardContainer}>
         <View style={styles.cardBorderStyle}>
@@ -188,30 +182,6 @@ export const BookingRequestSubmitted: React.FC<BookingRequestSubmittedProps> = (
               </Text>
             </View>
           </View>
-          {!showCircleSubscribed && false ? (
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => {}}
-              style={[
-                styles.row,
-                {
-                  marginTop:
-                    heading === string.consultType.online.heading
-                      ? true || false
-                        ? -16
-                        : -22
-                      : false
-                      ? -23
-                      : -29,
-                },
-              ]}
-            >
-              <Text style={styles.smallRightAlignText}>for</Text>
-              <CircleLogo style={styles.careLogo} />
-              <Text style={[styles.smallRightAlignText, { marginLeft: 0 }]}>members</Text>
-              <InfoBlue style={styles.infoIcon} />
-            </TouchableOpacity>
-          ) : null}
         </View>
 
         <View style={styles.stepsMainContainer}>
@@ -239,18 +209,12 @@ export const BookingRequestSubmitted: React.FC<BookingRequestSubmittedProps> = (
             </View>
           ))}
         </View>
-        {!isOnlineSelected ? (
-          <View style={styles.noteContainer}>
-            <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 16, 0)}>
-              Note: Pay at Reception is available.
-            </Text>
-          </View>
-        ) : null}
       </View>
     );
   };
 
   const renderSubmittedCard = () => {
+    console.log('csk props bor card', 'here card');
     return renderCard(
       <BORHeader />,
       'How Request Appointment Works',
