@@ -314,38 +314,6 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
       </StickyBottomComponent>
     );
   };
-  const renderDisclamer = () => {
-    return (
-      <View
-        style={{
-          margin: 20,
-          padding: 12,
-          borderRadius: 10,
-          backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-        }}
-      >
-        <Text
-          style={[
-            theme.viewStyles.text('M', 10, theme.colors.LIGHT_BLUE, 1, 16, 0),
-            { textAlign: 'justify' },
-          ]}
-        >
-          {selectedTab === consultOnlineTab
-            ? string.common.DisclaimerText
-            : string.common.agreePhysicalConsultTC}
-        </Text>
-      </View>
-    );
-  };
-  const renderFootNote = () => {
-    return (
-      <View style={styles.noteContainer}>
-        <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 16, 0)}>
-          Note: Pay at Reception is available.
-        </Text>
-      </View>
-    );
-  };
 
   const updateCouponDiscountOnChangeTab = (isOnlineConsult: boolean) => {
     // this function will reset coupon discount on change in consultation type
@@ -440,64 +408,32 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
               }}
               selectedTab={selectedTab}
             />
-            <ScrollView bounces={false} ref={scrollViewRef}>
-              {selectedTab === consultOnlineTab ? (
-                <>
-                  <ConsultOnline
-                    source={props.navigation.getParam('showBookAppointment') ? 'List' : 'Profile'}
-                    doctor={props.doctor}
-                    date={date}
-                    setDate={(date) => {
-                      setDate(date);
-                    }}
-                    nextAvailableSlot={nextAvailableSlot}
-                    setNextAvailableSlot={setNextAvailableSlot}
-                    isConsultOnline={isConsultOnline}
-                    setisConsultOnline={setisConsultOnline}
-                    setavailableInMin={setavailableInMin}
-                    availableInMin={availableInMin}
-                    setselectedTimeSlot={(timeSlot) => {
-                      postSlotSelectedEvent(timeSlot);
-                      setselectedTimeSlot(timeSlot);
-                    }}
-                    selectedTimeSlot={selectedTimeSlot}
-                    setshowSpinner={setshowSpinner}
-                    scrollToSlots={scrollToSlots}
-                    setshowOfflinePopup={setshowOfflinePopup}
-                  />
-                </>
-              ) : (
-                <ConsultPhysical
-                  doctor={props.doctor}
-                  clinics={props.clinics}
-                  setDate={(date) => {
-                    setDate(date);
-                  }}
-                  setselectedTimeSlot={(timeSlot) => {
-                    postSlotSelectedEvent(timeSlot);
-                    setselectedTimeSlot(timeSlot);
-                  }}
-                  selectedTimeSlot={selectedTimeSlot}
-                  date={date}
-                  setshowSpinner={setshowSpinner}
-                  setshowOfflinePopup={setshowOfflinePopup}
-                  scrollToSlots={scrollToSlots}
-                  setselectedClinic={setselectedClinic}
-                />
-              )}
-              {renderDisclamer()}
-              {!g(currentPatient, 'whatsAppConsult') ? (
-                <WhatsAppStatus
-                  onPress={() => {
-                    whatsAppUpdate ? setWhatsAppUpdate(false) : setWhatsAppUpdate(true);
-                  }}
-                  isSelected={whatsAppUpdate}
-                />
-              ) : null}
 
-              {selectedTab === consultPhysicalTab && renderFootNote()}
-              <View style={{ height: 70 }} />
-            </ScrollView>
+            <ConsultOnline
+              source={props.navigation.getParam('showBookAppointment') ? 'List' : 'Profile'}
+              doctor={props.doctor}
+              date={date}
+              setDate={(date) => {
+                setDate(date);
+              }}
+              nextAvailableSlot={nextAvailableSlot}
+              setNextAvailableSlot={''}
+              isConsultOnline={isConsultOnline}
+              setisConsultOnline={setisConsultOnline}
+              setavailableInMin={setavailableInMin}
+              availableInMin={availableInMin}
+              setselectedTimeSlot={(timeSlot) => {
+                postSlotSelectedEvent(timeSlot);
+                setselectedTimeSlot(timeSlot);
+              }}
+              selectedTimeSlot={selectedTimeSlot}
+              setshowSpinner={setshowSpinner}
+              scrollToSlots={scrollToSlots}
+              setshowOfflinePopup={setshowOfflinePopup}
+            />
+
+            <View style={{ height: 50 }} />
+
             {props.doctor && renderBottomButton()}
           </View>
         </View>
