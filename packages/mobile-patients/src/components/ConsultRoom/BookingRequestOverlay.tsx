@@ -111,14 +111,7 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
   const consultOnlineTab = string.consultModeTab.CONSULT_ONLINE;
   const consultPhysicalTab = string.consultModeTab.MEET_IN_PERSON;
 
-  const tabs =
-    props.doctor?.doctorType !== DoctorType.PAYROLL
-      ? isBoth?.length > 0
-        ? [{ title: consultOnlineTab }, { title: consultPhysicalTab }]
-        : isOnline?.length > 0
-        ? [{ title: consultOnlineTab }]
-        : [{ title: consultPhysicalTab }]
-      : [{ title: consultOnlineTab }];
+  const tabs = [{ title: 'Request Submitted' }];
 
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');
@@ -259,7 +252,7 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
           price: actualPrice,
           appointmentInput: appointmentInput,
           couponApplied: coupon == '' ? false : true,
-          consultedWithDoctorBefore: props.consultedWithDoctorBefore,
+          consultedWithDoctorBefore: props?.consultedWithDoctorBefore,
           patientId: props.patientId,
           callSaveSearch: props.callSaveSearch,
           availableInMin: availableInMin,
@@ -276,7 +269,7 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
           price: actualPrice,
           appointmentInput: appointmentInput,
           couponApplied: coupon == '' ? false : true,
-          consultedWithDoctorBefore: props.consultedWithDoctorBefore,
+          consultedWithDoctorBefore: props?.consultedWithDoctorBefore,
           patientId: props.patientId,
           callSaveSearch: props.callSaveSearch,
           availableInMin: availableInMin,

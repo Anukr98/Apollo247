@@ -2107,19 +2107,19 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         <BookingRequestOverlay
           setdisplayoverlay={() => setdisplayoverlay(false)}
           navigation={props.navigation}
-          consultedWithDoctorBefore={consultedWithDoctorBefore}
+          consultedWithDoctorBefore={false}
           doctor={doctorDetails ? doctorDetails : null}
           patientId={currentPatient ? currentPatient.id : ''}
-          clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
+          clinics={doctorDetails?.doctorHospital ? doctorDetails.doctorHospital : []}
           doctorId={props.navigation.state.params!.doctorId}
           FollowUp={props.navigation.state.params!.FollowUp}
           appointmentType={props.navigation.state.params!.appointmentType}
           appointmentId={props.navigation.state.params!.appointmentId}
-          consultModeSelected={consultMode}
+          consultModeSelected={ConsultMode.ONLINE}
           externalConnect={null}
           availableMode={ConsultMode.BOTH}
           callSaveSearch={callSaveSearch}
-          isDoctorsOfTheHourStatus={doctorDetails?.doctorsOfTheHourStatus}
+          isDoctorsOfTheHourStatus={false}
         />
       )}
       {displayFilter ? (
