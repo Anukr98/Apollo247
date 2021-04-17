@@ -91,6 +91,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginRight: 12,
     height: '100%',
+    marginTop: 8,
   },
   careLogo: {
     width: 25,
@@ -132,7 +133,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface BookingRequestSubmittedProps extends NavigationScreenProps {
+export interface BookingRequestCardProps extends NavigationScreenProps {
   onOnlinePress: () => void;
   onPhysicalPress: () => void;
   isOnlineSelected: boolean;
@@ -152,7 +153,7 @@ type stepsObject = {
   textColor?: string;
 };
 
-export const BookingRequestSubmitted: React.FC<BookingRequestSubmittedProps> = (props) => {
+export const BookingRequestCard: React.FC<BookingRequestCardProps> = (props) => {
   const {
     onOnlinePress,
     onPhysicalPress,
@@ -165,7 +166,6 @@ export const BookingRequestSubmitted: React.FC<BookingRequestSubmittedProps> = (
     headingImage: Element,
     heading: string,
     question: string,
-    time: string | null,
     steps: stepsObject[]
   ) => {
     console.log('csk props bor card', props);
@@ -218,8 +218,7 @@ export const BookingRequestSubmitted: React.FC<BookingRequestSubmittedProps> = (
     return renderCard(
       <BORHeader />,
       'How Request Appointment Works',
-      string.consultType.inperson.question,
-      nextAppointemntInPresonTime,
+      'How Request Appointment Works',
       [
         { image: <BORform />, description: string.BORJourney.point1 },
         { image: <CTDoctor />, description: string.BORJourney.point2 },
