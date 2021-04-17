@@ -2108,9 +2108,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           setdisplayoverlay={() => setdisplayoverlay(false)}
           navigation={props.navigation}
           consultedWithDoctorBefore={false}
-          doctor={doctorDetails ? doctorDetails : null}
-          patientId={currentPatient ? currentPatient.id : ''}
-          clinics={doctorDetails?.doctorHospital ? doctorDetails.doctorHospital : []}
+          doctor={null}
+          patientId={''}
+          clinics={[]}
           doctorId={props.navigation.state.params!.doctorId}
           FollowUp={props.navigation.state.params!.FollowUp}
           appointmentType={props.navigation.state.params!.appointmentType}

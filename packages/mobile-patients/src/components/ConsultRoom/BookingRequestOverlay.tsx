@@ -76,6 +76,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  headerTextStyle: {
+    margin: 18,
+  },
 });
 
 export interface BookingRequestOverlayProps extends NavigationScreenProps {
@@ -98,20 +101,14 @@ export interface BookingRequestOverlayProps extends NavigationScreenProps {
 }
 export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (props) => {
   const { doctor } = props;
-  const { availableModes } = doctor;
 
   const client = useApolloClient();
   const { circleSubscriptionId } = useShoppingCart();
-  const isOnline = availableModes?.filter(
-    (consultMode: ConsultMode) => consultMode === ConsultMode.ONLINE
-  );
-  const isBoth = availableModes?.filter(
-    (consultMode: ConsultMode) => consultMode === ConsultMode.BOTH
-  );
+
   const consultOnlineTab = string.consultModeTab.CONSULT_ONLINE;
   const consultPhysicalTab = string.consultModeTab.MEET_IN_PERSON;
 
-  const tabs = [{ title: 'Request Submitted' }];
+  const tabs = [{ title: 'Request Appointment' }];
 
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');
@@ -125,12 +122,6 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
   const [notificationAlert, setNotificationAlert] = useState(false);
 
-  const doctorFees =
-    consultOnlineTab === selectedTab
-      ? props.doctor!.onlineConsultationFees
-      : props.doctor!.physicalConsultationFees;
-
-  const [doctorDiscountedFees, setDoctorDiscountedFees] = useState<number>(0);
   const scrollViewRef = React.useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [disablePay, setdisablePay] = useState<boolean>(false);
@@ -142,30 +133,6 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
   );
   const { currentPatient } = useAllCurrentPatients();
   const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
-  const isOnlineConsult = selectedTab === consultOnlineTab;
-  const isPhysicalConsult = isPhysicalConsultation(selectedTab);
-
-  const circleDoctorDetails = calculateCircleDoctorPricing(
-    props.doctor,
-    isOnlineConsult,
-    isPhysicalConsult
-  );
-  const {
-    onlineConsultSlashedPrice,
-    onlineConsultMRPPrice,
-    physicalConsultMRPPrice,
-    physicalConsultSlashedPrice,
-    isCircleDoctorOnSelectedConsultMode,
-  } = circleDoctorDetails;
-  const actualPrice = isCircleDoctorOnSelectedConsultMode
-    ? selectedTab === consultOnlineTab
-      ? circleSubscriptionId
-        ? onlineConsultSlashedPrice
-        : onlineConsultMRPPrice
-      : circleSubscriptionId
-      ? physicalConsultSlashedPrice
-      : physicalConsultMRPPrice
-    : Number(doctorFees);
 
   const todayDate = new Date().toDateString().split('T')[0];
   const scrollToSlots = (top: number = 400) => {
@@ -173,31 +140,6 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
       scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: top, animated: true });
     }
   };
-  useEffect(() => {
-    if (props.consultModeSelected === ConsultMode.ONLINE) {
-      setselectedTab(consultOnlineTab);
-    } else if (props.consultModeSelected === ConsultMode.PHYSICAL) {
-      setselectedTab(consultPhysicalTab);
-    }
-  }, [props.consultModeSelected]);
-
-  useEffect(() => {
-    const todayDate = new Date().toISOString().slice(0, 10);
-    getNextAvailableSlots(client, props.doctor ? [props.doctor.id] : [], todayDate)
-      .then(({ data }: any) => {
-        try {
-          const nextSlot = data[0] ? data[0]!.availableSlot : '';
-          if (!nextSlot && data[0]!.physicalAvailableSlot) {
-            tabs.length > 1 && setselectedTab(consultPhysicalTab);
-          }
-        } catch (e) {
-          CommonBugFender('ConsultOverlay_getNextAvailableSlots_try', e);
-        }
-      })
-      .catch((e: any) => {
-        CommonBugFender('ConsultOverlay_getNextAvailableSlots', e);
-      });
-  }, []);
 
   const onPressCheckout = async () => {
     CommonLogEvent(AppRoutes.DoctorDetails, 'ConsultOverlay onSubmitBookAppointment clicked');
@@ -292,7 +234,7 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
         }}
       >
         <Button
-          title={'PROCEED'}
+          title={'SUBMIT REQUEST'}
           disabled={
             disablePay
               ? true
@@ -423,21 +365,19 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
           }}
         >
           <View style={[styles.mainViewStyle, props.mainContainerStyle]}>
-            <TabsComponent
+            <View
               style={{
                 ...theme.viewStyles.cardViewStyle,
-                borderRadius: 0,
+                borderRadius: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+                shadowOffset: { width: 5, height: 20 },
               }}
-              data={tabs}
-              onChange={(_selectedTab: string) => {
-                setDate(new Date());
-                setselectedTab(_selectedTab);
-                setselectedTimeSlot('');
-                setisConsultOnline(_selectedTab === consultOnlineTab);
-                updateCouponDiscountOnChangeTab(_selectedTab === consultOnlineTab);
-              }}
-              selectedTab={selectedTab}
-            />
+            >
+              <Text style={[styles.headerTextStyle, theme.viewStyles.text('M', 16, '#02475B')]}>
+                {tabs[0].title}
+              </Text>
+            </View>
             <ScrollView bounces={false} ref={scrollViewRef}>
               {selectedTab === consultOnlineTab ? (
                 <>
@@ -496,7 +436,7 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
               {selectedTab === consultPhysicalTab && renderFootNote()}
               <View style={{ height: 70 }} />
             </ScrollView>
-            {props.doctor && renderBottomButton()}
+            {renderBottomButton()}
           </View>
         </View>
       </View>
