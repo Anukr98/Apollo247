@@ -68,6 +68,7 @@ import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { BookingRequestCard } from '../ui/BookingRequestCard';
+import { BookingRequestSubmittedOverlay } from '../ui/BookingRequestSubmittedOverlay';
 import {
   ApolloDoctorIcon,
   ApolloPartnerIcon,
@@ -1311,7 +1312,7 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
       </SafeAreaView>
 
       {displayoverlay && doctorDetails && (
-        <ConsultOverlay
+        <BookingRequestSubmittedOverlay
           setdisplayoverlay={() => setdisplayoverlay(false)}
           navigation={props.navigation}
           consultedWithDoctorBefore={consultedWithDoctorBefore}
