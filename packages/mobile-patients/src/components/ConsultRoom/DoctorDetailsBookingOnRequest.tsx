@@ -67,7 +67,7 @@ import {
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
-import { ConsultTypeCard } from '../ui/ConsultTypeCard';
+import { BookingRequestSubmitted } from '../ui/BookingRequestSubmitted';
 import {
   ApolloDoctorIcon,
   ApolloPartnerIcon,
@@ -704,7 +704,7 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
 
   const renderConsultType = () => {
     return (
-      <ConsultTypeCard
+      <BookingRequestSubmitted
         isOnlineSelected={onlineSelected}
         DoctorId={doctorId}
         chatDays={g(doctorDetails, 'chatDays') ? g(doctorDetails, 'chatDays')!.toString() : '7'}

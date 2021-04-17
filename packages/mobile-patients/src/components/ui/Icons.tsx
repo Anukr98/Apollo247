@@ -1033,6 +1033,13 @@ export const InPersonHeader: React.FC<IconProps> = (props) => (
     source={require('./icons/illustration_search_specialist.webp')}
   />
 );
+export const BORHeader: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 40, height: 40 }}
+    {...props}
+    source={require('./icons/BORAvatar.png')}
+  />
+);
 
 export const OnlineHeader: React.FC<IconProps> = (props) => (
   <IconBase
@@ -1066,6 +1073,9 @@ export const CTPayment: React.FC<IconProps> = (props) => (
 
 export const CTPrescription: React.FC<IconProps> = (props) => (
   <IconBase size="sm_l" {...props} source={require('./icons/ct_prescription.webp')} />
+);
+export const BORform: React.FC<IconProps> = (props) => (
+  <IconBase style={{ width: 15, height: 15 }} {...props} source={require('./icons/formBOR.png')} />
 );
 
 export const CTChat: React.FC<IconProps> = (props) => (

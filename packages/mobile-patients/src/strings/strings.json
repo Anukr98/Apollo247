@@ -184,6 +184,11 @@
   "placeOrder": "PLACE ORDER",
   "microphone": "microphone",
   "enableMicrophoneToRecordCough": "Enable microphone from settings to record your cough.",
+  "BORJourney": {
+    "point1": "Register your Request through the Form.\n\nIf request is accepted, we will contact you for the Appointment booking and Payment.",
+    "point2": "If Appointment can not be booked, you can book another doctor",
+    "point3": "After Confirmation, you will receive the Booking Details on the Apollo 247 App/Web"
+  },
   "consultType": {
     "mainHeading": "How would you like to consult with",
     "checkBoxText": "I have consulted with {0} before",
