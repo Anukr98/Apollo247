@@ -39,7 +39,7 @@ import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Dimensions,
-  Linking,
+  ImageBackground,
   Platform,
   StyleSheet,
   Text,
@@ -229,6 +229,7 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
                 borderRadius: 1,
                 alignItems: 'center',
                 justifyContent: 'center',
+                shadowOffset: { width: 5, height: 20 },
               }}
             >
               <Text style={[styles.headerTextStyle, theme.viewStyles.text('M', 16, '#02475B')]}>
@@ -236,30 +237,21 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
               </Text>
             </View>
 
-            <ConsultOnline
-              source={props.navigation.getParam('showBookAppointment') ? 'List' : 'Profile'}
-              doctor={props.doctor}
-              date={date}
-              setDate={(date) => {
-                setDate(date);
-              }}
-              nextAvailableSlot={nextAvailableSlot}
-              setNextAvailableSlot={''}
-              isConsultOnline={isConsultOnline}
-              setisConsultOnline={setisConsultOnline}
-              setavailableInMin={setavailableInMin}
-              availableInMin={availableInMin}
-              setselectedTimeSlot={(timeSlot) => {
-                postSlotSelectedEvent(timeSlot);
-                setselectedTimeSlot(timeSlot);
-              }}
-              selectedTimeSlot={selectedTimeSlot}
-              setshowSpinner={setshowSpinner}
-              scrollToSlots={scrollToSlots}
-              setshowOfflinePopup={setshowOfflinePopup}
-            />
+            <View style={{ alignItems: 'center', justifyContent: 'center', margin: 25 }}>
+              <ImageBackground
+                style={{ width: 55, height: 55 }}
+                source={require('@aph/mobile-patients/src/images/consultation/BORCall.png')}
+              />
+              <Text
+                style={[styles.headerTextStyle, theme.viewStyles.text('M', 16, '#01475B', 1, 21)]}
+              >
+                Your appointment request with
+                <Text style={{ fontFamily: 'IBMPlexSans-Bold' }}> Dr. Jayanth Reddy</Text> has been
+                submitted. Our team will contact you shortly!
+              </Text>
+            </View>
 
-            <View style={{ height: 50 }} />
+            <View style={{ height: 20 }} />
           </View>
         </View>
       </View>
