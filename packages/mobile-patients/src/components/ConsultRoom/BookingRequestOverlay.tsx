@@ -270,9 +270,7 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
             { textAlign: 'justify' },
           ]}
         >
-          {selectedTab === consultOnlineTab
-            ? string.common.DisclaimerText
-            : string.common.agreePhysicalConsultTC}
+          {string.common.DisclaimerTextBookingRequest}
         </Text>
       </View>
     );
@@ -285,12 +283,6 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
         </Text>
       </View>
     );
-  };
-
-  const updateCouponDiscountOnChangeTab = (isOnlineConsult: boolean) => {
-    // this function will reset coupon discount on change in consultation type
-    setCoupon('');
-    setDoctorDiscountedFees(0);
   };
 
   const [slotsSelected, setSlotsSelected] = useState<string[]>([]);
@@ -379,61 +371,32 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
               </Text>
             </View>
             <ScrollView bounces={false} ref={scrollViewRef}>
-              {selectedTab === consultOnlineTab ? (
-                <>
-                  <ConsultOnline
-                    source={props.navigation.getParam('showBookAppointment') ? 'List' : 'Profile'}
-                    doctor={props.doctor}
-                    date={date}
-                    setDate={(date) => {
-                      setDate(date);
-                    }}
-                    nextAvailableSlot={nextAvailableSlot}
-                    setNextAvailableSlot={setNextAvailableSlot}
-                    isConsultOnline={isConsultOnline}
-                    setisConsultOnline={setisConsultOnline}
-                    setavailableInMin={setavailableInMin}
-                    availableInMin={availableInMin}
-                    setselectedTimeSlot={(timeSlot) => {
-                      postSlotSelectedEvent(timeSlot);
-                      setselectedTimeSlot(timeSlot);
-                    }}
-                    selectedTimeSlot={selectedTimeSlot}
-                    setshowSpinner={setshowSpinner}
-                    scrollToSlots={scrollToSlots}
-                    setshowOfflinePopup={setshowOfflinePopup}
-                  />
-                </>
-              ) : (
-                <ConsultPhysical
-                  doctor={props.doctor}
-                  clinics={props.clinics}
-                  setDate={(date) => {
-                    setDate(date);
-                  }}
-                  setselectedTimeSlot={(timeSlot) => {
-                    postSlotSelectedEvent(timeSlot);
-                    setselectedTimeSlot(timeSlot);
-                  }}
-                  selectedTimeSlot={selectedTimeSlot}
-                  date={date}
-                  setshowSpinner={setshowSpinner}
-                  setshowOfflinePopup={setshowOfflinePopup}
-                  scrollToSlots={scrollToSlots}
-                  setselectedClinic={setselectedClinic}
-                />
-              )}
-              {renderDisclamer()}
-              {!g(currentPatient, 'whatsAppConsult') ? (
-                <WhatsAppStatus
-                  onPress={() => {
-                    whatsAppUpdate ? setWhatsAppUpdate(false) : setWhatsAppUpdate(true);
-                  }}
-                  isSelected={whatsAppUpdate}
-                />
-              ) : null}
+              <ConsultOnline
+                source={props.navigation.getParam('showBookAppointment') ? 'List' : 'Profile'}
+                doctor={props.doctor}
+                date={date}
+                setDate={(date) => {
+                  setDate(date);
+                }}
+                nextAvailableSlot={nextAvailableSlot}
+                setNextAvailableSlot={setNextAvailableSlot}
+                isConsultOnline={isConsultOnline}
+                setisConsultOnline={setisConsultOnline}
+                setavailableInMin={setavailableInMin}
+                availableInMin={availableInMin}
+                setselectedTimeSlot={(timeSlot) => {
+                  postSlotSelectedEvent(timeSlot);
+                  setselectedTimeSlot(timeSlot);
+                }}
+                selectedTimeSlot={selectedTimeSlot}
+                setshowSpinner={setshowSpinner}
+                scrollToSlots={scrollToSlots}
+                setshowOfflinePopup={setshowOfflinePopup}
+              />
 
-              {selectedTab === consultPhysicalTab && renderFootNote()}
+              {renderDisclamer()}
+
+              {renderFootNote()}
               <View style={{ height: 70 }} />
             </ScrollView>
             {renderBottomButton()}
