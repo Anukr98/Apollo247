@@ -1,6 +1,5 @@
 import { ConsultOverlay } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultOverlay';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { AvailabilityCapsule } from '@aph/mobile-patients/src/components/ui/AvailabilityCapsule';
 import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
 import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -68,16 +67,13 @@ import {
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
-import { useAppCommonData } from '../AppCommonDataProvider';
 import { ConsultTypeCard } from '../ui/ConsultTypeCard';
 import {
   ApolloDoctorIcon,
   ApolloPartnerIcon,
   DoctorPlaceholderImage,
-  RectangularIcon,
   FamilyDoctorIcon,
   CTGrayChat,
-  InfoBlue,
   CircleLogo,
   ShareYellowDocIcon,
 } from '../ui/Icons';
@@ -308,6 +304,68 @@ const styles = StyleSheet.create({
     left: -3,
     top: -2,
   },
+  clinicImageContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    marginHorizontal: 8,
+    shadowRadius: 2,
+    width: '85%',
+    marginVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  clinicImageBlueText: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: theme.colors.LIGHT_BLUE,
+  },
+  clinicImageSkyBlueText: {
+    ...theme.fonts.IBMPlexSansSemiBold(12),
+    color: theme.colors.SKY_BLUE,
+  },
+  animatedView1: {
+    position: 'absolute',
+    height: 160,
+    width: '100%',
+    top: statusBarHeight(),
+    justifyContent: 'flex-end',
+    flexDirection: 'column',
+  },
+  animatedView2: {
+    top: 0,
+    height: 140,
+    width: '100%',
+  },
+  headerContainer: {
+    zIndex: 3,
+    position: 'absolute',
+    top: statusBarHeight(),
+    left: 0,
+    right: 0,
+    height: 56,
+    backgroundColor: 'transparent',
+    borderBottomWidth: 0,
+  },
+  doctorDetails: {
+    height: 160,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  docImagePlaceholder: {
+    top: 0,
+    height: 140,
+    width: 140,
+  },
+  animatedImageV2: {
+    top: 0,
+    height: 140,
+    width: 140,
+    alignSelf: 'center',
+  },
+  doctorDetailsTopView: {
+    height: 160,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
 type Appointments = {
   date: string;
@@ -357,11 +415,8 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
   const [availableTime, setavailableTime] = useState<string>('');
   const [physicalAvailableTime, setphysicalAvailableTime] = useState<string>('');
   const [membershipPlans, setMembershipPlans] = useState<any>([]);
-  const [availableInMinPhysical, setavailableInMinPhysical] = useState<Number>();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const { getPatientApiCall } = useAuth();
-  const { VirtualConsultationFee } = useAppCommonData();
-  const [consultType, setConsultType] = useState<ConsultMode>(ConsultMode.BOTH);
   const [showVideo, setShowVideo] = useState<boolean>(false);
   const [isFocused, setisFocused] = useState<boolean>(false);
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
@@ -371,13 +426,7 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const circleDoctorDetails = calculateCircleDoctorPricing(doctorDetails);
   const [showDoctorSharePopup, setShowDoctorSharePopup] = useState<boolean>(false);
-  const {
-    isCircleDoctor,
-    physicalConsultMRPPrice,
-    onlineConsultMRPPrice,
-    onlineConsultSlashedPrice,
-    physicalConsultSlashedPrice,
-  } = circleDoctorDetails;
+  const { isCircleDoctor } = circleDoctorDetails;
   const {
     circleSubscriptionId,
     selectDefaultPlan,
@@ -385,41 +434,6 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
     defaultCirclePlan,
     showCircleSubscribed,
   } = useShoppingCart();
-
-  const isPayrollDoctor = doctorDetails?.doctorType === DoctorType.PAYROLL;
-  const isPhysical =
-    doctorDetails &&
-    doctorDetails?.availableModes?.filter(
-      (consultMode: ConsultMode) => consultMode === ConsultMode.PHYSICAL
-    );
-  const isBoth =
-    doctorDetails &&
-    doctorDetails?.availableModes?.filter(
-      (consultMode: ConsultMode) => consultMode === ConsultMode.BOTH
-    );
-  const rectangularIconHeight = isCircleDoctor
-    ? Platform.OS == 'android'
-      ? showCircleSubscribed
-        ? 154
-        : 164
-      : showCircleSubscribed
-      ? 149
-      : 159
-    : Platform.OS == 'android'
-    ? 134
-    : 129;
-
-  const consultViewHeight = isCircleDoctor
-    ? Platform.OS == 'android'
-      ? showCircleSubscribed
-        ? 133
-        : 143
-      : showCircleSubscribed
-      ? 128
-      : 138
-    : Platform.OS == 'android'
-    ? 115
-    : 110;
 
   useEffect(() => {
     if (!currentPatient) {
@@ -702,54 +716,6 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
       });
   };
 
-  const renderCareDoctorPricing = (consultType: ConsultMode) => {
-    return (
-      <View style={{ paddingBottom: showCircleSubscribed ? 16 : 3 }}>
-        <Text
-          style={[
-            styles.carePrice,
-            {
-              textDecorationLine: showCircleSubscribed ? 'line-through' : 'none',
-              ...theme.viewStyles.text(
-                'M',
-                15,
-                showCircleSubscribed ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
-              ),
-            },
-          ]}
-        >
-          {string.common.Rs}
-          {consultType === ConsultMode.ONLINE
-            ? convertNumberToDecimal(onlineConsultMRPPrice)
-            : convertNumberToDecimal(physicalConsultMRPPrice)}
-        </Text>
-        <View style={styles.rowContainer}>
-          <Text style={styles.careDiscountedPrice}>
-            {string.common.Rs}
-            {consultType === ConsultMode.ONLINE
-              ? convertNumberToDecimal(onlineConsultSlashedPrice)
-              : convertNumberToDecimal(physicalConsultSlashedPrice)}
-          </Text>
-          {showCircleSubscribed ? (
-            <CircleLogo style={[styles.smallCareLogo, { height: 17 }]} />
-          ) : null}
-        </View>
-        {!showCircleSubscribed ? (
-          <TouchableOpacity
-            activeOpacity={1}
-            style={styles.row}
-            onPress={() => openCircleWebView()}
-          >
-            <Text style={styles.smallText}>for</Text>
-            <CircleLogo style={styles.smallCareLogo} />
-            <Text style={styles.smallText}>members</Text>
-            <InfoBlue style={styles.smallInfo} />
-          </TouchableOpacity>
-        ) : null}
-      </View>
-    );
-  };
-
   const openCircleWebView = () => {
     props.navigation.navigate(AppRoutes.CommonWebView, {
       url: AppConfig.Configuration.CIRCLE_CONSULT_URL,
@@ -985,22 +951,13 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
                       : [];
                   return (
                     <View>
-                      <View
-                        style={{
-                          ...theme.viewStyles.cardViewStyle,
-                          marginHorizontal: 8,
-                          shadowRadius: 2,
-                          width: 320,
-                          marginVertical: 8,
-                        }}
-                      >
+                      <View style={styles.clinicImageContainer}>
                         <View
                           style={{
                             overflow: 'hidden',
                             borderRadius: 10,
                           }}
                         >
-                          {/* {clinic.image && ( */}
                           <Image
                             source={
                               item && item.facility && item.facility.imageUrl
@@ -1014,7 +971,6 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
                               width: '100%',
                             }}
                           />
-                          {/* )} */}
 
                           <View
                             style={{
@@ -1022,24 +978,14 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
                               marginTop: 10,
                             }}
                           >
-                            <Text
-                              style={{
-                                ...theme.fonts.IBMPlexSansMedium(14),
-                                color: theme.colors.LIGHT_BLUE,
-                              }}
-                            >
+                            <Text style={styles.clinicImageBlueText}>
                               {item && item.facility.streetLine1}
                               {item && item.facility.streetLine2
                                 ? `${item && item.facility.streetLine1 ? ', ' : ''}${item &&
                                     item.facility.streetLine2}`
                                 : ''}
                             </Text>
-                            <Text
-                              style={{
-                                ...theme.fonts.IBMPlexSansMedium(14),
-                                color: theme.colors.LIGHT_BLUE,
-                              }}
-                            >
+                            <Text style={styles.clinicImageBlueText}>
                               {item && item.facility && item.facility.city}
                             </Text>
                             {clinicHours.length > 0 && (
@@ -1054,21 +1000,11 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
                                         justifyContent: 'space-between',
                                       }}
                                     >
-                                      <Text
-                                        style={{
-                                          ...theme.fonts.IBMPlexSansSemiBold(12),
-                                          color: theme.colors.SKY_BLUE,
-                                        }}
-                                      >
+                                      <Text style={styles.clinicImageSkyBlueText}>
                                         {time.weekDay.toUpperCase()}
                                       </Text>
 
-                                      <Text
-                                        style={{
-                                          ...theme.fonts.IBMPlexSansSemiBold(12),
-                                          color: theme.colors.SKY_BLUE,
-                                        }}
-                                      >
+                                      <Text style={styles.clinicImageSkyBlueText}>
                                         {formatTime(time.startTime)} - {formatTime(time.endTime)}
                                       </Text>
                                     </View>
@@ -1414,38 +1350,29 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
         />
       )}
       <Animated.View
-        style={{
-          position: 'absolute',
-          height: 160,
-          width: '100%',
-          top: statusBarHeight(),
-          backgroundColor: headColor,
-          justifyContent: 'flex-end',
-          flexDirection: 'column',
-          transform: [{ translateY: headMov }],
-        }}
+        style={[
+          styles.animatedView1,
+          {
+            backgroundColor: headColor,
+            transform: [{ translateY: headMov }],
+          },
+        ]}
       >
-        <View
-          style={{
-            height: 160,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
+        <View style={styles.doctorDetailsTopView}>
           {!showVideo && !!g(doctorDetails, 'photoUrl') ? (
             <>
               <View style={{ height: 20, width: '100%' }} />
               <Animated.View
-                style={{
-                  top: 0,
-                  height: 140,
-                  width: '100%',
-                  opacity: imgOp,
-                }}
+                style={[
+                  styles.animatedView2,
+                  {
+                    opacity: imgOp,
+                  },
+                ]}
               >
                 <Animated.Image
                   source={{ uri: doctorDetails!.photoUrl }}
-                  style={{ top: 0, height: 140, width: 140, opacity: imgOp, alignSelf: 'center' }}
+                  style={[styles.animatedImageV2, { opacity: imgOp }]}
                 />
                 {isCircleDoctor && (
                   <View style={styles.circleView}>
@@ -1457,31 +1384,15 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
           ) : (
             !showVideo &&
             doctorDetails && (
-              <View
-                style={{
-                  height: 160,
-                  width: '100%',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <DoctorPlaceholderImage style={{ top: 0, height: 140, width: 140 }} />
+              <View style={styles.doctorDetails}>
+                <DoctorPlaceholderImage style={styles.docImagePlaceholder} />
               </View>
             )
           )}
         </View>
       </Animated.View>
       <Header
-        container={{
-          zIndex: 3,
-          position: 'absolute',
-          top: statusBarHeight(),
-          left: 0,
-          right: 0,
-          height: 56,
-          backgroundColor: 'transparent',
-          borderBottomWidth: 0,
-        }}
+        container={styles.headerContainer}
         leftIcon="backArrow"
         onPressLeftIcon={() => moveBack()}
       />
