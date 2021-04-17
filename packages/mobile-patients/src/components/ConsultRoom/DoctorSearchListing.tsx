@@ -119,6 +119,7 @@ import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobil
 import { DoctorShareComponent } from '@aph/mobile-patients/src/components/ConsultRoom/Components/DoctorShareComponent';
 import { SKIP_LOCATION_PROMPT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
 import { userLocationConsultWEBEngage } from '@aph/mobile-patients/src/helpers/CommonEvents';
+import { BookingRequestOverlay } from '@aph/mobile-patients/src/components/ConsultRoom/BookingRequestOverlay';
 
 const searchFilters = require('@aph/mobile-patients/src/strings/filters');
 const { width: screenWidth } = Dimensions.get('window');
@@ -245,6 +246,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const scrollViewRef = React.useRef<ScrollView | null>(null);
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
+  const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [currentLocation, setcurrentLocation] = useState<string>('');
   const [locationSearchText, setLocationSearchText] = useState<string>('');
   const [showCarePlanNotification, setShowCarePlanNotification] = useState<boolean>(false);
@@ -1211,6 +1213,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         numberOfLines={numberOfLines}
         availableModes={rowData.consultMode}
         callSaveSearch={callSaveSearch}
+        onPressRequest={() => {
+          setdisplayoverlay(true);
+        }}
         onPress={() => {
           postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List');
           if (index != 3) {
@@ -2098,6 +2103,25 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         </ScrollView>
         {renderBottomOptions()}
       </SafeAreaView>
+      {displayoverlay && (
+        <BookingRequestOverlay
+          setdisplayoverlay={() => setdisplayoverlay(false)}
+          navigation={props.navigation}
+          consultedWithDoctorBefore={consultedWithDoctorBefore}
+          doctor={doctorDetails ? doctorDetails : null}
+          patientId={currentPatient ? currentPatient.id : ''}
+          clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
+          doctorId={props.navigation.state.params!.doctorId}
+          FollowUp={props.navigation.state.params!.FollowUp}
+          appointmentType={props.navigation.state.params!.appointmentType}
+          appointmentId={props.navigation.state.params!.appointmentId}
+          consultModeSelected={consultMode}
+          externalConnect={null}
+          availableMode={ConsultMode.BOTH}
+          callSaveSearch={callSaveSearch}
+          isDoctorsOfTheHourStatus={doctorDetails?.doctorsOfTheHourStatus}
+        />
+      )}
       {displayFilter ? (
         <FilterScene
           onClickClose={() => {

@@ -522,6 +522,6 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
   );
 };
 
-ConsultOverlay.defaultProps = {
+BookingRequestOverlay.defaultProps = {
   scrollToSlot: true,
 };

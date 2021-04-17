@@ -195,6 +195,7 @@ export interface DoctorCardProps extends NavigationScreenProps {
     | getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor
     | any
     | null;
+  onPressRequest?: () => void;
   onPress?: (doctorId: string) => void;
   onPressConsultNowOrBookAppointment?: (type: 'consult-now' | 'book-appointment') => void;
   displayButton?: boolean;
@@ -246,6 +247,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const { availableModes } = props;
   const { showCircleSubscribed } = useShoppingCart();
   const [fetchedSlot, setfetchedSlot] = useState<string>('');
+  const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const isPhysical = availableModes
     ? [ConsultMode.PHYSICAL, ConsultMode.BOTH].includes(availableModes)
     : false;
@@ -796,7 +798,10 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                     style={styles.BORButtonStyle}
                     titleTextStyle={styles.BORButtonTextStyle}
                     title={'Request Appointment'}
-                    onPress={() => console.log('csk booking on request button pressed')}
+                    onPress={() => {
+                      console.log('csk booking on request button pressed');
+                      props.onPressRequest && props.onPressRequest();
+                    }}
                   />
                 )}
               </View>
