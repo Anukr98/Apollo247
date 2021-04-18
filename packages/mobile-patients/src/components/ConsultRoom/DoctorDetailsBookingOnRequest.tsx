@@ -918,9 +918,7 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
         return (
           <View style={styles.cardView}>
             <View style={styles.labelView}>
-              <Text style={styles.labelStyle}>
-                {doctorDetails.fullName}’s location for physical visits
-              </Text>
+              <Text style={styles.labelStyle}>{doctorDetails.fullName}’s Clinic</Text>
             </View>
             <FlatList
               keyExtractor={(_, index) => index.toString()}

@@ -147,8 +147,6 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
       AppRoutes.DoctorDetailsBookingOnRequest,
       'BookingRequestOverlay onSubmitRequest clicked'
     );
-    props.setdisplayoverlay && props.setdisplayoverlay();
-    setSubmittedDisplayOverlay(true);
   };
 
   const renderBottomButton = () => {
@@ -163,19 +161,10 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
       >
         <Button
           title={'SUBMIT REQUEST'}
-          disabled={
-            disablePay
-              ? true
-              : consultOnlineTab === selectedTab &&
-                isConsultOnline &&
-                availableInMin! <= 60 &&
-                0 < availableInMin!
-              ? false
-              : selectedTimeSlot === ''
-              ? true
-              : false
-          }
+          disabled={disablePay ? false : false}
           onPress={() => {
+            props.setdisplayoverlay && props.setdisplayoverlay();
+            setSubmittedDisplayOverlay(true);
             onPressCheckout();
           }}
         />
@@ -224,32 +213,6 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
 
   const [slotsSelected, setSlotsSelected] = useState<string[]>([]);
 
-  const postSlotSelectedEvent = (slot: string) => {
-    if (!slot) {
-      return;
-    }
-    // to avoid duplicate events
-    if (!slotsSelected.find((val) => val == slot)) {
-      const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
-        if (item && item.facility && item.facility.facilityType)
-          return item.facility.facilityType === 'HOSPITAL';
-      });
-      const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_SLOT_SELECTED] = {
-        doctorName: g(props.doctor, 'fullName')!,
-        specialisation: g(props.doctor, 'specialty', 'name')!,
-        experience: Number(g(props.doctor, 'experience')!),
-        'language known': g(props.doctor, 'languages')! || 'NA',
-        'Consult Mode': consultOnlineTab === selectedTab ? 'Online' : 'Physical',
-        'Doctor ID': g(props.doctor, 'id')!,
-        'Speciality ID': g(props.doctor, 'specialty', 'id')!,
-        'Patient UHID': g(currentPatient, 'uhid'),
-        'Consult Date Time': moment(slot).toDate(),
-      };
-      postWebEngageEvent(WebEngageEventName.CONSULT_SLOT_SELECTED, eventAttributes);
-      setSlotsSelected([...slotsSelected, slot]);
-    }
-  };
-
   return (
     <View
       style={{
@@ -272,7 +235,7 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
-              props.setdisplayoverlay(false);
+              props.setdisplayoverlay();
             }}
             style={{
               marginTop: Platform.OS === 'ios' ? 38 : 14,
