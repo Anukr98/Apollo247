@@ -1,11 +1,8 @@
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { ConsultOnline } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultOnline';
-import { ConsultPhysical } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPhysical';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
-import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { BookingRequestSubmittedOverlay } from '../ui/BookingRequestSubmittedOverlay';
@@ -17,16 +14,7 @@ import {
   getDoctorDetailsById_getDoctorDetailsById,
   getDoctorDetailsById_getDoctorDetailsById_doctorHospital,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
-import {
-  ConsultMode,
-  DoctorType,
-  BookAppointmentInput,
-  APPOINTMENT_TYPE,
-  BOOKINGSOURCE,
-  DEVICETYPE,
-  PLAN,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { ConsultMode } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -36,10 +24,8 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
 import {
   Dimensions,
-  Linking,
   Platform,
   StyleSheet,
   Text,
@@ -50,12 +36,6 @@ import {
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-import { WhatsAppStatus } from '../ui/WhatsAppStatus';
-import {
-  calculateCircleDoctorPricing,
-  isPhysicalConsultation,
-} from '@aph/mobile-patients/src/utils/commonUtils';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import moment from 'moment';
 const { width, height } = Dimensions.get('window');
 
@@ -100,27 +80,9 @@ export interface BookingRequestOverlayProps extends NavigationScreenProps {
   isDoctorsOfTheHourStatus?: boolean;
 }
 export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (props) => {
-  const { doctor } = props;
-
-  const client = useApolloClient();
-  const { circleSubscriptionId } = useShoppingCart();
-
-  const consultOnlineTab = string.consultModeTab.CONSULT_ONLINE;
-  const consultPhysicalTab = string.consultModeTab.MEET_IN_PERSON;
-
   const tabs = [{ title: 'Request Appointment' }];
 
-  const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
-  const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');
-
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
-  const [nextAvailableSlot, setNextAvailableSlot] = useState<string>('');
-  const [isConsultOnline, setisConsultOnline] = useState<boolean>(true);
-  const [availableInMin, setavailableInMin] = useState<number>(0);
-  const [date, setDate] = useState<Date>(new Date());
-  const [coupon, setCoupon] = useState('');
-  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
-  const [notificationAlert, setNotificationAlert] = useState(false);
   const [submittedDisplayOverlay, setSubmittedDisplayOverlay] = useState<boolean>(false);
 
   const scrollViewRef = React.useRef<any>(null);
@@ -133,10 +95,8 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
     props.clinics && props.clinics.length > 0 ? props.clinics[0] : null
   );
   const { currentPatient } = useAllCurrentPatients();
-  const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
 
-  const todayDate = new Date().toDateString().split('T')[0];
-  const scrollToSlots = (top: number = 400) => {
+  const scrollToPos = (top: number = 400) => {
     if (props.scrollToSlot) {
       scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: top, animated: true });
     }
@@ -210,8 +170,6 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
       </View>
     );
   };
-
-  const [slotsSelected, setSlotsSelected] = useState<string[]>([]);
 
   return (
     <View

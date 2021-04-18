@@ -28,8 +28,6 @@ import {
 import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import {
   g,
-  mhdMY,
-  nameFormater,
   postWebEngageEvent,
   nextAvailability,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
