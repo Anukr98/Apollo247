@@ -124,11 +124,6 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
   const [notificationAlert, setNotificationAlert] = useState(false);
 
-  const doctorFees =
-    consultOnlineTab === selectedTab
-      ? props.doctor!.onlineConsultationFees
-      : props.doctor!.physicalConsultationFees;
-
   const [doctorDiscountedFees, setDoctorDiscountedFees] = useState<number>(0);
   const scrollViewRef = React.useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
@@ -156,15 +151,6 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
     physicalConsultSlashedPrice,
     isCircleDoctorOnSelectedConsultMode,
   } = circleDoctorDetails;
-  const actualPrice = isCircleDoctorOnSelectedConsultMode
-    ? selectedTab === consultOnlineTab
-      ? circleSubscriptionId
-        ? onlineConsultSlashedPrice
-        : onlineConsultMRPPrice
-      : circleSubscriptionId
-      ? physicalConsultSlashedPrice
-      : physicalConsultMRPPrice
-    : Number(doctorFees);
 
   const todayDate = new Date().toDateString().split('T')[0];
   const scrollToSlots = (top: number = 400) => {

@@ -1,11 +1,11 @@
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import AsyncStorage from '@react-native-community/async-storage';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import { BookingRequestSubmittedOverlay } from '../ui/BookingRequestSubmittedOverlay';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
   CommonBugFender,
   CommonLogEvent,
@@ -59,6 +59,87 @@ const styles = StyleSheet.create({
   headerTextStyle: {
     margin: 18,
   },
+  congratulationsDescriptionStyle: {
+    marginHorizontal: 20,
+    marginTop: 8,
+    color: theme.colors.SKY_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(17),
+    lineHeight: 24,
+  },
+  popDescriptionStyle: {
+    marginHorizontal: 20,
+    marginTop: 8,
+    color: theme.colors.SHERPA_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(17),
+    lineHeight: 24,
+  },
+  aphAlertCtaViewStyle: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 8,
+    marginVertical: 5,
+  },
+  ctaWhiteButtonViewStyle: {
+    padding: 2,
+    borderRadius: 10,
+    backgroundColor: theme.colors.WHITE,
+    marginRight: 15,
+    marginVertical: 5,
+    shadowColor: '#4c808080',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  ctaSelectButtonViewStyle: {
+    padding: 2,
+    borderRadius: 10,
+    backgroundColor: '#02475B',
+    marginRight: 15,
+    marginVertical: 5,
+    shadowColor: '#4c808080',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  ctaSelectTextStyle: {
+    textAlign: 'center',
+    ...theme.viewStyles.text('B', 13, '#ffffff', 1, 24),
+    marginHorizontal: 5,
+  },
+  ctaSelectText2Style: {
+    ...theme.viewStyles.text('R', 10, '#ffffff', 1, 20),
+    textAlign: 'center',
+    marginHorizontal: 5,
+  },
+  textViewStyle: {
+    marginTop: 8,
+    paddingVertical: 8,
+  },
+  ctaOrangeButtonViewStyle: { flex: 1, minHeight: 40, height: 'auto' },
+  ctaOrangeTextStyle: {
+    textAlign: 'center',
+    ...theme.viewStyles.text('B', 13, '#01475B', 1, 24),
+    marginHorizontal: 5,
+  },
+  errorSelectMessage: {
+    textAlign: 'center',
+    ...theme.viewStyles.text('B', 14, '#E31E24', 1, 20),
+    marginBottom: 5,
+    width: '100%',
+  },
+  ctaOrangeText2Style: {
+    ...theme.viewStyles.text('R', 10, '#01475B', 1, 20),
+    textAlign: 'center',
+    marginHorizontal: 5,
+  },
+  separatorStyle: {
+    borderBottomWidth: 0.5,
+    borderBottomColor: theme.colors.SEPARATOR_LINE,
+    width: '100%',
+    marginVertical: 12,
+  },
 });
 
 export interface BookingRequestOverlayProps extends NavigationScreenProps {
@@ -86,15 +167,17 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
 
   const scrollViewRef = React.useRef<any>(null);
-  const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [disablePay, setdisablePay] = useState<boolean>(false);
-  const [
-    selectedClinic,
-    setselectedClinic,
-  ] = useState<getDoctorDetailsById_getDoctorDetailsById_doctorHospital | null>(
-    props.clinics && props.clinics.length > 0 ? props.clinics[0] : null
-  );
-  const { currentPatient } = useAllCurrentPatients();
+  const [isSelectedOnce, setIsSelectedOnce] = useState<boolean>(false);
+
+  const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
+  const [patientProfiles, setPatientProfiles] = useState<any>([]);
+  const [gender, setGender] = useState<string>(currentPatient?.gender);
+  const { showAphAlert, setLoading } = useUIElements();
+
+  useEffect(() => {
+    setPatientProfiles(moveSelectedToTop());
+  }, []);
 
   const scrollToPos = (top: number = 400) => {
     if (props.scrollToSlot) {
@@ -107,6 +190,16 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
       AppRoutes.DoctorDetailsBookingOnRequest,
       'BookingRequestOverlay onSubmitRequest clicked'
     );
+  };
+  const moveSelectedToTop = () => {
+    if (currentPatient !== undefined) {
+      const patientLinkedProfiles = [
+        allCurrentPatients?.find((item: any) => item?.uhid === currentPatient.uhid),
+        ...allCurrentPatients.filter((item: any) => item?.uhid !== currentPatient.uhid),
+      ];
+      return patientLinkedProfiles;
+    }
+    return [];
   };
 
   const renderBottomButton = () => {
@@ -170,6 +263,98 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
       </View>
     );
   };
+
+  const renderProfileListView = () => {
+    return (
+      <View>
+        {showSpinner && (
+          <Spinner style={{ backgroundColor: 'transparent' }} spinnerProps={{ size: 'small' }} />
+        )}
+        {/* <Text style={styles.congratulationsDescriptionStyle}>explanatory text-dont delete this</Text> */}
+        {renderCTAs()}
+      </View>
+    );
+  };
+
+  const onNewProfileAdded = (onAdd: any) => {
+    //finalAppointmentInput['patientId'] = onAdd?.id;
+    setIsSelectedOnce(onAdd?.added);
+    let patientData = patientProfiles;
+    patientData?.unshift(onAdd?.profileData);
+    setPatientProfiles(patientData);
+  };
+
+  const onSelectedProfile = (item: any) => {
+    setshowSpinner(true);
+    selectUser(item);
+    setLoading && setLoading(false);
+  };
+
+  const selectUser = (selectedUser: any) => {
+    setGender(selectedUser?.gender);
+    setCurrentPatientId(selectedUser?.id);
+    AsyncStorage.setItem('selectUserId', selectedUser!.id);
+    AsyncStorage.setItem('selectUserUHId', selectedUser!.uhid);
+    AsyncStorage.setItem('isNewProfile', 'yes');
+    moveSelectedToTop();
+    setshowSpinner(false);
+    //finalAppointmentInput['patientId'] = selectedUser?.id;
+  };
+
+  const renderCTAs = () => (
+    <View style={styles.aphAlertCtaViewStyle}>
+      {patientProfiles?.map((item: any, index: any, array: any) =>
+        item.firstName !== '+ADD MEMBER' ? (
+          <TouchableOpacity
+            onPress={() => {
+              setLoading && setLoading(true);
+              onSelectedProfile(item);
+              setIsSelectedOnce(true);
+            }}
+            style={
+              currentPatient?.id === item.id && isSelectedOnce
+                ? styles.ctaSelectButtonViewStyle
+                : styles.ctaWhiteButtonViewStyle
+            }
+          >
+            <Text
+              style={
+                currentPatient?.id === item.id && isSelectedOnce
+                  ? styles.ctaSelectTextStyle
+                  : styles.ctaOrangeTextStyle
+              }
+            >
+              {item.firstName}
+            </Text>
+            <Text
+              style={
+                currentPatient?.id === item.id && isSelectedOnce
+                  ? styles.ctaSelectText2Style
+                  : styles.ctaOrangeText2Style
+              }
+            >
+              {Math.round(moment().diff(item.dateOfBirth || 0, 'years', true))}, {item.gender}
+            </Text>
+          </TouchableOpacity>
+        ) : null
+      )}
+      <View style={[styles.textViewStyle]}>
+        <Text
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.EditProfile, {
+              isEdit: false,
+              isPoptype: true,
+              mobileNumber: currentPatient && currentPatient!.mobileNumber,
+              onNewProfileAdded: onNewProfileAdded,
+            });
+          }}
+          style={[styles.ctaOrangeTextStyle, { color: '#fc9916' }]}
+        >
+          {'+ADD MEMBER'}
+        </Text>
+      </View>
+    </View>
+  );
 
   return (
     <View
@@ -241,6 +426,8 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
                 <Text style={theme.viewStyles.text('B', 13, '#0087BA', 1, 17, 0)}>
                   SELECT PATIENT <Text style={{ color: theme.colors.APP_RED }}>*</Text>
                 </Text>
+                <View style={styles.separatorStyle} />
+                {renderProfileListView()}
               </View>
 
               {renderPrefferedMode()}
