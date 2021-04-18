@@ -8,7 +8,7 @@ import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterN
 import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
+import { BookingRequestSubmittedOverlay } from '../ui/BookingRequestSubmittedOverlay';
 import {
   CommonBugFender,
   CommonLogEvent,
@@ -70,11 +70,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     overflow: 'hidden',
   },
-  noteContainer: {
-    margin: 12,
-    padding: 2,
+  inputContainer: {
+    margin: 15,
+    padding: 6,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   headerTextStyle: {
     margin: 18,
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
 });
 
 export interface BookingRequestOverlayProps extends NavigationScreenProps {
-  setdisplayoverlay: (arg0: boolean) => void;
+  setdisplayoverlay: () => void;
   patientId: string;
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
   clinics: getDoctorDetailsById_getDoctorDetailsById_doctorHospital[];
@@ -121,6 +121,7 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
   const [coupon, setCoupon] = useState('');
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
   const [notificationAlert, setNotificationAlert] = useState(false);
+  const [submittedDisplayOverlay, setSubmittedDisplayOverlay] = useState<boolean>(false);
 
   const scrollViewRef = React.useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
@@ -142,85 +143,12 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
   };
 
   const onPressCheckout = async () => {
-    CommonLogEvent(AppRoutes.DoctorDetails, 'ConsultOverlay onSubmitBookAppointment clicked');
-    const timeSlot =
-      consultOnlineTab === selectedTab &&
-      isConsultOnline &&
-      availableInMin! <= 60 &&
-      0 < availableInMin!
-        ? nextAvailableSlot
-        : selectedTimeSlot;
-
-    const doctorClinics = props.clinics.filter((item) => {
-      if (item && item.facility && item.facility.facilityType)
-        return item.facility.facilityType === 'HOSPITAL';
-    });
-
-    const hospitalId = isConsultOnline
-      ? doctorClinics.length > 0 && doctorClinics[0].facility
-        ? doctorClinics[0].facility.id
-        : ''
-      : selectedClinic
-      ? selectedClinic.facility.id
-      : '';
-    const externalConnectParam =
-      props.externalConnect !== null ? { externalConnect: props.externalConnect } : {};
-    const appointmentInput: BookAppointmentInput = {
-      patientId: props.patientId,
-      doctorId: props.doctor ? props.doctor.id : '',
-      appointmentDateTime: timeSlot, //appointmentDate,
-      appointmentType:
-        selectedTab === consultOnlineTab ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
-      hospitalId,
-      bookingSource: BOOKINGSOURCE.MOBILE,
-      deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
-      ...externalConnectParam,
-      actualAmount: actualPrice,
-      pinCode: locationDetails && locationDetails.pincode,
-      subscriptionDetails:
-        circleSubscriptionId && isCircleDoctorOnSelectedConsultMode
-          ? {
-              userSubscriptionId: circleSubscriptionId,
-              plan: PLAN.CARE_PLAN,
-            }
-          : null,
-    };
-
-    consultOnlineTab === selectedTab
-      ? props.navigation.navigate(AppRoutes.PaymentCheckout, {
-          doctor: props.doctor,
-          tabs: tabs,
-          selectedTab: selectedTab,
-          price: actualPrice,
-          appointmentInput: appointmentInput,
-          couponApplied: coupon == '' ? false : true,
-          consultedWithDoctorBefore: props?.consultedWithDoctorBefore,
-          patientId: props.patientId,
-          callSaveSearch: props.callSaveSearch,
-          availableInMin: availableInMin,
-          nextAvailableSlot: nextAvailableSlot,
-          selectedTimeSlot: selectedTimeSlot,
-          followUp: props.FollowUp,
-          whatsAppUpdate: whatsAppUpdate,
-          isDoctorsOfTheHourStatus: props.isDoctorsOfTheHourStatus,
-        })
-      : props.navigation.navigate(AppRoutes.PaymentCheckoutPhysical, {
-          doctor: props.doctor,
-          tabs: tabs,
-          selectedTab: selectedTab,
-          price: actualPrice,
-          appointmentInput: appointmentInput,
-          couponApplied: coupon == '' ? false : true,
-          consultedWithDoctorBefore: props?.consultedWithDoctorBefore,
-          patientId: props.patientId,
-          callSaveSearch: props.callSaveSearch,
-          availableInMin: availableInMin,
-          nextAvailableSlot: nextAvailableSlot,
-          selectedTimeSlot: selectedTimeSlot,
-          followUp: props.FollowUp,
-          whatsAppUpdate: whatsAppUpdate,
-          isDoctorsOfTheHourStatus: props.isDoctorsOfTheHourStatus,
-        });
+    CommonLogEvent(
+      AppRoutes.DoctorDetailsBookingOnRequest,
+      'BookingRequestOverlay onSubmitRequest clicked'
+    );
+    props.setdisplayoverlay && props.setdisplayoverlay();
+    setSubmittedDisplayOverlay(true);
   };
 
   const renderBottomButton = () => {
@@ -275,11 +203,20 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
       </View>
     );
   };
-  const renderFootNote = () => {
+  const renderPrefferedMode = () => {
     return (
-      <View style={styles.noteContainer}>
+      <View style={styles.inputContainer}>
         <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 16, 0)}>
-          Note: Pay at Reception is available.
+          Preferred Mode of Appointment
+        </Text>
+      </View>
+    );
+  };
+  const renderDateRange = () => {
+    return (
+      <View style={styles.inputContainer}>
+        <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 16, 0)}>
+          Preferred Date Range for Appointment
         </Text>
       </View>
     );
@@ -366,54 +303,55 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
                 shadowOffset: { width: 5, height: 20 },
               }}
             >
-              <Text style={[styles.headerTextStyle, theme.viewStyles.text('M', 16, '#02475B')]}>
+              <Text
+                style={[styles.headerTextStyle, theme.viewStyles.text('M', 16, '#02475B', 1, 21)]}
+              >
                 {tabs[0].title}
               </Text>
             </View>
             <ScrollView bounces={false} ref={scrollViewRef}>
-              <ConsultOnline
-                source={props.navigation.getParam('showBookAppointment') ? 'List' : 'Profile'}
-                doctor={props.doctor}
-                date={date}
-                setDate={(date) => {
-                  setDate(date);
+              <View
+                style={{
+                  ...theme.viewStyles.cardContainer,
+                  padding: 21,
+                  marginTop: 20,
                 }}
-                nextAvailableSlot={nextAvailableSlot}
-                setNextAvailableSlot={setNextAvailableSlot}
-                isConsultOnline={isConsultOnline}
-                setisConsultOnline={setisConsultOnline}
-                setavailableInMin={setavailableInMin}
-                availableInMin={availableInMin}
-                setselectedTimeSlot={(timeSlot) => {
-                  postSlotSelectedEvent(timeSlot);
-                  setselectedTimeSlot(timeSlot);
-                }}
-                selectedTimeSlot={selectedTimeSlot}
-                setshowSpinner={setshowSpinner}
-                scrollToSlots={scrollToSlots}
-                setshowOfflinePopup={setshowOfflinePopup}
-              />
+              >
+                <Text style={theme.viewStyles.text('B', 13, '#0087BA', 1, 17, 0)}>
+                  SELECT PATIENT <Text style={{ color: theme.colors.APP_RED }}>*</Text>
+                </Text>
+              </View>
 
+              {renderPrefferedMode()}
+              {renderDateRange()}
               {renderDisclamer()}
-
-              {renderFootNote()}
               <View style={{ height: 70 }} />
             </ScrollView>
             {renderBottomButton()}
           </View>
         </View>
       </View>
-      {notificationAlert && (
-        <NotificationPermissionAlert
-          onPressOutside={() => setNotificationAlert(false)}
-          onButtonPress={() => {
-            setNotificationAlert(false);
-            Linking.openSettings();
-          }}
+      {submittedDisplayOverlay && (
+        <BookingRequestSubmittedOverlay
+          setdisplayoverlay={() => setSubmittedDisplayOverlay(false)}
+          navigation={props.navigation}
+          consultedWithDoctorBefore={false}
+          doctor={null}
+          patientId={currentPatient ? currentPatient.id : ''}
+          clinics={[]}
+          doctorId={props.navigation.state.params!.doctorId}
+          FollowUp={props.navigation.state.params!.FollowUp}
+          appointmentType={props.navigation.state.params!.appointmentType}
+          appointmentId={props.navigation.state.params!.appointmentId}
+          consultModeSelected={ConsultMode.ONLINE}
+          externalConnect={null}
+          availableMode={ConsultMode.BOTH}
+          callSaveSearch={''}
+          isDoctorsOfTheHourStatus={false}
         />
       )}
+
       {showSpinner && <Spinner />}
-      {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
     </View>
   );
 };
