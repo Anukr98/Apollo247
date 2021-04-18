@@ -193,7 +193,7 @@ export interface DoctorCardProps extends NavigationScreenProps {
     | getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor
     | any
     | null;
-  onPressRequest?: () => void;
+  onPressRequest?: (arg: boolean) => void;
   onPress?: (doctorId: string) => void;
   onPressConsultNowOrBookAppointment?: (type: 'consult-now' | 'book-appointment') => void;
   displayButton?: boolean;
@@ -798,7 +798,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                     title={'Request Appointment'}
                     onPress={() => {
                       console.log('csk booking on request button pressed');
-                      props.onPressRequest && props.onPressRequest();
+                      props.onPressRequest && props.onPressRequest(true);
                     }}
                   />
                 )}

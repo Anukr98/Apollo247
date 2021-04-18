@@ -120,6 +120,7 @@ import { DoctorShareComponent } from '@aph/mobile-patients/src/components/Consul
 import { SKIP_LOCATION_PROMPT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
 import { userLocationConsultWEBEngage } from '@aph/mobile-patients/src/helpers/CommonEvents';
 import { BookingRequestOverlay } from '@aph/mobile-patients/src/components/ConsultRoom/BookingRequestOverlay';
+import { BookingRequestSubmittedOverlay } from '../ui/BookingRequestSubmittedOverlay';
 
 const searchFilters = require('@aph/mobile-patients/src/strings/filters');
 const { width: screenWidth } = Dimensions.get('window');
@@ -247,6 +248,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
+  const [submittedDisplayOverlay, setSubmittedDisplayOverlay] = useState<boolean>(false);
   const [currentLocation, setcurrentLocation] = useState<string>('');
   const [locationSearchText, setLocationSearchText] = useState<string>('');
   const [showCarePlanNotification, setShowCarePlanNotification] = useState<boolean>(false);
@@ -1213,8 +1215,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         numberOfLines={numberOfLines}
         availableModes={rowData.consultMode}
         callSaveSearch={callSaveSearch}
-        onPressRequest={() => {
-          setdisplayoverlay(true);
+        onPressRequest={(arg: boolean) => {
+          setdisplayoverlay(arg);
         }}
         onPress={() => {
           postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List');
@@ -2105,7 +2107,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       </SafeAreaView>
       {displayoverlay && (
         <BookingRequestOverlay
-          setdisplayoverlay={() => setdisplayoverlay(false)}
+          setdisplayoverlay={(arg: boolean) => setdisplayoverlay(arg)}
+          onRequestComplete={(arg: boolean) => setSubmittedDisplayOverlay(arg)}
           navigation={props.navigation}
           consultedWithDoctorBefore={false}
           doctor={null}
@@ -2119,6 +2122,25 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           externalConnect={null}
           availableMode={ConsultMode.BOTH}
           callSaveSearch={callSaveSearch}
+          isDoctorsOfTheHourStatus={false}
+        />
+      )}
+      {submittedDisplayOverlay && (
+        <BookingRequestSubmittedOverlay
+          setdisplayoverlay={() => setSubmittedDisplayOverlay(false)}
+          navigation={props.navigation}
+          consultedWithDoctorBefore={false}
+          doctor={null}
+          patientId={currentPatient ? currentPatient.id : ''}
+          clinics={[]}
+          doctorId={props.navigation.state.params!.doctorId}
+          FollowUp={props.navigation.state.params!.FollowUp}
+          appointmentType={props.navigation.state.params!.appointmentType}
+          appointmentId={props.navigation.state.params!.appointmentId}
+          consultModeSelected={ConsultMode.ONLINE}
+          externalConnect={null}
+          availableMode={ConsultMode.BOTH}
+          callSaveSearch={''}
           isDoctorsOfTheHourStatus={false}
         />
       )}

@@ -62,7 +62,8 @@ const styles = StyleSheet.create({
 });
 
 export interface BookingRequestOverlayProps extends NavigationScreenProps {
-  setdisplayoverlay: () => void;
+  setdisplayoverlay: (arg: boolean) => void;
+  onRequestComplete?: (arg: boolean) => void;
   patientId: string;
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
   clinics: getDoctorDetailsById_getDoctorDetailsById_doctorHospital[];
@@ -83,7 +84,6 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
   const tabs = [{ title: 'Request Appointment' }];
 
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
-  const [submittedDisplayOverlay, setSubmittedDisplayOverlay] = useState<boolean>(false);
 
   const scrollViewRef = React.useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
@@ -123,8 +123,8 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
           title={'SUBMIT REQUEST'}
           disabled={disablePay ? false : false}
           onPress={() => {
-            props.setdisplayoverlay && props.setdisplayoverlay();
-            setSubmittedDisplayOverlay(true);
+            props.setdisplayoverlay && props.setdisplayoverlay(false);
+            props.onRequestComplete && props.onRequestComplete(true);
             onPressCheckout();
           }}
         />
@@ -193,7 +193,7 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
-              props.setdisplayoverlay();
+              props.setdisplayoverlay(false);
             }}
             style={{
               marginTop: Platform.OS === 'ios' ? 38 : 14,
@@ -252,25 +252,6 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
           </View>
         </View>
       </View>
-      {submittedDisplayOverlay && (
-        <BookingRequestSubmittedOverlay
-          setdisplayoverlay={() => setSubmittedDisplayOverlay(false)}
-          navigation={props.navigation}
-          consultedWithDoctorBefore={false}
-          doctor={null}
-          patientId={currentPatient ? currentPatient.id : ''}
-          clinics={[]}
-          doctorId={props.navigation.state.params!.doctorId}
-          FollowUp={props.navigation.state.params!.FollowUp}
-          appointmentType={props.navigation.state.params!.appointmentType}
-          appointmentId={props.navigation.state.params!.appointmentId}
-          consultModeSelected={ConsultMode.ONLINE}
-          externalConnect={null}
-          availableMode={ConsultMode.BOTH}
-          callSaveSearch={''}
-          isDoctorsOfTheHourStatus={false}
-        />
-      )}
 
       {showSpinner && <Spinner />}
     </View>

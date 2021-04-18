@@ -103,16 +103,10 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
   props
 ) => {
   const { doctor } = props;
-  const { availableModes } = doctor;
 
   const client = useApolloClient();
   const { circleSubscriptionId } = useShoppingCart();
-  const isOnline = availableModes?.filter(
-    (consultMode: ConsultMode) => consultMode === ConsultMode.ONLINE
-  );
-  const isBoth = availableModes?.filter(
-    (consultMode: ConsultMode) => consultMode === ConsultMode.BOTH
-  );
+
   const consultOnlineTab = string.consultModeTab.CONSULT_ONLINE;
   const consultPhysicalTab = string.consultModeTab.MEET_IN_PERSON;
 
