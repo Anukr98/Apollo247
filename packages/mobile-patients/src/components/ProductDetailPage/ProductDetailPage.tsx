@@ -174,9 +174,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 
   useEffect(() => {
     getMedicineDetails();
-    if (!_deliveryError) {
-      fetchDeliveryTime(pincode, false);
-    }
+    fetchDeliveryTime(pincode, false);
     BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
