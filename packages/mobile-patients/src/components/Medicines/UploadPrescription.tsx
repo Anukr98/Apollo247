@@ -800,13 +800,11 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                       : item.id === NEED_ALL_MEDICINES
                       ? 'All Medicine'
                       : CALL_ME;
-                  if (optionSelected === CALL_ME) {
+                  if (optionSelected === CALL_ME || optionSelected === 'All Medicine') {
                     setTimeout(() => {
                       scrollviewRef.current.scrollToEnd({ animated: true });
                     }, 300);
-                    setPrescriptionOption(CALL_ME);
-                  } else if (optionSelected === 'All Medicine') {
-                    setPrescriptionOption(SPECIFIED_DURATION);
+                    setPrescriptionOption(optionSelected);
                   }
                   const eventAttribute: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED] = {
                     OptionSelected: optionSelected,
@@ -1026,7 +1024,9 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   }
 
   const renderExpectCall = () => {
-    return selectedMedicineOption === CALL_ME ? <ExpectCall /> : null;
+    return selectedMedicineOption === CALL_ME || selectedMedicineOption === NEED_ALL_MEDICINES ? (
+      <ExpectCall />
+    ) : null;
   };
 
   const renderUserCommentBox = () =>
