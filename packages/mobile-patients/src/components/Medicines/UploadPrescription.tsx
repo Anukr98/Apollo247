@@ -117,12 +117,12 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(14),
   },
   textStyle: {
-    ...theme.fonts.IBMPlexSansMedium(13),
-    lineHeight: 14,
+    ...theme.fonts.IBMPlexSansMedium(14),
+    lineHeight: 17,
     color: '#979797',
   },
   subtitleStyle: {
-    ...theme.fonts.IBMPlexSansMedium(14),
+    ...theme.fonts.IBMPlexSansMedium(15.4),
     lineHeight: 20,
     color: theme.colors.SHERPA_BLUE,
   },
@@ -206,14 +206,14 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const medicineDetailOptions = [
     {
-      id: NEED_ALL_MEDICINES,
-      title: 'Order all medicines from prescription',
-      subTitle: 'Order will be prepared with all the medicines as prescribed by the doctor',
-    },
-    {
       id: 'search',
       title: 'Search and select medicines by myself',
       subTitle: 'Browse and select medicines which you wish to purchase',
+    },
+    {
+      id: NEED_ALL_MEDICINES,
+      title: 'Order all medicines from prescription',
+      subTitle: 'Order will be prepared with all the medicines as prescribed by the doctor',
     },
     {
       id: CALL_ME,
@@ -221,7 +221,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       subTitle: 'Our pharmacist will call you to confirm the required items',
     },
   ];
-  const [selectedMedicineOption, setSelectedMedicineOption] = useState<string>('');
+  const [selectedMedicineOption, setSelectedMedicineOption] = useState<string>('search');
   const [numberOfPrescriptionClicked, setNumberOfPrescriptionClicked] = useState<number>(
     type === 'Camera' ? 1 : 0
   );
