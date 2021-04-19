@@ -2672,7 +2672,7 @@ export const validateCoupon = async (
 export const setAsyncPharmaLocation = (address: any) => {
   if (address) {
     const saveAddress = {
-      pincode: address?.zipcode,
+      pincode: address?.zipcode || address?.pincode,
       id: address?.id,
       city: address?.city,
       state: address?.state,
