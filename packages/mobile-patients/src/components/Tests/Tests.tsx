@@ -3,7 +3,10 @@ import {
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import stripHtml from 'string-strip-html';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import {
+  DiagnosticsCartItem,
+  useDiagnosticsCart,
+} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
   Badge,
@@ -53,9 +56,10 @@ import {
   getFormattedLocation,
   nameFormater,
   isSmallDevice,
-  formatAddressToLocation,
   navigateToHome,
   isAddressLatLngInValid,
+  addTestsToCart,
+  handleGraphQlError,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -76,8 +80,10 @@ import {
   Image as ImageNative,
   ImageBackground,
   BackHandler,
+  Alert,
+  Platform,
 } from 'react-native';
-import { Image, Input } from 'react-native-elements';
+import { Image } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import {
   SEARCH_TYPE,
@@ -101,7 +107,12 @@ import {
   GetSubscriptionsOfUserByStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
-import { getUserBannersList } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  getDiagnosticClosedOrders,
+  getDiagnosticOpenOrders,
+  getDiagnosticPatientPrescription,
+  getUserBannersList,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import Carousel from 'react-native-snap-carousel';
 import { DiagnosticsSearchSuggestionItem } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticsSearchSuggestionItem';
@@ -128,7 +139,7 @@ import {
   getPatientAddressListVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
-import { stepsToBookArray } from '@aph/mobile-patients/src/strings/AppConfig';
+import { AppConfig, stepsToBookArray } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   findDiagnosticsWidgetsPricing,
   findDiagnosticsWidgetsPricingVariables,
@@ -140,6 +151,10 @@ import {
   renderBannerShimmer,
   renderTestDiagonosticsShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import moment from 'moment';
+import RNFetchBlob from 'rn-fetch-blob';
+import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
+import { HomePageOrderStatusCard } from './components/HomePageOrderStatusCard';
 
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
@@ -166,7 +181,6 @@ export interface DiagnosticData {
 
 export interface TestsProps
   extends NavigationScreenProps<{
-    focusSearch?: boolean;
     comingFrom?: string;
     movedFrom?: string;
   }> {}
@@ -186,6 +200,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setAreaSelected,
     setDiagnosticSlot,
     setAddresses: setTestAddress,
+    addMultipleCartItems: addMultipleTestCartItems,
   } = useDiagnosticsCart();
   const {
     cartItems: shopCartItems,
@@ -217,7 +232,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
   type Address = savePatientAddress_savePatientAddress_patientAddress;
 
-  const focusSearch = props.navigation.getParam('focusSearch');
   const movedFrom = props.navigation.getParam('movedFrom');
   const { currentPatient } = useAllCurrentPatients();
 
@@ -238,6 +252,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const [widgetsData, setWidgetsData] = useState([] as any);
   const [reloadWidget, setReloadWidget] = useState<boolean>(false);
+
+  const [latestPrescription, setLatestPrescription] = useState([] as any);
+  const [prescriptionSlideIndex, setPrescriptionSlideIndex] = useState(0);
+
+  const [patientOpenOrders, setPatientOpenOrders] = useState([] as any);
+  const [patientClosedOrders, setPatientClosedOrders] = useState([] as any);
+  const [orderCardSlideIndex, setOrderCardSlideIndex] = useState(0);
 
   const [searchQuery, setSearchQuery] = useState({});
   const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
@@ -342,8 +363,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
     if (currentPatient) {
       getUserBanners();
       fetchAddress();
+      fetchPatientOpenOrders();
+      fetchPatientClosedOrders();
     }
   }, [currentPatient]);
+
+  useEffect(() => {
+    //fetch the doctor prescriptions for the current patient
+    fetchPatientPrescriptions();
+  }, [currentPatient, serviceableObject]);
 
   /**
    * if there is any change in the location yellow pop-up ,if location is present.
@@ -380,6 +408,71 @@ export const Tests: React.FC<TestsProps> = (props) => {
       });
     }
   }, [loading, banners]);
+
+  const fetchPatientOpenOrders = async () => {
+    try {
+      let openOrdersResponse: any = await getDiagnosticOpenOrders(client, currentPatient?.id, 0, 5);
+      console.log({ openOrdersResponse });
+      if (openOrdersResponse?.data?.data) {
+        const getOpenOrders =
+          openOrdersResponse?.data?.data?.getDiagnosticOpenOrdersList?.openOrders;
+        setPatientOpenOrders(getOpenOrders);
+      } else {
+        setPatientOpenOrders([]);
+      }
+    } catch (error) {
+      setPatientOpenOrders([]);
+      CommonBugFender('fetchPatientOpenOrders_Tests', error);
+    }
+  };
+
+  const fetchPatientClosedOrders = async () => {
+    try {
+      let closedOrdersResponse: any = await getDiagnosticClosedOrders(
+        client,
+        currentPatient?.id,
+        0,
+        3
+      );
+      console.log({ closedOrdersResponse });
+      if (closedOrdersResponse?.data?.data) {
+        const getClosedOrders =
+          closedOrdersResponse?.data?.data?.getDiagnosticClosedOrdersList?.closedOrders;
+        setPatientClosedOrders(getClosedOrders);
+      } else {
+        setPatientClosedOrders([]);
+      }
+    } catch (error) {
+      setPatientClosedOrders([]);
+      CommonBugFender('fetchPatientOpenOrders_Tests', error);
+    }
+  };
+
+  const fetchPatientPrescriptions = async () => {
+    try {
+      const res: any = await getDiagnosticPatientPrescription(
+        client,
+        currentPatient?.id,
+        3,
+        Object.keys(serviceableObject)?.length === 0 && serviceableObject?.constructor === Object
+          ? 9
+          : serviceableObject?.cityId
+      );
+      if (res?.data?.data) {
+        const response = res?.data?.data?.getPatientLatestPrescriptions;
+        if (!!response && response?.length > 0) {
+          setLatestPrescription(response);
+        } else {
+          setLatestPrescription([]);
+        }
+      } else {
+        setLatestPrescription([]);
+      }
+    } catch (error) {
+      setLatestPrescription([]);
+      CommonBugFender('fetchPatientPrescriptions_Tests', error);
+    }
+  };
 
   const getDiagnosticBanner = async () => {
     try {
@@ -766,8 +859,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
           marginBottom: 24,
           marginTop: 20,
         }}
-        title={'My Orders'}
-        leftIcon={<TestsIcon />}
+        titleStyle={{
+          color: theme.colors.SHERPA_BLUE,
+          ...theme.fonts.IBMPlexSansSemiBold(16),
+          paddingHorizontal: 0,
+        }}
+        title={'MY ORDERS'}
+        leftIcon={null}
       />
     );
   };
@@ -1231,9 +1329,19 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-  const renderDot = (active: boolean) => (
+  const renderDot = (active: boolean, source?: string) => (
     <View
-      style={[styles.sliderDotStyle, { backgroundColor: active ? colors.APP_GREEN : '#d8d8d8' }]}
+      style={[
+        styles.sliderDotStyle,
+        {
+          backgroundColor: active
+            ? source == 'orderStatus'
+              ? colors.APP_YELLOW
+              : colors.APP_GREEN
+            : '#d8d8d8',
+          width: source == 'orderStatus' && active ? 14 : 8,
+        },
+      ]}
     />
   );
 
@@ -1733,14 +1841,169 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderPrescriptionCard = () => {
     return (
+      <Carousel
+        onSnapToItem={setPrescriptionSlideIndex}
+        data={latestPrescription}
+        renderItem={renderPrescriptionCardItems}
+        sliderWidth={winWidth}
+        itemWidth={winWidth}
+        loop={false}
+        autoplay={false}
+      />
+    );
+  };
+
+  const renderPrescriptionCardItems = ({ item, index }: { item: any; index: number }) => {
+    const prescribedText = item?.caseSheet?.diagnosticPrescription;
+    const doctorName = item?.doctorName;
+    const doctorQualification = item?.doctorCredentials;
+    const prescribedDateTime = moment(item?.prescriptionDateTime)?.format('DD MMM, YYYY , hh:mm a');
+    const patientName = item?.patientName;
+    return (
       <PrescriptionCard
-        heading1={'4 tests prescribed by'}
-        docName={'DR. BHAVNA CHAURASIA'}
-        docQualification={'MBBS, MD'}
-        buttonTitle={'BOOK NOW'}
-        dateTime={'on 18th Jan, 2021, 12:30 pm'}
-        patientName={'Loki'}
-        onPressBookNow={() => console.log('book now pressed')}
+        key={index?.toString()}
+        heading1={`${prescribedText?.length} Tests Prescribed by`}
+        docName={doctorName}
+        docQualification={doctorQualification}
+        dateTime={`on ${prescribedDateTime}`}
+        patientName={`for ${patientName}`}
+        buttonTitle={item?.orderCount == 0 ? 'Book Now' : 'Book Again'}
+        onPressBookNow={() => onPressBookNow(item)}
+        onPressViewPrescription={() => onPressViewPrescription(item)}
+      />
+    );
+  };
+
+  function onPressBookNow(item: any) {
+    const testPrescription = item?.caseSheet?.diagnosticPrescription;
+    setLoading?.(true);
+    addTestsToCart(testPrescription, client, '500030')
+      .then((tests: DiagnosticsCartItem[]) => {
+        // Adding ePrescriptions to DiagnosticsCart
+        const unAvailableItemsArray = testPrescription.filter(
+          (item: any) =>
+            !tests.find((val) => val?.name?.toLowerCase() == item?.itemname?.toLowerCase())
+        );
+        const unAvailableItems = unAvailableItemsArray
+          .map((item: any) => item?.itemname)
+          .join(', ');
+
+        if (tests?.length) {
+          addMultipleTestCartItems!(tests);
+          //removed code for e-prescriptions
+        }
+        if (testPrescription?.length == unAvailableItemsArray?.length) {
+          Alert.alert(string.common.uhOh, string.common.noDiagnosticsAvailable);
+        } else if (unAvailableItems) {
+          Alert.alert(
+            string.common.uhOh,
+            `Out of ${testPrescription?.length} diagnostic(s), you are trying to order, following diagnostic(s) are not available.\n\n${unAvailableItems}\n`
+          );
+        }
+        setLoading?.(false);
+        props.navigation.navigate(AppRoutes.TestsCart);
+      })
+      .catch((e) => {
+        setLoading?.(false);
+        handleGraphQlError(e);
+      });
+  }
+
+  const getFileName = (item: any) => {
+    return (
+      'Prescription_' +
+      moment(item?.prescriptionDateTime).format('DD MM YYYY') +
+      '_' +
+      item?.doctorName +
+      '_Apollo 247' +
+      new Date().getTime() +
+      '.pdf'
+    );
+  };
+
+  //move this function out once code is merged.
+  function onPressViewPrescription(item: any) {
+    //ask permission.
+    const pdfName = item?.caseSheet?.blobName;
+    if (pdfName == null) {
+      Alert.alert('No Image');
+      CommonLogEvent('Tests', 'No image');
+    } else {
+      const dirs = RNFetchBlob.fs.dirs;
+      const fileName: string = getFileName(item);
+      const downloadPath =
+        Platform.OS === 'ios'
+          ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + (fileName || 'Apollo_Prescription.pdf')
+          : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf');
+      setLoading?.(true);
+      RNFetchBlob.config({
+        fileCache: true,
+        path: downloadPath,
+        addAndroidDownloads: {
+          title: fileName,
+          useDownloadManager: true,
+          notification: true,
+          path: downloadPath,
+          mime: mimeType(downloadPath),
+          description: 'File downloaded by download manager.',
+        },
+      })
+        .fetch('GET', AppConfig.Configuration.DOCUMENT_BASE_URL.concat(pdfName), {})
+        .then((res) => {
+          setLoading?.(false);
+          Platform.OS === 'ios'
+            ? RNFetchBlob.ios.previewDocument(res.path())
+            : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+        })
+        .catch((err) => {
+          CommonBugFender('Tests_onPressViewPrescription', err);
+          setLoading?.(false);
+        });
+    }
+  }
+
+  const renderOrderStatusCard = () => {
+    //check if the length of patientOpenOrders is 3 then don't show otherwise show.
+    const allOrders = [patientOpenOrders, patientClosedOrders];
+    console.log({ allOrders });
+    return (
+      <View style={{ marginBottom: 10 }}>
+        <Carousel
+          onSnapToItem={setOrderCardSlideIndex}
+          data={allOrders}
+          renderItem={renderOrderStatusCardItems}
+          sliderWidth={winWidth}
+          itemWidth={winWidth}
+          loop={false}
+          autoplay={false}
+        />
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'center',
+            position: 'absolute',
+            top: 105,
+            alignSelf: 'flex-start',
+            left: 32,
+          }}
+        >
+          {allOrders?.map((_, index) =>
+            index == orderCardSlideIndex
+              ? renderDot(true, 'orderStatus')
+              : renderDot(false, 'orderStatus')
+          )}
+        </View>
+      </View>
+    );
+  };
+
+  const renderOrderStatusCardItems = ({ item, index }: { item: any; index: number }) => {
+    const appointmentTime = moment(item?.slotDateTimeInUTC)?.format('DD MMM, hh:mm a');
+    return (
+      <HomePageOrderStatusCard
+        status={item?.orderStatus}
+        patientName={currentPatient?.firstName}
+        appointmentTime={appointmentTime}
       />
     );
   };
@@ -1757,11 +2020,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
         style={{ flex: 1 }}
       >
         {widgetsData?.length == 0 && reloadWidget && renderLowNetwork()}
-        {/* {uploadPrescriptionCTA()} */}
-        {renderPrescriptionCard()}
         {renderBanner()}
         {renderYourOrders()}
-
+        {latestPrescription?.length > 0 ? renderPrescriptionCard() : null}
+        {renderOrderStatusCard()}
         {renderBottomViews()}
       </TouchableOpacity>
     );

@@ -1296,24 +1296,24 @@ export const addTestsToCart = async (
     await getPackageInclusions(apolloClient, [Number(itemId)]);
 
   try {
-    const items = testPrescription.filter((val) => val.itemname).map((item) => item.itemname);
+    const items = testPrescription?.filter((val) => val?.itemname).map((item) => item?.itemname);
 
-    const searchQueries = Promise.all(items.map((item) => searchQuery(item!, '9')));
+    const searchQueries = Promise.all(items?.map((item) => searchQuery(item!, '9')));
     const searchQueriesData = (await searchQueries)
-      .map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
+      ?.map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
       // .filter((item, index) => g(item, 'itemName')! == items[index])
-      .filter((item) => !!item);
+      ?.filter((item) => !!item);
     const detailQueries = Promise.all(
-      searchQueriesData.map((item) => detailQuery(`${item.itemId}`))
+      searchQueriesData?.map((item) => detailQuery(`${item.itemId}`))
     );
-    const detailQueriesData = (await detailQueries).map(
+    const detailQueriesData = (await detailQueries)?.map(
       (item) => g(item, 'data', 'getInclusionsOfMultipleItems', 'inclusions', 'length') || 1 // updating testsIncluded
     );
     const finalArray: DiagnosticsCartItem[] = Array.from({
-      length: searchQueriesData.length,
+      length: searchQueriesData?.length,
     }).map((_, index) => {
-      const s = searchQueriesData[index];
-      const testIncludedCount = detailQueriesData[index];
+      const s = searchQueriesData?.[index];
+      const testIncludedCount = detailQueriesData?.[index];
       return {
         id: `${s?.itemId}`,
         name: s?.itemName,

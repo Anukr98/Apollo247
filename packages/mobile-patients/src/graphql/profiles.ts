@@ -4750,28 +4750,32 @@ export const GET_PATIENT_LATEST_PRESCRIPTION = gql `
   }
 `;
 
-export const GET_DIAGNOSTIC_OPEN_ORDERS_LIST = gql `
-  query getDiagnosticOpenOrdersList($patientId: String!, $skip: Int!, $take: Int!){
-    getDiagnosticOpenOrdersList(patientId: #patientId, skip: $skip, take: $take){
-      id
-      patientId
-      paymentOrderId
-      orderStatus
-      slotDateTimeInUTC
-      labReportUrl     
+export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql `
+  query getDiagnosticOpenOrdersList($patientId : String!, $skip: Int!, $take: Int!){
+    getDiagnosticOpenOrdersList(patientId: $patientId, skip: $skip, take: $take){
+      openOrders{
+        id
+        patientId
+        paymentOrderId
+        orderStatus
+        slotDateTimeInUTC
+        labReportURL
+      }
     }
   }
 `;
 
-export const GET_DIAGNOSTIC_CLOSED_ORDERS_LIST = gql `
-  query getDiagnosticClosedOrdersList($patientId: String!, $skip: Int!, $take: Int!){
-    getDiagnosticClosedOrdersList(patientId: #patientId, skip: $skip, take: $take){
-      id
-      patientId
-      paymentOrderId
-      orderStatus
-      slotDateTimeInUTC
-      labReportUrl     
+export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql `
+  query getDiagnosticClosedOrdersList($patientId : String!, $skip: Int!, $take: Int!){
+    getDiagnosticClosedOrdersList(patientId: $patientId, skip: $skip, take: $take){
+      closedOrders{
+        id
+        patientId
+        paymentOrderId
+        orderStatus
+        slotDateTimeInUTC
+        labReportURL
+      }
     }
   }
 `;
