@@ -15,8 +15,11 @@
     "test": "jest",
     "typecheck": "tsc --project . --noEmit",
     "jetify": "jetify",
-    "android-dev": "adb reverse tcp:8081 tcp:8081 && react-native run-android",
-    "postinstall": "cat OTSubscriberViewManager.java > node_modules/opentok-react-native/android/src/main/java/com/opentokreactnative/OTSubscriberViewManager.java && cat opentok-react-native.podspec > node_modules/opentok-react-native/opentok-react-native.podspec && npx jetify && patch-package"
+    "android": "adb reverse tcp:8081 tcp:8081 && react-native run-android",
+    "ios": "npm run vitals:dev && react-native run-ios",
+    "vitals:dev": "cp -a ../apollo-vitals-ios-dev.framework/. ios/ApolloVitalsFramework.framework/",
+    "vitals": "git checkout -- ios/ApolloVitalsFramework.framework/ && git clean -d -f -- ios/ApolloVitalsFramework.framework/",
+    "postinstall": "cat OTSubscriberViewManager.java > node_modules/opentok-react-native/android/src/main/java/com/opentokreactnative/OTSubscriberViewManager.java && cat opentok-react-native.podspec > node_modules/opentok-react-native/opentok-react-native.podspec && npx jetify"
   },
   "devDependencies": {
     "@aph/api-schema": "file:../api-schema",
