@@ -76,8 +76,9 @@ const styles = StyleSheet.create({
   aphAlertCtaViewStyle: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingHorizontal: 8,
-    marginVertical: 5,
+    paddingHorizontal: 1,
+    marginTop: 5,
+    marginBottom: -5,
   },
   ctaWhiteButtonViewStyle: {
     padding: 2,
@@ -137,8 +138,10 @@ const styles = StyleSheet.create({
   separatorStyle: {
     borderBottomWidth: 0.5,
     borderBottomColor: theme.colors.SEPARATOR_LINE,
-    width: '100%',
+    width: width,
     marginVertical: 12,
+    marginLeft: -21,
+    marginRight: 1,
   },
 });
 
