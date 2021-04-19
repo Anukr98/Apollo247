@@ -4718,6 +4718,7 @@ export const GET_PHLOBE_DETAILS = gql`
             name
           }
           phleboOTP
+          phleboTrackLink
         }
         phleboEta {
           distanceInMetres
@@ -4775,6 +4776,8 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql `
         orderStatus
         slotDateTimeInUTC
         labReportURL
+        paymentType
+        paymentOrderId
       }
     }
   }

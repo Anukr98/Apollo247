@@ -82,6 +82,7 @@ import {
   BackHandler,
   Alert,
   Platform,
+  Linking,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
@@ -111,6 +112,7 @@ import {
   getDiagnosticClosedOrders,
   getDiagnosticOpenOrders,
   getDiagnosticPatientPrescription,
+  getDiagnosticPhelboDetails,
   getUserBannersList,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
@@ -139,7 +141,13 @@ import {
   getPatientAddressListVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
-import { AppConfig, stepsToBookArray } from '@aph/mobile-patients/src/strings/AppConfig';
+import {
+  AppConfig,
+  DIAGNOSITC_PHELBO_TRACKING_STATUS,
+  DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY,
+  DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
+  stepsToBookArray,
+} from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   findDiagnosticsWidgetsPricing,
   findDiagnosticsWidgetsPricingVariables,
@@ -1964,36 +1972,39 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderOrderStatusCard = () => {
     //check if the length of patientOpenOrders is 3 then don't show otherwise show.
-    const allOrders = [patientOpenOrders, patientClosedOrders];
-    console.log({ allOrders });
+    const allOrders = [patientOpenOrders, patientClosedOrders]?.flat(1);
     return (
-      <View style={{ marginBottom: 10 }}>
-        <Carousel
-          onSnapToItem={setOrderCardSlideIndex}
-          data={allOrders}
-          renderItem={renderOrderStatusCardItems}
-          sliderWidth={winWidth}
-          itemWidth={winWidth}
-          loop={false}
-          autoplay={false}
-        />
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'center',
-            position: 'absolute',
-            top: 105,
-            alignSelf: 'flex-start',
-            left: 32,
-          }}
-        >
-          {allOrders?.map((_, index) =>
-            index == orderCardSlideIndex
-              ? renderDot(true, 'orderStatus')
-              : renderDot(false, 'orderStatus')
-          )}
-        </View>
-      </View>
+      <>
+        {allOrders?.length > 0 ? (
+          <View style={{ marginBottom: 10 }}>
+            <Carousel
+              onSnapToItem={setOrderCardSlideIndex}
+              data={allOrders}
+              renderItem={renderOrderStatusCardItems}
+              sliderWidth={winWidth}
+              itemWidth={winWidth}
+              loop={false}
+              autoplay={false}
+            />
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'center',
+                position: 'absolute',
+                top: 105,
+                alignSelf: 'flex-start',
+                left: 32,
+              }}
+            >
+              {allOrders?.map((_, index) =>
+                index == orderCardSlideIndex
+                  ? renderDot(true, 'orderStatus')
+                  : renderDot(false, 'orderStatus')
+              )}
+            </View>
+          </View>
+        ) : null}
+      </>
     );
   };
 
@@ -2004,9 +2015,67 @@ export const Tests: React.FC<TestsProps> = (props) => {
         status={item?.orderStatus}
         patientName={currentPatient?.firstName}
         appointmentTime={appointmentTime}
+        key={item?.id}
+        onPressBookNow={() => onPressOrderStatusOption(item)}
       />
     );
   };
+
+  function onPressOrderStatusOption(item: any) {
+    if (DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(item?.orderStatus)) {
+      navigateToTrackingScreen(item);
+      //track order
+    } else if (DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY.includes(item?.orderStatus)) {
+      //once code is merged.
+      //view report download
+    } else {
+      if (DIAGNOSITC_PHELBO_TRACKING_STATUS.includes(item?.orderStatus)) {
+        //track phlebo
+        getPhelboDetails(item?.id, item);
+      } else {
+        navigateToTrackingScreen(item);
+      }
+    }
+  }
+
+  function navigateToTrackingScreen(item: any) {
+    props.navigation.navigate(AppRoutes.TestOrderDetails, {
+      orderId: item?.id,
+      selectedOrder: item,
+      refundStatusArr: [], //since we don't get cancelled or failed orders
+      comingFrom: AppRoutes.YourOrdersTest,
+      showOrderSummaryTab: false,
+    });
+  }
+
+  async function getPhelboDetails(orderId: string, order: any) {
+    setLoading?.(true);
+    try {
+      let response: any = await getDiagnosticPhelboDetails(client, [orderId]);
+      console.log({ response });
+      if (response?.data?.data) {
+        const getUrl =
+          response?.data?.data?.getOrderPhleboDetailsBulk?.orderPhleboDetailsBulk?.length > 0 &&
+          response?.data?.data?.getOrderPhleboDetailsBulk?.orderPhleboDetailsBulk?.[0]
+            ?.orderPhleboDetails;
+        if (!!getUrl) {
+          Linking.canOpenURL(getUrl).then((supported: any) => {
+            if (supported) {
+              Linking.openURL(getUrl);
+            } else {
+              CommonBugFender('Tests_getPhelboDetails_Unable_to_open_url', getUrl);
+            }
+          });
+        } else {
+          navigateToTrackingScreen(order);
+        }
+      }
+      setLoading?.(false);
+    } catch (error) {
+      setLoading?.(false);
+      CommonBugFender('Tests_onPressOrderStatusOption', error);
+    }
+  }
 
   const renderSections = () => {
     return (

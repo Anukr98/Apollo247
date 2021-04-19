@@ -10,35 +10,28 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DIAGNOSTIC_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-
-const DIAGNOSTIC_SAMPLE_SUBMITTED = [
-  DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
-  DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
-  DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
-  DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
-  DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
-];
+import {
+  DIAGNOSITC_PHELBO_TRACKING_STATUS,
+  DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY,
+  DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
+} from '@aph/mobile-patients/src/strings/AppConfig';
 
 interface HomePageOrderStatusCardProps {
   status: DIAGNOSTIC_ORDER_STATUS;
   patientName?: string;
   appointmentTime?: string | Date;
   onPressBookNow?: () => void;
-  onPressViewPrescription?: () => void;
 }
 
 export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (props) => {
   function getOrderStatusContent(status: DIAGNOSTIC_ORDER_STATUS) {
     var heading, image, content, options;
-    if (DIAGNOSTIC_SAMPLE_SUBMITTED.includes(status)) {
+    if (DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(status)) {
       heading = string.diagnostics.sampleSubmitted;
       image = <SampleTestTubesIcon style={styles.iconStyle} />;
       content = string.diagnostics.sampleSubmittedContent;
       options = string.diagnostics.sampleCollectedText;
-    } else if (
-      status === DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED ||
-      status === DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED
-    ) {
+    } else if (DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY.includes(status)) {
       heading = string.diagnostics.reportGenrated;
       image = <MedicalHistoryIcon style={styles.iconStyle} />;
       content = string.diagnostics.viewReportContent;
@@ -47,7 +40,9 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
       heading = `${string.diagnostics.bookingFor} ${props.patientName}`;
       image = <AppointmentIcon style={styles.iconStyle} />;
       content = `${string.diagnostics.collectionAppointmentContent} ${props.appointmentTime}`;
-      options = string.diagnostics.collectionText;
+      options = DIAGNOSITC_PHELBO_TRACKING_STATUS.includes(status)
+        ? string.diagnostics.trackPhleboText
+        : string.diagnostics.collectionText;
     }
     return {
       heading,
@@ -58,7 +53,6 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
   }
 
   const { heading, image, content, options } = getOrderStatusContent(props.status);
-
   return (
     <View style={styles.container}>
       <View style={styles.rowStyles}>

@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { DIAGNOSTIC_ORDER_STATUS } from "./globalTypes";
+import { DIAGNOSTIC_ORDER_STATUS, DIAGNOSTIC_ORDER_PAYMENT_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getDiagnosticClosedOrdersList
@@ -17,6 +17,7 @@ export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_clo
   orderStatus: DIAGNOSTIC_ORDER_STATUS;
   slotDateTimeInUTC: any | null;
   labReportURL: string | null;
+  paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
 }
 
 export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList {

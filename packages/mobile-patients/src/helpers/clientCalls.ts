@@ -33,6 +33,8 @@ import {
   GET_PATIENT_LATEST_PRESCRIPTION,
   GET_DIAGNOSTIC_OPEN_ORDERLIST,
   GET_DIAGNOSTIC_CLOSED_ORDERLIST,
+  GET_PHLOBE_DETAILS,
+  GET_INTERNAL_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -137,6 +139,9 @@ import { getAllProhealthAppointments, getAllProhealthAppointmentsVariables } fro
 import { getPatientLatestPrescriptions, getPatientLatestPrescriptionsVariables } from '@aph/mobile-patients/src/graphql/types/getPatientLatestPrescriptions';
 import { getDiagnosticOpenOrdersList, getDiagnosticOpenOrdersListVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOpenOrdersList';
 import { getDiagnosticClosedOrdersList, getDiagnosticClosedOrdersListVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticClosedOrdersList';
+import {  getOrderPhleboDetailsBulk, getOrderPhleboDetailsBulkVariables } from '@aph/mobile-patients/src/graphql/types/getOrderPhleboDetailsBulk';
+import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
+import { getOrderInternal, getOrderInternalVariables } from '@aph/mobile-patients/src/graphql/types/getOrderInternal';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -986,6 +991,9 @@ export const getDiagnosticPatientPrescription = (
     client
       .query<getPatientLatestPrescriptions, getPatientLatestPrescriptionsVariables>({
         query: GET_PATIENT_LATEST_PRESCRIPTION,
+        context: {
+          sourceHeaders,
+        },
         variables: {
           patientId: patientId,
           limit: limit,
@@ -1013,6 +1021,9 @@ export const getDiagnosticOpenOrders = (
     client
       .query<getDiagnosticOpenOrdersList, getDiagnosticOpenOrdersListVariables>({
         query: GET_DIAGNOSTIC_OPEN_ORDERLIST,
+        context: {
+          sourceHeaders,
+        },
         variables: {
           patientId: patientId,
           skip: skip,
@@ -1040,6 +1051,9 @@ export const getDiagnosticClosedOrders = (
     client
       .query<getDiagnosticClosedOrdersList, getDiagnosticClosedOrdersListVariables>({
         query: GET_DIAGNOSTIC_CLOSED_ORDERLIST,
+        context: {
+          sourceHeaders,
+        },
         variables: {
           patientId: patientId,
           skip: skip,
@@ -1052,6 +1066,59 @@ export const getDiagnosticClosedOrders = (
       })
       .catch((e) => {
         CommonBugFender('clientCalls_getDiagnosticClosedOrders', e);
+        rej({ error: e });
+      });
+  });
+};
+
+export const getDiagnosticPhelboDetails = (
+  client: ApolloClient<object>,
+  orderId: any,
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getOrderPhleboDetailsBulk, getOrderPhleboDetailsBulkVariables>({
+        query: GET_PHLOBE_DETAILS,
+        context: {
+          sourceHeaders,
+        },
+        variables: {
+          diagnosticOrdersIds: orderId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_getDiagnosticPhelboDetails', e);
+        rej({ error: e });
+      });
+  });
+};
+
+export const getDiagnosticRefundOrders = (
+  client: ApolloClient<object>,
+  paymentId: any,
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getOrderInternal, getOrderInternalVariables>({
+        query: GET_INTERNAL_ORDER,
+        context: {
+          sourceHeaders,
+        },
+        variables: {
+          order_id: paymentId,
+         
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_getDiagnosticRefundOrders', e);
         rej({ error: e });
       });
   });

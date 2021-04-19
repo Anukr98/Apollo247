@@ -540,7 +540,8 @@
     "collectionAppointmentContent":"Sample Collection appointment on",
     "viewReportText":"View Report",
     "sampleCollectedText":"Check Status",
-    "collectionText":"Track Order"
+    "collectionText":"Track Order",
+    "trackPhleboText": "Track Phlebo"
   },
   "orders": {
     "urOrders": "MY ORDERS",
