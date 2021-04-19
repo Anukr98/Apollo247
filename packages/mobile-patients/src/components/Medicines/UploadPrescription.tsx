@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     color: '#979797',
   },
   subtitleStyle: {
-    ...theme.fonts.IBMPlexSansMedium(15.4),
+    ...theme.fonts.IBMPlexSansMedium(16),
     lineHeight: 20,
     color: theme.colors.SHERPA_BLUE,
   },

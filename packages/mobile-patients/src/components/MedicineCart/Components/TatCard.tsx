@@ -79,7 +79,7 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
         {!unServiceable &&
           (!!isNonCartOrder ? (
             <Text style={styles.deliveryText}>
-              {`Delivery will be confirmed after Pharmacist call.`}
+              {`Delivery date will be confirmed after Verification.`}
             </Text>
           ) : !isSplitCart ? (
             <Text style={styles.delivery}>
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   deliveryText: {
-    width: '75%',
+    width: '79%',
     color: '#F7F8F5',
     ...theme.fonts.IBMPlexSansRegular(14),
     lineHeight: 18,
