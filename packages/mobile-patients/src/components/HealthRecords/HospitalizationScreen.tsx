@@ -151,6 +151,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [callApi, setCallApi] = useState(false);
   const [apiError, setApiError] = useState(false);
+  const [noDataLabel, setNoDataLabel] = useState(false);
   const [isSearchFocus, SetIsSearchFocus] = useState(false);
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [searchInputFocus, setSearchInputFocus] = useState(false);
@@ -352,6 +353,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
           'hospitalizations',
           'response'
         );
+        setNoDataLabel(true);
         setHospitalizationMainData(phrSortWithDate(hospitalizationsData));
         setShowSpinner(false);
       })
@@ -543,14 +545,6 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
     );
   };
 
-  const emptyListView = () => {
-    return apiError ? (
-      <PhrNoDataComponent noDataText={string.common.phr_api_error_text} phrErrorIcon />
-    ) : (
-      <PhrNoDataComponent />
-    );
-  };
-
   const renderHospitalizationData = () => {
     return (
       <SectionList
@@ -559,10 +553,20 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 12, paddingHorizontal: 20 }}
         sections={localHospitalizationData || []}
         renderItem={({ item, index }) => renderHospitalizationItems(item, index)}
-        ListEmptyComponent={emptyListView}
+        ListEmptyComponent={renderEmptyList()}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
       />
     );
+  };
+
+  const renderEmptyList = () => {
+    if (noDataLabel) {
+      return <PhrNoDataComponent />;
+    } else if (apiError) {
+      <PhrNoDataComponent noDataText={string.common.phr_api_error_text} phrErrorIcon />;
+    } else {
+      return null;
+    }
   };
 
   const onRecordAdded = () => {
