@@ -16,16 +16,7 @@ export const TatCardwithoutAddress: React.FC<TatCardwithoutAddressProps> = (prop
   const { deliveryTime } = useShoppingCart();
 
   function getNonCartDeliveryDate() {
-    let tommorowDate = new Date();
-    tommorowDate.setDate(tommorowDate.getDate() + 1);
-
-    if (new Date(deliveryTime).toLocaleDateString() == new Date().toLocaleDateString()) {
-      return `Expected Delivery by Today!`;
-    } else if (new Date(deliveryTime).toLocaleDateString() == tommorowDate.toLocaleDateString()) {
-      return `Expected Delivery by Tomorrow!`;
-    } else {
-      return `Expected Delivery by: ${format(deliveryTime, 'D-MMM-YYYY')}`;
-    }
+    return 'Delivery Date & time will be confirmed after the Order is Verified by our Pharmacist';
   }
 
   function getDeliveryDate() {
@@ -50,7 +41,7 @@ export const TatCardwithoutAddress: React.FC<TatCardwithoutAddressProps> = (prop
         <Text style={styles.boldTxt}>
           {!!isNonCartOrder ? getNonCartDeliveryDate() : getDeliveryDate()}
         </Text>
-        <Text style={styles.subText}>{getDeliveryMsg()}</Text>
+        {!isNonCartOrder && <Text style={styles.subText}>{getDeliveryMsg()}</Text>}
       </View>
     </View>
   );
