@@ -243,7 +243,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const errorAlert = () => {
     showAphAlert!({
       title: string.common.uhOh,
-      description: 'Unable to fetch pakage details.',
+      description: 'Unable to fetch popular tests and packages.',
     });
   };
 
@@ -257,14 +257,13 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       if (res?.data?.success) {
         const product = g(res, 'data', 'data') || [];
         func && func(product);
-      } else {
-        errorAlert();
       }
-      setGlobalLoading!(false);
+      setIsLoading?.(false);
+      setGlobalLoading?.(false);
     } catch (error) {
       CommonBugFender('SearchTestScene_fetchPackageDetails', error);
       aphConsole.log({ error });
-      errorAlert();
+      setIsLoading?.(false);
       setGlobalLoading!(false);
     }
   };
@@ -507,7 +506,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             autoFocus: true,
           }}
           value={searchText}
-          placeholder="Search tests &amp; packages"
+          placeholder=" Search tests &amp; packages"
           underlineColorAndroid="transparent"
           onChangeText={(value) => {
             if (isValidSearch(value)) {
@@ -694,24 +693,32 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           />
         ) : (
           <ScrollView showsVerticalScrollIndicator={false} style={styles.viewDefaultContainer}>
-            <Text style={styles.headingSections}>Popular Packages</Text>
-            <View style={styles.defaultContainer}>
-              <FlatList
-                keyExtractor={(_, index) => `${index}`}
-                scrollEnabled={false}
-                data={popularPackages}
-                renderItem={renderPopularDiagnostic}
-              />
-            </View>
-            <Text style={styles.headingSections}>Popular Tests</Text>
-            <View style={styles.defaultContainer}>
-              <FlatList
-                keyExtractor={(_, index) => `${index}`}
-                scrollEnabled={false}
-                data={popularTests}
-                renderItem={renderPopularDiagnostic}
-              />
-            </View>
+            {popularPackages?.length > 0 ? (
+              <View>
+                <Text style={styles.headingSections}>Popular Packages</Text>
+                <View style={styles.defaultContainer}>
+                  <FlatList
+                    keyExtractor={(_, index) => `${index}`}
+                    scrollEnabled={false}
+                    data={popularPackages}
+                    renderItem={renderPopularDiagnostic}
+                  />
+                </View>
+              </View>
+            ) : null}
+            {popularTests?.length > 0 ? (
+              <View>
+                <Text style={styles.headingSections}>Popular Tests</Text>
+                <View style={styles.defaultContainer}>
+                  <FlatList
+                    keyExtractor={(_, index) => `${index}`}
+                    scrollEnabled={false}
+                    data={popularTests}
+                    renderItem={renderPopularDiagnostic}
+                  />
+                </View>
+              </View>
+            ) : null}
           </ScrollView>
         )}
       </>
