@@ -34,18 +34,9 @@ export const Coupon: React.FC<CouponProps> = (props) => {
           </View>
           <ArrowRight />
         </TouchableOpacity>
-        {(!!isCircleSubscription || !!circleMembershipCharges) && renderCareMessage()}
       </View>
     );
   };
-
-  const renderCareMessage = () => (
-    <View style={styles.careMessageContainer}>
-      <Text style={styles.removeCircleText}>
-        You can either use Circle benefits or apply a Coupon code
-      </Text>
-    </View>
-  );
 
   const renderCouponMsg = () => {
     return !isProuctFreeCouponApplied ? (
@@ -130,20 +121,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
-  careMessageContainer: {
-    flexDirection: 'row',
-    marginLeft: 8,
-    paddingBottom: 7,
-    justifyContent: 'flex-start',
-  },
   pendingIconStyle: {
     marginRight: 10,
     marginTop: 5,
-  },
-  removeCircleText: {
-    width: '85%',
-    marginLeft: 40,
-    ...theme.viewStyles.text('M', 13, '#02475B', 1, 17),
-    flexWrap: 'wrap',
   },
 });

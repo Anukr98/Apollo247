@@ -122,6 +122,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
+    marginTop: 10,
   },
   viewBtnText: {
     ...theme.viewStyles.text('M', 16, theme.colors.SHERPA_BLUE),
@@ -146,7 +147,9 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
   const [couponError, setCouponError] = useState<string>('');
   const [couponListError, setCouponListError] = useState<string>('');
   const [disableGeneralCouponsList, setDisableGeneralCouponsList] = useState<number[]>([]);
+  const [disableCouponsList, setDisableCouponsList] = useState<string[]>([]);
   const [showAllProductOffers, setShowAllProductOffers] = useState<boolean>(false);
+  const [showAllCircleCoupons, setShowAllCircleCoupons] = useState<boolean>(false);
   const [showCouponsForYou, setShowCouponsForYou] = useState<boolean>(false);
   const [circleCoupons, setCircleCoupons] = useState<pharma_coupon[]>([]); // circle coupons => applicable === 'APOLLO:Circle...'
   const [productOffers, setProductOffers] = useState<pharma_coupon[]>([]); // product offer coupons => frontendCategory === 'ProductOffer'
@@ -256,14 +259,14 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
       .then((resp: any) => {
         if (resp?.data?.errorCode == 0) {
           if (resp?.data?.response?.valid) {
-            setIsCircleSubscription?.(false);
             setCoupon!({ ...g(resp?.data, 'response')!, message: couponMsg });
             setIsFreeDelivery?.(!!resp?.data?.response?.freeDelivery);
             props.navigation.goBack();
           } else {
             !applyingFromList && setCouponError(g(resp.data, 'response', 'reason'));
             applyingFromList && setCouponListError(g(resp.data, 'response', 'reason'));
-            saveDisableListIndexes(listIndex);
+            setDisableCouponsList([...disableCouponsList, coupon]);
+            saveDisableCoupons(coupon);
           }
 
           const products = g(resp?.data, 'response', 'products');
@@ -280,34 +283,34 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
               ? g(resp.data, 'response', 'discount')
               : 'Not Applicable',
             'Customer ID': g(currentPatient, 'id'),
+            'Cart Items': cartItems?.length ? JSON.stringify(cartItems) : '',
           };
           postWebEngageEvent(WebEngageEventName.CART_COUPON_APPLIED, eventAttributes);
         } else {
           CommonBugFender('validatingPharmaCoupon', g(resp?.data, 'errorMsg'));
           !applyingFromList && setCouponError(g(resp?.data, 'errorMsg'));
           applyingFromList && setCouponListError(g(resp?.data, 'errorMsg'));
-          saveDisableListIndexes(listIndex);
+          saveDisableCoupons(coupon);
         }
       })
       .catch((error) => {
         CommonBugFender('validatingPharmaCoupon', error);
         !applyingFromList && setCouponError('Sorry, unable to validate coupon right now.');
         applyingFromList && setCouponListError('Sorry, unable to validate coupon right now.');
-
-        saveDisableListIndexes(listIndex);
+        saveDisableCoupons(coupon);
       })
       .finally(() => setLoading?.(false));
   };
 
-  const saveDisableListIndexes = (listIndex: number) => {
-    if (listIndex || listIndex === 0) {
-      if (disableGeneralCouponsList?.indexOf(listIndex) > -1) {
-        const arr = disableGeneralCouponsList;
-        const indexToRemove = arr?.indexOf(listIndex);
+  const saveDisableCoupons = (couponName: string) => {
+    if (couponName) {
+      if (disableCouponsList?.indexOf(couponName) > -1) {
+        const arr = disableCouponsList;
+        const indexToRemove = arr?.indexOf(couponName);
         arr?.splice(indexToRemove, 1);
-        setDisableGeneralCouponsList(arr);
+        setDisableCouponsList(arr);
       } else {
-        setDisableGeneralCouponsList(disableGeneralCouponsList?.concat(listIndex));
+        setDisableCouponsList(disableCouponsList?.concat(couponName));
       }
     }
   };
@@ -365,21 +368,24 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
 
   const renderNoCouponsFound = () => {
     return (
-      <View>
-        {!shimmerLoading && couponList.length == 0 && (
-          <Text style={styles.noCouponsAvailText}>No coupons available</Text>
-        )}
+      <View style={styles.cardStyle}>
+        <View>
+          {!shimmerLoading && couponList.length == 0 && (
+            <Text style={styles.noCouponsAvailText}>No coupons available</Text>
+          )}
+        </View>
       </View>
     );
   };
 
-  const renderGeneralCoupons = () => {
-    if (shimmerLoading) {
-      return couponViewShimmer();
-    }
-    const couponsForYou = showCouponsForYou ? couponList : couponList?.slice(0, 2);
+  const renderGeneralCoupons = (
+    coupons: pharma_coupon[],
+    category: string,
+    showAllCoupons: boolean
+  ) => {
+    const couponsForYou = coupons;
     return couponsForYou?.map((coupon, i) => {
-      const disableList = disableGeneralCouponsList?.indexOf(i) > -1;
+      const disableList = disableCouponsList?.indexOf(coupon?.coupon) > -1;
       return (
         <TouchableOpacity
           key={i}
@@ -393,20 +399,26 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
               <Text style={styles.couponTitle}>{coupon?.coupon}</Text>
               <Text style={[styles.applyBtnText, { opacity: disableList ? 0.5 : 1 }]}>APPLY</Text>
             </View>
-            <Text style={styles.couponSubTitle}>Get 5% off</Text>
+            {!!coupon?.textOffer && <Text style={styles.couponSubTitle}>{coupon?.textOffer}</Text>}
             <Text style={styles.couponDescription}>{coupon?.message}</Text>
             {disableList && renderCouponError(couponListError)}
-            {i !== couponList?.length - 1 && <View style={styles.itemSeperator} />}
+            {i !== coupons?.length - 1 && <View style={styles.itemSeperator} />}
           </View>
           {i === couponsForYou?.length - 1 ? (
             <TouchableOpacity
               style={styles.bottomViewCardBtn}
               onPress={() => {
-                setShowCouponsForYou(!showCouponsForYou);
+                if (category === 'general') {
+                  setShowCouponsForYou(!showCouponsForYou);
+                } else if (category === 'productOffers') {
+                  setShowAllProductOffers(!showAllProductOffers);
+                } else if (category === 'circle') {
+                  setShowAllCircleCoupons(!showAllCircleCoupons);
+                }
               }}
             >
-              <Text style={styles.viewBtnText}>View{showCouponsForYou ? ' less' : ' more'}</Text>
-              {showCouponsForYou ? <Up /> : <Down />}
+              <Text style={styles.viewBtnText}>View{showAllCoupons ? ' less' : ' more'}</Text>
+              {showAllCoupons ? <Up /> : <Down />}
             </TouchableOpacity>
           ) : null}
         </TouchableOpacity>
@@ -419,60 +431,44 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     applyCoupon(couponText, cartItems, true, index);
   };
 
-  const renderCouponCard = () => {
-    return (
-      <View style={{ margin: 20 }}>
-        {renderInputWithValidation()}
-        {renderCardTitle('COUPONS FOR YOU')}
-        <View style={styles.cardStyle}>
-          {renderNoCouponsFound()}
-          {renderGeneralCoupons()}
-        </View>
-        {!!couponList?.length && (
-          <>
-            {renderCardTitle('PRODUCT OFFERS')}
-            <View style={styles.cardStyle}>{renderProductOffers()}</View>
-          </>
+  const renderCouponList = () => (
+    <View>
+      {renderCardTitle('COUPONS FOR YOU')}
+      <View style={styles.cardStyle}>
+        {renderGeneralCoupons(
+          showCouponsForYou ? couponList : couponList?.slice(0, 2),
+          'general',
+          showCouponsForYou
         )}
       </View>
-    );
-  };
+    </View>
+  );
 
-  const renderProductOffers = () => {
-    const productOffers = showAllProductOffers ? couponList : couponList?.slice(0, 2);
-    return productOffers?.map((coupon, i) => {
-      return (
-        <TouchableOpacity
-          key={i}
-          onPress={() => {
-            setCouponText(coupon?.coupon);
-            setcouponMsg(coupon?.message);
-          }}
-        >
-          <View style={styles.couponContainer}>
-            <View style={styles.spaceRow}>
-              <Text style={styles.couponTitle}>{coupon?.coupon}</Text>
-              <Text style={styles.applyBtnText}>APPLY</Text>
-            </View>
-            <Text style={styles.couponSubTitle}>Get 5% off</Text>
-            <Text style={styles.couponDescription}>{coupon?.message}</Text>
-            {i !== productOffers?.length - 1 && <View style={styles.itemSeperator} />}
-          </View>
-          {i === productOffers?.length - 1 ? (
-            <TouchableOpacity
-              style={styles.bottomViewCardBtn}
-              onPress={() => {
-                setShowAllProductOffers(!showAllProductOffers);
-              }}
-            >
-              <Text style={styles.viewBtnText}>View{showAllProductOffers ? ' less' : ' more'}</Text>
-              {showAllProductOffers ? <Up /> : <Down />}
-            </TouchableOpacity>
-          ) : null}
-        </TouchableOpacity>
-      );
-    });
-  };
+  const renderProductOffers = () => (
+    <View>
+      {renderCardTitle('PRODUCT OFFERS')}
+      <View style={styles.cardStyle}>
+        {renderGeneralCoupons(
+          showAllProductOffers ? productOffers : productOffers?.slice(0, 2),
+          'productOffers',
+          showAllProductOffers
+        )}
+      </View>
+    </View>
+  );
+
+  const renderCircleCoupons = () => (
+    <View>
+      {renderCardTitle('APPLICABLE WITH CIRCLE BENEFITS')}
+      <View style={styles.cardStyle}>
+        {renderGeneralCoupons(
+          showAllCircleCoupons ? circleCoupons : circleCoupons?.slice(0, 2),
+          'circle',
+          showAllCircleCoupons
+        )}
+      </View>
+    </View>
+  );
 
   const renderCardTitle = (title: string) => {
     return (
@@ -492,7 +488,14 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
           container={{ borderBottomWidth: 0 }}
           onPressLeftIcon={() => props.navigation.goBack()}
         />
-        <ScrollView bounces={false}>{renderCouponCard()}</ScrollView>
+        <ScrollView bounces={false} contentContainerStyle={{ padding: 15 }}>
+          {renderInputWithValidation()}
+          {shimmerLoading && couponViewShimmer()}
+          {renderNoCouponsFound()}
+          {!!couponList?.length && renderCouponList()}
+          {!!productOffers?.length && renderProductOffers()}
+          {!!circleCoupons?.length && renderCircleCoupons()}
+        </ScrollView>
       </SafeAreaView>
     </View>
   );
