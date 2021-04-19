@@ -539,7 +539,9 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     position: 'absolute',
     left: 16,
-    bottom: 10,
+    bottom: 6,
+    width: '70%',
+    height: 30,
   },
   errorCardContainer: {
     height: 'auto',
