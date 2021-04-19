@@ -93,7 +93,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const paymentActions = ['nbTxn', 'walletTxn', 'upiTxn', 'cardTxn'];
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
-  const FailedStatuses = ['AUTHENTICATION_FAILED', 'AUTHORIZATION_FAILED'];
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
     const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
@@ -128,9 +127,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           setBanks(banks);
           setloading(false);
         } else if (paymentActions.indexOf(payload?.payload?.action) != -1 && status) {
-          status == 'CHARGED' && navigatetoOrderStatus(false, 'success');
-          status == 'PENDING_VBV' && handlePaymentPending(payload?.errorCode);
-          FailedStatuses.includes(status) && showTxnFailurePopUP();
+          handleTxnStatus(status, payload);
         } else if (payload?.payload?.action == 'isDeviceReady') {
           payload?.requestId == 'phonePe' && status && setphonePeReady(true);
           payload?.requestId == 'googlePay' && status && setGooglePayReady(true);
@@ -142,6 +139,23 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         break;
       default:
         console.log('Unknown Event', data);
+    }
+  };
+
+  const handleTxnStatus = (status: string, payload: any) => {
+    switch (status) {
+      case 'CHARGED':
+        navigatetoOrderStatus(false, 'success');
+        break;
+      case 'AUTHORIZING':
+        navigatetoOrderStatus(false, 'pending');
+        break;
+      case 'PENDING_VBV':
+        handlePaymentPending(payload?.errorCode);
+        break;
+      default:
+        // includes cases AUTHENTICATION_FAILED, AUTHORIZATION_FAILED
+        showTxnFailurePopUP();
     }
   };
 
