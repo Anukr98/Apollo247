@@ -27,7 +27,7 @@ export const ExpectCall: React.FC<ExpectCallProps> = (props) => {
             <Copy style={styles.iconStyle} />
           </TouchableOpacity>
         </View>
-        <Text style={styles.headerTxt}>that’s our pharmacist!</Text>
+        <Text style={styles.headerTxt}>in the next 24 hours, that’s our pharmacist!</Text>
       </View>
     );
   };

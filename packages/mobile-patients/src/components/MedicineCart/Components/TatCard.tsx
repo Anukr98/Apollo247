@@ -78,9 +78,8 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
       >
         {!unServiceable &&
           (!!isNonCartOrder ? (
-            <Text style={styles.delivery}>
-              {`Expected Delivery by `}
-              {deliveryTime ? getDeliveryDate() : getGenericDate()}
+            <Text style={styles.deliveryText}>
+              {`Delivery will be confirmed after Pharmacist call.`}
             </Text>
           ) : !isSplitCart ? (
             <Text style={styles.delivery}>
@@ -141,5 +140,11 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: '#D4D4D4',
     borderRadius: 5,
+  },
+  deliveryText: {
+    width: '75%',
+    color: '#F7F8F5',
+    ...theme.fonts.IBMPlexSansRegular(14),
+    lineHeight: 18,
   },
 });
