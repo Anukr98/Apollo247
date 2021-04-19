@@ -181,6 +181,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
   >([]);
 
   const [callApi, setCallApi] = useState(false);
+  const [noDataLabel, setNoDataLabel] = useState(false);
   const [apiError, setApiError] = useState(false);
   const [isSearchFocus, SetIsSearchFocus] = useState(false);
   const [showSearchBar, setShowSearchBar] = useState(false);
@@ -396,6 +397,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
           'familyHistory',
           'response'
         );
+        setNoDataLabel(true);
         setMedicalConditions(medicalCondition);
         setMedicalHealthRestrictions(medicalHealthRestriction);
         setMedicalMedications(medicalMedication);
@@ -682,14 +684,6 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
     );
   };
 
-  const emptyListView = () => {
-    return apiError ? (
-      <PhrNoDataComponent noDataText={string.common.phr_api_error_text} phrErrorIcon />
-    ) : (
-      <PhrNoDataComponent />
-    );
-  };
-
   const renderHealthCondtionsData = () => {
     return (
       <SectionList
@@ -698,10 +692,18 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 12, paddingHorizontal: 20 }}
         sections={localHealthRecordData || []}
         renderItem={({ item, index }) => renderHealthConditionItems(item, index)}
-        ListEmptyComponent={emptyListView}
+        ListEmptyComponent={renderEmptyList()}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
       />
     );
+  };
+
+  const renderEmptyList = () => {
+    if (noDataLabel || apiError) {
+      return <PhrNoDataComponent />;
+    } else {
+      return null;
+    }
   };
 
   const onRecordAdded = () => {

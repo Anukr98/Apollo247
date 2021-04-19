@@ -149,6 +149,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
+  const [noDataLabel, setNoDataLabel] = useState<boolean>(false);
   const [callApi, setCallApi] = useState(false);
   const [apiError, setApiError] = useState(false);
   const [isSearchFocus, SetIsSearchFocus] = useState(false);
@@ -352,6 +353,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
           'hospitalizations',
           'response'
         );
+        setNoDataLabel(true);
         setHospitalizationMainData(phrSortWithDate(hospitalizationsData));
         setShowSpinner(false);
       })
@@ -559,7 +561,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 12, paddingHorizontal: 20 }}
         sections={localHospitalizationData || []}
         renderItem={({ item, index }) => renderHospitalizationItems(item, index)}
-        ListEmptyComponent={emptyListView}
+        ListEmptyComponent={renderEmptyList()}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
       />
     );
@@ -567,6 +569,14 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
 
   const onRecordAdded = () => {
     setCallApi(true);
+  };
+
+  const renderEmptyList = () => {
+    if (noDataLabel || apiError) {
+      return <PhrNoDataComponent />;
+    } else {
+      return null;
+    }
   };
 
   const renderAddButton = () => {
