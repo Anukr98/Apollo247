@@ -52,7 +52,6 @@ import {
   EDIT_PROFILE,
   GET_DIAGNOSTIC_NEAREST_AREA,
   GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
-  EDIT_PROFILE,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticsHCChargesVariables,
@@ -639,6 +638,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const onRemoveCartItem = ({ id, name }: DiagnosticsCartItem) => {
     removeCartItem && removeCartItem(id);
+    const newCartItems = cartItems?.filter((item) => Number(item?.id) !== Number(id));
+    const removedItems = newCartItems?.map((item) => Number(item?.id));
+    setCartItems?.(newCartItems);
     if (deliveryAddressId != '') {
       const selectedAddressIndex = addresses?.findIndex(
         (address) => address?.id == deliveryAddressId
@@ -649,7 +651,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             addresses?.[selectedAddressIndex]?.zipcode!,
             showAreaSelection
           )
-        : getAreas();
+        : getAreas(removedItems);
       DiagnosticRemoveFromCartClicked(
         id,
         name,
@@ -1264,7 +1266,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const checkSlotSelection = (
-    item: areaObject | DiagnosticArea | any,
+    areaObject: areaObject | DiagnosticArea | any,
     changedDate?: Date,
     comingFrom?: string,
     _itemIds?: number[]
@@ -1292,7 +1294,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         fetchPolicy: 'no-cache',
         variables: {
           selectedDate: moment(dateToCheck).format('YYYY-MM-DD'),
-          areaID: Number((item as any).key!),
+          areaID: Number((areaObject as any).key!),
           itemIds: _itemIds || cartItemsWithId,
         },
       })
@@ -1329,7 +1331,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             .add(1, 'day')
             .toDate();
           setDate(changedDate);
-          checkSlotSelection(item, changedDate, undefined);
+          checkSlotSelection(areaObject, changedDate, undefined, _itemIds || cartItemsWithId);
         } else {
           setSlots(slotsArray);
           todaySlotNotAvailable && setTodaySlotNotAvailable(false);
@@ -2265,7 +2267,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             addresses?.[selectedAddressIndex]?.zipcode!,
             showAreaSelection
           )
-        : getAreas();
+        : getAreas(removedTestItemId);
       let removedItems = removedTestItemId?.join(', ');
       DiagnosticRemoveFromCartClicked(
         removedItems,
