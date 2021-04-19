@@ -657,6 +657,7 @@ export interface ItemSearchedOnLanding extends DiagnosticUserInfo {
   'Keyword Entered': string;
   '# Results appeared': number;
   'Item in Results'?: object[];
+  'Popular'?: 'Yes' | 'No';
 }
 
 export interface ItemClickedOnLanding extends DiagnosticUserInfo {
@@ -1195,9 +1196,9 @@ export interface WebEngageEvents {
     'Section Name': string;
   };
   [WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION]: {
-    Source: 'Full Search' | 'Home Page' | 'Cart Page' | 'Partial Search' | 'Deeplink';
+    Source: 'Full Search' | 'Home Page' | 'Cart Page' | 'Partial Search' | 'Deeplink' | 'Popular search';
     'Item Name': string;
-    'Item Type': string;
+    'Item Type'?: string;
     'Item Code': string;
   };
 
@@ -1264,9 +1265,10 @@ export interface WebEngageEvents {
   [WebEngageEventName.DIAGNOSTIC_ADD_TO_CART]: {
     'Item Name': string;
     'Item ID': string; // (SKUID)
-    Source: 'Home page' | 'Full search' | 'Details page' | 'Partial search' | 'Listing page';
+    Source: 'Home page' | 'Full search' | 'Details page' | 'Partial search' | 'Listing page' | 'Popular search';
     Section?: string;
   };
+  
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order id': string | number;
     Pincode: string | number;
