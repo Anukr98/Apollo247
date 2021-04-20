@@ -138,6 +138,7 @@ import {
   TouchableOpacity,
   View,
   Clipboard,
+  BackHandler,
 } from 'react-native';
 import CryptoJS from 'crypto-js';
 import { Image } from 'react-native-elements';
@@ -978,6 +979,51 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }
   const isAppointmentStartsInFifteenMin = appointmentDiffMin <= 15 && appointmentDiffMin > 0;
   const isAppointmentExceedsTenMin = appointmentDiffMin <= 0 && appointmentDiffMin > -10;
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
+
+  const onCall = useRef<boolean>(false);
+
+  const handleBack = () => {
+    if (onCall.current) {
+      minimiseCall();
+      return true;
+    } else {
+      props.navigation.goBack();
+      return true;
+    }
+  };
+
+  useEffect(() => {
+    onCall.current = isCall || isAudioCall;
+  }, [isCall, isAudioCall]);
+
+  const minimiseCall = () => {
+    setCallMinimize(true);
+    setTalkStyles({
+      height: 0,
+      width: 0,
+    });
+
+    setSubscriberStyles({
+      width: 0,
+      height: 0,
+    });
+
+    setPublisherStyles({
+      width: 0,
+      height: 0,
+    });
+
+    setPipView(true);
+    setChatReceived(false);
+    setHideStatusBar(false);
+  };
 
   const postAppointmentWEGEvent = (
     type:
