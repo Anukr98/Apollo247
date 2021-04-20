@@ -84,6 +84,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansBold(14),
     color: '#01475B',
     lineHeight: 17,
+    width: '55%',
   },
   subText: {
     ...theme.fonts.IBMPlexSansMedium(12),
