@@ -356,7 +356,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const OtherBanks = () => {
     const topBanks = paymentMethods?.find((item: any) => item?.name == 'NB');
-    const methods = topBanks?.payment_methods?.map((item: any) => item?.payment_method_code) || [];
+    const methods =
+      topBanks?.payment_methods?.map((item: any) => item?.payment_method_code).slice(0, 4) || [];
     const otherBanks = banks?.filter((item: any) => !methods?.includes(item?.paymentMethod));
     triggerWebengege('Prepaid', 'Other Banks');
     props.navigation.navigate(AppRoutes.OtherBanks, {
