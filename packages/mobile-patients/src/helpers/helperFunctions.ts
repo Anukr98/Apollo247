@@ -21,6 +21,8 @@ import {
   DIAGNOSTIC_ORDER_STATUS,
   REFUND_STATUSES,
   MedicalRecordType,
+  MEDICINE_TIMINGS,
+  MEDICINE_CONSUMPTION_DURATION,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from 'react-native-geolocation-service';
@@ -1972,6 +1974,68 @@ export const parseNumber = (number: string | number, decimalPoints?: number) =>
 
 export const getMaxQtyForMedicineItem = (qty?: number | string) => {
   return qty ? Number(qty) : AppConfig.Configuration.CART_ITEM_MAX_QUANTITY;
+};
+
+const getDaysCount = (type: MEDICINE_CONSUMPTION_DURATION | null) => {
+  return type == MEDICINE_CONSUMPTION_DURATION.MONTHS
+    ? 30
+    : type == MEDICINE_CONSUMPTION_DURATION.WEEKS
+    ? 7
+    : 1;
+};
+
+export const getPrescriptionItemQuantity = (
+  medicineUnit: MEDICINE_UNIT | null,
+  medicineTimings: (MEDICINE_TIMINGS | null)[] | null,
+  medicineDosage: string | null,
+  medicineCustomDosage: string | null /** E.g: (1-0-1/2-0.5), (1-0-2\3-3) etc.*/,
+  medicineConsumptionDurationInDays: string | null,
+  medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null,
+  mou: number // how many tablets per strip
+) => {
+  if (medicineUnit == MEDICINE_UNIT.TABLET || medicineUnit == MEDICINE_UNIT.CAPSULE) {
+    const medicineDosageMapping = medicineCustomDosage
+      ? medicineCustomDosage.split('-').map((item) => {
+          if (item.indexOf('/') > -1) {
+            const dosage = item.split('/').map((item) => Number(item));
+            return (dosage[0] || 1) / (dosage[1] || 1);
+          } else if (item.indexOf('\\') > -1) {
+            const dosage = item.split('\\').map((item) => Number(item));
+            return (dosage[0] || 1) / (dosage[1] || 1);
+          } else {
+            return Number(item);
+          }
+        })
+      : medicineDosage
+      ? Array.from({ length: 4 }).map(() => Number(medicineDosage))
+      : [1, 1, 1, 1];
+
+    const medicineTimingsPerDayCount =
+      (medicineTimings || []).reduce(
+        (currTotal, currItem) =>
+          currTotal +
+          (currItem == MEDICINE_TIMINGS.MORNING
+            ? medicineDosageMapping[0]
+            : currItem == MEDICINE_TIMINGS.NOON
+            ? medicineDosageMapping[1]
+            : currItem == MEDICINE_TIMINGS.EVENING
+            ? medicineDosageMapping[2]
+            : currItem == MEDICINE_TIMINGS.NIGHT
+            ? medicineDosageMapping[3]
+            : 1),
+        0
+      ) || 1;
+
+    const totalTabletsNeeded =
+      medicineTimingsPerDayCount *
+      Number(medicineConsumptionDurationInDays || '1') *
+      getDaysCount(medicineConsumptionDurationUnit);
+
+    return Math.ceil(totalTabletsNeeded / mou);
+  } else {
+    // 1 for other than tablet or capsule
+    return 1;
+  }
 };
 
 export const formatToCartItem = ({

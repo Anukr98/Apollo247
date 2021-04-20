@@ -56,6 +56,7 @@ import {
   doRequestAndAccessLocation,
   formatToCartItem,
   g,
+  getPrescriptionItemQuantity,
   handleGraphQlError,
   medUnitFormatArray,
   nameFormater,
@@ -603,7 +604,19 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         );
         const cartItems = response
           .filter(({ data }) => data?.productdp?.[0]?.id && data?.productdp?.[0]?.sku)
-          .map(({ data }) => formatToCartItem({ ...data?.productdp?.[0]!, image: '' }));
+          .map(({ data }, index) => ({
+            ...formatToCartItem({ ...data?.productdp?.[0]!, image: '' }),
+            quantity: getPrescriptionItemQuantity(
+              medPrescription?.[index]?.medicineUnit!,
+              medPrescription?.[index]?.medicineTimings!,
+              medPrescription?.[index]?.medicineDosage!,
+              medPrescription?.[index]?.medicineCustomDosage!,
+              medPrescription?.[index]?.medicineConsumptionDurationInDays!,
+              medPrescription?.[index]?.medicineConsumptionDurationUnit!,
+              parseInt(data?.productdp?.[0]?.mou || '1', 10)
+            ),
+          }));
+
         addMultipleCartItems?.(cartItems);
         setEPrescriptions?.([presToAdd]);
         setLoading?.(false);
