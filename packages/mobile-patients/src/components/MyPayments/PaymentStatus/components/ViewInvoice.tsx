@@ -43,9 +43,9 @@ const ViewInvoice: FC<ViewInvoiceProps> = (props) => {
     const { paymentFor, item } = props;
     let status = 'PENDING';
     if (paymentFor === 'consult') {
-      const { appointmentPayments, appointmentPaymentOrders } = item;
-      const paymentInfo = Object.keys(appointmentPaymentOrders).length
-        ? appointmentPaymentOrders
+      const { appointmentPayments, PaymentOrders } = item;
+      const paymentInfo = Object.keys(PaymentOrders).length
+        ? PaymentOrders
         : appointmentPayments[0];
       if (!paymentInfo) {
         status = 'PENDING';

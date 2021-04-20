@@ -66,7 +66,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/initiateDiagonsticHCOrderPayment';
 import { paymentModeVersionCheck } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-
+import { SecureTags } from '@aph/mobile-patients/src/components/PaymentGateway/Components/SecureTag';
 const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {
@@ -513,6 +513,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     });
   };
 
+  const renderSecureTag = () => <SecureTags />;
+
   return (
     <>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -521,6 +523,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           <ScrollView contentContainerStyle={styles.container}>
             {renderBookingInfo()}
             {showPaymentOptions()}
+            {!!paymentMethods?.length && renderSecureTag()}
           </ScrollView>
         ) : (
           <Spinner />
@@ -533,7 +536,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingBottom: 24,
+    paddingBottom: 47,
   },
   header: {
     ...theme.viewStyles.cardViewStyle,

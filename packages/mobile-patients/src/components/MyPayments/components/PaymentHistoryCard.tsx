@@ -42,8 +42,10 @@ const PaymentHistoryCard: FC<PaymentHistoryCardProps> = (props) => {
   }, []);
   const renderHeader = () => {
     if (paymentFor === 'consult') {
-      const { status, appointmentRefunds } = item;
-      if (status === 'CANCELLED' && appointmentRefunds.length) {
+      const { status, appointmentRefunds, PaymentOrders } = item;
+      const { refund } = PaymentOrders;
+      const refundInfo = refund?.length ? refund : appointmentRefunds;
+      if (status === 'CANCELLED' && refundInfo.length) {
         return <PaymentCardHeader status={status} />;
       }
     } else if (paymentFor === 'pharmacy') {
@@ -60,9 +62,9 @@ const PaymentHistoryCard: FC<PaymentHistoryCardProps> = (props) => {
 
   const getAmountPaid = () => {
     if (paymentFor === 'consult') {
-      const { appointmentPayments, appointmentPaymentOrders } = item;
-      const paymentInfo = Object.keys(appointmentPaymentOrders).length
-        ? appointmentPaymentOrders
+      const { appointmentPayments, PaymentOrders } = item;
+      const paymentInfo = Object.keys(PaymentOrders).length
+        ? PaymentOrders
         : appointmentPayments[0];
       if (!paymentInfo) {
         return 0;
