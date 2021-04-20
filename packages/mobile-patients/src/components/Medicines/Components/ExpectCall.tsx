@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, Clipboard, TouchableOpacity } from 'react-nativ
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Copy, CallRingIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Snackbar } from 'react-native-paper';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export interface ExpectCallProps {}
 
@@ -10,6 +11,7 @@ export const ExpectCall: React.FC<ExpectCallProps> = (props) => {
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const [highlightComponent, setHighlightComponent] = useState<boolean>(true);
   const phoneNumber = '040 48212890';
+  const { expectCallText } = useAppCommonData();
 
   useEffect(() => {
     setTimeout(() => {
@@ -27,7 +29,9 @@ export const ExpectCall: React.FC<ExpectCallProps> = (props) => {
             <Copy style={styles.iconStyle} />
           </TouchableOpacity>
         </View>
-        <Text style={styles.headerTxt}>in the next 24 hours, that’s our pharmacist!</Text>
+        <Text style={styles.headerTxt}>
+          {expectCallText ? expectCallText : `that’s our pharmacist!`}
+        </Text>
       </View>
     );
   };

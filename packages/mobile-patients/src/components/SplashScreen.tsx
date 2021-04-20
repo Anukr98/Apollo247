@@ -614,6 +614,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setCovidVaccineCtaV2,
     setCartBankOffer,
     setUploadPrescriptionOptions,
+    setExpectCallText,
+    setNonCartTatText,
+    setNonCartDeliveryText,
   } = useAppCommonData();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -762,6 +765,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'Health_Credit_Expiration_Time_QA',
       PROD: 'Health_Credit_Expiration_Time_Prod',
     },
+    Expect_Call_Text: {
+      QA: 'QA_Expect_Call_Text',
+      PROD: 'Expect_Call_Text',
+    },
+    Non_Cart_TAT_Text: {
+      QA: 'QA_Non_Cart_TAT_Text',
+      PROD: 'Non_Cart_TAT_Text',
+    },
+    Non_Cart_Delivery_Text: {
+      QA: 'QA_Non_Cart_Delivery_Text',
+      PROD: 'Non_Cart_Delivery_Text',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -842,6 +857,21 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) => JSON.parse(config.getString(key)) || []
       );
       uploadPrescriptionOptions && setUploadPrescriptionOptions!(uploadPrescriptionOptions);
+
+      const expectCallText = getRemoteConfigValue('Expect_Call_Text', (key) =>
+        config.getString(key)
+      );
+      expectCallText && setExpectCallText!(expectCallText);
+
+      const nonCartTatText = getRemoteConfigValue('Non_Cart_TAT_Text', (key) =>
+        config.getString(key)
+      );
+      nonCartTatText && setNonCartTatText!(nonCartTatText);
+
+      const nonCartDeliveryText = getRemoteConfigValue('Non_Cart_Delivery_Text', (key) =>
+        config.getString(key)
+      );
+      nonCartDeliveryText && setNonCartDeliveryText!(nonCartDeliveryText);
 
       setAppConfig(
         'Min_Value_For_Pharmacy_Free_Delivery',
