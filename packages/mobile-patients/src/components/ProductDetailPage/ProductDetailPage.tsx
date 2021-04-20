@@ -45,6 +45,7 @@ import {
   doRequestAndAccessLocationModified,
   navigateToHome,
   navigateToScreenWithEmptyStack,
+  setAsyncPharmaLocation,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   MedicineProductDetails,
@@ -565,6 +566,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             const latLang = data.results[0].geometry.location || {};
             const response = getFormattedLocation(addrComponents, latLang, pinCode);
             setPharmacyLocation!(response);
+            setAsyncPharmaLocation(response);
             setDeliveryAddressId!('');
             !locationDetails && setLocationDetails!(response);
             setpincode(pinCode);
@@ -675,6 +677,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         <AccessLocation
           addresses={addresses}
           onPressSelectAddress={(address) => {
+            setAsyncPharmaLocation(address);
             updatePlaceInfoByPincode(address?.zipcode);
             hideAphAlert!();
           }}

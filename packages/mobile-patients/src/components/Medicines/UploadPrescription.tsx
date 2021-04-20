@@ -21,6 +21,7 @@ import {
   postWebEngageEvent,
   findAddrComponents,
   formatAddress,
+  setAsyncPharmaLocation,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
@@ -1018,6 +1019,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           onPressSelectAddress={(address) => {
             checkServicability(address, false);
             nonCartAvailabilityTat(address?.zipcode);
+            setAsyncPharmaLocation(address);
             hideAphAlert!();
           }}
         />
