@@ -182,7 +182,6 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
 
   const [callApi, setCallApi] = useState(false);
   const [apiError, setApiError] = useState(false);
-  const [noDataLabel, setNoDataLabel] = useState(false);
   const [isSearchFocus, SetIsSearchFocus] = useState(false);
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [searchInputFocus, setSearchInputFocus] = useState(false);
@@ -397,7 +396,6 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
           'familyHistory',
           'response'
         );
-        setNoDataLabel(true);
         setMedicalConditions(medicalCondition);
         setMedicalHealthRestrictions(medicalHealthRestriction);
         setMedicalMedications(medicalMedication);
@@ -699,7 +697,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
   };
 
   const renderEmptyList = () => {
-    if (noDataLabel) {
+    if (!showSpinner) {
       return <PhrNoDataComponent />;
     } else if (apiError) {
       <PhrNoDataComponent noDataText={string.common.phr_api_error_text} phrErrorIcon />;
