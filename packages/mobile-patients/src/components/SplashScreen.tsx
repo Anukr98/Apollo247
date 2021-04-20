@@ -403,6 +403,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           setLoading!(false);
         }
       );
+      const params = id?.split('+');
+      getAppointmentDataAndNavigate(params?.[0]!, false);
     } else {
       getData(routeName, id, isCall, timeout, mediaSource);
     }
