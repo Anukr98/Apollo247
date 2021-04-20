@@ -151,7 +151,6 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [callApi, setCallApi] = useState(false);
   const [apiError, setApiError] = useState(false);
-  const [noDataLabel, setNoDataLabel] = useState(false);
   const [isSearchFocus, SetIsSearchFocus] = useState(false);
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [searchInputFocus, setSearchInputFocus] = useState(false);
@@ -353,7 +352,6 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
           'hospitalizations',
           'response'
         );
-        setNoDataLabel(true);
         setHospitalizationMainData(phrSortWithDate(hospitalizationsData));
         setShowSpinner(false);
       })
@@ -560,7 +558,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
   };
 
   const renderEmptyList = () => {
-    if (noDataLabel) {
+    if (!showSpinner) {
       return <PhrNoDataComponent />;
     } else if (apiError) {
       <PhrNoDataComponent noDataText={string.common.phr_api_error_text} phrErrorIcon />;
