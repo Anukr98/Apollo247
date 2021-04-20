@@ -861,17 +861,17 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       const expectCallText = getRemoteConfigValue('Expect_Call_Text', (key) =>
         config.getString(key)
       );
-      expectCallText && setExpectCallText!(expectCallText);
+      expectCallText && setExpectCallText?.(expectCallText);
 
       const nonCartTatText = getRemoteConfigValue('Non_Cart_TAT_Text', (key) =>
         config.getString(key)
       );
-      nonCartTatText && setNonCartTatText!(nonCartTatText);
+      nonCartTatText && setNonCartTatText?.(nonCartTatText);
 
       const nonCartDeliveryText = getRemoteConfigValue('Non_Cart_Delivery_Text', (key) =>
         config.getString(key)
       );
-      nonCartDeliveryText && setNonCartDeliveryText!(nonCartDeliveryText);
+      nonCartDeliveryText && setNonCartDeliveryText?.(nonCartDeliveryText);
 
       setAppConfig(
         'Min_Value_For_Pharmacy_Free_Delivery',
