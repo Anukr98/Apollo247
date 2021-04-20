@@ -183,7 +183,6 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
 
   const [callApi, setCallApi] = useState(false);
   const [apiError, setApiError] = useState(false);
-  const [noDataLabel, setNoDataLabel] = useState(false);
   const [isSearchFocus, SetIsSearchFocus] = useState(false);
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [searchInputFocus, setSearchInputFocus] = useState(false);
@@ -398,7 +397,6 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
           'familyHistory',
           'response'
         );
-        setNoDataLabel(true);
         setMedicalConditions(medicalCondition);
         setMedicalHealthRestrictions(medicalHealthRestriction);
         setMedicalMedications(medicalMedication);
