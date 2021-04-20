@@ -78,6 +78,7 @@ import { GET_PRISM_AUTH_TOKEN } from '@aph/mobile-patients/src/graphql/profiles'
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import moment from 'moment';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import ListEmptyComponent from '@aph/mobile-patients/src/components/HealthRecords/Components/ListEmptyComponent';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -692,20 +693,10 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 12, paddingHorizontal: 20 }}
         sections={localHealthRecordData || []}
         renderItem={({ item, index }) => renderHealthConditionItems(item, index)}
-        ListEmptyComponent={renderEmptyList()}
+        ListEmptyComponent={ListEmptyComponent.getEmptyListComponent(showSpinner, apiError)}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
       />
     );
-  };
-
-  const renderEmptyList = () => {
-    if (noDataLabel) {
-      return <PhrNoDataComponent />;
-    } else if (apiError) {
-      <PhrNoDataComponent noDataText={string.common.phr_api_error_text} phrErrorIcon />;
-    } else {
-      return null;
-    }
   };
 
   const onRecordAdded = () => {

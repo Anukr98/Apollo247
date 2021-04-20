@@ -64,6 +64,7 @@ import {
   HospitalPhrSearchIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import ListEmptyComponent from '@aph/mobile-patients/src/components/HealthRecords/Components/ListEmptyComponent';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -553,20 +554,10 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 12, paddingHorizontal: 20 }}
         sections={localHospitalizationData || []}
         renderItem={({ item, index }) => renderHospitalizationItems(item, index)}
-        ListEmptyComponent={renderEmptyList()}
+        ListEmptyComponent={ListEmptyComponent.getEmptyListComponent(showSpinner, apiError)}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
       />
     );
-  };
-
-  const renderEmptyList = () => {
-    if (noDataLabel) {
-      return <PhrNoDataComponent />;
-    } else if (apiError) {
-      <PhrNoDataComponent noDataText={string.common.phr_api_error_text} phrErrorIcon />;
-    } else {
-      return null;
-    }
   };
 
   const onRecordAdded = () => {
