@@ -154,6 +154,7 @@ import {
   addTestsToCart,
   doRequestAndAccessLocation,
   handleGraphQlError,
+  formatToCartItem,
 } from '../../helpers/helperFunctions';
 import { mimeType } from '../../helpers/mimeType';
 import { FeedbackPopup } from '../FeedbackPopup';
@@ -192,6 +193,9 @@ import { CheckReschedulePopup } from '@aph/mobile-patients/src/components/Consul
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { FollowUpChatGuideLines } from '@aph/mobile-patients/src/components/Consult/Components/FollowUpChatGuideLines';
 import { ChatDisablePrompt } from '@aph/mobile-patients/src/components/Consult/Components/ChatDisablePrompt';
+import { getMedicineDetailsApi, MedicineProductDetailsResponse } from '../../helpers/apiCalls';
+import { AxiosResponse } from 'axios';
+
 interface OpentokStreamObject {
   connection: {
     connectionId: string;
@@ -799,7 +803,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
-  const { setEPrescriptions } = useShoppingCart();
+  const { setEPrescriptions, addMultipleCartItems } = useShoppingCart();
   const [name, setname] = useState<string>('');
   const [showRescheduleCancel, setShowRescheduleCancel] = useState<boolean>(false);
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
@@ -3711,13 +3715,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     'Customer ID': currentPatient?.id,
   };
 
-  const onAddToCart = () => {
+  const onAddToCart = async () => {
     postWebEngageEvent(WebEngageEventName.ORDER_MEDICINES_IN_CONSULT_ROOM, UserInfo);
-    const medPrescription = (
-      caseSheet?.[0]?.medicinePrescription ||
-      MedicinePrescriptions ||
-      []
-    ).filter((item: any) => item!.id);
+    const prrescriptions = caseSheet?.[0]?.medicinePrescription || MedicinePrescriptions || [];
+    const medPrescription = prrescriptions.filter((item: any) => item!.id);
+    const isCartOrder = medPrescription?.length === prrescriptions.length;
     const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(
       caseSheet?.[0]?.blobName! || currentCaseSheet?.[0]?.blobName!
     );
@@ -3729,8 +3731,34 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       medicines: (medPrescription || []).map((item: any) => item!.medicineName).join(', '),
       uploadedUrl: docUrl,
     } as EPrescription;
-    setEPrescriptions && setEPrescriptions([presToAdd]);
 
+    if (isCartOrder) {
+      try {
+        setLoading(true);
+        const response: AxiosResponse<MedicineProductDetailsResponse>[] = await Promise.all(
+          medPrescription.map((item) => getMedicineDetailsApi(item?.id!))
+        );
+        const cartItems = response
+          .filter(({ data }) => {
+            const medicine = data?.productdp?.[0];
+            return medicine?.id && medicine?.sku;
+          })
+          .map(({ data }) => formatToCartItem({ ...data?.productdp?.[0]!, image: '' }));
+        addMultipleCartItems?.(cartItems);
+        setEPrescriptions?.([presToAdd]);
+        setLoading(false);
+        props.navigation.push(AppRoutes.MedicineCart);
+      } catch (error) {
+        setLoading(false);
+        showAphAlert?.({
+          title: string.common.uhOh,
+          description: string.common.somethingWentWrong,
+        });
+        CommonBugFender(`${AppRoutes.ChatRoom}_onAddToCart`, error);
+      }
+      return;
+    }
+    setEPrescriptions?.([presToAdd]);
     props.navigation.navigate(AppRoutes.UploadPrescription, {
       ePrescriptionsProp: [presToAdd],
       type: 'E-Prescription',
