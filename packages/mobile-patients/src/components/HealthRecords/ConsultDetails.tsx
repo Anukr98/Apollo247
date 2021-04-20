@@ -54,6 +54,7 @@ import {
 import {
   addTestsToCart,
   doRequestAndAccessLocation,
+  formatToCartItem,
   g,
   handleGraphQlError,
   medUnitFormatArray,
@@ -89,6 +90,9 @@ import { mimeType } from '../../helpers/mimeType';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { ListItem } from 'react-native-elements';
 import _ from 'lodash';
+import { AxiosResponse } from 'axios';
+import { getMedicineDetailsApi, MedicineProductDetailsResponse } from '../../helpers/apiCalls';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -269,7 +273,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const appointmentType = props.navigation.getParam('appointmentType');
   const appointmentId = props.navigation.getParam('CaseSheet');
 
-  const { loading, setLoading } = useUIElements();
+  const { loading, setLoading, showAphAlert } = useUIElements();
 
   const client = useApolloClient();
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
@@ -477,7 +481,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       </>
     );
   };
-  const { setEPrescriptions } = useShoppingCart();
+  const { setEPrescriptions, addMultipleCartItems } = useShoppingCart();
   const {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
@@ -576,7 +580,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       : 1;
   };
 
-  const onAddToCart = () => {
+  const onAddToCart = async () => {
     const medPrescription = (caseSheetDetails!.medicinePrescription || []).filter(
       (item) => item!.id
     );
@@ -589,7 +593,33 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       medicines: (medPrescription || []).map((item) => item!.medicineName).join(', '),
       uploadedUrl: docUrl,
     } as EPrescription;
-    setEPrescriptions && setEPrescriptions([presToAdd]);
+    const isCartOrder = medPrescription?.length === caseSheetDetails?.medicinePrescription?.length;
+
+    if (isCartOrder) {
+      try {
+        setLoading?.(true);
+        const response: AxiosResponse<MedicineProductDetailsResponse>[] = await Promise.all(
+          medPrescription.map((item) => getMedicineDetailsApi(item?.id!))
+        );
+        const cartItems = response
+          .filter(({ data }) => data?.productdp?.[0]?.id && data?.productdp?.[0]?.sku)
+          .map(({ data }) => formatToCartItem({ ...data?.productdp?.[0]!, image: '' }));
+        addMultipleCartItems?.(cartItems);
+        setEPrescriptions?.([presToAdd]);
+        setLoading?.(false);
+        props.navigation.push(AppRoutes.MedicineCart);
+      } catch (error) {
+        setLoading?.(false);
+        showAphAlert?.({
+          title: string.common.uhOh,
+          description: string.common.somethingWentWrong,
+        });
+        CommonBugFender(`${AppRoutes.ConsultDetails}_onAddToCart`, error);
+      }
+      return;
+    }
+
+    setEPrescriptions?.([presToAdd]);
     props.navigation.navigate(AppRoutes.UploadPrescription, {
       ePrescriptionsProp: [presToAdd],
       type: 'E-Prescription',
