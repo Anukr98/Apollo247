@@ -151,7 +151,13 @@ export const firePurchaseEvent = (orderId: string, grandTotal: number, cartItems
 };
 
 export function DiagnosticDetailsViewed(
-  source: 'Full Search' | 'Home Page' | 'Cart Page' | 'Partial Search' | 'Deeplink',
+  source:
+    | 'Full Search'
+    | 'Home Page'
+    | 'Cart Page'
+    | 'Partial Search'
+    | 'Deeplink'
+    | 'Popular search',
   itemName: string,
   itemType: string,
   itemCode: string,
@@ -162,9 +168,11 @@ export function DiagnosticDetailsViewed(
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION] = {
     Source: source,
     'Item Name': itemName,
-    'Item Type': itemType,
     'Item Code': itemCode,
   };
+  if (!!itemType) {
+    eventAttributes['Item Type'] = itemType;
+  }
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
 
   const firebaseEventAttributes: FirebaseEvents[FirebaseEventName.PRODUCT_PAGE_VIEWED] = {
