@@ -319,6 +319,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const hasLocation = locationDetails || pharmacyLocation || defaultAddress;
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
   const [asyncPincode, setAsyncPincode] = useState({});
+  const [isFocused, setIsFocused] = useState<boolean>(false);
   type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
   const postwebEngageCategoryClickedEvent = (
     categoryId: string,
@@ -537,14 +538,31 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       updateServiceability(pharmacyPincode);
       setPinCode && setPinCode(pharmacyPincode);
     }
+  }, []);
 
-    const getAsyncLocationPincode = async () => {
-      const asyncLocationPincode: any = await AsyncStorage.getItem('PharmacyLocationPincode');
-      if (asyncLocationPincode) {
-        setAsyncPincode(JSON.parse(asyncLocationPincode));
-      }
+  useEffect(() => {
+    if (isFocused) {
+      const getAsyncLocationPincode = async () => {
+        const asyncLocationPincode: any = await AsyncStorage.getItem('PharmacyLocationPincode');
+        if (asyncLocationPincode) {
+          setAsyncPincode(JSON.parse(asyncLocationPincode));
+        }
+      };
+      getAsyncLocationPincode();
+    }
+  }, [isFocused]);
+
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      setIsFocused(true);
+    });
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+      setIsFocused(false);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      didBlur && didBlur.remove();
     };
-    getAsyncLocationPincode();
   }, []);
 
   useEffect(() => {
