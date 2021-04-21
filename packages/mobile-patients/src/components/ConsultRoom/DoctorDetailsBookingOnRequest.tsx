@@ -77,6 +77,7 @@ import {
   CTGrayChat,
   CircleLogo,
   ShareYellowDocIcon,
+  CallRingIcon,
 } from '../ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -150,6 +151,13 @@ const styles = StyleSheet.create({
   followUpChatMessageStyle: {
     ...theme.fonts.IBMPlexSansMedium(12),
     color: '#225E6F',
+    lineHeight: 18,
+    flex: 1,
+    marginLeft: 11.5,
+  },
+  followUpCallNumberStyle: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: '#00B38E',
     lineHeight: 18,
     flex: 1,
     marginLeft: 11.5,
@@ -791,7 +799,7 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
           {doctorDetails && (
             <View style={styles.detailsViewStyle}>
               <View style={styles.doctorNameViewStyle}>
-                <Text style={styles.doctorNameStyles}>{doctorDetails.fullName} Asad</Text>
+                <Text style={styles.doctorNameStyles}>{doctorDetails.fullName}</Text>
                 <TouchableOpacity
                   activeOpacity={1}
                   onPress={() => onClickDoctorShare()}
@@ -833,7 +841,14 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
                   <ApolloPartnerIcon style={styles.apolloDocIcon} />
                 )}
               </View>
+
               <View style={styles.separatorStyle} />
+
+              <View style={[styles.followUpChatMessageViewStyle, { marginBottom: -4 }]}>
+                <CallRingIcon style={styles.followUpChatImageStyle} />
+                <Text style={styles.followUpCallNumberStyle}>{'040-2211782'}</Text>
+              </View>
+
               {follow_up_chat_message_visibility && (
                 <View style={styles.followUpChatMessageViewStyle}>
                   <CTGrayChat style={styles.followUpChatImageStyle} />
@@ -842,6 +857,7 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
               )}
             </View>
           )}
+
           {/* -------do not delete below commented code--------*/}
           {/* {isCircleDoctor && !showCircleSubscribed && defaultCirclePlan && renderUpgradeToCircle()}
           {isCircleDoctor &&
