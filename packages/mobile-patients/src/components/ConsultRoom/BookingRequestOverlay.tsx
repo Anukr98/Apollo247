@@ -294,7 +294,7 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
         >
           <TouchableOpacity
             activeOpacity={1}
-            style={styles.radioButtonContainer}
+            style={[styles.radioButtonContainer, { flex: 1 }]}
             key={1}
             onPress={() => {
               setModeSelected(ConsultMode.BOTH);
@@ -311,7 +311,7 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
           </TouchableOpacity>
           <TouchableOpacity
             activeOpacity={1}
-            style={styles.radioButtonContainer}
+            style={[styles.radioButtonContainer, { flex: 1 }]}
             key={1}
             onPress={() => {
               setModeSelected(ConsultMode.PHYSICAL);
@@ -363,7 +363,7 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
         >
           <TouchableOpacity
             activeOpacity={1}
-            style={styles.radioButtonContainer}
+            style={[styles.radioButtonContainer, { flex: 0.7 }]}
             key={1}
             onPress={() => {
               setDateRangeSelected('option1');
@@ -376,7 +376,7 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
           </TouchableOpacity>
           <TouchableOpacity
             activeOpacity={1}
-            style={styles.radioButtonContainer}
+            style={[styles.radioButtonContainer, { flex: 0.3 }]}
             key={1}
             onPress={() => {
               setDateRangeSelected('option2');
