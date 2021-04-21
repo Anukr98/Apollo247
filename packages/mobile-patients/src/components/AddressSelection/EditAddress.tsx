@@ -262,9 +262,11 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     city.length > 1 &&
     state &&
     state.length > 1 &&
-    addressType !== undefined &&
-    (addressType !== PATIENT_ADDRESS_TYPE.OTHER ||
-      (addressType === PATIENT_ADDRESS_TYPE.OTHER && optionalAddress));
+    ((!!source && source == 'Diagnostics Cart') || (!!source && source == 'Tests'))
+      ? true
+      : addressType !== undefined &&
+        (addressType !== PATIENT_ADDRESS_TYPE.OTHER ||
+          (addressType === PATIENT_ADDRESS_TYPE.OTHER && optionalAddress));
 
   const saveAddress = (addressInput: PatientAddressInput) =>
     client.mutate<savePatientAddress, savePatientAddressVariables>({
@@ -317,7 +319,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         zipcode: pincode,
         landmark: landMark.trim(),
         mobileNumber: phoneNumber,
-        addressType: addressType,
+        addressType: addressType! || PATIENT_ADDRESS_TYPE?.HOME,
         otherAddressType: optionalAddress,
         latitude: latitude,
         longitude: longitude,

@@ -252,7 +252,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const currentPatientId = currentPatient && currentPatient?.id;
   const client = useApolloClient();
   const {
-    locationForDiagnostics,
     locationDetails,
     diagnosticServiceabilityData,
     diagnosticLocation,
@@ -321,7 +320,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     });
 
   useEffect(() => {
-    fetchAddresses();
     initiateHyperSDK();
   }, [currentPatient]);
 
@@ -330,6 +328,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setSelectedPatient(currentPatient);
       setShowPatientListOverlay(false);
     }
+    fetchAddresses();
   }, []);
 
   const fetchTestReportGenDetails = async (_cartItemId: string | number[]) => {
@@ -601,7 +600,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       if (addresses?.length) {
         return;
       }
-      setLoading!(true);
+      setLoading?.(true);
       //clearing on changing user
       setDiagnosticAreas?.([]);
       setAreaSelected?.({});
@@ -2343,10 +2342,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const setAddressList = (key: string) => {
-    shopCart?.setDeliveryAddressId?.('');
-    diagCart?.setDeliveryAddressId?.('');
-    shopCart?.setAddresses?.([]);
-    diagCart?.setAddresses?.([]);
     setDoctorJoinedChat?.(false);
   };
 
