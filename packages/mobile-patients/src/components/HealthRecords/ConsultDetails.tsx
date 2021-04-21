@@ -23,7 +23,7 @@ import {
   PhrSymptomIcon,
   PhrDiagnosisIcon,
   PhrGeneralAdviceIcon,
-  Download,
+  WhiteDownloadIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
@@ -54,6 +54,7 @@ import {
 import {
   addTestsToCart,
   doRequestAndAccessLocation,
+  formatToCartItem,
   g,
   handleGraphQlError,
   medUnitFormatArray,
@@ -89,6 +90,9 @@ import { mimeType } from '../../helpers/mimeType';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { ListItem } from 'react-native-elements';
 import _ from 'lodash';
+import { AxiosResponse } from 'axios';
+import { getMedicineDetailsApi, MedicineProductDetailsResponse } from '../../helpers/apiCalls';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -150,14 +154,14 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     marginHorizontal: 8,
     paddingHorizontal: 16,
-    paddingTop: 26,
-    paddingBottom: 29,
+    paddingTop: 12,
+    paddingBottom: 9,
   },
   separatorLineStyle: {
     backgroundColor: '#02475B',
     opacity: 0.2,
     height: 0.5,
-    marginBottom: 23,
+    marginBottom: 7,
     marginTop: 16,
   },
   collapseCardLabelViewStyle: {
@@ -225,6 +229,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  checkupDateTextStyle: { ...theme.viewStyles.text('R', 14, '#67909C', 1, 18.2), marginTop: 6 },
+  downloadBtnViewStyle: {
+    alignSelf: 'flex-end',
+    backgroundColor: theme.colors.BUTTON_BG,
+    borderRadius: 10,
+    paddingVertical: 7,
+    paddingLeft: 18,
+    paddingRight: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  downloadBtnTextStyle: {
+    ...theme.viewStyles.text('B', 13, theme.colors.WHITE, 1, 16.9),
+    marginLeft: 2,
+  },
+  downloadIconStyle: { width: 20, height: 20 },
 });
 
 export interface ConsultDetailsProps
@@ -253,7 +273,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const appointmentType = props.navigation.getParam('appointmentType');
   const appointmentId = props.navigation.getParam('CaseSheet');
 
-  const { loading, setLoading } = useUIElements();
+  const { loading, setLoading, showAphAlert } = useUIElements();
 
   const client = useApolloClient();
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
@@ -370,30 +390,31 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           <Text style={{ ...theme.viewStyles.text('SB', 23, '#02475B', 1, 30) }}>
             {'Prescription'}
           </Text>
-          <TouchableOpacity onPress={() => onPressDownloadPrescripiton()}>
-            <Download />
-          </TouchableOpacity>
         </View>
         <Text style={{ ...theme.viewStyles.text('M', 16, '#0087BA', 1, 21), marginTop: 6 }}>
           {g(caseSheetDetails, 'appointment', 'doctorInfo', 'displayName')}
         </Text>
-        <Text style={{ ...theme.viewStyles.text('R', 14, '#67909C', 1, 18.2), marginTop: 6 }}>
+        <Text style={styles.checkupDateTextStyle}>
           {g(caseSheetDetails, 'appointment', 'appointmentType') == 'ONLINE'
             ? 'Online'
             : 'Physical'}{' '}
           Consult
         </Text>
+        <Text style={styles.checkupDateTextStyle}>
+          {'Checkup Date on '}
+          {caseSheetDetails?.appointment?.appointmentDateTime
+            ? moment(caseSheetDetails?.appointment?.appointmentDateTime).format('DD MMM, YYYY')
+            : ''}
+        </Text>
         <View style={styles.separatorLineStyle} />
-        <Text style={{ ...theme.viewStyles.text('M', 16, '#02475B', 1, 21) }}>
-          {'Checkup Date'}
-        </Text>
-        <Text style={{ ...theme.viewStyles.text('R', 14, '#0087BA', 1, 18), marginTop: 3 }}>
-          {'On '}
-          <Text style={{ ...theme.viewStyles.text('M', 14, '#02475B', 1, 18) }}>
-            {caseSheetDetails &&
-              moment(caseSheetDetails?.appointment?.appointmentDateTime).format('DD MMM, YYYY')}
-          </Text>
-        </Text>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => onPressDownloadPrescripiton()}
+          style={styles.downloadBtnViewStyle}
+        >
+          <WhiteDownloadIcon style={styles.downloadIconStyle} />
+          <Text style={styles.downloadBtnTextStyle}>{'DOWNLOAD'}</Text>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -460,7 +481,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       </>
     );
   };
-  const { setEPrescriptions } = useShoppingCart();
+  const { setEPrescriptions, addMultipleCartItems } = useShoppingCart();
   const {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
@@ -559,7 +580,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       : 1;
   };
 
-  const onAddToCart = () => {
+  const onAddToCart = async () => {
     const medPrescription = (caseSheetDetails!.medicinePrescription || []).filter(
       (item) => item!.id
     );
@@ -572,7 +593,33 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       medicines: (medPrescription || []).map((item) => item!.medicineName).join(', '),
       uploadedUrl: docUrl,
     } as EPrescription;
-    setEPrescriptions && setEPrescriptions([presToAdd]);
+    const isCartOrder = medPrescription?.length === caseSheetDetails?.medicinePrescription?.length;
+
+    if (isCartOrder) {
+      try {
+        setLoading?.(true);
+        const response: AxiosResponse<MedicineProductDetailsResponse>[] = await Promise.all(
+          medPrescription.map((item) => getMedicineDetailsApi(item?.id!))
+        );
+        const cartItems = response
+          .filter(({ data }) => data?.productdp?.[0]?.id && data?.productdp?.[0]?.sku)
+          .map(({ data }) => formatToCartItem({ ...data?.productdp?.[0]!, image: '' }));
+        addMultipleCartItems?.(cartItems);
+        setEPrescriptions?.([presToAdd]);
+        setLoading?.(false);
+        props.navigation.push(AppRoutes.MedicineCart);
+      } catch (error) {
+        setLoading?.(false);
+        showAphAlert?.({
+          title: string.common.uhOh,
+          description: string.common.somethingWentWrong,
+        });
+        CommonBugFender(`${AppRoutes.ConsultDetails}_onAddToCart`, error);
+      }
+      return;
+    }
+
+    setEPrescriptions?.([presToAdd]);
     props.navigation.navigate(AppRoutes.UploadPrescription, {
       ePrescriptionsProp: [presToAdd],
       type: 'E-Prescription',

@@ -1162,6 +1162,11 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
         onlineSlot
         physicalSlot
       }
+      doctorCardActiveCTA {
+        ONLINE
+        PHYSICAL
+        DEFAULT
+      }
     }
   }
 `;
@@ -1194,6 +1199,7 @@ export const GET_PLATINUM_DOCTOR = gql`
         qualification
         experience
         photoUrl
+        profile_deeplink
         slot
         thumbnailUrl
         availabilityTitle {
@@ -1207,6 +1213,11 @@ export const GET_PLATINUM_DOCTOR = gql`
           status
           mrp
           appointment_type
+        }
+        doctorCardActiveCTA {
+          ONLINE
+          PHYSICAL
+          DEFAULT
         }
       }
     }
@@ -1843,6 +1854,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
     getDiagnosticOrderDetails(diagnosticOrderId: $diagnosticOrderId) {
       ordersList {
         id
+        patientId
         patientAddressId
         city
         slotTimings
@@ -1865,6 +1877,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         slotDateTimeInUTC
         paymentType
         visitNo
+        labReportURL
         diagnosticOrderLineItems {
           id
           itemId
@@ -2197,6 +2210,7 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         diagnosticBranchCode
         diagnosticEmployeeCode
         visitNo
+        labReportURL
         diagnosticOrdersStatus {
           id
           orderStatus
@@ -2279,6 +2293,11 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         }
       }
       ordersCount
+      membersDetails {
+        id
+        firstName
+        lastName
+      }
     }
   }
 `;
@@ -4102,32 +4121,6 @@ export const UPDATE_SAVE_EXTERNAL_CONNECT = gql`
   }
 `;
 
-export const GET_PERSONALIZED_APPOITNMENTS = gql`
-  query getPatientPersonalizedAppointments($patientUhid: String!) {
-    getPatientPersonalizedAppointments(patientUhid: $patientUhid) {
-      appointmentDetails {
-        id
-        hospitalLocation
-        appointmentDateTime
-        appointmentType
-        doctorId
-        doctorDetails {
-          id
-          firstName
-          experience
-          photoUrl
-          displayName
-          specialty {
-            id
-            name
-            userFriendlyNomenclature
-          }
-        }
-      }
-    }
-  }
-`;
-
 export const GET_APPOINTMENT_RESCHEDULE_DETAILS = gql`
   query getAppointmentRescheduleDetails($appointmentId: String!) {
     getAppointmentRescheduleDetails(appointmentId: $appointmentId) {
@@ -4723,6 +4716,28 @@ export const GET_PHLOBE_DETAILS = gql`
           distanceInMetres
           estimatedArrivalTime
         }
+      }
+    }
+  }
+`;
+
+export const GET_PATIENT_PAST_CONSULTED_DOCTORS = gql`
+  query getPatientPastConsultedDoctors($patientMobile: String, $offset: Int, $limit: Int) {
+    getPatientPastConsultedDoctors(patientMobile: $patientMobile, offset: $offset, limit: $limit) {
+      id
+      fullName
+      thumbnailUrl
+      specialty {
+        name
+      }
+      consultDetails {
+        consultDateTime
+        displayId
+        appointmentId
+        hospitalId
+        hospitalName
+        consultMode
+        _247_Flag
       }
     }
   }

@@ -52,7 +52,6 @@ import {
   EDIT_PROFILE,
   GET_DIAGNOSTIC_NEAREST_AREA,
   GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
-  EDIT_PROFILE,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticsHCChargesVariables,
@@ -333,6 +332,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     initiateHyperSDK();
   }, [currentPatient]);
 
+  useEffect(() => {
+    if (showSelectPatient && currentPatient) {
+      setSelectedPatient(currentPatient);
+      setShowPatientListOverlay(false);
+    }
+  }, []);
+
   const fetchTestReportGenDetails = async (_cartItemId: string | number[]) => {
     try {
       const removeSpaces =
@@ -346,21 +352,23 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         const result = g(res, 'data', 'data');
         const widgetsData = g(res, 'data', 'widget_data', '0', 'diagnosticWidgetData');
         setReportGenDetails(result || []);
-        const _itemIds = widgetsData?.map((item) => Number(item?.itemId));
+        const _itemIds = widgetsData?.map((item: any) => Number(item?.itemId));
+        const _filterItemIds = _itemIds?.filter((val: any) => !cartItemsWithId?.includes(val));
+
         client
           .query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
             query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
             context: {
               sourceHeaders,
             },
-            variables: { cityID: Number(addressCityId) || 9, itemIDs: _itemIds },
+            variables: { cityID: Number(addressCityId) || 9, itemIDs: _filterItemIds },
             fetchPolicy: 'no-cache',
           })
           .then(({ data }) => {
             const diagnosticItems =
               g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
             let _diagnosticWidgetData: any = [];
-            widgetsData?.forEach((_widget) => {
+            widgetsData?.forEach((_widget: any) => {
               diagnosticItems?.forEach((_diagItems) => {
                 if (_widget?.itemId == _diagItems?.itemId) {
                   _diagnosticWidgetData?.push({
@@ -531,7 +539,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         fetchTestReportGenDetails(cartItemsWithId);
       }
     }
-  }, [cartItems?.length]);
+  }, [cartItems?.length, addressCityId]);
 
   useEffect(() => {
     setPatientId!(currentPatientId!);
@@ -630,6 +638,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const onRemoveCartItem = ({ id, name }: DiagnosticsCartItem) => {
     removeCartItem && removeCartItem(id);
+    const newCartItems = cartItems?.filter((item) => Number(item?.id) !== Number(id));
+    const removedItems = newCartItems?.map((item) => Number(item?.id));
+    setCartItems?.(newCartItems);
     if (deliveryAddressId != '') {
       const selectedAddressIndex = addresses?.findIndex(
         (address) => address?.id == deliveryAddressId
@@ -640,7 +651,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             addresses?.[selectedAddressIndex]?.zipcode!,
             showAreaSelection
           )
-        : getAreas();
+        : getAreas(removedItems);
       DiagnosticRemoveFromCartClicked(
         id,
         name,
@@ -1255,12 +1266,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const checkSlotSelection = (
-    item: areaObject | DiagnosticArea | any,
+    areaObject: areaObject | DiagnosticArea | any,
     changedDate?: Date,
     comingFrom?: string,
     _itemIds?: number[]
   ) => {
-    let dateToCheck = !!changedDate && comingFrom != '' ? changedDate : date;
+    const isCovidItem = cartItemsWithId?.map((item) =>
+      AppConfig.Configuration.Covid_Items.includes(item)
+    );
+    const isCartHasCovidItem = isCovidItem?.find((item) => item === true);
+    const maxDaysToShow = !!isCartHasCovidItem
+      ? AppConfig.Configuration.Covid_Max_Slot_Days
+      : AppConfig.Configuration.Non_Covid_Max_Slot_Days;
+
+    let dateToCheck = !!changedDate && comingFrom != '' ? changedDate : new Date();
     setLoading?.(true);
     const selectedAddressIndex = addresses?.findIndex(
       (address) => address?.id == deliveryAddressId
@@ -1275,7 +1294,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         fetchPolicy: 'no-cache',
         variables: {
           selectedDate: moment(dateToCheck).format('YYYY-MM-DD'),
-          areaID: Number((item as any).key!),
+          areaID: Number((areaObject as any).key!),
           itemIds: _itemIds || cartItemsWithId,
         },
       })
@@ -1302,13 +1321,17 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
         // if slot is empty then refetch it for next date
         const isSameDate = moment().isSame(moment(dateToCheck), 'date');
-        if (slotsArray?.length == 0) {
+        let lastDate = moment()
+          .add(maxDaysToShow, 'day')
+          .toDate();
+        const hasReachedEnd = moment(dateToCheck).isSameOrAfter(moment(lastDate), 'date');
+        if (!hasReachedEnd && slotsArray?.length == 0) {
           setTodaySlotNotAvailable(true);
           let changedDate = moment(dateToCheck) //date
             .add(1, 'day')
             .toDate();
           setDate(changedDate);
-          checkSlotSelection(item, changedDate);
+          checkSlotSelection(areaObject, changedDate, undefined, _itemIds || cartItemsWithId);
         } else {
           setSlots(slotsArray);
           todaySlotNotAvailable && setTodaySlotNotAvailable(false);
@@ -1324,9 +1347,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             diagnosticEmployeeCode: slotDetails?.employeeCode,
             city: selectedAddr ? selectedAddr?.city! : '', // not using city from this in order place API
           });
-          if (slotDetails == undefined) {
-            setDisplaySchedule(true);
-          }
           setLoading?.(false);
         }
 
@@ -2247,7 +2267,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             addresses?.[selectedAddressIndex]?.zipcode!,
             showAreaSelection
           )
-        : getAreas();
+        : getAreas(removedTestItemId);
       let removedItems = removedTestItemId?.join(', ');
       DiagnosticRemoveFromCartClicked(
         removedItems,

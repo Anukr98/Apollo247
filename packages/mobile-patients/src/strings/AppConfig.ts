@@ -212,6 +212,7 @@ const appStaticVariables = {
   Prod_PROHEALTH_MGMT_HashKey: Prod_PROHEALTH_MGMT_CM_KEY,
   DIABETES_MGMT_CM_PROGRAM_ID: 'diabetes_24_7',
   PROHEALTH_MGMT_CM_PROGRAM_ID: 'prohealth',
+  Health_Credit_Expiration_Time: 60, //default health credit expiration time 60 mins
 };
 
 const DEV_top_specialties = [

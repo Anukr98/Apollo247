@@ -557,7 +557,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                     const patientsDetails: UpdatePatientInput = {
                       id: profile.id,
                       relation: Relation[profile.relation!], // profile ? profile.relation!.toUpperCase() : '',
-                      referralCode: (profile.relation == Relation.ME && trimReferral) || null,
+                      referralCode: trimReferral || null,
                       deviceCode: deviceToken,
                     };
                     CommonLogEvent(AppRoutes.MultiSignup, 'Update API clicked');

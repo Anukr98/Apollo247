@@ -482,7 +482,7 @@ export const renderHealthRecordShimmer = () => {
       <ShimmerPlaceHolder
         shimmerColors={[theme.colors.LIGHT_GRAY, theme.colors.TEXT_LIGHT_BLUE]}
         LinearGradient={LinearGradient}
-        shimmerStyle={[styles.healthRecordLine, { width: 120 }]}
+        shimmerStyle={[styles.healthRecordLine, { width: '80%' }]}
       />
     </View>
   );

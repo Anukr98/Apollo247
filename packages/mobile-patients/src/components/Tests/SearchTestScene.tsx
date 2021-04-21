@@ -244,7 +244,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const errorAlert = () => {
     showAphAlert?.({
       title: string.common.uhOh,
-      description: 'Unable to fetch popular packages and tests',
+      description: 'Unable to fetch popular tests and packages.',
     });
   };
 
@@ -258,14 +258,13 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       if (res?.data?.success) {
         const product = g(res, 'data', 'data') || [];
         func && func(product);
-      } else {
-        errorAlert();
       }
-      setGlobalLoading!(false);
+      setIsLoading?.(false);
+      setGlobalLoading?.(false);
     } catch (error) {
       CommonBugFender('SearchTestScene_fetchPackageDetails', error);
       aphConsole.log({ error });
-      errorAlert();
+      setIsLoading?.(false);
       setGlobalLoading!(false);
     }
   };

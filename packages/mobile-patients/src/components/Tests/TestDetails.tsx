@@ -341,7 +341,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const homeBreadCrumb: TestBreadcrumbLink = {
     title: 'Home',
     onPress: () => {
-      navigateToHome(props.navigation);
+      props.navigation.navigate('TESTS');
     },
   };
 

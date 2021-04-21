@@ -810,7 +810,8 @@
     "restartSymptomTrackerDiscription": "This will end your symptom tracking and you’ll have to start it again. Do you want to continue tracking your symptoms or go back?",
     "symptomTracker": "Symptom Tracker",
     "addAnotherSymptom": "Would you like to report another symptom?",
-    "removeSelectionPlaceholder": "Remove selection to type your own symptom"
+    "removeSelectionPlaceholder": "Remove selection to type your own symptom",
+    "topSpecialities": "Top Specialities"
   },
   "callRelatedPermissions": {
     "allPermissions": "For a smooth consultation experience with {0} and to ensure that you do not miss out your doctor's call, Apollo 247 needs your camera, microphone and call display permissions.",
