@@ -4,12 +4,7 @@ import {
   ShoppingCartItem,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  Up,
-  Down,
-  SearchSendIcon,
-  PendingIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { Up, Down, SearchSendIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -143,10 +138,8 @@ export interface ViewCouponsProps extends NavigationScreenProps {
 export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
   const isDiag = props.navigation.getParam('isDiag');
   const [couponText, setCouponText] = useState<string>('');
-  const [couponMsg, setcouponMsg] = useState<string>('');
   const [couponError, setCouponError] = useState<string>('');
   const [couponListError, setCouponListError] = useState<string>('');
-  const [disableGeneralCouponsList, setDisableGeneralCouponsList] = useState<number[]>([]);
   const [disableCouponsList, setDisableCouponsList] = useState<string[]>([]);
   const [showAllProductOffers, setShowAllProductOffers] = useState<boolean>(false);
   const [showAllCircleCoupons, setShowAllCircleCoupons] = useState<boolean>(false);
@@ -164,9 +157,6 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     pinCode,
     addresses,
     deliveryAddressId,
-    isCircleSubscription,
-    setIsCircleSubscription,
-    circleMembershipCharges,
     circleSubscriptionId,
     hdfcSubscriptionId,
     setIsFreeDelivery,
@@ -259,7 +249,8 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
       .then((resp: any) => {
         if (resp?.data?.errorCode == 0) {
           if (resp?.data?.response?.valid) {
-            setCoupon!({ ...g(resp?.data, 'response')!, message: couponMsg });
+            const successMessage = resp?.data?.response?.successMessage || '';
+            setCoupon!({ ...g(resp?.data, 'response')!, successMessage: successMessage });
             setIsFreeDelivery?.(!!resp?.data?.response?.freeDelivery);
             props.navigation.goBack();
           } else {
@@ -340,7 +331,6 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
             if (/^\S*$/.test(text)) {
               couponError && setCouponError('');
               setCouponText(text);
-              setcouponMsg('');
             }
           }}
           textInputprops={{
