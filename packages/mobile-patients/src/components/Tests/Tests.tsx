@@ -967,7 +967,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         alignContent: 'center',
         padding: 10,
         marginVertical: 15,
-        backgroundColor: "#f7f8f5"
+        backgroundColor: '#f7f8f5',
       },
       searchTextStyle: {
         ...theme.viewStyles.text('SB', 18, 'rgba(1,48,91, 0.3)'),
