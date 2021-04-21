@@ -45,15 +45,15 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
 
   const tierData: any = {
     Gold: {
-      image: require('../ui/icons/gold.png'),
+      image: require('../ui/icons/gold.webp'),
       title: 'Gold Member',
     },
     Silver: {
-      image: require('../ui/icons/silver.png'),
+      image: require('../ui/icons/silver.webp'),
       title: 'Silver Member',
     },
     Platinum: {
-      image: require('../ui/icons/platinum.png'),
+      image: require('../ui/icons/platinum.webp'),
       title: 'Platinum Member',
     },
   };
@@ -220,7 +220,6 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
         {renderOneApolloHeader()}
         {renderScreen()}
       </ScrollView>
-
     </SafeAreaView>
   );
 };

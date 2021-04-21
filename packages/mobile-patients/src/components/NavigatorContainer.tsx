@@ -30,6 +30,7 @@ import { AddAddressNew } from '@aph/mobile-patients/src/components/AddressSelect
 import { LocationSearch } from '@aph/mobile-patients/src/components/AddressSelection/LocationSearch';
 import { EditAddress } from '@aph/mobile-patients/src/components/AddressSelection/EditAddress';
 import { ApplyCouponScene } from '@aph/mobile-patients/src/components/Medicines/ApplyCouponScene';
+import { ViewCoupons } from '@aph/mobile-patients/src/components/Medicines/ViewCoupons';
 import { Medicine } from '@aph/mobile-patients/src/components/Medicines/Medicine';
 import { MedicineSearch } from '@aph/mobile-patients/src/components/MedicineSearch/MedicineSearch';
 import { MedicineListing } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListing';
@@ -165,6 +166,7 @@ export enum AppRoutes {
   MedicineDetailsScene = 'MedicineDetailsScene',
   ProductDetailPage = 'ProductDetailPage',
   ApplyCouponScene = 'ApplyCouponScene',
+  ViewCoupons = 'ViewCoupons',
   ChatRoom = 'ChatRoom',
   YourOrdersScene = 'YourOrdersScene',
   ReturnMedicineOrder = 'ReturnMedicineOrder',
@@ -373,6 +375,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ApplyCouponScene]: {
     screen: ApplyCouponScene,
+  },
+  [AppRoutes.ViewCoupons]: {
+    screen: ViewCoupons,
   },
   [AppRoutes.StorPickupScene]: {
     screen: StorePickupScene,

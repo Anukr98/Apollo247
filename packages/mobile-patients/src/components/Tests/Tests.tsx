@@ -141,17 +141,17 @@ import {
 import AsyncStorage from '@react-native-community/async-storage';
 
 const imagesArray = [
-  require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.png'),
-  require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_2.png'),
-  require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_3.png'),
-  require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_4.png'),
+  require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
+  require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_2.webp'),
+  require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_3.webp'),
+  require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_4.webp'),
 ];
 
 const whyBookUsArray = [
-  { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_0.png') },
-  { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_1.png') },
-  { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_2.png') },
-  { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_3.png') },
+  { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_0.webp') },
+  { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_1.webp') },
+  { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_2.webp') },
+  { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_3.webp') },
 ];
 
 const { width: winWidth, height: winHeight } = Dimensions.get('window');
@@ -1701,7 +1701,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                         <View>{renderStepsToBookText(item.heading, item.subtext)}</View>
                       ) : (
                         <ImageBackground
-                          source={require('@aph/mobile-patients/src/components/ui/icons/bottomShadow.png')}
+                          source={require('@aph/mobile-patients/src/components/ui/icons/bottomShadow.webp')}
                           style={{ height: index == 1 ? 118 : 108, width: 300 }}
                           resizeMode={'contain'}
                         >

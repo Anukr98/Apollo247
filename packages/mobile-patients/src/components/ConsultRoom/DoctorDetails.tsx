@@ -333,6 +333,9 @@ export interface DoctorDetailsProps extends NavigationScreenProps {}
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
+  const [follow_up_chat_message_visibility, set_follow_up_chat_message_visibility] = useState<
+    boolean
+  >(true);
   const [consultMode, setConsultMode] = useState<ConsultMode>(ConsultMode.ONLINE);
   const [onlineSelected, setOnlineSelected] = useState<boolean>(true);
   const [doctorDetails, setDoctorDetails] = useState<getDoctorDetailsById_getDoctorDetailsById>();
@@ -642,6 +645,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         setConsultType(ConsultMode.ONLINE);
       } else if (modeOfConsult.includes(ConsultMode.PHYSICAL)) {
         setConsultType(ConsultMode.PHYSICAL);
+        setOnlineSelected(false);
+        set_follow_up_chat_message_visibility(false);
       } else {
         setConsultType(ConsultMode.BOTH);
       }
@@ -868,10 +873,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 )}
               </View>
               <View style={styles.separatorStyle} />
-              <View style={styles.followUpChatMessageViewStyle}>
-                <CTGrayChat style={styles.followUpChatImageStyle} />
-                <Text style={styles.followUpChatMessageStyle}>{followUpChatMessage}</Text>
-              </View>
+              {follow_up_chat_message_visibility && (
+                <View style={styles.followUpChatMessageViewStyle}>
+                  <CTGrayChat style={styles.followUpChatImageStyle} />
+                  <Text style={styles.followUpChatMessageStyle}>{followUpChatMessage}</Text>
+                </View>
+              )}
               <View
                 style={[
                   styles.onlineConsultView,
@@ -907,6 +914,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     style={{ height: consultViewHeight }}
                     onPress={() => {
                       setOnlineSelected(true);
+                      set_follow_up_chat_message_visibility(true);
                       const eventAttributes: WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED] = {
                         'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
                         'Patient Name': `${g(currentPatient, 'firstName')} ${g(
@@ -1029,6 +1037,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const onPressMeetInPersonCard = () => {
+    set_follow_up_chat_message_visibility(false);
     const eventAttributes: WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED] = {
       'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
@@ -1158,7 +1167,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                                 ? {
                                     uri: item.facility.imageUrl,
                                   }
-                                : require('@aph/mobile-patients/src/images/apollo/Hospital_Image.png')
+                                : require('@aph/mobile-patients/src/images/apollo/Hospital_Image.webp')
                             }
                             style={{
                               height: 136,

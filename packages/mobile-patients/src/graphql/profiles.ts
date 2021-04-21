@@ -4622,6 +4622,28 @@ export const VERIFY_TRUECALLER_PROFILE = gql`
   }
 `;
 
+export const GET_PATIENT_PAST_CONSULTED_DOCTORS = gql`
+  query getPatientPastConsultedDoctors($patientMobile: String, $offset: Int, $limit: Int) {
+    getPatientPastConsultedDoctors(patientMobile: $patientMobile, offset: $offset, limit: $limit) {
+      id
+      fullName
+      thumbnailUrl
+      specialty {
+        name
+      }
+      consultDetails {
+        consultDateTime
+        displayId
+        appointmentId
+        hospitalId
+        hospitalName
+        consultMode
+        _247_Flag
+      }
+    }
+  }
+`;
+
 export const GET_PROHEALTH_CITY_LIST = gql`
   query getProHealthCities {
     getProHealthCities {
