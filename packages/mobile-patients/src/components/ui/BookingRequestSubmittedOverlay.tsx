@@ -220,7 +220,7 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
             <View style={{ alignItems: 'center', justifyContent: 'center', margin: 25 }}>
               <ImageBackground
                 style={{ width: 55, height: 55 }}
-                source={require('@aph/mobile-patients/src/images/consultation/BORCall.png')}
+                source={require('@aph/mobile-patients/src/images/consultation/BORCall.webp')}
               />
               <Text
                 style={[styles.headerTextStyle, theme.viewStyles.text('M', 16, '#01475B', 1, 21)]}
