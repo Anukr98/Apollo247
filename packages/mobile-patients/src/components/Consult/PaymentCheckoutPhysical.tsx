@@ -280,7 +280,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
               <Text style={styles.appointmentTimeStyle}>Meet In Person</Text>
             </View>
             <View style={styles.doctorPointers}>
-              <AppointmentCalendarIcon style={styles.doctorPointersImage} />
+              <AppointmentCalendarIcon style={[styles.doctorPointersImage, { marginTop: -1 }]} />
               <Text style={styles.appointmentTimeStyle}>
                 {dateFormatter(appointmentInput?.appointmentDateTime)}
               </Text>
@@ -942,12 +942,12 @@ const styles = StyleSheet.create({
   doctorPointers: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 6,
+    marginTop: 7,
   },
   doctorPointersImage: {
     width: 14,
     height: '100%',
-    marginRight: 4,
+    marginRight: 8,
   },
   drImageBackground: {
     height: 95,

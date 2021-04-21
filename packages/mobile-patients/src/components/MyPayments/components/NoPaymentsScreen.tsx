@@ -14,7 +14,7 @@ const NoPaymentsScreen: FC = () => {
   return (
     <View style={styles.mainContainer}>
       <Image
-        source={require('@aph/mobile-patients/src/images/mypayments/ic_no_transaction_history.png')}
+        source={require('@aph/mobile-patients/src/images/mypayments/ic_no_transaction_history.webp')}
         style={styles.imageStyle}
         resizeMode="cover"
       />

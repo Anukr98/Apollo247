@@ -946,6 +946,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               prescription: '',
               disableChat: item.doctorInfo && pastAppointmentItem,
             })
+          : item.appointmentType === 'PHYSICAL'
+          ? props.navigation.navigate(AppRoutes.AppointmentDetailsPhysical, {
+              data: item,
+              from: 'Consult',
+            })
           : props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: g(item, 'doctorId') || '',
             });

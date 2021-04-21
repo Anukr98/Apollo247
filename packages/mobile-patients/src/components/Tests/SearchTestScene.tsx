@@ -216,6 +216,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     if (!popularArray?.length) {
       fetchPopularDetails();
     }
+    setWebEngageEventOnSearchItem('', []);
   }, []);
 
   useEffect(() => {
@@ -241,7 +242,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   }, [currentPatient]);
 
   const errorAlert = () => {
-    showAphAlert!({
+    showAphAlert?.({
       title: string.common.uhOh,
       description: 'Unable to fetch popular tests and packages.',
     });
@@ -277,12 +278,14 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       } else {
         errorAlert();
       }
-      setGlobalLoading!(false);
+      setIsLoading?.(false);
+      setGlobalLoading?.(false);
     } catch (error) {
       CommonBugFender('SearchTestScene_getDiagnosticsPopularResults', error);
       aphConsole.log({ error });
       errorAlert();
-      setGlobalLoading!(false);
+      setGlobalLoading?.(false);
+      setIsLoading?.(false);
     }
   };
   const fetchPackageInclusion = async (id: string, func: (tests: PackageInclusion[]) => void) => {
@@ -384,7 +387,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADD_TO_CART] = {
       'Item Name': name,
       'Item ID': id,
-      Source: 'Full search',
+      Source: 'Popular search',
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
 
@@ -404,14 +407,13 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     keyword: string,
     results: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
   ) => {
-    if (keyword.length > 2) {
-      const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ITEM_SEARCHED] = {
-        ...patientAttributes,
-        'Keyword Entered': keyword,
-        '# Results appeared': results.length,
-      };
-      postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ITEM_SEARCHED, eventAttributes);
-    }
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ITEM_SEARCHED] = {
+      ...patientAttributes,
+      'Keyword Entered': keyword,
+      '# Results appeared': results.length,
+      Popular: keyword == '' ? 'Yes' : 'No',
+    };
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ITEM_SEARCHED, eventAttributes);
   };
 
   const onAddCartItem = (
@@ -621,7 +623,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           CommonLogEvent(AppRoutes.SearchTestScene, 'Search suggestion Item');
           props.navigation.navigate(AppRoutes.TestDetails, {
             itemId: product?.diagnostic_item_id,
-            source: 'Full Search',
+            source: 'Popular search',
             comingFrom: AppRoutes.SearchTestScene,
           });
         }}
@@ -644,8 +646,10 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     let popularTests: never[] = [];
     let popularPackages: never[] = [];
     if (popularArray?.length) {
-      popularPackages = popularArray.filter((item) => item?.diagnostic_inclusions?.length > 1);
-      popularTests = popularArray.filter((item) => item?.diagnostic_inclusions?.length == 1);
+      popularPackages = popularArray?.filter(
+        (item: any) => item?.diagnostic_inclusions?.length > 1
+      );
+      popularTests = popularArray?.filter((item: any) => item?.diagnostic_inclusions?.length == 1);
     }
 
     return (
@@ -733,8 +737,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           props.navigation.navigate(AppRoutes.TestDetails, {
             itemId: item?.diagnostic_item_id,
             itemName: item?.diagnostic_item_name,
-            source: 'Partial Search',
-            comingFrom: AppRoutes.Tests,
+            source: 'Popular search',
+            comingFrom: AppRoutes.SearchTestScene,
           });
         }}
         onPressAddToCart={() => {

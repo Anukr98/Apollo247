@@ -194,6 +194,7 @@ import {
   renderCircleShimmer,
   renderBannerShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import { ConsultedDoctorsCard } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultedDoctorsCard';
 import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import {
@@ -1820,12 +1821,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
   const fetchHealthCredits = async () => {
-
     var cachedHealthCredit: any = await getHealthCredits();
     if (cachedHealthCredit != null) {
       setHealthCredits && setHealthCredits(cachedHealthCredit.healthCredit);
       return; // no need to call api
-    } 
+    }
 
     try {
       const res = await client.query({
@@ -2973,7 +2973,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             <View style={styles.circleButtonLeft}>
               <ImageBackground
                 style={styles.circleButtonImage}
-                source={require('../ui/icons/PathLeft.png')}
+                source={require('../ui/icons/PathLeft.webp')}
               />
             </View>
 
@@ -2987,7 +2987,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             <View style={styles.circleButtonRight}>
               <ImageBackground
                 style={styles.circleButtonImage}
-                source={require('../ui/icons/PathRight.png')}
+                source={require('../ui/icons/PathRight.webp')}
               />
             </View>
           </View>
@@ -3053,7 +3053,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <ImageBackground
           style={{ overflow: 'hidden', width: '100%', height: 150 }}
           resizeMode={'stretch'}
-          source={require('@aph/mobile-patients/src/images/home/healthcareEcosystem.png')}
+          source={require('@aph/mobile-patients/src/images/home/healthcareEcosystem.webp')}
         >
           <View style={{ paddingVertical: 16, paddingHorizontal: 16 }}>
             <Text
@@ -3356,6 +3356,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
+  const renderAllConsultedDoctors = () => {
+    return <ConsultedDoctorsCard navigation={props.navigation} />;
+  };
   const renderProhealthBanner = () => {
     return (
       <TouchableOpacity
