@@ -58,7 +58,6 @@ const styles = StyleSheet.create({
     margin: 15,
     padding: 6,
     justifyContent: 'center',
-    alignItems: 'flex-start',
   },
   headerTextStyle: {
     margin: 18,
@@ -173,6 +172,34 @@ const styles = StyleSheet.create({
     opacity: 0.1,
     backgroundColor: theme.colors.LIGHT_BLUE,
   },
+  sbcContainer: {
+    paddingHorizontal: 16,
+    height: 66,
+    marginTop: 10,
+  },
+  rowEven: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  overlayContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, .8)',
+    zIndex: 5,
+  },
+  overlayCrossPopup: {
+    marginTop: Platform.OS === 'ios' ? 38 : 14,
+    backgroundColor: 'white',
+    height: 28,
+    width: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 14,
+  },
 });
 
 export interface BookingRequestOverlayProps extends NavigationScreenProps {
@@ -239,14 +266,7 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
 
   const renderBottomButton = () => {
     return (
-      <StickyBottomComponent
-        defaultBG
-        style={{
-          paddingHorizontal: 16,
-          height: 66,
-          marginTop: 10,
-        }}
-      >
+      <StickyBottomComponent defaultBG style={styles.sbcContainer}>
         <Button
           title={'SUBMIT REQUEST'}
           disabled={disablePay ? false : false}
@@ -286,123 +306,62 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
         <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 16, 0)}>
           Preferred Mode of Appointment
         </Text>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-          }}
-        >
-          <TouchableOpacity
-            activeOpacity={1}
-            style={[styles.radioButtonContainer, { flex: 1 }]}
-            key={1}
-            onPress={() => {
-              setModeSelected(ConsultMode.BOTH);
-            }}
-          >
-            {modeSelected === ConsultMode.BOTH ? (
-              <RadioButtonIcon />
-            ) : (
-              <RadioButtonUnselectedIcon />
-            )}
-            <View style={styles.radioButtonTitleDescContainer}>
-              <Text style={styles.radioButtonTitle}>Any</Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={[styles.radioButtonContainer, { flex: 1 }]}
-            key={1}
-            onPress={() => {
-              setModeSelected(ConsultMode.PHYSICAL);
-            }}
-          >
-            {modeSelected === ConsultMode.PHYSICAL ? (
-              <RadioButtonIcon />
-            ) : (
-              <RadioButtonUnselectedIcon />
-            )}
-            <View style={styles.radioButtonTitleDescContainer}>
-              <Text style={styles.radioButtonTitle}>In-Person Visit</Text>
-            </View>
-          </TouchableOpacity>
+        <View style={styles.rowEven}>
+          {renderModeOptionInput('Any', ConsultMode.BOTH)}
+          {renderModeOptionInput('In-Person Visits', ConsultMode.PHYSICAL)}
         </View>
-        <View>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={styles.radioButtonContainer}
-            key={1}
-            onPress={() => {
-              setModeSelected(ConsultMode.ONLINE);
-            }}
-          >
-            {modeSelected === ConsultMode.ONLINE ? (
-              <RadioButtonIcon />
-            ) : (
-              <RadioButtonUnselectedIcon />
-            )}
-            <View style={styles.radioButtonTitleDescContainer}>
-              <Text style={styles.radioButtonTitle}>Online</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
+        <View>{renderModeOptionInput('Online', ConsultMode.ONLINE)}</View>
       </View>
     );
   };
+
+  const renderModeOptionInput = (title: string, mode: ConsultMode) => {
+    return (
+      <TouchableOpacity
+        activeOpacity={1}
+        style={styles.radioButtonContainer}
+        key={1}
+        onPress={() => {
+          setModeSelected(mode);
+        }}
+      >
+        {modeSelected === mode ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
+        <View style={styles.radioButtonTitleDescContainer}>
+          <Text style={styles.radioButtonTitle}>{title}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderDateOptionInput = (title: string, option: string) => {
+    return (
+      <TouchableOpacity
+        activeOpacity={1}
+        style={styles.radioButtonContainer}
+        key={1}
+        onPress={() => {
+          setDateRangeSelected(option);
+        }}
+      >
+        {dateRangeSelected === option ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
+        <View style={styles.radioButtonTitleDescContainer}>
+          <Text style={styles.radioButtonTitle}>{title}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   const renderDateRange = () => {
     return (
       <View style={styles.inputContainer}>
         <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 16, 0)}>
           Preferred Date Range for Appointment
         </Text>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-          }}
-        >
-          <TouchableOpacity
-            activeOpacity={1}
-            style={[styles.radioButtonContainer, { flex: 0.7 }]}
-            key={1}
-            onPress={() => {
-              setDateRangeSelected('option1');
-            }}
-          >
-            {dateRangeSelected === 'option1' ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
-            <View style={styles.radioButtonTitleDescContainer}>
-              <Text style={styles.radioButtonTitle}>15 days from now</Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={[styles.radioButtonContainer, { flex: 0.3 }]}
-            key={1}
-            onPress={() => {
-              setDateRangeSelected('option2');
-            }}
-          >
-            {dateRangeSelected === 'option2' ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
-            <View style={styles.radioButtonTitleDescContainer}>
-              <Text style={styles.radioButtonTitle}>Anytime</Text>
-            </View>
-          </TouchableOpacity>
+        <View style={styles.rowEven}>
+          {renderDateOptionInput('15 days from Now', 'option1')}
+          {renderDateOptionInput('Anytime', 'option2')}
         </View>
-        <View>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={styles.radioButtonContainer}
-            key={1}
-            onPress={() => {
-              setDateRangeSelected('option3');
-            }}
-          >
-            {dateRangeSelected === 'option3' ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
-            <View style={styles.radioButtonTitleDescContainer}>
-              <Text style={styles.radioButtonTitle}>Others</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
+        <View>{renderDateOptionInput('Other', 'option3')}</View>
       </View>
     );
   };
@@ -500,18 +459,7 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
   );
 
   return (
-    <View
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, .8)',
-        zIndex: 5,
-      }}
-    >
+    <View style={styles.overlayContainer}>
       <View style={{ paddingHorizontal: showSpinner ? 0 : 20 }}>
         <View
           style={{
@@ -523,16 +471,12 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
             onPress={() => {
               props.setdisplayoverlay(false);
             }}
-            style={{
-              marginTop: Platform.OS === 'ios' ? 38 : 14,
-              backgroundColor: 'white',
-              height: 28,
-              width: 28,
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: 14,
-              marginRight: showSpinner ? 20 : 0,
-            }}
+            style={[
+              styles.overlayCrossPopup,
+              {
+                marginRight: showSpinner ? 20 : 0,
+              },
+            ]}
           >
             <CrossPopup />
           </TouchableOpacity>
