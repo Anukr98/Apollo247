@@ -381,7 +381,8 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
   const renderGeneralCoupons = (
     coupons: pharma_coupon[],
     category: string,
-    showAllCoupons: boolean
+    showAllCoupons: boolean,
+    showMoreLessButton: boolean
   ) => {
     const couponsForYou = coupons;
     return couponsForYou?.map((coupon, i) => {
@@ -394,7 +395,12 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
             couponApply(coupon?.coupon, i);
           }}
         >
-          <View style={styles.couponContainer}>
+          <View
+            style={[
+              styles.couponContainer,
+              i === couponsForYou?.length - 1 && !showMoreLessButton ? { paddingBottom: 15 } : {},
+            ]}
+          >
             <View style={styles.spaceRow}>
               <Text style={styles.couponTitle}>{coupon?.coupon}</Text>
               <Text style={[styles.applyBtnText, { opacity: disableList ? 0.5 : 1 }]}>APPLY</Text>
@@ -404,7 +410,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
             {disableList && renderCouponError(couponListError)}
             {i !== coupons?.length - 1 && <View style={styles.itemSeperator} />}
           </View>
-          {i === couponsForYou?.length - 1 ? (
+          {showMoreLessButton && i === couponsForYou?.length - 1 ? (
             <TouchableOpacity
               style={styles.bottomViewCardBtn}
               onPress={() => {
@@ -438,7 +444,8 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
         {renderGeneralCoupons(
           showCouponsForYou ? couponList : couponList?.slice(0, 2),
           'general',
-          showCouponsForYou
+          showCouponsForYou,
+          couponList?.length > 2
         )}
       </View>
     </View>
@@ -451,7 +458,8 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
         {renderGeneralCoupons(
           showAllProductOffers ? productOffers : productOffers?.slice(0, 2),
           'productOffers',
-          showAllProductOffers
+          showAllProductOffers,
+          productOffers?.length > 2
         )}
       </View>
     </View>
@@ -464,7 +472,8 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
         {renderGeneralCoupons(
           showAllCircleCoupons ? circleCoupons : circleCoupons?.slice(0, 2),
           'circle',
-          showAllCircleCoupons
+          showAllCircleCoupons,
+          circleCoupons?.length > 2
         )}
       </View>
     </View>
