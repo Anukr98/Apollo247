@@ -842,12 +842,13 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
               )}
             </View>
           )}
-          {isCircleDoctor && !showCircleSubscribed && defaultCirclePlan && renderUpgradeToCircle()}
+          {/* -------do not delete below commented code--------*/}
+          {/* {isCircleDoctor && !showCircleSubscribed && defaultCirclePlan && renderUpgradeToCircle()}
           {isCircleDoctor &&
             !defaultCirclePlan &&
             circlePlanSelected &&
             renderCirclePlanAddedToCartView()}
-          {isCircleDoctor && showCirclePlans && renderCirclePlans()}
+          {isCircleDoctor && showCirclePlans && renderCirclePlans()} */}
         </View>
       );
     }

@@ -1,7 +1,11 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import AsyncStorage from '@react-native-community/async-storage';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  CrossPopup,
+  RadioButtonIcon,
+  RadioButtonUnselectedIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -143,6 +147,32 @@ const styles = StyleSheet.create({
     marginLeft: -21,
     marginRight: 1,
   },
+  radioButtonContainer: {
+    flexDirection: 'row',
+    marginTop: 16,
+  },
+  radioButtonTitleDescContainer: {
+    marginLeft: 16,
+  },
+  radioButtonTitle: {
+    ...theme.fonts.IBMPlexSansMedium(16),
+    lineHeight: 24,
+    color: theme.colors.SHERPA_BLUE,
+    marginBottom: 4,
+  },
+  radioButtonDesc: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    lineHeight: 16,
+    letterSpacing: 0.04,
+    color: theme.colors.LIGHT_BLUE,
+    opacity: 0.6,
+    marginBottom: 7.5,
+  },
+  separator: {
+    height: 1,
+    opacity: 0.1,
+    backgroundColor: theme.colors.LIGHT_BLUE,
+  },
 });
 
 export interface BookingRequestOverlayProps extends NavigationScreenProps {
@@ -176,6 +206,8 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
   const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
   const [patientProfiles, setPatientProfiles] = useState<any>([]);
   const [gender, setGender] = useState<string>(currentPatient?.gender);
+  const [modeSelected, setModeSelected] = useState<string>(ConsultMode.BOTH);
+  const [dateRangeSelected, setDateRangeSelected] = useState<string>('option1');
   const { showAphAlert, setLoading } = useUIElements();
 
   useEffect(() => {
@@ -254,6 +286,66 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
         <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 16, 0)}>
           Preferred Mode of Appointment
         </Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+          }}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.radioButtonContainer}
+            key={1}
+            onPress={() => {
+              setModeSelected(ConsultMode.BOTH);
+            }}
+          >
+            {modeSelected === ConsultMode.BOTH ? (
+              <RadioButtonIcon />
+            ) : (
+              <RadioButtonUnselectedIcon />
+            )}
+            <View style={styles.radioButtonTitleDescContainer}>
+              <Text style={styles.radioButtonTitle}>Any</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.radioButtonContainer}
+            key={1}
+            onPress={() => {
+              setModeSelected(ConsultMode.PHYSICAL);
+            }}
+          >
+            {modeSelected === ConsultMode.PHYSICAL ? (
+              <RadioButtonIcon />
+            ) : (
+              <RadioButtonUnselectedIcon />
+            )}
+            <View style={styles.radioButtonTitleDescContainer}>
+              <Text style={styles.radioButtonTitle}>In-Person Visit</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+        <View>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.radioButtonContainer}
+            key={1}
+            onPress={() => {
+              setModeSelected(ConsultMode.ONLINE);
+            }}
+          >
+            {modeSelected === ConsultMode.ONLINE ? (
+              <RadioButtonIcon />
+            ) : (
+              <RadioButtonUnselectedIcon />
+            )}
+            <View style={styles.radioButtonTitleDescContainer}>
+              <Text style={styles.radioButtonTitle}>Online</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   };
@@ -263,6 +355,54 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
         <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 16, 0)}>
           Preferred Date Range for Appointment
         </Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+          }}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.radioButtonContainer}
+            key={1}
+            onPress={() => {
+              setDateRangeSelected('option1');
+            }}
+          >
+            {dateRangeSelected === 'option1' ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
+            <View style={styles.radioButtonTitleDescContainer}>
+              <Text style={styles.radioButtonTitle}>15 days from now</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.radioButtonContainer}
+            key={1}
+            onPress={() => {
+              setDateRangeSelected('option2');
+            }}
+          >
+            {dateRangeSelected === 'option2' ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
+            <View style={styles.radioButtonTitleDescContainer}>
+              <Text style={styles.radioButtonTitle}>Anytime</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+        <View>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.radioButtonContainer}
+            key={1}
+            onPress={() => {
+              setDateRangeSelected('option3');
+            }}
+          >
+            {dateRangeSelected === 'option3' ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
+            <View style={styles.radioButtonTitleDescContainer}>
+              <Text style={styles.radioButtonTitle}>Others</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   };
