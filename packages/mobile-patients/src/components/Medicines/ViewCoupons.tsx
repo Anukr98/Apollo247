@@ -182,7 +182,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     hdfcStatus,
     circleStatus,
   } = useAppCommonData();
-  const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
+  const selectedAddress = addresses?.find((item) => item.id == deliveryAddressId);
   const pharmacyPincode =
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
 
@@ -272,14 +272,14 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
           const products = g(resp?.data, 'response', 'products');
           if (products?.length) {
             const freeProducts = products?.filter((product) => {
-              return product.couponFree === 1;
+              return product?.couponFree === 1;
             });
             setCouponProducts!(freeProducts);
           }
 
           const eventAttributes: WebEngageEvents[WebEngageEventName.CART_COUPON_APPLIED] = {
             'Coupon Code': coupon,
-            'Discounted amount': g(resp.data, 'response', 'valid')
+            'Discounted amount': g(resp?.data, 'response', 'valid')
               ? g(resp.data, 'response', 'discount')
               : 'Not Applicable',
             'Customer ID': g(currentPatient, 'id'),
