@@ -48,7 +48,6 @@ import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
   BackHandler,
-  Dimensions,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -72,11 +71,10 @@ import {
   createOneApolloUser,
   createOneApolloUserVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOneApolloUser';
+import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
 import { getPatientByMobileNumber_getPatientByMobileNumber_patients } from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
 import _ from 'lodash';
 import { LOGIN_PROFILE } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
-
-const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
@@ -146,9 +144,6 @@ const GenderOptions: genderOptions[] = [
   {
     name: 'Female',
   },
-  // {
-  //   name: 'Other',
-  // },
 ];
 
 let backPressCount = 0;
@@ -168,8 +163,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
   const [referral, setReferral] = useState<string>('');
-  const { signOut, getPatientApiCall, getPatientByPrism } = useAuth();
-  // const [referredBy, setReferredBy] = useState<string>();
+  const { signOut, getPatientApiCall } = useAuth();
   const [isValidReferral, setValidReferral] = useState<boolean>(false);
   const [deviceToken, setDeviceToken] = useState<string>('');
   const [showReferralCode, setShowReferralCode] = useState<boolean>(false);
@@ -218,9 +212,6 @@ const SignUp: React.FC<SignUpProps> = (props) => {
 
   const isSatisfyEmailRegex = (value: string) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value);
 
-  // const isSatisfyingEmailRegex = (value: string) =>
-  //   /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/.test(value);
-
   const _setEmail = (value: string) => {
     const trimmedValue = (value || '').trim();
     setEmail(trimmedValue);
@@ -251,10 +242,8 @@ const SignUp: React.FC<SignUpProps> = (props) => {
 
   const getPrefillReferralCode = async () => {
     const deeplinkReferalCode: any = await AsyncStorage.getItem('deeplinkReferalCode');
-    // console.log('deeplinkReferalCode', deeplinkReferalCode);
 
     if (deeplinkReferalCode !== null && deeplinkReferalCode !== undefined) {
-      // setBugFenderLog('Signup_Referral_Code', deeplinkReferalCode);
       setReferral(deeplinkReferalCode);
     }
   };
@@ -270,7 +259,6 @@ const SignUp: React.FC<SignUpProps> = (props) => {
           variables: { patientId: patientId },
         });
       } catch (error) {
-        console.log(error);
         CommonBugFender('oneApollo Registration', error);
       }
     }
@@ -279,13 +267,9 @@ const SignUp: React.FC<SignUpProps> = (props) => {
   const getDeviceCountAPICall = async () => {
     const uniqueId = await DeviceInfo.getUniqueId();
     setDeviceToken(uniqueId);
-    console.log(uniqueId, 'uniqueId');
 
     getDeviceTokenCount(client, uniqueId.trim())
       .then(({ data }: any) => {
-        // console.log(data, 'data getDeviceTokenCount');
-        console.log(data.data.getDeviceCodeCount.deviceCount, 'data getDeviceTokenCount');
-
         if (parseInt(data.data.getDeviceCodeCount.deviceCount, 10) < 2) {
           setShowReferralCode(true);
         } else {
@@ -293,9 +277,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
           setReferral('');
         }
       })
-      .catch((e) => {
-        console.log('Error getDeviceTokenCount ', e);
-      });
+      .catch((e) => {});
   };
 
   useEffect(() => {
@@ -335,12 +317,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
           <Gift style={{ marginRight: 20, marginTop: 12 }} />
           <TextInputComponent
             maxLength={25}
-            label={
-              'Do You Have A Referral Code? (Optional)'
-              // referredBy
-              //   ? `${referredBy} Has Sent You A Referral Code!`
-              //   : 'Do You Have A Referral Code? (Optional)'
-            }
+            label={'Do You Have A Referral Code? (Optional)'}
             labelStyle={{ ...theme.viewStyles.text('M', 14, '#ffffff'), marginBottom: 12 }}
             placeholder={'Enter referral code'}
             placeholderTextColor={'rgba(255,255,255,0.6)'}
@@ -488,11 +465,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
             value={email}
             autoCapitalize="none"
             keyboardType="email-address"
-            // textInputprops={{
-            //   autoCapitalize: 'none',
-            // }}
           />
-          {/* <View style={{ height: 80 }} /> */}
           {showReferralCode && renderReferral()}
         </Card>
       </View>
@@ -558,259 +531,15 @@ const SignUp: React.FC<SignUpProps> = (props) => {
       postAppsFlyerEvent(AppsFlyerEventName.REGISTRATION_DONE, appsflyereventAttributes);
       postFirebaseEvent(FirebaseEventName.SIGN_UP, eventFirebaseAttributes);
       setSignupEventFired(true);
-    } catch (error) {
-      console.log({ error });
-    }
-  };
-
-  const handleOpenURL = async () => {
-    try {
-      const event: any = await AsyncStorage.getItem('deeplink');
-
-      // const id = data[1];
-      // setBugFenderLog('signup_handleOpenURL', event);
-
-      if (event !== null) {
-        let route = event.replace('apollopatients://', '');
-
-        const data = route.split('?');
-        route = data[0];
-
-        console.log(data, 'handleOpenURL');
-        // setBugFenderLog('signup_handleOpenURL_route', route);
-
-        switch (route) {
-          case 'Consult':
-            console.log('Consult');
-            pushTheView('Consult', data.length === 2 ? data[1] : undefined);
-            break;
-          case 'Medicine':
-            console.log('Medicine');
-            pushTheView('Medicine', data.length === 2 ? data[1] : undefined);
-            break;
-          case 'Test':
-            console.log('Test');
-            pushTheView('Test');
-            break;
-          case 'Speciality':
-            console.log('Speciality handleopen');
-            if (data.length === 2) {
-              pushTheView('Speciality', data[1]);
-            } else {
-              pushTheView('ConsultRoom');
-            }
-            break;
-          case 'Doctor':
-            console.log('Doctor handleopen');
-            if (data.length === 2) {
-              pushTheView('Doctor', data[1]);
-            } else {
-              pushTheView('ConsultRoom');
-            }
-            break;
-          case 'DoctorSearch':
-            console.log('DoctorSearch handleopen');
-            pushTheView('DoctorSearch');
-            break;
-
-          case 'MedicineSearch':
-            console.log('MedicineSearch handleopen');
-            pushTheView('MedicineSearch', data.length === 2 ? data[1] : undefined);
-            break;
-
-          case 'MedicineDetail':
-            console.log('MedicineDetail handleopen');
-            pushTheView('MedicineDetail', data.length === 2 ? data[1] : undefined);
-            break;
-
-          case 'MedicineCart':
-            console.log('MedicineCart handleopen');
-            pushTheView('MedicineCart');
-            break;
-
-          default:
-            // setBugFenderLog('signup_handleOpenURL', 'not_worked');
-            pushTheView('ConsultRoom');
-            break;
-        }
-        console.log('route', route);
-      } else {
-        pushTheView('ConsultRoom');
-      }
     } catch (error) {}
   };
 
-  const pushTheView = (routeName: String, id?: String) => {
+  const handleOpenURLs = async () => {
     try {
-      console.log('pushTheView', routeName, id);
-      // setBugFenderLog('signup_pushTheView', routeName);
-
-      setTimeout(() => {
-        setVerifyingPhoneNumber(false);
-
-        switch (routeName) {
-          case 'Consult':
-            console.log('Consult');
-            props.navigation.navigate('APPOINTMENTS');
-            break;
-
-          case 'Medicine':
-            console.log('Medicine');
-            props.navigation.navigate('MEDICINES');
-            break;
-
-          case 'MedicineDetail':
-            console.log('MedicineDetail');
-
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [
-                  NavigationActions.navigate({
-                    routeName: AppRoutes.ProductDetailPage,
-                    params: {
-                      sku: id,
-                      movedFrom: ProductPageViewedSource.REGISTRATION,
-                    },
-                  }),
-                ],
-              })
-            );
-            break;
-
-          case 'Test':
-            console.log('Test');
-            props.navigation.navigate('TESTS');
-            break;
-
-          case 'ConsultRoom':
-            console.log('ConsultRoom');
-
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [
-                  NavigationActions.navigate({
-                    routeName: AppRoutes.ConsultRoom,
-                  }),
-                ],
-              })
-            );
-            break;
-          case 'Speciality':
-            console.log('Speciality id', id);
-
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [
-                  NavigationActions.navigate({
-                    routeName: AppRoutes.DoctorSearchListing,
-                    params: {
-                      specialityId: id ? id : '',
-                      movedFrom: 'registration',
-                    },
-                  }),
-                ],
-              })
-            );
-            break;
-
-          case 'Doctor':
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [
-                  NavigationActions.navigate({
-                    routeName: AppRoutes.DoctorDetails,
-                    params: {
-                      doctorId: id,
-                      movedFrom: 'registration',
-                    },
-                  }),
-                ],
-              })
-            );
-            break;
-
-          case 'DoctorSearch':
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [
-                  NavigationActions.navigate({
-                    routeName: AppRoutes.DoctorSearch,
-                    params: {
-                      movedFrom: 'registration',
-                    },
-                  }),
-                ],
-              })
-            );
-            break;
-
-          case 'MedicineSearch':
-            if (id) {
-              const [itemId, name] = id.split(',');
-              console.log(itemId, name);
-
-              props.navigation.dispatch(
-                StackActions.reset({
-                  index: 0,
-                  key: null,
-                  actions: [
-                    NavigationActions.navigate({
-                      routeName: AppRoutes.MedicineListing,
-                      params: {
-                        category_id: itemId,
-                        title: `${name ? name : 'Products'}`.toUpperCase(),
-                        movedFrom: 'registration',
-                      },
-                    }),
-                  ],
-                })
-              );
-            } else {
-              props.navigation.dispatch(
-                StackActions.reset({
-                  index: 0,
-                  key: null,
-                  actions: [
-                    NavigationActions.navigate({
-                      routeName: AppRoutes.ConsultRoom,
-                    }),
-                  ],
-                })
-              );
-            }
-            break;
-
-          case 'MedicineCart':
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [
-                  NavigationActions.navigate({
-                    routeName: AppRoutes.MedicineCart,
-                    params: {
-                      movedFrom: 'registration',
-                    },
-                  }),
-                ],
-              })
-            );
-            break;
-
-          default:
-            break;
-        }
-      }, 500);
+      const event: any = await AsyncStorage.getItem('deeplink');
+      const data = handleOpenURL(event);
+      const { routeName, id, isCall, timeout, mediaSource } = data;
+      pushTheView(props.navigation, routeName, id ? id : undefined, isCall, undefined, mediaSource);
     } catch (error) {}
   };
 
@@ -824,12 +553,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
         >
           <ScrollView
             style={styles.container} //extraScrollHeight={50}
-            // scrollEnabled={true}
-            // enableAutomaticScroll={Platform.OS === 'ios'}
-            // extraScrollHeight={50}
-            // enableOnAndroid={true}
             bounces={false}
-            // extraHeight={130}
           >
             {renderCard()}
           </ScrollView>
@@ -839,7 +563,6 @@ const SignUp: React.FC<SignUpProps> = (props) => {
                 <Button
                   title={'SUBMIT'}
                   style={{ marginHorizontal: 40, width: '70%' }}
-                  // style={{ width: '100%', flex: 1, marginHorizontal: 40 }}
                   disabled={!firstName || !lastName || !date || !gender}
                   onPress={async () => {
                     Keyboard.dismiss();
@@ -866,7 +589,6 @@ const SignUp: React.FC<SignUpProps> = (props) => {
                     } else {
                       setVerifyingPhoneNumber(true);
                       const formatDate = Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD');
-                      console.log('signup currentPatient', currentPatient);
 
                       const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
                       const item = JSON.parse(retrievedItem || 'null');
@@ -909,7 +631,6 @@ const SignUp: React.FC<SignUpProps> = (props) => {
                         referralCode: trimReferral ? trimReferral : null,
                         deviceCode: deviceToken,
                       };
-                      console.log('patientsDetails', patientsDetails);
                       mutate({
                         variables: {
                           patientInput: patientsDetails,
@@ -919,21 +640,16 @@ const SignUp: React.FC<SignUpProps> = (props) => {
                   }}
                 >
                   {data
-                    ? (console.log('data', data.updatePatient.patient),
-                      getPatientApiCall(),
+                    ? (getPatientApiCall(),
                       _postWebEngageEvent(),
                       AsyncStorage.setItem('userLoggedIn', 'true'),
                       AsyncStorage.setItem('signUp', 'false'),
                       AsyncStorage.setItem('gotIt', patient ? 'true' : 'false'),
                       createOneApolloUser(data?.updatePatient?.patient?.id!),
-                      handleOpenURL())
+                      handleOpenURLs())
                     : null}
-                  {/* {loading ? setVerifyingPhoneNumber(false) : null} */}
                   {error
                     ? (signOut(),
-                      // handleGraphQlError(error),
-                      // setBugFenderLog('SIGNUP_FAIL', error),
-                      console.log('updatePatient error', error),
                       AsyncStorage.setItem('userLoggedIn', 'false'),
                       AsyncStorage.setItem('multiSignUp', 'false'),
                       AsyncStorage.setItem('signUp', 'false'),

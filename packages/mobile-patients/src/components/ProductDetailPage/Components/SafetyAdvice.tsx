@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { filterHtmlContent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 

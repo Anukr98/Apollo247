@@ -70,6 +70,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   prescribedBy: string | null;
   notes: string | null;
   prescriptionSource: string | null;
+  siteDisplayName: string | null;
   source: string;
   fileUrl: string;
   prescriptionFiles: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_prescriptions_response_prescriptionFiles | null)[] | null;
@@ -102,6 +103,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   date: any;
   healthCheckName: string;
   healthCheckDate: number | null;
+  siteDisplayName: string | null;
   healthCheckSummary: string | null;
   healthCheckFiles: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_healthChecks_response_healthCheckFiles | null)[] | null;
   source: string | null;
@@ -137,6 +139,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   hospitalName: string | null;
   doctorName: string | null;
   reasonForAdmission: string | null;
+  siteDisplayName: string | null;
   diagnosisNotes: string | null;
   dateOfDischarge: number | null;
   dischargeSummary: string | null;
@@ -169,6 +172,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   hospitalName: string | null;
   billDate: number | null;
   source: string | null;
+  siteDisplayName: string | null;
   notes: string | null;
   fileUrl: string | null;
   billDateTime: any | null;
@@ -201,6 +205,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   startDateTime: any | null;
   endDateTime: any | null;
   source: string | null;
+  siteDisplayName: string | null;
   fileUrl: string | null;
   notes: string | null;
   sumInsured: string | null;
@@ -234,6 +239,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   notes: string | null;
   illnessType: MedicalConditionIllnessTypes | null;
   fileUrl: string | null;
+  siteDisplayName: string | null;
   startDateTime: any | null;
   endDateTime: any | null;
   medicationFiles: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalConditions_response_medicationFiles | null)[] | null;
@@ -259,6 +265,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   endDateTime: any | null;
   morning: boolean | null;
   noon: boolean | null;
+  siteDisplayName: string | null;
   evening: boolean | null;
   notes: string | null;
   source: string | null;
@@ -282,6 +289,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   restrictionName: string | null;
   suggestedByDoctor: string | null;
   nature: HealthRestrictionNature | null;
+  siteDisplayName: string | null;
   source: string | null;
   notes: string | null;
 }
@@ -315,6 +323,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   reactionToAllergy: string | null;
   doctorTreated: string | null;
   notes: string | null;
+  siteDisplayName: string | null;
   source: string | null;
   attachmentList: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_allergies_response_attachmentList | null)[] | null;
 }
@@ -346,6 +355,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   fileUrl: string | null;
   familyMember: string | null;
   notes: string | null;
+  siteDisplayName: string | null;
   recordDateTime: any | null;
   age: number | null;
   familyHistoryFiles: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_familyHistory_response_familyHistoryFiles | null)[] | null;

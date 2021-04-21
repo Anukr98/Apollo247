@@ -3,17 +3,17 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { LocationIcon } from '@aph/mobile-patients/src/components/ui/Icons';
-import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { formatSelectedAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export interface SelectedAddressProps {
-  onPressChange: () => void;
+  onPressChange?: () => void;
   orderType: 'Delivery' | 'StorePickUp';
+  showChangeAddress: boolean;
 }
 
 export const SelectedAddress: React.FC<SelectedAddressProps> = (props) => {
   const { addresses, deliveryAddressId, storeId, stores: storesFromContext } = useShoppingCart();
-  const { onPressChange, orderType } = props;
+  const { onPressChange, orderType, showChangeAddress } = props;
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const selectedStore =
     (storeId && storesFromContext.find((item) => item.storeid == storeId)) || undefined;
@@ -34,9 +34,11 @@ export const SelectedAddress: React.FC<SelectedAddressProps> = (props) => {
             </Text>
           </View>
         </View>
-        <TouchableOpacity onPress={onPressChange}>
-          <Text style={styles.change}>CHANGE</Text>
-        </TouchableOpacity>
+        {!!showChangeAddress && (
+          <TouchableOpacity onPress={onPressChange}>
+            <Text style={styles.change}>CHANGE</Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   };

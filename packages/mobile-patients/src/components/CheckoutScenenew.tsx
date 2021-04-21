@@ -4,13 +4,11 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   CheckUnselectedIcon,
-  MedicineIcon,
   CheckedIcon,
   OneApollo,
   CircleLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
   CommonLogEvent,
@@ -26,12 +24,12 @@ import {
 import {
   MedicineCartOMSItem,
   MEDICINE_ORDER_PAYMENT_TYPE,
-  CODCity,
   BOOKINGSOURCE,
   DEVICE_TYPE,
   ONE_APOLLO_STORE_CODE,
   PLAN_PURCHASE_DETAILS_PHARMA,
   PLAN,
+  PrescriptionType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   saveMedicineOrderOMS,
@@ -49,15 +47,16 @@ import {
 import {
   aphConsole,
   g,
-  handleGraphQlError,
   postWebEngageEvent,
   formatAddress,
   postAppsFlyerEvent,
   postFirebaseEvent,
+  getHealthCredits,
+  persistHealthCredits,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   SafeAreaView,
@@ -71,8 +70,7 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
-import firebaseAuth from '@react-native-firebase/auth';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import {
   SaveMedicineOrderPaymentMq,
   SaveMedicineOrderPaymentMqVariables,
@@ -82,22 +80,21 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { fetchPaymentOptions, trackTagalysEvent } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  fetchPaymentOptions,
+  trackTagalysEvent,
+  validateConsultCoupon,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   AppsFlyerEventName,
   AppsFlyerEvents,
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
-import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { FirebaseEvents, FirebaseEventName } from '../helpers/firebaseEvents';
-import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
-import { Down, Up } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Down } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { OrderPlacedPopUp } from '@aph/mobile-patients/src/components/ui/OrderPlacedPopUp';
 import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
-import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 import DeviceInfo from 'react-native-device-info';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
@@ -120,6 +117,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const [showPaymentOptions, setShowPaymentOptions] = useState<boolean>(true);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const {
+    consultProfile,
     deliveryAddressId,
     storeId,
     showPrescriptionAtStore,
@@ -128,6 +126,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     packagingCharges,
     cartItems,
     deliveryType,
+    prescriptionType,
     physicalPrescriptions,
     ePrescriptions,
     uploadPrescriptionRequired,
@@ -144,18 +143,19 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     circleSubscriptionId,
     isCircleSubscription,
     isFreeDelivery,
-    setIsCircleSubscription,
-    setDefaultCirclePlan,
-    setCirclePlanSelected,
-    setCircleMembershipCharges,
-    defaultCirclePlan,
-    circlePlanSelected,
     pharmacyCircleAttributes,
     shipments,
     orders,
-    setIsFreeDelivery,
+    hdfcSubscriptionId,
   } = useShoppingCart();
-  const { pharmacyUserTypeAttribute } = useAppCommonData();
+  const {
+    pharmacyUserTypeAttribute,
+    pharmacyLocation,
+    locationDetails,
+    hdfcStatus,
+    circleStatus,
+    hdfcPlanId,
+  } = useAppCommonData();
 
   type bankOptions = {
     name: string;
@@ -175,20 +175,12 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     imageUrl: string;
   };
   const [paymentOptions, setpaymentOptions] = useState<paymentOptions[]>([]);
-  const [showOneApolloOption, setShowOneApolloOption] = useState<boolean>(false);
   const [availableHC, setAvailableHC] = useState<number>(0);
   const [isOneApolloSelected, setisOneApolloSelected] = useState<boolean>(false);
   const [burnHC, setBurnHC] = useState<number>(0);
   const [HCorder, setHCorder] = useState<boolean>(false);
   const [scrollToend, setScrollToend] = useState<boolean>(false);
   const [showCareDetails, setShowCareDetails] = useState(true);
-  const [defaultPlan, setDefaultPlan] = useState(defaultCirclePlan);
-  const [planSelected, setPlanSelected] = useState(circlePlanSelected);
-  const [planCharges, setPlanCharges] = useState(circleMembershipCharges);
-  const [showRemoveMembership, setShowRemoveMembership] = useState<boolean>(
-    !!circleMembershipCharges
-  );
-
   const client = useApolloClient();
 
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
@@ -221,7 +213,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     fetchHealthCredits();
     fetchPaymentOptions()
       .then((res: any) => {
-        // console.log(JSON.stringify(res), 'objobj');
         let options: paymentOptions[] = [];
         res.data.forEach((item: any) => {
           if (item && item.enabled && item.paymentMode != 'NB') {
@@ -254,16 +245,19 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('fetchingPaymentOptions', error);
-        console.log(error);
         props.navigation.navigate(AppRoutes.MedicineCart);
         renderErrorPopup(string.common.tryAgainLater);
       });
-    return () => {
-      // setLoading && setLoading(false);
-    };
+    return () => {};
   }, []);
 
-  const fetchHealthCredits = () => {
+  const fetchHealthCredits = async () => {
+    var cachedHealthCredit: any = await getHealthCredits();
+    if (cachedHealthCredit != null) {
+      setAvailableHC(cachedHealthCredit.healthCredit);
+      return; // no need to call api
+    }
+
     client
       .query({
         query: GET_ONEAPOLLO_USER,
@@ -273,15 +267,14 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((res) => {
-        console.log(res.data.getOneApolloUser);
         if (res.data.getOneApolloUser) {
           setAvailableHC(res.data.getOneApolloUser.availableHC);
+          persistHealthCredits(res.data.getOneApolloUser.availableHC);
         }
       })
       .catch((error) => {
         CommonBugFender('fetchingOneApolloUser', error);
         setAvailableHC(0);
-        console.log(error);
       });
   };
 
@@ -399,10 +392,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   };
 
   const placeOrder = (orderId: string, orderAutoId: number, orderType: string, isCOD?: boolean) => {
-    console.log('placeOrder\t', { orderId, orderAutoId });
     const paymentInfo: SaveMedicineOrderPaymentMqVariables = {
       medicinePaymentMqInput: {
-        // orderId: orderId,
         orderAutoId: orderAutoId,
         amountPaid: getFormattedAmount(grandTotal),
         paymentType:
@@ -434,8 +425,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     savePayment(paymentInfo)
       .then(({ data }) => {
         const { errorCode, errorMessage } = g(data, 'SaveMedicineOrderPaymentMq') || {};
-        console.log({ data });
-        console.log({ errorCode, errorMessage });
         setLoading && setLoading(false);
         if (errorCode || errorMessage) {
           // Order-failed
@@ -446,16 +435,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         } else {
           // Order-Success, Show popup here & clear cart info
           try {
-            postwebEngageCheckoutCompletedEvent(
-              `${orderAutoId}`,
-              orderId,
-              // orderType == 'COD',
-              isCOD
-            );
+            postwebEngageCheckoutCompletedEvent(`${orderAutoId}`, orderId, isCOD);
             firePurchaseEvent(orderId);
-          } catch (error) {
-            console.log(error);
-          }
+          } catch (error) {}
           let orders: (saveMedicineOrderV2_saveMedicineOrderV2_orders | null)[] = [];
           orders[0] = {
             __typename: 'MedicineOrderIds',
@@ -517,13 +499,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       paymentInfo.medicinePaymentMqInput['storeCode'] =
         Platform.OS == 'android' ? ONE_APOLLO_STORE_CODE.ANDCUS : ONE_APOLLO_STORE_CODE.IOSCUS;
     }
-    console.log('paymentInfo >>>', paymentInfo);
     savePaymentV2(paymentInfo)
       .then(({ data }) => {
-        console.log('data >>>', data);
         const { errorCode, errorMessage } = g(data, 'saveMedicineOrderPaymentMqV2') || {};
-        console.log({ data });
-        console.log({ errorCode, errorMessage });
         setLoading && setLoading(false);
         if (errorCode || errorMessage) {
           // Order-failed
@@ -535,17 +513,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           // Order-Success, Show popup here & clear cart info
           try {
             orders?.forEach((order) => {
-              postwebEngageCheckoutCompletedEvent(
-                `${order?.orderAutoId}`,
-                order?.id!,
-                // orderType == 'COD',
-                isCOD
-              );
+              postwebEngageCheckoutCompletedEvent(`${order?.orderAutoId}`, order?.id!, isCOD);
               firePurchaseEvent(order?.id!);
             });
-          } catch (error) {
-            console.log(error);
-          }
+          } catch (error) {}
           props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
             status: 'PAYMENT_PENDING',
             price: getFormattedAmount(grandTotal),
@@ -611,6 +582,69 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     });
   };
 
+  const validateCouponAndInitiateOrder = (
+    paymentMode: string,
+    bankCode: string,
+    isCOD: boolean,
+    hcOrder: boolean
+  ) => {
+    if (!coupon?.coupon) {
+      initiateOrder(paymentMode, bankCode, isCOD, hcOrder);
+      return;
+    }
+    const selectedAddress = addresses?.find((item) => item?.id == deliveryAddressId);
+    const pharmacyPincode =
+      selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
+    let packageId: string[] = [];
+    if (hdfcSubscriptionId && hdfcStatus === 'active') {
+      packageId.push(`HDFC:${hdfcPlanId}`);
+    }
+    if (circleSubscriptionId && circleStatus === 'active') {
+      packageId.push(`APOLLO:${circlePlanId}`);
+    }
+    const data = {
+      mobile: g(currentPatient, 'mobileNumber'),
+      billAmount: (cartTotal - productDiscount).toFixed(2),
+      coupon: coupon?.coupon,
+      pinCode: pharmacyPincode,
+      products: cartItems?.map((item) => ({
+        sku: item?.id,
+        categoryId: item?.productType,
+        mrp: item?.price,
+        quantity: item?.quantity,
+        specialPrice: item?.specialPrice || item?.price,
+      })),
+      packageIds: packageId,
+      email: g(currentPatient, 'emailAddress'),
+    };
+    setLoading(true);
+    validateConsultCoupon(data)
+      .then((resp: any) => {
+        if (resp?.data?.errorCode == 0) {
+          if (resp?.data?.response?.valid) {
+            initiateOrder(paymentMode, bankCode, isCOD, hcOrder);
+          } else {
+            showAphAlert!({
+              title: `Uh oh.. :(`,
+              description: resp?.data?.response?.reason,
+            });
+            props.navigation.navigate(AppRoutes.MedicineCart);
+          }
+        } else {
+          CommonBugFender('validatingPharmaCoupon', g(resp?.data, 'errorMsg'));
+          showAphAlert!({
+            title: `Uh oh.. :(`,
+            description: 'Coupon validation failed',
+          });
+          props.navigation.navigate(AppRoutes.MedicineCart);
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('validatingPharmaCoupon', error);
+        console.log(error);
+      });
+  };
+
   const initiateOrder = async (
     paymentMode: string,
     bankCode: string,
@@ -631,7 +665,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         couponDiscount: coupon ? getFormattedAmount(couponDiscount) : 0,
         productDiscount: getFormattedAmount(productDiscount) || 0,
         quoteId: null,
-        patientId: (currentPatient && currentPatient.id) || '',
+        patientId:
+          (prescriptionType === PrescriptionType.CONSULT && consultProfile?.id) ||
+          currentPatient?.id ||
+          '',
         shopId: isStorePickup ? storeId : paramShopId || null,
         shopAddress: selectedStore
           ? {
@@ -651,6 +688,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         devliveryCharges: deliveryCharges,
         packagingCharges: packagingCharges,
         estimatedAmount,
+        prescriptionType,
         prescriptionImageUrl: [
           ...physicalPrescriptions.map((item) => item.uploadedUrl),
           ...ePrescriptions.map((item) => item.uploadedUrl),
@@ -716,7 +754,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     };
     const OrderInfoV2: saveMedicineOrderV2Variables = {
       medicineOrderInput: {
-        patientId: currentPatient?.id || '',
+        patientId:
+          (prescriptionType === PrescriptionType.CONSULT && consultProfile?.id) ||
+          currentPatient?.id ||
+          '',
         medicineDeliveryType: deliveryType!,
         estimatedAmount,
         bookingSource: BOOKINGSOURCE.MOBILE,
@@ -724,6 +765,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         appVersion: DeviceInfo.getVersion(),
         coupon: coupon ? coupon.coupon : '',
         patientAddressId: deliveryAddressId,
+        prescriptionType,
         prescriptionImageUrl: [
           ...physicalPrescriptions.map((item) => item.uploadedUrl),
           ...ePrescriptions.map((item) => item.uploadedUrl),
@@ -741,7 +783,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         shipments: shipments,
       },
     };
-    console.log(JSON.stringify(OrderInfoV2));
 
     const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PAYMENT_INITIATED] = {
       'Payment mode': isCashOnDelivery ? 'COD' : 'Online',
@@ -757,7 +798,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           .then(({ data }) => {
             const { orderId, orderAutoId, errorCode, errorMessage } =
               g(data, 'saveMedicineOrderOMS')! || {};
-            console.log({ orderAutoId, orderId, errorCode, errorMessage });
 
             if (errorCode || errorMessage) {
               // Order-failed
@@ -769,13 +809,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               return;
             } else {
               if (isCOD) {
-                console.log('isCashOnDelivery\t', { orderId, orderAutoId });
                 placeOrder(orderId, orderAutoId, 'COD', true);
               } else if (hcOrder) {
-                console.log('HCorder\t', { orderId, orderAutoId });
                 placeOrder(orderId, orderAutoId, 'HCorder', false);
               } else {
-                console.log('Redirect To Payment Gateway');
                 let orders: (saveMedicineOrderV2_saveMedicineOrderV2_orders | null)[] = [];
                 orders[0] = {
                   __typename: 'MedicineOrderIds',
@@ -817,10 +854,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           })
       : saveOrderV2(OrderInfoV2)
           .then(({ data }) => {
-            console.log('data >>>>', data);
             const { orders, transactionId, errorCode, errorMessage } =
               data?.saveMedicineOrderV2 || {};
-            console.log(orders, transactionId, errorCode, errorMessage);
             if (errorCode || errorMessage) {
               showAphAlert!({
                 title: `Uh oh.. :(`,
@@ -834,7 +869,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               } else if (hcOrder) {
                 placeOrderV2(orders!, transactionId!, 'HCorder', false);
               } else {
-                console.log('Redirect To Payment Gateway');
                 redirectToPaymentGateway(
                   orders!,
                   transactionId!,
@@ -901,39 +935,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       LOB: 'Pharma',
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
-  };
-
-  const handleOrderSuccess = (orderAutoId: string) => {
-    console.log('handleOrderSuccess\n', { orderAutoId });
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      })
-    );
-    showAphAlert!({
-      title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
-      description:
-        'Your order has been placed successfully. We will confirm the order in a few minutes.',
-      children: (
-        <OrderPlacedPopUp
-          deliveryTime={deliveryTime}
-          orderAutoId={orderAutoId}
-          onPressViewInvoice={() => navigateToOrderDetails(true, orderAutoId)}
-          onPressTrackOrder={() => navigateToOrderDetails(false, orderAutoId)}
-        />
-      ),
-    });
-  };
-
-  const navigateToOrderDetails = (showOrderSummaryTab: boolean, orderAutoId: string) => {
-    hideAphAlert!();
-    props.navigation.navigate(AppRoutes.OrderDetailsScene, {
-      goToHomeOnBack: true,
-      showOrderSummaryTab,
-      orderAutoId: orderAutoId,
-    });
   };
 
   const renderHeader = () => {
@@ -1154,59 +1155,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     );
   };
 
-  const renderRemoveMembershipSection = () => {
-    return (
-      <TouchableOpacity
-        onPress={() => {
-          if (circleMembershipCharges) {
-            setIsCircleSubscription && setIsCircleSubscription(false);
-            setDefaultCirclePlan && setDefaultCirclePlan(null);
-            setCirclePlanSelected && setCirclePlanSelected(null);
-            setCircleMembershipCharges && setCircleMembershipCharges(0);
-          } else {
-            setIsCircleSubscription && setIsCircleSubscription(true);
-            setDefaultCirclePlan && setDefaultCirclePlan(defaultPlan);
-            setCirclePlanSelected && setCirclePlanSelected(planSelected);
-            setCircleMembershipCharges && setCircleMembershipCharges(planCharges);
-          }
-        }}
-        activeOpacity={1}
-        style={{
-          backgroundColor: '#E8F5FF',
-          paddingHorizontal: 20,
-          paddingVertical: 10,
-          flexDirection: 'row',
-          marginTop: 20,
-        }}
-      >
-        {!!circleMembershipCharges ? (
-          <CheckUnselectedIcon style={{ marginRight: 10, marginTop: 4 }} />
-        ) : (
-          <CheckedIcon style={{ marginRight: 10, marginTop: 4 }} />
-        )}
-        <View style={{ width: '85%' }}>
-          <Text
-            style={{
-              ...theme.viewStyles.text('M', 14, '#02475B', 1, 20),
-              opacity: !!circleMembershipCharges ? 1 : 0.4,
-              marginBottom: 4,
-            }}
-          >
-            Remove Circle membership to avail COD
-          </Text>
-          <Text
-            style={{
-              ...theme.viewStyles.text('R', 12, '#02475B', 1, 17),
-              opacity: !!circleMembershipCharges ? 1 : 0.4,
-            }}
-          >
-            COD option is not available for current order as Circle is a prepaid membership
-          </Text>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
   useEffect(() => {
     // hide payment options if to pay (after hc) is zero
     setShowPaymentOptions(grandTotal - burnHC != 0);
@@ -1301,7 +1249,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               onPress={() => {
                 if (!HCorder) {
                   setCashOnDelivery(false);
-                  initiateOrder(item.paymentMode, '', false, false);
+                  validateCouponAndInitiateOrder(item?.paymentMode, '', false, false);
                 }
               }}
               style={styles.paymentModeCard}
@@ -1372,7 +1320,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
                 <TouchableOpacity
                   onPress={() => {
                     setCashOnDelivery(false);
-                    initiateOrder(item.paymentMode, item.bankCode, false, false);
+                    validateCouponAndInitiateOrder(item?.paymentMode, item?.bankCode, false, false);
                   }}
                   style={{ width: 0.225 * windowWidth, flex: 1 }}
                 >
@@ -1415,7 +1363,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               }}
               onPress={() => {
                 setCashOnDelivery(false);
-                initiateOrder('NB', '', false, false);
+                validateCouponAndInitiateOrder('NB', '', false, false);
               }}
             >
               <Text
@@ -1438,7 +1386,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           disabled={isOneApolloSelected || !!circleMembershipCharges}
           style={styles.CODoption}
           title={'CASH ON DELIVERY'}
-          onPress={() => initiateOrder('', '', true, false)}
+          onPress={() => validateCouponAndInitiateOrder('', '', true, false)}
         />
         {!!circleMembershipCharges ? (
           <Text style={styles.codAlertMsg}>
@@ -1475,9 +1423,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           title={'PLACE ORDER'}
           onPress={() => {
             if (isCashOnDelivery) {
-              initiateOrder('', '', true, false);
+              validateCouponAndInitiateOrder('', '', true, false);
             } else if (HCorder) {
-              initiateOrder('', '', false, true);
+              validateCouponAndInitiateOrder('', '', false, true);
             }
           }}
         />
@@ -1500,7 +1448,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             {!!cartTotalCashback && isCircleSubscription && renderCareSavings()}
             {availableHC != 0 && renderOneApolloOption()}
             {renderNewCOD()}
-            {/* {(!!circleMembershipCharges || showRemoveMembership) && renderRemoveMembershipSection()} */}
             {showPaymentOptions && (
               <>
                 {renderPaymentOptions()}

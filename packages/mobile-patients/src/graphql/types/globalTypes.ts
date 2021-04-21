@@ -237,6 +237,7 @@ export enum HealthRestrictionNature {
 
 export enum LOGIN_TYPE {
   DOCTOR = "DOCTOR",
+  EMAIL = "EMAIL",
   PATIENT = "PATIENT",
 }
 
@@ -1027,28 +1028,6 @@ export interface DeletePatientPrismMedicalRecordInput {
   recordType: MedicalRecordType;
 }
 
-export interface DiagnosticBookHomeCollectionInput {
-  patientId: string;
-  patientAddressId: string;
-  slotTimings: string;
-  totalPrice: number;
-  prescriptionUrl: string;
-  diagnosticDate: any;
-  bookingSource?: BOOKINGSOURCE | null;
-  deviceType?: DEVICETYPE | null;
-  paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
-  items?: (DiagnosticLineItem | null)[] | null;
-  slotId: string;
-  areaId: number;
-  homeCollectionCharges: number;
-  uniqueID?: string | null;
-  slotDateTimeInUTC?: any | null;
-  totalPriceExcludingDiscounts?: number | null;
-  userSubscriptionId?: string | null;
-  subscriptionInclusionId?: string | null;
-  attachmentData?: (Attachments | null)[] | null;
-}
-
 export interface DiagnosticInitiateOrderPayment {
   orderId?: string | null;
 }
@@ -1780,6 +1759,7 @@ export interface UpdatePatientInput {
   relation?: Relation | null;
   photoUrl?: string | null;
   deviceCode?: string | null;
+  externalAuthId?: string | null;
   employeeId?: string | null;
   partnerId?: string | null;
   appsflyerId?: string | null;

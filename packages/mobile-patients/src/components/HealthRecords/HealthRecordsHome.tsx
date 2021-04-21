@@ -21,7 +21,6 @@ import {
   LabTestPhrSearchIcon,
   BillPhrSearchIcon,
   InsurancePhrSearchIcon,
-  ClinicalDocumentPhrSearchIcon,
   HospitalPhrSearchIcon,
   HealthConditionPhrSearchIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -76,15 +75,15 @@ import {
   Platform,
   FlatList,
   Dimensions,
+  BackHandler,
 } from 'react-native';
 import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
 import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
-import stripHtml from 'string-strip-html';
 import { searchPHRApiWithAuthToken } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import {
   getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_healthChecks_response,
   getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response,
@@ -97,6 +96,8 @@ import _ from 'lodash';
 import { ListItem, Overlay } from 'react-native-elements';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { renderHealthRecordShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 
 const { width } = Dimensions.get('window');
 
@@ -401,7 +402,9 @@ const heightArray: HeightArray[] = [
   { key: HEIGHT_ARRAY.FT, title: HEIGHT_ARRAY.FT },
 ];
 
-export interface HealthRecordsHomeProps extends NavigationScreenProps {}
+export interface HealthRecordsHomeProps extends NavigationScreenProps {
+  movedFrom?: string;
+}
 
 export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [healthChecksNew, setHealthChecksNew] = useState<
@@ -420,8 +423,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     | undefined
   >([]);
 
+  const movedFrom = props.navigation.getParam('movedFrom');
   const [testAndHealthCheck, setTestAndHealthCheck] = useState<{ type: string; data: any }[]>();
-  const { loading, setLoading, showAphAlert } = useUIElements();
+  const { loading, setLoading } = useUIElements();
   const [prismdataLoader, setPrismdataLoader] = useState<boolean>(false);
   const [pastDataLoader, setPastDataLoader] = useState<boolean>(false);
   const [arrayValues, setarrayValues] = useState<any>([]);
@@ -443,6 +447,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [searchText, setSearchText] = useState('');
   const [isSearchFocus, SetIsSearchFocus] = useState(false);
   const [searchLoading, setSearchLoading] = useState<boolean>(false);
+  const [pageLoading, setPageLoading] = useState<boolean>(false);
   const _searchInputRef = useRef(null);
   const [healthRecordSearchResults, setHealthRecordSearchResults] = useState<any>([]);
   const [prismAuthToken, setPrismAuthToken] = useState<string>('');
@@ -473,6 +478,18 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
+
+  const handleBack = () => {
+    navigateToHome(props.navigation, {}, movedFrom === 'deeplink');
+    return true;
+  };
+
+  useEffect(() => {
     if (currentPatient) {
       getAuthToken();
     }
@@ -495,16 +512,14 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       })
       .catch((e) => {
         CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
-        const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
       });
   };
 
   useEffect(() => {
     if (prismdataLoader || pastDataLoader) {
-      !loading && setLoading!(true);
+      setPageLoading!(true);
     } else {
-      loading && setLoading!(false);
+      setPageLoading!(false);
     }
   }, [prismdataLoader, pastDataLoader]);
 
@@ -582,8 +597,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       })
       .catch((e) => {
         CommonBugFender('HealthRecordsHome_fetchPastData', e);
-        const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while fetching Heath records', error);
       })
       .finally(() => setPastDataLoader(false));
   };
@@ -642,7 +655,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('HealthRecordsHome_fetchTestData', error);
-        console.log('Error occured', { error });
         currentPatient && handleGraphQlError(error);
       })
       .finally(() => setPrismdataLoader(false));
@@ -672,7 +684,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('HealthRecordsHome_fetchTestReportsData', error);
-        console.log('Error occured fetchTestReportsData', { error });
         currentPatient && handleGraphQlError(error);
       })
       .finally(() => setPrismdataLoader(false));
@@ -692,7 +703,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('HealthRecordsHome_fetchPrescriptionData', error);
-        console.log('Error occured fetchPrescriptionData', { error });
         currentPatient && handleGraphQlError(error);
       })
       .finally(() => setPrismdataLoader(false));
@@ -803,7 +813,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           setShowUpdateProfilePopup(false);
           setOverlaySpinner(false);
           loading && setLoading!(false);
-          console.log(e);
         });
     }
   };
@@ -836,13 +845,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         container={{ borderBottomWidth: 0 }}
         onPressLeftIcon={() => {
           setPhrNotificationData && setPhrNotificationData(null);
-          props.navigation.dispatch(
-            StackActions.reset({
-              index: 0,
-              key: null,
-              actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-            })
-          );
+          navigateToHome(props.navigation);
         }}
       />
     );
@@ -869,14 +872,18 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     };
 
     const renderProfileNameView = () => {
-      return (
-        <View style={styles.profileNameViewStyle}>
-          <Text style={styles.profileNameTextStyle} numberOfLines={1}>
-            {'hi ' + (currentPatient?.firstName?.toLowerCase() + '!') || ''}
-          </Text>
-          <DropdownGreen />
-        </View>
-      );
+      if (pageLoading) {
+        return renderHealthRecordShimmer();
+      } else {
+        return (
+          <View style={styles.profileNameViewStyle}>
+            <Text style={styles.profileNameTextStyle} numberOfLines={1}>
+              {'hi ' + (currentPatient?.firstName?.toLowerCase() + '!') || ''}
+            </Text>
+            <DropdownGreen />
+          </View>
+        );
+      }
     };
 
     return (
@@ -1139,8 +1146,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           {'Health Categories'}
         </Text>
         <View style={styles.listItemCardStyle}>
-          {renderListItemView('Doctor Consultations', 1)}
-          {renderListItemView('Test Reports', 2)}
+          {pageLoading
+            ? renderHealthRecordShimmer()
+            : renderListItemView('Doctor Consultations', 1)}
+          {pageLoading ? renderHealthRecordShimmer() : renderListItemView('Test Reports', 2)}
           {renderListItemView('Hospitalization', 3)}
           {renderListItemView('Health Conditions', 4)}
         </View>
@@ -1538,7 +1547,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('HealthRecordsHome_searchPHRApiWithAuthToken', error);
-        console.log('searchPHRApiWithAuthToken Error', error);
         getAuthToken();
         setSearchLoading(false);
       });

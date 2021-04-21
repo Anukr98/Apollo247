@@ -49,9 +49,9 @@ import {
   SAVE_DIAGNOSTIC_ORDER,
   SAVE_DIAGNOSTIC_ORDER_NEW,
   CREATE_INTERNAL_ORDER,
+  EDIT_PROFILE,
   GET_DIAGNOSTIC_NEAREST_AREA,
   GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
-  EDIT_PROFILE,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticsHCChargesVariables,
@@ -332,14 +332,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     initiateHyperSDK();
   }, [currentPatient]);
 
-  const initiateHyperSDK = async () => {
-    try {
-      const isInitiated: boolean = await isSDKInitialised();
-      !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id);
-    } catch (error) {
-      CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
+  useEffect(() => {
+    if (showSelectPatient && currentPatient) {
+      setSelectedPatient(currentPatient);
+      setShowPatientListOverlay(false);
     }
-  };
+  }, []);
 
   const fetchTestReportGenDetails = async (_cartItemId: string | number[]) => {
     try {
@@ -354,21 +352,23 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         const result = g(res, 'data', 'data');
         const widgetsData = g(res, 'data', 'widget_data', '0', 'diagnosticWidgetData');
         setReportGenDetails(result || []);
-        const _itemIds = widgetsData?.map((item) => Number(item?.itemId));
+        const _itemIds = widgetsData?.map((item: any) => Number(item?.itemId));
+        const _filterItemIds = _itemIds?.filter((val: any) => !cartItemsWithId?.includes(val));
+
         client
           .query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
             query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
             context: {
               sourceHeaders,
             },
-            variables: { cityID: Number(addressCityId) || 9, itemIDs: _itemIds },
+            variables: { cityID: Number(addressCityId) || 9, itemIDs: _filterItemIds },
             fetchPolicy: 'no-cache',
           })
           .then(({ data }) => {
             const diagnosticItems =
               g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
             let _diagnosticWidgetData: any = [];
-            widgetsData?.forEach((_widget) => {
+            widgetsData?.forEach((_widget: any) => {
               diagnosticItems?.forEach((_diagItems) => {
                 if (_widget?.itemId == _diagItems?.itemId) {
                   _diagnosticWidgetData?.push({
@@ -399,12 +399,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   };
 
-  useEffect(() => {
-    if (showSelectPatient && currentPatient) {
-      setSelectedPatient(currentPatient);
-      setShowPatientListOverlay(false);
+  const initiateHyperSDK = async () => {
+    try {
+      const isInitiated: boolean = await isSDKInitialised();
+      !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id);
+    } catch (error) {
+      CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
-  }, []);
+  };
 
   const checkPatientAge = (_selectedPatient: any, fromNewProfile: boolean = false) => {
     let age = !!_selectedPatient?.dateOfBirth ? getAge(_selectedPatient?.dateOfBirth) : null;
@@ -537,7 +539,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         fetchTestReportGenDetails(cartItemsWithId);
       }
     }
-  }, [cartItems?.length]);
+  }, [cartItems?.length, addressCityId]);
 
   useEffect(() => {
     setPatientId!(currentPatientId!);
@@ -636,6 +638,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const onRemoveCartItem = ({ id, name }: DiagnosticsCartItem) => {
     removeCartItem && removeCartItem(id);
+    const newCartItems = cartItems?.filter((item) => Number(item?.id) !== Number(id));
+    const removedItems = newCartItems?.map((item) => Number(item?.id));
+    setCartItems?.(newCartItems);
     if (deliveryAddressId != '') {
       const selectedAddressIndex = addresses?.findIndex(
         (address) => address?.id == deliveryAddressId
@@ -646,7 +651,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             addresses?.[selectedAddressIndex]?.zipcode!,
             showAreaSelection
           )
-        : getAreas();
+        : getAreas(removedItems);
       DiagnosticRemoveFromCartClicked(
         id,
         name,
@@ -747,7 +752,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setLoading?.(false);
           setDeliveryAddressCityId?.('');
           setDeliveryAddressId?.('');
-          console.log('getDiagnosticsPincode serviceability Error\n', { e });
         });
     }
   };
@@ -777,7 +781,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       checkSlotSelection(obj, undefined, undefined, _itemIds);
       setWebEngageEventForAreaSelection(obj);
     } catch (e) {
-      console.log({ e });
       CommonBugFender('TestsCart_', e);
 
       setselectedTimeSlot(undefined);
@@ -1056,7 +1059,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         })
         .catch((e) => {
           CommonBugFender('TestsCart_fetchPackageDetails', e);
-          console.log({ e });
           errorAlert();
         })
         .finally(() => {
@@ -1119,7 +1121,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         setselectedTimeSlot(undefined);
         setWebEngageEventForAddressNonServiceable(pincode);
         CommonBugFender('TestsCart_getArea selection', e);
-        console.log('error' + e);
         showAphAlert!({
           title: string.common.uhOh,
           description: string.diagnostics.areaNotAvailableMessage,
@@ -1265,12 +1266,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const checkSlotSelection = (
-    item: areaObject | DiagnosticArea | any,
+    areaObject: areaObject | DiagnosticArea | any,
     changedDate?: Date,
     comingFrom?: string,
     _itemIds?: number[]
   ) => {
-    let dateToCheck = !!changedDate && comingFrom != '' ? changedDate : date;
+    const isCovidItem = cartItemsWithId?.map((item) =>
+      AppConfig.Configuration.Covid_Items.includes(item)
+    );
+    const isCartHasCovidItem = isCovidItem?.find((item) => item === true);
+    const maxDaysToShow = !!isCartHasCovidItem
+      ? AppConfig.Configuration.Covid_Max_Slot_Days
+      : AppConfig.Configuration.Non_Covid_Max_Slot_Days;
+
+    let dateToCheck = !!changedDate && comingFrom != '' ? changedDate : new Date();
     setLoading?.(true);
     const selectedAddressIndex = addresses?.findIndex(
       (address) => address?.id == deliveryAddressId
@@ -1285,7 +1294,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         fetchPolicy: 'no-cache',
         variables: {
           selectedDate: moment(dateToCheck).format('YYYY-MM-DD'),
-          areaID: Number((item as any).key!),
+          areaID: Number((areaObject as any).key!),
           itemIds: _itemIds || cartItemsWithId,
         },
       })
@@ -1312,13 +1321,17 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
         // if slot is empty then refetch it for next date
         const isSameDate = moment().isSame(moment(dateToCheck), 'date');
-        if (isSameDate && slotsArray?.length == 0) {
+        let lastDate = moment()
+          .add(maxDaysToShow, 'day')
+          .toDate();
+        const hasReachedEnd = moment(dateToCheck).isSameOrAfter(moment(lastDate), 'date');
+        if (!hasReachedEnd && slotsArray?.length == 0) {
           setTodaySlotNotAvailable(true);
           let changedDate = moment(dateToCheck) //date
             .add(1, 'day')
             .toDate();
           setDate(changedDate);
-          checkSlotSelection(item, changedDate);
+          checkSlotSelection(areaObject, changedDate, undefined, _itemIds || cartItemsWithId);
         } else {
           setSlots(slotsArray);
           todaySlotNotAvailable && setTodaySlotNotAvailable(false);
@@ -1334,9 +1347,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             diagnosticEmployeeCode: slotDetails?.employeeCode,
             city: selectedAddr ? selectedAddr?.city! : '', // not using city from this in order place API
           });
-          if (slotDetails == undefined) {
-            setDisplaySchedule(true);
-          }
           setLoading?.(false);
         }
 
@@ -1347,7 +1357,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       })
       .catch((e) => {
         CommonBugFender('TestsCart_checkServicability', e);
-        console.log('Error occured', { e });
         setDiagnosticSlot && setDiagnosticSlot(null);
         setselectedTimeSlot(undefined);
         const noHubSlots = g(e, 'graphQLErrors', '0', 'message') === 'NO_HUB_SLOTS';
@@ -1847,14 +1856,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
     };
 
-    console.log(JSON.stringify({ diagnosticOrderInput: orderInfo }));
     saveOrder(orderInfo)
-      .then(({ data }) => {
-        console.log('data >>>>', data);
-      })
+      .then(({ data }) => {})
       .catch((error) => {
         CommonBugFender('TestsCheckoutScene_saveOrder', error);
-        console.log('SaveDiagnosticOrder API Error\n', { error });
         setshowSpinner(false);
         setLoading!(false);
         showAphAlert!({
@@ -1870,7 +1875,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const saveHomeCollectionOrder = () => {
-    console.log('unique id' + validateCouponUniqueId);
     //for circle members if unique id is blank, show error
     if (
       isDiagnosticCircleSubscription &&
@@ -1879,7 +1883,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       renderAlert(string.common.tryAgainLater);
       setshowSpinner(false);
     } else {
-      console.log({ diagnosticSlot });
       const { slotStartTime, slotEndTime, employeeSlotId, date } = diagnosticSlot || {};
       const slotTimings = (slotStartTime && slotEndTime
         ? `${slotStartTime}-${slotEndTime}`
@@ -1923,7 +1926,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         // ].join(','),
       };
 
-      console.log('home collection \n', { diagnosticOrderInput: bookingOrderInfo });
       saveHomeCollectionBookingOrder(bookingOrderInfo)
         .then(async ({ data }) => {
           // in case duplicate test, price mismatch, address mismatch, slot issue
@@ -1976,7 +1978,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               total_amount: grandTotal,
               customer_id: currentPatient?.primaryPatientId || currentPatient?.id,
             };
-            console.log('orderInput >>', JSON.stringify(orderInput));
             const response = await createOrderInternal(orderInput);
             if (response?.data?.createOrderInternal?.success) {
               const orderInfo = {
@@ -2012,7 +2013,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         })
         .catch((error) => {
           CommonBugFender('TestsCheckoutScene_saveOrder', error);
-          console.log('DiagnosticBookHomeCollectionInput API Error\n', { error });
           setshowSpinner(false);
           setLoading!(false);
           showAphAlert!({
@@ -2181,7 +2181,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         }
       })
       .catch((e) => {
-        console.log({ e });
         //if api fails then also show the name... & remove..
         CommonBugFender('TestsCart_getDiagnosticsAvailability', e);
         setLoading!(false);
@@ -2268,9 +2267,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             addresses?.[selectedAddressIndex]?.zipcode!,
             showAreaSelection
           )
-        : getAreas();
+        : getAreas(removedTestItemId);
+      let removedItems = removedTestItemId?.join(', ');
       DiagnosticRemoveFromCartClicked(
-        removedTestItemId,
+        removedItems,
         removedTest,
         addresses?.[selectedAddressIndex]?.zipcode!,
         'Automated'
@@ -2314,7 +2314,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         testsOrdered: orderedTestArray,
         cityId: parseInt(addressCityId),
       };
-      console.log({ CouponInput });
       try {
         const validateDiagnosticCouponApi = await client.query<
           vaidateDiagnosticCoupon,
@@ -2329,8 +2328,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           },
           fetchPolicy: 'no-cache',
         });
-
-        console.log({ validateDiagnosticCouponApi });
         const validateApiResponse = g(
           validateDiagnosticCouponApi,
           'data',
@@ -2710,9 +2707,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const isCovidItem = cartItemsWithId?.map((item) =>
     AppConfig.Configuration.Covid_Items.includes(item)
   );
-
   const isCartHasCovidItem = isCovidItem?.find((item) => item === true);
-
   const maxDaysToShow = !!isCartHasCovidItem
     ? AppConfig.Configuration.Covid_Max_Slot_Days
     : AppConfig.Configuration.Non_Covid_Max_Slot_Days;
@@ -2850,6 +2845,37 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     opacity: 0.3,
   },
+  patientDetailsViewStyle: {
+    flex: 1,
+    marginBottom: 6,
+  },
+  patientNameMainViewStyle: {
+    flex: 1,
+    paddingHorizontal: 20,
+    backgroundColor: WHITE,
+    paddingVertical: 8,
+    marginBottom: 8,
+  },
+  patientNameViewStyle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'space-between',
+    marginBottom: 2,
+  },
+  patientNameTextStyle: {
+    ...text('R', 12, SHERPA_BLUE, 1, 20),
+  },
+  changeTextStyle: {
+    ...text('B', 13, APP_YELLOW, 1, 20),
+  },
+  patientDetailsTextStyle: {
+    ...text('SB', 14, SHERPA_BLUE, 1, 18),
+  },
+  testReportMsgStyle: {
+    ...text('R', 10, SHERPA_BLUE, 0.7, 14),
+    marginTop: 4,
+  },
   phelboTextView: {
     backgroundColor: '#FCFDDA',
     flex: 1,
@@ -2867,6 +2893,18 @@ const styles = StyleSheet.create({
     marginHorizontal: '2%',
   },
   infoIconStyle: { resizeMode: 'contain', height: 18, width: 18 },
+  dashedBannerViewStyle: {
+    ...cardViewStyle,
+    marginHorizontal: 20,
+    marginBottom: 0,
+    padding: 16,
+    marginTop: 10,
+    flexDirection: 'row',
+    borderColor: theme.colors.APP_GREEN,
+    borderWidth: 2,
+    borderRadius: 5,
+    borderStyle: 'dashed',
+  },
   homeCollectionContainer: {
     ...theme.viewStyles.cardViewStyle,
     padding: 12,

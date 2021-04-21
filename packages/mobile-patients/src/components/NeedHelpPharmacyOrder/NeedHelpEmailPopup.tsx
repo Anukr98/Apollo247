@@ -72,8 +72,6 @@ export const NeedHelpEmailPopup: React.FC<NeedHelpEmailPopupProps> = (props) => 
       isVisible
       windowBackgroundColor={'rgba(0, 0, 0, 0.3)'}
       containerStyle={{ marginBottom: 0 }}
-      fullScreen
-      transparent
       overlayStyle={styles.overlayStyle}
       {...overlayProps}
     >
@@ -93,8 +91,9 @@ const styles = StyleSheet.create({
   overlayStyle: {
     padding: 0,
     margin: 0,
-    width: '100%',
-    height: '100%',
+    height: 'auto',
+    width: 'auto',
+    maxWidth: '90%',
     backgroundColor: 'transparent',
     justifyContent: 'center',
   },

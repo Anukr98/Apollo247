@@ -150,6 +150,7 @@ const styles = StyleSheet.create({
   },
   pageTitle: {
     ...text('SB', 14, '#02475B'),
+    marginTop: -8,
   },
   productsTotal: {
     ...text('R', 14, '#02475B'),

@@ -23,6 +23,7 @@ import { dataSavedUserID, g } from '../../helpers/helperFunctions';
 import { MyMembership } from './MyMembership';
 import { MyTransactions } from './MyTransactions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { renderOneApolloMembershipShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -74,7 +75,6 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
       })
       .then((res) => {
         setLoading(false);
-        console.log(res.data.getOneApolloUser);
         setName(res.data.getOneApolloUser.name);
         setCredits(res.data.getOneApolloUser.availableHC);
         settier(res.data.getOneApolloUser.tier);
@@ -88,7 +88,6 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
         setLoading(false);
         setFetchFailed(true);
         CommonBugFender('fetchingOneApolloUser', error);
-        console.log(error);
         renderErrorPopup(string.common.tryAgainLater);
       });
   };
@@ -140,6 +139,9 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
   };
 
   const renderMembershipCard = () => {
+    if (loading) {
+      return renderOneApolloMembershipShimmer();
+    }
     return (
       <View style={styles.membership}>
         <ImageBackground
@@ -218,7 +220,7 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
         {renderOneApolloHeader()}
         {renderScreen()}
       </ScrollView>
-      {loading && <Spinner />}
+
     </SafeAreaView>
   );
 };
@@ -242,7 +244,6 @@ const styles = StyleSheet.create({
   },
   creditsCard: {
     height: 0.14 * windowWidth,
-    // width: 0.7 * windowWidth,
     marginTop: 0.12 * windowWidth,
     flexDirection: 'row',
     borderRadius: 10,

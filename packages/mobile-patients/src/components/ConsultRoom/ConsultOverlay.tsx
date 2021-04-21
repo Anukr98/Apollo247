@@ -108,14 +108,17 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const isBoth = availableModes?.filter(
     (consultMode: ConsultMode) => consultMode === ConsultMode.BOTH
   );
+  const consultOnlineTab = string.consultModeTab.CONSULT_ONLINE;
+  const consultPhysicalTab = string.consultModeTab.MEET_IN_PERSON;
+
   const tabs =
     props.doctor?.doctorType !== DoctorType.PAYROLL
       ? isBoth?.length > 0
-        ? [{ title: 'Consult Online' }, { title: 'Meet In Person' }]
+        ? [{ title: consultOnlineTab }, { title: consultPhysicalTab }]
         : isOnline?.length > 0
-        ? [{ title: 'Consult Online' }]
-        : [{ title: 'Meet In Person' }]
-      : [{ title: 'Consult Online' }];
+        ? [{ title: consultOnlineTab }]
+        : [{ title: consultPhysicalTab }]
+      : [{ title: consultOnlineTab }];
 
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');
@@ -130,7 +133,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [notificationAlert, setNotificationAlert] = useState(false);
 
   const doctorFees =
-    tabs[0].title === selectedTab
+    consultOnlineTab === selectedTab
       ? props.doctor!.onlineConsultationFees
       : props.doctor!.physicalConsultationFees;
 
@@ -146,7 +149,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   );
   const { currentPatient } = useAllCurrentPatients();
   const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
-  const isOnlineConsult = selectedTab === 'Consult Online';
+  const isOnlineConsult = selectedTab === consultOnlineTab;
   const isPhysicalConsult = isPhysicalConsultation(selectedTab);
 
   const circleDoctorDetails = calculateCircleDoctorPricing(
@@ -162,7 +165,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     isCircleDoctorOnSelectedConsultMode,
   } = circleDoctorDetails;
   const actualPrice = isCircleDoctorOnSelectedConsultMode
-    ? selectedTab === 'Consult Online'
+    ? selectedTab === consultOnlineTab
       ? circleSubscriptionId
         ? onlineConsultSlashedPrice
         : onlineConsultMRPPrice
@@ -179,11 +182,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   };
   useEffect(() => {
     if (props.consultModeSelected === ConsultMode.ONLINE) {
-      setselectedTab(tabs[0].title);
-    } else if (props.consultModeSelected === ConsultMode.PHYSICAL && tabs.length > 1) {
-      setselectedTab(tabs[1].title);
-    } else if (props.consultModeSelected === ConsultMode.PHYSICAL && tabs.length === 0) {
-      setselectedTab(tabs[0].title);
+      setselectedTab(consultOnlineTab);
+    } else if (props.consultModeSelected === ConsultMode.PHYSICAL) {
+      setselectedTab(consultPhysicalTab);
     }
   }, [props.consultModeSelected]);
 
@@ -191,12 +192,10 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     const todayDate = new Date().toISOString().slice(0, 10);
     getNextAvailableSlots(client, props.doctor ? [props.doctor.id] : [], todayDate)
       .then(({ data }: any) => {
-        console.log(data, 'next');
-
         try {
           const nextSlot = data[0] ? data[0]!.availableSlot : '';
           if (!nextSlot && data[0]!.physicalAvailableSlot) {
-            tabs.length > 1 && setselectedTab(tabs[1].title);
+            tabs.length > 1 && setselectedTab(consultPhysicalTab);
           }
         } catch (e) {
           CommonBugFender('ConsultOverlay_getNextAvailableSlots_try', e);
@@ -204,14 +203,13 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       })
       .catch((e: any) => {
         CommonBugFender('ConsultOverlay_getNextAvailableSlots', e);
-        console.log('error', e);
       });
   }, []);
 
   const onPressCheckout = async () => {
     CommonLogEvent(AppRoutes.DoctorDetails, 'ConsultOverlay onSubmitBookAppointment clicked');
     const timeSlot =
-      tabs[0].title === selectedTab &&
+      consultOnlineTab === selectedTab &&
       isConsultOnline &&
       availableInMin! <= 60 &&
       0 < availableInMin!
@@ -237,7 +235,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       doctorId: props.doctor ? props.doctor.id : '',
       appointmentDateTime: timeSlot, //appointmentDate,
       appointmentType:
-        selectedTab === tabs[0].title ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
+        selectedTab === consultOnlineTab ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
       hospitalId,
       bookingSource: BOOKINGSOURCE.MOBILE,
       deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
@@ -253,7 +251,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           : null,
     };
 
-    tabs[0].title === selectedTab
+    consultOnlineTab === selectedTab
       ? props.navigation.navigate(AppRoutes.PaymentCheckout, {
           doctor: props.doctor,
           tabs: tabs,
@@ -305,7 +303,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           disabled={
             disablePay
               ? true
-              : tabs[0].title === selectedTab &&
+              : consultOnlineTab === selectedTab &&
                 isConsultOnline &&
                 availableInMin! <= 60 &&
                 0 < availableInMin!
@@ -337,7 +335,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             { textAlign: 'justify' },
           ]}
         >
-          {selectedTab === tabs[0].title
+          {selectedTab === consultOnlineTab
             ? string.common.DisclaimerText
             : string.common.agreePhysicalConsultTC}
         </Text>
@@ -355,7 +353,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   };
 
   const updateCouponDiscountOnChangeTab = (isOnlineConsult: boolean) => {
-    console.log('updateCouponDiscountOnChangeTab isOnlineConsult', isOnlineConsult);
     // this function will reset coupon discount on change in consultation type
     setCoupon('');
     setDoctorDiscountedFees(0);
@@ -369,8 +366,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     }
     // to avoid duplicate events
     if (!slotsSelected.find((val) => val == slot)) {
-      console.log('new Date >>>>', new Date(slot));
-      console.log('moment >>>>>', moment(slot).toDate());
       const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
         if (item && item.facility && item.facility.facilityType)
           return item.facility.facilityType === 'HOSPITAL';
@@ -380,7 +375,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         specialisation: g(props.doctor, 'specialty', 'name')!,
         experience: Number(g(props.doctor, 'experience')!),
         'language known': g(props.doctor, 'languages')! || 'NA',
-        'Consult Mode': tabs[0].title === selectedTab ? 'Online' : 'Physical',
+        'Consult Mode': consultOnlineTab === selectedTab ? 'Online' : 'Physical',
         'Doctor ID': g(props.doctor, 'id')!,
         'Speciality ID': g(props.doctor, 'specialty', 'id')!,
         'Patient UHID': g(currentPatient, 'uhid'),
@@ -407,7 +402,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       <View style={{ paddingHorizontal: showSpinner ? 0 : 20 }}>
         <View
           style={{
-            // backgroundColor: 'white',
             alignItems: 'flex-end',
           }}
         >
@@ -446,13 +440,13 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                 setDate(new Date());
                 setselectedTab(_selectedTab);
                 setselectedTimeSlot('');
-                setisConsultOnline(_selectedTab === tabs[0].title);
-                updateCouponDiscountOnChangeTab(_selectedTab === tabs[0].title);
+                setisConsultOnline(_selectedTab === consultOnlineTab);
+                updateCouponDiscountOnChangeTab(_selectedTab === consultOnlineTab);
               }}
               selectedTab={selectedTab}
             />
             <ScrollView bounces={false} ref={scrollViewRef}>
-              {selectedTab === tabs[0].title ? (
+              {selectedTab === consultOnlineTab ? (
                 <>
                   <ConsultOnline
                     source={props.navigation.getParam('showBookAppointment') ? 'List' : 'Profile'}
@@ -483,10 +477,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                   clinics={props.clinics}
                   setDate={(date) => {
                     setDate(date);
-                    // fetchSlots(date);//removed
-                    // scrollViewRef.current &&
-                    //   scrollViewRef.current.scrollTo &&
-                    //   scrollViewRef.current.scrollTo({ x: 0, y: 465, animated: true });
                   }}
                   setselectedTimeSlot={(timeSlot) => {
                     postSlotSelectedEvent(timeSlot);
@@ -503,7 +493,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               {renderDisclamer()}
               {!g(currentPatient, 'whatsAppConsult') ? (
                 <WhatsAppStatus
-                  // style={{ marginTop: 6 }}
                   onPress={() => {
                     whatsAppUpdate ? setWhatsAppUpdate(false) : setWhatsAppUpdate(true);
                   }}
@@ -511,7 +500,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                 />
               ) : null}
 
-              {selectedTab === 'Meet In Person' && renderFootNote()}
+              {selectedTab === consultPhysicalTab && renderFootNote()}
               <View style={{ height: 70 }} />
             </ScrollView>
             {props.doctor && renderBottomButton()}
