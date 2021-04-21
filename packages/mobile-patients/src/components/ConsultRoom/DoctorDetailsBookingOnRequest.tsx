@@ -1,4 +1,3 @@
-import { ConsultOverlay } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultOverlay';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
 import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
@@ -39,7 +38,6 @@ import {
   statusBarHeight,
   timeDiffFromNow,
   setWebEngageScreenNames,
-  nextAvailability,
   getDoctorShareMessage,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {

@@ -41,6 +41,8 @@ import {
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 import moment from 'moment';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -200,6 +202,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 14,
   },
+  otherInputStyle: {
+    ...theme.fonts.IBMPlexSansMedium(16),
+    color: theme.colors.SHERPA_BLUE,
+  },
 });
 
 export interface BookingRequestOverlayProps extends NavigationScreenProps {
@@ -235,6 +241,7 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
   const [gender, setGender] = useState<string>(currentPatient?.gender);
   const [modeSelected, setModeSelected] = useState<string>(ConsultMode.BOTH);
   const [dateRangeSelected, setDateRangeSelected] = useState<string>('option1');
+  const [othersText, setOthersText] = useState<string>('');
   const { showAphAlert, setLoading } = useUIElements();
 
   useEffect(() => {
@@ -361,7 +368,23 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
           {renderDateOptionInput('15 days from Now', 'option1')}
           {renderDateOptionInput('Anytime', 'option2')}
         </View>
-        <View>{renderDateOptionInput('Other', 'option3')}</View>
+        <View>
+          {renderDateOptionInput('Other', 'option3')}
+          {dateRangeSelected === 'option3' && (
+            <TextInputComponent
+              value={othersText}
+              onChangeText={(text) => {
+                setOthersText(text);
+              }}
+              textInputprops={{
+                maxLength: 20,
+              }}
+              inputStyle={[styles.otherInputStyle]}
+              conatinerstyles={{ paddingBottom: 0 }}
+              placeholder={'Please Specify'}
+            />
+          )}
+        </View>
       </View>
     );
   };
