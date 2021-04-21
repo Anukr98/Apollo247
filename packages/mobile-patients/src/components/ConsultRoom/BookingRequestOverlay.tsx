@@ -57,8 +57,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   inputContainer: {
-    margin: 15,
-    padding: 6,
+    marginHorizontal: 15,
+    marginTop: 15,
+    padding: 4,
     justifyContent: 'center',
   },
   headerTextStyle: {
@@ -157,7 +158,7 @@ const styles = StyleSheet.create({
   },
   radioButtonTitle: {
     ...theme.fonts.IBMPlexSansMedium(16),
-    lineHeight: 24,
+    lineHeight: 23,
     color: theme.colors.SHERPA_BLUE,
     marginBottom: 4,
   },
@@ -205,6 +206,14 @@ const styles = StyleSheet.create({
   otherInputStyle: {
     ...theme.fonts.IBMPlexSansMedium(16),
     color: theme.colors.SHERPA_BLUE,
+  },
+  disclaimerContainer: {
+    marginHorizontal: 20,
+    marginBottom: 20,
+    marginTop: 10,
+    padding: 12,
+    borderRadius: 10,
+    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
   },
 });
 
@@ -288,21 +297,14 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
   };
   const renderDisclamer = () => {
     return (
-      <View
-        style={{
-          margin: 20,
-          padding: 12,
-          borderRadius: 10,
-          backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-        }}
-      >
+      <View style={styles.disclaimerContainer}>
         <Text
           style={[
             theme.viewStyles.text('M', 10, theme.colors.LIGHT_BLUE, 1, 16, 0),
             { textAlign: 'justify' },
           ]}
         >
-          {string.common.DisclaimerTextBookingRequest}
+          {string.common?.DisclaimerTextBookingRequest}
         </Text>
       </View>
     );
