@@ -816,7 +816,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       getAppointmentInfo(navigateToChatRoom);
     } else if (status == failure) {
       // navigate(AppRoutes.DoctorSearch);
-      setLoading?.(true);
       navigate(AppRoutes.DoctorDetails, {
         doctorId: doctorID,
       });
