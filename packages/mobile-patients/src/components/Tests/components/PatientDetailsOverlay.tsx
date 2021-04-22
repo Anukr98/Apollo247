@@ -129,10 +129,14 @@ export const PatientDetailsOverlay: React.FC<PatientDetailsOverlayProps> = (prop
     );
   };
 
+  const _onPressClose = () => {
+    return !selectedPatient?.dateOfBirth || !selectedPatient?.gender ? {} : onPressClose();
+  };
+
   return (
     <Overlay
       isVisible
-      onRequestClose={onPressClose}
+      onRequestClose={_onPressClose}
       windowBackgroundColor={'rgba(0, 0, 0, 0.6)'}
       containerStyle={{ marginBottom: 0 }}
       fullScreen
@@ -140,12 +144,7 @@ export const PatientDetailsOverlay: React.FC<PatientDetailsOverlayProps> = (prop
       overlayStyle={styles.phrOverlayStyle}
     >
       <View style={{ flex: 1 }}>
-        <TouchableOpacity
-          style={{ flex: 1 }}
-          onPress={() =>
-            !selectedPatient?.dateOfBirth || !selectedPatient?.gender ? {} : onPressClose()
-          }
-        />
+        <TouchableOpacity style={{ flex: 1 }} onPress={_onPressClose} />
         <View style={styles.overlayViewStyle}>
           <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
             <View style={styles.mainViewStyle}>
