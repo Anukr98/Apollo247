@@ -93,7 +93,10 @@ import {
   getDiagnosticSlotsCustomizedVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsCustomized';
 import { OrderTestCard } from '@aph/mobile-patients/src/components/Tests/components/OrderTestCard';
-import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  getDiagnosticRefundOrders,
+  getPatientPrismMedicalRecordsApi,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import { Overlay } from 'react-native-elements';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
@@ -382,28 +385,21 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const fetchRefundForOrder = async (orderSelected: any, tab: boolean) => {
     setRefundStatusArr(null);
     setLoading?.(true);
-    client
-      .query<getOrderInternal, getOrderInternalVariables>({
-        query: GET_INTERNAL_ORDER,
-        context: {
-          sourceHeaders,
-        },
-        variables: {
-          order_id: orderSelected?.paymentOrderId,
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then(({ data }) => {
-        const refundData = g(data, 'getOrderInternal', 'refunds');
+    try {
+      let response: any = await getDiagnosticRefundOrders(client, orderSelected?.paymentOrderId);
+      if (response?.data?.data) {
+        const refundData = g(response, 'data', 'data', 'getOrderInternal', 'refunds');
         if (refundData?.length! > 0) {
           setRefundStatusArr(refundData);
         }
         performNavigation(orderSelected, tab, refundData);
-      })
-      .catch((e) => {
-        CommonBugFender('OrderedTestStatus_fetchRefundOrder', e);
-        setLoading?.(false);
-      });
+      } else {
+        performNavigation(orderSelected, tab, []);
+      }
+    } catch (error) {
+      CommonBugFender('OrderedTestStatus_fetchRefundOrder', e);
+      setLoading?.(false);
+    }
   };
 
   const onSubmitCancelOrder = (reason: string, comment: string) => {
@@ -1205,7 +1201,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string) {
     setLoading?.(true);
     try {
-      await downloadDiagnosticReport(pdfUrl, appointmentDate, patientName);
+      await downloadDiagnosticReport(pdfUrl, appointmentDate, patientName, true);
     } catch (error) {
       setLoading?.(false);
       CommonBugFender('YourOrderTests_downloadLabTest', error);

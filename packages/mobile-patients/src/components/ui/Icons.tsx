@@ -1763,3 +1763,27 @@ export const ProHealthIcon: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_icon.webp')}
   />
 );
+
+export const SampleTestTubesIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/sample-tube.webp')}
+  />
+);
+
+export const AppointmentIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/appointment.webp')}
+  />
+);
+
+export const MedicalHistoryIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/medical-history.webp')}
+  />
+);

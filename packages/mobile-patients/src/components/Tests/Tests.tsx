@@ -3,7 +3,10 @@ import {
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import stripHtml from 'string-strip-html';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import {
+  DiagnosticsCartItem,
+  useDiagnosticsCart,
+} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
   Badge,
@@ -15,7 +18,6 @@ import {
   CartIcon,
   LocationOff,
   SearchSendIcon,
-  TestsIcon,
   SearchIcon,
   HomeIcon,
   NotificationIcon,
@@ -52,10 +54,12 @@ import {
   getFormattedLocation,
   nameFormater,
   isSmallDevice,
-  formatAddressToLocation,
   navigateToHome,
   isAddressLatLngInValid,
+  addTestsToCart,
+  handleGraphQlError,
   setAsyncPharmaLocation,
+  downloadDiagnosticReport,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -76,6 +80,8 @@ import {
   Image as ImageNative,
   ImageBackground,
   BackHandler,
+  Alert,
+  Linking,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
@@ -101,7 +107,13 @@ import {
   GetSubscriptionsOfUserByStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
-import { getUserBannersList } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  getDiagnosticClosedOrders,
+  getDiagnosticOpenOrders,
+  getDiagnosticPatientPrescription,
+  getDiagnosticPhelboDetails,
+  getUserBannersList,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import Carousel from 'react-native-snap-carousel';
 import { DiagnosticsSearchSuggestionItem } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticsSearchSuggestionItem';
@@ -128,16 +140,25 @@ import {
   getPatientAddressListVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
-import { stepsToBookArray } from '@aph/mobile-patients/src/strings/AppConfig';
+import {
+  AppConfig,
+  DIAGNOSITC_PHELBO_TRACKING_STATUS,
+  DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY,
+  DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
+  stepsToBookArray,
+} from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   findDiagnosticsWidgetsPricing,
   findDiagnosticsWidgetsPricingVariables,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
 import { LowNetworkCard } from '@aph/mobile-patients/src/components/Tests/components/LowNetworkCard';
+import { PrescriptionCard } from '@aph/mobile-patients/src/components/Tests/components/PrescriptionCard';
 import {
   renderBannerShimmer,
   renderTestDiagonosticsShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import moment from 'moment';
+import { HomePageOrderStatusCard } from '@aph/mobile-patients/src/components/Tests/components/HomePageOrderStatusCard';
 import AsyncStorage from '@react-native-community/async-storage';
 
 const imagesArray = [
@@ -184,6 +205,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setAreaSelected,
     setDiagnosticSlot,
     setAddresses: setTestAddress,
+    addMultipleCartItems: addMultipleTestCartItems,
   } = useDiagnosticsCart();
   const {
     cartItems: shopCartItems,
@@ -236,6 +258,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [widgetsData, setWidgetsData] = useState([] as any);
   const [reloadWidget, setReloadWidget] = useState<boolean>(false);
 
+  const [latestPrescription, setLatestPrescription] = useState([] as any);
+  const [prescriptionSlideIndex, setPrescriptionSlideIndex] = useState(0);
+
+  const [patientOpenOrders, setPatientOpenOrders] = useState([] as any);
+  const [patientClosedOrders, setPatientClosedOrders] = useState([] as any);
+  const [orderCardSlideIndex, setOrderCardSlideIndex] = useState(0);
+
+  const [searchQuery, setSearchQuery] = useState({});
   const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
   const [searchResult, setSearchResults] = useState<boolean>(false);
   const [isCurrentScreen, setCurrentScreen] = useState<string>('');
@@ -331,8 +361,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
     if (currentPatient) {
       getUserBanners();
       fetchAddress();
+      fetchPatientOpenOrders();
+      fetchPatientClosedOrders();
     }
   }, [currentPatient]);
+
+  useEffect(() => {
+    //fetch the doctor prescriptions for the current patient
+    fetchPatientPrescriptions();
+  }, [currentPatient, serviceableObject]);
 
   useEffect(() => {
     if (isFocused) {
@@ -399,6 +436,74 @@ export const Tests: React.FC<TestsProps> = (props) => {
       });
     }
   }, [loading, banners]);
+
+  const fetchPatientOpenOrders = async () => {
+    try {
+      let openOrdersResponse: any = await getDiagnosticOpenOrders(
+        client,
+        currentPatient?.mobileNumber,
+        0,
+        3
+      );
+      if (openOrdersResponse?.data?.data) {
+        const getOpenOrders =
+          openOrdersResponse?.data?.data?.getDiagnosticOpenOrdersList?.openOrders;
+        setPatientOpenOrders(getOpenOrders);
+      } else {
+        setPatientOpenOrders([]);
+      }
+    } catch (error) {
+      setPatientOpenOrders([]);
+      CommonBugFender('fetchPatientOpenOrders_Tests', error);
+    }
+  };
+
+  const fetchPatientClosedOrders = async () => {
+    try {
+      let closedOrdersResponse: any = await getDiagnosticClosedOrders(
+        client,
+        currentPatient?.mobileNumber,
+        0,
+        3
+      );
+      if (closedOrdersResponse?.data?.data) {
+        const getClosedOrders =
+          closedOrdersResponse?.data?.data?.getDiagnosticClosedOrdersList?.closedOrders;
+        setPatientClosedOrders(getClosedOrders);
+      } else {
+        setPatientClosedOrders([]);
+      }
+    } catch (error) {
+      setPatientClosedOrders([]);
+      CommonBugFender('fetchPatientOpenOrders_Tests', error);
+    }
+  };
+
+  const fetchPatientPrescriptions = async () => {
+    try {
+      const res: any = await getDiagnosticPatientPrescription(
+        client,
+        currentPatient?.id,
+        3,
+        Object.keys(serviceableObject)?.length === 0 && serviceableObject?.constructor === Object
+          ? 9
+          : serviceableObject?.cityId
+      );
+      if (res?.data?.data) {
+        const response = res?.data?.data?.getPatientLatestPrescriptions;
+        if (!!response && response?.length > 0) {
+          setLatestPrescription(response);
+        } else {
+          setLatestPrescription([]);
+        }
+      } else {
+        setLatestPrescription([]);
+      }
+    } catch (error) {
+      setLatestPrescription([]);
+      CommonBugFender('fetchPatientPrescriptions_Tests', error);
+    }
+  };
 
   const getDiagnosticBanner = async () => {
     try {
@@ -814,8 +919,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
           marginBottom: 24,
           marginTop: 20,
         }}
-        title={'My Orders'}
-        leftIcon={<TestsIcon />}
+        titleStyle={{
+          color: theme.colors.SHERPA_BLUE,
+          ...theme.fonts.IBMPlexSansSemiBold(16),
+          paddingHorizontal: 0,
+        }}
+        title={'MY ORDERS'}
+        leftIcon={null}
       />
     );
   };
@@ -1269,9 +1379,19 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-  const renderDot = (active: boolean) => (
+  const renderDot = (active: boolean, source?: string) => (
     <View
-      style={[styles.sliderDotStyle, { backgroundColor: active ? colors.APP_GREEN : '#d8d8d8' }]}
+      style={[
+        styles.sliderDotStyle,
+        {
+          backgroundColor: active
+            ? source == 'orderStatus'
+              ? colors.APP_YELLOW
+              : colors.APP_GREEN
+            : '#d8d8d8',
+          width: source == 'orderStatus' && active ? 14 : 8,
+        },
+      ]}
     />
   );
 
@@ -1769,6 +1889,240 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  const renderPrescriptionCard = () => {
+    return (
+      <Carousel
+        onSnapToItem={setPrescriptionSlideIndex}
+        data={latestPrescription}
+        renderItem={renderPrescriptionCardItems}
+        sliderWidth={winWidth}
+        itemWidth={winWidth}
+        loop={false}
+        autoplay={false}
+      />
+    );
+  };
+
+  const renderPrescriptionCardItems = ({ item, index }: { item: any; index: number }) => {
+    const prescribedText = item?.caseSheet?.diagnosticPrescription;
+    const doctorName = item?.doctorName;
+    const doctorQualification = item?.doctorCredentials;
+    const prescribedDateTime = moment(item?.prescriptionDateTime)?.format('DD MMM, YYYY , hh:mm a');
+    const patientName = item?.patientName;
+    return (
+      <PrescriptionCard
+        key={index?.toString()}
+        heading1={`${prescribedText?.length} Tests Prescribed by`}
+        docName={doctorName}
+        docQualification={doctorQualification}
+        dateTime={`on ${prescribedDateTime}`}
+        patientName={`for ${patientName}`}
+        buttonTitle={item?.orderCount == 0 ? 'Book Now' : 'Book Again'}
+        onPressBookNow={() => onPressBookNow(item)}
+        onPressViewPrescription={() => onPressViewPrescription(item)}
+      />
+    );
+  };
+
+  function onPressBookNow(item: any) {
+    const testPrescription = item?.caseSheet?.diagnosticPrescription;
+    setLoading?.(true);
+    addTestsToCart(testPrescription, client, '500030')
+      .then((tests: DiagnosticsCartItem[]) => {
+        // Adding ePrescriptions to DiagnosticsCart
+        const unAvailableItemsArray = testPrescription?.filter(
+          (item: any) =>
+            !tests?.find((val) => val?.name?.toLowerCase() == item?.itemname?.toLowerCase())
+        );
+        const unAvailableItems = unAvailableItemsArray
+          ?.map((item: any) => item?.itemname)
+          ?.join(', ');
+
+        if (tests?.length) {
+          addMultipleTestCartItems?.(tests);
+          //removed code for e-prescriptions
+        }
+        if (testPrescription?.length == unAvailableItemsArray?.length) {
+          Alert.alert(string.common.uhOh, string.common.noDiagnosticsAvailable);
+        } else if (unAvailableItems) {
+          Alert.alert(
+            string.common.uhOh,
+            `Out of ${testPrescription?.length} diagnostic(s), you are trying to order, following diagnostic(s) are not available.\n\n${unAvailableItems}\n`
+          );
+        }
+        setLoading?.(false);
+        props.navigation.navigate(AppRoutes.TestsCart);
+      })
+      .catch((e) => {
+        setLoading?.(false);
+        handleGraphQlError(e);
+      });
+  }
+
+  const getFileName = (item: any) => {
+    return (
+      'Prescription_' +
+      moment(item?.prescriptionDateTime).format('DD MM YYYY') +
+      '_' +
+      item?.doctorName +
+      '_Apollo 247' +
+      new Date().getTime() +
+      '.pdf'
+    );
+  };
+
+  async function onPressViewPrescription(item: any) {
+    const pdfName = item?.caseSheet?.blobName;
+    const prescriptionDate = moment(item?.prescriptionDateTime).format('DD MM YYYY');
+    const fileName: string = getFileName(item);
+
+    if (pdfName == null) {
+      Alert.alert('No Image');
+      CommonLogEvent('Tests', 'No image');
+    } else {
+      try {
+        setLoading?.(true);
+        await downloadDiagnosticReport(
+          AppConfig.Configuration.DOCUMENT_BASE_URL.concat(pdfName),
+          prescriptionDate,
+          item?.patientName,
+          true,
+          fileName
+        );
+      } catch (error) {
+        setLoading?.(false);
+        CommonBugFender('Tests_onPressViewPrescription_downloadLabTest', error);
+      } finally {
+        setLoading?.(false);
+      }
+    }
+  }
+
+  const renderOrderStatusCard = () => {
+    var allOrders;
+    if (patientOpenOrders?.length == 3) {
+      allOrders = [patientOpenOrders];
+    } else if (patientOpenOrders?.length && patientOpenOrders?.length < 3) {
+      allOrders = [patientOpenOrders, patientClosedOrders]?.flat(1);
+    } else {
+      allOrders = [patientClosedOrders];
+    }
+    return (
+      <>
+        {allOrders?.length > 0 ? (
+          <View style={{ marginBottom: 10 }}>
+            <Carousel
+              onSnapToItem={setOrderCardSlideIndex}
+              data={allOrders}
+              renderItem={renderOrderStatusCardItems}
+              sliderWidth={winWidth}
+              itemWidth={winWidth}
+              loop={false}
+              autoplay={false}
+            />
+            <View style={styles.orderStatusCardDots}>
+              {allOrders?.map((_, index) =>
+                index == orderCardSlideIndex
+                  ? renderDot(true, 'orderStatus')
+                  : renderDot(false, 'orderStatus')
+              )}
+            </View>
+          </View>
+        ) : null}
+      </>
+    );
+  };
+
+  const renderOrderStatusCardItems = ({ item, index }: { item: any; index: number }) => {
+    const appointmentTime = moment(item?.slotDateTimeInUTC)?.format('DD MMM, hh:mm a');
+    return (
+      <HomePageOrderStatusCard
+        status={item?.orderStatus}
+        patientName={`${item?.patientObj?.firstName} ${item?.patientObj?.lastName}`}
+        appointmentTime={appointmentTime}
+        key={item?.id}
+        onPressBookNow={() => onPressOrderStatusOption(item)}
+      />
+    );
+  };
+
+  async function onPressOrderStatusOption(item: any) {
+    const appointmentDate = moment(item?.slotDateTimeInUTC)?.format('DD MMM YYYY');
+    const patientName = `${item?.patientObj?.firstName} ${item?.patientObj?.lastName}`;
+    if (DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(item?.orderStatus)) {
+      //track order
+      navigateToTrackingScreen(item);
+    } else if (DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY.includes(item?.orderStatus)) {
+      //view report download
+      try {
+        if (!!item?.labReportURL && item?.labReportURL != '') {
+          setLoading?.(true);
+          await downloadDiagnosticReport(
+            item?.labReportURL,
+            appointmentDate,
+            !!patientName ? patientName : '_',
+            true,
+            undefined
+          );
+        } else {
+          showAphAlert?.({
+            title: string.common.uhOh,
+            description: string.diagnostics.responseUnavailableForReport,
+          });
+        }
+      } catch (error) {
+        setLoading?.(false);
+        CommonBugFender('Tests_onPressOrderStatusOption_downloadLabTest', error);
+      } finally {
+        setLoading?.(false);
+      }
+    } else {
+      if (DIAGNOSITC_PHELBO_TRACKING_STATUS.includes(item?.orderStatus)) {
+        //track phlebo
+        getPhelboDetails(item?.id, item);
+      } else {
+        navigateToTrackingScreen(item);
+      }
+    }
+  }
+
+  function navigateToTrackingScreen(item: any) {
+    props.navigation.navigate(AppRoutes.TestOrderDetails, {
+      orderId: item?.id,
+      selectedOrder: item,
+      refundStatusArr: [], //since we don't get cancelled or failed orders
+      comingFrom: AppRoutes.YourOrdersTest,
+      showOrderSummaryTab: false,
+    });
+  }
+
+  async function getPhelboDetails(orderId: string, order: any) {
+    setLoading?.(true);
+    try {
+      let response: any = await getDiagnosticPhelboDetails(client, [orderId]);
+      if (response?.data?.data) {
+        const getUrl =
+          response?.data?.data?.getOrderPhleboDetailsBulk?.orderPhleboDetailsBulk?.[0]
+            ?.orderPhleboDetails;
+        if (!!getUrl) {
+          Linking.canOpenURL(getUrl).then((supported: any) => {
+            if (supported) {
+              Linking.openURL(getUrl);
+            } else {
+              CommonBugFender('Tests_getPhelboDetails_Unable_to_open_url', getUrl);
+            }
+          });
+        } else {
+          navigateToTrackingScreen(order);
+        }
+      }
+      setLoading?.(false);
+    } catch (error) {
+      setLoading?.(false);
+      CommonBugFender('Tests_onPressOrderStatusOption', error);
+    }
+  }
+
   const renderSections = () => {
     return (
       <TouchableOpacity
@@ -1783,7 +2137,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         {widgetsData?.length == 0 && reloadWidget && renderLowNetwork()}
         {renderBanner()}
         {renderYourOrders()}
-
+        {latestPrescription?.length > 0 ? renderPrescriptionCard() : null}
+        {renderOrderStatusCard()}
         {renderBottomViews()}
       </TouchableOpacity>
     );
@@ -2136,5 +2491,13 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     paddingVertical: 0,
     backgroundColor: 'white',
+  },
+  orderStatusCardDots: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    position: 'absolute',
+    top: 105,
+    alignSelf: 'flex-start',
+    left: 32,
   },
 });

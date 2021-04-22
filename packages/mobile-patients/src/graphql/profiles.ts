@@ -4681,6 +4681,7 @@ export const GET_PHLOBE_DETAILS = gql`
             name
           }
           phleboOTP
+          phleboTrackLink
         }
         phleboEta {
           distanceInMetres
@@ -4690,6 +4691,48 @@ export const GET_PHLOBE_DETAILS = gql`
     }
   }
 `;
+
+export const GET_PATIENT_LATEST_PRESCRIPTION = gql `
+  query getPatientLatestPrescriptions($patientId: String!, $limit: Int!, $cityId: Int!){
+    getPatientLatestPrescriptions(patientId: $patientId, limit: $limit, cityId: $cityId){
+      doctorName
+      doctorCredentials
+      patientName
+      prescriptionDateTime
+      numberOfTests
+      orderCount
+      caseSheet{
+        id
+        blobName
+        diagnosticPrescription{
+          itemId
+          itemname
+          testInstruction
+        }
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql `
+  query getDiagnosticOpenOrdersList($mobileNumber : String!, $skip: Int!, $take: Int!){
+    getDiagnosticOpenOrdersList(mobileNumber: $mobileNumber, skip: $skip, take: $take){
+      openOrders{
+        id
+        patientId
+        paymentOrderId
+        orderStatus
+        slotDateTimeInUTC
+        labReportURL
+        paymentType
+        paymentOrderId
+        patientObj {
+          firstName
+          lastName
+        },
+      }
+    }
+  }`;
 
 export const GET_PATIENT_PAST_CONSULTED_DOCTORS = gql`
   query getPatientPastConsultedDoctors($patientMobile: String, $offset: Int, $limit: Int) {
@@ -4708,6 +4751,27 @@ export const GET_PATIENT_PAST_CONSULTED_DOCTORS = gql`
         hospitalName
         consultMode
         _247_Flag
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql `
+  query getDiagnosticClosedOrdersList($mobileNumber : String!, $skip: Int!, $take: Int!){
+    getDiagnosticClosedOrdersList(mobileNumber: $mobileNumber, skip: $skip, take: $take){
+      closedOrders{
+        id
+        patientId
+        paymentOrderId
+        orderStatus
+        slotDateTimeInUTC
+        labReportURL
+        paymentType
+        paymentOrderId
+        patientObj {
+          firstName
+          lastName
+        },
       }
     }
   }

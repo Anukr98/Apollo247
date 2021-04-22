@@ -29,6 +29,11 @@ import {
   GET_PACKAGE_INCLUSIONS,
   UPDATE_PATIENT_APP_VERSION,
   GET_ALL_PRO_HEALTH_APPOINTMENTS,
+  GET_PATIENT_LATEST_PRESCRIPTION,
+  GET_DIAGNOSTIC_OPEN_ORDERLIST,
+  GET_DIAGNOSTIC_CLOSED_ORDERLIST,
+  GET_PHLOBE_DETAILS,
+  GET_INTERNAL_ORDER,
   UPDATE_APPOINTMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -95,12 +100,12 @@ import {
   getAppointmentRescheduleDetailsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentRescheduleDetails';
 import { saveSearch, saveSearchVariables } from '@aph/mobile-patients/src/graphql/types/saveSearch';
-import { saveDeviceToken, saveDeviceTokenVariables } from '../graphql/types/saveDeviceToken';
+import { saveDeviceToken, saveDeviceTokenVariables } from '@aph/mobile-patients/src/graphql/types/saveDeviceToken';
 import { Platform } from 'react-native';
 import {
   getSecretaryDetailsByDoctorId,
   getSecretaryDetailsByDoctorIdVariables,
-} from '../graphql/types/getSecretaryDetailsByDoctorId';
+} from '@aph/mobile-patients/src/graphql/types/getSecretaryDetailsByDoctorId';
 import {
   setAndGetNumberOfParticipants,
   setAndGetNumberOfParticipantsVariables,
@@ -129,10 +134,13 @@ import {
 import AsyncStorage from '@react-native-community/async-storage';
 import DeviceInfo from 'react-native-device-info';
 import appsFlyer from 'react-native-appsflyer';
-import {
-  getAllProhealthAppointments,
-  getAllProhealthAppointmentsVariables,
-} from '../graphql/types/getAllProhealthAppointments';
+import { getAllProhealthAppointments, getAllProhealthAppointmentsVariables } from '@aph/mobile-patients/src/graphql/types/getAllProhealthAppointments';
+import { getPatientLatestPrescriptions, getPatientLatestPrescriptionsVariables } from '@aph/mobile-patients/src/graphql/types/getPatientLatestPrescriptions';
+import { getDiagnosticOpenOrdersList, getDiagnosticOpenOrdersListVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOpenOrdersList';
+import { getDiagnosticClosedOrdersList, getDiagnosticClosedOrdersListVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticClosedOrdersList';
+import {  getOrderPhleboDetailsBulk, getOrderPhleboDetailsBulkVariables } from '@aph/mobile-patients/src/graphql/types/getOrderPhleboDetailsBulk';
+import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
+import { getOrderInternal, getOrderInternalVariables } from '@aph/mobile-patients/src/graphql/types/getOrderInternal';
 import {
   updateAppointmentVariables,
   updateAppointment,
@@ -922,6 +930,149 @@ export const getAllProHealthAppointments = (client: ApolloClient<object>, patien
       })
       .catch((e) => {
         CommonBugFender('clientCalls_ getAllProHealthAppointments', e);
+        rej({ error: e });
+      });
+  });
+};
+
+export const getDiagnosticPatientPrescription = (
+  client: ApolloClient<object>,
+  patientId: string,
+  limit: number,
+  cityId: number | string
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getPatientLatestPrescriptions, getPatientLatestPrescriptionsVariables>({
+        query: GET_PATIENT_LATEST_PRESCRIPTION,
+        context: {
+          sourceHeaders,
+        },
+        variables: {
+          patientId: patientId,
+          limit: limit,
+          cityId: Number(cityId),
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_getDiagnosticPatientPrescription', e);
+        rej({ error: e });
+      });
+  });
+};
+
+export const getDiagnosticOpenOrders = (
+  client: ApolloClient<object>,
+  mobileNumber: string,
+  skip: number,
+  take: number
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getDiagnosticOpenOrdersList, getDiagnosticOpenOrdersListVariables>({
+        query: GET_DIAGNOSTIC_OPEN_ORDERLIST,
+        context: {
+          sourceHeaders,
+        },
+        variables: {
+          mobileNumber: mobileNumber,
+          skip: skip, //for pagination
+          take : take // number of orders to show
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_getDiagnosticOpenOrders', e);
+        rej({ error: e });
+      });
+  });
+};
+
+export const getDiagnosticClosedOrders = (
+  client: ApolloClient<object>,
+  mobileNumber: string,
+  skip: number,
+  take: number
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getDiagnosticClosedOrdersList, getDiagnosticClosedOrdersListVariables>({
+        query: GET_DIAGNOSTIC_CLOSED_ORDERLIST,
+        context: {
+          sourceHeaders,
+        },
+        variables: {
+          mobileNumber: mobileNumber,
+          skip: skip, //for pagination
+          take : take // number of orders to show
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_getDiagnosticClosedOrders', e);
+        rej({ error: e });
+      });
+  });
+};
+
+export const getDiagnosticPhelboDetails = (
+  client: ApolloClient<object>,
+  orderId: any,
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getOrderPhleboDetailsBulk, getOrderPhleboDetailsBulkVariables>({
+        query: GET_PHLOBE_DETAILS,
+        context: {
+          sourceHeaders,
+        },
+        variables: {
+          diagnosticOrdersIds: orderId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_getDiagnosticPhelboDetails', e);
+        rej({ error: e });
+      });
+  });
+};
+
+export const getDiagnosticRefundOrders = (
+  client: ApolloClient<object>,
+  paymentId: any,
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getOrderInternal, getOrderInternalVariables>({
+        query: GET_INTERNAL_ORDER,
+        context: {
+          sourceHeaders,
+        },
+        variables: {
+          order_id: paymentId,
+         
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_getDiagnosticRefundOrders', e);
         rej({ error: e });
       });
   });

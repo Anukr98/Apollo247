@@ -124,7 +124,9 @@
     "somethingWentWrong": "Something went wrong.",
     "settingProfileTxt": "We’re setting up your profile. Please check back soon!",
     "couldNotLoadText": "Uh oh.. could't load!",
-    "lowNetworkText": "We were unable to load the page properly because of low network. Please try again"
+    "lowNetworkText": "We were unable to load the page properly because of low network. Please try again",
+    "noDiagnosticsAvailable":"Unfortunately, we do not have any diagnostic(s) available right now.",
+    
   },
   "components": {
     "medicineDetails": {
@@ -529,7 +531,17 @@
     "homeHomeCollectionDisclaimerTxt": "Home collection charges of upto ₹100 would be levied in case of order value less than ₹500",
     "itDoseCancelledText": "Canceled by phlebotomist as per the request",
     "orderCancelledReasonText": "Order was cancelled -",
-    "wantToReschedule": "• Do you want to Reschedule Appointment ?"
+    "wantToReschedule": "• Do you want to Reschedule Appointment ?",
+    "sampleSubmitted": "Sample Submitted",
+    "reportGenrated": "Reports are ready",
+    "bookingFor":"Booking",
+    "sampleSubmittedContent":"Sample has been submitted to the lab.\nYou will be notified once your reports are ready.",
+    "viewReportContent":"'Your reports have been generated.",
+    "collectionAppointmentContent":"Sample Collection appointment on",
+    "viewReportText":"View Report",
+    "sampleCollectedText":"Check Status",
+    "collectionText":"Track Order",
+    "trackPhleboText": "Track Phlebo"
   },
   "orders": {
     "urOrders": "MY ORDERS",
