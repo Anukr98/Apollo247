@@ -25,6 +25,13 @@ export interface getPlatinumDoctor_getPlatinumDoctor_doctors_doctorPricing {
   appointment_type: APPOINTMENT_TYPE | null;
 }
 
+export interface getPlatinumDoctor_getPlatinumDoctor_doctors_doctorCardActiveCTA {
+  __typename: "DoctorCardActiveCTA";
+  ONLINE: string | null;
+  PHYSICAL: string | null;
+  DEFAULT: string | null;
+}
+
 export interface getPlatinumDoctor_getPlatinumDoctor_doctors {
   __typename: "doctorCardDetail";
   id: string | null;
@@ -39,10 +46,12 @@ export interface getPlatinumDoctor_getPlatinumDoctor_doctors {
   qualification: string | null;
   experience: number | null;
   photoUrl: string | null;
+  profile_deeplink: string | null;
   slot: string | null;
   thumbnailUrl: string | null;
   availabilityTitle: getPlatinumDoctor_getPlatinumDoctor_doctors_availabilityTitle | null;
   doctorPricing: (getPlatinumDoctor_getPlatinumDoctor_doctors_doctorPricing | null)[] | null;
+  doctorCardActiveCTA: getPlatinumDoctor_getPlatinumDoctor_doctors_doctorCardActiveCTA | null;
 }
 
 export interface getPlatinumDoctor_getPlatinumDoctor {

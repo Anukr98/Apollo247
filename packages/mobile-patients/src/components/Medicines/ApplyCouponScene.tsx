@@ -13,26 +13,13 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {
-  GET_PHARMA_COUPON_LIST,
-  VALIDATE_PHARMA_COUPON,
-} from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  CouponCategoryApplicable,
-  OrderLineItems,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { useApolloClient, useQuery } from 'react-apollo-hooks';
+import { useApolloClient } from 'react-apollo-hooks';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { getPharmaCouponList } from '../../graphql/types/getPharmaCouponList';
-import {
-  validatePharmaCoupon,
-  validatePharmaCouponVariables,
-} from '../../graphql/types/validatePharmaCoupon';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { useUIElements } from '../UIElementsProvider';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
@@ -183,13 +170,11 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     };
     fetchConsultCoupons(data)
       .then((res: any) => {
-        console.log(JSON.stringify(res.data), 'objobj');
         setcouponList(res.data.response);
         setLoading(false);
       })
       .catch((error) => {
         CommonBugFender('fetchingConsultCoupons', error);
-        console.log(error);
         props.navigation.goBack();
         showAphAlert!({
           title: string.common.uhOh,
@@ -221,7 +206,6 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
         if (resp.data.errorCode == 0) {
           if (resp.data.response.valid) {
             setIsCircleSubscription && setIsCircleSubscription(false);
-            console.log(g(resp.data, 'response'));
             setCoupon!({ ...g(resp.data, 'response')!, message: couponMsg });
             setIsFreeDelivery?.(!!resp?.data?.response?.freeDelivery);
             props.navigation.goBack();
@@ -253,7 +237,6 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('validatingPharmaCoupon', error);
-        console.log(error);
         setCouponError('Sorry, unable to validate coupon right now.');
       })
       .finally(() => setLoading!(false));

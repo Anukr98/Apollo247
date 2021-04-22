@@ -8,7 +8,7 @@ import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails,
@@ -19,6 +19,8 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { CircleLogo, DiscountIcon, OneApollo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { PaymentModes } from '@aph/mobile-patients/src/strings/strings.json';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
+import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   horizontalline: {
@@ -36,7 +38,6 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(12),
     color: '#01475b',
     letterSpacing: 0,
-    // lineHeight: 20,
   },
   orderStyles: {
     ...theme.fonts.IBMPlexSansSemiBold(13),
@@ -131,7 +132,6 @@ const styles = StyleSheet.create({
   cashBackView: {
     ...theme.viewStyles.cardViewStyle,
     marginTop: 10,
-    // marginHorizontal: 13,
     borderRadius: 5,
     marginBottom: 16,
     paddingHorizontal: 15,
@@ -161,7 +161,6 @@ export interface OrderSummaryViewProps {
 
 export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   orderDetails,
-  isTest,
   addressData,
   onBillChangesClick,
 }) => {
@@ -176,13 +175,17 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
     MEDICINE_ORDER_STATUS.VERIFICATION_DONE,
     MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
   ];
+  const [shipmentItems, setShipmentItems] = useState([]);
 
-  const itemsFromMedicineShipment = g(
+  const orderInvoice = g(
     orderDetails,
     'medicineOrderShipments',
     '0' as any,
-    'itemDetails'
+    'medicineOrderInvoice'
   );
+  const itemsFromMedicineShipment = orderInvoice?.length
+    ? g(orderDetails, 'medicineOrderShipments', '0' as any, 'itemDetails')
+    : '';
 
   const item_details_from_shipments = itemsFromMedicineShipment!
     ? JSON.parse(itemsFromMedicineShipment!)
@@ -203,8 +206,32 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
     '0' as any,
     'itemDetails'
   );
-  const itemDetails = item_details ? JSON.parse(item_details) : null;
-  // console.log('itemDetails', itemDetails, JSON.stringify(itemDetails));
+  const [itemDetails, setItemDetails] = useState(item_details ? JSON.parse(item_details) : []);
+
+  useEffect(() => {
+    if (itemDetails?.length) {
+      Promise.all(itemDetails?.map((item) => getMedicineDetailsApi(item?.itemId)))
+        .then((result) => {
+          const shipmentDetails = result?.map(({ data: { productdp } }, index) => {
+            const medicineDetails = (productdp && productdp[0]) || {};
+            const mou = medicineDetails?.mou || itemDetails?.[index]?.mou;
+            const qty = (itemDetails?.[index]?.issuedQty * itemDetails?.[index]?.mou) / mou;
+            return {
+              itemId: medicineDetails?.sku || itemDetails?.[index]?.itemId,
+              medicineName: medicineDetails?.name || itemDetails?.[index]?.itemName,
+              quantity: Math.ceil(qty),
+              mrp: (itemDetails?.[index]?.mrp * mou) / itemDetails?.[index]?.mou,
+              total: itemDetails?.[index]?.mrp * itemDetails?.[index]?.issuedQty || 0,
+            };
+          });
+          setShipmentItems(shipmentDetails);
+        })
+        .catch((e) => {
+          CommonBugFender('OrderSummaryView_getMedicineDetailsApi', e);
+        });
+    }
+  }, [itemDetails]);
+
   const billDetails = g(
     orderDetails,
     'medicineOrderShipments',
@@ -214,7 +241,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
     'billDetails'
   );
   const billingDetails = billDetails ? JSON.parse(billDetails) : null;
-  // console.log('biilingDetails', billingDetails, JSON.stringify(billingDetails));
   const orderBilledAndPacked = medicineOrderStatus.find(
     (item) =>
       item!.orderStatus == MEDICINE_ORDER_STATUS.READY_AT_STORE ||
@@ -228,17 +254,17 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
     item_quantity =
       item_details_from_shipments?.length +
       (item_details_from_shipments?.length > 1 ? ' item(s) ' : ' items ');
-  } else if (!orderBilledAndPacked && medicineOrderLineItems.length == 1) {
-    item_quantity = medicineOrderLineItems.length + ' item ';
-  } else if (orderBilledAndPacked && itemDetails && itemDetails.length == 1) {
-    item_quantity = itemDetails.length + ' item ';
+  } else if (!orderBilledAndPacked && medicineOrderLineItems?.length == 1) {
+    item_quantity = medicineOrderLineItems?.length + ' item ';
+  } else if (orderBilledAndPacked && itemDetails && itemDetails?.length == 1) {
+    item_quantity = itemDetails?.length + ' item ';
   } else {
     item_quantity =
       orderBilledAndPacked && itemDetails
-        ? orderBilledAndPacked && itemDetails.length + ' item(s) '
-        : medicineOrderLineItems.length + ' item(s) ';
+        ? orderBilledAndPacked && itemDetails?.length + ' item(s) '
+        : medicineOrderLineItems?.length + ' item(s) ';
   }
-  const mrpTotal = medicineOrderLineItems.reduce(
+  const mrpTotal = medicineOrderLineItems?.reduce(
     (acc, currentVal) => acc + currentVal!.mrp! * currentVal!.quantity!,
     0
   );
@@ -251,7 +277,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   const billedMrpTotal =
     orderBilledAndPacked &&
     itemDetails &&
-    itemDetails.reduce((acc, currentVal) => acc + currentVal!.mrp! * currentVal!.issuedQty!, 0);
+    itemDetails?.reduce((acc, currentVal) => acc + currentVal?.mrp * currentVal?.issuedQty, 0);
 
   const product_discount = orderDetails.productDiscount || 0;
   const coupon_discount = orderDetails.couponDiscount || 0;
@@ -289,12 +315,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
       ? billingDetails.invoiceValue - orderDetails.estimatedAmount!
       : billDetails && orderDetails.estimatedAmount! - billingDetails.invoiceValue
     : 0;
-  // console.log(
-  //   'prepaidBilledValue',
-  //   prepaidBilledValue,
-  //   Math.round(billingDetails && billingDetails.discountValue),
-  //   billingDetails && billingDetails.invoiceValue > billingDetails.prepaidValue
-  // );
 
   const noAdditionalDiscount =
     orderBilledAndPacked &&
@@ -318,8 +338,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
     orderDetails.medicineOrderShipments &&
     billingDetails &&
     billingDetails.discountValue != undefined;
-  // console.log('prescriptionUpload', prescriptionUpload, billingDiscount);
-  // console.log('newOrders', newOrders);
   const getOrderDifferenceAmounts = (
     paymentMethod: MEDICINE_ORDER_PAYMENT_TYPE,
     orderInfo: getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails
@@ -336,7 +354,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
       'billDetails'
     );
     const billingDetails = billDetails ? JSON.parse(billDetails) : null;
-    // console.log('biilingDetails', billingDetails, JSON.stringify(billingDetails));
     const billedDiscount = billingDetails.discountValue || 0;
     const billedValue = billingDetails.invoiceValue || 0;
 
@@ -426,13 +443,16 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   };
 
   const renderOrderBilledMedicineRow = (item: any) => {
-    const isTablet = (item.itemName || '').includes('TABLET');
-    const medicineName = `${item.itemName}${
-      item.mou! > 1 ? ` (${item.mou}${isTablet ? ' tabs' : ''})` : ''
+    const isTablet = (item?.itemName || '').includes('TABLET');
+    const medicineName = `${item?.itemName}${
+      item?.mou > 1 ? ` (${item?.mou}${isTablet ? ' tabs' : ''})` : ''
     }`;
+    const quantity = Math.ceil(item?.issuedQty);
+    const mrp = (item?.mrp * item?.issuedQty || 0).toFixed(2);
+    const billedTotal = (mrp * quantity).toFixed(2);
     return (
       <View
-        key={item.itemId!}
+        key={item?.itemId!}
         style={{ flexDirection: 'row', paddingLeft: 11, paddingRight: 16, marginBottom: 8 }}
       >
         <View
@@ -442,8 +462,9 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             borderRightColor: 'rgba(2, 71, 91, 0.3)',
           }}
         >
-          <Text numberOfLines={2} style={styles.medicineText1}>
-            {medicineName}
+          <Text style={styles.medicineText1}>{item?.medicineName || medicineName}</Text>
+          <Text style={styles.medicineText1}>
+            (MRP. {string.common.Rs} {item?.mrp?.toFixed(2) || mrp})
           </Text>
         </View>
         <View
@@ -453,7 +474,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             borderRightColor: 'rgba(2, 71, 91, 0.3)',
           }}
         >
-          <Text style={styles.medicineText1}>{Math.ceil(item.issuedQty)}</Text>
+          <Text style={styles.medicineText1}>{item?.quantity || quantity}</Text>
         </View>
         <View
           style={{
@@ -462,7 +483,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
           }}
         >
           <Text style={styles.medicineText1}>
-            {string.common.Rs} {(item.mrp! * item.issuedQty! || 0).toFixed(2)}
+            {string.common.Rs} {item?.total?.toFixed(2) || billedTotal}
           </Text>
         </View>
       </View>
@@ -590,7 +611,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             marginBottom: 8,
             paddingTop: 13,
             paddingBottom: 29,
-            //put a check here as well
             borderColor:
               isNewItemsAdded || isCartItemsUpdated ? 'rgba(79, 176, 144,0.8)' : 'transparent',
             borderWidth: isNewItemsAdded || isCartItemsUpdated ? 2 : 0,
@@ -686,14 +706,14 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                 alignItems: 'flex-end',
               }}
             >
-              <Text style={styles.medicineText}>{'MRP VALUE'}</Text>
+              <Text style={styles.medicineText}>{'MRP TOTAL'}</Text>
             </View>
           </View>
           {orderBilledAndPacked && newOrders && itemDetails
-            ? itemDetails.map((item) => renderOrderBilledMedicineRow(item!))
+            ? shipmentItems?.map((item) => renderOrderBilledMedicineRow(item!))
             : isCartItemsUpdated
             ? item_details_from_shipments?.map((item) => renderMedicineRow(item!))
-            : medicineOrderLineItems.map((item) => renderMedicineRow(item!))}
+            : medicineOrderLineItems?.map((item) => renderMedicineRow(item!))}
         </View>
 
         {orderDetails?.totalCashBack! > 0 && renderCircleSaving()}
@@ -810,9 +830,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
               {!offlineOrderNumber && !billingDetails && (
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                   <Text style={styles.paymentMethodText}>{string.OrderSummery.paymentMethod}</Text>
-                  <Text style={[styles.paymentMethodText, { textAlign: 'right' }]}>
-                    {/* {paymentMethodToDisplay} */}
-                  </Text>
+                  <Text style={[styles.paymentMethodText, { textAlign: 'right' }]}></Text>
                 </View>
               )}
               {!offlineOrderNumber && healthCreditsRedeemed != 0 && !billingDetails && (

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import {
   SelfUploadPhrIcon,
@@ -11,6 +11,7 @@ import {
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { EDIT_DELETE_TYPE } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DeleteReportPopup } from '@aph/mobile-patients/src/components/HealthRecords/Components/DeleteReportPopup';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   menuContainerStyle: {
@@ -80,7 +81,6 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
     dateText,
     selfUpload,
     sourceName,
-    index,
     onOrderTestAndMedicinePress,
     onFollowUpPress,
     showFollowUp,
@@ -175,7 +175,9 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
               <HospitalUploadPhrIcon style={{ height: 14, width: 14, marginRight: 8 }} />
             )}
             <Text numberOfLines={1} style={styles.sourceNameTextStyle}>
-              {sourceName}
+              {sourceName === string.common.clicnical_document_text
+                ? sourceName
+                : item?.siteDisplayName || '-'}
             </Text>
           </View>
         )}

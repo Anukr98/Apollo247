@@ -2,7 +2,6 @@ import React from 'react';
 import { StyleSheet, Text, FlatList, View } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { CartItemCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/CartItemCard';
 import { CartItemCard2 } from '@aph/mobile-patients/src/components/MedicineCart/Components/CartItemCard2';
 import { ShoppingCartItem } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { postwebEngageProductRemovedEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
@@ -16,7 +15,7 @@ export interface ShipmentsProps {
 
 export const Shipments: React.FC<ShipmentsProps> = (props) => {
   const { cartItems, updateCartItem, removeCartItem, orders } = useShoppingCart();
-  const { onPressProduct, setloading } = props;
+  const { setloading } = props;
   const { currentPatient } = useAllCurrentPatients();
   const isSplitCart: boolean = orders?.length > 1 ? true : false;
 

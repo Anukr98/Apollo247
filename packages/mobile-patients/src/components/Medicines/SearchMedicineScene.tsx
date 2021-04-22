@@ -840,7 +840,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
                       })
                       .catch((err) => {
                         CommonBugFender('SearchByBrand_getProductsByCategoryApi', err);
-                        console.log(err, 'errr');
                       })
                       .finally(() => {
                         setIsLoading(false);

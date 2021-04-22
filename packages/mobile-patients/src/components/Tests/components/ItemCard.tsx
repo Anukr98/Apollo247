@@ -45,15 +45,27 @@ export interface ItemCardProps {
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
   source: string;
   sourceScreen: string;
+  onPressAddToCartFromCart?: (item: any) => void;
+  onPressRemoveItemFromCart?: (item: any) => void;
 }
 
 export const ItemCard: React.FC<ItemCardProps> = (props) => {
   const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
-  const { data, isCircleSubscribed, navigation, source, sourceScreen } = props;
+  const {
+    data,
+    isCircleSubscribed,
+    navigation,
+    source,
+    sourceScreen,
+    onPressAddToCartFromCart,
+    onPressRemoveItemFromCart,
+  } = props;
 
   const actualItemsToShow =
-    data?.diagnosticWidgetData?.length > 0 &&
-    data?.diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
+    source === 'Cart Page'
+      ? data?.length > 0 && data?.filter((item: any) => item?.diagnosticPricing)
+      : data?.diagnosticWidgetData?.length > 0 &&
+        data?.diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
 
   const renderItemCard = (item: any) => {
     const getItem = item?.item;
@@ -72,13 +84,24 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     const imageUrl =
       getItem?.itemImageUrl || 'https://apolloaphstorage.blob.core.windows.net/organs/ic_liver.png';
     const name = getItem?.itemTitle;
-    const parameters = getItem?.itemParameter;
+    const inclusions = getItem?.inclusionData;
 
     const promoteCircle = pricesForItem?.promoteCircle;
     const promoteDiscount = pricesForItem?.promoteDiscount;
     const circleDiscount = pricesForItem?.circleDiscount;
     const specialDiscount = pricesForItem?.specialDiscount;
     const discount = pricesForItem?.discount;
+
+    const getMandatoryParamter =
+      !!inclusions &&
+      inclusions?.length > 0 &&
+      inclusions?.map((inclusion: any) =>
+        inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
+      );
+
+    const getMandatoryParameterCount =
+      !!getMandatoryParamter &&
+      getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
 
     const isAddedToCart = !!cartItems?.find(
       (items) => Number(items?.id) == Number(getItem?.itemId)
@@ -117,10 +140,16 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
               {name}
             </Text>
           </View>
-          {parameters ? (
-            <Text style={styles.parameterText}>{parameters} Parameters included</Text>
-          ) : null}
+          <View style={{ minHeight: isSmallDevice ? 25 : 30 }}>
+            {getMandatoryParameterCount > 0 ? (
+              <Text style={styles.parameterText}>
+                {getMandatoryParameterCount} {getMandatoryParameterCount == 1 ? 'test' : 'tests'}{' '}
+                included
+              </Text>
+            ) : null}
+          </View>
           <Spearator style={styles.horizontalSeparator} />
+
           {renderPricesView(pricesForItem, packageMrpForItem)}
           {renderAddToCart(isAddedToCart, getItem, pricesForItem, packageMrpForItem)}
         </View>
@@ -298,10 +327,12 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
       packageMrp: packageCalculatedMrp,
       inclusions: [Number(item?.itemId)], // since it's a test
     });
+    onPressAddToCartFromCart?.(item);
   }
 
   function onPressRemoveFromCart(item: any) {
     removeCartItem!(`${item?.itemId}`);
+    onPressRemoveItemFromCart?.(item);
   }
 
   function postHomePageWidgetClicked(name: string, id: string, section: string) {
@@ -319,26 +350,50 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     const widgetTitle = data?.diagnosticWidgetTitle;
 
     postHomePageWidgetClicked(item?.itemTitle!, `${item?.itemId}`, widgetTitle);
-    navigation.navigate(AppRoutes.TestDetails, {
-      itemId: item?.itemId,
-      comingFrom: sourceScreen,
-      testDetails: {
-        Rate: price,
-        specialPrice: specialPrice! || price,
-        circleRate: circlePrice,
-        circleSpecialPrice: circleSpecialPrice,
-        discountPrice: discountPrice,
-        discountSpecialPrice: discountSpecialPrice,
-        ItemID: `${item?.itemId}`,
-        ItemName: item?.itemTitle!,
-        collectionType: TEST_COLLECTION_TYPE.HC,
-        packageMrp: packageCalculatedMrp,
-        mrpToDisplay: mrpToDisplay,
-        source: source,
-        type: data?.diagnosticWidgetType,
-        inclusions: [Number(item?.itemId)],
-      } as TestPackageForDetails,
-    });
+
+    if (sourceScreen == AppRoutes.TestDetails) {
+      navigation.replace(AppRoutes.TestDetails, {
+        itemId: item?.itemId,
+        comingFrom: sourceScreen,
+        testDetails: ({
+          Rate: price,
+          specialPrice: specialPrice! || price,
+          circleRate: circlePrice,
+          circleSpecialPrice: circleSpecialPrice,
+          discountPrice: discountPrice,
+          discountSpecialPrice: discountSpecialPrice,
+          ItemID: `${item?.itemId}`,
+          ItemName: item?.itemTitle!,
+          collectionType: TEST_COLLECTION_TYPE.HC,
+          packageMrp: packageCalculatedMrp,
+          mrpToDisplay: mrpToDisplay,
+          source: source,
+          type: data?.diagnosticWidgetType,
+          inclusions: [Number(item?.itemId)],
+        } as unknown) as TestPackageForDetails,
+      });
+    } else {
+      navigation.navigate(AppRoutes.TestDetails, {
+        itemId: item?.itemId,
+        comingFrom: sourceScreen,
+        testDetails: {
+          Rate: price,
+          specialPrice: specialPrice! || price,
+          circleRate: circlePrice,
+          circleSpecialPrice: circleSpecialPrice,
+          discountPrice: discountPrice,
+          discountSpecialPrice: discountSpecialPrice,
+          ItemID: `${item?.itemId}`,
+          ItemName: item?.itemTitle!,
+          collectionType: TEST_COLLECTION_TYPE.HC,
+          packageMrp: packageCalculatedMrp,
+          mrpToDisplay: mrpToDisplay,
+          source: source,
+          type: data?.diagnosticWidgetType,
+          inclusions: [Number(item?.itemId)],
+        } as TestPackageForDetails,
+      });
+    }
   }
 
   const renderAddToCart = (
@@ -420,8 +475,7 @@ const styles = StyleSheet.create({
   itemCardView: {
     ...theme.viewStyles.card(12, 0),
     elevation: 10,
-    height: 210,
-    // width: 180,
+    height: 230, //210
     width: Dimensions.get('window').width * 0.45,
     marginHorizontal: 4,
     marginRight: 10,
@@ -485,7 +539,9 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     position: 'absolute',
     left: 16,
-    bottom: 10,
+    bottom: 6,
+    width: '70%',
+    height: 30,
   },
   errorCardContainer: {
     height: 'auto',

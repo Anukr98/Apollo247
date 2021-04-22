@@ -1,13 +1,5 @@
-import React, { useState } from 'react';
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  ScrollView,
-  StyleProp,
-  ViewStyle,
-} from 'react-native';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 

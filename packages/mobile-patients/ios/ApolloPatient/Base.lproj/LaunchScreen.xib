@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" colorMatched="YES">
-    <device id="retina4_7" orientation="portrait">
-        <adaptation id="fullscreen"/>
-    </device>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -16,10 +14,10 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="SplashIcon" translatesAutoresizingMaskIntoConstraints="NO" id="GHu-5D-zyl">
-                    <rect key="frame" x="164" y="181.5" width="152" height="117"/>
+                    <rect key="frame" x="165" y="182" width="150" height="116"/>
                 </imageView>
             </subviews>
-            <color key="backgroundColor" red="0.94117647058823528" green="0.94509803921568625" blue="0.92549019607843142" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <constraints>
                 <constraint firstItem="GHu-5D-zyl" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="2uQ-in-9Yh"/>
                 <constraint firstItem="GHu-5D-zyl" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="nyx-Q8-5zH"/>
@@ -30,6 +28,6 @@
         </view>
     </objects>
     <resources>
-        <image name="SplashIcon" width="152" height="117"/>
+        <image name="SplashIcon" width="150" height="116"/>
     </resources>
 </document>
