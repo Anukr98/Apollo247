@@ -3644,16 +3644,6 @@ export const SEARCH_DIAGNOSTICS_BY_ID = gql`
   }
 `;
 
-export const SAVE_DIAGNOSTIC_ORDER = gql`
-  mutation SaveDiagnosticOrder($diagnosticOrderInput: DiagnosticOrderInput) {
-    SaveDiagnosticOrder(diagnosticOrderInput: $diagnosticOrderInput) {
-      errorCode
-      errorMessage
-      orderId
-      displayId
-    }
-  }
-`;
 
 export const SAVE_DIAGNOSTIC_ORDER_NEW = gql`
   mutation saveDiagnosticBookHCOrder($diagnosticOrderInput: SaveBookHomeCollectionOrderInput) {
@@ -4622,27 +4612,7 @@ export const VERIFY_TRUECALLER_PROFILE = gql`
   }
 `;
 
-export const GET_PATIENT_PAST_CONSULTED_DOCTORS = gql`
-  query getPatientPastConsultedDoctors($patientMobile: String, $offset: Int, $limit: Int) {
-    getPatientPastConsultedDoctors(patientMobile: $patientMobile, offset: $offset, limit: $limit) {
-      id
-      fullName
-      thumbnailUrl
-      specialty {
-        name
-      }
-      consultDetails {
-        consultDateTime
-        displayId
-        appointmentId
-        hospitalId
-        hospitalName
-        consultMode
-        _247_Flag
-      }
-    }
-  }
-`;
+
 
 export const GET_PROHEALTH_CITY_LIST = gql`
   query getProHealthCities {

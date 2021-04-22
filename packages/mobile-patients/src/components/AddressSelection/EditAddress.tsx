@@ -262,9 +262,11 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     city.length > 1 &&
     state &&
     state.length > 1 &&
-    addressType !== undefined &&
-    (addressType !== PATIENT_ADDRESS_TYPE.OTHER ||
-      (addressType === PATIENT_ADDRESS_TYPE.OTHER && optionalAddress));
+    ((!!source && source == 'Diagnostics Cart') || (!!source && source == 'Tests'))
+      ? true
+      : addressType !== undefined &&
+        (addressType !== PATIENT_ADDRESS_TYPE.OTHER ||
+          (addressType === PATIENT_ADDRESS_TYPE.OTHER && optionalAddress));
 
   const saveAddress = (addressInput: PatientAddressInput) =>
     client.mutate<savePatientAddress, savePatientAddressVariables>({
@@ -317,7 +319,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         zipcode: pincode,
         landmark: landMark.trim(),
         mobileNumber: phoneNumber,
-        addressType: addressType,
+        addressType: addressType! || PATIENT_ADDRESS_TYPE?.HOME,
         otherAddressType: optionalAddress,
         latitude: latitude,
         longitude: longitude,
@@ -350,9 +352,9 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         //if pincode is changed.
         if (isAddressServiceable || addOnly) {
           setcity(isAddressServiceable?.city || '');
-          setDeliveryAddressId!(address.id || '');
-          setNewAddressAdded!(address.id || '');
-          setDiagnosticAddressId!(address.id || '');
+          setDeliveryAddressId!(address?.id || '');
+          setNewAddressAdded!(address?.id || '');
+          setDiagnosticAddressId!(address?.id || '');
           if (isComingFrom == 'My Account') {
             props.navigation.pop(3, { immediate: true });
             props.navigation.push(AppRoutes.AddressBook, { refetch: true });
@@ -634,8 +636,11 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         addressList?.longitude != null &&
         addressList?.latitude > 0 &&
         addressList?.longitude > 0
-          ? setDiagnosticAddressId!(addressList?.id || '')
+          ? setDiagnosticAddressId?.(addressList?.id || '')
           : null;
+        setDiagnosticAreas?.([]);
+        setAreaSelected?.({});
+        setDiagnosticSlot?.(null);
       }
       setUpdatedAddressList(addressList, keyName);
       props.navigation.pop(2, { immediate: true }); //1
