@@ -56,7 +56,7 @@ export const ProHealthWebView: React.FC<ProHealthWebViewProps> = (props) => {
   };
 
   const handleResponse = (data: NavState, WebViewRef: any) => {
-    const homeURL = 'http://www.apollo247.com/';
+    const homeURL = 'https://www.apollo247.com/';
     const url = data.url;
     setCanGoBack(data?.canGoBack || false);
     if (url && url.indexOf('redirectTo=doctor') > -1 && url.indexOf('#details') < 0) {
