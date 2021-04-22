@@ -75,7 +75,7 @@ export const CircleTypeCard5: React.FC<CircleTypeCard5Props> = (props) => {
 
           <Image
             style={styles.circleLogo}
-            source={require('@aph/mobile-patients/src/components/ui/icons/circleLogo.png')}
+            source={require('@aph/mobile-patients/src/components/ui/icons/circleLogo.webp')}
           />
         </View>
         <View style={styles.subPlanTwo}>

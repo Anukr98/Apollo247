@@ -659,10 +659,10 @@ export const getStoreInventoryApi = (
 export const pinCodeServiceabilityApi247 = (
   pincode: string
 ): Promise<AxiosResponse<{ response: boolean }>> => {
-  const url = `${config.UATTAT_CONFIG[0]}/v2/serviceable?pincode=${pincode}`;
+  const url = `${config.SERVICEABLE_CONFIG[0]}/${pincode}`;
   return Axios.get(url, {
     headers: {
-      Authorization: config.UATTAT_CONFIG[1],
+      Authorization: config.SERVICEABLE_CONFIG[1],
     },
   });
 };
@@ -1148,6 +1148,21 @@ export const getDiagnosticListingWidget = (
       Authorization: config.DRUPAL_CONFIG[1],
     },
   });
+};
+
+export const GetAllUHIDSForNumber_CM = (phoneNumber: string): Promise<AxiosResponse<any>> => {
+  const url = `${config.CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL}/askapollo/user/uhids?phoneNumber=${phoneNumber}`;
+  console.log('GetAllUHIDSForNumber_CM_Url', url);
+  return Axios.get(url);
+};
+
+export const GenrateVitalsToken_CM = (
+  appId: string,
+  userId: string
+): Promise<AxiosResponse<any>> => {
+  const url = `${config.CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL}/vitauser/vitatoken?appId=${appId}&appUserId=${userId}`;
+  console.log('GetAllUHIDSForNumber_CM_Url', url);
+  return Axios.get(url);
 };
 
 export const getDiagnosticCartItemReportGenDetails = (

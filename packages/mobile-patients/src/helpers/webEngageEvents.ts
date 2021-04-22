@@ -114,6 +114,7 @@ export enum WebEngageEventName {
   TRUECALLER_EVENT_ERRORS = 'Truecaller event errors',
   TRUECALLER_APOLLO247_LOGIN_ERRORS = 'Apollo247 truecaller login errors',
   LOGIN_WITH_TRUECALLER_CLICKED = 'Login with truecaller clicked',
+  MY_CONSULTED_DOCTORS_CLICKED = 'My doctor clicked',
 
   //Doctor Share Events
   SHARE_CLICK_DOC_LIST_SCREEN = 'Share clicked doc list screen',
@@ -139,6 +140,7 @@ export enum WebEngageEventName {
   BUY_MEDICINES = 'Buy Medicines',
   ORDER_TESTS = 'Order Tests',
   MANAGE_DIABETES = 'Manage Diabetes',
+  PROHEALTH = 'Prohealth',
   TRACK_SYMPTOMS = 'Track Symptoms',
   VIEW_HELATH_RECORDS = 'PHR Click Health records - app',
   LEARN_MORE_ABOUT_CORONAVIRUS = 'Learn more about coronavirus',
@@ -146,8 +148,10 @@ export enum WebEngageEventName {
   APOLLO_PRO_HEALTH = 'Apollo pro health',
   NOTIFICATION_ICON = 'Notification Icon clicked',
   ACTIVE_APPOINTMENTS = 'Active Appointments',
+  ACTIVE_PROHEALTH_APPOINTMENTS = 'PROHEALTH_ACTIVE_APPOINTMENTS',
   NEED_HELP = 'Need Help?',
   TICKET_RAISED = 'Ticket raised',
+  HELP_TICKET_SUBMITTED = 'Help_Ticket_Submitted',
   MY_ACCOUNT = 'My Account',
   BOOK_DOCTOR_APPOINTMENT = 'Book Doctor Appointment clicked on homescreen',
   TABBAR_APPOINTMENTS_CLICKED = 'Appointments Clicked on tab bar',
@@ -653,6 +657,7 @@ export interface ItemSearchedOnLanding extends DiagnosticUserInfo {
   'Keyword Entered': string;
   '# Results appeared': number;
   'Item in Results'?: object[];
+  'Popular'?: 'Yes' | 'No';
 }
 
 export interface ItemClickedOnLanding extends DiagnosticUserInfo {
@@ -790,8 +795,15 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.NOTIFICATION_ICON]: { clicked: true };
   [WebEngageEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
+  [WebEngageEventName.ACTIVE_PROHEALTH_APPOINTMENTS]: { clicked: true };
   [WebEngageEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
   [WebEngageEventName.TICKET_RAISED]: { Category: string; Query: string };
+  [WebEngageEventName.HELP_TICKET_SUBMITTED]: {
+    Source_Page: 'My Account' | 'My Orders' | 'Order Details';
+    Reason: string;
+    BU: string; //  Pharmacy / Consult / Diagnostics / ..........
+    Order_Status?: string;
+  };
   [WebEngageEventName.MY_ACCOUNT]: PatientInfo;
   [WebEngageEventName.BOOK_DOCTOR_APPOINTMENT]: {
     'Patient Name': string;
@@ -898,11 +910,10 @@ export interface WebEngageEvents {
   [WebEngageEventName.NOTIFY_ME]: {
     'product name': string;
     'product id': string; // (SKUID)
-    Brand: string;
-    'Brand ID': string;
-    'category name': string;
     'category ID': string;
+    price: number;
     pincode: string;
+    serviceable: YesOrNo;
   };
 
   [WebEngageEventName.CATEGORY_CLICKED]: {
@@ -1184,9 +1195,9 @@ export interface WebEngageEvents {
     'Section Name': string;
   };
   [WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION]: {
-    Source: 'Full Search' | 'Home Page' | 'Cart Page' | 'Partial Search' | 'Deeplink';
+    Source: 'Full Search' | 'Home Page' | 'Cart Page' | 'Partial Search' | 'Deeplink' | 'Popular search';
     'Item Name': string;
-    'Item Type': string;
+    'Item Type'?: string;
     'Item Code': string;
   };
 
@@ -1253,9 +1264,10 @@ export interface WebEngageEvents {
   [WebEngageEventName.DIAGNOSTIC_ADD_TO_CART]: {
     'Item Name': string;
     'Item ID': string; // (SKUID)
-    Source: 'Home page' | 'Full search' | 'Details page' | 'Partial search' | 'Listing page';
+    Source: 'Home page' | 'Full search' | 'Details page' | 'Partial search' | 'Listing page' | 'Popular search';
     Section?: string;
   };
+  
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order id': string | number;
     Pincode: string | number;
@@ -1347,6 +1359,7 @@ export interface WebEngageEvents {
     'Secretary Name': string;
     'Secretary Mobile Number': string;
     'Doctor Mobile Number': string;
+    User_Type: string;
   };
   [WebEngageEventName.TYPE_OF_CONSULT_SELECTED]: {
     'Consultation Type': string;
@@ -1370,6 +1383,7 @@ export interface WebEngageEvents {
     'Doctor Speciality': string;
     Rank: number;
     Is_TopDoc?: YesOrNo;
+    User_Type: string;
   };
   [WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK]: {
     'Patient Name': string;
@@ -1388,6 +1402,7 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Customer ID': string;
     Rank?: number;
+    User_Type: string;
   };
   [WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK]: {
     Fee: number;
@@ -1425,6 +1440,7 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    User_Type: string;
   };
   [WebEngageEventName.CONSULT_TYPE_SELECTION]: {
     'Consult Type': 'Online' | 'In Person';
@@ -2156,6 +2172,7 @@ export interface WebEngageEvents {
     'Circle Membership Value': number | null;
     User_Type?: PharmaUserStatus;
     Pincode?: string;
+    serviceable: YesOrNo;
   };
   [WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
     'Patient Name': string;
@@ -2168,6 +2185,7 @@ export interface WebEngageEvents {
     'Speciality ID': string;
     'Doctor ID': string;
     'Media Source': string;
+    User_Type: string;
   };
   [WebEngageEventName.SEARCH_SUGGESTIONS]: {
     'Patient Name': string;
@@ -2184,6 +2202,7 @@ export interface WebEngageEvents {
     Symptoms: string;
     Specialities: string;
     Procedures: string;
+    User_Type: string;
   };
 
   [WebEngageEventName.SEARCH_SUGGESTIONS_VIEW_ALL]: {
@@ -2213,6 +2232,7 @@ export interface WebEngageEvents {
     'Text typed by the user': string;
     'Search Suggestion Clicked': string;
     'Bucket Clicked': string;
+    User_Type: string;
   };
 
   [WebEngageEventName.SHARE_CLICK_DOC_LIST_SCREEN]: {
@@ -2497,4 +2517,26 @@ export interface WebEngageEvents {
     Error: any;
   };
   [WebEngageEventName.LOGIN_WITH_TRUECALLER_CLICKED]: {};
+  [WebEngageEventName.MY_CONSULTED_DOCTORS_CLICKED]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    User_Type: string;
+    'Doctor Name': string;
+    'Doctor Id': string;
+    'Doctor Speciality': string;
+    'Previous consult Details': {
+      'Consult Date & Time': Date | string;
+      'Display ID': string;
+      'Appointment Id': string;
+      'Hospital Id': string;
+      'Hospital Name': string;
+      _247_Flag: boolean | undefined;
+      'Consult Mode': string;
+    };
+  };
 }

@@ -1,29 +1,60 @@
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, Clipboard, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { Apollo247 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Copy, CallRingIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Snackbar } from 'react-native-paper';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export interface ExpectCallProps {}
 
 export const ExpectCall: React.FC<ExpectCallProps> = (props) => {
+  const [snackbarState, setSnackbarState] = useState<boolean>(false);
+  const [highlightComponent, setHighlightComponent] = useState<boolean>(true);
+  const phoneNumber = '040 48212890';
+  const { expectCallText } = useAppCommonData();
+
+  useEffect(() => {
+    setTimeout(() => {
+      setHighlightComponent(false);
+    }, 700);
+  }, []);
+
   const renderMsg = () => {
     return (
       <View style={{ flex: 1 }}>
+        <View style={styles.flexRow}>
+          <Text style={styles.headerTxt}>Expect a Call from</Text>
+          <TouchableOpacity style={{ flexDirection: 'row' }} onPress={copyToClipboard}>
+            <Text style={theme.viewStyles.text('B', 15, '#01475B', 1, 18)}>{phoneNumber}</Text>
+            <Copy style={styles.iconStyle} />
+          </TouchableOpacity>
+        </View>
         <Text style={styles.headerTxt}>
-          Expect a call from number starting with +91207... that's us!
-        </Text>
-        <Text style={styles.bodyTxt} numberOfLines={2}>
-          Our pharmacist will call you to verify the prescription in the next 15 minutes. Working
-          hours between 8 am and 9 pm
+          {expectCallText ? expectCallText : `that’s our pharmacist!`}
         </Text>
       </View>
     );
   };
 
+  const copyToClipboard = () => {
+    Clipboard.setString(phoneNumber);
+    setSnackbarState(true);
+  };
+
   return (
-    <View style={styles.card}>
-      <Apollo247 style={styles.apollo247Icon} />
+    <View style={[styles.card, highlightComponent ? styles.highlightedCard : {}]}>
+      <CallRingIcon style={styles.apollo247Icon} />
       {renderMsg()}
+      <Snackbar
+        style={styles.snackBarStyle}
+        visible={snackbarState}
+        onDismiss={() => {
+          setSnackbarState(false);
+        }}
+        duration={1000}
+      >
+        Number Copied
+      </Snackbar>
     </View>
   );
 };
@@ -41,22 +72,39 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     alignItems: 'center',
   },
+  highlightedCard: {
+    borderColor: theme.colors.APP_GREEN,
+    borderWidth: 2,
+    ...theme.viewStyles.shadowStyle,
+    shadowOpacity: 0.7,
+    shadowRadius: 20,
+    backgroundColor: '#EDF9EC',
+  },
   apollo247Icon: {
-    marginHorizontal: 5,
-    height: 48,
-    width: 48,
+    marginHorizontal: 10,
+    marginRight: 10,
+    height: 30,
+    width: 30,
   },
   headerTxt: {
-    ...theme.fonts.IBMPlexSansSemiBold(12),
-    lineHeight: 16,
+    ...theme.fonts.IBMPlexSansMedium(15),
+    lineHeight: 18,
     color: '#01475B',
     paddingRight: 5,
   },
-  bodyTxt: {
-    ...theme.fonts.IBMPlexSansRegular(10),
-    lineHeight: 13,
-    color: '#01475B',
+  iconStyle: {
+    marginLeft: 6,
     marginTop: 5,
-    paddingRight: 5,
+    width: 9,
+    height: 10,
+  },
+  snackBarStyle: {
+    position: 'absolute',
+    zIndex: 1001,
+    bottom: -30,
+    backgroundColor: theme.colors.light_label,
+  },
+  flexRow: {
+    flexDirection: 'row',
   },
 });

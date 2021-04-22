@@ -21,7 +21,6 @@ import {
   SearchIcon,
   FamilyDoctorIcon,
   RetryButtonIcon,
-  CircleLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
@@ -72,6 +71,7 @@ import {
   setWebEngageScreenNames,
   getDoctorShareMessage,
   postDoctorShareWEGEvents,
+  getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -109,7 +109,6 @@ import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEven
 import { getValuesArray } from '@aph/mobile-patients/src/utils/commonUtils';
 import _ from 'lodash';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { Switch } from '@aph/mobile-patients/src/components/ui/Switch';
 import { CirclePlanAddedToCart } from '@aph/mobile-patients/src/components/ui/CirclePlanAddedToCart';
 import {
   getPatientAddressList,
@@ -282,7 +281,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [filterMode, setfilterMode] = useState<ConsultMode>(ConsultMode.BOTH);
   const [searchQuery, setSearchQuery] = useState({});
 
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const [showLocations, setshowLocations] = useState<boolean>(false);
   const [sortValue, setSortValue] = useState<string>('');
@@ -382,8 +381,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   }, [showCarePlanNotification]);
 
   useEffect(() => {
-    getDoctorOfTheHour();
-    fetchAddress();
+    if (doctorsType != 'PARTNERS') {
+      getDoctorOfTheHour(false);
+      fetchAddress(false, 'from effect');
+    }
   }, []);
 
   const getDoctorOfTheHour = async (partnerDoctor: boolean = false, state?: string) => {
@@ -413,7 +414,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       });
   };
 
-  async function fetchAddress() {
+  async function fetchAddress(partnerDoctor: boolean = false, from?: string) {
     try {
       if (locationDetails?.state) {
         return;
@@ -430,7 +431,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           ?.addressList as savePatientAddress_savePatientAddress_patientAddress[]) || [];
       const state = addressList?.[0]?.state;
       if (state) {
-        getDoctorOfTheHour(false, state);
+        await getDoctorOfTheHour(partnerDoctor, state);
       }
     } catch (error) {
       CommonBugFender('DoctorSearchListing_fetchAddress', error);
@@ -1124,6 +1125,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       'Doctor Speciality': doctorDetails?.specialtydisplayName,
       Rank: doctorDetails?.rowId,
       Is_TopDoc: !!isTopDoc ? 'Yes' : 'No',
+      User_Type: getUserType(allCurrentPatients),
     };
 
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {
@@ -1209,11 +1211,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         numberOfLines={numberOfLines}
         availableModes={rowData.consultMode}
         callSaveSearch={callSaveSearch}
-        onPress={() => {
+        onPress={(id: string, onlineConsult: boolean) => {
           postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List');
           props.navigation.navigate(AppRoutes.DoctorDetails, {
             doctorId: rowData.id,
             callSaveSearch: callSaveSearch,
+            consultModeSelected: onlineConsult ? ConsultMode.ONLINE : ConsultMode.PHYSICAL,
           });
         }}
         onPressShare={(doctorData) => onClickDoctorShare(doctorData, index + 1)}
@@ -1543,7 +1546,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           <View style={{ width: getWidth(20) }} />
           <Image
             style={localStyles.imageStyle}
-            source={require('@aph/mobile-patients/src/images/doctor/doctor_search_filler_img.png')}
+            source={require('@aph/mobile-patients/src/images/doctor/doctor_search_filler_img.webp')}
           />
         </View>
         <Text style={localStyles.pleaseWaitTextStyle}>
@@ -1603,6 +1606,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           <FamilyDoctorIcon style={{ width: 16.58, height: 24 }} />
           <Text style={styles.doctorOfTheHourTextStyle}>{doctorOfHourText}</Text>
         </View>
+
         <DoctorCard
           rowData={platinumDoctor}
           navigation={props.navigation}
@@ -1613,13 +1617,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           buttonStyle={buttonStyle}
           buttonTextStyle={buttonTextStyle}
           onPressShare={(doctorData) => onClickDoctorShare(doctorData, index + 1)}
-          onPress={() => {
+          onPress={(id: string, onlineConsult: boolean) => {
             postDoctorClickWEGEvent(platinumDoctor, 'List', true);
             postPlatinumDoctorWEGEvents(platinumDoctor, WebEngageEventName.DOH_Clicked);
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: platinumDoctor?.id,
               callSaveSearch: callSaveSearch,
               platinumDoctor: true,
+              consultModeSelected: onlineConsult ? ConsultMode.ONLINE : ConsultMode.PHYSICAL,
             });
           }}
           onPressConsultNowOrBookAppointment={(type) => {
@@ -1970,7 +1975,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       scrollToTop();
       setPlatinumDoctor(null);
       getDoctorOfTheHour();
-      fetchAddress(); // this will get called when locationDetails?.state is null
+      fetchAddress(false, 'from apollo button press'); // this will get called when locationDetails?.state is null
     }
   };
 
@@ -1983,7 +1988,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       scrollToTop();
       setPlatinumDoctor(null);
       getDoctorOfTheHour(true);
-      fetchAddress();
+      fetchAddress(true, 'from partner button press');
     }
   };
 
@@ -2041,24 +2046,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       'Customer ID': g(currentPatient, 'id'),
     };
     postWebEngageEvent(WebEngageEventName.VC_CIRCLE_FILTER, eventAttributes);
-  };
-
-  const renderViewCareSwitch = () => {
-    return (
-      <View style={styles.rowContainer}>
-        <Text style={styles.careHeadingText}>View</Text>
-        <CircleLogo style={styles.careLogo} />
-        <Text style={[styles.careHeadingText, { marginLeft: 0 }]}>Doctors</Text>
-        <Switch
-          onChange={(value) => {
-            setCareDoctorsSwitch(value);
-            setFilterActionTaken(true);
-            filterCircleWebEngage();
-          }}
-          value={careDoctorsSwitch}
-        />
-      </View>
-    );
   };
 
   return (

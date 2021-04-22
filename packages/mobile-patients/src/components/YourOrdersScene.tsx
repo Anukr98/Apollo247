@@ -42,6 +42,7 @@ import {
   View,
   TouchableOpacity,
   Text,
+  BackHandler,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -69,13 +70,19 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState<any>([]);
   const [skuList, setSkuList] = useState<string[]>([]);
 
   useEffect(() => {
     fetchOrders();
+    BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
+    };
   }, []);
+
+  const onPressHardwareBack = () => props.navigation.goBack();
 
   const fetchOrders = async () => {
     try {
@@ -267,6 +274,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
     props.navigation.navigate(AppRoutes.NeedHelpPharmacyOrder, {
       queryIdLevel1: helpSectionQueryId.pharmacy,
+      sourcePage: 'My Orders',
     });
   };
 

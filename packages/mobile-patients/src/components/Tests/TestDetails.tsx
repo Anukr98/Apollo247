@@ -341,7 +341,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const homeBreadCrumb: TestBreadcrumbLink = {
     title: 'Home',
     onPress: () => {
-      navigateToHome(props.navigation);
+      props.navigation.navigate('TESTS');
     },
   };
 
@@ -378,12 +378,16 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   useEffect(() => {
     DiagnosticDetailsViewed(
-      isDeep == 'deeplink' ? 'Deeplink' : testInfo?.source,
-      testInfo?.ItemName || itemId,
-      testInfo?.type,
-      testInfo?.ItemID,
+      isDeep == 'deeplink'
+        ? 'Deeplink'
+        : movedFrom == AppRoutes.SearchTestScene
+        ? 'Popular search'
+        : testInfo?.source! || testDetails?.source,
+      itemName,
+      testInfo?.type! || testDetails?.type,
+      testInfo?.ItemID || itemId,
       currentPatient,
-      testInfo?.Rate,
+      testInfo?.Rate || testDetails?.Rate,
       pharmacyCircleAttributes
     );
   }, []);

@@ -134,6 +134,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  BackHandler,
 } from 'react-native';
 import ContentLoader from 'react-native-easy-content-loader';
 import { Divider, Image, ListItem } from 'react-native-elements';
@@ -243,6 +244,7 @@ type Address = savePatientAddress_savePatientAddress_patientAddress;
 export const Medicine: React.FC<MedicineProps> = (props) => {
   const focusSearch = props.navigation.getParam('focusSearch');
   const showRecommendedSection = props.navigation.getParam('showRecommendedSection');
+  const comingFrom = props.navigation.getParam('comingFrom');
   const {
     locationDetails,
     pharmacyLocation,
@@ -317,6 +319,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const hasLocation = locationDetails || pharmacyLocation || defaultAddress;
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
   const [asyncPincode, setAsyncPincode] = useState({});
+  const [isFocused, setIsFocused] = useState<boolean>(false);
   type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
   const postwebEngageCategoryClickedEvent = (
     categoryId: string,
@@ -340,6 +343,20 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       SectionName: sectionName,
     };
     postFirebaseEvent(FirebaseEventName.CATEGORY_CLICKED, firebaseEventAttributes);
+  };
+
+  useEffect(() => {
+    if (comingFrom === 'deeplink') {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+      return () => {
+        BackHandler.removeEventListener('hardwareBackPress', handleBack);
+      };
+    }
+  }, []);
+
+  const handleBack = () => {
+    navigateToHome(props.navigation, {}, comingFrom === 'deeplink');
+    return true;
   };
 
   const WebEngageEventAutoDetectLocation = (pincode: string, serviceable: boolean) => {
@@ -521,14 +538,31 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       updateServiceability(pharmacyPincode);
       setPinCode && setPinCode(pharmacyPincode);
     }
+  }, []);
 
-    const getAsyncLocationPincode = async () => {
-      const asyncLocationPincode: any = await AsyncStorage.getItem('PharmacyLocationPincode');
-      if (asyncLocationPincode) {
-        setAsyncPincode(JSON.parse(asyncLocationPincode));
-      }
+  useEffect(() => {
+    if (isFocused) {
+      const getAsyncLocationPincode = async () => {
+        const asyncLocationPincode: any = await AsyncStorage.getItem('PharmacyLocationPincode');
+        if (asyncLocationPincode) {
+          setAsyncPincode(JSON.parse(asyncLocationPincode));
+        }
+      };
+      getAsyncLocationPincode();
+    }
+  }, [isFocused]);
+
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      setIsFocused(true);
+    });
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+      setIsFocused(false);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      didBlur && didBlur.remove();
     };
-    getAsyncLocationPincode();
   }, []);
 
   useEffect(() => {
@@ -575,14 +609,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, []);
 
   const getUserBanners = async () => {
-    const res: any = await getUserBannersList(
-      client,
-      currentPatient,
-      string.banner_context.PHARMACY_HOME
-    );
-    if (res) {
-      setBannerData && setBannerData(res);
-    } else {
+    try {
+      const res: any = await getUserBannersList(
+        client,
+        currentPatient,
+        string.banner_context.PHARMACY_HOME
+      );
+      if (res) {
+        setBannerData && setBannerData(res);
+      }
+    } catch (error) {
       setBannerData && setBannerData([]);
     }
   };
@@ -704,6 +740,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           addresses={addressList}
           onPressSelectAddress={(address) => {
             setAsyncPharmaLocation(address);
+            const saveAddress = {
+              pincode: address?.zipcode,
+              id: address?.id,
+              city: address?.city,
+              state: address?.state,
+            };
             setAsyncPincode(saveAddress);
             setDefaultAddress(address);
           }}
@@ -774,13 +816,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     }
     try {
       setLoading(true);
+      setPageLoading(true);
       const resonse = (await getMedicinePageProducts(axdcCode, pinCode)).data;
       setData(resonse);
       setMedicinePageAPiResponse!(resonse);
       setLoading(false);
+      setPageLoading(false);
     } catch (e) {
       setError(e);
       setLoading(false);
+      setPageLoading(false);
       showAphAlert!({
         title: string.common.uhOh,
         description: "We're sorry! Unable to fetch products right now, please try later.",

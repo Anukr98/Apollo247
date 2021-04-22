@@ -80,6 +80,7 @@ export const NeedHelpConsultOrder: React.FC<Props> = ({ navigation }) => {
         queryIdLevel1,
         email,
         isConsult: true,
+        queries,
       });
     };
     const onPress = () => {};

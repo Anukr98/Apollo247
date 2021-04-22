@@ -1,0 +1,11 @@
+framework module ApolloVitalsFramework {
+  umbrella header "ApolloVitalsFramework.h"
+
+  export *
+  module * { export * }
+}
+
+module ApolloVitalsFramework.Swift {
+    header "ApolloVitalsFramework-Swift.h"
+    requires objc
+}

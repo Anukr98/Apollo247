@@ -45,6 +45,7 @@ import {
   formatAddress,
   postWebEngageEvent,
   g,
+  setAsyncPharmaLocation,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { ProceedBar } from '@aph/mobile-patients/src/components/Medicines/Components/ProceedBar';
 import { PaymentMethod } from '@aph/mobile-patients/src/components/Medicines/Components/PaymentMethod';
@@ -438,6 +439,7 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
           onPressSelectAddress={(address) => {
             checkServicability(address);
             hideAphAlert && hideAphAlert();
+            setAsyncPharmaLocation(address);
             nonCartAvailabilityTat(address?.zipcode);
           }}
         />

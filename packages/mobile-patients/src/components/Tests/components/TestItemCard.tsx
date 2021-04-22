@@ -84,7 +84,7 @@ export const TestItemCard: React.FC<TestItemCardProps> = (props) => {
 
   const renderTouchable = (item: Element, onPress: () => void) => {
     return (
-      <TouchableOpacity activeOpacity={1} onPress={onPress}>
+      <TouchableOpacity activeOpacity={1} onPress={onPress} style={styles.removeTouch}>
         {item}
       </TouchableOpacity>
     );
@@ -343,4 +343,10 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   reportGenViewStyle: { flexDirection: 'row', marginBottom: 8, alignItems: 'center' },
+  removeTouch: {
+    height: 30,
+    width: 30,
+    alignSelf: 'center',
+    alignItems: 'center',
+  },
 });

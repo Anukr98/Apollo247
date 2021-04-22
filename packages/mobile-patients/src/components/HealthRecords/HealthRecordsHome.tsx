@@ -75,6 +75,7 @@ import {
   Platform,
   FlatList,
   Dimensions,
+  BackHandler,
 } from 'react-native';
 import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
 import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
@@ -401,7 +402,9 @@ const heightArray: HeightArray[] = [
   { key: HEIGHT_ARRAY.FT, title: HEIGHT_ARRAY.FT },
 ];
 
-export interface HealthRecordsHomeProps extends NavigationScreenProps {}
+export interface HealthRecordsHomeProps extends NavigationScreenProps {
+  movedFrom?: string;
+}
 
 export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [healthChecksNew, setHealthChecksNew] = useState<
@@ -420,6 +423,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     | undefined
   >([]);
 
+  const movedFrom = props.navigation.getParam('movedFrom');
   const [testAndHealthCheck, setTestAndHealthCheck] = useState<{ type: string; data: any }[]>();
   const { loading, setLoading } = useUIElements();
   const [prismdataLoader, setPrismdataLoader] = useState<boolean>(false);
@@ -472,6 +476,18 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     }
     setPatientHistoryValues();
   }, [currentPatient]);
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
+
+  const handleBack = () => {
+    navigateToHome(props.navigation, {}, movedFrom === 'deeplink');
+    return true;
+  };
 
   useEffect(() => {
     if (currentPatient) {
@@ -857,7 +873,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
     const renderProfileNameView = () => {
       if (pageLoading) {
-        return renderHealthRecordShimmer(35);
+        return renderHealthRecordShimmer();
       } else {
         return (
           <View style={styles.profileNameViewStyle}>
@@ -1126,17 +1142,14 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const renderHealthCategoriesView = () => {
     return (
       <View style={{ marginTop: 54, marginHorizontal: 20, marginBottom: 25 }}>
-        {pageLoading ? (
-          renderHealthRecordShimmer(20)
-        ) : (
-          <Text style={{ ...theme.viewStyles.text('B', 18, theme.colors.LIGHT_BLUE, 1, 21) }}>
-            {'Health Categories'}
-          </Text>
-        )}
-
+        <Text style={{ ...theme.viewStyles.text('B', 18, theme.colors.LIGHT_BLUE, 1, 21) }}>
+          {'Health Categories'}
+        </Text>
         <View style={styles.listItemCardStyle}>
-          {renderListItemView('Doctor Consultations', 1)}
-          {renderListItemView('Test Reports', 2)}
+          {pageLoading
+            ? renderHealthRecordShimmer()
+            : renderListItemView('Doctor Consultations', 1)}
+          {pageLoading ? renderHealthRecordShimmer() : renderListItemView('Test Reports', 2)}
           {renderListItemView('Hospitalization', 3)}
           {renderListItemView('Health Conditions', 4)}
         </View>

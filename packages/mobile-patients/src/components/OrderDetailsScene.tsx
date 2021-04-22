@@ -2125,6 +2125,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       queryIdLevel1: helpSectionQueryId.pharmacy,
       medicineOrderStatusDate: currentStatusDate,
       email,
+      sourcePage: 'Order Details',
     });
   };
 

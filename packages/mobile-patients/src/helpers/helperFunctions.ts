@@ -27,7 +27,14 @@ import Geolocation from 'react-native-geolocation-service';
 import NetInfo from '@react-native-community/netinfo';
 import moment from 'moment';
 import AsyncStorage from '@react-native-community/async-storage';
-import { Alert, Dimensions, Platform, Linking, NativeModules } from 'react-native';
+import {
+  Alert,
+  Dimensions,
+  Platform,
+  Linking,
+  NativeModules,
+  PermissionsAndroid,
+} from 'react-native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import Permissions from 'react-native-permissions';
 import { DiagnosticsCartItem } from '../components/DiagnosticsCartProvider';
@@ -91,6 +98,10 @@ import { differenceInYears, parse } from 'date-fns';
 import stripHtml from 'string-strip-html';
 import isLessThan from 'semver/functions/lt';
 import coerce from 'semver/functions/coerce';
+import RNFetchBlob from 'rn-fetch-blob';
+import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
+import { HEALTH_CREDITS } from '../utils/AsyncStorageKey';
+import { getPatientByMobileNumber_getPatientByMobileNumber_patients } from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
 
 const width = Dimensions.get('window').width;
 
@@ -250,6 +261,16 @@ export const getAge = (dob: string) => {
   let age = parse(dob);
   return differenceInYears(now, age);
 };
+
+export function isAddressLatLngInValid(address: any) {
+  let isInvalid =
+    address?.latitude == null ||
+    address?.longitude == null ||
+    address?.latitude == 0 ||
+    address?.longitude == 0;
+
+  return isInvalid;
+}
 
 export const formatAddressBookAddress = (
   address: savePatientAddress_savePatientAddress_patientAddress
@@ -872,10 +893,14 @@ export const getDiffInMinutes = (doctorAvailableSlots: string) => {
 export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult' = 'Available') => {
   const isValidTime = moment(nextSlot).isValid();
   if (isValidTime) {
-    const current = moment(new Date());
+    const d = new Date();
+    const current = moment(d);
+    const hoursPassedToday = d.getHours();
+    const minPassedToday = hoursPassedToday * 60 + d.getMinutes();
     const difference = moment.duration(moment(nextSlot).diff(current));
     const differenceMinute = Math.ceil(difference.asMinutes());
     const diffDays = Math.ceil(difference.asDays());
+
     const isTomorrow = moment(nextSlot).isAfter(
       current
         .add(1, 'd')
@@ -891,7 +916,7 @@ export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult'
       return 'BOOK APPOINTMENT';
     } else if (differenceMinute >= 60 && !isTomorrow) {
       return `${type} at ${moment(nextSlot).format('hh:mm A')}`;
-    } else if (isTomorrow && diffDays < 2) {
+    } else if (isTomorrow && differenceMinute < 2880 - minPassedToday) {
       return `${type} Tomorrow${
         type === 'Available' ? ` at ${moment(nextSlot).format('hh:mm A')}` : ''
       }`;
@@ -1151,15 +1176,13 @@ export const extractUrlFromString = (text: string): string | undefined => {
   return (text.match(urlRegex) || [])[0];
 };
 
-export const getUserType = (currentPatient: any) => {
-  const user: string =
-    currentPatient?.isConsulted === undefined
-      ? 'undefined'
-      : currentPatient?.isConsulted
-      ? 'Repeat'
-      : 'New';
-
-  return user;
+export const getUserType = (allCurrentPatients: any) => {
+  const isConsulted = allCurrentPatients?.filter(
+    (patient: getPatientByMobileNumber_getPatientByMobileNumber_patients) =>
+      patient?.isConsulted === true
+  );
+  const userType: string = isConsulted?.length > 0 ? 'Repeat' : 'New';
+  return userType;
 };
 
 export const reOrderMedicines = async (
@@ -2383,23 +2406,35 @@ export const takeToHomePage = (props: any) => {
 
 export const navigateToHome = (
   navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  params?: any,
+  forceRedirect?: boolean
+) => {
+  if (forceRedirect) {
+    goToConsultRoom(navigation, params);
+  } else {
+    const navigate = navigation.popToTop();
+    if (!navigate) {
+      goToConsultRoom(navigation, params);
+    }
+  }
+};
+
+const goToConsultRoom = (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
   params?: any
 ) => {
-  const navigate = navigation.popToTop();
-  if (!navigate) {
-    navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [
-          NavigationActions.navigate({
-            routeName: AppRoutes.ConsultRoom,
-            params,
-          }),
-        ],
-      })
-    );
-  }
+  navigation.dispatch(
+    StackActions.reset({
+      index: 0,
+      key: null,
+      actions: [
+        NavigationActions.navigate({
+          routeName: AppRoutes.ConsultRoom,
+          params,
+        }),
+      ],
+    })
+  );
 };
 
 export const navigateToScreenWithEmptyStack = (
@@ -2637,11 +2672,146 @@ export const validateCoupon = async (
 export const setAsyncPharmaLocation = (address: any) => {
   if (address) {
     const saveAddress = {
-      pincode: address?.zipcode,
+      pincode: address?.zipcode || address?.pincode,
       id: address?.id,
       city: address?.city,
       state: address?.state,
     };
     AsyncStorage.setItem('PharmacyLocationPincode', JSON.stringify(saveAddress));
+  }
+};
+
+export const getPatientNameById = (allCurrentPatients: any, patientId: string) => {
+  const patientSelected = allCurrentPatients?.find(
+    (patient: { id: string }) => patient?.id === patientId
+  );
+
+  return patientSelected ? `${patientSelected?.firstName} ${patientSelected?.lastName}` : '';
+};
+
+export const requestReadSmsPermission = async () => {
+  try {
+    const resuts = await PermissionsAndroid.requestMultiple([
+      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+      PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+    ]);
+    if (resuts) {
+      return resuts;
+    }
+  } catch (error) {
+    CommonBugFender('HelperFunction_requestReadSmsPermission_try', error);
+  }
+};
+
+export const storagePermissionsToDownload = (doRequest?: () => void) => {
+  permissionHandler(
+    'storage',
+    'Enable storage from settings for downloading the test report',
+    () => {
+      doRequest && doRequest();
+    }
+  );
+};
+
+export async function downloadDiagnosticReport(
+  pdfUrl: string,
+  appointmentDate: string,
+  patientName: string
+) {
+  let result = Platform.OS === 'android' && (await requestReadSmsPermission());
+  try {
+    if (
+      (result &&
+        Platform.OS == 'android' &&
+        result?.[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] ===
+          PermissionsAndroid.RESULTS.GRANTED &&
+        result?.[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] ===
+          PermissionsAndroid.RESULTS.GRANTED) ||
+      Platform.OS == 'ios'
+    ) {
+      const dirs = RNFetchBlob.fs.dirs;
+      const reportName = `Apollo247_${appointmentDate}_${patientName}.pdf`;
+      const downloadPath =
+        Platform.OS === 'ios'
+          ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + reportName
+          : dirs.DownloadDir + '/' + reportName;
+
+      RNFetchBlob.config({
+        fileCache: true,
+        path: downloadPath,
+        addAndroidDownloads: {
+          title: reportName,
+          useDownloadManager: true,
+          notification: true,
+          path: downloadPath,
+          mime: mimeType(downloadPath),
+          description: 'File downloaded by download manager.',
+        },
+      })
+        .fetch('GET', pdfUrl, {})
+        .then((res) => {
+          Platform.OS === 'ios'
+            ? RNFetchBlob.ios.previewDocument(res.path())
+            : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+        })
+        .catch((err) => {
+          CommonBugFender('TestOrderDetails_ViewReport', err);
+          handleGraphQlError(err);
+          throw new Error('Something went wrong');
+        });
+    } else {
+      if (
+        result &&
+        Platform.OS == 'android' &&
+        result?.[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] !==
+          PermissionsAndroid.RESULTS.DENIED &&
+        result?.[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] !==
+          PermissionsAndroid.RESULTS.DENIED
+      ) {
+        storagePermissionsToDownload(() => {
+          downloadDiagnosticReport(pdfUrl, appointmentDate, patientName);
+        });
+      }
+    }
+  } catch (error) {
+    CommonBugFender('YourOrderTests_downloadLabTest', error);
+    throw new Error('Something went wrong');
+  }
+}
+
+export const persistHealthCredits = (healthCredit: number) => {
+  var healthCreditObj = {
+    healthCredit: healthCredit,
+    age: new Date().getTime(),
+  };
+  AsyncStorage.setItem(HEALTH_CREDITS, JSON.stringify(healthCreditObj));
+};
+
+export const getHealthCredits = async () => {
+  try {
+    var healthCreditObj: any = await AsyncStorage.getItem(HEALTH_CREDITS);
+
+    if (healthCreditObj != null && healthCreditObj != '') {
+      var healthCredit = JSON.parse?.(healthCreditObj);
+
+      if (healthCredit !== null) {
+        var age = healthCredit.age;
+        var ageDate = moment(age);
+        var nowDate = moment(new Date());
+        var duration = moment.duration(nowDate.diff(ageDate)).asMinutes();
+
+        if (duration < 0 || duration > AppConfig.Configuration.Health_Credit_Expiration_Time) {
+          return null; //Expired
+        } else {
+          return healthCredit;
+        }
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  } catch (error) {
+    return null;
   }
 };

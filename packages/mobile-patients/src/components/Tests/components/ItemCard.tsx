@@ -99,10 +99,9 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
         inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
       );
 
-    const getMandatoryParameterCount = getMandatoryParamter?.reduce(
-      (prevVal: any, curr: any) => prevVal + curr?.length,
-      0
-    );
+    const getMandatoryParameterCount =
+      !!getMandatoryParamter &&
+      getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
 
     const isAddedToCart = !!cartItems?.find(
       (items) => Number(items?.id) == Number(getItem?.itemId)
@@ -141,13 +140,16 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
               {name}
             </Text>
           </View>
-          {getMandatoryParameterCount > 0 ? (
-            <Text style={styles.parameterText}>
-              {getMandatoryParameterCount}{' '}
-              {getMandatoryParameterCount == 1 ? 'Parameter' : 'Parameters'} included
-            </Text>
-          ) : null}
+          <View style={{ minHeight: isSmallDevice ? 25 : 30 }}>
+            {getMandatoryParameterCount > 0 ? (
+              <Text style={styles.parameterText}>
+                {getMandatoryParameterCount} {getMandatoryParameterCount == 1 ? 'test' : 'tests'}{' '}
+                included
+              </Text>
+            ) : null}
+          </View>
           <Spearator style={styles.horizontalSeparator} />
+
           {renderPricesView(pricesForItem, packageMrpForItem)}
           {renderAddToCart(isAddedToCart, getItem, pricesForItem, packageMrpForItem)}
         </View>
@@ -537,7 +539,9 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     position: 'absolute',
     left: 16,
-    bottom: 10,
+    bottom: 6,
+    width: '70%',
+    height: 30,
   },
   errorCardContainer: {
     height: 'auto',

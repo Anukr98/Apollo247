@@ -54,6 +54,7 @@ import {
   isSmallDevice,
   formatAddressToLocation,
   navigateToHome,
+  isAddressLatLngInValid,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -74,6 +75,7 @@ import {
   Image as ImageNative,
   Image,
   ImageBackground,
+  BackHandler,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import {
@@ -139,17 +141,17 @@ import {
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 
 const imagesArray = [
-  require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.png'),
-  require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_2.png'),
-  require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_3.png'),
-  require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_4.png'),
+  require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
+  require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_2.webp'),
+  require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_3.webp'),
+  require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_4.webp'),
 ];
 
 const whyBookUsArray = [
-  { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_0.png') },
-  { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_1.png') },
-  { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_2.png') },
-  { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_3.png') },
+  { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_0.webp') },
+  { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_1.webp') },
+  { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_2.webp') },
+  { image: require('@aph/mobile-patients/src/components/ui/icons/whyBookUs_3.webp') },
 ];
 
 const { width: winWidth, height: winHeight } = Dimensions.get('window');
@@ -288,6 +290,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
     DiagnosticAddToCartEvent(name, id, price, discountedPrice, source, section);
   };
 
+  useEffect(() => {
+    if (movedFrom === 'deeplink') {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+      return () => {
+        BackHandler.removeEventListener('hardwareBackPress', handleBack);
+      };
+    }
+  }, []);
+
+  const handleBack = () => {
+    navigateToHome(props.navigation, {}, movedFrom === 'deeplink');
+    return true;
+  };
+
   /**
    * if any change in the location and pincode is changed
    */
@@ -399,6 +415,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         setWidgetsData([]);
         setLoading!(false);
         setPageLoading?.(false);
+        setReloadWidget(true);
       }
     } catch (error) {
       CommonBugFender('getHomePageWidgets_Tests', error);
@@ -410,14 +427,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const getUserBanners = async () => {
-    const res: any = await getUserBannersList(
-      client,
-      currentPatient,
-      string.banner_context.DIAGNOSTIC_HOME
-    );
-    if (res) {
-      setBannerData && setBannerData(res);
-    } else {
+    try {
+      const res: any = await getUserBannersList(
+        client,
+        currentPatient,
+        string.banner_context.DIAGNOSTIC_HOME
+      );
+      if (res) {
+        setBannerData && setBannerData(res);
+      }
+    } catch (error) {
       setBannerData && setBannerData([]);
     }
   };
@@ -468,9 +487,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
     } catch (error) {
       CommonBugFender('errorInFetchPricing api__Tests', error);
       setSectionLoading(false);
-      setReloadWidget(true);
       setLoading?.(false);
       setPageLoading?.(false);
+      setReloadWidget(true);
       showAphAlert?.({
         title: string.common.uhOh,
         description: string.common.tryAgainLater,
@@ -938,6 +957,22 @@ export const Tests: React.FC<TestsProps> = (props) => {
       },
       searchInput: { minHeight: undefined, paddingVertical: 8 },
       searchInputContainer: { marginBottom: 15, marginTop: 5 },
+      searchNewInput: {
+        borderColor: '#e7e7e7',
+        borderRadius: 5,
+        borderWidth: 1,
+        width: '95%',
+        alignSelf: 'center',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignContent: 'center',
+        padding: 10,
+        marginVertical: 15,
+        backgroundColor: '#f7f8f5',
+      },
+      searchTextStyle: {
+        ...theme.viewStyles.text('SB', 18, 'rgba(1,48,91, 0.3)'),
+      },
     });
 
     const shouldEnableSearchSend = searchText.length > 2;
@@ -977,90 +1012,71 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <TouchableOpacity
         onPress={() => {
-          setSearchFocused(true);
           props.navigation.navigate(AppRoutes.SearchTestScene, {
             searchText: searchText,
           });
-          setSearchText('');
-          setDiagnosticResults([]);
         }}
+        style={styles.searchNewInput}
       >
-        <SearchInput
-          _isSearchFocused={isSearchFocused}
-          editable={false}
-          autoFocus={false}
-          onSubmitEditing={() => {
-            if (searchText?.length > 2) {
-              props.navigation.navigate(AppRoutes.SearchTestScene, {
-                searchText: searchText,
-              });
-            }
-          }}
-          value={searchText}
-          onBlur={() => {
-            setSearchFocused(false);
-            setDiagnosticResults([]);
-            setSearchText('');
-            setsearchSate('success');
-          }}
-          onChangeText={(value) => {
-            if (isValidSearch(value)) {
-              setSearchText(value);
-              if (!(value && value.length > 2)) {
-                setDiagnosticResults([]);
-                return;
-              }
-              const search = _.debounce(onSearchTest, 300);
-              if (value?.length >= 3) {
-                setsearchSate('load');
-              }
-              setSearchQuery((prevSearch: any) => {
-                if (prevSearch.cancel) {
-                  prevSearch.cancel();
-                }
-                return search;
-              });
-              search(value);
-            }
-          }}
-          _rigthIconView={rigthIconView}
-          placeholder="Search tests &amp; packages"
-          _itemsNotFound={itemsNotFound}
-          inputStyle={styles.searchInput}
-          containerStyle={styles.searchInputContainer}
-        />
+        <Text style={styles.searchTextStyle}>Search tests &amp; packages</Text>
+        {rigthIconView}
       </TouchableOpacity>
     );
   };
 
+  const renderAlert = (message: string, source?: string, address?: any) => {
+    if (!!source && !!address) {
+      showAphAlert?.({
+        unDismissable: true,
+        title: string.common.uhOh,
+        description: message,
+        onPressOk: () => {
+          hideAphAlert?.();
+          props.navigation.push(AppRoutes.AddAddressNew, {
+            KeyName: 'Update',
+            addressDetails: address,
+            ComingFrom: AppRoutes.TestsCart,
+            updateLatLng: true,
+            source: 'Tests' as AddressSource,
+          });
+        },
+      });
+    }
+  };
+
   async function setDefaultAddress(address: Address) {
     try {
-      setPageLoading!(true);
-      hideAphAlert?.();
-      const response = await client.query<makeAdressAsDefault, makeAdressAsDefaultVariables>({
-        query: SET_DEFAULT_ADDRESS,
-        variables: { patientAddressId: address?.id },
-        fetchPolicy: 'no-cache',
-      });
-      const { data } = response;
-      const patientAddress = data?.makeAdressAsDefault?.patientAddress;
-      const updatedAddresses = addresses.map((item) => ({
-        ...item,
-        defaultAddress: patientAddress?.id == item.id ? patientAddress?.defaultAddress : false,
-      }));
-      setAddresses?.(updatedAddresses);
-      setTestAddress?.(updatedAddresses);
-      patientAddress?.defaultAddress && setDeliveryAddressId!(patientAddress?.id);
-      setDiagnosticAreas?.([]);
-      setAreaSelected?.({});
-      setDiagnosticSlot?.(null);
-      const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
-      // setPharmacyLocation!(formatAddressToLocation(deliveryAddress! || null));
-      setDiagnosticLocation!(formatAddressToLocation(deliveryAddress! || null));
-      checkIsPinCodeServiceable(address?.zipcode!, undefined, 'defaultAddress');
-      setPageLoading!(false);
+      const isSelectedAddressWithNoLatLng = isAddressLatLngInValid(address);
+      if (isSelectedAddressWithNoLatLng) {
+        //show the error
+        renderAlert(string.diagnostics.updateAddressLatLngMessage, 'updateLocation', address);
+      } else {
+        setPageLoading(true);
+        hideAphAlert?.();
+        const response = await client.query<makeAdressAsDefault, makeAdressAsDefaultVariables>({
+          query: SET_DEFAULT_ADDRESS,
+          variables: { patientAddressId: address?.id },
+          fetchPolicy: 'no-cache',
+        });
+        const { data } = response;
+        const patientAddress = data?.makeAdressAsDefault?.patientAddress;
+        const updatedAddresses = addresses.map((item) => ({
+          ...item,
+          defaultAddress: patientAddress?.id == item.id ? patientAddress?.defaultAddress : false,
+        }));
+        setAddresses?.(updatedAddresses);
+        setTestAddress?.(updatedAddresses);
+        patientAddress?.defaultAddress && setDeliveryAddressId!(patientAddress?.id);
+        setDiagnosticAreas?.([]);
+        setAreaSelected?.({});
+        setDiagnosticSlot?.(null);
+        const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
+        setDiagnosticLocation!(formatAddressToLocation(deliveryAddress! || null));
+        checkIsPinCodeServiceable(address?.zipcode!, undefined, 'defaultAddress');
+        setPageLoading(false);
+      }
     } catch (error) {
-      setPageLoading!(false);
+      setPageLoading(false);
       checkLocation(addresses);
       CommonBugFender('set_default_Address_on_Medicine_Page', error);
       showAphAlert!({
@@ -1202,9 +1218,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
       return renderBannerShimmer();
 
       return (
-        <View style={[styles.sliderPlaceHolderStyle, { height: imgHeight }]}>
-          <Spinner style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }} />
-        </View>
+        <View
+          style={[styles.sliderPlaceHolderStyle, { height: imgHeight, backgroundColor: '#e3e1e1' }]}
+        ></View>
       );
     } else if (banners?.length > 0) {
       return (
@@ -1221,10 +1237,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
             autoplayInterval={3000}
           />
           <View style={styles.landingBannerInnerView}>
-            {banners.map((_, index) => (index == slideIndex ? renderDot(true) : renderDot(false)))}
+            {banners?.map((_, index) => (index == slideIndex ? renderDot(true) : renderDot(false)))}
           </View>
         </View>
       );
+    } else {
+      return null;
     }
   };
 
@@ -1621,7 +1639,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                         <View>{renderStepsToBookText(item.heading, item.subtext)}</View>
                       ) : (
                         <ImageBackground
-                          source={require('@aph/mobile-patients/src/components/ui/icons/bottomShadow.png')}
+                          source={require('@aph/mobile-patients/src/components/ui/icons/bottomShadow.webp')}
                           style={{ height: index == 1 ? 118 : 108, width: 300 }}
                           resizeMode={'contain'}
                         >
@@ -1778,7 +1796,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         <TouchableOpacity
           style={{ alignItems: 'flex-end' }}
           activeOpacity={1}
-          onPress={() => props.navigation.navigate(AppRoutes.MedAndTestCart)}
+          onPress={() => props.navigation.navigate(AppRoutes.TestsCart)}
         >
           <CartIcon />
           {cartItemsCount > 0 && <Badge label={cartItemsCount} />}

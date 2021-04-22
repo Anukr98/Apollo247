@@ -30,6 +30,7 @@ import { AddAddressNew } from '@aph/mobile-patients/src/components/AddressSelect
 import { LocationSearch } from '@aph/mobile-patients/src/components/AddressSelection/LocationSearch';
 import { EditAddress } from '@aph/mobile-patients/src/components/AddressSelection/EditAddress';
 import { ApplyCouponScene } from '@aph/mobile-patients/src/components/Medicines/ApplyCouponScene';
+import { ViewCoupons } from '@aph/mobile-patients/src/components/Medicines/ViewCoupons';
 import { Medicine } from '@aph/mobile-patients/src/components/Medicines/Medicine';
 import { MedicineSearch } from '@aph/mobile-patients/src/components/MedicineSearch/MedicineSearch';
 import { MedicineListing } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListing';
@@ -73,6 +74,7 @@ import { NeedHelp } from '@aph/mobile-patients/src/components/NeedHelp';
 import { NeedHelpPharmacyOrder } from '@aph/mobile-patients/src/components/NeedHelpPharmacyOrder';
 import { NeedHelpConsultOrder } from '@aph/mobile-patients/src/components/NeedHelpConsultOrder';
 import { NeedHelpQueryDetails } from '@aph/mobile-patients/src/components/NeedHelpQueryDetails';
+import { NeedHelpContentView } from '@aph/mobile-patients/src/components/NeedHelpContentView';
 import { ShopByBrand } from '@aph/mobile-patients/src/components/Medicines/ShopByBrand';
 import { ImageSliderScreen } from '@aph/mobile-patients/src/components/ui/ImageSiderScreen';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -98,7 +100,6 @@ import { MyMembership } from '@aph/mobile-patients/src/components/SubscriptionMe
 import { MembershipDetails } from '@aph/mobile-patients/src/components/SubscriptionMembership/MembershipDetails';
 import { TestsByCategory } from '@aph/mobile-patients/src/components/Medicines/TestsByCategory';
 import { RenderPdf } from '@aph/mobile-patients/src/components/ui/RenderPdf';
-import { ApplyConsultCoupon } from '@aph/mobile-patients/src/components/ConsultRoom/ApplyConsultCoupon';
 import { CovidScan } from '@aph/mobile-patients/src/components/CovidScan';
 import { ConsultCheckout } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultCheckout';
 import { ConsultPaymentnew } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPaymentnew';
@@ -111,7 +112,6 @@ import { NotificationScreen } from '@aph/mobile-patients/src/components/Account/
 import { ChennaiNonCartOrderForm } from '@aph/mobile-patients/src/components/Medicines/ChennaiNonCartOrderForm';
 import MyPaymentsScreen from '@aph/mobile-patients/src/components/MyPayments/MyPaymentsScreen';
 import PaymentStatusScreen from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/PaymentStatusScreen';
-import { ConsultTypeScreen } from './ConsultRoom/ConsultTypeScreen';
 import { CommonWebView } from '@aph/mobile-patients/src/components/CommonWebView';
 import { RefundStatus } from '@aph/mobile-patients/src/components/RefundStatus';
 import { MedicineCart } from '@aph/mobile-patients/src/components/MedicineCart/MedicineCart';
@@ -130,12 +130,12 @@ import { Maps } from '@aph/mobile-patients/src/components/ui/Maps';
 import { PaymentMethods } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentMethods';
 import { OtherBanks } from '@aph/mobile-patients/src/components/PaymentGateway/OtherBanks';
 import { OrderStatus } from '@aph/mobile-patients/src/components/Tests/OrderStatus';
+import { ProHealthWebView } from '@aph/mobile-patients/src/components/ProHealthWebView';
 import MyOrdersScreen from '@aph/mobile-patients/src/components/MyOrders/MyOrdersScreen';
 
 export enum AppRoutes {
   Login = 'Login',
   ConsultRoom = 'ConsultRoom',
-  ApplyConsultCoupon = 'ApplyConsultCoupon',
   TabBar = 'TabBar',
   DoctorSearch = 'DoctorSearch',
   SignUp = 'SignUp',
@@ -150,6 +150,7 @@ export enum AppRoutes {
   NeedHelpPharmacyOrder = 'NeedHelpPharmacyOrder',
   NeedHelpConsultOrder = 'NeedHelpConsultOrder',
   NeedHelpQueryDetails = 'NeedHelpQueryDetails',
+  NeedHelpContentView = 'NeedHelpContentView',
   Consult = 'Consult',
   FilterScene = 'FilterScene',
   DoctorDetails = 'DoctorDetails',
@@ -164,6 +165,7 @@ export enum AppRoutes {
   MedicineDetailsScene = 'MedicineDetailsScene',
   ProductDetailPage = 'ProductDetailPage',
   ApplyCouponScene = 'ApplyCouponScene',
+  ViewCoupons = 'ViewCoupons',
   ChatRoom = 'ChatRoom',
   YourOrdersScene = 'YourOrdersScene',
   ReturnMedicineOrder = 'ReturnMedicineOrder',
@@ -226,7 +228,6 @@ export enum AppRoutes {
   MyPaymentsScreen = 'MyPaymentsScreen',
   PaymentStatusScreen = 'PaymentStatusScreen',
   OneApolloMembership = 'OneApolloMembership',
-  ConsultTypeScreen = 'ConsultTypeScreen',
   CommonWebView = 'CommonWebView',
   RefundStatus = 'RefundStatus',
   MedicineCart = 'MedicineCart',
@@ -249,6 +250,7 @@ export enum AppRoutes {
   OrderStatus = 'OrderStatus',
   TestListing = 'TestListing',
   TestWidgetListing = 'TestWidgetListing',
+  ProHealthWebView = 'ProHealthWebView',
   MyOrdersScreen = 'MyOrdersScreen',
 }
 
@@ -294,9 +296,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
     screen: ConsultRoom,
     path: 'ConsultRoomPage',
   },
-  [AppRoutes.ApplyConsultCoupon]: {
-    screen: ApplyConsultCoupon,
-  },
   [AppRoutes.DoctorSearchListing]: {
     screen: DoctorSearchListing,
     path: 'DoctorSearchListingPage',
@@ -329,6 +328,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.NeedHelpQueryDetails]: {
     screen: NeedHelpQueryDetails,
+  },
+  [AppRoutes.NeedHelpContentView]: {
+    screen: NeedHelpContentView,
   },
   [AppRoutes.Consult]: {
     screen: Consult,
@@ -370,6 +372,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ApplyCouponScene]: {
     screen: ApplyCouponScene,
+  },
+  [AppRoutes.ViewCoupons]: {
+    screen: ViewCoupons,
   },
   [AppRoutes.StorPickupScene]: {
     screen: StorePickupScene,
@@ -567,9 +572,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
     screen: OneApolloMembership,
     path: 'OneApolloPage',
   },
-  [AppRoutes.ConsultTypeScreen]: {
-    screen: ConsultTypeScreen,
-  },
   [AppRoutes.CommonWebView]: {
     screen: CommonWebView,
   },
@@ -635,6 +637,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.TestWidgetListing]: {
     screen: TestWidgetListing,
+  },
+  [AppRoutes.ProHealthWebView]: {
+    screen: ProHealthWebView,
   },
   [AppRoutes.MyOrdersScreen]: {
     screen: MyOrdersScreen,

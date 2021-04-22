@@ -4,7 +4,6 @@ import {
   DoctorPlaceholderImage,
   InPerson,
   Online,
-  VideoPlayIcon,
   ApolloDoctorIcon,
   ApolloPartnerIcon,
   InfoBlue,
@@ -29,16 +28,15 @@ import {
 import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import {
   g,
-  mhdMY,
-  nameFormater,
   postWebEngageEvent,
   nextAvailability,
+  getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Image,
@@ -185,7 +183,7 @@ export interface DoctorCardProps extends NavigationScreenProps {
     | getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor
     | any
     | null;
-  onPress?: (doctorId: string) => void;
+  onPress?: (doctorId: string, onlineConsult: boolean) => void;
   onPressConsultNowOrBookAppointment?: (type: 'consult-now' | 'book-appointment') => void;
   displayButton?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -214,7 +212,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const rowData = props.rowData;
   const { selectedConsultMode } = props;
   const ctaBannerText = rowData?.availabilityTitle;
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const isOnlineConsultSelected =
     selectedConsultMode === ConsultMode.ONLINE || selectedConsultMode === ConsultMode.BOTH;
@@ -263,6 +261,12 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     !selectedConsultMode || isCircleAvailForOnline
       ? onlineConsultDiscountedPrice
       : physicalConsultDiscountedPrice;
+  const ctaTitle = rowData?.doctorCardActiveCTA?.DEFAULT;
+  const onlineConsult = selectedConsultMode
+    ? isOnlineConsultSelected
+    : isBoth || isOnline
+    ? true
+    : false;
 
   useEffect(() => {
     if (!currentPatient) {
@@ -291,24 +295,13 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           CommonBugFender('DoctorCard_navigateToDetails', error);
         });
     }
-
-    if (isBoth) {
-      props.navigation.navigate(AppRoutes.DoctorDetails, {
-        doctorId: id,
-        callSaveSearch: props.callSaveSearch,
-        consultModeSelected: ConsultMode.BOTH,
-        externalConnect: null,
-        showBookAppointment: false,
-      });
-    } else {
-      props.navigation.navigate(AppRoutes.DoctorDetails, {
-        doctorId: id,
-        consultModeSelected: isOnline ? ConsultMode.ONLINE : ConsultMode.PHYSICAL,
-        externalConnect: null,
-        callSaveSearch: props.callSaveSearch,
-        ...params,
-      });
-    }
+    props.navigation.navigate(AppRoutes.DoctorDetails, {
+      doctorId: id,
+      consultModeSelected: onlineConsult ? ConsultMode.ONLINE : ConsultMode.PHYSICAL,
+      externalConnect: null,
+      callSaveSearch: props.callSaveSearch,
+      ...params,
+    });
   };
 
   const calculatefee = (rowData: any, consultTypeBoth: boolean, consultTypeOnline: boolean) => {
@@ -538,6 +531,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               ),
               'Patient Gender': currentPatient.gender,
               'Customer ID': currentPatient.id,
+              User_Type: getUserType(allCurrentPatients),
             };
             if (props.rowId) {
               eventAttributes['Rank'] = props.rowId;
@@ -545,7 +539,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             postWebEngageEvent(WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK, eventAttributes);
           } catch (error) {}
 
-          props.onPress ? props.onPress(rowData.id!) : navigateToDetails(rowData.id!);
+          props.onPress
+            ? props.onPress(rowData.id!, onlineConsult)
+            : navigateToDetails(rowData.id!);
         }}
       >
         <View style={{ borderRadius: 10, flex: 1, zIndex: 1 }}>
@@ -567,7 +563,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             <View>
               {isCircleDoctorOnSelectedConsultMode ? (
                 <ImageBackground
-                  source={require('@aph/mobile-patients/src/components/ui/icons/doctor_ring.png')}
+                  source={require('@aph/mobile-patients/src/components/ui/icons/doctor_ring.webp')}
                   style={[
                     styles.drImageBackground,
                     styles.drImageMargins,
@@ -737,6 +733,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                         ),
                         'Patient Gender': currentPatient.gender,
                         'Customer ID': currentPatient.id,
+                        User_Type: getUserType(allCurrentPatients),
                       };
                       if (props.rowId) {
                         eventAttributes['Rank'] = props.rowId;
@@ -771,8 +768,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                       props.buttonTextStyle,
                     ]}
                   >
-                    {!!ctaBannerText
-                      ? ctaBannerText.CONSULT_NOW
+                    {!!ctaTitle
+                      ? ctaTitle
                       : !!fetchedSlot
                       ? getButtonTitle(fetchedSlot)
                       : getButtonTitle(rowData?.slot)}

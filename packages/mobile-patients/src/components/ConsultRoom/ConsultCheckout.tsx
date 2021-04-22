@@ -63,7 +63,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
   const appointmentInput = props.navigation.getParam('appointmentInput');
   const price = props.navigation.getParam('price');
   const doctorName = props.navigation.getParam('doctorName');
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [loading, setLoading] = useState(true);
   const { showAphAlert } = useUIElements();
   const couponApplied = props.navigation.getParam('couponApplied');
@@ -181,7 +181,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       af_currency: 'INR',
       'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
       'Circle discount': circleDiscountedPrice,
-      User_Type: getUserType(currentPatient),
+      User_Type: getUserType(allCurrentPatients),
     };
     return eventAttributes;
   };
@@ -270,7 +270,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
           const paymentModeEventAttribute: WebEngageEvents[WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED] = {
             'Payment Mode': item.paymentMode,
-            User_Type: getUserType(currentPatient),
+            User_Type: getUserType(allCurrentPatients),
           };
           postWebEngageEvent(
             WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED,
