@@ -128,6 +128,7 @@ export interface TestRatingScreenProps extends NavigationScreenProps {
 export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [ratingStar, setRatingStar] = useState(props.navigation.getParam('ratingStar'));
+  const [orderDetail, setOrderDetail] = useState(props.navigation.getParam('orderDetails'))
   const starCount = [1, 2, 3, 4, 5];
   const [ratedStarsArray, setRatedStarsArray] = useState(starCount.slice(0, ratingStar));
   const [unRatedStarsArray, setUnRatedStarsArray] = useState(starCount.slice(ratingStar, 5));
@@ -189,6 +190,7 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
     } 
     return result
   }
+  // console.log('object :>> ', orderDetail);
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>

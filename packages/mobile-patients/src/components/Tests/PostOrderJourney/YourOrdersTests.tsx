@@ -171,6 +171,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [profileArray, setProfileArray] = useState<
     GetCurrentPatients_getCurrentPatients_patients[] | null
   >(allCurrentPatients);
+  const [currentOffset, setCurrentOffset] = useState<number>(1);
+  const [resultList, setResultList] = useState<(orderListByMobile | null)[] | null>(
+    []
+  );
   var rescheduleDate: Date,
     rescheduleSlotObject: {
       slotStartTime: any;
@@ -242,6 +246,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     fetchOrders(true);
   };
 
+  useEffect(() => {
+    refetchOrders()
+  }, [currentOffset]);
   const fetchOrders = async (isRefetch: boolean) => {
     try {
       setLoading!(true);
@@ -253,13 +260,23 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           },
           variables: {
             mobileNumber: currentPatient && currentPatient.mobileNumber,
+            paginated: true,
+            limit: 10,
+            offset: currentOffset
           },
           fetchPolicy: 'no-cache',
         })
-        .then((data) => {
-          const ordersList = data?.data?.getDiagnosticOrdersListByMobile?.ordersList || [];
+        .then( (data) => {
+          const ordersList =  data?.data?.getDiagnosticOrdersListByMobile?.ordersList || [];
+          setOrderListData(ordersList)
+          if (currentOffset == 1) {
+            setResultList(ordersList);
+          } else {
+            setResultList(resultList?.concat(ordersList))
+          }
+          const finalList = currentOffset == 1 ? ordersList : resultList?.concat(ordersList)
           const filteredOrderList =
-            data?.data?.getDiagnosticOrdersListByMobile?.ordersList ||
+          finalList ||
             []?.filter((item: orderListByMobile) => {
               if (
                 item?.diagnosticOrderLineItems?.length &&
@@ -1167,7 +1184,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         phelboObject={order?.phleboDetailsObj}
         onPressRatingStar={(star)=>{
           props.navigation.navigate(AppRoutes.TestRatingScreen, {
-            ratingStar:star
+            ratingStar: star,
+            orderDetails: order
           });
         }}
         style={[
@@ -1218,7 +1236,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const renderLoadMore = () => {
     return (
-        <TouchableOpacity style={styles.loadMoreView}>
+        <TouchableOpacity style={styles.loadMoreView} onPress={()=>{
+          setCurrentOffset(currentOffset + 1);
+        }}>
           <Text style={styles.textLoadMore}>{nameFormater('load more', 'upper')}</Text>
           <DownO size="sm_l" style={styles.downArrow}/>
         </TouchableOpacity>
@@ -1229,9 +1249,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       <FlatList
         bounces={false}
         data={orders}
+        extraData={orderListData}
         renderItem={({ item, index }) => renderOrder(item, index)}
         ListEmptyComponent={renderNoOrders()}
-        ListFooterComponent={renderLoadMore()}
+        ListFooterComponent={orderListData?.length && orderListData?.length < 10 || loading || error ? null : renderLoadMore()}
       />
     );
   };
@@ -1286,6 +1307,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           setSelectedPaitent(item?.firstName == null ? '' : item?.firstName);
           setSelectedPaitentId(item?.id);
           setIsPaitentList(false);
+          setCurrentOffset(1);
         }}
         style={[
           styles.paitentItem,

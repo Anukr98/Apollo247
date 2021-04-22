@@ -273,10 +273,11 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
   const showOTPContainer = () => {
     const phlObj = props?.phelboObject;
-    console.log('object :>> ', phlObj);
     let otpToShow = !!phlObj && phlObj?.PhelboOTP;
     let phoneNumber = !!phlObj && phlObj?.diagnosticPhlebotomists?.mobile;
     let name = !!phlObj && phlObj?.diagnosticPhlebotomists?.name;
+    let phleboEta = !!phlObj?.phleboEta?.estimatedArrivalTime;
+    let phleboTrackLink = 'https://www.google.com'; //!!phlObj?.phleboEta?.estimatedArrivalTime;
     return (
       <>
         {!!otpToShow && SHOW_OTP_ARRAY.includes(props.orderLevelStatus) ? (
@@ -302,15 +303,17 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
           </View>
         </View>
 
-        <View style={styles.otpContainer}>
+        {phleboEta ? <View style={styles.otpContainer}>
           <View style={styles.etaContainer}>
                <LocationOutline style={styles.locationIcon}/>
-            <Text style={styles.otpTextStyle}>{'Phlebo will arrive in 15 minutes '}</Text>
+            <Text style={styles.otpTextStyle}>Phlebo will arrive in{` ${phleboEta} `}minutes</Text>
           </View>
-          <TouchableOpacity>
+          {phleboTrackLink ? <TouchableOpacity onPress={()=>{
+            Linking.openURL(phleboTrackLink)
+          }}>
             <Text style={styles.trackStyle}>{nameFormater('track Phlebo', 'upper')}</Text>
-          </TouchableOpacity>
-          </View>
+          </TouchableOpacity> : null}
+          </View> : null}
             </>
      ) : null}
       </>
@@ -318,22 +321,24 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   };
 
   const showRatingView = () => {
-    const starCount = [1,2,3,4,5];
-    return (
+    const starCount = [1, 2, 3, 4, 5];
+    return props.orderLevelStatus != 'PHLEBO_COMPLETED' ? (
       <View style={styles.ratingContainer}>
         <Text style={styles.ratingTextStyle}>How was your Experience with Phlebo</Text>
         <View style={styles.startContainer}>
           {starCount.map((item) => (
-            <TouchableOpacity onPress={()=>{
-              props.onPressRatingStar(item)
-            }}>
+            <TouchableOpacity
+              onPress={() => {
+                props.onPressRatingStar(item);
+              }}
+            >
               <StarEmpty style={{ margin: 5 }} />
             </TouchableOpacity>
           ))}
         </View>
       </View>
-    );
-  }
+    ) : null;
+  };
 
   const renderAdditionalInfoView = () => {
     const isPresent =
@@ -570,6 +575,6 @@ const styles = StyleSheet.create({
     margin:5
   },
   ratingTextStyle: {
-    ...theme.viewStyles.text('R', 12, colors.SHERPA_BLUE, 1, 18),
+    ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 1, 16),
   },
 });
