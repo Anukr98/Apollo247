@@ -16,7 +16,7 @@ export interface getOrderPhleboDetailsBulk_getOrderPhleboDetailsBulk_orderPhlebo
   __typename: "DiagnosticOrderPhlebotomists";
   diagnosticOrdersId: string;
   diagnosticPhlebotomists: getOrderPhleboDetailsBulk_getOrderPhleboDetailsBulk_orderPhleboDetailsBulk_orderPhleboDetails_diagnosticPhlebotomists;
-  phleboOTP: number | null;
+  phleboOTP: string | null;
   phleboTrackLink: string | null;
 }
 

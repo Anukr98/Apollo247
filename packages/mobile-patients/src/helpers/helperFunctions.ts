@@ -34,6 +34,8 @@ import {
   Linking,
   NativeModules,
   PermissionsAndroid,
+  ToastAndroid,
+  AlertIOS
 } from 'react-native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import Permissions from 'react-native-permissions';
@@ -2716,7 +2718,10 @@ export const storagePermissionsToDownload = (doRequest?: () => void) => {
 export async function downloadDiagnosticReport(
   pdfUrl: string,
   appointmentDate: string,
-  patientName: string
+  patientName: string,
+  showToast: boolean,
+  downloadFileName?: string,
+
 ) {
   let result = Platform.OS === 'android' && (await requestReadSmsPermission());
   try {
@@ -2730,12 +2735,21 @@ export async function downloadDiagnosticReport(
       Platform.OS == 'ios'
     ) {
       const dirs = RNFetchBlob.fs.dirs;
-      const reportName = `Apollo247_${appointmentDate}_${patientName}.pdf`;
+      const reportName = !!downloadFileName ? downloadFileName :  `Apollo247_${appointmentDate}_${patientName}.pdf`;
       const downloadPath =
         Platform.OS === 'ios'
           ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + reportName
           : dirs.DownloadDir + '/' + reportName;
-
+          
+      let msg = "File is downloading.."
+      if(showToast){
+        if (Platform.OS === 'android') {
+          ToastAndroid.show(msg, ToastAndroid.SHORT)
+        } else {
+          AlertIOS.alert(msg);
+        }
+      }
+      
       RNFetchBlob.config({
         fileCache: true,
         path: downloadPath,

@@ -4715,8 +4715,8 @@ export const GET_PATIENT_LATEST_PRESCRIPTION = gql `
 `;
 
 export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql `
-  query getDiagnosticOpenOrdersList($patientId : String!, $skip: Int!, $take: Int!){
-    getDiagnosticOpenOrdersList(patientId: $patientId, skip: $skip, take: $take){
+  query getDiagnosticOpenOrdersList($mobileNumber : String!, $skip: Int!, $take: Int!){
+    getDiagnosticOpenOrdersList(mobileNumber: $mobileNumber, skip: $skip, take: $take){
       openOrders{
         id
         patientId
@@ -4726,6 +4726,10 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql `
         labReportURL
         paymentType
         paymentOrderId
+        patientObj {
+          firstName
+          lastName
+        },
       }
     }
   }`;
@@ -4753,8 +4757,8 @@ export const GET_PATIENT_PAST_CONSULTED_DOCTORS = gql`
 `;
 
 export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql `
-  query getDiagnosticClosedOrdersList($patientId : String!, $skip: Int!, $take: Int!){
-    getDiagnosticClosedOrdersList(patientId: $patientId, skip: $skip, take: $take){
+  query getDiagnosticClosedOrdersList($mobileNumber : String!, $skip: Int!, $take: Int!){
+    getDiagnosticClosedOrdersList(mobileNumber: $mobileNumber, skip: $skip, take: $take){
       closedOrders{
         id
         patientId
@@ -4764,6 +4768,10 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql `
         labReportURL
         paymentType
         paymentOrderId
+        patientObj {
+          firstName
+          lastName
+        },
       }
     }
   }

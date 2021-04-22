@@ -70,7 +70,7 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
 
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_phleboDetailsObj {
   __typename: "PhleboDetailsObj";
-  PhelboOTP: number | null;
+  PhelboOTP: string | null;
 }
 
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderReschedule {

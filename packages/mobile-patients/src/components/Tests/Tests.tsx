@@ -18,7 +18,6 @@ import {
   CartIcon,
   LocationOff,
   SearchSendIcon,
-  TestsIcon,
   SearchIcon,
   HomeIcon,
   NotificationIcon,
@@ -27,7 +26,6 @@ import {
   ShieldIcon,
   Remove,
   DropdownGreen,
-  PrescriptionPad,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -61,6 +59,7 @@ import {
   addTestsToCart,
   handleGraphQlError,
   setAsyncPharmaLocation,
+  downloadDiagnosticReport,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -82,7 +81,6 @@ import {
   ImageBackground,
   BackHandler,
   Alert,
-  Platform,
   Linking,
 } from 'react-native';
 import { Image } from 'react-native-elements';
@@ -160,8 +158,6 @@ import {
   renderTestDiagonosticsShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import moment from 'moment';
-import RNFetchBlob from 'rn-fetch-blob';
-import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { HomePageOrderStatusCard } from './components/HomePageOrderStatusCard';
 import AsyncStorage from '@react-native-community/async-storage';
 
@@ -375,7 +371,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     fetchPatientPrescriptions();
   }, [currentPatient, serviceableObject]);
 
-  useEffect(()=>{
+  useEffect(() => {
     if (isFocused) {
       const getAsyncLocationPincode = async () => {
         const asyncLocationPincode: any = await AsyncStorage.getItem('PharmacyLocationPincode');
@@ -401,8 +397,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       };
       getAsyncLocationPincode();
     }
-  },[isFocused])
-
+  }, [isFocused]);
 
   /**
    * if there is any change in the location yellow pop-up ,if location is present.
@@ -444,8 +439,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const fetchPatientOpenOrders = async () => {
     try {
-      let openOrdersResponse: any = await getDiagnosticOpenOrders(client, currentPatient?.id, 0, 5);
-      console.log({ openOrdersResponse });
+      let openOrdersResponse: any = await getDiagnosticOpenOrders(
+        client,
+        currentPatient?.mobileNumber,
+        0,
+        3
+      );
       if (openOrdersResponse?.data?.data) {
         const getOpenOrders =
           openOrdersResponse?.data?.data?.getDiagnosticOpenOrdersList?.openOrders;
@@ -463,11 +462,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
     try {
       let closedOrdersResponse: any = await getDiagnosticClosedOrders(
         client,
-        currentPatient?.id,
+        currentPatient?.mobileNumber,
         0,
         3
       );
-      console.log({ closedOrdersResponse });
       if (closedOrdersResponse?.data?.data) {
         const getClosedOrders =
           closedOrdersResponse?.data?.data?.getDiagnosticClosedOrdersList?.closedOrders;
@@ -1973,50 +1971,42 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-  //move this function out once code is merged.
-  function onPressViewPrescription(item: any) {
-    //ask permission.
+  async function onPressViewPrescription(item: any) {
     const pdfName = item?.caseSheet?.blobName;
+    const prescriptionDate = moment(item?.prescriptionDateTime).format('DD MM YYYY');
+    const fileName: string = getFileName(item);
+
     if (pdfName == null) {
       Alert.alert('No Image');
       CommonLogEvent('Tests', 'No image');
     } else {
-      const dirs = RNFetchBlob.fs.dirs;
-      const fileName: string = getFileName(item);
-      const downloadPath =
-        Platform.OS === 'ios'
-          ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + (fileName || 'Apollo_Prescription.pdf')
-          : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf');
-      setLoading?.(true);
-      RNFetchBlob.config({
-        fileCache: true,
-        path: downloadPath,
-        addAndroidDownloads: {
-          title: fileName,
-          useDownloadManager: true,
-          notification: true,
-          path: downloadPath,
-          mime: mimeType(downloadPath),
-          description: 'File downloaded by download manager.',
-        },
-      })
-        .fetch('GET', AppConfig.Configuration.DOCUMENT_BASE_URL.concat(pdfName), {})
-        .then((res) => {
-          setLoading?.(false);
-          Platform.OS === 'ios'
-            ? RNFetchBlob.ios.previewDocument(res.path())
-            : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
-        })
-        .catch((err) => {
-          CommonBugFender('Tests_onPressViewPrescription', err);
-          setLoading?.(false);
-        });
+      try {
+        setLoading?.(true);
+        await downloadDiagnosticReport(
+          AppConfig.Configuration.DOCUMENT_BASE_URL.concat(pdfName),
+          prescriptionDate,
+          item?.patientName,
+          true,
+          fileName
+        );
+      } catch (error) {
+        setLoading?.(false);
+        CommonBugFender('Tests_onPressViewPrescription_downloadLabTest', error);
+      } finally {
+        setLoading?.(false);
+      }
     }
   }
 
   const renderOrderStatusCard = () => {
-    //check if the length of patientOpenOrders is 3 then don't show otherwise show.
-    const allOrders = [patientOpenOrders, patientClosedOrders]?.flat(1);
+    var allOrders;
+    if (patientOpenOrders?.length == 3) {
+      allOrders = [patientOpenOrders];
+    } else if (patientOpenOrders?.length && patientOpenOrders?.length < 3) {
+      allOrders = [patientOpenOrders, patientClosedOrders]?.flat(1);
+    } else {
+      allOrders = [patientClosedOrders];
+    }
     return (
       <>
         {allOrders?.length > 0 ? (
@@ -2030,16 +2020,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               loop={false}
               autoplay={false}
             />
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'center',
-                position: 'absolute',
-                top: 105,
-                alignSelf: 'flex-start',
-                left: 32,
-              }}
-            >
+            <View style={styles.orderStatusCardDots}>
               {allOrders?.map((_, index) =>
                 index == orderCardSlideIndex
                   ? renderDot(true, 'orderStatus')
@@ -2057,7 +2038,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <HomePageOrderStatusCard
         status={item?.orderStatus}
-        patientName={currentPatient?.firstName}
+        patientName={`${item?.patientObj?.firstName} ${item?.patientObj?.lastName}`}
         appointmentTime={appointmentTime}
         key={item?.id}
         onPressBookNow={() => onPressOrderStatusOption(item)}
@@ -2065,13 +2046,36 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-  function onPressOrderStatusOption(item: any) {
+  async function onPressOrderStatusOption(item: any) {
+    const appointmentDate = moment(item?.slotDateTimeInUTC)?.format('DD MMM YYYY');
+    const patientName = `${item?.patientObj?.firstName} ${item?.patientObj?.lastName}`;
     if (DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(item?.orderStatus)) {
-      navigateToTrackingScreen(item);
       //track order
+      navigateToTrackingScreen(item);
     } else if (DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY.includes(item?.orderStatus)) {
-      //once code is merged.
       //view report download
+      try {
+        if (!!item?.labReportURL && item?.labReportURL != '') {
+          setLoading?.(true);
+          await downloadDiagnosticReport(
+            item?.labReportURL,
+            appointmentDate,
+            !!patientName ? patientName : '_',
+            true,
+            undefined
+          );
+        } else {
+          showAphAlert?.({
+            title: string.common.uhOh,
+            description: string.diagnostics.responseUnavailableForReport,
+          });
+        }
+      } catch (error) {
+        setLoading?.(false);
+        CommonBugFender('Tests_onPressOrderStatusOption_downloadLabTest', error);
+      } finally {
+        setLoading?.(false);
+      }
     } else {
       if (DIAGNOSITC_PHELBO_TRACKING_STATUS.includes(item?.orderStatus)) {
         //track phlebo
@@ -2096,7 +2100,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setLoading?.(true);
     try {
       let response: any = await getDiagnosticPhelboDetails(client, [orderId]);
-      console.log({ response });
       if (response?.data?.data) {
         const getUrl =
           response?.data?.data?.getOrderPhleboDetailsBulk?.orderPhleboDetailsBulk?.length > 0 &&
@@ -2489,5 +2492,13 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     paddingVertical: 0,
     backgroundColor: 'white',
+  },
+  orderStatusCardDots: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    position: 'absolute',
+    top: 105,
+    alignSelf: 'flex-start',
+    left: 32,
   },
 });

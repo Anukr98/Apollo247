@@ -9,6 +9,12 @@ import { DIAGNOSTIC_ORDER_STATUS, DIAGNOSTIC_ORDER_PAYMENT_TYPE } from "./global
 // GraphQL query operation: getDiagnosticClosedOrdersList
 // ====================================================
 
+export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders_patientObj {
+  __typename: "PatientObj";
+  firstName: string | null;
+  lastName: string | null;
+}
+
 export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders {
   __typename: "DiagnosticOrders";
   id: string;
@@ -18,6 +24,7 @@ export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_clo
   slotDateTimeInUTC: any | null;
   labReportURL: string | null;
   paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
+  patientObj: getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders_patientObj | null;
 }
 
 export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList {
@@ -30,7 +37,7 @@ export interface getDiagnosticClosedOrdersList {
 }
 
 export interface getDiagnosticClosedOrdersListVariables {
-  patientId: string;
+  mobileNumber: string;
   skip: number;
   take: number;
 }

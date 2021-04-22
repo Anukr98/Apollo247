@@ -37,7 +37,7 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
       content = string.diagnostics.viewReportContent;
       options = string.diagnostics.viewReportText;
     } else {
-      heading = `${string.diagnostics.bookingFor} ${props.patientName}`;
+      heading = `${string.diagnostics.bookingFor}`;
       image = <AppointmentIcon style={styles.iconStyle} />;
       content = `${string.diagnostics.collectionAppointmentContent} ${props.appointmentTime}`;
       options = DIAGNOSITC_PHELBO_TRACKING_STATUS.includes(status)
@@ -56,7 +56,9 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
   return (
     <View style={styles.container}>
       <View style={styles.rowStyles}>
-        <Text style={styles.heading1}>{nameFormater(heading, 'upper')}</Text>
+        <Text style={styles.heading1}>
+          {nameFormater(heading, 'upper')} FOR {nameFormater(props.patientName!, 'title')}
+        </Text>
         {image}
       </View>
       <View>
@@ -78,7 +80,10 @@ const styles = StyleSheet.create({
     margin: 16,
   },
   rowStyles: { flexDirection: 'row', justifyContent: 'space-between' },
-  heading1: { ...theme.viewStyles.text('M', 16, colors.SHERPA_BLUE, 1, 20) },
+  heading1: {
+    ...theme.viewStyles.text('M', 16, colors.SHERPA_BLUE, 1, 20),
+    width: '87%',
+  },
   content: {
     ...theme.viewStyles.text('R', 12.5, colors.SHERPA_BLUE, 1, 18),
     marginTop: 6,

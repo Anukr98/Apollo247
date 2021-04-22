@@ -3,11 +3,17 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { DIAGNOSTIC_ORDER_STATUS } from "./globalTypes";
+import { DIAGNOSTIC_ORDER_STATUS, DIAGNOSTIC_ORDER_PAYMENT_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getDiagnosticOpenOrdersList
 // ====================================================
+
+export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_patientObj {
+  __typename: "PatientObj";
+  firstName: string | null;
+  lastName: string | null;
+}
 
 export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders {
   __typename: "DiagnosticOrders";
@@ -17,6 +23,8 @@ export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrd
   orderStatus: DIAGNOSTIC_ORDER_STATUS;
   slotDateTimeInUTC: any | null;
   labReportURL: string | null;
+  paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
+  patientObj: getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_patientObj | null;
 }
 
 export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList {
@@ -29,7 +37,7 @@ export interface getDiagnosticOpenOrdersList {
 }
 
 export interface getDiagnosticOpenOrdersListVariables {
-  patientId: string;
+  mobileNumber: string;
   skip: number;
   take: number;
 }

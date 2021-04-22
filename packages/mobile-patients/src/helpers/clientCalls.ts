@@ -967,7 +967,7 @@ export const getDiagnosticPatientPrescription = (
 
 export const getDiagnosticOpenOrders = (
   client: ApolloClient<object>,
-  patientId: string,
+  mobileNumber: string,
   skip: number,
   take: number
 ) => {
@@ -979,9 +979,9 @@ export const getDiagnosticOpenOrders = (
           sourceHeaders,
         },
         variables: {
-          patientId: patientId,
-          skip: skip,
-          take : take
+          mobileNumber: mobileNumber,
+          skip: skip, //for pagination
+          take : take // number of orders to show
         },
         fetchPolicy: 'no-cache',
       })
@@ -997,7 +997,7 @@ export const getDiagnosticOpenOrders = (
 
 export const getDiagnosticClosedOrders = (
   client: ApolloClient<object>,
-  patientId: string,
+  mobileNumber: string,
   skip: number,
   take: number
 ) => {
@@ -1009,9 +1009,9 @@ export const getDiagnosticClosedOrders = (
           sourceHeaders,
         },
         variables: {
-          patientId: patientId,
-          skip: skip,
-          take : take
+          mobileNumber: mobileNumber,
+          skip: skip, //for pagination
+          take : take // number of orders to show
         },
         fetchPolicy: 'no-cache',
       })

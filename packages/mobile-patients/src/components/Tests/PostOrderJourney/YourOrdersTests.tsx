@@ -1201,7 +1201,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string) {
     setLoading?.(true);
     try {
-      await downloadDiagnosticReport(pdfUrl, appointmentDate, patientName);
+      await downloadDiagnosticReport(pdfUrl, appointmentDate, patientName, true);
     } catch (error) {
       setLoading?.(false);
       CommonBugFender('YourOrderTests_downloadLabTest', error);
