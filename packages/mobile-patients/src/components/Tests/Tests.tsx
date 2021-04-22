@@ -77,7 +77,7 @@ import {
   ImageBackground,
   BackHandler,
 } from 'react-native';
-import { Image, Input } from 'react-native-elements';
+import { Image } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import {
   SEARCH_TYPE,
@@ -165,7 +165,6 @@ export interface DiagnosticData {
 
 export interface TestsProps
   extends NavigationScreenProps<{
-    focusSearch?: boolean;
     comingFrom?: string;
     movedFrom?: string;
   }> {}
@@ -216,7 +215,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
   type Address = savePatientAddress_savePatientAddress_patientAddress;
 
-  const focusSearch = props.navigation.getParam('focusSearch');
   const movedFrom = props.navigation.getParam('movedFrom');
   const { currentPatient } = useAllCurrentPatients();
 
@@ -238,7 +236,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [widgetsData, setWidgetsData] = useState([] as any);
   const [reloadWidget, setReloadWidget] = useState<boolean>(false);
 
-  const [searchQuery, setSearchQuery] = useState({});
   const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
   const [searchResult, setSearchResults] = useState<boolean>(false);
   const [isCurrentScreen, setCurrentScreen] = useState<string>('');
