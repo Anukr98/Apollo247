@@ -104,6 +104,8 @@ import { CircleCartItem } from '@aph/mobile-patients/src/components/MedicineCart
 import { OneApolloCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/OneApolloCard';
 import AsyncStorage from '@react-native-community/async-storage';
 import { MedicineOrderShipmentInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 
 export interface MedicineCartProps extends NavigationScreenProps {}
 
@@ -187,6 +189,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     fetchPickupStores(pharmacyPincode);
     fetchProductSuggestions();
     fetchHealthCredits();
+    initiateHyperSDK();
     cartItems.length &&
       PharmacyCartViewedEvent(
         shoppingCart,
@@ -284,6 +287,15 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   useEffect(() => {
     onFinishUpload();
   }, [isPhysicalUploadComplete]);
+
+  const initiateHyperSDK = async () => {
+    try {
+      const isInitiated: boolean = await isSDKInitialised();
+      !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id);
+    } catch (error) {
+      CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
+    }
+  };
 
   const handleAppStateChange = (nextAppState: AppStateStatus) => {
     setappState(nextAppState);
