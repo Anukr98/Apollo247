@@ -411,26 +411,17 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const checkPatientAge = (_selectedPatient: any, fromNewProfile: boolean = false) => {
     let age = !!_selectedPatient?.dateOfBirth ? getAge(_selectedPatient?.dateOfBirth) : null;
-    let gender = _selectedPatient?.gender;
-    if (age! <= 10 || age == null || gender == null) {
+    if (age && age <= 10) {
       setSelectedPatient(null);
       setShowSelectPatient?.(false);
-      Alert.alert(
-        string.common.uhOh,
-        age == null
-          ? string.common.contactCustomerCare1
-          : gender == null
-          ? string.common.contactCustomerCare2
-          : string.diagnostics.minorAgeText,
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              fromNewProfile && setShowPatientListOverlay(true);
-            },
+      Alert.alert(string.common.uhOh, string.diagnostics.minorAgeText, [
+        {
+          text: 'OK',
+          onPress: () => {
+            fromNewProfile && setShowPatientListOverlay(true);
           },
-        ]
-      );
+        },
+      ]);
       return true;
     }
     return false;
@@ -2537,6 +2528,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               setLoading?.(false);
               getPatientApiCall();
               if (!checkPatientAge(profileData, true)) {
+                setSelectedPatient(profileData);
                 changeCurrentProfile(profileData, false);
               }
             })
