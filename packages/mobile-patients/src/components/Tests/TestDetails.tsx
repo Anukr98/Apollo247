@@ -8,7 +8,6 @@ import {
   CircleLogo,
   ClockIcon,
   InfoIconRed,
-  PendingIcon,
   WhyBookUs,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -21,13 +20,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import stripHtml from 'string-strip-html';
-import {
-  aphConsole,
-  g,
-  nameFormater,
-  isSmallDevice,
-  filterHtmlContent,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, nameFormater, isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
@@ -39,14 +32,12 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
-  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
   GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -55,15 +46,8 @@ import {
   findDiagnosticsByItemIDsAndCityIDVariables,
   findDiagnosticsByItemIDsAndCityID,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsByItemIDsAndCityID';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
 import {
-  GetSubscriptionsOfUserByStatus,
-  GetSubscriptionsOfUserByStatusVariables,
-} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
-import {
-  calculatePackageDiscounts,
   getPricesForItem,
   sourceHeaders,
   convertNumberToDecimal,
@@ -84,16 +68,18 @@ import {
   findDiagnosticsWidgetsPricing,
   findDiagnosticsWidgetsPricingVariables,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import HTML from 'react-native-render-html';
+import _ from 'lodash';
+import {
+  navigateToHome,
+  navigateToScreenWithEmptyStack,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 
-const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
-
 export interface TestPackageForDetails extends TestPackage {
   collectionType: TEST_COLLECTION_TYPE;
   preparation: string;
-  source: 'Home Page' | 'Full Search' | 'Cart Page' | 'Partial Search';
+  source: 'Home Page' | 'Full Search' | 'Cart Page' | 'Partial Search' | 'Deeplink';
   type: string;
   specialPrice?: string | number;
   circleRate?: string | number;
@@ -143,6 +129,7 @@ export interface TestDetailsProps
     source?: string;
     comingFrom?: string;
     itemName?: string;
+    movedFrom?: string;
   }> {}
 
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
@@ -151,21 +138,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     addCartItem,
     removeCartItem,
     isDiagnosticCircleSubscription,
-    setIsDiagnosticCircleSubscription,
     testDetailsBreadCrumbs,
     setTestDetailsBreadCrumbs,
     deliveryAddressId: diagnosticDeliveryAddressId,
   } = useDiagnosticsCart();
-  const {
-    setIsCircleSubscription,
-    setHdfcSubscriptionId,
-    setCircleSubscriptionId,
-    setHdfcPlanName,
-    setIsFreeDelivery,
-    setCirclePlanValidity,
-    pharmacyCircleAttributes,
-    deliveryAddressId,
-  } = useShoppingCart();
+  const { pharmacyCircleAttributes } = useShoppingCart();
 
   const { diagnosticServiceabilityData, isDiagnosticLocationServiceable } = useAppCommonData();
 
@@ -174,9 +151,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const { setLoading: setLoadingContext } = useUIElements();
 
   const movedFrom = props.navigation.getParam('comingFrom');
+  const isDeep = props.navigation.getParam('movedFrom');
   const itemId =
     movedFrom == AppRoutes.TestsCart ? testDetails?.ItemID : props.navigation.getParam('itemId');
-  const source = props.navigation.getParam('source');
 
   const [cmsTestDetails, setCmsTestDetails] = useState((([] as unknown) as CMSTestDetails) || []);
   const [testInfo, setTestInfo] = useState(movedFrom == 'TestsCart' ? testDetails : ({} as any));
@@ -192,7 +169,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     testInfo?.ItemName ||
     '';
 
-  const hdfc_values = string.Hdfc_values;
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
 
@@ -323,7 +299,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
       setTestInfo({ ...(partialTestDetails || []) });
     } catch (error) {
-      console.log({ error });
       setErrorState(true);
     } finally {
       setLoadingContext?.(false);
@@ -366,25 +341,13 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const homeBreadCrumb: TestBreadcrumbLink = {
     title: 'Home',
     onPress: () => {
-      const resetAction = StackActions.reset({
-        index: 0,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      });
-      props.navigation.dispatch(resetAction);
+      props.navigation.navigate('TESTS');
     },
-  };
-
-  const scrollToTop = () => {
-    setTimeout(() => {
-      scrollViewRef?.current && scrollViewRef.current.scrollTo({ x: 0, y: 0, animated: true });
-    }, 0);
   };
 
   useEffect(() => {
     let breadcrumb: TestBreadcrumbLink[] = [homeBreadCrumb];
     if (!!movedFrom) {
-      scrollToTop();
-
       if (movedFrom == AppRoutes.Tests || movedFrom == AppRoutes.TestDetails) {
       }
       if (movedFrom == AppRoutes.SearchTestScene || movedFrom == AppRoutes.TestListing) {
@@ -401,11 +364,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         breadcrumb.push({
           title: 'Cart',
           onPress: () => {
-            const resetAction = StackActions.reset({
-              index: 0,
-              actions: [NavigationActions.navigate({ routeName: AppRoutes.TestsCart })],
-            });
-            props.navigation.dispatch(resetAction);
+            navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TestsCart);
           },
         });
       }
@@ -419,66 +378,15 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   useEffect(() => {
     DiagnosticDetailsViewed(
-      testInfo?.source,
-      testInfo?.ItemName,
+      isDeep == 'deeplink' ? 'Deeplink' : testInfo?.source,
+      testInfo?.ItemName || itemId,
       testInfo?.type,
-      testInfo?.ItemID,
+      testInfo?.ItemID || itemId,
       currentPatient,
       testInfo?.Rate,
       pharmacyCircleAttributes
     );
   }, []);
-
-  const getUserSubscriptionsByStatus = async () => {
-    try {
-      const query: GetSubscriptionsOfUserByStatusVariables = {
-        mobile_number: g(currentPatient, 'mobileNumber'),
-        status: ['active', 'deferred_inactive'],
-      };
-      const res = await client.query<GetSubscriptionsOfUserByStatus>({
-        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
-        context: {
-          sourceHeaders,
-        },
-        fetchPolicy: 'no-cache',
-        variables: query,
-      });
-      const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
-      if (data) {
-        if (data?.APOLLO?.[0]._id) {
-          setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
-          setIsCircleSubscription && setIsCircleSubscription(true);
-          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
-          const planValidity = {
-            startDate: data?.APOLLO?.[0]?.start_date,
-            endDate: data?.APOLLO?.[0]?.end_date,
-          };
-          setCirclePlanValidity && setCirclePlanValidity(planValidity);
-        } else {
-          setCircleSubscriptionId && setCircleSubscriptionId('');
-          setIsCircleSubscription && setIsCircleSubscription(false);
-          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
-          setCirclePlanValidity && setCirclePlanValidity(null);
-        }
-
-        if (data?.HDFC?.[0]._id) {
-          setHdfcSubscriptionId && setHdfcSubscriptionId(data?.HDFC?.[0]._id);
-
-          const planName = data?.HDFC?.[0].name;
-          setHdfcPlanName && setHdfcPlanName(planName);
-
-          if (planName === hdfc_values.PLATINUM_PLAN && data?.HDFC?.[0].status === 'active') {
-            setIsFreeDelivery && setIsFreeDelivery(true);
-          }
-        } else {
-          setHdfcSubscriptionId && setHdfcSubscriptionId('');
-          setHdfcPlanName && setHdfcPlanName('');
-        }
-      }
-    } catch (error) {
-      CommonBugFender('Diagnositic_DetailsPage_GetSubscriptionsOfUserByStatus', error);
-    }
-  };
 
   function createSampleType(data: any) {
     const array = data?.map(
@@ -498,13 +406,13 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     const showAge = (!!cmsTestDetails && cmsTestDetails?.diagnosticAge) || 'For all age group';
     const showGender =
       (!!cmsTestDetails && cmsTestDetails?.diagnosticGender) ||
-      (!!testInfo && `FOR ${gender?.[testInfo?.Gender]}`) ||
+      (!_.isEmpty(testInfo) && `FOR ${gender?.[testInfo?.Gender]}`) ||
       'Both';
     const showDescription =
       (!!cmsTestDetails &&
         cmsTestDetails?.diagnosticOverview?.length > 0 &&
         cmsTestDetails?.diagnosticOverview?.[0]?.value) ||
-      (!!testInfo && testInfo?.testDescription);
+      (!_.isEmpty(testInfo) && testInfo?.testDescription);
     return (
       <>
         {sampleType || showAge || showGender || showDescription ? (
@@ -637,7 +545,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         {renderSeparator()}
         <View style={{ marginTop: '2%' }}>
           {renderSlashedView(slashedPrice, priceToShow)}
-          {!!testInfo && renderMainPriceView(priceToShow)}
+          {!_.isEmpty(testInfo) && renderMainPriceView(priceToShow)}
         </View>
       </View>
     );
@@ -1087,7 +995,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             style={{ marginBottom: 60 }}
             ref={scrollViewRef}
           >
-            {!!testInfo && !!cmsTestDetails && renderItemCard()}
+            {!_.isEmpty(testInfo) && !!cmsTestDetails && renderItemCard()}
             {renderWhyBookUs()}
             {renderDescriptionCard()}
             {!!cmsTestDetails?.diagnosticFAQs && cmsTestDetails?.diagnosticFAQs?.length > 0
@@ -1106,7 +1014,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               }
             />
           </StickyBottomComponent>
-          {/* {loading && <Spinner />} */}
         </>
       ) : (
         <>
@@ -1132,7 +1039,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingTop: 10,
     backgroundColor: theme.colors.WHITE,
-    // height: height === 812 || height === 896 ? 120 : 110,
     height: 'auto',
     paddingHorizontal: 20,
     shadowColor: theme.colors.WHITE,

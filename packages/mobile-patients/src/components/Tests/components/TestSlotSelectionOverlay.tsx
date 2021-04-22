@@ -17,7 +17,6 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   getDiagnosticSlotsCustomized,
@@ -38,14 +37,15 @@ export interface TestSlotSelectionOverlayProps extends AphOverlayProps {
   itemId?: any[];
   source?: string;
 }
-
+const { width } = Dimensions.get('window');
 export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> = (props) => {
-  const { isTodaySlotUnavailable } = props;
+  const { isTodaySlotUnavailable, maxDate } = props;
   const { cartItems } = useDiagnosticsCart();
 
   const [slotInfo, setSlotInfo] = useState<TestSlot | undefined>(props.slotInfo);
   const [slots, setSlots] = useState<TestSlot[]>(props.slots);
   const [date, setDate] = useState<Date>(props.date);
+  const [changedDate, setChangedDate] = useState<Date>(props.date);
   const [calendarType, setCalendarType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.MONTH);
   const [isDateAutoSelected, setIsDateAutoSelected] = useState(true);
   const client = useApolloClient();
@@ -61,7 +61,9 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
 
   type UniqueSlotType = typeof uniqueSlots[0];
 
-  const fetchSlots = () => {
+  const fetchSlots = (updatedDate?: Date) => {
+    let dateToCheck = !!updatedDate ? updatedDate : date;
+    setChangedDate(dateToCheck);
     if (!isVisible || !zipCode) return;
     showSpinner(true);
     client
@@ -69,16 +71,15 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
         query: GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
         fetchPolicy: 'no-cache',
         variables: {
-          selectedDate: moment(date).format('YYYY-MM-DD'),
+          selectedDate: moment(dateToCheck).format('YYYY-MM-DD'),
           areaID: Number(props.areaId!),
           itemIds: props.isReschdedule ? itemId! : cartItemsWithId,
         },
       })
       .then(({ data }) => {
         const diagnosticSlots = g(data, 'getDiagnosticSlotsCustomized', 'slots') || [];
-        console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
         const updatedDiagnosticSlots =
-          moment(date).format('YYYY-MM-DD') == dt && props.isReschdedule
+          moment(dateToCheck).format('YYYY-MM-DD') == dt && props.isReschdedule
             ? diagnosticSlots.filter((item) => item?.Timeslot != tm)
             : diagnosticSlots;
 
@@ -94,21 +95,19 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
               startTime: item?.Timeslot!,
               slot: item?.TimeslotID,
             },
-            date: date,
+            date: dateToCheck,
             diagnosticBranchCode: 'apollo_route',
           } as TestSlot);
         });
-
-        console.log('ARRAY OF SLOTS', { slotsArray });
         // if slot is empty then refetch it for next date
         const isSameDate = moment().isSame(moment(date), 'date');
-        if (isSameDate && uniqueSlots?.length == 0 && isDateAutoSelected) {
-          setDate(
-            moment(date)
-              .add(1, 'day')
-              .toDate()
-          );
-          showSpinner(true);
+        const hasReachedEnd = moment(dateToCheck).isSameOrAfter(moment(maxDate), 'date');
+        if (!hasReachedEnd && slotsArray?.length == 0 && isDateAutoSelected) {
+          let changedDate = moment(dateToCheck) //date
+            .add(1, 'day')
+            .toDate();
+
+          fetchSlots(changedDate);
         } else {
           setSlots(slotsArray);
           slotsArray?.length && setSlotInfo(slotsArray?.[0]);
@@ -116,7 +115,6 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
         }
       })
       .catch((e) => {
-        console.log('getDiagnosticSlots Error', { e });
         const noHubSlots = g(e, 'graphQLErrors', '0', 'message') === 'NO_HUB_SLOTS';
         if (!noHubSlots) {
           handleGraphQlError(e);
@@ -136,9 +134,6 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
       data: val,
     }));
 
-    console.log('dropDownOptions', { dropDownOptions, uniqueSlots });
-
-    const { width } = Dimensions.get('window');
     return (
       <View style={[styles.sectionStyle, { paddingHorizontal: 16 }]}>
         <Text style={{ ...theme.viewStyles.text('M', 14, '#02475b'), marginTop: 16 }}>Slot</Text>
@@ -146,22 +141,15 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
           <MaterialMenu
             options={dropDownOptions}
             selectedText={slotInfo && `${formatTestSlot(slotInfo.slotInfo.startTime!)}`}
-            menuContainerStyle={{
-              alignItems: 'flex-end',
-              marginTop: 24,
-              marginLeft: width / 2 - 110,
-            }}
+            menuContainerStyle={styles.menuStyle}
             itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b') }}
             selectedTextStyle={{ ...theme.viewStyles.text('M', 16, '#00b38e') }}
             onPress={({ data }) => {
-              console.log('selectedSlot', { data });
-
               const selectedSlot = getTestSlotDetailsByTime(
                 slots,
                 (data as UniqueSlotType).startTime,
                 (data as UniqueSlotType).endTime
               );
-              console.log('selectedSlot\n\n', { selectedSlot });
               setSlotInfo(selectedSlot);
             }}
           >
@@ -215,8 +203,7 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
       <CalendarView
         source={props.source}
         styles={{ marginBottom: 16 }}
-        date={dateToHighlight}
-        // minDate={new Date()}
+        date={changedDate}
         minDate={new Date()}
         maxDate={props.maxDate}
         onPressDate={(selectedDate) => {
@@ -291,5 +278,10 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.cardContainer,
     backgroundColor: theme.colors.CARD_BG,
     marginBottom: 16,
+  },
+  menuStyle: {
+    alignItems: 'flex-end',
+    marginTop: -40,
+    marginLeft: width / 2 - 90,
   },
 });

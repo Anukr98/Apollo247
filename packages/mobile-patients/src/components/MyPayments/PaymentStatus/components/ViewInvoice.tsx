@@ -8,7 +8,6 @@ import { View, StyleSheet, TouchableOpacity, Alert, Platform } from 'react-nativ
 import RNFetchBlob from 'rn-fetch-blob';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -39,26 +38,6 @@ const ViewInvoice: FC<ViewInvoiceProps> = (props) => {
       title: 'Uh oh.. :(',
       description: `${desc || ''}`.trim(),
     });
-  const statusItemValues = () => {
-    const { paymentFor, item } = props;
-    let status = 'PENDING';
-    if (paymentFor === 'consult') {
-      const { appointmentPayments, PaymentOrders } = item;
-      const paymentInfo = Object.keys(PaymentOrders).length
-        ? PaymentOrders
-        : appointmentPayments[0];
-      if (!paymentInfo) {
-        status = 'PENDING';
-      } else {
-        status = paymentInfo?.paymentStatus;
-      }
-      return {
-        status: status,
-      };
-    } else {
-      return { status: null };
-    }
-  };
 
   //TODO: refactor the downloadInvoice function and need to handle failure case
   const downloadInvoice = (emailInvoice?: boolean) => {
@@ -104,7 +83,6 @@ const ViewInvoice: FC<ViewInvoiceProps> = (props) => {
               //some headers ..
             })
             .then((res) => {
-              console.log('invoiceURL-->', res);
               if (Platform.OS === 'android') {
                 Alert.alert('Download Complete');
               }
@@ -114,12 +92,10 @@ const ViewInvoice: FC<ViewInvoiceProps> = (props) => {
             })
             .catch((err) => {
               CommonBugFender('ConsultView_downloadInvoice', err);
-              console.log('error ', err);
             });
         }
       })
       .catch((error) => {
-        // props.navigationProps.navigate(AppRoutes.MyAccount);
         renderErrorPopup(`Something went wrong, please try again after sometime`);
         CommonBugFender('fetchingConsultInvoice', error);
       });

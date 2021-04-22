@@ -28,7 +28,6 @@ import strings from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   container: {
-    // ...theme.viewStyles.container,
     flex: 1,
     backgroundColor: theme.colors.WHITE,
     position: 'absolute',
@@ -88,11 +87,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.1,
     borderBottomColor: 'rgba(2, 71, 91, 0.3)',
   },
-  //start
   content: {
     flexDirection: 'row',
   },
-  // menu Column - left
   menuColumn: {
     width: '33%',
     display: 'flex',
@@ -113,7 +110,6 @@ const styles = StyleSheet.create({
   menuItemText: {
     ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE),
   },
-  // settings column -right
   settingsColumn: {
     flex: 1,
     padding: 15,
@@ -124,7 +120,6 @@ const styles = StyleSheet.create({
   availabilityTextStyle: {
     ...theme.viewStyles.text('M', 15, '#02475b'),
   },
-  //end
 });
 
 interface AppointmentFilterSceneProps {

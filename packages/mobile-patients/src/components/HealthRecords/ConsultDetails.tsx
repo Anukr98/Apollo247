@@ -23,7 +23,7 @@ import {
   PhrSymptomIcon,
   PhrDiagnosisIcon,
   PhrGeneralAdviceIcon,
-  Download,
+  WhiteDownloadIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
@@ -54,6 +54,7 @@ import {
 import {
   addTestsToCart,
   doRequestAndAccessLocation,
+  formatToCartItem,
   g,
   handleGraphQlError,
   medUnitFormatArray,
@@ -89,6 +90,9 @@ import { mimeType } from '../../helpers/mimeType';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { ListItem } from 'react-native-elements';
 import _ from 'lodash';
+import { AxiosResponse } from 'axios';
+import { getMedicineDetailsApi, MedicineProductDetailsResponse } from '../../helpers/apiCalls';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -150,14 +154,14 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     marginHorizontal: 8,
     paddingHorizontal: 16,
-    paddingTop: 26,
-    paddingBottom: 29,
+    paddingTop: 12,
+    paddingBottom: 9,
   },
   separatorLineStyle: {
     backgroundColor: '#02475B',
     opacity: 0.2,
     height: 0.5,
-    marginBottom: 23,
+    marginBottom: 7,
     marginTop: 16,
   },
   collapseCardLabelViewStyle: {
@@ -225,6 +229,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  checkupDateTextStyle: { ...theme.viewStyles.text('R', 14, '#67909C', 1, 18.2), marginTop: 6 },
+  downloadBtnViewStyle: {
+    alignSelf: 'flex-end',
+    backgroundColor: theme.colors.BUTTON_BG,
+    borderRadius: 10,
+    paddingVertical: 7,
+    paddingLeft: 18,
+    paddingRight: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  downloadBtnTextStyle: {
+    ...theme.viewStyles.text('B', 13, theme.colors.WHITE, 1, 16.9),
+    marginLeft: 2,
+  },
+  downloadIconStyle: { width: 20, height: 20 },
 });
 
 export interface ConsultDetailsProps
@@ -233,9 +253,7 @@ export interface ConsultDetailsProps
     DoctorInfo:
       | getDoctorDetailsById_getDoctorDetailsById
       | getAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo;
-    // PatientId: any;
     appointmentType: APPOINTMENT_TYPE | AppointmentType;
-    // appointmentDate: any;
     DisplayId: any;
     Displayoverlay: any;
     isFollowcount: any;
@@ -255,8 +273,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const appointmentType = props.navigation.getParam('appointmentType');
   const appointmentId = props.navigation.getParam('CaseSheet');
 
-  // const [loading, setLoading && setLoading] = useState<boolean>(true);
-  const { loading, setLoading } = useUIElements();
+  const { loading, setLoading, showAphAlert } = useUIElements();
 
   const client = useApolloClient();
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
@@ -317,7 +334,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         CommonBugFender('ConsultDetails_GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS', error);
         setLoading && setLoading(false);
         const errorMessage = error && error.message.split(':')[1].trim();
-        console.log(errorMessage, 'err');
         if (errorMessage === 'NO_CASESHEET_EXIST') {
           setshowNotExistAlert(true);
         }
@@ -374,30 +390,31 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           <Text style={{ ...theme.viewStyles.text('SB', 23, '#02475B', 1, 30) }}>
             {'Prescription'}
           </Text>
-          <TouchableOpacity onPress={() => onPressDownloadPrescripiton()}>
-            <Download />
-          </TouchableOpacity>
         </View>
         <Text style={{ ...theme.viewStyles.text('M', 16, '#0087BA', 1, 21), marginTop: 6 }}>
           {g(caseSheetDetails, 'appointment', 'doctorInfo', 'displayName')}
         </Text>
-        <Text style={{ ...theme.viewStyles.text('R', 14, '#67909C', 1, 18.2), marginTop: 6 }}>
+        <Text style={styles.checkupDateTextStyle}>
           {g(caseSheetDetails, 'appointment', 'appointmentType') == 'ONLINE'
             ? 'Online'
             : 'Physical'}{' '}
           Consult
         </Text>
+        <Text style={styles.checkupDateTextStyle}>
+          {'Checkup Date on '}
+          {caseSheetDetails?.appointment?.appointmentDateTime
+            ? moment(caseSheetDetails?.appointment?.appointmentDateTime).format('DD MMM, YYYY')
+            : ''}
+        </Text>
         <View style={styles.separatorLineStyle} />
-        <Text style={{ ...theme.viewStyles.text('M', 16, '#02475B', 1, 21) }}>
-          {'Checkup Date'}
-        </Text>
-        <Text style={{ ...theme.viewStyles.text('R', 14, '#0087BA', 1, 18), marginTop: 3 }}>
-          {'On '}
-          <Text style={{ ...theme.viewStyles.text('M', 14, '#02475B', 1, 18) }}>
-            {caseSheetDetails &&
-              moment(caseSheetDetails?.appointment?.appointmentDateTime).format('DD MMM, YYYY')}
-          </Text>
-        </Text>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => onPressDownloadPrescripiton()}
+          style={styles.downloadBtnViewStyle}
+        >
+          <WhiteDownloadIcon style={styles.downloadIconStyle} />
+          <Text style={styles.downloadBtnTextStyle}>{'DOWNLOAD'}</Text>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -464,7 +481,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       </>
     );
   };
-  const { addMultipleCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
+  const { setEPrescriptions, addMultipleCartItems } = useShoppingCart();
   const {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
@@ -523,7 +540,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         const unAvailableItemsArray = testPrescription.filter(
           (item) => !tests.find((val) => val?.name!.toLowerCase() == item?.itemname!.toLowerCase())
         );
-        console.log({ unAvailableItemsArray });
         const unAvailableItems = unAvailableItemsArray.map((item) => item.itemname).join(', ');
 
         if (tests.length) {
@@ -564,65 +580,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       : 1;
   };
 
-  const getQuantity = (
-    medicineUnit: MEDICINE_UNIT | null,
-    medicineTimings: (MEDICINE_TIMINGS | null)[] | null,
-    medicineDosage: string | null,
-    medicineCustomDosage: string | null /** E.g: (1-0-1/2-0.5), (1-0-2\3-3) etc.*/,
-    medicineConsumptionDurationInDays: string | null,
-    medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null,
-    mou: number // how many tablets per strip
-  ) => {
-    if (medicineUnit == MEDICINE_UNIT.TABLET || medicineUnit == MEDICINE_UNIT.CAPSULE) {
-      const medicineDosageMapping = medicineCustomDosage
-        ? medicineCustomDosage.split('-').map((item) => {
-            if (item.indexOf('/') > -1) {
-              const dosage = item.split('/').map((item) => Number(item));
-              return (dosage[0] || 1) / (dosage[1] || 1);
-            } else if (item.indexOf('\\') > -1) {
-              const dosage = item.split('\\').map((item) => Number(item));
-              return (dosage[0] || 1) / (dosage[1] || 1);
-            } else {
-              return Number(item);
-            }
-          })
-        : medicineDosage
-        ? Array.from({ length: 4 }).map(() => Number(medicineDosage))
-        : [1, 1, 1, 1];
-
-      const medicineTimingsPerDayCount =
-        (medicineTimings || []).reduce(
-          (currTotal, currItem) =>
-            currTotal +
-            (currItem == MEDICINE_TIMINGS.MORNING
-              ? medicineDosageMapping[0]
-              : currItem == MEDICINE_TIMINGS.NOON
-              ? medicineDosageMapping[1]
-              : currItem == MEDICINE_TIMINGS.EVENING
-              ? medicineDosageMapping[2]
-              : currItem == MEDICINE_TIMINGS.NIGHT
-              ? medicineDosageMapping[3]
-              : (medicineDosage && Number(medicineDosage)) || 1),
-          0
-        ) || 1;
-
-      console.log({ medicineTimingsPerDayCount });
-
-      const totalTabletsNeeded =
-        medicineTimingsPerDayCount *
-        Number(medicineConsumptionDurationInDays || '1') *
-        getDaysCount(medicineConsumptionDurationUnit);
-
-      console.log({ totalTabletsNeeded });
-
-      return Math.ceil(totalTabletsNeeded / mou);
-    } else {
-      // 1 for other than tablet or capsule
-      return 1;
-    }
-  };
-
-  const onAddToCart = () => {
+  const onAddToCart = async () => {
     const medPrescription = (caseSheetDetails!.medicinePrescription || []).filter(
       (item) => item!.id
     );
@@ -635,7 +593,33 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       medicines: (medPrescription || []).map((item) => item!.medicineName).join(', '),
       uploadedUrl: docUrl,
     } as EPrescription;
-    setEPrescriptions && setEPrescriptions([presToAdd]);
+    const isCartOrder = medPrescription?.length === caseSheetDetails?.medicinePrescription?.length;
+
+    if (isCartOrder) {
+      try {
+        setLoading?.(true);
+        const response: AxiosResponse<MedicineProductDetailsResponse>[] = await Promise.all(
+          medPrescription.map((item) => getMedicineDetailsApi(item?.id!))
+        );
+        const cartItems = response
+          .filter(({ data }) => data?.productdp?.[0]?.id && data?.productdp?.[0]?.sku)
+          .map(({ data }) => formatToCartItem({ ...data?.productdp?.[0]!, image: '' }));
+        addMultipleCartItems?.(cartItems);
+        setEPrescriptions?.([presToAdd]);
+        setLoading?.(false);
+        props.navigation.push(AppRoutes.MedicineCart);
+      } catch (error) {
+        setLoading?.(false);
+        showAphAlert?.({
+          title: string.common.uhOh,
+          description: string.common.somethingWentWrong,
+        });
+        CommonBugFender(`${AppRoutes.ConsultDetails}_onAddToCart`, error);
+      }
+      return;
+    }
+
+    setEPrescriptions?.([presToAdd]);
     props.navigation.navigate(AppRoutes.UploadPrescription, {
       ePrescriptionsProp: [presToAdd],
       type: 'E-Prescription',
@@ -831,48 +815,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           renderNoData('No diagnosis')
         )}
       </>
-    );
-  };
-
-  const renderReferral = () => {
-    return (
-      <View>
-        <CollapseCard
-          heading={`Referral`}
-          collapse={showReferral}
-          onPress={() => setShowReferral(!showReferral)}
-        >
-          <View style={[styles.cardViewStyle, styles.bottomPaddingTwelve]}>
-            {!!caseSheetDetails?.referralSpecialtyName ? (
-              <View>
-                <Text style={styles.labelStyle}>{caseSheetDetails!.referralSpecialtyName}</Text>
-                {!!caseSheetDetails?.referralDescription && (
-                  <Text style={styles.dataTextStyle}>{caseSheetDetails!.referralDescription}</Text>
-                )}
-                <TouchableOpacity
-                  style={{ marginTop: 12 }}
-                  onPress={() => {
-                    props.navigation.navigate(AppRoutes.DoctorSearch);
-                  }}
-                >
-                  <Text
-                    style={[
-                      theme.viewStyles.yellowTextStyle,
-                      { textAlign: 'right', paddingBottom: 16 },
-                    ]}
-                  >
-                    {strings.common.book_apointment}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View>
-                <Text style={styles.labelStyle}>No referral</Text>
-              </View>
-            )}
-          </View>
-        </CollapseCard>
-      </View>
     );
   };
 
@@ -1097,7 +1039,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         })
         .catch((err) => {
           CommonBugFender('ConsultDetails_renderFollowUp', err);
-          console.log('error ', err);
           setLoading && setLoading(false);
         });
     }

@@ -1,15 +1,7 @@
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  Linking,
-  BackHandler,
-} from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Linking } from 'react-native';
 import {
   NavigationScreenProps,
   ScrollView,
@@ -202,16 +194,17 @@ export interface MembershipDetailsProps extends NavigationScreenProps {
   source?: string;
   isRenew: boolean;
   isExpired?: boolean;
+  comingFrom?: string;
 }
 
 export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const membershipType = props.navigation.getParam('membershipType');
+  const comingFrom = props.navigation.getParam('comingFrom');
   const isCirclePlan = membershipType === Circle.planName;
   const source = props.navigation.getParam('source');
   const isExpired = props.navigation.getParam('isExpired');
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const [showCircleActivation, setShowCircleActivation] = useState<boolean>(false);
-
   const {
     hdfcUserSubscriptions,
     circleSubscription,
@@ -222,6 +215,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     setCircleSubscription,
     setHdfcUpgradeUserSubscriptions,
     healthCredits,
+    isRenew,
   } = useAppCommonData();
   const {
     setHdfcPlanName,
@@ -250,7 +244,6 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const areBenefitsAvailable = !!benefits?.length;
   const areCouponsAvailable = !!coupons?.length;
   const [selectedTab, setSelectedTab] = useState<string>('Benefits Available');
-  const [isActiveCouponVisible, setIsActiveCouponVisible] = useState<boolean>(true);
   const [isHowToAvailVisible, setIsHowToAvailVisible] = useState<boolean>(true);
   const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
   const [showAvailPopup, setShowAvailPopup] = useState<boolean>(false);
@@ -264,6 +257,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const planPurchased = useRef<boolean | undefined>(false);
 
   useEffect(() => {
+    isCirclePlan && postViewCircleWEGEvent();
     fetchCircleSavings();
     getUserSubscriptionsWithBenefits();
   }, []);
@@ -273,6 +267,17 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       setHdfcUpgradeUserSubscriptions && setHdfcUpgradeUserSubscriptions(upgradePlans);
     }
   }, [upgradePlans]);
+
+  const postViewCircleWEGEvent = () => {
+    postCircleWEGEvent(
+      currentPatient,
+      isExpired ? 'Expired' : isRenew ? 'About to Expire' : 'Not Expiring',
+      'viewed',
+      circlePlanValidity,
+      circleSubscriptionId,
+      comingFrom
+    );
+  };
 
   const handleBack = async () => {
     if (source) {
@@ -476,9 +481,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         setUpgradePlans([...upgradePlans, subscription]);
       }
       return subscription;
-    } catch (e) {
-      console.log('ERROR: ', e);
-    }
+    } catch (e) {}
   };
 
   const fetchCircleSavings = async () => {
@@ -1069,7 +1072,6 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       .catch((error) => {
         setLoading!(false);
         setShowDiabeticQuestionaire(false);
-        console.log(error);
         showAphAlert!({
           title: string.common.uhOh,
           description: 'Error while connecting to the Doctor, Please try again',

@@ -33,7 +33,6 @@ export const RenderPdf: React.FC<RenderPdfProps> = (props) => {
 
   const downloadPDF = () => {
     let dirs = RNFetchBlob.fs.dirs;
-    console.log('avilable dir', dirs.DownloadDir + '/' + title, 'title', title);
     const downloadPath =
       Platform.OS === 'ios'
         ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + title
@@ -70,7 +69,6 @@ export const RenderPdf: React.FC<RenderPdfProps> = (props) => {
       })
       .catch((err) => {
         CommonBugFender('RenderPdf_downloadPDF', err);
-        console.log('error ', err);
         setLoading!(false);
       });
   };
@@ -93,15 +91,6 @@ export const RenderPdf: React.FC<RenderPdfProps> = (props) => {
     return (
       <Pdf
         key={uri}
-        onLoadComplete={(numberOfPages, filePath) => {
-          console.log(`number of pages: ${numberOfPages}, fb:${filePath}`);
-        }}
-        onPageChanged={(page, numberOfPages) => {
-          console.log(`current page: ${page}`);
-        }}
-        onError={(error) => {
-          console.log(error);
-        }}
         source={{ uri: uri }}
         style={{
           marginTop: 6,

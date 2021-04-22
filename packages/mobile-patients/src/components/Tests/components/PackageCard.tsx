@@ -111,11 +111,6 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
                   {name}
                 </Text>
               </View>
-              {/* <Image
-              placeholderStyle={styles.imagePlaceholderStyle}
-              source={{ uri: imageUrl }}
-              style={styles.imageStyle}
-            /> */}
               {renderPercentageDiscount(
                 promoteCircle && isCircleSubscribed
                   ? circleDiscount
@@ -125,7 +120,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
               )}
             </View>
             {!!inclusions && inclusions?.length > 0 ? (
-              <View>
+              <View style={{ minHeight: isSmallDevice ? 90 : 95 }}>
                 <Text style={styles.inclusionsText}>
                   {getMandatoryParameterCount > 0
                     ? `TOTAL PARAMETERS : ${getMandatoryParameterCount}`

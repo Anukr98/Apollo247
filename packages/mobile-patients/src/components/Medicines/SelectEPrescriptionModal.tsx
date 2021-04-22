@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface SelectEPrescriptionModalProps extends NavigationScreenProps {
+export interface SelectEPrescriptionModalProps {
   onSubmit: (prescriptions: EPrescription[]) => void;
   isVisible: boolean;
   selectedEprescriptionIds?: EPrescription['id'][];
@@ -499,14 +499,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
         onBackdropPress={() => setShowPreview(false)}
       >
         {isPdfPrescription ? (
-          <Pdf
-            key={imageUrl}
-            onError={(error) => {
-              console.log(error);
-            }}
-            source={{ uri: imageUrl }}
-            style={styles.pdfPreview}
-          />
+          <Pdf key={imageUrl} source={{ uri: imageUrl }} style={styles.pdfPreview} />
         ) : (
           <ImageBackground
             source={{ uri: imageUrl }}

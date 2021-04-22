@@ -70,6 +70,7 @@ export enum FirebaseEventName {
   BUY_MEDICINES = 'BUY_MEDICINES',
   ORDER_TESTS = 'ORDER_TESTS',
   MANAGE_DIABETES = 'MANAGE_DIABETES',
+  PROHEALTH = 'PROHEALTH',
   TRACK_SYMPTOMS = 'TRACK_SYMPTOMS',
   VIEW_HELATH_RECORDS = 'VIEW_HELATH_RECORDS',
   ACTIVE_APPOINTMENTS = 'Active Appointments',
@@ -103,6 +104,9 @@ export enum FirebaseEventName {
   PAYMENT_STATUS = 'PAYMENT_STATUS',
 
   PURCHASE = 'purchase',
+
+  //for address crash debugging
+  ADDADDRESS_LAT_LNG = 'AddAddressLatLng'
 }
 
 export interface PatientInfo {
@@ -258,13 +262,6 @@ export interface FirebaseEvents {
     BrandID?: string;
     categoryname?: string;
     categoryID?: string;
-    // 'Patient Name': string;
-    // 'Patient UHID': string;
-    // Relation: string;
-    // Age: number;
-    // Gender: string;
-    // 'Mobile Number': string;
-    // 'Customer ID': string;
   };
   [FirebaseEventName.CATEGORY_PAGE_VIEWED]: {
     source: 'home' | 'deeplink' | 'registration';
@@ -672,4 +669,9 @@ export interface FirebaseEvents {
     value: number;
     LOB: string;
   };
+
+  [FirebaseEventName.ADDADDRESS_LAT_LNG]:{
+    latitude: number;
+    longitude: number;
+  }
 }

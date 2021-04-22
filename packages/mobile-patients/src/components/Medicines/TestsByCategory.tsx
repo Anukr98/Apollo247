@@ -26,7 +26,7 @@ import {
   searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 
-import { getPackageData, PackageInclusion } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { PackageInclusion } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   g,
   isValidSearch,
@@ -202,7 +202,6 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
     } catch (e) {
       CommonBugFender('Tests_fetchPackageInclusion', e);
       setGlobalLoading!(false);
-      console.log('getPackageData Error\n', { e });
       errorAlert();
     }
   };
@@ -252,7 +251,6 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity
               activeOpacity={1}
-              // style={{ marginRight: 24 }}
               onPress={() => {
                 props.navigation.navigate(AppRoutes.MedAndTestCart);
               }}
@@ -260,9 +258,6 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
               <CartIcon />
               {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
             </TouchableOpacity>
-            {/* <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-              <Filter />
-            </TouchableOpacity> */}
           </View>
         }
         onPressLeftIcon={() => props.navigation.goBack()}
@@ -329,7 +324,6 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
         <View style={localStyles.iconOrImageContainerStyle}>
           {data.imgUri ? (
             <Image
-              // placeholderStyle={styles.imagePlaceholderStyle}
               source={{ uri: data.imgUri }}
               style={{ height: 40, width: 40 }}
               resizeMode="contain"
@@ -413,17 +407,9 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
       inputContainerStyle: {
         borderBottomColor: '#00b38e',
         borderBottomWidth: 2,
-        // marginHorizontal: 10,
       },
       rightIconContainerStyle: {
         height: 24,
-      },
-      style: {
-        // paddingBottom: 18.5,
-      },
-      containerStyle: {
-        // marginBottom: 19,
-        // marginTop: 18,
       },
     });
 
@@ -503,11 +489,6 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
     const foundMedicineInCart = cartItems.find((item) => item.id == `${medicine.itemId}`);
     const price = medicine.rate;
     const testsIncluded = g(foundMedicineInCart, 'mou') || 1;
-    // const specialPrice = medicine.special_price
-    //   ? typeof medicine.special_price == 'string'
-    //     ? parseInt(medicine.special_price)
-    //     : medicine.special_price
-    //   : undefined;
     const specialPrice = undefined;
 
     return (
@@ -672,7 +653,6 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
           searchText.length > 2 && (
             <FlatList
               keyboardShouldPersistTaps="always"
-              // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
               bounces={false}
               keyExtractor={(_, index) => `${index}`}
               showsVerticalScrollIndicator={false}

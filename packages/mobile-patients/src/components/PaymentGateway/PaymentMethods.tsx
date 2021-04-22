@@ -1,15 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
-  Text,
   NativeModules,
   BackHandler,
   NativeEventEmitter,
-  View,
   ScrollView,
 } from 'react-native';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { BookingInfo } from '@aph/mobile-patients/src/components/PaymentGateway/Components/BookingInfo';
@@ -24,7 +22,6 @@ import {
   fetchAvailableUPIApps,
   InitiateNetBankingTxn,
   InitiateWalletTxn,
-  InitiateUPISDKTxn,
   InitiateUPIIntentTxn,
   InitiateVPATxn,
   InitiateCardTxn,
@@ -93,7 +90,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { authToken, setauthToken } = useAppCommonData();
-  const FailedStatuses = ['AUTHENTICATION_FAILED', 'AUTHORIZATION_FAILED'];
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
     const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
@@ -126,9 +122,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           setBanks(banks);
           setloading(false);
         } else if (paymentActions.indexOf(action) != -1 && status) {
-          status == 'CHARGED' && navigatetoOrderStatus(false, 'success');
-          status == 'PENDING_VBV' && handlePaymentPending(payload?.errorCode);
-          FailedStatuses.includes(payload?.payload?.status) && showTxnFailurePopUP();
+          handleTxnStatus(status, payload);
           setisTxnProcessing(false);
         } else if (action == 'upiTxn' && !payload?.error && !status) {
           setAvailableUPIapps(payload?.payload?.availableApps || []);
@@ -137,7 +131,23 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         }
         break;
       default:
-        console.log('Unknown Event', data);
+    }
+  };
+
+  const handleTxnStatus = (status: string, payload: any) => {
+    switch (status) {
+      case 'CHARGED':
+        navigatetoOrderStatus(false, 'success');
+        break;
+      case 'AUTHORIZING':
+        navigatetoOrderStatus(false, 'pending');
+        break;
+      case 'PENDING_VBV':
+        handlePaymentPending(payload?.errorCode);
+        break;
+      default:
+        // includes cases AUTHENTICATION_FAILED, AUTHORIZATION_FAILED, JUSPAY_DECLINED
+        showTxnFailurePopUP();
     }
   };
 
@@ -287,13 +297,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   async function onPressUPIApp(app: any) {
     triggerWebengege('Prepaid', 'UPI');
     const token = await getClientToken();
-    // const sdkPresent =
-    //   app?.payment_method_code == 'PHONEPE'
-    //     ? 'ANDROID_PHONEPE'
-    //     : app?.payment_method_code == 'GOOGLEPAY'
-    //     ? 'ANDROID_GOOGLEPAY'
-    //     : '';
-    // InitiateUPISDKTxn(currentPatient?.id, token, paymentId, app?.payment_method_code, sdkPresent);
     InitiateUPIIntentTxn(currentPatient?.id, token, paymentId, app.packageName);
   }
 
@@ -342,7 +345,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const OtherBanks = () => {
     const topBanks = paymentMethods?.find((item: any) => item?.name == 'NB');
-    const methods = topBanks?.payment_methods?.map((item: any) => item?.payment_method_code) || [];
+    const methods =
+      topBanks?.payment_methods?.map((item: any) => item?.payment_method_code).slice(0, 4) || [];
     const otherBanks = banks?.filter((item: any) => !methods?.includes(item?.paymentMethod));
     triggerWebengege('Prepaid', 'Other Banks');
     props.navigation.navigate(AppRoutes.OtherBanks, {

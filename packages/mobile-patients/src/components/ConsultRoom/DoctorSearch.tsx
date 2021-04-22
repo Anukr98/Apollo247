@@ -1,11 +1,7 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  ArrowRight,
-  DropdownGreen,
-  LinkedUhidIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -52,7 +48,6 @@ import {
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
-
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -72,16 +67,8 @@ import {
   TouchableOpacity,
   View,
   Platform,
-  Modal,
-  Alert,
 } from 'react-native';
-import {
-  NavigationActions,
-  NavigationScreenProps,
-  ScrollView,
-  StackActions,
-} from 'react-navigation';
-import { ProfileList } from '../ui/ProfileList';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import _ from 'lodash';
 import { getDoctorList } from '@aph/mobile-patients/src/graphql/types/getDoctorList';
@@ -165,7 +152,6 @@ const styles = StyleSheet.create({
   bookConsultTxt: {
     ...theme.fonts.IBMPlexSansMedium(14),
     color: theme.colors.LIGHT_BLUE,
-    // lineHeight: 20,
     marginLeft: 20,
     marginTop: 8,
   },
@@ -354,8 +340,6 @@ const styles = StyleSheet.create({
   },
 });
 
-let timeout: NodeJS.Timeout;
-
 export interface DoctorSearchProps
   extends NavigationScreenProps<{
     movedFrom?: string;
@@ -382,9 +366,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [isSearching, setisSearching] = useState<boolean>(false);
   const [showPastSearchSpinner, setshowPastSearchSpinner] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState({});
-  const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
-  const [showList, setShowList] = useState<boolean>(false);
   const [showProfilePopUp, setShowProfilePopUp] = useState<boolean>(false);
   const [gender, setGender] = useState<string>(currentPatient?.gender);
   const [isSearchFocused, setIsSearchFocused] = useState<boolean>(false);
@@ -400,26 +383,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const clickedBucket = useRef<string>('');
 
   useEffect(() => {
-    newUserPastSearch();
     if (!currentPatient) {
-      console.log('No current patients available');
       getPatientApiCall();
     }
   }, [currentPatient]);
 
   const client = useApolloClient();
-
-  const newUserPastSearch = async () => {
-    const newPatientId = await AsyncStorage.getItem('selectUserId');
-    setTimeout(() => {
-      newPatientId && fetchPastSearches(newPatientId);
-      newPatientId && fetchConsultedDoctors(newPatientId);
-    }, 1500);
-  };
-
-  const handleBack = async () => {
-    props.navigation.goBack();
-  };
 
   const moveSelectedToTop = () => {
     if (currentPatient !== undefined) {
@@ -443,7 +412,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
-      User_Type: getUserType(currentPatient),
+      User_Type: getUserType(allCurrentPatients),
     };
     postWebEngageEvent(WebEngageEventName.DOCTOR_SEARCH, eventAttributes);
 
@@ -526,7 +495,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           setSymptoms([]);
           setisSearching(false);
           CommonBugFender('DoctorSearch_fetchSearchData', e);
-          console.log('Error occured while searching Doctor', e);
         });
     }
   };
@@ -587,6 +555,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       Symptoms: symptomsList?.join(', '),
       Specialities: specialitiesList?.join(', '),
       Procedures: proceduresList?.join(', '),
+      User_Type: getUserType(allCurrentPatients),
     };
     if (clickedItem) {
       // search suggestions clicked event
@@ -620,7 +589,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const fetchSpecialities = () => {
-    console.log('fetchSpecialities');
     setshowSpinner(true);
     client
       .query<getAllSpecialties>({
@@ -645,7 +613,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       .catch((e) => {
         CommonBugFender('DoctorSearch_fetchSpecialities', e);
         setshowSpinner(false);
-        console.log('Error occured', e);
       });
   };
 
@@ -699,10 +666,10 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     setSpecialities(data);
   };
 
-  const fetchConsultedDoctors = async (selectedUser?: any) => {
+  const fetchConsultedDoctors = async () => {
     const userId = await dataSavedUserID('selectedProfileId');
     const input = {
-      patientId: selectedUser ? selectedUser : userId ? userId : g(currentPatient, 'id'),
+      patientId: userId ? userId : g(currentPatient, 'id'),
     };
     const res = await client.query<getPatientAllAppointments>({
       query: GET_PATIENT_ALL_CONSULTED_DOCTORS,
@@ -760,7 +727,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       .catch((e) => {
         setshowPastSearchSpinner(false);
         CommonBugFender('DoctorSearch_fetchPastSearches', e);
-        console.log('Error occured', e);
         !!searchText && fetchSearchData();
       });
   };
@@ -933,12 +899,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             style={{ marginBottom: 0, marginTop: 10 }}
           />
           <FlatList
-            contentContainerStyle={
-              {
-                // flexWrap: 'wrap',
-                // marginHorizontal: 12,
-              }
-            }
             horizontal={true}
             bounces={false}
             data={PastSearches}
@@ -1239,9 +1199,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                         saveSearchInput: searchInput,
                       },
                     });
-                  } catch (error) {
-                    console.log(error);
-                  }
+                  } catch (error) {}
                 }
               }}
               style={[
@@ -1321,7 +1279,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Customer ID': g(currentPatient, 'id'),
       'Speciality Name': speciality,
       'Speciality ID': specialityId,
-      User_Type: getUserType(currentPatient),
+      User_Type: getUserType(allCurrentPatients),
     };
     postWebEngageEvent(WebEngageEventName.SPECIALITY_CLICKED, eventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.SPECIALITY_CLICKED, eventAttributes);
@@ -1353,6 +1311,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       Fee: Number(doctorDetails?.fee),
       'Doctor Speciality': doctorDetails?.specialtydisplayName,
       Rank: doctorDetails?.rowId,
+      User_Type: getUserType(allCurrentPatients),
     };
 
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {
@@ -1570,149 +1529,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         specialities: [item?.speciality],
       });
     }
-  };
-
-  const selectUser = (selectedUser: any) => {
-    setGender(selectedUser?.gender);
-    setCurrentPatientId(selectedUser?.id);
-    AsyncStorage.setItem('selectUserId', selectedUser!.id);
-    AsyncStorage.setItem('selectUserUHId', selectedUser!.uhid);
-    AsyncStorage.setItem('isNewProfile', 'yes');
-  };
-  const renderCTAs = () => (
-    <View style={styles.aphAlertCtaViewStyle}>
-      {moveSelectedToTop()
-        .slice(0, 5)
-        .map((item: any, index: any, array: any) =>
-          item.firstName !== '+ADD MEMBER' ? (
-            <TouchableOpacity
-              onPress={() => {
-                onSelectedProfile(item);
-              }}
-              style={[styles.ctaWhiteButtonViewStyle]}
-            >
-              <Text style={[styles.ctaOrangeTextStyle]}>{item.firstName}</Text>
-            </TouchableOpacity>
-          ) : null
-        )}
-      <View style={[styles.textViewStyle]}>
-        <Text
-          onPress={() => {
-            if (allCurrentPatients.length > 6) {
-              setShowList(true);
-            } else {
-              setShowProfilePopUp(false);
-              props.navigation.navigate(AppRoutes.EditProfile, {
-                isEdit: false,
-                isPoptype: true,
-                mobileNumber: currentPatient && currentPatient!.mobileNumber,
-              });
-            }
-          }}
-          style={[styles.ctaOrangeTextStyle]}
-        >
-          {allCurrentPatients.length > 6 ? 'OTHERS' : '+ADD MEMBER'}
-        </Text>
-      </View>
-    </View>
-  );
-  const onSelectedProfile = (item: any) => {
-    selectUser(item);
-    setShowProfilePopUp(false);
-    setTimeout(() => {
-      fetchPastSearches(item.id);
-      fetchConsultedDoctors(item.id);
-    }, 1000);
-  };
-  const onProfileChange = () => {
-    setShowList(false);
-
-    setTimeout(() => {
-      setShowProfilePopUp(false);
-      fetchPastSearches();
-      fetchConsultedDoctors();
-    }, 1000);
-  };
-
-  const renderProfileDrop = () => {
-    return (
-      <ProfileList
-        showList={showList}
-        menuHidden={() => setShowList(false)}
-        onProfileChange={onProfileChange}
-        navigation={props.navigation}
-        saveUserChange={true}
-        listContainerStyle={{ marginTop: Platform.OS === 'ios' ? 10 : 60 }}
-        childView={
-          <View
-            style={{
-              flexDirection: 'row',
-              paddingRight: 8,
-              borderRightWidth: 0,
-              // paddingTop: 80,
-              // marginTop: 30,
-              borderRightColor: 'rgba(2, 71, 91, 0.2)',
-              backgroundColor: theme.colors.CLEAR,
-            }}
-          >
-            <Text style={styles.hiTextStyle}>{'Hi'}</Text>
-            <View style={styles.nameTextContainerStyle}>
-              <View style={{ flexDirection: 'row' }}>
-                <Text style={styles.nameTextStyle} numberOfLines={1}>
-                  {(currentPatient && currentPatient!.firstName + ' ' + currentPatient!.lastName) ||
-                    ''}
-                </Text>
-                {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
-                  <LinkedUhidIcon
-                    style={{
-                      width: 22,
-                      height: 20,
-                      marginLeft: 5,
-                      marginTop: Platform.OS === 'ios' ? 26 : 30,
-                    }}
-                    resizeMode={'contain'}
-                  />
-                ) : null}
-                <View style={{ paddingTop: 28 }}>
-                  <DropdownGreen />
-                </View>
-              </View>
-              <View style={styles.seperatorStyle} />
-            </View>
-          </View>
-        }
-        // setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
-        unsetloaderDisplay={true}
-      />
-    );
-  };
-
-  const renderProfileListView = () => {
-    return (
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={showProfilePopUp}
-        onRequestClose={() => {
-          setShowProfilePopUp(false);
-          handleBack();
-        }}
-        onDismiss={() => {
-          setShowProfilePopUp(false);
-        }}
-      >
-        <View style={styles.mainView}>
-          <View style={styles.subViewPopup}>
-            {renderProfileDrop()}
-            <Text style={styles.congratulationsDescriptionStyle}>Who is the patient?</Text>
-            <Text style={styles.popDescriptionStyle}>
-              Prescription to be generated in the name of?
-            </Text>
-            {renderCTAs()}
-          </View>
-        </View>
-      </Modal>
-    );
   };
 
   const renderDefaultSearchScreen = () => {

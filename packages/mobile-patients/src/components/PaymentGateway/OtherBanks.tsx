@@ -1,15 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  NativeModules,
-  BackHandler,
-  FlatList,
-  View,
-  ScrollView,
-} from 'react-native';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import React, { useState } from 'react';
+import { SafeAreaView, StyleSheet, Text, FlatList, View, ScrollView } from 'react-native';
+import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Bank } from '@aph/mobile-patients/src/components/PaymentGateway/Components/Bank';
