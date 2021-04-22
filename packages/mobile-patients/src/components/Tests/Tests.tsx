@@ -1930,16 +1930,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
     addTestsToCart(testPrescription, client, '500030')
       .then((tests: DiagnosticsCartItem[]) => {
         // Adding ePrescriptions to DiagnosticsCart
-        const unAvailableItemsArray = testPrescription.filter(
+        const unAvailableItemsArray = testPrescription?.filter(
           (item: any) =>
-            !tests.find((val) => val?.name?.toLowerCase() == item?.itemname?.toLowerCase())
+            !tests?.find((val) => val?.name?.toLowerCase() == item?.itemname?.toLowerCase())
         );
         const unAvailableItems = unAvailableItemsArray
-          .map((item: any) => item?.itemname)
-          .join(', ');
+          ?.map((item: any) => item?.itemname)
+          ?.join(', ');
 
         if (tests?.length) {
-          addMultipleTestCartItems!(tests);
+          addMultipleTestCartItems?.(tests);
           //removed code for e-prescriptions
         }
         if (testPrescription?.length == unAvailableItemsArray?.length) {
@@ -2102,7 +2102,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       let response: any = await getDiagnosticPhelboDetails(client, [orderId]);
       if (response?.data?.data) {
         const getUrl =
-          response?.data?.data?.getOrderPhleboDetailsBulk?.orderPhleboDetailsBulk?.length > 0 &&
           response?.data?.data?.getOrderPhleboDetailsBulk?.orderPhleboDetailsBulk?.[0]
             ?.orderPhleboDetails;
         if (!!getUrl) {
