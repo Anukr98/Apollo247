@@ -152,13 +152,13 @@ import {
   findDiagnosticsWidgetsPricingVariables,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
 import { LowNetworkCard } from '@aph/mobile-patients/src/components/Tests/components/LowNetworkCard';
-import { PrescriptionCard } from './components/PrescriptionCard';
+import { PrescriptionCard } from '@aph/mobile-patients/src/components/Tests/components/PrescriptionCard';
 import {
   renderBannerShimmer,
   renderTestDiagonosticsShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import moment from 'moment';
-import { HomePageOrderStatusCard } from './components/HomePageOrderStatusCard';
+import { HomePageOrderStatusCard } from '@aph/mobile-patients/src/components/Tests/components/HomePageOrderStatusCard';
 import AsyncStorage from '@react-native-community/async-storage';
 
 const imagesArray = [
