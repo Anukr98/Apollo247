@@ -606,6 +606,12 @@
     "askPermission1": "To make sure that you do not miss the call from Dr.",
     "askPermission2": " for your consultation, Apollo 247 needs to have \"full screen overlay\" permission to display call notifications."
   },
+  "NewPaymentStatuses": {
+    "success": "TXN_SUCCESS",
+    "failure": "TXN_FAILURE",
+    "pending": "PENDING",
+    "refund": "AUTO_REFUNDED"
+  },
   "PharmaPayment": {
     "success": "TXN_SUCCESS",
     "failure": "TXN_FAILURE",

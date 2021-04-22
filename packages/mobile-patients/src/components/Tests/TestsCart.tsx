@@ -263,6 +263,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     locationDetails,
     diagnosticServiceabilityData,
     diagnosticLocation,
+    setauthToken,
     setDoctorJoinedChat,
     isDiagnosticLocationServiceable,
   } = useAppCommonData();
@@ -2000,13 +2001,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 'Appointment time': slotStartTime!,
                 'Item ids': cartItemsWithId,
               };
-
+              setauthToken?.('');
               props.navigation.navigate(AppRoutes.PaymentMethods, {
                 paymentId: response?.data?.createOrderInternal?.payment_order_id!,
                 amount: grandTotal,
                 orderId: orderId,
                 orderDetails: orderInfo,
                 eventAttributes,
+                businessLine: 'diagnostics',
               });
             }
           }

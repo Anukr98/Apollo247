@@ -1695,7 +1695,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             typeof paymentRef == 'string' ? JSON.parse(paymentRef) : paymentRef;
           AsyncStorage.setItem('isCircleMember', 'yes');
           setIsCircleMember && setIsCircleMember('yes');
-
+          AsyncStorage.removeItem('circlePlanSelected');
           let WEGAttributes = {};
           if (circleData?.status === 'active') {
             const circleMembershipType = setCircleMembershipType(
