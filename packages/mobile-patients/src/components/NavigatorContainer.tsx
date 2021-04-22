@@ -30,6 +30,7 @@ import { AddAddressNew } from '@aph/mobile-patients/src/components/AddressSelect
 import { LocationSearch } from '@aph/mobile-patients/src/components/AddressSelection/LocationSearch';
 import { EditAddress } from '@aph/mobile-patients/src/components/AddressSelection/EditAddress';
 import { ApplyCouponScene } from '@aph/mobile-patients/src/components/Medicines/ApplyCouponScene';
+import { ViewCoupons } from '@aph/mobile-patients/src/components/Medicines/ViewCoupons';
 import { Medicine } from '@aph/mobile-patients/src/components/Medicines/Medicine';
 import { MedicineSearch } from '@aph/mobile-patients/src/components/MedicineSearch/MedicineSearch';
 import { MedicineListing } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListing';
@@ -98,7 +99,6 @@ import { MyMembership } from '@aph/mobile-patients/src/components/SubscriptionMe
 import { MembershipDetails } from '@aph/mobile-patients/src/components/SubscriptionMembership/MembershipDetails';
 import { TestsByCategory } from '@aph/mobile-patients/src/components/Medicines/TestsByCategory';
 import { RenderPdf } from '@aph/mobile-patients/src/components/ui/RenderPdf';
-import { ApplyConsultCoupon } from '@aph/mobile-patients/src/components/ConsultRoom/ApplyConsultCoupon';
 import { CovidScan } from '@aph/mobile-patients/src/components/CovidScan';
 import { ConsultCheckout } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultCheckout';
 import { ConsultPaymentnew } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPaymentnew';
@@ -111,7 +111,6 @@ import { NotificationScreen } from '@aph/mobile-patients/src/components/Account/
 import { ChennaiNonCartOrderForm } from '@aph/mobile-patients/src/components/Medicines/ChennaiNonCartOrderForm';
 import MyPaymentsScreen from '@aph/mobile-patients/src/components/MyPayments/MyPaymentsScreen';
 import PaymentStatusScreen from '@aph/mobile-patients/src/components/MyPayments/PaymentStatus/PaymentStatusScreen';
-import { ConsultTypeScreen } from './ConsultRoom/ConsultTypeScreen';
 import { CommonWebView } from '@aph/mobile-patients/src/components/CommonWebView';
 import { RefundStatus } from '@aph/mobile-patients/src/components/RefundStatus';
 import { MedicineCart } from '@aph/mobile-patients/src/components/MedicineCart/MedicineCart';
@@ -136,7 +135,6 @@ import MyOrdersScreen from '@aph/mobile-patients/src/components/MyOrders/MyOrder
 export enum AppRoutes {
   Login = 'Login',
   ConsultRoom = 'ConsultRoom',
-  ApplyConsultCoupon = 'ApplyConsultCoupon',
   TabBar = 'TabBar',
   DoctorSearch = 'DoctorSearch',
   SignUp = 'SignUp',
@@ -166,6 +164,7 @@ export enum AppRoutes {
   MedicineDetailsScene = 'MedicineDetailsScene',
   ProductDetailPage = 'ProductDetailPage',
   ApplyCouponScene = 'ApplyCouponScene',
+  ViewCoupons = 'ViewCoupons',
   ChatRoom = 'ChatRoom',
   YourOrdersScene = 'YourOrdersScene',
   ReturnMedicineOrder = 'ReturnMedicineOrder',
@@ -228,7 +227,6 @@ export enum AppRoutes {
   MyPaymentsScreen = 'MyPaymentsScreen',
   PaymentStatusScreen = 'PaymentStatusScreen',
   OneApolloMembership = 'OneApolloMembership',
-  ConsultTypeScreen = 'ConsultTypeScreen',
   CommonWebView = 'CommonWebView',
   RefundStatus = 'RefundStatus',
   MedicineCart = 'MedicineCart',
@@ -295,9 +293,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.ConsultRoom]: {
     screen: ConsultRoom,
     path: 'ConsultRoomPage',
-  },
-  [AppRoutes.ApplyConsultCoupon]: {
-    screen: ApplyConsultCoupon,
   },
   [AppRoutes.DoctorSearchListing]: {
     screen: DoctorSearchListing,
@@ -375,6 +370,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ApplyCouponScene]: {
     screen: ApplyCouponScene,
+  },
+  [AppRoutes.ViewCoupons]: {
+    screen: ViewCoupons,
   },
   [AppRoutes.StorPickupScene]: {
     screen: StorePickupScene,
@@ -571,9 +569,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.OneApolloMembership]: {
     screen: OneApolloMembership,
     path: 'OneApolloPage',
-  },
-  [AppRoutes.ConsultTypeScreen]: {
-    screen: ConsultTypeScreen,
   },
   [AppRoutes.CommonWebView]: {
     screen: CommonWebView,

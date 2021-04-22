@@ -60,6 +60,7 @@ import {
   isAddressLatLngInValid,
   addTestsToCart,
   handleGraphQlError,
+  setAsyncPharmaLocation,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -152,7 +153,6 @@ import {
   findDiagnosticsWidgetsPricing,
   findDiagnosticsWidgetsPricingVariables,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
-import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
 import { LowNetworkCard } from '@aph/mobile-patients/src/components/Tests/components/LowNetworkCard';
 import { PrescriptionCard } from './components/PrescriptionCard';
 import {
@@ -163,6 +163,7 @@ import moment from 'moment';
 import RNFetchBlob from 'rn-fetch-blob';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { HomePageOrderStatusCard } from './components/HomePageOrderStatusCard';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
@@ -278,6 +279,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
   const defaultAddress = addresses?.find((item) => item?.defaultAddress);
   const [pageLoading, setPageLoading] = useState<boolean>(false);
+  const [asyncPincode, setAsyncPincode] = useState({});
+  const [isFocused, setIsFocused] = useState<boolean>(false);
 
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
 
@@ -321,10 +324,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', handleBack);
-    return () => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    };
+    if (movedFrom === 'deeplink') {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+      return () => {
+        BackHandler.removeEventListener('hardwareBackPress', handleBack);
+      };
+    }
   }, []);
 
   const handleBack = () => {
@@ -342,17 +347,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setNewAddressAddedHomePage?.('');
     }
   }, [newAddressAddedHomePage]);
-
-  /** added so that if phramacy code change, then this also changes. */
-  /**need to put a check if pincode is entered then that needs to be saved, and only change in pharama location comes here. */
-  useEffect(() => {
-    setDiagnosticLocation!(!!pharmacyLocation ? pharmacyLocation! : locationDetails!);
-    checkIsPinCodeServiceable(
-      !!pharmacyLocation ? pharmacyLocation?.pincode! : locationDetails?.pincode!,
-      'manual',
-      'initialPincode'
-    );
-  }, [pharmacyLocation]); //removed location details
 
   /**
    * fetch widgets
@@ -381,6 +375,35 @@ export const Tests: React.FC<TestsProps> = (props) => {
     fetchPatientPrescriptions();
   }, [currentPatient, serviceableObject]);
 
+  useEffect(()=>{
+    if (isFocused) {
+      const getAsyncLocationPincode = async () => {
+        const asyncLocationPincode: any = await AsyncStorage.getItem('PharmacyLocationPincode');
+        if (asyncLocationPincode) {
+          let getAsyncPincode = JSON.parse(asyncLocationPincode);
+          setAsyncPincode(JSON.parse(asyncLocationPincode));
+          //call only when they are different.
+          if (asyncPincode?.pincode === getAsyncPincode?.pincode) {
+            return;
+          } else {
+            checkIsPinCodeServiceable(
+              getAsyncPincode?.pincode!
+                ? getAsyncPincode?.pincode
+                : !!pharmacyLocation
+                ? pharmacyLocation?.pincode!
+                : locationDetails?.pincode!,
+              'manual',
+              'initalPicode'
+            );
+          }
+          setDiagnosticLocation!(!!pharmacyLocation ? pharmacyLocation! : locationDetails!);
+        }
+      };
+      getAsyncLocationPincode();
+    }
+  },[isFocused])
+
+
   /**
    * if there is any change in the location yellow pop-up ,if location is present.
    */
@@ -389,16 +412,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setBannerData && setBannerData([]); // default banners to be empty
       getUserBanners();
+      setIsFocused(true);
       setCurrentScreen(AppRoutes.Tests); //to avoid showing non-serviceable prompt on medicine page
     });
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       setCurrentScreen('');
+      setIsFocused(false);
     });
     return () => {
       didFocus && didFocus.remove();
       didBlur && didBlur.remove();
     };
-  });
+  }, []);
 
   useEffect(() => {
     if (!loading && banners?.length > 0) {
@@ -527,14 +552,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const getUserBanners = async () => {
-    const res: any = await getUserBannersList(
-      client,
-      currentPatient,
-      string.banner_context.DIAGNOSTIC_HOME
-    );
-    if (res) {
-      setBannerData && setBannerData(res);
-    } else {
+    try {
+      const res: any = await getUserBannersList(
+        client,
+        currentPatient,
+        string.banner_context.DIAGNOSTIC_HOME
+      );
+      if (res) {
+        setBannerData && setBannerData(res);
+      }
+    } catch (error) {
       setBannerData && setBannerData([]);
     }
   };
@@ -659,7 +686,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
         if (deliveryAddress) {
           setDeliveryAddressId!(deliveryAddress?.id);
           //if location is not undefined in either of the three, then don't change address
-          if (!locationDetails && !pharmacyLocation && !diagnosticLocation) {
+          if (
+            !asyncPincode?.pincode! &&
+            !locationDetails &&
+            !pharmacyLocation &&
+            !diagnosticLocation
+          ) {
             checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'initialFetchAddress');
             setDiagnosticLocation!(formatAddressToLocation(deliveryAddress));
             return;
@@ -678,7 +710,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
       const deliveryAddress = addressList?.find((item) => item?.defaultAddress);
       if (deliveryAddress) {
         setDeliveryAddressId?.(deliveryAddress?.id);
-        if (!locationDetails && !pharmacyLocation && !diagnosticLocation) {
+        if (
+          !asyncPincode?.pincode! &&
+          !locationDetails &&
+          !pharmacyLocation &&
+          !diagnosticLocation
+        ) {
           checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'fetchAddressResponse');
           setDiagnosticLocation?.(formatAddressToLocation(deliveryAddress));
         }
@@ -715,10 +752,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
               setCity = response?.city || '';
               setState = response?.state || '';
             }
-
             (response.city = setCity), (response.state = setState);
             setDiagnosticLocation!(response);
             !locationDetails && setLocationDetails!(response);
+            //for storing in the async storage.
+            const saveAddress = {
+              pincode: pincode,
+              id: '',
+              city: setCity,
+              state: setState,
+            };
+            setAsyncPharmaLocation(saveAddress);
+            setAsyncPincode(saveAddress);
             setLoadingContext!(false);
           } else {
             let response = {
@@ -744,8 +789,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
               country: 'India',
               pincode: String(pincode),
             };
+
             setDiagnosticLocation!(response);
             !locationDetails && setLocationDetails!(response);
+            const saveAddress = {
+              pincode: pincode,
+              id: '',
+              city: response?.city,
+              state: response?.state,
+            };
+            setAsyncPharmaLocation(saveAddress);
+            setAsyncPincode(saveAddress);
             setLoadingContext!(false);
           }
         } catch (e) {
@@ -788,7 +842,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const checkIsPinCodeServiceable = async (pincode: string, mode?: string, comingFrom?: string) => {
     let obj = {} as DiagnosticData;
     if (!!pincode) {
-      setPageLoading!(true);
+      setPageLoading?.(true);
       client
         .query<getPincodeServiceability, getPincodeServiceabilityVariables>({
           query: GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
@@ -1060,6 +1114,22 @@ export const Tests: React.FC<TestsProps> = (props) => {
       },
       searchInput: { minHeight: undefined, paddingVertical: 8 },
       searchInputContainer: { marginBottom: 15, marginTop: 5 },
+      searchNewInput: {
+        borderColor: '#e7e7e7',
+        borderRadius: 5,
+        borderWidth: 1,
+        width: '95%',
+        alignSelf: 'center',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignContent: 'center',
+        padding: 10,
+        marginVertical: 15,
+        backgroundColor: '#f7f8f5',
+      },
+      searchTextStyle: {
+        ...theme.viewStyles.text('SB', 18, 'rgba(1,48,91, 0.3)'),
+      },
     });
 
     const shouldEnableSearchSend = searchText.length > 2;
@@ -1099,58 +1169,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <TouchableOpacity
         onPress={() => {
-          setSearchFocused(true);
           props.navigation.navigate(AppRoutes.SearchTestScene, {
             searchText: searchText,
           });
-          setSearchText('');
-          setDiagnosticResults([]);
         }}
+        style={styles.searchNewInput}
       >
-        <SearchInput
-          _isSearchFocused={isSearchFocused}
-          editable={false}
-          autoFocus={false}
-          onSubmitEditing={() => {
-            if (searchText?.length > 2) {
-              props.navigation.navigate(AppRoutes.SearchTestScene, {
-                searchText: searchText,
-              });
-            }
-          }}
-          value={searchText}
-          onBlur={() => {
-            setSearchFocused(false);
-            setDiagnosticResults([]);
-            setSearchText('');
-            setsearchSate('success');
-          }}
-          onChangeText={(value) => {
-            if (isValidSearch(value)) {
-              setSearchText(value);
-              if (!(value && value.length > 2)) {
-                setDiagnosticResults([]);
-                return;
-              }
-              const search = _.debounce(onSearchTest, 300);
-              if (value?.length >= 3) {
-                setsearchSate('load');
-              }
-              setSearchQuery((prevSearch: any) => {
-                if (prevSearch.cancel) {
-                  prevSearch.cancel();
-                }
-                return search;
-              });
-              search(value);
-            }
-          }}
-          _rigthIconView={rigthIconView}
-          placeholder="Search tests &amp; packages"
-          _itemsNotFound={itemsNotFound}
-          inputStyle={styles.searchInput}
-          containerStyle={styles.searchInputContainer}
-        />
+        <Text style={styles.searchTextStyle}>Search tests &amp; packages</Text>
+        {rigthIconView}
       </TouchableOpacity>
     );
   };
@@ -1232,7 +1258,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
       onPressOutside: () => {
         hideAphAlert!();
         //if this needs to be done, if location permission is denied or anywhere.
-        if (!defaultAddress && !locationDetails && !diagnosticLocation && !pharmacyLocation) {
+        if (
+          !defaultAddress &&
+          !locationDetails &&
+          !diagnosticLocation &&
+          !pharmacyLocation &&
+          !asyncPincode?.pincode!
+        ) {
           setDeliveryAddressId!('');
           checkIsPinCodeServiceable('500034', undefined, 'noLocation');
         }
@@ -1242,6 +1274,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
           source={AppRoutes.Tests}
           addresses={addressList}
           onPressSelectAddress={(address) => {
+            setAsyncPharmaLocation(address);
+            const saveAddress = {
+              pincode: address?.zipcode,
+              id: address?.id,
+              city: address?.city,
+              state: address?.state,
+            };
+            setAsyncPincode(saveAddress);
             setDefaultAddress(address);
           }}
           onPressEditAddress={(address) => {
@@ -1289,8 +1329,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderDeliverToLocationCTA = () => {
     let deliveryAddress = addresses?.find((item) => item?.id == deliveryAddressId);
-    const location = !deliveryAddress
-      ? diagnosticLocation
+    const location = asyncPincode?.pincode
+      ? `${formatText(asyncPincode?.city || asyncPincode?.state || '', 18)} ${
+          asyncPincode?.pincode
+        }`
+      : !deliveryAddress
+      ? diagnosticLocation?.pincode
         ? `${formatText(
             g(diagnosticLocation, 'city') || g(diagnosticLocation, 'state') || '',
             18

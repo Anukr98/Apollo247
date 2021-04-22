@@ -4,6 +4,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { DeliveryIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { format } from 'date-fns';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export interface TatCardwithoutAddressProps {
   style?: StyleProp<ViewStyle>;
@@ -14,11 +15,11 @@ export interface TatCardwithoutAddressProps {
 export const TatCardwithoutAddress: React.FC<TatCardwithoutAddressProps> = (props) => {
   const { style, vdcType, isNonCartOrder } = props;
   const { deliveryTime } = useShoppingCart();
+  const { nonCartDeliveryText } = useAppCommonData();
 
   function getNonCartDeliveryDate() {
     let tommorowDate = new Date();
     tommorowDate.setDate(tommorowDate.getDate() + 1);
-
     if (new Date(deliveryTime).toLocaleDateString() == new Date().toLocaleDateString()) {
       return `Expected Delivery by Today!`;
     } else if (new Date(deliveryTime).toLocaleDateString() == tommorowDate.toLocaleDateString()) {
@@ -48,9 +49,13 @@ export const TatCardwithoutAddress: React.FC<TatCardwithoutAddressProps> = (prop
       <DeliveryIcon />
       <View style={{ marginLeft: 10 }}>
         <Text style={styles.boldTxt}>
-          {!!isNonCartOrder ? getNonCartDeliveryDate() : getDeliveryDate()}
+          {!!isNonCartOrder
+            ? nonCartDeliveryText
+              ? nonCartDeliveryText
+              : getNonCartDeliveryDate()
+            : getDeliveryDate()}
         </Text>
-        <Text style={styles.subText}>{getDeliveryMsg()}</Text>
+        {!isNonCartOrder && <Text style={styles.subText}>{getDeliveryMsg()}</Text>}
       </View>
     </View>
   );
@@ -79,6 +84,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansBold(14),
     color: '#01475B',
     lineHeight: 17,
+    width: '55%',
   },
   subText: {
     ...theme.fonts.IBMPlexSansMedium(12),

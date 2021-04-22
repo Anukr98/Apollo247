@@ -53,6 +53,8 @@ import {
   getShipmentPrice,
   validateCoupon,
   setAsyncPharmaLocation,
+  getHealthCredits,
+  persistHealthCredits,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   pinCodeServiceabilityApi247,
@@ -367,14 +369,23 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   };
 
   const fetchHealthCredits = async () => {
+    var cachedHealthCredit: any = await getHealthCredits();
+
+    if (cachedHealthCredit != null) {
+      setAvailableHC(cachedHealthCredit.healthCredit);
+      return; // no need to call api
+    }
+
     try {
       const response = await client.query({
         query: GET_ONEAPOLLO_USER,
         variables: { patientId: currentPatient?.id },
         fetchPolicy: 'no-cache',
       });
+
       if (response?.data?.getOneApolloUser) {
         setAvailableHC(response?.data?.getOneApolloUser.availableHC);
+        persistHealthCredits(response?.data?.getOneApolloUser.availableHC);
       }
     } catch (error) {
       CommonBugFender('fetchingHealthCreditsonCart', error);
@@ -927,7 +938,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (cartTotal == 0) {
       renderAlert('Please add items in the cart to apply coupon.');
     } else {
-      props.navigation.navigate(AppRoutes.ApplyCouponScene);
+      props.navigation.navigate(AppRoutes.ViewCoupons);
       setCoupon!(null);
       applyCouponClickedEvent(g(currentPatient, 'id'), JSON.stringify(cartItems));
     }

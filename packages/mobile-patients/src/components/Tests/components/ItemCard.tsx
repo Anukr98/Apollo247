@@ -143,8 +143,8 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
           <View style={{ minHeight: isSmallDevice ? 25 : 30 }}>
             {getMandatoryParameterCount > 0 ? (
               <Text style={styles.parameterText}>
-                {getMandatoryParameterCount}{' '}
-                {getMandatoryParameterCount == 1 ? 'Parameter' : 'Parameters'} included
+                {getMandatoryParameterCount} {getMandatoryParameterCount == 1 ? 'test' : 'tests'}{' '}
+                included
               </Text>
             ) : null}
           </View>
@@ -539,7 +539,9 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     position: 'absolute',
     left: 16,
-    bottom: 10,
+    bottom: 6,
+    width: '70%',
+    height: 30,
   },
   errorCardContainer: {
     height: 'auto',

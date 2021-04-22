@@ -54,7 +54,12 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     !isDiagnosticCircleSubscription && orderCircleSaving > 0 && orderCircleSaving > orderCartSaving;
   const moveToHome = () => {
     // use apiCallsEnum values here in order to make that api call in home screen
-    apisToCall.current = [apiCallEnums.circleSavings];
+    apisToCall.current = [
+      apiCallEnums.circleSavings,
+      apiCallEnums.getAllBanners,
+      apiCallEnums.plansCashback,
+      apiCallEnums.getUserSubscriptions,
+    ];
     navigateToHome(props.navigation);
   };
 
