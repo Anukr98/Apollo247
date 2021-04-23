@@ -57,7 +57,6 @@ const styles = StyleSheet.create({
     elevation: 0,
   },
   helpTextStyle: { ...theme.viewStyles.text('B', 13, '#FC9916', 1, 24) },
-  customHelpContainer: { alignItems: 'flex-end', marginRight: 16, marginTop: 10 },
 });
 
 type AppSection = { buyAgainSection: true };
@@ -297,9 +296,6 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
             onPressLeftIcon={() => props.navigation.goBack()}
             rightComponent={renderHeaderRightComponent()}
           />
-        )}
-        {props?.showHeader == false && (
-          <View style={styles.customHelpContainer}>{renderHeaderRightComponent()}</View>
         )}
         {renderError()}
         {renderOrders()}

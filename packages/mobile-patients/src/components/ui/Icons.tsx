@@ -1755,3 +1755,18 @@ export const ProHealthIcon: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_icon.png')}
   />
 );
+
+export const RefreshIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/ic_cached.png')}
+  />
+);
+
+export const AgentIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/agent_icon.png')}
+  />
+);
