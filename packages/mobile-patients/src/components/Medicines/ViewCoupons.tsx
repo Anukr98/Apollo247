@@ -177,6 +177,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     circleSubscriptionId,
     hdfcSubscriptionId,
     setIsFreeDelivery,
+    circlePlanSelected,
   } = useShoppingCart();
   const { showAphAlert, setLoading } = useUIElements();
   const [shimmerLoading, setShimmerLoading] = useState<boolean>(true);
@@ -198,13 +199,13 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
   if (hdfcSubscriptionId && hdfcStatus === 'active') {
     packageId.push(`HDFC:${hdfcPlanId}`);
   }
-  if (circleSubscriptionId && circleStatus === 'active') {
-    packageId.push(`APOLLO:${circlePlanId}`);
+  if ((circleSubscriptionId && circleStatus === 'active') || circlePlanSelected?.subPlanId) {
+    packageId.push(`APOLLO:${circlePlanId || circlePlanSelected?.subPlanId}`);
   }
 
   useEffect(() => {
     const data = {
-      packageId: activeUserSubscriptions ? getPackageIds(activeUserSubscriptions)?.join() : '',
+      packageId: getPackageIds(activeUserSubscriptions, circlePlanSelected)?.join(),
       mobile: g(currentPatient, 'mobileNumber'),
       email: g(currentPatient, 'emailAddress'),
       type: isFromConsult ? 'Consult' : 'Pharmacy',
@@ -258,7 +259,10 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
         if (resp?.data?.errorCode == 0) {
           if (resp?.data?.response?.valid) {
             const successMessage = resp?.data?.response?.successMessage || '';
-            setCoupon!({ ...g(resp?.data, 'response')!, successMessage: successMessage });
+            setCoupon!({
+              ...resp?.data?.response,
+              successMessage: successMessage,
+            });
             setIsFreeDelivery?.(!!resp?.data?.response?.freeDelivery);
             props.navigation.goBack();
           } else {
