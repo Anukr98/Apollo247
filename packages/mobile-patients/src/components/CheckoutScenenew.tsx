@@ -147,6 +147,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     shipments,
     orders,
     hdfcSubscriptionId,
+    minCartValueForCOD,
+    maxCartValueForCOD,
   } = useShoppingCart();
   const {
     pharmacyUserTypeAttribute,
@@ -1380,15 +1382,24 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     );
   };
   const renderNewCOD = () => {
+    const total = grandTotal - burnHC;
+    const isValidForCOD =
+      minCartValueForCOD && maxCartValueForCOD
+        ? minCartValueForCOD <= total && total <= maxCartValueForCOD
+        : true;
     return (
       <View>
         <Button
-          disabled={isOneApolloSelected || !!circleMembershipCharges}
+          disabled={!isValidForCOD || isOneApolloSelected || !!circleMembershipCharges}
           style={styles.CODoption}
           title={'CASH ON DELIVERY'}
           onPress={() => validateCouponAndInitiateOrder('', '', true, false)}
         />
-        {!!circleMembershipCharges ? (
+        {!isValidForCOD ? (
+          <Text style={styles.codAlertMsg}>
+            {`COD option is available for Order values between ₹${minCartValueForCOD} and ₹${maxCartValueForCOD}`}
+          </Text>
+        ) : !!circleMembershipCharges ? (
           <Text style={styles.codAlertMsg}>
             {'!Remove Circle Membership on Cart Page to avail COD'}
           </Text>
