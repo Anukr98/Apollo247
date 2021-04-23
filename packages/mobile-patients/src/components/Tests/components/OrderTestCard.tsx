@@ -282,40 +282,55 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       <>
         {!!otpToShow && SHOW_OTP_ARRAY.includes(props.orderLevelStatus) ? (
           <>
-        <View style={styles.otpCallContainer}>
-          <View style={styles.detailContainer}>
-              <TouchableOpacity style={styles.callContainer}
-               onPress={()=>{
-                 Linking.openURL(`tel:${phoneNumber}`)
-               }}
-              >
-                <WhiteProfile/>
-                <OrangeCall size='sm' style={styles.profileCircle}/>
-              </TouchableOpacity>
-            <View style={styles.nameContainer}>
-              <Text style={styles.nameTextHeadingStyles}>Phlebotomist Details</Text>
-              <Text style={styles.nameTextStyles}>{name}</Text>
+            <View style={styles.otpCallContainer}>
+              <View style={styles.detailContainer}>
+                {phoneNumber ? (
+                  <TouchableOpacity
+                    style={styles.callContainer}
+                    onPress={() => {
+                      Linking.openURL(`tel:${phoneNumber}`);
+                    }}
+                  >
+                    <WhiteProfile />
+                    <OrangeCall size="sm" style={styles.profileCircle} />
+                  </TouchableOpacity>
+                ) : null}
+                {name ? (
+                  <View style={styles.nameContainer}>
+                    <Text style={styles.nameTextHeadingStyles}>Phlebotomist Details</Text>
+                    <Text style={styles.nameTextStyles}>{name}</Text>
+                  </View>
+                ) : null}
+              </View>
+              {otpToShow ? (
+                <View style={styles.otpBoxConatiner}>
+                  <Text style={styles.otpBoxTextStyle}>{'OTP'}</Text>
+                  <Text style={styles.otpBoxTextStyle}>{otpToShow}</Text>
+                </View>
+              ) : null}
             </View>
-          </View>
-          <View style={styles.otpBoxConatiner}>
-            <Text style={styles.otpBoxTextStyle}>{'OTP'}</Text>
-            <Text style={styles.otpBoxTextStyle}>{otpToShow}</Text>
-          </View>
-        </View>
 
-        {phleboEta ? <View style={styles.otpContainer}>
-          <View style={styles.etaContainer}>
-               <LocationOutline style={styles.locationIcon}/>
-            <Text style={styles.otpTextStyle}>Phlebo will arrive in{` ${phleboEta} `}minutes</Text>
-          </View>
-          {phleboTrackLink ? <TouchableOpacity onPress={()=>{
-            Linking.openURL(phleboTrackLink)
-          }}>
-            <Text style={styles.trackStyle}>{nameFormater('track Phlebo', 'upper')}</Text>
-          </TouchableOpacity> : null}
-          </View> : null}
-            </>
-     ) : null}
+            {phleboEta ? (
+              <View style={styles.otpContainer}>
+                <View style={styles.etaContainer}>
+                  <LocationOutline style={styles.locationIcon} />
+                  <Text style={styles.otpTextStyle}>
+                    Phlebo will arrive in{` ${phleboEta} `}minutes
+                  </Text>
+                </View>
+                {phleboTrackLink ? (
+                  <TouchableOpacity
+                    onPress={() => {
+                      Linking.openURL(phleboTrackLink);
+                    }}
+                  >
+                    <Text style={styles.trackStyle}>{nameFormater('track Phlebo', 'upper')}</Text>
+                  </TouchableOpacity>
+                ) : null}
+              </View>
+            ) : null}
+          </>
+        ) : null}
       </>
     );
   };
@@ -514,7 +529,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 8,
     borderBottomRightRadius: 8,
     borderRadius: 10,
-    paddingHorizontal:10
+    padding:10
   },
   detailContainer: {
     flexDirection:'row',
@@ -528,7 +543,7 @@ const styles = StyleSheet.create({
     right:0
   },
   callContainer: {
-    margin:8
+    margin:0
   },
   nameContainer: {
     justifyContent:'flex-start',

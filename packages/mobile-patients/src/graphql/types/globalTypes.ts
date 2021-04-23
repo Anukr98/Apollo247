@@ -1646,6 +1646,12 @@ export interface SaveSearchInput {
   patient: string;
 }
 
+export interface SavePhleboFeedback{
+  phleboRating: number | null;
+  phleboFeedback: string | null;
+  diagnosticOrdersId: string;
+}
+
 export interface ShopAddress {
   storename?: string | null;
   address?: string | null;

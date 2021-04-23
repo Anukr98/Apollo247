@@ -103,7 +103,7 @@ import {
   getDiagnosticSlotsCustomizedVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsCustomized';
 import { OrderTestCard } from '@aph/mobile-patients/src/components/Tests/components/OrderTestCard';
-import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { setPhleboFeedback } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { Overlay } from 'react-native-elements';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
@@ -114,6 +114,7 @@ import {
   getOrderPhleboDetailsBulk,
   getOrderPhleboDetailsBulkVariables,
 } from '@aph/mobile-patients/src/graphql/types/getOrderPhleboDetailsBulk';
+import ApolloClient from 'apollo-client';
 
 export interface DiagnosticsOrderList
   extends getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList {
@@ -137,6 +138,8 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
   useEffect(() => {
     setLoading!(false);
   }, []);
+
+  const client = useApolloClient();
   useEffect(() => {
     getEmoticon(ratingStar);
     getReviewTag(ratingStar);
@@ -189,6 +192,16 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
       result = true
     } 
     return result
+  }
+  const onSubmitFeedback = async (rating: number,feedback: string,id: string) => {
+      try {
+        setLoading!(true);
+        const response = await setPhleboFeedback(client,rating,feedback,id);
+       console.log('response :>> ', response);
+       
+      } catch (error) {
+        console.log('error :>> ', error.networkError.result.errors);
+      }
   }
   // console.log('object :>> ', orderDetail);
   return (
@@ -255,7 +268,9 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
           <Button 
             title={'SUBMIT FEEDBACK'}
             onPress={()=>{
-              props.navigation.navigate(AppRoutes.YourOrdersScene);
+              console.log(`object`, activeReason,ratingStar,orderDetail?.id)
+              onSubmitFeedback(ratingStar,activeReason,orderDetail?.id)
+              // props.navigation.navigate(AppRoutes.YourOrdersScene);
             }}
             disabled={checkDisability()}
           />
