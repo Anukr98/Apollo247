@@ -217,14 +217,18 @@ export const NeedHelp: React.FC<Props> = (props) => {
     fetchQueries();
     fetchOngoingQuery();
 
-    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+
     const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
       fetchHelpdeskTickets();
     });
 
     return () => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
       _didFocusSubscription && _didFocusSubscription.remove();
+      _willBlurSubscription && _willBlurSubscription.remove();
     };
   }, []);
 
@@ -399,6 +403,7 @@ export const NeedHelp: React.FC<Props> = (props) => {
     return (
       <TouchableOpacity
         onPress={() => {
+          setShowPreviousTickets(false);
           props.navigation.navigate(AppRoutes.HelpChatScreen, {
             ticket: ticket,
             query: ongoingQuery,
@@ -441,14 +446,8 @@ export const NeedHelp: React.FC<Props> = (props) => {
   };
 
   const handleBack = async () => {
-    if (showPreviousTickets) {
-      setShowPreviousTickets(false);
-      fetchQueries();
-      fetchOngoingQuery();
-      fetchHelpdeskTickets();
-    } else {
-      props.navigation.goBack();
-    }
+    fetchHelpdeskTickets();
+    props.navigation.goBack();
     return true;
   };
 
