@@ -250,7 +250,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
             uri: bannerUri,
           }}
           resizeMode={'cover'}
-          borderRadius={15}
+          borderRadius={10}
         >
           <View style={styles.bannerContainer}>
             {headerText1 ? renderBannerText(headerText1) : null}
