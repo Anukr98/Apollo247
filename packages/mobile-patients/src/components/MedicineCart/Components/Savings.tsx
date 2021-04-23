@@ -15,24 +15,21 @@ export const Savings: React.FC<SavingsProps> = (props) => {
     cartTotalCashback,
     circleMembershipCharges,
     coupon,
-    cartTotal,
     couponProducts,
   } = useShoppingCart();
-  const deliveryFee = AppConfig.Configuration.DELIVERY_CHARGES;
-  const minValueForFreeDelivery = AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY;
   const [showCareDetails, setShowCareDetails] = useState(true);
   const [showCareSavings, setShowCareSavings] = useState(true);
 
-  const careTotal = !!coupon
-    ? Number(cartTotal <= minValueForFreeDelivery ? 0 : deliveryFee) +
-      Number(productDiscount) +
-      Number(couponDiscount)
-    : isCircleSubscription || circleMembershipCharges
-    ? Number(deliveryFee) + Number(productDiscount) + cartTotalCashback
-    : Number(productDiscount);
+  const deliveryFee = AppConfig.Configuration.DELIVERY_CHARGES;
+  const totalSavings =
+    coupon && !coupon?.circleBenefits
+      ? deliveryFee + productDiscount + couponDiscount
+      : isCircleSubscription || circleMembershipCharges
+      ? deliveryFee + productDiscount + couponDiscount + cartTotalCashback
+      : productDiscount;
 
   function getSavings() {
-    return Number(careTotal).toFixed(2);
+    return Number(totalSavings).toFixed(2);
   }
 
   function saveMessage() {
@@ -117,9 +114,12 @@ export const Savings: React.FC<SavingsProps> = (props) => {
             </Text>
           </View>
         )}
-        <View style={styles.totalAmountContainer}>
-          <Text style={styles.totalAmount}>₹{careTotal.toFixed(2)}</Text>
-        </View>
+        {!!coupon && showCareSavings && renderCurrentSavings()}
+        {showCareSavings && (
+          <View style={styles.totalAmountContainer}>
+            <Text style={styles.totalAmount}>₹{totalSavings.toFixed(2)}</Text>
+          </View>
+        )}
       </View>
     );
   }
@@ -147,20 +147,20 @@ export const Savings: React.FC<SavingsProps> = (props) => {
     );
   };
 
-  return getSavings() && getSavings() != 0 ? (
+  return (
     <>
-      <View style={styles.savingsCard}>
-        {saveMessage()}
-        {(isCircleSubscription || !!circleMembershipCharges) &&
-          !coupon &&
-          showCareDetails &&
-          careSavings()}
-        {!!coupon && !isCircleSubscription && showCareSavings && renderCurrentSavings()}
-      </View>
-      {(!(isCircleSubscription || !!circleMembershipCharges) || (!!coupon && showCareDetails)) &&
-        careSubscribeMessage()}
+      {totalSavings > 0 && (
+        <View style={styles.savingsCard}>
+          {saveMessage()}
+          {(isCircleSubscription || !!circleMembershipCharges) &&
+            (!coupon || coupon?.circleBenefits) &&
+            showCareDetails &&
+            careSavings()}
+        </View>
+      )}
+      {!isCircleSubscription && careSubscribeMessage()}
     </>
-  ) : null;
+  );
 };
 
 const styles = StyleSheet.create({
@@ -173,14 +173,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 9,
     borderColor: '#00B38E',
-    borderWidth: 3,
-    borderStyle: 'dashed',
+    borderWidth: 1,
   },
   careMessageCard: {
     flexDirection: 'row',
     ...theme.viewStyles.cardViewStyle,
     borderRadius: 5,
-    marginHorizontal: 18,
+    marginHorizontal: 14,
     backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
     paddingHorizontal: 15,
     paddingVertical: 9,
