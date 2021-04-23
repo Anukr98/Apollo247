@@ -302,7 +302,11 @@ export const handleOpenURL = (event: any) => {
         };
         break;
     }
-  } catch (error) {}
+  } catch (error) {
+    return {
+      routeName: 'ConsultRoom',
+    };
+  }
 };
 
 export const pushTheView = (
