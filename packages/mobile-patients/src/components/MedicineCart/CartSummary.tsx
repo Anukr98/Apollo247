@@ -48,7 +48,11 @@ import {
   uploadPrescriptionClickedEvent,
   postTatResponseFailureEvent,
 } from '@aph/mobile-patients/src/components/MedicineCart/Events';
-import { UPLOAD_DOCUMENT } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  UPLOAD_DOCUMENT,
+  SAVE_MEDICINE_ORDER_OMS_V2,
+  CREATE_INTERNAL_ORDER,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -60,7 +64,20 @@ import { Shipments } from '@aph/mobile-patients/src/components/MedicineCart/Comp
 import {
   MedicineOrderShipmentInput,
   PrescriptionType,
+  OrderVerticals,
+  OrderCreate,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import { useGetOrderInfo } from '@aph/mobile-patients/src/components/MedicineCart/Hooks/useGetOrderInfo';
+import {
+  saveMedicineOrderV2,
+  saveMedicineOrderV2Variables,
+} from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderV2';
+import {
+  createOrderInternal,
+  createOrderInternalVariables,
+} from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
 
 export interface CartSummaryProps extends NavigationScreenProps {}
 
@@ -88,6 +105,9 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     productDiscount,
     pinCode,
     setCouponProducts,
+    grandTotal,
+    circleMembershipCharges,
+    circlePlanSelected,
   } = useShoppingCart();
   const {
     pharmacyUserTypeAttribute,
@@ -120,9 +140,12 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   const shoppingCart = useShoppingCart();
   const pharmacyPincode =
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
+  const OrderInfo = useGetOrderInfo();
+  console.log('OrderInfo >>>', OrderInfo);
 
   useEffect(() => {
     hasUnserviceableproduct();
+    initiateHyperSDK();
     AppState.addEventListener('change', handleAppStateChange);
     return () => {
       AppState.removeEventListener('change', handleAppStateChange);
@@ -146,6 +169,50 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   useEffect(() => {
     availabilityTat(deliveryAddressId);
   }, [cartItems, deliveryAddressId]);
+
+  const initiateHyperSDK = async () => {
+    try {
+      const isInitiated: boolean = await isSDKInitialised();
+      !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id);
+    } catch (error) {
+      CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
+    }
+  };
+  const getFormattedAmount = (num: number) => Number(num.toFixed(2));
+
+  const estimatedAmount = !!circleMembershipCharges
+    ? getFormattedAmount(grandTotal - circleMembershipCharges)
+    : getFormattedAmount(grandTotal);
+
+  const saveOrder = (orderInfo: saveMedicineOrderV2Variables) =>
+    client.mutate<saveMedicineOrderV2, saveMedicineOrderV2Variables>({
+      mutation: SAVE_MEDICINE_ORDER_OMS_V2,
+      variables: orderInfo,
+    });
+
+  const createOrderInternal = (orderId: string, subscriptionId?: string) => {
+    const orders: OrderVerticals = {
+      pharma: [{ order_id: orderId, amount: estimatedAmount, patient_id: currentPatient?.id }],
+    };
+    if (subscriptionId) {
+      orders['subscription'] = [
+        {
+          order_id: subscriptionId,
+          amount: Number(circlePlanSelected?.currentSellingPrice),
+          patient_id: currentPatient?.id,
+        },
+      ];
+    }
+    const orderInput: OrderCreate = {
+      orders: orders,
+      total_amount: grandTotal,
+      customer_id: currentPatient?.primaryPatientId || currentPatient?.id,
+    };
+    return client.mutate<createOrderInternal, createOrderInternalVariables>({
+      mutation: CREATE_INTERNAL_ORDER,
+      variables: { order: orderInput },
+    });
+  };
 
   function hasUnserviceableproduct() {
     const unserviceableItems = cartItems.filter((item) => item.unserviceable) || [];
@@ -354,6 +421,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   };
 
   async function onPressProceedtoPay() {
+    console.log(' pay clicked <<<<<<');
+    setloading(true);
     if (coupon && cartTotal > 0) {
       try {
         const response = await validateCoupon(
@@ -381,12 +450,12 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       }
     }
     await availabilityTat(deliveryAddressId);
-    props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
-      deliveryTime,
-      storeDistance: storeDistance,
-      tatType: storeType,
-      shopId: shopId,
-    });
+    // props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
+    //   deliveryTime,
+    //   storeDistance: storeDistance,
+    //   tatType: storeType,
+    //   shopId: shopId,
+    // });
     let splitOrderDetails: any = {};
     if (orders?.length > 1) {
       orders?.forEach((order: any, index: number) => {
@@ -397,12 +466,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
       });
     }
-    props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
-      deliveryTime,
-      storeDistance: storeDistance,
-      tatType: storeType,
-      shopId: shopId,
-    });
     postwebEngageProceedToPayEvent(
       shoppingCart,
       false,
@@ -413,7 +476,17 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       orders?.length > 1,
       splitOrderDetails
     );
+    initiateOrder();
   }
+
+  const initiateOrder = async () => {
+    const response = await saveOrder(OrderInfo);
+    console.log('response >>>', response);
+    const { orders, transactionId, errorCode, errorMessage } =
+      response?.data?.saveMedicineOrderV2 || {};
+
+    setloading(true);
+  };
 
   const renderAlert = (message: string) => {
     showAphAlert!({

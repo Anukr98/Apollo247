@@ -1,12 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
-import { useApolloClient } from 'react-apollo-hooks';
-import { SAVE_MEDICINE_ORDER_OMS_V2 } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  saveMedicineOrderV2,
-  saveMedicineOrderV2Variables,
-  saveMedicineOrderV2_saveMedicineOrderV2_orders,
-} from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderV2';
 import {
   BOOKINGSOURCE,
   DEVICE_TYPE,
@@ -17,9 +10,13 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import DeviceInfo from 'react-native-device-info';
 import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
+import {
+  saveMedicineOrderV2,
+  saveMedicineOrderV2Variables,
+  saveMedicineOrderV2_saveMedicineOrderV2_orders,
+} from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderV2';
 
-export const useInitiatePharmaOrder = () => {
-  const client = useApolloClient();
+export const useGetOrderInfo = () => {
   const { currentPatient } = useAllCurrentPatients();
   const {
     deliveryAddressId,
@@ -57,15 +54,6 @@ export const useInitiatePharmaOrder = () => {
     orders,
     setIsFreeDelivery,
   } = useShoppingCart();
-  const [response, setResponse] = useState<any>({});
-  const [isLoading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<boolean>(false);
-
-  const saveOrder = (orderInfo: saveMedicineOrderV2Variables) =>
-    client.mutate<saveMedicineOrderV2, saveMedicineOrderV2Variables>({
-      mutation: SAVE_MEDICINE_ORDER_OMS_V2,
-      variables: orderInfo,
-    });
 
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
 
@@ -108,19 +96,5 @@ export const useInitiatePharmaOrder = () => {
     },
   };
 
-  const initiateOrder = async () => {
-    try {
-      const response = await saveOrder(OrderInfo);
-      setResponse(response);
-      setLoading(false);
-    } catch (error) {
-      setError(true);
-    }
-  };
-
-  useEffect(() => {
-    initiateOrder();
-  }, []);
-
-  return { response, isLoading, error };
+  return OrderInfo;
 };
