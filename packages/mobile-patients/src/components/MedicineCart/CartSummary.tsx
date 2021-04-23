@@ -8,6 +8,7 @@ import {
   AppState,
   AppStateStatus,
   Text,
+  Platform,
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -52,6 +53,7 @@ import {
   UPLOAD_DOCUMENT,
   SAVE_MEDICINE_ORDER_OMS_V2,
   CREATE_INTERNAL_ORDER,
+  SAVE_ORDER_WITH_SUBSCRIPTION,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -66,6 +68,8 @@ import {
   PrescriptionType,
   OrderVerticals,
   OrderCreate,
+  one_apollo_store_code,
+  PaymentStatus,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
@@ -141,6 +145,9 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   const pharmacyPincode =
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
   const OrderInfo = useGetOrderInfo();
+  const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
+  const storeCode =
+    Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
   console.log('OrderInfo >>>', OrderInfo);
 
   useEffect(() => {
@@ -189,6 +196,33 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       mutation: SAVE_MEDICINE_ORDER_OMS_V2,
       variables: orderInfo,
     });
+
+  const saveOrderWithSubscription = (orderInfo: saveMedicineOrderV2Variables) => {
+    const orderSubscriptionInput = {
+      orderInfo,
+      userSubscription: {
+        mobile_number: currentPatient?.mobileNumber,
+        plan_id: planId,
+        sub_plan_id: circlePlanSelected?.subPlanId,
+        storeCode,
+        FirstName: currentPatient?.firstName,
+        LastName: currentPatient?.lastName,
+        payment_reference: {
+          amount_paid: Number(circlePlanSelected?.currentSellingPrice),
+          payment_status: PaymentStatus.PENDING,
+          purchase_via_HC: false,
+          HC_used: 0,
+        },
+        transaction_date_time: new Date().toISOString(),
+      },
+    };
+    console.log('orderSubscriptionInput >>>', JSON.stringify(orderSubscriptionInput));
+    return client.mutate({
+      mutation: SAVE_ORDER_WITH_SUBSCRIPTION,
+      variables: orderSubscriptionInput,
+      fetchPolicy: 'no-cache',
+    });
+  };
 
   const createOrderInternal = (orderId: string, subscriptionId?: string) => {
     const orders: OrderVerticals = {
@@ -480,8 +514,11 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   }
 
   const initiateOrder = async () => {
-    const response = await saveOrder(OrderInfo);
-    console.log('response >>>', response);
+    const response =
+      !circleSubscriptionId && circlePlanSelected
+        ? await saveOrderWithSubscription(OrderInfo)
+        : await saveOrder(OrderInfo);
+    console.log('response >>>', JSON.stringify(response));
     const { orders, transactionId, errorCode, errorMessage } =
       response?.data?.saveMedicineOrderV2 || {};
 

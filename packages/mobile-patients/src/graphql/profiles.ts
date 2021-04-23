@@ -1671,6 +1671,39 @@ export const SAVE_MEDICINE_ORDER_OMS_V2 = gql`
   }
 `;
 
+export const SAVE_ORDER_WITH_SUBSCRIPTION = gql`
+  mutation saveOrderWithSubscription(
+    $medicineOrderInput: SaveMedicineOrderV2Input!
+    $userSubscription: CreateUserSubscriptionInput!
+  ) {
+    saveMedicineOrderV2(medicineOrderInput: $medicineOrderInput) {
+      errorCode
+      errorMessage
+      transactionId
+      orders {
+        id
+        orderAutoId
+      }
+    }
+    CreateUserSubscription(UserSubscription: $userSubscription) {
+      code
+      success
+      message
+      response {
+        _id
+        mobile_number
+        status
+        start_date
+        end_date
+        group_plan {
+          name
+          plan_id
+        }
+      }
+    }
+  }
+`;
+
 export const SAVE_MEDICINE_ORDER_PAYMENT = gql`
   mutation SaveMedicineOrderPaymentMq($medicinePaymentMqInput: MedicinePaymentMqInput!) {
     SaveMedicineOrderPaymentMq(medicinePaymentMqInput: $medicinePaymentMqInput) {
