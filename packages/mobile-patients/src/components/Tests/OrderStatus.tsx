@@ -64,10 +64,8 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     navigateToHome(props.navigation);
   };
   const moveToMyOrders = () => {
-    props.navigation.navigate(AppRoutes.MyOrdersScreen, {
-      patientId: currentPatient.id,
-      fromNotification: false,
-      tabSelected: 1
+    props.navigation.navigate(AppRoutes.YourOrdersTest, {
+      isTest: true,
     });
   }
 
