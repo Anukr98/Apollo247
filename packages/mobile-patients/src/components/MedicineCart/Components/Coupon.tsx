@@ -15,13 +15,7 @@ export interface CouponProps {
 }
 
 export const Coupon: React.FC<CouponProps> = (props) => {
-  const {
-    coupon,
-    couponDiscount,
-    isProuctFreeCouponApplied,
-    isCircleSubscription,
-    circleMembershipCharges,
-  } = useShoppingCart();
+  const { coupon, couponDiscount, isProuctFreeCouponApplied } = useShoppingCart();
   const { onPressApplyCoupon, onPressRemove } = props;
 
   const renderApplyCoupon = () => {
@@ -64,6 +58,12 @@ export const Coupon: React.FC<CouponProps> = (props) => {
                 : `Coupon : ${coupon?.coupon}`}
             </Text>
             {renderCouponMsg()}
+            {!!coupon?.successMessage && <View style={styles.itemSeperator} />}
+            {!!coupon?.successMessage && (
+              <Text
+                style={theme.viewStyles.text('M', 13, '#01475B', 1, 27)}
+              >{`(${coupon?.successMessage})`}</Text>
+            )}
           </View>
         </View>
         <TouchableOpacity style={{ marginTop: 10 }} onPress={onPressRemove}>
@@ -124,5 +124,12 @@ const styles = StyleSheet.create({
   pendingIconStyle: {
     marginRight: 10,
     marginTop: 5,
+  },
+  itemSeperator: {
+    width: '170%',
+    height: 0.5,
+    backgroundColor: theme.colors.LIGHT_BLUE,
+    opacity: 0.5,
+    marginTop: 3,
   },
 });

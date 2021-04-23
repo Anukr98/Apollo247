@@ -10,7 +10,6 @@ import {
   AppState,
   DeviceEventEmitter,
   NativeModules,
-  Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import { NavigationScreenProps } from 'react-navigation';
@@ -335,7 +334,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               if (Platform.OS === 'ios') InitiateAppsFlyer(props.navigation);
               const data = handleOpenURL(url);
               const { routeName, id, isCall, timeout, mediaSource } = data;
-              redirectRoute(routeName, id, isCall, timeout, mediaSource);
+              redirectRoute(routeName, id, isCall, timeout, mediaSource, data?.data);
               fireAppOpenedEvent(url);
             } catch (e) {}
           } else {
@@ -352,7 +351,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
           const data = handleOpenURL(event.url);
           const { routeName, id, isCall, timeout, mediaSource } = data;
-          redirectRoute(routeName, id, isCall, timeout, mediaSource);
+          redirectRoute(routeName, id, isCall, timeout, mediaSource, data?.data);
           fireAppOpenedEvent(event.url);
         } catch (e) {}
       });
@@ -367,14 +366,20 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     id?: string,
     timeout?: boolean,
     isCall?: boolean,
-    mediaSource?: string
+    mediaSource?: string,
+    data?: any
   ) => {
-    if (routeName === 'ChatRoom_AppointmentData') {
-      getAppointmentDataAndNavigate(id || '', !!isCall);
-    } else if (routeName === 'DoctorCall_AppointmentData') {
+    if (routeName === 'ChatRoom' && data?.length >= 1) {
+      getAppointmentDataAndNavigate(id!, false);
+    } else if (
+      routeName === 'DoctorCall' &&
+      data?.length >= 1 &&
+      getCurrentRoute() !== AppRoutes.ChatRoom
+    ) {
       const params = id?.split('+');
-      voipCallType.current = params[1];
+      voipCallType.current = params?.[1]!;
       callPermissions();
+      getAppointmentDataAndNavigate(params?.[0]!, true);
     } else if (routeName === 'DoctorCallRejected') {
       setLoading!(true);
       const appointmentId = id?.split('+')?.[0];
@@ -397,6 +402,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           setLoading!(false);
         }
       );
+      const params = id?.split('+');
+      getAppointmentDataAndNavigate(params?.[0]!, false);
     } else {
       getData(routeName, id, isCall, timeout, mediaSource);
     }
@@ -565,7 +572,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       });
       const appointmentData: any = response.data?.getAppointmentData?.appointmentsHistory?.[0];
       if (appointmentData?.doctorInfo) {
-        getData('ChatRoom_AppointmentData', appointmentData, false, isCall);
+        getData('ChatRoom', appointmentData, false, isCall);
       } else {
         throw new Error('Doctor info is required to process the request.');
       }
@@ -607,6 +614,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setLoginSection,
     setCovidVaccineCtaV2,
     setCartBankOffer,
+    setUploadPrescriptionOptions,
+    setExpectCallText,
+    setNonCartTatText,
+    setNonCartDeliveryText,
   } = useAppCommonData();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -747,6 +758,26 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_FollowUp_Chat_Limit',
       PROD: 'FollowUp_Chat_Limit',
     },
+    uploadPrescription_Options: {
+      QA: 'QA_UploadPrescription_Options',
+      PROD: 'UploadPrescription_Options',
+    },
+    Health_Credit_Expiration_Time: {
+      QA: 'Health_Credit_Expiration_Time_QA',
+      PROD: 'Health_Credit_Expiration_Time_Prod',
+    },
+    Expect_Call_Text: {
+      QA: 'QA_Expect_Call_Text',
+      PROD: 'Expect_Call_Text',
+    },
+    Non_Cart_TAT_Text: {
+      QA: 'QA_Non_Cart_TAT_Text',
+      PROD: 'Non_Cart_TAT_Text',
+    },
+    Non_Cart_Delivery_Text: {
+      QA: 'QA_Non_Cart_Delivery_Text',
+      PROD: 'Non_Cart_Delivery_Text',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -822,6 +853,27 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
       bankOfferText && setCartBankOffer!(bankOfferText);
 
+      const uploadPrescriptionOptions = getRemoteConfigValue(
+        'uploadPrescription_Options',
+        (key) => JSON.parse(config.getString(key)) || []
+      );
+      uploadPrescriptionOptions && setUploadPrescriptionOptions!(uploadPrescriptionOptions);
+
+      const expectCallText = getRemoteConfigValue('Expect_Call_Text', (key) =>
+        config.getString(key)
+      );
+      expectCallText && setExpectCallText?.(expectCallText);
+
+      const nonCartTatText = getRemoteConfigValue('Non_Cart_TAT_Text', (key) =>
+        config.getString(key)
+      );
+      nonCartTatText && setNonCartTatText?.(nonCartTatText);
+
+      const nonCartDeliveryText = getRemoteConfigValue('Non_Cart_Delivery_Text', (key) =>
+        config.getString(key)
+      );
+      nonCartDeliveryText && setNonCartDeliveryText?.(nonCartDeliveryText);
+
       setAppConfig(
         'Min_Value_For_Pharmacy_Free_Delivery',
         'MIN_CART_VALUE_FOR_FREE_DELIVERY',
@@ -880,6 +932,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       setAppConfig('Enable_Conditional_Management', 'ENABLE_CONDITIONAL_MANAGEMENT', (key) =>
         config.getBoolean(key)
+      );
+
+      setAppConfig('Health_Credit_Expiration_Time', 'Health_Credit_Expiration_Time', (key) =>
+        config.getNumber(key)
       );
 
       setAppConfig('Covid_Items', 'Covid_Items', (key) => config.getString(key));
@@ -998,6 +1054,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   return (
     <View style={styles.mainView}>
+
       <Animated.View
         style={{
           transform: [

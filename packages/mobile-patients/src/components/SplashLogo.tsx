@@ -13,6 +13,6 @@ export const SplashLogo: React.FC<Partial<ImageProps>> = (props) => (
       }),
     }}
     {...props}
-    source={require('@aph/mobile-patients/src/images/apollo/splashLogo.png')}
+    source={require('@aph/mobile-patients/src/images/apollo/splashLogo.webp')}
   />
 );

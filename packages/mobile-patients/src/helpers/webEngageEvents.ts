@@ -657,6 +657,7 @@ export interface ItemSearchedOnLanding extends DiagnosticUserInfo {
   'Keyword Entered': string;
   '# Results appeared': number;
   'Item in Results'?: object[];
+  'Popular'?: 'Yes' | 'No';
 }
 
 export interface ItemClickedOnLanding extends DiagnosticUserInfo {
@@ -794,7 +795,7 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.NOTIFICATION_ICON]: { clicked: true };
   [WebEngageEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
-  [WebEngageEventName.ACTIVE_PROHEALTH_APPOINTMENTS] : {clicked: true};
+  [WebEngageEventName.ACTIVE_PROHEALTH_APPOINTMENTS]: { clicked: true };
   [WebEngageEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
   [WebEngageEventName.TICKET_RAISED]: { Category: string; Query: string };
   [WebEngageEventName.HELP_TICKET_SUBMITTED]: {
@@ -909,11 +910,10 @@ export interface WebEngageEvents {
   [WebEngageEventName.NOTIFY_ME]: {
     'product name': string;
     'product id': string; // (SKUID)
-    Brand: string;
-    'Brand ID': string;
-    'category name': string;
     'category ID': string;
+    price: number;
     pincode: string;
+    serviceable: YesOrNo;
   };
 
   [WebEngageEventName.CATEGORY_CLICKED]: {
@@ -1195,10 +1195,14 @@ export interface WebEngageEvents {
     'Section Name': string;
   };
   [WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION]: {
-    Source: 'Full Search' | 'Home Page' | 'Cart Page' | 'Partial Search' | 'Deeplink';
+    Source: 'Full Search' | 'Home Page' | 'Cart Page' | 'Partial Search' | 'Deeplink' | 'Popular search';
     'Item Name': string;
-    'Item Type': string;
+    'Item Type'?: string;
     'Item Code': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    'Item ID' : string | number;
+    'Item Price'?: number | string;
   };
 
   [WebEngageEventName.DIAGNOSTIC_CART_VIEWED]: {
@@ -1264,9 +1268,10 @@ export interface WebEngageEvents {
   [WebEngageEventName.DIAGNOSTIC_ADD_TO_CART]: {
     'Item Name': string;
     'Item ID': string; // (SKUID)
-    Source: 'Home page' | 'Full search' | 'Details page' | 'Partial search' | 'Listing page';
+    Source: 'Home page' | 'Full search' | 'Details page' | 'Partial search' | 'Listing page' | 'Popular search';
     Section?: string;
   };
+  
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order id': string | number;
     Pincode: string | number;
@@ -1358,6 +1363,7 @@ export interface WebEngageEvents {
     'Secretary Name': string;
     'Secretary Mobile Number': string;
     'Doctor Mobile Number': string;
+    User_Type: string;
   };
   [WebEngageEventName.TYPE_OF_CONSULT_SELECTED]: {
     'Consultation Type': string;
@@ -1381,6 +1387,7 @@ export interface WebEngageEvents {
     'Doctor Speciality': string;
     Rank: number;
     Is_TopDoc?: YesOrNo;
+    User_Type: string;
   };
   [WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK]: {
     'Patient Name': string;
@@ -1399,6 +1406,7 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Customer ID': string;
     Rank?: number;
+    User_Type: string;
   };
   [WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK]: {
     Fee: number;
@@ -1436,6 +1444,7 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    User_Type: string;
   };
   [WebEngageEventName.CONSULT_TYPE_SELECTION]: {
     'Consult Type': 'Online' | 'In Person';
@@ -2167,6 +2176,7 @@ export interface WebEngageEvents {
     'Circle Membership Value': number | null;
     User_Type?: PharmaUserStatus;
     Pincode?: string;
+    serviceable: YesOrNo;
   };
   [WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
     'Patient Name': string;
@@ -2179,6 +2189,7 @@ export interface WebEngageEvents {
     'Speciality ID': string;
     'Doctor ID': string;
     'Media Source': string;
+    User_Type: string;
   };
   [WebEngageEventName.SEARCH_SUGGESTIONS]: {
     'Patient Name': string;
@@ -2195,6 +2206,7 @@ export interface WebEngageEvents {
     Symptoms: string;
     Specialities: string;
     Procedures: string;
+    User_Type: string;
   };
 
   [WebEngageEventName.SEARCH_SUGGESTIONS_VIEW_ALL]: {
@@ -2224,6 +2236,7 @@ export interface WebEngageEvents {
     'Text typed by the user': string;
     'Search Suggestion Clicked': string;
     'Bucket Clicked': string;
+    User_Type: string;
   };
 
   [WebEngageEventName.SHARE_CLICK_DOC_LIST_SCREEN]: {

@@ -132,13 +132,17 @@ export interface pharma_coupon {
 }
 
 export interface ViewCouponsProps extends NavigationScreenProps {
-  movedFrom: string;
+  movedFrom: 'consult' | 'pharma' | 'diagnostic';
+  onApplyCoupon: (value: string) => Promise<void>;
+  coupon: string;
 }
 
 export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
-  const isDiag = props.navigation.getParam('isDiag');
-  const [couponText, setCouponText] = useState<string>('');
-  const [couponMsg, setcouponMsg] = useState<string>('');
+  const onApplyCoupon = props.navigation.getParam('onApplyCoupon');
+  const movedFrom = props.navigation.getParam('movedFrom');
+  const isFromConsult = movedFrom === 'consult';
+  const couponFromConsult = props.navigation.getParam('coupon');
+  const [couponText, setCouponText] = useState<string>(couponFromConsult || '');
   const [couponError, setCouponError] = useState<string>('');
   const [couponListError, setCouponListError] = useState<string>('');
   const [disableCouponsList, setDisableCouponsList] = useState<string[]>([]);
@@ -189,7 +193,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
       packageId: packageId?.join(),
       mobile: g(currentPatient, 'mobileNumber'),
       email: g(currentPatient, 'emailAddress'),
-      type: isDiag ? 'Diag' : 'Pharmacy',
+      type: isFromConsult ? 'Consult' : 'Pharmacy',
     };
     fetchConsultCoupons(data)
       .then((res: any) => {
@@ -248,7 +252,8 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
       .then((resp: any) => {
         if (resp?.data?.errorCode == 0) {
           if (resp?.data?.response?.valid) {
-            setCoupon!({ ...g(resp?.data, 'response')!, message: couponMsg });
+            const successMessage = resp?.data?.response?.successMessage || '';
+            setCoupon!({ ...g(resp?.data, 'response')!, successMessage: successMessage });
             setIsFreeDelivery?.(!!resp?.data?.response?.freeDelivery);
             props.navigation.goBack();
           } else {
@@ -305,6 +310,21 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     }
   };
 
+  const applyConsultCoupon = (coupon: string, applyingFromList?: boolean) => {
+    setLoading?.(true);
+    onApplyCoupon(coupon)
+      .then(() => {
+        props.navigation.goBack();
+      })
+      .catch((reason: string) => {
+        setLoading?.(false);
+        !applyingFromList && setCouponError(reason);
+        applyingFromList && setCouponListError(reason);
+        saveDisableCoupons(coupon);
+      })
+      .finally(() => setLoading?.(false));
+  };
+
   const renderInputWithValidation = () => {
     const rightIconView = () => {
       return (
@@ -313,7 +333,13 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
             <TouchableOpacity
               activeOpacity={1}
               disabled={!isEnableApplyBtn}
-              onPress={() => applyCoupon(couponText, cartItems)}
+              onPress={() => {
+                if (isFromConsult) {
+                  applyConsultCoupon(couponText, false);
+                } else {
+                  applyCoupon(couponText, cartItems);
+                }
+              }}
             >
               <SearchSendIcon />
             </TouchableOpacity>
@@ -330,12 +356,12 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
             if (/^\S*$/.test(text)) {
               couponError && setCouponError('');
               setCouponText(text);
-              setcouponMsg('');
             }
           }}
           textInputprops={{
             ...(couponError ? { selectionColor: '#e50000' } : {}),
             maxLength: 20,
+            autoCapitalize: 'characters',
           }}
           inputStyle={[
             styles.couponInputStyle,
@@ -352,7 +378,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
 
   const renderCouponError = (error: string) => {
     return !!error ? (
-      <Text style={styles.inputValidationStyle}>{couponError || 'Invalid Coupon Code'}</Text>
+      <Text style={styles.inputValidationStyle}>{error || 'Invalid Coupon Code'}</Text>
     ) : null;
   };
 
@@ -419,7 +445,11 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
 
   const couponApply = (couponText: string, index: number) => {
     CommonLogEvent(AppRoutes.ViewCoupons, 'Apply Coupon');
-    applyCoupon(couponText, cartItems, true);
+    if (isFromConsult) {
+      applyConsultCoupon(couponText, true);
+    } else {
+      applyCoupon(couponText, cartItems, true);
+    }
   };
 
   const renderCouponList = () => (

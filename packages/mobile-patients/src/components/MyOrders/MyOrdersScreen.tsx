@@ -16,7 +16,8 @@ import { YourOrdersTest } from '@aph/mobile-patients/src/components/Tests/PostOr
 interface MyOrdersScreenProps extends NavigationScreenProps<{}> {}
 const MyOrdersScreen: FC<MyOrdersScreenProps> = (props) => {
   const tabs = [{ title: 'Pharmacy Orders' }, { title: 'Diagnostic Orders' }];
-  const [selectedTab, setSelectedTab] = useState<string>(tabs[0].title);
+  const [selectedTabFromParams,setSelectedTabFromParams] = useState<number>(props?.navigation?.getParam("tabSelected") | 0)
+  const [selectedTab, setSelectedTab] = useState<string>(tabs[selectedTabFromParams].title);
 
   const renderHeader = () => {
     return (

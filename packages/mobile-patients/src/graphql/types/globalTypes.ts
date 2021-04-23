@@ -47,6 +47,7 @@ export enum AppointmentType {
 }
 
 export enum BOOKINGSOURCE {
+  BOOKING_TOOL = "BOOKING_TOOL",
   MOBILE = "MOBILE",
   WEB = "WEB",
 }
@@ -158,7 +159,6 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   PAYMENT_SUCCESSFUL = "PAYMENT_SUCCESSFUL",
   PHLEBO_CHECK_IN = "PHLEBO_CHECK_IN",
   PHLEBO_COMPLETED = "PHLEBO_COMPLETED",
-  PHLEBO_ON_THE_WAY = "PHLEBO_ON_THE_WAY",
   PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
   REPORT_GENERATED = "REPORT_GENERATED",
@@ -238,6 +238,7 @@ export enum HealthRestrictionNature {
 
 export enum LOGIN_TYPE {
   DOCTOR = "DOCTOR",
+  EMAIL = "EMAIL",
   PATIENT = "PATIENT",
 }
 
@@ -1039,36 +1040,6 @@ export interface DiagnosticLineItem {
   groupPlan?: string | null;
 }
 
-export interface DiagnosticOrderInput {
-  patientId: string;
-  patientAddressId: string;
-  city: string;
-  cityId: string;
-  state: string;
-  stateId: string;
-  slotTimings: string;
-  employeeSlotId?: any | null;
-  diagnosticEmployeeCode: string;
-  diagnosticBranchCode: string;
-  totalPrice: number;
-  prescriptionUrl: string;
-  diagnosticDate: any;
-  centerName: string;
-  centerCode: string;
-  centerCity: string;
-  centerState: string;
-  centerLocality: string;
-  bookingSource?: BOOKINGSOURCE | null;
-  deviceType?: DEVICETYPE | null;
-  paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
-  items?: (DiagnosticLineItem | null)[] | null;
-  slotId?: string | null;
-  areaId?: number | null;
-  totalPriceExcludingDiscounts?: number | null;
-  userSubscriptionId?: string | null;
-  subscriptionInclusionId?: string | null;
-}
-
 export interface DiagnosticTestsOrdered {
   itemId?: number | null;
   itemName?: string | null;
@@ -1622,6 +1593,7 @@ export interface SaveBookHomeCollectionOrderInput {
   areaId: number;
   collectionCharges: number;
   uniqueID?: string | null;
+  couponCode?: string | null;
   slotDateTimeInUTC: any;
   totalPriceExcludingDiscounts?: number | null;
   userSubscriptionId?: string | null;
@@ -1759,6 +1731,7 @@ export interface UpdatePatientInput {
   relation?: Relation | null;
   photoUrl?: string | null;
   deviceCode?: string | null;
+  externalAuthId?: string | null;
   employeeId?: string | null;
   partnerId?: string | null;
   appsflyerId?: string | null;

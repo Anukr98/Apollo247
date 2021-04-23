@@ -297,7 +297,7 @@ export const renderCircleShimmer = () => {
         <View style={styles.subPlanOne}>
           <Image
             style={styles.circleLogo}
-            source={require('@aph/mobile-patients/src/components/ui/icons/circleLogo.png')}
+            source={require('@aph/mobile-patients/src/components/ui/icons/circleLogo.webp')}
           />
         </View>
 
@@ -482,7 +482,7 @@ export const renderHealthRecordShimmer = () => {
       <ShimmerPlaceHolder
         shimmerColors={[theme.colors.LIGHT_GRAY, theme.colors.TEXT_LIGHT_BLUE]}
         LinearGradient={LinearGradient}
-        shimmerStyle={[styles.healthRecordLine, { width: 120 }]}
+        shimmerStyle={[styles.healthRecordLine, { width: '80%' }]}
       />
     </View>
   );

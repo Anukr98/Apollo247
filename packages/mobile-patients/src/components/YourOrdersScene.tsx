@@ -42,6 +42,7 @@ import {
   View,
   TouchableOpacity,
   Text,
+  BackHandler,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -75,7 +76,13 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
 
   useEffect(() => {
     fetchOrders();
+    BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
+    };
   }, []);
+
+  const onPressHardwareBack = () => props.navigation.goBack();
 
   const fetchOrders = async () => {
     try {
