@@ -1647,9 +1647,9 @@ export interface SaveSearchInput {
 }
 
 export interface SavePhleboFeedback{
-  phleboRating: number | null;
+  phleboRating?: number;
   phleboFeedback: string | null;
-  diagnosticOrdersId: string;
+  diagnosticOrdersId?: string;
 }
 
 export interface ShopAddress {

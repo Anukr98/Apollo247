@@ -1104,7 +1104,7 @@ export const saveConsultationLocation = async (
     CommonBugFender('saveLocationWithConsultation', error);
   }
 };
-export const setPhleboFeedback = (
+export const savePhleboFeedback = (
   client: ApolloClient<object>,
   rating: number,
   feedback: string,
@@ -1118,7 +1118,9 @@ export const setPhleboFeedback = (
   return client.mutate<savePhleboFeedback_savePhleboFeedback, savePhleboFeedbackVariables>({
     mutation: SAVE_PHLEBO_FEEDBACK,
     variables: {
-      savePhleboFeedback: inputVariables,
+      phleboRating: rating,
+      phleboFeedback: feedback,
+      diagnosticOrdersId: orderId,
     },
     fetchPolicy: 'no-cache',
   });

@@ -1,42 +1,21 @@
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { getReviewTag, sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { getReviewTag } from '@aph/mobile-patients/src/utils/commonUtils';
 import {
-  GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
-  GET_INTERNAL_ORDER,
-  GET_PATIENT_ADDRESS_BY_ID,
-  RESCHEDULE_DIAGNOSTIC_ORDER,
-  GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
-  GET_PHLOBE_DETAILS,
-} from '@aph/mobile-patients/src/graphql/profiles';
-import { getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
-import {
-  getDiagnosticOrdersListByMobile,
-  getDiagnosticOrdersListByMobileVariables,
   getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList,
-  getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
-import { CANCEL_DIAGNOSTIC_ORDER } from '@aph/mobile-patients/src/graphql/profiles';
-import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import moment from 'moment';
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
   View,
   TouchableOpacity,
-  FlatList,
   ScrollView,
-  BackHandler,
   Text,
-  Modal,
   TextInput,
 } from 'react-native';
 import {
@@ -50,71 +29,12 @@ import {
   Emoticon5,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NavigationScreenProps } from 'react-navigation';
-import {
-  CancellationDiagnosticsInput,
-  DIAGNOSTIC_ORDER_PAYMENT_TYPE,
-  DIAGNOSTIC_ORDER_STATUS,
-  MedicalRecordType,
-  RescheduleDiagnosticsInput,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useApolloClient } from 'react-apollo-hooks';
-import {
-  g,
-  handleGraphQlError,
-  nameFormater,
-  TestSlot,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { DisabledTickIcon, TickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
-import {
-  AppConfig,
-  BLACK_LIST_CANCEL_STATUS_ARRAY,
-  BLACK_LIST_RESCHEDULE_STATUS_ARRAY,
-  DIAGNOSTIC_ORDER_FAILED_STATUS,
-  TestCancelReasons,
-  TestReschedulingReasons,
-} from '@aph/mobile-patients/src/strings/AppConfig';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import _ from 'lodash';
-import {
-  cancelDiagnosticsOrder,
-  cancelDiagnosticsOrderVariables,
-} from '@aph/mobile-patients/src/graphql/types/cancelDiagnosticsOrder';
-import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlay';
-import {
-  rescheduleDiagnosticsOrder,
-  rescheduleDiagnosticsOrderVariables,
-} from '@aph/mobile-patients/src/graphql/types/rescheduleDiagnosticsOrder';
-import {
-  getPatientAddressById,
-  getPatientAddressByIdVariables,
-} from '@aph/mobile-patients/src/graphql/types/getPatientAddressById';
-import {
-  getOrderInternal,
-  getOrderInternalVariables,
-} from '@aph/mobile-patients/src/graphql/types/getOrderInternal';
-import {
-  DiagnosticRescheduleOrder,
-  DiagnosticViewReportClicked,
-} from '@aph/mobile-patients/src/components/Tests/Events';
-import {
-  getDiagnosticSlotsCustomized,
-  getDiagnosticSlotsCustomizedVariables,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsCustomized';
-import { OrderTestCard } from '@aph/mobile-patients/src/components/Tests/components/OrderTestCard';
-import { setPhleboFeedback } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { Overlay } from 'react-native-elements';
-import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { savePhleboFeedback } from '@aph/mobile-patients/src/helpers/clientCalls';
 
-import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
-import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList as orderListByMobile } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
-import {
-  getOrderPhleboDetailsBulk,
-  getOrderPhleboDetailsBulkVariables,
-} from '@aph/mobile-patients/src/graphql/types/getOrderPhleboDetailsBulk';
-import ApolloClient from 'apollo-client';
 
 export interface DiagnosticsOrderList
   extends getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList {
@@ -196,7 +116,7 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
   const onSubmitFeedback = async (rating: number,feedback: string,id: string) => {
       try {
         setLoading!(true);
-        const response = await setPhleboFeedback(client,rating,feedback,id);
+        const response = await savePhleboFeedback(client,rating,feedback,id);
        console.log('response :>> ', response);
        
       } catch (error) {

@@ -4777,8 +4777,8 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
   }
 `;
 export const SAVE_PHLEBO_FEEDBACK = gql`
-  mutation savePhleboFeedback($savePhleboFeedback: SavePhleboFeedback!) {
-    savePhleboFeedback(savePhleboFeedback: $SavePhleboFeedback) {
+  mutation savePhleboFeedback($phleboRating: Int!, $phleboFeedback: String, $diagnosticOrdersId: String!) {
+    savePhleboFeedback(phleboRating: $phleboRating, phleboFeedback: $phleboFeedback, diagnosticOrdersId: $diagnosticOrdersId) {
         status
     }
   }

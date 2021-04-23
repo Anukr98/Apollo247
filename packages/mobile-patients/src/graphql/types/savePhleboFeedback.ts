@@ -20,5 +20,7 @@ export interface savePhleboFeedback {
 }
 
 export interface savePhleboFeedbackVariables {
-    savePhleboFeedback: SavePhleboFeedback
+    phleboRating: number,
+    phleboFeedback: string,
+    diagnosticOrdersId: string,
 }
