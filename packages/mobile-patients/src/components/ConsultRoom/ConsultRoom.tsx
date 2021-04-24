@@ -856,7 +856,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   //for prohealth option
   useEffect(() => {
-    if (currentPatient?.id) {
+    //for new users, patient uhid was coming as blank
+    if (currentPatient?.id && currentPatient?.uhid) {
       checkIsProhealthActive(currentPatient); //to show prohealth option
       getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
     }
@@ -1820,12 +1821,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
   const fetchHealthCredits = async () => {
-
     var cachedHealthCredit: any = await getHealthCredits();
     if (cachedHealthCredit != null) {
       setHealthCredits && setHealthCredits(cachedHealthCredit.healthCredit);
       return; // no need to call api
-    } 
+    }
 
     try {
       const res = await client.query({
