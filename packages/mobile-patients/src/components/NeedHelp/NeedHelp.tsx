@@ -400,13 +400,13 @@ export const NeedHelp: React.FC<Props> = (props) => {
   };
 
   const renderOrderStatusCard = (ticket: any) => {
+    console.log('check Needhelp renderOrderStatusCard ongoingQuery --- ',ongoingQuery);
     return (
       <TouchableOpacity
         onPress={() => {
           setShowPreviousTickets(false);
           props.navigation.navigate(AppRoutes.HelpChatScreen, {
             ticket: ticket,
-            query: ongoingQuery,
           });
         }}
         style={styles.orderStatusCard}

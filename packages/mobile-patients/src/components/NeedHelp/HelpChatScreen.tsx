@@ -198,7 +198,6 @@ export interface HelpChatProps extends NavigationScreenProps {}
 
 export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
   let ticket = props.navigation.getParam('ticket');
-  let query = props.navigation.getParam('query');
   const flatListRef = useRef<FlatList<any> | undefined | null>();
   const [loading, setLoading] = useState<boolean>(false);
   const [messageText, setMessageText] = useState<string>('');
@@ -376,9 +375,8 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
 
   const onPressWhatsApp = async () => {
     try {
-      const order = query.orderType === ORDER_TYPE.CONSULT ? 'Appointment' : 'Order';
-      const chatPreFilledMessage = `I want to know the status of my Help_Ticket regarding ${order} ID - ${query.orderId}`;
-      const phoneNumber = query.orderType === ORDER_TYPE.CONSULT ? '8047104009' : '4041894343';
+      const chatPreFilledMessage = `I want to know the status of my Help_Ticket regarding ticket Number ${ticket.ticketNumber}`;
+      const phoneNumber = '4041894343';
       const whatsAppScheme = `whatsapp://send?text=${chatPreFilledMessage}&phone=91${phoneNumber}`;
       const canOpenURL = await Linking.canOpenURL(whatsAppScheme);
       canOpenURL && Linking.openURL(whatsAppScheme);
