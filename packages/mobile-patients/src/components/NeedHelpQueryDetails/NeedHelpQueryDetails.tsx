@@ -63,7 +63,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState(navigation.getParam('email') || '');
   const orderId = navigation.getParam('orderId') || '';
   const isOrderRelatedIssue = navigation.getParam('isOrderRelatedIssue') || false;
-  const [showEmailPopup, setShowEmailPopup] = useState<boolean>(true);
+  const [showEmailPopup, setShowEmailPopup] = useState<boolean>(email ? false : true);
   const [requestEmailWithoutAction, setRequestEmailWithoutAction] = useState<boolean>(true);
   const medicineOrderStatus = navigation.getParam('medicineOrderStatus');
   const { saveNeedHelpQuery, getQueryData, getQueryDataByOrderStatus } = Helpers;
