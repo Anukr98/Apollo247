@@ -400,7 +400,7 @@ export const NeedHelp: React.FC<Props> = (props) => {
   };
 
   const renderOrderStatusCard = (ticket: any) => {
-    console.log('check Needhelp renderOrderStatusCard ongoingQuery --- ',ongoingQuery);
+
     return (
       <TouchableOpacity
         onPress={() => {
