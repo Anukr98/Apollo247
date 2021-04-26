@@ -71,6 +71,7 @@ import {
   SplashSyringe,
   SplashStethoscope,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 (function() {
   /**
@@ -620,6 +621,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setNonCartTatText,
     setNonCartDeliveryText,
   } = useAppCommonData();
+  const { setMinimumCartValue, setMinCartValueForCOD, setMaxCartValueForCOD } = useShoppingCart();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
       try {
@@ -779,6 +781,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Non_Cart_Delivery_Text',
       PROD: 'Non_Cart_Delivery_Text',
     },
+    Mininum_Cart_Values: {
+      QA: 'QA_Mininum_Cart_Values',
+      PROD: 'Mininum_Cart_Values',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -874,6 +880,17 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         config.getString(key)
       );
       nonCartDeliveryText && setNonCartDeliveryText?.(nonCartDeliveryText);
+
+      const minMaxCartValues = getRemoteConfigValue(
+        'Mininum_Cart_Values',
+        (key) => JSON.parse(config.getString(key)) || {}
+      );
+
+      minMaxCartValues?.minCartValue && setMinimumCartValue?.(minMaxCartValues?.minCartValue);
+      minMaxCartValues?.minCartValueCOD &&
+        setMinCartValueForCOD?.(minMaxCartValues?.minCartValueCOD);
+      minMaxCartValues?.maxCartValueCOD &&
+        setMaxCartValueForCOD?.(minMaxCartValues?.maxCartValueCOD);
 
       setAppConfig(
         'Min_Value_For_Pharmacy_Free_Delivery',
