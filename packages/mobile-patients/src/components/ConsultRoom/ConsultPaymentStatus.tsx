@@ -288,16 +288,16 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             if (camera === 'authorized' && microphone === 'authorized') {
               !locationDetails && askLocationPermission();
             } else {
-              overlyCallPermissions(
-                currentPatient.firstName,
-                doctorName,
-                showAphAlert,
-                hideAphAlert,
-                true,
-                () => {
-                  !locationDetails && askLocationPermission();
-                }
-              );
+              // overlyCallPermissions(
+              //   currentPatient.firstName,
+              //   doctorName,
+              //   showAphAlert,
+              //   hideAphAlert,
+              //   true,
+              //   () => {
+              //     !locationDetails && askLocationPermission();
+              //   }
+              // );
             }
           });
         } else {

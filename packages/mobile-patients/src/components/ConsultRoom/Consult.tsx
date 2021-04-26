@@ -761,13 +761,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           callPermissions();
         } else {
           callPermissions(() => {
-            overlyCallPermissions(
-              currentPatient!.firstName!,
-              activeAppointments[0]?.doctorInfo?.displayName || '',
-              showAphAlert,
-              hideAphAlert,
-              true
-            );
+            // overlyCallPermissions(
+            //   currentPatient!.firstName!,
+            //   activeAppointments[0]?.doctorInfo?.displayName || '',
+            //   showAphAlert,
+            //   hideAphAlert,
+            //   true
+            // );
           });
         }
       }
