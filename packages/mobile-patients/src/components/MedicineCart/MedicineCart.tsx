@@ -1158,6 +1158,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         }}
         screen={'MedicineCart'}
         onPressReviewOrder={onPressReviewOrder}
+        onPressAddMoreMedicines={() => {
+          props.navigation.navigate('MEDICINES');
+        }}
       />
     );
   };
