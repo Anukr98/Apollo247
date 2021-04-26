@@ -621,7 +621,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setNonCartTatText,
     setNonCartDeliveryText,
   } = useAppCommonData();
-  const { setMinimumCartValue, setMinCartValueForCOD, setMaxCartValueForCOD } = useShoppingCart();
+  const {
+    setMinimumCartValue,
+    setMinCartValueForCOD,
+    setMaxCartValueForCOD,
+    setNonCodSKus,
+  } = useShoppingCart();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
       try {
@@ -785,6 +790,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Mininum_Cart_Values',
       PROD: 'Mininum_Cart_Values',
     },
+    Sku_Non_COD: {
+      QA: 'QA_Sku_Non_COD',
+      PROD: 'Sku_Non_COD',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -891,6 +900,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         setMinCartValueForCOD?.(minMaxCartValues?.minCartValueCOD);
       minMaxCartValues?.maxCartValueCOD &&
         setMaxCartValueForCOD?.(minMaxCartValues?.maxCartValueCOD);
+
+      const nonCodSkuList = getRemoteConfigValue(
+        'Sku_Non_COD',
+        (key) => JSON.parse(config.getString(key)) || []
+      );
+      nonCodSkuList?.length && setNonCodSKus?.(nonCodSkuList);
 
       setAppConfig(
         'Min_Value_For_Pharmacy_Free_Delivery',
