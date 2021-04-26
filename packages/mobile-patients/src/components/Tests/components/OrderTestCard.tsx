@@ -276,8 +276,11 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     let otpToShow = !!phlObj && phlObj?.PhelboOTP;
     let phoneNumber = !!phlObj && phlObj?.diagnosticPhlebotomists?.mobile;
     let name = !!phlObj && phlObj?.diagnosticPhlebotomists?.name;
-    let phleboEta = !!phlObj?.phleboEta?.estimatedArrivalTime;
-    let phleboTrackLink = 'https://www.google.com'; //!!phlObj?.phleboEta?.estimatedArrivalTime;
+    let checkEta = !!phlObj?.phleboEta?.estimatedArrivalTime
+    let phleboEta = ''
+    if (checkEta) {
+      phleboEta =  moment(phlObj?.phleboEta?.estimatedArrivalTime).format('YYYY-MM-DDTHH:mm:ss');
+    }
     return (
       <>
         {!!otpToShow && SHOW_OTP_ARRAY.includes(props.orderLevelStatus) ? (
@@ -310,23 +313,14 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
               ) : null}
             </View>
 
-            {phleboEta ? (
+            {checkEta ? (
               <View style={styles.otpContainer}>
                 <View style={styles.etaContainer}>
                   <LocationOutline style={styles.locationIcon} />
                   <Text style={styles.otpTextStyle}>
-                    Phlebo will arrive in{` ${phleboEta} `}minutes
+                    Phlebo will arrive in{` ${moment(phleboEta).utc().fromNow()} `}
                   </Text>
                 </View>
-                {phleboTrackLink ? (
-                  <TouchableOpacity
-                    onPress={() => {
-                      Linking.openURL(phleboTrackLink);
-                    }}
-                  >
-                    <Text style={styles.trackStyle}>{nameFormater('track Phlebo', 'upper')}</Text>
-                  </TouchableOpacity>
-                ) : null}
               </View>
             ) : null}
           </>

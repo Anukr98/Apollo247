@@ -17,6 +17,7 @@ import {
   ScrollView,
   Text,
   TextInput,
+  Alert
 } from 'react-native';
 import {
   UserOutline,
@@ -49,7 +50,8 @@ export interface TestRatingScreenProps extends NavigationScreenProps {
 export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [ratingStar, setRatingStar] = useState(props.navigation.getParam('ratingStar'));
-  const [orderDetail, setOrderDetail] = useState(props.navigation.getParam('orderDetails'))
+  const [orderDetail, setOrderDetail] = useState(props.navigation.getParam('orderDetails'));
+  const phlObj = orderDetail?.phleboDetailsObj;
   const starCount = [1, 2, 3, 4, 5];
   const [ratedStarsArray, setRatedStarsArray] = useState(starCount.slice(0, ratingStar));
   const [unRatedStarsArray, setUnRatedStarsArray] = useState(starCount.slice(ratingStar, 5));
@@ -114,16 +116,23 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
     return result
   }
   const onSubmitFeedback = async (rating: number,feedback: string,id: string) => {
+    setLoading!(true);
       try {
-        setLoading!(true);
         const response = await savePhleboFeedback(client,rating,feedback,id);
-       console.log('response :>> ', response);
-       
+        setLoading!(false);
+       Alert.alert(
+        'FEEDBACK SENT',
+        'Your feedback and review sent successfully.'
+      );
+       props.navigation.goBack()
       } catch (error) {
-        console.log('error :>> ', error.networkError.result.errors);
+        setLoading!(false);
+        Alert.alert(
+         'Something went wrong',
+         'Unable to send the feedback. Please try again.'
+       );
       }
   }
-  // console.log('object :>> ', orderDetail);
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -137,10 +146,10 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
         )}
 
         <ScrollView bounces={false} scrollEventThrottle={1}>
-          <View style={styles.phleboDetails}>
+          {phlObj?.diagnosticPhlebotomists?.name ? <View style={styles.phleboDetails}>
             <UserOutline style={styles.icon} />
-            <Text style={styles.textStylePhlebo}>Phlebotomist • Ramkumar sharma</Text>
-          </View>
+            <Text style={styles.textStylePhlebo}>Phlebotomist • {`${phlObj?.diagnosticPhlebotomists?.name}`}</Text>
+          </View> : <View style={styles.phleboDetails}></View>}
           <Text style={styles.textStyleHeading}>{string.orders.ratingDetailHeader}</Text>
           <View style={styles.startContainer}>
             {ratedStarsArray.map((item, index) => (
