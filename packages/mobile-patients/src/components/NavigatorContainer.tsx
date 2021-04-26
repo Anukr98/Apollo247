@@ -131,7 +131,7 @@ import { OtherBanks } from '@aph/mobile-patients/src/components/PaymentGateway/O
 import { OrderStatus } from '@aph/mobile-patients/src/components/Tests/OrderStatus';
 import { ProHealthWebView } from '@aph/mobile-patients/src/components/ProHealthWebView';
 import MyOrdersScreen from '@aph/mobile-patients/src/components/MyOrders/MyOrdersScreen';
-import { TestRatingScreen } from './Tests/PostOrderJourney/TestRatingScreen';
+import { TestRatingScreen } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/TestRatingScreen';
 
 export enum AppRoutes {
   Login = 'Login',

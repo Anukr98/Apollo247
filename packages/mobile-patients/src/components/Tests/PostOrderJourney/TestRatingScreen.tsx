@@ -120,17 +120,17 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
       try {
         const response = await savePhleboFeedback(client,rating,feedback,id);
         setLoading!(false);
-       Alert.alert(
-        'FEEDBACK SENT',
-        'Your feedback and review sent successfully.'
-      );
+        showAphAlert!({
+          title: 'Feedback Sent!',
+          description: 'Your feedback and review sent successfully.',
+        });
        props.navigation.goBack()
       } catch (error) {
         setLoading!(false);
-        Alert.alert(
-         'Something went wrong',
-         'Unable to send the feedback. Please try again.'
-       );
+        showAphAlert!({
+          title: 'Something went wrong',
+          description: 'Unable to send the feedback. Please try again.',
+        });
       }
   }
   return (
@@ -197,9 +197,7 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
           <Button 
             title={'SUBMIT FEEDBACK'}
             onPress={()=>{
-              console.log(`object`, activeReason,ratingStar,orderDetail?.id)
               onSubmitFeedback(ratingStar,activeReason,orderDetail?.id)
-              // props.navigation.navigate(AppRoutes.YourOrdersScene);
             }}
             disabled={checkDisability()}
           />
