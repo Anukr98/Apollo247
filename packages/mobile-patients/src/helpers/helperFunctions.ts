@@ -1775,12 +1775,6 @@ export const UnInstallAppsFlyer = (newFirebaseToken: string) => {
   appsFlyer.updateServerUninstallToken(newFirebaseToken, (success) => {});
 };
 
-export const APPStateInActive = () => {
-  if (Platform.OS === 'ios') {
-    appsFlyer.trackAppLaunch();
-  }
-};
-
 export const APPStateActive = () => {
   if (onInstallConversionDataCanceller) {
     onInstallConversionDataCanceller();
@@ -1795,7 +1789,7 @@ export const APPStateActive = () => {
 export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Object) => {
   try {
     const logContent = `[AppsFlyer Event] ${eventName}`;
-    appsFlyer.trackEvent(
+    appsFlyer.logEvent(
       eventName,
       attributes,
       (res) => {},

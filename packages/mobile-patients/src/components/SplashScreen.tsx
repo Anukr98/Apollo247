@@ -33,7 +33,6 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import {
   doRequestAndAccessLocation,
   InitiateAppsFlyer,
-  APPStateInActive,
   APPStateActive,
   postWebEngageEvent,
   callPermissions,
@@ -646,9 +645,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             });
         }
       } catch {}
-    }
-    if (appState.match(/inactive|background/) && nextAppState === 'active') {
-      APPStateInActive();
     }
     if (appState.match(/active|foreground/) && nextAppState === 'background') {
       APPStateActive();
