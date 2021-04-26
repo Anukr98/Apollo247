@@ -2204,56 +2204,37 @@ export const overlyCallPermissions = (
         const microphoneYes = microphone === 'authorized';
         // Response is one of: 'authorized', 'denied', 'restricted', or 'undetermined'
         if (cameraNo && microphoneNo) {
-          RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
-            if (status) {
-              showPermissionPopUp(
-                string.callRelatedPermissions.allPermissions.replace('{0}', doctorName),
-                () => callPermissions(() => RNAppSignatureHelper.requestOverlayPermission())
-              );
-            } else {
-              showPermissionPopUp(
-                string.callRelatedPermissions.camAndMPPermission.replace('{0}', doctorName),
-                () => callPermissions()
-              );
-            }
-          });
+
+               // ----------- dont delete this commented  overlay permission block incase we decide to use again
+          // RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
+          //   if (status) {
+          //     showPermissionPopUp(
+          //       string.callRelatedPermissions.allPermissions.replace('{0}', doctorName),
+          //       () => callPermissions(() => RNAppSignatureHelper.requestOverlayPermission())
+          //     );
+          //   } 
+          // });
+
+
+          showPermissionPopUp(
+            string.callRelatedPermissions.camAndMPPermission.replace('{0}', doctorName),
+            () => callPermissions()
+          );
+
         } else if (cameraYes && microphoneNo) {
-          RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
-            if (status) {
-              showPermissionPopUp(
-                string.callRelatedPermissions.mpAndOverlayPermission.replace('{0}', doctorName),
-                () => callPermissions(() => RNAppSignatureHelper.requestOverlayPermission())
-              );
-            } else {
-              showPermissionPopUp(
-                string.callRelatedPermissions.onlyMPPermission.replace('{0}', doctorName),
-                () => callPermissions()
-              );
-            }
-          });
+
+          showPermissionPopUp(
+            string.callRelatedPermissions.onlyMPPermission.replace('{0}', doctorName),
+            () => callPermissions()
+          );
+
         } else if (cameraNo && microphoneYes) {
-          RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
-            if (status) {
-              showPermissionPopUp(
-                string.callRelatedPermissions.camAndOverlayPermission.replace('{0}', doctorName),
-                () => callPermissions(() => RNAppSignatureHelper.requestOverlayPermission())
-              );
-            } else {
-              showPermissionPopUp(
-                string.callRelatedPermissions.onlyCameraPermission.replace('{0}', doctorName),
-                () => callPermissions()
-              );
-            }
-          });
-        } else if (cameraYes && microphoneYes) {
-          RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
-            if (status) {
-              showPermissionPopUp(
-                string.callRelatedPermissions.onlyOverlayPermission.replace('{0}', doctorName),
-                () => RNAppSignatureHelper.requestOverlayPermission()
-              );
-            }
-          });
+
+          showPermissionPopUp(
+            string.callRelatedPermissions.onlyCameraPermission.replace('{0}', doctorName),
+            () => callPermissions()
+          );
+
         }
       })
       .catch((e) => {});
