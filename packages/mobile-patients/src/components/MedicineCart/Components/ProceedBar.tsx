@@ -48,7 +48,9 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
     ({ unavailableOnline, unserviceable }) => unavailableOnline || unserviceable
   );
   const isValidCartValue =
-    !!minimumCartValue && screen === 'MedicineCart' ? grandTotal >= minimumCartValue : true;
+    !!minimumCartValue && screen === 'MedicineCart' && deliveryAddressId && addresses?.length
+      ? grandTotal >= minimumCartValue
+      : true;
 
   function getTitle() {
     return !deliveryAddressId
