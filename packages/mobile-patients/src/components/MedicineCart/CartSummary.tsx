@@ -144,11 +144,10 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   const shoppingCart = useShoppingCart();
   const pharmacyPincode =
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
-  const OrderInfo = useGetOrderInfo();
+  const { OrderInfo, SubscriptionInfo } = useGetOrderInfo();
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const storeCode =
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
-  console.log('OrderInfo >>>', OrderInfo);
 
   useEffect(() => {
     hasUnserviceableproduct();
@@ -191,30 +190,16 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     ? getFormattedAmount(grandTotal - circleMembershipCharges)
     : getFormattedAmount(grandTotal);
 
-  const saveOrder = (orderInfo: saveMedicineOrderV2Variables) =>
+  const saveOrder = () =>
     client.mutate<saveMedicineOrderV2, saveMedicineOrderV2Variables>({
       mutation: SAVE_MEDICINE_ORDER_OMS_V2,
-      variables: orderInfo,
+      variables: OrderInfo,
     });
 
-  const saveOrderWithSubscription = (orderInfo: saveMedicineOrderV2Variables) => {
+  const saveOrderWithSubscription = () => {
     const orderSubscriptionInput = {
-      orderInfo,
-      userSubscription: {
-        mobile_number: currentPatient?.mobileNumber,
-        plan_id: planId,
-        sub_plan_id: circlePlanSelected?.subPlanId,
-        storeCode,
-        FirstName: currentPatient?.firstName,
-        LastName: currentPatient?.lastName,
-        payment_reference: {
-          amount_paid: Number(circlePlanSelected?.currentSellingPrice),
-          payment_status: PaymentStatus.PENDING,
-          purchase_via_HC: false,
-          HC_used: 0,
-        },
-        transaction_date_time: new Date().toISOString(),
-      },
+      ...OrderInfo,
+      ...SubscriptionInfo,
     };
     console.log('orderSubscriptionInput >>>', JSON.stringify(orderSubscriptionInput));
     return client.mutate({
@@ -224,10 +209,11 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     });
   };
 
-  const createOrderInternal = (orderId: string, subscriptionId?: string) => {
-    const orders: OrderVerticals = {
-      pharma: [{ order_id: orderId, amount: estimatedAmount, patient_id: currentPatient?.id }],
-    };
+  const createOrderInternal = (shipments: any, subscriptionId?: string) => {
+    const pharmaOrders = shipments.map((item: any) => {
+      return { order_id: item?.id, amount: estimatedAmount, patient_id: currentPatient?.id };
+    });
+    const orders: OrderVerticals = { pharma: pharmaOrders };
     if (subscriptionId) {
       orders['subscription'] = [
         {
@@ -516,12 +502,12 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   const initiateOrder = async () => {
     const response =
       !circleSubscriptionId && circlePlanSelected
-        ? await saveOrderWithSubscription(OrderInfo)
-        : await saveOrder(OrderInfo);
+        ? await saveOrderWithSubscription()
+        : await saveOrder();
     console.log('response >>>', JSON.stringify(response));
-    const { orders, transactionId, errorCode, errorMessage } =
-      response?.data?.saveMedicineOrderV2 || {};
-
+    const { orders, transactionId, errorCode } = response?.data?.saveMedicineOrderV2 || {};
+    const subscriptionId = response?.data?.CreateUserSubscription?.response?._id;
+    const data = await createOrderInternal(orders, subscriptionId);
     setloading(true);
   };
 

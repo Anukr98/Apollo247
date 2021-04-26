@@ -5,6 +5,8 @@ import {
   DEVICE_TYPE,
   PLAN_PURCHASE_DETAILS_PHARMA,
   PLAN,
+  PaymentStatus,
+  one_apollo_store_code,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
@@ -15,6 +17,7 @@ import {
   saveMedicineOrderV2Variables,
   saveMedicineOrderV2_saveMedicineOrderV2_orders,
 } from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderV2';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export const useGetOrderInfo = () => {
   const { currentPatient } = useAllCurrentPatients();
@@ -96,5 +99,27 @@ export const useGetOrderInfo = () => {
     },
   };
 
-  return OrderInfo;
+  const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
+  const storeCode =
+    Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
+
+  const SubscriptionInfo = {
+    userSubscription: {
+      mobile_number: currentPatient?.mobileNumber,
+      plan_id: planId,
+      sub_plan_id: circlePlanSelected?.subPlanId,
+      storeCode,
+      FirstName: currentPatient?.firstName,
+      LastName: currentPatient?.lastName,
+      payment_reference: {
+        amount_paid: Number(circlePlanSelected?.currentSellingPrice),
+        payment_status: PaymentStatus.PENDING,
+        purchase_via_HC: false,
+        HC_used: 0,
+      },
+      transaction_date_time: new Date().toISOString(),
+    },
+  };
+
+  return { OrderInfo, SubscriptionInfo };
 };
