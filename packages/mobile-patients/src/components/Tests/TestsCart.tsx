@@ -12,6 +12,7 @@ import {
   getAge,
   isAddressLatLngInValid,
   setAsyncPharmaLocation,
+  isSmallDevice,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
@@ -31,7 +32,9 @@ import {
   CheckedIcon,
   CircleLogo,
   CouponIcon,
+  Down,
   InfoIconRed,
+  Up,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -164,6 +167,11 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/editProfile';
 import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import AsyncStorage from '@react-native-community/async-storage';
+import {
+  getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList,
+  getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
+import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 const { width: screenWidth } = Dimensions.get('window');
 
 export interface areaObject {
@@ -182,6 +190,7 @@ export interface orderDetails {
 
 export interface TestsCartProps extends NavigationScreenProps {
   comingFrom?: string;
+  orderDetails?: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList;
 }
 
 export const TestsCart: React.FC<TestsCartProps> = (props) => {
@@ -235,11 +244,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   } = useShoppingCart();
 
   const sourceScreen = props.navigation.getParam('comingFrom');
+  const existingOrderDetails = props.navigation.getParam('orderDetails');
+  console.log({ existingOrderDetails });
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
   const { currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const [todaySlotNotAvailable, setTodaySlotNotAvailable] = useState<boolean>(false);
-  const currentPatientId = currentPatient && currentPatient?.id;
+  const currentPatientId = !!existingOrderDetails
+    ? existingOrderDetails?.patientId
+    : currentPatient && currentPatient?.id;
   const client = useApolloClient();
   const {
     locationDetails,
@@ -265,14 +278,17 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [duplicateNameArray, setDuplicateNameArray] = useState([] as any);
   const [showAreaSelection, setShowAreaSelection] = useState<boolean>(false);
   const [showPatientListOverlay, setShowPatientListOverlay] = useState<boolean>(
-    showSelectPatient ? false : true
+    !!existingOrderDetails ? false : showSelectPatient ? false : true
   );
   const [showPatientDetailsOverlay, setShowPatientDetailsOverlay] = useState<boolean>(false);
-  const [selectedPatient, setSelectedPatient] = useState<any>(null);
+  const [selectedPatient, setSelectedPatient] = useState<any>(
+    !!existingOrderDetails ? existingOrderDetails?.patientObj : null
+  );
   const [showSelectAreaOverlay, setShowSelectAreaOverlay] = useState<boolean>(false);
   const [reportGenDetails, setReportGenDetails] = useState<any>([]);
   const [alsoAddListData, setAlsoAddListData] = useState<any>([]);
   const [isFocused, setIsFocused] = useState<boolean>(false);
+  const [showAllPreviousItems, setShowAllPreviousItems] = useState<boolean>(false);
 
   const itemsWithHC = cartItems?.filter((item) => item!.collectionMethod == 'HC');
   const itemWithId = itemsWithHC?.map((item) => Number(item.id!));
@@ -321,7 +337,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setSelectedPatient(currentPatient);
       setShowPatientListOverlay(false);
     }
-    fetchAddresses();
+    !!existingOrderDetails ? null : fetchAddresses();
   }, []);
 
   const fetchTestReportGenDetails = async (_cartItemId: string | number[]) => {
@@ -700,7 +716,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             newAddressAddedCartPage != '' && setNewAddressAddedCartPage?.('');
           } else {
             setLoading?.(false);
-            showAphAlert!({
+            showAphAlert?.({
               unDismissable: true,
               title: string.common.uhOh,
               description: string.diagnostics.nonServiceableConfigPinCodeMsg.replace(
@@ -1264,6 +1280,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       : AppConfig.Configuration.Non_Covid_Max_Slot_Days;
 
     let dateToCheck = !!changedDate && comingFrom != '' ? changedDate : new Date();
+
+    console.log({ areaObject });
+
+    const selectedArea = !!existingOrderDetails
+      ? existingOrderDetails?.areaId
+      : Number((areaObject as any).key!);
+    console.log({ selectedArea });
     setLoading?.(true);
     const selectedAddressIndex = addresses?.findIndex(
       (address) => address?.id == deliveryAddressId
@@ -1278,7 +1301,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         fetchPolicy: 'no-cache',
         variables: {
           selectedDate: moment(dateToCheck).format('YYYY-MM-DD'),
-          areaID: Number((areaObject as any).key!),
+          areaID: selectedArea,
           itemIds: _itemIds || cartItemsWithId,
         },
       })
@@ -1439,6 +1462,138 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       <View style={styles.homeCollectionContainer}>
         <InfoIconRed style={styles.infoIconStyle} />
         <Text style={styles.phleboText}>{string.diagnostics.homeHomeCollectionDisclaimerTxt}</Text>
+      </View>
+    );
+  };
+
+  const renderPreviouslyAddedItems = () => {
+    const previousAddedItemsCount =
+      !!existingOrderDetails && existingOrderDetails?.diagnosticOrderLineItems?.length;
+    const remainingItems = existingOrderDetails?.diagnosticOrderLineItems?.length - 1;
+    const firstItem = existingOrderDetails?.diagnosticOrderLineItems?.[0]?.itemName;
+    const orderLineItems = existingOrderDetails?.diagnosticOrderLineItems! || [];
+    const subTotalArray = existingOrderDetails?.diagnosticOrderLineItems?.map(
+      (
+        item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems
+      ) => Number(item?.price)
+    );
+    const previousSubTotal = subTotalArray?.reduce(
+      (preVal: number, curVal: number) => preVal + curVal,
+      0
+    );
+    const previousCollectionCharges = existingOrderDetails?.collectionCharges;
+    const previousTotalCharges = existingOrderDetails?.totalPrice;
+    return (
+      <View>
+        {renderLabel('PREVIOUSLY ADDED TO CART', previousAddedItemsCount)}
+        <View
+          style={[
+            styles.totalChargesContainer,
+            styles.previousItemContainer,
+            { paddingBottom: showAllPreviousItems ? 16 : 0 },
+          ]}
+        >
+          <View style={styles.previousItemInnerContainer}>
+            <Text style={styles.previousItemHeading}>
+              {nameFormater(firstItem, 'title')} {remainingItems > 0 && `+ ${remainingItems} more`}
+            </Text>
+            <TouchableOpacity
+              onPress={() => setShowAllPreviousItems(!showAllPreviousItems)}
+              style={styles.arrowTouch}
+            >
+              {showAllPreviousItems ? (
+                <Up style={styles.arrowIconStyle} />
+              ) : (
+                <Down style={styles.arrowIconStyle} />
+              )}
+            </TouchableOpacity>
+          </View>
+          {showAllPreviousItems ? (
+            <>
+              <View style={[styles.rowSpaceBetweenStyle, { marginBottom: 0 }]}>
+                <Text style={styles.itemHeading}> ITEM NAME</Text>
+                <Text style={styles.itemHeading}> MRP VALUE</Text>
+              </View>
+              {orderLineItems?.map(
+                (
+                  item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems
+                ) => {
+                  return (
+                    <View style={styles.commonTax}>
+                      <View style={{ width: '65%' }}>
+                        <Text style={styles.commonText}>
+                          {nameFormater(
+                            !!item?.itemName ? item?.itemName! : item?.diagnostics?.itemName!,
+                            'title'
+                          )}
+                        </Text>
+                        {!!item?.itemObj?.inclusions && (
+                          <Text style={styles.inclusionsText}>
+                            Inclusions : {item?.itemObj?.inclusions?.length}
+                          </Text>
+                        )}
+                      </View>
+                      <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                        <Text style={[styles.commonText, { lineHeight: 20 }]}>
+                          {string.common.Rs}
+                          {convertNumberToDecimal(g(item, 'price') || null)}
+                        </Text>
+                      </View>
+                    </View>
+                  );
+                }
+              )}
+              <Spearator style={{ marginTop: 12, marginBottom: 12 }} />
+              {renderPrices('Subtotal', previousSubTotal)}
+              {renderPrices('Home collection Charges', previousCollectionCharges)}
+              {renderPrices('Total', previousTotalCharges, true)}
+            </>
+          ) : null}
+        </View>
+      </View>
+    );
+  };
+
+  const renderPrices = (title: string, price: string | number, customStyle?: boolean) => {
+    return (
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
+        <View style={{ width: '65%' }}>
+          <Text
+            style={[
+              styles.commonText,
+              {
+                ...theme.viewStyles.text(
+                  customStyle ? 'B' : 'M',
+                  customStyle ? 14 : 12,
+                  SHERPA_BLUE,
+                  1,
+                  customStyle ? 20 : 18
+                ),
+              },
+            ]}
+          >
+            {title}
+          </Text>
+        </View>
+        <View style={{ flex: 1, alignItems: 'flex-end' }}>
+          <Text
+            style={[
+              styles.commonText,
+              {
+                ...theme.viewStyles.text(
+                  customStyle ? 'B' : 'M',
+                  customStyle ? 14 : 12,
+                  SHERPA_BLUE,
+                  1,
+                  customStyle ? 20 : 18
+                ),
+              },
+            ]}
+          >
+            {string.common.Rs}
+            {convertNumberToDecimal(price)}
+          </Text>
+        </View>
       </View>
     );
   };
@@ -2232,7 +2387,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const selectedAddressIndex = addresses?.findIndex(
       (address) => address?.id == deliveryAddressId
     );
-    const pinCodeFromAddress = addresses?.[selectedAddressIndex]?.zipcode!;
+    const pinCodeFromAddress = !!existingOrderDetails
+      ? existingOrderDetails?.patientAddressObj?.zipcode!
+      : addresses?.[selectedAddressIndex]?.zipcode!;
+
+    console.log({ pinCodeFromAddress });
     setPinCode?.(pinCode);
     setLoading?.(true);
     let newGrandTotal = grandTotal - hcCharges;
@@ -2278,9 +2437,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <View style={styles.patientNameMainViewStyle}>
             <View style={styles.patientNameViewStyle}>
               <Text style={styles.patientNameTextStyle}>{string.diagnostics.patientNameText}</Text>
-              <Text style={styles.changeTextStyle} onPress={() => setShowPatientListOverlay(true)}>
-                {string.diagnostics.changeText}
-              </Text>
+              {!!existingOrderDetails ? null : (
+                <Text
+                  style={styles.changeTextStyle}
+                  onPress={() => setShowPatientListOverlay(true)}
+                >
+                  {string.diagnostics.changeText}
+                </Text>
+              )}
             </View>
             <Text style={styles.patientDetailsTextStyle}>{patientDetailsText}</Text>
             <Text style={styles.testReportMsgStyle}>{string.diagnostics.testReportMsgText}</Text>
@@ -2290,9 +2454,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <View style={styles.patientNameMainViewStyle}>
             <View style={styles.patientNameViewStyle}>
               <Text style={styles.patientNameTextStyle}>{string.diagnostics.homeVisitText}</Text>
-              <Text style={styles.changeTextStyle} onPress={() => showAddressPopup()}>
-                {string.diagnostics.changeText}
-              </Text>
+              {!!existingOrderDetails ? null : (
+                <Text style={styles.changeTextStyle} onPress={() => showAddressPopup()}>
+                  {string.diagnostics.changeText}
+                </Text>
+              )}
             </View>
             <Text style={styles.patientDetailsTextStyle}>{addressText}</Text>
           </View>
@@ -2353,6 +2519,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       <PatientListOverlay
         onPressClose={() => setShowPatientListOverlay(false)}
         onPressDone={(_selectedPatient: any) => {
+          console.log({ _selectedPatient });
           if (!checkPatientAge(_selectedPatient)) {
             setSelectedPatient(_selectedPatient);
             setShowPatientListOverlay(false);
@@ -2578,8 +2745,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
-  const addressText = selectedAddr ? formatAddressWithLandmark(selectedAddr) || '' : '';
-  const zipCode = (deliveryAddressId && selectedAddr && selectedAddr?.zipcode) || '0';
+  const addressText = !!existingOrderDetails
+    ? formatAddressWithLandmark(existingOrderDetails?.patientAddressObj) || ''
+    : selectedAddr
+    ? formatAddressWithLandmark(selectedAddr) || ''
+    : '';
+  const zipCode = !!existingOrderDetails
+    ? existingOrderDetails?.patientAddressObj?.zipcode || '0'
+    : (deliveryAddressId && selectedAddr && selectedAddr?.zipcode) || '0';
 
   const isCovidItem = cartItemsWithId?.map((item) =>
     AppConfig.Configuration.Covid_Items.includes(item)
@@ -2633,6 +2806,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <View style={{ marginVertical: 16 }}>
             {renderPatientDetails()}
             {renderItemsInCart()}
+            {!!existingOrderDetails ? renderPreviouslyAddedItems() : null}
             {renderTotalCharges()}
             {cartItems?.length > 0 ? renderAlsoAddItems() : null}
           </View>
@@ -2801,5 +2975,47 @@ const styles = StyleSheet.create({
     ...text('B', 13, SHERPA_BLUE, 1, 16.9),
     marginHorizontal: 20,
     marginTop: 24,
+  },
+  previousItemContainer: {
+    marginBottom: 20,
+    marginTop: 12,
+  },
+  previousItemInnerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+    height: 30,
+    alignItems: 'center',
+  },
+  arrowIconStyle: { height: 30, width: 30, resizeMode: 'contain' },
+  itemHeading: {
+    ...theme.viewStyles.text('M', 11, SHERPA_BLUE, 1, 15),
+    letterSpacing: 0.28,
+  },
+  commonTax: {
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 18,
+  },
+  commonText: {
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 11 : 12),
+    color: SHERPA_BLUE,
+    marginBottom: 5,
+    lineHeight: 18,
+  },
+  inclusionsText: {
+    ...theme.viewStyles.text('R', 11, SHERPA_BLUE, 1, 15),
+  },
+  previousItemHeading: {
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13 : 14),
+    color: SHERPA_BLUE,
+    lineHeight: 22,
+    width: '85%',
+  },
+  arrowTouch: {
+    width: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

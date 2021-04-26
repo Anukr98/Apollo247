@@ -79,13 +79,17 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     return (
       <View style={styles.midViewContainer}>
         {!!props.patientName && (
-          <View>
+          <View style={styles.patientNameView}>
             <Text style={styles.testForText}>Tests for {props.patientName}</Text>
           </View>
         )}
         {props.showAddTest ? (
-          <TouchableOpacity activeOpacity={1} onPress={props.onPressAddTest}>
-            <Text style={styles.yellowText}>ADD TEST</Text>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={props.onPressAddTest}
+            style={styles.addTestTouch}
+          >
+            <Text style={styles.yellowText}>ADD MORE TEST</Text>
           </TouchableOpacity>
         ) : null}
       </View>
@@ -393,9 +397,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: 20,
     marginBottom: '2%',
+    minHeight: 30,
   },
   testForText: {
-    ...theme.viewStyles.text('M', 13, colors.SHERPA_BLUE, 1, 18),
+    ...theme.viewStyles.text('SB', 13, colors.SHERPA_BLUE, 1, 18),
     letterSpacing: 0.3,
   },
   yellowText: { ...theme.viewStyles.yellowTextStyle, fontSize: screenWidth > 380 ? 13 : 12 },
@@ -442,4 +447,9 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 4,
     borderRadius: 10,
   },
+  addTestTouch: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  patientNameView: { width: '67%', justifyContent: 'center' },
 });

@@ -9,6 +9,26 @@ import { DIAGNOSTIC_ORDER_STATUS, DIAGNOSTICS_TYPE, DIAGNOSTIC_ORDER_PAYMENT_TYP
 // GraphQL query operation: getDiagnosticOrdersListByMobile
 // ====================================================
 
+export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj {
+  __typename: "PatientObj";
+  id: string | null;
+  uhid: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  gender: string | null;
+  dateOfBirth: any | null;
+}
+
+export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientAddressObj {
+  __typename: "PatientAddressObj";
+  addressLine1: string | null;
+  addressLine2: string | null;
+  landmark: string | null;
+  state: string | null;
+  city: string | null;
+  zipcode: number | null;
+}
+
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus {
   __typename: "DiagnosticOrdersStatus";
   id: string;
@@ -98,6 +118,8 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   addressLine1: string | null;
   addressLine2: string | null;
   patientId: string;
+  patientObj: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj | null;
+  patientAddressObj: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientAddressObj | null;
   displayId: number;
   diagnosticDate: any;
   diagnosticBranchCode: string;

@@ -17,6 +17,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { circleValidity } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 
 function createPatientAttributes(currentPatient: any) {
   const patientAttributes = {
@@ -92,7 +93,13 @@ export function DiagnosticAddToCartEvent(
   id: string,
   price: number,
   discountedPrice: number,
-  source: 'Home page' | 'Full search' | 'Details page' | 'Partial search' | 'Listing page',
+  source:
+    | 'Home page'
+    | 'Full search'
+    | 'Details page'
+    | 'Partial search'
+    | 'Listing page'
+    | 'Popular search',
   section?: string
 ) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADD_TO_CART] = {
@@ -437,4 +444,19 @@ export function DiagnosticFeedbackSubmitted(currentPatient: any, rating: string,
     'Thing to Improve selected': reason,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_FEEDBACK_GIVEN, eventAttributes);
+}
+
+export function DiagnosticItemSearched(
+  currentPatient: any,
+  keyword: string,
+  results: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
+) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ITEM_SEARCHED] = {
+    ...getPatientAttributes,
+    'Keyword Entered': keyword,
+    '# Results appeared': results?.length,
+    Popular: keyword == '' ? 'Yes' : 'No',
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ITEM_SEARCHED, eventAttributes);
 }

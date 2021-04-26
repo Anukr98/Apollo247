@@ -265,9 +265,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [patientClosedOrders, setPatientClosedOrders] = useState([] as any);
   const [orderCardSlideIndex, setOrderCardSlideIndex] = useState(0);
 
-  const [searchQuery, setSearchQuery] = useState({});
-  const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
-  const [searchResult, setSearchResults] = useState<boolean>(false);
   const [isCurrentScreen, setCurrentScreen] = useState<string>('');
 
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
@@ -973,40 +970,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [isSearchFocused, setSearchFocused] = useState(false);
   const client = useApolloClient();
 
-  const onSearchTest = async (_searchText: string) => {
-    if (isValidSearch(_searchText)) {
-      if (!(_searchText && _searchText.length > 2)) {
-        setDiagnosticResults([]);
-        return;
-      }
-      setShowMatchingMedicines(true);
-      setsearchSate('load');
-      try {
-        const res: any = await getDiagnosticsSearchResults(
-          'diagnostic',
-          _searchText,
-          Number(serviceableObject?.cityId! || 9)
-        );
-        if (res?.data?.success) {
-          const products = g(res, 'data', 'data') || [];
-          setDiagnosticResults(
-            products as searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
-          );
-          setSearchResults(products?.length == 0);
-          setsearchSate('success');
-          setWebEngageEventOnSearchItem(_searchText, products);
-        } else {
-          setDiagnosticResults([]);
-          setSearchResults(true);
-          setsearchSate('success');
-        }
-      } catch (error) {
-        CommonBugFender('Tests_onSearchTests', error);
-        setsearchSate('fail');
-      }
-    }
-  };
-
   const getUserSubscriptionsByStatus = async () => {
     setPageLoading!(true);
     try {
@@ -1163,7 +1126,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       />
     );
 
-    const itemsNotFound = searchSate == 'success' && searchText?.length > 2 && searchResult;
     return (
       <TouchableOpacity
         onPress={() => {

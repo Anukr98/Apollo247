@@ -2205,6 +2205,22 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         addressLine1
         addressLine2
         patientId
+        patientObj{
+          id
+          uhid
+          firstName
+          lastName
+          gender
+          dateOfBirth
+        }
+        patientAddressObj{
+          addressLine1
+          addressLine2
+          landmark
+          state
+          city 
+          zipcode
+        }
         displayId
         diagnosticDate
         diagnosticBranchCode
@@ -4612,8 +4628,6 @@ export const VERIFY_TRUECALLER_PROFILE = gql`
   }
 `;
 
-
-
 export const GET_PROHEALTH_CITY_LIST = gql`
   query getProHealthCities {
     getProHealthCities {
@@ -4772,6 +4786,20 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql `
           firstName
           lastName
         },
+      }
+    }
+  }
+`;
+
+export const MODIFY_DIAGNOSTIC_ORDERS = gql `
+  mutation saveModifyDiagnosticOrder($saveModifyDiagnosticOrder: saveModifyDiagnosticOrderInput!) {
+    saveModifyDiagnosticOrder(saveModifyDiagnosticOrder: $saveModifyDiagnosticOrder) {
+      orderId
+      displayId
+      status
+      errorMessageToDisplay
+      attributes {
+        itemids
       }
     }
   }

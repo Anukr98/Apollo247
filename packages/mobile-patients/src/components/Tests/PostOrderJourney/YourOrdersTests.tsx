@@ -1136,7 +1136,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         orderLevelStatus={order?.orderStatus}
         patientName={getPatientNameById(allCurrentPatients, order?.patientId)}
         gender={currentPatient?.gender == 'FEMALE' ? 'Ms.' : 'Mr.'}
-        showAddTest={false}
+        showAddTest={order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED}
         ordersData={order?.diagnosticOrderLineItems!}
         showPretesting={showPreTesting!}
         dateTime={!!order?.slotDateTimeInUTC ? order?.slotDateTimeInUTC : order?.diagnosticDate}
@@ -1159,7 +1159,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         additonalRejectedInfo={sampleRejectedString}
         price={order?.totalPrice}
         onPressCard={() => _navigateToYourTestDetails(order, false)}
-        onPressAddTest={() => _onPressAddTest()}
+        onPressAddTest={() => _onPressAddTest(order)}
         onPressReschedule={() => _onPressTestReschedule(order)}
         onPressViewDetails={() => _navigateToYourTestDetails(order, true)}
         onPressViewReport={() => _onPressViewReport(order)}
@@ -1173,7 +1173,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     );
   };
 
-  function _onPressAddTest() {}
+  function _onPressAddTest(
+    order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList
+  ) {
+    props.navigation.navigate(AppRoutes.SearchTestScene, {
+      searchText: '',
+      orderDetails: order,
+    });
+  }
 
   function _onPressViewReport(
     order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList
@@ -1210,12 +1217,16 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   }
 
+  const keyExtractor = useCallback((item: any, index: number) => `${index}`, []);
+
   const renderOrders = () => {
     return (
       <FlatList
+        keyExtractor={keyExtractor}
         bounces={false}
         data={orders}
         renderItem={({ item, index }) => renderOrder(item, index)}
+        initialNumToRender={10}
         ListEmptyComponent={renderNoOrders()}
       />
     );
@@ -1312,11 +1323,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           />
         )}
         {renderFilterArea()}
-        <ScrollView bounces={false} scrollEventThrottle={1}>
-          {renderError()}
-          {renderOrders()}
-          {showBottomOverlay && renderBottomPopUp()}
-        </ScrollView>
+        {renderError()}
+        {renderOrders()}
+        {showBottomOverlay && renderBottomPopUp()}
         <Modal
           animationType="fade"
           transparent={true}
