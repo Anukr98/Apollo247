@@ -197,13 +197,8 @@ import {
 import { ConsultedDoctorsCard } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultedDoctorsCard';
 import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import {
-  getProHealthHospitalByCityId,
-  getProHealthHospitalByCityIdVariables,
-} from '@aph/mobile-patients/src/graphql/types/getProHealthHospitalByCityId';
 import { AuthContextProps } from '@aph/mobile-patients/src/components/AuthProvider';
 import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
-import { ConsultedDoctorsCard } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultedDoctorsCard';
 
 const { Vitals } = NativeModules;
 
@@ -3428,7 +3423,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         '&deviceType=',
         deviceType
       );
-      console.log(finalUrl);
       !!jwtToken &&
         jwtToken != '' &&
         props.navigation.navigate(AppRoutes.ProHealthWebView, {
