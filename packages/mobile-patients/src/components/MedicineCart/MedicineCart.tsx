@@ -196,6 +196,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         pharmacyCircleAttributes!,
         pharmacyUserTypeAttribute!
       );
+    setIsCircleSubscription?.(false);
     if (!circleSubPlanId) {
       setCircleMembershipCharges && setCircleMembershipCharges(0);
     }
@@ -267,14 +268,13 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }, [couponProducts]);
 
   useEffect(() => {
-    if (!!coupon) {
+    if (!!coupon && !coupon?.circleBenefits) {
       setCircleMembershipCharges && setCircleMembershipCharges(0);
+      setIsCircleSubscription?.(false);
     } else {
       if (!circleSubscriptionId) {
         setCircleMembershipCharges &&
           setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
-      } else {
-        setIsCircleSubscription && setIsCircleSubscription(true);
       }
     }
   }, [coupon]);
@@ -355,7 +355,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
                 hdfcPlanId,
                 circleStatus,
                 circlePlanId,
-                setCouponProducts
+                setCouponProducts,
+                circlePlanSelected
               );
             } catch (error) {
               return;
@@ -633,7 +634,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           hdfcPlanId,
           circleStatus,
           circlePlanId,
-          setCouponProducts
+          setCouponProducts,
+          circlePlanSelected
         );
         if (response !== 'success') {
           removeCouponWithAlert(response);
@@ -857,7 +859,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           hdfcPlanId,
           circleStatus,
           circlePlanId,
-          setCouponProducts
+          setCouponProducts,
+          circlePlanSelected
         );
         if (response !== 'success') {
           removeCouponWithAlert(response);
@@ -987,20 +990,23 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         activeOpacity={0.7}
         style={styles.applyBenefits}
         onPress={() => {
-          if (!coupon && isCircleSubscription) {
+          if (
+            (!coupon && isCircleSubscription) ||
+            (coupon?.circleBenefits && isCircleSubscription)
+          ) {
             if (!circleSubscriptionId || cartTotalCashback) {
-              setIsCircleSubscription && setIsCircleSubscription(false);
-              setDefaultCirclePlan && setDefaultCirclePlan(null);
-              setCirclePlanSelected && setCirclePlanSelected(null);
-              setCircleMembershipCharges && setCircleMembershipCharges(0);
+              setIsCircleSubscription?.(false);
+              setDefaultCirclePlan?.(null);
+              setCirclePlanSelected?.(null);
+              setCircleMembershipCharges?.(0);
             }
           } else {
-            setCoupon && setCoupon(null);
-            setIsCircleSubscription && setIsCircleSubscription(true);
+            !coupon?.circleBenefits && setCoupon?.(null);
+            setIsCircleSubscription?.(true);
           }
         }}
       >
-        {!coupon && isCircleSubscription ? (
+        {(!coupon && isCircleSubscription) || (coupon?.circleBenefits && isCircleSubscription) ? (
           <View style={{ flexDirection: 'row' }}>
             <CheckedIcon style={{ marginTop: 8, marginRight: 4 }} />
             <CareCashbackBanner

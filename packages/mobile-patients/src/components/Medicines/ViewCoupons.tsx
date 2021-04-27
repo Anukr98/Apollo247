@@ -147,11 +147,10 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
   const [couponListError, setCouponListError] = useState<string>('');
   const [disableCouponsList, setDisableCouponsList] = useState<string[]>([]);
   const [showAllProductOffers, setShowAllProductOffers] = useState<boolean>(false);
-  const [showAllCircleCoupons, setShowAllCircleCoupons] = useState<boolean>(false);
-  const [showCouponsForYou, setShowCouponsForYou] = useState<boolean>(false);
   const [circleCoupons, setCircleCoupons] = useState<pharma_coupon[]>([]); // circle coupons => applicable === 'APOLLO:Circle...'
-  const [productOffers, setProductOffers] = useState<pharma_coupon[]>([]); // product offer coupons => frontendCategory === 'ProductOffer'
+  const [productOffers, setProductOffers] = useState<pharma_coupon[]>([]); // product offer coupons => frontendCategory === 'productOffers'
   const [couponList, setCouponList] = useState<pharma_coupon[]>([]); // normal coupons
+  const [appliedCouponName, setAppliedCouponName] = useState<string>('');
   const { currentPatient } = useAllCurrentPatients();
   const {
     setCoupon,
@@ -165,6 +164,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     circleSubscriptionId,
     hdfcSubscriptionId,
     setIsFreeDelivery,
+    circlePlanSelected,
   } = useShoppingCart();
   const { showAphAlert, setLoading } = useUIElements();
   const [shimmerLoading, setShimmerLoading] = useState<boolean>(true);
@@ -185,8 +185,8 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
   if (hdfcSubscriptionId && hdfcStatus === 'active') {
     packageId.push(`HDFC:${hdfcPlanId}`);
   }
-  if (circleSubscriptionId && circleStatus === 'active') {
-    packageId.push(`APOLLO:${circlePlanId}`);
+  if ((circleSubscriptionId && circleStatus === 'active') || circlePlanSelected?.subPlanId) {
+    packageId.push(`APOLLO:${circlePlanId || circlePlanSelected?.subPlanId}`);
   }
 
   useEffect(() => {
@@ -206,7 +206,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
         const nonCircleCoupons =
           coupons.filter((coupon: pharma_coupon) => !circleCoupons.includes(coupon)) || [];
         const productOfferCoupons = nonCircleCoupons?.filter(
-          (coupon: pharma_coupon) => coupon?.frontendCategory === 'ProductOffer'
+          (coupon: pharma_coupon) => coupon?.frontEndCategory === 'productOffers'
         );
         setProductOffers(productOfferCoupons || []);
         const nonSpecialOfferCoupons =
@@ -230,8 +230,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
   const applyCoupon = (
     coupon: string,
     cartItems: ShoppingCartItem[],
-    applyingFromList?: boolean,
-    listIndex?: number
+    applyingFromList?: boolean
   ) => {
     CommonLogEvent(AppRoutes.ViewCoupons, 'Select coupon');
     setLoading?.(true);
@@ -255,7 +254,10 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
         if (resp?.data?.errorCode == 0) {
           if (resp?.data?.response?.valid) {
             const successMessage = resp?.data?.response?.successMessage || '';
-            setCoupon!({ ...g(resp?.data, 'response')!, successMessage: successMessage });
+            setCoupon!({
+              ...resp?.data?.response,
+              successMessage: successMessage,
+            });
             setIsFreeDelivery?.(!!resp?.data?.response?.freeDelivery);
             props.navigation.goBack();
           } else {
@@ -300,6 +302,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
 
   const saveDisableCoupons = (couponName: string) => {
     if (couponName) {
+      setAppliedCouponName(couponName);
       if (disableCouponsList?.indexOf(couponName) > -1) {
         const arr = disableCouponsList;
         const indexToRemove = arr?.indexOf(couponName);
@@ -397,7 +400,6 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
 
   const renderGeneralCoupons = (
     coupons: pharma_coupon[],
-    category: string,
     showAllCoupons: boolean,
     showMoreLessButton: boolean
   ) => {
@@ -424,20 +426,16 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
             </View>
             {!!coupon?.textOffer && <Text style={styles.couponSubTitle}>{coupon?.textOffer}</Text>}
             <Text style={styles.couponDescription}>{coupon?.message}</Text>
-            {disableList && renderCouponError(couponListError)}
+            {disableList &&
+              appliedCouponName === coupon?.coupon &&
+              renderCouponError(couponListError)}
             {i !== coupons?.length - 1 && <View style={styles.itemSeperator} />}
           </View>
           {showMoreLessButton && i === couponsForYou?.length - 1 ? (
             <TouchableOpacity
               style={styles.bottomViewCardBtn}
               onPress={() => {
-                if (category === 'general') {
-                  setShowCouponsForYou(!showCouponsForYou);
-                } else if (category === 'productOffers') {
-                  setShowAllProductOffers(!showAllProductOffers);
-                } else if (category === 'circle') {
-                  setShowAllCircleCoupons(!showAllCircleCoupons);
-                }
+                setShowAllProductOffers(!showAllProductOffers);
               }}
             >
               <Text style={styles.viewBtnText}>View{showAllCoupons ? ' less' : ' more'}</Text>
@@ -454,21 +452,16 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     if (isFromConsult) {
       applyConsultCoupon(couponText, true);
     } else {
-      applyCoupon(couponText, cartItems, true, index);
+      applyCoupon(couponText, cartItems, true);
     }
   };
 
   const renderCouponList = () => (
     <View>
-      {renderCardTitle('COUPONS FOR YOU')}
-      <View style={styles.cardStyle}>
-        {renderGeneralCoupons(
-          isFromConsult ? couponList : showCouponsForYou ? couponList : couponList?.slice(0, 2),
-          'general',
-          showCouponsForYou,
-          isFromConsult ? false : couponList?.length > 2
-        )}
-      </View>
+      {renderCardTitle(
+        !!circleCoupons?.length ? 'NOT APPLICABLE WITH CIRCLE BENEFITS' : 'COUPONS FOR YOU'
+      )}
+      <View style={styles.cardStyle}>{renderGeneralCoupons(couponList, true, false)}</View>
     </View>
   );
 
@@ -478,7 +471,6 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
       <View style={styles.cardStyle}>
         {renderGeneralCoupons(
           showAllProductOffers ? productOffers : productOffers?.slice(0, 2),
-          'productOffers',
           showAllProductOffers,
           productOffers?.length > 2
         )}
@@ -489,14 +481,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
   const renderCircleCoupons = () => (
     <View>
       {renderCardTitle('APPLICABLE WITH CIRCLE BENEFITS')}
-      <View style={styles.cardStyle}>
-        {renderGeneralCoupons(
-          showAllCircleCoupons ? circleCoupons : circleCoupons?.slice(0, 2),
-          'circle',
-          showAllCircleCoupons,
-          circleCoupons?.length > 2
-        )}
-      </View>
+      <View style={styles.cardStyle}>{renderGeneralCoupons(circleCoupons, true, false)}</View>
     </View>
   );
 
@@ -522,9 +507,9 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
           {renderInputWithValidation()}
           {shimmerLoading && couponViewShimmer()}
           {renderNoCouponsFound()}
+          {!!circleCoupons?.length && renderCircleCoupons()}
           {!!couponList?.length && renderCouponList()}
           {!!productOffers?.length && renderProductOffers()}
-          {!!circleCoupons?.length && renderCircleCoupons()}
         </ScrollView>
       </SafeAreaView>
     </View>
