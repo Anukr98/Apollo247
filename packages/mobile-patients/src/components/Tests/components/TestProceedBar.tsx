@@ -20,6 +20,7 @@ export interface TestProceedBarProps {
   selectedTimeSlot?: any;
   showTime?: any;
   disableProceedToPay?: boolean;
+  isModifyCOD: boolean;
 }
 
 export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
@@ -39,6 +40,7 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
     selectedTimeSlot,
     showTime,
     disableProceedToPay,
+    isModifyCOD,
   } = props;
 
   function getButtonTitle() {
@@ -48,6 +50,8 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
         : string.diagnostics.addAddressText
       : isEmptyObject(areaSelected)
       ? string.diagnostics.selectAreaText
+      : isModifyCOD
+      ? `${string.placeOrder} (COD)`
       : string.proceedToPay;
   }
 

@@ -55,6 +55,7 @@ import {
   EDIT_PROFILE,
   GET_DIAGNOSTIC_NEAREST_AREA,
   GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
+  MODIFY_DIAGNOSTIC_ORDERS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticsHCChargesVariables,
@@ -72,6 +73,8 @@ import {
   OrderCreate,
   OrderVerticals,
   DiagnosticsBookingSource,
+  DIAGNOSTIC_ORDER_PAYMENT_TYPE,
+  saveModifyDiagnosticOrderInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
@@ -172,6 +175,10 @@ import {
   getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import {
+  saveModifyDiagnosticOrder,
+  saveModifyDiagnosticOrderVariables,
+} from '@aph/mobile-patients/src/graphql/types/saveModifyDiagnosticOrder';
 const { width: screenWidth } = Dimensions.get('window');
 
 export interface areaObject {
@@ -313,6 +320,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         sourceHeaders,
       },
       variables: { order: orders },
+    });
+
+  const saveModifyOrder = (orderInfo: saveModifyDiagnosticOrderInput) =>
+    client.mutate<saveModifyDiagnosticOrder, saveModifyDiagnosticOrderVariables>({
+      mutation: MODIFY_DIAGNOSTIC_ORDERS,
+      context: {
+        sourceHeaders,
+      },
+      variables: { saveModifyDiagnosticOrder: orderInfo },
     });
 
   useEffect(() => {
@@ -1906,8 +1922,55 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const bookDiagnosticOrder = async () => {
     setshowSpinner(true);
-    saveHomeCollectionOrder();
+    //if modify order
+    if (!!existingOrderDetails) {
+      existingOrderDetails?.paymentType === DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
+        ? _navigateToPaymentsPage()
+        : saveModifiedOrder();
+    }
+    //for normal flow
+    else {
+      saveHomeCollectionOrder();
+    }
   };
+
+  function _navigateToPaymentsPage() {
+    //call save api
+    //call internal order api
+    //navigate to next page.
+  }
+
+  function saveModifiedOrder() {
+    setshowSpinner?.(true);
+    const modifyBookingInput: saveModifyDiagnosticOrderInput = {
+      orderId: existingOrderDetails?.id,
+      collectionCharges: hcCharges,
+      bookingSource: DiagnosticsBookingSource.MOBILE,
+      deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
+      items: createItemPrice(),
+      userSubscriptionId: circleSubscriptionId,
+      subscriptionInclusionId: null,
+    };
+    console.log({ modifyBookingInput });
+    saveModifyOrder?.(modifyBookingInput)
+      .then((data) => {
+        console.log({ data });
+        setshowSpinner?.(false);
+        //call PROCESS_DIAG_COD_ORDER api from payments page
+        //navigate to confirm page
+        
+      })
+      .catch((error) => {
+        console.log({ error });
+        CommonBugFender('TestsCart__saveModifiedOrder', error);
+        setshowSpinner?.(false);
+        showAphAlert!({
+          unDismissable: true,
+          title: `Hi ${g(currentPatient, 'firstName') || ''}!`, //existing order patient
+          description: string.diagnostics.bookingOrderFailedMessage,
+        });
+      });
+  }
 
   const saveHomeCollectionOrder = () => {
     //for circle members if unique id is blank, show error
@@ -1916,7 +1979,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       (validateCouponUniqueId == '' || validateCouponUniqueId == null)
     ) {
       renderAlert(string.common.tryAgainLater);
-      setshowSpinner(false);
+      setshowSpinner?.(false);
     } else {
       const { slotStartTime, slotEndTime, employeeSlotId, date } = diagnosticSlot || {};
       const slotTimings = (slotStartTime && slotEndTime
@@ -2604,6 +2667,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         showTime={showTime}
         onPressTimeSlot={() => showTime && setDisplaySchedule(true)}
         onPressSelectArea={() => setShowSelectAreaOverlay(true)}
+        isModifyCOD={
+          !!existingOrderDetails
+            ? existingOrderDetails?.paymentType !== DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
+            : false
+        }
       />
     ) : null;
   };
