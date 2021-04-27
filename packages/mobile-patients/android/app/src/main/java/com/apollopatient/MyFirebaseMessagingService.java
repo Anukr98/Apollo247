@@ -232,6 +232,8 @@ public class MyFirebaseMessagingService
         notification.flags |= Notification.FLAG_INSISTENT;
         notificationManager.notify(oneTimeID, notification);
 
+// debug this block
+System.out.println("csk r msg"+remoteMessage.toString());
         try {
             Intent startIntent = new Intent(this, RingtonePlayingService.class);
             this.startService(startIntent);
@@ -243,7 +245,7 @@ public class MyFirebaseMessagingService
                 vibrator.vibrate(pattern, 0);
             }
         } catch (Exception e) {
-            Log.e("vibration error", e.getMessage() + "\n" + e.toString());
+            Log.e("csk vibration error", e.getMessage() + "\n" + e.toString());
         }
     }
 
