@@ -39,6 +39,7 @@ import {
 import WebEngage from 'react-native-webengage';
 import AsyncStorage from '@react-native-community/async-storage';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import loggingLink from '@aph/mobile-patients/src/helpers/loggingLink';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then(
@@ -176,7 +177,10 @@ export const AuthProvider: React.FC = (props) => {
       uri: apiRoutes.graphql(),
     });
 
-    const link = errorLink.concat(authLink).concat(httpLink);
+    const link = errorLink
+      //.concat(loggingLink)  //Uncomment this inroder to enable logging
+      .concat(authLink)
+      .concat(httpLink);
     const cache = apolloClient ? apolloClient.cache : new InMemoryCache();
     return new ApolloClient({
       link,

@@ -137,8 +137,8 @@ android {
         applicationId "com.apollo.patientapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 93
-        versionName "5.4.8"
+        versionCode 108
+        versionName "5.5.1"
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
@@ -202,6 +202,7 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-appsflyer')
     implementation project(':react-native-splash-screen')
     implementation project(':react-native-camera')
     implementation 'com.google.firebase:firebase-messaging:17.3.2'
@@ -218,7 +219,6 @@ dependencies {
     implementation project(':react-native-system-setting')
     implementation project(':opentok-react-native')
     implementation project(':react-native-sms-retriever')
-    implementation project(':react-native-appsflyer')
     implementation 'com.webengage:android-sdk:3.+'
     implementation 'com.google.android.gms:play-services-ads:15.0.1' // optional for webengage
     implementation 'com.android.installreferrer:installreferrer:1.1.1'

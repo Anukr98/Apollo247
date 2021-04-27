@@ -6,27 +6,32 @@ import { formatSelectedAddress } from '@aph/mobile-patients/src/helpers/helperFu
 import moment from 'moment';
 
 export interface BookingInfoProps {
-  LOB: 'Diag' | 'Consult' | 'Pharma';
+  LOB: 'diagnostics' | 'consult' | 'Pharma';
+  orderDetails: any;
 }
 
 export const BookingInfo: React.FC<BookingInfoProps> = (props) => {
-  const { LOB } = props;
+  const { LOB, orderDetails } = props;
   const { addresses, deliveryAddressId, diagnosticSlot } = useDiagnosticsCart();
   const selectedAddress = addresses.find((address) => address?.id == deliveryAddressId);
 
   const renderHeading = () => {
     const msg =
-      LOB == 'Diag'
+      LOB == 'diagnostics'
         ? `Slot booked for sample collection ${diagnosticSlot?.slotStartTime}, ${moment(
             diagnosticSlot?.date
           ).format('D MMM, YYYY')}`
+        : LOB == 'consult'
+        ? `${orderDetails?.doctorName}'s appointment on ${moment(
+            orderDetails?.appointmentDateTime
+          ).format('DD MMM YYYY, h:mm A')} `
         : '';
     return <Text style={styles.heading}>{msg}</Text>;
   };
 
   const renderSubText = () => {
-    const subTxt = LOB == 'Diag' ? formatSelectedAddress(selectedAddress!).slice(0, 60) : '';
-    return <Text style={styles.subTxt}>{subTxt}</Text>;
+    const subTxt = LOB == 'diagnostics' ? formatSelectedAddress(selectedAddress!).slice(0, 60) : '';
+    return !!subTxt ? <Text style={styles.subTxt}>{subTxt}</Text> : null;
   };
 
   return (
@@ -44,6 +49,7 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     marginHorizontal: 20,
     marginTop: 15,
+    alignItems: 'center',
   },
   heading: {
     ...theme.fonts.IBMPlexSansMedium(12),

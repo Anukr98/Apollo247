@@ -358,6 +358,13 @@
       ]
     }
   },
+  "needHelpScreen":{
+    "view_previous_tickets":"To view previous tickets ",
+    "click_here":"CLICK HERE",
+    "reopen_ticket":"REOPEN TICKET",
+    "whatsapp_with_us":"WHATSAPP WITH US",
+    "no_conversation_till_now":"No conversation till now !"
+  },
   "doctor_search_listing": {
     "pleaseWait": "Please Wait!",
     "lookingForBestDoctors": "We are looking for the\nbest doctors for you :)",
@@ -530,7 +537,8 @@
     "call_us": "CALL US",
     "add_to_cart": "ADD TO CART",
     "test_prec_req": "This test requires doctor’s prescription",
-    "test_prec_not_req": "This test doesn't requires doctor’s prescription"
+    "test_prec_not_req": "This test doesn't requires doctor’s prescription",
+    "go_to_help":"GO TO HELP"
   },
   "OrderSummery": {
     "total": "Total",
@@ -596,6 +604,12 @@
     "aborted": "PAYMENT_ABORTED",
     "askPermission1": "To make sure that you do not miss the call from Dr.",
     "askPermission2": " for your consultation, Apollo 247 needs to have \"full screen overlay\" permission to display call notifications."
+  },
+  "NewPaymentStatuses": {
+    "success": "TXN_SUCCESS",
+    "failure": "TXN_FAILURE",
+    "pending": "PENDING",
+    "refund": "AUTO_REFUNDED"
   },
   "PharmaPayment": {
     "success": "TXN_SUCCESS",
@@ -1028,4 +1042,5 @@
     "CONSULT_ONLINE": "Consult Online",
     "MEET_IN_PERSON": "Meet In Person"
   }
+
 }

@@ -961,6 +961,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       checkApisToCall();
+      getUserBanners();
     });
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       apisToCall.current = [];
@@ -1696,7 +1697,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             typeof paymentRef == 'string' ? JSON.parse(paymentRef) : paymentRef;
           AsyncStorage.setItem('isCircleMember', 'yes');
           setIsCircleMember && setIsCircleMember('yes');
-
+          AsyncStorage.removeItem('circlePlanSelected');
           let WEGAttributes = {};
           if (circleData?.status === 'active') {
             const circleMembershipType = setCircleMembershipType(

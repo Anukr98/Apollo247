@@ -1699,6 +1699,14 @@ export const Emergency: React.FC<IconProps> = (props) => (
   />
 );
 
+export const PayTm: React.FC<IconProps> = (props) => (
+  <IconBase style={{ width: 63, height: 20 }} {...props} source={require('./icons/pay.png')} />
+);
+
+export const PayU: React.FC<IconProps> = (props) => (
+  <IconBase style={{ width: 42, height: 20 }} {...props} source={require('./icons/payu.png')} />
+);
+
 export const ExternalMeetingVideoCall: React.FC<IconProps> = (props) => (
   <IconBase
     size="sm"
@@ -1745,5 +1753,20 @@ export const ProHealthIcon: React.FC<IconProps> = (props) => (
     size="lg"
     {...props}
     source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_icon.png')}
+  />
+);
+
+export const RefreshIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/ic_cached.png')}
+  />
+);
+
+export const AgentIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/agent_icon.png')}
   />
 );
