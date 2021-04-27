@@ -14,6 +14,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.SystemClock;
+import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.provider.Settings;
 import android.text.Spannable;
@@ -31,6 +32,7 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.webengage.sdk.android.WebEngage;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -108,6 +110,7 @@ public class MyFirebaseMessagingService
         }
     }
 
+    @SuppressLint("MissingPermission")
     private void cancelCall(){
         NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancelAll();
@@ -232,20 +235,37 @@ public class MyFirebaseMessagingService
         notification.flags |= Notification.FLAG_INSISTENT;
         notificationManager.notify(oneTimeID, notification);
 
-// debug this block
-System.out.println("csk r msg"+remoteMessage.toString());
         try {
             Intent startIntent = new Intent(this, RingtonePlayingService.class);
             this.startService(startIntent);
-            Boolean isDndOn = Settings.Global.getInt(getContentResolver(), "zen_mode") != 0;
-            Boolean isVibrationOn = !isDndOn && (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).getRingerMode() == AudioManager.RINGER_MODE_VIBRATE ||
-                    (Settings.System.getInt(getBaseContext().getContentResolver(), "vibrate_when_ringing", 0) == 1));
-            if (isVibrationOn) {
-                long[] pattern = new long[]{100, 200, 300, 400, 500, 400, 300, 200};
+            setVibration();
+        } catch (Exception e) {
+            Log.e("csk ring & vibrate e", e.getMessage() + "\n" + e.toString());
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private void setVibration() {
+        Boolean isDNDOn=false;
+        try {
+             isDNDOn= Settings.Global.getInt(getContentResolver(), "zen_mode") != 0;
+        }catch (Exception e){
+            Log.e("csk vibrate settings e", e.getMessage() + "\n" + e.toString());
+        }
+        Boolean isVibrationOn = !isDNDOn && (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).getRingerMode() == AudioManager.RINGER_MODE_VIBRATE ||
+                (Settings.System.getInt(getBaseContext().getContentResolver(), "vibrate_when_ringing", 0) == 1));
+
+        if (isVibrationOn) {
+            long[] pattern = new long[]{100, 200, 300, 400, 500, 400, 300, 200};
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(VibrationEffect.createWaveform(pattern, 0),
+                        new AudioAttributes.Builder()
+                                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                                .setUsage(AudioAttributes.USAGE_ALARM)
+                                .build());
+            } else {
                 vibrator.vibrate(pattern, 0);
             }
-        } catch (Exception e) {
-            Log.e("csk vibration error", e.getMessage() + "\n" + e.toString());
         }
     }
 
