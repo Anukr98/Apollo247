@@ -56,7 +56,7 @@ import {
   createOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOrder';
 import { verifyVPA, verifyVPAVariables } from '@aph/mobile-patients/src/graphql/types/verifyVPA';
-import { DiagnosticPaymentInitiated } from '@aph/mobile-patients/src/components/Tests/Events';
+import { PaymentInitiated } from '@aph/mobile-patients/src/components/Tests/Events';
 import {
   initiateDiagonsticHCOrderPaymentVariables,
   initiateDiagonsticHCOrderPayment,
@@ -279,7 +279,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   function triggerWebengege(mode: 'Prepaid' | 'Cash', type: string) {
-    DiagnosticPaymentInitiated(mode, amount, 'Diagnostic', 'Diagnostic', type);
+    PaymentInitiated(mode, amount, businessLine, type);
   }
 
   async function onPressBank(bankCode: string) {
@@ -295,13 +295,13 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressUPIApp(app: any) {
-    triggerWebengege('Prepaid', 'UPI');
+    triggerWebengege('Prepaid', 'UPI Intent');
     const token = await getClientToken();
     InitiateUPIIntentTxn(currentPatient?.id, token, paymentId, app.payment_method_code);
   }
 
   async function onPressVPAPay(VPA: string) {
-    triggerWebengege('Prepaid', VPA);
+    triggerWebengege('Prepaid', 'UPI Collect');
     try {
       setisTxnProcessing(true);
       const response = await verifyVPA(VPA);
