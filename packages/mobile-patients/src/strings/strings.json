@@ -41,7 +41,7 @@
     "error_enter_number_text": "Please enter numeric values (eg. 0,1...)",
     "addPrescriptionText": "ADD PRESCRIPTION",
     "addTestReportText": "ADD TEST REPORT",
-    "doctorConsultPHRText": "Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room",
+    "doctorConsultPHRText": "For privacy reasons, reports uploaded here are for your view only. To share with doctors, please upload selected reports in in your chat with the doctor.",
     "addDischargeSummaryText": "ADD DISCHARGE SUMMARY",
     "addHealthConditionText": "ADD HEALTH CONDITIONS",
     "addBillText": "ADD BILL",
@@ -246,8 +246,7 @@
     "need_help": "Need Help?",
     "book_appointment": "BOOK AN APPOINTMENT",
     "book_appointment_question": "Want to book an appointment?",
-    "arrayTest": [
-      {
+    "arrayTest": [{
         "id": 1,
         "title": "Are you looking for a particular doctor?",
         "descripiton": "FIND SPECIALIST",
@@ -266,8 +265,7 @@
         "image": "require('@aph/mobile-patients/src/images/home/test.png')"
       }
     ],
-    "startDoctor": [
-      {
+    "startDoctor": [{
         "name": "Dr. Narayana Rao’s",
         "status": "AVAILABLE",
         "Program": "Star Cardiology Program",
@@ -296,8 +294,7 @@
     }
   },
   "consult_room": {
-    "specialities": [
-      {
+    "specialities": [{
         "image": "",
         "name": "General Physician",
         "id": 1
@@ -331,8 +328,7 @@
     "description": "You have no consultations today :) Hope you are doing well?",
     "things_to_do": {
       "label": "Things To Do",
-      "data": [
-        {
+      "data": [{
           "title": "Your Health Profile is just 30% complete. Update it now!",
           "description": "UPDATE HEALTH PROFILE"
         },
@@ -344,8 +340,7 @@
     },
     "articles": {
       "label": "Read a few articles on how to stay healthy",
-      "data": [
-        {
+      "data": [{
           "image": "",
           "title": "5 Simple Daily Yoga Exercises For Good Health!",
           "link": ""
@@ -379,8 +374,7 @@
     "avaliablity": "Availability",
     "online": "Online\nConsults",
     "inperson": "In-Person\nConsults",
-    "filter_data": [
-      {
+    "filter_data": [{
         "label": "City",
         "options": ["Hyderabad", "Chennai"]
       },
@@ -460,11 +454,9 @@
     "specialDiscountText": "TESTS247 coupon pre-applied",
     "unableToOpenReport": "We are facing some issue in opening the report. Please try again later.",
     "responseUnavailableForReport": "Report is not yet available to download. Please try after some time.",
-    "disclaimerText": [
-      {
-        "text": "Rescheduling can be done upto 3 times only"
-      }
-    ],
+    "disclaimerText": [{
+      "text": "Rescheduling can be done upto 3 times only"
+    }],
     "reschduleCountExceed": "You have rescheduled thrice. You're out of reschedule attempts.",
     "rescheduleCountText": "You can reschedule to a maximum of 3 times. If you click ok, you will have {{setRescheduleCount}} reschedule attempt(s) left.",
     "reasonForCancel_TestOrder": {
@@ -586,8 +578,7 @@
     "order_test": "ORDER TESTS",
     "book_follow_up": "BOOK FOLLOW-UP",
     "add_note_to_notify_users": "Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!",
-    "tabs": [
-      {
+    "tabs": [{
         "title": "Consults & Rx",
         "count": "0"
       },
@@ -638,8 +629,7 @@
   "alerts": {
     "Open_camera_in_video_call": "Image capturing is disabled during a video call. Please switch to the Audio call if you want to send an Image."
   },
-  "muiltdosages": [
-    {
+  "muiltdosages": [{
       "single": "tablet",
       "multiple": "tablet(s)"
     },
@@ -760,11 +750,9 @@
     "ADVANCE_DIABETES_QUESTIONAIRE": {
       "HEADING": "THANK YOU  !!",
       "SUBHEADING": "In order to assist you in the best possible way, please answer these questions",
-      "QUESTIONAIRE": [
-        {
+      "QUESTIONAIRE": [{
           "QUESTION": "Q1. Which type of diabetes are you living with?",
-          "OPTIONS": [
-            {
+          "OPTIONS": [{
               "key": "Pre-Diabetes",
               "value": "Pre-Diabetes"
             },
@@ -784,8 +772,7 @@
         },
         {
           "QUESTION": "Q2. For how many years have you lived with diabetes?",
-          "OPTIONS": [
-            {
+          "OPTIONS": [{
               "key": "lessThan2Years",
               "value": "Less than 2 years"
             },
@@ -909,8 +896,7 @@
       "Benefits and offers available through the program may change or be withdrawn without prior intimation. Apollo 24/7 will not be responsible for any liability arising from such situations or use of such offers.",
       "Any disputes arising out of the program shall be subject to arbitration by a sole arbitrator appointed by Apollo 24/7 for this purpose. The proceedings of the arbitration shall be conducted as per the provisions of Arbitration and Conciliation Act, 1996. The place of arbitration shall be at Chennai and language of arbitration shall be English. The existence of a dispute, if at all, shall not constitute a claim against Apollo 24/7."
     ],
-    "FAQ": [
-      {
+    "FAQ": [{
         "faqQuestion": "What is the Apollo 24|7 CIRCLE Membership program?",
         "faqAnswer": "Apollo 24|7 CIRCLE membership is a one-of-its-kind program designed to give the best care and value to its members. Once you sign up by choosing the plan that suits your needs, you will receive benefits like an emergency doctor-on-call, cashback on medicines, discounts on doctor consultations, and diagnostics. Did we also tell you that all your deliveries will be done free of cost and on a priority basis?"
       },
@@ -1009,13 +995,30 @@
     "testPincodeText": "Enter pincode here",
     "addNewAddressText": "Add New Address"
   },
-  "aboutApolloList": [
-    { "title": "About Us", "url": "https://www.apollo247.com/aboutUs?isMobile=true" },
-    { "title": "Contact Us", "url": "https://www.apollo247.com/contact?isMobile=true" },
-    { "title": "FAQs", "url": "https://www.apollo247.com/faq?isMobile=true" },
-    { "title": "Terms and Conditions", "url": "https://www.apollo247.com/terms?isMobile=true" },
-    { "title": "Returns Policy", "url": "https://www.apollo247.com/returns?isMobile=true" },
-    { "title": "Privacy Policy", "url": "https://www.apollo247.com/privacy?isMobile=true" }
+  "aboutApolloList": [{
+      "title": "About Us",
+      "url": "https://www.apollo247.com/aboutUs?isMobile=true"
+    },
+    {
+      "title": "Contact Us",
+      "url": "https://www.apollo247.com/contact?isMobile=true"
+    },
+    {
+      "title": "FAQs",
+      "url": "https://www.apollo247.com/faq?isMobile=true"
+    },
+    {
+      "title": "Terms and Conditions",
+      "url": "https://www.apollo247.com/terms?isMobile=true"
+    },
+    {
+      "title": "Returns Policy",
+      "url": "https://www.apollo247.com/returns?isMobile=true"
+    },
+    {
+      "title": "Privacy Policy",
+      "url": "https://www.apollo247.com/privacy?isMobile=true"
+    }
   ],
   "truecaller": {
     "networkProblem": "There is a problem with network connection.",
