@@ -175,16 +175,16 @@ export const Location: React.FC<IconProps> = (props) => (
 );
 
 export const LocationOutline: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/pin.png')} />
+  <IconBase size="sm" {...props} source={require('./icons/pin.webp')} />
 );
 export const StarEmpty: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/star.png')} />
+  <IconBase size="sm" {...props} source={require('./icons/star.webp')} />
 );
 export const StarEmptyGreen: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/emptystar.png')} />
+  <IconBase size="sm" {...props} source={require('./icons/emptystar.webp')} />
 );
 export const StarFillGreen: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/fillstar.png')} />
+  <IconBase size="sm" {...props} source={require('./icons/fillstar.webp')} />
 );
 
 export const LocationOn: React.FC<IconProps> = (props) => (
@@ -635,10 +635,10 @@ export const Down: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_accordion_down.webp')} />
 );
 export const DownO: React.FC<IconProps> = (props) => (
-  <IconBase size='sm' {...props} source={require('./icons/chevron-bottom3x.png')} />
+  <IconBase size='sm' {...props} source={require('./icons/chevron-bottom3x.webp')} />
 );
 export const UserOutline: React.FC<IconProps> = (props) => (
-  <IconBase size='sm' {...props} source={require('./icons/user.png')} />
+  <IconBase size='sm' {...props} source={require('./icons/user.webp')} />
 );
 
 export const Up: React.FC<IconProps> = (props) => (
@@ -726,25 +726,25 @@ export const PendingIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_exclamation.webp')} />
 );
 export const WhiteProfile: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/profile_circle.png')} />
+  <IconBase size="md" {...props} source={require('./icons/profile_circle.webp')} />
 );
 export const OrangeCall: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/call_orange_circle.png')} />
+  <IconBase size="sm" {...props} source={require('./icons/call_orange_circle.webp')} />
 );
 export const Emoticon1: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/emoticons_5.png')} />
+  <IconBase size="sm" {...props} source={require('./icons/emoticons_5.webp')} />
 );
 export const Emoticon2: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/emoticons_7.png')} />
+  <IconBase size="sm" {...props} source={require('./icons/emoticons_7.webp')} />
 );
 export const Emoticon3: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/emoticons_9.png')} />
+  <IconBase size="sm" {...props} source={require('./icons/emoticons_9.webp')} />
 );
 export const Emoticon4: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/emoticons_11.png')} />
+  <IconBase size="sm" {...props} source={require('./icons/emoticons_11.webp')} />
 );
 export const Emoticon5: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/emoticons_13.png')} />
+  <IconBase size="sm" {...props} source={require('./icons/emoticons_13.webp')} />
 );
 
 
