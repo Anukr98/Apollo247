@@ -1666,6 +1666,7 @@ export const SAVE_MEDICINE_ORDER_OMS_V2 = gql`
       orders {
         id
         orderAutoId
+        estimatedAmount
       }
     }
   }
@@ -1683,6 +1684,7 @@ export const SAVE_ORDER_WITH_SUBSCRIPTION = gql`
       orders {
         id
         orderAutoId
+        estimatedAmount
       }
     }
     CreateUserSubscription(UserSubscription: $userSubscription) {

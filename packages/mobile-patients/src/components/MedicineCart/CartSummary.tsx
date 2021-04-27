@@ -121,20 +121,21 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     circlePlanId,
     pharmacyLocation,
     locationDetails,
+    setauthToken,
   } = useAppCommonData();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
-  const [storeType, setStoreType] = useState<string | undefined>(
-    props.navigation.getParam('tatType') || ''
-  );
-  const [storeDistance, setStoreDistance] = useState(
-    props.navigation.getParam('storeDistance') || 0
-  );
-  const [shopId, setShopId] = useState<string | undefined>(
-    props.navigation.getParam('shopId') || ''
-  );
+  // const [storeType, setStoreType] = useState<string | undefined>(
+  //   props.navigation.getParam('tatType') || ''
+  // );
+  // const [storeDistance, setStoreDistance] = useState(
+  //   props.navigation.getParam('storeDistance') || 0
+  // );
+  // const [shopId, setShopId] = useState<string | undefined>(
+  //   props.navigation.getParam('shopId') || ''
+  // );
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>(false);
   const [lastCartItems, setlastCartItems] = useState(
@@ -145,9 +146,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   const pharmacyPincode =
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
   const { OrderInfo, SubscriptionInfo } = useGetOrderInfo();
-  const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
-  const storeCode =
-    Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
 
   useEffect(() => {
     hasUnserviceableproduct();
@@ -184,11 +182,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
   };
-  const getFormattedAmount = (num: number) => Number(num.toFixed(2));
-
-  const estimatedAmount = !!circleMembershipCharges
-    ? getFormattedAmount(grandTotal - circleMembershipCharges)
-    : getFormattedAmount(grandTotal);
 
   const saveOrder = () =>
     client.mutate<saveMedicineOrderV2, saveMedicineOrderV2Variables>({
@@ -211,7 +204,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
 
   const createOrderInternal = (shipments: any, subscriptionId?: string) => {
     const pharmaOrders = shipments.map((item: any) => {
-      return { order_id: item?.id, amount: estimatedAmount, patient_id: currentPatient?.id };
+      return { order_id: item?.id, amount: item?.estimatedAmount, patient_id: currentPatient?.id };
     });
     const orders: OrderVerticals = { pharma: pharmaOrders };
     if (subscriptionId) {
@@ -228,6 +221,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       total_amount: grandTotal,
       customer_id: currentPatient?.primaryPatientId || currentPatient?.id,
     };
+    console.log('orderInput >>>', JSON.stringify(orderInput));
     return client.mutate<createOrderInternal, createOrderInternalVariables>({
       mutation: CREATE_INTERNAL_ORDER,
       variables: { order: orderInput },
@@ -500,17 +494,41 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   }
 
   const initiateOrder = async () => {
-    const response =
-      !circleSubscriptionId && circlePlanSelected
-        ? await saveOrderWithSubscription()
-        : await saveOrder();
-    console.log('response >>>', JSON.stringify(response));
-    const { orders, transactionId, errorCode } = response?.data?.saveMedicineOrderV2 || {};
-    const subscriptionId = response?.data?.CreateUserSubscription?.response?._id;
-    const data = await createOrderInternal(orders, subscriptionId);
-    setloading(true);
+    try {
+      const response =
+        !circleSubscriptionId && circlePlanSelected
+          ? await saveOrderWithSubscription()
+          : await saveOrder();
+      console.log('response >>>', JSON.stringify(response));
+      const { orders, transactionId, errorCode } = response?.data?.saveMedicineOrderV2 || {};
+      const subscriptionId = response?.data?.CreateUserSubscription?.response?._id;
+      const data = await createOrderInternal(orders, subscriptionId);
+      console.log('data >>>>', JSON.stringify(data));
+      if (data?.data?.createOrderInternal?.success) {
+        setauthToken?.('');
+        props.navigation.navigate(AppRoutes.PaymentMethods, {
+          paymentId: data?.data?.createOrderInternal?.payment_order_id!,
+          amount: grandTotal,
+          orderDetails: getOrderDetails(),
+          businessLine: 'pharma',
+        });
+      }
+      setloading(false);
+    } catch (error) {
+      console.log('error >>>>', error);
+      setloading(false);
+    }
   };
 
+  const getOrderDetails = () => {
+    const orderDetails = {
+      orders: orders,
+      orderInfo: OrderInfo,
+      deliveryTime: deliveryTime,
+      isStorePickup: false,
+    };
+    return orderDetails;
+  };
   const renderAlert = (message: string) => {
     showAphAlert!({
       title: string.common.uhOh,
