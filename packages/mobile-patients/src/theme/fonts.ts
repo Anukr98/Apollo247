@@ -2,13 +2,16 @@ import { Platform, TextStyle } from 'react-native';
 
 type AphOpacity = 0.1 | 0.2 | 0.3 | 0.4 | 0.5 | 0.6 | 0.7 | 0.8 | 0.9 | 1;
 type AphTextColors = '#01475b' | '#02475b' | '#0087ba' | '#fc9916' | '#890000' | '#fff' | string;
-type AphFont = 'SB' | 'R' | 'M' | 'B';
+type AphFont = 'SB' | 'R' | 'M' | 'L' | 'B';
 
 const getFont = (key: AphFont, size: number): TextStyle => {
   let fontStyle = Fonts.IBMPlexSansBold(size);
   switch (key) {
     case 'B':
       fontStyle = Fonts.IBMPlexSansBold(size);
+      break;
+    case 'L':
+      fontStyle = Fonts.IBMPlexSansLight(size);
       break;
     case 'M':
       fontStyle = Fonts.IBMPlexSansMedium(size);
@@ -51,7 +54,6 @@ const Fonts = {
       fontSize: s,
     };
   },
-
   IBMPlexSansMedium: (s = 12) => {
     return {
       fontFamily: 'IBMPlexSans-Medium',
@@ -64,6 +66,12 @@ const Fonts = {
           fontWeight: '500' as '500',
         },
       }),
+    };
+  },
+  IBMPlexSansLight: (s = 12) => {
+    return {
+      fontFamily: 'IBMPlexSans-Light',
+      fontSize: s,
     };
   },
   IBMPlexSansBold: (s = 12) => {
