@@ -2815,3 +2815,15 @@ export const getHealthCredits = async () => {
     return null;
   }
 };
+
+export const getPackageIds = (activeUserSubscriptions: any) => {
+  let packageIds: string[] = [];
+  activeUserSubscriptions &&
+    Object.keys(activeUserSubscriptions)?.forEach((subscription: string) => {
+      activeUserSubscriptions?.[subscription]?.forEach((item) => {
+        if (item?.status?.toLowerCase() === 'active')
+          packageIds.push(`${subscription?.toUpperCase()}:${item?.plan_id}`);
+      });
+    });
+  return packageIds;
+};
