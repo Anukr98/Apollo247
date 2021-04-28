@@ -50,8 +50,6 @@ export interface BookingRequestSubmittedOverlayProps extends NavigationScreenPro
 export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOverlayProps> = (
   props
 ) => {
-  const { doctor } = props;
-
   const tabs = [{ title: 'Request Submitted' }, { title: 'Request Failed' }];
 
   return (
@@ -67,7 +65,7 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
         zIndex: 5,
       }}
     >
-      <View style={{ paddingHorizontal: showSpinner ? 0 : 20 }}>
+      <View style={{ paddingHorizontal: 20 }}>
         <View
           style={{
             alignItems: 'flex-end',

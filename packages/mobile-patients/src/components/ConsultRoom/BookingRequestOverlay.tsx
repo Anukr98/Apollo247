@@ -19,7 +19,7 @@ import {
   getDoctorDetailsById_getDoctorDetailsById_doctorHospital,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import { ConsultMode } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
   WebEngageEvents,
@@ -264,10 +264,7 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
   };
 
   const onPressCheckout = async () => {
-    CommonLogEvent(
-      AppRoutes.DoctorDetailsBookingOnRequest,
-      'BookingRequestOverlay onSubmitRequest clicked'
-    );
+    setshowSpinner(true);
   };
   const moveSelectedToTop = () => {
     if (currentPatient !== undefined) {
@@ -287,9 +284,10 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
           title={'SUBMIT REQUEST'}
           disabled={disablePay ? false : false}
           onPress={() => {
+            onPressCheckout();
+
             props.setdisplayoverlay && props.setdisplayoverlay(false);
             props.onRequestComplete && props.onRequestComplete(true);
-            onPressCheckout();
           }}
         />
       </StickyBottomComponent>
@@ -394,21 +392,21 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
   const renderProfileListView = () => {
     return (
       <View>
-        {showSpinner && (
-          <Spinner style={{ backgroundColor: 'transparent' }} spinnerProps={{ size: 'small' }} />
-        )}
-        {/* <Text style={styles.congratulationsDescriptionStyle}>explanatory text-dont delete this</Text> */}
+        <Text style={[theme.viewStyles.text('B', 13, '#0087BA', 1, 17, 0), { marginTop: -4 }]}>
+          SELECT PATIENT <Text style={{ color: theme.colors.APP_RED }}>*</Text>
+        </Text>
+        <View style={styles.separatorStyle} />
         {renderCTAs()}
       </View>
     );
   };
 
   const onNewProfileAdded = (onAdd: any) => {
-    //finalAppointmentInput['patientId'] = onAdd?.id;
     setIsSelectedOnce(onAdd?.added);
     let patientData = patientProfiles;
     patientData?.unshift(onAdd?.profileData);
     setPatientProfiles(patientData);
+    setCurrentPatientId(patientData?.id);
   };
 
   const onSelectedProfile = (item: any) => {
@@ -425,7 +423,6 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
     AsyncStorage.setItem('isNewProfile', 'yes');
     moveSelectedToTop();
     setshowSpinner(false);
-    //finalAppointmentInput['patientId'] = selectedUser?.id;
   };
 
   const renderCTAs = () => (
@@ -531,14 +528,10 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
               <View
                 style={{
                   ...theme.viewStyles.cardContainer,
-                  padding: 21,
-                  marginTop: 20,
+                  padding: 20,
+                  marginTop: 15,
                 }}
               >
-                <Text style={theme.viewStyles.text('B', 13, '#0087BA', 1, 17, 0)}>
-                  SELECT PATIENT <Text style={{ color: theme.colors.APP_RED }}>*</Text>
-                </Text>
-                <View style={styles.separatorStyle} />
                 {renderProfileListView()}
               </View>
 
