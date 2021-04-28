@@ -3356,9 +3356,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const renderAllConsultedDoctors = () => {
-    return <ConsultedDoctorsCard navigation={props.navigation} />;
-  };
+
   const renderProhealthBanner = () => {
     return (
       <TouchableOpacity

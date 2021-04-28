@@ -169,6 +169,10 @@ export function DiagnosticDetailsViewed(
     Source: source,
     'Item Name': itemName,
     'Item Code': itemCode,
+    'Item ID': itemCode,
+    'Patient Name': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+    'Patient UHID': currentPatient?.uhid,
+    'Item Price': itemPrice,
   };
   if (!!itemType) {
     eventAttributes['Item Type'] = itemType;

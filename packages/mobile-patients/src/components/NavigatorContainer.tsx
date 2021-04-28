@@ -132,6 +132,7 @@ import { OtherBanks } from '@aph/mobile-patients/src/components/PaymentGateway/O
 import { OrderStatus } from '@aph/mobile-patients/src/components/Tests/OrderStatus';
 import { ProHealthWebView } from '@aph/mobile-patients/src/components/ProHealthWebView';
 import MyOrdersScreen from '@aph/mobile-patients/src/components/MyOrders/MyOrdersScreen';
+import { TestRatingScreen } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/TestRatingScreen';
 
 export enum AppRoutes {
   Login = 'Login',
@@ -252,6 +253,7 @@ export enum AppRoutes {
   TestWidgetListing = 'TestWidgetListing',
   ProHealthWebView = 'ProHealthWebView',
   MyOrdersScreen = 'MyOrdersScreen',
+  TestRatingScreen = 'TestRatingScreen'
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -643,6 +645,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.MyOrdersScreen]: {
     screen: MyOrdersScreen,
+  },
+  [AppRoutes.TestRatingScreen]: {
+    screen: TestRatingScreen,
   },
 };
 

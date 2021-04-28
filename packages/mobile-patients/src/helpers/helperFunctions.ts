@@ -34,6 +34,8 @@ import {
   Linking,
   NativeModules,
   PermissionsAndroid,
+  ToastAndroid,
+  AlertIOS
 } from 'react-native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import Permissions from 'react-native-permissions';
@@ -1305,24 +1307,24 @@ export const addTestsToCart = async (
     await getPackageInclusions(apolloClient, [Number(itemId)]);
 
   try {
-    const items = testPrescription.filter((val) => val.itemname).map((item) => item.itemname);
+    const items = testPrescription?.filter((val) => val?.itemname).map((item) => item?.itemname);
 
-    const searchQueries = Promise.all(items.map((item) => searchQuery(item!, '9')));
+    const searchQueries = Promise.all(items?.map((item) => searchQuery(item!, '9')));
     const searchQueriesData = (await searchQueries)
-      .map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
+      ?.map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
       // .filter((item, index) => g(item, 'itemName')! == items[index])
-      .filter((item) => !!item);
+      ?.filter((item) => !!item);
     const detailQueries = Promise.all(
-      searchQueriesData.map((item) => detailQuery(`${item.itemId}`))
+      searchQueriesData?.map((item) => detailQuery(`${item.itemId}`))
     );
-    const detailQueriesData = (await detailQueries).map(
+    const detailQueriesData = (await detailQueries)?.map(
       (item) => g(item, 'data', 'getInclusionsOfMultipleItems', 'inclusions', 'length') || 1 // updating testsIncluded
     );
     const finalArray: DiagnosticsCartItem[] = Array.from({
-      length: searchQueriesData.length,
+      length: searchQueriesData?.length,
     }).map((_, index) => {
-      const s = searchQueriesData[index];
-      const testIncludedCount = detailQueriesData[index];
+      const s = searchQueriesData?.[index];
+      const testIncludedCount = detailQueriesData?.[index];
       return {
         id: `${s?.itemId}`,
         name: s?.itemName,
@@ -2618,15 +2620,16 @@ export const validateCoupon = async (
   hdfcPlanId: string,
   circleStatus: string,
   circlePlanId: string,
-  setCouponProducts: ((items: CouponProducts[]) => void) | null
+  setCouponProducts: ((items: CouponProducts[]) => void) | null,
+  circlePlanSelected: ShoppingCartContextProps['circlePlanSelected']
 ) => {
   CommonLogEvent(AppRoutes.ApplyCouponScene, 'Apply coupon');
   let packageId: string[] = [];
   if (hdfcSubscriptionId && hdfcStatus === 'active') {
     packageId.push(`HDFC:${hdfcPlanId}`);
   }
-  if (circleSubscriptionId && circleStatus === 'active') {
-    packageId.push(`APOLLO:${circlePlanId}`);
+  if ((circleSubscriptionId && circleStatus === 'active') || circlePlanSelected?.subPlanId) {
+    packageId.push(`APOLLO:${circlePlanId || circlePlanSelected?.subPlanId}`);
   }
   const data = {
     mobile: mobileNumber,
@@ -2647,7 +2650,10 @@ export const validateCoupon = async (
       const response = await validateConsultCoupon(data);
       if (response.data.errorCode == 0) {
         if (response.data.response.valid) {
-          setCoupon!({ ...response?.data?.response, message: message ? message : '' });
+          setCoupon!({
+            ...response?.data?.response,
+            message: message ? message : '',
+          });
           res('success');
         } else {
           rej(response.data.response.reason);
@@ -2716,7 +2722,10 @@ export const storagePermissionsToDownload = (doRequest?: () => void) => {
 export async function downloadDiagnosticReport(
   pdfUrl: string,
   appointmentDate: string,
-  patientName: string
+  patientName: string,
+  showToast: boolean,
+  downloadFileName?: string,
+
 ) {
   let result = Platform.OS === 'android' && (await requestReadSmsPermission());
   try {
@@ -2730,12 +2739,21 @@ export async function downloadDiagnosticReport(
       Platform.OS == 'ios'
     ) {
       const dirs = RNFetchBlob.fs.dirs;
-      const reportName = `Apollo247_${appointmentDate}_${patientName}.pdf`;
+      const reportName = !!downloadFileName ? downloadFileName :  `Apollo247_${appointmentDate}_${patientName}.pdf`;
       const downloadPath =
         Platform.OS === 'ios'
           ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + reportName
           : dirs.DownloadDir + '/' + reportName;
-
+          
+      let msg = "File is downloading.."
+      if(showToast){
+        if (Platform.OS === 'android') {
+          ToastAndroid.show(msg, ToastAndroid.SHORT)
+        } else {
+          AlertIOS.alert(msg);
+        }
+      }
+      
       RNFetchBlob.config({
         fileCache: true,
         path: downloadPath,

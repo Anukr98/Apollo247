@@ -1199,6 +1199,10 @@ export interface WebEngageEvents {
     'Item Name': string;
     'Item Type'?: string;
     'Item Code': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    'Item ID' : string | number;
+    'Item Price'?: number | string;
   };
 
   [WebEngageEventName.DIAGNOSTIC_CART_VIEWED]: {

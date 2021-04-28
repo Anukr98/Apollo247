@@ -47,6 +47,7 @@ export enum AppointmentType {
 }
 
 export enum BOOKINGSOURCE {
+  BOOKING_TOOL = "BOOKING_TOOL",
   MOBILE = "MOBILE",
   WEB = "WEB",
 }
@@ -1039,36 +1040,6 @@ export interface DiagnosticLineItem {
   groupPlan?: string | null;
 }
 
-export interface DiagnosticOrderInput {
-  patientId: string;
-  patientAddressId: string;
-  city: string;
-  cityId: string;
-  state: string;
-  stateId: string;
-  slotTimings: string;
-  employeeSlotId?: any | null;
-  diagnosticEmployeeCode: string;
-  diagnosticBranchCode: string;
-  totalPrice: number;
-  prescriptionUrl: string;
-  diagnosticDate: any;
-  centerName: string;
-  centerCode: string;
-  centerCity: string;
-  centerState: string;
-  centerLocality: string;
-  bookingSource?: BOOKINGSOURCE | null;
-  deviceType?: DEVICETYPE | null;
-  paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
-  items?: (DiagnosticLineItem | null)[] | null;
-  slotId?: string | null;
-  areaId?: number | null;
-  totalPriceExcludingDiscounts?: number | null;
-  userSubscriptionId?: string | null;
-  subscriptionInclusionId?: string | null;
-}
-
 export interface DiagnosticTestsOrdered {
   itemId?: number | null;
   itemName?: string | null;
@@ -1622,6 +1593,7 @@ export interface SaveBookHomeCollectionOrderInput {
   areaId: number;
   collectionCharges: number;
   uniqueID?: string | null;
+  couponCode?: string | null;
   slotDateTimeInUTC: any;
   totalPriceExcludingDiscounts?: number | null;
   userSubscriptionId?: string | null;
@@ -1672,6 +1644,12 @@ export interface SaveSearchInput {
   typeName?: string | null;
   image?: string | null;
   patient: string;
+}
+
+export interface SavePhleboFeedback{
+  phleboRating?: number;
+  phleboFeedback: string | null;
+  diagnosticOrdersId?: string;
 }
 
 export interface ShopAddress {

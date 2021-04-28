@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     width: '100%',
     height: 48,
-    paddingHorizontal: 10,
+    paddingLeft: 10,
   },
   deliveryPinCodeContaner: {
     ...theme.viewStyles.cardContainer,
@@ -508,7 +508,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             autoFocus: true,
           }}
           value={searchText}
-          placeholder=" Search tests &amp; packages"
+          placeholder="Search tests &amp; packages"
           underlineColorAndroid="transparent"
           onChangeText={(value) => {
             if (isValidSearch(value)) {
