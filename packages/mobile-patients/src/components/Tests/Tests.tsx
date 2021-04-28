@@ -78,12 +78,12 @@ import {
   View,
   ViewStyle,
   Image as ImageNative,
-  Image,
   ImageBackground,
   BackHandler,
   Alert,
   Linking,
 } from 'react-native';
+import { Image } from 'react-native-elements';
 import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import {
   SEARCH_TYPE,
@@ -152,7 +152,7 @@ import {
   findDiagnosticsWidgetsPricingVariables,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
 import { LowNetworkCard } from '@aph/mobile-patients/src/components/Tests/components/LowNetworkCard';
-import { WidgetCard } from './components/WidgetCard';
+import { WidgetCard } from '@aph/mobile-patients/src/components/Tests/components/WidgetCard';
 import { PrescriptionCard } from '@aph/mobile-patients/src/components/Tests/components/PrescriptionCard';
 import {
   renderBannerShimmer,
@@ -2237,7 +2237,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
   const scrollWidgetSection = (data: any) => {
-    // console.log('data scroll:>> ', data);
     return (
       <View style={styles.container}>
         <SectionHeader
@@ -2301,9 +2300,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
          }
        }}
      >
-       <View style={styles.circleImg}>
-         <Image source={{ uri: item.itemIcon }} style={styles.image} />
-       </View>
+       <ImageNative
+          resizeMode={"contain"}
+          style={styles.image}
+          source={{ uri: item.itemIcon }}
+        />
        <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>
          {item?.itemTitle}
        </Text>
@@ -2585,7 +2586,6 @@ const styles = StyleSheet.create({
   stepsToBookModalIconStyle: {
     height: 30,
     width: 30,
-    resizeMode: 'contain',
   },
   stepsToBookModalMainTextHeading: {
     marginTop: '2%',
@@ -2620,7 +2620,6 @@ const styles = StyleSheet.create({
   circleImg: {
     width: 70,
     height: 70,
-    backgroundColor: '#E8E8E8',
     borderRadius: 70/2,
     alignItems: 'center',
     justifyContent: 'center',
@@ -2628,8 +2627,7 @@ const styles = StyleSheet.create({
   image: {
     width: 70,
     height: 70,
-    borderRadius: 50,
-    backgroundColor:'#E8E8E8',
+    borderRadius: 70/2,
   },
   gridPart: {
     alignItems: 'center',

@@ -12,24 +12,12 @@ import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/Diagnost
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
 
 export interface WidgetCardProps {
-  onPress?: () => void;
-  isCircleSubscribed: boolean;
-  style?: ViewStyle;
-  showSeparator?: boolean;
-  loading?: boolean;
   data: any;
-  isServiceable?: boolean;
-  isVertical: boolean;
-  columns?: number;
-  navigation: NavigationScreenProp<NavigationRoute<object>, object>;
-  source: string;
-  sourceScreen: string;
   onPressWidget: any
 }
 
 export const WidgetCard: React.FC<WidgetCardProps> = (props) => {
-  const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
-  const { data, isCircleSubscribed, source, navigation, sourceScreen, onPressWidget } = props;
+  const { data, onPressWidget } = props;
 
     return (
       <TouchableOpacity style={styles.container} onPress={()=>{
