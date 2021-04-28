@@ -1140,22 +1140,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         }}
         deliveryTime={deliveryTime}
         onPressChangeAddress={showAddressPopup}
-        onPressTatCard={() => {
-          /*
-          if (hasUnserviceableproduct()) {
-            return;
-          } else if (uploadPrescriptionRequired) {
-            props.navigation.navigate(AppRoutes.MedicineCartPrescription);
-          } else {
-            props.navigation.navigate(AppRoutes.CartSummary, {
-              deliveryTime: deliveryTime,
-              storeDistance: storeDistance,
-              tatType: storeType,
-              shopId: shopId,
-            });
-          }
-          */
-        }}
         screen={'MedicineCart'}
         onPressReviewOrder={onPressReviewOrder}
         onPressAddMoreMedicines={() => {
