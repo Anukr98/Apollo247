@@ -1,42 +1,9 @@
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { ConsultOnline } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultOnline';
-import { ConsultPhysical } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPhysical';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
-import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
-import {
-  CommonBugFender,
-  CommonLogEvent,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {
-  getDoctorDetailsById_getDoctorDetailsById,
-  getDoctorDetailsById_getDoctorDetailsById_doctorHospital,
-} from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
-import {
-  ConsultMode,
-  DoctorType,
-  BookAppointmentInput,
-  APPOINTMENT_TYPE,
-  BOOKINGSOURCE,
-  DEVICETYPE,
-  PLAN,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import {
-  WebEngageEventName,
-  WebEngageEvents,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
 import {
   Dimensions,
   ImageBackground,
@@ -45,18 +12,11 @@ import {
   Text,
   TouchableOpacity,
   View,
-  StyleProp,
   ViewStyle,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-import { WhatsAppStatus } from './WhatsAppStatus';
-import {
-  calculateCircleDoctorPricing,
-  isPhysicalConsultation,
-} from '@aph/mobile-patients/src/utils/commonUtils';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import moment from 'moment';
+
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -92,50 +52,7 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
 ) => {
   const { doctor } = props;
 
-  const client = useApolloClient();
-  const { circleSubscriptionId } = useShoppingCart();
-
-  const consultOnlineTab = string.consultModeTab.CONSULT_ONLINE;
-  const consultPhysicalTab = string.consultModeTab.MEET_IN_PERSON;
-
   const tabs = [{ title: 'Request Submitted' }, { title: 'Request Failed' }];
-
-  const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
-  const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');
-
-  const [showSpinner, setshowSpinner] = useState<boolean>(false);
-  const [nextAvailableSlot, setNextAvailableSlot] = useState<string>('');
-  const [isConsultOnline, setisConsultOnline] = useState<boolean>(true);
-  const [availableInMin, setavailableInMin] = useState<number>(0);
-  const [date, setDate] = useState<Date>(new Date());
-  const [coupon, setCoupon] = useState('');
-  const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
-  const [notificationAlert, setNotificationAlert] = useState(false);
-
-  const [doctorDiscountedFees, setDoctorDiscountedFees] = useState<number>(0);
-  const scrollViewRef = React.useRef<any>(null);
-  const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
-  const [disablePay, setdisablePay] = useState<boolean>(false);
-
-  const { currentPatient } = useAllCurrentPatients();
-  const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
-  const isOnlineConsult = selectedTab === consultOnlineTab;
-  const isPhysicalConsult = isPhysicalConsultation(selectedTab);
-
-  const circleDoctorDetails = calculateCircleDoctorPricing(
-    props.doctor,
-    isOnlineConsult,
-    isPhysicalConsult
-  );
-  const {
-    onlineConsultSlashedPrice,
-    onlineConsultMRPPrice,
-    physicalConsultMRPPrice,
-    physicalConsultSlashedPrice,
-    isCircleDoctorOnSelectedConsultMode,
-  } = circleDoctorDetails;
-
-  const todayDate = new Date().toDateString().split('T')[0];
 
   return (
     <View
