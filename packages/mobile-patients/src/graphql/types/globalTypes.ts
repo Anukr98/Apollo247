@@ -53,6 +53,8 @@ export enum BOOKINGSOURCE {
 }
 
 export enum BOOKING_SOURCE {
+  AP_IN = "AP_IN",
+  BOOKING_TOOL = "BOOKING_TOOL",
   MFINE = "MFINE",
   MOBILE = "MOBILE",
   ORDER_PUNCHING_TOOL = "ORDER_PUNCHING_TOOL",
@@ -1239,7 +1241,7 @@ export interface MedicineCartOMSInput {
   estimatedAmount?: number | null;
   patientId: string;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
-  bookingSource?: BOOKINGSOURCE | null;
+  bookingSource?: BOOKING_SOURCE | null;
   deviceType?: DEVICE_TYPE | null;
   appVersion?: string | null;
   patientAddressId?: string | null;
@@ -1642,7 +1644,7 @@ export interface SaveMedicineOrderV2Input {
   patientId: string;
   estimatedAmount?: number | null;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
-  bookingSource?: BOOKINGSOURCE | null;
+  bookingSource?: BOOKING_SOURCE | null;
   deviceType?: DEVICE_TYPE | null;
   appVersion?: string | null;
   coupon?: string | null;

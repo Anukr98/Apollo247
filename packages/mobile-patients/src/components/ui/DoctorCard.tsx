@@ -702,7 +702,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   props.buttonViewStyle,
                 ]}
               >
-                {props?.rowId != 4 && (
+                {!props?.rowData?.allowBookingRequest && (
                   <TouchableOpacity
                     activeOpacity={1}
                     style={[
@@ -791,7 +791,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   </TouchableOpacity>
                 )}
 
-                {props?.rowId === 4 && console.log('csk row', JSON.stringify(props?.rowData)) && (
+                {props?.rowData?.allowBookingRequest && (
                   <Button
                     style={styles.BORButtonStyle}
                     titleTextStyle={styles.BORButtonTextStyle}

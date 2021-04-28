@@ -1220,7 +1220,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         }}
         onPress={() => {
           postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List');
-          if (index != 3) {
+          if (!rowData?.allowBookingRequest) {
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: rowData.id,
               callSaveSearch: callSaveSearch,
