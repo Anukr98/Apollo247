@@ -104,6 +104,8 @@
 	<string>${PRODUCT_NAME} need access to your photo to choose your avatar.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>$(PRODUCT_NAME)  would like to access speech recognition. Speech data from this app will be sent to Apple to process your requests. This will also help Apple improve its speech recognition technology.</string>
+  <key>NSUserTrackingUsageDescription</key>
+  <string>${PRODUCT_NAME} would like to access for collecting data in order to track the user, including Product Interaction, Device ID, and User ID</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>MaterialIcons-Regular.ttf</string>
