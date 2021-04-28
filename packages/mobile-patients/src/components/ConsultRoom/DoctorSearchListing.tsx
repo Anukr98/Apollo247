@@ -298,6 +298,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [doctorShareRank, setDoctorShareRank] = useState<number>(1);
   const specialityId = props.navigation.getParam('specialityId') || '';
   const [requestDoctorSelected, setRequestDoctorSelected] = useState<string>('');
+  const [requestDoctorSelectedDetails, setRequestDoctorSelectedDetails] = useState<any>({});
   const [requestErrorMessage, setRequestErrorMessage] = useState<string>('');
   const [requestError, setRequestError] = useState<boolean>(false);
 
@@ -1219,8 +1220,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         availableModes={rowData.consultMode}
         callSaveSearch={callSaveSearch}
         onPressRequest={(arg: boolean) => {
-          setdisplayoverlay(arg);
           setRequestDoctorSelected(rowData?.displayName);
+          setRequestDoctorSelectedDetails(rowData);
+          setdisplayoverlay(arg);
         }}
         onPress={() => {
           postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List');
@@ -2114,19 +2116,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           setdisplayoverlay={(arg: boolean) => setdisplayoverlay(arg)}
           onRequestComplete={(arg: boolean) => setSubmittedDisplayOverlay(arg)}
           navigation={props.navigation}
-          consultedWithDoctorBefore={false}
-          doctor={null}
-          patientId={''}
-          clinics={[]}
-          doctorId={props.navigation.state.params!.doctorId}
-          FollowUp={props.navigation.state.params!.FollowUp}
-          appointmentType={props.navigation.state.params!.appointmentType}
-          appointmentId={props.navigation.state.params!.appointmentId}
-          consultModeSelected={ConsultMode.ONLINE}
-          externalConnect={null}
-          availableMode={ConsultMode.BOTH}
-          callSaveSearch={callSaveSearch}
-          isDoctorsOfTheHourStatus={false}
+          doctor={requestDoctorSelectedDetails}
+          hospitalId={''}
         />
       )}
       {submittedDisplayOverlay && (

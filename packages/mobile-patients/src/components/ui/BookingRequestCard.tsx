@@ -3,13 +3,6 @@ import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { BORHeader, CTDoctor, CTCalender, BORform, InfoBlue, CircleLogo } from './Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '../../theme/theme';
-import {
-  nextAvailability,
-  timeDiffFromNow,
-  postWebEngageEvent,
-} from '../../helpers/helperFunctions';
-import moment from 'moment';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
@@ -134,17 +127,8 @@ const styles = StyleSheet.create({
 });
 
 export interface BookingRequestCardProps extends NavigationScreenProps {
-  onOnlinePress: () => void;
-  onPhysicalPress: () => void;
-  isOnlineSelected: boolean;
-  DoctorId: string;
-  chatDays: string;
-  DoctorName: string | null;
-  nextAppointemntOnlineTime: string;
-  nextAppointemntInPresonTime: string;
-  circleDoctorDetails?: any;
-  availNowText?: string;
-  consultNowText?: string;
+  onPress: () => void;
+  doctorName: string | null;
 }
 
 type stepsObject = {
@@ -154,13 +138,7 @@ type stepsObject = {
 };
 
 export const BookingRequestCard: React.FC<BookingRequestCardProps> = (props) => {
-  const {
-    onOnlinePress,
-    onPhysicalPress,
-    nextAppointemntInPresonTime,
-    circleDoctorDetails,
-    availNowText,
-  } = props;
+  const { onPress, doctorName } = props;
 
   const renderCard = (
     headingImage: Element,
@@ -168,7 +146,6 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = (props) => 
     question: string,
     steps: stepsObject[]
   ) => {
-    console.log('csk props bor card', props);
     return (
       <View style={styles.cardContainer}>
         <View style={styles.cardBorderStyle}>

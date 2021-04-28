@@ -594,36 +594,6 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
       });
   };
 
-  const todayDate = new Date().toISOString().slice(0, 10);
-
-  const fetchNextAvailableSlots = (doctorIds: string[]) => {
-    getNextAvailableSlots(client, doctorIds, todayDate)
-      .then(({ data }: any) => {
-        try {
-          if (data && availableInMin === undefined) {
-            const nextSlot = data ? g(data[0], 'availableSlot') : null;
-            const nextPhysicalSlot = data ? g(data[0], 'physicalAvailableSlot') : null;
-            if (nextSlot) {
-              setavailableTime(nextSlot);
-              const timeDiff: Number = timeDiffFromNow(nextSlot);
-              setavailableInMin(timeDiff);
-            }
-            if (nextPhysicalSlot) {
-              setphysicalAvailableTime(nextPhysicalSlot);
-              const timeDiff: Number = timeDiffFromNow(nextPhysicalSlot);
-              setavailableInMinPhysical(timeDiff);
-            }
-          }
-        } catch (error) {
-          CommonBugFender('DoctorDetails_fetchNextAvailableSlots_try', error);
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('DoctorDetails_fetchNextAvailableSlots', e);
-        setshowSpinner(false);
-      });
-  };
-
   const fetchDoctorDetails = () => {
     const input = {
       id: doctorId,
@@ -642,12 +612,9 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
             setDoctorId(data.getDoctorDetailsById.id);
             setCtaBannerText(data?.getDoctorDetailsById?.availabilityTitle);
             setshowSpinner(false);
-            fetchNextAvailableSlots([data.getDoctorDetailsById.id]);
-            setAvailableModes(data.getDoctorDetailsById);
           } else {
             setTimeout(() => {
               setshowSpinner(false);
-              navigateToSpecialitySearch();
             }, 1500);
           }
         } catch (e) {
@@ -679,52 +646,12 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
     postWebEngageEvent(WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK, eventAttributes);
   };
 
-  const setAvailableModes = (availabilityMode: any) => {
-    const modeOfConsult = availabilityMode.availableModes;
-
-    try {
-      if (modeOfConsult.includes(ConsultMode.BOTH)) {
-        setConsultType(ConsultMode.BOTH);
-        setOnlineSelected(true);
-      } else if (modeOfConsult.includes(ConsultMode.ONLINE)) {
-        setConsultType(ConsultMode.ONLINE);
-        setOnlineSelected(true);
-      } else if (modeOfConsult.includes(ConsultMode.PHYSICAL)) {
-        setConsultType(ConsultMode.PHYSICAL);
-        setOnlineSelected(false);
-        set_follow_up_chat_message_visibility(false);
-      } else {
-        setConsultType(ConsultMode.BOTH);
-      }
-    } catch (error) {}
-  };
-
-  const navigateToSpecialitySearch = () => {
-    navigateToScreenWithEmptyStack(props.navigation, AppRoutes.DoctorSearch);
-  };
-
-  const formatTime = (time: string) => {
-    const IOSFormat = `${todayDate}T${time}.000Z`;
-    return Moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('hh:mm A');
-  };
-  const formatDateTime = (time: string) => {
-    return Moment(new Date(time), 'HH:mm:ss.SSSz').format('hh:mm A');
-  };
-
-  const renderConsultType = () => {
-    console.log('csk props bor card', 'here', props);
+  const renderHowItWorks = (doctorDetails: getDoctorDetailsById_getDoctorDetailsById) => {
     return (
       <BookingRequestCard
-        isOnlineSelected={onlineSelected}
-        DoctorId={doctorId}
-        chatDays={g(doctorDetails, 'chatDays') ? g(doctorDetails, 'chatDays')!.toString() : '7'}
-        DoctorName={doctorDetails ? doctorDetails.fullName : ''}
-        nextAppointemntOnlineTime={availableTime}
-        nextAppointemntInPresonTime={physicalAvailableTime}
-        circleDoctorDetails={circleDoctorDetails}
+        doctorName={doctorDetails.fullName || ''}
+        onPress={() => null}
         navigation={props.navigation}
-        availNowText={'asad in'}
-        consultNowText={'asad now'}
       />
     );
   };
@@ -844,7 +771,7 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
 
               <View style={styles.separatorStyle} />
 
-              {/*  dont delete this, will be added in next version*/}
+              {/* ---- dont delete this, will be added in next version* -----/}
               {/* <View style={[styles.followUpChatMessageViewStyle, { marginBottom: -4 }]}>
                 <CallRingIcon style={styles.followUpChatImageStyle} />
                 <Text style={styles.followUpCallNumberStyle}>{'040-2211782'}</Text>
@@ -1317,7 +1244,7 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
           )}
         >
           {doctorDetails && renderDoctorDetails()}
-          {doctorDetails && renderConsultType()}
+          {doctorDetails && renderHowItWorks(doctorDetails)}
           {doctorDetails && renderDoctorClinic()}
           {doctorDetails && renderDoctorTeam()}
           {appointmentHistory && renderAppointmentHistory()}
@@ -1332,19 +1259,8 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
           setdisplayoverlay={(arg: boolean) => setdisplayoverlay(arg)}
           onRequestComplete={(arg: boolean) => setSubmittedDisplayOverlay(arg)}
           navigation={props.navigation}
-          consultedWithDoctorBefore={false}
-          doctor={doctorDetails ? doctorDetails : null}
-          patientId={currentPatient ? currentPatient.id : ''}
-          clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
-          doctorId={props.navigation.state.params!.doctorId}
-          FollowUp={props.navigation.state.params!.FollowUp}
-          appointmentType={props.navigation.state.params!.appointmentType}
-          appointmentId={props.navigation.state.params!.appointmentId}
-          consultModeSelected={ConsultMode.ONLINE}
-          externalConnect={null}
-          availableMode={ConsultMode.BOTH}
-          callSaveSearch={callSaveSearch}
-          isDoctorsOfTheHourStatus={false}
+          doctor={doctorDetails}
+          hospitalId={props.navigation.state.params!.doctorId}
         />
       )}
       {submittedDisplayOverlay && doctorDetails && (

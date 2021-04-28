@@ -42,6 +42,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 import moment from 'moment';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { DoctorDetails } from './DoctorDetails';
 
 const { width, height } = Dimensions.get('window');
 
@@ -220,21 +221,8 @@ const styles = StyleSheet.create({
 export interface BookingRequestOverlayProps extends NavigationScreenProps {
   setdisplayoverlay: (arg: boolean) => void;
   onRequestComplete?: (arg: boolean) => void;
-  patientId: string;
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
-  clinics: getDoctorDetailsById_getDoctorDetailsById_doctorHospital[];
-  doctorId: string;
-  FollowUp: boolean;
-  appointmentType: string;
-  appointmentId: string;
-  consultModeSelected: ConsultMode;
-  externalConnect: boolean | null;
-  availableMode: string;
-  consultedWithDoctorBefore: boolean;
-  callSaveSearch: string;
-  mainContainerStyle?: StyleProp<ViewStyle>;
-  scrollToSlot?: boolean;
-  isDoctorsOfTheHourStatus?: boolean;
+  hospitalId: string;
 }
 export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (props) => {
   const tabs = [{ title: 'Request Appointment' }];
@@ -257,6 +245,7 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
   const [dateRangeSelected, setDateRangeSelected] = useState<string>('option1');
   const [othersText, setOthersText] = useState<string>('');
   const { showAphAlert, setLoading } = useUIElements();
+  const { doctor } = props;
 
   useEffect(() => {
     setPatientProfiles(moveSelectedToTop());
@@ -270,15 +259,25 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
 
   const onPressCheckout = async () => {
     //setshowSpinner(true);
-    console.log(
-      'csk form data',
-      isSelectedOnce,
-      modeSelected,
-      dateRangeSelected,
-      othersText,
-      currentPatientId,
-      currentPatient
-    );
+    const formdata = {
+      bookAppointment: {
+        patientId: currentPatientId,
+        doctorId: doctor?.id,
+        hospitalId: '',
+        bookingSource: 'MOBILE',
+        appointmentType: modeSelected,
+        deviceType: Platform.OS === 'ios' ? 'ios' : 'android',
+        requestDetail: {
+          comments:
+            dateRangeSelected === 'option1'
+              ? '15 days from now'
+              : dateRangeSelected === 'option2'
+              ? 'anytime'
+              : othersText,
+        },
+      },
+    };
+    console.log('csk form data', isSelectedOnce, JSON.stringify(doctor), '\n\n', formdata);
   };
 
   const moveSelectedToTop = () => {
@@ -560,6 +559,7 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
               {renderDisclamer()}
               <View style={{ height: 70 }} />
             </ScrollView>
+            {console.log('csk doc details page', JSON.stringify(doctor))}
             {renderBottomButton()}
           </View>
         </View>
