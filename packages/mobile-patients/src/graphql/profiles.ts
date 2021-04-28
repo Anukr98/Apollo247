@@ -4729,7 +4729,7 @@ export const GET_PATIENT_PAST_CONSULTED_DOCTORS = gql`
   }
 `;
 
-export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql `
+export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
   query getDiagnosticClosedOrdersList($mobileNumber : String!, $skip: Int!, $take: Int!){
     getDiagnosticClosedOrdersList(mobileNumber: $mobileNumber, skip: $skip, take: $take){
       closedOrders{
@@ -4756,6 +4756,14 @@ export const GET_PROHEALTH_HOSPITAL_BY_SLUG = gql `
         hospitals{
         id
       }
+    }
+  }
+`;
+
+export const SAVE_PHLEBO_FEEDBACK = gql`
+  mutation savePhleboFeedback($phleboRating: Int!, $phleboFeedback: String, $diagnosticOrdersId: String!) {
+    savePhleboFeedback(phleboRating: $phleboRating, phleboFeedback: $phleboFeedback, diagnosticOrdersId: $diagnosticOrdersId) {
+        status
     }
   }
 `;

@@ -1151,30 +1151,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
       </TouchableOpacity>
     );
 
-    const leftIconView = (
-      <SearchIcon
-        style={{
-          marginLeft: -16,
-          height: 21,
-          width: 21,
-          tintColor: colors.APP_GREEN,
-          marginRight: 5,
-        }}
-      />
-    );
+
 
     const itemsNotFound = searchSate == 'success' && searchText?.length > 2 && searchResult;
     return (
       <TouchableOpacity
         onPress={() => {
-          props.navigation.navigate(AppRoutes.SearchTestScene, {
-            searchText: searchText,
-          });
+            props.navigation.navigate(AppRoutes.SearchTestScene, {
+              searchText: searchText,
+            });
         }}
         style={styles.searchNewInput}
       >
-        <Text style={styles.searchTextStyle}>Search tests &amp; packages</Text>
-        {rigthIconView}
+          <Text style={styles.searchTextStyle}>Search tests &amp; packages</Text>
+          {rigthIconView}
       </TouchableOpacity>
     );
   };
