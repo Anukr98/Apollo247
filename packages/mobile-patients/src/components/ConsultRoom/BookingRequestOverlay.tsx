@@ -19,7 +19,10 @@ import {
   getDoctorDetailsById_getDoctorDetailsById_doctorHospital,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import { ConsultMode } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  postWebEngageEvent,
+  handleGraphQlError,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
   WebEngageEvents,
@@ -28,6 +31,7 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   Dimensions,
   Platform,
@@ -43,7 +47,20 @@ import { NavigationScreenProps } from 'react-navigation';
 import moment from 'moment';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { DoctorDetails } from './DoctorDetails';
+import {
+  appointmentBookingRequest_appointmentBookingRequest,
+  appointmentBookingRequest,
+  appointmentBookingRequestVariables,
+} from '@aph/mobile-patients/src/graphql/types/appointmentBookingRequest';
 
+import { MAKE_APPOINTMENT_BOOKING_REQUEST } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  AppointmentBookingRequestInput,
+  REQUEST_DETAIL,
+  BOOKINGSOURCE,
+  DEVICETYPE,
+  APPOINTMENT_TYPE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -245,7 +262,8 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
   const [dateRangeSelected, setDateRangeSelected] = useState<string>('option1');
   const [othersText, setOthersText] = useState<string>('');
   const { showAphAlert, setLoading } = useUIElements();
-  const { doctor } = props;
+  const { doctor, hospitalId } = props;
+  const client = useApolloClient();
 
   useEffect(() => {
     setPatientProfiles(moveSelectedToTop());
@@ -258,26 +276,66 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
   };
 
   const onPressCheckout = async () => {
-    //setshowSpinner(true);
+    setshowSpinner(true);
+
+    const requestDetail: REQUEST_DETAIL = {
+      comments:
+        dateRangeSelected === 'option1'
+          ? '15 days from now'
+          : dateRangeSelected === 'option2'
+          ? 'anytime'
+          : othersText,
+      preferredStartDate: null,
+      preferredEndDate: null,
+    };
+
+    const appointmentType: APPOINTMENT_TYPE =
+      modeSelected === ConsultMode.BOTH
+        ? APPOINTMENT_TYPE.BOTH
+        : modeSelected === ConsultMode.PHYSICAL
+        ? APPOINTMENT_TYPE.PHYSICAL
+        : APPOINTMENT_TYPE.ONLINE;
+
+    const deviceType: DEVICETYPE = Platform.OS === 'ios' ? DEVICETYPE.IOS : DEVICETYPE.ANDROID;
+
     const formdata = {
       bookAppointment: {
-        patientId: currentPatientId,
-        doctorId: doctor?.id,
-        hospitalId: '',
+        patientId: currentPatientId || '',
+        doctorId: doctor?.id || '',
+        hospitalId: hospitalId,
         bookingSource: 'MOBILE',
-        appointmentType: modeSelected,
-        deviceType: Platform.OS === 'ios' ? 'ios' : 'android',
-        requestDetail: {
-          comments:
-            dateRangeSelected === 'option1'
-              ? '15 days from now'
-              : dateRangeSelected === 'option2'
-              ? 'anytime'
-              : othersText,
-        },
+        appointmentType: appointmentType,
+        deviceType: deviceType,
+        requestDetail: requestDetail,
       },
     };
-    console.log('csk form data', isSelectedOnce, JSON.stringify(doctor), '\n\n', formdata);
+    console.log('csk form data', '\n\n', formdata, '\n');
+
+    client
+      .mutate<appointmentBookingRequest, appointmentBookingRequestVariables>({
+        mutation: MAKE_APPOINTMENT_BOOKING_REQUEST,
+        variables: {
+          bookAppointment: {
+            patientId: currentPatientId || '',
+            doctorId: doctor?.id || '',
+            hospitalId: hospitalId,
+            bookingSource: BOOKINGSOURCE.MOBILE,
+            appointmentType: appointmentType,
+            deviceType: deviceType,
+            requestDetail: requestDetail,
+          },
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        console.log('csk appointment mutation result', JSON.stringify(data));
+        setshowSpinner(false);
+      })
+      .catch((e: any) => {
+        console.log('csk form error', JSON.stringify(e));
+        setshowSpinner!(false);
+        handleGraphQlError(e);
+      });
   };
 
   const moveSelectedToTop = () => {
@@ -559,7 +617,6 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
               {renderDisclamer()}
               <View style={{ height: 70 }} />
             </ScrollView>
-            {console.log('csk doc details page', JSON.stringify(doctor))}
             {renderBottomButton()}
           </View>
         </View>

@@ -1260,7 +1260,7 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
           onRequestComplete={(arg: boolean) => setSubmittedDisplayOverlay(arg)}
           navigation={props.navigation}
           doctor={doctorDetails}
-          hospitalId={props.navigation.state.params!.doctorId}
+          hospitalId={doctorDetails?.doctorHospital?.[0].facility.id}
         />
       )}
       {submittedDisplayOverlay && doctorDetails && (
