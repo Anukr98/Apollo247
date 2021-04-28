@@ -245,7 +245,12 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
   const [disablePay, setdisablePay] = useState<boolean>(false);
   const [isSelectedOnce, setIsSelectedOnce] = useState<boolean>(false);
 
-  const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
+  const {
+    currentPatient,
+    allCurrentPatients,
+    setCurrentPatientId,
+    currentPatientId,
+  } = useAllCurrentPatients();
   const [patientProfiles, setPatientProfiles] = useState<any>([]);
   const [gender, setGender] = useState<string>(currentPatient?.gender);
   const [modeSelected, setModeSelected] = useState<string>(ConsultMode.BOTH);
@@ -264,8 +269,18 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
   };
 
   const onPressCheckout = async () => {
-    setshowSpinner(true);
+    //setshowSpinner(true);
+    console.log(
+      'csk form data',
+      isSelectedOnce,
+      modeSelected,
+      dateRangeSelected,
+      othersText,
+      currentPatientId,
+      currentPatient
+    );
   };
+
   const moveSelectedToTop = () => {
     if (currentPatient !== undefined) {
       const patientLinkedProfiles = [
@@ -282,12 +297,17 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
       <StickyBottomComponent defaultBG style={styles.sbcContainer}>
         <Button
           title={'SUBMIT REQUEST'}
-          disabled={disablePay ? false : false}
+          disabled={
+            isSelectedOnce &&
+            (dateRangeSelected === 'option3' && othersText.length < 3 ? false : true)
+              ? false
+              : true
+          }
           onPress={() => {
             onPressCheckout();
 
-            props.setdisplayoverlay && props.setdisplayoverlay(false);
-            props.onRequestComplete && props.onRequestComplete(true);
+            // props.setdisplayoverlay && props.setdisplayoverlay(false);
+            // props.onRequestComplete && props.onRequestComplete(true);
           }}
         />
       </StickyBottomComponent>
@@ -406,7 +426,7 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
     let patientData = patientProfiles;
     patientData?.unshift(onAdd?.profileData);
     setPatientProfiles(patientData);
-    setCurrentPatientId(patientData?.id);
+    //setCurrentPatientId(patientData?.id);
   };
 
   const onSelectedProfile = (item: any) => {
