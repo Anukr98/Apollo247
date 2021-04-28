@@ -408,7 +408,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setCommentForCancel(comment);
 
     const orderCancellationInput: CancellationDiagnosticsInput = {
-      comment: comment,
+      comment: comment?.length != 0 ? comment : '',
       orderId: String(selectedOrderId),
       patientId: g(currentPatient, 'id'),
       reason: reason,
