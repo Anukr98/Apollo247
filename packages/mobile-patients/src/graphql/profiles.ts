@@ -1044,6 +1044,7 @@ export const ADD_PRESCRIPTION_RECORD = gql`
   }
 `;
 
+
 export const GET_DOCTOR_DETAILS_BY_ID = gql`
   query getDoctorDetailsById($id: String!) {
     getDoctorDetailsById(id: $id) {
@@ -4707,6 +4708,26 @@ export const GET_ALL_PRO_HEALTH_APPOINTMENTS = gql`
     }
   }
 `;
+
+export const MAKE_APPOINTMENT_BOOKING_REQUEST =gql`
+mutation appointmentBookingRequest(
+  $bookAppointment: AppointmentBookingRequestInput!
+) {
+  appointmentBookingRequest(appointmentInput: $bookAppointment) {
+    appointment {
+      id
+      doctorId
+      appointmentDateTime
+      status
+      appointmentType
+      patientId
+      __typename
+    }
+    __typename
+  }
+}
+`;
+
 
 export const GET_PHLOBE_DETAILS = gql`
   query getOrderPhleboDetailsBulk($diagnosticOrdersIds: [String]!) {

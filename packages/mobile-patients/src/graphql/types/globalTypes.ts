@@ -53,8 +53,6 @@ export enum BOOKINGSOURCE {
 }
 
 export enum BOOKING_SOURCE {
-  AP_IN = "AP_IN",
-  BOOKING_TOOL = "BOOKING_TOOL",
   MFINE = "MFINE",
   MOBILE = "MOBILE",
   ORDER_PUNCHING_TOOL = "ORDER_PUNCHING_TOOL",
@@ -75,18 +73,6 @@ export enum BloodGroups {
   BPositive = "BPositive",
   ONegative = "ONegative",
   OPositive = "OPositive",
-}
-
-export enum BookingSource {
-  Apollo247_Android = "Apollo247_Android",
-  Apollo247_Ios = "Apollo247_Ios",
-  Apollo247_Web = "Apollo247_Web",
-}
-
-export enum BookingStatus {
-  COMPLETED = "COMPLETED",
-  FAILED = "FAILED",
-  INPROGRESS = "INPROGRESS",
 }
 
 export enum CODCity {
@@ -211,13 +197,6 @@ export enum FEEDBACKTYPE {
   CONSULT = "CONSULT",
   DIAGNOSTICS = "DIAGNOSTICS",
   PHARMACY = "PHARMACY",
-}
-
-export enum GENDER {
-  ALL = "ALL",
-  FEMALE = "FEMALE",
-  MALE = "MALE",
-  OTHER = "OTHER",
 }
 
 export enum Gender {
@@ -638,6 +617,7 @@ export enum STATUS {
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PAYMENT_PENDING_PG = "PAYMENT_PENDING_PG",
   PENDING = "PENDING",
+  REQUESTED = "REQUESTED",
   UNAVAILABLE_MEDMANTRA = "UNAVAILABLE_MEDMANTRA",
 }
 
@@ -688,11 +668,6 @@ export enum USER_STATUS {
 export enum USER_TYPE {
   DOCTOR = "DOCTOR",
   PATIENT = "PATIENT",
-}
-
-export enum UnitTypes {
-  CLINIC = "CLINIC",
-  HOSPITAL = "HOSPITAL",
 }
 
 export enum UserState {
@@ -876,6 +851,18 @@ export interface AllergyFileProperties {
   fileName?: string | null;
   mimeType?: string | null;
   content?: string | null;
+}
+
+export interface AppointmentBookingRequestInput {
+  patientId: string;
+  doctorId: string;
+  appointmentType: APPOINTMENT_TYPE;
+  hospitalId: string;
+  bookingSource?: BOOKINGSOURCE | null;
+  deviceType?: DEVICETYPE | null;
+  actualAmount?: number | null;
+  discountedAmount?: number | null;
+  requestDetail?: REQUEST_DETAIL | null;
 }
 
 export interface AppointmentHistoryInput {
@@ -1241,7 +1228,7 @@ export interface MedicineCartOMSInput {
   estimatedAmount?: number | null;
   patientId: string;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
-  bookingSource?: BOOKING_SOURCE | null;
+  bookingSource?: BOOKINGSOURCE | null;
   deviceType?: DEVICE_TYPE | null;
   appVersion?: string | null;
   patientAddressId?: string | null;
@@ -1574,6 +1561,12 @@ export interface ProcessDiagnosticHCOrderInput {
   amount: number;
 }
 
+export interface REQUEST_DETAIL {
+  preferredStartDate: any;
+  preferredEndDate: any;
+  comments?: string | null;
+}
+
 export interface Range {
   minimum?: number | null;
   maximum?: number | null;
@@ -1644,7 +1637,7 @@ export interface SaveMedicineOrderV2Input {
   patientId: string;
   estimatedAmount?: number | null;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
-  bookingSource?: BOOKING_SOURCE | null;
+  bookingSource?: BOOKINGSOURCE | null;
   deviceType?: DEVICE_TYPE | null;
   appVersion?: string | null;
   coupon?: string | null;
