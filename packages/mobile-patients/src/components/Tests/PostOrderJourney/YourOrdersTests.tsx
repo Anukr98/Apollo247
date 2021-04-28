@@ -160,6 +160,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const client = useApolloClient();
   const [orders, setOrders] = useState<any>(props.navigation.getParam('orders'));
+  const [isTest, setIsTest] = useState<any>(props.navigation.getParam('isTest'));
 
   const [isPaitentList, setIsPaitentList] = useState<boolean>(false);
   const [selectedPaitent, setSelectedPaitent] = useState<string>('All');
@@ -205,6 +206,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     if (showSummaryPopupRef.current) {
       setSummaryPopup(false);
       return true;
+    } else {
+      if (isTest) {
+        props.navigation.navigate(AppRoutes.Tests)
+      }
     }
     return false;
   };

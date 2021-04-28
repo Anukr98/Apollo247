@@ -89,7 +89,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
 
   const handleBack = () => {
-    moveToHome();
+    moveToMyOrders();
     return true;
   };
 
