@@ -109,6 +109,7 @@
 		<string>IBMPlexSans-SemiBold.ttf</string>
 		<string>IBMPlexSans-Regular.ttf</string>
 		<string>IBMPlexSans-Medium.ttf</string>
+		<string>IBMPlexSans-Light.ttf</string>
 		<string>IBMPlexSans-Bold.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
