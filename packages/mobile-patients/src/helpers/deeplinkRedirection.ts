@@ -28,11 +28,6 @@ import {
 import { GET_ALL_SPECIALTIES } from '@aph/mobile-patients/src/graphql/profiles';
 import { getMedicineSku } from '@aph/mobile-patients/src/helpers/apiCalls';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import AsyncStorage from '@react-native-community/async-storage';
-import firebaseAuth from '@react-native-firebase/auth';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { Platform } from 'react-native';
-import { BookingSource } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 export const handleOpenURL = (event: any) => {
   try {
@@ -70,7 +65,6 @@ export const handleOpenURL = (event: any) => {
       }
     } catch (error) {}
     route = route ? route?.toLowerCase() : '';
-
     switch (route) {
       case 'consult':
       case 'consults':
@@ -296,10 +290,18 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'prohealth':
-        console.log({data})
-        return {
-          routeName: 'ProHealthWebView',
-          id:''
+        if (data.length === 2) {
+          return {
+            routeName: 'prohealth',
+            id: linkId,
+            isCall: false,
+            data: data,
+          }
+        }
+        else{
+          return {
+            routeName: 'prohealth',
+          }
         }
         break;
 
@@ -493,10 +495,9 @@ export const pushTheView = (
     case 'MyTestOrders':
       navigateToView(navigation, AppRoutes.YourOrdersTest);
       break;
-    case 'ProHealthWebView':
-       regenerateJWTToken(navigation, id);
+    case 'prohealth':
+      navigateToView(navigation, AppRoutes.ProHealthWebView, {covidUrl : id,  goBackCallback: webViewGoBack, movedFrom: 'deeplink'})
       break;
-
     default:
       const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
         source: 'deeplink',
@@ -506,6 +507,10 @@ export const pushTheView = (
       break;
   }
 };
+
+const  webViewGoBack = (navigation: NavigationScreenProp<NavigationRoute<object>, object>)=> {
+  navigation.navigate(AppRoutes.ConsultRoom);
+}
 
 const navigateToView = (
   navigation: NavigationScreenProp<NavigationRoute<object>, object>,
@@ -580,37 +585,3 @@ const getMedicineSKU = async (
     navigation.navigate('MEDICINES', { comingFrom: 'deeplink' });
   }
 };
-
-const regenerateJWTToken = async (navigation: NavigationScreenProp<NavigationRoute<object>, object>,id: string) => {
-  let deviceType =
-      Platform.OS == 'android' ? BookingSource?.Apollo247_Android : BookingSource?.Apollo247_Ios;
-  const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
-  if (userLoggedIn == 'true') {
-    try {
-      firebaseAuth().onAuthStateChanged(async (user) => {
-        if (user) {
-          const jwtToken = await user.getIdToken(true).catch((error) => {
-            throw error;
-          });
-          const openUrl = AppConfig.Configuration.PROHEALTH_BOOKING_URL;
-
-          let finalUrl = openUrl.concat(
-            '?utm_token=',
-            jwtToken,
-            '&utm_mobile_number=',
-            '',
-            '&deviceType=',
-            deviceType
-          );
-          console.log({finalUrl})
-          !!jwtToken && jwtToken!="" && navigateToView(navigation, AppRoutes.ProHealthWebView, {
-            url: finalUrl
-          })
-        }
-      });
-    } catch (e) {
-      CommonBugFender('regenerateJWTToken_deepLink', e);
-    }
-  }
-};
-

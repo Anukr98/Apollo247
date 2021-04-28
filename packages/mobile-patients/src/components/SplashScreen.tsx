@@ -17,7 +17,7 @@ import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
 import { AppRoutes, getCurrentRoute } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import remoteConfig from '@react-native-firebase/remote-config';
 import SplashScreenView from 'react-native-splash-screen';
-import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { BookingSource, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAuth } from '../hooks/authHooks';
 import { AppConfig, updateAppConfig, AppEnv } from '../strings/AppConfig';
 import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
@@ -47,7 +47,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import { phrNotificationCountApi } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
-import { GET_APPOINTMENT_DATA } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_APPOINTMENT_DATA,
+  GET_PROHEALTH_HOSPITAL_BY_SLUG,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -57,7 +60,6 @@ import coerce from 'semver/functions/coerce';
 import RNCallKeep from 'react-native-callkeep';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import { string as localStrings } from '../strings/string';
-import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
 import Pubnub from 'pubnub';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import messaging from '@react-native-firebase/messaging';
@@ -70,6 +72,11 @@ import {
   SplashSyringe,
   SplashStethoscope,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  getProHealthHospitalBySlug,
+  getProHealthHospitalBySlugVariables,
+} from '@aph/mobile-patients/src/graphql/types/getProHealthHospitalBySlug';
+import firebaseAuth from '@react-native-firebase/auth';
 
 (function() {
   /**
@@ -404,6 +411,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
       const params = id?.split('+');
       getAppointmentDataAndNavigate(params?.[0]!, false);
+    } else if (routeName == 'prohealth' && data?.length >= 1) {
+      fetchProhealthHospitalDetails(id);
     } else {
       getData(routeName, id, isCall, timeout, mediaSource);
     }
@@ -516,7 +525,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             if (mePatient) {
               if (mePatient.firstName !== '') {
                 const isCircleMember: any = await AsyncStorage.getItem('isCircleMember');
-
                 pushTheView(
                   props.navigation,
                   routeName,
@@ -602,6 +610,77 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         ],
       });
       CommonBugFender('SplashFetchingAppointmentData', error);
+    }
+  };
+
+  const fetchProhealthHospitalDetails = async (slugName: string) => {
+    setLoading?.(true);
+    try {
+      const response = await client.query<
+        getProHealthHospitalBySlug,
+        getProHealthHospitalBySlugVariables
+      >({
+        query: GET_PROHEALTH_HOSPITAL_BY_SLUG,
+        variables: {
+          hospitalSlug: slugName,
+        },
+        fetchPolicy: 'no-cache',
+      });
+      const { data } = response;
+      if (data?.getProHealthHospitalBySlug?.hospitals?.length) {
+        const getHospitalId = data?.getProHealthHospitalBySlug?.hospitals?.[0]?.id;
+        regenerateJWTToken(getHospitalId);
+      } else {
+        regenerateJWTToken();
+      }
+    } catch (error) {
+      regenerateJWTToken();
+      CommonBugFender('SplashScreen_fetchProhealthHospitalDetails', error);
+    }
+  };
+
+  const regenerateJWTToken = async (id?: string) => {
+    let deviceType =
+      Platform.OS == 'android' ? BookingSource?.Apollo247_Android : BookingSource?.Apollo247_Ios;
+    const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+
+    if (userLoggedIn == 'true') {
+      try {
+        firebaseAuth().onAuthStateChanged(async (user) => {
+          if (user) {
+            const jwtToken = await user.getIdToken(true).catch((error) => {
+              throw error;
+            });
+            const openUrl = AppConfig.Configuration.PROHEALTH_BOOKING_URL;
+            let finalUrl;
+            if (!!id) {
+              finalUrl = openUrl.concat(
+                '?hospital_id=',
+                id,
+                '?utm_token=',
+                jwtToken,
+                '&utm_mobile_number=',
+                '',
+                '&deviceType=',
+                deviceType
+              );
+            } else {
+              finalUrl = openUrl.concat(
+                '?utm_token=',
+                jwtToken,
+                '&utm_mobile_number=',
+                '',
+                '&deviceType=',
+                deviceType
+              );
+            }
+            setLoading?.(false);
+            !!jwtToken && jwtToken != '' && getData('prohealth', finalUrl);
+          }
+        });
+      } catch (e) {
+        CommonBugFender('regenerateJWTToken_deepLink', e);
+      }
     }
   };
 
@@ -1054,7 +1133,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   return (
     <View style={styles.mainView}>
-
       <Animated.View
         style={{
           transform: [
