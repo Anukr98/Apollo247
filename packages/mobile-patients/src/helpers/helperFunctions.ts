@@ -2620,15 +2620,16 @@ export const validateCoupon = async (
   hdfcPlanId: string,
   circleStatus: string,
   circlePlanId: string,
-  setCouponProducts: ((items: CouponProducts[]) => void) | null
+  setCouponProducts: ((items: CouponProducts[]) => void) | null,
+  circlePlanSelected: ShoppingCartContextProps['circlePlanSelected']
 ) => {
   CommonLogEvent(AppRoutes.ApplyCouponScene, 'Apply coupon');
   let packageId: string[] = [];
   if (hdfcSubscriptionId && hdfcStatus === 'active') {
     packageId.push(`HDFC:${hdfcPlanId}`);
   }
-  if (circleSubscriptionId && circleStatus === 'active') {
-    packageId.push(`APOLLO:${circlePlanId}`);
+  if ((circleSubscriptionId && circleStatus === 'active') || circlePlanSelected?.subPlanId) {
+    packageId.push(`APOLLO:${circlePlanId || circlePlanSelected?.subPlanId}`);
   }
   const data = {
     mobile: mobileNumber,
@@ -2649,7 +2650,10 @@ export const validateCoupon = async (
       const response = await validateConsultCoupon(data);
       if (response.data.errorCode == 0) {
         if (response.data.response.valid) {
-          setCoupon!({ ...response?.data?.response, message: message ? message : '' });
+          setCoupon!({
+            ...response?.data?.response,
+            message: message ? message : '',
+          });
           res('success');
         } else {
           rej(response.data.response.reason);

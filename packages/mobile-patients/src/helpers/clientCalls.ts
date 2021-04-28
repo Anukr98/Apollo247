@@ -35,6 +35,7 @@ import {
   GET_PHLOBE_DETAILS,
   GET_INTERNAL_ORDER,
   UPDATE_APPOINTMENT,
+  SAVE_PHLEBO_FEEDBACK,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -145,6 +146,7 @@ import {
   updateAppointmentVariables,
   updateAppointment,
 } from '@aph/mobile-patients/src/graphql/types/updateAppointment';
+import { savePhleboFeedbackVariables, savePhleboFeedback_savePhleboFeedback } from '@aph/mobile-patients/src/graphql/types/savePhleboFeedback';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -1101,4 +1103,25 @@ export const saveConsultationLocation = async (
   } catch (error) {
     CommonBugFender('saveLocationWithConsultation', error);
   }
+};
+export const savePhleboFeedback = (
+  client: ApolloClient<object>,
+  rating: number,
+  feedback: string,
+  orderId: string
+) => {
+  const inputVariables = {
+    phleboRating: rating,
+    phleboFeedback: feedback,
+    diagnosticOrdersId: orderId,
+  };
+  return client.mutate<savePhleboFeedback_savePhleboFeedback, savePhleboFeedbackVariables>({
+    mutation: SAVE_PHLEBO_FEEDBACK,
+    variables: {
+      phleboRating: rating,
+      phleboFeedback: feedback,
+      diagnosticOrdersId: orderId,
+    },
+    fetchPolicy: 'no-cache',
+  });
 };
