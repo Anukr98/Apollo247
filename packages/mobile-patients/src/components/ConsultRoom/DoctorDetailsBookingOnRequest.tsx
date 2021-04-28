@@ -842,10 +842,11 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
 
               <View style={styles.separatorStyle} />
 
-              <View style={[styles.followUpChatMessageViewStyle, { marginBottom: -4 }]}>
+              {/*  dont delete this, will be added in next version*/}
+              {/* <View style={[styles.followUpChatMessageViewStyle, { marginBottom: -4 }]}>
                 <CallRingIcon style={styles.followUpChatImageStyle} />
                 <Text style={styles.followUpCallNumberStyle}>{'040-2211782'}</Text>
-              </View>
+              </View> */}
 
               {follow_up_chat_message_visibility && (
                 <View style={styles.followUpChatMessageViewStyle}>

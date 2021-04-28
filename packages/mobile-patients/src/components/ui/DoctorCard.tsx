@@ -791,7 +791,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   </TouchableOpacity>
                 )}
 
-                {props?.rowId === 4 && (
+                {props?.rowId === 4 && console.log('csk row', JSON.stringify(props?.rowData)) && (
                   <Button
                     style={styles.BORButtonStyle}
                     titleTextStyle={styles.BORButtonTextStyle}
