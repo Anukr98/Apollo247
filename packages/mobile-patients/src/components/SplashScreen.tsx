@@ -794,6 +794,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Sku_Non_COD',
       PROD: 'Sku_Non_COD',
     },
+    Helpdesk_Chat_Confim_Msg: {
+      QA: 'Helpdesk_Chat_Confim_Msg_QA',
+      PROD: 'Helpdesk_Chat_Confim_Msg_Prod',
+    },
+    Reopen_Help_Max_Time: {
+      QA: 'Reopen_Help_Max_Time_QA',
+      PROD: 'Reopen_Help_Max_Time_Prod',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -919,12 +927,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) => config.getNumber(key)
       );
 
-      setAppConfig(
-        'Min_Value_For_Pharmacy_Free_Packaging',
-        'MIN_CART_VALUE_FOR_FREE_PACKAGING',
-        (key) => config.getNumber(key)
-      );
-
       setAppConfig('Pharmacy_Delivery_Charges', 'DELIVERY_CHARGES', (key) => config.getNumber(key));
 
       setAppConfig('Pharmacy_Packaging_Charges', 'PACKAGING_CHARGES', (key) =>
@@ -939,6 +941,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'top6_specailties',
         'TOP_SPECIALITIES',
         (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.TOP_SPECIALITIES
+      );
+
+      setAppConfig(
+        'Min_Value_For_Pharmacy_Free_Packaging',
+        'MIN_CART_VALUE_FOR_FREE_PACKAGING',
+        (key) => config.getNumber(key)
       );
 
       setAppConfig(
@@ -969,6 +977,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       setAppConfig('Health_Credit_Expiration_Time', 'Health_Credit_Expiration_Time', (key) =>
         config.getNumber(key)
+      );
+      setAppConfig('Reopen_Help_Max_Time', 'Reopen_Help_Max_Time', (key) => {
+        config.getNumber(key);
+      });
+
+      setAppConfig('Helpdesk_Chat_Confim_Msg', 'Helpdesk_Chat_Confim_Msg', (key) =>
+        config.getString(key)
       );
 
       setAppConfig('Covid_Items', 'Covid_Items', (key) => config.getString(key));

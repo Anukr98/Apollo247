@@ -12,9 +12,9 @@
 import { ApolloLink } from 'apollo-link';
 
 const loggingLink = new ApolloLink((operation, forward) => {
-  console.info('request >> ', operation.getContext());
+  //console.info('check  request >> ', operation.getContext());
   return forward(operation).map((result) => {
-    console.info('response >> ', operation.getContext());
+    // console.info('check request forward >> ', operation.getContext());
     return result;
   });
 });
