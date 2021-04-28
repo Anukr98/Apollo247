@@ -91,6 +91,7 @@ import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/G
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { DoctorShareComponent } from '@aph/mobile-patients/src/components/ConsultRoom/Components/DoctorShareComponent';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { BookingRequestOverlay } from '@aph/mobile-patients/src/components/ConsultRoom/BookingRequestOverlay';
 
 const { height, width } = Dimensions.get('window');
 
@@ -418,6 +419,7 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
 ) => {
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
+  const [submittedDisplayOverlay, setSubmittedDisplayOverlay] = useState<boolean>(false);
   const [follow_up_chat_message_visibility, set_follow_up_chat_message_visibility] = useState<
     boolean
   >(true);
@@ -1326,10 +1328,11 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
       </SafeAreaView>
 
       {displayoverlay && doctorDetails && (
-        <BookingRequestSubmittedOverlay
-          setdisplayoverlay={() => setdisplayoverlay(false)}
+        <BookingRequestOverlay
+          setdisplayoverlay={(arg: boolean) => setdisplayoverlay(arg)}
+          onRequestComplete={(arg: boolean) => setSubmittedDisplayOverlay(arg)}
           navigation={props.navigation}
-          consultedWithDoctorBefore={consultedWithDoctorBefore}
+          consultedWithDoctorBefore={false}
           doctor={doctorDetails ? doctorDetails : null}
           patientId={currentPatient ? currentPatient.id : ''}
           clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
@@ -1337,11 +1340,30 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
           FollowUp={props.navigation.state.params!.FollowUp}
           appointmentType={props.navigation.state.params!.appointmentType}
           appointmentId={props.navigation.state.params!.appointmentId}
-          consultModeSelected={consultMode}
+          consultModeSelected={ConsultMode.ONLINE}
           externalConnect={null}
           availableMode={ConsultMode.BOTH}
           callSaveSearch={callSaveSearch}
-          isDoctorsOfTheHourStatus={doctorDetails?.doctorsOfTheHourStatus}
+          isDoctorsOfTheHourStatus={false}
+        />
+      )}
+      {submittedDisplayOverlay && doctorDetails && (
+        <BookingRequestSubmittedOverlay
+          setdisplayoverlay={() => setSubmittedDisplayOverlay(false)}
+          navigation={props.navigation}
+          consultedWithDoctorBefore={false}
+          doctor={doctorDetails ? doctorDetails : null}
+          patientId={currentPatient ? currentPatient.id : ''}
+          clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
+          doctorId={props.navigation.state.params!.doctorId}
+          FollowUp={props.navigation.state.params!.FollowUp}
+          appointmentType={props.navigation.state.params!.appointmentType}
+          appointmentId={props.navigation.state.params!.appointmentId}
+          consultModeSelected={ConsultMode.ONLINE}
+          externalConnect={null}
+          availableMode={ConsultMode.BOTH}
+          callSaveSearch={''}
+          isDoctorsOfTheHourStatus={false}
         />
       )}
       <Animated.View

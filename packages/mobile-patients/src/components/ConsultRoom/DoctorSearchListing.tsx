@@ -1205,6 +1205,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     numberOfLines?: number,
     filter?: ConsultMode
   ) => {
+    console.log('csk doc bor', rowData?.allowBookingRequest, index);
     return platinumDoctor?.id !== rowData?.id ? (
       <DoctorCard
         key={index}
