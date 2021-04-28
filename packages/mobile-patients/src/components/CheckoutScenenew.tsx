@@ -53,6 +53,7 @@ import {
   postFirebaseEvent,
   getHealthCredits,
   persistHealthCredits,
+  getPackageIds,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -146,7 +147,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     pharmacyCircleAttributes,
     shipments,
     orders,
-    hdfcSubscriptionId,
     minCartValueForCOD,
     maxCartValueForCOD,
     nonCodSKus,
@@ -155,9 +155,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     pharmacyUserTypeAttribute,
     pharmacyLocation,
     locationDetails,
-    hdfcStatus,
-    circleStatus,
-    hdfcPlanId,
+    activeUserSubscriptions,
   } = useAppCommonData();
 
   type bankOptions = {
@@ -607,13 +605,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     const selectedAddress = addresses?.find((item) => item?.id == deliveryAddressId);
     const pharmacyPincode =
       selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
-    let packageId: string[] = [];
-    if (hdfcSubscriptionId && hdfcStatus === 'active') {
-      packageId.push(`HDFC:${hdfcPlanId}`);
-    }
-    if (circleSubscriptionId && circleStatus === 'active') {
-      packageId.push(`APOLLO:${circlePlanId}`);
-    }
     const data = {
       mobile: g(currentPatient, 'mobileNumber'),
       billAmount: (cartTotal - productDiscount).toFixed(2),
@@ -626,7 +617,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         quantity: item?.quantity,
         specialPrice: item?.specialPrice || item?.price,
       })),
-      packageIds: packageId,
+      packageIds: activeUserSubscriptions ? getPackageIds(activeUserSubscriptions) : [],
       email: g(currentPatient, 'emailAddress'),
     };
     setLoading(true);
