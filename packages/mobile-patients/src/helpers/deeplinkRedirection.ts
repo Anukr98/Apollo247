@@ -496,7 +496,7 @@ export const pushTheView = (
       navigateToView(navigation, AppRoutes.YourOrdersTest);
       break;
     case 'prohealth':
-      navigateToView(navigation, AppRoutes.ProHealthWebView, {covidUrl : id,  goBackCallback: webViewGoBack, movedFrom: 'deeplink'})
+      navigateToView(navigation, AppRoutes.ProHealthWebView, {covidUrl : id,  goBackCallback: ()=>webViewGoBack(navigation), movedFrom: 'deeplink'})
       break;
     default:
       const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
@@ -509,7 +509,7 @@ export const pushTheView = (
 };
 
 const  webViewGoBack = (navigation: NavigationScreenProp<NavigationRoute<object>, object>)=> {
-  navigation.navigate(AppRoutes.ConsultRoom);
+  navigation.push(AppRoutes.ConsultRoom);
 }
 
 const navigateToView = (
