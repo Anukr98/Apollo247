@@ -1,5 +1,5 @@
 import React, { FC, useState, useEffect } from 'react';
-import { StyleSheet, View, SafeAreaView, Text } from 'react-native';
+import { StyleSheet, View, SafeAreaView, Text, TouchableOpacity } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   CommonLogEvent,
@@ -13,7 +13,6 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { YourOrdersScene } from '@aph/mobile-patients/src/components/YourOrdersScene';
 import { YourOrdersTest } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/YourOrdersTests';
 import { AppConfig } from '../../strings/AppConfig';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 
 interface MyOrdersScreenProps extends NavigationScreenProps<{}> {}
@@ -32,7 +31,13 @@ const MyOrdersScreen: FC<MyOrdersScreenProps> = (props) => {
 
   const renderHeaderRightComponent = () => {
     return showHelpCTA ? (
-      <TouchableOpacity activeOpacity={1} style={{ paddingLeft: 10 }} onPress={onPressHelp}>
+      <TouchableOpacity
+        activeOpacity={1}
+        style={{ paddingLeft: 10 }}
+        onPress={() => {
+          onPressHelp();
+        }}
+      >
         <Text style={styles.helpTextStyle}>{string.help.toUpperCase()}</Text>
       </TouchableOpacity>
     ) : null;
