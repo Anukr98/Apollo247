@@ -902,7 +902,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             style={styles.buttonStyle}
             disabled={
               selectCancelReason == string.diagnostics.reasonForCancel_TestOrder.otherReasons
-                ? cancelReasonComment == ''
+                ? cancelReasonComment?.trim() == ''
                 : selectCancelReason == ''
             }
             onPress={() => _onPressCancelNow()}
