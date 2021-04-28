@@ -83,21 +83,9 @@ const styles = StyleSheet.create({
 
 export interface BookingRequestSubmittedOverlayProps extends NavigationScreenProps {
   setdisplayoverlay: (arg0: boolean) => void;
-  patientId: string;
-  doctor: getDoctorDetailsById_getDoctorDetailsById | null;
-  clinics: getDoctorDetailsById_getDoctorDetailsById_doctorHospital[];
-  doctorId: string;
-  FollowUp: boolean;
-  appointmentType: string;
-  appointmentId: string;
-  consultModeSelected: ConsultMode;
-  externalConnect: boolean | null;
-  availableMode: string;
-  consultedWithDoctorBefore: boolean;
-  callSaveSearch: string;
-  mainContainerStyle?: StyleProp<ViewStyle>;
-  scrollToSlot?: boolean;
-  isDoctorsOfTheHourStatus?: boolean;
+  doctor: string;
+  errorMessage: string;
+  error?: boolean;
 }
 export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOverlayProps> = (
   props
@@ -110,7 +98,7 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
   const consultOnlineTab = string.consultModeTab.CONSULT_ONLINE;
   const consultPhysicalTab = string.consultModeTab.MEET_IN_PERSON;
 
-  const tabs = [{ title: 'Request Submitted' }];
+  const tabs = [{ title: 'Request Submitted' }, { title: 'Request Failed' }];
 
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');
@@ -128,12 +116,7 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
   const scrollViewRef = React.useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [disablePay, setdisablePay] = useState<boolean>(false);
-  const [
-    selectedClinic,
-    setselectedClinic,
-  ] = useState<getDoctorDetailsById_getDoctorDetailsById_doctorHospital | null>(
-    props.clinics && props.clinics.length > 0 ? props.clinics[0] : null
-  );
+
   const { currentPatient } = useAllCurrentPatients();
   const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
   const isOnlineConsult = selectedTab === consultOnlineTab;
@@ -153,11 +136,6 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
   } = circleDoctorDetails;
 
   const todayDate = new Date().toDateString().split('T')[0];
-  const scrollToSlots = (top: number = 400) => {
-    if (props.scrollToSlot) {
-      scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: top, animated: true });
-    }
-  };
 
   return (
     <View
@@ -202,7 +180,7 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
             alignItems: 'center',
           }}
         >
-          <View style={[styles.mainViewStyle, props.mainContainerStyle]}>
+          <View style={[styles.mainViewStyle]}>
             <View
               style={{
                 ...theme.viewStyles.cardViewStyle,
@@ -213,7 +191,7 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
               }}
             >
               <Text style={[styles.headerTextStyle, theme.viewStyles.text('M', 16, '#02475B')]}>
-                {tabs[0].title}
+                {props?.error ? tabs[1].title : tabs[0].title}
               </Text>
             </View>
 
@@ -222,13 +200,24 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
                 style={{ width: 55, height: 55 }}
                 source={require('@aph/mobile-patients/src/images/consultation/BORCall.webp')}
               />
-              <Text
-                style={[styles.headerTextStyle, theme.viewStyles.text('M', 16, '#01475B', 1, 21)]}
-              >
-                Your appointment request with
-                <Text style={{ fontFamily: 'IBMPlexSans-Bold' }}> Dr. Jayanth Reddy</Text> has been
-                submitted. Our team will contact you shortly!
-              </Text>
+              {props?.error ? (
+                <Text
+                  style={[
+                    styles.headerTextStyle,
+                    theme.viewStyles.text('M', 16, theme.colors.APP_RED, 1, 21),
+                  ]}
+                >
+                  {props?.errorMessage}
+                </Text>
+              ) : (
+                <Text
+                  style={[styles.headerTextStyle, theme.viewStyles.text('M', 16, '#01475B', 1, 21)]}
+                >
+                  Your appointment request with
+                  <Text style={{ fontFamily: 'IBMPlexSans-Bold' }}> Dr. {props?.doctor + ' '}</Text>
+                  has been submitted. Our team will contact you shortly!
+                </Text>
+              )}
             </View>
 
             <View style={{ height: 20 }} />
@@ -237,8 +226,4 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
       </View>
     </View>
   );
-};
-
-BookingRequestSubmittedOverlay.defaultProps = {
-  scrollToSlot: true,
 };

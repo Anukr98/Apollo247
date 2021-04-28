@@ -1351,19 +1351,9 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
         <BookingRequestSubmittedOverlay
           setdisplayoverlay={() => setSubmittedDisplayOverlay(false)}
           navigation={props.navigation}
-          consultedWithDoctorBefore={false}
-          doctor={doctorDetails ? doctorDetails : null}
-          patientId={currentPatient ? currentPatient.id : ''}
-          clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
-          doctorId={props.navigation.state.params!.doctorId}
-          FollowUp={props.navigation.state.params!.FollowUp}
-          appointmentType={props.navigation.state.params!.appointmentType}
-          appointmentId={props.navigation.state.params!.appointmentId}
-          consultModeSelected={ConsultMode.ONLINE}
-          externalConnect={null}
-          availableMode={ConsultMode.BOTH}
-          callSaveSearch={''}
-          isDoctorsOfTheHourStatus={false}
+          doctor={doctorDetails?.fullName || ''}
+          error={false}
+          errorMessage={doctorDetails?.errorMessage || 'Something went wrong! \nPlease try again'}
         />
       )}
       <Animated.View

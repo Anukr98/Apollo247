@@ -297,6 +297,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [showDoctorSharePopup, setShowDoctorSharePopup] = useState<boolean>(false);
   const [doctorShareRank, setDoctorShareRank] = useState<number>(1);
   const specialityId = props.navigation.getParam('specialityId') || '';
+  const [requestDoctorSelected, setRequestDoctorSelected] = useState<string>('');
+  const [requestErrorMessage, setRequestErrorMessage] = useState<string>('');
+  const [requestError, setRequestError] = useState<boolean>(false);
 
   let DoctorsflatListRef: any;
   const filterOptions = (filters: any) => {
@@ -1205,7 +1208,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     numberOfLines?: number,
     filter?: ConsultMode
   ) => {
-    console.log('csk doc bor', rowData?.allowBookingRequest, index);
     return platinumDoctor?.id !== rowData?.id ? (
       <DoctorCard
         key={index}
@@ -1218,6 +1220,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         callSaveSearch={callSaveSearch}
         onPressRequest={(arg: boolean) => {
           setdisplayoverlay(arg);
+          setRequestDoctorSelected(rowData?.displayName);
         }}
         onPress={() => {
           postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List');
@@ -2130,19 +2133,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         <BookingRequestSubmittedOverlay
           setdisplayoverlay={() => setSubmittedDisplayOverlay(false)}
           navigation={props.navigation}
-          consultedWithDoctorBefore={false}
-          doctor={null}
-          patientId={currentPatient ? currentPatient.id : ''}
-          clinics={[]}
-          doctorId={props.navigation.state.params!.doctorId}
-          FollowUp={props.navigation.state.params!.FollowUp}
-          appointmentType={props.navigation.state.params!.appointmentType}
-          appointmentId={props.navigation.state.params!.appointmentId}
-          consultModeSelected={ConsultMode.ONLINE}
-          externalConnect={null}
-          availableMode={ConsultMode.BOTH}
-          callSaveSearch={''}
-          isDoctorsOfTheHourStatus={false}
+          doctor={requestDoctorSelected}
+          error={false}
+          errorMessage={requestErrorMessage || 'Something went wrong! \nPlease try again'}
         />
       )}
       {displayFilter ? (
