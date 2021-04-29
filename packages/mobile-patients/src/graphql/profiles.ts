@@ -4612,33 +4612,6 @@ export const VERIFY_TRUECALLER_PROFILE = gql`
   }
 `;
 
-
-
-export const GET_PROHEALTH_CITY_LIST = gql`
-  query getProHealthCities {
-    getProHealthCities {
-      cityList {
-        regionId
-        cityName
-        id
-      }
-    }
-  }
-`;
-
-export const GET_PROHEALTH_HOSPITAL_LIST = gql`
-  query getProHealthHospitalByCityId($cityId: ID!) {
-    getProHealthHospitalByCityId(cityId: $cityId) {
-      hospitals {
-        unitName
-        unitType
-        unitLocationId
-        id
-      }
-    }
-  }
-`;
-
 export const GET_ALL_PRO_HEALTH_APPOINTMENTS = gql`
   query getAllProhealthAppointments($patientId: ID!) {
     getAllProhealthAppointments(patientId: $patientId) {
@@ -4776,6 +4749,17 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
     }
   }
 `;
+
+export const GET_PROHEALTH_HOSPITAL_BY_SLUG = gql `
+  query getProHealthHospitalBySlug($hospitalSlug: String!){
+    getProHealthHospitalBySlug(hospitalSlug:$hospitalSlug){
+        hospitals{
+        id
+      }
+    }
+  }
+`;
+
 export const SAVE_PHLEBO_FEEDBACK = gql`
   mutation savePhleboFeedback($phleboRating: Int!, $phleboFeedback: String, $diagnosticOrdersId: String!) {
     savePhleboFeedback(phleboRating: $phleboRating, phleboFeedback: $phleboFeedback, diagnosticOrdersId: $diagnosticOrdersId) {
