@@ -431,7 +431,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setCommentForCancel(comment);
 
     const orderCancellationInput: CancellationDiagnosticsInput = {
-      comment: comment,
+      comment: comment?.length != 0 ? comment : '',
       orderId: String(selectedOrderId),
       patientId: g(currentPatient, 'id'),
       reason: reason,
@@ -925,7 +925,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             style={styles.buttonStyle}
             disabled={
               selectCancelReason == string.diagnostics.reasonForCancel_TestOrder.otherReasons
-                ? cancelReasonComment == ''
+                ? cancelReasonComment?.trim() == ''
                 : selectCancelReason == ''
             }
             onPress={() => _onPressCancelNow()}
