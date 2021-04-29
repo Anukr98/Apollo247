@@ -2113,7 +2113,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       </SafeAreaView>
       {displayoverlay && (
         <BookingRequestOverlay
-          setdisplayoverlay={(arg: boolean) => setdisplayoverlay(arg)}
+          setdisplayoverlay={(arg0: boolean, arg1: string, arg2: boolean) => {
+            setRequestError(arg0);
+            setRequestErrorMessage(arg1);
+            setdisplayoverlay(arg2);
+          }}
           onRequestComplete={(arg: boolean) => setSubmittedDisplayOverlay(arg)}
           navigation={props.navigation}
           doctor={requestDoctorSelectedDetails}
@@ -2125,7 +2129,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           setdisplayoverlay={() => setSubmittedDisplayOverlay(false)}
           navigation={props.navigation}
           doctor={requestDoctorSelected}
-          error={false}
+          error={requestError}
           errorMessage={requestErrorMessage || 'Something went wrong! \nPlease try again'}
         />
       )}

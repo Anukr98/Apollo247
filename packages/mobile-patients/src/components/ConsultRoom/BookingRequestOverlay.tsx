@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
 });
 
 export interface BookingRequestOverlayProps extends NavigationScreenProps {
-  setdisplayoverlay: (arg: boolean) => void;
+  setdisplayoverlay: (arg0: boolean, arg1: string, arg2: boolean) => void;
   onRequestComplete?: (arg: boolean) => void;
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
   hospitalId: string;
@@ -262,7 +262,8 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
   const [dateRangeSelected, setDateRangeSelected] = useState<string>('option1');
   const [othersText, setOthersText] = useState<string>('');
   const { showAphAlert, setLoading } = useUIElements();
-  const { doctor, hospitalId } = props;
+  const { doctor } = props;
+  const hospitalId = props.hospitalId === '' ? doctor?.doctorfacilityId || '' : props.hospitalId;
   const client = useApolloClient();
 
   useEffect(() => {
@@ -327,13 +328,32 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
         },
         fetchPolicy: 'no-cache',
       })
-      .then((data: any) => {
+      .then(({ data }) => {
         console.log('csk appointment mutation result', JSON.stringify(data));
-        setshowSpinner(false);
+
+        if (
+          data?.appointmentBookingRequest?.appointment?.id.length > 3 &&
+          data?.appointmentBookingRequest?.appointment.status === 'REQUESTED'
+        ) {
+          setshowSpinner(false);
+          props.setdisplayoverlay && props.setdisplayoverlay(false, '', false);
+          props.onRequestComplete && props.onRequestComplete(true);
+        } else {
+          console.log(
+            'csk appointment mutation result',
+            data?.appointmentBookingRequest?.appointment.status
+          );
+          setshowSpinner(false);
+          props.setdisplayoverlay && props.setdisplayoverlay(true, '', false);
+          props.onRequestComplete && props.onRequestComplete(true);
+        }
       })
       .catch((e: any) => {
         console.log('csk form error', JSON.stringify(e));
         setshowSpinner!(false);
+        props.setdisplayoverlay &&
+          props.setdisplayoverlay(true, 'GraphQL Query Failed. Please try after sometime', false);
+        props.onRequestComplete && props.onRequestComplete(true);
         handleGraphQlError(e);
       });
   };
@@ -362,9 +382,6 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
           }
           onPress={() => {
             onPressCheckout();
-
-            // props.setdisplayoverlay && props.setdisplayoverlay(false);
-            // props.onRequestComplete && props.onRequestComplete(true);
           }}
         />
       </StickyBottomComponent>

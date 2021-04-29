@@ -454,6 +454,8 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const circleDoctorDetails = calculateCircleDoctorPricing(doctorDetails);
   const [showDoctorSharePopup, setShowDoctorSharePopup] = useState<boolean>(false);
+  const [requestErrorMessage, setRequestErrorMessage] = useState<string>('');
+  const [requestError, setRequestError] = useState<boolean>(false);
   const { isCircleDoctor } = circleDoctorDetails;
   const {
     circleSubscriptionId,
@@ -1256,7 +1258,11 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
 
       {displayoverlay && doctorDetails && (
         <BookingRequestOverlay
-          setdisplayoverlay={(arg: boolean) => setdisplayoverlay(arg)}
+          setdisplayoverlay={(arg0: boolean, arg1: string, arg2: boolean) => {
+            setRequestError(arg0);
+            setRequestErrorMessage(arg1);
+            setdisplayoverlay(arg2);
+          }}
           onRequestComplete={(arg: boolean) => setSubmittedDisplayOverlay(arg)}
           navigation={props.navigation}
           doctor={doctorDetails}
@@ -1268,8 +1274,8 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
           setdisplayoverlay={() => setSubmittedDisplayOverlay(false)}
           navigation={props.navigation}
           doctor={doctorDetails?.fullName || ''}
-          error={false}
-          errorMessage={doctorDetails?.errorMessage || 'Something went wrong! \nPlease try again'}
+          error={requestError}
+          errorMessage={requestErrorMessage || 'Something went wrong! \nPlease try again'}
         />
       )}
       <Animated.View
