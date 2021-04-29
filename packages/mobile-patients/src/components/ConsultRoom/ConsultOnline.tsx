@@ -150,6 +150,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
           if (timeArray[i].time.includes(NextAvailableSlot)) {
             setselectedtiming(timeArray[i].label);
             props.setselectedTimeSlot(NextAvailableSlot);
+            props.setshowSpinner?.(false);
             break;
           }
         }
@@ -159,10 +160,14 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
   }, [NextAvailableSlot, timeArray]);
 
   const setTimeArrayData = async (availableSlots: string[], date: Date) => {
+    if (availableSlots?.length === 0) props.setshowSpinner?.(false);
     setselectedtiming(timeArray[0].label);
-
     const array = await divideSlots(availableSlots, date);
-    if (array !== timeArray) settimeArray(array);
+    if (array !== timeArray) {
+      settimeArray(array);
+    } else {
+      props.setshowSpinner?.(false);
+    }
   };
 
   const fetchSlots = (selectedDate: Date = date) => {
@@ -189,11 +194,11 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
                   data.getDoctorAvailableSlots &&
                   data.getDoctorAvailableSlots.availableSlots
                 ) {
-                  props.setshowSpinner(false);
                   setTimeArrayData(data.getDoctorAvailableSlots.availableSlots, selectedDate);
                 }
               } catch (e) {
                 CommonBugFender('ConsultOnline_fetchSlots_try', e);
+                props.setshowSpinner?.(false);
               }
             })
             .catch((e) => {
@@ -207,6 +212,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
       })
       .catch((e) => {
         CommonBugFender('ConsultOnline_getNetStatus', e);
+        props.setshowSpinner?.(false);
       });
   };
 
@@ -224,7 +230,6 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
       getNextAvailableSlots(client, props.doctor ? [props.doctor.id] : [], todayDate)
         .then(({ data }: any) => {
           try {
-            props.setshowSpinner && props.setshowSpinner(false);
             if (data[0] && data[0]!.availableSlot && availableInMin === 0) {
               const nextSlot = data[0]!.availableSlot;
               let timeDiff: Number = 0;
@@ -246,6 +251,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
             }
           } catch (e) {
             CommonBugFender('ConsultOnline_checkAvailabilitySlot_try', e);
+            props.setshowSpinner?.(false);
           } finally {
             setCheckingAvailability(false);
           }
