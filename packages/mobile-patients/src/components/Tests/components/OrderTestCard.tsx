@@ -341,7 +341,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
   const showRatingView = () => {
     const starCount = [1, 2, 3, 4, 5];
-    return props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED ? (
+    return props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED ? (
       <View style={styles.ratingContainer}>
         <Text style={styles.ratingTextStyle}>How was your Experience with Phlebo</Text>
         <View style={styles.startContainer}>
