@@ -289,14 +289,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           getPhlobeOTP(orderIdsArr, filteredOrderList, isRefetch);
         })
         .catch((error) => {
-
-        console.log(`error fetchOrders`, error.networkError.result.errors)
           setLoading!(false);
           setError(true);
           CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrders`, error);
         });
     } catch (error) {
-      console.log(`error fetchOrders 2`, error)
       setLoading!(false);
       setError(true);
       CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrders`, error);
@@ -371,12 +368,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           }
         })
         .catch((error) => {
-          console.log(`error`, error)
           setLoading!(false);
           CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchPhleboObject`, error);
         });
     } catch (error) {
-      console.log(`error 2`, error)
       setLoading!(false);
       CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchPhleboObject`, error);
     }
