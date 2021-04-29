@@ -289,11 +289,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           getPhlobeOTP(orderIdsArr, filteredOrderList, isRefetch);
         })
         .catch((error) => {
+
+        console.log(`error fetchOrders`, error.networkError.result.errors)
           setLoading!(false);
           setError(true);
           CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrders`, error);
         });
     } catch (error) {
+      console.log(`error fetchOrders 2`, error)
       setLoading!(false);
       setError(true);
       CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrders`, error);
@@ -340,10 +343,21 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   if (order.phleboDetailsObj === null) {
                     order.phleboDetailsObj = {
                       PhelboOTP: null,
+                      PhelbotomistName: null,
+                      PhelbotomistMobile: null,
+                      PhelbotomistTrackLink: null,
+                      TempRecording: null,
+                      CheckInTime: null,
+                      PhleboLatitude: null,
+                      PhleboLongitude: null,
                       __typename: 'PhleboDetailsObj',
                     };
                   }
                   order.phleboDetailsObj.PhelboOTP = findOrder?.orderPhleboDetails?.phleboOTP;
+                  order.phleboDetailsObj.PhelbotomistName = findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.name;
+                  order.phleboDetailsObj.PhelbotomistMobile = findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.mobile;
+                  order.phleboDetailsObj.PhelbotomistTrackLink = findOrder?.orderPhleboDetails?.phleboTrackLink;
+                  order.phleboDetailsObj.CheckInTime = findOrder?.phleboEta?.estimatedArrivalTime;
                 }
               }
             );
@@ -357,10 +371,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           }
         })
         .catch((error) => {
+          console.log(`error`, error)
           setLoading!(false);
           CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchPhleboObject`, error);
         });
     } catch (error) {
+      console.log(`error 2`, error)
       setLoading!(false);
       CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchPhleboObject`, error);
     }
@@ -415,7 +431,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         performNavigation(orderSelected, tab, []);
       }
     } catch (error) {
-      CommonBugFender('OrderedTestStatus_fetchRefundOrder', e);
+      CommonBugFender('OrderedTestStatus_fetchRefundOrder', error);
       setLoading?.(false);
     }
   };

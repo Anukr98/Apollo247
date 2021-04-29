@@ -2271,6 +2271,13 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         patientAddressId
         phleboDetailsObj {
           PhelboOTP
+          PhelbotomistName
+          PhelbotomistMobile
+          PhelbotomistTrackLink
+          TempRecording
+          CheckInTime
+          PhleboLatitude
+          PhleboLongitude
         }
         slotTimings
         slotDateTimeInUTC
@@ -4679,6 +4686,7 @@ export const GET_PHLOBE_DETAILS = gql`
           diagnosticOrdersId
           diagnosticPhlebotomists {
             name
+            mobile
           }
           phleboOTP
           phleboTrackLink
