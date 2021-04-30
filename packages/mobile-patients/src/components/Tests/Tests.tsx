@@ -84,7 +84,7 @@ import {
   Linking,
 } from 'react-native';
 import { Image } from 'react-native-elements';
-import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import {
   SEARCH_TYPE,
   TEST_COLLECTION_TYPE,
@@ -152,6 +152,7 @@ import {
   findDiagnosticsWidgetsPricingVariables,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
 import { LowNetworkCard } from '@aph/mobile-patients/src/components/Tests/components/LowNetworkCard';
+import { WidgetCard } from '@aph/mobile-patients/src/components/Tests/components/WidgetCard';
 import { PrescriptionCard } from '@aph/mobile-patients/src/components/Tests/components/PrescriptionCard';
 import {
   renderBannerShimmer,
@@ -1575,6 +1576,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const renderWidgets = (data: any) => {
     if (data?.diagnosticWidgetType == 'Package') {
       return renderPackageWidget(data);
+    } else if (data?.diagnosticWidgetType == 'Category_Scroll') {
+      return scrollWidgetSection(data)
+    } else if (data?.diagnosticWidgetType == 'Category') {
+      return gridWidgetSection(data)
     } else {
       return renderTestWidgets(data);
     }
@@ -2231,6 +2236,125 @@ export const Tests: React.FC<TestsProps> = (props) => {
       </View>
     );
   };
+  const scrollWidgetSection = (data: any) => {
+    return (
+      <View style={styles.container}>
+        <SectionHeader
+          leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
+          leftTextStyle={[
+            styles.widgetHeading,
+            {
+              ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE, 1, 20),
+            },
+          ]}
+          rightText={'VIEW ALL'}
+          rightTextStyle={styles.widgetViewAllText} //showViewAll ? styles.widgetViewAllText : {}
+          onPressRightText={() => {
+                  props.navigation.navigate(AppRoutes.TestWidgetListing, {
+                    movedFrom: AppRoutes.Tests,
+                    data: data,
+                    cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+                  });
+                }
+          }
+        />
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sectionView}>
+        {data?.diagnosticWidgetData.map((item:any) => (
+          <WidgetCard
+            data={item}
+            isCircleSubscribed={isDiagnosticCircleSubscription}
+            isServiceable={isDiagnosticLocationServiceable}
+            isVertical={false}
+            navigation={props.navigation}
+            onPressWidget={()=>{
+              {
+                props.navigation.navigate(AppRoutes.TestListing, {
+                  widgetName: item?.itemTitle,
+                  movedFrom: AppRoutes.Tests,
+                  data: data,
+                  cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+                });
+              }
+            }}
+            source={'Home Page'}
+            sourceScreen={AppRoutes.Tests}
+          />
+        ))}
+        </ScrollView>
+      </View>
+    );
+  }
+ 
+ const renderGridComponent = (data: any, item: any, index: number) => {
+   return (
+     <TouchableOpacity
+       style={styles.gridPart}
+       onPress={() => {
+         {
+           props.navigation.navigate(AppRoutes.TestListing, {
+             widgetName: item?.itemTitle,
+             movedFrom: AppRoutes.Tests,
+             data: data,
+             cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+           });
+         }
+       }}
+     >
+       <ImageNative
+          resizeMode={"contain"}
+          style={styles.image}
+          source={{ uri: item.itemIcon }}
+        />
+       <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>
+         {item?.itemTitle}
+       </Text>
+     </TouchableOpacity>
+   );
+ };
+  const gridWidgetSection = (data : any) => {
+    const numColumns = 3;
+    let newGridData: any[] = [];
+    if (
+      data?.diagnosticWidgetData?.length >= numColumns &&
+      data?.diagnosticWidgetData?.length % numColumns != 0
+    ) {
+      let sortedItemsIndex =
+        data?.diagnosticWidgetData?.length - (data?.diagnosticWidgetData?.length % numColumns);
+      newGridData = data?.diagnosticWidgetData.slice(0, sortedItemsIndex);
+    } else {
+      newGridData = data?.diagnosticWidgetData;
+    }
+    return (
+      <View style={{ marginTop: 10 }}>
+        <SectionHeader
+          leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')} //nameFormater(data?.diagnosticWidgetTitle, 'upper')
+          leftTextStyle={[
+            styles.widgetHeading,
+            {
+              ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE, 1, 20),
+            },
+          ]}
+          rightText={'VIEW ALL'}
+          rightTextStyle={styles.widgetViewAllText} //showViewAll ? styles.widgetViewAllText : {}
+          onPressRightText={() => {
+            props.navigation.navigate(AppRoutes.TestWidgetListing, {
+              movedFrom: AppRoutes.Tests,
+              data: data,
+              cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+            });
+          }}
+        />
+        <View style={styles.gridConatiner}>
+          <FlatList
+            data={newGridData}
+            numColumns={numColumns}
+            keyExtractor={(_, index) => `${index}`}
+            renderItem={({ item, index}) => renderGridComponent(data, item, index)}
+          />
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1 }}>
@@ -2284,6 +2408,18 @@ const styles = StyleSheet.create({
   labelText: {
     ...theme.fonts.IBMPlexSansBold(9),
     color: theme.colors.WHITE,
+  },
+  sectionView: {
+    margin:10,
+    flexDirection:'row',
+  },
+  container:{
+    marginTop:20
+  },
+  gridConatiner: {
+    width: '100%',
+    backgroundColor:'white',
+    marginVertical: 20
   },
   imagePlaceholderStyle: {
     backgroundColor: '#f7f8f5',
@@ -2450,7 +2586,6 @@ const styles = StyleSheet.create({
   stepsToBookModalIconStyle: {
     height: 30,
     width: 30,
-    resizeMode: 'contain',
   },
   stepsToBookModalMainTextHeading: {
     marginTop: '2%',
@@ -2481,6 +2616,30 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     paddingVertical: 0,
     backgroundColor: 'white',
+  },
+  circleImg: {
+    width: 70,
+    height: 70,
+    borderRadius: 70/2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  image: {
+    width: 70,
+    height: 70,
+    borderRadius: 70/2,
+  },
+  gridPart: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '33%',
+    borderColor:'#E8E8E8',
+    borderWidth: 0.5,
+    padding:15,
+  },
+  textStyle: {
+    ...theme.viewStyles.text('SB', 14, '#000000', 1, 20, 0),
+    padding: 5
   },
   orderStatusCardDots: {
     flexDirection: 'row',
