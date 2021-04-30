@@ -55,6 +55,7 @@ import { ReturnMedicineOrder } from '@aph/mobile-patients/src/components/ReturnM
 import { AppointmentOnlineDetails } from '@aph/mobile-patients/src/components/Consult/AppointmentOnlineDetails';
 import { ChooseDoctor } from '@aph/mobile-patients/src/components/Consult/ChooseDoctor';
 import { TestListing } from '@aph/mobile-patients/src/components/Tests/TestListing';
+import { TestWidgetListing } from '@aph/mobile-patients/src/components/Tests/TestWidgetListing';
 import {
   createAppContainer,
   createStackNavigator,
@@ -249,6 +250,7 @@ export enum AppRoutes {
   OtherBanks = 'OtherBanks',
   OrderStatus = 'OrderStatus',
   TestListing = 'TestListing',
+  TestWidgetListing = 'TestWidgetListing',
   ProHealthWebView = 'ProHealthWebView',
   MyOrdersScreen = 'MyOrdersScreen',
   TestRatingScreen = 'TestRatingScreen'
@@ -634,6 +636,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.TestListing]: {
     screen: TestListing,
+  },
+  [AppRoutes.TestWidgetListing]: {
+    screen: TestWidgetListing,
   },
   [AppRoutes.ProHealthWebView]: {
     screen: ProHealthWebView,
