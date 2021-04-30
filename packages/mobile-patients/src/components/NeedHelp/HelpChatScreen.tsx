@@ -450,16 +450,16 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
       let message = '';
 
       if (ticket?.customFields?.Business == BUSINESS.PHARMACY) {
-        phoneNumber = '+914041894343';
+        phoneNumber = '914041894343';
         message = `I want to know the status of my Help_ticket , Ticket Number : ${ticket.ticketNumber}`;
       } else if (ticket?.customFields?.Business == BUSINESS.VIRTUAL_CONSULTATION) {
-        phoneNumber = '+918047104009';
+        phoneNumber = '918047104009';
         message = `I want to know the status of my VC_Help_ticket  , Ticket Number :  ${ticket.ticketNumber}`;
       } else if (ticket?.customFields?.Business == BUSINESS.PHYSICAL_CONSULTATION) {
-        phoneNumber = '+918047104009';
+        phoneNumber = '918047104009';
         message = `I want to know the status of my PC_Help_ticket , Ticket Number:  ${ticket.ticketNumber}`;
       } else if (ticket?.customFields?.Business == BUSINESS.DIAGNOSTICS) {
-        phoneNumber = '+914048218743';
+        phoneNumber = '914048218743';
         message = `I want to know the status of my Help_ticket , Ticket Number :  ${ticket.ticketNumber}`;
       }
 
