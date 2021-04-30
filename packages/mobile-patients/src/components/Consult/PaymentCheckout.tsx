@@ -33,6 +33,7 @@ import {
   apiCallEnums,
   navigateToHome,
   getUserType,
+  getPackageIds,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
@@ -114,12 +115,9 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const [coupon, setCoupon] = useState<string>('');
   const {
     locationDetails,
-    hdfcPlanId,
-    circlePlanId,
-    hdfcStatus,
-    circleStatus,
     apisToCall,
     homeScreenParamsOnPop,
+    activeUserSubscriptions,
   } = useAppCommonData();
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const doctor = props.navigation.getParam('doctor');
@@ -515,14 +513,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           ? onlineConsultSlashedPrice
           : physicalConsultSlashedPrice
         : Number(price);
-
-    let packageId: string[] = [];
-    if (hdfcSubscriptionId && hdfcStatus === 'active') {
-      packageId.push(`HDFC:${hdfcPlanId}`);
-    }
-    if (circleSubscriptionId && circleStatus === 'active') {
-      packageId.push(`APOLLO:${circlePlanId}`);
-    }
     const timeSlot =
       tabs[0].title === selectedTab &&
       isOnlineConsult &&
@@ -548,7 +538,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           rescheduling: false,
         },
       ],
-      packageIds: packageId,
+      packageIds: activeUserSubscriptions ? getPackageIds(activeUserSubscriptions) : [],
       email: g(currentPatient, 'emailAddress'),
     };
     return new Promise((res, rej) => {
