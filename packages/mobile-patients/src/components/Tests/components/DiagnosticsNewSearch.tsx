@@ -1,11 +1,11 @@
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { AddIcon, RemoveIconOrange, TestsIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { AddIcon, RemoveIconOrange } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
-import { Image } from 'react-native-elements';
 import { nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
 export interface DiagnosticsNewSearchProps {
   onPress: () => void;
@@ -14,7 +14,10 @@ export interface DiagnosticsNewSearchProps {
   style?: ViewStyle;
   showSeparator?: boolean;
   loading?: boolean;
-  data: any; //define the interface
+  data: any;
+  modifyOrderDetails?:
+    | getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems
+    | any;
 }
 
 export const DiagnosticsNewSearch: React.FC<DiagnosticsNewSearchProps> = (props) => {
@@ -42,30 +45,30 @@ export const DiagnosticsNewSearch: React.FC<DiagnosticsNewSearchProps> = (props)
     );
   };
 
-  const renderIconOrImage = () => {
-    return (
-      <View style={styles.iconOrImageContainerStyle}>
-        {imageUri ? (
-          <Image
-            placeholderStyle={theme.viewStyles.imagePlaceholderStyle}
-            source={{ uri: imageUri }}
-            style={styles.imageIcon}
-            resizeMode="contain"
-          />
-        ) : (
-          <TestsIcon />
-        )}
-      </View>
-    );
-  };
-
   const renderAddToCartView = () => {
+    const isModifyOrder = !!props.modifyOrderDetails;
+    const getExisitingOrderItems = isModifyOrder
+      ? props.modifyOrderDetails?.diagnosticOrderLineItems?.map(
+          (
+            item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems
+          ) => Number(item?.itemId)
+        )
+      : [];
+    const isAlreadyPartOfOrder =
+      getExisitingOrderItems?.length > 0 &&
+      getExisitingOrderItems?.find((id: number) => Number(id) == Number(data?.diagnostic_item_id));
     return (
       <TouchableOpacity
         activeOpacity={1}
-        onPress={isAddedToCart ? props.onPressRemoveFromCart : props.onPressAddToCart}
+        onPress={
+          isAlreadyPartOfOrder
+            ? () => {}
+            : isAddedToCart
+            ? props.onPressRemoveFromCart
+            : props.onPressAddToCart
+        }
       >
-        {isAddedToCart ? <RemoveIconOrange /> : <AddIcon />}
+        {isAlreadyPartOfOrder ? <AddIcon /> : isAddedToCart ? <RemoveIconOrange /> : <AddIcon />}
       </TouchableOpacity>
     );
   };

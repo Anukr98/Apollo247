@@ -7,7 +7,6 @@ import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
-  GET_INTERNAL_ORDER,
   GET_PATIENT_ADDRESS_BY_ID,
   RESCHEDULE_DIAGNOSTIC_ORDER,
   GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
@@ -17,6 +16,7 @@ import {
   getDiagnosticOrdersListByMobile,
   getDiagnosticOrdersListByMobileVariables,
   getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList,
+  getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems,
   getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
@@ -32,7 +32,6 @@ import {
   View,
   TouchableOpacity,
   FlatList,
-  ScrollView,
   BackHandler,
   Text,
   Modal,
@@ -82,10 +81,6 @@ import {
   getPatientAddressByIdVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressById';
 import {
-  getOrderInternal,
-  getOrderInternalVariables,
-} from '@aph/mobile-patients/src/graphql/types/getOrderInternal';
-import {
   DiagnosticRescheduleOrder,
   DiagnosticViewReportClicked,
 } from '@aph/mobile-patients/src/components/Tests/Events';
@@ -121,7 +116,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
   ];
 
-  const { addresses, diagnosticSlot, setDiagnosticSlot } = useDiagnosticsCart();
+  const {
+    addresses,
+    diagnosticSlot,
+    setDiagnosticSlot,
+    setHcCharges,
+    cartItems,
+    removeCartItem,
+  } = useDiagnosticsCart();
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
@@ -1203,6 +1205,25 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   function _onPressAddTest(
     order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList
   ) {
+    //clear the cart, if it has some duplicate item present.
+    const getOrderItems = order?.diagnosticOrderLineItems?.map(
+      (
+        item:
+          | getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems
+          | any
+      ) => Number(item?.itemId)
+    );
+    const getCartItemsWithId = cartItems?.length > 0 && cartItems?.map((item) => Number(item?.id));
+    const isAlreadyPartOfOrder =
+      !!getCartItemsWithId &&
+      getCartItemsWithId?.length > 0 &&
+      getOrderItems?.filter((val) => getCartItemsWithId?.includes(val));
+    if (!!isAlreadyPartOfOrder && isAlreadyPartOfOrder?.length > 0) {
+      isAlreadyPartOfOrder?.map((id: number) => removeCartItem?.(String(id)));
+      renderReportError(string.diagnostics.modifyItemAlreadyExist);
+    }
+    //clear the hcCharges.
+    setHcCharges?.(0);
     props.navigation.navigate(AppRoutes.SearchTestScene, {
       searchText: '',
       orderDetails: order,

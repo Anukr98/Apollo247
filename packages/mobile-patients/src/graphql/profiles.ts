@@ -1855,20 +1855,12 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
       ordersList {
         id
         patientId
-        patientAddressId
         city
         slotTimings
-        employeeSlotId
-        diagnosticEmployeeCode
-        diagnosticBranchCode
+        slotId
         totalPrice
         prescriptionUrl
         diagnosticDate
-        centerName
-        centerCode
-        centerCity
-        centerState
-        centerLocality
         orderStatus
         orderType
         displayId
@@ -2202,9 +2194,23 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         isRescheduled
         rescheduleCount
         areaId
-        addressLine1
-        addressLine2
         patientId
+        orderType
+        totalPrice
+        orderStatus
+        createdDate
+        paymentType
+        diagnosticDate
+        paymentOrderId
+        patientAddressId
+        displayId
+        diagnosticDate
+        visitNo
+        labReportURL
+        slotTimings
+        slotId
+        slotDateTimeInUTC
+        collectionCharges
         patientObj{
           id
           uhid
@@ -2221,12 +2227,6 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           city 
           zipcode
         }
-        displayId
-        diagnosticDate
-        diagnosticBranchCode
-        diagnosticEmployeeCode
-        visitNo
-        labReportURL
         diagnosticOrdersStatus {
           id
           orderStatus
@@ -2273,26 +2273,9 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           testPreparationData
           packageCalculatedMrp
         }
-        orderType
-        totalPrice
-        centerName
-        centerState
-        orderStatus
-        createdDate
-        paymentType
-        diagnosticDate
-        centerLocality
-        paymentOrderId
-        paymentOrderId
-        patientAddressId
         phleboDetailsObj {
           PhelboOTP
         }
-        slotTimings
-        slotDateTimeInUTC
-        collectionCharges
-        diagnosticBranchCode
-        diagnosticEmployeeCode
         diagnosticOrderReschedule {
           rescheduleDate
           rescheduleReason

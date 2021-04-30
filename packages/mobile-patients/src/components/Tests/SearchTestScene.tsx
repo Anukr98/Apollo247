@@ -483,6 +483,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           paddingBottom: index == diagnosticResults?.length - 1 ? 20 : 0,
         }}
         onPressRemoveFromCart={() => onRemoveCartItem(product?.diagnostic_item_id)}
+        modifyOrderDetails={!!existingOrderDetails ? existingOrderDetails : null}
       />
     );
   };
@@ -597,6 +598,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           paddingBottom: index == diagnosticResults?.length - 1 ? 20 : 0,
         }}
         onPressRemoveFromCart={() => removeCartItem!(`${item?.diagnostic_item_id}`)}
+        modifyOrderDetails={!!existingOrderDetails ? existingOrderDetails : null}
       />
     );
   };

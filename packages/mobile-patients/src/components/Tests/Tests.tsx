@@ -1114,19 +1114,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
       </TouchableOpacity>
     );
 
-
-
     return (
       <TouchableOpacity
         onPress={() => {
-            props.navigation.navigate(AppRoutes.SearchTestScene, {
-              searchText: searchText,
-            });
+          props.navigation.navigate(AppRoutes.SearchTestScene, {
+            searchText: searchText,
+          });
         }}
         style={styles.searchNewInput}
       >
-          <Text style={styles.searchTextStyle}>Search tests &amp; packages</Text>
-          {rigthIconView}
+        <Text style={styles.searchTextStyle}>Search tests &amp; packages</Text>
+        {rigthIconView}
       </TouchableOpacity>
     );
   };

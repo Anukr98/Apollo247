@@ -78,10 +78,9 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
         inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
       );
 
-    const getMandatoryParameterCount = getMandatoryParamter?.reduce(
-      (prevVal: any, curr: any) => prevVal + curr?.length,
-      0
-    );
+    const getMandatoryParameterCount =
+      !!getMandatoryParamter &&
+      getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
 
     const getParamterData = getMandatoryParamter?.length > 0 && getMandatoryParamter?.flat(1);
     const dataToShow = getMandatoryParameterCount > 0 ? getParamterData : inclusions;
