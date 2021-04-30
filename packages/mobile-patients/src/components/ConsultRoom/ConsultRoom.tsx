@@ -1729,6 +1729,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
           if (circleData?.status === 'disabled') {
             setIsCircleExpired && setIsCircleExpired(true);
+            setNonCircleValues();
           }
 
           const planValidity = {
@@ -1744,11 +1745,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             setCirclePaymentReference &&
             setCirclePaymentReference(paymentStoredVal);
         } else {
-          AsyncStorage.setItem('isCircleMember', 'no');
-          setIsCircleMember && setIsCircleMember('no');
-          setCircleSubscriptionId && setCircleSubscriptionId('');
-          setIsCircleSubscription && setIsCircleSubscription(false);
-          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+          setNonCircleValues();
           setCirclePlanValidity && setCirclePlanValidity(null);
           setCirclePaymentReference && setCirclePaymentReference(null);
           setCirclePlanId && setCirclePlanId('');
@@ -1787,6 +1784,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       onAppLoad && logHomePageViewed(WEGAttributes);
     }
     setCircleDataLoading(false);
+  };
+
+  const setNonCircleValues = () => {
+    AsyncStorage.setItem('isCircleMember', 'no');
+    setIsCircleMember && setIsCircleMember('no');
+    setCircleSubscriptionId && setCircleSubscriptionId('');
+    setIsCircleSubscription && setIsCircleSubscription(false);
+    setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+    fireFirstTimeLanded();
   };
 
   const fetchCarePlans = async () => {
