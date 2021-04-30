@@ -94,7 +94,7 @@ import {
   Alert,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlay';
+import { TestSlotSelectionOverlayNew } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlayNew';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -2592,7 +2592,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       {displaySchedule && (
-        <TestSlotSelectionOverlay
+        <TestSlotSelectionOverlayNew
           source={'Tests'}
           heading="Schedule Appointment"
           date={date}

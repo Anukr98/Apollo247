@@ -72,7 +72,7 @@ import {
   cancelDiagnosticsOrder,
   cancelDiagnosticsOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/cancelDiagnosticsOrder';
-import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlay';
+import { TestSlotSelectionOverlayNew } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlayNew';
 import {
   rescheduleDiagnosticsOrder,
   rescheduleDiagnosticsOrderVariables,
@@ -729,7 +729,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
     return (
       <View style={{ flex: 1 }}>
-        <TestSlotSelectionOverlay
+        <TestSlotSelectionOverlayNew
           source={'Tests'}
           heading="Schedule Appointment"
           date={date}
