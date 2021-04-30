@@ -4,7 +4,6 @@ import {
   StyleSheet,
   View,
   Platform,
-  ActivityIndicator,
   Linking,
   AppStateStatus,
   AppState,
@@ -411,8 +410,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
       const params = id?.split('+');
       getAppointmentDataAndNavigate(params?.[0]!, false);
-    } else if (routeName == 'prohealth' && data?.length >= 1) {
-      fetchProhealthHospitalDetails(id);
+    } else if (routeName == 'prohealth') {
+      fetchProhealthHospitalDetails(id!);
     } else {
       getData(routeName, id, isCall, timeout, mediaSource);
     }
@@ -525,6 +524,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             if (mePatient) {
               if (mePatient.firstName !== '') {
                 const isCircleMember: any = await AsyncStorage.getItem('isCircleMember');
+                if (routeName == 'prohealth' && id) {
+                  id = id.replace('mobileNumber', currentPatient?.mobileNumber || '');
+                }
                 pushTheView(
                   props.navigation,
                   routeName,
@@ -657,10 +659,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               finalUrl = openUrl.concat(
                 '?hospital_id=',
                 id,
-                '?utm_token=',
+                '&utm_token=',
                 jwtToken,
                 '&utm_mobile_number=',
-                '',
+                'mobileNumber',
                 '&deviceType=',
                 deviceType
               );
@@ -669,7 +671,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                 '?utm_token=',
                 jwtToken,
                 '&utm_mobile_number=',
-                '',
+                'mobileNumber',
                 '&deviceType=',
                 deviceType
               );
@@ -867,7 +869,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     const valueBasedOnEnv = config[_key] as RemoteConfigKeysType;
     return currentEnv === AppEnv.PROD
       ? valueBasedOnEnv.PROD
-      : currentEnv === AppEnv.QA || currentEnv === AppEnv.QA2 || currentEnv === AppEnv.QA3
+      : currentEnv === AppEnv.QA ||
+        currentEnv === AppEnv.QA2 ||
+        currentEnv === AppEnv.QA3 ||
+        currentEnv === AppEnv.QA5
       ? valueBasedOnEnv.QA || valueBasedOnEnv.PROD
       : valueBasedOnEnv.DEV || valueBasedOnEnv.QA || valueBasedOnEnv.PROD;
   };

@@ -840,6 +840,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   useEffect(() => {
     preFetchSDK(currentPatient?.id);
+    getPatientApiCall();
     try {
       createHyperServiceObject();
     } catch (error) {
@@ -849,7 +850,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   //for prohealth option
   useEffect(() => {
-    if (currentPatient?.id) {
+    if (currentPatient?.id && currentPatient?.uhid) {
       checkIsProhealthActive(currentPatient); //to show prohealth option
       getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
     }

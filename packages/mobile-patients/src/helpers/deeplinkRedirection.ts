@@ -509,7 +509,17 @@ export const pushTheView = (
 };
 
 const  webViewGoBack = (navigation: NavigationScreenProp<NavigationRoute<object>, object>)=> {
-  navigation.push(AppRoutes.ConsultRoom);
+  navigation.dispatch(
+    StackActions.reset({
+      index: 0,
+      key: null,
+      actions: [
+        NavigationActions.navigate({
+          routeName: AppRoutes.ConsultRoom,
+        }),
+      ],
+    })
+  );
 }
 
 const navigateToView = (
