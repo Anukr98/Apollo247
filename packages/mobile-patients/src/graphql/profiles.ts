@@ -4745,11 +4745,14 @@ export const GET_HELPDESK_TICKETS = gql`
         subject
         createdTime
         ticketNumber
-        description
         modifiedTime
         channel
         closedTime
         id
+        status
+        customFields {
+          Business
+        }
       }
       count
     }

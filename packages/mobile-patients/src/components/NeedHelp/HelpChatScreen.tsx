@@ -207,6 +207,13 @@ const styles = StyleSheet.create({
   },
 });
 
+const BUSINESS = {
+  PHARMACY: 'Pharmacy',
+  VIRTUAL_CONSULTATION: 'Virtual Consultation',
+  PHYSICAL_CONSULTATION: 'Physical Consultation',
+  DIAGNOSTICS: 'Diagnostics',
+};
+
 export interface HelpChatProps extends NavigationScreenProps {}
 
 export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
@@ -424,19 +431,39 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
           </Text>
         ) : null}
 
-        <TouchableOpacity style={styles.whatsWithUsContainer} onPress={() => onPressWhatsApp()}>
-          <WhatsAppIcon style={styles.whatsAppIcon} />
-          <Text style={styles.whatsWithUsText}>{string.needHelpScreen.whatsapp_with_us}</Text>
-        </TouchableOpacity>
+        {ticket?.customFields?.Business == BUSINESS.PHARMACY ||
+        ticket?.customFields?.Business == BUSINESS.VIRTUAL_CONSULTATION ||
+        ticket?.customFields?.Business == BUSINESS.PHYSICAL_CONSULTATION ||
+        ticket?.customFields?.Business == BUSINESS.DIAGNOSTICS ? (
+          <TouchableOpacity style={styles.whatsWithUsContainer} onPress={() => onPressWhatsApp()}>
+            <WhatsAppIcon style={styles.whatsAppIcon} />
+            <Text style={styles.whatsWithUsText}>{string.needHelpScreen.whatsapp_with_us}</Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
     );
   };
 
   const onPressWhatsApp = async () => {
     try {
-      const chatPreFilledMessage = `I want to know the status of my Help_Ticket regarding ticket Number ${ticket.ticketNumber}`;
-      const phoneNumber = '4041894343';
-      const whatsAppScheme = `whatsapp://send?text=${chatPreFilledMessage}&phone=91${phoneNumber}`;
+      let phoneNumber = '';
+      let message = '';
+
+      if (ticket?.customFields?.Business == BUSINESS.PHARMACY) {
+        phoneNumber = '+914041894343';
+        message = `I want to know the status of my Help_ticket , Ticket Number : ${ticket.ticketNumber}`;
+      } else if (ticket?.customFields?.Business == BUSINESS.VIRTUAL_CONSULTATION) {
+        phoneNumber = '+918047104009';
+        message = `I want to know the status of my VC_Help_ticket  , Ticket Number :  ${ticket.ticketNumber}`;
+      } else if (ticket?.customFields?.Business == BUSINESS.PHYSICAL_CONSULTATION) {
+        phoneNumber = '+918047104009';
+        message = `I want to know the status of my PC_Help_ticket , Ticket Number:  ${ticket.ticketNumber}`;
+      } else if (ticket?.customFields?.Business == BUSINESS.DIAGNOSTICS) {
+        phoneNumber = '+914048218743';
+        message = `I want to know the status of my Help_ticket , Ticket Number :  ${ticket.ticketNumber}`;
+      }
+
+      const whatsAppScheme = `whatsapp://send?text=${message}&phone=${phoneNumber}`;
       const canOpenURL = await Linking.canOpenURL(whatsAppScheme);
       canOpenURL && Linking.openURL(whatsAppScheme);
     } catch (error) {

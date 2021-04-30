@@ -7,17 +7,23 @@
 // GraphQL query operation: getHelpdeskTickets
 // ====================================================
 
+export interface getHelpdeskTickets_getHelpdeskTickets_tickets_customFields {
+  __typename: "ZohoCustomField";
+  Business: string | null;
+}
+
 export interface getHelpdeskTickets_getHelpdeskTickets_tickets {
   __typename: "HelpdeskTicket";
   statusType: string | null;
   subject: string | null;
   createdTime: string | null;
   ticketNumber: string | null;
-  description: string | null;
   modifiedTime: string | null;
   channel: string | null;
   closedTime: string | null;
   id: string | null;
+  status: string | null;
+  customFields: getHelpdeskTickets_getHelpdeskTickets_tickets_customFields | null;
 }
 
 export interface getHelpdeskTickets_getHelpdeskTickets {
