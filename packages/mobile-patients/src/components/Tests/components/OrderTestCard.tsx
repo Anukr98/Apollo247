@@ -274,12 +274,13 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   const showOTPContainer = () => {
     const phlObj = props?.phelboObject;
     let otpToShow = !!phlObj && phlObj?.PhelboOTP;
-    let phoneNumber = !!phlObj && phlObj?.diagnosticPhlebotomists?.mobile;
-    let name = !!phlObj && phlObj?.diagnosticPhlebotomists?.name;
-    let checkEta = !!phlObj?.phleboEta?.estimatedArrivalTime
+    let phoneNumber = !!phlObj && phlObj?.PhelbotomistMobile;
+    let name = !!phlObj && phlObj?.PhelbotomistName;
+    let phleboTrackLink = !!phlObj && phlObj?.PhelbotomistTrackLink;
+    let checkEta = !!phlObj?.CheckInTime
     let phleboEta = ''
     if (checkEta) {
-      phleboEta =  moment(phlObj?.phleboEta?.estimatedArrivalTime).format('YYYY-MM-DDTHH:mm:ss');
+      phleboEta =  moment(phlObj?.CheckInTime).format('YYYY-MM-DDTHH:mm:ss');
     }
     return (
       <>
@@ -321,6 +322,15 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                     Phlebo will arrive in{` ${moment(phleboEta).utc().fromNow()} `}
                   </Text>
                 </View>
+                {phleboTrackLink ? (
+                  <TouchableOpacity
+                    onPress={() => {
+                      Linking.openURL(phleboTrackLink);
+                    }}
+                  >
+                    <Text style={styles.trackStyle}>{nameFormater('track Phlebo', 'upper')}</Text>
+                  </TouchableOpacity>
+                ) : null}
               </View>
             ) : null}
           </>
@@ -331,7 +341,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
   const showRatingView = () => {
     const starCount = [1, 2, 3, 4, 5];
-    return props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED ? (
+    return props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED ? (
       <View style={styles.ratingContainer}>
         <Text style={styles.ratingTextStyle}>How was your Experience with Phlebo</Text>
         <View style={styles.startContainer}>

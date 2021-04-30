@@ -71,6 +71,13 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_phleboDetailsObj {
   __typename: "PhleboDetailsObj";
   PhelboOTP: string | null;
+  PhelbotomistName: string | null;
+  PhelbotomistMobile: string | null;
+  PhelbotomistTrackLink: string | null;
+  TempRecording: string | null;
+  CheckInTime: string | null;
+  PhleboLatitude: string | null;
+  PhleboLongitude: string | null;
 }
 
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderReschedule {

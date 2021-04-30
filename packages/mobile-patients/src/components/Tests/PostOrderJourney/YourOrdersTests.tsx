@@ -345,10 +345,21 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   if (order.phleboDetailsObj === null) {
                     order.phleboDetailsObj = {
                       PhelboOTP: null,
+                      PhelbotomistName: null,
+                      PhelbotomistMobile: null,
+                      PhelbotomistTrackLink: null,
+                      TempRecording: null,
+                      CheckInTime: null,
+                      PhleboLatitude: null,
+                      PhleboLongitude: null,
                       __typename: 'PhleboDetailsObj',
                     };
                   }
                   order.phleboDetailsObj.PhelboOTP = findOrder?.orderPhleboDetails?.phleboOTP;
+                  order.phleboDetailsObj.PhelbotomistName = findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.name;
+                  order.phleboDetailsObj.PhelbotomistMobile = findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.mobile;
+                  order.phleboDetailsObj.PhelbotomistTrackLink = findOrder?.orderPhleboDetails?.phleboTrackLink;
+                  order.phleboDetailsObj.CheckInTime = findOrder?.phleboEta?.estimatedArrivalTime;
                 }
               }
             );
@@ -420,7 +431,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         performNavigation(orderSelected, tab, []);
       }
     } catch (error) {
-      CommonBugFender('OrderedTestStatus_fetchRefundOrder', e);
+      CommonBugFender('OrderedTestStatus_fetchRefundOrder', error);
       setLoading?.(false);
     }
   };
