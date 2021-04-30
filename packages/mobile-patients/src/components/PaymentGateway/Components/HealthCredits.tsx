@@ -2,14 +2,19 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { UnCheckIcon, CheckIcon, OneApollo } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+
 export interface HealthCreditsProps {
   credits: number;
   HCSelected: boolean;
+  amount: number;
+  burnHc: number;
   onPressHCoption: (selected: boolean) => void;
+  onPressPlaceOrder: () => void;
 }
 
 export const HealthCredits: React.FC<HealthCreditsProps> = (props) => {
-  const { credits, HCSelected, onPressHCoption } = props;
+  const { credits, HCSelected, onPressHCoption, amount, burnHc, onPressPlaceOrder } = props;
 
   const renderHeader = () => {
     return (
@@ -37,12 +42,31 @@ export const HealthCredits: React.FC<HealthCreditsProps> = (props) => {
     );
   };
 
+  const renderPlaceorder = () => {
+    return (
+      <View style={styles.subcontainer2}>
+        <Button
+          title={'PLACE ORDER'}
+          onPress={onPressPlaceOrder}
+          titleTextStyle={styles.place}
+          style={{ borderRadius: 5 }}
+        />
+      </View>
+    );
+  };
+
   const renderChildComponent = () => {
     return (
-      <TouchableOpacity style={styles.ChildComponent} onPress={() => onPressHCoption(!HCSelected)}>
-        {renderOneApollo()}
-        {renderHcs()}
-      </TouchableOpacity>
+      <View>
+        <TouchableOpacity
+          style={styles.ChildComponent}
+          onPress={() => onPressHCoption(!HCSelected)}
+        >
+          {renderOneApollo()}
+          {renderHcs()}
+        </TouchableOpacity>
+        {amount == 0 && burnHc && renderPlaceorder()}
+      </View>
     );
   };
 
@@ -86,5 +110,15 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginLeft: 10,
     color: '#01475B',
+  },
+  place: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginVertical: 10,
+  },
+  subcontainer2: {
+    paddingBottom: 16,
+    paddingHorizontal: 20,
+    backgroundColor: '#fff',
   },
 });

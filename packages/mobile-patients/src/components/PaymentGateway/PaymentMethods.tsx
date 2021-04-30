@@ -67,6 +67,7 @@ import { SecureTags } from '@aph/mobile-patients/src/components/PaymentGateway/C
 import { useFetchHealthCredits } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useFetchHealthCredits';
 import { HealthCredits } from '@aph/mobile-patients/src/components/PaymentGateway/Components/HealthCredits';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { useGetPaymentMethods } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useGetPaymentMethods';
 const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {
@@ -76,16 +77,12 @@ export interface PaymentMethodsProps extends NavigationScreenProps {
 export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const paymentId = props.navigation.getParam('paymentId');
   const [amount, setAmount] = useState<number>(props.navigation.getParam('amount'));
-  const orderId = props.navigation.getParam('orderId');
   const orderDetails = props.navigation.getParam('orderDetails');
   const eventAttributes = props.navigation.getParam('eventAttributes');
   const businessLine = props.navigation.getParam('businessLine');
   const { currentPatient } = useAllCurrentPatients();
   const [banks, setBanks] = useState<any>([]);
-  const [loading, setloading] = useState<boolean>(true);
   const [isTxnProcessing, setisTxnProcessing] = useState<boolean>(false);
-  const [paymentMethods, setPaymentMethods] = useState<any>([]);
-  const [cardTypes, setCardTypes] = useState<any>([]);
   const [isVPAvalid, setisVPAvalid] = useState<boolean>(true);
   const [isCardValid, setisCardValid] = useState<boolean>(true);
   const [availableUPIApps, setAvailableUPIapps] = useState([]);
@@ -95,7 +92,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { authToken, setauthToken } = useAppCommonData();
   const { grandTotal, deliveryCharges, packagingCharges } = useShoppingCart();
   const { healthCredits } = useFetchHealthCredits(businessLine);
-  // const healthCredits = 89.8;
+  const { paymentMethods, cardTypes, fetching } = useGetPaymentMethods();
   const [HCSelected, setHCSelected] = useState<boolean>(false);
   const [burnHc, setburnHc] = useState<number>(0);
   useEffect(() => {
@@ -104,7 +101,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       handleEventListener(resp);
     });
     fecthPaymentOptions();
-    fetchTopBanks();
     return () => eventListener.remove();
   }, []);
 
@@ -143,7 +139,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
             (item: any) => item?.paymentMethodType == 'NB'
           );
           setBanks(banks);
-          setloading(false);
         } else if (paymentActions.indexOf(action) != -1 && status) {
           handleTxnStatus(status, payload);
           setisTxnProcessing(false);
@@ -211,20 +206,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     }
   };
 
-  const fetchTopBanks = async () => {
-    const response = await client.query({
-      query: GET_PAYMENT_METHODS,
-      variables: { is_mobile: true },
-      fetchPolicy: 'no-cache',
-    });
-    const { data } = response;
-    const { getPaymentMethods } = data;
-    setPaymentMethods(getPaymentMethods);
-    const types = getPaymentMethods.find((item: any) => item?.name == 'CARD');
-    setCardTypes(types?.payment_methods);
-    setloading(false);
-  };
-
   const createJusPayOrder = (paymentMode: PAYMENT_MODE) => {
     const orderInput: OrderInput = {
       payment_order_id: paymentId,
@@ -289,7 +270,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       try {
         businessLine == 'diagnostics' && initiateOrderPayment();
         const response = await createJusPayOrder(PAYMENT_MODE.PREPAID);
-        console.log('response >>>', JSON.stringify(response));
         const { data } = response;
         const { createOrder } = data;
         const token = createOrder?.juspay?.client_auth_token;
@@ -363,6 +343,14 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       } else {
         showTxnFailurePopUP();
       }
+    } catch (e) {
+      showTxnFailurePopUP();
+    }
+  }
+
+  async function onPressplaceHcOrder() {
+    try {
+      const response = await createJusPayOrder(PAYMENT_MODE.COD);
     } catch (e) {
       showTxnFailurePopUP();
     }
@@ -456,6 +444,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const showPaymentOptions = () => {
+    if (amount == 0) return null;
     return !!paymentMethods?.length
       ? paymentMethods.map((item: any) => {
           const minVersion = item?.minimum_supported_version;
@@ -486,7 +475,10 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       <HealthCredits
         credits={healthCredits}
         HCSelected={HCSelected}
+        amount={amount}
+        burnHc={burnHc}
         onPressHCoption={(value) => setHCSelected(value)}
+        onPressPlaceOrder={onPressplaceHcOrder}
       />
     ) : null;
   };
@@ -543,18 +535,20 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     });
   };
 
-  const renderSecureTag = () => <SecureTags />;
+  const renderSecureTag = () => {
+    return !!paymentMethods?.length && amount != 0 ? <SecureTags /> : null;
+  };
 
   return (
     <>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-        {!loading ? (
+        {!fetching ? (
           <ScrollView contentContainerStyle={styles.container}>
             {renderBookingInfo()}
             {renderHealthCredits()}
             {showPaymentOptions()}
-            {!!paymentMethods?.length && renderSecureTag()}
+            {renderSecureTag()}
           </ScrollView>
         ) : (
           <Spinner />
