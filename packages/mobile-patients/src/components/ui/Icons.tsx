@@ -266,6 +266,14 @@ export const CheckedIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_check.png')} />
 );
 
+export const CheckIcon: React.FC<IconProps> = (props) => (
+  <IconBase style={{ height: 18, width: 18 }} {...props} source={require('./icons/check.png')} />
+);
+
+export const UnCheckIcon: React.FC<IconProps> = (props) => (
+  <IconBase style={{ height: 18, width: 18 }} {...props} source={require('./icons/uncheck.png')} />
+);
+
 export const WhiteTickIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_check_white.png')} />
 );

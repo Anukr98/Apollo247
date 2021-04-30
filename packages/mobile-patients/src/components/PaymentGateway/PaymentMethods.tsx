@@ -64,6 +64,9 @@ import {
 import { paymentModeVersionCheck } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { SecureTags } from '@aph/mobile-patients/src/components/PaymentGateway/Components/SecureTag';
+import { useFetchHealthCredits } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useFetchHealthCredits';
+import { HealthCredits } from '@aph/mobile-patients/src/components/PaymentGateway/Components/HealthCredits';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {
@@ -72,7 +75,7 @@ export interface PaymentMethodsProps extends NavigationScreenProps {
 
 export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const paymentId = props.navigation.getParam('paymentId');
-  const amount = props.navigation.getParam('amount');
+  const [amount, setAmount] = useState<number>(props.navigation.getParam('amount'));
   const orderId = props.navigation.getParam('orderId');
   const orderDetails = props.navigation.getParam('orderDetails');
   const eventAttributes = props.navigation.getParam('eventAttributes');
@@ -90,6 +93,11 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { authToken, setauthToken } = useAppCommonData();
+  const { grandTotal, deliveryCharges, packagingCharges } = useShoppingCart();
+  const { healthCredits } = useFetchHealthCredits(businessLine);
+  // const healthCredits = 89.8;
+  const [HCSelected, setHCSelected] = useState<boolean>(false);
+  const [burnHc, setburnHc] = useState<number>(0);
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
     const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
@@ -106,6 +114,21 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     });
     return () => BackHandler.removeEventListener('hardwareBackPress', () => null);
   }, []);
+
+  useEffect(() => {
+    healthCredits && updateAmount();
+  }, [HCSelected]);
+
+  const getFormattedAmount = (num: number) => Number(num.toFixed(2));
+
+  const updateAmount = () => {
+    const redeemableAmount = grandTotal - deliveryCharges - packagingCharges;
+    HCSelected
+      ? healthCredits >= redeemableAmount
+        ? (setburnHc(redeemableAmount), setAmount(amount - redeemableAmount))
+        : (setburnHc(healthCredits), setAmount(getFormattedAmount(amount - healthCredits)))
+      : (setAmount(props.navigation.getParam('amount')), setburnHc(0));
+  };
 
   const handleEventListener = (resp: any) => {
     var data = JSON.parse(resp);
@@ -266,6 +289,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       try {
         businessLine == 'diagnostics' && initiateOrderPayment();
         const response = await createJusPayOrder(PAYMENT_MODE.PREPAID);
+        console.log('response >>>', JSON.stringify(response));
         const { data } = response;
         const { createOrder } = data;
         const token = createOrder?.juspay?.client_auth_token;
@@ -324,6 +348,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressPayByCash() {
+    if (HCSelected) return;
     triggerWebengege('Cash', 'Cash');
     setisTxnProcessing(true);
     try {
@@ -402,6 +427,15 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           paymentId: paymentId,
         });
         break;
+      case 'pharma':
+        props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
+          status: paymentStatus,
+          price: amount,
+          transId: paymentId,
+          orderDetails: orderDetails,
+          // checkoutEventAttributes: checkoutEventAttributes,
+        });
+        break;
     }
   };
 
@@ -452,6 +486,16 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       : renderPayByCash();
   };
 
+  const renderHealthCredits = () => {
+    return healthCredits && businessLine == 'pharma' ? (
+      <HealthCredits
+        credits={healthCredits}
+        HCSelected={HCSelected}
+        onPressHCoption={(value) => setHCSelected(value)}
+      />
+    ) : null;
+  };
+
   const renderWallets = (wallets: any) => {
     return <Wallets wallets={wallets} onPressPayNow={onPressWallet} />;
   };
@@ -490,7 +534,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderPayByCash = () => {
-    return businessLine != 'consult' ? <PayByCash onPressPlaceOrder={onPressPayByCash} /> : null;
+    return businessLine != 'consult' ? (
+      <PayByCash HCselected={HCSelected} onPressPlaceOrder={onPressPayByCash} />
+    ) : null;
   };
 
   const showTxnFailurePopUP = () => {
@@ -511,6 +557,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         {!loading ? (
           <ScrollView contentContainerStyle={styles.container}>
             {renderBookingInfo()}
+            {renderHealthCredits()}
             {showPaymentOptions()}
             {!!paymentMethods?.length && renderSecureTag()}
           </ScrollView>

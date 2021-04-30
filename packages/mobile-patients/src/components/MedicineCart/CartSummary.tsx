@@ -204,7 +204,11 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
 
   const createOrderInternal = (shipments: any, subscriptionId?: string) => {
     const pharmaOrders = shipments.map((item: any) => {
-      return { order_id: item?.id, amount: item?.estimatedAmount, patient_id: currentPatient?.id };
+      return {
+        order_id: JSON.stringify(item?.orderAutoId),
+        amount: item?.estimatedAmount,
+        patient_id: currentPatient?.id,
+      };
     });
     const orders: OrderVerticals = { pharma: pharmaOrders };
     if (subscriptionId) {
