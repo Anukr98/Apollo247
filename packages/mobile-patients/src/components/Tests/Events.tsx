@@ -332,21 +332,19 @@ export function DiagnosticAppointmentTimeSlot(
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED, eventAttributes);
 }
 
-export function DiagnosticPaymentInitiated(
+export function PaymentInitiated(
   mode: 'Prepaid' | 'Cash',
   grandTotal: number,
-  serviceArea: 'Diagnostic' | 'Pharmacy',
   LOB: string,
   type: string
 ) {
-  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.PAYMENT_INITIATED] = {
     Paymentmode: mode,
     Amount: grandTotal,
-    ServiceArea: serviceArea,
     LOB: LOB,
     type: type,
   };
-  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED, eventAttributes);
+  postWebEngageEvent(WebEngageEventName.PAYMENT_INITIATED, eventAttributes);
 }
 
 export function DiagnosticViewReportClicked() {

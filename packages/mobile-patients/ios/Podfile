@@ -79,7 +79,6 @@ target 'ApolloPatient' do
   pod 'WebEngage', '~> 5.0.2'
 
   pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-community/async-storage'
-  pod 'react-native-appsflyer', :path => '../node_modules/react-native-appsflyer'
   pod 'RCTSystemSetting', :path => '../node_modules/react-native-system-setting'
   pod 'RNSound', :path => '../node_modules/react-native-sound'
   pod 'react-native-background-timer', :path => '../node_modules/react-native-background-timer'
@@ -110,6 +109,8 @@ target 'ApolloPatient' do
   pod 'hyper-sdk-react', :path => '../node_modules/hyper-sdk-react'
 
   pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
+
+  pod 'react-native-appsflyer', :path => '../node_modules/react-native-appsflyer'
 
   target 'NotificationService' do
       platform :ios, '10.0'

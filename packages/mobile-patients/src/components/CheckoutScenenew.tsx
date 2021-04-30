@@ -147,6 +147,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     shipments,
     orders,
     hdfcSubscriptionId,
+    minCartValueForCOD,
+    maxCartValueForCOD,
+    nonCodSKus,
   } = useShoppingCart();
   const {
     pharmacyUserTypeAttribute,
@@ -181,6 +184,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const [HCorder, setHCorder] = useState<boolean>(false);
   const [scrollToend, setScrollToend] = useState<boolean>(false);
   const [showCareDetails, setShowCareDetails] = useState(true);
+  const [areNonCODSkus, setAreNonCODSkus] = useState(false);
   const client = useApolloClient();
 
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
@@ -250,6 +254,14 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       });
     return () => {};
   }, []);
+
+  useEffect(() => {
+    if (cartItems?.length) {
+      const skusNotForCod = cartItems?.find((item) => nonCodSKus?.includes(item?.id));
+      const areNonCodSkus = !!skusNotForCod?.id;
+      setAreNonCODSkus(areNonCodSkus);
+    }
+  }, [cartItems]);
 
   const fetchHealthCredits = async () => {
     var cachedHealthCredit: any = await getHealthCredits();
@@ -1380,10 +1392,19 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     );
   };
   const renderNewCOD = () => {
+    const total = grandTotal - burnHC;
+    const isLessThanCodLimit = minCartValueForCOD ? total < minCartValueForCOD : false;
+    const isMoreThanCodLimit = maxCartValueForCOD ? total > maxCartValueForCOD : false;
     return (
       <View>
         <Button
-          disabled={isOneApolloSelected || !!circleMembershipCharges}
+          disabled={
+            areNonCODSkus ||
+            isLessThanCodLimit ||
+            isMoreThanCodLimit ||
+            isOneApolloSelected ||
+            !!circleMembershipCharges
+          }
           style={styles.CODoption}
           title={'CASH ON DELIVERY'}
           onPress={() => validateCouponAndInitiateOrder('', '', true, false)}
@@ -1391,6 +1412,18 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         {!!circleMembershipCharges ? (
           <Text style={styles.codAlertMsg}>
             {'!Remove Circle Membership on Cart Page to avail COD'}
+          </Text>
+        ) : isLessThanCodLimit ? (
+          <Text style={styles.codAlertMsg}>
+            {`Minimum Order amount eligible for COD is ₹${minCartValueForCOD}.`}
+          </Text>
+        ) : isMoreThanCodLimit ? (
+          <Text style={styles.codAlertMsg}>
+            {`Maximum Order amount eligible for COD is ₹${maxCartValueForCOD}.`}
+          </Text>
+        ) : areNonCODSkus ? (
+          <Text style={styles.codAlertMsg}>
+            {'Some of the products you have added to cart are not eligible for Cash on Delivery'}
           </Text>
         ) : !!isOneApolloSelected ? (
           <Text style={styles.codAlertMsg}>

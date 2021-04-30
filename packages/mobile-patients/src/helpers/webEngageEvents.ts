@@ -190,7 +190,7 @@ export enum WebEngageEventName {
   DIAGNOSTIC_AREA_SELECTED = 'Area Selected on Cart',
   DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Appointment time slot selected',
   DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic proceed to pay clicked',
-  DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic Payment Initiated',
+  PAYMENT_INITIATED = 'Payment Initiated',
   DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
   DIAGNOSTIC_TRACK_ORDER_VIEWED = 'Diagnostic track Order viewed',
   DIAGNOSITC_ORDER_RESCHEDULE = 'Diagnostic order rescheduled',
@@ -1278,10 +1278,9 @@ export interface WebEngageEvents {
     'Appointment time'?: string;
     'Item ids'?: any;
   };
-  [WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
+  [WebEngageEventName.PAYMENT_INITIATED]: {
     Paymentmode?: 'Prepaid' | 'Cash';
     Amount: number;
-    ServiceArea: 'Pharmacy' | 'Diagnostic';
     LOB: string;
     type?: string;
   };

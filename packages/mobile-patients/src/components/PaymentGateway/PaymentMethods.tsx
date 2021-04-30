@@ -56,7 +56,7 @@ import {
   createOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOrder';
 import { verifyVPA, verifyVPAVariables } from '@aph/mobile-patients/src/graphql/types/verifyVPA';
-import { DiagnosticPaymentInitiated } from '@aph/mobile-patients/src/components/Tests/Events';
+import { PaymentInitiated } from '@aph/mobile-patients/src/components/Tests/Events';
 import {
   initiateDiagonsticHCOrderPaymentVariables,
   initiateDiagonsticHCOrderPayment,
@@ -303,7 +303,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   function triggerWebengege(mode: 'Prepaid' | 'Cash', type: string) {
-    DiagnosticPaymentInitiated(mode, amount, 'Diagnostic', 'Diagnostic', type);
+    PaymentInitiated(mode, amount, businessLine, type);
   }
 
   async function onPressBank(bankCode: string) {
@@ -319,13 +319,13 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressUPIApp(app: any) {
-    triggerWebengege('Prepaid', 'UPI');
+    triggerWebengege('Prepaid', 'UPI Intent');
     const token = await getClientToken();
-    InitiateUPIIntentTxn(currentPatient?.id, token, paymentId, app.packageName);
+    InitiateUPIIntentTxn(currentPatient?.id, token, paymentId, app.payment_method_code);
   }
 
   async function onPressVPAPay(VPA: string) {
-    triggerWebengege('Prepaid', VPA);
+    triggerWebengege('Prepaid', 'UPI Collect');
     try {
       setisTxnProcessing(true);
       const response = await verifyVPA(VPA);
@@ -385,19 +385,14 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const filterUPIApps = () => {
     if (availableUPIApps?.length) {
-      const available = availableUPIApps?.map((item: any) => item?.appName);
+      const available = availableUPIApps?.map((item: any) => item?.packageName);
       const UPIApps = paymentMethods?.find((item: any) => item?.name == 'UPI')?.payment_methods;
       const apps = UPIApps?.map((app: any) => {
         if (
-          available.includes(app?.payment_method_name) &&
+          available.includes(app?.payment_method_code) &&
           paymentModeVersionCheck(app?.minimum_supported_version)
         ) {
-          let object = app;
-          const packageName = availableUPIApps?.find(
-            (item: any) => item?.appName == app.payment_method_name
-          )?.['packageName'];
-          object['packageName'] = packageName;
-          return object;
+          return app;
         }
       }).filter((value: any) => value);
       return apps;

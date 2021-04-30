@@ -12,11 +12,31 @@ import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsCompon
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { YourOrdersScene } from '@aph/mobile-patients/src/components/YourOrdersScene';
 import { YourOrdersTest } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/YourOrdersTests';
+import { AppConfig } from '../../strings/AppConfig';
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 interface MyOrdersScreenProps extends NavigationScreenProps<{}> {}
 const MyOrdersScreen: FC<MyOrdersScreenProps> = (props) => {
   const tabs = [{ title: 'Pharmacy Orders' }, { title: 'Diagnostic Orders' }];
   const [selectedTab, setSelectedTab] = useState<string>(tabs[0].title);
+  const [showHelpCTA, setShowHelpCTA] = useState<boolean>(true);
+
+  const onPressHelp = () => {
+    const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
+    props.navigation.navigate(AppRoutes.NeedHelpPharmacyOrder, {
+      queryIdLevel1: helpSectionQueryId.pharmacy,
+      sourcePage: 'My Orders',
+    });
+  };
+
+  const renderHeaderRightComponent = () => {
+    return showHelpCTA ? (
+      <TouchableOpacity activeOpacity={1} style={{ paddingLeft: 10 }} onPress={onPressHelp}>
+        <Text style={styles.helpTextStyle}>{string.help.toUpperCase()}</Text>
+      </TouchableOpacity>
+    ) : null;
+  };
 
   const renderHeader = () => {
     return (
@@ -28,6 +48,7 @@ const MyOrdersScreen: FC<MyOrdersScreenProps> = (props) => {
           CommonLogEvent(AppRoutes.MyOrdersScreen, 'Go back clicked');
           props.navigation.goBack();
         }}
+        rightComponent={renderHeaderRightComponent()}
       />
     );
   };
@@ -45,6 +66,11 @@ const MyOrdersScreen: FC<MyOrdersScreenProps> = (props) => {
         data={tabs}
         onChange={(selectedTab: string) => {
           setSelectedTab(selectedTab);
+          if (selectedTab === tabs[1].title) {
+            setShowHelpCTA(false);
+          } else {
+            setShowHelpCTA(true);
+          }
         }}
         selectedTab={selectedTab}
       />
@@ -86,6 +112,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 5,
   },
+  helpTextStyle: { ...theme.viewStyles.text('B', 13, '#FC9916', 1, 24) },
 });
 
 export default MyOrdersScreen;

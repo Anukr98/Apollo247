@@ -227,6 +227,14 @@ export interface ShoppingCartContextProps {
   orders: any;
   setOrders: ((orders: any[]) => void) | null;
   shipments: (MedicineOrderShipmentInput | null)[];
+  minimumCartValue: number;
+  setMinimumCartValue: ((value: number) => void) | null;
+  minCartValueForCOD: number;
+  setMinCartValueForCOD: ((value: number) => void) | null;
+  maxCartValueForCOD: number;
+  setMaxCartValueForCOD: ((value: number) => void) | null;
+  nonCodSKus: string[];
+  setNonCodSKus: ((items: string[]) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -326,6 +334,14 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   orders: [],
   setOrders: null,
   shipments: [],
+  minimumCartValue: 0,
+  setMinimumCartValue: null,
+  minCartValueForCOD: 0,
+  setMinCartValueForCOD: null,
+  maxCartValueForCOD: 0,
+  setMaxCartValueForCOD: null,
+  nonCodSKus: [],
+  setNonCodSKus: null,
 });
 
 const AsyncStorageKeys = {
@@ -441,6 +457,17 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [consultProfile, setConsultProfile] = useState<ShoppingCartContextProps['consultProfile']>(
     null
   );
+
+  const [minimumCartValue, setMinimumCartValue] = useState<
+    ShoppingCartContextProps['minimumCartValue']
+  >(0);
+  const [minCartValueForCOD, setMinCartValueForCOD] = useState<
+    ShoppingCartContextProps['minCartValueForCOD']
+  >(0);
+  const [maxCartValueForCOD, setMaxCartValueForCOD] = useState<
+    ShoppingCartContextProps['maxCartValueForCOD']
+  >(0);
+  const [nonCodSKus, setNonCodSKus] = useState<ShoppingCartContextProps['nonCodSKus']>([]);
 
   const [isProuctFreeCouponApplied, setisProuctFreeCouponApplied] = useState<boolean>(false);
   const [orders, setOrders] = useState<ShoppingCartContextProps['orders']>([]);
@@ -1160,6 +1187,14 @@ export const ShoppingCartProvider: React.FC = (props) => {
         orders,
         setOrders,
         shipments,
+        minimumCartValue,
+        setMinimumCartValue,
+        minCartValueForCOD,
+        setMinCartValueForCOD,
+        maxCartValueForCOD,
+        setMaxCartValueForCOD,
+        nonCodSKus,
+        setNonCodSKus,
       }}
     >
       {props.children}
