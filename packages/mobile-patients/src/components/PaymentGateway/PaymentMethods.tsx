@@ -266,7 +266,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   async function onPressUPIApp(app: any) {
     triggerWebengege('Prepaid', 'UPI');
     const token = await getClientToken();
-    InitiateUPIIntentTxn(currentPatient?.id, token, paymentId, app.app.payment_method_code);
+    InitiateUPIIntentTxn(currentPatient?.id, token, paymentId, app.payment_method_code);
   }
 
   async function onPressVPAPay(VPA: string) {
