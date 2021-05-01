@@ -82,6 +82,8 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   groupPlan: string | null;
   price: number | null;
   itemType: DIAGNOSTICS_TYPE | null;
+  editOrderID: string | null;
+  isRemoved: boolean | null;
   itemObj: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems_itemObj | null;
   diagnostics: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems_diagnostics | null;
   testPreparationData: string | null;

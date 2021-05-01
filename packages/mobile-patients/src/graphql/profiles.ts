@@ -1870,6 +1870,11 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         paymentType
         visitNo
         labReportURL
+        patientObj{
+          firstName
+          lastName
+          gender
+        }
         diagnosticOrderLineItems {
           id
           itemId
@@ -1878,6 +1883,8 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           price
           quantity
           groupPlan
+          editOrderID
+          isRemoved
           itemObj {
             itemType
             testPreparationData
@@ -2246,6 +2253,8 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           groupPlan
           price
           itemType
+          editOrderID
+          isRemoved
           itemObj {
             itemType
             testPreparationData
@@ -4701,6 +4710,7 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql `
         patientObj {
           firstName
           lastName
+          gender
         },
       }
     }

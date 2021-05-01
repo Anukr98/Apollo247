@@ -147,6 +147,7 @@ import {
   DiagnosticAreaSelected,
   DiagnosticCartViewed,
   DiagnosticNonServiceableAddressSelected,
+  DiagnosticPaymentInitiated,
   DiagnosticProceedToPay,
   DiagnosticRemoveFromCartClicked,
 } from '@aph/mobile-patients/src/components/Tests/Events';
@@ -179,6 +180,7 @@ import {
   saveModifyDiagnosticOrder,
   saveModifyDiagnosticOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/saveModifyDiagnosticOrder';
+import { processDiagnosticsCODOrder } from '@aph/mobile-patients/src/helpers/clientCalls';
 const { width: screenWidth } = Dimensions.get('window');
 
 export interface areaObject {
@@ -252,7 +254,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const sourceScreen = props.navigation.getParam('comingFrom');
   const existingOrderDetails = props.navigation.getParam('orderDetails');
-  console.log({ existingOrderDetails });
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
   const { currentPatient, setCurrentPatientId } = useAllCurrentPatients();
@@ -352,6 +353,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    console.log('po');
     if (showSelectPatient && currentPatient) {
       setSelectedPatient(
         !!existingOrderDetails ? existingOrderDetails?.patientObj : currentPatient
@@ -365,6 +367,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, []);
 
   const fetchTestReportGenDetails = async (_cartItemId: string | number[]) => {
+    console.log('fetch report');
     try {
       const removeSpaces =
         typeof _cartItemId == 'string' ? _cartItemId.replace(/\s/g, '').split(',') : null;
@@ -463,13 +466,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   useEffect(() => {
+    console.log('ffff');
     if (cartItemsWithId?.length > 0) {
-      console.log('fetch package details..');
       fetchPackageDetails(cartItemsWithId, null, 'diagnosticServiceablityChange');
     }
   }, [diagnosticServiceabilityData]);
 
   useEffect(() => {
+    console.log('djkdhjkdhkjdhjkd');
     if (
       !!existingOrderDetails &&
       existingOrderDetails?.slotId &&
@@ -483,7 +487,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         ) => Number(item?.itemId)
       );
       const allItemIds = [cartItemsWithId, modifyOrderItemIds].flat(1);
-      console.log({ allItemIds });
       fetchHC_ChargesForTest(existingOrderDetails?.slotId, allItemIds);
     } else if (
       selectedTimeSlot?.slotInfo?.slot! &&
@@ -497,6 +500,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, [diagnosticSlot, deliveryAddressId, cartItems, addresses]);
 
   useEffect(() => {
+    console.log('shjshjsh=> pincode..?');
     if ((!!existingOrderDetails || deliveryAddressId != '') && isFocused) {
       getPinCodeServiceability();
     }
@@ -574,13 +578,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, [isEPrescriptionUploadComplete, isPhysicalUploadComplete]);
 
   useEffect(() => {
+    console.log('bro');
     if (cartItems?.length > 0) {
       if (cartItemsWithId?.length > 0) {
         fetchTestReportGenDetails(cartItemsWithId);
       }
     }
   }, [cartItems?.length, addressCityId]);
-
   useEffect(() => {
     if (!!existingOrderDetails) {
       return;
@@ -643,6 +647,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         },
       });
     } else {
+      setshowSpinner?.(false);
+      setLoading?.(false);
       showAphAlert?.({
         title: string.common.uhOh,
         description: message,
@@ -1052,7 +1058,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     ) => void | null,
     comingFrom: string
   ) => {
-    console.log('ayaga');
     const removeSpaces = typeof itemIds == 'string' ? itemIds.replace(/\s/g, '').split(',') : null;
 
     const listOfIds =
@@ -1064,8 +1069,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         : !!sourceScreen
         ? 9
         : Number(diagnosticServiceabilityData?.cityId! || '9');
-
-    console.log({ listOfIds });
 
     {
       setLoading?.(true);
@@ -1342,7 +1345,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     comingFrom?: string,
     _itemIds?: number[]
   ) => {
-    console.log('inside slot selection api');
+    console.log('yeyeyyeye');
     const isCovidItem = cartItemsWithId?.map((item) =>
       AppConfig.Configuration.Covid_Items.includes(item)
     );
@@ -1352,13 +1355,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       : AppConfig.Configuration.Non_Covid_Max_Slot_Days;
 
     let dateToCheck = !!changedDate && comingFrom != '' ? changedDate : new Date();
-
-    console.log({ areaObject });
-
     const selectedArea = !!existingOrderDetails
       ? existingOrderDetails?.areaId
       : Number((areaObject as any).key!);
-    console.log({ selectedArea });
     setLoading?.(true);
     const selectedAddressIndex = addresses?.findIndex(
       (address) => address?.id == deliveryAddressId
@@ -1453,6 +1452,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             },
           });
         } else {
+          console.log('p2');
           setDeliveryAddressId && setDeliveryAddressId('');
           setDiagnosticAreas?.([]);
           setAreaSelected?.({});
@@ -1994,9 +1994,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setshowSpinner(true);
     //if modify order
     if (!!existingOrderDetails) {
-      existingOrderDetails?.paymentType === DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
-        ? _navigateToPaymentsPage()
-        : saveModifiedOrder();
+      saveModifiedOrder();
     }
     //for normal flow
     else {
@@ -2004,13 +2002,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   };
 
-  function _navigateToPaymentsPage() {
-    //call save api
-    //call internal order api
-    //navigate to next page.
-  }
-
   function saveModifiedOrder() {
+    const slotTimings = existingOrderDetails?.slotDateTimeInUTC;
+    const slotStartTime = existingOrderDetails?.slotDateTimeInUTC;
+    const allItems = cartItems?.find(
+      (item) =>
+        item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL ||
+        item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+    );
+
     setshowSpinner?.(true);
     const modifyBookingInput: saveModifyDiagnosticOrderInput = {
       orderId: existingOrderDetails?.id,
@@ -2025,20 +2025,69 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     saveModifyOrder?.(modifyBookingInput)
       .then((data) => {
         console.log({ data });
-        setshowSpinner?.(false);
+        const getModifyResponse = data?.data?.saveModifyDiagnosticOrder;
+        if (!getModifyResponse?.status) {
+          apiHandleErrorFunction(modifyBookingInput, getModifyResponse, 'modifyOrder');
+        } else {
+          callCreateInternalOrder(
+            getModifyResponse?.orderId!,
+            getModifyResponse?.displayId!,
+            slotTimings,
+            allItems,
+            slotStartTime!,
+            'modifyOrder'
+          );
+        }
         //call PROCESS_DIAG_COD_ORDER api from payments page
         //navigate to confirm page
       })
       .catch((error) => {
+        console.log('p3');
         console.log({ error });
         CommonBugFender('TestsCart__saveModifiedOrder', error);
         setshowSpinner?.(false);
-        showAphAlert!({
+        setLoading?.(false);
+        showAphAlert?.({
           unDismissable: true,
           title: `Hi ${g(currentPatient, 'firstName') || ''}!`, //existing order patient
           description: string.diagnostics.bookingOrderFailedMessage,
         });
       });
+  }
+
+  async function processModifiyCODOrder(
+    orderId: string,
+    amount: number,
+    eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED],
+    orderInfo: any
+  ) {
+    DiagnosticPaymentInitiated('Cash', amount, 'Diagnostic', 'Diagnostic', 'Cash');
+    try {
+      const response = await processDiagnosticsCODOrder(client, orderId, amount);
+      console.log(response);
+      const { data } = response;
+      data?.processDiagnosticHCOrder?.status
+        ? _navigatetoOrderStatus(true, 'success', eventAttributes, orderInfo)
+        : renderAlert(string.common.tryAgainLater);
+    } catch (e) {
+      console.log({ e });
+      renderAlert(string.common.tryAgainLater);
+    }
+  }
+
+  function _navigatetoOrderStatus(
+    isCOD: boolean,
+    paymentStatus: string,
+    eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED],
+    orderInfo: any
+  ) {
+    props.navigation.navigate(AppRoutes.OrderStatus, {
+      isModify: !!existingOrderDetails ? existingOrderDetails : null,
+      orderDetails: orderInfo,
+      isCOD: isCOD,
+      eventAttributes,
+      paymentStatus: paymentStatus,
+    });
   }
 
   const saveHomeCollectionOrder = () => {
@@ -2083,102 +2132,31 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         totalPriceExcludingDiscounts: totalPriceExcludingAnyDiscounts + hcCharges,
         subscriptionInclusionId: null,
         userSubscriptionId: circleSubscriptionId,
-        // prismPrescriptionFileId: [
-        //   ...physicalPrescriptions.map((item) => item.prismPrescriptionFileId),
-        //   ...ePrescriptions.map((item) => item.prismPrescriptionFileId),
-        // ].join(','),
       };
 
       saveHomeCollectionBookingOrder(bookingOrderInfo)
         .then(async ({ data }) => {
+          const getSaveHomeCollectionResponse = data?.saveDiagnosticBookHCOrder;
           // in case duplicate test, price mismatch, address mismatch, slot issue
-          if (!data?.saveDiagnosticBookHCOrder?.status) {
-            let message =
-              data?.saveDiagnosticBookHCOrder?.errorMessageToDisplay ||
-              string.diagnostics.bookingOrderFailedMessage;
-            //itemIds will only come in case of duplicate
-            let itemIds = data?.saveDiagnosticBookHCOrder?.attributes?.itemids;
-            if (itemIds?.length! > 0) {
-              showAphAlert?.({
-                unDismissable: true,
-                title: string.common.uhOh,
-                description: message,
-                onPressOk: () => {
-                  removeDuplicateCartItems(itemIds!, bookingOrderInfo?.items);
-                },
-              });
-            } else {
-              if (
-                slotBookedArray.some((item) => message?.includes(item)) ||
-                message.includes('slot has been booked')
-              ) {
-                showAphAlert?.({
-                  title: string.common.uhOh,
-                  description: message,
-                  onPressOutside: () => {
-                    checkSlotSelection(areaSelected, '', 'errorState');
-                    hideAphAlert?.();
-                  },
-                  onPressOk: () => {
-                    checkSlotSelection(areaSelected, '', 'errorState');
-                    hideAphAlert?.();
-                  },
-                });
-              } else {
-                renderAlert(message);
-              }
-            }
+          if (!getSaveHomeCollectionResponse?.status) {
+            apiHandleErrorFunction(bookingOrderInfo, getSaveHomeCollectionResponse, 'saveOrder');
           } else {
-            const orderId = data?.saveDiagnosticBookHCOrder?.orderId || '';
-            const displayId = data?.saveDiagnosticBookHCOrder?.displayId || '';
-            const orders: OrderVerticals = {
-              diagnostics: [
-                { order_id: orderId, amount: grandTotal, patient_id: currentPatient?.id },
-              ],
-            };
-            const orderInput: OrderCreate = {
-              orders: orders,
-              total_amount: grandTotal,
-              customer_id: currentPatient?.primaryPatientId || currentPatient?.id,
-            };
-            const response = await createOrderInternal(orderInput);
-            if (response?.data?.createOrderInternal?.success) {
-              const orderInfo = {
-                orderId: orderId,
-                displayId: displayId,
-                diagnosticDate: date!,
-                slotTime: slotTimings!,
-                cartSaving: cartSaving,
-                circleSaving: circleSaving,
-                cartHasAll: allItems != undefined ? true : false,
-                amount: grandTotal,
-              };
-              const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED] = {
-                'Order id': orderId,
-                Pincode: parseInt(selectedAddr?.zipcode!),
-                'Patient UHID': g(currentPatient, 'id'),
-                'Total items in cart': cartItems.length,
-                'Order amount': grandTotal,
-                'Appointment Date': moment(orderDetails?.diagnosticDate!).format('DD/MM/YYYY'),
-                'Appointment time': slotStartTime!,
-                'Item ids': cartItemsWithId,
-              };
-
-              props.navigation.navigate(AppRoutes.PaymentMethods, {
-                paymentId: response?.data?.createOrderInternal?.payment_order_id!,
-                amount: grandTotal,
-                orderId: orderId,
-                orderDetails: orderInfo,
-                eventAttributes,
-              });
-            }
+            callCreateInternalOrder(
+              getSaveHomeCollectionResponse?.orderId!,
+              getSaveHomeCollectionResponse?.displayId!,
+              slotTimings,
+              allItems,
+              slotStartTime!,
+              'saveOrder'
+            );
           }
         })
         .catch((error) => {
-          CommonBugFender('TestsCheckoutScene_saveOrder', error);
-          setshowSpinner(false);
-          setLoading!(false);
-          showAphAlert!({
+          console.log('p4');
+          CommonBugFender('TestsCart_saveHomeCollectionOrder', error);
+          setshowSpinner?.(false);
+          setLoading?.(false);
+          showAphAlert?.({
             unDismissable: true,
             title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
             description: string.diagnostics.bookingOrderFailedMessage,
@@ -2190,6 +2168,132 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         });
     }
   };
+
+  function apiHandleErrorFunction(input: any, data: any, source: string) {
+    console.log({ data });
+    let message =
+      source === 'modifyOrder'
+        ? data?.errorMessageToDisplay
+        : data?.errorMessage || string.diagnostics.bookingOrderFailedMessage;
+    //itemIds will only come in case of duplicate
+    let itemIds = data?.attributes?.itemids;
+    if (itemIds?.length! > 0) {
+      showAphAlert?.({
+        unDismissable: true,
+        title: string.common.uhOh,
+        description: message,
+        onPressOk: () => {
+          removeDuplicateCartItems(itemIds!, input?.items);
+        },
+      });
+    } else {
+      if (
+        slotBookedArray.some((item) => message?.includes(item)) ||
+        message.includes('slot has been booked')
+      ) {
+        showAphAlert?.({
+          title: string.common.uhOh,
+          description: message,
+          onPressOutside: () => {
+            checkSlotSelection(areaSelected, '', 'errorState');
+            hideAphAlert?.();
+          },
+          onPressOk: () => {
+            checkSlotSelection(areaSelected, '', 'errorState');
+            hideAphAlert?.();
+          },
+        });
+      } else {
+        renderAlert(message);
+      }
+    }
+  }
+
+  async function callCreateInternalOrder(
+    getOrderId: string,
+    getDisplayId: string,
+    slotTimings: string,
+    items: any,
+    slotStartTime: string,
+    source: string
+  ) {
+    try {
+      const orderId = getOrderId! || '';
+      const displayId = getDisplayId! || '';
+      const getPatientId =
+        source === 'modifyOrder' && !!existingOrderDetails
+          ? existingOrderDetails?.patientId
+          : currentPatient?.id;
+      const orders: OrderVerticals = {
+        diagnostics: [{ order_id: orderId, amount: grandTotal, patient_id: getPatientId }],
+      };
+      const orderInput: OrderCreate = {
+        orders: orders,
+        total_amount: grandTotal,
+        customer_id: currentPatient?.primaryPatientId || getPatientId,
+      };
+      const response = await createOrderInternal(orderInput);
+      if (response?.data?.createOrderInternal?.success) {
+        const orderInfo = {
+          orderId: orderId,
+          displayId: displayId,
+          diagnosticDate: date!,
+          slotTime: slotTimings!,
+          cartSaving: cartSaving,
+          circleSaving: circleSaving,
+          cartHasAll: items != undefined ? true : false,
+          amount: grandTotal,
+        };
+        const eventAttributes = createCheckOutEventAttributes(orderId, slotStartTime);
+        if (
+          source === 'modifyOrder' &&
+          existingOrderDetails?.paymentType !== DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
+        ) {
+          //call the process wali api & success page
+          processModifiyCODOrder(orderId, grandTotal, eventAttributes, orderInfo);
+        } else {
+          setLoading?.(false);
+          setshowSpinner?.(false);
+          props.navigation.navigate(AppRoutes.PaymentMethods, {
+            paymentId: response?.data?.createOrderInternal?.payment_order_id!,
+            amount: grandTotal,
+            orderId: orderId,
+            orderDetails: orderInfo,
+            isModify: !!existingOrderDetails,
+            eventAttributes,
+          });
+        }
+      }
+    } catch (error) {
+      console.log('p1');
+      CommonBugFender('TestCart_callInternalOrder', error);
+      setshowSpinner?.(false);
+      setLoading?.(false);
+      showAphAlert?.({
+        unDismissable: true,
+        title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
+        description: string.diagnostics.bookingOrderFailedMessage,
+      });
+    }
+  }
+
+  function createCheckOutEventAttributes(orderId: string, slotStartTime?: string) {
+    const attributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED] = {
+      'Order id': orderId,
+      Pincode: parseInt(selectedAddr?.zipcode!),
+      'Patient UHID': g(currentPatient, 'id'),
+      'Total items in cart': cartItems.length,
+      'Order amount': grandTotal,
+      'Appointment Date': !!existingOrderDetails
+        ? moment(existingOrderDetails?.slotDateTimeInUTC).format('DD/MM/YYYY')
+        : moment(orderDetails?.diagnosticDate!).format('DD/MM/YYYY'),
+      'Appointment time': !!existingOrderDetails
+        ? moment(existingOrderDetails?.slotDateTimeInUTC).format('hh:mm')
+        : slotStartTime!,
+      'Item ids': cartItemsWithId,
+    };
+    return attributes;
+  }
 
   const removeDisabledCartItems = (disabledCartItemIds: string[]) => {
     hideAphAlert!();
@@ -2214,8 +2318,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           } as DiagnosticLineItem)
       );
 
-    console.log({ modifyPricesForItemArray });
-
     pricesForItemArray = cartItems?.map(
       (item) =>
         ({
@@ -2234,11 +2336,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             : DIAGNOSTIC_GROUP_PLAN.ALL,
         } as DiagnosticLineItem)
     );
-    console.log({ pricesForItemArray });
     const itemPricingObject = !!existingOrderDetails
       ? [modifyPricesForItemArray, pricesForItemArray].flat(1)
       : pricesForItemArray;
-    console.log({ itemPricingObject });
     return itemPricingObject;
   }
 
@@ -2260,10 +2360,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
     const duplicateItems = [...new Set(duplicateItems_1)];
     hideAphAlert?.();
-
+    console.log({ duplicateItems });
     if (duplicateItems?.length) {
+      console.log('level1');
       checkDuplicateItems_Level1(getPricesForItem, duplicateItems, getItemIds);
     } else {
+      console.log('level2');
       checkDuplicateItems_Level2(getPricesForItem, getItemIds);
     }
   }
@@ -2374,14 +2476,19 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }
 
   const checkDuplicateItems_Level2 = (pricesForItem: any, getItemIds: any) => {
+    console.log('level___2');
     //no inclusion level duplicates are found...
     if (getItemIds?.length > 0) {
       const newItems = getItemIds?.map((item: string) => Number(item));
+
+      //handle the case here, if hemogram +cbc (and min price is of one in the existing..); same check for level1
 
       //get the prices for both the items,
       const getDuplicateItems = pricesForItem
         ?.filter((item: any) => newItems?.includes(item?.itemId))
         .sort((a: any, b: any) => b?.price - a?.price);
+
+      // if on sorting -> highest price wala is on the cart then fine, otherwise -> check first element on cart.
 
       const itemsToRemove = getDuplicateItems?.splice(1, getDuplicateItems?.length - 1);
       const itemIdToRemove = itemsToRemove?.map((item: any) => item?.itemId);
@@ -2413,6 +2520,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       const duplicateTests = array?.[0]?.removalName;
 
       let arrayToSet = [...duplicateNameArray, array]?.flat(1);
+      console.log({ arrayToSet });
       onChangeCartItems(updatedCartItems, duplicateTests, itemIdToRemove);
       setShowInclusions(true);
       setDuplicateNameArray(arrayToSet);
@@ -2571,7 +2679,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
       let getCharges = g(HomeCollectionChargesApi.data, 'getDiagnosticsHCCharges', 'charges') || 0;
       if (getCharges != null) {
-        console.log({ getCharges });
         //add a check for calulating home collection charges.
         let recalculatedHC = !!existingOrderDetails
           ? calculateModifiedOrderHomeCollectionCharges(getCharges)
@@ -2692,7 +2799,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       <PatientListOverlay
         onPressClose={() => setShowPatientListOverlay(false)}
         onPressDone={(_selectedPatient: any) => {
-          console.log({ _selectedPatient });
           if (!checkPatientAge(_selectedPatient)) {
             setSelectedPatient(_selectedPatient);
             setShowPatientListOverlay(false);

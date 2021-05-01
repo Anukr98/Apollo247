@@ -152,6 +152,7 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   ORDER_COMPLETED = "ORDER_COMPLETED",
   ORDER_FAILED = "ORDER_FAILED",
   ORDER_INITIATED = "ORDER_INITIATED",
+  ORDER_MODIFIED = "ORDER_MODIFIED",
   ORDER_PLACED = "ORDER_PLACED",
   ORDER_RESCHEDULED = "ORDER_RESCHEDULED",
   ORDER_RESCHEDULED_REQUEST = "ORDER_RESCHEDULED_REQUEST",
@@ -690,11 +691,6 @@ export enum USER_TYPE {
   PATIENT = "PATIENT",
 }
 
-export enum UnitTypes {
-  CLINIC = "CLINIC",
-  HOSPITAL = "HOSPITAL",
-}
-
 export enum UserState {
   LOGGED_IN = "LOGGED_IN",
   LOGGED_OUT = "LOGGED_OUT",
@@ -1040,6 +1036,7 @@ export interface DiagnosticLineItem {
   price?: number | null;
   quantity?: number | null;
   groupPlan?: string | null;
+  discAmount?: number | null;
 }
 
 export interface DiagnosticTestsOrdered {
@@ -1595,6 +1592,7 @@ export interface SaveBookHomeCollectionOrderInput {
   areaId: number;
   collectionCharges: number;
   uniqueID?: string | null;
+  couponCode?: string | null;
   slotDateTimeInUTC: any;
   totalPriceExcludingDiscounts?: number | null;
   userSubscriptionId?: string | null;

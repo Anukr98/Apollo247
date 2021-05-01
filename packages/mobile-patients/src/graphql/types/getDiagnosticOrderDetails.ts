@@ -9,6 +9,13 @@ import { DIAGNOSTIC_ORDER_STATUS, DIAGNOSTIC_ORDER_PAYMENT_TYPE, DIAGNOSTICS_TYP
 // GraphQL query operation: getDiagnosticOrderDetails
 // ====================================================
 
+export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientObj {
+  __typename: "PatientObj";
+  firstName: string | null;
+  lastName: string | null;
+  gender: string | null;
+}
+
 export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_itemObj {
   __typename: "ItemObj";
   itemType: string | null;
@@ -62,6 +69,8 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_
   price: number | null;
   quantity: number | null;
   groupPlan: string | null;
+  editOrderID: string | null;
+  isRemoved: boolean | null;
   itemObj: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_itemObj | null;
   pricingObj: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_pricingObj | null)[] | null;
   diagnostics: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_diagnostics | null;
@@ -94,6 +103,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList 
   paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
   visitNo: string | null;
   labReportURL: string | null;
+  patientObj: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientObj | null;
   diagnosticOrderLineItems: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems | null)[] | null;
   diagnosticOrdersStatus: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrdersStatus | null)[] | null;
 }

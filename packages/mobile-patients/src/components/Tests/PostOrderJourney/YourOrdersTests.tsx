@@ -42,6 +42,7 @@ import {
   CancellationDiagnosticsInput,
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
   DIAGNOSTIC_ORDER_STATUS,
+  Gender,
   MedicalRecordType,
   RescheduleDiagnosticsInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -1158,7 +1159,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         createdOn={order?.createdDate}
         orderLevelStatus={order?.orderStatus}
         patientName={getPatientNameById(allCurrentPatients, order?.patientId)}
-        gender={currentPatient?.gender == 'FEMALE' ? 'Ms.' : 'Mr.'}
+        gender={
+          !!order?.patientObj?.gender
+            ? order?.patientObj?.gender === Gender.MALE
+              ? 'Mr.'
+              : 'Ms.'
+            : ''
+        }
         showAddTest={order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED}
         ordersData={order?.diagnosticOrderLineItems!}
         showPretesting={showPreTesting!}

@@ -13,6 +13,7 @@ export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrd
   __typename: "PatientObj";
   firstName: string | null;
   lastName: string | null;
+  gender: string | null;
 }
 
 export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders {

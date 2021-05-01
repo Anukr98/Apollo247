@@ -16,6 +16,7 @@ import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUti
 import {
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
   DIAGNOSTIC_ORDER_STATUS,
+  GENDER,
   REFUND_STATUSES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components/StatusCard';
@@ -44,6 +45,11 @@ export interface TestOrderSummaryViewProps {
 export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props) => {
   const { orderDetails, refundDetails } = props;
   const isPrepaid = orderDetails?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
+  const salutation = !!orderDetails?.patientObj?.gender
+    ? orderDetails?.patientObj?.gender === GENDER.MALE
+      ? 'Mr. '
+      : 'Ms. '
+    : '';
 
   const { currentPatient } = useAllCurrentPatients();
 
@@ -261,9 +267,14 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           return (
             <View style={styles.commonTax}>
               <View style={{ width: '65%' }}>
-                <Text style={styles.commonText}>
-                  {!!item?.itemName ? item?.itemName : item?.diagnostics?.itemName}
-                </Text>
+                <View style={{ flexDirection: 'row' }}>
+                  <Text style={styles.commonText}>
+                    {!!item?.itemName ? item?.itemName : item?.diagnostics?.itemName}
+                  </Text>
+                  {!!item?.editOrderID ? (
+                    <View style={{ marginLeft: 10 }}>{renderNewTag()}</View>
+                  ) : null}
+                </View>
                 {!!item?.itemObj?.inclusions && (
                   <Text style={styles.inclusionsText}>
                     Inclusions : {item?.itemObj?.inclusions?.length}
@@ -383,12 +394,23 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     );
   };
 
+  const renderNewTag = () => {
+    return (
+      <View style={styles.newItemView}>
+        <Text style={styles.newText}>NEW</Text>
+      </View>
+    );
+  };
+
   return (
     <ScrollView style={{ flex: 1 }}>
       <View style={{ margin: 16 }}>
         {renderOrderId()}
         {renderSlotView()}
-        {renderHeading(`Tests for ${currentPatient?.firstName}`)}
+        {renderHeading(
+          `Tests for ${salutation != '' && salutation}${orderDetails?.patientObj?.firstName! ||
+            currentPatient?.firstName}`
+        )}
         {renderItemsCard()}
         {renderPricesCard()}
         {orderDetails?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED && !isPrepaid
@@ -542,4 +564,16 @@ const styles = StyleSheet.create({
   orderId: { ...theme.viewStyles.text('M', 13, colors.SHERPA_BLUE, 1, 18) },
   bookedOn: { ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 0.5, 14) },
   testSlotContainer: { justifyContent: 'space-between', flexDirection: 'row', marginTop: '6%' },
+  newItemView: {
+    backgroundColor: '#4CAF50',
+    height: 20,
+    width: 40,
+    borderRadius: 2,
+    borderColor: '#4CAF50',
+    justifyContent: 'center',
+  },
+  newText: {
+    ...theme.viewStyles.text('SB', 10, 'white'),
+    textAlign: 'center',
+  },
 });
