@@ -182,11 +182,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   };
   useEffect(() => {
     if (props.consultModeSelected === ConsultMode.ONLINE) {
-      setselectedTab(tabs[0].title);
-    } else if (props.consultModeSelected === ConsultMode.PHYSICAL && tabs.length > 1) {
-      setselectedTab(tabs[1].title);
-    } else if (props.consultModeSelected === ConsultMode.PHYSICAL && tabs.length === 1) {
-      setselectedTab(tabs[1].title);
+      setselectedTab(consultOnlineTab);
+    } else if (props.consultModeSelected === ConsultMode.PHYSICAL) {
+      setselectedTab(consultPhysicalTab);
     }
   }, [props.consultModeSelected]);
 
