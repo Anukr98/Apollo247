@@ -7,8 +7,6 @@ import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
-  GET_INTERNAL_ORDER,
-  GET_PATIENT_ADDRESS_BY_ID,
   RESCHEDULE_DIAGNOSTIC_ORDER,
   GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
   GET_PHLOBE_DETAILS,
@@ -45,6 +43,7 @@ import {
   DIAGNOSTIC_ORDER_STATUS,
   MedicalRecordType,
   RescheduleDiagnosticsInput,
+  Gender,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -53,7 +52,7 @@ import {
   getPatientNameById,
   handleGraphQlError,
   TestSlot,
-  nameFormater
+  nameFormater,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DisabledTickIcon, TickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
@@ -77,14 +76,6 @@ import {
   rescheduleDiagnosticsOrder,
   rescheduleDiagnosticsOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/rescheduleDiagnosticsOrder';
-import {
-  getPatientAddressById,
-  getPatientAddressByIdVariables,
-} from '@aph/mobile-patients/src/graphql/types/getPatientAddressById';
-import {
-  getOrderInternal,
-  getOrderInternalVariables,
-} from '@aph/mobile-patients/src/graphql/types/getOrderInternal';
 import {
   DiagnosticRescheduleOrder,
   DiagnosticViewReportClicked,
@@ -121,13 +112,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
   ];
 
-  const { addresses, diagnosticSlot, setDiagnosticSlot } = useDiagnosticsCart();
+  const { diagnosticSlot, setDiagnosticSlot } = useDiagnosticsCart();
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [date, setDate] = useState<Date>(new Date());
   const [showDisplaySchedule, setDisplaySchedule] = useState<boolean>(false);
-  const [pincode, setPincode] = useState<string>('');
   const [selectedOrderId, setSelectedOrderId] = useState<number>(0);
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
@@ -150,7 +140,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [cancelReasonComment, setCancelReasonComment] = useState<string>('');
   const [selectRescheduleReason, setSelectRescheduleReason] = useState<string>('');
 
-  const [selectedReasonForReschedule, setSelectedReasonForReschedule] = useState('');
   const [commentForReschedule, setCommentForReschedule] = useState('');
   const [refundStatusArr, setRefundStatusArr] = useState<any>(null);
   const [selectedOrder, setSelectedOrder] = useState<
@@ -173,9 +162,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     GetCurrentPatients_getCurrentPatients_patients[] | null
   >(allCurrentPatients);
   const [currentOffset, setCurrentOffset] = useState<number>(1);
-  const [resultList, setResultList] = useState<(orderListByMobile | null)[] | null>(
-    []
-  );
+  const [resultList, setResultList] = useState<(orderListByMobile | null)[] | null>([]);
   var rescheduleDate: Date,
     rescheduleSlotObject: {
       slotStartTime: any;
@@ -208,7 +195,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       return true;
     } else {
       if (isTest) {
-        props.navigation.navigate(AppRoutes.Tests)
+        props.navigation.navigate(AppRoutes.Tests);
       }
     }
     return false;
@@ -252,7 +239,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   useEffect(() => {
-    refetchOrders()
+    refetchOrders();
   }, [currentOffset]);
   const fetchOrders = async (isRefetch: boolean) => {
     try {
@@ -267,21 +254,21 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             mobileNumber: currentPatient && currentPatient.mobileNumber,
             paginated: true,
             limit: 10,
-            offset: currentOffset
+            offset: currentOffset,
           },
           fetchPolicy: 'no-cache',
         })
-        .then( (data) => {
-          const ordersList =  data?.data?.getDiagnosticOrdersListByMobile?.ordersList || [];
-          setOrderListData(ordersList)
+        .then((data) => {
+          const ordersList = data?.data?.getDiagnosticOrdersListByMobile?.ordersList || [];
+          setOrderListData(ordersList);
           if (currentOffset == 1) {
             setResultList(ordersList);
           } else {
-            setResultList(resultList?.concat(ordersList))
+            setResultList(resultList?.concat(ordersList));
           }
-          const finalList = currentOffset == 1 ? ordersList : resultList?.concat(ordersList)
+          const finalList = currentOffset == 1 ? ordersList : resultList?.concat(ordersList);
           const filteredOrderList =
-          finalList ||
+            finalList ||
             []?.filter((item: orderListByMobile) => {
               if (
                 item?.diagnosticOrderLineItems?.length &&
@@ -371,40 +358,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   };
 
-  const getAddressDatails = async () => {
-    try {
-      setLoading!(true);
-      const address = addresses.find((item) => item?.id == selectedOrder?.patientAddressId);
-      let getPincode = '';
-      if (address) {
-        getPincode = address?.zipcode!;
-      } else {
-        const getPatientAddressByIdResponse = await client.query<
-          getPatientAddressById,
-          getPatientAddressByIdVariables
-        >({
-          query: GET_PATIENT_ADDRESS_BY_ID,
-          variables: { id: selectedOrder?.patientAddressId },
-        });
-
-        getPincode = g(
-          getPatientAddressByIdResponse,
-          'data',
-          'getPatientAddressById',
-          'patientAddress',
-          'zipcode'
-        )!;
-      }
-      setPincode(getPincode);
-      setLoading!(false);
-
-      setDisplaySchedule(true); //show slot popup
-    } catch (error) {
-      setLoading!(false);
-      CommonBugFender(`${AppRoutes.YourOrdersTest}_getAddressDatails`, error);
-    }
-  };
-
   const fetchRefundForOrder = async (orderSelected: any, tab: boolean) => {
     setRefundStatusArr(null);
     setLoading?.(true);
@@ -449,7 +402,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           });
         } else {
           setLoading?.(false);
-          showAphAlert!({
+          showAphAlert?.({
             unDismissable: true,
             title: string.common.uhOh,
             description: cancelResponse?.message,
@@ -574,6 +527,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         const isSameDate = moment().isSame(moment(date), 'date');
         if (isSameDate && slotsArray?.length == 0) {
           setTodaySlotNotAvailable(true);
+          setDisplaySchedule(true);
         } else {
           todaySlotNotAvailable && setTodaySlotNotAvailable(false);
         }
@@ -581,9 +535,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         setSlots(slotsArray);
         const slotDetails = slotsArray?.[0];
         slotsArray?.length && setselectedTimeSlot(slotDetails);
-
-        //call the api to get the pincode.
-        getAddressDatails();
       })
       .catch((e) => {
         CommonBugFender('TestsCart_checkServicability', e);
@@ -656,7 +607,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       slotId: employeeSlot,
     };
     DiagnosticRescheduleOrder(
-      selectedReasonForReschedule,
+      selectRescheduleReason,
       formatTime,
       formattedDate,
       String(selectedOrderId)
@@ -727,6 +678,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       ? AppConfig.Configuration.Covid_Max_Slot_Days
       : AppConfig.Configuration.Non_Covid_Max_Slot_Days;
 
+    const getPincode = selectedOrder?.patientAddressObj?.zipcode;
+
     return (
       <View style={{ flex: 1 }}>
         <TestSlotSelectionOverlay
@@ -741,7 +694,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           isVisible={showDisplaySchedule}
           onClose={() => setDisplaySchedule(false)}
           slots={slots}
-          zipCode={Number(pincode!)}
+          zipCode={Number(getPincode!)}
           slotInfo={selectedTimeSlot}
           isReschdedule={true}
           itemId={orderItemId}
@@ -1158,7 +1111,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         createdOn={order?.createdDate}
         orderLevelStatus={order?.orderStatus}
         patientName={getPatientNameById(allCurrentPatients, order?.patientId)}
-        gender={currentPatient?.gender == 'FEMALE' ? 'Ms.' : 'Mr.'}
+        gender={
+          !!order?.patientObj?.gender
+            ? order?.patientObj?.gender === Gender.MALE
+              ? 'Mr.'
+              : 'Ms.'
+            : ''
+        }
         showAddTest={false}
         ordersData={order?.diagnosticOrderLineItems!}
         showPretesting={showPreTesting!}
@@ -1187,10 +1146,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPressViewDetails={() => _navigateToYourTestDetails(order, true)}
         onPressViewReport={() => _onPressViewReport(order)}
         phelboObject={order?.phleboDetailsObj}
-        onPressRatingStar={(star)=>{
+        onPressRatingStar={(star) => {
           props.navigation.navigate(AppRoutes.TestRatingScreen, {
             ratingStar: star,
-            orderDetails: order
+            orderDetails: order,
           });
         }}
         style={[
@@ -1241,14 +1200,17 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const renderLoadMore = () => {
     return (
-        <TouchableOpacity style={styles.loadMoreView} onPress={()=>{
+      <TouchableOpacity
+        style={styles.loadMoreView}
+        onPress={() => {
           setCurrentOffset(currentOffset + 1);
-        }}>
-          <Text style={styles.textLoadMore}>{nameFormater('load more', 'upper')}</Text>
-          <DownO size="sm_l" style={styles.downArrow}/>
-        </TouchableOpacity>
+        }}
+      >
+        <Text style={styles.textLoadMore}>{nameFormater('load more', 'upper')}</Text>
+        <DownO size="sm_l" style={styles.downArrow} />
+      </TouchableOpacity>
     );
-  }
+  };
   const renderOrders = () => {
     return (
       <FlatList
@@ -1257,7 +1219,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         extraData={orderListData}
         renderItem={({ item, index }) => renderOrder(item, index)}
         ListEmptyComponent={renderNoOrders()}
-        ListFooterComponent={orderListData?.length && orderListData?.length < 10 || loading || error ? null : renderLoadMore()}
+        ListFooterComponent={
+          (orderListData?.length && orderListData?.length < 10) || loading || error
+            ? null
+            : renderLoadMore()
+        }
       />
     );
   };
@@ -1498,19 +1464,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
   },
-  loadMoreView:{
-    flexDirection:'row',
+  loadMoreView: {
+    flexDirection: 'row',
     justifyContent: 'center',
-    width:'100%',
-    paddingBottom:10,
+    width: '100%',
+    paddingBottom: 10,
   },
-  textLoadMore:{
+  textLoadMore: {
     ...theme.viewStyles.text('SB', 15, '#FC9916'),
-    paddingHorizontal:8,
-    alignSelf:'flex-start',
+    paddingHorizontal: 8,
+    alignSelf: 'flex-start',
   },
   downArrow: {
-    alignSelf:'flex-end',
+    alignSelf: 'flex-end',
   },
   textHeadingModal: {
     ...theme.viewStyles.text('SB', 17, '#02475b'),
