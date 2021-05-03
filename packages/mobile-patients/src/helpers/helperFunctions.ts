@@ -35,7 +35,7 @@ import {
   NativeModules,
   PermissionsAndroid,
   ToastAndroid,
-  AlertIOS
+  AlertIOS,
 } from 'react-native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import Permissions from 'react-native-permissions';
@@ -2104,6 +2104,7 @@ export const addPharmaItemToCart = (
       const availability = g(res, 'data', 'response', '0' as any, 'exist');
       if (availability) {
         addToCart();
+        onAddedSuccessfully?.();
       } else {
         navigate();
       }
@@ -2121,7 +2122,6 @@ export const addPharmaItemToCart = (
           'Cart Items': JSON.stringify(itemsInCart) || '',
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
-        onAddedSuccessfully?.();
       } catch (error) {}
     })
     .catch(() => {
@@ -2204,37 +2204,30 @@ export const overlyCallPermissions = (
         const microphoneYes = microphone === 'authorized';
         // Response is one of: 'authorized', 'denied', 'restricted', or 'undetermined'
         if (cameraNo && microphoneNo) {
-
-               // ----------- dont delete this commented  overlay permission block incase we decide to use again
+          // ----------- dont delete this commented  overlay permission block incase we decide to use again
           // RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
           //   if (status) {
           //     showPermissionPopUp(
           //       string.callRelatedPermissions.allPermissions.replace('{0}', doctorName),
           //       () => callPermissions(() => RNAppSignatureHelper.requestOverlayPermission())
           //     );
-          //   } 
+          //   }
           // });
-
 
           showPermissionPopUp(
             string.callRelatedPermissions.camAndMPPermission.replace('{0}', doctorName),
             () => callPermissions()
           );
-
         } else if (cameraYes && microphoneNo) {
-
           showPermissionPopUp(
             string.callRelatedPermissions.onlyMPPermission.replace('{0}', doctorName),
             () => callPermissions()
           );
-
         } else if (cameraNo && microphoneYes) {
-
           showPermissionPopUp(
             string.callRelatedPermissions.onlyCameraPermission.replace('{0}', doctorName),
             () => callPermissions()
           );
-
         }
       })
       .catch((e) => {});
@@ -2705,8 +2698,7 @@ export async function downloadDiagnosticReport(
   appointmentDate: string,
   patientName: string,
   showToast: boolean,
-  downloadFileName?: string,
-
+  downloadFileName?: string
 ) {
   let result = Platform.OS === 'android' && (await requestReadSmsPermission());
   try {
@@ -2720,21 +2712,23 @@ export async function downloadDiagnosticReport(
       Platform.OS == 'ios'
     ) {
       const dirs = RNFetchBlob.fs.dirs;
-      const reportName = !!downloadFileName ? downloadFileName :  `Apollo247_${appointmentDate}_${patientName}.pdf`;
+      const reportName = !!downloadFileName
+        ? downloadFileName
+        : `Apollo247_${appointmentDate}_${patientName}.pdf`;
       const downloadPath =
         Platform.OS === 'ios'
           ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + reportName
           : dirs.DownloadDir + '/' + reportName;
-          
-      let msg = "File is downloading.."
-      if(showToast){
+
+      let msg = 'File is downloading..';
+      if (showToast) {
         if (Platform.OS === 'android') {
-          ToastAndroid.show(msg, ToastAndroid.SHORT)
+          ToastAndroid.show(msg, ToastAndroid.SHORT);
         } else {
           AlertIOS.alert(msg);
         }
       }
-      
+
       RNFetchBlob.config({
         fileCache: true,
         path: downloadPath,
