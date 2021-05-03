@@ -2608,26 +2608,14 @@ export const validateCoupon = async (
   message: string | undefined,
   pharmacyPincode: any,
   mobileNumber: string,
-  hdfcSubscriptionId: string,
-  circleSubscriptionId: string,
   setCoupon: ((coupon: PharmaCoupon | null) => void) | null,
   cartTotal: number,
   productDiscount: number,
   cartItems: ShoppingCartItem[],
-  hdfcStatus: string,
-  hdfcPlanId: string,
-  circleStatus: string,
-  circlePlanId: string,
-  setCouponProducts: ((items: CouponProducts[]) => void) | null
+  setCouponProducts: ((items: CouponProducts[]) => void) | null,
+  packageId: string[]
 ) => {
   CommonLogEvent(AppRoutes.ApplyCouponScene, 'Apply coupon');
-  let packageId: string[] = [];
-  if (hdfcSubscriptionId && hdfcStatus === 'active') {
-    packageId.push(`HDFC:${hdfcPlanId}`);
-  }
-  if (circleSubscriptionId && circleStatus === 'active') {
-    packageId.push(`APOLLO:${circlePlanId}`);
-  }
   const data = {
     mobile: mobileNumber,
     billAmount: (cartTotal - productDiscount).toFixed(2),
@@ -2814,4 +2802,16 @@ export const getHealthCredits = async () => {
   } catch (error) {
     return null;
   }
+};
+
+export const getPackageIds = (activeUserSubscriptions: any) => {
+  let packageIds: string[] = [];
+  activeUserSubscriptions &&
+    Object.keys(activeUserSubscriptions)?.forEach((subscription: string) => {
+      activeUserSubscriptions?.[subscription]?.forEach((item) => {
+        if (item?.status?.toLowerCase() === 'active')
+          packageIds.push(`${subscription?.toUpperCase()}:${item?.plan_id}`);
+      });
+    });
+  return packageIds;
 };

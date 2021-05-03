@@ -460,6 +460,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [heightArrayValue, setHeightArrayValue] = useState<HEIGHT_ARRAY | string>(HEIGHT_ARRAY.CM);
   const [bloodGroup, setBloodGroup] = useState<BloodGroupArray>();
   const [overlaySpinner, setOverlaySpinner] = useState(false);
+  const [searchQuery, setSearchQuery] = useState({});
   const isHeightAvailable =
     currentPatient?.patientMedicalHistory?.height &&
     currentPatient?.patientMedicalHistory?.height !== 'No Idea' &&
@@ -1572,6 +1573,12 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       }
       setSearchLoading(true);
       const search = _.debounce(onSearchHealthRecords, 500);
+      setSearchQuery((prevSearch: any) => {
+        if (prevSearch.cancel) {
+          prevSearch.cancel();
+        }
+        return search;
+      });
       search(value);
     }
   };

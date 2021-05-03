@@ -4720,3 +4720,60 @@ export const GET_PATIENT_PAST_CONSULTED_DOCTORS = gql`
     }
   }
 `;
+
+export const GET_HELPDESK_TICKET_CONVERSATION = gql`
+  query getHelpdeskTicketConversation($ticketId: String!) {
+    getHelpdeskTicketConversation(ticketId: $ticketId) {
+      conversations {
+        id
+        type
+        contentType
+        comment
+        commenterName
+        commenterType
+        createdTime
+      }
+    }
+  }
+`;
+
+export const GET_HELPDESK_TICKETS = gql`
+  query getHelpdeskTickets {
+    getHelpdeskTickets {
+      tickets {
+        statusType
+        subject
+        createdTime
+        ticketNumber
+        modifiedTime
+        channel
+        closedTime
+        id
+        status
+        customFields {
+          Business
+        }
+      }
+      count
+    }
+  }
+`;
+
+export const UPDATE_HELPDESK_TICKET = gql`
+  mutation updateHelpdeskTicket($updateHelpdeskTicketInput: UpdateHelpdeskTicketInput!) {
+    updateHelpdeskTicket(updateHelpdeskTicketInput: $updateHelpdeskTicketInput) {
+      ticket {
+        ticketNumber
+      }
+    }
+  }
+`;
+export const ADD_COMMENTS_HELPDESK_TICKET = gql`
+  mutation addCommentHelpdeskTicket(
+    $addCommentHelpdeskTicketInput: AddCommentHelpdeskTicketInput!
+  ) {
+    addCommentHelpdeskTicket(addCommentHelpdeskTicketInput: $addCommentHelpdeskTicketInput) {
+      status
+    }
+  }
+`;

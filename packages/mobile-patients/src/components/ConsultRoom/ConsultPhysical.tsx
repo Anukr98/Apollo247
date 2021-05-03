@@ -155,6 +155,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
           if (timeArray[i].time.includes(NextAvailableSlot)) {
             setselectedtiming(timeArray[i].label);
             props.setselectedTimeSlot(NextAvailableSlot);
+            props.setshowSpinner?.(false);
             break;
           }
         }
@@ -169,7 +170,6 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
     getNextAvailableSlots(client, props.doctor ? [props.doctor.id] : [], todayDate)
       .then(({ data }: any) => {
         try {
-          props.setshowSpinner && props.setshowSpinner(false);
           if (data[0] && data[0]!.physicalAvailableSlot) {
             const nextSlot = data[0]!.physicalAvailableSlot;
             const date2: Date = new Date(nextSlot);
@@ -180,6 +180,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
           }
         } catch (e) {
           CommonBugFender('ConsultPhysical_checkAvailabilitySlot_try', e);
+          props.setshowSpinner?.(false);
         }
       })
       .catch((e: any) => {
@@ -194,6 +195,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   }, []);
 
   const setTimeArrayData = async (availableSlots: string[], selectedDate: Date = date) => {
+    if (availableSlots?.length === 0) props.setshowSpinner?.(false);
     setselectedtiming(timeArray[0].label);
     const array = await divideSlots(availableSlots, selectedDate);
     settimeArray(array);
@@ -221,12 +223,12 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
             data.getDoctorPhysicalAvailableSlots &&
             data.getDoctorPhysicalAvailableSlots.availableSlots
           ) {
-            props.setshowSpinner(false);
             setTimeArrayData(data.getDoctorPhysicalAvailableSlots.availableSlots, selectedDate);
             setavailableSlots(data.getDoctorPhysicalAvailableSlots.availableSlots);
           }
         } catch (e) {
           CommonBugFender('ConsultPhysical_fetchPhysicalSlots_try', e);
+          props.setshowSpinner?.(false);
         }
       })
       .catch((e: any) => {

@@ -767,6 +767,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     covidVaccineCtaV2,
     apisToCall,
     homeScreenParamsOnPop,
+    setActiveUserSubscriptions,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -961,6 +962,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       checkApisToCall();
+      getUserBanners();
     });
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       apisToCall.current = [];
@@ -1684,11 +1686,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
       if (data) {
-        /**
-         * for circle and hdfc
-         * data?.HDFC ------> HDFC data
-         * data?.APOLLO ----> Circle data
-         */
+        let activeSubscriptions = {};
+        Object.keys(data).forEach((subscription) => {
+          data[subscription].forEach((item) => {
+            let subscriptionData = [];
+            if (item?.status?.toLowerCase() === 'active') {
+              subscriptionData.push(item);
+              activeSubscriptions[subscription] = subscriptionData;
+            }
+          });
+        });
+        setActiveUserSubscriptions && setActiveUserSubscriptions(activeSubscriptions);
         const circleData = data?.APOLLO?.[0];
         if (circleData?._id) {
           const paymentRef = circleData?.payment_reference;
@@ -1721,6 +1729,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
           if (circleData?.status === 'disabled') {
             setIsCircleExpired && setIsCircleExpired(true);
+            setNonCircleValues();
           }
 
           const planValidity = {
@@ -1736,11 +1745,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             setCirclePaymentReference &&
             setCirclePaymentReference(paymentStoredVal);
         } else {
-          AsyncStorage.setItem('isCircleMember', 'no');
-          setIsCircleMember && setIsCircleMember('no');
-          setCircleSubscriptionId && setCircleSubscriptionId('');
-          setIsCircleSubscription && setIsCircleSubscription(false);
-          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+          setNonCircleValues();
           setCirclePlanValidity && setCirclePlanValidity(null);
           setCirclePaymentReference && setCirclePaymentReference(null);
           setCirclePlanId && setCirclePlanId('');
@@ -1779,6 +1784,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       onAppLoad && logHomePageViewed(WEGAttributes);
     }
     setCircleDataLoading(false);
+  };
+
+  const setNonCircleValues = () => {
+    AsyncStorage.setItem('isCircleMember', 'no');
+    setIsCircleMember && setIsCircleMember('no');
+    setCircleSubscriptionId && setCircleSubscriptionId('');
+    setIsCircleSubscription && setIsCircleSubscription(false);
+    setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+    fireFirstTimeLanded();
   };
 
   const fetchCarePlans = async () => {
