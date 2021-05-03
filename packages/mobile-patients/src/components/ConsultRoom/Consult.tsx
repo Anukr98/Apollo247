@@ -733,7 +733,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           it?.appointmentType == 'ONLINE'
       ).length;
 
-      console.log('csk dat', JSON.stringify(isOnlineFutureOnly));
       const activeFollowUpAppointments = appointments?.activeAppointments?.length
         ? [{ type: 'Active', data: appointments?.activeAppointments! || [] }]
         : [];
