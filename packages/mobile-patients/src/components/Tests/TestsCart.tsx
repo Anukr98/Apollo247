@@ -1883,6 +1883,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 orderId: orderId,
                 orderDetails: orderInfo,
                 eventAttributes,
+                source: 'diagnostics'
               });
             }
           }
