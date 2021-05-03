@@ -1,5 +1,4 @@
 import { FeedbackPopup } from '@aph/mobile-patients/src/components/FeedbackPopup';
-import { Props as BreadcrumbProps } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
 import {
   MedicineReOrderOverlay,
   MedicineReOrderOverlayProps,
@@ -22,7 +21,6 @@ import {
   More,
   NotificationIcon,
   NotifySymbolGreen,
-  PendingIcon,
   RetryButtonIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
@@ -110,14 +108,8 @@ import {
   View,
 } from 'react-native';
 import { Overlay } from 'react-native-elements';
-import {
-  NavigationActions,
-  NavigationScreenProps,
-  ScrollView,
-  StackActions,
-} from 'react-navigation';
-
-const whatsappScheme = `whatsapp://send?text=${AppConfig.Configuration.CUSTOMER_CARE_HELP_TEXT}&phone=91${AppConfig.Configuration.CUSTOMER_CARE_NUMBER}`;
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 const screenWidth = Dimensions.get('window').width;
 
 export interface OrderDetailsSceneProps
@@ -126,9 +118,6 @@ export interface OrderDetailsSceneProps
     orderAutoId?: string;
     billNumber?: string;
     isCancelOrder?: boolean;
-    isOrderHelp?: boolean;
-    breadCrumb: BreadcrumbProps['links'];
-    queryCategory: string;
     email: string;
     showOrderSummaryTab?: boolean;
     goToHomeOnBack?: boolean;
@@ -140,10 +129,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const orderAutoId = props.navigation.getParam('orderAutoId');
   const billNumber = props.navigation.getParam('billNumber');
   const isCancelOrder = props.navigation.getParam('isCancelOrder');
-  const isOrderHelp = props.navigation.getParam('isOrderHelp');
-  const queryCategory = props.navigation.getParam('queryCategory') || string.pharmacy;
   const email = props.navigation.getParam('email') || '';
-  const breadCrumb = props.navigation.getParam('breadCrumb') || [];
   const refetchOrders = props.navigation.getParam('refetchOrders');
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
@@ -152,7 +138,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     GetMedicineOrderCancelReasons_getMedicineOrderCancelReasons_cancellationReasons[]
   >([]);
   const client = useApolloClient();
-  const NeedHelp = AppConfig.Configuration.NEED_HELP;
 
   const [showAlertStore, setShowAlertStore] = useState<boolean>(true);
   const [selectedTab, setSelectedTab] = useState<string>(
@@ -373,13 +358,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const handleBack = async () => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
     if (goToHomeOnBack) {
-      props.navigation.dispatch(
-        StackActions.reset({
-          index: 0,
-          key: null,
-          actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-        })
-      );
+      navigateToHome(props.navigation);
     } else {
       props.navigation.goBack();
     }
@@ -868,11 +847,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const tatInfo = orderDetails.orderTat;
     const expectedDeliveryDiff = moment.duration(
       moment(tatInfo! /*'D-MMM-YYYY HH:mm a'*/).diff(moment())
-      // moment('27-JAN-2020 10:51 AM').diff(moment())
     );
     const hours = expectedDeliveryDiff.asHours();
-    // const formattedDateDeliveryTime =
-    //   hours > 0 ? `${hours.toFixed()}hr(s)` : `${expectedDeliveryDiff.asMinutes()}minute(s)`;
     let orderCompleteText =
       orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
         ? `Your order no. #${orderAutoId} is successfully picked up on ${isDelivered &&
@@ -992,7 +968,14 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             ? `Your order #${orderAutoId} has been dispatched via ${shipmentTrackingProvider}, AWB #${shipmentTrackingNumber}.`
             : '',
         ],
-
+        [MEDICINE_ORDER_STATUS.CONSULT_PENDING]: [
+          '',
+          `Doctor Consult Booked! You will receive a call soon.  Doctor Name: ${
+            order?.consultInfo?.doctorName
+          }, Slot time: ${moment(order?.consultInfo?.appointmentDateTime).format(
+            'DD MMM YYYY, hh:mm A'
+          )}`,
+        ],
         [MEDICINE_ORDER_STATUS.DELIVERED]: [
           '',
           `If you have any issues with your delivered order, please talk to us on our official WhatsApp (8:00 am-8.30 pm) ${AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK}`,
@@ -1349,7 +1332,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         ? shouldScrollToSlot(isNotTatBreach!)
         : scrollToSlots();
     }
-    console.log({ orderDetails });
 
     const cartObject = {
       heading: '',
@@ -1361,7 +1343,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       description: 'Items added to the order by our pharmacist as per your instructions.',
       showOption: true,
     };
-    console.log({ reasonForOnHold });
     const isOrderOnHoldOption = onHoldOptionOrder.filter((item) => item.id == orderAutoId);
 
     const renderCourierTrackingCta = () => {
@@ -1611,7 +1592,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     return (
       <View style={styles.chatView}>
         <Text style={styles.queryText}>In case of any issues/queries:</Text>
-        <ChatWithUs text={patientWhtsappQuery} />
+        <TouchableOpacity onPress={() => onPressHelp()}>
+          <Text style={styles.goToHelp}>{string.orders.go_to_help}</Text>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -1736,13 +1719,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         aphConsole.log({
           s: data,
         });
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-          })
-        );
+        navigateToHome(props.navigation);
         renderSuccessPopup();
       })
       .catch((e) => {
@@ -1986,8 +1963,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       },
     };
 
-    console.log(JSON.stringify(variables));
-
     client
       .mutate<CancelMedicineOrderOMS, CancelMedicineOrderOMSVariables>({
         mutation: CANCEL_MEDICINE_ORDER_OMS,
@@ -2096,21 +2071,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     );
   };
 
-  const renderHelpHeader = () => {
-    return (
-      <TouchableOpacity activeOpacity={1} style={{ paddingLeft: 10 }} onPress={onPressHelp}>
-        <Text style={styles.helpTextStyle}>{string.help.toUpperCase()}</Text>
-      </TouchableOpacity>
-    );
-  };
-
   const renderRightComponent = () => {
-    return (
-      <View style={styles.headerViewStyle}>
-        {renderHelpHeader()}
-        {renderMoreMenu()}
-      </View>
-    );
+    return <View style={styles.headerViewStyle}>{renderMoreMenu()}</View>;
   };
 
   const showCancelOrder = () => {
@@ -2144,58 +2106,23 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const currentStatusDate = order?.medicineOrdersStatus?.find(
       (i) => i?.orderStatus === order?.currentStatus
     )?.statusDate;
-    const { category } = NeedHelp[0];
-    let breadCrudArray: BreadcrumbProps['links'] =
-      breadCrumb?.length > 1
-        ? [...breadCrumb, { title: string.help }]
-        : [
-            { title: string.needHelp },
-            { title: category },
-            { title: string.productDetail },
-            { title: string.help },
-          ];
+    const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
     props.navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
       isOrderRelatedIssue: true,
       medicineOrderStatus: order?.currentStatus,
       orderId: billNumber || orderAutoId,
-      queryCategory,
+      queryIdLevel1: helpSectionQueryId.pharmacy,
       medicineOrderStatusDate: currentStatusDate,
       email,
-      breadCrumb: breadCrudArray,
-      fromOrderFlow: true,
+      sourcePage: 'Order Details',
     });
   };
 
-  const renderHelpButton = () => {
-    const currentStatusDate = order?.medicineOrdersStatus?.find(
-      (i) => i?.orderStatus === order?.currentStatus
-    )?.statusDate;
-    const onPress = () => {
-      props.navigation.navigate(AppRoutes.NeedHelpQueryDetails, {
-        isOrderRelatedIssue: true,
-        medicineOrderStatus: order?.currentStatus,
-        orderId: billNumber || orderAutoId,
-        medicineOrderStatusDate: currentStatusDate,
-        queryCategory,
-        email,
-        breadCrumb: [...breadCrumb, { title: string.help }] as BreadcrumbProps['links'],
-      });
-    };
-    return (
-      !!isOrderHelp && (
-        <TouchableOpacity onPress={onPress} style={styles.helpButtonView}>
-          <Text style={styles.helpButtonText}>{string.help.toUpperCase()}</Text>
-        </TouchableOpacity>
-      )
-    );
-  };
-
   const renderReOrderButton = () => {
-    const showReOrder = isOrderHelp
-      ? false
-      : orderCancel?.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
-        orderDetails?.currentStatus == MEDICINE_ORDER_STATUS.RETURN_INITIATED ||
-        orderDetails?.currentStatus == MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE;
+    const showReOrder =
+      orderCancel?.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
+      orderDetails?.currentStatus == MEDICINE_ORDER_STATUS.RETURN_INITIATED ||
+      orderDetails?.currentStatus == MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE;
     return (
       !!showReOrder && (
         <View>
@@ -2316,7 +2243,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 : !loading && renderOrderSummary()}
             </ScrollView>
             {renderReOrderButton()}
-            {/* {renderHelpButton()} */}
           </>
         )}
       </SafeAreaView>
@@ -2484,11 +2410,13 @@ const styles = StyleSheet.create({
   },
   queryText: {
     ...theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE),
-    paddingBottom: 10,
-    paddingTop: 4,
     marginRight: 6,
   },
   chatBtnTxt: {
     ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW),
+  },
+  goToHelp: {
+    textAlign: 'center',
+    ...theme.viewStyles.text('B', 14, '#FC9916'),
   },
 });

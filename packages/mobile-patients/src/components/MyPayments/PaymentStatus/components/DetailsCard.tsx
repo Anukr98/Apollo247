@@ -7,8 +7,6 @@ import React, { FC } from 'react';
 import { View, StyleSheet, Dimensions, Text } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { Payment } from '@aph/mobile-patients/src/strings/strings.json';
-import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
 import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
 import { textComponent } from './GenericText';
 
@@ -18,7 +16,6 @@ interface DetailsCardProps {
 }
 
 const windowWidth = Dimensions.get('window').width;
-const windowHeight = Dimensions.get('window').height;
 
 const DetailsCard: FC<DetailsCardProps> = (props) => {
   const PaymentModes: any = {
@@ -82,13 +79,18 @@ const DetailsCard: FC<DetailsCardProps> = (props) => {
   const getUpperHeaderText = () => {
     if (paymentFor === 'consult') {
       let statusType = 'PENDING';
-      const { appointmentDateTime, appointmentPayments, appointmentRefunds } = item;
-      if (!appointmentPayments.length) {
+      const { appointmentDateTime, appointmentPayments, appointmentRefunds, PaymentOrders } = item;
+      const { refund } = PaymentOrders;
+      const refundInfo = refund?.length ? refund : appointmentRefunds;
+      const paymentInfo = Object.keys(PaymentOrders).length
+        ? PaymentOrders
+        : appointmentPayments[0];
+      if (!paymentInfo) {
         statusType = 'PENDING';
       } else {
-        statusType = appointmentPayments[0].paymentStatus;
+        statusType = paymentInfo?.paymentStatus;
       }
-      if (appointmentRefunds.length) {
+      if (refundInfo.length) {
         return (
           <View style={styles.upperContainerRefundStyle}>
             <View>

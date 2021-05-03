@@ -32,7 +32,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import Pdf from 'react-native-pdf';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Image } from 'react-native-elements';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -64,6 +64,7 @@ import {
   getDiagnosticOrderDetailsByDisplayID,
   getDiagnosticOrderDetailsByDisplayIDVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetailsByDisplayID';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -323,7 +324,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       }
     } catch (error) {
       CommonBugFender('RecordDetails_requestReadSmsPermission_try', error);
-      console.log('error', error);
     }
   };
 
@@ -446,7 +446,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         .catch((error) => {
           setApiError(true);
           CommonBugFender('HealthRecordsHome_fetchTestData', error);
-          console.log('Error occured', { error });
           currentPatient && handleGraphQlError(error);
         })
         .finally(() => setLoading && setLoading(false));
@@ -519,7 +518,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
           }
         })
         .catch((e: any) => {
-          console.log(e);
           setLoading?.(false);
           currentPatient && handleGraphQlError(e, 'Report is yet not available');
         });
@@ -532,7 +530,9 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       : hospitalization
       ? 'DISCHARGE SUMMARY'
       : prescriptions
-      ? 'PRESCRIPTION'
+      ? data?.source !== '247selfConsultation'
+        ? 'PRESCRIPTION'
+        : 'MEDICAL FILE'
       : medicalBill
       ? 'BILLS'
       : medicalInsurance
@@ -798,15 +798,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             <View style={{ marginHorizontal: 20, marginBottom: 15, marginTop: 30 }}>
               <Pdf
                 key={data.fileUrl}
-                onLoadComplete={(numberOfPages, filePath) => {
-                  console.log(`number of pages: ${numberOfPages}, fb:${filePath}`);
-                }}
-                onPageChanged={(page, numberOfPages) => {
-                  console.log(`current page: ${page}`);
-                }}
-                onError={(error) => {
-                  console.log(error);
-                }}
                 source={{ uri: data.fileUrl }}
                 style={{
                   height: 425,
@@ -956,7 +947,9 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
           <Text style={styles.doctorTextStyle}>{data?.policyNumber}</Text>
         ) : null}
         {prescriptions && data?.prescriptionName !== data?.prescribedBy ? (
-          <Text style={styles.doctorTextStyle}>{'Dr. ' + data?.prescribedBy || 'Dr. -'}</Text>
+          <Text style={styles.doctorTextStyle}>
+            {data?.prescribedBy ? 'Dr. ' + data?.prescribedBy : 'Dr. -'}
+          </Text>
         ) : null}
         {data?.suggestedByDoctor ? (
           <Text style={styles.doctorTextStyle}>{'Dr. ' + data?.suggestedByDoctor || 'Dr. -'}</Text>
@@ -969,7 +962,10 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         ) : null}
         {medicalInsurance || hospitalization || data?.diseaseName ? null : (
           <Text style={styles.sourceTextStyle}>
-            {getSourceName(data?.labTestSource, data?.siteDisplayName, data?.source) || '-'}
+            {getSourceName(data?.labTestSource, data?.siteDisplayName, data?.source) ===
+            string.common.clicnical_document_text
+              ? string.common.clicnical_document_text
+              : data?.siteDisplayName || '-'}
           </Text>
         )}
         {data?.age ? (
@@ -979,7 +975,10 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         ) : null}
         {hospitalization ? (
           <Text style={styles.sourceTextStyle}>
-            {data?.hospitalName ? data?.hospitalName : getSourceName(data?.source) || '-'}
+            {data?.hospitalName &&
+            getSourceName(data?.source) === string.common.clicnical_document_text
+              ? data?.hospitalName
+              : data?.siteDisplayName || '-'}
           </Text>
         ) : null}
         <View style={styles.separatorLineStyle} />
@@ -1099,7 +1098,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       })
       .catch((err) => {
         CommonBugFender('ConsultDetails_renderFollowUp', err);
-        console.log('error ', err);
         currentPatient && handleGraphQlError(err);
         setLoading && setLoading(false);
       })
@@ -1119,17 +1117,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
 
   const onGoBack = () => {
     if (movedFrom == 'deeplink') {
-      props.navigation.dispatch(
-        StackActions.reset({
-          index: 0,
-          key: null,
-          actions: [
-            NavigationActions.navigate({
-              routeName: AppRoutes.ConsultRoom,
-            }),
-          ],
-        })
-      );
+      navigateToHome(props.navigation);
     } else {
       props.navigation.state.params?.onPressBack && props.navigation.state.params?.onPressBack();
       props.navigation.goBack();

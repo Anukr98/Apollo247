@@ -95,10 +95,6 @@
         <service android:name=".RingtonePlayingService" />
 
         <meta-data
-            android:name="com.bugsnag.android.API_KEY"
-            android:value="53a0b9fd23719632a22d2c262a06bb4e" />
-
-        <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_notification_white" />
 
@@ -118,9 +114,6 @@
         <!--        <meta-data-->
         <!--            android:name="firebase_crash_collection_enabled"-->
         <!--            android:value="${analytics_deactivated}"/>-->
-        <meta-data
-            android:name="com.facebook.sdk.ApplicationId"
-            android:value="@string/facebook_app_id" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0" />

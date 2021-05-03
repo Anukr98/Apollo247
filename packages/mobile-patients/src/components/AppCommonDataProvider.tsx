@@ -1,8 +1,6 @@
 import { getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsCites';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-community/async-storage';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getDoctorsBySpecialtyAndFilters } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
 import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../graphql/types/getPatientPersonalizedAppointments';
 import { MedicinePageAPiResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -134,8 +132,13 @@ export interface TotalCircleSavings {
   callsUsed: number;
 }
 
-export type PharmaUserStatus = 'NEW' | 'REPEAT' | '';
+export interface UploadPrescriptionOptions {
+  id: string;
+  titile: string;
+  subTitle: string;
+}
 
+export type PharmaUserStatus = 'NEW' | 'REPEAT' | '';
 export type UploadPrescSource = 'Cart' | 'Upload Flow' | 'Re-Upload' | 'Non-cart' | 'Consult Flow';
 
 export interface PharmacyUserTypeEvent {
@@ -214,12 +217,6 @@ export interface AppCommonDataContextProps {
   setisSelected: ((arg0: any[]) => void) | null;
   isUHID: string[];
   setisUHID: ((arg0: string[]) => void) | null;
-  appointmentsPersonalized: getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails[];
-  setAppointmentsPersonalized:
-    | ((
-        items: getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails[]
-      ) => void)
-    | null;
   savePatientDetails: any;
   setSavePatientDetails: ((items: any) => void) | null;
   savePatientDetailsWithHistory: any;
@@ -243,8 +240,20 @@ export interface AppCommonDataContextProps {
   pharmacyUserType: PharmaUserStatus;
   setPharmacyUserType: ((type: PharmaUserStatus) => void) | null;
   pharmacyUserTypeAttribute: PharmacyUserTypeEvent | null;
+  apisToCall: any;
+  homeScreenParamsOnPop: any;
   cartBankOffer: string;
   setCartBankOffer: ((id: string) => void) | null;
+  authToken: string;
+  setauthToken: ((value: string) => void) | null;
+  uploadPrescriptionOptions: UploadPrescriptionOptions[];
+  setUploadPrescriptionOptions: ((prescription: UploadPrescriptionOptions[]) => void) | null;
+  expectCallText: string;
+  setExpectCallText: ((str: string) => void) | null;
+  nonCartTatText: string;
+  setNonCartTatText: ((str: string) => void) | null;
+  nonCartDeliveryText: string;
+  setNonCartDeliveryText: ((str: string) => void) | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -274,8 +283,6 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setMedicinePageAPiResponse: null,
   diagnosticsCities: [],
   setDiagnosticsCities: null,
-  appointmentsPersonalized: [],
-  setAppointmentsPersonalized: null,
   locationForDiagnostics: null,
   diagnosticServiceabilityData: null,
   setDiagnosticServiceabilityData: null,
@@ -336,14 +343,29 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   pharmacyUserType: '',
   setPharmacyUserType: null,
   pharmacyUserTypeAttribute: null,
+  apisToCall: [],
+  homeScreenParamsOnPop: null,
   cartBankOffer: '',
   setCartBankOffer: null,
+  authToken: '',
+  setauthToken: null,
+  uploadPrescriptionOptions: [],
+  setUploadPrescriptionOptions: null,
+  expectCallText: '',
+  setExpectCallText: null,
+  nonCartTatText: '',
+  setNonCartTatText: null,
+  nonCartDeliveryText: '',
+  setNonCartDeliveryText: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
   const [isCurrentLocationFetched, setCurrentLocationFetched] = useState<
     AppCommonDataContextProps['isCurrentLocationFetched']
   >(false);
+
+  const apisToCall = useRef<AppCommonDataContextProps['apisToCall']>([]);
+  const homeScreenParamsOnPop = useRef<AppCommonDataContextProps['homeScreenParamsOnPop']>([]);
 
   const [locationDetails, _setLocationDetails] = useState<
     AppCommonDataContextProps['locationDetails']
@@ -401,10 +423,6 @@ export const AppCommonDataProvider: React.FC = (props) => {
     AppCommonDataContextProps['isDiagnosticLocationServiceable']
   >();
 
-  const [appointmentsPersonalized, setAppointmentsPersonalized] = useState<
-    AppCommonDataContextProps['appointmentsPersonalized']
-  >([]);
-
   const [savePatientDetails, setSavePatientDetails] = useState<
     AppCommonDataContextProps['savePatientDetails']
   >([]);
@@ -456,11 +474,11 @@ export const AppCommonDataProvider: React.FC = (props) => {
 
   const [doctorJoinedChat, setDoctorJoinedChat] = useState<boolean>(false);
 
+  const [authToken, setauthToken] = useState<AppCommonDataContextProps['authToken']>('');
+
   const setLocationDetails: AppCommonDataContextProps['setLocationDetails'] = (locationDetails) => {
     _setLocationDetails(locationDetails);
-    AsyncStorage.setItem('locationDetails', JSON.stringify(locationDetails)).catch(() => {
-      console.log('Failed to save location in local storage.');
-    });
+    AsyncStorage.setItem('locationDetails', JSON.stringify(locationDetails)).catch(() => {});
   };
 
   const setHdfcUserSubscriptions: AppCommonDataContextProps['setHdfcUserSubscriptions'] = (
@@ -498,31 +516,31 @@ export const AppCommonDataProvider: React.FC = (props) => {
     pharmacyLocation
   ) => {
     _setPharmacyLocation(pharmacyLocation);
-    AsyncStorage.setItem('pharmacyLocation', JSON.stringify(pharmacyLocation)).catch(() => {
-      console.log('Failed to save pharmacy location in local storage.');
-    });
+    AsyncStorage.setItem('pharmacyLocation', JSON.stringify(pharmacyLocation)).catch(() => {});
   };
 
   const setDiagnosticLocation: AppCommonDataContextProps['setDiagnosticLocation'] = (
     diagnosticLocation
   ) => {
     _setDiagnosticLocation(diagnosticLocation);
-    AsyncStorage.setItem('diagnosticLocation', JSON.stringify(diagnosticLocation)).catch(() => {
-      console.log('Failed to save diagnostic location in local storage.');
-    });
+    AsyncStorage.setItem('diagnosticLocation', JSON.stringify(diagnosticLocation)).catch(() => {});
   };
 
-  // const setDiagnosticLocationServiceable: AppCommonDataContextProps['setDiagnosticLocationServiceable'] = (
-  //   diagnosticLocation
-  // ) => {
-  //   // _setDiagnosticLocationServiceable(diagnosticLocation);
-  //   AsyncStorage.setItem(
-  //     'diagnosticPinCodeServiceability',
-  //     JSON.stringify(diagnosticLocation)
-  //   ).catch(() => {
-  //     console.log('Failed to save diagnostic pincode serviceablity in local storage.');
-  //   });
-  // };
+  const [uploadPrescriptionOptions, setUploadPrescriptionOptions] = useState<
+    AppCommonDataContextProps['uploadPrescriptionOptions']
+  >([]);
+
+  const [expectCallText, setExpectCallText] = useState<AppCommonDataContextProps['expectCallText']>(
+    ''
+  );
+
+  const [nonCartTatText, setNonCartTatText] = useState<AppCommonDataContextProps['nonCartTatText']>(
+    ''
+  );
+
+  const [nonCartDeliveryText, setNonCartDeliveryText] = useState<
+    AppCommonDataContextProps['nonCartDeliveryText']
+  >('');
 
   const [axdcCode, setAxdcCode] = useState<AppCommonDataContextProps['axdcCode']>('');
   const [circlePlanId, setCirclePlanId] = useState<AppCommonDataContextProps['circlePlanId']>('');
@@ -571,10 +589,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
         _setLocationDetails(JSON.parse(location || 'null'));
         _setPharmacyLocation(JSON.parse(pharmacyLocation || 'null'));
         _setDiagnosticLocation(JSON.parse(diagnosticLocation || 'null'));
-        // _setDiagnosticLocationServiceable(JSON.parse(diagnosticPinCodeServiceability || 'null'));
-      } catch (error) {
-        console.log('Failed to get location from local storage.');
-      }
+      } catch (error) {}
     };
     updateLocationFromStorage();
   }, []);
@@ -645,8 +660,6 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setisSelected,
         isUHID,
         setisUHID,
-        appointmentsPersonalized,
-        setAppointmentsPersonalized,
         savePatientDetails,
         setSavePatientDetails,
         doctorJoinedChat,
@@ -670,8 +683,20 @@ export const AppCommonDataProvider: React.FC = (props) => {
         pharmacyUserType,
         setPharmacyUserType,
         pharmacyUserTypeAttribute,
+        apisToCall,
+        homeScreenParamsOnPop,
         cartBankOffer,
         setCartBankOffer,
+        authToken,
+        setauthToken,
+        uploadPrescriptionOptions,
+        setUploadPrescriptionOptions,
+        expectCallText,
+        setExpectCallText,
+        nonCartTatText,
+        setNonCartTatText,
+        nonCartDeliveryText,
+        setNonCartDeliveryText,
       }}
     >
       {props.children}

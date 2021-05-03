@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions, ImageBackground } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { SpecialDiscountImage } from '../../ui/Icons';

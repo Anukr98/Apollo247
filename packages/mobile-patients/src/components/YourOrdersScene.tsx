@@ -42,6 +42,7 @@ import {
   View,
   TouchableOpacity,
   Text,
+  BackHandler,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -56,7 +57,6 @@ const styles = StyleSheet.create({
     elevation: 0,
   },
   helpTextStyle: { ...theme.viewStyles.text('B', 13, '#FC9916', 1, 24) },
-  customHelpContainer: { alignItems: 'flex-end', marginRight: 16, marginTop: 10 },
 });
 
 type AppSection = { buyAgainSection: true };
@@ -69,14 +69,19 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState<any>([]);
   const [skuList, setSkuList] = useState<string[]>([]);
-  const NeedHelp = AppConfig.Configuration.NEED_HELP;
 
   useEffect(() => {
     fetchOrders();
+    BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
+    };
   }, []);
+
+  const onPressHardwareBack = () => props.navigation.goBack();
 
   const fetchOrders = async () => {
     try {
@@ -265,13 +270,10 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   };
 
   const onPressHelp = () => {
-    const { category } = NeedHelp[0];
+    const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
     props.navigation.navigate(AppRoutes.NeedHelpPharmacyOrder, {
-      queryCategory: category,
-      breadCrumb: [{ title: string.needHelp }, { title: category }] as BreadcrumbProps['links'],
-      pageTitle: category.toUpperCase(),
-      email: currentPatient?.emailAddress || '',
-      fromOrderFlow: true,
+      queryIdLevel1: helpSectionQueryId.pharmacy,
+      sourcePage: 'My Orders',
     });
   };
 
@@ -294,9 +296,6 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
             onPressLeftIcon={() => props.navigation.goBack()}
             rightComponent={renderHeaderRightComponent()}
           />
-        )}
-        {props?.showHeader == false && (
-          <View style={styles.customHelpContainer}>{renderHeaderRightComponent()}</View>
         )}
         {renderError()}
         {renderOrders()}

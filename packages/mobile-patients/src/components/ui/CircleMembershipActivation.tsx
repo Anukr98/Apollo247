@@ -174,6 +174,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
             closeModal && closeModal(true);
             props.navigation.navigate(AppRoutes.MembershipDetails, {
               membershipType: Circle.planName,
+              comingFrom: 'Circle Membership Activation Know More CTA',
             });
           }}
         >

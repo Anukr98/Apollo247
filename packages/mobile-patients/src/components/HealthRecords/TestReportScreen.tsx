@@ -141,6 +141,13 @@ const styles = StyleSheet.create({
   searchListHeaderTextStyle: { ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 21) },
   phrNodataMainViewStyle: { marginTop: 59, backgroundColor: 'transparent' },
   searchBarMainView: { flexDirection: 'row', alignItems: 'center' },
+  doctorTestReportPHRTextStyle: {
+    ...theme.viewStyles.text('R', 12, theme.colors.SKY_BLUE, 1, 14),
+    marginLeft: 20,
+    marginBottom: 10,
+    marginRight: 32,
+    marginTop: 2,
+  },
 });
 
 export enum FILTER_TYPE {
@@ -197,6 +204,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   const [prismAuthToken, setPrismAuthToken] = useState<string>(
     props.navigation?.getParam('authToken') || ''
   );
+  const [searchQuery, setSearchQuery] = useState({});
   const { phrSession, setPhrSession } = useAppCommonData();
 
   const gotoPHRHomeScreen = () => {
@@ -254,7 +262,6 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       .catch((error) => {
         CommonBugFender('TestReportScreen_getPatientPrismMedicalRecordsApi', error);
         setShowSpinner(false);
-        console.log('error getPatientPrismMedicalRecordsApi', error);
         currentPatient && handleGraphQlError(error);
       });
   };
@@ -289,8 +296,6 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       })
       .catch((e) => {
         CommonBugFender('TestReportScreen_GET_PRISM_AUTH_TOKEN', e);
-        const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
       });
   };
 
@@ -325,7 +330,6 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('TestReportScreen_searchPHRApiWithAuthToken', error);
-        console.log('searchPHRApiWithAuthToken Error', error);
         getAuthToken();
         setSearchLoading(false);
       });
@@ -480,6 +484,12 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       }
       setSearchLoading(true);
       const search = _.debounce(onSearchHealthRecords, 500);
+      setSearchQuery((prevSearch: any) => {
+        if (prevSearch.cancel) {
+          prevSearch.cancel();
+        }
+        return search;
+      });
       search(value);
     }
   };
@@ -662,7 +672,6 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         .catch((e) => {
           CommonBugFender('TestReportScreen_DeleteParameter_ADD_PATIENT_LAB_TEST_RECORD', e);
           setShowSpinner(false);
-          console.log(JSON.stringify(e), 'eeeee');
           currentPatient && handleGraphQlError(e);
         });
     } else {
@@ -895,6 +904,9 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
             ? renderSearchBar()
             : renderSearchAndFilterView()
           : null}
+        <Text style={styles.doctorTestReportPHRTextStyle}>
+          {string.common.doctorConsultPHRText}
+        </Text>
         {searchText?.length > 2 ? renderHealthRecordSearchResults() : renderTestReportsMainView()}
       </SafeAreaView>
     </View>

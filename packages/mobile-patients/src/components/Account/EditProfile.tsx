@@ -1,5 +1,4 @@
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -262,10 +261,6 @@ const GenderOptions: genderOptions[] = [
     name: Gender.FEMALE,
     title: 'Female',
   },
-  // {
-  //   name: Gender.OTHER,
-  //   title: 'Other',
-  // },
 ];
 
 type RelationArray = {
@@ -324,7 +319,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const relationArray: RelationArray[] = getRelations() || selectedGenderRelationArray;
   const isEdit = props.navigation.getParam('isEdit');
   const screenName = props.navigation.getParam('screenName');
-  const isPoptype = props.navigation.getParam('isPoptype');
   const { width, height } = Dimensions.get('window');
   const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
@@ -758,7 +752,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           setUploadVisible(false);
         }}
         onResponse={(type, response) => {
-          console.log('profile data', type, response);
           response.forEach((item) =>
             client
               .mutate<uploadFile, uploadFileVariables>({
@@ -770,7 +763,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
                 },
               })
               .then((data) => {
-                console.log(data);
                 data!.data!.uploadFile && setPhotoUrl(data!.data!.uploadFile!.filePath!);
                 setUploadVisible(false);
               })
@@ -1077,7 +1069,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       allCurrentPatients!.map((item) => {
         return item.relation === Relation.ME;
       });
-    console.log(presentRelation, 'presentRelation');
 
     const isValid = isSelfRelation!.find((i) => i === true) === undefined;
 

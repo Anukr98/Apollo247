@@ -18,6 +18,7 @@ import {
   GET_TRANSACTION_STATUS,
   GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
   UPDATE_APPOINTMENT,
+  GET_APPOINTMENT_INFO,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   postAppsFlyerEvent,
@@ -27,6 +28,7 @@ import {
   g,
   doRequestAndAccessLocationModified,
   checkPermissions,
+  apiCallEnums,
   getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
@@ -40,7 +42,7 @@ import {
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
-import string, { Payment } from '@aph/mobile-patients/src/strings/strings.json';
+import string, { Payment, NewPaymentStatuses } from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
@@ -72,7 +74,6 @@ import {
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
 import messaging from '@react-native-firebase/messaging';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
 import { Snackbar } from 'react-native-paper';
 import { SearchSendIcon } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -102,35 +103,44 @@ import {
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { userLocationConsultWEBEngage } from '@aph/mobile-patients/src/helpers/CommonEvents';
+import {
+  getAppointmentInfo,
+  getAppointmentInfoVariables,
+} from '@aph/mobile-patients/src/graphql/types/getAppointmentInfo';
+import { PAYMENT_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { saveConsultationLocation } from '@aph/mobile-patients/src/helpers/clientCalls';
 
 export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
 export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props) => {
   const [showSpinner, setShowSpinner] = useState<boolean>(true);
   const [status, setStatus] = useState<string>(props.navigation.getParam('status'));
-  const [refNo, setrefNo] = useState<string>('');
   const [displayId, setdisplayId] = useState<String>('');
   const [paymentRefId, setpaymentRefId] = useState<string>('');
-  const price = props.navigation.getParam('price');
-  const orderId = props.navigation.getParam('orderId');
-  const doctorName = props.navigation.getParam('doctorName');
-  const doctorID = props.navigation.getParam('doctorID');
-  const doctor = props.navigation.getParam('doctor');
-  const appointmentDateTime = props.navigation.getParam('appointmentDateTime');
-  const appointmentType = props.navigation.getParam('appointmentType');
-  const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
-  const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
-  const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
-  const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
-  const coupon = props.navigation.getParam('coupon');
+  const paymentId = props.navigation.getParam('paymentId');
+  const orderDetails = props.navigation.getParam('orderDetails');
+  const {
+    price,
+    orderId,
+    doctorName,
+    doctorID,
+    doctor,
+    appointmentDateTime,
+    appointmentType,
+    webEngageEventAttributes,
+    appsflyerEventAttributes,
+    fireBaseEventAttributes,
+    isDoctorsOfTheHourStatus,
+    coupon,
+    isCircleDoctor,
+  } = orderDetails;
   const paymentTypeID = props.navigation.getParam('paymentTypeID');
-  const isCircleDoctor = props.navigation.getParam('isCircleDoctor');
   const client = useApolloClient();
-  const { success, failure, pending, aborted } = Payment;
+  const { success, failure, pending } = NewPaymentStatuses;
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [notificationAlert, setNotificationAlert] = useState(false);
-  const [copiedText, setCopiedText] = useState('');
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const [showEmailInput, setshowEmailInput] = useState<boolean>(false);
   const [email, setEmail] = useState<string>(currentPatient?.emailAddress || '');
@@ -150,12 +160,20 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     amountBreakup,
     setAmountBreakup,
   ] = useState<paymentTransactionStatus_paymentTransactionStatus_appointment_amountBreakup | null>();
-  const circleSavings = (amountBreakup?.actual_price || 0) - (amountBreakup?.slashed_price || 0);
+  const circleSavings =
+    amountBreakup?.actual_price && amountBreakup?.slashed_price
+      ? amountBreakup?.actual_price - amountBreakup?.slashed_price
+      : 0;
 
   const { circleSubscriptionId, circlePlanSelected } = useShoppingCart();
-  const { setLocationDetails, locationDetails, locationForDiagnostics } = useAppCommonData();
+  const {
+    setLocationDetails,
+    locationDetails,
+    locationForDiagnostics,
+    apisToCall,
+    homeScreenParamsOnPop,
+  } = useAppCommonData();
   const { clearDiagnoticCartInfo } = useDiagnosticsCart();
-
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
     setSnackbarState(true);
@@ -165,7 +183,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       title: 'Uh oh.. :(',
       description: `${desc || ''}`.trim(),
     });
-
   useEffect(() => {
     getUserSubscriptionsByStatus();
   }, []);
@@ -237,87 +254,108 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     fireLocationEvent.current = false;
   };
 
-  useEffect(() => {
-    // getTxnStatus(orderId)
-    console.log(webEngageEventAttributes['Consult Mode']);
+  const getOrderInfo = () => {
+    return client.query<getAppointmentInfo, getAppointmentInfoVariables>({
+      query: GET_APPOINTMENT_INFO,
+      variables: {
+        order_id: paymentId,
+      },
+      fetchPolicy: 'no-cache',
+    });
+  };
 
-    client
-      .query({
-        query: GET_TRANSACTION_STATUS,
-        variables: {
-          appointmentId: orderId,
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((res) => {
-        try {
-          const paymentEventAttributes = {
-            Payment_Status: res.data.paymentTransactionStatus.appointment.paymentStatus,
-            LOB: 'Consultation',
-            Appointment_Id: orderId,
-          };
-          postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
-          postFirebaseEvent(FirebaseEventName.PAYMENT_STATUS, paymentEventAttributes);
-          postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_STATUS, paymentEventAttributes);
-        } catch (error) {}
-        console.log(res.data);
-        if (res.data.paymentTransactionStatus.appointment.paymentStatus == success) {
-          locationDetails && saveLocationWithConsultation(locationDetails);
-
-          const amountBreakup = res?.data?.paymentTransactionStatus?.appointment?.amountBreakup;
-          if (isCircleDoctor && amountBreakup?.slashed_price) {
-            setAmountBreakup(res?.data?.paymentTransactionStatus?.appointment?.amountBreakup);
-          }
-          fireBaseFCM();
-          try {
-            let eventAttributes = webEngageEventAttributes;
-            eventAttributes['Display ID'] = res.data.paymentTransactionStatus.appointment.displayId;
-            eventAttributes['User_Type'] = getUserType(currentPatient);
-            postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, appsflyerEventAttributes);
-            postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
-            firePurchaseEvent(amountBreakup);
-            eventAttributes['Dr of hour appointment'] = !!isDoctorsOfTheHourStatus ? 'Yes' : 'No';
-            postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
-            if (!currentPatient?.isConsulted) getPatientApiCall();
-          } catch (error) {}
-          checkPermissions(['camera', 'microphone']).then((response: any) => {
-            const { camera, microphone } = response;
-            if (camera === 'authorized' && microphone === 'authorized') {
-              !locationDetails && askLocationPermission();
-            } else {
-              overlyCallPermissions(
-                currentPatient.firstName,
-                doctorName,
-                showAphAlert,
-                hideAphAlert,
-                true,
-                () => {
-                  !locationDetails && askLocationPermission();
-                }
-              );
-            }
-          });
-        } else {
-          fireOrderFailedEvent();
+  const fetchOrderStatus = async () => {
+    try {
+      const response = await getOrderInfo();
+      const txnStatus = response?.data?.getOrderInternal?.payment_status || PAYMENT_STATUS.PENDING;
+      const appmtDetails = response?.data?.getOrderInternal?.AppointmentDetails?.find(
+        (item: any) => item
+      );
+      const displayId = appmtDetails?.displayId || '';
+      firePaymentStatusEvent(txnStatus);
+      if (txnStatus == success) {
+        locationDetails && saveLocationWithConsultation(locationDetails);
+        const amountBreakup = appmtDetails?.amountBreakup;
+        if (isCircleDoctor && amountBreakup?.slashed_price) {
+          setAmountBreakup(amountBreakup);
         }
-        setrefNo(res.data.paymentTransactionStatus.appointment.bankTxnId);
-        setStatus(res.data.paymentTransactionStatus.appointment.paymentStatus);
-        setdisplayId(res.data.paymentTransactionStatus.appointment.displayId);
-        setpaymentRefId(res.data.paymentTransactionStatus.appointment.paymentRefId);
-        setShowSpinner?.(false);
-      })
-      .catch((error) => {
-        setShowSpinner?.(false);
-        CommonBugFender('fetchingTxnStutus', error);
-        console.log(error);
-        props.navigation.navigate(AppRoutes.DoctorSearch);
-        renderErrorPopup(string.common.tryAgainLater);
-      });
+        fireBaseFCM();
+        fireConsultBookedEvent(displayId);
+        PermissionsCheck();
+      } else {
+        fireOrderFailedEvent();
+      }
+      setStatus(txnStatus);
+      setdisplayId(displayId);
+      setShowSpinner?.(false);
+    } catch (error) {
+      setShowSpinner?.(false);
+      CommonBugFender('fetchingTxnStutus', error);
+      renderErrorPopup(string.common.tryAgainLater);
+    }
+  };
+
+  const PermissionsCheck = () => {
+    checkPermissions(['camera', 'microphone']).then((response: any) => {
+      const { camera, microphone } = response;
+      if (camera === 'authorized' && microphone === 'authorized') {
+        !locationDetails && askLocationPermission();
+      } else {
+        overlyCallPermissions(
+          currentPatient.firstName,
+          doctorName,
+          showAphAlert,
+          hideAphAlert,
+          true,
+          () => {
+            !locationDetails && askLocationPermission();
+          }
+        );
+      }
+    });
+  };
+
+  const firePaymentStatusEvent = (status: string) => {
+    try {
+      const paymentEventAttributes = {
+        Payment_Status: status,
+        LOB: 'Consultation',
+        Appointment_Id: orderId,
+      };
+      postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
+      postFirebaseEvent(FirebaseEventName.PAYMENT_STATUS, paymentEventAttributes);
+      postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_STATUS, paymentEventAttributes);
+    } catch (error) {}
+  };
+
+  const fireConsultBookedEvent = (displayId: any) => {
+    try {
+      let eventAttributes = webEngageEventAttributes;
+      eventAttributes['Display ID'] = displayId;
+      eventAttributes['User_Type'] = getUserType(currentPatient);
+      postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, appsflyerEventAttributes);
+      postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
+      firePurchaseEvent(amountBreakup);
+      eventAttributes['Dr of hour appointment'] = !!isDoctorsOfTheHourStatus ? 'Yes' : 'No';
+      postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
+      if (!currentPatient?.isConsulted) getPatientApiCall();
+    } catch (error) {}
+  };
+
+  useEffect(() => {
+    fetchOrderStatus();
+    clearCirclePlanInfo();
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
   }, []);
+
+  const clearCirclePlanInfo = () => {
+    if (circleSavings > 0 && !circleSubscriptionId) {
+      AsyncStorage.removeItem('circlePlanSelected');
+    }
+  };
 
   const getUserSubscriptionsByStatus = async () => {
     try {
@@ -390,7 +428,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       value: Number(price),
       LOB: 'Consult',
     };
-    console.log(eventAttributes);
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
     isCircleDoctor && amountBreakup?.slashed_price && fireCirclePurchaseEvent(amountBreakup);
   };
@@ -419,7 +456,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       !circleSubscriptionId &&
       postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
 
-    console.log('eventAttributes >>>>', eventAttributes);
     clearCircleSubscriptionData();
   };
 
@@ -440,12 +476,10 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       ) {
       }
       if (resuts) {
-        console.log(resuts);
         downloadInvoice();
       }
     } catch (error) {
       CommonBugFender('PaymentStatusScreen_requestReadSmsPermission_try', error);
-      console.log('error', error);
     }
   };
 
@@ -457,7 +491,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const statusIcon = () => {
     if (status === success) {
       return <Success style={styles.statusIconStyles} />;
-    } else if (status === failure || status === aborted) {
+    } else if (status === failure) {
       return <Failure style={styles.statusIconStyles} />;
     } else {
       return <Pending style={styles.statusIconStyles} />;
@@ -486,7 +520,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const statusCardColour = () => {
     if (status == success) {
       return colors.SUCCESS;
-    } else if (status == failure || status == aborted) {
+    } else if (status == failure) {
       return colors.FAILURE;
     } else {
       return colors.PENDING;
@@ -501,9 +535,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       textColor = theme.colors.SUCCESS_TEXT;
     } else if (status === failure) {
       message = ' PAYMENT FAILED';
-      textColor = theme.colors.FAILURE_TEXT;
-    } else if (status === aborted) {
-      message = ' PAYMENT ABORTED';
       textColor = theme.colors.FAILURE_TEXT;
     }
     return textComponent(message, undefined, textColor, false);
@@ -570,7 +601,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const rightIconView = () => {
-    console.log(isSatisfyingEmailRegex(email.trim()));
     return (
       <View style={{ paddingBottom: 0, opacity: isSatisfyingEmailRegex(email.trim()) ? 1 : 0.5 }}>
         <TouchableOpacity
@@ -603,9 +633,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         },
         fetchPolicy: 'no-cache',
       })
-      .then((res) => {
-        console.log(res);
-      })
+      .then((res) => {})
       .catch((error) => {
         CommonBugFender('Error while sending invoice on mail', error);
       })
@@ -613,7 +641,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const downloadInvoice = () => {
-    console.log('-------------', currentPatient.id, orderId);
     client
       .query({
         query: CONSULT_ORDER_INVOICE,
@@ -624,7 +651,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         fetchPolicy: 'no-cache',
       })
       .then((res) => {
-        console.log('-------------', res);
         const { data } = res;
         const { getOrderInvoice } = data;
         let dirs = RNFetchBlob.fs.dirs;
@@ -651,7 +677,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             //some headers ..
           })
           .then((res) => {
-            console.log('invoiceURL-->', res);
             if (Platform.OS === 'android') {
               Alert.alert('Download Complete');
             }
@@ -661,7 +686,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           })
           .catch((err) => {
             CommonBugFender('ConsultView_downloadInvoice', err);
-            console.log('error ', err);
           });
       })
       .catch((error) => {
@@ -671,7 +695,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       });
   };
   const renderStatusCard = () => {
-    const refNumberText = String(paymentRefId != '' && paymentRefId != null ? paymentRefId : '--');
+    const refNumberText = String(paymentId != '' && paymentId != null ? paymentId : '--');
     const orderIdText = 'Order ID: ' + String(displayId);
     const priceText = `${string.common.Rs} ` + String(price);
     return (
@@ -768,7 +792,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     if (status === failure) {
       noteText =
         'Note : In case your account has been debited, you should get the refund in 1-7 working days.';
-    } else if (status != success && status != failure && status != aborted) {
+    } else if (status != success && status != failure) {
       noteText =
         'Note : Your payment is in progress and this may take a couple of minutes to confirm your booking. We’ll intimate you once your bank confirms the payment.';
     }
@@ -778,7 +802,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const getButtonText = () => {
     if (status == success) {
       return 'Go To Consult Room';
-    } else if (status == failure || status == aborted) {
+    } else if (status == failure) {
       return 'TRY AGAIN';
     } else {
       return 'GO TO HOME';
@@ -790,25 +814,39 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     const { navigate } = navigation;
     if (status == success) {
       getAppointmentInfo(navigateToChatRoom);
-    } else if (status == failure || status == aborted) {
+    } else if (status == failure) {
       // navigate(AppRoutes.DoctorSearch);
-      setLoading?.(true);
       navigate(AppRoutes.DoctorDetails, {
         doctorId: doctorID,
       });
     } else {
-      props.navigation.dispatch(
-        StackActions.reset({
-          index: 0,
-          key: null,
-          actions: [
-            NavigationActions.navigate({
-              routeName: AppRoutes.ConsultRoom,
-            }),
-          ],
-        })
-      );
+      moveToHome();
     }
+  };
+
+  const moveToHome = (navigateToChatRoom?: boolean, appointmentData?: any) => {
+    // use apiCallsEnum values here in order to make that api call in home screen
+
+    apisToCall.current = !!circleSubscriptionId
+      ? [apiCallEnums.patientAppointments, apiCallEnums.patientAppointmentsCount]
+      : [
+          apiCallEnums.patientAppointments,
+          apiCallEnums.patientAppointmentsCount,
+          apiCallEnums.circleSavings,
+          apiCallEnums.getAllBanners,
+          apiCallEnums.getUserSubscriptions,
+          apiCallEnums.getUserSubscriptionsV2,
+        ];
+    const params = {
+      isFreeConsult: navigateToChatRoom ? false : true,
+      doctorName: doctorName,
+      appointmentData: appointmentData?.[0],
+      skipAutoQuestions: doctor?.skipAutoQuestions,
+    };
+    if (!navigateToChatRoom) {
+      homeScreenParamsOnPop.current = params;
+    }
+    navigateToHome(props.navigation, params);
   };
 
   const getAppointmentInfo = (navigateToChatRoom?: boolean) => {
@@ -825,32 +863,31 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       .then((_data) => {
         try {
           setShowSpinner && setShowSpinner(false);
-
-          console.log(
-            'GetDoctorNextAvailableSlot',
-            _data.data.getAppointmentData!.appointmentsHistory
-          );
           const appointmentData = _data.data.getAppointmentData!.appointmentsHistory;
           if (appointmentData) {
             try {
               if (appointmentData[0]!.doctorInfo !== null) {
-                props.navigation.dispatch(
-                  StackActions.reset({
-                    index: 0,
-                    key: null,
-                    actions: [
-                      NavigationActions.navigate({
-                        routeName: AppRoutes.ConsultRoom,
-                        params: {
-                          isFreeConsult: navigateToChatRoom ? false : true,
-                          doctorName: doctorName,
-                          appointmentData: appointmentData[0],
-                          skipAutoQuestions: doctor?.skipAutoQuestions,
-                        },
-                      }),
-                    ],
-                  })
-                );
+                if (!navigateToChatRoom) {
+                  moveToHome(navigateToChatRoom, appointmentData);
+                } else {
+                  props.navigation.dispatch(
+                    StackActions.reset({
+                      index: 0,
+                      key: null,
+                      actions: [
+                        NavigationActions.navigate({
+                          routeName: AppRoutes.ConsultRoom,
+                          params: {
+                            isFreeConsult: navigateToChatRoom ? false : true,
+                            doctorName: doctorName,
+                            appointmentData: appointmentData[0],
+                            skipAutoQuestions: doctor?.skipAutoQuestions,
+                          },
+                        }),
+                      ],
+                    })
+                  );
+                }
                 if (navigateToChatRoom) {
                   props.navigation.navigate(AppRoutes.ChatRoom, {
                     data: appointmentData[0],
@@ -868,7 +905,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         }
       })
       .catch((e) => {
-        console.log('Error occured while GetDoctorNextAvailableSlot', { e });
         setShowSpinner && setShowSpinner(false);
         props.navigation.navigate('APPOINTMENTS');
       });
@@ -968,26 +1004,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
   const saveLocationWithConsultation = async (location: LocationData) => {
     setLoading?.(true);
-    try {
-      const query: updateAppointmentVariables = {
-        appointmentInput: {
-          appointmentId: orderId,
-          patientLocation: {
-            city: location?.city,
-            pincode: Number(location?.pincode),
-          },
-        },
-      };
-      await client.query<updateAppointment>({
-        query: UPDATE_APPOINTMENT,
-        fetchPolicy: 'no-cache',
-        variables: query,
-      });
-      setLoading?.(false);
-    } catch (error) {
-      setLoading?.(false);
-      CommonBugFender('ConsultRoom_getUserSubscriptionsByStatus', error);
-    }
+    await saveConsultationLocation(client, orderId, location);
+    setLoading?.(false);
   };
 
   const renderSearchManualLocation = () => {

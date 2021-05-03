@@ -26,7 +26,6 @@ import {
   postWebEngageEvent,
   postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import string from '@aph/mobile-patients/src/strings/strings.json';
 import { FirebaseEvents, FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import moment from 'moment';
 import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
@@ -142,7 +141,6 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
 
   const onWebViewStateChange = (data: NavState) => {
     const redirectedUrl = data.url;
-    console.log({ data, redirectedUrl });
     if (
       redirectedUrl &&
       redirectedUrl.indexOf(AppConfig.Configuration.SUBSCRIPTION_PG_SUCCESS) > -1

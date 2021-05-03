@@ -20,6 +20,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { HEALTH_CREDITS } from '../../utils/AsyncStorageKey';
 
 const styles = StyleSheet.create({
   placeholderViewStyle: {
@@ -89,7 +90,6 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     setDisplayAddProfile,
     listContainerStyle,
     showProfilePic,
-    // unsetloaderDisplay,
   } = props;
   const addString = '+ADD MEMBER';
   const addBoolen = false;
@@ -166,6 +166,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
             setCurrentPatientId!(g(profilePatients[0], 'id')),
               AsyncStorage.setItem('selectUserId', g(profilePatients[0], 'id')),
               AsyncStorage.setItem('selectUserUHId', g(profilePatients[0], 'uhid')),
+              AsyncStorage.setItem(HEALTH_CREDITS, ''),
               setAddressList(g(profilePatients[0], 'id'));
           }
         } catch (error) {}
@@ -174,10 +175,8 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   }, [isUHID]);
 
   useEffect(() => {
-    // AsyncStorage.removeItem('selectUserId');
     const getDataFromTree = async () => {
       const storeVallue = await AsyncStorage.getItem('selectUserId');
-      console.log('storeVallue : uuh', storeVallue, currentPatient);
       if (storeVallue) {
         setCurrentPatientId(storeVallue);
         storeVallue &&
@@ -189,6 +188,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
       } else if (currentPatient) {
         AsyncStorage.setItem('selectUserId', currentPatient!.id);
         AsyncStorage.setItem('selectUserUHId', currentPatient!.uhid),
+          AsyncStorage.setItem(HEALTH_CREDITS, ''),
           setAddressList(currentPatient!.id);
       }
     };
@@ -208,9 +208,6 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
 
   useEffect(() => {
     setProfileArray(addNewProfileText(profileAllPatients!));
-    // if (profileAllPatients) {
-    //   setLoading && setLoading(false);
-    // }
   }, [profileAllPatients]);
 
   useEffect(() => {
@@ -341,6 +338,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
             (setCurrentPatientId!(selectedUser!.key),
             AsyncStorage.setItem('selectUserId', selectedUser!.key),
             AsyncStorage.setItem('selectUserUHId', selectedUser!.uhid),
+            AsyncStorage.setItem(HEALTH_CREDITS, ''),
             setAddressList(selectedUser!.key));
         }}
       >

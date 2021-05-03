@@ -19,7 +19,6 @@ import {
   View,
   ViewStyle,
   TouchableOpacityProps,
-  Platform,
   Dimensions,
 } from 'react-native';
 import { getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
@@ -34,7 +33,6 @@ import {
   DIAGNOSTIC_ORDER_FAILED_STATUS,
   DIAGNOSTIC_JUSPAY_REFUND_STATUS,
   DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS,
-  AppConfig,
   DIAGNOSTIC_HORIZONTAL_STATUS_TO_SHOW,
   DIAGNOSTIC_COMPLETED_STATUS,
   DIAGNOSTIC_CONFIRMED_STATUS,
@@ -70,7 +68,6 @@ export interface TestOrderCardProps {
   onPressViewReport?: () => void;
   showRefund?: boolean;
   refundStatus?: REFUND_STATUSES;
-  // isReschedule?: boolean;
 }
 
 const statusToBeShown = DIAGNOSTIC_HORIZONTAL_STATUS_TO_SHOW;

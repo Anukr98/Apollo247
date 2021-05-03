@@ -253,8 +253,7 @@ const showGenericAlert = (message: string) => {
 };
 
 export const DiagnosticsCartProvider: React.FC = (props) => {
-  // const { currentPatient } = useAllCurrentPatients();
-  const id = ''; //(currentPatient && currentPatient.id) || '';
+  const id = '';
   const AsyncStorageKeys = {
     cartItems: `diagnosticsCartItems${id}`,
     ePrescriptions: `diagnosticsEPrescriptions${id}`,
@@ -382,9 +381,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     const existingFilteredEPres = ePrescriptions.filter(
       (item) => !itemsToAdd.find((val) => val.id == item.id)
     );
-    // console.log('existingFilteredEPres\n', { existingFilteredEPres });
     const updatedEPres = [...existingFilteredEPres, ...itemsToAdd];
-    // console.log('updatedEPres\n', { updatedEPres });
     setEPrescriptions(updatedEPres);
   };
 
@@ -418,12 +415,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     const existingFilteredCartItems = cartItems.filter(
       (item) => !itemsToAdd.find((val) => val.id == item.id)
     );
-    // console.log('existingFilteredCartItems\n', { existingFilteredCartItems });
     const newCartItems = [
       ...existingFilteredCartItems,
       ...itemsToAdd.filter((v, i, a) => a.findIndex((t) => t.id === v.id) === i),
     ];
-    // console.log('newCartItems\n', { newCartItems });
     setCartItems(newCartItems);
   };
 
@@ -519,13 +514,11 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const setClinicId = (id: DiagnosticsCartContextProps['clinicId']) => {
     setDeliveryType(MEDICINE_DELIVERY_TYPE.STORE_PICKUP);
     _setClinicId(id);
-    // _setDeliveryAddressId('');
   };
 
   const setDeliveryAddressId = (id: DiagnosticsCartContextProps['deliveryAddressId']) => {
     setDeliveryType(MEDICINE_DELIVERY_TYPE.HOME_DELIVERY);
     _setDeliveryAddressId(id);
-    // _setClinicId('');
   };
 
   const addPhysicalPrescription: DiagnosticsCartContextProps['addPhysicalPrescription'] = (
@@ -631,7 +624,6 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
       value={{
         forPatientId,
         setPatientId,
-
         cartItems,
         setCartItems,
         addCartItem,
@@ -653,63 +645,48 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         diagnosticAreas,
         hcCharges,
         setHcCharges,
-
         uploadPrescriptionRequired: false,
-
         ePrescriptions,
         addEPrescription,
         addMultipleEPrescriptions,
         removeEPrescription,
         setEPrescriptions,
-
         physicalPrescriptions,
         setPhysicalPrescriptions,
         addPhysicalPrescription,
         updatePhysicalPrescription,
         removePhysicalPrescription,
-
         addresses,
         setAddresses,
         addAddress,
         deliveryAddressId,
         setDeliveryAddressId,
-
         deliveryAddressCityId,
         setDeliveryAddressCityId,
-
         deliveryType,
         coupon,
         setCoupon,
-
         clinics,
         setClinics,
-
         clinicId,
         setClinicId,
-
         pinCode,
         setPinCode,
-
         clearDiagnoticCartInfo,
-
         diagnosticClinic,
         setDiagnosticClinic,
         diagnosticSlot,
         setDiagnosticSlot,
         isDiagnosticCircleSubscription,
         setIsDiagnosticCircleSubscription,
-
         showSelectPatient,
         setShowSelectPatient,
-
         getUniqueId,
         setUniqueId,
-
         testListingBreadCrumbs,
         setTestListingBreadCrumbs,
         testDetailsBreadCrumbs,
         setTestDetailsBreadCrumbs,
-
         newAddressAddedHomePage,
         setNewAddressAddedHomePage,
         newAddressAddedCartPage,

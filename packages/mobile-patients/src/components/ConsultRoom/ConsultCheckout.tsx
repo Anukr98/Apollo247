@@ -11,7 +11,6 @@ import {
   Image,
   StatusBar,
   ScrollView,
-  ActivityIndicator,
   FlatList,
 } from 'react-native';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -64,7 +63,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
   const appointmentInput = props.navigation.getParam('appointmentInput');
   const price = props.navigation.getParam('price');
   const doctorName = props.navigation.getParam('doctorName');
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [loading, setLoading] = useState(true);
   const { showAphAlert } = useUIElements();
   const couponApplied = props.navigation.getParam('couponApplied');
@@ -103,7 +102,6 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     fetchPaymentOptions()
       .then((res: any) => {
-        console.log(JSON.stringify(res), 'objobj');
         let options: paymentOptions[] = [];
         res.data.forEach((item: any) => {
           if (item && item.enabled && item.paymentMode != 'NB') {
@@ -136,7 +134,6 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('fetchingPaymentOptions', error);
-        console.log(error);
         props.navigation.navigate(AppRoutes.DoctorSearch);
         renderErrorPopup(string.common.tryAgainLater);
       });
@@ -147,9 +144,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
 
   const getConsultationBookedEventAttributes = (time: string, id: string) => {
     const localTimeSlot = moment(new Date(time));
-    console.log(localTimeSlot.format('DD MMM YYYY, h:mm A'));
     let date = moment(time).toDate();
-    // date = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
     const doctorClinics = (g(doctor, 'doctorHospital') || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
         return item.facility.facilityType === 'HOSPITAL';
@@ -159,7 +154,6 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       name: g(doctor, 'fullName'),
       specialisation: g(doctor, 'specialty', 'name'),
       category: g(doctor, 'doctorType'), // send doctorType
-      // time: localTimeSlot.format('DD-MM-YYY, hh:mm A'),
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
@@ -187,7 +181,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       af_currency: 'INR',
       'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
       'Circle discount': circleDiscountedPrice,
-      User_Type: getUserType(currentPatient),
+      User_Type: getUserType(allCurrentPatients),
     };
     return eventAttributes;
   };
@@ -210,7 +204,6 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
 
   const getConsultationBookedFirebaseEventAttributes = (time: string, id: string) => {
     const localTimeSlot = moment(new Date(time));
-    console.log(localTimeSlot.format('DD-MM-YYY, hh:mm A'));
 
     const doctorClinics = (g(doctor, 'doctorHospital') || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
@@ -246,7 +239,6 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
   };
 
   const initiatePayment = (item) => {
-    console.log('appointmentInput---------------', appointmentInput);
     setLoading && setLoading(true);
     client
       .mutate<bookAppointment>({
@@ -257,7 +249,6 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
-        console.log(JSON.stringify(data));
         try {
           if (callSaveSearch !== 'true') {
             saveSearchDoctor(client, doctor ? doctor.id : '', patientId);
@@ -279,7 +270,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
           const paymentModeEventAttribute: WebEngageEvents[WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED] = {
             'Payment Mode': item.paymentMode,
-            User_Type: getUserType(currentPatient),
+            User_Type: getUserType(allCurrentPatients),
           };
           postWebEngageEvent(
             WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED,

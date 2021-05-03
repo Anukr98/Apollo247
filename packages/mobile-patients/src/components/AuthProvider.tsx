@@ -39,6 +39,7 @@ import {
 import WebEngage from 'react-native-webengage';
 import AsyncStorage from '@react-native-community/async-storage';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import loggingLink from '@aph/mobile-patients/src/helpers/loggingLink';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then(
@@ -111,9 +112,7 @@ export const AuthProvider: React.FC = (props) => {
       // no need to refresh jwt token on login
       try {
         firebaseAuth().onAuthStateChanged(async (user) => {
-          // console.log('authprovider', user);
           if (user) {
-            // console.log('authprovider login');
             const jwt = await user.getIdToken(true).catch((error) => {
               setIsSigningIn(false);
               setSignInError(true);
@@ -131,7 +130,6 @@ export const AuthProvider: React.FC = (props) => {
       const jwtDecode = require('jwt-decode');
       const millDate = jwtDecode(authToken).exp;
       const currentTime = new Date().valueOf() / 1000;
-      // console.log('millDate', millDate, currentTime, millDate > currentTime);
       if (millDate < currentTime) {
         getFirebaseToken();
       } else {
@@ -146,7 +144,6 @@ export const AuthProvider: React.FC = (props) => {
       const jwtDecode = require('jwt-decode');
       const millDate = jwtDecode(authToken).exp;
       const currentTime = new Date().valueOf() / 1000;
-      // console.log('millDate', millDate, currentTime, millDate > currentTime);
       if (millDate < currentTime) {
         setNewToken();
       }
@@ -154,7 +151,6 @@ export const AuthProvider: React.FC = (props) => {
       setNewToken();
     }
     const errorLink = onError((error) => {
-      console.log('-------error-------', error);
       const { graphQLErrors, operation, forward } = error;
       if (graphQLErrors) {
         const unauthenticatedError = graphQLErrors.some(
@@ -162,7 +158,6 @@ export const AuthProvider: React.FC = (props) => {
         );
         if (unauthenticatedError) {
           setNewToken();
-          console.log('-------unauthenticatedError-------', unauthenticatedError);
         }
       }
       //This stops multiple trigger of graphql for known errors
@@ -170,7 +165,6 @@ export const AuthProvider: React.FC = (props) => {
         return;
       } else {
         return;
-        // return forward(operation);
       }
     });
     const authLink = setContext(async (_, { headers }) => ({
@@ -183,7 +177,10 @@ export const AuthProvider: React.FC = (props) => {
       uri: apiRoutes.graphql(),
     });
 
-    const link = errorLink.concat(authLink).concat(httpLink);
+    const link = errorLink
+      //.concat(loggingLink)  //Uncomment this inroder to enable logging
+      .concat(authLink)
+      .concat(httpLink);
     const cache = apolloClient ? apolloClient.cache : new InMemoryCache();
     return new ApolloClient({
       link,
@@ -228,7 +225,6 @@ export const AuthProvider: React.FC = (props) => {
   const signOut = useCallback(() => {
     try {
       if (auth.currentUser) {
-        // console.log('signOut called', auth.currentUser);
         auth.signOut();
       }
       setAuthToken('');
@@ -239,11 +235,8 @@ export const AuthProvider: React.FC = (props) => {
       AsyncStorage.removeItem('deviceToken');
       AsyncStorage.removeItem('selectUserId');
       AsyncStorage.removeItem('callByPrism');
-
-      console.log('authprovider signOut');
     } catch (error) {
       CommonBugFender('AuthProvider_signOut_try', error);
-      console.log('signOut error', error);
     }
   }, [auth]);
 
@@ -251,10 +244,6 @@ export const AuthProvider: React.FC = (props) => {
     async function fetchData() {
       let jwtToken: any = await AsyncStorage.getItem('jwt');
       jwtToken = JSON.parse(jwtToken || 'null');
-      // console.log('jwtToken', jwtToken);
-
-      // setAuthToken(jwtToken);
-      // getFirebaseToken();
       validateAndUpdate(jwtToken);
     }
     fetchData();
@@ -264,12 +253,8 @@ export const AuthProvider: React.FC = (props) => {
     try {
       return new Promise(async (resolve, reject) => {
         let authStateRegistered = false;
-        console.log('authprovider');
         auth.onAuthStateChanged(async (user) => {
-          // console.log('authprovider', authStateRegistered, user);
-
           if (user && !authStateRegistered) {
-            // console.log('authprovider login');
             setIsSigningIn(true);
             authStateRegistered = true;
 
@@ -278,28 +263,16 @@ export const AuthProvider: React.FC = (props) => {
               setSignInError(true);
               setAuthToken('');
               authStateRegistered = false;
-              console.log('authprovider error', error);
               reject(error);
               throw error;
             });
 
-            console.log('authprovider jwt', jwt);
             setAuthToken(jwt);
             AsyncStorage.setItem('jwt', JSON.stringify(jwt));
 
             apolloClient = buildApolloClient(jwt, () => getFirebaseToken());
             authStateRegistered = false;
             resolve(jwt);
-            // getNetStatus()
-            //   .then(async (item) => {
-            //     const userLoggedIn = await AsyncStorage.getItem('logginHappened');
-            //     if (userLoggedIn == 'true') {
-            //       item && getPatientApiCall();
-            //     }
-            //   })
-            //   .catch((e) => {
-            //     CommonBugFender('AuthProvider_getNetStatus', e);
-            //   });
           }
           setIsSigningIn(false);
         });
@@ -314,7 +287,6 @@ export const AuthProvider: React.FC = (props) => {
         const input = {
           mobileNumber: '+91' + storedPhoneNumber,
         };
-        console.log('getPatientApiCall', input);
         storedPhoneNumber &&
           apolloClient
             .query<getPatientByMobileNumber, getPatientByMobileNumberVariables>({
@@ -328,16 +300,13 @@ export const AuthProvider: React.FC = (props) => {
                 const patient = patients.find((item) => item!.relation == Relation.ME);
                 const mobileNumber = g(patient, 'mobileNumber');
                 mobileNumber && webengage.user.login(mobileNumber);
-              } catch (error) {
-                console.log('SplashScreen Webengage----', { error });
-              }
+              } catch (error) {}
 
               const allPatients = g(data, 'data', 'getPatientByMobileNumber', 'patients');
               if (!containsHistory) {
                 AsyncStorage.setItem('currentPatient', JSON.stringify(data));
                 setSavePatientDetails && setSavePatientDetails(allPatients);
                 setSignInError(false);
-                console.log('getPatientApiCall', data);
                 AsyncStorage.setItem('callByPrism', 'false');
                 setAllPatients(data);
                 setMobileAPICalled(false);
@@ -353,7 +322,6 @@ export const AuthProvider: React.FC = (props) => {
               setAllPatients(item);
               setSignInError(false);
               reject(error);
-              console.log('getPatientApiCallerror', error);
             });
       } catch (error) {}
     });
@@ -373,7 +341,6 @@ export const AuthProvider: React.FC = (props) => {
           deviceToken: deviceToken2,
           deviceOS: '',
         };
-        console.log('getPatientByPrism', versionInput);
 
         await apolloClient
           .query<GetCurrentPatients, GetCurrentPatientsVariables>({
@@ -394,13 +361,11 @@ export const AuthProvider: React.FC = (props) => {
             AsyncStorage.setItem('currentPatient', JSON.stringify(data));
             setMobileAPICalled(true);
             setSignInError(false);
-            console.log('getPatientByPrism', data);
             setAllPatients(data);
             resolve(data);
           })
           .catch(async (error) => {
             CommonBugFender('AuthProvider_getPatientByPrism', error);
-            console.log('getPatientByPrismerror', error);
             reject(error);
           });
       });

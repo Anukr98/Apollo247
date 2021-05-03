@@ -17,9 +17,7 @@ export interface DiagnosticsNewSearchProps {
   data: any; //define the interface
 }
 
-export const DiagnosticsNewSearch: React.FC<DiagnosticsNewSearchProps> = (
-  props
-) => {
+export const DiagnosticsNewSearch: React.FC<DiagnosticsNewSearchProps> = (props) => {
   const { cartItems } = useDiagnosticsCart();
   const { data } = props;
   const name = data?.diagnostic_item_name || '';
@@ -80,7 +78,7 @@ export const DiagnosticsNewSearch: React.FC<DiagnosticsNewSearchProps> = (
     >
       <View style={styles.containerStyle} key={data.name}>
         <View style={styles.iconAndDetailsContainerStyle}>
-          <View style={{ width: 16}} />
+          <View style={{ width: 16 }} />
           {renderNamePriceAndInStockStatus()}
         </View>
         {props.showSeparator ? <Spearator /> : null}
@@ -93,7 +91,7 @@ const styles = StyleSheet.create({
   containerStyle: {
     width: '100%',
     justifyContent: 'space-between',
-    margin:0
+    margin: 0,
   },
   iconAndDetailsContainerStyle: {
     flexDirection: 'row',
@@ -107,7 +105,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
   },
-  numberPlate: { ...theme.viewStyles.text('SB', 10, theme.colors.SKY_BLUE, 1, 18)},
+  numberPlate: { ...theme.viewStyles.text('SB', 10, theme.colors.SKY_BLUE, 1, 18) },
   flexRow: {
     flexDirection: 'row',
   },

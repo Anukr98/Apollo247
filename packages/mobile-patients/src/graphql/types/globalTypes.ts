@@ -47,6 +47,7 @@ export enum AppointmentType {
 }
 
 export enum BOOKINGSOURCE {
+  BOOKING_TOOL = "BOOKING_TOOL",
   MOBILE = "MOBILE",
   WEB = "WEB",
 }
@@ -72,18 +73,6 @@ export enum BloodGroups {
   BPositive = "BPositive",
   ONegative = "ONegative",
   OPositive = "OPositive",
-}
-
-export enum BookingSource {
-  Apollo247_Android = "Apollo247_Android",
-  Apollo247_Ios = "Apollo247_Ios",
-  Apollo247_Web = "Apollo247_Web",
-}
-
-export enum BookingStatus {
-  COMPLETED = "COMPLETED",
-  FAILED = "FAILED",
-  INPROGRESS = "INPROGRESS",
 }
 
 export enum CODCity {
@@ -210,13 +199,6 @@ export enum FEEDBACKTYPE {
   PHARMACY = "PHARMACY",
 }
 
-export enum GENDER {
-  ALL = "ALL",
-  FEMALE = "FEMALE",
-  MALE = "MALE",
-  OTHER = "OTHER",
-}
-
 export enum Gender {
   FEMALE = "FEMALE",
   MALE = "MALE",
@@ -229,6 +211,10 @@ export enum HDFC_CUSTOMER {
   OTP_NOT_GENERATED = "OTP_NOT_GENERATED",
 }
 
+export enum HELP_DESK_TICKET_STATUS {
+  Open = "Open",
+}
+
 export enum HealthRestrictionNature {
   Dietary = "Dietary",
   OTHER = "OTHER",
@@ -237,6 +223,7 @@ export enum HealthRestrictionNature {
 
 export enum LOGIN_TYPE {
   DOCTOR = "DOCTOR",
+  EMAIL = "EMAIL",
   PATIENT = "PATIENT",
 }
 
@@ -316,7 +303,6 @@ export enum MEDICINE_ORDER_STATUS {
   RETURN_PENDING = "RETURN_PENDING",
   RETURN_PICKUP = "RETURN_PICKUP",
   RETURN_REQUESTED = "RETURN_REQUESTED",
-  RETURN_REQUEST_CREATED = "RETURN_REQUEST_CREATED",
   RETURN_RTO = "RETURN_RTO",
   RETURN_TO_ORIGIN = "RETURN_TO_ORIGIN",
   RVP_ASSIGNED = "RVP_ASSIGNED",
@@ -505,6 +491,15 @@ export enum PAYMENT_MODE {
   PREPAID = "PREPAID",
 }
 
+export enum PAYMENT_STATUS {
+  AUTO_REFUNDED = "AUTO_REFUNDED",
+  COD_COMPLETE = "COD_COMPLETE",
+  PAYMENT_NOT_INITIATED = "PAYMENT_NOT_INITIATED",
+  PENDING = "PENDING",
+  TXN_FAILURE = "TXN_FAILURE",
+  TXN_SUCCESS = "TXN_SUCCESS",
+}
+
 export enum PHARMACY_USER_TYPE {
   NEW = "NEW",
   REPEAT = "REPEAT",
@@ -648,6 +643,7 @@ export enum SubscriptionStatus {
   DEFERRED_ACTIVE = "DEFERRED_ACTIVE",
   DEFERRED_INACTIVE = "DEFERRED_INACTIVE",
   DISABLED = "DISABLED",
+  PARTIAL_PAYMENT = "PARTIAL_PAYMENT",
   PAYMENT_FAILED = "PAYMENT_FAILED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   UPGRADED = "UPGRADED",
@@ -684,11 +680,6 @@ export enum USER_STATUS {
 export enum USER_TYPE {
   DOCTOR = "DOCTOR",
   PATIENT = "PATIENT",
-}
-
-export enum UnitTypes {
-  CLINIC = "CLINIC",
-  HOSPITAL = "HOSPITAL",
 }
 
 export enum UserState {
@@ -753,6 +744,11 @@ export interface AddAllergyRecordInput {
   reactionToAllergy?: string | null;
   notes?: string | null;
   attachmentList?: (AllergyFileProperties | null)[] | null;
+}
+
+export interface AddCommentHelpdeskTicketInput {
+  ticketNumber: string;
+  comment: string;
 }
 
 export interface AddDiabeticQuestionnaireInput {
@@ -1025,28 +1021,6 @@ export interface DeletePatientPrismMedicalRecordInput {
   id?: string | null;
   patientId: string;
   recordType: MedicalRecordType;
-}
-
-export interface DiagnosticBookHomeCollectionInput {
-  patientId: string;
-  patientAddressId: string;
-  slotTimings: string;
-  totalPrice: number;
-  prescriptionUrl: string;
-  diagnosticDate: any;
-  bookingSource?: BOOKINGSOURCE | null;
-  deviceType?: DEVICETYPE | null;
-  paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
-  items?: (DiagnosticLineItem | null)[] | null;
-  slotId: string;
-  areaId: number;
-  homeCollectionCharges: number;
-  uniqueID?: string | null;
-  slotDateTimeInUTC?: any | null;
-  totalPriceExcludingDiscounts?: number | null;
-  userSubscriptionId?: string | null;
-  subscriptionInclusionId?: string | null;
-  attachmentData?: (Attachments | null)[] | null;
 }
 
 export interface DiagnosticInitiateOrderPayment {
@@ -1741,12 +1715,20 @@ export interface TrueCallerProfile {
 export interface UpdateAppointmentInput {
   appointmentId: string;
   patientLocation?: PatientLocation | null;
+  paymentOrderId?: string | null;
+  status?: STATUS | null;
+  discountedAmount?: number | null;
 }
 
 export interface UpdateAppointmentSessionInput {
   appointmentId: string;
   requestRole: string;
   isUserJoining?: boolean | null;
+}
+
+export interface UpdateHelpdeskTicketInput {
+  ticketId: string;
+  status: HELP_DESK_TICKET_STATUS;
 }
 
 export interface UpdatePatientAddressInput {
@@ -1780,6 +1762,7 @@ export interface UpdatePatientInput {
   relation?: Relation | null;
   photoUrl?: string | null;
   deviceCode?: string | null;
+  externalAuthId?: string | null;
   employeeId?: string | null;
   partnerId?: string | null;
   appsflyerId?: string | null;

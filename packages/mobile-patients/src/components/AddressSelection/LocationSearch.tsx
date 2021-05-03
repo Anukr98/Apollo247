@@ -2,7 +2,6 @@ import {
   LocationData,
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -17,7 +16,7 @@ import {
   BackHandler,
   Keyboard,
 } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { LocationIcon, SearchIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   doRequestAndAccessLocation,
@@ -58,7 +57,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [isCurrentLocationDisable, setCurrentLocationDisable] = useState<boolean>(false);
 
-  const { locationDetails, pharmacyLocation, diagnosticLocation } = useAppCommonData();
+  const { pharmacyLocation } = useAppCommonData();
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -162,18 +161,11 @@ export const LocationSearch: React.FC<LocationSearchProps> = (props) => {
           const addrComponents = g(data, 'result', 'address_components') || [];
           const coordinates = g(data, 'result', 'geometry', 'location')! || {};
           const loc = getFormattedLocation(addrComponents, coordinates, '', true);
-          console.log({ loc });
-
           props.navigation.goBack(); //pass the new location.
           props.navigation.state.params!.goBackCallback(loc);
-        } catch (e) {
-          console.log({ e });
-        }
+        } catch (e) {}
       })
-      .catch((error) => {
-        console.log({ error });
-        console.log('error in google locations..' + error);
-      })
+      .catch((error) => {})
       .finally(() => {
         setshowSpinner!(false);
       });
@@ -190,7 +182,6 @@ export const LocationSearch: React.FC<LocationSearchProps> = (props) => {
               setSearchState('success');
               try {
                 if (obj.data.predictions) {
-                  console.log({ obj });
                   const address = obj.data.predictions.map(
                     (item: {
                       place_id: string;
@@ -220,7 +211,6 @@ export const LocationSearch: React.FC<LocationSearchProps> = (props) => {
               setshowSpinner!(false);
               setLocationSuggestion([]);
               CommonBugFender('LocationSearch_autoSearch', error);
-              console.log(error);
             });
         }
       })
@@ -352,7 +342,6 @@ export const LocationSearch: React.FC<LocationSearchProps> = (props) => {
   };
 
   const renderSearchSuggestions = () => {
-    console.log({ locationSuggestion });
     return (
       <FlatList
         onScroll={() => Keyboard.dismiss()}

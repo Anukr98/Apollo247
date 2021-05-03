@@ -138,30 +138,22 @@ export const UIElementsProvider: React.FC = (props) => {
   }, [isAlertVisible, loading]);
 
   useEffect(() => {
-    console.log('useeffectaudiotrack');
-
     audioTrack = new RNSound(
       'incallmanager_ringtone.mp3',
       Platform.OS === 'ios' ? encodeURIComponent(RNSound.MAIN_BUNDLE) : RNSound.MAIN_BUNDLE,
-      (error) => {
-        console.log('erroraudiotrack', error);
-      }
+      (error) => {}
     );
 
     joinAudioTrack = new RNSound(
       'join_sound.mp3',
       Platform.OS === 'ios' ? encodeURIComponent(RNSound.MAIN_BUNDLE) : RNSound.MAIN_BUNDLE,
-      (error) => {
-        console.log('erroraudiotrack', error);
-      }
+      (error) => {}
     );
 
     disconnectAudioTrack = new RNSound(
       'left_sound.mp3',
       Platform.OS === 'ios' ? encodeURIComponent(RNSound.MAIN_BUNDLE) : RNSound.MAIN_BUNDLE,
-      (error) => {
-        console.log('erroraudiotrack', error);
-      }
+      (error) => {}
     );
   }, []);
 
@@ -184,7 +176,6 @@ export const UIElementsProvider: React.FC = (props) => {
   };
 
   const handleBack = async () => {
-    console.log('handleBack Called');
     if (!alertParams.unDismissable) {
       hideAphAlert();
     }

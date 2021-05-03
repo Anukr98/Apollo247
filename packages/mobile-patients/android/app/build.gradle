@@ -137,8 +137,8 @@ android {
         applicationId "com.apollo.patientapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 93
-        versionName "5.4.8"
+        versionCode 108
+        versionName "5.5.1"
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
@@ -196,18 +196,15 @@ android {
         }
     }
     packagingOptions {
-        pickFirst '**/armeabi-v7a/libc++_shared.so'
-        pickFirst '**/x86/libc++_shared.so'
-        pickFirst '**/x86_64/libc++_shared.so'
-        pickFirst '**/arm64-v8a/libc++_shared.so'
-        pickFirst '**/libjsc.so'
+        pickFirst '**/libc++_shared.so'
     }
 
 }
 
 dependencies {
+    implementation project(':react-native-appsflyer')
+    implementation project(':react-native-splash-screen')
     implementation project(':react-native-camera')
-    implementation 'org.webkit:android-jsc:+'
     implementation 'com.google.firebase:firebase-messaging:17.3.2'
     implementation project(':@react-native-community_progress-bar-android')
     implementation project(':@react-native-community_progress-view')
@@ -220,26 +217,18 @@ dependencies {
     implementation project(':react-native-linear-gradient')
     implementation project(':react-native-sound')
     implementation project(':react-native-system-setting')
-    implementation project(':react-native-incall-manager')
     implementation project(':opentok-react-native')
     implementation project(':react-native-sms-retriever')
-    implementation project(':@bugfender_rn-bugfender')
-    implementation project(':react-native-fbsdk')
-    implementation project(':react-native-appsflyer')
     implementation 'com.webengage:android-sdk:3.+'
     implementation 'com.google.android.gms:play-services-ads:15.0.1' // optional for webengage
     implementation 'com.android.installreferrer:installreferrer:1.1.1'
     implementation project(':react-native-webengage')
     implementation project(':@react-native-community_async-storage')
-    implementation project(':react-native-exception-handler')
-    implementation project(':react-native-image-picker')
     implementation project(':react-native-device-info')
     implementation project(':react-native-webview')
-    implementation project(':bugsnag-react-native')
     implementation project(':react-native-pdf')
     implementation project(':rn-fetch-blob')
     implementation project(':react-native-vector-icons')
-    implementation project(':react-native-splash-screen')
     implementation project(':react-native-keep-awake')
     implementation project(':react-native-image-crop-picker')
     implementation project(':react-native-gesture-handler')

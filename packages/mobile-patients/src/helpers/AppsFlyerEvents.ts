@@ -192,13 +192,6 @@ export interface AppsFlyerEvents {
     BrandID?: string;
     categoryname?: string;
     categoryID?: string;
-    // 'Patient Name': string;
-    // 'Patient UHID': string;
-    // Relation: string;
-    // 'Patient Age': number;
-    // 'Patient Gender': string;
-    // 'Mobile Number': string;
-    // 'Customer ID': string;
   };
   [AppsFlyerEventName.PHARMACY_CART_VIEWED]: {
     'Customer ID': string;

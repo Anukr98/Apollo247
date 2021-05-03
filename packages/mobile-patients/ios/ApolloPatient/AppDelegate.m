@@ -14,15 +14,9 @@
 #import "RNSplashScreen.h"  // here
 #import <React/RCTLinkingManager.h>
 #import <WebEngage/WebEngage.h>
-@import AppsFlyerLib;
-#import <FBSDKCoreKit/FBSDKCoreKit.h>
 #import <CodePush/CodePush.h>
 
-#if __has_include(<AppsFlyerLib/AppsFlyerTracker.h>) // from Pod
-#import <AppsFlyerLib/AppsFlyerTracker.h>
-#else
-#import "AppsFlyerTracker.h"
-#endif
+#import <RNAppsFlyer.h>
 #import <PushKit/PushKit.h>
 #import "RNCallKeep.h"
 #import "RNVoipPushNotificationManager.h"
@@ -46,7 +40,7 @@
   rootViewController.view = rootView;
   self.window.rootViewController = rootViewController;
   [self.window makeKeyAndVisible];
-  //  [RNSplashScreen show];  // here
+  // [RNSplashScreen show];  // here
   [RNSplashScreen showSplash:@"LaunchScreen" inRootView:rootView];
   
   if ([FIRApp defaultApp] == nil) {
@@ -72,9 +66,6 @@
   }];
   
   [[WebEngage sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
-  [[FBSDKApplicationDelegate sharedInstance] application:application
-                           didFinishLaunchingWithOptions:launchOptions];
-  
   return YES;
 }
 
@@ -136,7 +127,7 @@
   @try {
     NSLog(@"deviceToken %@",deviceToken);
     
-    [[AppsFlyerTracker sharedTracker] registerUninstall:deviceToken];
+    [[AppsFlyerLib shared] registerUninstall:deviceToken];
     
     NSString *pushToken;
     pushToken = [deviceToken description];
@@ -218,16 +209,12 @@ API_AVAILABLE(ios(10.0)){
     }
     
     
-    [[AppsFlyerTracker sharedTracker] handleOpenUrl:url options:options];
+    [[AppsFlyerAttribution shared] handleOpenUrl:url options:options];
     
     [RCTLinkingManager application:application
                            openURL:url
                  sourceApplication:options[UIApplicationOpenURLOptionsSourceApplicationKey]
                         annotation:options[UIApplicationOpenURLOptionsAnnotationKey]];
-    
-    if ([[FBSDKApplicationDelegate sharedInstance] application:application openURL:url options:options]) {
-      return YES;
-    }
   } @catch (NSException *exception) {
     NSLog(@"%@",exception );
   }
@@ -238,7 +225,8 @@ API_AVAILABLE(ios(10.0)){
 // Reports app open from deep link from apps which do not support Universal Links (Twitter) and for iOS8 and below
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString*)sourceApplication annotation:(id)annotation
 {
-     [[AppsFlyerTracker sharedTracker] handleOpenURL:url sourceApplication:sourceApplication withAnnotation:annotation];
+    [[AppsFlyerAttribution shared] handleOpenUrl:url sourceApplication:sourceApplication annotation:annotation];
+
      return YES;
 }
 
@@ -249,7 +237,8 @@ API_AVAILABLE(ios(10.0)){
   [RCTLinkingManager application:application
             continueUserActivity:userActivity
               restorationHandler:restorationHandler];
-  [[AppsFlyerTracker sharedTracker] continueUserActivity:userActivity restorationHandler:restorationHandler];
+  [[AppsFlyerAttribution shared] continueUserActivity:userActivity restorationHandler:restorationHandler];
+
   [RNCallKeep application:application continueUserActivity:userActivity restorationHandler:restorationHandler];
   return true;
 }

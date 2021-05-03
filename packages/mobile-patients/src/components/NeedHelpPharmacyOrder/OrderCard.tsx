@@ -36,7 +36,6 @@ export const OrderCard: React.FC<Props> = ({
   const renderTitle = () => {
     const title = getOrderTitle(orderDetail);
     const orderAutoId = `#${orderDetail?.billNumber || orderDetail?.orderAutoId}`;
-    // const patient = `for ${orderDetail?.patient?.firstName}`;
     const orderedOn = `Ordered on: ${getFormattedTime(orderDetail?.createdDate)}`;
 
     return (
@@ -45,7 +44,6 @@ export const OrderCard: React.FC<Props> = ({
         <Text onPress={onPress} style={styles.orderTitle} numberOfLines={1} ellipsizeMode="middle">
           {title}
         </Text>
-        {/* <Text style={styles.listItemTitle}>{patient}</Text> */}
         <Text style={styles.orderedOn}>{orderedOn}</Text>
         {renderStatusBar()}
       </View>
