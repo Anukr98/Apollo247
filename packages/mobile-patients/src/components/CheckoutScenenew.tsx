@@ -657,6 +657,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     setLoading && setLoading(true);
     const selectedStore = storeId && stores.find((item) => item.storeid == storeId);
     const { storename, address, workinghrs, phone, city, state, state_id } = selectedStore || {};
+    const appointmentIds = ePrescriptions?.map((item) => item?.id);
     const orderInfo: saveMedicineOrderOMSVariables = {
       medicineCartOMSInput: {
         tatType: tatType,
@@ -747,6 +748,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         appVersion: DeviceInfo.getVersion(),
         savedDeliveryCharge:
           !!isFreeDelivery || isCircleSubscription ? 0 : AppConfig.Configuration.DELIVERY_CHARGES,
+        appointmentId: appointmentIds?.length ? appointmentIds.join(',') : '',
       },
     };
 
@@ -785,6 +787,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         planPurchaseDetails: !!circleMembershipCharges ? planPurchaseDetails : null,
         healthCreditUsed: hcOrder ? getFormattedAmount(grandTotal) : 0,
         shipments: shipments,
+        appointmentId: appointmentIds?.length ? appointmentIds.join(',') : '',
       },
     };
 
