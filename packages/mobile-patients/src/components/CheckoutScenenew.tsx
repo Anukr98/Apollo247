@@ -51,7 +51,6 @@ import {
   formatAddress,
   postAppsFlyerEvent,
   postFirebaseEvent,
-  getHealthCredits,
   persistHealthCredits,
   getPackageIds,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -262,12 +261,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   }, [cartItems]);
 
   const fetchHealthCredits = async () => {
-    var cachedHealthCredit: any = await getHealthCredits();
-    if (cachedHealthCredit != null) {
-      setAvailableHC(cachedHealthCredit.healthCredit);
-      return; // no need to call api
-    }
-
     client
       .query({
         query: GET_ONEAPOLLO_USER,
