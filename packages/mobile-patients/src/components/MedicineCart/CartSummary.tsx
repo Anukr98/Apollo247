@@ -340,7 +340,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         setPhysicalPrescriptions && setPhysicalPrescriptions([...newuploadedPrescriptions]);
         setisPhysicalUploadComplete(true);
       } catch (error) {
-        CommonBugFender('YourCart_physicalPrescriptionUpload', error);
+        CommonBugFender('CartSummary_physicalPrescriptionUpload', error);
         setloading!(false);
         renderAlert('Error occurred while uploading prescriptions.');
       }

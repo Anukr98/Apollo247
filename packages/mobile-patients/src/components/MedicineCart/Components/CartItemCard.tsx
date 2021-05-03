@@ -56,7 +56,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const renderImage = () => {
     const imageUrl = productsThumbnailUrl(item?.thumbnail!);
     return (
-      <View style={{ width: 50, justifyContent: 'center', opacity: itemAvailable ? 1 : 0.3 }}>
+      <View style={{ width: 80, justifyContent: 'center', opacity: itemAvailable ? 1 : 0.3 }}>
         {item?.prescriptionRequired && (
           <View style={styles.rxSymbolContainer}>
             <PrescriptionRequiredIcon style={styles.rxSymbol} />
@@ -66,7 +66,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
           PlaceholderContent={item?.prescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
           placeholderStyle={{ backgroundColor: 'transparent' }}
           source={{ uri: imageUrl }}
-          style={{ height: 40, width: 40 }}
+          style={{ height: 75, width: 75 }}
           resizeMode="contain"
         />
       </View>
@@ -271,14 +271,14 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginBottom: 5,
     flexDirection: 'row',
-    paddingHorizontal: 10,
+    paddingRight: 10,
     paddingVertical: 8,
     minHeight: 110,
   },
   itemName: {
     color: 'rgb(1,28,36)',
-    ...theme.fonts.IBMPlexSansMedium(16),
-    lineHeight: 20,
+    ...theme.fonts.IBMPlexSansMedium(14),
+    lineHeight: 18,
   },
   info: {
     ...theme.fonts.IBMPlexSansRegular(11),
