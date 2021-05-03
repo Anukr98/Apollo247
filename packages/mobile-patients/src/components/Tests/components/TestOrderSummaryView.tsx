@@ -17,6 +17,7 @@ import {
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
   DIAGNOSTIC_ORDER_STATUS,
   REFUND_STATUSES,
+  Gender,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components/StatusCard';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -44,7 +45,11 @@ export interface TestOrderSummaryViewProps {
 export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props) => {
   const { orderDetails, refundDetails } = props;
   const isPrepaid = orderDetails?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
-
+  const salutation = !!orderDetails?.patientObj?.gender
+    ? orderDetails?.patientObj?.gender === Gender.MALE
+      ? 'Mr. '
+      : 'Ms. '
+    : '';
   const { currentPatient } = useAllCurrentPatients();
 
   useEffect(() => {
@@ -388,7 +393,10 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       <View style={{ margin: 16 }}>
         {renderOrderId()}
         {renderSlotView()}
-        {renderHeading(`Tests for ${currentPatient?.firstName}`)}
+        {renderHeading(
+          `Tests for ${salutation != '' && salutation}${orderDetails?.patientObj?.firstName! ||
+            currentPatient?.firstName}`
+        )}
         {renderItemsCard()}
         {renderPricesCard()}
         {orderDetails?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED && !isPrepaid

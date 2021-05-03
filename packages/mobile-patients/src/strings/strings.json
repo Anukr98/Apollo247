@@ -124,7 +124,9 @@
     "somethingWentWrong": "Something went wrong.",
     "settingProfileTxt": "We’re setting up your profile. Please check back soon!",
     "couldNotLoadText": "Uh oh.. could't load!",
-    "lowNetworkText": "We were unable to load the page properly because of low network. Please try again"
+    "lowNetworkText": "We were unable to load the page properly because of low network. Please try again",
+    "noDiagnosticsAvailable":"Unfortunately, we do not have any diagnostic(s) available right now.",
+    
   },
   "components": {
     "medicineDetails": {
@@ -529,10 +531,22 @@
     "homeHomeCollectionDisclaimerTxt": "Home collection charges of upto ₹100 would be levied in case of order value less than ₹500",
     "itDoseCancelledText": "Canceled by phlebotomist as per the request",
     "orderCancelledReasonText": "Order was cancelled -",
-    "wantToReschedule": "• Do you want to Reschedule Appointment ?"
+    "wantToReschedule": "• Do you want to Reschedule Appointment ?",
+    "sampleSubmitted": "Sample Submitted",
+    "reportGenrated": "Reports are ready",
+    "bookingFor":"Booking",
+    "sampleSubmittedContent":"Sample has been submitted to the lab.\nYou will be notified once your reports are ready.",
+    "viewReportContent":"'Your reports have been generated.",
+    "collectionAppointmentContent":"Sample Collection appointment on",
+    "viewReportText":"View Report",
+    "sampleCollectedText":"Check Status",
+    "collectionText":"Track Order",
+    "trackPhleboText": "Track Phlebo"
   },
   "orders": {
     "urOrders": "MY ORDERS",
+    "ratingHeader": "FEEDBACK",
+    "ratingDetailHeader": "Rate your Experience with our Phlebotomist",
     "trackOrder": "Track Order",
     "viewBill": "Order Summary",
     "call_us": "CALL US",
@@ -540,6 +554,14 @@
     "test_prec_req": "This test requires doctor’s prescription",
     "test_prec_not_req": "This test doesn't requires doctor’s prescription"
   },
+  "defaultReasonList": [
+    { "title": "Arrived very Late" },
+    { "title": "Did not seem Well-Trained" },
+    { "title": "Phlebo was not Polite" },
+    { "title": "Didn’t Wear the PPE Kit or Gloves" },
+    { "title": "I have other Feedback" }
+  ],
+  "positiveReasonList": [{ "title": "I have Positive Feedback" }],
   "OrderSummery": {
     "total": "Total",
     "order": "ORDER",
@@ -810,7 +832,8 @@
     "restartSymptomTrackerDiscription": "This will end your symptom tracking and you’ll have to start it again. Do you want to continue tracking your symptoms or go back?",
     "symptomTracker": "Symptom Tracker",
     "addAnotherSymptom": "Would you like to report another symptom?",
-    "removeSelectionPlaceholder": "Remove selection to type your own symptom"
+    "removeSelectionPlaceholder": "Remove selection to type your own symptom",
+    "topSpecialities": "Top Specialities"
   },
   "callRelatedPermissions": {
     "allPermissions": "For a smooth consultation experience with {0} and to ensure that you do not miss out your doctor's call, Apollo 247 needs your camera, microphone and call display permissions.",

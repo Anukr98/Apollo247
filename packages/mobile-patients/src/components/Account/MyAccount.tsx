@@ -68,7 +68,10 @@ import {
   StackActions,
 } from 'react-navigation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { SKIP_LOCATION_PROMPT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
+import {
+  SKIP_LOCATION_PROMPT,
+  HEALTH_CREDITS,
+} from '@aph/mobile-patients/src/utils/AsyncStorageKey';
 import { LOGIN_PROFILE } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
 
 const { width } = Dimensions.get('window');
@@ -151,7 +154,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   const { signOut, getPatientApiCall } = useAuth();
   const {
     setSavePatientDetails,
-    setAppointmentsPersonalized,
     setHdfcUserSubscriptions,
     setBannerData,
     setCircleSubscription,
@@ -291,10 +293,10 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       AsyncStorage.removeItem(LOGIN_PROFILE);
       AsyncStorage.removeItem('PharmacyLocationPincode');
       AsyncStorage.setItem(SKIP_LOCATION_PROMPT, 'false');
+      AsyncStorage.setItem(HEALTH_CREDITS, '');
       setSavePatientDetails && setSavePatientDetails('');
       setHdfcUserSubscriptions && setHdfcUserSubscriptions(null);
       setBannerData && setBannerData([]);
-      setAppointmentsPersonalized && setAppointmentsPersonalized([]);
       setIsCircleSubscription && setIsCircleSubscription(false);
       setCircleMembershipCharges && setCircleMembershipCharges(0);
       setCircleSubscription && setCircleSubscription(null);
@@ -382,7 +384,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               />
             ) : (
               <Image
-                source={require('@aph/mobile-patients/src/components/ui/icons/no-photo-icon-round.png')}
+                source={require('@aph/mobile-patients/src/components/ui/icons/no-photo-icon-round.webp')}
                 style={{ top: 10, height: 200, width: '100%' }}
                 resizeMode={'contain'}
               />

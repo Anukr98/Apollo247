@@ -23,6 +23,8 @@ import {
   g,
   postWebEngageEvent,
   setCircleMembershipType,
+  getHealthCredits,
+  persistHealthCredits,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { NavigationScreenProps } from 'react-navigation';
@@ -87,6 +89,12 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
   }, [currentPatient]);
 
   const getOneApolloUserDetails = async () => {
+    var cachedHealthCredit: any = await getHealthCredits();
+    if (cachedHealthCredit != null) {
+      setHealthCredits(cachedHealthCredit.healthCredit);
+      return; // no need to call api
+    }
+
     client
       .query({
         query: GET_ONEAPOLLO_USER,
@@ -97,6 +105,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       })
       .then((res) => {
         setHealthCredits(res?.data?.getOneApolloUser?.availableHC);
+        persistHealthCredits(res?.data?.getOneApolloUser?.availableHC);
       })
       .catch((error) => {
         CommonBugFender('fetchingOneApolloUser', error);
@@ -235,13 +244,13 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       >
         <ImageBackground
           style={{
-            height: imageHeight,
-            width: '100%',
+            aspectRatio: 16 / 7,
           }}
           source={{
             uri: bannerUri,
           }}
-          resizeMode={'stretch'}
+          resizeMode={'cover'}
+          borderRadius={10}
         >
           <View style={styles.bannerContainer}>
             {headerText1 ? renderBannerText(headerText1) : null}
@@ -595,7 +604,6 @@ const renderDot = (active: boolean) => (
 const styles = StyleSheet.create({
   hdfcBanner: {
     backgroundColor: theme.colors.CLEAR,
-    borderRadius: 12,
     marginTop: 10,
     marginHorizontal: 28,
     marginBottom: 15,

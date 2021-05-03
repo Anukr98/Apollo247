@@ -22,6 +22,7 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { HealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/HealthRecordCard';
 import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
 import { ProfileImageComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/ProfileImageComponent';
+import ListEmptyComponent from '@aph/mobile-patients/src/components/HealthRecords/Components/ListEmptyComponent';
 import {
   g,
   getPrescriptionDate,
@@ -420,14 +421,6 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
     return <Text style={styles.sectionHeaderTitleStyle}>{sectionTitle}</Text>;
   };
 
-  const emptyListView = () => {
-    return apiError ? (
-      <PhrNoDataComponent noDataText={string.common.phr_api_error_text} phrErrorIcon />
-    ) : (
-      <PhrNoDataComponent />
-    );
-  };
-
   const renderMedicalBillsData = () => {
     return (
       <SectionList
@@ -436,7 +429,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 12, paddingHorizontal: 20 }}
         sections={localMedicalBillsData || []}
         renderItem={({ item, index }) => renderMedicalBillItems(item, index)}
-        ListEmptyComponent={emptyListView}
+        ListEmptyComponent={ListEmptyComponent.getEmptyListComponent(showSpinner, apiError)}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
       />
     );

@@ -417,7 +417,7 @@ export const Login: React.FC<LoginProps> = (props) => {
             allPatients?.find((patient: any) => patient?.relation === Relation.ME) ||
             allPatients[0] ||
             null;
-          moveScreenForward(mePatient);
+          moveScreenForward(mePatient, allPatients);
         }
       } catch (error) {
         showLoginError('GetCurrentPatients', error);
@@ -427,11 +427,11 @@ export const Login: React.FC<LoginProps> = (props) => {
         profileData?.find((patient: any) => patient?.relation === Relation.ME) ||
         profileData[0] ||
         null;
-      moveScreenForward(mePatient);
+      moveScreenForward(mePatient, profileData);
     }
   };
 
-  const moveScreenForward = async (mePatient: any) => {
+  const moveScreenForward = async (mePatient: any, allPatients: any) => {
     AsyncStorage.setItem('logginHappened', 'true');
     SetAppsFlyerCustID(mePatient.primaryPatientId);
     mePatient && (await AsyncStorage.setItem(LOGIN_PROFILE, JSON.stringify(mePatient)));
@@ -448,7 +448,7 @@ export const Login: React.FC<LoginProps> = (props) => {
           AsyncStorage.setItem('userLoggedIn', 'true');
           deviceTokenAPI(mePatient?.id);
           callPhrNotificationApi(mePatient?.id);
-          truecallerWEBEngage(mePatient, 'login');
+          truecallerWEBEngage(mePatient, 'login', null, allPatients);
           props.navigation.dispatch(
             StackActions.reset({
               index: 0,

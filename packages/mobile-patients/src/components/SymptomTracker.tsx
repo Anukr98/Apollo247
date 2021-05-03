@@ -642,24 +642,38 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
         {chatEnded && symptoms.length > 0 ? (
           <View>
             <View style={styles.symptomsContainer}>
-              <View style={styles.seperatorLine}>
-                <Text style={styles.patientDetailsTitle}>{string.symptomChecker.symptoms}</Text>
-              </View>
-              {symptoms &&
-                symptoms.length > 0 &&
-                symptoms.map((item, index) => {
-                  return (
-                    <View key={index} style={[styles.itemRowStyle, styles.itemRowMargin]}>
-                      <View style={styles.bullet} />
-                      <Text style={styles.patientDetailsText}>{item.name}</Text>
-                    </View>
-                  );
-                })}
+              {renderSymptomsListTitle(string.symptomChecker.symptoms)}
+              {renderSymptomsList(symptoms)}
+              {renderSymptomsListTitle(string.symptomChecker.topSpecialities, 20)}
+              {renderSymptomsList(specialities)}
             </View>
           </View>
         ) : (
           <View />
         )}
+      </View>
+    );
+  };
+
+  const renderSymptomsListTitle = (title: string, marginTop: number = 13) => {
+    return (
+      <View style={[styles.seperatorLine, { marginTop }]}>
+        <Text style={styles.patientDetailsTitle}>{title}</Text>
+      </View>
+    );
+  };
+
+  const renderSymptomsList = (data: Symptoms[] | SymptomsSpecialities[]) => {
+    return (
+      <View>
+        {data?.map((item: Symptoms | SymptomsSpecialities, index: number) => {
+          return (
+            <View key={index} style={[styles.itemRowStyle, styles.itemRowMargin]}>
+              <View style={styles.bullet} />
+              <Text style={styles.patientDetailsText}>{item?.name}</Text>
+            </View>
+          );
+        })}
       </View>
     );
   };
@@ -921,10 +935,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(2, 71, 91, 0.1)',
     paddingRight: 20,
     paddingLeft: 25,
-    paddingVertical: 13,
+    paddingBottom: 13,
     borderRadius: 10,
     marginRight: 20,
     marginLeft: 40,
+    borderWidth: 0.5,
+    borderColor: theme.colors.LIGHT_BLUE,
   },
   patientDetailsTitle: {
     ...theme.fonts.IBMPlexSansMedium(16),

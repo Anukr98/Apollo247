@@ -4,13 +4,11 @@ import {
   StyleSheet,
   View,
   Platform,
-  ActivityIndicator,
   Linking,
   AppStateStatus,
   AppState,
   DeviceEventEmitter,
   NativeModules,
-  Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import { NavigationScreenProps } from 'react-navigation';
@@ -18,7 +16,7 @@ import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
 import { AppRoutes, getCurrentRoute } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import remoteConfig from '@react-native-firebase/remote-config';
 import SplashScreenView from 'react-native-splash-screen';
-import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { BookingSource, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAuth } from '../hooks/authHooks';
 import { AppConfig, updateAppConfig, AppEnv } from '../strings/AppConfig';
 import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
@@ -48,7 +46,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import { phrNotificationCountApi } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
-import { GET_APPOINTMENT_DATA } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_APPOINTMENT_DATA,
+  GET_PROHEALTH_HOSPITAL_BY_SLUG,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -58,7 +59,6 @@ import coerce from 'semver/functions/coerce';
 import RNCallKeep from 'react-native-callkeep';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import { string as localStrings } from '../strings/string';
-import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
 import Pubnub from 'pubnub';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import messaging from '@react-native-firebase/messaging';
@@ -71,6 +71,11 @@ import {
   SplashSyringe,
   SplashStethoscope,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  getProHealthHospitalBySlug,
+  getProHealthHospitalBySlugVariables,
+} from '@aph/mobile-patients/src/graphql/types/getProHealthHospitalBySlug';
+import firebaseAuth from '@react-native-firebase/auth';
 
 (function() {
   /**
@@ -335,7 +340,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               if (Platform.OS === 'ios') InitiateAppsFlyer(props.navigation);
               const data = handleOpenURL(url);
               const { routeName, id, isCall, timeout, mediaSource } = data;
-              redirectRoute(routeName, id, isCall, timeout, mediaSource);
+              redirectRoute(routeName, id, isCall, timeout, mediaSource, data?.data);
               fireAppOpenedEvent(url);
             } catch (e) {}
           } else {
@@ -352,7 +357,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
           const data = handleOpenURL(event.url);
           const { routeName, id, isCall, timeout, mediaSource } = data;
-          redirectRoute(routeName, id, isCall, timeout, mediaSource);
+          redirectRoute(routeName, id, isCall, timeout, mediaSource, data?.data);
           fireAppOpenedEvent(event.url);
         } catch (e) {}
       });
@@ -367,14 +372,20 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     id?: string,
     timeout?: boolean,
     isCall?: boolean,
-    mediaSource?: string
+    mediaSource?: string,
+    data?: any
   ) => {
-    if (routeName === 'ChatRoom_AppointmentData') {
-      getAppointmentDataAndNavigate(id || '', !!isCall);
-    } else if (routeName === 'DoctorCall_AppointmentData') {
+    if (routeName === 'ChatRoom' && data?.length >= 1) {
+      getAppointmentDataAndNavigate(id!, false);
+    } else if (
+      routeName === 'DoctorCall' &&
+      data?.length >= 1 &&
+      getCurrentRoute() !== AppRoutes.ChatRoom
+    ) {
       const params = id?.split('+');
-      voipCallType.current = params[1];
+      voipCallType.current = params?.[1]!;
       callPermissions();
+      getAppointmentDataAndNavigate(params?.[0]!, true);
     } else if (routeName === 'DoctorCallRejected') {
       setLoading!(true);
       const appointmentId = id?.split('+')?.[0];
@@ -397,6 +408,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           setLoading!(false);
         }
       );
+      const params = id?.split('+');
+      getAppointmentDataAndNavigate(params?.[0]!, false);
+    } else if (routeName == 'prohealth') {
+      fetchProhealthHospitalDetails(id!);
     } else {
       getData(routeName, id, isCall, timeout, mediaSource);
     }
@@ -509,7 +524,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             if (mePatient) {
               if (mePatient.firstName !== '') {
                 const isCircleMember: any = await AsyncStorage.getItem('isCircleMember');
-
+                if (routeName == 'prohealth' && id) {
+                  id = id.replace('mobileNumber', currentPatient?.mobileNumber || '');
+                }
                 pushTheView(
                   props.navigation,
                   routeName,
@@ -565,7 +582,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       });
       const appointmentData: any = response.data?.getAppointmentData?.appointmentsHistory?.[0];
       if (appointmentData?.doctorInfo) {
-        getData('ChatRoom_AppointmentData', appointmentData, false, isCall);
+        getData('ChatRoom', appointmentData, false, isCall);
       } else {
         throw new Error('Doctor info is required to process the request.');
       }
@@ -598,6 +615,77 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
   };
 
+  const fetchProhealthHospitalDetails = async (slugName: string) => {
+    setLoading?.(true);
+    try {
+      const response = await client.query<
+        getProHealthHospitalBySlug,
+        getProHealthHospitalBySlugVariables
+      >({
+        query: GET_PROHEALTH_HOSPITAL_BY_SLUG,
+        variables: {
+          hospitalSlug: slugName,
+        },
+        fetchPolicy: 'no-cache',
+      });
+      const { data } = response;
+      if (data?.getProHealthHospitalBySlug?.hospitals?.length) {
+        const getHospitalId = data?.getProHealthHospitalBySlug?.hospitals?.[0]?.id;
+        regenerateJWTToken(getHospitalId);
+      } else {
+        regenerateJWTToken();
+      }
+    } catch (error) {
+      regenerateJWTToken();
+      CommonBugFender('SplashScreen_fetchProhealthHospitalDetails', error);
+    }
+  };
+
+  const regenerateJWTToken = async (id?: string) => {
+    let deviceType =
+      Platform.OS == 'android' ? BookingSource?.Apollo247_Android : BookingSource?.Apollo247_Ios;
+    const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+
+    if (userLoggedIn == 'true') {
+      try {
+        firebaseAuth().onAuthStateChanged(async (user) => {
+          if (user) {
+            const jwtToken = await user.getIdToken(true).catch((error) => {
+              throw error;
+            });
+            const openUrl = AppConfig.Configuration.PROHEALTH_BOOKING_URL;
+            let finalUrl;
+            if (!!id) {
+              finalUrl = openUrl.concat(
+                '?hospital_id=',
+                id,
+                '&utm_token=',
+                jwtToken,
+                '&utm_mobile_number=',
+                'mobileNumber',
+                '&deviceType=',
+                deviceType
+              );
+            } else {
+              finalUrl = openUrl.concat(
+                '?utm_token=',
+                jwtToken,
+                '&utm_mobile_number=',
+                'mobileNumber',
+                '&deviceType=',
+                deviceType
+              );
+            }
+            setLoading?.(false);
+            !!jwtToken && jwtToken != '' && getData('prohealth', finalUrl);
+          }
+        });
+      } catch (e) {
+        CommonBugFender('regenerateJWTToken_deepLink', e);
+      }
+    }
+  };
+
   const {
     setLocationDetails,
     setNeedHelpToContactInMessage,
@@ -607,6 +695,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setLoginSection,
     setCovidVaccineCtaV2,
     setCartBankOffer,
+    setUploadPrescriptionOptions,
+    setExpectCallText,
+    setNonCartTatText,
+    setNonCartDeliveryText,
   } = useAppCommonData();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -747,6 +839,26 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_FollowUp_Chat_Limit',
       PROD: 'FollowUp_Chat_Limit',
     },
+    uploadPrescription_Options: {
+      QA: 'QA_UploadPrescription_Options',
+      PROD: 'UploadPrescription_Options',
+    },
+    Health_Credit_Expiration_Time: {
+      QA: 'Health_Credit_Expiration_Time_QA',
+      PROD: 'Health_Credit_Expiration_Time_Prod',
+    },
+    Expect_Call_Text: {
+      QA: 'QA_Expect_Call_Text',
+      PROD: 'Expect_Call_Text',
+    },
+    Non_Cart_TAT_Text: {
+      QA: 'QA_Non_Cart_TAT_Text',
+      PROD: 'Non_Cart_TAT_Text',
+    },
+    Non_Cart_Delivery_Text: {
+      QA: 'QA_Non_Cart_Delivery_Text',
+      PROD: 'Non_Cart_Delivery_Text',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -757,7 +869,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     const valueBasedOnEnv = config[_key] as RemoteConfigKeysType;
     return currentEnv === AppEnv.PROD
       ? valueBasedOnEnv.PROD
-      : currentEnv === AppEnv.QA || currentEnv === AppEnv.QA2 || currentEnv === AppEnv.QA3
+      : currentEnv === AppEnv.QA ||
+        currentEnv === AppEnv.QA2 ||
+        currentEnv === AppEnv.QA3 ||
+        currentEnv === AppEnv.QA5
       ? valueBasedOnEnv.QA || valueBasedOnEnv.PROD
       : valueBasedOnEnv.DEV || valueBasedOnEnv.QA || valueBasedOnEnv.PROD;
   };
@@ -822,6 +937,27 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
       bankOfferText && setCartBankOffer!(bankOfferText);
 
+      const uploadPrescriptionOptions = getRemoteConfigValue(
+        'uploadPrescription_Options',
+        (key) => JSON.parse(config.getString(key)) || []
+      );
+      uploadPrescriptionOptions && setUploadPrescriptionOptions!(uploadPrescriptionOptions);
+
+      const expectCallText = getRemoteConfigValue('Expect_Call_Text', (key) =>
+        config.getString(key)
+      );
+      expectCallText && setExpectCallText?.(expectCallText);
+
+      const nonCartTatText = getRemoteConfigValue('Non_Cart_TAT_Text', (key) =>
+        config.getString(key)
+      );
+      nonCartTatText && setNonCartTatText?.(nonCartTatText);
+
+      const nonCartDeliveryText = getRemoteConfigValue('Non_Cart_Delivery_Text', (key) =>
+        config.getString(key)
+      );
+      nonCartDeliveryText && setNonCartDeliveryText?.(nonCartDeliveryText);
+
       setAppConfig(
         'Min_Value_For_Pharmacy_Free_Delivery',
         'MIN_CART_VALUE_FOR_FREE_DELIVERY',
@@ -880,6 +1016,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       setAppConfig('Enable_Conditional_Management', 'ENABLE_CONDITIONAL_MANAGEMENT', (key) =>
         config.getBoolean(key)
+      );
+
+      setAppConfig('Health_Credit_Expiration_Time', 'Health_Credit_Expiration_Time', (key) =>
+        config.getNumber(key)
       );
 
       setAppConfig('Covid_Items', 'Covid_Items', (key) => config.getString(key));

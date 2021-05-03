@@ -35,7 +35,9 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
 import { getDiagnosticOrdersListVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 import {
+  downloadDiagnosticReport,
   g,
+  getPatientNameById,
   getTestOrderStatusText,
   handleGraphQlError,
   nameFormater,
@@ -105,7 +107,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   );
   const [showRateDiagnosticBtn, setShowRateDiagnosticBtn] = useState(false);
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { showAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const [scrollYValue, setScrollYValue] = useState(0);
@@ -532,13 +534,35 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const onPressViewReport = () => {
-    const visitId = selectedOrder?.visitNo;
-    if (visitId) {
+    const visitId = order?.visitNo;
+    const appointmentDetails = !!order?.slotDateTimeInUTC
+      ? order?.slotDateTimeInUTC
+      : order?.diagnosticDate;
+    const appointmentDate = moment(appointmentDetails)?.format('DD MMM YYYY');
+    const patientName = getPatientNameById(allCurrentPatients, order?.patientId!)?.replace(
+      / /g,
+      '_'
+    );
+    if (order?.labReportURL && order?.labReportURL != '') {
+      downloadLabTest(order?.labReportURL, appointmentDate, patientName);
+    } else if (visitId) {
       fetchTestReportResult();
     } else {
       props.navigation.navigate(AppRoutes.HealthRecordsHome);
     }
   };
+
+  async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string) {
+    setLoading?.(true);
+    try {
+      await downloadDiagnosticReport(pdfUrl, appointmentDate, patientName, true);
+    } catch (error) {
+      setLoading?.(false);
+      CommonBugFender('YourOrderTests_downloadLabTest', error);
+    } finally {
+      setLoading?.(false);
+    }
+  }
 
   const renderReportError = (message: string) => {
     showAphAlert!({

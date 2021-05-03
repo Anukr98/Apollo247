@@ -151,7 +151,13 @@ export const firePurchaseEvent = (orderId: string, grandTotal: number, cartItems
 };
 
 export function DiagnosticDetailsViewed(
-  source: 'Full Search' | 'Home Page' | 'Cart Page' | 'Partial Search' | 'Deeplink',
+  source:
+    | 'Full Search'
+    | 'Home Page'
+    | 'Cart Page'
+    | 'Partial Search'
+    | 'Deeplink'
+    | 'Popular search',
   itemName: string,
   itemType: string,
   itemCode: string,
@@ -162,9 +168,15 @@ export function DiagnosticDetailsViewed(
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION] = {
     Source: source,
     'Item Name': itemName,
-    'Item Type': itemType,
     'Item Code': itemCode,
+    'Item ID': itemCode,
+    'Patient Name': `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+    'Patient UHID': currentPatient?.uhid,
+    'Item Price': itemPrice,
   };
+  if (!!itemType) {
+    eventAttributes['Item Type'] = itemType;
+  }
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
 
   const firebaseEventAttributes: FirebaseEvents[FirebaseEventName.PRODUCT_PAGE_VIEWED] = {
@@ -425,4 +437,12 @@ export function DiagnosticFeedbackSubmitted(currentPatient: any, rating: string,
     'Thing to Improve selected': reason,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_FEEDBACK_GIVEN, eventAttributes);
+}
+
+export function DiagnosticPaymentPageViewed(currentPatient: any, amount: string | number) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED] = {
+    UHID: g(currentPatient, 'uhid'),
+    'Order amount': amount,
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED, eventAttributes);
 }

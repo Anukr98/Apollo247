@@ -42,6 +42,7 @@ import {
   setWebEngageScreenNames,
   nextAvailability,
   getDoctorShareMessage,
+  getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -332,6 +333,9 @@ export interface DoctorDetailsProps extends NavigationScreenProps {}
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
+  const [follow_up_chat_message_visibility, set_follow_up_chat_message_visibility] = useState<
+    boolean
+  >(true);
   const [consultMode, setConsultMode] = useState<ConsultMode>(ConsultMode.ONLINE);
   const [onlineSelected, setOnlineSelected] = useState<boolean>(true);
   const [doctorDetails, setDoctorDetails] = useState<getDoctorDetailsById_getDoctorDetailsById>();
@@ -345,7 +349,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [doctorId, setDoctorId] = useState<string>(
     props.navigation.state.params ? props.navigation.state.params.doctorId : ''
   );
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [scrollY] = useState(new Animated.Value(0));
   const [availableInMin, setavailableInMin] = useState<number>();
@@ -366,6 +370,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const circleDoctorDetails = calculateCircleDoctorPricing(doctorDetails);
   const [showDoctorSharePopup, setShowDoctorSharePopup] = useState<boolean>(false);
+  const consultModeSelected = props.navigation.getParam('consultModeSelected');
   const {
     isCircleDoctor,
     physicalConsultMRPPrice,
@@ -481,23 +486,21 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   });
 
   useEffect(() => {
-    if (isFocused) {
-      setWebEngageScreenNames('Doctor Profile');
-      getNetStatus()
-        .then((status) => {
-          if (status) {
-            fetchDoctorDetails();
-            fetchAppointmentHistory();
-          } else {
-            setshowSpinner(false);
-            setshowOfflinePopup(true);
-          }
-        })
-        .catch((e) => {
-          CommonBugFender('DoctorDetails_getNetStatus', e);
-        });
-    }
-  }, [isFocused]);
+    setWebEngageScreenNames('Doctor Profile');
+    getNetStatus()
+      .then((status) => {
+        if (status) {
+          fetchDoctorDetails();
+          fetchAppointmentHistory();
+        } else {
+          setshowSpinner(false);
+          setshowOfflinePopup(true);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('DoctorDetails_getNetStatus', e);
+      });
+  }, []);
 
   useEffect(() => {
     const display = props.navigation.state.params
@@ -628,26 +631,26 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Speciality Name': g(doctorDetails, 'specialty', 'name')!,
       'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
       'Media Source': mediaSource,
+      User_Type: getUserType(allCurrentPatients),
     };
     postWebEngageEvent(WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK, eventAttributes);
   };
 
   const setAvailableModes = (availabilityMode: any) => {
     const modeOfConsult = availabilityMode.availableModes;
-
     try {
       if (modeOfConsult.includes(ConsultMode.BOTH)) {
         setConsultType(ConsultMode.BOTH);
-        setOnlineSelected(true);
       } else if (modeOfConsult.includes(ConsultMode.ONLINE)) {
         setConsultType(ConsultMode.ONLINE);
-        setOnlineSelected(true);
       } else if (modeOfConsult.includes(ConsultMode.PHYSICAL)) {
         setConsultType(ConsultMode.PHYSICAL);
         setOnlineSelected(false);
+        set_follow_up_chat_message_visibility(false);
       } else {
         setConsultType(ConsultMode.BOTH);
       }
+      consultModeSelected && setOnlineSelected(consultModeSelected === ConsultMode.ONLINE);
     } catch (error) {}
   };
 
@@ -870,10 +873,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 )}
               </View>
               <View style={styles.separatorStyle} />
-              <View style={styles.followUpChatMessageViewStyle}>
-                <CTGrayChat style={styles.followUpChatImageStyle} />
-                <Text style={styles.followUpChatMessageStyle}>{followUpChatMessage}</Text>
-              </View>
+              {follow_up_chat_message_visibility && (
+                <View style={styles.followUpChatMessageViewStyle}>
+                  <CTGrayChat style={styles.followUpChatImageStyle} />
+                  <Text style={styles.followUpChatMessageStyle}>{followUpChatMessage}</Text>
+                </View>
+              )}
               <View
                 style={[
                   styles.onlineConsultView,
@@ -909,6 +914,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     style={{ height: consultViewHeight }}
                     onPress={() => {
                       setOnlineSelected(true);
+                      set_follow_up_chat_message_visibility(true);
                       const eventAttributes: WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED] = {
                         'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
                         'Patient Name': `${g(currentPatient, 'firstName')} ${g(
@@ -1031,6 +1037,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const onPressMeetInPersonCard = () => {
+    set_follow_up_chat_message_visibility(false);
     const eventAttributes: WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED] = {
       'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
@@ -1160,7 +1167,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                                 ? {
                                     uri: item.facility.imageUrl,
                                   }
-                                : require('@aph/mobile-patients/src/images/apollo/Hospital_Image.png')
+                                : require('@aph/mobile-patients/src/images/apollo/Hospital_Image.webp')
                             }
                             style={{
                               height: 136,
@@ -1461,6 +1468,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Secretary Name': g(secretaryData, 'name'),
       'Secretary Mobile Number': g(secretaryData, 'mobileNumber'),
       'Doctor Mobile Number': g(doctorDetails, 'mobileNumber')!,
+      User_Type: getUserType(allCurrentPatients),
     };
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
     const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.BOOK_APPOINTMENT] = {
@@ -1509,7 +1517,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const getTitle = () => {
     const consultNowText = ctaBannerText?.CONSULT_NOW || '';
     const time = onlineSelected ? availableTime : physicalAvailableTime;
-    return consultNowText || (time && moment(time).isValid())
+    const activeCTA = doctorDetails?.doctorCardActiveCTA?.DEFAULT;
+    return activeCTA
+      ? activeCTA
+      : consultNowText || (time && moment(time).isValid())
       ? nextAvailability(time, 'Consult')
       : string.common.book_apointment;
   };

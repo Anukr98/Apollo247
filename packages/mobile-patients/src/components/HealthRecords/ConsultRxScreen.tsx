@@ -954,7 +954,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 12, paddingHorizontal: 20 }}
         sections={localConsultRxData || []}
         renderItem={({ item, index }) => renderConsultRxItems(item, index)}
-        ListEmptyComponent={<PhrNoDataComponent />}
+        ListEmptyComponent={renderEmptyList()}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
       />
     );
@@ -966,6 +966,14 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         <Spinner style={styles.loaderStyle} />
       </View>
     );
+  };
+
+  const renderEmptyList = () => {
+    if (consultRxMainData?.length != 0) {
+      return null;
+    } else {
+      return <PhrNoDataComponent />;
+    }
   };
 
   const searchListHeaderView = () => {

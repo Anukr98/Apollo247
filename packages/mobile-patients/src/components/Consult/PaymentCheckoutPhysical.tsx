@@ -91,6 +91,8 @@ import {
   getAppointmentDataVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { saveConsultationLocation } from '@aph/mobile-patients/src/helpers/clientCalls';
+
 interface PaymentCheckoutPhysicalProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
   tabs: { title: string }[];
@@ -137,7 +139,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   const scrollviewRef = useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [gender, setGender] = useState<string>(currentPatient?.gender);
-  const { apisToCall, homeScreenParamsOnPop } = useAppCommonData();
+  const { apisToCall, homeScreenParamsOnPop, locationDetails } = useAppCommonData();
   const [patientListYPos, setPatientListYPos] = useState<number>(0);
   const [patientProfiles, setPatientProfiles] = useState<any>([]);
 
@@ -592,7 +594,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           g(data, 'makeAppointmentPayment', 'appointment', 'id')!
         );
         eventAttributes['Display ID'] = displayID;
-        eventAttributes['User_Type'] = getUserType(currentPatient);
+        eventAttributes['User_Type'] = getUserType(allCurrentPatients);
         postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
         postAppsFlyerEvent(
           AppsFlyerEventName.CONSULTATION_BOOKED,
@@ -644,6 +646,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
                   skipAutoQuestions: doctor?.skipAutoQuestions,
                 };
                 homeScreenParamsOnPop.current = params;
+                locationDetails && saveConsultationLocation(client, appointmentId, locationDetails);
                 navigateToHome(props.navigation, params);
               }
             } catch (error) {}
@@ -714,7 +717,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       af_currency: 'INR',
       'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
       'Circle discount': circleDiscount,
-      User_Type: getUserType(currentPatient),
+      User_Type: getUserType(allCurrentPatients),
     };
     return eventAttributes;
   };
@@ -792,7 +795,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         doctorClinics?.length > 0 && doctor?.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics?.[0].facility?.city}`
           : '',
-      User_Type: getUserType(currentPatient),
+      User_Type: getUserType(allCurrentPatients),
     };
     postWebEngageEvent(WebEngageEventName.PAY_BUTTON_CLICKED, eventAttributes);
     postFirebaseEvent(FirebaseEventName.PAY_BUTTON_CLICKED, eventAttributes);

@@ -53,6 +53,8 @@ import {
   getShipmentPrice,
   validateCoupon,
   setAsyncPharmaLocation,
+  getHealthCredits,
+  persistHealthCredits,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   pinCodeServiceabilityApi247,
@@ -87,6 +89,7 @@ import {
   postPhamracyCartAddressSelectedFailure,
   postPhamracyCartAddressSelectedSuccess,
   postPharmacyAddNewAddressClick,
+  postPharmacyAddNewAddressCompleted,
 } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -200,6 +203,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (!circleSubscriptionId) {
       setShowCareSelectPlans(true);
     }
+    if (coupon?.coupon) {
+      setIsCircleSubscription?.(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -265,14 +271,13 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }, [couponProducts]);
 
   useEffect(() => {
-    if (!!coupon) {
+    if (!!coupon && !coupon?.circleBenefits) {
       setCircleMembershipCharges && setCircleMembershipCharges(0);
+      setIsCircleSubscription?.(false);
     } else {
       if (!circleSubscriptionId) {
         setCircleMembershipCharges &&
           setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
-      } else {
-        setIsCircleSubscription && setIsCircleSubscription(true);
       }
     }
   }, [coupon]);
@@ -298,7 +303,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }, [appState]);
 
   const handleBack = () => {
-    setCoupon!(null);
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
   };
 
@@ -353,7 +357,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
                 hdfcPlanId,
                 circleStatus,
                 circlePlanId,
-                setCouponProducts
+                setCouponProducts,
+                circlePlanSelected
               );
             } catch (error) {
               return;
@@ -367,14 +372,23 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   };
 
   const fetchHealthCredits = async () => {
+    var cachedHealthCredit: any = await getHealthCredits();
+
+    if (cachedHealthCredit != null) {
+      setAvailableHC(cachedHealthCredit.healthCredit);
+      return; // no need to call api
+    }
+
     try {
       const response = await client.query({
         query: GET_ONEAPOLLO_USER,
         variables: { patientId: currentPatient?.id },
         fetchPolicy: 'no-cache',
       });
+
       if (response?.data?.getOneApolloUser) {
         setAvailableHC(response?.data?.getOneApolloUser.availableHC);
+        persistHealthCredits(response?.data?.getOneApolloUser.availableHC);
       }
     } catch (error) {
       CommonBugFender('fetchingHealthCreditsonCart', error);
@@ -533,6 +547,18 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       orderSelected?.length > 1,
       splitOrderDetails
     );
+
+    if (selectedAddress?.id === newAddressAdded) {
+      postPharmacyAddNewAddressCompleted(
+        'Cart',
+        g(selectedAddress, 'zipcode')!,
+        formatAddress(selectedAddress),
+        moment(tatDate, AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT).toDate(),
+        moment(tatDate).diff(currentDate, 'd'),
+        'Yes'
+      );
+      setNewAddressAdded && setNewAddressAdded('');
+    }
   }
 
   async function setDefaultAddress(address: savePatientAddress_savePatientAddress_patientAddress) {
@@ -622,7 +648,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           hdfcPlanId,
           circleStatus,
           circlePlanId,
-          setCouponProducts
+          setCouponProducts,
+          circlePlanSelected
         );
         if (response !== 'success') {
           removeCouponWithAlert(response);
@@ -846,7 +873,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           hdfcPlanId,
           circleStatus,
           circlePlanId,
-          setCouponProducts
+          setCouponProducts,
+          circlePlanSelected
         );
         if (response !== 'success') {
           removeCouponWithAlert(response);
@@ -890,7 +918,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       <TouchableOpacity
         activeOpacity={0.5}
         onPress={() => {
-          setCoupon!(null);
           navigateToScreenWithEmptyStack(props.navigation, AppRoutes.Medicine);
         }}
       >
@@ -909,7 +936,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         rightComponent={headerRightComponent()}
         onPressLeftIcon={() => {
           CommonLogEvent(AppRoutes.MedicineCart, 'Go back to add items');
-          setCoupon!(null);
           props.navigation.goBack();
         }}
       />
@@ -927,7 +953,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (cartTotal == 0) {
       renderAlert('Please add items in the cart to apply coupon.');
     } else {
-      props.navigation.navigate(AppRoutes.ApplyCouponScene);
+      props.navigation.navigate(AppRoutes.ViewCoupons, { movedFrom: 'pharma' });
       setCoupon!(null);
       applyCouponClickedEvent(g(currentPatient, 'id'), JSON.stringify(cartItems));
     }
@@ -976,20 +1002,23 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         activeOpacity={0.7}
         style={styles.applyBenefits}
         onPress={() => {
-          if (!coupon && isCircleSubscription) {
+          if (
+            (!coupon && isCircleSubscription) ||
+            (coupon?.circleBenefits && isCircleSubscription)
+          ) {
             if (!circleSubscriptionId || cartTotalCashback) {
-              setIsCircleSubscription && setIsCircleSubscription(false);
-              setDefaultCirclePlan && setDefaultCirclePlan(null);
-              setCirclePlanSelected && setCirclePlanSelected(null);
-              setCircleMembershipCharges && setCircleMembershipCharges(0);
+              setIsCircleSubscription?.(false);
+              setDefaultCirclePlan?.(null);
+              setCirclePlanSelected?.(null);
+              setCircleMembershipCharges?.(0);
             }
           } else {
-            setCoupon && setCoupon(null);
-            setIsCircleSubscription && setIsCircleSubscription(true);
+            !coupon?.circleBenefits && setCoupon?.(null);
+            setIsCircleSubscription?.(true);
           }
         }}
       >
-        {!coupon && isCircleSubscription ? (
+        {(!coupon && isCircleSubscription) || (coupon?.circleBenefits && isCircleSubscription) ? (
           <View style={{ flexDirection: 'row' }}>
             <CheckedIcon style={{ marginTop: 8, marginRight: 4 }} />
             <CareCashbackBanner

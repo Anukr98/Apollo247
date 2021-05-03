@@ -97,7 +97,7 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
     getPatientAddressList_getPatientAddressList_addressList[] | null
   >([]);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
-  const { setAddresses, addresses } = useShoppingCart();
+  const { setAddresses, addresses, deliveryAddressId, setDeliveryAddressId } = useShoppingCart();
   const { setAddresses: setAdd } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
 
@@ -167,6 +167,9 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
       })
       .then((_data: any) => {
         getAddressList();
+        if (deliveryAddressId === address?.id) {
+          setDeliveryAddressId?.('');
+        }
       })
       .catch((e) => {
         CommonBugFender('AddressBook_DELETE_PATIENT_ADDRESS', e);
