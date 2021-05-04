@@ -727,7 +727,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
-        console.log('csk log', JSON.stringify(data));
         try {
           setshowPastSearchSpinner(false);
           if (data && data.getPatientPastSearches) {
@@ -947,10 +946,15 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           onPress={() => {
             if (rowData.searchType === 'DOCTOR') {
               CommonLogEvent(AppRoutes.DoctorSearch, 'Doctor Search Move clicked');
-              props.navigation.navigate(AppRoutes.DoctorDetails, {
-                doctorId: rowData.typeId,
-                callSaveSearch: 'true',
-              });
+              rowData?.allowBookingRequest
+                ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
+                    doctorId: rowData.typeId,
+                    callSaveSearch: 'true',
+                  })
+                : props.navigation.navigate(AppRoutes.DoctorDetails, {
+                    doctorId: rowData.typeId,
+                    callSaveSearch: 'true',
+                  });
             }
             if (rowData.searchType === 'SPECIALTY') {
               CommonLogEvent(AppRoutes.DoctorSearch, 'Doctor Search Move  SPECIALTY clicked');
