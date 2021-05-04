@@ -18,7 +18,6 @@ import {
   CartIcon,
   LocationOff,
   SearchSendIcon,
-  SearchIcon,
   HomeIcon,
   NotificationIcon,
   WorkflowIcon,
@@ -64,7 +63,7 @@ import {
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Dimensions,
@@ -84,7 +83,7 @@ import {
   Linking,
 } from 'react-native';
 import { Image } from 'react-native-elements';
-import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import { FlatList, NavigationScreenProps } from 'react-navigation';
 import {
   SEARCH_TYPE,
   TEST_COLLECTION_TYPE,
@@ -161,6 +160,7 @@ import {
 import moment from 'moment';
 import { HomePageOrderStatusCard } from '@aph/mobile-patients/src/components/Tests/components/HomePageOrderStatusCard';
 import AsyncStorage from '@react-native-community/async-storage';
+import { getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOpenOrdersList';
 
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
@@ -481,7 +481,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     try {
       const res: any = await getDiagnosticPatientPrescription(
         client,
-        currentPatient?.id,
+        currentPatient?.mobileNumber,
         3,
         Object.keys(serviceableObject)?.length === 0 && serviceableObject?.constructor === Object
           ? 9
@@ -1537,9 +1537,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
     if (data?.diagnosticWidgetType == 'Package') {
       return renderPackageWidget(data);
     } else if (data?.diagnosticWidgetType == 'Category_Scroll') {
-      return scrollWidgetSection(data)
+      return scrollWidgetSection(data);
     } else if (data?.diagnosticWidgetType == 'Category') {
-      return gridWidgetSection(data)
+      return gridWidgetSection(data);
     } else {
       return renderTestWidgets(data);
     }
@@ -1844,16 +1844,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  const keyExtractor = useCallback((item: any, index: number) => `${index}`, []);
+
   const renderPrescriptionCard = () => {
     return (
-      <Carousel
-        onSnapToItem={setPrescriptionSlideIndex}
+      <FlatList
+        bounces={false}
+        pagingEnabled={true}
+        keyExtractor={keyExtractor}
+        showsHorizontalScrollIndicator={false}
+        showsVerticalScrollIndicator={false}
+        horizontal={true}
         data={latestPrescription}
         renderItem={renderPrescriptionCardItems}
-        sliderWidth={winWidth}
-        itemWidth={winWidth}
-        loop={false}
-        autoplay={false}
+        maxToRenderPerBatch={3}
       />
     );
   };
@@ -1936,8 +1940,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
       CommonLogEvent('Tests', 'No image');
     } else {
       try {
-        setLoading?.(true);
         await downloadDiagnosticReport(
+          setLoadingContext,
           AppConfig.Configuration.DOCUMENT_BASE_URL.concat(pdfName),
           prescriptionDate,
           item?.patientName,
@@ -1953,15 +1957,68 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   }
 
+  const orderStatusCardKeyExtractor = useCallback((item: any, index: number) => `${index}`, []);
+
+  const _onViewRef = React.useRef((viewableItems: { viewableItems: { index: any }[] }) => {
+    let indexVal = viewableItems?.viewableItems?.[0]?.index;
+    setOrderCardSlideIndex(indexVal);
+  });
+
+  const _viewConfigRef = React.useRef({ viewAreaCoveragePercentThreshold: 50 });
+
   const renderOrderStatusCard = () => {
-    var allOrders;
+    var allOrders = [];
     if (patientOpenOrders?.length == 3) {
-      allOrders = [patientOpenOrders];
+      allOrders.push(patientOpenOrders);
     } else if (patientOpenOrders?.length && patientOpenOrders?.length < 3) {
-      allOrders = [patientOpenOrders, patientClosedOrders]?.flat(1);
+      allOrders.push(patientOpenOrders);
+      allOrders.push(patientClosedOrders);
     } else {
-      allOrders = [patientClosedOrders];
+      allOrders.push(patientClosedOrders);
     }
+    allOrders = allOrders?.flat(1);
+    return (
+      <>
+        {allOrders?.length > 0 ? (
+          <View style={{ marginBottom: 10 }}>
+            <FlatList
+              bounces={false}
+              pagingEnabled={true}
+              keyExtractor={orderStatusCardKeyExtractor}
+              showsHorizontalScrollIndicator={false}
+              showsVerticalScrollIndicator={false}
+              horizontal={true}
+              data={allOrders}
+              renderItem={renderOrderStatusCardItems}
+              maxToRenderPerBatch={3}
+              onViewableItemsChanged={_onViewRef.current}
+              viewabilityConfig={_viewConfigRef.current}
+            />
+            <View style={styles.orderStatusCardDots}>
+              {allOrders?.length > 0 &&
+                allOrders?.map((_: any, index: number) =>
+                  index == orderCardSlideIndex
+                    ? renderDot(true, 'orderStatus')
+                    : renderDot(false, 'orderStatus')
+                )}
+            </View>
+          </View>
+        ) : null}
+      </>
+    );
+  };
+
+  const renderOrderStatusCard1 = () => {
+    var allOrders = [];
+    if (patientOpenOrders?.length == 3) {
+      allOrders.push(patientOpenOrders);
+    } else if (patientOpenOrders?.length && patientOpenOrders?.length < 3) {
+      allOrders.push(patientOpenOrders);
+      allOrders.push(patientClosedOrders);
+    } else {
+      allOrders.push(patientClosedOrders);
+    }
+    allOrders = allOrders?.flat(1);
     return (
       <>
         {allOrders?.length > 0 ? (
@@ -1976,11 +2033,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
               autoplay={false}
             />
             <View style={styles.orderStatusCardDots}>
-              {allOrders?.map((_, index) =>
-                index == orderCardSlideIndex
-                  ? renderDot(true, 'orderStatus')
-                  : renderDot(false, 'orderStatus')
-              )}
+              {allOrders?.length > 0 &&
+                allOrders?.map((_: any, index: number) =>
+                  index == orderCardSlideIndex
+                    ? renderDot(true, 'orderStatus')
+                    : renderDot(false, 'orderStatus')
+                )}
             </View>
           </View>
         ) : null}
@@ -1988,7 +2046,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-  const renderOrderStatusCardItems = ({ item, index }: { item: any; index: number }) => {
+  const renderOrderStatusCardItems = ({
+    item,
+    index,
+  }: {
+    item: getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders;
+    index: number;
+  }) => {
     const appointmentTime = moment(item?.slotDateTimeInUTC)?.format('DD MMM, hh:mm a');
     return (
       <HomePageOrderStatusCard
@@ -1997,6 +2061,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         appointmentTime={appointmentTime}
         key={item?.id}
         onPressBookNow={() => onPressOrderStatusOption(item)}
+        testPreparationData={item?.diagnosticOrderLineItems?.[0]?.itemObj?.testPreparationData}
       />
     );
   };
@@ -2011,8 +2076,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
       //view report download
       try {
         if (!!item?.labReportURL && item?.labReportURL != '') {
-          setLoading?.(true);
           await downloadDiagnosticReport(
+            setLoadingContext,
             item?.labReportURL,
             appointmentDate,
             !!patientName ? patientName : '_',
@@ -2210,68 +2275,63 @@ export const Tests: React.FC<TestsProps> = (props) => {
           rightText={'VIEW ALL'}
           rightTextStyle={styles.widgetViewAllText} //showViewAll ? styles.widgetViewAllText : {}
           onPressRightText={() => {
-                  props.navigation.navigate(AppRoutes.TestWidgetListing, {
+            props.navigation.navigate(AppRoutes.TestWidgetListing, {
+              movedFrom: AppRoutes.Tests,
+              data: data,
+              cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+            });
+          }}
+        />
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sectionView}>
+          {data?.diagnosticWidgetData.map((item: any) => (
+            <WidgetCard
+              data={item}
+              isCircleSubscribed={isDiagnosticCircleSubscription}
+              isServiceable={isDiagnosticLocationServiceable}
+              isVertical={false}
+              navigation={props.navigation}
+              onPressWidget={() => {
+                {
+                  props.navigation.navigate(AppRoutes.TestListing, {
+                    widgetName: item?.itemTitle,
                     movedFrom: AppRoutes.Tests,
                     data: data,
                     cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
                   });
                 }
-          }
-        />
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sectionView}>
-        {data?.diagnosticWidgetData.map((item:any) => (
-          <WidgetCard
-            data={item}
-            isCircleSubscribed={isDiagnosticCircleSubscription}
-            isServiceable={isDiagnosticLocationServiceable}
-            isVertical={false}
-            navigation={props.navigation}
-            onPressWidget={()=>{
-              {
-                props.navigation.navigate(AppRoutes.TestListing, {
-                  widgetName: item?.itemTitle,
-                  movedFrom: AppRoutes.Tests,
-                  data: data,
-                  cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
-                });
-              }
-            }}
-            source={'Home Page'}
-            sourceScreen={AppRoutes.Tests}
-          />
-        ))}
+              }}
+              source={'Home Page'}
+              sourceScreen={AppRoutes.Tests}
+            />
+          ))}
         </ScrollView>
       </View>
     );
-  }
- 
- const renderGridComponent = (data: any, item: any, index: number) => {
-   return (
-     <TouchableOpacity
-       style={styles.gridPart}
-       onPress={() => {
-         {
-           props.navigation.navigate(AppRoutes.TestListing, {
-             widgetName: item?.itemTitle,
-             movedFrom: AppRoutes.Tests,
-             data: data,
-             cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
-           });
-         }
-       }}
-     >
-       <ImageNative
-          resizeMode={"contain"}
-          style={styles.image}
-          source={{ uri: item.itemIcon }}
-        />
-       <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>
-         {item?.itemTitle}
-       </Text>
-     </TouchableOpacity>
-   );
- };
-  const gridWidgetSection = (data : any) => {
+  };
+
+  const renderGridComponent = (data: any, item: any, index: number) => {
+    return (
+      <TouchableOpacity
+        style={styles.gridPart}
+        onPress={() => {
+          {
+            props.navigation.navigate(AppRoutes.TestListing, {
+              widgetName: item?.itemTitle,
+              movedFrom: AppRoutes.Tests,
+              data: data,
+              cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+            });
+          }
+        }}
+      >
+        <ImageNative resizeMode={'contain'} style={styles.image} source={{ uri: item.itemIcon }} />
+        <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>
+          {item?.itemTitle}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+  const gridWidgetSection = (data: any) => {
     const numColumns = 3;
     let newGridData: any[] = [];
     if (
@@ -2309,12 +2369,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
             data={newGridData}
             numColumns={numColumns}
             keyExtractor={(_, index) => `${index}`}
-            renderItem={({ item, index}) => renderGridComponent(data, item, index)}
+            renderItem={({ item, index }) => renderGridComponent(data, item, index)}
           />
         </View>
       </View>
     );
-  }
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -2370,16 +2430,16 @@ const styles = StyleSheet.create({
     color: theme.colors.WHITE,
   },
   sectionView: {
-    margin:10,
-    flexDirection:'row',
+    margin: 10,
+    flexDirection: 'row',
   },
-  container:{
-    marginTop:20
+  container: {
+    marginTop: 20,
   },
   gridConatiner: {
     width: '100%',
-    backgroundColor:'white',
-    marginVertical: 20
+    backgroundColor: 'white',
+    marginVertical: 20,
   },
   imagePlaceholderStyle: {
     backgroundColor: '#f7f8f5',
@@ -2580,32 +2640,32 @@ const styles = StyleSheet.create({
   circleImg: {
     width: 70,
     height: 70,
-    borderRadius: 70/2,
+    borderRadius: 70 / 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
   image: {
     width: 70,
     height: 70,
-    borderRadius: 70/2,
+    borderRadius: 70 / 2,
   },
   gridPart: {
     alignItems: 'center',
     justifyContent: 'center',
     width: '33%',
-    borderColor:'#E8E8E8',
+    borderColor: '#E8E8E8',
     borderWidth: 0.5,
-    padding:15,
+    padding: 15,
   },
   textStyle: {
     ...theme.viewStyles.text('SB', 14, '#000000', 1, 20, 0),
-    padding: 5
+    padding: 5,
   },
   orderStatusCardDots: {
     flexDirection: 'row',
     justifyContent: 'center',
     position: 'absolute',
-    top: 105,
+    top: 130,
     alignSelf: 'flex-start',
     left: 32,
   },

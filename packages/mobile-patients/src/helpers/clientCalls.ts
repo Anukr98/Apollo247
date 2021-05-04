@@ -947,7 +947,7 @@ export const getAllProHealthAppointments = (client: ApolloClient<object>, patien
 
 export const getDiagnosticPatientPrescription = (
   client: ApolloClient<object>,
-  patientId: string,
+  mobileNumber: string,
   limit: number,
   cityId: number | string
 ) => {
@@ -959,7 +959,7 @@ export const getDiagnosticPatientPrescription = (
           sourceHeaders,
         },
         variables: {
-          patientId: patientId,
+          mobileNumber: mobileNumber,
           limit: limit,
           cityId: Number(cityId),
         },

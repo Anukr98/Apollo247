@@ -350,9 +350,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                     };
                   }
                   order.phleboDetailsObj.PhelboOTP = findOrder?.orderPhleboDetails?.phleboOTP;
-                  order.phleboDetailsObj.PhelbotomistName = findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.name;
-                  order.phleboDetailsObj.PhelbotomistMobile = findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.mobile;
-                  order.phleboDetailsObj.PhelbotomistTrackLink = findOrder?.orderPhleboDetails?.phleboTrackLink;
+                  order.phleboDetailsObj.PhelbotomistName =
+                    findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.name;
+                  order.phleboDetailsObj.PhelbotomistMobile =
+                    findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.mobile;
+                  order.phleboDetailsObj.PhelbotomistTrackLink =
+                    findOrder?.orderPhleboDetails?.phleboTrackLink;
                   order.phleboDetailsObj.CheckInTime = findOrder?.phleboEta?.estimatedArrivalTime;
                 }
               }
@@ -1233,7 +1236,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string) {
     setLoading?.(true);
     try {
-      await downloadDiagnosticReport(pdfUrl, appointmentDate, patientName, true);
+      await downloadDiagnosticReport(setLoading, pdfUrl, appointmentDate, patientName, true);
     } catch (error) {
       setLoading?.(false);
       CommonBugFender('YourOrderTests_downloadLabTest', error);
