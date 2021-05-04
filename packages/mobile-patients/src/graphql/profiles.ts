@@ -252,6 +252,8 @@ export const GET_PATIENT_FUTURE_APPOINTMENT_COUNT = gql`
   query getPatientFutureAppointmentCount($patientId: String) {
     getPatientFutureAppointmentCount(patientId: $patientId) {
       activeConsultsCount
+      upcomingConsultsCount
+      upcomingPhysicalConsultsCount
     }
   }
 `;
@@ -1856,6 +1858,11 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         id
         patientId
         patientAddressId
+        patientObj{
+          firstName
+          lastName
+          gender
+        }
         city
         slotTimings
         employeeSlotId
@@ -2211,6 +2218,22 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         diagnosticEmployeeCode
         visitNo
         labReportURL
+        patientObj{
+          id
+          uhid
+          firstName
+          lastName
+          gender
+          dateOfBirth
+        }
+        patientAddressObj{
+          addressLine1
+          addressLine2
+          landmark
+          state
+          city 
+          zipcode
+        }
         diagnosticOrdersStatus {
           id
           orderStatus
@@ -2271,6 +2294,13 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         patientAddressId
         phleboDetailsObj {
           PhelboOTP
+          PhelbotomistName
+          PhelbotomistMobile
+          PhelbotomistTrackLink
+          TempRecording
+          CheckInTime
+          PhleboLatitude
+          PhleboLongitude
         }
         slotTimings
         slotDateTimeInUTC
@@ -3644,16 +3674,6 @@ export const SEARCH_DIAGNOSTICS_BY_ID = gql`
   }
 `;
 
-export const SAVE_DIAGNOSTIC_ORDER = gql`
-  mutation SaveDiagnosticOrder($diagnosticOrderInput: DiagnosticOrderInput) {
-    SaveDiagnosticOrder(diagnosticOrderInput: $diagnosticOrderInput) {
-      errorCode
-      errorMessage
-      orderId
-      displayId
-    }
-  }
-`;
 
 export const SAVE_DIAGNOSTIC_ORDER_NEW = gql`
   mutation saveDiagnosticBookHCOrder($diagnosticOrderInput: SaveBookHomeCollectionOrderInput) {
@@ -4622,31 +4642,6 @@ export const VERIFY_TRUECALLER_PROFILE = gql`
   }
 `;
 
-export const GET_PROHEALTH_CITY_LIST = gql`
-  query getProHealthCities {
-    getProHealthCities {
-      cityList {
-        regionId
-        cityName
-        id
-      }
-    }
-  }
-`;
-
-export const GET_PROHEALTH_HOSPITAL_LIST = gql`
-  query getProHealthHospitalByCityId($cityId: ID!) {
-    getProHealthHospitalByCityId(cityId: $cityId) {
-      hospitals {
-        unitName
-        unitType
-        unitLocationId
-        id
-      }
-    }
-  }
-`;
-
 export const GET_ALL_PRO_HEALTH_APPOINTMENTS = gql`
   query getAllProhealthAppointments($patientId: ID!) {
     getAllProhealthAppointments(patientId: $patientId) {
@@ -4687,8 +4682,10 @@ export const GET_PHLOBE_DETAILS = gql`
           diagnosticOrdersId
           diagnosticPhlebotomists {
             name
+            mobile
           }
           phleboOTP
+          phleboTrackLink
         }
         phleboEta {
           distanceInMetres
@@ -4698,6 +4695,54 @@ export const GET_PHLOBE_DETAILS = gql`
     }
   }
 `;
+
+export const GET_PATIENT_LATEST_PRESCRIPTION = gql `
+  query getPatientLatestPrescriptions($mobileNumber: String!, $limit: Int!, $cityId: Int!){
+    getPatientLatestPrescriptions(mobileNumber: $mobileNumber, limit: $limit, cityId: $cityId){
+      doctorName
+      doctorCredentials
+      patientName
+      prescriptionDateTime
+      numberOfTests
+      orderCount
+      caseSheet{
+        id
+        blobName
+        diagnosticPrescription{
+          itemId
+          itemname
+          testInstruction
+        }
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql `
+  query getDiagnosticOpenOrdersList($mobileNumber : String!, $skip: Int!, $take: Int!){
+    getDiagnosticOpenOrdersList(mobileNumber: $mobileNumber, skip: $skip, take: $take){
+      openOrders{
+        id
+        patientId
+        paymentOrderId
+        orderStatus
+        slotDateTimeInUTC
+        labReportURL
+        paymentType
+        paymentOrderId
+        patientObj {
+          firstName
+          lastName
+        },
+        diagnosticOrderLineItems{
+          itemObj{
+            inclusions
+            testPreparationData
+          }
+        }  
+      }
+    }
+  }`;
 
 export const GET_PATIENT_PAST_CONSULTED_DOCTORS = gql`
   query getPatientPastConsultedDoctors($patientMobile: String, $offset: Int, $limit: Int) {
@@ -4717,6 +4762,51 @@ export const GET_PATIENT_PAST_CONSULTED_DOCTORS = gql`
         consultMode
         _247_Flag
       }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
+  query getDiagnosticClosedOrdersList($mobileNumber : String!, $skip: Int!, $take: Int!){
+    getDiagnosticClosedOrdersList(mobileNumber: $mobileNumber, skip: $skip, take: $take){
+      closedOrders{
+        id
+        patientId
+        paymentOrderId
+        orderStatus
+        slotDateTimeInUTC
+        labReportURL
+        paymentType
+        paymentOrderId
+        patientObj {
+          firstName
+          lastName
+        },
+        diagnosticOrderLineItems{
+          itemObj{
+            inclusions
+            testPreparationData
+          }
+        }  
+      }
+    }
+  }
+`;
+
+export const GET_PROHEALTH_HOSPITAL_BY_SLUG = gql `
+  query getProHealthHospitalBySlug($hospitalSlug: String!){
+    getProHealthHospitalBySlug(hospitalSlug:$hospitalSlug){
+        hospitals{
+        id
+      }
+    }
+  }
+`;
+
+export const SAVE_PHLEBO_FEEDBACK = gql`
+  mutation savePhleboFeedback($phleboRating: Int!, $phleboFeedback: String, $diagnosticOrdersId: String!) {
+    savePhleboFeedback(phleboRating: $phleboRating, phleboFeedback: $phleboFeedback, diagnosticOrdersId: $diagnosticOrdersId) {
+        status
     }
   }
 `;

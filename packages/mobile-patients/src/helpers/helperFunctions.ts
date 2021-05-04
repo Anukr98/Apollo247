@@ -36,10 +36,12 @@ import {
   Linking,
   NativeModules,
   PermissionsAndroid,
+  ToastAndroid,
+  AlertIOS,
 } from 'react-native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import Permissions from 'react-native-permissions';
-import { DiagnosticsCartItem } from '../components/DiagnosticsCartProvider';
+import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription } from '../graphql/types/getCaseSheet';
 import { apiRoutes } from './apiRoutes';
 import {
@@ -1307,24 +1309,24 @@ export const addTestsToCart = async (
     await getPackageInclusions(apolloClient, [Number(itemId)]);
 
   try {
-    const items = testPrescription.filter((val) => val.itemname).map((item) => item.itemname);
+    const items = testPrescription?.filter((val) => val?.itemname).map((item) => item?.itemname);
 
-    const searchQueries = Promise.all(items.map((item) => searchQuery(item!, '9')));
+    const searchQueries = Promise.all(items?.map((item) => searchQuery(item!, '9')));
     const searchQueriesData = (await searchQueries)
-      .map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
+      ?.map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
       // .filter((item, index) => g(item, 'itemName')! == items[index])
-      .filter((item) => !!item);
+      ?.filter((item) => !!item);
     const detailQueries = Promise.all(
-      searchQueriesData.map((item) => detailQuery(`${item.itemId}`))
+      searchQueriesData?.map((item) => detailQuery(`${item.itemId}`))
     );
-    const detailQueriesData = (await detailQueries).map(
+    const detailQueriesData = (await detailQueries)?.map(
       (item) => g(item, 'data', 'getInclusionsOfMultipleItems', 'inclusions', 'length') || 1 // updating testsIncluded
     );
     const finalArray: DiagnosticsCartItem[] = Array.from({
-      length: searchQueriesData.length,
+      length: searchQueriesData?.length,
     }).map((_, index) => {
-      const s = searchQueriesData[index];
-      const testIncludedCount = detailQueriesData[index];
+      const s = searchQueriesData?.[index];
+      const testIncludedCount = detailQueriesData?.[index];
       return {
         id: `${s?.itemId}`,
         name: s?.itemName,
@@ -2166,6 +2168,7 @@ export const addPharmaItemToCart = (
       const availability = g(res, 'data', 'response', '0' as any, 'exist');
       if (availability) {
         addToCart();
+        onAddedSuccessfully?.();
       } else {
         navigate();
       }
@@ -2183,7 +2186,6 @@ export const addPharmaItemToCart = (
           'Cart Items': JSON.stringify(itemsInCart) || '',
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
-        onAddedSuccessfully?.();
       } catch (error) {}
     })
     .catch(() => {
@@ -2266,56 +2268,30 @@ export const overlyCallPermissions = (
         const microphoneYes = microphone === 'authorized';
         // Response is one of: 'authorized', 'denied', 'restricted', or 'undetermined'
         if (cameraNo && microphoneNo) {
-          RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
-            if (status) {
-              showPermissionPopUp(
-                string.callRelatedPermissions.allPermissions.replace('{0}', doctorName),
-                () => callPermissions(() => RNAppSignatureHelper.requestOverlayPermission())
-              );
-            } else {
-              showPermissionPopUp(
-                string.callRelatedPermissions.camAndMPPermission.replace('{0}', doctorName),
-                () => callPermissions()
-              );
-            }
-          });
+          // ----------- dont delete this commented  overlay permission block incase we decide to use again
+          // RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
+          //   if (status) {
+          //     showPermissionPopUp(
+          //       string.callRelatedPermissions.allPermissions.replace('{0}', doctorName),
+          //       () => callPermissions(() => RNAppSignatureHelper.requestOverlayPermission())
+          //     );
+          //   }
+          // });
+
+          showPermissionPopUp(
+            string.callRelatedPermissions.camAndMPPermission.replace('{0}', doctorName),
+            () => callPermissions()
+          );
         } else if (cameraYes && microphoneNo) {
-          RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
-            if (status) {
-              showPermissionPopUp(
-                string.callRelatedPermissions.mpAndOverlayPermission.replace('{0}', doctorName),
-                () => callPermissions(() => RNAppSignatureHelper.requestOverlayPermission())
-              );
-            } else {
-              showPermissionPopUp(
-                string.callRelatedPermissions.onlyMPPermission.replace('{0}', doctorName),
-                () => callPermissions()
-              );
-            }
-          });
+          showPermissionPopUp(
+            string.callRelatedPermissions.onlyMPPermission.replace('{0}', doctorName),
+            () => callPermissions()
+          );
         } else if (cameraNo && microphoneYes) {
-          RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
-            if (status) {
-              showPermissionPopUp(
-                string.callRelatedPermissions.camAndOverlayPermission.replace('{0}', doctorName),
-                () => callPermissions(() => RNAppSignatureHelper.requestOverlayPermission())
-              );
-            } else {
-              showPermissionPopUp(
-                string.callRelatedPermissions.onlyCameraPermission.replace('{0}', doctorName),
-                () => callPermissions()
-              );
-            }
-          });
-        } else if (cameraYes && microphoneYes) {
-          RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
-            if (status) {
-              showPermissionPopUp(
-                string.callRelatedPermissions.onlyOverlayPermission.replace('{0}', doctorName),
-                () => RNAppSignatureHelper.requestOverlayPermission()
-              );
-            }
-          });
+          showPermissionPopUp(
+            string.callRelatedPermissions.onlyCameraPermission.replace('{0}', doctorName),
+            () => callPermissions()
+          );
         }
       })
       .catch((e) => {});
@@ -2682,15 +2658,16 @@ export const validateCoupon = async (
   hdfcPlanId: string,
   circleStatus: string,
   circlePlanId: string,
-  setCouponProducts: ((items: CouponProducts[]) => void) | null
+  setCouponProducts: ((items: CouponProducts[]) => void) | null,
+  circlePlanSelected: ShoppingCartContextProps['circlePlanSelected']
 ) => {
   CommonLogEvent(AppRoutes.ApplyCouponScene, 'Apply coupon');
   let packageId: string[] = [];
   if (hdfcSubscriptionId && hdfcStatus === 'active') {
     packageId.push(`HDFC:${hdfcPlanId}`);
   }
-  if (circleSubscriptionId && circleStatus === 'active') {
-    packageId.push(`APOLLO:${circlePlanId}`);
+  if ((circleSubscriptionId && circleStatus === 'active') || circlePlanSelected?.subPlanId) {
+    packageId.push(`APOLLO:${circlePlanId || circlePlanSelected?.subPlanId}`);
   }
   const data = {
     mobile: mobileNumber,
@@ -2711,7 +2688,10 @@ export const validateCoupon = async (
       const response = await validateConsultCoupon(data);
       if (response.data.errorCode == 0) {
         if (response.data.response.valid) {
-          setCoupon!({ ...response?.data?.response, message: message ? message : '' });
+          setCoupon!({
+            ...response?.data?.response,
+            message: message ? message : '',
+          });
           res('success');
         } else {
           rej(response.data.response.reason);
@@ -2778,10 +2758,14 @@ export const storagePermissionsToDownload = (doRequest?: () => void) => {
 };
 
 export async function downloadDiagnosticReport(
+  setLoading: UIElementsContextProps['setLoading'],
   pdfUrl: string,
   appointmentDate: string,
-  patientName: string
+  patientName: string,
+  showToast: boolean,
+  downloadFileName?: string
 ) {
+  setLoading?.(true);
   let result = Platform.OS === 'android' && (await requestReadSmsPermission());
   try {
     if (
@@ -2794,11 +2778,22 @@ export async function downloadDiagnosticReport(
       Platform.OS == 'ios'
     ) {
       const dirs = RNFetchBlob.fs.dirs;
-      const reportName = `Apollo247_${appointmentDate}_${patientName}.pdf`;
+      const reportName = !!downloadFileName
+        ? downloadFileName
+        : `Apollo247_${appointmentDate}_${patientName}.pdf`;
       const downloadPath =
         Platform.OS === 'ios'
           ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + reportName
           : dirs.DownloadDir + '/' + reportName;
+
+      let msg = 'File is downloading..';
+      if (showToast) {
+        if (Platform.OS === 'android') {
+          ToastAndroid.show(msg, ToastAndroid.SHORT);
+        } else {
+          AlertIOS.alert(msg);
+        }
+      }
 
       RNFetchBlob.config({
         fileCache: true,
@@ -2814,11 +2809,13 @@ export async function downloadDiagnosticReport(
       })
         .fetch('GET', pdfUrl, {})
         .then((res) => {
+          setLoading?.(false);
           Platform.OS === 'ios'
             ? RNFetchBlob.ios.previewDocument(res.path())
             : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
         })
         .catch((err) => {
+          setLoading?.(false);
           CommonBugFender('TestOrderDetails_ViewReport', err);
           handleGraphQlError(err);
           throw new Error('Something went wrong');
@@ -2833,11 +2830,12 @@ export async function downloadDiagnosticReport(
           PermissionsAndroid.RESULTS.DENIED
       ) {
         storagePermissionsToDownload(() => {
-          downloadDiagnosticReport(pdfUrl, appointmentDate, patientName);
+          downloadDiagnosticReport(setLoading,pdfUrl, appointmentDate, patientName, true);
         });
       }
     }
   } catch (error) {
+    setLoading?.(false)
     CommonBugFender('YourOrderTests_downloadLabTest', error);
     throw new Error('Something went wrong');
   }

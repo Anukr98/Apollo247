@@ -16,6 +16,7 @@ import {
   postWebEngageEvent,
   apiCallEnums,
   navigateToHome,
+  nameFormater,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -62,6 +63,11 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     ];
     navigateToHome(props.navigation);
   };
+  const moveToMyOrders = () => {
+    props.navigation.navigate(AppRoutes.YourOrdersTest, {
+      isTest: true,
+    });
+  }
 
   useEffect(() => {
     postwebEngageCheckoutCompletedEvent();
@@ -83,7 +89,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
 
   const handleBack = () => {
-    moveToHome();
+    moveToMyOrders();
     return true;
   };
 
@@ -226,8 +232,8 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     return (
       <View>
         <Spearator style={styles.separator} />
-        <TouchableOpacity style={{ alignItems: 'center' }} onPress={() => moveToHome()}>
-          <Text style={styles.homeScreen}>GO TO HOMESCREEN</Text>
+        <TouchableOpacity style={{ alignItems: 'center' }} onPress={() => moveToMyOrders()}>
+          <Text style={styles.homeScreen}>{nameFormater('Go to my orders','upper')}</Text>
         </TouchableOpacity>
       </View>
     );

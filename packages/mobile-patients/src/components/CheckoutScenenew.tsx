@@ -657,6 +657,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     setLoading && setLoading(true);
     const selectedStore = storeId && stores.find((item) => item.storeid == storeId);
     const { storename, address, workinghrs, phone, city, state, state_id } = selectedStore || {};
+    const appointmentIds = ePrescriptions?.map((item) => item?.id);
     const orderInfo: saveMedicineOrderOMSVariables = {
       medicineCartOMSInput: {
         tatType: tatType,
@@ -739,10 +740,15 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               subPlanId: circleSubPlanId || '',
             }
           : null,
-        totalCashBack: !coupon?.coupon && isCircleSubscription ? Number(cartTotalCashback) || 0 : 0,
+        totalCashBack:
+          (!coupon?.coupon && isCircleSubscription) ||
+          (coupon?.circleBenefits && isCircleSubscription)
+            ? Number(cartTotalCashback) || 0
+            : 0,
         appVersion: DeviceInfo.getVersion(),
         savedDeliveryCharge:
           !!isFreeDelivery || isCircleSubscription ? 0 : AppConfig.Configuration.DELIVERY_CHARGES,
+        appointmentId: appointmentIds?.length ? appointmentIds.join(',') : '',
       },
     };
 
@@ -781,6 +787,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         planPurchaseDetails: !!circleMembershipCharges ? planPurchaseDetails : null,
         healthCreditUsed: hcOrder ? getFormattedAmount(grandTotal) : 0,
         shipments: shipments,
+        appointmentId: appointmentIds?.length ? appointmentIds.join(',') : '',
       },
     };
 
@@ -1062,8 +1069,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         paddingHorizontal: 10,
         paddingVertical: 9,
         borderColor: '#00B38E',
-        borderWidth: 3,
-        borderStyle: 'dashed',
+        borderWidth: 1,
         margin: 0.05 * windowWidth,
       },
       rowSpaceBetween: {

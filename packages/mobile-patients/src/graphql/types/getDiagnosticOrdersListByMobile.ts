@@ -9,6 +9,26 @@ import { DIAGNOSTIC_ORDER_STATUS, DIAGNOSTICS_TYPE, DIAGNOSTIC_ORDER_PAYMENT_TYP
 // GraphQL query operation: getDiagnosticOrdersListByMobile
 // ====================================================
 
+export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj {
+  __typename: "PatientObj";
+  id: string | null;
+  uhid: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  gender: string | null;
+  dateOfBirth: string | null;
+}
+
+export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientAddressObj {
+  __typename: "PatientAddressObj";
+  addressLine1: string | null;
+  addressLine2: string | null;
+  landmark: string | null;
+  state: string | null;
+  city: string | null;
+  zipcode: number | null;
+}
+
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus {
   __typename: "DiagnosticOrdersStatus";
   id: string;
@@ -70,7 +90,14 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
 
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_phleboDetailsObj {
   __typename: "PhleboDetailsObj";
-  PhelboOTP: number | null;
+  PhelboOTP: string | null;
+  PhelbotomistName: string;
+  PhelbotomistMobile: string;
+  PhelbotomistTrackLink: string;
+  TempRecording: string | null;
+  CheckInTime: any | null;
+  PhleboLatitude: number | null;
+  PhleboLongitude: number | null;
 }
 
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderReschedule {
@@ -104,6 +131,8 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   diagnosticEmployeeCode: string;
   visitNo: string | null;
   labReportURL: string | null;
+  patientObj: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj | null;
+  patientAddressObj: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientAddressObj | null;
   diagnosticOrdersStatus: (getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus | null)[] | null;
   diagnosticOrderLineItems: (getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems | null)[] | null;
   orderType: string;

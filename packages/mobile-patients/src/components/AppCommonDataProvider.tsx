@@ -246,6 +246,12 @@ export interface AppCommonDataContextProps {
   setCartBankOffer: ((id: string) => void) | null;
   uploadPrescriptionOptions: UploadPrescriptionOptions[];
   setUploadPrescriptionOptions: ((prescription: UploadPrescriptionOptions[]) => void) | null;
+  expectCallText: string;
+  setExpectCallText: ((str: string) => void) | null;
+  nonCartTatText: string;
+  setNonCartTatText: ((str: string) => void) | null;
+  nonCartDeliveryText: string;
+  setNonCartDeliveryText: ((str: string) => void) | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -341,6 +347,12 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setCartBankOffer: null,
   uploadPrescriptionOptions: [],
   setUploadPrescriptionOptions: null,
+  expectCallText: '',
+  setExpectCallText: null,
+  nonCartTatText: '',
+  setNonCartTatText: null,
+  nonCartDeliveryText: '',
+  setNonCartDeliveryText: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
@@ -512,6 +524,18 @@ export const AppCommonDataProvider: React.FC = (props) => {
     AppCommonDataContextProps['uploadPrescriptionOptions']
   >([]);
 
+  const [expectCallText, setExpectCallText] = useState<AppCommonDataContextProps['expectCallText']>(
+    ''
+  );
+
+  const [nonCartTatText, setNonCartTatText] = useState<AppCommonDataContextProps['nonCartTatText']>(
+    ''
+  );
+
+  const [nonCartDeliveryText, setNonCartDeliveryText] = useState<
+    AppCommonDataContextProps['nonCartDeliveryText']
+  >('');
+
   const [axdcCode, setAxdcCode] = useState<AppCommonDataContextProps['axdcCode']>('');
   const [circlePlanId, setCirclePlanId] = useState<AppCommonDataContextProps['circlePlanId']>('');
   const [healthCredits, setHealthCredits] = useState<AppCommonDataContextProps['healthCredits']>(
@@ -659,6 +683,12 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setCartBankOffer,
         uploadPrescriptionOptions,
         setUploadPrescriptionOptions,
+        expectCallText,
+        setExpectCallText,
+        nonCartTatText,
+        setNonCartTatText,
+        nonCartDeliveryText,
+        setNonCartDeliveryText,
       }}
     >
       {props.children}

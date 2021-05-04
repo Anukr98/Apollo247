@@ -725,6 +725,14 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         },
       });
       const appointments = data?.getPatientAllAppointments;
+
+      let isOnlineFutureOnly: any = [];
+      isOnlineFutureOnly = appointments?.activeAppointments?.filter(
+        (it) =>
+          moment(it?.appointmentDateTime).isAfter(moment(new Date())) &&
+          it?.appointmentType == 'ONLINE'
+      ).length;
+
       const activeFollowUpAppointments = appointments?.activeAppointments?.length
         ? [{ type: 'Active', data: appointments?.activeAppointments! || [] }]
         : [];
@@ -756,7 +764,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       setLoading(false);
       setPageLoading(false);
 
-      if (activeAppointments?.length || followUpAppointments?.length) {
+      if (isOnlineFutureOnly > 0) {
         if (Platform.OS === 'ios') {
           callPermissions();
         } else {
@@ -945,6 +953,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               callType: '',
               prescription: '',
               disableChat: item.doctorInfo && pastAppointmentItem,
+            })
+          : item.appointmentType === 'PHYSICAL'
+          ? props.navigation.navigate(AppRoutes.AppointmentDetailsPhysical, {
+              data: item,
+              from: 'Consult',
             })
           : props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: g(item, 'doctorId') || '',

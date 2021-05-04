@@ -196,6 +196,7 @@ export enum WebEngageEventName {
   DIAGNOSITC_ORDER_RESCHEDULE = 'Diagnostic order rescheduled',
   DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
   DIAGNOSITC_HOME_PAGE_BANNER_CLICKED = 'Diagnostic home page banner',
+  DIAGNOSTIC_PAYMENT_PAGE_VIEWED = 'Diagnostic payment page viewed',
 
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
@@ -657,6 +658,7 @@ export interface ItemSearchedOnLanding extends DiagnosticUserInfo {
   'Keyword Entered': string;
   '# Results appeared': number;
   'Item in Results'?: object[];
+  'Popular'?: 'Yes' | 'No';
 }
 
 export interface ItemClickedOnLanding extends DiagnosticUserInfo {
@@ -1194,10 +1196,14 @@ export interface WebEngageEvents {
     'Section Name': string;
   };
   [WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION]: {
-    Source: 'Full Search' | 'Home Page' | 'Cart Page' | 'Partial Search' | 'Deeplink';
+    Source: 'Full Search' | 'Home Page' | 'Cart Page' | 'Partial Search' | 'Deeplink' | 'Popular search';
     'Item Name': string;
-    'Item Type': string;
+    'Item Type'?: string;
     'Item Code': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    'Item ID' : string | number;
+    'Item Price'?: number | string;
   };
 
   [WebEngageEventName.DIAGNOSTIC_CART_VIEWED]: {
@@ -1263,9 +1269,10 @@ export interface WebEngageEvents {
   [WebEngageEventName.DIAGNOSTIC_ADD_TO_CART]: {
     'Item Name': string;
     'Item ID': string; // (SKUID)
-    Source: 'Home page' | 'Full search' | 'Details page' | 'Partial search' | 'Listing page';
+    Source: 'Home page' | 'Full search' | 'Details page' | 'Partial search' | 'Listing page' | 'Popular search';
     Section?: string;
   };
+  
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order id': string | number;
     Pincode: string | number;
@@ -1306,6 +1313,10 @@ export interface WebEngageEvents {
     'Slot Time': string;
     'Slot Date': string;
     'Order id': string;
+  };
+  [WebEngageEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED]: {
+    'UHID': string;
+    'Order amount': string | number;
   };
 
   // ********** ConsultEvents ********** \\

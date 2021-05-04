@@ -70,7 +70,7 @@ export const StorePickup: React.FC<StorePickupProps> = (props) => {
           }
         })
         .catch((e) => {
-          CommonBugFender('YourCart_getPlaceInfoByLatLng', e);
+          CommonBugFender('StorePickup_getPlaceInfoByLatLng', e);
         });
     }
   }, []);

@@ -106,27 +106,11 @@
 	<string>$(PRODUCT_NAME)  would like to access speech recognition. Speech data from this app will be sent to Apple to process your requests. This will also help Apple improve its speech recognition technology.</string>
 	<key>UIAppFonts</key>
 	<array>
-		<string>MaterialIcons-Regular.ttf</string>
-		<string>IBMPlexSans-ThinItalic.ttf</string>
-		<string>IBMPlexSans-Thin.ttf</string>
-		<string>IBMPlexSans-SemiBoldItalic.ttf</string>
 		<string>IBMPlexSans-SemiBold.ttf</string>
 		<string>IBMPlexSans-Regular.ttf</string>
-		<string>IBMPlexSans-MediumItalic.ttf</string>
 		<string>IBMPlexSans-Medium.ttf</string>
-		<string>IBMPlexSans-LightItalic.ttf</string>
 		<string>IBMPlexSans-Light.ttf</string>
-		<string>IBMPlexSans-Italic.ttf</string>
-		<string>IBMPlexSans-ExtraLightItalic.ttf</string>
-		<string>IBMPlexSans-ExtraLight.ttf</string>
 		<string>IBMPlexSans-Bold.ttf</string>
-		<string>IBMPlexSans-BoldItalic.ttf</string>
-		<string>Comfortaa_Regular.ttf</string>
-		<string>OpenSans-Bold.ttf</string>
-		<string>OpenSans-ExtraBold.ttf</string>
-		<string>OpenSans-Light.ttf</string>
-		<string>OpenSans-Regular.ttf</string>
-		<string>OpenSans-Semibold.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

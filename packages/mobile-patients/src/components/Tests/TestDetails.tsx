@@ -74,6 +74,7 @@ import {
   navigateToHome,
   navigateToScreenWithEmptyStack,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const screenWidth = Dimensions.get('window').width;
 export interface TestPackageForDetails extends TestPackage {
@@ -140,7 +141,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     isDiagnosticCircleSubscription,
     testDetailsBreadCrumbs,
     setTestDetailsBreadCrumbs,
-    deliveryAddressId: diagnosticDeliveryAddressId,
   } = useDiagnosticsCart();
   const { pharmacyCircleAttributes } = useShoppingCart();
 
@@ -310,32 +310,37 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       item?.diagnosticWidgetData?.map((data: any, index: number) => Number(data?.itemId))
     );
     //restriction less than 12.
-    const res = Promise.all(
-      itemIds?.map((item: any) =>
-        fetchPricesForCityId(Number(cityId!) || 9, item?.length > 12 ? item?.slice(0, 12) : item)
-      )
-    );
+    try {
+      const res = Promise.all(
+        itemIds?.map((item: any) =>
+          fetchPricesForCityId(Number(cityId!) || 9, item?.length > 12 ? item?.slice(0, 12) : item)
+        )
+      );
 
-    const response = (await res)?.map((item: any) =>
-      g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics')
-    );
-    let newWidgetsData = [...widgetsData];
+      const response = (await res)?.map((item: any) =>
+        g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics')
+      );
+      let newWidgetsData = [...widgetsData];
 
-    for (let i = 0; i < widgetsData?.length; i++) {
-      for (let j = 0; j < widgetsData?.[i]?.diagnosticWidgetData?.length; j++) {
-        const findIndex = widgetsData?.[i]?.diagnosticWidgetData?.findIndex(
-          (item: any) => item?.itemId == Number(response?.[i]?.[j]?.itemId)
-        );
-        if (findIndex !== -1) {
-          (newWidgetsData[i].diagnosticWidgetData[findIndex].packageCalculatedMrp =
-            response?.[i]?.[j]?.packageCalculatedMrp),
-            (newWidgetsData[i].diagnosticWidgetData[findIndex].diagnosticPricing =
-              response?.[i]?.[j]?.diagnosticPricing);
+      for (let i = 0; i < widgetsData?.length; i++) {
+        for (let j = 0; j < widgetsData?.[i]?.diagnosticWidgetData?.length; j++) {
+          const findIndex = widgetsData?.[i]?.diagnosticWidgetData?.findIndex(
+            (item: any) => item?.itemId == Number(response?.[i]?.[j]?.itemId)
+          );
+          if (findIndex !== -1) {
+            (newWidgetsData[i].diagnosticWidgetData[findIndex].packageCalculatedMrp =
+              response?.[i]?.[j]?.packageCalculatedMrp),
+              (newWidgetsData[i].diagnosticWidgetData[findIndex].diagnosticPricing =
+                response?.[i]?.[j]?.diagnosticPricing);
+          }
         }
       }
+      setWidgetsData(newWidgetsData);
+      setLoadingContext?.(false);
+    } catch (error) {
+      CommonBugFender('errorInFetchPricing api__TestDetails', error);
+      setLoadingContext?.(false);
     }
-    setWidgetsData(newWidgetsData);
-    setLoadingContext?.(false);
   };
 
   const homeBreadCrumb: TestBreadcrumbLink = {
@@ -377,16 +382,22 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   }, [movedFrom, itemName]);
 
   useEffect(() => {
-    DiagnosticDetailsViewed(
-      isDeep == 'deeplink' ? 'Deeplink' : testInfo?.source,
-      testInfo?.ItemName || itemId,
-      testInfo?.type,
-      testInfo?.ItemID || itemId,
-      currentPatient,
-      testInfo?.Rate,
-      pharmacyCircleAttributes
-    );
-  }, []);
+    if (testInfo?.Rate) {
+      DiagnosticDetailsViewed(
+        isDeep == 'deeplink'
+          ? 'Deeplink'
+          : movedFrom == AppRoutes.SearchTestScene
+          ? 'Popular search'
+          : testInfo?.source! || testDetails?.source,
+        itemName,
+        testInfo?.type! || testDetails?.type,
+        testInfo?.ItemID || itemId,
+        currentPatient,
+        testInfo?.Rate || testDetails?.Rate,
+        pharmacyCircleAttributes
+      );
+    }
+  }, [testInfo]);
 
   function createSampleType(data: any) {
     const array = data?.map(

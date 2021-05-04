@@ -65,7 +65,6 @@ export const handleOpenURL = (event: any) => {
       }
     } catch (error) {}
     route = route ? route?.toLowerCase() : '';
-
     switch (route) {
       case 'consult':
       case 'consults':
@@ -290,6 +289,22 @@ export const handleOpenURL = (event: any) => {
         };
         break;
 
+      case 'prohealth':
+        if (data.length === 2) {
+          return {
+            routeName: 'prohealth',
+            id: linkId,
+            isCall: false,
+            data: data,
+          }
+        }
+        else{
+          return {
+            routeName: 'prohealth',
+          }
+        }
+        break;
+
       default:
         const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
           source: 'deeplink',
@@ -302,7 +317,11 @@ export const handleOpenURL = (event: any) => {
         };
         break;
     }
-  } catch (error) {}
+  } catch (error) {
+    return {
+      routeName: 'ConsultRoom',
+    };
+  }
 };
 
 export const pushTheView = (
@@ -476,6 +495,9 @@ export const pushTheView = (
     case 'MyTestOrders':
       navigateToView(navigation, AppRoutes.YourOrdersTest);
       break;
+    case 'prohealth':
+      navigateToView(navigation, AppRoutes.ProHealthWebView, {covidUrl : id,  goBackCallback: ()=>webViewGoBack(navigation), movedFrom: 'deeplink'})
+      break;
     default:
       const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
         source: 'deeplink',
@@ -485,6 +507,20 @@ export const pushTheView = (
       break;
   }
 };
+
+const  webViewGoBack = (navigation: NavigationScreenProp<NavigationRoute<object>, object>)=> {
+  navigation.dispatch(
+    StackActions.reset({
+      index: 0,
+      key: null,
+      actions: [
+        NavigationActions.navigate({
+          routeName: AppRoutes.ConsultRoom,
+        }),
+      ],
+    })
+  );
+}
 
 const navigateToView = (
   navigation: NavigationScreenProp<NavigationRoute<object>, object>,

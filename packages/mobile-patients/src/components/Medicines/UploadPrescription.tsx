@@ -21,6 +21,7 @@ import {
   postWebEngageEvent,
   findAddrComponents,
   formatAddress,
+  setAsyncPharmaLocation,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
@@ -378,13 +379,14 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         selectedMedicineOption === CALL_ME && !!userComment
           ? `${prescriptionOption}, ${userComment}`?.trim()
           : prescriptionOption;
+      const appointmentIds = e_Prescription.length ? e_Prescription?.map((item) => item?.id) : [];
 
       const prescriptionMedicineInput: savePrescriptionMedicineOrderOMSVariables = {
         prescriptionMedicineOMSInput: {
           patientId: (currentPatient && currentPatient.id) || '',
           medicineDeliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
           ...(storeId ? { shopId: storeId } : {}),
-          appointmentId: '',
+          appointmentId: appointmentIds?.length ? appointmentIds.join(',') : '',
           patinetAddressId: deliveryAddressId || '',
           prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),
           prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
@@ -1016,6 +1018,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           onPressSelectAddress={(address) => {
             checkServicability(address, false);
             nonCartAvailabilityTat(address?.zipcode);
+            setAsyncPharmaLocation(address);
             hideAphAlert!();
           }}
         />
