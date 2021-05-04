@@ -1,7 +1,7 @@
 import { AphOverlay, AphOverlayProps } from '@aph/mobile-patients/src/components/ui/AphOverlay';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CalendarView, CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
-import { DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
+import { DriveWayIcon, DriveWayIcon, DropdownGreen, InfoIconRed } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { GET_CUSTOMIZED_DIAGNOSTIC_SLOTS } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -16,12 +16,13 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, StyleSheet, Text, View, ScrollView } from 'react-native';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   getDiagnosticSlotsCustomized,
   getDiagnosticSlotsCustomizedVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsCustomized';
+import { Overlay } from 'react-native-elements';
 
 export interface TestSlotSelectionOverlayNewProps extends AphOverlayProps {
   zipCode: number;
@@ -37,7 +38,7 @@ export interface TestSlotSelectionOverlayNewProps extends AphOverlayProps {
   itemId?: any[];
   source?: string;
 }
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewProps> = (props) => {
   const { isTodaySlotUnavailable, maxDate } = props;
   const { cartItems } = useDiagnosticsCart();
@@ -134,47 +135,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
       data: val,
     }));
 
-    return (
-      <View style={[styles.sectionStyle, { paddingHorizontal: 16 }]}>
-        <Text style={{ ...theme.viewStyles.text('M', 14, '#02475b'), marginTop: 16 }}>Slot</Text>
-        <View style={styles.optionsView}>
-          <MaterialMenu
-            options={dropDownOptions}
-            selectedText={slotInfo && `${formatTestSlot(slotInfo.slotInfo.startTime!)}`}
-            menuContainerStyle={styles.menuStyle}
-            itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b') }}
-            selectedTextStyle={{ ...theme.viewStyles.text('M', 16, '#00b38e') }}
-            onPress={({ data }) => {
-              const selectedSlot = getTestSlotDetailsByTime(
-                slots,
-                (data as UniqueSlotType).startTime,
-                (data as UniqueSlotType).endTime
-              );
-              setSlotInfo(selectedSlot);
-            }}
-          >
-            <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-              <View style={[styles.placeholderViewStyle]}>
-                <Text
-                  style={[styles.placeholderTextStyle, , slotInfo ? null : styles.placeholderStyle]}
-                >
-                  {spinner
-                    ? 'Loading...'
-                    : dropDownOptions?.length
-                    ? slotInfo
-                      ? `${formatTestSlot(slotInfo.slotInfo.startTime!)}`
-                      : 'Please select a slot'
-                    : 'No slots available'}
-                </Text>
-                <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
-                  <DropdownGreen />
-                </View>
-              </View>
-            </View>
-          </MaterialMenu>
-        </View>
-      </View>
-    );
+    return <View></View>;
   };
 
   const renderCalendarView = () => {
@@ -198,7 +159,43 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           .add(1, 'day')
           .toDate()
       : new Date();
-
+    const datearray = [
+      {
+        date:'12',
+        day:'Mon'
+      },
+      {
+        date:'13',
+        day:'Tue'
+      },
+      {
+        date:'14',
+        day:'Wed'
+      },
+      {
+        date:'15',
+        day:'Thu'
+      },
+      {
+        date:'16',
+        day:'Fri'
+      },
+      {
+        date:'17',
+        day:'Sat'
+      },{
+        date:'18',
+        day:'Sun'
+      },
+      {
+        date:'19',
+        day:'Mon'
+      },
+      {
+        date:'20',
+        day:'Tue'
+      },
+    ]
     return (
       // <CalendarView
       //   source={props.source}
@@ -217,13 +214,53 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
       //   }}
       // />
       <View>
-        <Text>Bhawana</Text>
+        <Text
+          style={[
+            {
+              ...theme.fonts.IBMPlexSansMedium(17),
+              color: theme.colors.LIGHT_BLUE,
+              padding: 15,
+            },
+            props.headingTextStyle,
+          ]}
+        >
+          {' '}
+          {props.heading}
+        </Text>
+        <View style={{borderColor:'#e7e7e7',borderWidth:1,borderRadius:10,margin:10,padding:10}}>
+          <Text style={{
+              ...theme.fonts.IBMPlexSansMedium(14),
+              color: theme.colors.LIGHT_BLUE,
+              padding: 10,
+            }}>February 2021</Text>
+          <ScrollView 
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          >
+            {
+              datearray.map((item)=>(
+                  <View style={{paddingHorizontal:10,marginHorizontal:10,backgroundColor:'#00B38E'}}>
+                    <Text>{item?.date}</Text>
+                    <Text>{item?.day}</Text>
+                  </View>
+                )
+                )
+            } 
+            
+          </ScrollView>
+        </View>
       </View>
     );
   };
 
   const isDoneBtnDisabled = !date || !slotInfo;
-
+  const infoPanel = () => {
+    return (
+      <View>
+        <InfoIconRed/>
+      </View>
+    )
+  }
   const renderBottomButton = (
     <Button
       style={{ margin: 16, marginTop: 5, width: 'auto' }}
@@ -238,24 +275,43 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   );
 
   return (
-    <AphOverlay {...aphOverlayProps}>
+    <Overlay
+      isVisible
+      // onRequestClose={() => (onPressClose())}
+      windowBackgroundColor={'rgba(0, 0, 0, 0.6)'}
+      containerStyle={{ marginBottom: 0 }}
+      fullScreen
+      transparent
+      overlayStyle={styles.phrOverlayStyle}
+    >
       <View style={styles.containerStyle}>
         {renderCalendarView()}
         {renderSlotSelectionView()}
+        {infoPanel()}
         {renderBottomButton}
       </View>
-    </AphOverlay>
+    </Overlay>
   );
 };
 
 const styles = StyleSheet.create({
   containerStyle: {
+    flex: 1,
     backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-    borderBottomRightRadius: 10,
-    borderBottomLeftRadius: 10,
-    marginTop: 20,
+    marginTop: 120,
+  },
+  phrOverlayStyle: {
+    padding: 0,
+    margin: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'transparent',
+    overflow: 'hidden',
+    elevation: 0,
+    bottom: 0,
+    position: 'absolute',
   },
   optionsView: {
     flexDirection: 'row',
