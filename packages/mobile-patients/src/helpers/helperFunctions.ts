@@ -2694,12 +2694,14 @@ export const storagePermissionsToDownload = (doRequest?: () => void) => {
 };
 
 export async function downloadDiagnosticReport(
+  setLoading: UIElementsContextProps['setLoading'],
   pdfUrl: string,
   appointmentDate: string,
   patientName: string,
   showToast: boolean,
   downloadFileName?: string
 ) {
+  setLoading?.(true);
   let result = Platform.OS === 'android' && (await requestReadSmsPermission());
   try {
     if (
@@ -2743,11 +2745,13 @@ export async function downloadDiagnosticReport(
       })
         .fetch('GET', pdfUrl, {})
         .then((res) => {
+          setLoading?.(false);
           Platform.OS === 'ios'
             ? RNFetchBlob.ios.previewDocument(res.path())
             : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
         })
         .catch((err) => {
+          setLoading?.(false);
           CommonBugFender('TestOrderDetails_ViewReport', err);
           handleGraphQlError(err);
           throw new Error('Something went wrong');
@@ -2762,11 +2766,12 @@ export async function downloadDiagnosticReport(
           PermissionsAndroid.RESULTS.DENIED
       ) {
         storagePermissionsToDownload(() => {
-          downloadDiagnosticReport(pdfUrl, appointmentDate, patientName, true);
+          downloadDiagnosticReport(setLoading,pdfUrl, appointmentDate, patientName, true);
         });
       }
     }
   } catch (error) {
+    setLoading?.(false)
     CommonBugFender('YourOrderTests_downloadLabTest', error);
     throw new Error('Something went wrong');
   }

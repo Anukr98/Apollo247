@@ -15,6 +15,17 @@ export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_clo
   lastName: string | null;
 }
 
+export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders_diagnosticOrderLineItems_itemObj {
+  __typename: "ItemObj";
+  inclusions: (number | null)[] | null;
+  testPreparationData: string | null;
+}
+
+export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders_diagnosticOrderLineItems {
+  __typename: "DiagnosticOrderLineItems";
+  itemObj: getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders_diagnosticOrderLineItems_itemObj | null;
+}
+
 export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders {
   __typename: "DiagnosticOrders";
   id: string;
@@ -25,6 +36,7 @@ export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_clo
   labReportURL: string | null;
   paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
   patientObj: getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders_patientObj | null;
+  diagnosticOrderLineItems: (getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders_diagnosticOrderLineItems | null)[] | null;
 }
 
 export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList {
