@@ -56,7 +56,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const renderImage = () => {
     const imageUrl = productsThumbnailUrl(item?.thumbnail!);
     return (
-      <View style={{ width: 80, justifyContent: 'center', opacity: itemAvailable ? 1 : 0.3 }}>
+      <View style={[styles.imageContainer, { opacity: itemAvailable ? 1 : 0.3 }]}>
         {item?.prescriptionRequired && (
           <View style={styles.rxSymbolContainer}>
             <PrescriptionRequiredIcon style={styles.rxSymbol} />
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginBottom: 5,
     flexDirection: 'row',
-    paddingRight: 10,
+    paddingHorizontal: 10,
     paddingVertical: 8,
     minHeight: 110,
   },
@@ -389,5 +389,10 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     width: 15,
     height: 15,
+  },
+  imageContainer: {
+    width: 80,
+    justifyContent: 'center',
+    marginRight: 7,
   },
 });
