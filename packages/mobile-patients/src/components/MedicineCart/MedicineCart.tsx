@@ -182,6 +182,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const pharmacyPincode =
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
   const [showCareSelectPlans, setShowCareSelectPlans] = useState<boolean>(true);
+  const [tatResponse, setTatResponse] = useState<string>('');
 
   useEffect(() => {
     fetchAddress();
@@ -236,12 +237,20 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   useEffect(() => {
     // call servicability api if new address is added from cart
     const addressLength = addresses.length;
-    if (!!addressLength && !!newAddressAdded) {
+    if (!!addressLength && !!newAddressAdded && !!tatResponse) {
       const newAddress = addresses.filter((value) => value.id === newAddressAdded);
       checkServicability(newAddress[0]);
+      postPharmacyAddNewAddressCompleted(
+        'Cart',
+        g(selectedAddress, 'zipcode')!,
+        formatAddress(selectedAddress),
+        moment(tatResponse, AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT).toDate(),
+        moment(tatResponse).diff(new Date(), 'd'),
+        'Yes'
+      );
       setNewAddressAdded && setNewAddressAdded('');
     }
-  }, [newAddressAdded]);
+  }, [newAddressAdded, selectedAddress, tatResponse]);
 
   useEffect(() => {
     availabilityTat(false);
@@ -465,6 +474,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             inventoryData = inventoryData.concat(order?.items);
           });
           setloading!(false);
+          setTatResponse(response[0]?.tat);
           addressSelectedEvent(selectedAddress, response[0]?.tat, response);
           addressChange && NavigateToCartSummary();
           updatePricesAfterTat(inventoryData, updatedCartItems);
@@ -547,18 +557,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       orderSelected?.length > 1,
       splitOrderDetails
     );
-
-    if (selectedAddress?.id === newAddressAdded) {
-      postPharmacyAddNewAddressCompleted(
-        'Cart',
-        g(selectedAddress, 'zipcode')!,
-        formatAddress(selectedAddress),
-        moment(tatDate, AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT).toDate(),
-        moment(tatDate).diff(currentDate, 'd'),
-        'Yes'
-      );
-      setNewAddressAdded && setNewAddressAdded('');
-    }
   }
 
   async function setDefaultAddress(address: savePatientAddress_savePatientAddress_patientAddress) {
