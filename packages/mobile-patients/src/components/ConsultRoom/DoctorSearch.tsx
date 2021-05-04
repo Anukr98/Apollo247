@@ -727,6 +727,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
+        console.log('csk log', JSON.stringify(data));
         try {
           setshowPastSearchSpinner(false);
           if (data && data.getPatientPastSearches) {
