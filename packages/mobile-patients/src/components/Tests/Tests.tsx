@@ -603,7 +603,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
           }
         }
       }
-      console.log({ newWidgetsData });
       newWidgetsData?.length > 0 && reloadWidget ? setReloadWidget(false) : setReloadWidget(true);
       setWidgetsData(newWidgetsData);
       setSectionLoading(false);
