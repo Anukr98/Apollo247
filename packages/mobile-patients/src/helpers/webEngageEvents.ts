@@ -2117,6 +2117,7 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    'Order Type': 'Cart'| 'Non-Cart';
   };
   [WebEngageEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS]: {
     'Doctor Name': string;

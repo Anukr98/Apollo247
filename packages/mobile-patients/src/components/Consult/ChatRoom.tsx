@@ -3763,7 +3763,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const onAddToCart = async () => {
-    postWebEngageEvent(WebEngageEventName.ORDER_MEDICINES_IN_CONSULT_ROOM, UserInfo);
     const prrescriptions = caseSheet?.[0]?.medicinePrescription || MedicinePrescriptions || [];
     const medPrescription = prrescriptions.filter((item: any) => item!.id);
     const isCartOrder = medPrescription?.length === prrescriptions.length;
@@ -3820,6 +3819,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     props.navigation.navigate(AppRoutes.UploadPrescription, {
       ePrescriptionsProp: [presToAdd],
       type: 'E-Prescription',
+    });
+    postWebEngageEvent(WebEngageEventName.ORDER_MEDICINES_IN_CONSULT_ROOM, {
+      ...UserInfo,
+      'Order Type': isCartOrder ? 'Cart' : 'Non-Cart',
     });
   };
 
