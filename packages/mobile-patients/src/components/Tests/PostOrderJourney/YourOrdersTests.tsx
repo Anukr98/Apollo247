@@ -53,7 +53,7 @@ import {
   getPatientNameById,
   handleGraphQlError,
   TestSlot,
-  nameFormater
+  nameFormater,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DisabledTickIcon, TickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
@@ -173,9 +173,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     GetCurrentPatients_getCurrentPatients_patients[] | null
   >(allCurrentPatients);
   const [currentOffset, setCurrentOffset] = useState<number>(1);
-  const [resultList, setResultList] = useState<(orderListByMobile | null)[] | null>(
-    []
-  );
+  const [resultList, setResultList] = useState<(orderListByMobile | null)[] | null>([]);
   var rescheduleDate: Date,
     rescheduleSlotObject: {
       slotStartTime: any;
@@ -208,7 +206,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       return true;
     } else {
       if (isTest) {
-        props.navigation.navigate(AppRoutes.Tests)
+        props.navigation.navigate(AppRoutes.Tests);
       }
     }
     return false;
@@ -252,7 +250,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   useEffect(() => {
-    refetchOrders()
+    refetchOrders();
   }, [currentOffset]);
   const fetchOrders = async (isRefetch: boolean) => {
     try {
@@ -267,21 +265,21 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             mobileNumber: currentPatient && currentPatient.mobileNumber,
             paginated: true,
             limit: 10,
-            offset: currentOffset
+            offset: currentOffset,
           },
           fetchPolicy: 'no-cache',
         })
-        .then( (data) => {
-          const ordersList =  data?.data?.getDiagnosticOrdersListByMobile?.ordersList || [];
-          setOrderListData(ordersList)
+        .then((data) => {
+          const ordersList = data?.data?.getDiagnosticOrdersListByMobile?.ordersList || [];
+          setOrderListData(ordersList);
           if (currentOffset == 1) {
             setResultList(ordersList);
           } else {
-            setResultList(resultList?.concat(ordersList))
+            setResultList(resultList?.concat(ordersList));
           }
-          const finalList = currentOffset == 1 ? ordersList : resultList?.concat(ordersList)
+          const finalList = currentOffset == 1 ? ordersList : resultList?.concat(ordersList);
           const filteredOrderList =
-          finalList ||
+            finalList ||
             []?.filter((item: orderListByMobile) => {
               if (
                 item?.diagnosticOrderLineItems?.length &&
@@ -356,9 +354,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                     };
                   }
                   order.phleboDetailsObj.PhelboOTP = findOrder?.orderPhleboDetails?.phleboOTP;
-                  order.phleboDetailsObj.PhelbotomistName = findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.name;
-                  order.phleboDetailsObj.PhelbotomistMobile = findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.mobile;
-                  order.phleboDetailsObj.PhelbotomistTrackLink = findOrder?.orderPhleboDetails?.phleboTrackLink;
+                  order.phleboDetailsObj.PhelbotomistName =
+                    findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.name;
+                  order.phleboDetailsObj.PhelbotomistMobile =
+                    findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.mobile;
+                  order.phleboDetailsObj.PhelbotomistTrackLink =
+                    findOrder?.orderPhleboDetails?.phleboTrackLink;
                   order.phleboDetailsObj.CheckInTime = findOrder?.phleboEta?.estimatedArrivalTime;
                 }
               }
@@ -1198,10 +1199,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPressViewDetails={() => _navigateToYourTestDetails(order, true)}
         onPressViewReport={() => _onPressViewReport(order)}
         phelboObject={order?.phleboDetailsObj}
-        onPressRatingStar={(star)=>{
+        onPressRatingStar={(star) => {
           props.navigation.navigate(AppRoutes.TestRatingScreen, {
             ratingStar: star,
-            orderDetails: order
+            orderDetails: order,
           });
         }}
         style={[
@@ -1241,7 +1242,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string) {
     setLoading?.(true);
     try {
-      await downloadDiagnosticReport(pdfUrl, appointmentDate, patientName, true);
+      await downloadDiagnosticReport(setLoading, pdfUrl, appointmentDate, patientName, true);
     } catch (error) {
       setLoading?.(false);
       CommonBugFender('YourOrderTests_downloadLabTest', error);
@@ -1252,14 +1253,17 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const renderLoadMore = () => {
     return (
-        <TouchableOpacity style={styles.loadMoreView} onPress={()=>{
+      <TouchableOpacity
+        style={styles.loadMoreView}
+        onPress={() => {
           setCurrentOffset(currentOffset + 1);
-        }}>
-          <Text style={styles.textLoadMore}>{nameFormater('load more', 'upper')}</Text>
-          <DownO size="sm_l" style={styles.downArrow}/>
-        </TouchableOpacity>
+        }}
+      >
+        <Text style={styles.textLoadMore}>{nameFormater('load more', 'upper')}</Text>
+        <DownO size="sm_l" style={styles.downArrow} />
+      </TouchableOpacity>
     );
-  }
+  };
   const renderOrders = () => {
     return (
       <FlatList
@@ -1268,7 +1272,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         extraData={orderListData}
         renderItem={({ item, index }) => renderOrder(item, index)}
         ListEmptyComponent={renderNoOrders()}
-        ListFooterComponent={orderListData?.length && orderListData?.length < 10 || loading || error ? null : renderLoadMore()}
+        ListFooterComponent={
+          (orderListData?.length && orderListData?.length < 10) || loading || error
+            ? null
+            : renderLoadMore()
+        }
       />
     );
   };
@@ -1509,19 +1517,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
   },
-  loadMoreView:{
-    flexDirection:'row',
+  loadMoreView: {
+    flexDirection: 'row',
     justifyContent: 'center',
-    width:'100%',
-    paddingBottom:10,
+    width: '100%',
+    paddingBottom: 10,
   },
-  textLoadMore:{
+  textLoadMore: {
     ...theme.viewStyles.text('SB', 15, '#FC9916'),
-    paddingHorizontal:8,
-    alignSelf:'flex-start',
+    paddingHorizontal: 8,
+    alignSelf: 'flex-start',
   },
   downArrow: {
-    alignSelf:'flex-end',
+    alignSelf: 'flex-end',
   },
   textHeadingModal: {
     ...theme.viewStyles.text('SB', 17, '#02475b'),

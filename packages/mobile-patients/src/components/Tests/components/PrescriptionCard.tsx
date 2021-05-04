@@ -1,10 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { PrescriptionPad } from '@aph/mobile-patients/src/components/ui/Icons';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
-
+const { width: winWidth } = Dimensions.get('window');
 interface PrescriptionCardProps {
   heading1?: string;
   docName?: string;
@@ -55,6 +55,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.cardViewStyle,
     padding: 16,
     margin: 16,
+    width: winWidth - 32,
   },
   rowStyles: { flexDirection: 'row', justifyContent: 'space-between' },
   heading1: { ...theme.viewStyles.text('M', 12.5, colors.SHERPA_BLUE, 1, 20) },

@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import {
   AppointmentIcon,
+  InfoIconRed,
   MedicalHistoryIcon,
   SampleTestTubesIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -15,12 +16,19 @@ import {
   DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY,
   DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
 } from '@aph/mobile-patients/src/strings/AppConfig';
+const { width: winWidth } = Dimensions.get('window');
+
+const AFTER_COLLECTION_STATUS = [
+  DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY,
+  DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
+].flat(1);
 
 interface HomePageOrderStatusCardProps {
   status: DIAGNOSTIC_ORDER_STATUS;
   patientName?: string;
   appointmentTime?: string | Date;
   onPressBookNow?: () => void;
+  testPreparationData?: string | null | undefined;
 }
 
 export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (props) => {
@@ -64,6 +72,14 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
       <View>
         <Text style={styles.content}>{content}</Text>
       </View>
+      {!!props.testPreparationData &&
+        props.testPreparationData != '' &&
+        !AFTER_COLLECTION_STATUS.includes(props.status) && (
+          <View style={styles.prepDataContainer}>
+            <InfoIconRed style={styles.infoIconStyle} />
+            <Text style={styles.prepDataStyle}>{props.testPreparationData}</Text>
+          </View>
+        )}
       <View style={styles.buttonView}>
         <TouchableOpacity onPress={props.onPressBookNow}>
           <Text style={styles.bookNowText}>{nameFormater(options, 'upper')}</Text>
@@ -78,6 +94,8 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.cardViewStyle,
     padding: 16,
     margin: 16,
+    minHeight: 150,
+    width: winWidth - 32,
   },
   rowStyles: { flexDirection: 'row', justifyContent: 'space-between' },
   heading1: {
@@ -94,4 +112,10 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   iconStyle: { height: 35, width: 35, resizeMode: 'contain' },
+  prepDataContainer: { flexDirection: 'row', marginVertical: 10, alignItems: 'center' },
+  infoIconStyle: { resizeMode: 'contain', height: 18, width: 18 },
+  prepDataStyle: {
+    ...theme.viewStyles.text('R', 11, '#FF637B', 1, 14),
+    marginHorizontal: 10,
+  },
 });

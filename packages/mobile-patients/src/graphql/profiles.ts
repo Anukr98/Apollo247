@@ -4674,8 +4674,8 @@ export const GET_PHLOBE_DETAILS = gql`
 `;
 
 export const GET_PATIENT_LATEST_PRESCRIPTION = gql `
-  query getPatientLatestPrescriptions($patientId: String!, $limit: Int!, $cityId: Int!){
-    getPatientLatestPrescriptions(patientId: $patientId, limit: $limit, cityId: $cityId){
+  query getPatientLatestPrescriptions($mobileNumber: String!, $limit: Int!, $cityId: Int!){
+    getPatientLatestPrescriptions(mobileNumber: $mobileNumber, limit: $limit, cityId: $cityId){
       doctorName
       doctorCredentials
       patientName
@@ -4711,6 +4711,12 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql `
           firstName
           lastName
         },
+        diagnosticOrderLineItems{
+          itemObj{
+            inclusions
+            testPreparationData
+          }
+        }  
       }
     }
   }`;
@@ -4753,6 +4759,12 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
           firstName
           lastName
         },
+        diagnosticOrderLineItems{
+          itemObj{
+            inclusions
+            testPreparationData
+          }
+        }  
       }
     }
   }
