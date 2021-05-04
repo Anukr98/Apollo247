@@ -1447,13 +1447,19 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             onPressCallback={(item: any, index: number) => {
               clickedBucket.current = 'Doctor';
               const itemNo = index + 1;
+              console.log('csk serach item click', JSON.stringify(item));
               postDoctorClickWEGEvent({ ...item, itemNo }, 'Search');
               postSearchedResultWebEngageEvent(item?.displayName);
               CommonLogEvent(AppRoutes.DoctorSearch, 'renderSearchDoctorResultsRow clicked');
-              props.navigation.navigate(AppRoutes.DoctorDetails, {
-                doctorId: item?.id,
-                callSaveSearch: 'true',
-              });
+              item?.allowBookingRequest
+                ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
+                    doctorId: item.id,
+                    callSaveSearch: 'true',
+                  })
+                : props.navigation.navigate(AppRoutes.DoctorDetails, {
+                    doctorId: item?.id,
+                    callSaveSearch: 'true',
+                  });
             }}
           />
         </View>
