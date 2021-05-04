@@ -7,8 +7,6 @@ import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
-  GET_INTERNAL_ORDER,
-  GET_PATIENT_ADDRESS_BY_ID,
   RESCHEDULE_DIAGNOSTIC_ORDER,
   GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
   GET_PHLOBE_DETAILS,
@@ -45,6 +43,7 @@ import {
   DIAGNOSTIC_ORDER_STATUS,
   MedicalRecordType,
   RescheduleDiagnosticsInput,
+  Gender,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -77,14 +76,6 @@ import {
   rescheduleDiagnosticsOrder,
   rescheduleDiagnosticsOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/rescheduleDiagnosticsOrder';
-import {
-  getPatientAddressById,
-  getPatientAddressByIdVariables,
-} from '@aph/mobile-patients/src/graphql/types/getPatientAddressById';
-import {
-  getOrderInternal,
-  getOrderInternalVariables,
-} from '@aph/mobile-patients/src/graphql/types/getOrderInternal';
 import {
   DiagnosticRescheduleOrder,
   DiagnosticViewReportClicked,
@@ -121,13 +112,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
   ];
 
-  const { addresses, diagnosticSlot, setDiagnosticSlot } = useDiagnosticsCart();
+  const { diagnosticSlot, setDiagnosticSlot } = useDiagnosticsCart();
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [date, setDate] = useState<Date>(new Date());
   const [showDisplaySchedule, setDisplaySchedule] = useState<boolean>(false);
-  const [pincode, setPincode] = useState<string>('');
   const [selectedOrderId, setSelectedOrderId] = useState<number>(0);
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
@@ -150,7 +140,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [cancelReasonComment, setCancelReasonComment] = useState<string>('');
   const [selectRescheduleReason, setSelectRescheduleReason] = useState<string>('');
 
-  const [selectedReasonForReschedule, setSelectedReasonForReschedule] = useState('');
   const [commentForReschedule, setCommentForReschedule] = useState('');
   const [refundStatusArr, setRefundStatusArr] = useState<any>(null);
   const [selectedOrder, setSelectedOrder] = useState<
@@ -383,40 +372,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   };
 
-  const getAddressDatails = async () => {
-    try {
-      setLoading!(true);
-      const address = addresses.find((item) => item?.id == selectedOrder?.patientAddressId);
-      let getPincode = '';
-      if (address) {
-        getPincode = address?.zipcode!;
-      } else {
-        const getPatientAddressByIdResponse = await client.query<
-          getPatientAddressById,
-          getPatientAddressByIdVariables
-        >({
-          query: GET_PATIENT_ADDRESS_BY_ID,
-          variables: { id: selectedOrder?.patientAddressId },
-        });
-
-        getPincode = g(
-          getPatientAddressByIdResponse,
-          'data',
-          'getPatientAddressById',
-          'patientAddress',
-          'zipcode'
-        )!;
-      }
-      setPincode(getPincode);
-      setLoading!(false);
-
-      setDisplaySchedule(true); //show slot popup
-    } catch (error) {
-      setLoading!(false);
-      CommonBugFender(`${AppRoutes.YourOrdersTest}_getAddressDatails`, error);
-    }
-  };
-
   const fetchRefundForOrder = async (orderSelected: any, tab: boolean) => {
     setRefundStatusArr(null);
     setLoading?.(true);
@@ -461,7 +416,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           });
         } else {
           setLoading?.(false);
-          showAphAlert!({
+          showAphAlert?.({
             unDismissable: true,
             title: string.common.uhOh,
             description: cancelResponse?.message,
@@ -586,6 +541,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         const isSameDate = moment().isSame(moment(date), 'date');
         if (isSameDate && slotsArray?.length == 0) {
           setTodaySlotNotAvailable(true);
+          setDisplaySchedule(true);
         } else {
           todaySlotNotAvailable && setTodaySlotNotAvailable(false);
         }
@@ -593,9 +549,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         setSlots(slotsArray);
         const slotDetails = slotsArray?.[0];
         slotsArray?.length && setselectedTimeSlot(slotDetails);
-
-        //call the api to get the pincode.
-        getAddressDatails();
       })
       .catch((e) => {
         CommonBugFender('TestsCart_checkServicability', e);
@@ -668,7 +621,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       slotId: employeeSlot,
     };
     DiagnosticRescheduleOrder(
-      selectedReasonForReschedule,
+      selectRescheduleReason,
       formatTime,
       formattedDate,
       String(selectedOrderId)
@@ -739,6 +692,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       ? AppConfig.Configuration.Covid_Max_Slot_Days
       : AppConfig.Configuration.Non_Covid_Max_Slot_Days;
 
+    const getPincode = selectedOrder?.patientAddressObj?.zipcode;
+
     return (
       <View style={{ flex: 1 }}>
         <TestSlotSelectionOverlay
@@ -753,7 +708,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           isVisible={showDisplaySchedule}
           onClose={() => setDisplaySchedule(false)}
           slots={slots}
-          zipCode={Number(pincode!)}
+          zipCode={Number(getPincode!)}
           slotInfo={selectedTimeSlot}
           isReschdedule={true}
           itemId={orderItemId}
@@ -1170,7 +1125,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         createdOn={order?.createdDate}
         orderLevelStatus={order?.orderStatus}
         patientName={getPatientNameById(allCurrentPatients, order?.patientId)}
-        gender={currentPatient?.gender == 'FEMALE' ? 'Ms.' : 'Mr.'}
+        gender={
+          !!order?.patientObj?.gender
+            ? order?.patientObj?.gender === Gender.MALE
+              ? 'Mr.'
+              : 'Ms.'
+            : ''
+        }
         showAddTest={false}
         ordersData={order?.diagnosticOrderLineItems!}
         showPretesting={showPreTesting!}

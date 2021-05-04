@@ -1856,6 +1856,11 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         id
         patientId
         patientAddressId
+        patientObj{
+          firstName
+          lastName
+          gender
+        }
         city
         slotTimings
         employeeSlotId
@@ -2211,6 +2216,22 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         diagnosticEmployeeCode
         visitNo
         labReportURL
+        patientObj{
+          id
+          uhid
+          firstName
+          lastName
+          gender
+          dateOfBirth
+        }
+        patientAddressObj{
+          addressLine1
+          addressLine2
+          landmark
+          state
+          city 
+          zipcode
+        }
         diagnosticOrdersStatus {
           id
           orderStatus
