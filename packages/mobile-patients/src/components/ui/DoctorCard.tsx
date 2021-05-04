@@ -560,7 +560,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       >
         <View style={{ borderRadius: 10, flex: 1, zIndex: 1 }}>
           <View style={{ flexDirection: 'row' }}>
-            {rowData.slot ? (
+            {rowData.slot && !rowData?.allowBookingRequest ? (
               <AvailabilityCapsule
                 availableTime={rowData.slot}
                 styles={styles.availableView}
