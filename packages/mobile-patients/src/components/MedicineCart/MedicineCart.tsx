@@ -1135,6 +1135,44 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     ) : null;
   };
 
+  async function redirectToUploadPrescription() {
+    const redirect = () => {
+      uploadPrescriptionClickedEvent(currentPatient?.id);
+      props.navigation.navigate(AppRoutes.MedicineCartPrescription);
+    };
+    if (coupon) {
+      try {
+        const response = await validateCoupon(
+          coupon?.coupon,
+          coupon?.message,
+          pharmacyPincode,
+          g(currentPatient, 'mobileNumber'),
+          hdfcSubscriptionId,
+          circleSubscriptionId,
+          setCoupon,
+          cartTotal,
+          productDiscount,
+          cartItems,
+          hdfcStatus,
+          hdfcPlanId,
+          circleStatus,
+          circlePlanId,
+          setCouponProducts,
+          circlePlanSelected
+        );
+        if (response === 'success') {
+          redirect();
+        } else {
+          removeCouponWithAlert(response);
+        }
+      } catch (error) {
+        return;
+      }
+    } else {
+      redirect();
+    }
+  }
+
   const renderProceedBar = () => {
     return (
       <ProceedBar
@@ -1149,10 +1187,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           selectDeliveryAddressClickedEvent(currentPatient?.id, JSON.stringify(cartItems));
           showAddressPopup();
         }}
-        onPressUploadPrescription={() => {
-          uploadPrescriptionClickedEvent(currentPatient?.id);
-          props.navigation.navigate(AppRoutes.MedicineCartPrescription);
-        }}
+        onPressUploadPrescription={redirectToUploadPrescription}
         onPressProceedtoPay={() => {
           physicalPrescriptions?.length > 0 ? uploadPhysicalPrescriptons() : onPressProceedtoPay();
         }}
