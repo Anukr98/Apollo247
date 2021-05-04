@@ -475,6 +475,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           props.navigation.navigate(AppRoutes.MedicineCartPrescription);
         }}
         showSelectedOption
+        myPresProps={{ showTick: true }}
+        ePresProps={{ showTick: true }}
       />
     );
   };
