@@ -312,12 +312,18 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     const sdkPresent =
       paymentCode == 'com.phonepe.app' && phonePeReady
         ? 'ANDROID_PHONEPE'
-        : // : paymentCode == 'com.google.android.apps.nbu.paisa.user' && googlePayReady
-          // ? 'ANDROID_GOOGLEPAY'
-          '';
+        : paymentCode == 'com.google.android.apps.nbu.paisa.user' && googlePayReady
+        ? 'ANDROID_GOOGLEPAY'
+        : '';
+    const paymentMethod =
+      paymentCode == 'com.phonepe.app'
+        ? 'PHONEPE'
+        : paymentCode == 'com.google.android.apps.nbu.paisa.user'
+        ? 'GOOGLEPAY'
+        : '';
     sdkPresent
-      ? InitiateUPISDKTxn(currentPatient?.id, token, paymentId, paymentCode, sdkPresent)
-      : InitiateUPIIntentTxn(currentPatient?.id, token, paymentId, app.packageName);
+      ? InitiateUPISDKTxn(currentPatient?.id, token, paymentId, paymentMethod, sdkPresent)
+      : InitiateUPIIntentTxn(currentPatient?.id, token, paymentId, paymentCode);
   }
 
   async function onPressVPAPay(VPA: string) {
