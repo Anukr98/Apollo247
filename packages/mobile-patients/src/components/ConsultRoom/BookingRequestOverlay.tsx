@@ -280,14 +280,12 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
     setshowSpinner(true);
 
     const requestDetail: REQUEST_DETAIL = {
-      comments:
+      preferredDateText:
         dateRangeSelected === 'option1'
           ? '15 days from now'
           : dateRangeSelected === 'option2'
           ? 'anytime'
           : othersText,
-      preferredStartDate: null,
-      preferredEndDate: null,
     };
 
     const appointmentType: APPOINTMENT_TYPE =

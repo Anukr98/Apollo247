@@ -201,6 +201,7 @@ export const GET_PATIENT_PAST_SEARCHES = gql`
       image
       specialty
       symptoms
+      allowBookingRequest
     }
   }
 `;

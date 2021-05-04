@@ -138,6 +138,7 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   ORDER_COMPLETED = "ORDER_COMPLETED",
   ORDER_FAILED = "ORDER_FAILED",
   ORDER_INITIATED = "ORDER_INITIATED",
+  ORDER_MODIFIED = "ORDER_MODIFIED",
   ORDER_PLACED = "ORDER_PLACED",
   ORDER_RESCHEDULED = "ORDER_RESCHEDULED",
   ORDER_RESCHEDULED_REQUEST = "ORDER_RESCHEDULED_REQUEST",
@@ -618,6 +619,7 @@ export enum STATUS {
   PAYMENT_PENDING_PG = "PAYMENT_PENDING_PG",
   PENDING = "PENDING",
   REQUESTED = "REQUESTED",
+  REQUEST_DECLINED = "REQUEST_DECLINED",
   UNAVAILABLE_MEDMANTRA = "UNAVAILABLE_MEDMANTRA",
 }
 
@@ -1027,6 +1029,8 @@ export interface DiagnosticLineItem {
   price?: number | null;
   quantity?: number | null;
   groupPlan?: string | null;
+  preTestingRequirement?: string | null;
+  reportGenerationTime?: string | null;
 }
 
 export interface DiagnosticOrderInput {
@@ -1562,9 +1566,7 @@ export interface ProcessDiagnosticHCOrderInput {
 }
 
 export interface REQUEST_DETAIL {
-  preferredStartDate: any;
-  preferredEndDate: any;
-  comments?: string | null;
+  preferredDateText?: string | null;
 }
 
 export interface Range {
