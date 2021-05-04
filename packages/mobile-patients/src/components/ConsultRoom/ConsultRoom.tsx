@@ -1119,9 +1119,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         },
       });
       const appointmentCount = res?.data?.getPatientFutureAppointmentCount;
+
       if (appointmentCount) {
-        const inProgressAppointments = appointmentCount?.activeConsultsCount || 0;
-        if (inProgressAppointments > 0) {
+        const upcomingConsultsCount = appointmentCount?.upcomingConsultsCount || 0;
+        const upcomingPhysicalConsultsCount = appointmentCount?.upcomingPhysicalConsultsCount || 0;
+
+        if (upcomingConsultsCount - upcomingPhysicalConsultsCount > 0) {
           overlyCallPermissions(
             currentPatient!.firstName!,
             'the doctor',
