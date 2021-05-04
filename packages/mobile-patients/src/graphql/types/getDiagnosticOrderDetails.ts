@@ -88,6 +88,8 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList 
   __typename: "DiagnosticOrders";
   id: string;
   patientId: string;
+  patientAddressId: string;
+  patientObj: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientObj | null;
   city: string | null;
   slotTimings: string;
   slotId: string | null;
@@ -103,7 +105,6 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList 
   paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
   visitNo: string | null;
   labReportURL: string | null;
-  patientObj: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientObj | null;
   diagnosticOrderLineItems: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems | null)[] | null;
   diagnosticOrdersStatus: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrdersStatus | null)[] | null;
 }

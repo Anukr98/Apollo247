@@ -40,7 +40,10 @@ import { TxnFailed } from '@aph/mobile-patients/src/components/PaymentGateway/Co
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { PAYMENT_MODE, VerifyVPA } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { verifyVPA, verifyVPAVariables } from '@aph/mobile-patients/src/graphql/types/verifyVPA';
-import { DiagnosticPaymentInitiated } from '@aph/mobile-patients/src/components/Tests/Events';
+import {
+  DiagnosticPaymentInitiated,
+  DiagnosticPaymentPageViewed,
+} from '@aph/mobile-patients/src/components/Tests/Events';
 import {
   initiateDiagonsticHCOrderPaymentVariables,
   initiateDiagonsticHCOrderPayment,
@@ -53,7 +56,9 @@ import {
 
 const { HyperSdkReact } = NativeModules;
 
-export interface PaymentMethodsProps extends NavigationScreenProps {}
+export interface PaymentMethodsProps extends NavigationScreenProps {
+  source?: string;
+}
 
 export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const paymentId = props.navigation.getParam('paymentId');
@@ -61,6 +66,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const orderId = props.navigation.getParam('orderId');
   const orderDetails = props.navigation.getParam('orderDetails');
   const eventAttributes = props.navigation.getParam('eventAttributes');
+  const source = props.navigation.getParam('source');
   const { currentPatient } = useAllCurrentPatients();
   const [banks, setBanks] = useState<any>([]);
   const [loading, setloading] = useState<boolean>(true);
@@ -74,11 +80,13 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const FailedStatuses = ['AUTHENTICATION_FAILED', 'AUTHORIZATION_FAILED'];
+
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
     const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
       handleEventListener(resp);
     });
+    source === 'diagnostics' && DiagnosticPaymentPageViewed(currentPatient, amount);
     fecthPaymentOptions();
     fetchTopBanks();
     return () => eventListener.remove();

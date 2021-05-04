@@ -1037,6 +1037,8 @@ export interface DiagnosticLineItem {
   quantity?: number | null;
   groupPlan?: string | null;
   discAmount?: number | null;
+  preTestingRequirement?: string | null;
+  reportGenerationTime?: string | null;
 }
 
 export interface DiagnosticTestsOrdered {

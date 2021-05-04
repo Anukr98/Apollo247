@@ -2319,7 +2319,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       );
 
     pricesForItemArray = cartItems?.map(
-      (item) =>
+      (item, index) =>
         ({
           itemId: Number(item?.id),
           price:
@@ -2334,6 +2334,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
             ? item?.groupPlan
             : DIAGNOSTIC_GROUP_PLAN.ALL,
+          preTestingRequirement:
+            !!reportGenDetails && reportGenDetails?.[index]?.itemReportTat
+              ? reportGenDetails?.[index]?.itemReportTat
+              : null,
+          reportGenerationTime:
+            !!reportGenDetails && reportGenDetails?.[index]?.itemPrepration
+              ? reportGenDetails?.[index]?.itemPrepration
+              : null,
         } as DiagnosticLineItem)
     );
     const itemPricingObject = !!existingOrderDetails

@@ -16,8 +16,8 @@ import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUti
 import {
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
   DIAGNOSTIC_ORDER_STATUS,
-  GENDER,
   REFUND_STATUSES,
+  Gender,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components/StatusCard';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -46,11 +46,10 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const { orderDetails, refundDetails } = props;
   const isPrepaid = orderDetails?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
   const salutation = !!orderDetails?.patientObj?.gender
-    ? orderDetails?.patientObj?.gender === GENDER.MALE
+    ? orderDetails?.patientObj?.gender === Gender.MALE
       ? 'Mr. '
       : 'Ms. '
     : '';
-
   const { currentPatient } = useAllCurrentPatients();
 
   useEffect(() => {
