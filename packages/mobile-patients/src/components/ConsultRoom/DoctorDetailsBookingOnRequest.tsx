@@ -476,13 +476,8 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
   }, []);
 
   useEffect(() => {
-    fetchCarePlans();
-  }, [isCircleDoctor]);
-
-  useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setisFocused(true);
-      fetchCarePlans();
     });
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       setisFocused(false);
@@ -492,27 +487,6 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
       didBlur && didBlur.remove();
     };
   });
-
-  const fetchCarePlans = async () => {
-    if (isCircleDoctor && !circleSubscriptionId && !circlePlanSelected) {
-      try {
-        const res = await client.query<GetPlanDetailsByPlanId>({
-          query: GET_PLAN_DETAILS_BY_PLAN_ID,
-          fetchPolicy: 'no-cache',
-          variables: {
-            plan_id: AppConfig.Configuration.CIRCLE_PLAN_ID,
-          },
-        });
-        const membershipPlans = res?.data?.GetPlanDetailsByPlanId?.response?.plan_summary;
-        if (membershipPlans) {
-          setMembershipPlans(membershipPlans);
-          selectDefaultPlan && selectDefaultPlan(membershipPlans);
-        }
-      } catch (error) {
-        CommonBugFender('CircleMembershipPlans_GetPlanDetailsByPlanId', error);
-      }
-    }
-  };
 
   const client = useApolloClient();
 
@@ -536,7 +510,6 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
         .then((status) => {
           if (status) {
             fetchDoctorDetails();
-            fetchAppointmentHistory();
           } else {
             setshowSpinner(false);
             setshowOfflinePopup(true);
@@ -564,36 +537,6 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
         setSecretaryData(secretaryDetails);
       })
       .catch((error) => {});
-  };
-
-  const fetchAppointmentHistory = () => {
-    client
-      .query<getAppointmentHistory>({
-        query: GET_APPOINTMENT_HISTORY,
-        variables: {
-          appointmentHistoryInput: {
-            patientId: currentPatient ? currentPatient.id : '',
-            doctorId: doctorId ? doctorId : '',
-          },
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then(({ data }) => {
-        try {
-          if (
-            data &&
-            data.getAppointmentHistory &&
-            appointmentHistory !== data.getAppointmentHistory.appointmentsHistory
-          ) {
-            setAppointmentHistory(data.getAppointmentHistory.appointmentsHistory);
-          }
-        } catch (e) {
-          CommonBugFender('DoctorDetails_fetchAppointmentHistory_try', e);
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('DoctorDetails_fetchAppointmentHistory', e);
-      });
   };
 
   const fetchDoctorDetails = () => {
@@ -656,13 +599,6 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
         navigation={props.navigation}
       />
     );
-  };
-
-  const openCircleWebView = () => {
-    props.navigation.navigate(AppRoutes.CommonWebView, {
-      url: AppConfig.Configuration.CIRCLE_CONSULT_URL,
-    });
-    circlePlanWebEngage(WebEngageEventName.VC_NON_CIRCLE_KNOWMORE_PROFILE);
   };
 
   const renderPlatinumDoctorView = () => {
@@ -787,70 +723,10 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
               )}
             </View>
           )}
-
-          {/* -------do not delete below commented code--------*/}
-          {/* {isCircleDoctor && !showCircleSubscribed && defaultCirclePlan && renderUpgradeToCircle()}
-          {isCircleDoctor &&
-            !defaultCirclePlan &&
-            circlePlanSelected &&
-            renderCirclePlanAddedToCartView()}
-          {isCircleDoctor && showCirclePlans && renderCirclePlans()} */}
         </View>
       );
     }
     return null;
-  };
-
-  const circlePlanWebEngage = (eventName: any) => {
-    const eventAttributes = {
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient UHID': g(currentPatient, 'uhid'),
-      Relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(
-        Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-      ),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Customer ID': g(currentPatient, 'id'),
-    };
-    postWebEngageEvent(eventName, eventAttributes);
-  };
-
-  const renderUpgradeToCircle = () => {
-    return (
-      <TouchableOpacity
-        style={styles.upgradeContainer}
-        onPress={() => {
-          setShowCirclePlans(true);
-          circlePlanWebEngage(WebEngageEventName.VC_NON_CIRCLE_ADDS_PROFILE);
-        }}
-      >
-        <Text style={{ ...theme.viewStyles.text('SB', 11, theme.colors.APP_YELLOW, 1, 14) }}>
-          UPGRADE TO
-        </Text>
-        <CircleLogo style={styles.circleLogo} />
-        <Text style={{ ...theme.viewStyles.text('M', 10, theme.colors.LIGHT_BLUE, 1, 14) }}>
-          Starting at {string.common.Rs}
-          {convertNumberToDecimal(defaultCirclePlan?.currentSellingPrice) || '-'}
-        </Text>
-      </TouchableOpacity>
-    );
-  };
-
-  const renderCirclePlanAddedToCartView = () => (
-    <CirclePlanAddedToCart style={{ marginBottom: 15 }} />
-  );
-
-  const renderCirclePlans = () => {
-    return (
-      <CircleMembershipPlans
-        isModal={true}
-        navigation={props.navigation}
-        membershipPlans={membershipPlans}
-        closeModal={() => setShowCirclePlans(false)}
-        isConsultJourney={true}
-      />
-    );
   };
 
   const renderDoctorClinic = () => {
@@ -1044,106 +920,6 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
     return null;
   };
 
-  const renderAppointmentHistory = () => {
-    let arrayHistory = appointmentHistory ? appointmentHistory : [];
-    arrayHistory = arrayHistory.filter((item) => {
-      return item.status == 'COMPLETED';
-    });
-
-    if (arrayHistory.length > 0) {
-      return (
-        <View style={styles.cardView}>
-          <View style={styles.labelView}>
-            <Text style={styles.labelStyle}>Appointment History</Text>
-            <Text style={styles.labelStyle}>
-              {arrayHistory ? arrayHistory.length : 0} Prior Consults
-            </Text>
-          </View>
-          <FlatList
-            keyExtractor={(_, index) => index.toString()}
-            contentContainerStyle={{
-              marginVertical: 12,
-            }}
-            data={arrayHistory}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                activeOpacity={1}
-                onPress={() => {
-                  props.navigation.navigate(AppRoutes.ConsultDetails, {
-                    CaseSheet: item.id,
-                    DoctorInfo: doctorDetails,
-                    FollowUp: '',
-                    appointmentType: item.appointmentType,
-                    DisplayId: '',
-                    BlobName: '',
-                  });
-                }}
-              >
-                <View
-                  style={{
-                    ...theme.viewStyles.cardViewStyle,
-                    marginHorizontal: 20,
-                    marginVertical: 8,
-                    padding: 16,
-                    shadowRadius: 2,
-                  }}
-                >
-                  <CapsuleView
-                    isActive={false}
-                    style={{ position: 'absolute', top: 0, right: 0, width: 112 }}
-                    title={
-                      item.appointmentType === 'ONLINE'
-                        ? item.appointmentType + ' CONSULT'
-                        : 'CLINIC VISIT'
-                    }
-                  />
-                  <Text
-                    style={{
-                      paddingTop: 16,
-                      paddingBottom: 4,
-                      ...theme.fonts.IBMPlexSansMedium(18),
-                      color: theme.colors.SEARCH_DOCTOR_NAME,
-                    }}
-                  >
-                    {Moment.utc(item.appointmentDateTime)
-                      .local()
-                      .format('DD MMMM, hh:mm A')}
-                  </Text>
-                  <View style={styles.separatorStyle} />
-                  {item.caseSheet && renderAppointmentSymptoms(item)}
-                </View>
-              </TouchableOpacity>
-            )}
-          />
-        </View>
-      );
-    }
-  };
-
-  const renderAppointmentSymptoms = (
-    item: getAppointmentHistory_getAppointmentHistory_appointmentsHistory
-  ) => {
-    const symptomsJson = g(item, 'caseSheet');
-    if (symptomsJson && symptomsJson.length != 0) {
-      return (
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-          {symptomsJson &&
-            symptomsJson[0] &&
-            symptomsJson[0].symptoms &&
-            symptomsJson[0].symptoms.map((item, index) => (
-              <CapsuleView
-                key={index}
-                title={item && item.symptom}
-                isActive={false}
-                style={{ width: 'auto', marginRight: 4, marginTop: 11 }}
-                titleTextStyle={{ color: theme.colors.SKY_BLUE }}
-              />
-            ))}
-        </View>
-      );
-    }
-  };
-
   const handleScroll = () => {};
 
   const postBookAppointmentWEGEvent = () => {
@@ -1249,7 +1025,6 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
           {doctorDetails && renderHowItWorks(doctorDetails)}
           {doctorDetails && renderDoctorClinic()}
           {doctorDetails && renderDoctorTeam()}
-          {appointmentHistory && renderAppointmentHistory()}
           <View style={{ height: 92 }} />
         </Animated.ScrollView>
         {doctorDetails && renderConsultNow()}
