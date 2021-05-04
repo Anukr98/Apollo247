@@ -74,6 +74,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         }
         deepLinkWidgetName = pageName?.join(' ');
         fetchWidgets(widgetName!);
+      } else if (!!widgetName) {
+        fetchWidgets(widgetName);
       } else if (!!title) {
         fetchWidgets(title);
       } else {
