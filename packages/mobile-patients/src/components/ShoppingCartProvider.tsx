@@ -228,6 +228,8 @@ export interface ShoppingCartContextProps {
   orders: any;
   setOrders: ((orders: any[]) => void) | null;
   shipments: (MedicineOrderShipmentInput | null)[];
+  asyncPincode: any;
+  setAsyncPincode: ((pincode: any) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -327,6 +329,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   orders: [],
   setOrders: null,
   shipments: [],
+  asyncPincode: null,
+  setAsyncPincode: null,
 });
 
 const AsyncStorageKeys = {
@@ -443,6 +447,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [consultProfile, setConsultProfile] = useState<ShoppingCartContextProps['consultProfile']>(
     null
   );
+
+  const [asyncPincode, setAsyncPincode] = useState<ShoppingCartContextProps['asyncPincode']>();
 
   const [isProuctFreeCouponApplied, setisProuctFreeCouponApplied] = useState<boolean>(false);
   const [orders, setOrders] = useState<ShoppingCartContextProps['orders']>([]);
@@ -1168,6 +1174,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         orders,
         setOrders,
         shipments,
+        asyncPincode,
+        setAsyncPincode,
       }}
     >
       {props.children}
