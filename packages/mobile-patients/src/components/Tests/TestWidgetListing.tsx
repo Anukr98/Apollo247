@@ -14,6 +14,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 import {
   Dimensions,
   SafeAreaView,
@@ -90,7 +91,7 @@ export const TestWidgetListing: React.FC<TestWidgetListingProps> = (props) => {
                 <View style={styles.circleImg}>
                   <Image style={styles.image} source={{ uri: item.itemIcon }} />
                 </View>
-                <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>{item?.itemTitle}</Text>
+                <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>{nameFormater(item?.itemTitle,'default')}</Text>
               </TouchableOpacity>
     )
   }
@@ -174,7 +175,7 @@ const styles = StyleSheet.create({
     padding:15
   },
   textStyle: {
-    ...theme.viewStyles.text('SB', 14, '#000000', 1, 20, 0),
+    ...theme.viewStyles.text('SB', 14, colors.SHERPA_BLUE, 1, 20, 0),
     padding: 5
   },
 });
