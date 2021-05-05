@@ -252,6 +252,8 @@ export const GET_PATIENT_FUTURE_APPOINTMENT_COUNT = gql`
   query getPatientFutureAppointmentCount($patientId: String) {
     getPatientFutureAppointmentCount(patientId: $patientId) {
       activeConsultsCount
+      upcomingConsultsCount
+      upcomingPhysicalConsultsCount
     }
   }
 `;
@@ -507,6 +509,12 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           medicinePrescription {
             id
             medicineName
+            medicineUnit
+            medicineTimings
+            medicineDosage
+            medicineCustomDosage
+            medicineConsumptionDurationInDays
+            medicineConsumptionDurationUnit
           }
           diagnosticPrescription {
             itemname
@@ -668,6 +676,12 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           medicinePrescription {
             id
             medicineName
+            medicineUnit
+            medicineTimings
+            medicineDosage
+            medicineCustomDosage
+            medicineConsumptionDurationInDays
+            medicineConsumptionDurationUnit
           }
           diagnosticPrescription {
             itemname
@@ -829,6 +843,12 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           medicinePrescription {
             id
             medicineName
+            medicineUnit
+            medicineTimings
+            medicineDosage
+            medicineCustomDosage
+            medicineConsumptionDurationInDays
+            medicineConsumptionDurationUnit
           }
           diagnosticPrescription {
             itemname
@@ -990,6 +1010,12 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           medicinePrescription {
             id
             medicineName
+            medicineUnit
+            medicineTimings
+            medicineDosage
+            medicineCustomDosage
+            medicineConsumptionDurationInDays
+            medicineConsumptionDurationUnit
           }
           diagnosticPrescription {
             itemname
@@ -1856,6 +1882,11 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         id
         patientId
         patientAddressId
+        patientObj{
+          firstName
+          lastName
+          gender
+        }
         city
         slotTimings
         employeeSlotId
@@ -2211,6 +2242,22 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         diagnosticEmployeeCode
         visitNo
         labReportURL
+        patientObj{
+          id
+          uhid
+          firstName
+          lastName
+          gender
+          dateOfBirth
+        }
+        patientAddressObj{
+          addressLine1
+          addressLine2
+          landmark
+          state
+          city 
+          zipcode
+        }
         diagnosticOrdersStatus {
           id
           orderStatus
@@ -2271,6 +2318,13 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         patientAddressId
         phleboDetailsObj {
           PhelboOTP
+          PhelbotomistName
+          PhelbotomistMobile
+          PhelbotomistTrackLink
+          TempRecording
+          CheckInTime
+          PhleboLatitude
+          PhleboLongitude
         }
         slotTimings
         slotDateTimeInUTC
@@ -3454,6 +3508,12 @@ export const GET_APPOINTMENT_DATA = gql`
           medicinePrescription {
             id
             medicineName
+            medicineUnit
+            medicineTimings
+            medicineDosage
+            medicineCustomDosage
+            medicineConsumptionDurationInDays
+            medicineConsumptionDurationUnit
           }
           diagnosticPrescription {
             itemname
@@ -4652,6 +4712,7 @@ export const GET_PHLOBE_DETAILS = gql`
           diagnosticOrdersId
           diagnosticPhlebotomists {
             name
+            mobile
           }
           phleboOTP
           phleboTrackLink
@@ -4666,8 +4727,8 @@ export const GET_PHLOBE_DETAILS = gql`
 `;
 
 export const GET_PATIENT_LATEST_PRESCRIPTION = gql `
-  query getPatientLatestPrescriptions($patientId: String!, $limit: Int!, $cityId: Int!){
-    getPatientLatestPrescriptions(patientId: $patientId, limit: $limit, cityId: $cityId){
+  query getPatientLatestPrescriptions($mobileNumber: String!, $limit: Int!, $cityId: Int!){
+    getPatientLatestPrescriptions(mobileNumber: $mobileNumber, limit: $limit, cityId: $cityId){
       doctorName
       doctorCredentials
       patientName
@@ -4703,6 +4764,12 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql `
           firstName
           lastName
         },
+        diagnosticOrderLineItems{
+          itemObj{
+            inclusions
+            testPreparationData
+          }
+        }  
       }
     }
   }`;
@@ -4745,6 +4812,12 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
           firstName
           lastName
         },
+        diagnosticOrderLineItems{
+          itemObj{
+            inclusions
+            testPreparationData
+          }
+        }  
       }
     }
   }

@@ -63,6 +63,7 @@ export const ProductList: React.FC<Props> = ({
     removeCartItem,
     pharmacyCircleAttributes,
     cartItems,
+    asyncPincode,
   } = useShoppingCart();
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
 
@@ -95,7 +96,7 @@ export const ProductList: React.FC<Props> = ({
     const { onAddedSuccessfully } = restOfProps;
     addPharmaItemToCart(
       formatToCartItem(item),
-      pharmacyPincode!,
+      asyncPincode?.pincode || pharmacyPincode!,
       addCartItem,
       setGlobalLoading,
       navigation,

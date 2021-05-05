@@ -37,7 +37,7 @@ export interface getPatientLatestPrescriptions {
 }
 
 export interface getPatientLatestPrescriptionsVariables {
-  patientId: string;
+  mobileNumber: string;
   limit: number;
   cityId: number;
 }

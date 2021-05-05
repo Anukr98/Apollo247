@@ -54,6 +54,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const widgetName = props.navigation.getParam('widgetName');
   const cityId = props.navigation.getParam('cityId');
   const title = dataFromHomePage?.diagnosticWidgetTitle;
+  const widgetType = dataFromHomePage?.diagnosticWidgetType;
   const client = useApolloClient();
 
   const [widgetsData, setWidgetsData] = useState([] as any);
@@ -74,6 +75,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         }
         deepLinkWidgetName = pageName?.join(' ');
         fetchWidgets(widgetName!);
+      } else if (!!widgetName) {
+        fetchWidgets(widgetName);
       } else if (!!title) {
         fetchWidgets(title);
       } else {
@@ -87,7 +90,10 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
 
   const fetchWidgets = async (title: string) => {
     const createTitle = title?.replace(/ /g, '-')?.toLowerCase();
-    const widgetName = movedFrom == AppRoutes.Tests ? `home-${createTitle}` : `${createTitle}`;
+    let widgetName = movedFrom == AppRoutes.Tests ? `home-${createTitle}` : `${createTitle}`;
+    if (widgetType == 'Category' || widgetType == 'Category_Scroll') {
+      widgetName = createTitle.toLowerCase();
+    }
     try {
       const result: any = await getDiagnosticListingWidget('diagnostic-list', widgetName);
       if (result?.data?.success && result?.data?.data?.diagnosticWidgetData?.length > 0) {
@@ -199,13 +205,24 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             : nameFormater(title, 'title'),
         onPress: () => {},
       });
+      if (widgetType == 'Category' || widgetType == 'Category_Scroll') {
+        breadcrumb.push({
+          title: !!widgetName ? nameFormater(widgetName, 'default') : '',
+          onPress: () => {},
+        });
+      }
       setTestListingBreadCrumbs && setTestListingBreadCrumbs(breadcrumb);
     }
   }, [movedFrom]);
 
   const renderHeader = () => {
+    const heading =
+      widgetType == 'Category' || widgetType == 'Category_Scroll' ? widgetName : title;
     return (
-      <TestListingHeader navigation={props.navigation} headerText={nameFormater(title, 'upper')} />
+      <TestListingHeader
+        navigation={props.navigation}
+        headerText={nameFormater(heading, 'upper')}
+      />
     );
   };
 

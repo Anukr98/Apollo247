@@ -650,6 +650,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         (item: any) => item?.diagnostic_inclusions?.length > 1
       );
       popularTests = popularArray?.filter((item: any) => item?.diagnostic_inclusions?.length == 1);
+      if (popularTests?.length == 0) {
+        popularTests = popularArray
+      }
     }
 
     return (

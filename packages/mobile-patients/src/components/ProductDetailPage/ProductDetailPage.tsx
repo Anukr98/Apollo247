@@ -119,6 +119,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     setPdpBreadCrumbs,
     addresses,
     productDiscount,
+    setAsyncPincode,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
@@ -565,6 +566,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             const addrComponents = data.results[0].address_components || [];
             const latLang = data.results[0].geometry.location || {};
             const response = getFormattedLocation(addrComponents, latLang, pinCode);
+            setAsyncPincode?.(response);
             setPharmacyLocation!(response);
             setAsyncPharmaLocation(response);
             setDeliveryAddressId!('');

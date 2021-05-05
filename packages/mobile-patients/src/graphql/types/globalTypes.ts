@@ -53,6 +53,8 @@ export enum BOOKINGSOURCE {
 }
 
 export enum BOOKING_SOURCE {
+  AP_IN = "AP_IN",
+  BOOKING_TOOL = "BOOKING_TOOL",
   MFINE = "MFINE",
   MOBILE = "MOBILE",
   ORDER_PUNCHING_TOOL = "ORDER_PUNCHING_TOOL",
@@ -150,6 +152,7 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   ORDER_COMPLETED = "ORDER_COMPLETED",
   ORDER_FAILED = "ORDER_FAILED",
   ORDER_INITIATED = "ORDER_INITIATED",
+  ORDER_MODIFIED = "ORDER_MODIFIED",
   ORDER_PLACED = "ORDER_PLACED",
   ORDER_RESCHEDULED = "ORDER_RESCHEDULED",
   ORDER_RESCHEDULED_REQUEST = "ORDER_RESCHEDULED_REQUEST",
@@ -688,11 +691,6 @@ export enum USER_TYPE {
   PATIENT = "PATIENT",
 }
 
-export enum UnitTypes {
-  CLINIC = "CLINIC",
-  HOSPITAL = "HOSPITAL",
-}
-
 export enum UserState {
   LOGGED_IN = "LOGGED_IN",
   LOGGED_OUT = "LOGGED_OUT",
@@ -1038,6 +1036,9 @@ export interface DiagnosticLineItem {
   price?: number | null;
   quantity?: number | null;
   groupPlan?: string | null;
+  discAmount?: number | null;
+  preTestingRequirement?: string | null;
+  reportGenerationTime?: string | null;
 }
 
 export interface DiagnosticTestsOrdered {
@@ -1209,7 +1210,7 @@ export interface MedicineCartOMSInput {
   estimatedAmount?: number | null;
   patientId: string;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
-  bookingSource?: BOOKINGSOURCE | null;
+  bookingSource?: BOOKING_SOURCE | null;
   deviceType?: DEVICE_TYPE | null;
   appVersion?: string | null;
   patientAddressId?: string | null;
@@ -1234,6 +1235,7 @@ export interface MedicineCartOMSInput {
   prescriptionType?: PrescriptionType | null;
   tatCity?: string | null;
   tatHours?: string | null;
+  appointmentId?: string | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -1593,6 +1595,7 @@ export interface SaveBookHomeCollectionOrderInput {
   areaId: number;
   collectionCharges: number;
   uniqueID?: string | null;
+  couponCode?: string | null;
   slotDateTimeInUTC: any;
   totalPriceExcludingDiscounts?: number | null;
   userSubscriptionId?: string | null;
@@ -1612,7 +1615,7 @@ export interface SaveMedicineOrderV2Input {
   patientId: string;
   estimatedAmount?: number | null;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
-  bookingSource?: BOOKINGSOURCE | null;
+  bookingSource?: BOOKING_SOURCE | null;
   deviceType?: DEVICE_TYPE | null;
   appVersion?: string | null;
   coupon?: string | null;
@@ -1625,6 +1628,7 @@ export interface SaveMedicineOrderV2Input {
   healthCreditUsed?: number | null;
   shipments?: (MedicineOrderShipmentInput | null)[] | null;
   prescriptionType?: PrescriptionType | null;
+  appointmentId?: string | null;
 }
 
 export interface SavePatientNotificationSettingsInput {
@@ -1643,12 +1647,6 @@ export interface SaveSearchInput {
   typeName?: string | null;
   image?: string | null;
   patient: string;
-}
-
-export interface SavePhleboFeedback{
-  phleboRating?: number;
-  phleboFeedback: string | null;
-  diagnosticOrdersId?: string;
 }
 
 export interface ShopAddress {

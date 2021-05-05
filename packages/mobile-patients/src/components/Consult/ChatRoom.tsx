@@ -156,6 +156,7 @@ import {
   doRequestAndAccessLocation,
   handleGraphQlError,
   formatToCartItem,
+  getPrescriptionItemQuantity,
 } from '../../helpers/helperFunctions';
 import { mimeType } from '../../helpers/mimeType';
 import { FeedbackPopup } from '../FeedbackPopup';
@@ -3762,7 +3763,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const onAddToCart = async () => {
-    postWebEngageEvent(WebEngageEventName.ORDER_MEDICINES_IN_CONSULT_ROOM, UserInfo);
     const prrescriptions = caseSheet?.[0]?.medicinePrescription || MedicinePrescriptions || [];
     const medPrescription = prrescriptions.filter((item: any) => item!.id);
     const isCartOrder = medPrescription?.length === prrescriptions.length;
@@ -3789,7 +3789,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             const medicine = data?.productdp?.[0];
             return medicine?.id && medicine?.sku;
           })
-          .map(({ data }) => formatToCartItem({ ...data?.productdp?.[0]!, image: '' }));
+          .map(({ data }, index) => ({
+            ...formatToCartItem({ ...data?.productdp?.[0]!, image: '' }),
+            quantity: getPrescriptionItemQuantity(
+              medPrescription?.[index]?.medicineUnit,
+              medPrescription?.[index]?.medicineTimings,
+              medPrescription?.[index]?.medicineDosage,
+              medPrescription?.[index]?.medicineCustomDosage,
+              medPrescription?.[index]?.medicineConsumptionDurationInDays,
+              medPrescription?.[index]?.medicineConsumptionDurationUnit,
+              parseInt(data?.productdp?.[0]?.mou || '1', 10)
+            ),
+          }));
         addMultipleCartItems?.(cartItems);
         setEPrescriptions?.([presToAdd]);
         setLoading(false);
@@ -3808,6 +3819,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     props.navigation.navigate(AppRoutes.UploadPrescription, {
       ePrescriptionsProp: [presToAdd],
       type: 'E-Prescription',
+    });
+    postWebEngageEvent(WebEngageEventName.ORDER_MEDICINES_IN_CONSULT_ROOM, {
+      ...UserInfo,
+      'Order Type': isCartOrder ? 'Cart' : 'Non-Cart',
     });
   };
 

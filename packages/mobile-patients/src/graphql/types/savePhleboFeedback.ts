@@ -3,24 +3,21 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { SavePhleboFeedback } from "./globalTypes";
-
-
 // ====================================================
 // GraphQL mutation operation: savePhleboFeedback
 // ====================================================
 
 export interface savePhleboFeedback_savePhleboFeedback {
-  __typename: "PhleboFeedback";
-  status: boolean
+  __typename: "SavePhleboFeedbackResponse";
+  status: boolean | null;
 }
 
 export interface savePhleboFeedback {
-    savePhleboFeedback: savePhleboFeedback_savePhleboFeedback;
+  savePhleboFeedback: savePhleboFeedback_savePhleboFeedback | null;
 }
 
 export interface savePhleboFeedbackVariables {
-    phleboRating: number,
-    phleboFeedback: string,
-    diagnosticOrdersId: string,
+  phleboRating: number;
+  phleboFeedback?: string | null;
+  diagnosticOrdersId: string;
 }
