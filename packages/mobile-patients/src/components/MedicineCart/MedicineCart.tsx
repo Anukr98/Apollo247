@@ -506,6 +506,20 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       setCirclePlanSelected && setCirclePlanSelected(null);
       AsyncStorage.removeItem('circlePlanSelected');
     }
+    if (newAddressAdded) {
+      postPharmacyAddNewAddressCompleted(
+        'Cart',
+        g(selectedAddress, 'zipcode')!,
+        formatAddress(selectedAddress),
+        moment(
+          genericServiceableDate,
+          AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT
+        ).toDate(),
+        moment(genericServiceableDate).diff(new Date(), 'd'),
+        'Yes'
+      );
+      setNewAddressAdded && setNewAddressAdded('');
+    }
     addressSelectedEvent(selectedAddress, genericServiceableDate);
     setdeliveryTime?.(genericServiceableDate);
     postTatResponseFailureEvent(cartItems, selectedAddress.zipcode || '', error);
