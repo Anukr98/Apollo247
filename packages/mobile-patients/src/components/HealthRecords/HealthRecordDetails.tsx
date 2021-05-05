@@ -27,6 +27,7 @@ import {
 import {
   GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID,
   GET_LAB_RESULT_PDF,
+  PHR_COVERT_TO_ZIP,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import Pdf from 'react-native-pdf';
@@ -52,6 +53,10 @@ import {
   getLabResultpdf,
   getLabResultpdfVariables,
 } from '@aph/mobile-patients/src/graphql/types/getLabResultpdf';
+import {
+  convertToZip,
+  convertToZipVariables,
+} from '@aph/mobile-patients/src/graphql/types/convertToZip';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import _ from 'lodash';
 import {
@@ -260,6 +265,20 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     : g(data, 'familyHistoryFiles')
     ? g(data, 'familyHistoryFiles')
     : [];
+
+  const file_name_text = healthCheck
+    ? 'HealthSummary_'
+    : hospitalization
+    ? 'DischargeSummary_'
+    : prescriptions
+    ? 'Prescription_'
+    : medicalBill
+    ? 'Bill_'
+    : medicalInsurance
+    ? 'InsuranceReport_'
+    : healthCondition
+    ? 'HealthConditionReport_'
+    : 'TestReport_';
 
   useEffect(() => {
     Platform.OS === 'android' && requestReadSmsPermission();
@@ -550,14 +569,85 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         })
         .then(({ data }: any) => {
           if (data?.getLabResultpdf?.url) {
-            downloadDocument(data?.getLabResultpdf?.url);
+            imagesArray?.length === 0
+              ? downloadDocument(data?.getLabResultpdf?.url)
+              : callConvertToZipApi(data?.getLabResultpdf?.url);
           }
         })
         .catch((e: any) => {
           setLoading?.(false);
           currentPatient && handleGraphQlError(e, 'Report is yet not available');
+          CommonBugFender('HealthRecordDetails_downloadPDFTestReport', e);
         });
     }
+  };
+
+  const callConvertToZipApi = (pdfUrl?: string) => {
+    setLoading?.(true);
+    const fileUrls = imagesArray?.map((item) => item?.file_Url);
+    pdfUrl && fileUrls?.push(pdfUrl);
+    console.log('fileUrls', fileUrls, imagesArray);
+    client
+      .mutate<convertToZip, convertToZipVariables>({
+        mutation: PHR_COVERT_TO_ZIP,
+        variables: {
+          uhid: currentPatient?.uhid || '',
+          fileUrls: fileUrls,
+        },
+      })
+      .then(({ data }) => {
+        setLoading?.(false);
+        console.log('data', data);
+        if (data?.convertToZip?.zipUrl) {
+          downloadZipFile(data?.convertToZip?.zipUrl);
+        }
+      })
+      .catch((e: any) => {
+        console.log('error', e);
+        setLoading?.(false);
+        currentPatient && handleGraphQlError(e, 'Report is yet not available');
+        CommonBugFender('HealthRecordDetails_downloadPDFTestReport', e);
+      });
+  };
+
+  const downloadZipFile = (zipUrl: string) => {
+    const dirs = RNFetchBlob.fs.dirs;
+    const fileName: string =
+      file_name_text + currentPatient?.uhid + '_' + new Date().getTime() + '.zip';
+    const downloadPath =
+      Platform.OS === 'ios'
+        ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + (fileName || 'Apollo_TestReport.zip')
+        : dirs.DownloadDir + '/' + (fileName || 'Apollo_TestReport.zip');
+    console.log('downloadPath', downloadPath, fileName, zipUrl);
+    setLoading && setLoading(true);
+    RNFetchBlob.config({
+      fileCache: true,
+      path: downloadPath,
+      addAndroidDownloads: {
+        title: fileName,
+        useDownloadManager: true,
+        notification: true,
+        path: downloadPath,
+        mime: mimeType(downloadPath),
+        description: 'File downloaded by download manager.',
+      },
+    })
+      .fetch('GET', zipUrl)
+      .then((res) => {
+        setLoading && setLoading(false);
+        // postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, data);
+        Platform.OS === 'ios'
+          ? RNFetchBlob.ios.previewDocument(res.path())
+          : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+      })
+      .catch((err) => {
+        CommonBugFender('HealthRecordDetails_downloadZipFile', err);
+        currentPatient && handleGraphQlError(err);
+        setLoading && setLoading(false);
+      })
+      .finally(() => {
+        setLoading && setLoading(false);
+      });
   };
 
   const renderDownloadButton = () => {
@@ -577,6 +667,13 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       ? 'HEALTH CONDITION REPORT'
       : 'TEST REPORT';
     const btnTitle = labResults && Platform.OS === 'ios' ? 'SAVE ' : 'DOWNLOAD ';
+    const _callDownloadDocumentApi = () => {
+      if (imagesArray?.length === 1) {
+        labResults ? downloadPDFTestReport() : downloadDocument();
+      } else {
+        labResults ? downloadPDFTestReport() : callConvertToZipApi();
+      }
+    };
     return (
       <View style={{ marginHorizontal: 40, marginBottom: 15, marginTop: 33 }}>
         {!!data.fileUrl && labResults && Platform.OS === 'ios' ? (
@@ -586,10 +683,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             onPress={() => downloadDocument()}
           />
         ) : null}
-        <Button
-          title={btnTitle + buttonTitle}
-          onPress={() => (labResults ? downloadPDFTestReport() : downloadDocument())}
-        />
+        <Button title={btnTitle + buttonTitle} onPress={_callDownloadDocumentApi} />
       </View>
     );
   };
@@ -854,8 +948,8 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         {data?.additionalNotes || data?.healthCheckSummary || data?.notes || data?.diagnosisNotes
           ? renderTopLineReport()
           : null}
-        {!!data.fileUrl ? renderImage() : null}
-        {!!data.fileUrl || labResults ? renderDownloadButton() : null}
+        {imagesArray?.length > 0 ? renderImage() : null}
+        {imagesArray?.length > 0 || labResults ? renderDownloadButton() : null}
       </View>
     );
   };
@@ -992,19 +1086,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   };
 
   const getFileName = (file_name: string, pdfUrl: string) => {
-    const file_name_text = healthCheck
-      ? 'HealthSummary_'
-      : hospitalization
-      ? 'DischargeSummary_'
-      : prescriptions
-      ? 'Prescription_'
-      : medicalBill
-      ? 'Bill_'
-      : medicalInsurance
-      ? 'InsuranceReport_'
-      : healthCondition
-      ? 'HealthConditionReport_'
-      : 'TestReport_';
     const labResultFileName = `${file_name_text}${moment(data?.date).format(
       'DD MM YYYY'
     )}_Apollo 247${new Date().getTime()}${pdfUrl ? '.pdf' : file_name}`;
