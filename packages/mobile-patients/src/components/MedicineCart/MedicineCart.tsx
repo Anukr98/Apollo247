@@ -1166,7 +1166,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           removeCouponWithAlert(response);
         }
       } catch (error) {
-        return;
+        removeCouponWithAlert('Sorry, invalid coupon applied. Remove the coupon and try again.');
       }
     } else {
       redirect();
