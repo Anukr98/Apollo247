@@ -245,6 +245,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setNewAddressAddedCartPage,
     showSelectPatient,
     setShowSelectPatient,
+    modifyHcCharges,
+    setModifyHcCharges,
   } = useDiagnosticsCart();
   const {
     setAddresses: setMedAddresses,
@@ -297,7 +299,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [alsoAddListData, setAlsoAddListData] = useState<any>([]);
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const [showAllPreviousItems, setShowAllPreviousItems] = useState<boolean>(true);
-  const [modifyOrderHcCharges, setModifyOrderHcCharges] = useState<number>(0);
   const [isHcApiCalled, setHcApiCalled] = useState<boolean>(false);
 
   const itemsWithHC = cartItems?.filter((item) => item!.collectionMethod == 'HC');
@@ -353,7 +354,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    console.log('po');
     if (showSelectPatient && currentPatient) {
       setSelectedPatient(
         !!existingOrderDetails ? existingOrderDetails?.patientObj : currentPatient
@@ -362,12 +362,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
     !!existingOrderDetails ? null : fetchAddresses();
     //if modifiedOrder, then set the area selected.
-    !!existingOrderDetails && setAreaSelected?.({ key: !!existingOrderDetails?.areaId, value: '' });
+    !!existingOrderDetails && setAreaSelected?.({ key: existingOrderDetails?.areaId, value: '' });
     !!existingOrderDetails && setPatientId?.(existingOrderDetails?.patientId);
   }, []);
 
   const fetchTestReportGenDetails = async (_cartItemId: string | number[]) => {
-    console.log('fetch report');
     try {
       const removeSpaces =
         typeof _cartItemId == 'string' ? _cartItemId.replace(/\s/g, '').split(',') : null;
@@ -459,21 +458,17 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     if (!!existingOrderDetails) {
       setPatientId?.(currentPatientId!);
       setAreaSelected?.({});
-      //address is fine
-      //slot
     }
     props.navigation.goBack();
   };
 
   useEffect(() => {
-    console.log('ffff');
     if (cartItemsWithId?.length > 0) {
       fetchPackageDetails(cartItemsWithId, null, 'diagnosticServiceablityChange');
     }
   }, [diagnosticServiceabilityData]);
 
   useEffect(() => {
-    console.log('djkdhjkdhkjdhjkd');
     if (
       !!existingOrderDetails &&
       existingOrderDetails?.slotId &&
@@ -481,13 +476,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       cartItems?.length > 0
     ) {
       //for modify order
-      const modifyOrderItemIds = existingOrderDetails?.diagnosticOrderLineItems?.map(
+      const modifyOrderItems = existingOrderDetails?.diagnosticOrderLineItems?.map(
         (
           item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems
-        ) => Number(item?.itemId)
+        ) => item
       );
-      const allItemIds = [cartItemsWithId, modifyOrderItemIds].flat(1);
-      fetchHC_ChargesForTest(existingOrderDetails?.slotId, allItemIds);
+      fetchHC_ChargesForTest(existingOrderDetails?.slotId, modifyOrderItems);
     } else if (
       selectedTimeSlot?.slotInfo?.slot! &&
       areaSelected &&
@@ -500,7 +494,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, [diagnosticSlot, deliveryAddressId, cartItems, addresses]);
 
   useEffect(() => {
-    console.log('shjshjsh=> pincode..?');
     if ((!!existingOrderDetails || deliveryAddressId != '') && isFocused) {
       getPinCodeServiceability();
     }
@@ -527,8 +520,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const postwebEngageProceedToPayEvent = () => {
     const mode = 'Home Visit';
-    const area = String((areaSelected as areaObject)?.value);
-
+    const area = !!existingOrderDetails
+      ? String(existingOrderDetails?.areaId)
+      : String((areaSelected as areaObject)?.value);
+    const slotTime = !!existingOrderDetails
+      ? moment(existingOrderDetails?.slotDateTimeInUTC).format('hh:mm')
+      : selectedTimeSlot?.slotInfo?.startTime!;
     DiagnosticProceedToPay(
       date,
       currentPatient,
@@ -541,7 +538,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       'Diagnostic',
       area,
       hcCharges,
-      selectedTimeSlot?.slotInfo?.startTime!
+      slotTime
     );
   };
 
@@ -578,7 +575,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, [isEPrescriptionUploadComplete, isPhysicalUploadComplete]);
 
   useEffect(() => {
-    console.log('bro');
     if (cartItems?.length > 0) {
       if (cartItemsWithId?.length > 0) {
         fetchTestReportGenDetails(cartItemsWithId);
@@ -598,6 +594,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setDiagnosticAreas?.([]);
       setAreaSelected?.({});
       setDeliveryAddressId?.('');
+      setModifyHcCharges?.(0);
       setHcCharges?.(0);
       setLoading?.(false);
     }
@@ -1009,18 +1006,21 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           borderRadius: 0,
         }}
         leftIcon={'backArrow'}
-        title={'TESTS CART'}
+        title={!!existingOrderDetails ? 'MODIFY ORDERS' : 'TESTS CART'}
         titleStyle={{ marginLeft: 20 }}
         rightComponent={
           <View>
-            <TouchableOpacity activeOpacity={1} onPress={() => _navigateToHomePage()}>
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => (!!existingOrderDetails ? _navigateToSearch() : _navigateToHomePage())}
+            >
               <Text
                 style={{
                   ...theme.fonts.IBMPlexSansSemiBold(13),
                   color: theme.colors.APP_YELLOW,
                 }}
               >
-                ADD ITEMS
+                ADD TESTS
               </Text>
             </TouchableOpacity>
           </View>
@@ -1029,6 +1029,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       />
     );
   };
+
+  function _navigateToSearch() {
+    DiagnosticAddToCartClicked();
+    props.navigation.navigate(AppRoutes.SearchTestScene, {
+      searchText: '',
+      orderDetails: existingOrderDetails,
+    });
+  }
 
   function _navigateToHomePage() {
     DiagnosticAddToCartClicked();
@@ -1254,12 +1262,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             index == 0 ? { marginTop: 20 } : {},
             index == array.length - 1 ? { marginBottom: 20 } : {},
           ];
-          const imageUrl =
-            test.thumbnail && !test.thumbnail.includes('/default/placeholder')
-              ? test.thumbnail.startsWith('http')
-                ? test.thumbnail
-                : `${AppConfig.Configuration.IMAGES_BASE_URL}${test.thumbnail}`
-              : '';
+
           const sellingPrice = !promoteCircle
             ? promoteDiscount && discountSpecialPrice != discountPrice
               ? discountSpecialPrice!
@@ -1345,7 +1348,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     comingFrom?: string,
     _itemIds?: number[]
   ) => {
-    console.log('yeyeyyeye');
     const isCovidItem = cartItemsWithId?.map((item) =>
       AppConfig.Configuration.Covid_Items.includes(item)
     );
@@ -1452,7 +1454,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             },
           });
         } else {
-          console.log('p2');
           setDeliveryAddressId && setDeliveryAddressId('');
           setDiagnosticAreas?.([]);
           setAreaSelected?.({});
@@ -1672,6 +1673,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
+  const getHcCharges = (): number => {
+    if (hcCharges === 0 && !!existingOrderDetails && existingOrderDetails?.collectionCharges > 0) {
+      return existingOrderDetails?.collectionCharges;
+    } else if (
+      existingOrderDetails > 0 &&
+      !!existingOrderDetails &&
+      existingOrderDetails?.collectionCharges > 0
+    ) {
+      return 0.0;
+    } else {
+      return hcCharges;
+    }
+  };
+
   const renderTotalCharges = () => {
     const anyCartSaving = isDiagnosticCircleSubscription ? cartSaving + circleSaving : cartSaving;
 
@@ -1705,16 +1720,28 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={[styles.blueTextStyle, { width: '60%' }]}>Home Collection Charges</Text>
               <View style={{ flexDirection: 'row' }}>
-                <Text style={styles.blueTextStyle}>
-                  {string.common.Rs} {hcCharges.toFixed(2)}
+                <Text
+                  style={[
+                    styles.blueTextStyle,
+                    {
+                      textDecorationLine:
+                        !!existingOrderDetails &&
+                        existingOrderDetails?.collectionCharges > 0 &&
+                        hcCharges === 0
+                          ? 'line-through'
+                          : 'none',
+                    },
+                  ]}
+                >
+                  {string.common.Rs} {getHcCharges()?.toFixed(2)}
                 </Text>
-                {!!existingOrderDetails &&
-                modifyOrderHcCharges > 0 &&
-                modifyOrderHcCharges > hcCharges ? (
+                {/* {!!existingOrderDetails &&
+                existingOrderDetails?.collectionCharges > 0 &&
+                modifyOrderHcCharges === 0 ? (
                   <Text style={styles.strikedThroughHC}>
-                    ({string.common.Rs} {modifyOrderHcCharges?.toFixed(2)})
+                    ({string.common.Rs} {modifyHcCharges?.toFixed(2)})
                   </Text>
-                ) : null}
+                ) : null} */}
               </View>
             </View>
           }
@@ -1856,8 +1883,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
+  function isCartPricesUpdated() {
+    if (cartItems?.length) {
+      let filterNotUpdatedItems = cartItems?.filter((item) => Number(item?.price) === 0);
+      if (filterNotUpdatedItems?.length > 0) {
+        return false;
+      } else {
+        return true;
+      }
+    }
+  }
+
   const disableProceedToPay = !(!!existingOrderDetails
     ? cartItems?.length > 0 &&
+      isCartPricesUpdated() &&
       existingOrderDetails?.slotId &&
       existingOrderDetails?.areaId &&
       isHcApiCalled
@@ -2003,6 +2042,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   function saveModifiedOrder() {
+    const calHcChargers = existingOrderDetails?.collectionCharges === 0 ? hcCharges : 0.0;
     const slotTimings = existingOrderDetails?.slotDateTimeInUTC;
     const slotStartTime = existingOrderDetails?.slotDateTimeInUTC;
     const allItems = cartItems?.find(
@@ -2014,17 +2054,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setshowSpinner?.(true);
     const modifyBookingInput: saveModifyDiagnosticOrderInput = {
       orderId: existingOrderDetails?.id,
-      collectionCharges: hcCharges,
+      collectionCharges: calHcChargers,
       bookingSource: DiagnosticsBookingSource.MOBILE,
       deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
-      items: createItemPrice(),
+      items: createItemPrice()?.itemPricingObject,
       userSubscriptionId: circleSubscriptionId,
       subscriptionInclusionId: null,
     };
-    console.log({ modifyBookingInput });
     saveModifyOrder?.(modifyBookingInput)
       .then((data) => {
-        console.log({ data });
         const getModifyResponse = data?.data?.saveModifyDiagnosticOrder;
         if (!getModifyResponse?.status) {
           apiHandleErrorFunction(modifyBookingInput, getModifyResponse, 'modifyOrder');
@@ -2038,12 +2076,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             'modifyOrder'
           );
         }
-        //call PROCESS_DIAG_COD_ORDER api from payments page
-        //navigate to confirm page
       })
       .catch((error) => {
-        console.log('p3');
-        console.log({ error });
         CommonBugFender('TestsCart__saveModifiedOrder', error);
         setshowSpinner?.(false);
         setLoading?.(false);
@@ -2064,13 +2098,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     DiagnosticPaymentInitiated('Cash', amount, 'Diagnostic', 'Diagnostic', 'Cash');
     try {
       const response = await processDiagnosticsCODOrder(client, orderId, amount);
-      console.log(response);
       const { data } = response;
       data?.processDiagnosticHCOrder?.status
         ? _navigatetoOrderStatus(true, 'success', eventAttributes, orderInfo)
         : renderAlert(string.common.tryAgainLater);
     } catch (e) {
-      console.log({ e });
       renderAlert(string.common.tryAgainLater);
     }
   }
@@ -2125,7 +2157,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         diagnosticDate: formattedDate,
         bookingSource: DiagnosticsBookingSource.MOBILE,
         deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
-        items: createItemPrice(),
+        items: createItemPrice()?.itemPricingObject,
         slotId: employeeSlotId?.toString() || '0',
         areaId: (areaSelected || ({} as any)).key!,
         collectionCharges: hcCharges,
@@ -2152,7 +2184,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           }
         })
         .catch((error) => {
-          console.log('p4');
           CommonBugFender('TestsCart_saveHomeCollectionOrder', error);
           setshowSpinner?.(false);
           setLoading?.(false);
@@ -2170,11 +2201,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   function apiHandleErrorFunction(input: any, data: any, source: string) {
-    console.log({ data });
-    let message =
-      source === 'modifyOrder'
-        ? data?.errorMessageToDisplay
-        : data?.errorMessage || string.diagnostics.bookingOrderFailedMessage;
+    let message = data?.errorMessageToDisplay || string.diagnostics.bookingOrderFailedMessage;
     //itemIds will only come in case of duplicate
     let itemIds = data?.attributes?.itemids;
     if (itemIds?.length! > 0) {
@@ -2259,13 +2286,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             amount: grandTotal,
             orderId: orderId,
             orderDetails: orderInfo,
-            isModify: !!existingOrderDetails,
+            modifyOrderDetails: existingOrderDetails,
             eventAttributes,
           });
         }
       }
     } catch (error) {
-      console.log('p1');
       CommonBugFender('TestCart_callInternalOrder', error);
       setshowSpinner?.(false);
       setLoading?.(false);
@@ -2347,7 +2373,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const itemPricingObject = !!existingOrderDetails
       ? [modifyPricesForItemArray, pricesForItemArray].flat(1)
       : pricesForItemArray;
-    return itemPricingObject;
+    return {
+      itemPricingObject,
+      pricesForItemArray,
+    };
   }
 
   const onPressProceedToPay = () => {
@@ -2359,7 +2388,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     //can be used only when itdose starts returning all id
     const getItemIds = itemIds?.split(',');
     const allInclusions = cartItems?.map((item) => item?.inclusions);
-    const getPricesForItem = createItemPrice();
+    const getPricesForItem = createItemPrice()?.itemPricingObject;
+    const getCartItemPrices = createItemPrice()?.pricesForItemArray;
 
     const mergedInclusions = allInclusions?.flat(1); //from array level to single array
     const duplicateItems_1 = mergedInclusions?.filter(
@@ -2368,20 +2398,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
     const duplicateItems = [...new Set(duplicateItems_1)];
     hideAphAlert?.();
-    console.log({ duplicateItems });
+    setLoading?.(false);
+    setshowSpinner?.(false);
     if (duplicateItems?.length) {
-      console.log('level1');
-      checkDuplicateItems_Level1(getPricesForItem, duplicateItems, getItemIds);
+      checkDuplicateItems_Level1(getPricesForItem, duplicateItems, getItemIds, getCartItemPrices);
     } else {
-      console.log('level2');
-      checkDuplicateItems_Level2(getPricesForItem, getItemIds);
+      checkDuplicateItems_Level2(getPricesForItem, getItemIds, getCartItemPrices);
     }
   }
 
   function checkDuplicateItems_Level1(
     getPricesForItem: any,
     duplicateItems: any,
-    itemIdFromBackend: any
+    itemIdFromBackend: any,
+    getCartItemPrices: any
   ) {
     //search for duplicate items in cart. (single tests added)
     let duplicateItemIds = cartItems?.filter((item) => duplicateItems?.includes(Number(item?.id)));
@@ -2443,7 +2473,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         //if not found at inclusion level, then show whatever is coming from api.
         if (higherPricesItems?.length == 0) {
           setLoading?.(false);
-          checkDuplicateItems_Level2(getPricesForItem, itemIdFromBackend);
+          checkDuplicateItems_Level2(getPricesForItem, itemIdFromBackend, getCartItemPrices);
         } else {
           //there can be case, that they are found in the inclusion level.
           const formattedHigherPriceItemName = higherPricesItems?.map(
@@ -2483,22 +2513,22 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       });
   }
 
-  const checkDuplicateItems_Level2 = (pricesForItem: any, getItemIds: any) => {
-    console.log('level___2');
+  const checkDuplicateItems_Level2 = (pricesForItem: any, getItemIds: any, cartItemPrices: any) => {
     //no inclusion level duplicates are found...
     if (getItemIds?.length > 0) {
       const newItems = getItemIds?.map((item: string) => Number(item));
 
-      //handle the case here, if hemogram +cbc (and min price is of one in the existing..); same check for level1
-
       //get the prices for both the items,
-      const getDuplicateItems = pricesForItem
+      let filterItemArray = !!existingOrderDetails ? cartItemPrices : pricesForItem;
+      const getDuplicateItems = filterItemArray
         ?.filter((item: any) => newItems?.includes(item?.itemId))
         .sort((a: any, b: any) => b?.price - a?.price);
 
-      // if on sorting -> highest price wala is on the cart then fine, otherwise -> check first element on cart.
+      //filter the items present in both (only in case of modify)
 
-      const itemsToRemove = getDuplicateItems?.splice(1, getDuplicateItems?.length - 1);
+      const itemsToRemove = cartItems?.map((item) =>
+        getDuplicateItems?.splice(1, getDuplicateItems?.length - 1)
+      );
       const itemIdToRemove = itemsToRemove?.map((item: any) => item?.itemId);
 
       const updatedCartItems = cartItems?.filter(function(items: any) {
@@ -2528,12 +2558,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       const duplicateTests = array?.[0]?.removalName;
 
       let arrayToSet = [...duplicateNameArray, array]?.flat(1);
-      console.log({ arrayToSet });
       onChangeCartItems(updatedCartItems, duplicateTests, itemIdToRemove);
       setShowInclusions(true);
       setDuplicateNameArray(arrayToSet);
 
       renderDuplicateMessage(duplicateTests, higherPricesName);
+      setLoading?.(false);
     } else {
       setLoading?.(false);
       hideAphAlert?.();
@@ -2655,7 +2685,24 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   };
 
-  const fetchHC_ChargesForTest = async (slotVal: string, _itemIds?: any[]) => {
+  const fetchHC_ChargesForTest = async (slotVal: string, modifiedItems?: any[]) => {
+    const getModifiedId = !!modifiedItems && modifiedItems?.map((item) => Number(item?.itemId));
+    const allItemId =
+      !!getModifiedId && getModifiedId?.length ? cartItemsWithId.concat(getModifiedId) : itemWithId;
+    const getModifiedItemPrices = !!modifiedItems && modifiedItems?.map((item) => item?.price);
+
+    const totalModifiedItemPrices =
+      !!getModifiedItemPrices &&
+      getModifiedItemPrices?.length &&
+      getModifiedItemPrices?.reduce((prevVal, currVal) => currVal + prevVal, 0);
+
+    //only for modified order (grandTotal - hc)
+    const totalCartPricesIncludingDiscount =
+      totalPriceExcludingAnyDiscounts +
+      couponDiscount -
+      cartSaving -
+      (isDiagnosticCircleSubscription ? circleSaving : 0);
+
     setHcApiCalled(false);
     const selectedAddressIndex = addresses?.findIndex(
       (address) => address?.id == deliveryAddressId
@@ -2666,7 +2713,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
     setPinCode?.(pinCode);
     setLoading?.(true);
-    let newGrandTotal = grandTotal - hcCharges;
+    let newGrandTotal = !!existingOrderDetails
+      ? totalCartPricesIncludingDiscount + totalModifiedItemPrices
+      : grandTotal - hcCharges;
+
     try {
       const HomeCollectionChargesApi = await client.query<
         getDiagnosticsHCCharges,
@@ -2677,7 +2727,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           sourceHeaders,
         },
         variables: {
-          itemIDs: !!existingOrderDetails && !!_itemIds ? _itemIds : itemWithId,
+          itemIDs: allItemId,
           totalCharges: newGrandTotal, //removed cartTotal due APP-7386
           slotID: slotVal!,
           pincode: Number(pinCodeFromAddress),
@@ -2692,8 +2742,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           ? calculateModifiedOrderHomeCollectionCharges(getCharges)
           : getCharges;
 
-        setHcCharges?.(recalculatedHC);
-        setModifyOrderHcCharges?.(getCharges);
+        const updatedHcCharges =
+          !!existingOrderDetails &&
+          existingOrderDetails?.collectionCharges > 0 &&
+          (getCharges === 0 || getCharges > 0)
+            ? -existingOrderDetails?.collectionCharges
+            : getCharges;
+
+        setHcCharges?.(getCharges);
+        setModifyHcCharges?.(updatedHcCharges);
       }
       setLoading?.(false);
       setHcApiCalled(true);

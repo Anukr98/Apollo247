@@ -7,20 +7,28 @@ import moment from 'moment';
 
 export interface BookingInfoProps {
   LOB: 'Diag' | 'Consult' | 'Pharma';
+  modifyOrderDetails?: any;
 }
 
 export const BookingInfo: React.FC<BookingInfoProps> = (props) => {
-  const { LOB } = props;
+  const { LOB, modifyOrderDetails } = props;
   const { addresses, deliveryAddressId, diagnosticSlot } = useDiagnosticsCart();
-  const selectedAddress = addresses.find((address) => address?.id == deliveryAddressId);
+  const selectedAddress = !!modifyOrderDetails
+    ? !!modifyOrderDetails?.patientAddressObj
+      ? modifyOrderDetails?.patientAddressObj
+      : addresses.find((address) => address?.id == modifyOrderDetails?.patientAddressId)
+    : addresses.find((address) => address?.id == deliveryAddressId);
 
   const renderHeading = () => {
-    const msg =
-      LOB == 'Diag'
-        ? `Slot booked for sample collection ${diagnosticSlot?.slotStartTime}, ${moment(
-            diagnosticSlot?.date
-          ).format('D MMM, YYYY')}`
-        : '';
+    const slotTime = !!modifyOrderDetails
+      ? moment(modifyOrderDetails?.slotDateTimeInUTC).format('hh:mm')
+      : diagnosticSlot?.slotStartTime;
+
+    const slotDate = moment(
+      !!modifyOrderDetails ? modifyOrderDetails?.slotDateTimeInUTC : diagnosticSlot?.date
+    ).format('D MMM, YYYY');
+
+    const msg = LOB == 'Diag' ? `Slot booked for sample collection ${slotTime}, ${slotDate}` : '';
     return <Text style={styles.heading}>{msg}</Text>;
   };
 

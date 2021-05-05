@@ -65,6 +65,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const amount = props.navigation.getParam('amount');
   const orderId = props.navigation.getParam('orderId');
   const orderDetails = props.navigation.getParam('orderDetails');
+  const modifiedOrderDetails = props.navigation.getParam('modifyOrderDetails');
   const eventAttributes = props.navigation.getParam('eventAttributes');
   const source = props.navigation.getParam('source');
   const { currentPatient } = useAllCurrentPatients();
@@ -333,6 +334,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       isCOD: isCOD,
       eventAttributes,
       paymentStatus: paymentStatus,
+      isModify: !!modifiedOrderDetails ? modifiedOrderDetails : null,
     });
   };
 
@@ -354,7 +356,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderBookingInfo = () => {
-    return <BookingInfo LOB={'Diag'} />;
+    return <BookingInfo LOB={'Diag'} modifyOrderDetails={modifiedOrderDetails} />;
   };
 
   const showPaymentOptions = () => {
@@ -363,7 +365,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           const minVersion = item?.minimum_supported_version;
           switch (item?.name) {
             case 'COD':
-              return paymentModeVersionCheck(minVersion) && renderPayByCash();
+              return paymentModeVersionCheck(minVersion) && !!modifiedOrderDetails
+                ? null
+                : renderPayByCash();
             case 'CARD':
               return paymentModeVersionCheck(minVersion) && renderCards();
             case 'WALLET':

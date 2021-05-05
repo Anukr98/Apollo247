@@ -24,7 +24,7 @@ export interface DiagnosticsSearchSuggestionItemProps {
 export const DiagnosticsSearchSuggestionItem: React.FC<DiagnosticsSearchSuggestionItemProps> = (
   props
 ) => {
-  const { cartItems } = useDiagnosticsCart();
+  const { cartItems, modifiedOrderItemIds } = useDiagnosticsCart();
   const { data } = props;
   const name = data?.diagnostic_item_name || '';
   const imageUri = false;
@@ -84,11 +84,7 @@ export const DiagnosticsSearchSuggestionItem: React.FC<DiagnosticsSearchSuggesti
   const renderAddToCartView = () => {
     const isModifyOrder = !!props.modifyOrderDetails;
     const getExisitingOrderItems = isModifyOrder
-      ? props.modifyOrderDetails?.diagnosticOrderLineItems?.map(
-          (
-            item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems
-          ) => Number(item?.itemId)
-        )
+      ? !!modifiedOrderItemIds && modifiedOrderItemIds
       : [];
     const isAlreadyPartOfOrder =
       getExisitingOrderItems?.length > 0 &&

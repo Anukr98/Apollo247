@@ -113,12 +113,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   ];
 
   const {
-    addresses,
     diagnosticSlot,
     setDiagnosticSlot,
     setHcCharges,
+    setModifyHcCharges,
     cartItems,
     removeCartItem,
+    setModifiedOrderItemIds
   } = useDiagnosticsCart();
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
@@ -326,40 +327,36 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           if (data?.data?.getOrderPhleboDetailsBulk?.orderPhleboDetailsBulk) {
             const orderPhleboDetailsBulk =
               data?.data?.getOrderPhleboDetailsBulk?.orderPhleboDetailsBulk;
-            ordersList?.forEach(
-              (
-                order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList
-              ) => {
-                const findOrder = orderPhleboDetailsBulk?.find(
-                  (phleboDetails: any) =>
-                    phleboDetails?.orderPhleboDetails !== null &&
-                    phleboDetails?.orderPhleboDetails?.diagnosticOrdersId === order?.id
-                );
-                if (findOrder && findOrder.orderPhleboDetails !== null) {
-                  if (order.phleboDetailsObj === null) {
-                    order.phleboDetailsObj = {
-                      PhelboOTP: null,
-                      PhelbotomistName: null,
-                      PhelbotomistMobile: null,
-                      PhelbotomistTrackLink: null,
-                      TempRecording: null,
-                      CheckInTime: null,
-                      PhleboLatitude: null,
-                      PhleboLongitude: null,
-                      __typename: 'PhleboDetailsObj',
-                    };
-                  }
-                  order.phleboDetailsObj.PhelboOTP = findOrder?.orderPhleboDetails?.phleboOTP;
-                  order.phleboDetailsObj.PhelbotomistName =
-                    findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.name;
-                  order.phleboDetailsObj.PhelbotomistMobile =
-                    findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.mobile;
-                  order.phleboDetailsObj.PhelbotomistTrackLink =
-                    findOrder?.orderPhleboDetails?.phleboTrackLink;
-                  order.phleboDetailsObj.CheckInTime = findOrder?.phleboEta?.estimatedArrivalTime;
+            ordersList?.forEach((order: any) => {
+              const findOrder = orderPhleboDetailsBulk?.find(
+                (phleboDetails: any) =>
+                  phleboDetails?.orderPhleboDetails !== null &&
+                  phleboDetails?.orderPhleboDetails?.diagnosticOrdersId === order?.id
+              );
+              if (findOrder && findOrder.orderPhleboDetails !== null) {
+                if (order.phleboDetailsObj === null) {
+                  order.phleboDetailsObj = {
+                    PhelboOTP: null,
+                    PhelbotomistName: null,
+                    PhelbotomistMobile: null,
+                    PhelbotomistTrackLink: null,
+                    TempRecording: null,
+                    CheckInTime: null,
+                    PhleboLatitude: null,
+                    PhleboLongitude: null,
+                    __typename: 'PhleboDetailsObj',
+                  };
                 }
+                order.phleboDetailsObj.PhelboOTP = findOrder?.orderPhleboDetails?.phleboOTP;
+                order.phleboDetailsObj.PhelbotomistName =
+                  findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.name;
+                order.phleboDetailsObj.PhelbotomistMobile =
+                  findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.mobile;
+                order.phleboDetailsObj.PhelbotomistTrackLink =
+                  findOrder?.orderPhleboDetails?.phleboTrackLink;
+                order.phleboDetailsObj.CheckInTime = findOrder?.phleboEta?.estimatedArrivalTime;
               }
-            );
+            });
             setOrders(ordersList);
             setFilteredOrderList(ordersList);
             setTimeout(() => setLoading!(false), isRefetch ? 1000 : 0);
@@ -1204,6 +1201,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
     //clear the hcCharges.
     setHcCharges?.(0);
+    setModifyHcCharges?.(0);
+    setModifiedOrderItemIds?.(getOrderItems)
     props.navigation.navigate(AppRoutes.SearchTestScene, {
       searchText: '',
       orderDetails: order,
@@ -1594,3 +1593,4 @@ const styles = StyleSheet.create({
     width: '20%',
   },
 });
+

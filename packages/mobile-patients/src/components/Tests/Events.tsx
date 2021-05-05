@@ -468,3 +468,18 @@ export function DiagnosticPaymentPageViewed(currentPatient: any, amount: string 
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED, eventAttributes);
 }
+
+export function DiagnosticOrderSummaryViewed(
+  id: string,
+  charges: string | number,
+  date: string,
+  status: string
+) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED] = {
+    'Order id:': id,
+    'Order amount': charges!,
+    'Sample Collection Date': date,
+    'Order status': status,
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED, eventAttributes);
+}

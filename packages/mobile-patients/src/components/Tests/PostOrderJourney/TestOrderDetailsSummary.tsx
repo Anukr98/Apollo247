@@ -141,7 +141,7 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
         <View style={styles.headerShadowContainer}>
           <Header
             leftIcon="backArrow"
-            title={`ORDER #${orderDetails.displayId || ''}`}
+            title={`ORDER #${orderDetails?.displayId || ''}`}
             titleStyle={{ marginHorizontal: 10 }}
             container={{ borderBottomWidth: 0 }}
             onPressLeftIcon={() => {

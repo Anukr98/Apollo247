@@ -90,7 +90,15 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const { addCartItem, removeCartItem, cartItems } = useDiagnosticsCart();
+  const {
+    addCartItem,
+    removeCartItem,
+    cartItems,
+    setModifyHcCharges,
+    setModifiedOrderItemIds,
+    setHcCharges,
+    setAreaSelected,
+  } = useDiagnosticsCart();
   const { cartItems: shopCartItems } = useShoppingCart();
   const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
@@ -326,10 +334,21 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             </TouchableOpacity>
           </View>
         }
-        onPressLeftIcon={() => props.navigation.goBack()}
+        onPressLeftIcon={() => handleBack()}
       />
     );
   };
+
+  function handleBack() {
+    if (!!existingOrderDetails) {
+      setModifyHcCharges?.(0);
+      setModifiedOrderItemIds?.([]);
+      setHcCharges?.(0);
+      setAreaSelected?.({});
+    }
+
+    props.navigation.goBack();
+  }
 
   const isNoTestsFound = !isLoading && searchText?.length > 2 && searchResult;
 
@@ -409,6 +428,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             props.navigation.navigate(AppRoutes.TestDetails, {
               itemId: `${product?.itemId}`,
               comingFrom: AppRoutes.SearchTestScene,
+              existingOrderDetails: existingOrderDetails,
               testDetails: {
                 Rate: price,
                 specialPrice: specialPrice! || price,
@@ -470,6 +490,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             itemId: product?.diagnostic_item_id,
             source: 'Popular search',
             comingFrom: AppRoutes.SearchTestScene,
+            existingOrderDetails: existingOrderDetails,
           });
         }}
         onPressAddToCart={() => {
@@ -497,7 +518,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       );
       popularTests = popularArray?.filter((item: any) => item?.diagnostic_inclusions?.length == 1);
       if (popularTests?.length == 0) {
-        popularTests = popularArray
+        popularTests = popularArray;
       }
     }
 
@@ -588,6 +609,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             itemName: item?.diagnostic_item_name,
             source: 'Popular search',
             comingFrom: AppRoutes.SearchTestScene,
+            existingOrderDetails: existingOrderDetails,
           });
         }}
         onPressAddToCart={() => {

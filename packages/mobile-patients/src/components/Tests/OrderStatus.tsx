@@ -106,11 +106,14 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const navigateToOrderDetails = (showOrderSummaryTab: boolean, orderId: string) => {
     setLoading?.(false);
     apisToCall.current = [apiCallEnums.circleSavings];
-    props.navigation.navigate(AppRoutes.TestOrderDetailsSummary, {
-      goToHomeOnBack: true,
-      showOrderSummaryTab,
-      orderId: orderId,
+    props.navigation.navigate(AppRoutes.TestOrderDetails, {
+      orderId: !!modifiedOrderDetails ? modifiedOrderDetails?.id : orderId,
+      setOrders: null,
+      selectedOrder: null,
+      refundStatusArr: [],
       comingFrom: AppRoutes.TestsCart,
+      showOrderSummaryTab: true,
+      disableTrackOrder: true,
     });
   };
 

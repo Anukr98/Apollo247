@@ -69,6 +69,15 @@ interface OrderTestCardProps {
 
 export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   const [moreTests, setMoreTests] = useState<boolean>(false);
+  const { ordersData } = props;
+  //added if item is removed from phelbo app.
+  const filterOrderLineItem =
+    !!ordersData &&
+    ordersData?.filter(
+      (
+        item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems
+      ) => !item?.isRemoved
+    );
 
   const bookedOn = moment(props?.createdOn)?.format('Do MMM') || null;
   const renderTopView = () => {
@@ -116,16 +125,9 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   };
 
   const renderTestNames = () => {
-    //if items has been removed from the phlebo app
-    const filterItems = props.ordersData?.filter(
-      (
-        item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems
-      ) => !item?.isRemoved
-    );
-
     return (
       <>
-        {props.ordersData?.map(
+        {filterOrderLineItem?.map(
           (
             item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems,
             index: number
@@ -143,15 +145,15 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                   </Text>
                   {!!item?.editOrderID ? renderNewTag() : null}
                   {index == 1 &&
-                    props.ordersData?.length - 2 > 0 &&
-                    renderShowMore(props.ordersData, item?.itemName!)}
+                    filterOrderLineItem?.length - 2 > 0 &&
+                    renderShowMore(filterOrderLineItem, item?.itemName!)}
                 </>
               ) : null}
             </View>
           )
         )}
         {moreTests &&
-          props.ordersData?.map(
+          filterOrderLineItem?.map(
             (
               item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems,
               index: number
@@ -221,7 +223,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
   const renderPreparationData = () => {
     //remove duplicate test prep data.
-    const getPrepData = props.ordersData?.map(
+    const getPrepData = filterOrderLineItem?.map(
       (item: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems) =>
         item?.itemObj?.testPreparationData || item?.diagnostics?.testPreparationData!
     );
@@ -428,8 +430,12 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       <View key={props?.key?.toString()} style={{ padding: 16, paddingBottom: 12 }}>
         {renderTopView()}
         {renderMidView()}
-        {!!props.ordersData && props.ordersData?.length > 0 ? renderTestListView() : null}
-        {!!props.ordersData && props.ordersData?.length > 0 ? renderPreparationData() : null}
+        {!!ordersData && !!filterOrderLineItem && filterOrderLineItem?.length
+          ? renderTestListView()
+          : null}
+        {!!ordersData && !!filterOrderLineItem && filterOrderLineItem?.length
+          ? renderPreparationData()
+          : null}
         {!!props.orderLevelStatus && DIAGNOSTIC_ORDER_FAILED_STATUS.includes(props.orderLevelStatus)
           ? null
           : renderBottomView()}
