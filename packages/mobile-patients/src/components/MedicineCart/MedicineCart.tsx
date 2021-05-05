@@ -204,9 +204,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (!circleSubscriptionId) {
       setShowCareSelectPlans(true);
     }
-    if (coupon?.coupon) {
-      setIsCircleSubscription?.(false);
-    }
   }, []);
 
   useEffect(() => {
@@ -312,6 +309,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }, [appState]);
 
   const handleBack = () => {
+    setCoupon!(null);
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
   };
 
@@ -918,6 +916,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       <TouchableOpacity
         activeOpacity={0.5}
         onPress={() => {
+          setCoupon!(null);
           navigateToScreenWithEmptyStack(props.navigation, AppRoutes.Medicine);
         }}
       >
@@ -936,6 +935,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         rightComponent={headerRightComponent()}
         onPressLeftIcon={() => {
           CommonLogEvent(AppRoutes.MedicineCart, 'Go back to add items');
+          setCoupon!(null);
           props.navigation.goBack();
         }}
       />

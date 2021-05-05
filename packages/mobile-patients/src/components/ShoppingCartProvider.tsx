@@ -338,7 +338,6 @@ const AsyncStorageKeys = {
   ePrescriptions: 'ePrescriptions',
   physicalPrescriptions: 'physicalPrescriptions',
   onHoldOptionOrder: 'onHoldItems',
-  coupon: 'coupon',
 };
 
 const showGenericAlert = (message: string) => {
@@ -371,7 +370,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
   >('');
   const [deliveryTime, setdeliveryTime] = useState<ShoppingCartContextProps['deliveryTime']>('');
   const [storeId, _setStoreId] = useState<ShoppingCartContextProps['storeId']>('');
-  const [coupon, _setCoupon] = useState<ShoppingCartContextProps['coupon']>(null);
+  const [coupon, setCoupon] = useState<ShoppingCartContextProps['coupon']>(null);
   const [deliveryType, setDeliveryType] = useState<ShoppingCartContextProps['deliveryType']>(null);
   const [hdfcPlanName, _setHdfcPlanName] = useState<ShoppingCartContextProps['hdfcPlanName']>('');
   const [circleSubscriptionId, setCircleSubscriptionId] = useState<
@@ -479,13 +478,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
     );
     const updatedEPres = [...existingFilteredEPres, ...itemsToAdd];
     setEPrescriptions(updatedEPres);
-  };
-
-  const setCoupon: ShoppingCartContextProps['setCoupon'] = (coupon) => {
-    _setCoupon(coupon);
-    AsyncStorage.setItem(AsyncStorageKeys.coupon, JSON.stringify(coupon)).catch(() => {
-      showGenericAlert('Failed to save coupon details in local storage.');
-    });
   };
 
   const setCartItems: ShoppingCartContextProps['setCartItems'] = (cartItems) => {
@@ -916,15 +908,12 @@ export const ShoppingCartProvider: React.FC = (props) => {
         const cartItemsFromStorage = await AsyncStorage.multiGet([
           AsyncStorageKeys.cartItems,
           AsyncStorageKeys.onHoldOptionOrder,
-          AsyncStorageKeys.coupon,
         ]);
         const cartItems = cartItemsFromStorage[0][1];
         const showOnHoldOptions = cartItemsFromStorage[1][1];
-        const couponDetails = cartItemsFromStorage[2][1];
 
         _setCartItems(JSON.parse(cartItems || 'null') || []);
         _setOnHoldOptionOrder(JSON.parse(showOnHoldOptions || 'null') || []);
-        _setCoupon(JSON.parse(couponDetails || 'null') || '');
       } catch (error) {
         CommonBugFender('ShoppingCartProvider_updateCartItemsFromStorage_try', error);
         showGenericAlert('Failed to get cart items from local storage.');
@@ -956,6 +945,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
   useEffect(() => {
     // updating coupon discount here on update in cart or new coupon code applied
     if (cartTotal == 0) {
+      setCouponDiscount(0);
+      setProductDiscount(0);
+      setCoupon(null);
+      setCouponProducts([]);
       return;
     }
     const productDiscount =
