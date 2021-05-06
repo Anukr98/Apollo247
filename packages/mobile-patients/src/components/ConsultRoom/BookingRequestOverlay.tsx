@@ -407,9 +407,9 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
         </Text>
         <View style={styles.rowEven}>
           {renderModeOptionInput('Any', ConsultMode.BOTH)}
-          {renderModeOptionInput('In-Person Visits', ConsultMode.PHYSICAL)}
+          {renderModeOptionInput('Hospital Visit', ConsultMode.PHYSICAL)}
         </View>
-        <View>{renderModeOptionInput('Online', ConsultMode.ONLINE)}</View>
+        <View>{renderModeOptionInput('Video Consult', ConsultMode.ONLINE)}</View>
       </View>
     );
   };
