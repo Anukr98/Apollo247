@@ -662,7 +662,7 @@ const styles = StyleSheet.create({
     marginLeft: -24,
     marginTop: -48,
     position: 'absolute',
-    top: screenHeight / 3,
+    top: '47%',
   },
   markerIcon: {
     height: 35,
