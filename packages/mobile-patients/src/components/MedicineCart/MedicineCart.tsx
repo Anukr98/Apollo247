@@ -182,6 +182,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const pharmacyPincode =
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
   const [showCareSelectPlans, setShowCareSelectPlans] = useState<boolean>(true);
+  const [tatResponse, setTatResponse] = useState<string>('');
 
   useEffect(() => {
     fetchAddress();
@@ -202,9 +203,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     }
     if (!circleSubscriptionId) {
       setShowCareSelectPlans(true);
-    }
-    if (coupon?.coupon) {
-      setIsCircleSubscription?.(false);
     }
   }, []);
 
@@ -236,12 +234,20 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   useEffect(() => {
     // call servicability api if new address is added from cart
     const addressLength = addresses.length;
-    if (!!addressLength && !!newAddressAdded) {
+    if (!!addressLength && !!newAddressAdded && !!tatResponse) {
       const newAddress = addresses.filter((value) => value.id === newAddressAdded);
       checkServicability(newAddress[0]);
+      postPharmacyAddNewAddressCompleted(
+        'Cart',
+        g(selectedAddress, 'zipcode')!,
+        formatAddress(selectedAddress),
+        moment(tatResponse, AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT).toDate(),
+        moment(tatResponse).diff(new Date(), 'd'),
+        'Yes'
+      );
       setNewAddressAdded && setNewAddressAdded('');
     }
-  }, [newAddressAdded]);
+  }, [newAddressAdded, selectedAddress, tatResponse]);
 
   useEffect(() => {
     availabilityTat(false);
@@ -303,6 +309,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }, [appState]);
 
   const handleBack = () => {
+    setCoupon!(null);
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
   };
 
@@ -465,6 +472,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             inventoryData = inventoryData.concat(order?.items);
           });
           setloading!(false);
+          setTatResponse(response[0]?.tat);
           addressSelectedEvent(selectedAddress, response[0]?.tat, response);
           addressChange && NavigateToCartSummary();
           updatePricesAfterTat(inventoryData, updatedCartItems);
@@ -497,6 +505,20 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       setCircleMembershipCharges && setCircleMembershipCharges(0);
       setCirclePlanSelected && setCirclePlanSelected(null);
       AsyncStorage.removeItem('circlePlanSelected');
+    }
+    if (newAddressAdded) {
+      postPharmacyAddNewAddressCompleted(
+        'Cart',
+        g(selectedAddress, 'zipcode')!,
+        formatAddress(selectedAddress),
+        moment(
+          genericServiceableDate,
+          AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT
+        ).toDate(),
+        moment(genericServiceableDate).diff(new Date(), 'd'),
+        'Yes'
+      );
+      setNewAddressAdded && setNewAddressAdded('');
     }
     addressSelectedEvent(selectedAddress, genericServiceableDate);
     setdeliveryTime?.(genericServiceableDate);
@@ -547,18 +569,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       orderSelected?.length > 1,
       splitOrderDetails
     );
-
-    if (selectedAddress?.id === newAddressAdded) {
-      postPharmacyAddNewAddressCompleted(
-        'Cart',
-        g(selectedAddress, 'zipcode')!,
-        formatAddress(selectedAddress),
-        moment(tatDate, AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT).toDate(),
-        moment(tatDate).diff(currentDate, 'd'),
-        'Yes'
-      );
-      setNewAddressAdded && setNewAddressAdded('');
-    }
   }
 
   async function setDefaultAddress(address: savePatientAddress_savePatientAddress_patientAddress) {
@@ -920,6 +930,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       <TouchableOpacity
         activeOpacity={0.5}
         onPress={() => {
+          setCoupon!(null);
           navigateToScreenWithEmptyStack(props.navigation, AppRoutes.Medicine);
         }}
       >
@@ -938,6 +949,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         rightComponent={headerRightComponent()}
         onPressLeftIcon={() => {
           CommonLogEvent(AppRoutes.MedicineCart, 'Go back to add items');
+          setCoupon!(null);
           props.navigation.goBack();
         }}
       />
@@ -1137,6 +1149,44 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     ) : null;
   };
 
+  async function redirectToUploadPrescription() {
+    const redirect = () => {
+      uploadPrescriptionClickedEvent(currentPatient?.id);
+      props.navigation.navigate(AppRoutes.MedicineCartPrescription);
+    };
+    if (coupon) {
+      try {
+        const response = await validateCoupon(
+          coupon?.coupon,
+          coupon?.message,
+          pharmacyPincode,
+          g(currentPatient, 'mobileNumber'),
+          hdfcSubscriptionId,
+          circleSubscriptionId,
+          setCoupon,
+          cartTotal,
+          productDiscount,
+          cartItems,
+          hdfcStatus,
+          hdfcPlanId,
+          circleStatus,
+          circlePlanId,
+          setCouponProducts,
+          circlePlanSelected
+        );
+        if (response === 'success') {
+          redirect();
+        } else {
+          removeCouponWithAlert(response);
+        }
+      } catch (error) {
+        removeCouponWithAlert('Sorry, invalid coupon applied. Remove the coupon and try again.');
+      }
+    } else {
+      redirect();
+    }
+  }
+
   const renderProceedBar = () => {
     return (
       <ProceedBar
@@ -1151,10 +1201,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           selectDeliveryAddressClickedEvent(currentPatient?.id, JSON.stringify(cartItems));
           showAddressPopup();
         }}
-        onPressUploadPrescription={() => {
-          uploadPrescriptionClickedEvent(currentPatient?.id);
-          props.navigation.navigate(AppRoutes.MedicineCartPrescription);
-        }}
+        onPressUploadPrescription={redirectToUploadPrescription}
         onPressProceedtoPay={() => {
           physicalPrescriptions?.length > 0 ? uploadPhysicalPrescriptons() : onPressProceedtoPay();
         }}

@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
+import { nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { colors } from 'react-native-elements';
 
 export interface WidgetCardProps {
   data: any;
@@ -24,7 +26,7 @@ export const WidgetCard: React.FC<WidgetCardProps> = (props) => {
         onPressWidget()
       }}>
           <Image source={{uri: data.itemIcon}} style={styles.circleImg}/>
-        <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>{data?.itemTitle}</Text>
+        <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>{nameFormater(data?.itemTitle,'default')}</Text>
       </TouchableOpacity>
     );
 }
@@ -43,7 +45,7 @@ const styles = StyleSheet.create({
     elevation:5
   },
   textStyle: {
-    ...theme.viewStyles.text('SB', 14, '#000000', 1, 20, 0),
+    ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE , 1, 20, 0),
     width:'100%',
     textAlign:'center',
     padding: 5,

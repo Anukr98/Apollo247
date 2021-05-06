@@ -2326,7 +2326,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       >
         <ImageNative resizeMode={'contain'} style={styles.image} source={{ uri: item.itemIcon }} />
         <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>
-          {item?.itemTitle}
+          {nameFormater(item?.itemTitle,'default')}
         </Text>
       </TouchableOpacity>
     );
@@ -2658,7 +2658,7 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   textStyle: {
-    ...theme.viewStyles.text('SB', 14, '#000000', 1, 20, 0),
+    ...theme.viewStyles.text('SB', 14, colors.SHERPA_BLUE, 1, 20, 0),
     padding: 5,
   },
   orderStatusCardDots: {
