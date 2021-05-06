@@ -35,6 +35,7 @@ import {
   formatAddress,
   getShipmentPrice,
   validateCoupon,
+  getPackageIds,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   availabilityApi247,
@@ -92,12 +93,9 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   } = useShoppingCart();
   const {
     pharmacyUserTypeAttribute,
-    hdfcStatus,
-    hdfcPlanId,
-    circleStatus,
-    circlePlanId,
     pharmacyLocation,
     locationDetails,
+    activeUserSubscriptions,
   } = useAppCommonData();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -362,18 +360,12 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           coupon.message,
           pharmacyPincode,
           g(currentPatient, 'mobileNumber'),
-          hdfcSubscriptionId,
-          circleSubscriptionId,
           setCoupon,
           cartTotal,
           productDiscount,
           cartItems,
-          hdfcStatus,
-          hdfcPlanId,
-          circleStatus,
-          circlePlanId,
           setCouponProducts,
-          circlePlanSelected
+          activeUserSubscriptions ? getPackageIds(activeUserSubscriptions) : []
         );
         if (response !== 'success') {
           removeCouponWithAlert(response);

@@ -19,7 +19,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -216,6 +216,9 @@ const appStaticVariables = {
   DIABETES_MGMT_CM_PROGRAM_ID: 'diabetes_24_7',
   PROHEALTH_MGMT_CM_PROGRAM_ID: 'prohealth',
   Health_Credit_Expiration_Time: 60, //default health credit expiration time 60 mins
+  Reopen_Help_Max_Time: 24, // hrs
+  Helpdesk_Chat_Confim_Msg:
+    'Thank you for reaching out. As we are experiencing a heavy load, our team will get back to you in 24 to 48 hours.',
 };
 
 const DEV_top_specialties = [

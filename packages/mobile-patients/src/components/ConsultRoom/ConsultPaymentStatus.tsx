@@ -783,7 +783,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       getAppointmentInfo(navigateToChatRoom);
     } else if (status == failure || status == aborted) {
       // navigate(AppRoutes.DoctorSearch);
-      setLoading?.(true);
       navigate(AppRoutes.DoctorDetails, {
         doctorId: doctorID,
       });

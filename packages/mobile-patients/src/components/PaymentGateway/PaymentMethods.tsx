@@ -274,7 +274,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   async function onPressUPIApp(app: any) {
     triggerWebengege('Prepaid', 'UPI');
     const token = await getClientToken();
-    InitiateUPIIntentTxn(currentPatient?.id, token, paymentId, app.packageName);
+    InitiateUPIIntentTxn(currentPatient?.id, token, paymentId, app.payment_method_code);
   }
 
   async function onPressVPAPay(VPA: string) {
@@ -335,19 +335,14 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const filterUPIApps = () => {
     if (availableUPIApps?.length) {
-      const available = availableUPIApps?.map((item: any) => item?.appName);
+      const available = availableUPIApps?.map((item: any) => item?.packageName);
       const UPIApps = paymentMethods?.find((item: any) => item?.name == 'UPI')?.payment_methods;
       const apps = UPIApps?.map((app: any) => {
         if (
-          available.includes(app?.payment_method_name) &&
+          available.includes(app?.payment_method_code) &&
           paymentModeVersionCheck(app?.minimum_supported_version)
         ) {
-          let object = app;
-          const packageName = availableUPIApps?.find(
-            (item: any) => item?.appName == app.payment_method_name
-          )?.['packageName'];
-          object['packageName'] = packageName;
-          return object;
+          return app;
         }
       }).filter((value: any) => value);
       return apps;

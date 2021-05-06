@@ -1592,7 +1592,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     return (
       <View style={styles.chatView}>
         <Text style={styles.queryText}>In case of any issues/queries:</Text>
-        <ChatWithUs text={patientWhtsappQuery} />
+        <TouchableOpacity onPress={() => onPressHelp()}>
+          <Text style={styles.goToHelp}>{string.orders.go_to_help}</Text>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -2069,21 +2071,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     );
   };
 
-  const renderHelpHeader = () => {
-    return (
-      <TouchableOpacity activeOpacity={1} style={{ paddingLeft: 10 }} onPress={onPressHelp}>
-        <Text style={styles.helpTextStyle}>{string.help.toUpperCase()}</Text>
-      </TouchableOpacity>
-    );
-  };
-
   const renderRightComponent = () => {
-    return (
-      <View style={styles.headerViewStyle}>
-        {renderHelpHeader()}
-        {renderMoreMenu()}
-      </View>
-    );
+    return <View style={styles.headerViewStyle}>{renderMoreMenu()}</View>;
   };
 
   const showCancelOrder = () => {
@@ -2247,7 +2236,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               selectedTab={selectedTab}
             />
             {selectedTab == string.orders.trackOrder && renderOrderTrackTopView()}
-            {!hideWhtsappQueryOption && renderInconvenienceView()}
+            {renderInconvenienceView()}
             <ScrollView bounces={false} ref={scrollViewRef}>
               {selectedTab == string.orders.trackOrder
                 ? renderOrderHistory()
@@ -2421,11 +2410,13 @@ const styles = StyleSheet.create({
   },
   queryText: {
     ...theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE),
-    paddingBottom: 10,
-    paddingTop: 4,
     marginRight: 6,
   },
   chatBtnTxt: {
     ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW),
+  },
+  goToHelp: {
+    textAlign: 'center',
+    ...theme.viewStyles.text('B', 14, '#FC9916'),
   },
 });
