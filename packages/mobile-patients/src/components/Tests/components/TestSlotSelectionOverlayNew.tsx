@@ -248,7 +248,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           ))}
         </View>
         <View>
-          <FlatList
+        {selectedDayTab == 0 ?  <FlatList
             keyExtractor={(_, index) => index.toString()}
             data={dropDownOptions}
             contentContainerStyle={styles.timeContainer}
@@ -258,7 +258,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
                 <Text style={styles.dateTextStyle}>{item?.value}</Text>
               </View>
             )}
-          />
+          />  : renderNoSlots()}
         </View>
       </View>
     );
@@ -285,7 +285,12 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
                 .add(1, 'day')
                 .toDate()
             : new Date();
-
+            var offset = 0;
+            var months = [];
+            while (offset < 12) {
+              months.push(moment().add(offset++, 'month').format('MMMM'));
+            }
+            console.log('months :>> ', months);
           return (
             <View>
               <Text
@@ -324,6 +329,9 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
                     <TouchableOpacity
                       onPress={() => {
                         setSelectedDate(item?.date);
+                        // setDate(selectedDate);
+                        setSlotInfo(undefined);
+                        setIsDateAutoSelected(false);
                       }}
                       style={[
                         styles.dateContainer,
@@ -359,8 +367,14 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
               </View>
             </View>
           );
-        };;
-
+        };
+  const renderNoSlots = () => {
+    return (
+        <View style={styles.noSlotsContainer}>
+          <Text style={styles.noSlotsText}>No Slots Available</Text>
+        </View>
+    )
+  }
   const isDoneBtnDisabled = !date || !slotInfo;
   const infoPanel = () => {
     return (
@@ -470,6 +484,18 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  noSlotsContainer: {
+    width: '94%',
+    paddingVertical:90,
+    alignSelf: 'center',
+    // backgroundColor: '#c8c8c8',
+    alignContent: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noSlotsText: {
+    ...theme.viewStyles.text('SB', 17, theme.colors.SHERPA_BLUE),
   },
   dateContentStyle: {
     width: 68,
