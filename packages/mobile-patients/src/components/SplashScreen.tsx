@@ -656,7 +656,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         firebaseAuth().onAuthStateChanged(async (user) => {
           if (user) {
             const jwtToken = await user.getIdToken(true).catch((error) => {
-              throw error;
+              CommonBugFender('SplashScreen_regenerateJWTToken', error);
             });
             const openUrl = AppConfig.Configuration.PROHEALTH_BOOKING_URL;
             let finalUrl;
