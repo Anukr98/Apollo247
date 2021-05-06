@@ -34,8 +34,17 @@ import {
   BackHandler,
   Text,
   Modal,
+  Linking
 } from 'react-native';
-import { Down, Up, DownO } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  Down,
+  Up,
+  DownO,
+  CopyBlue,
+  DownloadNew,
+  ShareBlue,
+  ViewIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { NavigationScreenProps } from 'react-navigation';
 import {
   CancellationDiagnosticsInput,
@@ -152,6 +161,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [isTest, setIsTest] = useState<any>(props.navigation.getParam('isTest'));
 
   const [isPaitentList, setIsPaitentList] = useState<boolean>(false);
+  const [isViewReport, setIsViewReport] = useState<boolean>(false);
+  const [activeOrder, setActiveOrder] = useState<
+    getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList
+  >();
   const [selectedPaitent, setSelectedPaitent] = useState<string>('All');
   const [selectedPaitentId, setSelectedPaitentId] = useState<string>('');
   const [orderListData, setOrderListData] = useState<(orderListByMobile | null)[] | null>([]);
@@ -1158,7 +1171,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPressAddTest={() => _onPressAddTest()}
         onPressReschedule={() => _onPressTestReschedule(order)}
         onPressViewDetails={() => _navigateToYourTestDetails(order, true)}
-        onPressViewReport={() => _onPressViewReport(order)}
+        onPressViewReport={() => {
+          setIsViewReport(true);
+          setActiveOrder(order)
+          // _onPressViewReport(order)
+        }}
         phelboObject={order?.phleboDetailsObj}
         onPressRatingStar={(star) => {
           props.navigation.navigate(AppRoutes.TestRatingScreen, {
@@ -1320,6 +1337,24 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       </TouchableOpacity>
     );
   };
+  const viewReportItemsArray = [
+    {
+      icon: <ViewIcon />,
+      title: string.Report.view,
+    },
+    {
+      icon: <DownloadNew />,
+      title: string.Report.download,
+    },
+    {
+      icon: <ShareBlue />,
+      title: string.Report.share,
+    },
+    {
+      icon: <CopyBlue />,
+      title: string.Report.copy,
+    },
+  ];
   return (
     <View style={{ flex: 1 }}>
       {showDisplaySchedule && renderRescheduleOrderOverlay()}
@@ -1361,6 +1396,38 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   renderItem={({ item, index }) => renderModalView(item, index)}
                 />
               </View>
+            </View>
+          </View>
+        </Modal>
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={isViewReport}
+          onRequestClose={() => {
+            setIsViewReport(false);
+          }}
+          onDismiss={() => {
+            setIsViewReport(false);
+          }}
+        >
+          <View style={styles.modalMainView}>
+            <View style={styles.reportModalView}>
+              {viewReportItemsArray.map((item) => (
+                <TouchableOpacity onPress={()=>{
+                    if (item?.title == string.Report.view) {
+                      _onPressViewReport(activeOrder)
+                    } else if (item?.title == string.Report.download) {
+                      _onPressViewReport(activeOrder)
+                    } else if (item?.title == string.Report.share) {
+                      // Linking.openURL(`whatsapp://send?text=${'wait'}`);
+                    } else {
+                      
+                    }
+                }} style={styles.itemView}>
+                  {item?.icon}
+                  <Text style={styles.itemTextStyle}>{item?.title}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
           </View>
         </Modal>
@@ -1531,6 +1598,27 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
+  },
+  reportModalView: {
+    backgroundColor: 'white',
+    width: '100%',
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  },
+  itemView: {
+    backgroundColor: 'white',
+    width: '100%',
+    padding: 10,
+    flexDirection: 'row',
+    alignContent: 'center',
+    borderBottomColor: '#e8e8e8',
+    borderBottomWidth: 1,
+  },
+  itemTextStyle: {
+    marginHorizontal: 10,
+    ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE),
   },
   paitentCard: {
     backgroundColor: '#F7F8F5',
