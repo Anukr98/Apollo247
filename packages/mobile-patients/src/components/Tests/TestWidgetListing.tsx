@@ -88,8 +88,8 @@ export const TestWidgetListing: React.FC<TestWidgetListingProps> = (props) => {
           });
         }
       }}>
-                <View style={styles.circleImg}>
-                  <Image style={styles.image} source={{ uri: item.itemIcon }} />
+                <View style={styles.circleView}>
+                  <Image resizeMode={'contain'} style={styles.image} source={{ uri: item.itemIcon }} />
                 </View>
                 <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>{nameFormater(item?.itemTitle,'default')}</Text>
               </TouchableOpacity>
@@ -152,19 +152,18 @@ const styles = StyleSheet.create({
     backgroundColor:'white',
     marginVertical: 20
   },
-  circleImg: {
-    width: 70,
-    height: 70,
-    backgroundColor: '#ededed',
-    justifyContent:'center',
-    alignItems:'center',
-    // margin:5,
-    borderRadius: 50,
+  circleView: {
+    width: 80,
+    height: 80,
+    borderRadius: 80 / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor:'#f9f9f9'
   },
   image: {
-    width: 70,
-    height: 70,
-    borderRadius: 50,
+    width: 50,
+    height: 50,
+    backgroundColor:'#f9f9f9'
   },
   gridPart: {
     alignItems: 'center',
