@@ -216,6 +216,8 @@ const appStaticVariables = {
   Reopen_Help_Max_Time: 24, // hrs
   Helpdesk_Chat_Confim_Msg:
     'Thank you for reaching out. As we are experiencing a heavy load, our team will get back to you in 24 to 48 hours.',
+  Enable_Diagnostics_COD : false
+
 };
 
 const DEV_top_specialties = [

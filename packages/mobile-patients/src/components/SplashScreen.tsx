@@ -802,6 +802,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'Reopen_Help_Max_Time_QA',
       PROD: 'Reopen_Help_Max_Time_Prod',
     },
+    Enable_Diagnostics_COD: {
+      QA: 'QA_Enable_Diagnostics_COD',
+      PROD: 'Enable_Diagnostics_COD',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -992,6 +996,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         config.getNumber(key)
       );
       setAppConfig('followUp_Chat', 'FollowUp_Chat_Limit', (key) => config.getNumber(key));
+      setAppConfig('Enable_Diagnostics_COD', 'Enable_Diagnostics_COD', (key) =>
+        config.getBoolean(key)
+      );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';
