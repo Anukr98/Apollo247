@@ -41,7 +41,7 @@
     "error_enter_number_text": "Please enter numeric values (eg. 0,1...)",
     "addPrescriptionText": "ADD PRESCRIPTION",
     "addTestReportText": "ADD TEST REPORT",
-    "doctorConsultPHRText": "Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room",
+    "doctorConsultPHRText": "For privacy reasons, reports uploaded here are for your view only. To share with doctors, please upload selected reports in your chat with the doctor.",
     "addDischargeSummaryText": "ADD DISCHARGE SUMMARY",
     "addHealthConditionText": "ADD HEALTH CONDITIONS",
     "addBillText": "ADD BILL",
@@ -365,6 +365,13 @@
       ]
     }
   },
+  "needHelpScreen":{
+    "view_previous_tickets":"To view previous tickets ",
+    "click_here":"CLICK HERE",
+    "reopen_ticket":"REOPEN TICKET",
+    "whatsapp_with_us":"WHATSAPP WITH US",
+    "no_conversation_till_now":"No conversation till now !"
+  },
   "doctor_search_listing": {
     "pleaseWait": "Please Wait!",
     "lookingForBestDoctors": "We are looking for the\nbest doctors for you :)",
@@ -555,7 +562,8 @@
     "call_us": "CALL US",
     "add_to_cart": "ADD TO CART",
     "test_prec_req": "This test requires doctor’s prescription",
-    "test_prec_not_req": "This test doesn't requires doctor’s prescription"
+    "test_prec_not_req": "This test doesn't requires doctor’s prescription",
+    "go_to_help":"GO TO HELP"
   },
   "defaultReasonList": [
     { "title": "Arrived very Late" },
@@ -1021,12 +1029,30 @@
     "addNewAddressText": "Add New Address"
   },
   "aboutApolloList": [
-    { "title": "About Us", "url": "https://www.apollo247.com/aboutUs?isMobile=true" },
-    { "title": "Contact Us", "url": "https://www.apollo247.com/contact?isMobile=true" },
-    { "title": "FAQs", "url": "https://www.apollo247.com/faq?isMobile=true" },
-    { "title": "Terms and Conditions", "url": "https://www.apollo247.com/terms?isMobile=true" },
-    { "title": "Returns Policy", "url": "https://www.apollo247.com/returns?isMobile=true" },
-    { "title": "Privacy Policy", "url": "https://www.apollo247.com/privacy?isMobile=true" }
+    {
+      "title": "About Us",
+      "url": "https://www.apollo247.com/aboutUs?isMobile=true"
+    },
+    {
+      "title": "Contact Us",
+      "url": "https://www.apollo247.com/contact?isMobile=true"
+    },
+    {
+      "title": "FAQs",
+      "url": "https://www.apollo247.com/faq?isMobile=true"
+    },
+    {
+      "title": "Terms and Conditions",
+      "url": "https://www.apollo247.com/terms?isMobile=true"
+    },
+    {
+      "title": "Returns Policy",
+      "url": "https://www.apollo247.com/returns?isMobile=true"
+    },
+    {
+      "title": "Privacy Policy",
+      "url": "https://www.apollo247.com/privacy?isMobile=true"
+    }
   ],
   "truecaller": {
     "networkProblem": "There is a problem with network connection.",
@@ -1050,4 +1076,5 @@
     "CONSULT_ONLINE": "Consult Online",
     "MEET_IN_PERSON": "Meet In Person"
   }
+
 }

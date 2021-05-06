@@ -230,6 +230,14 @@ export interface ShoppingCartContextProps {
   shipments: (MedicineOrderShipmentInput | null)[];
   asyncPincode: any;
   setAsyncPincode: ((pincode: any) => void) | null;
+  minimumCartValue: number;
+  setMinimumCartValue: ((value: number) => void) | null;
+  minCartValueForCOD: number;
+  setMinCartValueForCOD: ((value: number) => void) | null;
+  maxCartValueForCOD: number;
+  setMaxCartValueForCOD: ((value: number) => void) | null;
+  nonCodSKus: string[];
+  setNonCodSKus: ((items: string[]) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -331,6 +339,14 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   shipments: [],
   asyncPincode: null,
   setAsyncPincode: null,
+  minimumCartValue: 0,
+  setMinimumCartValue: null,
+  minCartValueForCOD: 0,
+  setMinCartValueForCOD: null,
+  maxCartValueForCOD: 0,
+  setMaxCartValueForCOD: null,
+  nonCodSKus: [],
+  setNonCodSKus: null,
 });
 
 const AsyncStorageKeys = {
@@ -448,6 +464,16 @@ export const ShoppingCartProvider: React.FC = (props) => {
   );
 
   const [asyncPincode, setAsyncPincode] = useState<ShoppingCartContextProps['asyncPincode']>();
+  const [minimumCartValue, setMinimumCartValue] = useState<
+    ShoppingCartContextProps['minimumCartValue']
+  >(0);
+  const [minCartValueForCOD, setMinCartValueForCOD] = useState<
+    ShoppingCartContextProps['minCartValueForCOD']
+  >(0);
+  const [maxCartValueForCOD, setMaxCartValueForCOD] = useState<
+    ShoppingCartContextProps['maxCartValueForCOD']
+  >(0);
+  const [nonCodSKus, setNonCodSKus] = useState<ShoppingCartContextProps['nonCodSKus']>([]);
 
   const [isProuctFreeCouponApplied, setisProuctFreeCouponApplied] = useState<boolean>(false);
   const [orders, setOrders] = useState<ShoppingCartContextProps['orders']>([]);
@@ -484,11 +510,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     if (cartItems.length) {
       // calculate circle cashback
       cartItems.forEach((item) => {
-        const finalPrice = item.specialPrice
-          ? item.price - item.specialPrice
-            ? item.specialPrice
-            : item.price
-          : item.price;
+        const finalPrice = (coupon && item.couponPrice) || item.specialPrice || item.price;
         let cashback = 0;
         const type_id = item?.productType?.toUpperCase();
         if (!!circleCashback && !!circleCashback[type_id]) {
@@ -1169,6 +1191,14 @@ export const ShoppingCartProvider: React.FC = (props) => {
         shipments,
         asyncPincode,
         setAsyncPincode,
+        minimumCartValue,
+        setMinimumCartValue,
+        minCartValueForCOD,
+        setMinCartValueForCOD,
+        maxCartValueForCOD,
+        setMaxCartValueForCOD,
+        nonCodSKus,
+        setNonCodSKus,
       }}
     >
       {props.children}

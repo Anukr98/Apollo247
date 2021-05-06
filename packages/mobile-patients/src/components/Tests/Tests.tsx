@@ -2324,7 +2324,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
           }
         }}
       >
-        <ImageNative resizeMode={'contain'} style={styles.image} source={{ uri: item.itemIcon }} />
+        <View style={styles.circleView}>
+        <ImageNative 
+          resizeMode="contain" style={styles.image} source={{ uri: item.itemIcon }} />
+        </View>
         <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>
           {nameFormater(item?.itemTitle,'default')}
         </Text>
@@ -2637,17 +2640,18 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     backgroundColor: 'white',
   },
-  circleImg: {
-    width: 70,
-    height: 70,
-    borderRadius: 70 / 2,
+  circleView: {
+    width: 80,
+    height: 80,
+    borderRadius: 80 / 2,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor:'#f9f9f9'
   },
   image: {
-    width: 70,
-    height: 70,
-    borderRadius: 70 / 2,
+    width: 50,
+    height: 50,
+    backgroundColor:'#f9f9f9'
   },
   gridPart: {
     alignItems: 'center',

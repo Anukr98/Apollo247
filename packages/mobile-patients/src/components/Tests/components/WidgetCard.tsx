@@ -24,8 +24,10 @@ export const WidgetCard: React.FC<WidgetCardProps> = (props) => {
     return (
       <TouchableOpacity style={styles.container} onPress={()=>{
         onPressWidget()
-      }}>
-          <Image source={{uri: data.itemIcon}} style={styles.circleImg}/>
+      }}> 
+      <View style={styles.circleView}>
+          <Image resizeMode={'contain'} source={{uri: data.itemIcon}} style={styles.image}/>
+      </View>
         <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>{nameFormater(data?.itemTitle,'default')}</Text>
       </TouchableOpacity>
     );
@@ -58,6 +60,19 @@ const styles = StyleSheet.create({
     margin:5,
     // opacity: 0.2,
     borderRadius: 50,
-  }
+  },
+  circleView: {
+    width: 80,
+    height: 80,
+    borderRadius: 80 / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor:'#f9f9f9'
+  },
+  image: {
+    width: 50,
+    height: 50,
+    backgroundColor:'#f9f9f9'
+  },
 });
 

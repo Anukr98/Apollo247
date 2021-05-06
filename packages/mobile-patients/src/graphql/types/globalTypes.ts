@@ -77,18 +77,6 @@ export enum BloodGroups {
   OPositive = "OPositive",
 }
 
-export enum BookingSource {
-  Apollo247_Android = "Apollo247_Android",
-  Apollo247_Ios = "Apollo247_Ios",
-  Apollo247_Web = "Apollo247_Web",
-}
-
-export enum BookingStatus {
-  COMPLETED = "COMPLETED",
-  FAILED = "FAILED",
-  INPROGRESS = "INPROGRESS",
-}
-
 export enum CODCity {
   CHENNAI = "CHENNAI",
 }
@@ -214,13 +202,6 @@ export enum FEEDBACKTYPE {
   PHARMACY = "PHARMACY",
 }
 
-export enum GENDER {
-  ALL = "ALL",
-  FEMALE = "FEMALE",
-  MALE = "MALE",
-  OTHER = "OTHER",
-}
-
 export enum Gender {
   FEMALE = "FEMALE",
   MALE = "MALE",
@@ -231,6 +212,10 @@ export enum HDFC_CUSTOMER {
   NOT_HDFC_CUSTOMER = "NOT_HDFC_CUSTOMER",
   OTP_GENERATED = "OTP_GENERATED",
   OTP_NOT_GENERATED = "OTP_NOT_GENERATED",
+}
+
+export enum HELP_DESK_TICKET_STATUS {
+  Open = "Open",
 }
 
 export enum HealthRestrictionNature {
@@ -753,6 +738,11 @@ export interface AddAllergyRecordInput {
   reactionToAllergy?: string | null;
   notes?: string | null;
   attachmentList?: (AllergyFileProperties | null)[] | null;
+}
+
+export interface AddCommentHelpdeskTicketInput {
+  ticketNumber: string;
+  comment: string;
 }
 
 export interface AddDiabeticQuestionnaireInput {
@@ -1701,6 +1691,11 @@ export interface UpdateAppointmentSessionInput {
   appointmentId: string;
   requestRole: string;
   isUserJoining?: boolean | null;
+}
+
+export interface UpdateHelpdeskTicketInput {
+  ticketId: string;
+  status: HELP_DESK_TICKET_STATUS;
 }
 
 export interface UpdatePatientAddressInput {

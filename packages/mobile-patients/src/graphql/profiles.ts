@@ -4766,7 +4766,8 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql `
         }  
       }
     }
-  }`;
+  }
+`;
 
 export const GET_PATIENT_PAST_CONSULTED_DOCTORS = gql`
   query getPatientPastConsultedDoctors($patientMobile: String, $offset: Int, $limit: Int) {
@@ -4811,7 +4812,7 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
             inclusions
             testPreparationData
           }
-        }  
+        }
       }
     }
   }
@@ -4844,6 +4845,64 @@ export const SAVE_PHLEBO_FEEDBACK = gql`
   mutation savePhleboFeedback($phleboRating: Int!, $phleboFeedback: String, $diagnosticOrdersId: String!) {
     savePhleboFeedback(phleboRating: $phleboRating, phleboFeedback: $phleboFeedback, diagnosticOrdersId: $diagnosticOrdersId) {
         status
+    }
+  }
+`;
+  
+export const GET_HELPDESK_TICKETS = gql`
+  query getHelpdeskTickets {
+    getHelpdeskTickets {
+      tickets {
+        statusType
+        subject
+        createdTime
+        ticketNumber
+        modifiedTime
+        channel
+        closedTime
+        id
+        status
+        customFields {
+          Business
+        }
+      }
+      count
+    }
+  }
+`;
+
+export const UPDATE_HELPDESK_TICKET = gql`
+  mutation updateHelpdeskTicket($updateHelpdeskTicketInput: UpdateHelpdeskTicketInput!) {
+    updateHelpdeskTicket(updateHelpdeskTicketInput: $updateHelpdeskTicketInput) {
+      ticket {
+        ticketNumber
+      }
+    }
+  }
+`;
+
+export const ADD_COMMENTS_HELPDESK_TICKET = gql`
+  mutation addCommentHelpdeskTicket(
+    $addCommentHelpdeskTicketInput: AddCommentHelpdeskTicketInput!
+  ) {
+    addCommentHelpdeskTicket(addCommentHelpdeskTicketInput: $addCommentHelpdeskTicketInput) {
+      status
+    }
+  }
+`;
+
+export const GET_HELPDESK_TICKET_CONVERSATION = gql`
+  query getHelpdeskTicketConversation($ticketId: String!) {
+    getHelpdeskTicketConversation(ticketId: $ticketId) {
+      conversations {
+        id
+        type
+        contentType
+        comment
+        commenterName
+        commenterType
+        createdTime
+      }
     }
   }
 `;
