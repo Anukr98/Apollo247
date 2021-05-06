@@ -345,40 +345,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   };
 
-  const getAddressDatails = async () => {
-    try {
-      setLoading!(true);
-      const address = addresses.find((item) => item?.id == selectedOrder?.patientAddressId);
-      let getPincode = '';
-      if (address) {
-        getPincode = address?.zipcode!;
-      } else {
-        const getPatientAddressByIdResponse = await client.query<
-          getPatientAddressById,
-          getPatientAddressByIdVariables
-        >({
-          query: GET_PATIENT_ADDRESS_BY_ID,
-          variables: { id: selectedOrder?.patientAddressId },
-        });
-
-        getPincode = g(
-          getPatientAddressByIdResponse,
-          'data',
-          'getPatientAddressById',
-          'patientAddress',
-          'zipcode'
-        )!;
-      }
-      setPincode(getPincode);
-      setLoading!(false);
-
-      setDisplaySchedule(true); //show slot popup
-    } catch (error) {
-      setLoading!(false);
-      CommonBugFender(`${AppRoutes.YourOrdersTest}_getAddressDatails`, error);
-    }
-  };
-
   const fetchRefundForOrder = async (orderSelected: any, tab: boolean) => {
     setRefundStatusArr(null);
     setLoading?.(true);
@@ -555,6 +521,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         const isSameDate = moment().isSame(moment(date), 'date');
         if (isSameDate && slotsArray?.length == 0) {
           setTodaySlotNotAvailable(true);
+          setDisplaySchedule(true);
         } else {
           todaySlotNotAvailable && setTodaySlotNotAvailable(false);
         }
@@ -562,9 +529,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         setSlots(slotsArray);
         const slotDetails = slotsArray?.[0];
         slotsArray?.length && setselectedTimeSlot(slotDetails);
-
-        //call the api to get the pincode.
-        getAddressDatails();
       })
       .catch((e) => {
         CommonBugFender('TestsCart_checkServicability', e);
@@ -637,7 +601,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       slotId: employeeSlot,
     };
     DiagnosticRescheduleOrder(
-      selectedReasonForReschedule,
+      selectRescheduleReason,
       formatTime,
       formattedDate,
       String(selectedOrderId)
@@ -708,6 +672,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       ? AppConfig.Configuration.Covid_Max_Slot_Days
       : AppConfig.Configuration.Non_Covid_Max_Slot_Days;
 
+    const getPincode = selectedOrder?.patientAddressObj?.zipcode;
+
     return (
       <View style={{ flex: 1 }}>
         <TestSlotSelectionOverlay
@@ -722,7 +688,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           isVisible={showDisplaySchedule}
           onClose={() => setDisplaySchedule(false)}
           slots={slots}
-          zipCode={Number(pincode!)}
+          zipCode={Number(getPincode!)}
           slotInfo={selectedTimeSlot}
           isReschdedule={true}
           itemId={orderItemId}
