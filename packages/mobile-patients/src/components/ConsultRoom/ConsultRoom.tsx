@@ -83,8 +83,6 @@ import {
   GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
   GET_ONEAPOLLO_USER,
   GET_PLAN_DETAILS_BY_PLAN_ID,
-  GET_PROHEALTH_CITY_LIST,
-  GET_PROHEALTH_HOSPITAL_LIST,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
@@ -195,11 +193,6 @@ import {
   renderBannerShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
-import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import {
-  getProHealthHospitalByCityId,
-  getProHealthHospitalByCityIdVariables,
-} from '@aph/mobile-patients/src/graphql/types/getProHealthHospitalByCityId';
 import { AuthContextProps } from '@aph/mobile-patients/src/components/AuthProvider';
 import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
 import { ConsultedDoctorsCard } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultedDoctorsCard';
@@ -848,6 +841,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   useEffect(() => {
     preFetchSDK(currentPatient?.id);
+    getPatientApiCall();
     try {
       createHyperServiceObject();
     } catch (error) {
@@ -3385,194 +3379,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       </TouchableOpacity>
     );
   };
-  const [showCities, setShowCitites] = useState<boolean>(false);
-  const [showHospitals, setShowHospitals] = useState<boolean>(false);
-  const [prohealthCityList, setProHealthCityList] = useState([] as any);
-  const [prohealthHospitalList, setProHealthHospitalList] = useState([] as any);
-  const [selectedProHealthCity, setSelectedProHealthCity] = useState<string>('');
-  const [selectedProHealthHospital, setSelectedProHealthHospital] = useState<string>('');
 
-  const getProHealthCities = () =>
-    client.query({
-      query: GET_PROHEALTH_CITY_LIST,
-    });
   async function _navigateProHealth() {
-    //call cities api.
-    try {
-      setLoading?.(true);
-      let response = await getProHealthCities();
-      if (
-        response?.data?.getProHealthCities &&
-        response?.data?.getProHealthCities?.cityList?.length > 0
-      ) {
-        let cityList = response?.data?.getProHealthCities?.cityList;
-        setProHealthCityList(cityList);
-        setShowCitites(true);
-        showHospitals && setShowHospitals(false);
-      }
-      setLoading?.(false);
-    } catch (error) {
-      setLoading?.(false);
-      CommonBugFender('_navigateProHealth_ConsultPage', error);
-    }
-  }
-  const renderCitiesOverlay = () => {
-    return (
-      <View style={styles.proHealthOverlay}>
-        <View style={styles.proHealthContainer}>
-          <View style={styles.proHealthInnerContainer}>
-            {prohealthCityList?.length > 0 ? (
-              <View style={{ marginBottom: 10 }}>
-                <Text style={styles.proHealthPopUpHeading}>SELECT YOUR CITY</Text>
-              </View>
-            ) : null}
-            <FlatList
-              data={prohealthCityList}
-              renderItem={renderCity}
-              keyExtractor={(_, index) => `${index}`}
-              style={{ flexGrow: 0 }}
-              contentContainerStyle={{}}
-              keyboardShouldPersistTaps="handled"
-              onScrollBeginDrag={() => Keyboard.dismiss()}
-              ListEmptyComponent={renderNoResults('No Cities found. Please try again later')}
-            />
-          </View>
-          <TouchableOpacity style={styles.crossIconTouch} onPress={() => _onCloseCitiesPopUp()}>
-            <CrossPopup />
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
-  const renderNoResults = (text: string) => {
-    return (
-      <View style={{ marginTop: 10 }}>
-        <Text style={styles.listName}>{text}</Text>
-      </View>
-    );
-  };
-
-  function _onCloseCitiesPopUp() {
-    setShowCitites(false);
-    setSelectedProHealthHospital('');
-    setSelectedProHealthCity('');
-  }
-  const renderCity = (item: any) => {
-    return (
-      <TouchableOpacity onPress={() => _onPressCity(item)}>
-        <View style={styles.listContainer} key={item?.item?.id}>
-          <Text style={styles.listName}>{item?.item?.cityName}</Text>
-          {item?.index === prohealthCityList?.length - 1 ? null : (
-            <Spearator style={{ marginTop: 10 }} />
-          )}
-        </View>
-      </TouchableOpacity>
-    );
-  };
-  function _onPressCity(item: any) {
-    let selectedCityId = item?.item?.id;
-    setShowCitites(false);
-    setSelectedProHealthCity(selectedCityId);
-    fetchProHealthHospitalList(item);
-  }
-  const getProHealthHospitals = (id: string) =>
-    client.query<getProHealthHospitalByCityId, getProHealthHospitalByCityIdVariables>({
-      query: GET_PROHEALTH_HOSPITAL_LIST,
-      variables: { cityId: id },
-    });
-  async function fetchProHealthHospitalList(item: any) {
-    try {
-      setLoading?.(true);
-      let response = await getProHealthHospitals(item?.item?.id);
-      if (
-        response?.data?.getProHealthHospitalByCityId &&
-        response?.data?.getProHealthHospitalByCityId?.hospitals?.length! > 0
-      ) {
-        let hospitalList = response?.data?.getProHealthHospitalByCityId?.hospitals || [];
-        setProHealthHospitalList(hospitalList);
-        setShowHospitals(true);
-      }
-      setLoading?.(false);
-    } catch (error) {
-      setLoading?.(false);
-      CommonBugFender('_fetchProHealthHospitalList_ConsultPage', error);
-    }
-  }
-  function _onPressHospitalBack() {
-    setShowHospitals(false);
-    setProHealthHospitalList([]);
-    setSelectedProHealthHospital('');
-    setSelectedProHealthCity('');
-    setShowCitites(true);
-  }
-  const renderHospitalOverlay = () => {
-    return (
-      <View style={styles.proHealthOverlay}>
-        <View style={styles.proHealthContainer}>
-          <View style={styles.proHealthInnerContainer}>
-            {renderHospitals?.length > 0 ? (
-              <View style={styles.hospitalHeadingView}>
-                <TouchableOpacity
-                  onPress={() => _onPressHospitalBack()}
-                  style={{ alignSelf: 'center' }}
-                >
-                  <BackArrow />
-                </TouchableOpacity>
-                <Text style={[styles.proHealthPopUpHeading, { marginHorizontal: 20 }]}>
-                  SELECT YOUR HOSPITAL
-                </Text>
-              </View>
-            ) : null}
-            <FlatList
-              data={prohealthHospitalList}
-              renderItem={renderHospitals}
-              keyExtractor={(_, index) => `${index}`}
-              style={{ flexGrow: 0 }}
-              contentContainerStyle={{}}
-              keyboardShouldPersistTaps="handled"
-              onScrollBeginDrag={() => Keyboard.dismiss()}
-              ListEmptyComponent={renderNoResults('No Hospitals found. Please try again later.')}
-            />
-          </View>
-          <TouchableOpacity
-            style={{ alignSelf: 'flex-start', marginLeft: 20 }}
-            onPress={() => _onCloseHospitalPopUp()}
-          >
-            <CrossPopup />
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
-  function _onCloseHospitalPopUp() {
-    setShowCitites(false);
-    setShowHospitals(false);
-    setSelectedProHealthHospital('');
-    setSelectedProHealthCity('');
-  }
-
-  const renderHospitals = (item: any) => {
-    return (
-      <TouchableOpacity onPress={() => _onPressHospital(item)}>
-        <View style={styles.listContainer} key={item?.item?.id}>
-          <Text style={styles.listName}>{item?.item?.unitName}</Text>
-          {item?.index === prohealthHospitalList?.length - 1 ? null : (
-            <Spearator style={{ marginTop: 10 }} />
-          )}
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  function _onPressHospital(item: any) {
-    let selectedHospitalId = item?.item?.id;
-    setShowHospitals(false);
-    setSelectedProHealthHospital(selectedHospitalId);
     //call the jwt token again.
-    regenerateJWTToken('bookings', selectedHospitalId);
+    regenerateJWTToken('bookings');
   }
 
-  const regenerateJWTToken = async (source: string, id: string) => {
+  const regenerateJWTToken = async (source: string, id?: string) => {
     let deviceType =
       Platform.OS == 'android' ? BookingSource?.Apollo247_Android : BookingSource?.Apollo247_Ios;
     setLoading?.(true);
@@ -3592,8 +3405,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             source == 'vaccine'
               ? initiateVaccinationWebView(id, jwt)
               : source === 'bookings'
-              ? initiateProHealthWebView(id, jwt, deviceType)
-              : initiateOrdersProHealthWebView(id, jwt, deviceType);
+              ? initiateProHealthWebView(jwt, deviceType)
+              : initiateOrdersProHealthWebView(id!, jwt, deviceType);
           }
         });
       } catch (e) {
@@ -3612,14 +3425,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     });
   }
 
-  function initiateProHealthWebView(hospitalId: string, jwtToken: string, deviceType: string) {
+  function initiateProHealthWebView(jwtToken: string, deviceType: string) {
     try {
       const openUrl = AppConfig.Configuration.PROHEALTH_BOOKING_URL;
       let finalUrl = openUrl.concat(
-        '/',
-        selectedProHealthCity,
-        '/',
-        hospitalId,
         '?utm_token=',
         jwtToken,
         '&utm_mobile_number=',
@@ -3627,12 +3436,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         '&deviceType=',
         deviceType
       );
-      !!hospitalId && hospitalId != ''
-        ? props.navigation.navigate(AppRoutes.ProHealthWebView, {
-            covidUrl: finalUrl,
-            goBackCallback: webViewGoBack,
-          })
-        : null;
+      !!jwtToken &&
+        jwtToken != '' &&
+        props.navigation.navigate(AppRoutes.ProHealthWebView, {
+          covidUrl: finalUrl,
+          goBackCallback: webViewGoBack,
+        });
       setLoading?.(false);
     } catch (e) {
       setLoading?.(false);
@@ -3673,14 +3482,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       CommonBugFender('opening_ProHealthwebView_ConsultRoom', e);
     }
   }
+
   const renderAllConsultedDoctors = () => {
     return <ConsultedDoctorsCard navigation={props.navigation} />;
   };
 
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
-      {showCities && renderCitiesOverlay()}
-      {showHospitals && renderHospitalOverlay()}
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
         <ScrollView style={{ flex: 1 }} bounces={false}>
           <View style={{ width: '100%' }}>

@@ -12,12 +12,13 @@ import {
   BackHandler,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationRoute, NavigationScreenProp, NavigationScreenProps } from 'react-navigation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 
 export interface ProHealthWebViewProps
   extends NavigationScreenProps<{
     requestMicroPhonePermission: boolean;
+    goBackCallback?: (navigation: NavigationScreenProp<NavigationRoute<object>, object>) => void;
   }> {}
 
 export const ProHealthWebView: React.FC<ProHealthWebViewProps> = (props) => {
@@ -87,7 +88,7 @@ export const ProHealthWebView: React.FC<ProHealthWebViewProps> = (props) => {
 
   const handleBack = async () => {
     props.navigation.goBack();
-    navigation.state.params?.goBackCallback();
+    navigation.state.params?.goBackCallback?.(props.navigation);
   };
 
   const renderError = (WebViewRef: any) => {
