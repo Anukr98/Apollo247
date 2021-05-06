@@ -554,11 +554,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   const downloadPDFTestReport = () => {
     if (currentPatient?.id) {
       setLoading && setLoading(true);
-      if (Platform.OS === 'android') {
-        if (!!data?.fileUrl) {
-          downloadDocument();
-        }
-      }
       client
         .query<getLabResultpdf, getLabResultpdfVariables>({
           query: GET_LAB_RESULT_PDF,
@@ -666,7 +661,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       : healthCondition
       ? 'HEALTH CONDITION REPORT'
       : 'TEST REPORT';
-    const btnTitle = labResults && Platform.OS === 'ios' ? 'SAVE ' : 'DOWNLOAD ';
+    const btnTitle = 'DOWNLOAD ';
     const _callDownloadDocumentApi = () => {
       if (imagesArray?.length === 1) {
         labResults ? downloadPDFTestReport() : downloadDocument();
@@ -676,13 +671,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     };
     return (
       <View style={{ marginHorizontal: 40, marginBottom: 15, marginTop: 33 }}>
-        {!!data.fileUrl && labResults && Platform.OS === 'ios' ? (
-          <Button
-            title={'SAVE ATTACHMENT'}
-            style={{ marginBottom: 20 }}
-            onPress={() => downloadDocument()}
-          />
-        ) : null}
         <Button title={btnTitle + buttonTitle} onPress={_callDownloadDocumentApi} />
       </View>
     );
