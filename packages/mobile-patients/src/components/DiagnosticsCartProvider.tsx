@@ -404,8 +404,6 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setCartItems(newCartItems);
     //empty the slots and areas everytime due to dependency of api.
     setDiagnosticSlot(null);
-    setAreaSelected!({});
-    setDiagnosticAreas([]);
   };
 
   const addMultipleCartItems: DiagnosticsCartContextProps['addMultipleCartItems'] = (
@@ -426,8 +424,6 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     const newCartItems = cartItems?.filter((item) => Number(item?.id) !== Number(id));
     //empty the slots and areas everytime due to dependency of api.
     setDiagnosticSlot(null);
-    setAreaSelected!({});
-    setDiagnosticAreas!([]);
     setCartItems(newCartItems);
   };
   const updateCartItem: DiagnosticsCartContextProps['updateCartItem'] = (itemUpdates) => {

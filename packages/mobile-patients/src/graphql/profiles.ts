@@ -3652,17 +3652,6 @@ export const SEARCH_DIAGNOSTICS_BY_ID = gql`
   }
 `;
 
-export const SAVE_DIAGNOSTIC_ORDER = gql`
-  mutation SaveDiagnosticOrder($diagnosticOrderInput: DiagnosticOrderInput) {
-    SaveDiagnosticOrder(diagnosticOrderInput: $diagnosticOrderInput) {
-      errorCode
-      errorMessage
-      orderId
-      displayId
-    }
-  }
-`;
-
 export const SAVE_DIAGNOSTIC_ORDER_NEW = gql`
   mutation saveDiagnosticBookHCOrder($diagnosticOrderInput: SaveBookHomeCollectionOrderInput) {
     saveDiagnosticBookHCOrder(diagnosticOrderInput: $diagnosticOrderInput) {
@@ -4630,31 +4619,6 @@ export const VERIFY_TRUECALLER_PROFILE = gql`
   }
 `;
 
-export const GET_PROHEALTH_CITY_LIST = gql`
-  query getProHealthCities {
-    getProHealthCities {
-      cityList {
-        regionId
-        cityName
-        id
-      }
-    }
-  }
-`;
-
-export const GET_PROHEALTH_HOSPITAL_LIST = gql`
-  query getProHealthHospitalByCityId($cityId: ID!) {
-    getProHealthHospitalByCityId(cityId: $cityId) {
-      hospitals {
-        unitName
-        unitType
-        unitLocationId
-        id
-      }
-    }
-  }
-`;
-
 export const GET_ALL_PRO_HEALTH_APPOINTMENTS = gql`
   query getAllProhealthAppointments($patientId: ID!) {
     getAllProhealthAppointments(patientId: $patientId) {
@@ -4782,6 +4746,16 @@ export const ADD_COMMENTS_HELPDESK_TICKET = gql`
   ) {
     addCommentHelpdeskTicket(addCommentHelpdeskTicketInput: $addCommentHelpdeskTicketInput) {
       status
+    }
+  }
+`;
+
+export const GET_PROHEALTH_HOSPITAL_BY_SLUG = gql `
+  query getProHealthHospitalBySlug($hospitalSlug: String!){
+    getProHealthHospitalBySlug(hospitalSlug:$hospitalSlug){
+        hospitals{
+        id
+      }
     }
   }
 `;

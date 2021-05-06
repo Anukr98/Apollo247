@@ -11,7 +11,7 @@ import { DIAGNOSTIC_ORDER_STATUS, DIAGNOSTIC_ORDER_PAYMENT_TYPE, DIAGNOSTICS_TYP
 
 export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_phleboDetailsObj {
   __typename: "PhleboDetailsObj";
-  PhelboOTP: number | null;
+  PhelboOTP: string | null;
   PhelbotomistName: string;
   PhelbotomistMobile: string;
   PhelbotomistTrackLink: string;

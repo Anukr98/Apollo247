@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     width: '100%',
     height: 48,
-    paddingHorizontal: 10,
+    paddingLeft: 10,
   },
   deliveryPinCodeContaner: {
     ...theme.viewStyles.cardContainer,
