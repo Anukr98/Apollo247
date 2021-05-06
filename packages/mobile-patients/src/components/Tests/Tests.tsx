@@ -1883,20 +1883,38 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const keyExtractor = useCallback((item: any, index: number) => `${index}`, []);
+  const _onViewRefForPrescription = React.useRef(
+    (viewableItems: { viewableItems: { index: any }[] }) => {
+      let indexVal = viewableItems?.viewableItems?.[0]?.index;
+      setPrescriptionSlideIndex(indexVal);
+    }
+  );
 
   const renderPrescriptionCard = () => {
     return (
-      <FlatList
-        bounces={false}
-        pagingEnabled={true}
-        keyExtractor={keyExtractor}
-        showsHorizontalScrollIndicator={false}
-        showsVerticalScrollIndicator={false}
-        horizontal={true}
-        data={latestPrescription}
-        renderItem={renderPrescriptionCardItems}
-        maxToRenderPerBatch={3}
-      />
+      <View>
+        <FlatList
+          bounces={false}
+          pagingEnabled={true}
+          keyExtractor={keyExtractor}
+          showsHorizontalScrollIndicator={false}
+          showsVerticalScrollIndicator={false}
+          horizontal={true}
+          data={latestPrescription}
+          renderItem={renderPrescriptionCardItems}
+          maxToRenderPerBatch={3}
+          onViewableItemsChanged={_onViewRefForPrescription.current}
+          viewabilityConfig={_viewConfigRef.current}
+        />
+        <View style={styles.prescriptionStatusCardDots}>
+          {latestPrescription?.length > 1 &&
+            latestPrescription?.map((_: any, index: number) =>
+              index == prescriptionSlideIndex
+                ? renderDot(true, 'orderStatus')
+                : renderDot(false, 'orderStatus')
+            )}
+        </View>
+      </View>
     );
   };
 
@@ -1997,10 +2015,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const orderStatusCardKeyExtractor = useCallback((item: any, index: number) => `${index}`, []);
 
-  const _onViewRef = React.useRef((viewableItems: { viewableItems: { index: any }[] }) => {
-    let indexVal = viewableItems?.viewableItems?.[0]?.index;
-    setOrderCardSlideIndex(indexVal);
-  });
+  const _onViewRefForStatusCard = React.useRef(
+    (viewableItems: { viewableItems: { index: any }[] }) => {
+      let indexVal = viewableItems?.viewableItems?.[0]?.index;
+      setOrderCardSlideIndex(indexVal);
+    }
+  );
 
   const _viewConfigRef = React.useRef({ viewAreaCoveragePercentThreshold: 50 });
 
@@ -2029,11 +2049,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
               data={allOrders}
               renderItem={renderOrderStatusCardItems}
               maxToRenderPerBatch={3}
-              onViewableItemsChanged={_onViewRef.current}
+              onViewableItemsChanged={_onViewRefForStatusCard.current}
               viewabilityConfig={_viewConfigRef.current}
             />
             <View style={styles.orderStatusCardDots}>
-              {allOrders?.length > 0 &&
+              {allOrders?.length > 1 &&
                 allOrders?.map((_: any, index: number) =>
                   index == orderCardSlideIndex
                     ? renderDot(true, 'orderStatus')
@@ -2363,11 +2383,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }}
       >
         <View style={styles.circleView}>
-        <ImageNative 
-          resizeMode="contain" style={styles.image} source={{ uri: item.itemIcon }} />
+          <ImageNative resizeMode="contain" style={styles.image} source={{ uri: item.itemIcon }} />
         </View>
         <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>
-          {nameFormater(item?.itemTitle,'default')}
+          {nameFormater(item?.itemTitle, 'default')}
         </Text>
       </TouchableOpacity>
     );
@@ -2684,12 +2703,12 @@ const styles = StyleSheet.create({
     borderRadius: 80 / 2,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor:'#f9f9f9'
+    backgroundColor: '#f9f9f9',
   },
   image: {
     width: 50,
     height: 50,
-    backgroundColor:'#f9f9f9'
+    backgroundColor: '#f9f9f9',
   },
   gridPart: {
     alignItems: 'center',
@@ -2704,6 +2723,14 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   orderStatusCardDots: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    position: 'absolute',
+    top: 130,
+    alignSelf: 'flex-start',
+    left: 32,
+  },
+  prescriptionStatusCardDots: {
     flexDirection: 'row',
     justifyContent: 'center',
     position: 'absolute',
