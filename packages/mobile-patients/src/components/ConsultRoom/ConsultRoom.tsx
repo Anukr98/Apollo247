@@ -840,7 +840,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     try {
       const savedToken = await AsyncStorage.getItem('deviceToken');
       const token = await messaging().getToken();
-      if (savedToken && JSON.parse(savedToken) !== token) {
+      if (!savedToken || (savedToken && JSON.parse(savedToken) !== token)) {
         saveTokenDevice(client, token, id);
       }
     } catch (error) {}
