@@ -2212,7 +2212,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             }
             if (Platform.OS === 'ios') {
               if (tokenValue) {
-                Vitals.vitalsToExport(tokenValue, buildSpecify);
+                Vitals.vitalsToExport(tokenValue, buildSpecify, '247');
                 setTimeout(() => {
                   Vitals.goToReactNative(tokenValue);
                 }, 500);
@@ -2277,7 +2277,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         //call the sdk.
         if (Platform.OS === 'ios') {
           if (vitaToken) {
-            Vitals.vitalsToExport(vitaToken, buildSpecify);
+            Vitals.vitalsToExport(vitaToken, buildSpecify, 'prohealth');
             setTimeout(() => {
               Vitals.goToReactNative(vitaToken);
             }, 500);
@@ -2585,8 +2585,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderMenuOptions = () => {
-    let arrayList =
-      isProHealthActive && Platform.OS == 'android' ? listValuesForProHealth : listValues;
+    let arrayList = isProHealthActive ? listValuesForProHealth : listValues;
     return (
       <View
         style={{

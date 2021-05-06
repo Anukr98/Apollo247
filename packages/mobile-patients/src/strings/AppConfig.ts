@@ -30,7 +30,7 @@ const paymentGatewayBaseUrl: string =
     : APP_ENV == AppEnv.QA3
     ? 'https://qathreepmt.apollo247.com'
     : APP_ENV == AppEnv.PERFORM
-    ? 'https://aspmt.apollo247.com'
+    ? 'https://perfpmt.apollo247.com'
     : APP_ENV == AppEnv.VAPT
     ? 'https://stagingpmt.apollo247.com'
     : APP_ENV == AppEnv.DEV
@@ -818,8 +818,8 @@ const ConfigurationProd = {
 const ConfigurationPERFORM = {
   TAGALYS_API_KEY: '050343bfa6dae87212fd64ee7809c2c8',
   TAGALYS_CLIENT_CODE: 'A029C7273776C78A',
-  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '',
-  CODE_PUSH_DEPLOYMENT_KEY_IOS: '',
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: 'b72foAZYvb6d0xOaqdvE_LHyaYiW5rsh_wGKM',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: 'of-02CUYoW4JfbgDXp4TwRN2mYfaZghf22hF-',
   PAYMENT_GATEWAY_BASE_URL: paymentGatewayBaseUrl,
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
