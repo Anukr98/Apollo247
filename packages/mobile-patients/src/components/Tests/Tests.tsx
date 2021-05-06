@@ -314,6 +314,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   }, [newAddressAddedHomePage]);
 
+  /** added so that if phramacy code change, then this also changes. */
+  /**need to put a check if pincode is entered then that needs to be saved, and only change in pharama location comes here. */
+  useEffect(() => {
+    setDiagnosticLocation?.(!!pharmacyLocation ? pharmacyLocation! : locationDetails!);
+    checkIsPinCodeServiceable(
+      !!pharmacyLocation ? pharmacyLocation?.pincode! : locationDetails?.pincode!,
+      'manual',
+      'initialPincode'
+    );
+  }, [pharmacyLocation]); //removed location details
+
   /**
    * fetch widgets
    */
@@ -333,34 +344,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       fetchAddress();
     }
   }, [currentPatient]);
-
-  useEffect(() => {
-    if (isFocused) {
-      const getAsyncLocationPincode = async () => {
-        const asyncLocationPincode: any = await AsyncStorage.getItem('PharmacyLocationPincode');
-        if (asyncLocationPincode) {
-          let getAsyncPincode = JSON.parse(asyncLocationPincode);
-          setAsyncPincode(JSON.parse(asyncLocationPincode));
-          //call only when they are different.
-          if (asyncPincode?.pincode === getAsyncPincode?.pincode) {
-            return;
-          } else {
-            checkIsPinCodeServiceable(
-              getAsyncPincode?.pincode!
-                ? getAsyncPincode?.pincode
-                : !!pharmacyLocation
-                ? pharmacyLocation?.pincode!
-                : locationDetails?.pincode!,
-              'manual',
-              'initalPicode'
-            );
-          }
-          setDiagnosticLocation!(!!pharmacyLocation ? pharmacyLocation! : locationDetails!);
-        }
-      };
-      getAsyncLocationPincode();
-    }
-  }, [isFocused]);
 
   /**
    * if there is any change in the location yellow pop-up ,if location is present.
@@ -579,12 +562,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         if (deliveryAddress) {
           setDeliveryAddressId!(deliveryAddress?.id);
           //if location is not undefined in either of the three, then don't change address
-          if (
-            !asyncPincode?.pincode! &&
-            !locationDetails &&
-            !pharmacyLocation &&
-            !diagnosticLocation
-          ) {
+          if (!locationDetails && !pharmacyLocation && !diagnosticLocation) {
             checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'initialFetchAddress');
             setDiagnosticLocation!(formatAddressToLocation(deliveryAddress));
             return;
@@ -603,12 +581,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       const deliveryAddress = addressList?.find((item) => item?.defaultAddress);
       if (deliveryAddress) {
         setDeliveryAddressId?.(deliveryAddress?.id);
-        if (
-          !asyncPincode?.pincode! &&
-          !locationDetails &&
-          !pharmacyLocation &&
-          !diagnosticLocation
-        ) {
+        if (!locationDetails && !pharmacyLocation && !diagnosticLocation) {
           checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'fetchAddressResponse');
           setDiagnosticLocation?.(formatAddressToLocation(deliveryAddress));
         }
@@ -649,7 +622,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
             (response.city = setCity), (response.state = setState);
             setDiagnosticLocation!(response);
             !locationDetails && setLocationDetails!(response);
-            //for storing in the async storage.
             const saveAddress = {
               pincode: pincode,
               id: '',
@@ -1135,7 +1107,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const checkLocation = (addresses: addressListType) => {
     !defaultAddress &&
-      !asyncPincode?.pincode! &&
       !locationDetails &&
       !diagnosticLocation &&
       !pharmacyLocation &&
@@ -1148,13 +1119,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       onPressOutside: () => {
         hideAphAlert!();
         //if this needs to be done, if location permission is denied or anywhere.
-        if (
-          !defaultAddress &&
-          !locationDetails &&
-          !diagnosticLocation &&
-          !pharmacyLocation &&
-          !asyncPincode?.pincode!
-        ) {
+        if (!defaultAddress && !locationDetails && !diagnosticLocation && !pharmacyLocation) {
           setDeliveryAddressId!('');
           checkIsPinCodeServiceable('500034', undefined, 'noLocation');
         }
@@ -1219,11 +1184,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderDeliverToLocationCTA = () => {
     let deliveryAddress = addresses?.find((item) => item?.id == deliveryAddressId);
-    const location = asyncPincode?.pincode
-      ? `${formatText(asyncPincode?.city || asyncPincode?.state || '', 18)} ${
-          asyncPincode?.pincode
-        }`
-      : !deliveryAddress
+    const location = !deliveryAddress
       ? diagnosticLocation
         ? `${formatText(
             g(diagnosticLocation, 'city') || g(diagnosticLocation, 'state') || '',
