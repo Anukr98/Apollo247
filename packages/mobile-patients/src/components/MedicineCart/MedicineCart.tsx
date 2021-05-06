@@ -283,11 +283,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (!!coupon && !coupon?.circleBenefits) {
       setCircleMembershipCharges && setCircleMembershipCharges(0);
       setIsCircleSubscription?.(false);
-    } else {
-      if (!circleSubscriptionId) {
-        setCircleMembershipCharges &&
-          setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
-      }
+    } else if (coupon?.circleBenefits) {
+      setIsCircleSubscription?.(true);
+    } else if (!circleSubscriptionId) {
+      setCircleMembershipCharges?.(circlePlanSelected?.currentSellingPrice);
     }
   }, [coupon]);
 
