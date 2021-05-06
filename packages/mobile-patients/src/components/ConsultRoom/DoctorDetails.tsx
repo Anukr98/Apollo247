@@ -641,6 +641,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     try {
       if (modeOfConsult.includes(ConsultMode.BOTH)) {
         setConsultType(ConsultMode.BOTH);
+        if (consultModeSelected === ConsultMode.PHYSICAL)
+          set_follow_up_chat_message_visibility(false);
       } else if (modeOfConsult.includes(ConsultMode.ONLINE)) {
         setConsultType(ConsultMode.ONLINE);
       } else if (modeOfConsult.includes(ConsultMode.PHYSICAL)) {
