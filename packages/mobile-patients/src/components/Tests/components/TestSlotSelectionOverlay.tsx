@@ -64,7 +64,7 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
   const fetchSlots = (updatedDate?: Date) => {
     let dateToCheck = !!updatedDate ? updatedDate : date;
     setChangedDate(dateToCheck);
-    if (!isVisible || !zipCode) return;
+    if (!isVisible) return;
     showSpinner(true);
     client
       .query<getDiagnosticSlotsCustomized, getDiagnosticSlotsCustomizedVariables>({
