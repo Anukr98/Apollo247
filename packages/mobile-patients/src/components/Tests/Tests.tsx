@@ -81,9 +81,10 @@ import {
   BackHandler,
   Alert,
   Linking,
+  FlatList,
 } from 'react-native';
 import { Image } from 'react-native-elements';
-import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import {
   SEARCH_TYPE,
   TEST_COLLECTION_TYPE,
@@ -142,7 +143,7 @@ import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobil
 import {
   AppConfig,
   DIAGNOSITC_PHELBO_TRACKING_STATUS,
-  DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY,
+  DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY,
   DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
   stepsToBookArray,
 } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -2072,7 +2073,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     if (DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(item?.orderStatus)) {
       //track order
       navigateToTrackingScreen(item);
-    } else if (DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY.includes(item?.orderStatus)) {
+    } else if (DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(item?.orderStatus)) {
       //view report download
       try {
         if (!!item?.labReportURL && item?.labReportURL != '') {
@@ -2325,11 +2326,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }}
       >
         <View style={styles.circleView}>
-        <ImageNative 
-          resizeMode="contain" style={styles.image} source={{ uri: item.itemIcon }} />
+          <ImageNative resizeMode="contain" style={styles.image} source={{ uri: item.itemIcon }} />
         </View>
         <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>
-          {nameFormater(item?.itemTitle,'default')}
+          {nameFormater(item?.itemTitle, 'default')}
         </Text>
       </TouchableOpacity>
     );
@@ -2646,12 +2646,12 @@ const styles = StyleSheet.create({
     borderRadius: 80 / 2,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor:'#f9f9f9'
+    backgroundColor: '#f9f9f9',
   },
   image: {
     width: 50,
     height: 50,
-    backgroundColor:'#f9f9f9'
+    backgroundColor: '#f9f9f9',
   },
   gridPart: {
     alignItems: 'center',

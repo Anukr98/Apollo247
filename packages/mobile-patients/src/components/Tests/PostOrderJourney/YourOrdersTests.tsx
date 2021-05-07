@@ -62,6 +62,7 @@ import {
   DIAGNOSTIC_ORDER_FAILED_STATUS,
   TestCancelReasons,
   TestReschedulingReasons,
+  DIAGNOSTIC_CONFIRMED_STATUS
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -1136,7 +1137,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               : 'Ms.'
             : ''
         }
-        showAddTest={order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED}
+        showAddTest={
+          order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED ||
+          DIAGNOSTIC_CONFIRMED_STATUS.includes(order?.orderStatus)
+        }
         ordersData={order?.diagnosticOrderLineItems!}
         showPretesting={showPreTesting!}
         dateTime={!!order?.slotDateTimeInUTC ? order?.slotDateTimeInUTC : order?.diagnosticDate}
