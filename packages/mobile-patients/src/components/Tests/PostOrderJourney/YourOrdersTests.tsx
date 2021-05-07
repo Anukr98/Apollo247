@@ -34,8 +34,10 @@ import {
   BackHandler,
   Text,
   Modal,
-  Linking
+  Linking,
+  Clipboard
 } from 'react-native';
+import { Snackbar } from 'react-native-paper';
 import {
   Down,
   Up,
@@ -164,7 +166,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [isViewReport, setIsViewReport] = useState<boolean>(false);
   const [activeOrder, setActiveOrder] = useState<
     getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList
-  >();
+  >('');
   const [selectedPaitent, setSelectedPaitent] = useState<string>('All');
   const [selectedPaitentId, setSelectedPaitentId] = useState<string>('');
   const [orderListData, setOrderListData] = useState<(orderListByMobile | null)[] | null>([]);
@@ -176,6 +178,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   >(allCurrentPatients);
   const [currentOffset, setCurrentOffset] = useState<number>(1);
   const [resultList, setResultList] = useState<(orderListByMobile | null)[] | null>([]);
+  const [snackbarState, setSnackbarState] = useState<boolean>(false);
+
   var rescheduleDate: Date,
     rescheduleSlotObject: {
       slotStartTime: any;
@@ -1172,8 +1176,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPressReschedule={() => _onPressTestReschedule(order)}
         onPressViewDetails={() => _navigateToYourTestDetails(order, true)}
         onPressViewReport={() => {
-          setIsViewReport(true);
+          setSnackbarState(true);
           setActiveOrder(order)
+          setIsViewReport(true);
           // _onPressViewReport(order)
         }}
         phelboObject={order?.phleboDetailsObj}
@@ -1302,6 +1307,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       );
     }
   };
+
+  const copyToClipboard = (refId: string) => {
+    Clipboard.setString(refId);
+    setSnackbarState(true);
+  };
   const renderModalView = (item: any, index: number) => {
     return (
       <TouchableOpacity
@@ -1413,19 +1423,29 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           <View style={styles.modalMainView}>
             <View style={styles.reportModalView}>
               {viewReportItemsArray.map((item) => (
-                <TouchableOpacity onPress={()=>{
-                    if (item?.title == string.Report.view) {
-                      _onPressViewReport(activeOrder)
-                    } else if (item?.title == string.Report.download) {
-                      _onPressViewReport(activeOrder)
+                <TouchableOpacity
+                  onPress={async () => {
+                    if (item?.title == string.Report.view || item?.title == string.Report.download) {
+                      _onPressViewReport(activeOrder);
                     } else if (item?.title == string.Report.share) {
-                      // Linking.openURL(`whatsapp://send?text=${'wait'}`);
+                      try {
+                        const whatsAppScheme = `whatsapp://send?text=${activeOrder?.labReportURL}`;
+                        const canOpenURL = await Linking.canOpenURL(whatsAppScheme);
+                        canOpenURL && Linking.openURL(whatsAppScheme);
+                      } catch (error) {}
                     } else {
-                      
+                      copyToClipboard(
+                        activeOrder && activeOrder?.labReportURL ? activeOrder?.labReportURL : ''
+                      );
                     }
-                }} style={styles.itemView}>
+                    setIsViewReport(false)
+                  }}
+                  style={styles.itemView}
+                >
                   {item?.icon}
                   <Text style={styles.itemTextStyle}>{item?.title}</Text>
+                  {snackbarState && item?.title == string.Report.copy ? <Text style={styles.copyTextStyle}>Copied !!</Text>: null}
+                  
                 </TouchableOpacity>
               ))}
             </View>
@@ -1619,6 +1639,11 @@ const styles = StyleSheet.create({
   itemTextStyle: {
     marginHorizontal: 10,
     ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE),
+  },
+  copyTextStyle: {
+    marginHorizontal: 10,
+    textAlign:'left',
+    ...theme.viewStyles.text('SB', 14, theme.colors.APP_GREEN),
   },
   paitentCard: {
     backgroundColor: '#F7F8F5',
