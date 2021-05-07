@@ -76,46 +76,28 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   const isSameDate = moment().isSame(moment(date), 'date');
   const itemId = props.itemId;
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id));
-  const [selectedDate, setSelectedDate] = useState('12');
+  const [selectedDate, setSelectedDate] = useState<string>(moment(date).format('DD') || '');
+  const [newSelectedSlot, setNewSelectedSlot] = useState('')
   type UniqueSlotType = typeof uniqueSlots[0];
-  const datearray = [
-    {
-      date: '12',
-      day: 'Mon',
-    },
-    {
-      date: '13',
-      day: 'Tue',
-    },
-    {
-      date: '14',
-      day: 'Wed',
-    },
-    {
-      date: '15',
-      day: 'Thu',
-    },
-    {
-      date: '16',
-      day: 'Fri',
-    },
-    {
-      date: '17',
-      day: 'Sat',
-    },
-    {
-      date: '18',
-      day: 'Sun',
-    },
-    {
-      date: '19',
-      day: 'Mon',
-    },
-    {
-      date: '20',
-      day: 'Tue',
-    },
-  ];
+  
+  var offsetDays = 0;
+  var offsetDates = 0;
+  var offsetTimestamp = 0
+  let newDateArray: { days: string; dates: string; timestamp: string }[] = []
+  while (offsetDates < 4) {
+    newDateArray.push({
+      days: moment()
+      .add(offsetDays++, 'days')
+      .format('ddd'),
+      dates: moment()
+      .add(offsetDates++, 'days')
+      .format('DD'),
+      timestamp: moment()
+      .add(offsetTimestamp++, 'days')
+      .format()
+    })
+  }
+  let monthHeading = `${moment().format('MMMM')} ${moment().format('YYYY')}`;
   const fetchSlots = (updatedDate?: Date) => {
     let dateToCheck = !!updatedDate ? updatedDate : date;
     setChangedDate(dateToCheck);
@@ -208,28 +190,19 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
         title: 'Evening',
       },
     ];
-    // console.log('dropDownOptions :>> ', dropDownOptions);
-    const wait = [
-      { data: { endTime: '06:00', startTime: '06:00' }, key: '06:00 AM', value: '06:00 AM' },
-      { data: { endTime: '06:30', startTime: '06:30' }, key: '06:30 AM', value: '06:30 AM' },
-      { data: { endTime: '07:00', startTime: '07:00' }, key: '07:00 AM', value: '07:00 AM' },
-      { data: { endTime: '07:30', startTime: '07:30' }, key: '07:30 AM', value: '07:30 AM' },
-      { data: { endTime: '08:00', startTime: '08:00' }, key: '08:00 AM', value: '08:00 AM' },
-      { data: { endTime: '08:30', startTime: '08:30' }, key: '08:30 AM', value: '08:30 AM' },
-      { data: { endTime: '09:00', startTime: '09:00' }, key: '09:00 AM', value: '09:00 AM' },
-      { data: { endTime: '09:30', startTime: '09:30' }, key: '09:30 AM', value: '09:30 AM' },
-      { data: { endTime: '10:00', startTime: '10:00' }, key: '10:00 AM', value: '10:00 AM' },
-      { data: { endTime: '10:30', startTime: '10:30' }, key: '10:30 AM', value: '10:30 AM' },
-    ];
     return (
       <View>
         <View style={styles.dayPhaseContainer}>
           {dayPhaseArray.map((item, index) => (
             <TouchableOpacity
-              style={[styles.dayPhaseStyle,{
-                borderBottomColor: selectedDayTab == index ? theme.colors.APP_GREEN : theme.colors.WHITE,
-                borderBottomWidth: selectedDayTab == index ? 4 : 0,
-              }]}
+              style={[
+                styles.dayPhaseStyle,
+                {
+                  borderBottomColor:
+                    selectedDayTab == index ? theme.colors.APP_GREEN : theme.colors.WHITE,
+                  borderBottomWidth: selectedDayTab == index ? 4 : 0,
+                },
+              ]}
               onPress={() => {
                 setSelectedDayTab(index);
               }}
@@ -248,133 +221,130 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           ))}
         </View>
         <View>
-        {selectedDayTab == 0 ?  <FlatList
-            keyExtractor={(_, index) => index.toString()}
-            data={dropDownOptions}
-            contentContainerStyle={styles.timeContainer}
-            numColumns={4}
-            renderItem={({ item, index }) => (
-              <View style={styles.dateContentStyle}>
-                <Text style={styles.dateTextStyle}>{item?.value}</Text>
-              </View>
-            )}
-          />  : renderNoSlots()}
+            {dropDownOptions?.length != 0 ? 
+            <FlatList
+              keyExtractor={(_, index) => index.toString()}
+              data={dropDownOptions}
+              extraData={newSelectedSlot}
+              contentContainerStyle={styles.timeContainer}
+              numColumns={4}
+              renderItem={({ item, index }) => (
+                <TouchableOpacity onPress={()=>{
+                  const selectedSlot = getTestSlotDetailsByTime(
+                    slots,
+                    (item.data as UniqueSlotType)?.startTime,
+                    (item.data as UniqueSlotType).endTime
+                  );
+                  setSlotInfo(selectedSlot);
+                  setNewSelectedSlot(item?.value);
+                }} style={[styles.dateContentStyle,{
+                  backgroundColor: newSelectedSlot == item?.value ? theme.colors.APP_GREEN : theme.colors.DEFAULT_BACKGROUND_COLOR,
+                }]}>
+                  <Text style={[styles.dateTextStyle,{
+                      color: newSelectedSlot == item?.value ? 'white' : theme.colors.SHERPA_BLUE,
+                    },]}>{item?.value}</Text>
+                </TouchableOpacity>
+              )}
+            /> : renderNoSlots()}
         </View>
       </View>
     );
   };
 
   const renderCalendarView = () => {
-          /**
-           * as soon as current date has no slot selection, then change it to next date (autoselection)
-           */
+    /**
+     * as soon as current date has no slot selection, then change it to next date (autoselection)
+     */
 
-          const isCurrentDateSlotUnavailable = isSameDate && uniqueSlots?.length == 0;
-          //date is the selected date & minDate : date to show.
-          const dateToHighlight =
-            isCurrentDateSlotUnavailable && isDateAutoSelected
-              ? moment(date)
-                  .add(1, 'day')
-                  .toDate()
-              : date;
+    const isCurrentDateSlotUnavailable = isSameDate && uniqueSlots?.length == 0;
+    //date is the selected date & minDate : date to show.
+    const dateToHighlight =
+      isCurrentDateSlotUnavailable && isDateAutoSelected
+        ? moment(date)
+            .add(1, 'day')
+            .toDate()
+        : date;
 
-          const minDateToShow = props.isReschdedule
-            ? new Date()
-            : !!isTodaySlotUnavailable && isTodaySlotUnavailable
-            ? moment(new Date())
-                .add(1, 'day')
-                .toDate()
-            : new Date();
-            var offset = 0;
-            var months = [];
-            while (offset < 12) {
-              months.push(moment().add(offset++, 'month').format('MMMM'));
-            }
-            console.log('months :>> ', months);
-          return (
-            <View>
-              <Text
+    const minDateToShow = props.isReschdedule
+      ? new Date()
+      : !!isTodaySlotUnavailable && isTodaySlotUnavailable
+      ? moment(new Date())
+          .add(1, 'day')
+          .toDate()
+      : new Date();
+    return (
+      <View>
+        <View
+          style={{
+            borderColor: '#cccccc',
+            borderWidth: 1,
+            borderRadius: 10,
+            margin: 10,
+            padding: 10,
+          }}
+        >
+          <Text
+            style={{
+              ...theme.fonts.IBMPlexSansMedium(15),
+              color: theme.colors.LIGHT_BLUE,
+              padding: 10,
+            }}
+          >
+            {monthHeading}
+          </Text>
+          <View style={{ flexDirection: 'row' }}>
+            {newDateArray.map((item, index) => (
+              <TouchableOpacity
+                onPress={() => {
+                  let newdate = moment(item?.timestamp).utc().toDate()
+                  
+                  setSelectedDate(item?.dates);
+                  setDate(newdate);
+                  setSlotInfo(undefined);
+                  setIsDateAutoSelected(false);
+                }}
                 style={[
+                  styles.dateContainer,
                   {
-                    ...theme.fonts.IBMPlexSansMedium(17),
-                    color: theme.colors.LIGHT_BLUE,
-                    padding: 15,
+                    backgroundColor:
+                      selectedDate == item?.dates ? theme.colors.APP_GREEN : 'transparent',
                   },
-                  props.headingTextStyle,
                 ]}
               >
-                {' '}
-                {props.heading}
-              </Text>
-              <View
-                style={{
-                  borderColor: '#cccccc',
-                  borderWidth: 1,
-                  borderRadius: 10,
-                  margin: 10,
-                  padding: 10,
-                }}
-              >
                 <Text
-                  style={{
-                    ...theme.fonts.IBMPlexSansMedium(15),
-                    color: theme.colors.LIGHT_BLUE,
-                    padding: 10,
-                  }}
+                  style={[
+                    styles.dateStyle,
+                    {
+                      color: selectedDate == item?.dates ? 'white' : theme.colors.SHERPA_BLUE,
+                    },
+                  ]}
                 >
-                  {`${moment().format('MMMM')} ${moment().format('YYYY')}`}
+                  {item?.dates}
                 </Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  {datearray.map((item, index) => (
-                    <TouchableOpacity
-                      onPress={() => {
-                        setSelectedDate(item?.date);
-                        // setDate(selectedDate);
-                        setSlotInfo(undefined);
-                        setIsDateAutoSelected(false);
-                      }}
-                      style={[
-                        styles.dateContainer,
-                        {
-                          backgroundColor:
-                            selectedDate == item?.date ? theme.colors.APP_GREEN : 'transparent',
-                        },
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.dateStyle,
-                          {
-                            color: selectedDate == item?.date ? 'white' : theme.colors.SHERPA_BLUE,
-                          },
-                        ]}
-                      >
-                        {item?.date}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.dayStyle,
-                          {
-                            color: selectedDate == item?.date ? 'white' : theme.colors.SHERPA_BLUE,
-                          },
-                        ]}
-                      >
-                        {item?.day}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-            </View>
-          );
-        };
+                <Text
+                  style={[
+                    styles.dayStyle,
+                    {
+                      color: selectedDate == item?.dates ? 'white' : theme.colors.SHERPA_BLUE,
+                    },
+                  ]}
+                >
+                  {item?.days}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      </View>
+    );
+  };
   const renderNoSlots = () => {
     return (
-        <View style={styles.noSlotsContainer}>
-          <Text style={styles.noSlotsText}>No Slots Available</Text>
-        </View>
-    )
-  }
+      <View style={styles.noSlotsContainer}>
+        <Text style={styles.noSlotsText}>No Slots Available</Text>
+      </View>
+    );
+  };
   const isDoneBtnDisabled = !date || !slotInfo;
   const infoPanel = () => {
     return (
@@ -408,7 +378,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   return (
     <Overlay
       isVisible
-      // onRequestClose={() => (onPressClose())}
+      onRequestClose={() => (props.onClose())}
       windowBackgroundColor={'rgba(0, 0, 0, 0.6)'}
       containerStyle={{ marginBottom: 0 }}
       fullScreen
@@ -416,9 +386,24 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
       overlayStyle={styles.phrOverlayStyle}
     >
       <View style={styles.containerStyle}>
+      <Text
+          style={[
+            {
+              ...theme.fonts.IBMPlexSansMedium(17),
+              color: theme.colors.LIGHT_BLUE,
+              padding: 15,
+            },
+            props.headingTextStyle,
+          ]}
+        >
+          {' '}
+          {props.heading}
+        </Text>
+        <ScrollView style={styles.containerContentStyle}>
         {renderCalendarView()}
         {infoPanel()}
         {renderSlotSelectionView()}
+        </ScrollView>
         {renderBottomButton}
       </View>
     </Overlay>
@@ -431,7 +416,13 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.WHITE,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-    marginTop: 160,
+    marginTop: 140,
+  },
+  containerContentStyle: {
+    flex:1,
+    backgroundColor: theme.colors.WHITE,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
   },
   phrOverlayStyle: {
     padding: 0,
@@ -487,7 +478,7 @@ const styles = StyleSheet.create({
   },
   noSlotsContainer: {
     width: '94%',
-    paddingVertical:90,
+    paddingVertical: 40,
     alignSelf: 'center',
     // backgroundColor: '#c8c8c8',
     alignContent: 'center',
@@ -506,7 +497,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
   },
-  dateTextStyle:{
+  dateTextStyle: {
     ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE),
   },
   optionsView: {
