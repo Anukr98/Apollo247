@@ -4690,6 +4690,7 @@ export const GET_PHLOBE_DETAILS = gql`
           }
           phleboOTP
           phleboTrackLink
+          phleboRating
         }
         phleboEta {
           distanceInMetres
