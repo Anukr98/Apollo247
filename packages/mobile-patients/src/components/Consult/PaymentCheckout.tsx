@@ -1085,7 +1085,7 @@ const styles = StyleSheet.create({
   couponSavingView: {
     marginTop: 15,
     borderTopWidth: 0.5,
-    borderColor: '#979797',
+    borderColor: theme.colors.BORDER_BOTTOM_COLOR,
     borderRadius: 3,
     paddingVertical: 7,
     justifyContent: 'center',
