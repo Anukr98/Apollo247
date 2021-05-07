@@ -37,7 +37,6 @@ import {
   Linking,
   Clipboard
 } from 'react-native';
-import { Snackbar } from 'react-native-paper';
 import {
   Down,
   Up,
