@@ -6418,7 +6418,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                           KeepAwake.activate();
                         })
                         .catch((e) => {
-                          console.log('erroe', e);
                           setLoading(false);
                           CommonBugFender(
                             'ChatRoom_renderPrescriptionModal_ADD_CHAT_DOCUMENTSt',

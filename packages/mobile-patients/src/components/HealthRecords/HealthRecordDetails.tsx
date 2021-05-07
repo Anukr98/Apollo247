@@ -581,7 +581,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     setLoading?.(true);
     const fileUrls = imagesArray?.map((item) => item?.file_Url);
     pdfUrl && fileUrls?.push(pdfUrl);
-    console.log('fileUrls', fileUrls, imagesArray);
     client
       .mutate<convertToZip, convertToZipVariables>({
         mutation: PHR_COVERT_TO_ZIP,
@@ -592,13 +591,11 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       })
       .then(({ data }) => {
         setLoading?.(false);
-        console.log('data', data);
         if (data?.convertToZip?.zipUrl) {
           downloadZipFile(data?.convertToZip?.zipUrl);
         }
       })
       .catch((e: any) => {
-        console.log('error', e);
         setLoading?.(false);
         currentPatient && handleGraphQlError(e, 'Report is yet not available');
         CommonBugFender('HealthRecordDetails_downloadPDFTestReport', e);
@@ -613,7 +610,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       Platform.OS === 'ios'
         ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + (fileName || 'Apollo_TestReport.zip')
         : dirs.DownloadDir + '/' + (fileName || 'Apollo_TestReport.zip');
-    console.log('downloadPath', downloadPath, fileName, zipUrl);
     setLoading && setLoading(true);
     RNFetchBlob.config({
       fileCache: true,
