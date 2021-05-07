@@ -119,7 +119,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setModifyHcCharges,
     cartItems,
     removeCartItem,
-    setModifiedOrderItemIds
+    setModifiedOrderItemIds,
   } = useDiagnosticsCart();
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
@@ -334,7 +334,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   phleboDetails?.orderPhleboDetails?.diagnosticOrdersId === order?.id
               );
               if (findOrder && findOrder.orderPhleboDetails !== null) {
-                if (order.phleboDetailsObj === null) {
+                if (order?.phleboDetailsObj === null) {
                   order.phleboDetailsObj = {
                     PhelboOTP: null,
                     PhelbotomistName: null,
@@ -1202,7 +1202,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     //clear the hcCharges.
     setHcCharges?.(0);
     setModifyHcCharges?.(0);
-    setModifiedOrderItemIds?.(getOrderItems)
+    setModifiedOrderItemIds?.(getOrderItems);
     props.navigation.navigate(AppRoutes.SearchTestScene, {
       searchText: '',
       orderDetails: order,
@@ -1593,4 +1593,3 @@ const styles = StyleSheet.create({
     width: '20%',
   },
 });
-

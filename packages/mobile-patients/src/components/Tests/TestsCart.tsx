@@ -1636,15 +1636,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <Text
             style={[
               styles.commonText,
-              {
-                ...theme.viewStyles.text(
-                  customStyle ? 'B' : 'M',
-                  customStyle ? 14 : 12,
-                  SHERPA_BLUE,
-                  1,
-                  customStyle ? 20 : 18
-                ),
-              },
+              customStyle ? styles.pricesBoldText : styles.pricesNormalText 
             ]}
           >
             {title}
@@ -2308,7 +2300,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       'Order id': orderId,
       Pincode: parseInt(selectedAddr?.zipcode!),
       'Patient UHID': g(currentPatient, 'id'),
-      'Total items in cart': cartItems.length,
+      'Total items in cart': cartItems?.length,
       'Order amount': grandTotal,
       'Appointment Date': !!existingOrderDetails
         ? moment(existingOrderDetails?.slotDateTimeInUTC).format('DD/MM/YYYY')
@@ -3381,5 +3373,11 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     textDecorationLine: 'line-through',
     marginLeft: 6,
+  },
+  pricesNormalText: {
+    ...theme.viewStyles.text('M', 12, SHERPA_BLUE, 1, 18),
+  },
+  pricesBoldText: {
+    ...theme.viewStyles.text('B', 14, SHERPA_BLUE, 1, 20),
   },
 });
