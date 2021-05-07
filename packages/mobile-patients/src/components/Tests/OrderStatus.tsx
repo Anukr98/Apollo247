@@ -29,16 +29,26 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 export interface OrderStatusProps extends NavigationScreenProps {}
 
 export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
+  const modifiedOrderDetails = props.navigation.getParam('isModify');
   const orderDetails = props.navigation.getParam('orderDetails');
   const eventAttributes = props.navigation.getParam('eventAttributes');
   const isCOD = props.navigation.getParam('isCOD');
   const { currentPatient } = useAllCurrentPatients();
-  const pickupDate = moment(orderDetails?.diagnosticDate!).format('DD MMM');
-  const pickupYear = moment(orderDetails?.diagnosticDate!).format('YYYY');
+  const pickupDate = !!modifiedOrderDetails
+    ? moment(modifiedOrderDetails?.slotDateTimeInUTC)?.format('DD MMM')
+    : moment(orderDetails?.diagnosticDate!).format('DD MMM');
+  const pickupYear = !!modifiedOrderDetails
+    ? moment(modifiedOrderDetails?.slotDateTimeInUTC)?.format('YYYY')
+    : moment(orderDetails?.diagnosticDate!).format('YYYY');
   const paymentStatus = props.navigation.getParam('paymentStatus');
-  const pickupTime = orderDetails && formatTestSlotWithBuffer(orderDetails?.slotTime!);
+  const pickupTime = !!modifiedOrderDetails
+    ? formatTestSlotWithBuffer(moment(modifiedOrderDetails?.slotDateTimeInUTC)?.format('hh:mm'))
+    : orderDetails && formatTestSlotWithBuffer(orderDetails?.slotTime!);
   const orderCartSaving = orderDetails?.cartSaving!;
   const orderCircleSaving = orderDetails?.circleSaving!;
+  const displayId = !!modifiedOrderDetails
+    ? modifiedOrderDetails?.displayId
+    : orderDetails?.displayId;
   const showCartSaving = orderCartSaving > 0 && orderDetails?.cartHasAll;
   const { apisToCall } = useAppCommonData();
   const {
@@ -67,7 +77,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     props.navigation.navigate(AppRoutes.YourOrdersTest, {
       isTest: true,
     });
-  }
+  };
 
   useEffect(() => {
     postwebEngageCheckoutCompletedEvent();
@@ -96,11 +106,14 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const navigateToOrderDetails = (showOrderSummaryTab: boolean, orderId: string) => {
     setLoading?.(false);
     apisToCall.current = [apiCallEnums.circleSavings];
-    props.navigation.navigate(AppRoutes.TestOrderDetailsSummary, {
-      goToHomeOnBack: true,
-      showOrderSummaryTab,
-      orderId: orderId,
+    props.navigation.navigate(AppRoutes.TestOrderDetails, {
+      orderId: !!modifiedOrderDetails ? modifiedOrderDetails?.id : orderId,
+      setOrders: null,
+      selectedOrder: null,
+      refundStatusArr: [],
       comingFrom: AppRoutes.TestsCart,
+      showOrderSummaryTab: true,
+      disableTrackOrder: true,
     });
   };
 
@@ -136,7 +149,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       <View style={styles.bookingInfo}>
         <Text style={styles.bookingIdText}>
           Your Booking ID is
-          <Text style={styles.bookingNumberText}> #{orderDetails?.displayId!}</Text>
+          <Text style={styles.bookingNumberText}> #{displayId!}</Text>
         </Text>
         <Spearator style={styles.horizontalSeparator} />
         <View style={styles.pickUpInfo}>
@@ -233,7 +246,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       <View>
         <Spearator style={styles.separator} />
         <TouchableOpacity style={{ alignItems: 'center' }} onPress={() => moveToMyOrders()}>
-          <Text style={styles.homeScreen}>{nameFormater('Go to my orders','upper')}</Text>
+          <Text style={styles.homeScreen}>{nameFormater('Go to my orders', 'upper')}</Text>
         </TouchableOpacity>
       </View>
     );

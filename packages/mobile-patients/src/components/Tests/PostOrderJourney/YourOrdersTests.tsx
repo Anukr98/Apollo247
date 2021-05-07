@@ -15,6 +15,7 @@ import {
   getDiagnosticOrdersListByMobile,
   getDiagnosticOrdersListByMobileVariables,
   getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList,
+  getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems,
   getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
@@ -30,7 +31,6 @@ import {
   View,
   TouchableOpacity,
   FlatList,
-  ScrollView,
   BackHandler,
   Text,
   Modal,
@@ -112,7 +112,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
   ];
 
-  const { diagnosticSlot, setDiagnosticSlot } = useDiagnosticsCart();
+  const {
+    diagnosticSlot,
+    setDiagnosticSlot,
+    setHcCharges,
+    setModifyHcCharges,
+    cartItems,
+    removeCartItem,
+    setModifiedOrderItemIds,
+  } = useDiagnosticsCart();
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
@@ -319,40 +327,36 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           if (data?.data?.getOrderPhleboDetailsBulk?.orderPhleboDetailsBulk) {
             const orderPhleboDetailsBulk =
               data?.data?.getOrderPhleboDetailsBulk?.orderPhleboDetailsBulk;
-            ordersList?.forEach(
-              (
-                order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList
-              ) => {
-                const findOrder = orderPhleboDetailsBulk?.find(
-                  (phleboDetails: any) =>
-                    phleboDetails?.orderPhleboDetails !== null &&
-                    phleboDetails?.orderPhleboDetails?.diagnosticOrdersId === order?.id
-                );
-                if (findOrder && findOrder.orderPhleboDetails !== null) {
-                  if (order.phleboDetailsObj === null) {
-                    order.phleboDetailsObj = {
-                      PhelboOTP: null,
-                      PhelbotomistName: null,
-                      PhelbotomistMobile: null,
-                      PhelbotomistTrackLink: null,
-                      TempRecording: null,
-                      CheckInTime: null,
-                      PhleboLatitude: null,
-                      PhleboLongitude: null,
-                      __typename: 'PhleboDetailsObj',
-                    };
-                  }
-                  order.phleboDetailsObj.PhelboOTP = findOrder?.orderPhleboDetails?.phleboOTP;
-                  order.phleboDetailsObj.PhelbotomistName =
-                    findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.name;
-                  order.phleboDetailsObj.PhelbotomistMobile =
-                    findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.mobile;
-                  order.phleboDetailsObj.PhelbotomistTrackLink =
-                    findOrder?.orderPhleboDetails?.phleboTrackLink;
-                  order.phleboDetailsObj.CheckInTime = findOrder?.phleboEta?.estimatedArrivalTime;
+            ordersList?.forEach((order: any) => {
+              const findOrder = orderPhleboDetailsBulk?.find(
+                (phleboDetails: any) =>
+                  phleboDetails?.orderPhleboDetails !== null &&
+                  phleboDetails?.orderPhleboDetails?.diagnosticOrdersId === order?.id
+              );
+              if (findOrder && findOrder.orderPhleboDetails !== null) {
+                if (order?.phleboDetailsObj === null) {
+                  order.phleboDetailsObj = {
+                    PhelboOTP: null,
+                    PhelbotomistName: null,
+                    PhelbotomistMobile: null,
+                    PhelbotomistTrackLink: null,
+                    TempRecording: null,
+                    CheckInTime: null,
+                    PhleboLatitude: null,
+                    PhleboLongitude: null,
+                    __typename: 'PhleboDetailsObj',
+                  };
                 }
+                order.phleboDetailsObj.PhelboOTP = findOrder?.orderPhleboDetails?.phleboOTP;
+                order.phleboDetailsObj.PhelbotomistName =
+                  findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.name;
+                order.phleboDetailsObj.PhelbotomistMobile =
+                  findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.mobile;
+                order.phleboDetailsObj.PhelbotomistTrackLink =
+                  findOrder?.orderPhleboDetails?.phleboTrackLink;
+                order.phleboDetailsObj.CheckInTime = findOrder?.phleboEta?.estimatedArrivalTime;
               }
-            );
+            });
             setOrders(ordersList);
             setFilteredOrderList(ordersList);
             setTimeout(() => setLoading!(false), isRefetch ? 1000 : 0);
@@ -1132,7 +1136,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               : 'Ms.'
             : ''
         }
-        showAddTest={false}
+        showAddTest={order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED}
         ordersData={order?.diagnosticOrderLineItems!}
         showPretesting={showPreTesting!}
         dateTime={!!order?.slotDateTimeInUTC ? order?.slotDateTimeInUTC : order?.diagnosticDate}
@@ -1155,7 +1159,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         additonalRejectedInfo={sampleRejectedString}
         price={order?.totalPrice}
         onPressCard={() => _navigateToYourTestDetails(order, false)}
-        onPressAddTest={() => _onPressAddTest()}
+        onPressAddTest={() => _onPressAddTest(order)}
         onPressReschedule={() => _onPressTestReschedule(order)}
         onPressViewDetails={() => _navigateToYourTestDetails(order, true)}
         onPressViewReport={() => _onPressViewReport(order)}
@@ -1175,7 +1179,35 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     );
   };
 
-  function _onPressAddTest() {}
+  function _onPressAddTest(
+    order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList
+  ) {
+    //clear the cart, if it has some duplicate item present.
+    const getOrderItems = order?.diagnosticOrderLineItems?.map(
+      (
+        item:
+          | getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems
+          | any
+      ) => Number(item?.itemId)
+    );
+    const getCartItemsWithId = cartItems?.length > 0 && cartItems?.map((item) => Number(item?.id));
+    const isAlreadyPartOfOrder =
+      !!getCartItemsWithId &&
+      getCartItemsWithId?.length > 0 &&
+      getOrderItems?.filter((val) => getCartItemsWithId?.includes(val));
+    if (!!isAlreadyPartOfOrder && isAlreadyPartOfOrder?.length > 0) {
+      isAlreadyPartOfOrder?.map((id: number) => removeCartItem?.(String(id)));
+      renderReportError(string.diagnostics.modifyItemAlreadyExist);
+    }
+    //clear the hcCharges.
+    setHcCharges?.(0);
+    setModifyHcCharges?.(0);
+    setModifiedOrderItemIds?.(getOrderItems);
+    props.navigation.navigate(AppRoutes.SearchTestScene, {
+      searchText: '',
+      orderDetails: order,
+    });
+  }
 
   function _onPressViewReport(
     order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList
@@ -1212,6 +1244,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   }
 
+  const keyExtractor = useCallback((item: any, index: number) => `${index}`, []);
+
   const renderLoadMore = () => {
     return (
       <TouchableOpacity
@@ -1225,13 +1259,16 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       </TouchableOpacity>
     );
   };
+
   const renderOrders = () => {
     return (
       <FlatList
+        keyExtractor={keyExtractor}
         bounces={false}
         data={orders}
         extraData={orderListData}
         renderItem={({ item, index }) => renderOrder(item, index)}
+        initialNumToRender={10}
         ListEmptyComponent={renderNoOrders()}
         ListFooterComponent={
           (orderListData?.length && orderListData?.length < 10) || loading || error
@@ -1334,11 +1371,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           />
         )}
         {renderFilterArea()}
-        <ScrollView bounces={false} scrollEventThrottle={1}>
-          {renderError()}
-          {renderOrders()}
-          {showBottomOverlay && renderBottomPopUp()}
-        </ScrollView>
+        {renderError()}
+        {renderOrders()}
+        {showBottomOverlay && renderBottomPopUp()}
         <Modal
           animationType="fade"
           transparent={true}

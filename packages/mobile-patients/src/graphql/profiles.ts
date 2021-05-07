@@ -1889,17 +1889,10 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         }
         city
         slotTimings
-        employeeSlotId
-        diagnosticEmployeeCode
-        diagnosticBranchCode
+        slotId
         totalPrice
         prescriptionUrl
         diagnosticDate
-        centerName
-        centerCode
-        centerCity
-        centerState
-        centerLocality
         orderStatus
         orderType
         displayId
@@ -1909,6 +1902,11 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         paymentType
         visitNo
         labReportURL
+        patientObj{
+          firstName
+          lastName
+          gender
+        }
         diagnosticOrderLineItems {
           id
           itemId
@@ -1917,6 +1915,8 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           price
           quantity
           groupPlan
+          editOrderID
+          isRemoved
           itemObj {
             itemType
             testPreparationData
@@ -2233,15 +2233,23 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         isRescheduled
         rescheduleCount
         areaId
-        addressLine1
-        addressLine2
         patientId
+        orderType
+        totalPrice
+        orderStatus
+        createdDate
+        paymentType
+        diagnosticDate
+        paymentOrderId
+        patientAddressId
         displayId
         diagnosticDate
-        diagnosticBranchCode
-        diagnosticEmployeeCode
         visitNo
         labReportURL
+        slotTimings
+        slotId
+        slotDateTimeInUTC
+        collectionCharges
         patientObj{
           id
           uhid
@@ -2277,6 +2285,8 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           groupPlan
           price
           itemType
+          editOrderID
+          isRemoved
           itemObj {
             itemType
             testPreparationData
@@ -2304,18 +2314,6 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           testPreparationData
           packageCalculatedMrp
         }
-        orderType
-        totalPrice
-        centerName
-        centerState
-        orderStatus
-        createdDate
-        paymentType
-        diagnosticDate
-        centerLocality
-        paymentOrderId
-        paymentOrderId
-        patientAddressId
         phleboDetailsObj {
           PhelboOTP
           PhelbotomistName
@@ -2326,11 +2324,6 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           PhleboLatitude
           PhleboLongitude
         }
-        slotTimings
-        slotDateTimeInUTC
-        collectionCharges
-        diagnosticBranchCode
-        diagnosticEmployeeCode
         diagnosticOrderReschedule {
           rescheduleDate
           rescheduleReason
@@ -4763,6 +4756,7 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql `
         patientObj {
           firstName
           lastName
+          gender
         },
         diagnosticOrderLineItems{
           itemObj{
@@ -4823,7 +4817,20 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
     }
   }
 `;
-   
+
+export const MODIFY_DIAGNOSTIC_ORDERS = gql `
+  mutation saveModifyDiagnosticOrder($saveModifyDiagnosticOrder: saveModifyDiagnosticOrderInput!) {
+    saveModifyDiagnosticOrder(saveModifyDiagnosticOrder: $saveModifyDiagnosticOrder) {
+      orderId
+      displayId
+      status
+      errorMessageToDisplay
+      attributes {
+        itemids
+      }
+    }
+  }`;
+  
 export const GET_PROHEALTH_HOSPITAL_BY_SLUG = gql `
   query getProHealthHospitalBySlug($hospitalSlug: String!){
     getProHealthHospitalBySlug(hospitalSlug:$hospitalSlug){

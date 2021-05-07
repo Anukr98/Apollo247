@@ -1,11 +1,12 @@
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { AddIcon, RemoveIcon, TestsIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { TestsIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Image } from 'react-native-elements';
 import { nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useDiagnosticsCart } from '../../DiagnosticsCartProvider';
+import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
 export interface DiagnosticsSearchSuggestionItemProps {
   onPress: () => void;
@@ -14,13 +15,16 @@ export interface DiagnosticsSearchSuggestionItemProps {
   style?: ViewStyle;
   showSeparator?: boolean;
   loading?: boolean;
-  data: any; //define the interface
+  data: any;
+  modifyOrderDetails?:
+    | getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems
+    | any;
 }
 
 export const DiagnosticsSearchSuggestionItem: React.FC<DiagnosticsSearchSuggestionItemProps> = (
   props
 ) => {
-  const { cartItems } = useDiagnosticsCart();
+  const { cartItems, modifiedOrderItemIds } = useDiagnosticsCart();
   const { data } = props;
   const name = data?.diagnostic_item_name || '';
   const imageUri = false;
@@ -36,7 +40,7 @@ export const DiagnosticsSearchSuggestionItem: React.FC<DiagnosticsSearchSuggesti
     return (
       <View style={styles.detailContainer}>
         <View style={styles.nameAndPriceViewStyle}>
-          <View style={{ width: '70%'}}>
+          <View style={{ width: '70%' }}>
             <Text numberOfLines={2} style={styles.testNameText}>
               {nameFormater(name, 'default')}
             </Text>
@@ -51,7 +55,9 @@ export const DiagnosticsSearchSuggestionItem: React.FC<DiagnosticsSearchSuggesti
             <Text style={styles.numberPlate}>{`${parameterData?.length} ${
               parameterData?.length > 1 ? `Tests` : `Test`
             } included`}</Text>
-          ) : <Text></Text>}
+          ) : (
+            <Text></Text>
+          )}
           <View style={styles.cartViewContainer}>{renderAddToCartView()}</View>
         </View>
       </View>
@@ -76,16 +82,31 @@ export const DiagnosticsSearchSuggestionItem: React.FC<DiagnosticsSearchSuggesti
   };
 
   const renderAddToCartView = () => {
+    const isModifyOrder = !!props.modifyOrderDetails;
+    const getExisitingOrderItems = isModifyOrder
+      ? !!modifiedOrderItemIds && modifiedOrderItemIds
+      : [];
+    const isAlreadyPartOfOrder =
+      getExisitingOrderItems?.length > 0 &&
+      getExisitingOrderItems?.find((id: number) => Number(id) == Number(data?.diagnostic_item_id));
     return (
       <TouchableOpacity
         activeOpacity={1}
-        onPress={isAddedToCart ? props.onPressRemoveFromCart : props.onPressAddToCart}
+        onPress={
+          isAlreadyPartOfOrder
+            ? () => {}
+            : isAddedToCart
+            ? props.onPressRemoveFromCart
+            : props.onPressAddToCart
+        }
       >
-          {isAddedToCart ? (
-            <Text style={styles.removeCta}>REMOVE</Text>
-          ) : (
-            <Text style={styles.addCta}>ADD TO CART</Text>
-          )}
+        {isAlreadyPartOfOrder ? (
+          <Text style={styles.removeCta}>ALREADY ADDED</Text>
+        ) : isAddedToCart ? (
+          <Text style={styles.removeCta}>REMOVE</Text>
+        ) : (
+          <Text style={styles.addCta}>ADD TO CART</Text>
+        )}
       </TouchableOpacity>
     );
   };
@@ -120,7 +141,7 @@ const styles = StyleSheet.create({
   nameAndPriceViewStyle: {
     flex: 1,
     flexDirection: 'row',
-    justifyContent:'space-between'
+    justifyContent: 'space-between',
   },
   detailContainer: {
     flex: 1,
@@ -128,25 +149,27 @@ const styles = StyleSheet.create({
   flexRow: {
     flexDirection: 'row',
   },
-  numberPlate: { ...theme.viewStyles.text('R', 10, '#01475b', 1, 18)},
-  addCta: { ...theme.viewStyles.text('B', 14, '#FCA317', 1, 18, 0),
+  numberPlate: { ...theme.viewStyles.text('R', 10, '#01475b', 1, 18) },
+  addCta: {
+    ...theme.viewStyles.text('B', 14, '#FCA317', 1, 18, 0),
     textTransform: 'uppercase',
     textAlign: 'right',
-    width:'auto',
+    width: 'auto',
   },
-  removeCta: { ...theme.viewStyles.text('B', 14, '#FF774B', 1, 18, 0),
+  removeCta: {
+    ...theme.viewStyles.text('B', 14, '#FF774B', 1, 18, 0),
     textTransform: 'uppercase',
     textAlign: 'right',
   },
   categories: {
     ...theme.viewStyles.text('SB', 12, '#66909C', 1, 20, 0),
-    textAlign:'right',
+    textAlign: 'right',
     width: '30%',
-    alignSelf: 'flex-start'
+    alignSelf: 'flex-start',
   },
   cartViewContainer: {
     alignSelf: 'center',
-    width: '30%'
+    width: '30%',
   },
   testNameText: { ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0), width: '95%' },
   imageIcon: { height: 40, width: 40 },

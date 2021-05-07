@@ -1759,6 +1759,16 @@ export interface prescriptionPrismFileProperties {
   content?: string | null;
 }
 
+export interface saveModifyDiagnosticOrderInput {
+  orderId?: string | null;
+  collectionCharges?: number | null;
+  bookingSource?: DiagnosticsBookingSource | null;
+  deviceType?: DEVICETYPE | null;
+  items?: (DiagnosticLineItem | null)[] | null;
+  userSubscriptionId?: string | null;
+  subscriptionInclusionId?: string | null;
+}
+
 export interface voipPushTokenInput {
   patientId?: string | null;
   voipToken?: string | null;

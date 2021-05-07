@@ -89,6 +89,7 @@ export interface TestOrderDetailsProps extends NavigationScreenProps {
   selectedTest?: any;
   selectedOrder: object;
   refundStatusArr?: any;
+  disableTrackOrder?: boolean;
 }
 {
 }
@@ -97,6 +98,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const orderId = props.navigation.getParam('orderId');
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
+  const disableTrackOrderTab = props.navigation.getParam('disableTrackOrder');
   const setOrders = props.navigation.getParam('setOrders');
   const selectedTest = props.navigation.getParam('selectedTest');
   const selectedOrder = props.navigation.getParam('selectedOrder');
@@ -286,8 +288,13 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           setLoading?.(false);
         });
     }
-    props.navigation.goBack();
-    return false;
+    if (goToHomeOnBack) {
+      props.navigation.navigate('TESTS');
+      return true;
+    } else {
+      props.navigation.goBack();
+      return false;
+    }
   };
 
   const updateRateDeliveryBtnVisibility = async () => {
@@ -682,7 +689,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         <TabsComponent
           style={styles.tabsContainer}
           onChange={(title) => {
-            setSelectedTab(title);
+            !!disableTrackOrderTab ? setSelectedTab(string.orders.viewBill) : setSelectedTab(title);
           }}
           data={[{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]}
           selectedTab={selectedTab}

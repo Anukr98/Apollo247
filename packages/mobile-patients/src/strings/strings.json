@@ -548,7 +548,10 @@
     "viewReportText":"View Report",
     "sampleCollectedText":"Check Status",
     "collectionText":"Track Order",
-    "trackPhleboText": "Track Phlebo"
+    "trackPhleboText": "Track Phlebo",
+    "modifyItemAlreadyExist": "Your cart has been updated, since it had duplicate items",
+    "previousCharges": "Previous Charges",
+    "currentCharges": "Current Charges"
   },
   "orders": {
     "urOrders": "MY ORDERS",

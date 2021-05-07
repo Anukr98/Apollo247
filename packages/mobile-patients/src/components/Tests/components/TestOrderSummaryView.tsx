@@ -1,14 +1,13 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect } from 'react';
-import { Dimensions, StyleSheet, Text, View, ScrollView } from 'react-native';
-import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
+import React, { useEffect, useState } from 'react';
+import { Dimensions, StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
+import {
+  getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList,
+  getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
 import moment from 'moment';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import {
-  WebEngageEventName,
-  WebEngageEvents,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { g, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -27,6 +26,9 @@ import {
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { DiagnosticOrderSummaryViewed } from '@aph/mobile-patients/src/components/Tests/Events';
+import { Down, Up } from '@aph/mobile-patients/src/components/ui/Icons';
+import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
 export interface LineItemPricing {
   packageMrp: number;
@@ -44,6 +46,10 @@ export interface TestOrderSummaryViewProps {
 
 export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props) => {
   const { orderDetails, refundDetails } = props;
+  const filterOrderLineItem =
+    !!orderDetails &&
+    orderDetails?.diagnosticOrderLineItems?.filter((item: any) => !item?.isRemoved);
+
   const isPrepaid = orderDetails?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
   const salutation = !!orderDetails?.patientObj?.gender
     ? orderDetails?.patientObj?.gender === Gender.MALE
@@ -51,32 +57,38 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       : 'Ms. '
     : '';
   const { currentPatient } = useAllCurrentPatients();
+  const [showPreviousCard, setShowPreviousCard] = useState<boolean>(true);
+  const [showCurrCard, setShowCurrCard] = useState<boolean>(true);
 
   useEffect(() => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED] = {
-      'Order id:': orderDetails?.id,
-      'Order amount': grossCharges!,
-      'Sample Collection Date': orderDetails?.diagnosticDate,
-      'Order status': orderDetails?.orderStatus,
-    };
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED, eventAttributes);
+    DiagnosticOrderSummaryViewed(
+      orderDetails?.id,
+      grossCharges,
+      orderDetails?.diagnosticDate,
+      orderDetails?.orderStatus
+    );
   }, []);
 
-  const getCircleObject = orderDetails?.diagnosticOrderLineItems?.filter(
-    (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
-  );
+  const getCircleObject =
+    (!!filterOrderLineItem &&
+      filterOrderLineItem?.filter((items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE)) ||
+    [];
 
-  const getAllObject = orderDetails?.diagnosticOrderLineItems?.filter(
-    (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
-  );
+  const getAllObject =
+    (!!filterOrderLineItem &&
+      filterOrderLineItem?.filter((items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL)) ||
+    [];
 
-  const getAllObjectForNull = orderDetails?.diagnosticOrderLineItems?.filter(
-    (items) => items?.groupPlan == null
-  );
+  const getAllObjectForNull =
+    (!!filterOrderLineItem && filterOrderLineItem?.filter((items) => items?.groupPlan == null)) ||
+    [];
 
-  const getDiscountObject = orderDetails?.diagnosticOrderLineItems?.filter(
-    (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
-  );
+  const getDiscountObject =
+    (!!filterOrderLineItem &&
+      filterOrderLineItem?.filter(
+        (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+      )) ||
+    [];
 
   let newCircleArray: LineItemPricing[] = [];
   let newAllArray: LineItemPricing[] = [];
@@ -131,8 +143,6 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
         ? item?.packageMrp! - item?.pricingObj?.[0].price!
         : item?.pricingObj?.[0].mrp! - item?.pricingObj?.[0].price!
     ) || [];
-
-  //gross charges considering packageMrp (how to check for previous orders)
 
   let newArr: any[] = [];
   newCircleArray?.map((item) =>
@@ -189,7 +199,16 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       ? totalCartSaving + totalDiscountSaving
       : 0;
 
-  const orderLineItems = orderDetails!.diagnosticOrderLineItems || [];
+  const getModifiedLineItems = filterOrderLineItem?.filter((item) => item?.editOrderID != null);
+  const getPreviousLineItems = filterOrderLineItem?.filter((item) => item?.editOrderID == null);
+
+  const previousTotal = getPreviousLineItems
+    ?.map((item: any) => Number(item?.price))
+    ?.reduce((preVal: number, curVal: number) => preVal + curVal, 0);
+
+  const modifyTotal = getModifiedLineItems
+    ?.map((item: any) => Number(item?.price))
+    ?.reduce((preVal: number, curVal: number) => preVal + curVal, 0);
 
   const renderOrderId = () => {
     const bookedOn = moment(orderDetails?.createdDate)?.format('Do MMM') || null;
@@ -221,9 +240,8 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       getUTCDateTime != null
         ? moment(getUTCDateTime).format('hh:mm a')
         : getSlotStartTime(orderDetails?.slotTimings);
-
     return (
-      <View style={styles.testSlotContainer}>
+      <View style={[styles.testSlotContainer]}>
         {(!!bookedForTime || !!bookedForDate) && (
           <View>
             <Text style={styles.headingText}>Appointment Time</Text>
@@ -262,13 +280,18 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           <Text style={styles.itemHeading}> ITEM NAME</Text>
           <Text style={styles.itemHeading}> MRP VALUE</Text>
         </View>
-        {orderLineItems?.map((item) => {
+        {filterOrderLineItem?.map((item) => {
           return (
             <View style={styles.commonTax}>
               <View style={{ width: '65%' }}>
-                <Text style={styles.commonText}>
-                  {!!item?.itemName ? item?.itemName : item?.diagnostics?.itemName}
-                </Text>
+                <View style={{ flexDirection: 'row' }}>
+                  <Text style={styles.commonText}>
+                    {!!item?.itemName ? item?.itemName : item?.diagnostics?.itemName}
+                  </Text>
+                  {!!item?.editOrderID ? (
+                    <View style={{ marginLeft: 10 }}>{renderNewTag()}</View>
+                  ) : null}
+                </View>
                 {!!item?.itemObj?.inclusions && (
                   <Text style={styles.inclusionsText}>
                     Inclusions : {item?.itemObj?.inclusions?.length}
@@ -304,9 +327,118 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     );
   };
 
+  const renderOrderBreakdownCard = (data: any, title: string) => {
+    const remainingItems = data?.length - 1;
+    const firstItem = data?.[0]?.itemName;
+    const openPreviousView = title === string.diagnostics.previousCharges && showPreviousCard;
+    const openCurrentView = title === string.diagnostics.currentCharges && showCurrCard;
+    return (
+      <View>
+        {renderHeading(title)}
+        <View
+          style={[
+            styles.orderSummaryView,
+            { paddingBottom: openPreviousView || openCurrentView ? 16 : 0 },
+          ]}
+        >
+          <TouchableOpacity
+            style={[styles.previousItemInnerContainer]}
+            onPress={() =>
+              title === string.diagnostics.previousCharges
+                ? setShowPreviousCard(!showPreviousCard)
+                : setShowCurrCard(!showCurrCard)
+            }
+          >
+            <Text style={styles.previousItemHeading}>
+              {nameFormater(firstItem, 'title')} {remainingItems > 0 && `+ ${remainingItems} more`}
+            </Text>
+            {(title === string.diagnostics.previousCharges && !showPreviousCard) ||
+            (title === string.diagnostics.currentCharges && !showCurrCard) ? (
+              <Text style={styles.closedViewTotal}>
+                {string.common.Rs}
+                {title === string.diagnostics.previousCharges
+                  ? Number(previousTotal! + orderDetails?.collectionCharges!)
+                  : Number(modifyTotal! + 0.0)}
+              </Text>
+            ) : null}
+            <View>
+              {title === string.diagnostics.previousCharges ? (
+                showPreviousCard ? (
+                  <Up style={styles.arrowIconStyle} />
+                ) : (
+                  <Down style={styles.arrowIconStyle} />
+                )
+              ) : showCurrCard ? (
+                <Up style={styles.arrowIconStyle} />
+              ) : (
+                <Down style={styles.arrowIconStyle} />
+              )}
+            </View>
+          </TouchableOpacity>
+
+          {openPreviousView || openCurrentView ? (
+            <>
+              <View style={[styles.rowSpaceBetweenStyle, { marginBottom: 0 }]}>
+                <Text style={styles.itemHeading}> ITEM NAME</Text>
+                <Text style={styles.itemHeading}> MRP VALUE</Text>
+              </View>
+              {data?.map(
+                (
+                  item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems
+                ) => {
+                  return (
+                    <View style={styles.commonTax}>
+                      <View style={{ width: '65%' }}>
+                        <Text style={styles.commonText}>
+                          {nameFormater(
+                            !!item?.itemName ? item?.itemName! : item?.diagnostics?.itemName!,
+                            'title'
+                          )}
+                        </Text>
+                        {!!item?.itemObj?.inclusions && (
+                          <Text style={styles.inclusionsText}>
+                            Inclusions : {item?.itemObj?.inclusions?.length}
+                          </Text>
+                        )}
+                      </View>
+                      <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                        <Text style={[styles.commonText, { lineHeight: 20 }]}>
+                          {string.common.Rs}
+                          {convertNumberToDecimal(g(item, 'price') || null)}
+                        </Text>
+                      </View>
+                    </View>
+                  );
+                }
+              )}
+              <Spearator style={{ marginTop: 12, marginBottom: 12 }} />
+              {renderPrices(
+                'Subtotal',
+                title === string.diagnostics.previousCharges ? previousTotal! : modifyTotal!
+              )}
+              {renderPrices(
+                'Home collection Charges',
+                title === string.diagnostics.previousCharges
+                  ? orderDetails?.collectionCharges!
+                  : 0.0
+              )}
+              {renderPrices(
+                'Total',
+                title === string.diagnostics.previousCharges
+                  ? Number(previousTotal! + orderDetails?.collectionCharges!)
+                  : Number(modifyTotal! + 0.0),
+                true
+              )}
+            </>
+          ) : null}
+        </View>
+      </View>
+    );
+  };
+
   const renderPrices = (title: string, price: string | number, customStyle?: boolean) => {
     return (
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
+      <View style={styles.pricesContainer}>
         <View style={{ width: '65%' }}>
           <Text
             style={[
@@ -388,6 +520,14 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     );
   };
 
+  const renderNewTag = () => {
+    return (
+      <View style={styles.newItemView}>
+        <Text style={styles.newText}>NEW</Text>
+      </View>
+    );
+  };
+
   return (
     <ScrollView style={{ flex: 1 }}>
       <View style={{ margin: 16 }}>
@@ -398,6 +538,12 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
             currentPatient?.firstName}`
         )}
         {renderItemsCard()}
+        {!!getPreviousLineItems && getPreviousLineItems?.length
+          ? renderOrderBreakdownCard(getPreviousLineItems, string.diagnostics.previousCharges)
+          : null}
+        {!!getModifiedLineItems && getModifiedLineItems?.length
+          ? renderOrderBreakdownCard(getModifiedLineItems, string.diagnostics.currentCharges)
+          : null}
         {renderPricesCard()}
         {orderDetails?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED && !isPrepaid
           ? null
@@ -549,5 +695,46 @@ const styles = StyleSheet.create({
   viewReport: { width: '40%', marginBottom: 5, alignSelf: 'flex-start', marginTop: 10 },
   orderId: { ...theme.viewStyles.text('M', 13, colors.SHERPA_BLUE, 1, 18) },
   bookedOn: { ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 0.5, 14) },
-  testSlotContainer: { justifyContent: 'space-between', flexDirection: 'row', marginTop: '6%' },
+  testSlotContainer: {
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    marginTop: 15,
+  },
+  newItemView: {
+    backgroundColor: '#4CAF50',
+    height: 20,
+    width: 40,
+    borderRadius: 2,
+    borderColor: '#4CAF50',
+    justifyContent: 'center',
+  },
+  newText: {
+    ...theme.viewStyles.text('SB', 10, 'white'),
+    textAlign: 'center',
+  },
+  previousItemInnerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+    height: 30,
+    alignItems: 'center',
+  },
+  previousItemHeading: {
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13 : 14),
+    color: colors.SHERPA_BLUE,
+    lineHeight: 22,
+    width: '76%',
+  },
+  arrowIconStyle: { height: 30, width: 30, resizeMode: 'contain' },
+  rowSpaceBetweenStyle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 5,
+  },
+  pricesContainer: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+  closedViewTotal: {
+    ...theme.fonts.IBMPlexSansBold(isSmallDevice ? 13 : 14),
+    color: colors.SHERPA_BLUE,
+    lineHeight: 22,
+  },
 });

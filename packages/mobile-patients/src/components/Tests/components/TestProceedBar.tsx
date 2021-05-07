@@ -5,6 +5,7 @@ import {
   WhiteChevronRightIcon,
   TestInfoWhiteIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -20,6 +21,8 @@ export interface TestProceedBarProps {
   selectedTimeSlot?: any;
   showTime?: any;
   disableProceedToPay?: boolean;
+  isModifyCOD: boolean;
+  modifyOrderDetails: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList | null;
 }
 
 export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
@@ -39,6 +42,8 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
     selectedTimeSlot,
     showTime,
     disableProceedToPay,
+    isModifyCOD,
+    modifyOrderDetails,
   } = props;
 
   function getButtonTitle() {
@@ -48,6 +53,8 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
         : string.diagnostics.addAddressText
       : isEmptyObject(areaSelected)
       ? string.diagnostics.selectAreaText
+      : isModifyCOD
+      ? `${string.placeOrder} (COD)`
       : string.proceedToPay;
   }
 
@@ -62,27 +69,34 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
   }
 
   const renderTimeSlot = () => {
-    const timeSlotText = `${moment(selectedTimeSlot?.date).format('ddd, DD MMM, YYYY') || ''}, ${
-      selectedTimeSlot?.slotInfo?.startTime
-        ? `${formatTestSlot(selectedTimeSlot?.slotInfo?.startTime!)}`
-        : string.diagnostics.noSlotSelectedText
-    }`;
+    const timeSlotText = modifyOrderDetails
+      ? `${moment(modifyOrderDetails?.slotDateTimeInUTC)?.format('ddd, DD MMM, YYYY') ||
+          ''}, ${`${formatTestSlot(
+          modifyOrderDetails?.slotDateTimeInUTC! || modifyOrderDetails?.slotTimings
+        )}`}`
+      : `${moment(selectedTimeSlot?.date).format('ddd, DD MMM, YYYY') || ''}, ${
+          selectedTimeSlot?.slotInfo?.startTime
+            ? `${formatTestSlot(selectedTimeSlot?.slotInfo?.startTime!)}`
+            : string.diagnostics.noSlotSelectedText
+        }`;
     return (
       <View style={styles.timeSlotMainViewStyle}>
         <View style={styles.timeSlotChangeViewStyle}>
           <Text style={styles.timeSlotTextStyle}>{string.diagnostics.timeSlotText}</Text>
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => onPressTimeSlot?.()}
-            style={{ flexDirection: 'row', alignItems: 'center' }}
-          >
-            <Text style={[styles.timeSlotTextStyle, { paddingHorizontal: 8 }]}>
-              {showTime && selectedTimeSlot?.slotInfo?.startTime
-                ? string.diagnostics.changeText
-                : string.diagnostics.selectSlotText}
-            </Text>
-            <WhiteChevronRightIcon style={{ width: 20, height: 20 }} />
-          </TouchableOpacity>
+          {!!modifyOrderDetails ? null : (
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => onPressTimeSlot?.()}
+              style={{ flexDirection: 'row', alignItems: 'center' }}
+            >
+              <Text style={[styles.timeSlotTextStyle, { paddingHorizontal: 8 }]}>
+                {showTime && selectedTimeSlot?.slotInfo?.startTime
+                  ? string.diagnostics.changeText
+                  : string.diagnostics.selectSlotText}
+              </Text>
+              <WhiteChevronRightIcon style={{ width: 20, height: 20 }} />
+            </TouchableOpacity>
+          )}
         </View>
         <Text style={styles.timeTextStyle}>{timeSlotText || ''}</Text>
         <View style={styles.infoIconViewStyle}>
@@ -103,9 +117,10 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
   };
 
   const renderButton = () => {
-    const disableProceedToPayButton =
-      (getButtonTitle() === string.proceedToPay && disableProceedToPay) ||
-      (getButtonTitle() === string.diagnostics.selectAreaText && diagnosticAreas?.length == 0);
+    const disableProceedToPayButton = !!modifyOrderDetails
+      ? getButtonTitle() === `${string.placeOrder} (COD)` && disableProceedToPay
+      : (getButtonTitle() === string.proceedToPay && disableProceedToPay) ||
+        (getButtonTitle() === string.diagnostics.selectAreaText && diagnosticAreas?.length == 0);
     return (
       <Button
         disabled={disableProceedToPayButton}
@@ -118,7 +133,7 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
 
   return (
     <View style={styles.container}>
-      {selectedTimeSlot ? renderTimeSlot() : null}
+      {selectedTimeSlot || !!modifyOrderDetails ? renderTimeSlot() : null}
       <View style={styles.subContainer}>
         {renderTotal()}
         {renderButton()}
