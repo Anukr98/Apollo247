@@ -10,7 +10,7 @@
 export interface getOrderPhleboDetailsBulk_getOrderPhleboDetailsBulk_orderPhleboDetailsBulk_orderPhleboDetails_diagnosticPhlebotomists {
   __typename: "DiagnosticPhlebotomists";
   name: string;
-  mobile: string;
+  mobile: string | null;
 }
 
 export interface getOrderPhleboDetailsBulk_getOrderPhleboDetailsBulk_orderPhleboDetailsBulk_orderPhleboDetails {

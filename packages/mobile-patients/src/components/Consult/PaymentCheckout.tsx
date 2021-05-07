@@ -33,6 +33,7 @@ import {
   apiCallEnums,
   navigateToHome,
   getUserType,
+  getPackageIds,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
@@ -115,12 +116,9 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const [successMessage, setSuccessMessage] = useState<string>('');
   const {
     locationDetails,
-    hdfcPlanId,
-    circlePlanId,
-    hdfcStatus,
-    circleStatus,
     apisToCall,
     homeScreenParamsOnPop,
+    activeUserSubscriptions,
   } = useAppCommonData();
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
   const doctor = props.navigation.getParam('doctor');
@@ -500,10 +498,12 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const renderCouponSavingsView = () => {
     return (
       <View style={styles.couponSavingView}>
-        <Text style={styles.amountSavedText}>
-          {string.common.savingsOnBill.replace('{amount}', `${couponDiscountFees}`)}
-        </Text>
         {!!successMessage && <Text style={styles.successMessageStyle}>{successMessage}</Text>}
+        <View style={styles.couponDiscountView}>
+          <Text style={styles.amountSavedText}>
+            {string.common.savingsOnBill.replace('{amount}', `${couponDiscountFees}`)}
+          </Text>
+        </View>
       </View>
     );
   };
@@ -519,14 +519,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           ? onlineConsultSlashedPrice
           : physicalConsultSlashedPrice
         : Number(price);
-
-    let packageId: string[] = [];
-    if (hdfcSubscriptionId && hdfcStatus === 'active') {
-      packageId.push(`HDFC:${hdfcPlanId}`);
-    }
-    if (circleSubscriptionId && circleStatus === 'active') {
-      packageId.push(`APOLLO:${circlePlanId}`);
-    }
     const timeSlot =
       tabs[0].title === selectedTab &&
       isOnlineConsult &&
@@ -552,7 +544,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           rescheduling: false,
         },
       ],
-      packageIds: packageId,
+      packageIds: activeUserSubscriptions ? getPackageIds(activeUserSubscriptions) : [],
       email: g(currentPatient, 'emailAddress'),
     };
     return new Promise((res, rej) => {
@@ -1092,6 +1084,15 @@ const styles = StyleSheet.create({
   },
   couponSavingView: {
     marginTop: 15,
+    borderTopWidth: 0.5,
+    borderColor: theme.colors.BORDER_BOTTOM_COLOR,
+    borderRadius: 3,
+    paddingVertical: 7,
+    justifyContent: 'center',
+    width: '100%',
+  },
+  couponDiscountView: {
+    marginTop: 5,
     borderWidth: 1,
     borderColor: theme.colors.SEARCH_UNDERLINE_COLOR,
     borderRadius: 3,
@@ -1229,8 +1230,5 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(17),
     lineHeight: 24,
   },
-  successMessageStyle: {
-    ...theme.viewStyles.text('R', 16, theme.colors.SEARCH_UNDERLINE_COLOR, 1, 27),
-    marginLeft: 8,
-  },
+  successMessageStyle: theme.viewStyles.text('R', 16, theme.colors.SEARCH_UNDERLINE_COLOR, 1, 27),
 });

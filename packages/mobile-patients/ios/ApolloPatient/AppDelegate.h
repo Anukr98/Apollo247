@@ -11,6 +11,7 @@
 @import UserNotifications;
 @import ApolloVitalsFramework;
 #import <PushKit/PushKit.h>
+#import <AppTrackingTransparency/AppTrackingTransparency.h>
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate, RCTBridgeDelegate, UNUserNotificationCenterDelegate, PKPushRegistryDelegate>
 

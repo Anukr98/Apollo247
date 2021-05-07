@@ -55,6 +55,7 @@ import {
   setAsyncPharmaLocation,
   getHealthCredits,
   persistHealthCredits,
+  getPackageIds,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   pinCodeServiceabilityApi247,
@@ -89,6 +90,7 @@ import {
   postPhamracyCartAddressSelectedFailure,
   postPhamracyCartAddressSelectedSuccess,
   postPharmacyAddNewAddressClick,
+  postPharmacyAddNewAddressCompleted,
 } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -158,11 +160,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     setPharmacyLocation,
     axdcCode,
     setAxdcCode,
-    circlePlanId,
-    hdfcPlanId,
-    hdfcStatus,
-    circleStatus,
     pharmacyUserTypeAttribute,
+    activeUserSubscriptions,
   } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
@@ -181,6 +180,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const pharmacyPincode =
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
   const [showCareSelectPlans, setShowCareSelectPlans] = useState<boolean>(true);
+  const [tatResponse, setTatResponse] = useState<string>('');
 
   useEffect(() => {
     fetchAddress();
@@ -196,7 +196,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         pharmacyCircleAttributes!,
         pharmacyUserTypeAttribute!
       );
-    setIsCircleSubscription?.(false);
     if (!circleSubPlanId) {
       setCircleMembershipCharges && setCircleMembershipCharges(0);
     }
@@ -233,12 +232,20 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   useEffect(() => {
     // call servicability api if new address is added from cart
     const addressLength = addresses.length;
-    if (!!addressLength && !!newAddressAdded) {
+    if (!!addressLength && !!newAddressAdded && !!tatResponse) {
       const newAddress = addresses.filter((value) => value.id === newAddressAdded);
       checkServicability(newAddress[0]);
+      postPharmacyAddNewAddressCompleted(
+        'Cart',
+        g(selectedAddress, 'zipcode')!,
+        formatAddress(selectedAddress),
+        moment(tatResponse, AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT).toDate(),
+        moment(tatResponse).diff(new Date(), 'd'),
+        'Yes'
+      );
       setNewAddressAdded && setNewAddressAdded('');
     }
-  }, [newAddressAdded]);
+  }, [newAddressAdded, selectedAddress, tatResponse]);
 
   useEffect(() => {
     availabilityTat(false);
@@ -271,11 +278,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (!!coupon && !coupon?.circleBenefits) {
       setCircleMembershipCharges && setCircleMembershipCharges(0);
       setIsCircleSubscription?.(false);
-    } else {
-      if (!circleSubscriptionId) {
-        setCircleMembershipCharges &&
-          setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
-      }
+    } else if (coupon?.circleBenefits) {
+      setIsCircleSubscription?.(true);
+    } else if (!circleSubscriptionId) {
+      setCircleMembershipCharges?.(circlePlanSelected?.currentSellingPrice);
     }
   }, [coupon]);
 
@@ -345,18 +351,12 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
                 coupon.message,
                 pharmacyPincode,
                 g(currentPatient, 'mobileNumber'),
-                hdfcSubscriptionId,
-                circleSubscriptionId,
                 setCoupon,
                 cartTotal,
                 productDiscount,
                 cartItems,
-                hdfcStatus,
-                hdfcPlanId,
-                circleStatus,
-                circlePlanId,
                 setCouponProducts,
-                circlePlanSelected
+                activeUserSubscriptions ? getPackageIds(activeUserSubscriptions) : []
               );
             } catch (error) {
               return;
@@ -463,6 +463,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             inventoryData = inventoryData.concat(order?.items);
           });
           setloading!(false);
+          setTatResponse(response[0]?.tat);
           addressSelectedEvent(selectedAddress, response[0]?.tat, response);
           addressChange && NavigateToCartSummary();
           updatePricesAfterTat(inventoryData, updatedCartItems);
@@ -495,6 +496,20 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       setCircleMembershipCharges && setCircleMembershipCharges(0);
       setCirclePlanSelected && setCirclePlanSelected(null);
       AsyncStorage.removeItem('circlePlanSelected');
+    }
+    if (newAddressAdded) {
+      postPharmacyAddNewAddressCompleted(
+        'Cart',
+        g(selectedAddress, 'zipcode')!,
+        formatAddress(selectedAddress),
+        moment(
+          genericServiceableDate,
+          AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT
+        ).toDate(),
+        moment(genericServiceableDate).diff(new Date(), 'd'),
+        'Yes'
+      );
+      setNewAddressAdded && setNewAddressAdded('');
     }
     addressSelectedEvent(selectedAddress, genericServiceableDate);
     setdeliveryTime?.(genericServiceableDate);
@@ -576,6 +591,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     const updatePrices = AppConfig.Configuration.CART_UPDATE_PRICE_CONFIG.updatePrices;
     const updatePricePercent = AppConfig.Configuration.CART_UPDATE_PRICE_CONFIG.percentage;
     const updatePricesNotAllowed = updatePrices === 'No';
+    let didPricesUpdate: boolean = false;
     if (updatePricesNotAllowed) {
       return;
     }
@@ -593,6 +609,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
               : true
             : false;
         if (storeItem?.mrp != 0 && allowPriceUpdate) {
+          didPricesUpdate = true;
           showAphAlert!({
             title: `Hi ${currentPatient?.firstName || ''},`,
             description: `Important message for items in your Cart:\n\nSome items' prices have been updated based on the updated MRP from Manufacturer. Please check before you place the order.`,
@@ -608,7 +625,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       cartItemsAfterPriceUpdate.push(cartItem);
     });
     setCartItems!(cartItemsAfterPriceUpdate);
-    await validatePharmaCoupon();
+    if (didPricesUpdate) await validatePharmaCoupon();
   }
   function hasUnserviceableproduct() {
     return !!cartItems.find(
@@ -624,18 +641,12 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           coupon.message,
           pharmacyPincode,
           g(currentPatient, 'mobileNumber'),
-          hdfcSubscriptionId,
-          circleSubscriptionId,
           setCoupon,
           cartTotal,
           productDiscount,
           cartItems,
-          hdfcStatus,
-          hdfcPlanId,
-          circleStatus,
-          circlePlanId,
           setCouponProducts,
-          circlePlanSelected
+          activeUserSubscriptions ? getPackageIds(activeUserSubscriptions) : []
         );
         if (response !== 'success') {
           removeCouponWithAlert(response);
@@ -849,18 +860,12 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           coupon.message,
           pharmacyPincode,
           g(currentPatient, 'mobileNumber'),
-          hdfcSubscriptionId,
-          circleSubscriptionId,
           setCoupon,
           cartTotal,
           productDiscount,
           cartItems,
-          hdfcStatus,
-          hdfcPlanId,
-          circleStatus,
-          circlePlanId,
           setCouponProducts,
-          circlePlanSelected
+          activeUserSubscriptions ? getPackageIds(activeUserSubscriptions) : []
         );
         if (response !== 'success') {
           removeCouponWithAlert(response);
@@ -941,7 +946,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (cartTotal == 0) {
       renderAlert('Please add items in the cart to apply coupon.');
     } else {
-      props.navigation.navigate(AppRoutes.ViewCoupons);
+      props.navigation.navigate(AppRoutes.ViewCoupons, { movedFrom: 'pharma' });
       setCoupon!(null);
       applyCouponClickedEvent(g(currentPatient, 'id'), JSON.stringify(cartItems));
     }
@@ -999,6 +1004,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
               setDefaultCirclePlan?.(null);
               setCirclePlanSelected?.(null);
               setCircleMembershipCharges?.(0);
+              coupon?.circleBenefits && isCircleSubscription && setCoupon?.(null);
             }
           } else {
             !coupon?.circleBenefits && setCoupon?.(null);
@@ -1123,6 +1129,44 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     ) : null;
   };
 
+  async function redirectToUploadPrescription() {
+    const redirect = () => {
+      uploadPrescriptionClickedEvent(currentPatient?.id);
+      props.navigation.navigate(AppRoutes.MedicineCartPrescription);
+    };
+    if (coupon) {
+      try {
+        const response = await validateCoupon(
+          coupon?.coupon,
+          coupon?.message,
+          pharmacyPincode,
+          g(currentPatient, 'mobileNumber'),
+          hdfcSubscriptionId,
+          circleSubscriptionId,
+          setCoupon,
+          cartTotal,
+          productDiscount,
+          cartItems,
+          hdfcStatus,
+          hdfcPlanId,
+          circleStatus,
+          circlePlanId,
+          setCouponProducts,
+          circlePlanSelected
+        );
+        if (response === 'success') {
+          redirect();
+        } else {
+          removeCouponWithAlert(response);
+        }
+      } catch (error) {
+        removeCouponWithAlert('Sorry, invalid coupon applied. Remove the coupon and try again.');
+      }
+    } else {
+      redirect();
+    }
+  }
+
   const renderProceedBar = () => {
     return (
       <ProceedBar
@@ -1137,33 +1181,17 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           selectDeliveryAddressClickedEvent(currentPatient?.id, JSON.stringify(cartItems));
           showAddressPopup();
         }}
-        onPressUploadPrescription={() => {
-          uploadPrescriptionClickedEvent(currentPatient?.id);
-          props.navigation.navigate(AppRoutes.MedicineCartPrescription);
-        }}
+        onPressUploadPrescription={redirectToUploadPrescription}
         onPressProceedtoPay={() => {
           physicalPrescriptions?.length > 0 ? uploadPhysicalPrescriptons() : onPressProceedtoPay();
         }}
         deliveryTime={deliveryTime}
         onPressChangeAddress={showAddressPopup}
-        onPressTatCard={() => {
-          /*
-          if (hasUnserviceableproduct()) {
-            return;
-          } else if (uploadPrescriptionRequired) {
-            props.navigation.navigate(AppRoutes.MedicineCartPrescription);
-          } else {
-            props.navigation.navigate(AppRoutes.CartSummary, {
-              deliveryTime: deliveryTime,
-              storeDistance: storeDistance,
-              tatType: storeType,
-              shopId: shopId,
-            });
-          }
-          */
-        }}
         screen={'MedicineCart'}
         onPressReviewOrder={onPressReviewOrder}
+        onPressAddMoreMedicines={() => {
+          props.navigation.navigate('MEDICINES');
+        }}
       />
     );
   };

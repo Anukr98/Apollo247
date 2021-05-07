@@ -65,6 +65,7 @@ public class MainApplication extends Application implements ReactApplication {
     public void onCreate() {
         super.onCreate();
 
+        SoLoader.init(this, /* native exopackage */ false);
         initAppComponents();
     }
 
@@ -78,11 +79,9 @@ public class MainApplication extends Application implements ReactApplication {
                         WebEngage.get().setRegistrationID(token);
                     }
                 });
-                
-                SoLoader.init(this, /* native exopackage */ false);
 
                 WebEngageConfig webEngageConfig = new WebEngageConfig.Builder()
-                        .setWebEngageKey("in~~c2ab3529")
+                        .setWebEngageKey("in~~c2ab3533")
                         .setDebugMode(false) // only in development mode
                         .build();
 

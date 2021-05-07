@@ -56,7 +56,10 @@ import {
   createOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOrder';
 import { verifyVPA, verifyVPAVariables } from '@aph/mobile-patients/src/graphql/types/verifyVPA';
-import { DiagnosticPaymentInitiated } from '@aph/mobile-patients/src/components/Tests/Events';
+import {
+  DiagnosticPaymentInitiated,
+  DiagnosticPaymentPageViewed,
+} from '@aph/mobile-patients/src/components/Tests/Events';
 import {
   initiateDiagonsticHCOrderPaymentVariables,
   initiateDiagonsticHCOrderPayment,
@@ -65,7 +68,9 @@ import { paymentModeVersionCheck } from '@aph/mobile-patients/src/helpers/helper
 
 const { HyperSdkReact } = NativeModules;
 
-export interface PaymentMethodsProps extends NavigationScreenProps {}
+export interface PaymentMethodsProps extends NavigationScreenProps {
+  source?: string;
+}
 
 export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const paymentId = props.navigation.getParam('paymentId');
@@ -73,6 +78,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const orderId = props.navigation.getParam('orderId');
   const orderDetails = props.navigation.getParam('orderDetails');
   const eventAttributes = props.navigation.getParam('eventAttributes');
+  const source = props.navigation.getParam('source');
   const { currentPatient } = useAllCurrentPatients();
   const [banks, setBanks] = useState<any>([]);
   const [loading, setloading] = useState<boolean>(true);
@@ -86,11 +92,13 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const FailedStatuses = ['AUTHENTICATION_FAILED', 'AUTHORIZATION_FAILED'];
+
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
     const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
       handleEventListener(resp);
     });
+    source === 'diagnostics' && DiagnosticPaymentPageViewed(currentPatient, amount);
     fecthPaymentOptions();
     fetchTopBanks();
     return () => eventListener.remove();
@@ -266,7 +274,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   async function onPressUPIApp(app: any) {
     triggerWebengege('Prepaid', 'UPI');
     const token = await getClientToken();
-    InitiateUPIIntentTxn(currentPatient?.id, token, paymentId, app.packageName);
+    InitiateUPIIntentTxn(currentPatient?.id, token, paymentId, app.payment_method_code);
   }
 
   async function onPressVPAPay(VPA: string) {
@@ -327,19 +335,14 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const filterUPIApps = () => {
     if (availableUPIApps?.length) {
-      const available = availableUPIApps?.map((item: any) => item?.appName);
+      const available = availableUPIApps?.map((item: any) => item?.packageName);
       const UPIApps = paymentMethods?.find((item: any) => item?.name == 'UPI')?.payment_methods;
       const apps = UPIApps?.map((app: any) => {
         if (
-          available.includes(app?.payment_method_name) &&
+          available.includes(app?.payment_method_code) &&
           paymentModeVersionCheck(app?.minimum_supported_version)
         ) {
-          let object = app;
-          const packageName = availableUPIApps?.find(
-            (item: any) => item?.appName == app.payment_method_name
-          )?.['packageName'];
-          object['packageName'] = packageName;
-          return object;
+          return app;
         }
       }).filter((value: any) => value);
       return apps;

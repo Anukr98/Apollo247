@@ -196,6 +196,7 @@ export enum WebEngageEventName {
   DIAGNOSITC_ORDER_RESCHEDULE = 'Diagnostic order rescheduled',
   DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
   DIAGNOSITC_HOME_PAGE_BANNER_CLICKED = 'Diagnostic home page banner',
+  DIAGNOSTIC_PAYMENT_PAGE_VIEWED = 'Diagnostic payment page viewed',
 
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
@@ -1313,6 +1314,10 @@ export interface WebEngageEvents {
     'Slot Date': string;
     'Order id': string;
   };
+  [WebEngageEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED]: {
+    'UHID': string;
+    'Order amount': string | number;
+  };
 
   // ********** ConsultEvents ********** \\
   [WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM]: ConsultRoomDoctorPatientInfo;
@@ -2112,6 +2117,7 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    'Order Type': 'Cart'| 'Non-Cart';
   };
   [WebEngageEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS]: {
     'Doctor Name': string;

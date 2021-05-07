@@ -55,6 +55,7 @@ import { ReturnMedicineOrder } from '@aph/mobile-patients/src/components/ReturnM
 import { AppointmentOnlineDetails } from '@aph/mobile-patients/src/components/Consult/AppointmentOnlineDetails';
 import { ChooseDoctor } from '@aph/mobile-patients/src/components/Consult/ChooseDoctor';
 import { TestListing } from '@aph/mobile-patients/src/components/Tests/TestListing';
+import { TestWidgetListing } from '@aph/mobile-patients/src/components/Tests/TestWidgetListing';
 import {
   createAppContainer,
   createStackNavigator,
@@ -74,6 +75,7 @@ import { NeedHelpPharmacyOrder } from '@aph/mobile-patients/src/components/NeedH
 import { NeedHelpConsultOrder } from '@aph/mobile-patients/src/components/NeedHelpConsultOrder';
 import { NeedHelpQueryDetails } from '@aph/mobile-patients/src/components/NeedHelpQueryDetails';
 import { NeedHelpContentView } from '@aph/mobile-patients/src/components/NeedHelpContentView';
+import { HelpChatScreen } from '@aph/mobile-patients/src/components/NeedHelp/HelpChatScreen';
 import { ShopByBrand } from '@aph/mobile-patients/src/components/Medicines/ShopByBrand';
 import { ImageSliderScreen } from '@aph/mobile-patients/src/components/ui/ImageSiderScreen';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -151,6 +153,7 @@ export enum AppRoutes {
   NeedHelpConsultOrder = 'NeedHelpConsultOrder',
   NeedHelpQueryDetails = 'NeedHelpQueryDetails',
   NeedHelpContentView = 'NeedHelpContentView',
+  HelpChatScreen = 'HelpChatScreen',
   Consult = 'Consult',
   FilterScene = 'FilterScene',
   DoctorDetails = 'DoctorDetails',
@@ -249,6 +252,7 @@ export enum AppRoutes {
   OtherBanks = 'OtherBanks',
   OrderStatus = 'OrderStatus',
   TestListing = 'TestListing',
+  TestWidgetListing = 'TestWidgetListing',
   ProHealthWebView = 'ProHealthWebView',
   MyOrdersScreen = 'MyOrdersScreen',
   TestRatingScreen = 'TestRatingScreen'
@@ -331,6 +335,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.NeedHelpContentView]: {
     screen: NeedHelpContentView,
+  },
+  [AppRoutes.HelpChatScreen]: {
+    screen: HelpChatScreen,
   },
   [AppRoutes.Consult]: {
     screen: Consult,
@@ -634,6 +641,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.TestListing]: {
     screen: TestListing,
+  },
+  [AppRoutes.TestWidgetListing]: {
+    screen: TestWidgetListing,
   },
   [AppRoutes.ProHealthWebView]: {
     screen: ProHealthWebView,

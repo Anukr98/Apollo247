@@ -4,7 +4,6 @@ import {
   StyleSheet,
   View,
   Platform,
-  ActivityIndicator,
   Linking,
   AppStateStatus,
   AppState,
@@ -17,7 +16,7 @@ import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
 import { AppRoutes, getCurrentRoute } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import remoteConfig from '@react-native-firebase/remote-config';
 import SplashScreenView from 'react-native-splash-screen';
-import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { BookingSource, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAuth } from '../hooks/authHooks';
 import { AppConfig, updateAppConfig, AppEnv } from '../strings/AppConfig';
 import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
@@ -47,7 +46,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import { phrNotificationCountApi } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
-import { GET_APPOINTMENT_DATA } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_APPOINTMENT_DATA,
+  GET_PROHEALTH_HOSPITAL_BY_SLUG,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -57,7 +59,6 @@ import coerce from 'semver/functions/coerce';
 import RNCallKeep from 'react-native-callkeep';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import { string as localStrings } from '../strings/string';
-import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
 import Pubnub from 'pubnub';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import messaging from '@react-native-firebase/messaging';
@@ -70,6 +71,12 @@ import {
   SplashSyringe,
   SplashStethoscope,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  getProHealthHospitalBySlug,
+  getProHealthHospitalBySlugVariables,
+} from '@aph/mobile-patients/src/graphql/types/getProHealthHospitalBySlug';
+import firebaseAuth from '@react-native-firebase/auth';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 (function() {
   /**
@@ -404,6 +411,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
       const params = id?.split('+');
       getAppointmentDataAndNavigate(params?.[0]!, false);
+    } else if (routeName == 'prohealth') {
+      fetchProhealthHospitalDetails(id!);
     } else {
       getData(routeName, id, isCall, timeout, mediaSource);
     }
@@ -516,7 +525,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             if (mePatient) {
               if (mePatient.firstName !== '') {
                 const isCircleMember: any = await AsyncStorage.getItem('isCircleMember');
-
+                if (routeName == 'prohealth' && id) {
+                  id = id.replace('mobileNumber', currentPatient?.mobileNumber || '');
+                }
                 pushTheView(
                   props.navigation,
                   routeName,
@@ -605,6 +616,77 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
   };
 
+  const fetchProhealthHospitalDetails = async (slugName: string) => {
+    setLoading?.(true);
+    try {
+      const response = await client.query<
+        getProHealthHospitalBySlug,
+        getProHealthHospitalBySlugVariables
+      >({
+        query: GET_PROHEALTH_HOSPITAL_BY_SLUG,
+        variables: {
+          hospitalSlug: slugName,
+        },
+        fetchPolicy: 'no-cache',
+      });
+      const { data } = response;
+      if (data?.getProHealthHospitalBySlug?.hospitals?.length) {
+        const getHospitalId = data?.getProHealthHospitalBySlug?.hospitals?.[0]?.id;
+        regenerateJWTToken(getHospitalId);
+      } else {
+        regenerateJWTToken();
+      }
+    } catch (error) {
+      regenerateJWTToken();
+      CommonBugFender('SplashScreen_fetchProhealthHospitalDetails', error);
+    }
+  };
+
+  const regenerateJWTToken = async (id?: string) => {
+    let deviceType =
+      Platform.OS == 'android' ? BookingSource?.Apollo247_Android : BookingSource?.Apollo247_Ios;
+    const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+
+    if (userLoggedIn == 'true') {
+      try {
+        firebaseAuth().onAuthStateChanged(async (user) => {
+          if (user) {
+            const jwtToken = await user.getIdToken(true).catch((error) => {
+              throw error;
+            });
+            const openUrl = AppConfig.Configuration.PROHEALTH_BOOKING_URL;
+            let finalUrl;
+            if (!!id) {
+              finalUrl = openUrl.concat(
+                '?hospital_id=',
+                id,
+                '&utm_token=',
+                jwtToken,
+                '&utm_mobile_number=',
+                'mobileNumber',
+                '&deviceType=',
+                deviceType
+              );
+            } else {
+              finalUrl = openUrl.concat(
+                '?utm_token=',
+                jwtToken,
+                '&utm_mobile_number=',
+                'mobileNumber',
+                '&deviceType=',
+                deviceType
+              );
+            }
+            setLoading?.(false);
+            !!jwtToken && jwtToken != '' && getData('prohealth', finalUrl);
+          }
+        });
+      } catch (e) {
+        CommonBugFender('regenerateJWTToken_deepLink', e);
+      }
+    }
+  };
+
   const {
     setLocationDetails,
     setNeedHelpToContactInMessage,
@@ -619,6 +701,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setNonCartTatText,
     setNonCartDeliveryText,
   } = useAppCommonData();
+  const {
+    setMinimumCartValue,
+    setMinCartValueForCOD,
+    setMaxCartValueForCOD,
+    setNonCodSKus,
+  } = useShoppingCart();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
       try {
@@ -778,6 +866,22 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Non_Cart_Delivery_Text',
       PROD: 'Non_Cart_Delivery_Text',
     },
+    Mininum_Cart_Values: {
+      QA: 'QA_Mininum_Cart_Values',
+      PROD: 'Mininum_Cart_Values',
+    },
+    Sku_Non_COD: {
+      QA: 'QA_Sku_Non_COD',
+      PROD: 'Sku_Non_COD',
+    },
+    Helpdesk_Chat_Confim_Msg: {
+      QA: 'Helpdesk_Chat_Confim_Msg_QA',
+      PROD: 'Helpdesk_Chat_Confim_Msg_Prod',
+    },
+    Reopen_Help_Max_Time: {
+      QA: 'Reopen_Help_Max_Time_QA',
+      PROD: 'Reopen_Help_Max_Time_Prod',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -788,7 +892,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     const valueBasedOnEnv = config[_key] as RemoteConfigKeysType;
     return currentEnv === AppEnv.PROD
       ? valueBasedOnEnv.PROD
-      : currentEnv === AppEnv.QA || currentEnv === AppEnv.QA2 || currentEnv === AppEnv.QA3
+      : currentEnv === AppEnv.QA ||
+        currentEnv === AppEnv.QA2 ||
+        currentEnv === AppEnv.QA3 ||
+        currentEnv === AppEnv.QA5
       ? valueBasedOnEnv.QA || valueBasedOnEnv.PROD
       : valueBasedOnEnv.DEV || valueBasedOnEnv.QA || valueBasedOnEnv.PROD;
   };
@@ -874,6 +981,23 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
       nonCartDeliveryText && setNonCartDeliveryText?.(nonCartDeliveryText);
 
+      const minMaxCartValues = getRemoteConfigValue(
+        'Mininum_Cart_Values',
+        (key) => JSON.parse(config.getString(key)) || {}
+      );
+
+      minMaxCartValues?.minCartValue && setMinimumCartValue?.(minMaxCartValues?.minCartValue);
+      minMaxCartValues?.minCartValueCOD &&
+        setMinCartValueForCOD?.(minMaxCartValues?.minCartValueCOD);
+      minMaxCartValues?.maxCartValueCOD &&
+        setMaxCartValueForCOD?.(minMaxCartValues?.maxCartValueCOD);
+
+      const nonCodSkuList = getRemoteConfigValue(
+        'Sku_Non_COD',
+        (key) => JSON.parse(config.getString(key)) || []
+      );
+      nonCodSkuList?.length && setNonCodSKus?.(nonCodSkuList);
+
       setAppConfig(
         'Min_Value_For_Pharmacy_Free_Delivery',
         'MIN_CART_VALUE_FOR_FREE_DELIVERY',
@@ -883,12 +1007,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       setAppConfig(
         'min_value_to_nudge_users_to_avail_free_delivery',
         'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
-        (key) => config.getNumber(key)
-      );
-
-      setAppConfig(
-        'Min_Value_For_Pharmacy_Free_Packaging',
-        'MIN_CART_VALUE_FOR_FREE_PACKAGING',
         (key) => config.getNumber(key)
       );
 
@@ -906,6 +1024,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'top6_specailties',
         'TOP_SPECIALITIES',
         (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.TOP_SPECIALITIES
+      );
+
+      setAppConfig(
+        'Min_Value_For_Pharmacy_Free_Packaging',
+        'MIN_CART_VALUE_FOR_FREE_PACKAGING',
+        (key) => config.getNumber(key)
       );
 
       setAppConfig(
@@ -936,6 +1060,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       setAppConfig('Health_Credit_Expiration_Time', 'Health_Credit_Expiration_Time', (key) =>
         config.getNumber(key)
+      );
+      setAppConfig('Reopen_Help_Max_Time', 'Reopen_Help_Max_Time', (key) => {
+        config.getNumber(key);
+      });
+
+      setAppConfig('Helpdesk_Chat_Confim_Msg', 'Helpdesk_Chat_Confim_Msg', (key) =>
+        config.getString(key)
       );
 
       setAppConfig('Covid_Items', 'Covid_Items', (key) => config.getString(key));
@@ -1054,7 +1185,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   return (
     <View style={styles.mainView}>
-
       <Animated.View
         style={{
           transform: [

@@ -63,6 +63,7 @@ export const ProductList: React.FC<Props> = ({
     removeCartItem,
     pharmacyCircleAttributes,
     cartItems,
+    asyncPincode,
   } = useShoppingCart();
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
 
@@ -95,7 +96,7 @@ export const ProductList: React.FC<Props> = ({
     const { onAddedSuccessfully } = restOfProps;
     addPharmaItemToCart(
       formatToCartItem(item),
-      pharmacyPincode!,
+      asyncPincode?.pincode || pharmacyPincode!,
       addCartItem,
       setGlobalLoading,
       navigation,
@@ -121,42 +122,45 @@ export const ProductList: React.FC<Props> = ({
     });
   };
 
-  const renderItem = useCallback((info: ListRenderItemInfo<MedicineProduct>) => {
-    const { item, index } = info;
-    const id = item.sku;
-    const qty = getCartItemQty(id);
-    const onPressAddQty = () => {
-      if (qty < item.MaxOrderQty) {
-        updateCartItem!({ id, quantity: qty + 1 });
-      }
-    };
-    const onPressSubtractQty = () => {
-      qty == 1 ? removeCartItem!(id) : updateCartItem!({ id, quantity: qty - 1 });
-    };
+  const renderItem = useCallback(
+    (info: ListRenderItemInfo<MedicineProduct>) => {
+      const { item, index } = info;
+      const id = item.sku;
+      const qty = getCartItemQty(id);
+      const onPressAddQty = () => {
+        if (qty < item.MaxOrderQty) {
+          updateCartItem!({ id, quantity: qty + 1 });
+        }
+      };
+      const onPressSubtractQty = () => {
+        qty == 1 ? removeCartItem!(id) : updateCartItem!({ id, quantity: qty - 1 });
+      };
 
-    const props: ProductCardProps = {
-      ...item,
-      quantity: qty,
-      onPress: () => onPress(item.sku),
-      onPressAddToCart: () => onPressAddToCart(item),
-      onPressAddQty: onPressAddQty,
-      onPressSubtractQty: onPressSubtractQty,
-      onPressNotify: () => onPressNotify(item.name),
-      onPressCashback: () => onPressCareCashback(),
-      containerStyle:
-        index === 0
-          ? styles.itemStartContainer
-          : index + 1 === data?.length
-          ? styles.itemEndContainer
-          : styles.itemContainer,
-    };
+      const props: ProductCardProps = {
+        ...item,
+        quantity: qty,
+        onPress: () => onPress(item.sku),
+        onPressAddToCart: () => onPressAddToCart(item),
+        onPressAddQty: onPressAddQty,
+        onPressSubtractQty: onPressSubtractQty,
+        onPressNotify: () => onPressNotify(item.name),
+        onPressCashback: () => onPressCareCashback(),
+        containerStyle:
+          index === 0
+            ? styles.itemStartContainer
+            : index + 1 === data?.length
+            ? styles.itemEndContainer
+            : styles.itemContainer,
+      };
 
-    return renderComponent ? (
-      renderComponent({ ...info, item: props })
-    ) : Component ? (
-      <Component {...props} />
-    ) : null;
-  }, []);
+      return renderComponent ? (
+        renderComponent({ ...info, item: props })
+      ) : Component ? (
+        <Component {...props} />
+      ) : null;
+    },
+    [cartItems]
+  );
 
   const keyExtractor = useCallback(({ sku }) => `${sku}`, []);
 

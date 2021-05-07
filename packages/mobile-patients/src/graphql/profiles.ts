@@ -252,6 +252,8 @@ export const GET_PATIENT_FUTURE_APPOINTMENT_COUNT = gql`
   query getPatientFutureAppointmentCount($patientId: String) {
     getPatientFutureAppointmentCount(patientId: $patientId) {
       activeConsultsCount
+      upcomingConsultsCount
+      upcomingPhysicalConsultsCount
     }
   }
 `;
@@ -507,6 +509,12 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           medicinePrescription {
             id
             medicineName
+            medicineUnit
+            medicineTimings
+            medicineDosage
+            medicineCustomDosage
+            medicineConsumptionDurationInDays
+            medicineConsumptionDurationUnit
           }
           diagnosticPrescription {
             itemname
@@ -668,6 +676,12 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           medicinePrescription {
             id
             medicineName
+            medicineUnit
+            medicineTimings
+            medicineDosage
+            medicineCustomDosage
+            medicineConsumptionDurationInDays
+            medicineConsumptionDurationUnit
           }
           diagnosticPrescription {
             itemname
@@ -829,6 +843,12 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           medicinePrescription {
             id
             medicineName
+            medicineUnit
+            medicineTimings
+            medicineDosage
+            medicineCustomDosage
+            medicineConsumptionDurationInDays
+            medicineConsumptionDurationUnit
           }
           diagnosticPrescription {
             itemname
@@ -990,6 +1010,12 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           medicinePrescription {
             id
             medicineName
+            medicineUnit
+            medicineTimings
+            medicineDosage
+            medicineCustomDosage
+            medicineConsumptionDurationInDays
+            medicineConsumptionDurationUnit
           }
           diagnosticPrescription {
             itemname
@@ -1856,6 +1882,11 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         id
         patientId
         patientAddressId
+        patientObj{
+          firstName
+          lastName
+          gender
+        }
         city
         slotTimings
         employeeSlotId
@@ -2211,6 +2242,22 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         diagnosticEmployeeCode
         visitNo
         labReportURL
+        patientObj{
+          id
+          uhid
+          firstName
+          lastName
+          gender
+          dateOfBirth
+        }
+        patientAddressObj{
+          addressLine1
+          addressLine2
+          landmark
+          state
+          city 
+          zipcode
+        }
         diagnosticOrdersStatus {
           id
           orderStatus
@@ -3461,6 +3508,12 @@ export const GET_APPOINTMENT_DATA = gql`
           medicinePrescription {
             id
             medicineName
+            medicineUnit
+            medicineTimings
+            medicineDosage
+            medicineCustomDosage
+            medicineConsumptionDurationInDays
+            medicineConsumptionDurationUnit
           }
           diagnosticPrescription {
             itemname
@@ -4619,33 +4672,6 @@ export const VERIFY_TRUECALLER_PROFILE = gql`
   }
 `;
 
-
-
-export const GET_PROHEALTH_CITY_LIST = gql`
-  query getProHealthCities {
-    getProHealthCities {
-      cityList {
-        regionId
-        cityName
-        id
-      }
-    }
-  }
-`;
-
-export const GET_PROHEALTH_HOSPITAL_LIST = gql`
-  query getProHealthHospitalByCityId($cityId: ID!) {
-    getProHealthHospitalByCityId(cityId: $cityId) {
-      hospitals {
-        unitName
-        unitType
-        unitLocationId
-        id
-      }
-    }
-  }
-`;
-
 export const GET_ALL_PRO_HEALTH_APPOINTMENTS = gql`
   query getAllProhealthAppointments($patientId: ID!) {
     getAllProhealthAppointments(patientId: $patientId) {
@@ -4702,8 +4728,8 @@ export const GET_PHLOBE_DETAILS = gql`
 `;
 
 export const GET_PATIENT_LATEST_PRESCRIPTION = gql `
-  query getPatientLatestPrescriptions($patientId: String!, $limit: Int!, $cityId: Int!){
-    getPatientLatestPrescriptions(patientId: $patientId, limit: $limit, cityId: $cityId){
+  query getPatientLatestPrescriptions($mobileNumber: String!, $limit: Int!, $cityId: Int!){
+    getPatientLatestPrescriptions(mobileNumber: $mobileNumber, limit: $limit, cityId: $cityId){
       doctorName
       doctorCredentials
       patientName
@@ -4739,9 +4765,16 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql `
           firstName
           lastName
         },
+        diagnosticOrderLineItems{
+          itemObj{
+            inclusions
+            testPreparationData
+          }
+        }  
       }
     }
-  }`;
+  }
+`;
 
 export const GET_PATIENT_PAST_CONSULTED_DOCTORS = gql`
   query getPatientPastConsultedDoctors($patientMobile: String, $offset: Int, $limit: Int) {
@@ -4781,14 +4814,89 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
           firstName
           lastName
         },
+        diagnosticOrderLineItems{
+          itemObj{
+            inclusions
+            testPreparationData
+          }
+        }
       }
     }
   }
 `;
+   
+export const GET_PROHEALTH_HOSPITAL_BY_SLUG = gql `
+  query getProHealthHospitalBySlug($hospitalSlug: String!){
+    getProHealthHospitalBySlug(hospitalSlug:$hospitalSlug){
+        hospitals{
+        id
+      }
+    }
+  }
+`;
+
 export const SAVE_PHLEBO_FEEDBACK = gql`
   mutation savePhleboFeedback($phleboRating: Int!, $phleboFeedback: String, $diagnosticOrdersId: String!) {
     savePhleboFeedback(phleboRating: $phleboRating, phleboFeedback: $phleboFeedback, diagnosticOrdersId: $diagnosticOrdersId) {
         status
+    }
+  }
+`;
+  
+export const GET_HELPDESK_TICKETS = gql`
+  query getHelpdeskTickets {
+    getHelpdeskTickets {
+      tickets {
+        statusType
+        subject
+        createdTime
+        ticketNumber
+        modifiedTime
+        channel
+        closedTime
+        id
+        status
+        customFields {
+          Business
+        }
+      }
+      count
+    }
+  }
+`;
+
+export const UPDATE_HELPDESK_TICKET = gql`
+  mutation updateHelpdeskTicket($updateHelpdeskTicketInput: UpdateHelpdeskTicketInput!) {
+    updateHelpdeskTicket(updateHelpdeskTicketInput: $updateHelpdeskTicketInput) {
+      ticket {
+        ticketNumber
+      }
+    }
+  }
+`;
+
+export const ADD_COMMENTS_HELPDESK_TICKET = gql`
+  mutation addCommentHelpdeskTicket(
+    $addCommentHelpdeskTicketInput: AddCommentHelpdeskTicketInput!
+  ) {
+    addCommentHelpdeskTicket(addCommentHelpdeskTicketInput: $addCommentHelpdeskTicketInput) {
+      status
+    }
+  }
+`;
+
+export const GET_HELPDESK_TICKET_CONVERSATION = gql`
+  query getHelpdeskTicketConversation($ticketId: String!) {
+    getHelpdeskTicketConversation(ticketId: $ticketId) {
+      conversations {
+        id
+        type
+        contentType
+        comment
+        commenterName
+        commenterType
+        createdTime
+      }
     }
   }
 `;

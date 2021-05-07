@@ -17,7 +17,14 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components/StatusCard';
 import { getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
-import { InfoIconRed, WhiteProfile, OrangeCall, LocationOutline, StarEmpty, ClockIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  InfoIconRed,
+  WhiteProfile,
+  OrangeCall,
+  LocationOutline,
+  StarEmpty,
+  ClockIcon
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -81,8 +88,10 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     return (
       <View style={styles.midViewContainer}>
         {!!props.patientName && (
-          <View>
-            <Text style={styles.testForText}>Tests for {props.patientName}</Text>
+          <View style={styles.patientNameView}>
+            <Text style={styles.testForText}>
+              Tests for {props.gender != '' && props.gender} {props.patientName}
+            </Text>
           </View>
         )}
         {props.showAddTest ? (
@@ -277,11 +286,10 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     const phoneNumber = !!phlObj && phlObj?.PhelbotomistMobile;
     const name = !!phlObj && phlObj?.PhelbotomistName;
     const phleboTrackLink = !!phlObj && phlObj?.PhelbotomistTrackLink;
-    const phleboRating = !!phlObj && phlObj?.PhleboRating;
     const checkEta = !!phlObj?.CheckInTime
     let phleboEta = ''
     if (checkEta) {
-      phleboEta =  moment(phlObj?.CheckInTime).format('YYYY-MM-DDTHH:mm:ss');
+      phleboEta = moment(phlObj?.CheckInTime).format('YYYY-MM-DDTHH:mm:ss');
     }
     return (
       <>
@@ -320,7 +328,10 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                 <View style={styles.etaContainer}>
                   <LocationOutline style={styles.locationIcon} />
                   <Text style={styles.otpTextStyle}>
-                    Phlebo will arrive in{` ${moment(phleboEta).utc().fromNow()} `}
+                    Phlebo will arrive in
+                    {` ${moment(phleboEta)
+                      .utc()
+                      .fromNow()} `}
                   </Text>
                 </View>
                 {phleboTrackLink ? (
@@ -485,6 +496,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: 20,
     marginBottom: '2%',
+    minHeight: 30,
   },
   testForText: {
     ...theme.viewStyles.text('M', 13, colors.SHERPA_BLUE, 1, 18),
@@ -520,8 +532,8 @@ const styles = StyleSheet.create({
     height: 40,
   },
   otpTextStyle: {
-    alignSelf:'center',
-    paddingHorizontal:10,
+    alignSelf: 'center',
+    paddingHorizontal: 10,
     color: theme.colors.LIGHT_BLUE,
     ...theme.fonts.IBMPlexSansRegular(10),
   },
@@ -533,44 +545,44 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 8,
     borderBottomRightRadius: 8,
     borderRadius: 10,
-    padding:10
+    padding: 10,
   },
   locationIcon: {
-    width:15,
-    height:15,
-    alignSelf:'center'
+    width: 15,
+    height: 15,
+    alignSelf: 'center',
   },
   otpCallContainer: {
     backgroundColor: 'white',
     justifyContent: 'space-between',
-    alignItems:'center',
+    alignItems: 'center',
     flexDirection: 'row',
-    borderTopWidth:0.5,
-    borderColor:'#000000',
+    borderTopWidth: 0.5,
+    borderColor: '#000000',
     borderBottomLeftRadius: 8,
     borderBottomRightRadius: 8,
     borderRadius: 10,
-    padding:10
+    padding: 10,
   },
   detailContainer: {
-    flexDirection:'row',
-    width:'80%',
+    flexDirection: 'row',
+    width: '80%',
     borderBottomLeftRadius: 4,
     borderBottomRightRadius: 4,
   },
   profileCircle: {
-    position:'absolute',
-    bottom:0,
-    right:0
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
   },
   callContainer: {
-    margin:0
+    margin: 0,
   },
   nameContainer: {
-    justifyContent:'flex-start',
-    alignContent:'center',
-    padding:10,
-    width:'80%',
+    justifyContent: 'flex-start',
+    alignContent: 'center',
+    padding: 10,
+    width: '80%',
   },
   nameTextHeadingStyles: {
     ...theme.viewStyles.text('SB', 13, colors.SHERPA_BLUE, 1, 18),
@@ -578,23 +590,23 @@ const styles = StyleSheet.create({
   nameTextStyles: {
     ...theme.viewStyles.text('R', 13, colors.SHERPA_BLUE, 1, 18),
   },
-  otpBoxConatiner:{
-    width:45,
-    height:40,
-    justifyContent:'center',
-    alignItems:'center',
-    padding:5,
-    borderRadius:4,
-    borderWidth:1,
-    borderColor:'#000000'
+  otpBoxConatiner: {
+    width: 45,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 5,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#000000',
   },
   otpBoxTextStyle: {
     ...theme.viewStyles.text('SB', 13, colors.SHERPA_BLUE, 1, 18),
   },
   etaContainer: {
-    flexDirection:'row',
-    justifyContent:'center',
-    alignItems:'center'
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   trackStyle: {
     ...theme.viewStyles.text('SB', 13, colors.APP_YELLOW, 1, 18),
@@ -604,7 +616,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 8,
     borderBottomRightRadius: 8,
     borderRadius: 10,
-    padding:10
+    padding: 10,
   },
   reporttatContainer: {
     marginVertical: 5,
@@ -612,8 +624,8 @@ const styles = StyleSheet.create({
     alignItems:'center',
   },
   startContainer: {
-    flexDirection:'row',
-    margin:5
+    flexDirection: 'row',
+    margin: 5,
   },
   reportTextStyle: {
     marginHorizontal:10,
@@ -622,4 +634,5 @@ const styles = StyleSheet.create({
   ratingTextStyle: {
     ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 1, 16),
   },
+  patientNameView: { width: '67%', justifyContent: 'center' },
 });

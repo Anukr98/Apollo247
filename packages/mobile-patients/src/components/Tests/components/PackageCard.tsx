@@ -78,12 +78,12 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
         inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
       );
 
-    const getMandatoryParameterCount = getMandatoryParamter?.reduce(
-      (prevVal: any, curr: any) => prevVal + curr?.length,
-      0
-    );
+    const getMandatoryParameterCount =
+      !!getMandatoryParamter &&
+      getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
 
-    const getParamterData = getMandatoryParamter?.length > 0 && getMandatoryParamter?.flat(1);
+    const getParamterData =
+      !!getMandatoryParamter && getMandatoryParamter?.length > 0 && getMandatoryParamter?.flat(1);
     const dataToShow = getMandatoryParameterCount > 0 ? getParamterData : inclusions;
 
     const promoteCircle = pricesForItem?.promoteCircle;
@@ -104,7 +104,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
         ]}
       >
         <View>
-          <View style={{ minHeight: 100 }}>
+          <View style={{ minHeight: !!inclusions && inclusions?.length > 0 ? 100 : 0 }}>
             <View style={styles.topPackageView}>
               <View style={{ width: '75%' }}>
                 <Text style={styles.itemNameText} numberOfLines={2}>

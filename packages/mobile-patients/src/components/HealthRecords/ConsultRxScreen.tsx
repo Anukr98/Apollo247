@@ -245,6 +245,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   const [prismAuthToken, setPrismAuthToken] = useState<string>(
     props.navigation?.getParam('authToken') || ''
   );
+  const [searchQuery, setSearchQuery] = useState({});
 
   const doctorType = (item: any) => {
     return item?.caseSheet?.find((obj: any) => {
@@ -509,6 +510,12 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       }
       setSearchLoading(true);
       const search = _.debounce(onSearchHealthRecords, 500);
+      setSearchQuery((prevSearch: any) => {
+        if (prevSearch.cancel) {
+          prevSearch.cancel();
+        }
+        return search;
+      });
       search(value);
     }
   };

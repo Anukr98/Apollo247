@@ -35,6 +35,7 @@ import {
   formatAddress,
   getShipmentPrice,
   validateCoupon,
+  getPackageIds,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   availabilityApi247,
@@ -92,12 +93,9 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   } = useShoppingCart();
   const {
     pharmacyUserTypeAttribute,
-    hdfcStatus,
-    hdfcPlanId,
-    circleStatus,
-    circlePlanId,
     pharmacyLocation,
     locationDetails,
+    activeUserSubscriptions,
   } = useAppCommonData();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -340,7 +338,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         setPhysicalPrescriptions && setPhysicalPrescriptions([...newuploadedPrescriptions]);
         setisPhysicalUploadComplete(true);
       } catch (error) {
-        CommonBugFender('YourCart_physicalPrescriptionUpload', error);
+        CommonBugFender('CartSummary_physicalPrescriptionUpload', error);
         setloading!(false);
         renderAlert('Error occurred while uploading prescriptions.');
       }
@@ -362,18 +360,12 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           coupon.message,
           pharmacyPincode,
           g(currentPatient, 'mobileNumber'),
-          hdfcSubscriptionId,
-          circleSubscriptionId,
           setCoupon,
           cartTotal,
           productDiscount,
           cartItems,
-          hdfcStatus,
-          hdfcPlanId,
-          circleStatus,
-          circlePlanId,
           setCouponProducts,
-          circlePlanSelected
+          activeUserSubscriptions ? getPackageIds(activeUserSubscriptions) : []
         );
         if (response !== 'success') {
           removeCouponWithAlert(response);
@@ -475,6 +467,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           props.navigation.navigate(AppRoutes.MedicineCartPrescription);
         }}
         showSelectedOption
+        myPresProps={{ showTick: true }}
+        ePresProps={{ showTick: true }}
       />
     );
   };

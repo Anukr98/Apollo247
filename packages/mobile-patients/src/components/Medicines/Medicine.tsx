@@ -290,6 +290,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     pharmacyCircleAttributes,
     setEPrescriptions,
     setPhysicalPrescriptions,
+    asyncPincode,
+    setAsyncPincode,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
@@ -318,7 +320,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const defaultAddress = addresses.find((item) => item.defaultAddress);
   const hasLocation = locationDetails || pharmacyLocation || defaultAddress;
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
-  const [asyncPincode, setAsyncPincode] = useState({});
   const [isFocused, setIsFocused] = useState<boolean>(false);
   type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
   const postwebEngageCategoryClickedEvent = (
@@ -545,7 +546,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       const getAsyncLocationPincode = async () => {
         const asyncLocationPincode: any = await AsyncStorage.getItem('PharmacyLocationPincode');
         if (asyncLocationPincode) {
-          setAsyncPincode(JSON.parse(asyncLocationPincode));
+          setAsyncPincode?.(JSON.parse(asyncLocationPincode));
         }
       };
       getAsyncLocationPincode();
@@ -746,7 +747,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               city: address?.city,
               state: address?.state,
             };
-            setAsyncPincode(saveAddress);
+            setAsyncPincode?.(saveAddress);
             setDefaultAddress(address);
           }}
           onPressEditAddress={(address) => {
@@ -914,6 +915,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     doRequestAndAccessLocationModified()
       .then((response) => {
         setPageLoading!(false);
+        response && setAsyncPincode?.(response);
         response && setPharmacyLocation!(response);
         response && !locationDetails && setLocationDetails!(response);
         setDeliveryAddressId!('');
@@ -949,7 +951,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               state: response?.state,
             };
             setAsyncPharmaLocation(saveAddress);
-            setAsyncPincode(saveAddress);
+            setAsyncPincode?.(saveAddress);
             setPharmacyLocation!(response);
             setDeliveryAddressId!('');
             updateServiceability(pincode, 'pincode');
@@ -1767,7 +1769,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         productType: type_id,
         circleCashbackAmt: 0,
       },
-      pharmacyPincode!,
+      asyncPincode?.pincode || pharmacyPincode!,
       addCartItem,
       null,
       props.navigation,

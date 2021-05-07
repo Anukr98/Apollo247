@@ -15,3 +15,4 @@ export const getHelpSectionQueries = async (apolloClient: ApolloClient<object>) 
   });
   return data?.getHelpSectionQueries?.needHelpQueries as HelpSectionQuery[];
 };
+

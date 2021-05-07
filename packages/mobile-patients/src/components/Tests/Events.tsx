@@ -438,3 +438,11 @@ export function DiagnosticFeedbackSubmitted(currentPatient: any, rating: string,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_FEEDBACK_GIVEN, eventAttributes);
 }
+
+export function DiagnosticPaymentPageViewed(currentPatient: any, amount: string | number) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED] = {
+    UHID: g(currentPatient, 'uhid'),
+    'Order amount': amount,
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED, eventAttributes);
+}
