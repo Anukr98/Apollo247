@@ -4899,3 +4899,11 @@ export const GET_HELPDESK_TICKET_CONVERSATION = gql`
     }
   }
 `;
+
+export const FIND_DIAGNOSTIC_SETTINGS = gql`
+  query findDiagnosticSettings {
+    findDiagnosticSettings {
+      phleboETAInMinutes
+    }
+  }
+`;
