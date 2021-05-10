@@ -61,6 +61,18 @@ export const More: React.FC<IconProps> = (props) => (
 export const Copy: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/copy.webp')} />
 );
+export const CopyBlue: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/copy_blue.webp')} />
+);
+export const DownloadNew: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/download.webp')} />
+);
+export const ShareBlue: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/share.webp')} />
+);
+export const ViewIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/view.webp')} />
+);
 
 export const DropdownGreen: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_dropdown_green.webp')} />
