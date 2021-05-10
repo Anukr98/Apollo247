@@ -219,7 +219,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    fetchOrders(false);
+    fetchOrders(true);
   }, []);
 
   useEffect(() => {
@@ -339,6 +339,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                       CheckInTime: null,
                       PhleboLatitude: null,
                       PhleboLongitude: null,
+                      PhleboRating: null,
                       __typename: 'PhleboDetailsObj',
                     };
                   }
@@ -350,6 +351,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   order.phleboDetailsObj.PhelbotomistTrackLink =
                     findOrder?.orderPhleboDetails?.phleboTrackLink;
                   order.phleboDetailsObj.CheckInTime = findOrder?.phleboEta?.estimatedArrivalTime;
+                  order.phleboDetailsObj.PhleboRating = findOrder?.orderPhleboDetails?.phleboRating;
                 }
               }
             );
