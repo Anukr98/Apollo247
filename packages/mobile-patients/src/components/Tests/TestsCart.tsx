@@ -165,7 +165,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/editProfile';
 import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import AsyncStorage from '@react-native-community/async-storage';
-import { findDiagnosticSettings, findDiagnosticSettingsVariables } from '../../graphql/types/findDiagnosticSettings';
+import {
+  findDiagnosticSettings,
+  findDiagnosticSettingsVariables,
+} from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
 const { width: screenWidth } = Dimensions.get('window');
 
 export interface areaObject {
@@ -275,7 +278,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [reportGenDetails, setReportGenDetails] = useState<any>([]);
   const [alsoAddListData, setAlsoAddListData] = useState<any>([]);
   const [isFocused, setIsFocused] = useState<boolean>(false);
-  const [phleboMin, setPhleboMin] = useState(0)
+  const [phleboMin, setPhleboMin] = useState(0);
   const itemsWithHC = cartItems?.filter((item) => item!.collectionMethod == 'HC');
   const itemWithId = itemsWithHC?.map((item) => Number(item.id!));
 
@@ -326,8 +329,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     fetchAddresses();
   }, []);
   useEffect(() => {
-    fetchFindDiagnosticSettings()
-  }, [])
+    fetchFindDiagnosticSettings();
+  }, []);
 
   const fetchTestReportGenDetails = async (_cartItemId: string | number[]) => {
     try {
@@ -398,10 +401,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         },
         fetchPolicy: 'no-cache',
       });
-      const phleboMin = g(response, 'data','findDiagnosticSettings','phleboETAInMinutes') || 45;
-      setPhleboMin(phleboMin)
+      const phleboMin = g(response, 'data', 'findDiagnosticSettings', 'phleboETAInMinutes') || 45;
+      setPhleboMin(phleboMin);
     } catch (error) {
-      CommonBugFender('TestsCart_fetchFindDiagnosticSettings', error)
+      CommonBugFender('TestsCart_fetchFindDiagnosticSettings', error);
     }
   };
 
@@ -1774,7 +1777,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setshowSpinner(true);
     saveHomeCollectionOrder();
   };
-
   const saveHomeCollectionOrder = () => {
     //for circle members if unique id is blank, show error
     if (
@@ -1822,7 +1824,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         //   ...ePrescriptions.map((item) => item.prismPrescriptionFileId),
         // ].join(','),
       };
-
       saveHomeCollectionBookingOrder(bookingOrderInfo)
         .then(async ({ data }) => {
           // in case duplicate test, price mismatch, address mismatch, slot issue
@@ -1904,7 +1905,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 orderId: orderId,
                 orderDetails: orderInfo,
                 eventAttributes,
-                source: 'diagnostics'
+                businessLine: 'diagnostics',
               });
             }
           }
@@ -1950,8 +1951,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
             ? item?.groupPlan
             : DIAGNOSTIC_GROUP_PLAN.ALL,
-          preTestingRequirement: !!reportGenDetails && reportGenDetails?.[index]?.itemReportTat ? reportGenDetails?.[index]?.itemReportTat : null,
-          reportGenerationTime: !!reportGenDetails && reportGenDetails?.[index]?.itemPrepration ? reportGenDetails?.[index]?.itemPrepration : null,
+          preTestingRequirement:
+            !!reportGenDetails && reportGenDetails?.[index]?.itemReportTat
+              ? reportGenDetails?.[index]?.itemReportTat
+              : null,
+          reportGenerationTime:
+            !!reportGenDetails && reportGenDetails?.[index]?.itemPrepration
+              ? reportGenDetails?.[index]?.itemPrepration
+              : null,
         } as DiagnosticLineItem)
     );
     return pricesForItemArray;
