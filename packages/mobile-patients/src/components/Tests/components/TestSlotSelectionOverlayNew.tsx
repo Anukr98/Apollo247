@@ -101,7 +101,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   const fetchSlots = (updatedDate?: Date) => {
     let dateToCheck = !!updatedDate ? updatedDate : date;
     setChangedDate(dateToCheck);
-    if (!isVisible || !zipCode) return;
+    if (!isVisible) return;
     showSpinner(true);
     client
       .query<getDiagnosticSlotsCustomized, getDiagnosticSlotsCustomizedVariables>({
@@ -233,7 +233,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
                   const selectedSlot = getTestSlotDetailsByTime(
                     slots,
                     (item.data as UniqueSlotType)?.startTime,
-                    (item.data as UniqueSlotType).endTime
+                    (item.data as UniqueSlotType)?.endTime
                   );
                   setSlotInfo(selectedSlot);
                   setNewSelectedSlot(item?.value);
@@ -275,13 +275,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     return (
       <View>
         <View
-          style={{
-            borderColor: '#cccccc',
-            borderWidth: 1,
-            borderRadius: 10,
-            margin: 10,
-            padding: 10,
-          }}
+          style={styles.monthHeading}
         >
           <Text
             style={{
@@ -292,7 +286,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           >
             {monthHeading}
           </Text>
-          <View style={{ flexDirection: 'row' }}>
+          <View style={styles.dateArrayContainer}>
             {newDateArray.map((item, index) => (
               <TouchableOpacity
                 onPress={() => {
@@ -419,7 +413,7 @@ const styles = StyleSheet.create({
     marginTop: 140,
   },
   containerContentStyle: {
-    flex:1,
+    flex: 1,
     backgroundColor: theme.colors.WHITE,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
@@ -530,4 +524,13 @@ const styles = StyleSheet.create({
     marginTop: -40,
     marginLeft: width / 2 - 90,
   },
+  monthHeading: {
+    borderColor: '#cccccc',
+    borderWidth: 1,
+    borderRadius: 10,
+    margin: 10,
+    padding: 10,
+  },
+  dateArrayContainer:{ flexDirection: 'row' },
+  
 });
