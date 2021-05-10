@@ -232,8 +232,8 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
                 <TouchableOpacity onPress={()=>{
                   const selectedSlot = getTestSlotDetailsByTime(
                     slots,
-                    (item.data as UniqueSlotType)?.startTime,
-                    (item.data as UniqueSlotType)?.endTime
+                    (item?.data as UniqueSlotType)?.startTime,
+                    (item?.data as UniqueSlotType)?.endTime
                   );
                   setSlotInfo(selectedSlot);
                   setNewSelectedSlot(item?.value);
