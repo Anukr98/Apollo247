@@ -2,7 +2,15 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect, useRef } from 'react';
-import { BackHandler, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  BackHandler,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ImageBackground,
+} from 'react-native';
 import {
   NavigationScreenProps,
   StackActions,
@@ -142,6 +150,11 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     width: 100,
     height: 20,
+  },
+  corpLogo: {
+    resizeMode: 'contain',
+    width: 100,
+    height: 30,
   },
   currentBenefits: {
     ...theme.viewStyles.text('B', 14, '#02475B', 1, 20, 0.35),
@@ -384,7 +397,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             }
             if (corprPlan) {
               setShowCorporateActivation(true);
-              setCorporatePlan(circlePlan);
+              setCorporatePlan(corprPlan);
             }
           }
         })
@@ -732,25 +745,30 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     );
   };
 
-  const renderCorporateCard = (subscription: any) => {
-    const planBenefits = subscription?.benefits;
+  const renderCorporateCard = () => {
     return (
       <View style={styles.cardStyle}>
         <View style={styles.healthyLifeContainer}>
           <Text style={[styles.planName, theme.viewStyles.text('B', 14, '#02475B', 1, 20, 0.35)]}>
             CORPORATE MEMBERSHIP
           </Text>
-
-          <HdfcBankLogo style={styles.hdfcLogo} />
+          <ImageBackground
+            source={{
+              uri:
+                'https://banner2.cleanpng.com/20180409/xoe/kisspng-microsoft-logo-organization-company-computer-softw-microsoft-5acb52c02fbaa9.9956933215232744321955.jpg',
+            }}
+            resizeMode="contain"
+            style={styles.corpLogo}
+          />
         </View>
         <View style={styles.subTextContainer}>
           <Text
             style={[theme.viewStyles.text('R', 12, '#000000', 1, 20, 0.35), { marginBottom: 5 }]}
           >
-            Key Benefits you get...`
+            Key Benefits you get...
           </Text>
-          {planBenefits.map((value: any, i: number) => {
-            return getEllipseBulletPoint(value.headerContent, i, false);
+          {corporatePlan.map((value: any, i: number) => {
+            return getEllipseBulletPoint(value.name, i, false);
           })}
         </View>
         <TouchableOpacity
