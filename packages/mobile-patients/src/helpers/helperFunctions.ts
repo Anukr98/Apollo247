@@ -1288,7 +1288,9 @@ export const reOrderMedicines = async (
 export const addTestsToCart = async (
   testPrescription: getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[], // testsIncluded will not come from API
   apolloClient: ApolloClient<object>,
-  pincode: string
+  pincode?: string,
+  setLoading?: UIElementsContextProps['setLoading'],
+
 ) => {
   const searchQuery = (name: string, cityId: string) =>
     apolloClient.query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
@@ -1309,6 +1311,7 @@ export const addTestsToCart = async (
     await getPackageInclusions(apolloClient, [Number(itemId)]);
 
   try {
+    setLoading?.(true);
     const items = testPrescription?.filter((val) => val?.itemname).map((item) => item?.itemname);
 
     const searchQueries = Promise.all(items?.map((item) => searchQuery(item!, '9')));
@@ -1320,8 +1323,9 @@ export const addTestsToCart = async (
       searchQueriesData?.map((item) => detailQuery(`${item.itemId}`))
     );
     const detailQueriesData = (await detailQueries)?.map(
-      (item) => g(item, 'data', 'getInclusionsOfMultipleItems', 'inclusions', 'length') || 1 // updating testsIncluded
+      (item: any) => g(item, 'data', 'getInclusionsOfMultipleItems', 'inclusions', 'length') || 1 // updating testsIncluded
     );
+    setLoading?.(false)
     const finalArray: DiagnosticsCartItem[] = Array.from({
       length: searchQueriesData?.length,
     }).map((_, index) => {
@@ -1342,6 +1346,7 @@ export const addTestsToCart = async (
     return finalArray;
   } catch (error) {
     CommonBugFender('helperFunctions_addTestsToCart', error);
+    setLoading?.(false);
     throw 'error';
   }
 };
