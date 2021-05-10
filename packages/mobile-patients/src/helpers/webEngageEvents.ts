@@ -1194,6 +1194,7 @@ export interface WebEngageEvents {
     'Item ID': string;
     Source: 'Home Page';
     'Section Name': string;
+    'Category name?': string
   };
   [WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION]: {
     Source: 'Full Search' | 'Home Page' | 'Cart Page' | 'Partial Search' | 'Deeplink' | 'Popular search';
@@ -1251,6 +1252,7 @@ export interface WebEngageEvents {
     'Patient Name': string;
     'Latest Order Status': string;
     'Order id': string;
+    'Source?': 'Home'
   };
   [WebEngageEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED]: {
     'Patient UHID': string;
@@ -1269,7 +1271,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.DIAGNOSTIC_ADD_TO_CART]: {
     'Item Name': string;
     'Item ID': string; // (SKUID)
-    Source: 'Home page' | 'Full search' | 'Details page' | 'Partial search' | 'Listing page' | 'Popular search';
+    Source: 'Home page' | 'Full search' | 'Details page' | 'Partial search' | 'Listing page' | 'Popular search' | 'Prescription';
     Section?: string;
   };
   

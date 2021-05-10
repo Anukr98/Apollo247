@@ -13,15 +13,14 @@ import { nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DIAGNOSTIC_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   DIAGNOSITC_PHELBO_TRACKING_STATUS,
-  DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY,
+  DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY,
   DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 const { width: winWidth } = Dimensions.get('window');
 
-const AFTER_COLLECTION_STATUS = [
-  DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY,
-  DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
-].flat(1);
+const AFTER_COLLECTION_STATUS = DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.concat(
+  DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY
+);
 
 interface HomePageOrderStatusCardProps {
   status: DIAGNOSTIC_ORDER_STATUS;
@@ -39,7 +38,7 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
       image = <SampleTestTubesIcon style={styles.iconStyle} />;
       content = string.diagnostics.sampleSubmittedContent;
       options = string.diagnostics.sampleCollectedText;
-    } else if (DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY.includes(status)) {
+    } else if (DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(status)) {
       heading = string.diagnostics.reportGenrated;
       image = <MedicalHistoryIcon style={styles.iconStyle} />;
       content = string.diagnostics.viewReportContent;
@@ -94,7 +93,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.cardViewStyle,
     padding: 16,
     margin: 16,
-    minHeight: 150,
+    minHeight: 130,
     width: winWidth - 32,
   },
   rowStyles: { flexDirection: 'row', justifyContent: 'space-between' },

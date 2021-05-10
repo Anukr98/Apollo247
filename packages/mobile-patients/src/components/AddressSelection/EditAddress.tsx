@@ -359,15 +359,12 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
             props.navigation.pop(3, { immediate: true });
             props.navigation.push(AppRoutes.AddressBook, { refetch: true });
           } else {
-            if (source == 'Tests') {
+            if (source == 'Tests' || source == 'Diagnostics Cart') {
               setNewAddressAddedHomePage?.(String(address?.zipcode!) || '');
               setNewAddressAddedCartPage?.('');
               setDiagnosticAreas?.([]);
               setAreaSelected?.({});
               setDiagnosticSlot?.(null);
-            } else if (source == 'Diagnostics Cart') {
-              setNewAddressAddedCartPage?.(String(address?.zipcode!) || '');
-              setNewAddressAddedHomePage?.('');
             }
             props.navigation.pop(2, { immediate: true });
           }
@@ -556,7 +553,6 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
       onSavePress(); //navigate to map as change in address + name & number
     }
   };
-
   const onUpdateDetails = () => {
     if (props.navigation.getParam('KeyName') == 'Update' && addressData) {
       setshowSpinner(true);
