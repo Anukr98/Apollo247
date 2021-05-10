@@ -545,7 +545,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 
   const renderEmptyData = () => {
     return (
-      <View style={{ flex: 1, justifyContent: 'center' }}>
+      <View style={{ flex: 1, justifyContent: 'center', marginTop: 50 }}>
         <Card
           cardContainer={{ marginTop: 0 }}
           heading={'Uh oh! :('}
@@ -778,7 +778,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         <View>
           {loading ? (
             <ActivityIndicator
-              style={{ flex: 1, alignItems: 'center' }}
+              style={{ flex: 1, alignItems: 'center', marginTop: 50 }}
               animating={loading}
               size="large"
               color="green"
@@ -860,6 +860,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   consumeType={medicineDetails?.consume_type}
                 />
               )}
+              {!!substitutes.length && !isInStock && (
+                <SimilarProducts
+                  heading={string.productDetailPage.PRODUCT_SUBSTITUTES}
+                  similarProducts={substitutes}
+                  navigation={props.navigation}
+                  composition={medicineDetails?.PharmaOverview?.[0]?.Composition}
+                  setShowSubstituteInfo={setShowSubstituteInfo}
+                />
+              )}
               <ProductInfo
                 name={medicineDetails?.name}
                 description={medicineDetails?.product_information}
@@ -880,7 +889,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 }
                 directionsOfUse={medicineDetails?.direction_for_use_dosage}
               />
-              {!!substitutes.length && (
+              {!!substitutes.length && isInStock && (
                 <SimilarProducts
                   heading={string.productDetailPage.PRODUCT_SUBSTITUTES}
                   similarProducts={substitutes}
