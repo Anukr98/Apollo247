@@ -2789,6 +2789,14 @@ export const ADD_PATIENT_LAB_TEST_RECORD = gql`
   }
 `;
 
+export const PHR_COVERT_TO_ZIP = gql`
+  mutation convertToZip($fileUrls: [String]!, $uhid: String!) {
+    convertToZip(fileUrls: $fileUrls, uhid: $uhid) {
+      zipUrl
+    }
+  }
+`;
+
 export const GET_PRISM_AUTH_TOKEN = gql`
   query getPrismAuthToken($uhid: String!) {
     getPrismAuthToken(uhid: $uhid) {
@@ -2842,7 +2850,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            # content
+            file_Url
             # byteContent
           }
         }
@@ -2868,7 +2878,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            # content
+            file_Url
             # byteContent
           }
           hospital_name
@@ -2896,7 +2908,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            # content
+            file_Url
             # byteContent
             # dateCreated
           }
@@ -2930,7 +2944,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            # content
+            file_Url
             # byteContent
             # dateCreated
           }
@@ -2955,7 +2971,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            # content
+            file_Url
             # byteContent
             # dateCreated
           }
@@ -2982,7 +3000,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            # content
+            file_Url
             # byteContent
             # dateCreated
           }
@@ -3009,7 +3029,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            # content
+            file_Url
             # byteContent
             # dateCreated
           }
@@ -3076,7 +3098,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            # content
+            file_Url
             # byteContent
             # dateCreated
           }
@@ -3101,7 +3125,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            # content
+            file_Url
             byteContent
             dateCreated
           }
@@ -4716,6 +4742,7 @@ export const GET_PHLOBE_DETAILS = gql`
           }
           phleboOTP
           phleboTrackLink
+          phleboRating
         }
         phleboEta {
           distanceInMetres
@@ -4896,6 +4923,14 @@ export const GET_HELPDESK_TICKET_CONVERSATION = gql`
         commenterType
         createdTime
       }
+    }
+  }
+`;
+
+export const FIND_DIAGNOSTIC_SETTINGS = gql`
+  query findDiagnosticSettings {
+    findDiagnosticSettings {
+      phleboETAInMinutes
     }
   }
 `;

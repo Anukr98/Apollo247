@@ -52,6 +52,7 @@ import {
   EDIT_PROFILE,
   GET_DIAGNOSTIC_NEAREST_AREA,
   GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
+  FIND_DIAGNOSTIC_SETTINGS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticsHCChargesVariables,
@@ -164,6 +165,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/editProfile';
 import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import AsyncStorage from '@react-native-community/async-storage';
+import { findDiagnosticSettings, findDiagnosticSettingsVariables } from '../../graphql/types/findDiagnosticSettings';
 const { width: screenWidth } = Dimensions.get('window');
 
 export interface areaObject {
@@ -273,7 +275,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [reportGenDetails, setReportGenDetails] = useState<any>([]);
   const [alsoAddListData, setAlsoAddListData] = useState<any>([]);
   const [isFocused, setIsFocused] = useState<boolean>(false);
-
+  const [phleboMin, setPhleboMin] = useState(0)
   const itemsWithHC = cartItems?.filter((item) => item!.collectionMethod == 'HC');
   const itemWithId = itemsWithHC?.map((item) => Number(item.id!));
 
@@ -323,6 +325,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
     fetchAddresses();
   }, []);
+  useEffect(() => {
+    fetchFindDiagnosticSettings()
+  }, [])
 
   const fetchTestReportGenDetails = async (_cartItemId: string | number[]) => {
     try {
@@ -381,6 +386,22 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       CommonBugFender('TestsCart_fetchTestReportGenDetails', e);
       setAlsoAddListData([]);
       setReportGenDetails([]);
+    }
+  };
+
+  const fetchFindDiagnosticSettings = async () => {
+    try {
+      const response = await client.query<findDiagnosticSettings, findDiagnosticSettingsVariables>({
+        query: FIND_DIAGNOSTIC_SETTINGS,
+        variables: {
+          phleboETAInMinutes: 0,
+        },
+        fetchPolicy: 'no-cache',
+      });
+      const phleboMin = g(response, 'data','findDiagnosticSettings','phleboETAInMinutes') || 45;
+      setPhleboMin(phleboMin)
+    } catch (error) {
+      CommonBugFender('TestsCart_fetchFindDiagnosticSettings', error)
     }
   };
 
@@ -2438,6 +2459,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         onPressProceedtoPay={() => onPressProceedToPay()}
         onPressSelectDeliveryAddress={() => showAddressPopup()}
         showTime={showTime}
+        phleboMin={phleboMin}
         onPressTimeSlot={() => showTime && setDisplaySchedule(true)}
         onPressSelectArea={() => setShowSelectAreaOverlay(true)}
       />
