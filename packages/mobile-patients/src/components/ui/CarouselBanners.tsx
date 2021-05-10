@@ -244,13 +244,13 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       >
         <ImageBackground
           style={{
-            height: imageHeight,
-            width: '100%',
+            aspectRatio: 16 / 7,
           }}
           source={{
             uri: bannerUri,
           }}
-          resizeMode={'stretch'}
+          resizeMode={'cover'}
+          borderRadius={15}
         >
           <View style={styles.bannerContainer}>
             {headerText1 ? renderBannerText(headerText1) : null}
