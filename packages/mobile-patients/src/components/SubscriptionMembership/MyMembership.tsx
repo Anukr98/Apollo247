@@ -212,6 +212,8 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   const planPurchased = useRef<boolean | undefined>(false);
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const [showCircleActivation, setShowCircleActivation] = useState<boolean>(false);
+  const [showCorporateActivation, setShowCorporateActivation] = useState<boolean>(false);
+  const [corporatePlan, setCorporatePlan] = useState<any[]>([]);
 
   useEffect(() => {
     if (showHdfcSubscriptions) {
@@ -343,6 +345,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
         })
         .then((data) => {
           setshowSpinner(false);
+          console.log('csk mem data', JSON.stringify(data));
           const groupPlans = g(
             data,
             'data',
@@ -352,6 +355,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           if (groupPlans) {
             const hdfcPlan = groupPlans?.HDFC;
             const circlePlan = groupPlans?.APOLLO;
+            const corprPlan = groupPlans?.Apollo247testcorporate;
 
             if (hdfcPlan) {
               const hdfcSubscription = setSubscriptionData(hdfcPlan[0]);
@@ -377,6 +381,10 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
                 setIsCircleSubscription && setIsCircleSubscription(true);
               }
               setCircleSubscription && setCircleSubscription(circleSubscription);
+            }
+            if (corprPlan) {
+              setShowCorporateActivation(true);
+              setCorporatePlan(circlePlan);
             }
           }
         })
@@ -724,6 +732,39 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     );
   };
 
+  const renderCorporateCard = (subscription: any) => {
+    const planBenefits = subscription?.benefits;
+    return (
+      <View style={styles.cardStyle}>
+        <View style={styles.healthyLifeContainer}>
+          <Text style={[styles.planName, theme.viewStyles.text('B', 14, '#02475B', 1, 20, 0.35)]}>
+            CORPORATE MEMBERSHIP
+          </Text>
+
+          <HdfcBankLogo style={styles.hdfcLogo} />
+        </View>
+        <View style={styles.subTextContainer}>
+          <Text
+            style={[theme.viewStyles.text('R', 12, '#000000', 1, 20, 0.35), { marginBottom: 5 }]}
+          >
+            Key Benefits you get...`
+          </Text>
+          {planBenefits.map((value: any, i: number) => {
+            return getEllipseBulletPoint(value.headerContent, i, false);
+          })}
+        </View>
+        <TouchableOpacity
+          style={[styles.membershipButtons, { padding: 10, marginBottom: -1 }]}
+          onPress={() => {
+            console.log('csk btn pressed view more');
+          }}
+        >
+          <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>VIEW DETAILS</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   const renderUpgradeButton = () => {
     return (
       <TouchableOpacity
@@ -779,6 +820,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
                 {hdfcUserSubscriptions?._id
                   ? renderMembershipCard(hdfcUserSubscriptions, false)
                   : null}
+                {showCorporateActivation ? renderCorporateCard(circleSubscription) : null}
               </View>
               {canUpgrade && (
                 <View>
