@@ -160,6 +160,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const client = useApolloClient();
   const [orders, setOrders] = useState<any>(props.navigation.getParam('orders'));
   const [isTest, setIsTest] = useState<any>(props.navigation.getParam('isTest'));
+  const [fromOrderSummary, setFromOrderSummary] = useState<any>(props.navigation.getParam('fromOrderSummary'));
 
   const [isPaitentList, setIsPaitentList] = useState<boolean>(false);
   const [isViewReport, setIsViewReport] = useState<boolean>(false);
@@ -210,8 +211,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       setSummaryPopup(false);
       return true;
     } else {
-      if (isTest) {
-        props.navigation.navigate(AppRoutes.Tests);
+      if (fromOrderSummary) {
+        props.navigation.popToTop()
       }
     }
     return false;
