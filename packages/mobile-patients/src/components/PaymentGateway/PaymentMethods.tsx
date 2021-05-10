@@ -65,7 +65,9 @@ import { paymentModeVersionCheck } from '@aph/mobile-patients/src/helpers/helper
 
 const { HyperSdkReact } = NativeModules;
 
-export interface PaymentMethodsProps extends NavigationScreenProps {}
+export interface PaymentMethodsProps extends NavigationScreenProps {
+  businessLine: 'consult' | 'diagnostics' | 'pharma' | 'subscription';
+}
 
 export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const paymentId = props.navigation.getParam('paymentId');
@@ -73,6 +75,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const orderId = props.navigation.getParam('orderId');
   const orderDetails = props.navigation.getParam('orderDetails');
   const eventAttributes = props.navigation.getParam('eventAttributes');
+  const businessLine = props.navigation.getParam('businessLine');
   const { currentPatient } = useAllCurrentPatients();
   const [banks, setBanks] = useState<any>([]);
   const [loading, setloading] = useState<boolean>(true);
@@ -437,7 +440,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderPayByCash = () => {
-    return <PayByCash onPressPlaceOrder={onPressPayByCash} />;
+    return businessLine === 'diagnostics' && AppConfig.Configuration.Enable_Diagnostics_COD ? (
+      <PayByCash onPressPlaceOrder={onPressPayByCash} />
+    ) : null;
   };
 
   const showTxnFailurePopUP = () => {
