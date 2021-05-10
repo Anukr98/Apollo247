@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
   ImageBackground,
+  Linking,
 } from 'react-native';
 import {
   NavigationScreenProps,
@@ -155,6 +156,8 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     width: 100,
     height: 30,
+    position: 'absolute',
+    right: -10,
   },
   currentBenefits: {
     ...theme.viewStyles.text('B', 14, '#02475B', 1, 20, 0.35),
@@ -754,8 +757,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           </Text>
           <ImageBackground
             source={{
-              uri:
-                'https://banner2.cleanpng.com/20180409/xoe/kisspng-microsoft-logo-organization-company-computer-softw-microsoft-5acb52c02fbaa9.9956933215232744321955.jpg',
+              uri: 'https://newassets.apollo247.com/images/ic_logo.png',
             }}
             resizeMode="contain"
             style={styles.corpLogo}
@@ -774,7 +776,9 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
         <TouchableOpacity
           style={[styles.membershipButtons, { padding: 10, marginBottom: -1 }]}
           onPress={() => {
-            console.log('csk btn pressed view more');
+            Linking.openURL('https://www.apollo247.com/my-membership').catch((e: any) =>
+              CommonBugFender(`${AppRoutes.MyMembership}_Linking.openURL`, e)
+            );
           }}
         >
           <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>VIEW DETAILS</Text>
