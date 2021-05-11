@@ -88,6 +88,7 @@ import {
   rescheduleDiagnosticsOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/rescheduleDiagnosticsOrder';
 import {
+  DiagnosticAddTestClicked,
   DiagnosticRescheduleOrder,
   DiagnosticViewReportClicked,
 } from '@aph/mobile-patients/src/components/Tests/Events';
@@ -1213,6 +1214,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   function _onPressAddTest(
     order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList
   ) {
+    DiagnosticAddTestClicked(order?.id, currentPatient, order?.orderStatus);
     //clear the cart, if it has some duplicate item present.
     const getOrderItems = order?.diagnosticOrderLineItems?.map(
       (

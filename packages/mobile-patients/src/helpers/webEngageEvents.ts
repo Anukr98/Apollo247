@@ -197,6 +197,8 @@ export enum WebEngageEventName {
   DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
   DIAGNOSITC_HOME_PAGE_BANNER_CLICKED = 'Diagnostic home page banner',
   DIAGNOSTIC_PAYMENT_PAGE_VIEWED = 'Diagnostic payment page viewed',
+  DIAGNOSITC_MODIFY_CLICKED = 'Diagnostic modify clicked',
+  DIAGNOSTIC_MODIFY_ORDER = 'Diagnostic modify order',
 
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
@@ -1320,6 +1322,20 @@ export interface WebEngageEvents {
     'UHID': string;
     'Order amount': string | number;
   };
+  [WebEngageEventName.DIAGNOSITC_MODIFY_CLICKED]:{
+    'UHID': string;
+    'Order id': string;
+    'Order status': string;
+  }
+  [WebEngageEventName.DIAGNOSTIC_MODIFY_ORDER]:{
+    'No of items Added': number,
+    'Item ids in array': string,
+    'Old order value': number,
+    'updated order value': number,
+    'HC charge updated' : 'Yes' | 'No'
+    'payment mode': 'Prepaid' | 'Cash',
+    'time of modification': string | Date
+  }
 
   // ********** ConsultEvents ********** \\
   [WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM]: ConsultRoomDoctorPatientInfo;

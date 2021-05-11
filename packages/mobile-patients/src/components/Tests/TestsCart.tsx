@@ -147,6 +147,7 @@ import {
   DiagnosticAppointmentTimeSlot,
   DiagnosticAreaSelected,
   DiagnosticCartViewed,
+  DiagnosticModifyOrder,
   DiagnosticNonServiceableAddressSelected,
   DiagnosticPaymentInitiated,
   DiagnosticProceedToPay,
@@ -182,6 +183,7 @@ import {
   saveModifyDiagnosticOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/saveModifyDiagnosticOrder';
 import { processDiagnosticsCODOrder } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
   findDiagnosticSettings,
   findDiagnosticSettingsVariables,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
@@ -542,7 +544,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   }, [hcCharges]);
 
-  const postwebEngageProceedToPayEvent = () => {
+  function postwebEngageProceedToPayEvent() {
     const mode = 'Home Visit';
     const area = !!existingOrderDetails
       ? String(existingOrderDetails?.areaId)
@@ -564,7 +566,24 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       hcCharges,
       slotTime
     );
-  };
+  }
+
+  function postwebEngageProceedToPayEventForModify() {
+    const previousTotalCharges = existingOrderDetails?.totalPrice;
+    const isHCUpdated = existingOrderDetails?.collectionCharges === hcCharges ? 'No' : 'Yes';
+    const paymentMode =
+      existingOrderDetails?.paymentType !== DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
+        ? 'Cash'
+        : 'Prepaid';
+    DiagnosticModifyOrder(
+      cartItemsWithId?.length,
+      cartItemsWithId?.join(', '),
+      previousTotalCharges,
+      grandTotal,
+      isHCUpdated,
+      paymentMode
+    );
+  }
 
   const setWebEngageEventForAddressNonServiceable = (pincode: string) => {
     const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
@@ -1660,7 +1679,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <Text
             style={[
               styles.commonText,
-              customStyle ? styles.pricesBoldText : styles.pricesNormalText 
+              customStyle ? styles.pricesBoldText : styles.pricesNormalText,
             ]}
           >
             {title}
@@ -2046,15 +2065,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const bookDiagnosticOrder = async () => {
-    setshowSpinner(true);
-    //if modify order
-    if (!!existingOrderDetails) {
-      saveModifiedOrder();
-    }
-    //for normal flow
-    else {
-      saveHomeCollectionOrder();
-    }
+    saveHomeCollectionOrder();
   };
 
   function saveModifiedOrder() {
@@ -2395,8 +2406,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }
 
   const onPressProceedToPay = () => {
-    postwebEngageProceedToPayEvent();
-    proceedForBooking();
+    if (!!existingOrderDetails) {
+      postwebEngageProceedToPayEventForModify();
+      setshowSpinner(true);
+      saveModifiedOrder();
+    } else {
+      postwebEngageProceedToPayEvent();
+      proceedForBooking();
+    }
   };
 
   function removeDuplicateCartItems(itemIds: string, pricesOfEach: any) {
