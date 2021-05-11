@@ -148,6 +148,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     cartItems,
     pinCode,
     pharmacyCircleAttributes,
+    asyncPincode,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { getPatientApiCall } = useAuth();
@@ -255,7 +256,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         maxOrderQty: MaxOrderQty,
         productType: type_id,
       },
-      pharmacyPincode!,
+      asyncPincode?.pincode || pharmacyPincode!,
       addCartItem,
       suggestionItem ? null : globalLoading,
       props.navigation,

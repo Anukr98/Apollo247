@@ -177,6 +177,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     cartItems,
     pinCode,
     pharmacyCircleAttributes,
+    asyncPincode,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
@@ -383,7 +384,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         maxOrderQty: MaxOrderQty,
         productType: type_id,
       },
-      pharmacyPincode!,
+      asyncPincode?.pincode || pharmacyPincode!,
       addCartItem,
       suggestionItem ? null : globalLoading,
       props.navigation,
