@@ -25,6 +25,8 @@
 #import <PushKit/PushKit.h>
 #import "RNCallKeep.h"
 #import "RNVoipPushNotificationManager.h"
+#import <CleverTapSDK/CleverTap.h>
+#import <CleverTapReact/CleverTapReactManager.h>
 @import GoogleMaps;
 
 @implementation AppDelegate
@@ -37,6 +39,9 @@
   RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge
                                                    moduleName:@"ApolloPatient"
                                             initialProperties:nil];
+  
+  [CleverTap autoIntegrate]; // integrate CleverTap SDK using the autoIntegrate option
+  [[CleverTapReactManager sharedInstance] applicationDidLaunchWithOptions:launchOptions];
   
   rootView.backgroundColor = [[UIColor alloc] initWithRed:1.0f green:1.0f blue:1.0f alpha:1];
   
