@@ -2422,7 +2422,6 @@ export const filterHtmlContent = (content: string = '') => {
     .replace(/&gt;/g, '>')
     .replace(/&nbsp;/g, '</>')
     .replace(/\.t/g, '.')
-    .replace(/.rn/gi, '. ')
     .replace(/<\/>/gi, '');
 };
 export const isProductInStock = (product: MedicineProduct) => {
