@@ -163,6 +163,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         MedicineListingEvents.searchEnterClick({
           keyword: searchText,
           numberofresults: data.product_count || 0,
+          source: movedFrom || '',
         });
       }
       MedicineListingEvents.tagalysSearch(currentPatient?.id, {

@@ -658,7 +658,7 @@ export interface ItemSearchedOnLanding extends DiagnosticUserInfo {
   'Keyword Entered': string;
   '# Results appeared': number;
   'Item in Results'?: object[];
-  'Popular'?: 'Yes' | 'No';
+  Popular?: 'Yes' | 'No';
 }
 
 export interface ItemClickedOnLanding extends DiagnosticUserInfo {
@@ -892,6 +892,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.SEARCH_ENTER_CLICK]: {
     keyword: string;
     numberofresults: number;
+    source: string;
   };
   [WebEngageEventName.PHARMACY_SEARCH_RESULTS]: {
     keyword: string;
@@ -1196,13 +1197,19 @@ export interface WebEngageEvents {
     'Section Name': string;
   };
   [WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION]: {
-    Source: 'Full Search' | 'Home Page' | 'Cart Page' | 'Partial Search' | 'Deeplink' | 'Popular search';
+    Source:
+      | 'Full Search'
+      | 'Home Page'
+      | 'Cart Page'
+      | 'Partial Search'
+      | 'Deeplink'
+      | 'Popular search';
     'Item Name': string;
     'Item Type'?: string;
     'Item Code': string;
     'Patient Name': string;
     'Patient UHID': string;
-    'Item ID' : string | number;
+    'Item ID': string | number;
     'Item Price'?: number | string;
   };
 
@@ -1269,10 +1276,16 @@ export interface WebEngageEvents {
   [WebEngageEventName.DIAGNOSTIC_ADD_TO_CART]: {
     'Item Name': string;
     'Item ID': string; // (SKUID)
-    Source: 'Home page' | 'Full search' | 'Details page' | 'Partial search' | 'Listing page' | 'Popular search';
+    Source:
+      | 'Home page'
+      | 'Full search'
+      | 'Details page'
+      | 'Partial search'
+      | 'Listing page'
+      | 'Popular search';
     Section?: string;
   };
-  
+
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order id': string | number;
     Pincode: string | number;
@@ -1315,7 +1328,7 @@ export interface WebEngageEvents {
     'Order id': string;
   };
   [WebEngageEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED]: {
-    'UHID': string;
+    UHID: string;
     'Order amount': string | number;
   };
 
@@ -2117,7 +2130,7 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
-    'Order Type': 'Cart'| 'Non-Cart';
+    'Order Type': 'Cart' | 'Non-Cart';
   };
   [WebEngageEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS]: {
     'Doctor Name': string;
