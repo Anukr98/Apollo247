@@ -182,7 +182,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   useEffect(() => {
     if (selectedTab == string.orders.trackOrder && newList?.length > 0) {
       let latestStatus = newList?.[newList?.length - 1]?.orderStatus;
-      DiagnosticTrackOrderViewed(currentPatient, latestStatus, orderId);
+      DiagnosticTrackOrderViewed(currentPatient, latestStatus, orderId, 'Track Order');
     }
   }, [selectedTab]);
 
@@ -549,6 +549,13 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     const patientName = getPatientNameById(allCurrentPatients, order?.patientId!)?.replace(
       / /g,
       '_'
+    );
+    //need to remove the event once added
+    DiagnosticViewReportClicked(
+      'Track Order',
+      !!order?.labReportURL ? 'Yes' : 'No',
+      'Download Report PDF',
+      order?.id
     );
     if (order?.labReportURL && order?.labReportURL != '') {
       downloadLabTest(order?.labReportURL, appointmentDate, patientName);

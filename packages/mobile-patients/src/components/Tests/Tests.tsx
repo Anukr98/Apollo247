@@ -131,9 +131,12 @@ import {
   DiagnosticAddToCartEvent,
   DiagnosticBannerClick,
   DiagnosticHomePageSearchItem,
+  DiagnosticHomePageWidgetClicked,
   DiagnosticLandingPageViewedEvent,
   DiagnosticPinCodeClicked,
   DiagnosticTrackOrderViewed,
+  DiagnosticTrackPhleboClicked,
+  DiagnosticViewReportClicked,
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import { PackageCard } from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
@@ -1547,10 +1550,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
       case 'Package':
         return renderPackageWidget(data);
         break;
-      case 'Category_Scroll':
+      case string.diagnosticCategoryTitle.categoryGrid:
         return scrollWidgetSection(data);
         break;
-      case 'Category':
+      case string.diagnosticCategoryTitle.category:
         return gridWidgetSection(data);
         break;
       default:
@@ -1593,6 +1596,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                         movedFrom: AppRoutes.Tests,
                         data: data,
                         cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+                        widgetType: data?.diagnosticWidgetType,
                       });
                     }
                   : undefined
@@ -1653,6 +1657,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                         movedFrom: AppRoutes.Tests,
                         data: data,
                         cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+                        widgetType: data?.diagnosticWidgetType,
                       });
                     }
                   : undefined
@@ -1959,12 +1964,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
             `Out of ${testPrescription?.length} diagnostic(s), you are trying to order, following diagnostic(s) are not available.\n\n${unAvailableItems}\n`
           );
         }
+        const getItemNames = tests?.map((item) => item?.name)?.join(', ');
+        const getItemIds = tests?.map((item) => Number(item?.id))?.join(', ');
         setLoading?.(false);
-        const getAddedItemNames = tests?.map((item) => item?.name)?.join(', ');
-        const getAddedItemIds = tests?.map((item) => Number(item?.id))?.join(', ');
-
-        postDiagnosticAddToCartEvent(getAddedItemNames, getAddedItemIds, 0, 0, 'Prescription');
-
+        DiagnosticAddToCartEvent(getItemNames, getItemIds, 0, 0, 'Prescription');
         props.navigation.navigate(AppRoutes.TestsCart);
       })
       .catch((e) => {
@@ -1989,7 +1992,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const pdfName = item?.caseSheet?.blobName;
     const prescriptionDate = moment(item?.prescriptionDateTime).format('DD MM YYYY');
     const fileName: string = getFileName(item);
-
+    //need to remove the event once added
+    DiagnosticViewReportClicked(
+      'Home',
+      !!pdfName?.labReportURL ? 'Yes' : 'No',
+      'Download Report PDF'
+    );
     if (pdfName == null) {
       Alert.alert('No Image');
       CommonLogEvent('Tests', 'No image');
@@ -2142,6 +2150,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }
 
   function navigateToTrackingScreen(item: any) {
+    DiagnosticTrackOrderViewed(currentPatient, item?.orderStatus, item?.id, 'Home');
     props.navigation.navigate(AppRoutes.TestOrderDetails, {
       orderId: item?.id,
       selectedOrder: item,
@@ -2162,17 +2171,21 @@ export const Tests: React.FC<TestsProps> = (props) => {
         if (!!getUrl) {
           Linking.canOpenURL(getUrl).then((supported: any) => {
             if (supported) {
+              DiagnosticTrackPhleboClicked(orderId, 'Home', currentPatient, 'Yes');
               Linking.openURL(getUrl);
             } else {
+              DiagnosticTrackPhleboClicked(orderId, 'Home', currentPatient, 'No');
               CommonBugFender('Tests_getPhelboDetails_Unable_to_open_url', getUrl);
             }
           });
         } else {
+          DiagnosticTrackPhleboClicked(orderId, 'Home', currentPatient, 'No');
           navigateToTrackingScreen(order);
         }
       }
       setLoading?.(false);
     } catch (error) {
+      DiagnosticTrackPhleboClicked(orderId, 'Home', currentPatient, 'No');
       setLoading?.(false);
       CommonBugFender('Tests_onPressOrderStatusOption', error);
     }
@@ -2318,25 +2331,26 @@ export const Tests: React.FC<TestsProps> = (props) => {
           }}
         />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sectionView}>
-          {data?.diagnosticWidgetData.map((item: any) => (
+          {data?.diagnosticWidgetData?.map((item: any) => (
             <WidgetCard
               data={item}
-              isCircleSubscribed={isDiagnosticCircleSubscription}
-              isServiceable={isDiagnosticLocationServiceable}
-              isVertical={false}
-              navigation={props.navigation}
               onPressWidget={() => {
+                DiagnosticHomePageWidgetClicked(
+                  data?.diagnosticWidgetTitle,
+                  undefined,
+                  undefined,
+                  item?.itemTitle
+                );
                 {
                   props.navigation.navigate(AppRoutes.TestListing, {
                     widgetName: item?.itemTitle,
                     movedFrom: AppRoutes.Tests,
                     data: data,
                     cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+                    widgetType: data?.diagnosticWidgetType,
                   });
                 }
               }}
-              source={'Home Page'}
-              sourceScreen={AppRoutes.Tests}
             />
           ))}
         </ScrollView>
@@ -2349,12 +2363,19 @@ export const Tests: React.FC<TestsProps> = (props) => {
       <TouchableOpacity
         style={styles.gridPart}
         onPress={() => {
+          DiagnosticHomePageWidgetClicked(
+            data?.diagnosticWidgetTitle,
+            undefined,
+            undefined,
+            item?.itemTitle
+          );
           {
             props.navigation.navigate(AppRoutes.TestListing, {
               widgetName: item?.itemTitle,
               movedFrom: AppRoutes.Tests,
               data: data,
               cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+              widgetType: data?.diagnosticWidgetType,
             });
           }
         }}

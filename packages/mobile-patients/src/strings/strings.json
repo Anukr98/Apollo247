@@ -552,6 +552,10 @@
     "previousCharges": "Previous Charges",
     "currentCharges": "Current Charges"
   },
+  "diagnosticCategoryTitle": {
+    "category" : "Category",
+    "categoryGrid": "Category_Scroll"
+  },
   "orders": {
     "urOrders": "MY ORDERS",
     "ratingHeader": "FEEDBACK",

@@ -1254,8 +1254,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       / /g,
       '_'
     );
-
-    DiagnosticViewReportClicked();
     if (order?.labReportURL && order?.labReportURL != '') {
       downloadLabTest(order?.labReportURL, appointmentDate, patientName);
     } else if (visitId) {
@@ -1471,6 +1469,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               {viewReportItemsArray.map((item) => (
                 <TouchableOpacity
                   onPress={async () => {
+                    DiagnosticViewReportClicked(
+                      'My Order',
+                      !!activeOrder?.labReportURL ? 'Yes' : 'No',
+                      item?.title,
+                      activeOrder?.id
+                    );
                     if (
                       item?.title == string.Report.view ||
                       item?.title == string.Report.download

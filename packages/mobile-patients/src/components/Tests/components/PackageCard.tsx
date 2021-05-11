@@ -42,7 +42,14 @@ export interface PackageCardProps {
   isVertical: boolean;
   columns?: number;
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
-  source: string;
+  source:
+    | 'Home page'
+    | 'Full search'
+    | 'Details page'
+    | 'Partial search'
+    | 'Listing page'
+    | 'Category page'
+    | 'Prescription';
   sourceScreen: string;
 }
 
@@ -303,13 +310,18 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     const planToConsider = pricesForItem?.planToConsider;
     const discountToDisplay = pricesForItem?.discountToDisplay;
     const mrpToDisplay = pricesForItem?.mrpToDisplay;
+    const widgetType = data?.diagnosticWidgetType;
 
     DiagnosticAddToCartEvent(
       item?.itemTitle,
       `${item?.itemId}`,
       mrpToDisplay,
       discountToDisplay,
-      data?.diagnosticWidgetTitle
+      source,
+      widgetType === string.diagnosticCategoryTitle.categoryGrid ||
+        widgetType == string.diagnosticCategoryTitle.category
+        ? 'Category page'
+        : data?.diagnosticWidgetTitle
     );
 
     addCartItem!({
@@ -335,7 +347,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
   }
 
   function postHomePageWidgetClicked(name: string, id: string, section: string) {
-    DiagnosticHomePageWidgetClicked(name, id, section);
+    DiagnosticHomePageWidgetClicked(section, id, name);
   }
 
   function onPress(item: any, packageCalculatedMrp: number, pricesForItem: any) {
