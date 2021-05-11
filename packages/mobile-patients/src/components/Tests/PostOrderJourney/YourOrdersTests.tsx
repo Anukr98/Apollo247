@@ -34,8 +34,18 @@ import {
   BackHandler,
   Text,
   Modal,
+  Linking,
+  Clipboard,
 } from 'react-native';
-import { Down, Up, DownO } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  Down,
+  Up,
+  DownO,
+  CopyBlue,
+  DownloadNew,
+  ShareBlue,
+  ViewIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { NavigationScreenProps } from 'react-navigation';
 import {
   CancellationDiagnosticsInput,
@@ -71,7 +81,7 @@ import {
   cancelDiagnosticsOrder,
   cancelDiagnosticsOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/cancelDiagnosticsOrder';
-import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlay';
+import { TestSlotSelectionOverlayNew } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlayNew';
 import {
   rescheduleDiagnosticsOrder,
   rescheduleDiagnosticsOrderVariables,
@@ -152,6 +162,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [isTest, setIsTest] = useState<any>(props.navigation.getParam('isTest'));
 
   const [isPaitentList, setIsPaitentList] = useState<boolean>(false);
+  const [isViewReport, setIsViewReport] = useState<boolean>(false);
+  const [activeOrder, setActiveOrder] = useState<
+    getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList
+  >('');
   const [selectedPaitent, setSelectedPaitent] = useState<string>('All');
   const [selectedPaitentId, setSelectedPaitentId] = useState<string>('');
   const [orderListData, setOrderListData] = useState<(orderListByMobile | null)[] | null>([]);
@@ -163,6 +177,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   >(allCurrentPatients);
   const [currentOffset, setCurrentOffset] = useState<number>(1);
   const [resultList, setResultList] = useState<(orderListByMobile | null)[] | null>([]);
+  const [snackbarState, setSnackbarState] = useState<boolean>(false);
+
   var rescheduleDate: Date,
     rescheduleSlotObject: {
       slotStartTime: any;
@@ -219,7 +235,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    fetchOrders(false);
+    fetchOrders(true);
   }, []);
 
   useEffect(() => {
@@ -339,6 +355,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                       CheckInTime: null,
                       PhleboLatitude: null,
                       PhleboLongitude: null,
+                      PhleboRating: null,
                       __typename: 'PhleboDetailsObj',
                     };
                   }
@@ -350,6 +367,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   order.phleboDetailsObj.PhelbotomistTrackLink =
                     findOrder?.orderPhleboDetails?.phleboTrackLink;
                   order.phleboDetailsObj.CheckInTime = findOrder?.phleboEta?.estimatedArrivalTime;
+                  order.phleboDetailsObj.PhleboRating = findOrder?.orderPhleboDetails?.phleboRating;
                 }
               }
             );
@@ -696,7 +714,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
     return (
       <View style={{ flex: 1 }}>
-        <TestSlotSelectionOverlay
+        <TestSlotSelectionOverlayNew
           source={'Tests'}
           heading="Schedule Appointment"
           date={date}
@@ -1158,7 +1176,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPressAddTest={() => _onPressAddTest()}
         onPressReschedule={() => _onPressTestReschedule(order)}
         onPressViewDetails={() => _navigateToYourTestDetails(order, true)}
-        onPressViewReport={() => _onPressViewReport(order)}
+        onPressViewReport={() => {
+          setSnackbarState(true);
+          setActiveOrder(order);
+          setIsViewReport(true);
+          // _onPressViewReport(order)
+        }}
         phelboObject={order?.phleboDetailsObj}
         onPressRatingStar={(star) => {
           props.navigation.navigate(AppRoutes.TestRatingScreen, {
@@ -1189,8 +1212,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       / /g,
       '_'
     );
-
-    DiagnosticViewReportClicked();
     if (order?.labReportURL && order?.labReportURL != '') {
       downloadLabTest(order?.labReportURL, appointmentDate, patientName);
     } else if (visitId) {
@@ -1285,6 +1306,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       );
     }
   };
+
+  const copyToClipboard = (refId: string) => {
+    Clipboard.setString(refId);
+    setSnackbarState(true);
+  };
   const renderModalView = (item: any, index: number) => {
     return (
       <TouchableOpacity
@@ -1320,6 +1346,24 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       </TouchableOpacity>
     );
   };
+  const viewReportItemsArray = [
+    {
+      icon: <ViewIcon />,
+      title: string.Report.view,
+    },
+    {
+      icon: <DownloadNew />,
+      title: string.Report.download,
+    },
+    {
+      icon: <ShareBlue />,
+      title: string.Report.share,
+    },
+    {
+      icon: <CopyBlue />,
+      title: string.Report.copy,
+    },
+  ];
   return (
     <View style={{ flex: 1 }}>
       {showDisplaySchedule && renderRescheduleOrderOverlay()}
@@ -1361,6 +1405,58 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   renderItem={({ item, index }) => renderModalView(item, index)}
                 />
               </View>
+            </View>
+          </View>
+        </Modal>
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={isViewReport}
+          onRequestClose={() => {
+            setIsViewReport(false);
+          }}
+          onDismiss={() => {
+            setIsViewReport(false);
+          }}
+        >
+          <View style={styles.modalMainView}>
+            <View style={styles.reportModalView}>
+              {viewReportItemsArray.map((item) => (
+                <TouchableOpacity
+                  onPress={async () => {
+                    DiagnosticViewReportClicked(
+                      'My Order',
+                      !!activeOrder?.labReportURL ? 'Yes' : 'No',
+                      item?.title,
+                      activeOrder?.id
+                    );
+                    if (
+                      item?.title == string.Report.view ||
+                      item?.title == string.Report.download
+                    ) {
+                      _onPressViewReport(activeOrder);
+                    } else if (item?.title == string.Report.share) {
+                      try {
+                        const whatsAppScheme = `whatsapp://send?text=${activeOrder?.labReportURL}`;
+                        const canOpenURL = await Linking.canOpenURL(whatsAppScheme);
+                        canOpenURL && Linking.openURL(whatsAppScheme);
+                      } catch (error) {}
+                    } else {
+                      copyToClipboard(
+                        activeOrder && activeOrder?.labReportURL ? activeOrder?.labReportURL : ''
+                      );
+                    }
+                    setIsViewReport(false);
+                  }}
+                  style={styles.itemView}
+                >
+                  {item?.icon}
+                  <Text style={styles.itemTextStyle}>{item?.title}</Text>
+                  {snackbarState && item?.title == string.Report.copy ? (
+                    <Text style={styles.copyTextStyle}>Copied !!</Text>
+                  ) : null}
+                </TouchableOpacity>
+              ))}
             </View>
           </View>
         </Modal>
@@ -1531,6 +1627,32 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
+  },
+  reportModalView: {
+    backgroundColor: 'white',
+    width: '100%',
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  },
+  itemView: {
+    backgroundColor: 'white',
+    width: '100%',
+    padding: 10,
+    flexDirection: 'row',
+    alignContent: 'center',
+    borderBottomColor: '#e8e8e8',
+    borderBottomWidth: 1,
+  },
+  itemTextStyle: {
+    marginHorizontal: 10,
+    ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE),
+  },
+  copyTextStyle: {
+    marginHorizontal: 10,
+    textAlign: 'left',
+    ...theme.viewStyles.text('SB', 14, theme.colors.APP_GREEN),
   },
   paitentCard: {
     backgroundColor: '#F7F8F5',

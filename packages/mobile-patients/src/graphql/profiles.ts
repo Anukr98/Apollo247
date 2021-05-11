@@ -4742,6 +4742,7 @@ export const GET_PHLOBE_DETAILS = gql`
           }
           phleboOTP
           phleboTrackLink
+          phleboRating
         }
         phleboEta {
           distanceInMetres
@@ -4922,6 +4923,14 @@ export const GET_HELPDESK_TICKET_CONVERSATION = gql`
         commenterType
         createdTime
       }
+    }
+  }
+`;
+
+export const FIND_DIAGNOSTIC_SETTINGS = gql`
+  query findDiagnosticSettings {
+    findDiagnosticSettings {
+      phleboETAInMinutes
     }
   }
 `;
