@@ -2418,7 +2418,6 @@ export const filterHtmlContent = (content: string = '') => {
     .replace(/&gt;/g, '>')
     .replace(/&nbsp;/g, '</>')
     .replace(/\.t/g, '.')
-    .replace(/.rn/gi, '. ')
     .replace(/<\/>/gi, '');
 };
 export const isProductInStock = (product: MedicineProduct) => {
@@ -2817,12 +2816,12 @@ export async function downloadDiagnosticReport(
           PermissionsAndroid.RESULTS.DENIED
       ) {
         storagePermissionsToDownload(() => {
-          downloadDiagnosticReport(setLoading,pdfUrl, appointmentDate, patientName, true);
+          downloadDiagnosticReport(setLoading, pdfUrl, appointmentDate, patientName, true);
         });
       }
     }
   } catch (error) {
-    setLoading?.(false)
+    setLoading?.(false);
     CommonBugFender('YourOrderTests_downloadLabTest', error);
     throw new Error('Something went wrong');
   }

@@ -770,6 +770,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     });
   };
 
+  const onCompositionClick = () =>
+    props.navigation.navigate(AppRoutes.MedicineListing, {
+      searchText: medicineDetails?.PharmaOverview?.[0]?.Composition,
+    });
+
   let buttonRef = React.useRef<View>(null);
   return (
     <View style={{ flex: 1 }}>
@@ -858,15 +863,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   manufacturer={medicineDetails?.manufacturer}
                   composition={medicineDetails?.PharmaOverview?.[0]?.Composition}
                   consumeType={medicineDetails?.consume_type}
-                />
-              )}
-              {!!substitutes.length && !isInStock && (
-                <SimilarProducts
-                  heading={string.productDetailPage.PRODUCT_SUBSTITUTES}
-                  similarProducts={substitutes}
-                  navigation={props.navigation}
-                  composition={medicineDetails?.PharmaOverview?.[0]?.Composition}
-                  setShowSubstituteInfo={setShowSubstituteInfo}
+                  onCompositionClick={onCompositionClick}
                 />
               )}
               <ProductInfo
@@ -889,7 +886,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 }
                 directionsOfUse={medicineDetails?.direction_for_use_dosage}
               />
-              {!!substitutes.length && isInStock && (
+              {!!substitutes.length && (
                 <SimilarProducts
                   heading={string.productDetailPage.PRODUCT_SUBSTITUTES}
                   similarProducts={substitutes}

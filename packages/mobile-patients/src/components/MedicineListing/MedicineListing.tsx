@@ -81,6 +81,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const [filterOptions, setFilterOptions] = useState<Filter[]>([]);
   const [filterVisible, setFilterVisible] = useState<boolean>(false);
   const [showAddedToCart, setShowAddedToCart] = useState<boolean>(false);
+  const [isFocused, setIsFocused] = useState<boolean>(false);
 
   // global contexts
   const { currentPatient } = useAllCurrentPatients();
@@ -88,7 +89,20 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const { axdcCode } = useAppCommonData();
 
   useEffect(() => {
-    if (categoryId && !searchText) {
+    const didFocus = navigation.addListener('didFocus', (payload) => {
+      setIsFocused(true);
+    });
+    const didBlur = navigation.addListener('didBlur', (payload) => {
+      setIsFocused(false);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      didBlur && didBlur.remove();
+    };
+  }, [navigation]);
+
+  useEffect(() => {
+    if (categoryId && !searchText && isFocused) {
       searchProductsByCategory(
         categoryId,
         1,
@@ -100,7 +114,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     } else if (searchText.length >= 3) {
       searchProducts(searchText, 1, sortBy?.id || null, filterBy, filterOptions);
     }
-  }, [sortBy, filterBy]);
+  }, [sortBy, filterBy, isFocused]);
 
   useEffect(() => {
     if (categoryId && !searchText && movedFrom) {
