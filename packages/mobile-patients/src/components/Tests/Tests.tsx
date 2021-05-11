@@ -2494,6 +2494,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 style={{ flex: 1, marginBottom: !!cartItems && cartItems?.length > 0 ? 30 : 0 }}
                 keyboardShouldPersistTaps="always"
                 showsVerticalScrollIndicator={false}
+                nestedScrollEnabled={true}
               >
                 {renderSections()}
                 {renderOverlay()}

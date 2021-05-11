@@ -395,7 +395,7 @@ export function DiagnosticAddresssSelected(
 }
 
 export function DiagnosticAddToCartClicked() {
-  postWebEngageEvent(WebEngageEventName.DIAGNOSITC_ITEM_ADD_ON_CARTPAGE, {});
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE, {});
 }
 
 export function DiagnosticRemoveFromCartClicked(
