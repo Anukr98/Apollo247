@@ -751,6 +751,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       .add(followUpAfterInDays, 'days')
       .startOf('day')
       .isBefore(moment(new Date()).startOf('day'));
+
+  const isInFuture = moment(props.navigation.state.params!.data.appointmentDateTime).isAfter(
+    moment(new Date())
+  );
+
   const callType = props.navigation.state.params!.callType
     ? props.navigation.state.params!.callType
     : '';
@@ -1374,7 +1379,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, [currentPatientWithHistory, displayChatQuestions]);
 
   useEffect(() => {
-    if (!disableChat && status.current !== STATUS.COMPLETED) {
+    if (!disableChat && status.current !== STATUS.COMPLETED && isInFuture) {
       callPermissions();
     }
   }, []);
