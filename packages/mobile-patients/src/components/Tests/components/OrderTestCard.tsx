@@ -285,9 +285,6 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   const postDiagnosticPhleboCallingClicked = (phleboName: string) => {
     DiagnosticPhleboCallingClicked(currentPatient, props.orderId, phleboName);
   };
-  const postDiagnosticPhleboTrackClicked = (isClicked: boolean) => {
-    DiagnosticPhleboTrackClicked(currentPatient, props.orderId, isClicked);
-  };
   const showOTPContainer = () => {
     const phlObj = props?.phelboObject;
     const otpToShow = !!phlObj && phlObj?.PhelboOTP;
@@ -350,14 +347,11 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                         Linking.canOpenURL(phleboTrackLink).then((supported) => {
                           if (supported) {
                             Linking.openURL(phleboTrackLink);
-                            postDiagnosticPhleboTrackClicked(true)
                           } else {
-                            postDiagnosticPhleboTrackClicked(false)
                             setBugFenderLog('FAILED_OPEN_URL', phleboTrackLink);
                           }
                         });
                       } catch (e) {
-                        postDiagnosticPhleboTrackClicked(false)
                         setBugFenderLog('FAILED_OPEN_URL', phleboTrackLink);
                       }
                     }}
