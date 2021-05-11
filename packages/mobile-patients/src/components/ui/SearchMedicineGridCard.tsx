@@ -161,6 +161,7 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
     onPressSubtractQty,
     dc_availability,
     is_in_contract,
+    image,
   } = props;
   const finalPrice = price - Number(special_price) ? Number(special_price) : price;
   const cashback = getCareCashback(Number(finalPrice), type_id);
@@ -214,11 +215,11 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
     const isPrescriptionRequired = is_prescription_required == 1;
     return (
       <View style={styles.medicineIconViewStyle}>
-        {thumbnail ? (
+        {thumbnail || image ? (
           <Image
             PlaceholderContent={isPrescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
             placeholderStyle={{ backgroundColor: 'transparent' }}
-            source={{ uri: productsThumbnailUrl(thumbnail) }}
+            source={{ uri: productsThumbnailUrl(thumbnail || image) }}
             style={styles.imageStyle}
             resizeMode="contain"
           />

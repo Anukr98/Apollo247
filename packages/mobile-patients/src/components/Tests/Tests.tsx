@@ -57,8 +57,8 @@ import {
   isAddressLatLngInValid,
   addTestsToCart,
   handleGraphQlError,
-  setAsyncPharmaLocation,
   downloadDiagnosticReport,
+  setAsyncPharmaLocation,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -355,6 +355,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setNewAddressAddedHomePage?.('');
     }
   }, [newAddressAddedHomePage]);
+
+  /** added so that if phramacy code change, then this also changes. */
+  /**need to put a check if pincode is entered then that needs to be saved, and only change in pharama location comes here. */
+  useEffect(() => {
+    setDiagnosticLocation?.(!!pharmacyLocation ? pharmacyLocation! : locationDetails!);
+    checkIsPinCodeServiceable(
+      !!pharmacyLocation ? pharmacyLocation?.pincode! : locationDetails?.pincode!,
+      'manual',
+      'initialPincode'
+    );
+  }, [pharmacyLocation]); //removed location details
 
   /**
    * fetch widgets
@@ -765,7 +776,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
             (response.city = setCity), (response.state = setState);
             setDiagnosticLocation!(response);
             !locationDetails && setLocationDetails!(response);
-            //for storing in the async storage.
             const saveAddress = {
               pincode: pincode,
               id: '',
@@ -802,6 +812,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
             setDiagnosticLocation!(response);
             !locationDetails && setLocationDetails!(response);
+            //for storing in the async storage.
             const saveAddress = {
               pincode: pincode,
               id: '',

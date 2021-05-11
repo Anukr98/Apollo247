@@ -1,15 +1,16 @@
 import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 
 export interface PharmaManufacturerProps {
   manufacturer?: string | null;
   composition?: string | null;
   consumeType?: string | null;
+  onCompositionClick?: () => void;
 }
 
 export const PharmaManufacturer: React.FC<PharmaManufacturerProps> = (props) => {
-  const { manufacturer, composition, consumeType } = props;
+  const { manufacturer, composition, consumeType, onCompositionClick } = props;
 
   return (
     <View style={styles.container}>
@@ -20,10 +21,15 @@ export const PharmaManufacturer: React.FC<PharmaManufacturerProps> = (props) => 
         </View>
       )}
       {!!composition && (
-        <View style={styles.cardStyle}>
+        <TouchableOpacity
+          onPress={() => {
+            onCompositionClick ? onCompositionClick() : null;
+          }}
+          style={styles.cardStyle}
+        >
           <Text style={styles.heading}>Composition:</Text>
-          <Text style={styles.value}>{composition}</Text>
-        </View>
+          <Text style={styles.compositionLink}>{composition}</Text>
+        </TouchableOpacity>
       )}
       {!!consumeType && (
         <View style={styles.cardStyle}>
@@ -47,5 +53,9 @@ const styles = StyleSheet.create({
   },
   value: {
     ...theme.viewStyles.text('R', 15, '#02475B', 1, 25, 0.35),
+  },
+  compositionLink: {
+    ...theme.viewStyles.text('SB', 15, theme.colors.SKY_BLUE, 1, 25, 0.35),
+    textDecorationLine: 'underline',
   },
 });
