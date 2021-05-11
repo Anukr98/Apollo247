@@ -1141,18 +1141,12 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           coupon?.message,
           pharmacyPincode,
           g(currentPatient, 'mobileNumber'),
-          hdfcSubscriptionId,
-          circleSubscriptionId,
           setCoupon,
           cartTotal,
           productDiscount,
           cartItems,
-          hdfcStatus,
-          hdfcPlanId,
-          circleStatus,
-          circlePlanId,
           setCouponProducts,
-          circlePlanSelected
+          activeUserSubscriptions ? getPackageIds(activeUserSubscriptions) : []
         );
         if (response === 'success') {
           redirect();
