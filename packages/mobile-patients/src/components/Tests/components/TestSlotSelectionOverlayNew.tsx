@@ -10,6 +10,7 @@ import {
   NightSelected,
   DropdownGreen,
   InfoIconRed,
+  EmptySlot
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { GET_CUSTOMIZED_DIAGNOSTIC_SLOTS } from '@aph/mobile-patients/src/graphql/profiles';
@@ -164,32 +165,62 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     fetchSlots();
   }, [date]);
 
+  const dayPhaseArray = [
+    {
+      tab: 0,
+      activeImage: <MorningSelected />,
+      inactiveImage: <Morning />,
+      title: 'Morning',
+    },
+    {
+      tab: 1,
+      activeImage: <AfternoonSelected />,
+      inactiveImage: <Afternoon />,
+      title: 'Afternoon',
+    },
+    {
+      tab: 2,
+      activeImage: <NightSelected />,
+      inactiveImage: <Night />,
+      title: 'Evening',
+    },
+  ];
+
+  let dropDownOptions = uniqueSlots?.map((val) => ({
+    key: `${formatTestSlot(val.startTime)}`,
+    value: `${formatTestSlot(val.startTime)}`,
+    data: val,
+  }));
+  
+  const time24 = (item:any) => {
+    return moment(item?.value ,'hh:mm A').format('HH')
+  } 
+
+  if (selectedDayTab == 1) {
+    //for afternoon 12-17
+    dropDownOptions = dropDownOptions.filter((item) => {
+      if (time24(item) >= '12' && time24(item) < '17') {
+        console.log(`object`, time24(item));
+        return item;
+      }
+    });
+    
+  } else if (selectedDayTab == 2) {
+    //for evening 17 - 6
+    dropDownOptions = dropDownOptions.filter((item) => {
+      if (time24(item) >= '17' && time24(item) < '06') {
+        return item;
+      }
+    });
+  } else if (selectedDayTab == 0) {
+    //for morning 6- 12
+    dropDownOptions = dropDownOptions.filter((item) => {
+      if (time24(item) >= '06' && time24(item) < '12') {
+        return item;
+      }
+    });
+  }
   const renderSlotSelectionView = () => {
-    const dropDownOptions = uniqueSlots?.map((val) => ({
-      key: `${formatTestSlot(val.startTime)}`,
-      value: `${formatTestSlot(val.startTime)}`,
-      data: val,
-    }));
-    const dayPhaseArray = [
-      {
-        tab: 0,
-        activeImage: <MorningSelected />,
-        inactiveImage: <Morning />,
-        title: 'Morning',
-      },
-      {
-        tab: 1,
-        activeImage: <AfternoonSelected />,
-        inactiveImage: <Afternoon />,
-        title: 'Afternoon',
-      },
-      {
-        tab: 2,
-        activeImage: <NightSelected />,
-        inactiveImage: <Night />,
-        title: 'Evening',
-      },
-    ];
     return (
       <View>
         <View style={styles.dayPhaseContainer}>
@@ -335,7 +366,8 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   const renderNoSlots = () => {
     return (
       <View style={styles.noSlotsContainer}>
-        <Text style={styles.noSlotsText}>No Slots Available</Text>
+        <EmptySlot />
+        <Text style={styles.noSlotsText}>Sorry! No Slots are Available</Text>
       </View>
     );
   };
@@ -398,7 +430,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
         {infoPanel()}
         {renderSlotSelectionView()}
         </ScrollView>
-        {renderBottomButton}
+        {dropDownOptions.length ? renderBottomButton : null}
       </View>
     </Overlay>
   );
