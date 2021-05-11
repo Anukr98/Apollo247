@@ -197,6 +197,9 @@ export enum WebEngageEventName {
   DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
   DIAGNOSITC_HOME_PAGE_BANNER_CLICKED = 'Diagnostic home page banner',
   DIAGNOSTIC_PAYMENT_PAGE_VIEWED = 'Diagnostic payment page viewed',
+  DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED = 'Diagnostic Phlebo feedback submitted',
+  DIAGNOSTIC_PHLEBO_CALLING_CLICKED = 'Diagnostic Phlebo calling clicked',
+  DIAGNOSTIC_TRACK_PHLEBO_CLICKED = 'Diagnostic Track Phlebo clicked',
 
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
@@ -1319,6 +1322,23 @@ export interface WebEngageEvents {
   [WebEngageEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED]: {
     'UHID': string;
     'Order amount': string | number;
+  };
+  [WebEngageEventName.DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED]: {
+    'Rating': string | number;
+    'Feedback': string | number;
+    'Phlebo Name': string;
+    'Order id': string | number;
+    'Phlebo id': string | number;
+  };
+  [WebEngageEventName.DIAGNOSTIC_PHLEBO_CALLING_CLICKED]: {
+    'UHID': string;
+    'Order id': string | number;
+    'Phlebo Name': string;
+  };
+  [WebEngageEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED]: {
+    'UHID': string;
+    'Order id': string | number;
+    'Linked opened': 'Yes' | 'No';
   };
 
   // ********** ConsultEvents ********** \\
