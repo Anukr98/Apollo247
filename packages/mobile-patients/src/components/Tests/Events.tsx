@@ -479,7 +479,7 @@ export function DiagnosticViewReportClicked(
   orderId: string,
   source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary',
   reportGenerated: 'Yes' | 'No',
-  action: 'Copy' | 'Share on whatsapp' | 'Download' | 'View'
+  action: 'View Report' | 'Download Report PDF' | 'Share on Whatsapp' | 'Copy Link to PDF'
 ) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED] = {
     'Order id': orderId,

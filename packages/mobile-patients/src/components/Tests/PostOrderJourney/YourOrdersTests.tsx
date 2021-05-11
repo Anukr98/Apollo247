@@ -35,7 +35,7 @@ import {
   Text,
   Modal,
   Linking,
-  Clipboard
+  Clipboard,
 } from 'react-native';
 import {
   Down,
@@ -1178,7 +1178,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPressViewDetails={() => _navigateToYourTestDetails(order, true)}
         onPressViewReport={() => {
           setSnackbarState(true);
-          setActiveOrder(order)
+          setActiveOrder(order);
           setIsViewReport(true);
           // _onPressViewReport(order)
         }}
@@ -1212,8 +1212,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       / /g,
       '_'
     );
-
-    DiagnosticViewReportClicked();
     if (order?.labReportURL && order?.labReportURL != '') {
       downloadLabTest(order?.labReportURL, appointmentDate, patientName);
     } else if (visitId) {
@@ -1426,7 +1424,16 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               {viewReportItemsArray.map((item) => (
                 <TouchableOpacity
                   onPress={async () => {
-                    if (item?.title == string.Report.view || item?.title == string.Report.download) {
+                    DiagnosticViewReportClicked(
+                      activeOrder?.id,
+                      'My Order',
+                      !!activeOrder?.labReportURL ? 'Yes' : 'No',
+                      item?.title
+                    );
+                    if (
+                      item?.title == string.Report.view ||
+                      item?.title == string.Report.download
+                    ) {
                       _onPressViewReport(activeOrder);
                     } else if (item?.title == string.Report.share) {
                       try {
@@ -1439,14 +1446,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                         activeOrder && activeOrder?.labReportURL ? activeOrder?.labReportURL : ''
                       );
                     }
-                    setIsViewReport(false)
+                    setIsViewReport(false);
                   }}
                   style={styles.itemView}
                 >
                   {item?.icon}
                   <Text style={styles.itemTextStyle}>{item?.title}</Text>
-                  {snackbarState && item?.title == string.Report.copy ? <Text style={styles.copyTextStyle}>Copied !!</Text>: null}
-                  
+                  {snackbarState && item?.title == string.Report.copy ? (
+                    <Text style={styles.copyTextStyle}>Copied !!</Text>
+                  ) : null}
                 </TouchableOpacity>
               ))}
             </View>
@@ -1643,7 +1651,7 @@ const styles = StyleSheet.create({
   },
   copyTextStyle: {
     marginHorizontal: 10,
-    textAlign:'left',
+    textAlign: 'left',
     ...theme.viewStyles.text('SB', 14, theme.colors.APP_GREEN),
   },
   paitentCard: {

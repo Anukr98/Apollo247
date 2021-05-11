@@ -1261,7 +1261,7 @@ export interface WebEngageEvents {
     'Order id': string;
     'Source': 'Home' | 'My Order' | 'Track Order' | 'Order Summary'
     'Report generated': 'Yes' | 'No';
-    'Action taken' : 'Copy' | 'Share on whatsapp' | 'Download' | 'View'
+    'Action taken' : 'View Report' | "Download Report PDF" | "Share on Whatsapp" | "Copy Link to PDF"
   };
   [WebEngageEventName.DIAGNOSTIC_FEEDBACK_GIVEN]: {
     'Patient UHID': string;
