@@ -1068,6 +1068,12 @@ export const ShoppingCartProvider: React.FC = (props) => {
     }
   }, [deliveryAddressId]);
 
+  useEffect(() => {
+    if (physicalPrescriptions?.length || ePrescriptions?.length) {
+      setPrescriptionType(PrescriptionType.UPLOADED);
+    }
+  }, [physicalPrescriptions, ePrescriptions]);
+
   const selectDefaultPlan = (plan: any) => {
     const defaultPlan = plan?.filter((item: any) => item.defaultPack === true);
     if (defaultPlan?.length > 0) {

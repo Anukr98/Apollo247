@@ -166,6 +166,16 @@ export const Night: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_night.webp')} />
 );
 
+export const MorningSelected: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_morning_active.webp')} />
+);
+export const AfternoonSelected: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_sun_active.webp')} />
+);
+export const NightSelected: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_night_active.webp')} />
+);
+
 export const MorningUnselected: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_morning_unselected.webp')} />
 );
