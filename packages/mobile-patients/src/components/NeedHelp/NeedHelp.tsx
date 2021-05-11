@@ -214,6 +214,13 @@ export const NeedHelp: React.FC<Props> = (props) => {
   };
 
   useEffect(() => {
+    if (currentPatient?.emailAddress && !email) {
+      setEmail(currentPatient?.emailAddress);
+    }
+  }, [currentPatient?.emailAddress]);
+
+  useEffect(() => {
+    fetchHelpdeskTickets();
     fetchQueries();
     fetchOngoingQuery();
 

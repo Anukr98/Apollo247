@@ -70,6 +70,7 @@ const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {
   source?: string;
+  businessLine: 'consult' | 'diagnostics' | 'pharma' | 'subscription';
 }
 
 export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
@@ -79,6 +80,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const orderDetails = props.navigation.getParam('orderDetails');
   const eventAttributes = props.navigation.getParam('eventAttributes');
   const source = props.navigation.getParam('source');
+  const businessLine = props.navigation.getParam('businessLine');
   const { currentPatient } = useAllCurrentPatients();
   const [banks, setBanks] = useState<any>([]);
   const [loading, setloading] = useState<boolean>(true);
@@ -445,7 +447,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderPayByCash = () => {
-    return <PayByCash onPressPlaceOrder={onPressPayByCash} />;
+    return businessLine === 'diagnostics' && AppConfig.Configuration.Enable_Diagnostics_COD ? (
+      <PayByCash onPressPlaceOrder={onPressPayByCash} />
+    ) : null;
   };
 
   const showTxnFailurePopUP = () => {

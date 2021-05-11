@@ -1289,8 +1289,7 @@ export const addTestsToCart = async (
   testPrescription: getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[], // testsIncluded will not come from API
   apolloClient: ApolloClient<object>,
   pincode?: string,
-  setLoading?: UIElementsContextProps['setLoading'],
-
+  setLoading?: UIElementsContextProps['setLoading']
 ) => {
   const searchQuery = (name: string, cityId: string) =>
     apolloClient.query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
@@ -1325,7 +1324,7 @@ export const addTestsToCart = async (
     const detailQueriesData = (await detailQueries)?.map(
       (item: any) => g(item, 'data', 'getInclusionsOfMultipleItems', 'inclusions', 'length') || 1 // updating testsIncluded
     );
-    setLoading?.(false)
+    setLoading?.(false);
     const finalArray: DiagnosticsCartItem[] = Array.from({
       length: searchQueriesData?.length,
     }).map((_, index) => {
@@ -2822,12 +2821,12 @@ export async function downloadDiagnosticReport(
           PermissionsAndroid.RESULTS.DENIED
       ) {
         storagePermissionsToDownload(() => {
-          downloadDiagnosticReport(setLoading,pdfUrl, appointmentDate, patientName, true);
+          downloadDiagnosticReport(setLoading, pdfUrl, appointmentDate, patientName, true);
         });
       }
     }
   } catch (error) {
-    setLoading?.(false)
+    setLoading?.(false);
     CommonBugFender('YourOrderTests_downloadLabTest', error);
     throw new Error('Something went wrong');
   }
