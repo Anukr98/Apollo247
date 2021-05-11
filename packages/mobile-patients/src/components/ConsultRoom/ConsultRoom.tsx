@@ -988,12 +988,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         }
       });
     }
+
     if (params?.isFreeConsult) {
       checkPermissions(['camera', 'microphone']).then((response: any) => {
         const { camera, microphone } = response;
         if (camera === 'authorized' && microphone === 'authorized') {
           showFreeConsultOverlay(params);
-        } else {
+        } else if (!params?.isPhysicalConsultBooked) {
           overlyCallPermissions(
             currentPatient!.firstName!,
             params?.doctorName,
@@ -1006,6 +1007,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               }
             }
           );
+        } else {
+          if (params?.doctorName) showFreeConsultOverlay(params);
         }
       });
     }
@@ -1046,7 +1049,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const { camera, microphone } = response;
         if (camera === 'authorized' && microphone === 'authorized') {
           showFreeConsultOverlay(params);
-        } else {
+        } else if (!params?.isPhysicalConsultBooked) {
           overlyCallPermissions(
             currentPatient!.firstName!,
             params?.doctorName,
@@ -1059,6 +1062,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               }
             }
           );
+        } else {
+          if (params?.doctorName) showFreeConsultOverlay(params);
         }
       });
     }
