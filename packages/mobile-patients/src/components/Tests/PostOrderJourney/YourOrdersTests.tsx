@@ -45,6 +45,7 @@ import {
   DownloadNew,
   ShareBlue,
   ViewIcon,
+  Cross
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NavigationScreenProps } from 'react-navigation';
 import {
@@ -1177,7 +1178,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPressReschedule={() => _onPressTestReschedule(order)}
         onPressViewDetails={() => _navigateToYourTestDetails(order, true)}
         onPressViewReport={() => {
-          setSnackbarState(true);
+          setSnackbarState(false);
           setActiveOrder(order);
           setIsViewReport(true);
           // _onPressViewReport(order)
@@ -1421,42 +1422,52 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         >
           <View style={styles.modalMainView}>
             <View style={styles.reportModalView}>
-              {viewReportItemsArray.map((item) => (
-                <TouchableOpacity
-                  onPress={async () => {
-                    DiagnosticViewReportClicked(
-                      'My Order',
-                      !!activeOrder?.labReportURL ? 'Yes' : 'No',
-                      item?.title,
-                      activeOrder?.id
-                    );
-                    if (
-                      item?.title == string.Report.view ||
-                      item?.title == string.Report.download
-                    ) {
-                      _onPressViewReport(activeOrder);
-                    } else if (item?.title == string.Report.share) {
-                      try {
-                        const whatsAppScheme = `whatsapp://send?text=${activeOrder?.labReportURL}`;
-                        const canOpenURL = await Linking.canOpenURL(whatsAppScheme);
-                        canOpenURL && Linking.openURL(whatsAppScheme);
-                      } catch (error) {}
-                    } else {
-                      copyToClipboard(
-                        activeOrder && activeOrder?.labReportURL ? activeOrder?.labReportURL : ''
+              <TouchableOpacity
+                style={{ alignSelf: 'flex-end' }}
+                onPress={() => {
+                  setIsViewReport(false);
+                }}
+              >
+                <Cross />
+              </TouchableOpacity>
+              <View style={styles.reportModalOptionsView}>
+                {viewReportItemsArray.map((item) => (
+                  <TouchableOpacity
+                    onPress={async () => {
+                      DiagnosticViewReportClicked(
+                        'My Order',
+                        !!activeOrder?.labReportURL ? 'Yes' : 'No',
+                        item?.title,
+                        activeOrder?.id
                       );
-                    }
-                    setIsViewReport(false);
-                  }}
-                  style={styles.itemView}
-                >
-                  {item?.icon}
-                  <Text style={styles.itemTextStyle}>{item?.title}</Text>
-                  {snackbarState && item?.title == string.Report.copy ? (
-                    <Text style={styles.copyTextStyle}>Copied !!</Text>
-                  ) : null}
-                </TouchableOpacity>
-              ))}
+                      if (
+                        item?.title == string.Report.view ||
+                        item?.title == string.Report.download
+                      ) {
+                        _onPressViewReport(activeOrder);
+                      } else if (item?.title == string.Report.share) {
+                        try {
+                          const whatsAppScheme = `whatsapp://send?text=${activeOrder?.labReportURL}`;
+                          const canOpenURL = await Linking.canOpenURL(whatsAppScheme);
+                          canOpenURL && Linking.openURL(whatsAppScheme);
+                        } catch (error) {}
+                      } else {
+                        copyToClipboard(
+                          activeOrder && activeOrder?.labReportURL ? activeOrder?.labReportURL : ''
+                        );
+                      }
+                      setIsViewReport(false);
+                    }}
+                    style={styles.itemView}
+                  >
+                    {item?.icon}
+                    <Text style={styles.itemTextStyle}>{item?.title}</Text>
+                    {snackbarState && item?.title == string.Report.copy ? (
+                      <Text style={styles.copyTextStyle}>Copied !!</Text>
+                    ) : null}
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
           </View>
         </Modal>
@@ -1632,9 +1643,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     width: '100%',
     paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingVertical: 10,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
+  },
+  reportModalOptionsView: {
+    backgroundColor: 'white',
+    width: '100%',
   },
   itemView: {
     backgroundColor: 'white',

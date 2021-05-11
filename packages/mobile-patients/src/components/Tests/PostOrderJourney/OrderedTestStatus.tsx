@@ -9,7 +9,7 @@ import moment from 'moment';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import _ from 'lodash';
-import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity, Linking } from 'react-native';
+import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity, Linking, Modal, Clipboard } from 'react-native';
 import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
 import {
   DIAGNOSTIC_ORDER_STATUS,
@@ -22,7 +22,14 @@ import {
   getTestOrderStatusText,
   handleGraphQlError,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { WhatsAppIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  WhatsAppIcon,
+  CopyBlue,
+  DownloadNew,
+  ShareBlue,
+  ViewIcon,
+  Cross,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   AppConfig,
   DIAGNOSTIC_ORDER_FAILED_STATUS,
@@ -61,6 +68,9 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   const individualItemStatus = props.navigation.getParam('itemLevelStatus');
   const getRefundArray = props.navigation.getParam('refundStatusArr');
 
+  const [isViewReport, setIsViewReport] = useState<boolean>(false);
+  const [activeOrder, setActiveOrder] = useState<any>('');
+  const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const isPrepaid = orderSelected?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
 
   const [individualTestData, setIndividualTestData] = useState<any>([]);
@@ -265,11 +275,17 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
     const visitId = orderSelected?.visitNo;
     DiagnosticViewReportClicked();
     if (visitId) {
-      fetchTestReportResult(order);
+      setActiveOrder(order)
+      setSnackbarState(false)
+      setIsViewReport(true)
     } else {
       props.navigation.navigate(AppRoutes.HealthRecordsHome);
     }
   }
+  const copyToClipboard = (refId: string) => {
+    Clipboard.setString(refId);
+    setSnackbarState(true);
+  };
 
   const renderReportError = (message: string) => {
     showAphAlert!({
@@ -356,6 +372,24 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
       </View>
     );
   };
+  const viewReportItemsArray = [
+    {
+      icon: <ViewIcon />,
+      title: string.Report.view,
+    },
+    {
+      icon: <DownloadNew />,
+      title: string.Report.download,
+    },
+    {
+      icon: <ShareBlue />,
+      title: string.Report.share,
+    },
+    {
+      icon: <CopyBlue />,
+      title: string.Report.copy,
+    },
+  ];
 
   return (
     <View style={{ flex: 1 }}>
@@ -371,6 +405,68 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
           {renderOrders()}
           {renderRefund()}
         </ScrollView>
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={isViewReport}
+          onRequestClose={() => {
+            setIsViewReport(false);
+          }}
+          onDismiss={() => {
+            setIsViewReport(false);
+          }}
+        >
+          <View style={styles.modalMainView}>
+            <View style={styles.reportModalView}>
+              <TouchableOpacity
+                style={{ alignSelf: 'flex-end' }}
+                onPress={() => {
+                  setIsViewReport(false);
+                }}
+              >
+                <Cross />
+              </TouchableOpacity>
+              <View style={styles.reportModalOptionsView}>
+                {viewReportItemsArray.map((item) => (
+                  <TouchableOpacity
+                    onPress={async () => {
+                      DiagnosticViewReportClicked(
+                        'My Order',
+                        !!activeOrder?.labReportURL ? 'Yes' : 'No',
+                        item?.title,
+                        activeOrder?.id
+                      );
+                      if (
+                        item?.title == string.Report.view ||
+                        item?.title == string.Report.download
+                      ) {
+                        fetchTestReportResult(activeOrder);
+                      } else if (item?.title == string.Report.share) {
+                        try {
+                          const whatsAppScheme = `whatsapp://send?text=${activeOrder?.labReportURL}`;
+                          const canOpenURL = await Linking.canOpenURL(whatsAppScheme);
+                          canOpenURL && Linking.openURL(whatsAppScheme);
+                        } catch (error) {}
+                      } else {
+                        copyToClipboard(
+                          activeOrder && activeOrder?.labReportURL ? activeOrder?.labReportURL : ''
+                        );
+                      }
+                      setIsViewReport(false);
+                    }}
+                    style={styles.itemView}
+                  >
+                    {item?.icon}
+                    <Text style={styles.itemTextStyle}>{item?.title}</Text>
+                    {snackbarState && item?.title == string.Report.copy ? (
+                      <Text style={styles.copyTextStyle}>Copied !!</Text>
+                    ) : null}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
       {loading && <Spinner />}
     </View>
@@ -450,5 +546,43 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 10,
     borderBottomRightRadius: 10,
     borderBottomLeftRadius: 10,
+  },
+  modalMainView: {
+    backgroundColor: 'rgba(100,100,100, 0.5)',
+    flex: 1,
+    justifyContent: 'flex-end',
+    // alignItems: 'center',
+    flexDirection: 'column',
+  },
+  reportModalView: {
+    backgroundColor: 'white',
+    width: '100%',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  },
+
+  reportModalOptionsView: {
+    backgroundColor: 'white',
+    width: '100%',
+  },
+  itemView: {
+    backgroundColor: 'white',
+    width: '100%',
+    padding: 10,
+    flexDirection: 'row',
+    alignContent: 'center',
+    borderBottomColor: '#e8e8e8',
+    borderBottomWidth: 1,
+  },
+  itemTextStyle: {
+    marginHorizontal: 10,
+    ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE),
+  },
+  copyTextStyle: {
+    marginHorizontal: 10,
+    textAlign: 'left',
+    ...theme.viewStyles.text('SB', 14, theme.colors.APP_GREEN),
   },
 });
