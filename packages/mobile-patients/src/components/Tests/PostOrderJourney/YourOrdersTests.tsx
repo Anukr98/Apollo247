@@ -1425,10 +1425,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                 <TouchableOpacity
                   onPress={async () => {
                     DiagnosticViewReportClicked(
-                      activeOrder?.id,
                       'My Order',
                       !!activeOrder?.labReportURL ? 'Yes' : 'No',
-                      item?.title
+                      item?.title,
+                      activeOrder?.id
                     );
                     if (
                       item?.title == string.Report.view ||

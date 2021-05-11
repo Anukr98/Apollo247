@@ -1258,7 +1258,7 @@ export interface WebEngageEvents {
     'Source': 'Home' | 'My Order' | 'Track Order' | 'Order Summary'
   };
   [WebEngageEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED]: {
-    'Order id': string;
+    'Order id'?: string;
     'Source': 'Home' | 'My Order' | 'Track Order' | 'Order Summary'
     'Report generated': 'Yes' | 'No';
     'Action taken' : 'View Report' | "Download Report PDF" | "Share on Whatsapp" | "Copy Link to PDF"

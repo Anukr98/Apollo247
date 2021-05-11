@@ -135,6 +135,7 @@ import {
   DiagnosticPinCodeClicked,
   DiagnosticTrackOrderViewed,
   DiagnosticTrackPhleboClicked,
+  DiagnosticViewReportClicked,
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import { PackageCard } from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
@@ -2028,7 +2029,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const pdfName = item?.caseSheet?.blobName;
     const prescriptionDate = moment(item?.prescriptionDateTime).format('DD MM YYYY');
     const fileName: string = getFileName(item);
-
+    //need to remove the event once added
+    DiagnosticViewReportClicked(
+      'Home',
+      !!pdfName?.labReportURL ? 'Yes' : 'No',
+      'Download Report PDF'
+    );
     if (pdfName == null) {
       Alert.alert('No Image');
       CommonLogEvent('Tests', 'No image');

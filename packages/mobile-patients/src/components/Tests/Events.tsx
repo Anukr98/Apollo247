@@ -476,17 +476,19 @@ export function DiagnosticOrderSummaryViewed(
 }
 
 export function DiagnosticViewReportClicked(
-  orderId: string,
   source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary',
   reportGenerated: 'Yes' | 'No',
-  action: 'View Report' | 'Download Report PDF' | 'Share on Whatsapp' | 'Copy Link to PDF'
+  action: 'View Report' | 'Download Report PDF' | 'Share on Whatsapp' | 'Copy Link to PDF',
+  orderId?: string
 ) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED] = {
-    'Order id': orderId,
     Source: source,
     'Report generated': reportGenerated,
     'Action taken': action,
   };
+  if (!!orderId) {
+    eventAttributes['Order id'] = orderId;
+  }
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED, eventAttributes);
 }
 

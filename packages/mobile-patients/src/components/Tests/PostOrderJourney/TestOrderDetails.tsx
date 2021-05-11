@@ -543,6 +543,13 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       / /g,
       '_'
     );
+    //need to remove the event once added
+    DiagnosticViewReportClicked(
+      'Track Order',
+      !!order?.labReportURL ? 'Yes' : 'No',
+      'Download Report PDF',
+      order?.id
+    );
     if (order?.labReportURL && order?.labReportURL != '') {
       downloadLabTest(order?.labReportURL, appointmentDate, patientName);
     } else if (visitId) {
