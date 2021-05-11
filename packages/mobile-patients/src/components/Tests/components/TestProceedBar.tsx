@@ -18,6 +18,7 @@ export interface TestProceedBarProps {
   onPressProceedtoPay?: () => void;
   onPressTimeSlot?: () => void;
   onPressSelectArea?: () => void;
+  phleboMin?: number;
   selectedTimeSlot?: any;
   showTime?: any;
   disableProceedToPay?: boolean;
@@ -99,10 +100,18 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
           )}
         </View>
         <Text style={styles.timeTextStyle}>{timeSlotText || ''}</Text>
-        <View style={styles.infoIconViewStyle}>
-          <TestInfoWhiteIcon style={styles.timeIconStyle} />
-          <Text style={styles.infoTextStyle}>{string.diagnostics.cartPhelboTxt}</Text>
-        </View>
+        {!!timeSlotText ? (
+          <View style={styles.infoIconViewStyle}>
+            <TestInfoWhiteIcon style={styles.timeIconStyle} />
+            <Text style={styles.infoTextStyle}>
+              {`The sample collection executive will reach between ${moment(timeSlotText).format(
+                'hh:mm A'
+              )} - ${moment(timeSlotText)
+                .add(props.phleboMin, 'minutes')
+                .format('hh:mm A')} for collecting the samples`}
+            </Text>
+          </View>
+        ) : null}
       </View>
     );
   };

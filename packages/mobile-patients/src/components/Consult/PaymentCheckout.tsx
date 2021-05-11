@@ -498,10 +498,12 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const renderCouponSavingsView = () => {
     return (
       <View style={styles.couponSavingView}>
-        <Text style={styles.amountSavedText}>
-          {string.common.savingsOnBill.replace('{amount}', `${couponDiscountFees}`)}
-        </Text>
         {!!successMessage && <Text style={styles.successMessageStyle}>{successMessage}</Text>}
+        <View style={styles.couponDiscountView}>
+          <Text style={styles.amountSavedText}>
+            {string.common.savingsOnBill.replace('{amount}', `${couponDiscountFees}`)}
+          </Text>
+        </View>
       </View>
     );
   };
@@ -1082,6 +1084,15 @@ const styles = StyleSheet.create({
   },
   couponSavingView: {
     marginTop: 15,
+    borderTopWidth: 0.5,
+    borderColor: theme.colors.BORDER_BOTTOM_COLOR,
+    borderRadius: 3,
+    paddingVertical: 7,
+    justifyContent: 'center',
+    width: '100%',
+  },
+  couponDiscountView: {
+    marginTop: 5,
     borderWidth: 1,
     borderColor: theme.colors.SEARCH_UNDERLINE_COLOR,
     borderRadius: 3,
@@ -1219,8 +1230,5 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(17),
     lineHeight: 24,
   },
-  successMessageStyle: {
-    ...theme.viewStyles.text('R', 16, theme.colors.SEARCH_UNDERLINE_COLOR, 1, 27),
-    marginLeft: 8,
-  },
+  successMessageStyle: theme.viewStyles.text('R', 16, theme.colors.SEARCH_UNDERLINE_COLOR, 1, 27),
 });

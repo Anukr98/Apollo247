@@ -63,6 +63,7 @@ export interface PhysicalPrescription {
 export interface EPrescription {
   id: string;
   uploadedUrl: string;
+  uploadedUrlArray: any;
   forPatient: string;
   date: string;
   medicines: string;
@@ -1066,6 +1067,12 @@ export const ShoppingCartProvider: React.FC = (props) => {
       setShowPrescriptionAtStore(false);
     }
   }, [deliveryAddressId]);
+
+  useEffect(() => {
+    if (physicalPrescriptions?.length || ePrescriptions?.length) {
+      setPrescriptionType(PrescriptionType.UPLOADED);
+    }
+  }, [physicalPrescriptions, ePrescriptions]);
 
   const selectDefaultPlan = (plan: any) => {
     const defaultPlan = plan?.filter((item: any) => item.defaultPack === true);

@@ -23,6 +23,7 @@ import {
   OrangeCall,
   LocationOutline,
   StarEmpty,
+  ClockIcon
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -303,12 +304,12 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
   const showOTPContainer = () => {
     const phlObj = props?.phelboObject;
-    let otpToShow = !!phlObj && phlObj?.PhelboOTP;
-    let phoneNumber = !!phlObj && phlObj?.PhelbotomistMobile;
-    let name = !!phlObj && phlObj?.PhelbotomistName;
-    let phleboTrackLink = !!phlObj && phlObj?.PhelbotomistTrackLink;
-    let checkEta = !!phlObj?.CheckInTime;
-    let phleboEta = '';
+    const otpToShow = !!phlObj && phlObj?.PhelboOTP;
+    const phoneNumber = !!phlObj && phlObj?.PhelbotomistMobile;
+    const name = !!phlObj && phlObj?.PhelbotomistName;
+    const phleboTrackLink = !!phlObj && phlObj?.PhelbotomistTrackLink;
+    const checkEta = !!phlObj?.CheckInTime
+    let phleboEta = ''
     if (checkEta) {
       phleboEta = moment(phlObj?.CheckInTime).format('YYYY-MM-DDTHH:mm:ss');
     }
@@ -344,7 +345,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
               ) : null}
             </View>
 
-            {checkEta ? (
+            {checkEta && props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN ? (
               <View style={styles.otpContainer}>
                 <View style={styles.etaContainer}>
                   <LocationOutline style={styles.locationIcon} />
@@ -374,7 +375,10 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
   const showRatingView = () => {
     const starCount = [1, 2, 3, 4, 5];
-    return props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED ? (
+    const phlObj = props?.phelboObject;
+    const phleboRating = !!phlObj && phlObj?.PhleboRating;
+    let checkRating = starCount.includes(phleboRating)
+    return props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED && !checkRating ? (
       <View style={styles.ratingContainer}>
         <Text style={styles.ratingTextStyle}>How was your Experience with Phlebo</Text>
         <View style={styles.startContainer}>
@@ -391,6 +395,18 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       </View>
     ) : null;
   };
+
+  const showReportTat = () => {
+    const report = !!props?.ordersData?.testPreparationData ? props?.ordersData?.testPreparationData : '';
+    return props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED && report ? (
+      <View style={styles.ratingContainer}>
+        <View style={styles.reporttatContainer}>
+          <ClockIcon />
+          <Text style={styles.reportTextStyle}>{report}</Text>
+        </View>
+      </View>
+    ) : null;
+  }
 
   const renderAdditionalInfoView = () => {
     const isPresent =
@@ -444,6 +460,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       {props.showAdditonalView || props.isCancelled ? renderAdditionalInfoView() : null}
       {showOTPContainer()}
       {showRatingView()}
+      {showReportTat()}
     </TouchableOpacity>
   );
 };
@@ -627,9 +644,18 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
   },
+  reporttatContainer: {
+    marginVertical: 5,
+    flexDirection:'row',
+    alignItems:'center',
+  },
   startContainer: {
     flexDirection: 'row',
     margin: 5,
+  },
+  reportTextStyle: {
+    marginHorizontal:10,
+    ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 1, 16),
   },
   ratingTextStyle: {
     ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 1, 16),

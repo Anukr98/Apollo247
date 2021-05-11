@@ -82,6 +82,7 @@ import {
   Alert,
   Linking,
   FlatList,
+  Animated,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
@@ -132,6 +133,7 @@ import {
   DiagnosticHomePageSearchItem,
   DiagnosticLandingPageViewedEvent,
   DiagnosticPinCodeClicked,
+  DiagnosticTrackOrderViewed,
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import { PackageCard } from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
@@ -277,6 +279,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [asyncPincode, setAsyncPincode] = useState({});
   const [isFocused, setIsFocused] = useState<boolean>(false);
 
+  const orderPrescription_scrollX = new Animated.Value(0);
+  let orderPrescription_position = Animated.divide(orderPrescription_scrollX, winWidth);
+
+  const orderStatus_scrollX = new Animated.Value(0);
+  let orderStatus_position = Animated.divide(orderStatus_scrollX, winWidth);
+
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
 
   const [serviceableObject, setServiceableObject] = useState({} as any);
@@ -312,7 +320,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     id: string,
     price: number,
     discountedPrice: number,
-    source: 'Home page' | 'Full search' | 'Details page' | 'Partial search',
+    source: 'Home page' | 'Full search' | 'Details page' | 'Partial search' | 'Prescription',
     section?: 'Featured tests' | 'Browse packages'
   ) => {
     DiagnosticAddToCartEvent(name, id, price, discountedPrice, source, section);
@@ -943,7 +951,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     savePastSearch(`${itemId}`, itemName).catch((e) => {
       aphConsole.log({ e });
     });
-    // postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, rate, rate, 'Partial search');
     //passed zero till the time prices aren't updated.
     postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, 0, 0, 'Partial search');
     addCartItem!({
@@ -1535,14 +1542,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderWidgets = (data: any) => {
-    if (data?.diagnosticWidgetType == 'Package') {
-      return renderPackageWidget(data);
-    } else if (data?.diagnosticWidgetType == 'Category_Scroll') {
-      return scrollWidgetSection(data);
-    } else if (data?.diagnosticWidgetType == 'Category') {
-      return gridWidgetSection(data);
-    } else {
-      return renderTestWidgets(data);
+    let widgetType = data?.diagnosticWidgetType;
+    switch (widgetType) {
+      case 'Package':
+        return renderPackageWidget(data);
+        break;
+      case 'Category_Scroll':
+        return scrollWidgetSection(data);
+        break;
+      case 'Category':
+        return gridWidgetSection(data);
+        break;
+      default:
+        return renderTestWidgets(data);
+        break;
     }
   };
 
@@ -1849,17 +1862,54 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderPrescriptionCard = () => {
     return (
-      <FlatList
-        bounces={false}
-        pagingEnabled={true}
-        keyExtractor={keyExtractor}
-        showsHorizontalScrollIndicator={false}
-        showsVerticalScrollIndicator={false}
-        horizontal={true}
-        data={latestPrescription}
-        renderItem={renderPrescriptionCardItems}
-        maxToRenderPerBatch={3}
-      />
+      <View>
+        <FlatList
+          bounces={false}
+          pagingEnabled={true}
+          keyExtractor={keyExtractor}
+          showsHorizontalScrollIndicator={false}
+          showsVerticalScrollIndicator={false}
+          horizontal={true}
+          data={latestPrescription}
+          renderItem={renderPrescriptionCardItems}
+          maxToRenderPerBatch={3}
+          snapToAlignment="center"
+          scrollEventThrottle={16}
+          decelerationRate={'fast'}
+          onScroll={Animated.event([
+            { nativeEvent: { contentOffset: { x: orderPrescription_scrollX } } },
+          ])}
+        />
+        <View style={styles.prescriptionStatusCardDots}>
+          {latestPrescription?.length > 1
+            ? latestPrescription?.map((_, i) => {
+                let opacity = orderPrescription_position.interpolate({
+                  inputRange: [i - 1, i, i + 1],
+                  outputRange: [0.2, 1, 0.2],
+                  extrapolate: 'clamp',
+                });
+                let width = orderPrescription_position.interpolate({
+                  inputRange: [i - 1, i, i + 1],
+                  outputRange: [8, 14, 8],
+                  extrapolate: 'clamp',
+                });
+                return (
+                  <Animated.View
+                    key={i}
+                    style={[
+                      styles.sliderDotStyle,
+                      {
+                        width,
+                        backgroundColor: colors.APP_YELLOW,
+                        opacity,
+                      },
+                    ]}
+                  />
+                );
+              })
+            : null}
+        </View>
+      </View>
     );
   };
 
@@ -1886,8 +1936,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   function onPressBookNow(item: any) {
     const testPrescription = item?.caseSheet?.diagnosticPrescription;
-    setLoading?.(true);
-    addTestsToCart(testPrescription, client, '500030')
+    addTestsToCart(testPrescription, client, '500030', setLoading)
       .then((tests: DiagnosticsCartItem[]) => {
         // Adding ePrescriptions to DiagnosticsCart
         const unAvailableItemsArray = testPrescription?.filter(
@@ -1911,6 +1960,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
           );
         }
         setLoading?.(false);
+        const getAddedItemNames = tests?.map((item) => item?.name)?.join(', ');
+        const getAddedItemIds = tests?.map((item) => Number(item?.id))?.join(', ');
+
+        postDiagnosticAddToCartEvent(getAddedItemNames, getAddedItemIds, 0, 0, 'Prescription');
+
         props.navigation.navigate(AppRoutes.TestsCart);
       })
       .catch((e) => {
@@ -1960,13 +2014,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const orderStatusCardKeyExtractor = useCallback((item: any, index: number) => `${index}`, []);
 
-  const _onViewRef = React.useRef((viewableItems: { viewableItems: { index: any }[] }) => {
-    let indexVal = viewableItems?.viewableItems?.[0]?.index;
-    setOrderCardSlideIndex(indexVal);
-  });
-
-  const _viewConfigRef = React.useRef({ viewAreaCoveragePercentThreshold: 50 });
-
   const renderOrderStatusCard = () => {
     var allOrders = [];
     if (patientOpenOrders?.length == 3) {
@@ -1992,54 +2039,41 @@ export const Tests: React.FC<TestsProps> = (props) => {
               data={allOrders}
               renderItem={renderOrderStatusCardItems}
               maxToRenderPerBatch={3}
-              onViewableItemsChanged={_onViewRef.current}
-              viewabilityConfig={_viewConfigRef.current}
+              snapToAlignment="center"
+              scrollEventThrottle={16}
+              decelerationRate={'fast'}
+              onScroll={Animated.event([
+                { nativeEvent: { contentOffset: { x: orderStatus_scrollX } } },
+              ])}
             />
             <View style={styles.orderStatusCardDots}>
-              {allOrders?.length > 0 &&
-                allOrders?.map((_: any, index: number) =>
-                  index == orderCardSlideIndex
-                    ? renderDot(true, 'orderStatus')
-                    : renderDot(false, 'orderStatus')
-                )}
-            </View>
-          </View>
-        ) : null}
-      </>
-    );
-  };
-
-  const renderOrderStatusCard1 = () => {
-    var allOrders = [];
-    if (patientOpenOrders?.length == 3) {
-      allOrders.push(patientOpenOrders);
-    } else if (patientOpenOrders?.length && patientOpenOrders?.length < 3) {
-      allOrders.push(patientOpenOrders);
-      allOrders.push(patientClosedOrders);
-    } else {
-      allOrders.push(patientClosedOrders);
-    }
-    allOrders = allOrders?.flat(1);
-    return (
-      <>
-        {allOrders?.length > 0 ? (
-          <View style={{ marginBottom: 10 }}>
-            <Carousel
-              onSnapToItem={setOrderCardSlideIndex}
-              data={allOrders}
-              renderItem={renderOrderStatusCardItems}
-              sliderWidth={winWidth}
-              itemWidth={winWidth}
-              loop={false}
-              autoplay={false}
-            />
-            <View style={styles.orderStatusCardDots}>
-              {allOrders?.length > 0 &&
-                allOrders?.map((_: any, index: number) =>
-                  index == orderCardSlideIndex
-                    ? renderDot(true, 'orderStatus')
-                    : renderDot(false, 'orderStatus')
-                )}
+              {allOrders?.length > 1
+                ? allOrders?.map((_, i) => {
+                    let opacity = orderStatus_position.interpolate({
+                      inputRange: [i - 1, i, i + 1],
+                      outputRange: [0.2, 1, 0.2],
+                      extrapolate: 'clamp',
+                    });
+                    let width = orderStatus_position.interpolate({
+                      inputRange: [i - 1, i, i + 1],
+                      outputRange: [8, 14, 8],
+                      extrapolate: 'clamp',
+                    });
+                    return (
+                      <Animated.View
+                        key={i}
+                        style={[
+                          styles.sliderDotStyle,
+                          {
+                            width,
+                            backgroundColor: colors.APP_YELLOW,
+                            opacity,
+                          },
+                        ]}
+                      />
+                    );
+                  })
+                : null}
             </View>
           </View>
         ) : null}
@@ -2669,7 +2703,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     position: 'absolute',
-    top: 130,
+    bottom: 35,
+    alignSelf: 'flex-start',
+    left: 32,
+  },
+  prescriptionStatusCardDots: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    position: 'absolute',
+    bottom: 35,
     alignSelf: 'flex-start',
     left: 32,
   },

@@ -100,6 +100,7 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   CheckInTime: any | null;
   PhleboLatitude: number | null;
   PhleboLongitude: number | null;
+  PhleboRating: number | null;
 }
 
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderReschedule {

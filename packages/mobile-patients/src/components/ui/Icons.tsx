@@ -61,6 +61,18 @@ export const More: React.FC<IconProps> = (props) => (
 export const Copy: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/copy.webp')} />
 );
+export const CopyBlue: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/copy_blue.webp')} />
+);
+export const DownloadNew: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/download.webp')} />
+);
+export const ShareBlue: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/share.webp')} />
+);
+export const ViewIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/view.webp')} />
+);
 
 export const DropdownGreen: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_dropdown_green.webp')} />
@@ -152,6 +164,16 @@ export const Evening: React.FC<IconProps> = (props) => (
 
 export const Night: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_night.webp')} />
+);
+
+export const MorningSelected: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_morning_active.webp')} />
+);
+export const AfternoonSelected: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_sun_active.webp')} />
+);
+export const NightSelected: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_night_active.webp')} />
 );
 
 export const MorningUnselected: React.FC<IconProps> = (props) => (

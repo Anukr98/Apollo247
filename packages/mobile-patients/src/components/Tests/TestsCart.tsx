@@ -56,6 +56,7 @@ import {
   GET_DIAGNOSTIC_NEAREST_AREA,
   GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
   MODIFY_DIAGNOSTIC_ORDERS,
+  FIND_DIAGNOSTIC_SETTINGS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticsHCChargesVariables,
@@ -100,7 +101,7 @@ import {
   Alert,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlay';
+import { TestSlotSelectionOverlayNew } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlayNew';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -181,6 +182,9 @@ import {
   saveModifyDiagnosticOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/saveModifyDiagnosticOrder';
 import { processDiagnosticsCODOrder } from '@aph/mobile-patients/src/helpers/clientCalls';
+  findDiagnosticSettings,
+  findDiagnosticSettingsVariables,
+} from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
 const { width: screenWidth } = Dimensions.get('window');
 
 export interface areaObject {
@@ -301,6 +305,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [showAllPreviousItems, setShowAllPreviousItems] = useState<boolean>(true);
   const [isHcApiCalled, setHcApiCalled] = useState<boolean>(false);
 
+  const [phleboMin, setPhleboMin] = useState(0);
   const itemsWithHC = cartItems?.filter((item) => item!.collectionMethod == 'HC');
   const itemWithId = itemsWithHC?.map((item) => Number(item.id!));
 
@@ -365,6 +370,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     !!existingOrderDetails && setAreaSelected?.({ key: existingOrderDetails?.areaId, value: '' });
     !!existingOrderDetails && setPatientId?.(existingOrderDetails?.patientId);
   }, []);
+  useEffect(() => {
+    fetchFindDiagnosticSettings();
+  }, []);
 
   const fetchTestReportGenDetails = async (_cartItemId: string | number[]) => {
     try {
@@ -423,6 +431,22 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       CommonBugFender('TestsCart_fetchTestReportGenDetails', e);
       setAlsoAddListData([]);
       setReportGenDetails([]);
+    }
+  };
+
+  const fetchFindDiagnosticSettings = async () => {
+    try {
+      const response = await client.query<findDiagnosticSettings, findDiagnosticSettingsVariables>({
+        query: FIND_DIAGNOSTIC_SETTINGS,
+        variables: {
+          phleboETAInMinutes: 0,
+        },
+        fetchPolicy: 'no-cache',
+      });
+      const phleboMin = g(response, 'data', 'findDiagnosticSettings', 'phleboETAInMinutes') || 45;
+      setPhleboMin(phleboMin);
+    } catch (error) {
+      CommonBugFender('TestsCart_fetchFindDiagnosticSettings', error);
     }
   };
 
@@ -2157,7 +2181,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         subscriptionInclusionId: null,
         userSubscriptionId: circleSubscriptionId,
       };
-
       saveHomeCollectionBookingOrder(bookingOrderInfo)
         .then(async ({ data }) => {
           const getSaveHomeCollectionResponse = data?.saveDiagnosticBookHCOrder;
@@ -2940,6 +2963,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         onPressProceedtoPay={() => onPressProceedToPay()}
         onPressSelectDeliveryAddress={() => showAddressPopup()}
         showTime={showTime}
+        phleboMin={phleboMin}
         onPressTimeSlot={() => showTime && setDisplaySchedule(true)}
         onPressSelectArea={() => setShowSelectAreaOverlay(true)}
         isModifyCOD={
@@ -3111,7 +3135,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       {displaySchedule && (
-        <TestSlotSelectionOverlay
+        <TestSlotSelectionOverlayNew
           source={'Tests'}
           heading="Schedule Appointment"
           date={date}
