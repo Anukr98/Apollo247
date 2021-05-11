@@ -77,13 +77,25 @@ export function DiagnosticPinCodeClicked(
   );
 }
 
-export function DiagnosticHomePageWidgetClicked(name: string, id: string, section: string) {
+export function DiagnosticHomePageWidgetClicked(
+  section: string,
+  name?: string,
+  id?: string,
+  category?: string
+) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED] = {
-    'Item Name': name,
-    'Item ID': id,
     Source: 'Home Page',
     'Section Name': section,
   };
+  if (!!category) {
+    eventAttributes['Category Name'] = category;
+  }
+  if (!!id) {
+    eventAttributes['Item ID'] = id;
+  }
+  if (!!name) {
+    eventAttributes['Item Name'] = name;
+  }
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED, eventAttributes);
 }
 
@@ -92,7 +104,14 @@ export function DiagnosticAddToCartEvent(
   id: string,
   price: number,
   discountedPrice: number,
-  source: 'Home page' | 'Full search' | 'Details page' | 'Partial search' | 'Listing page',
+  source:
+    | 'Home page'
+    | 'Full search'
+    | 'Details page'
+    | 'Partial search'
+    | 'Listing page'
+    | 'Category page'
+    | 'Prescription',
   section?: string
 ) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADD_TO_CART] = {
@@ -157,7 +176,8 @@ export function DiagnosticDetailsViewed(
     | 'Cart Page'
     | 'Partial Search'
     | 'Deeplink'
-    | 'Popular search',
+    | 'Popular search'
+    | 'Category page',
   itemName: string,
   itemType: string,
   itemCode: string,
@@ -214,7 +234,8 @@ export function DiagnosticCartViewed(
   collectionCharges: number,
   validity: circleValidity | null,
   circleSubId: string,
-  isCircle: boolean
+  isCircle: boolean,
+  pincode: string | number
 ) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CART_VIEWED] = {
     'Total items in cart': cartItems?.length,
@@ -231,6 +252,8 @@ export function DiagnosticCartViewed(
           specialPrice: item?.specialPrice || item.price,
         } as unknown) as DiagnosticsCartItem)
     ),
+    Pincode: pincode,
+    UHID: currentPatient?.uhid,
   };
   if (diagnosticSlot) {
     eventAttributes['Delivery charge'] = collectionCharges;
@@ -269,14 +292,14 @@ export function DiagnosticProceedToPay(
   cartTotal: number,
   grandTotal: number,
   prescRqd: boolean,
-  mode: 'Home' | 'Pickup' | 'Home Visit' | 'Clinic Visit',
+  mode: 'Home Visit' | 'Clinic Visit',
   pincode: string | number,
   serviceName: 'Pharmacy' | 'Diagnostic',
   areaName: string,
+  areaId: string | number,
   collectionCharges: number,
   timeSlot: string
 ) {
-  const diffInDays = date.getDate() - new Date().getDate();
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED] = {
     'Patient Name selected': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
     'Total items in cart': cartItems?.length,
@@ -289,11 +312,11 @@ export function DiagnosticProceedToPay(
     'Pin Code': pincode,
     'Service Area': serviceName,
     'Area Name': areaName,
-    'No of Days ahead of Order Date selected': diffInDays,
+    'Area id': areaId,
     'Home collection charges': collectionCharges,
     'Collection Time Slot': timeSlot,
   };
-  if (mode == 'Home' || mode == 'Home Visit') {
+  if (mode == 'Home Visit') {
     eventAttributes['Delivery Date Time'] = date;
   }
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED, eventAttributes);
@@ -324,7 +347,6 @@ export function DiagnosticAreaSelected(selectedAddr: any, area: string) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_AREA_SELECTED] = {
     'Address Pincode': Number(selectedAddr?.zipcode!),
     'Area Selected': area,
-    Servicability: 'Yes',
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_AREA_SELECTED, eventAttributes);
 }
@@ -333,39 +355,30 @@ export function DiagnosticAppointmentTimeSlot(
   selectedAddr: any,
   area: string,
   time: string,
-  diffInDays: number
+  slotSelectedMode: 'Manual' | 'Automatic',
+  isSlotAvailable: 'Yes' | 'No',
+  currentPatient: any
 ) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED] = {
     'Address Pincode': Number(selectedAddr?.zipcode!),
     'Area Selected': area,
     'Time Selected': time,
-    'No of Days ahead of Order Date selected': diffInDays,
+    'Slot selected': slotSelectedMode,
+    'Slot available': isSlotAvailable,
+    UHID: currentPatient?.uhid,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED, eventAttributes);
 }
 
-export function DiagnosticPaymentInitiated(
-  mode: 'Prepaid' | 'Cash',
-  grandTotal: number,
-  serviceArea: 'Diagnostic' | 'Pharmacy',
-  LOB: string,
-  type: string
-) {
+export function DiagnosticPaymentInitiated(grandTotal: number, LOB: string, type: string) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
-    Paymentmode: mode,
     Amount: grandTotal,
-    ServiceArea: serviceArea,
     LOB: LOB,
     type: type,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED, eventAttributes);
 }
 
-export function DiagnosticViewReportClicked() {
-  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED, {});
-}
-
-//to do
 export function DiagnosticAddresssSelected(
   type: 'New' | 'Existing',
   serviceable: 'Yes' | 'No',
@@ -406,25 +419,27 @@ export function DiagnosticRescheduleOrder(
   date: string,
   orderId: string
 ) {
-  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSITC_ORDER_RESCHEDULE] = {
-    Reschedule: reason,
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ORDER_RESCHEDULE] = {
+    'Reschedule reason': reason,
     'Slot Time': time,
     'Slot Date': date,
     'Order id': orderId,
   };
-  postWebEngageEvent(WebEngageEventName.DIAGNOSITC_ORDER_RESCHEDULE, eventAttributes);
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ORDER_RESCHEDULE, eventAttributes);
 }
 
 export function DiagnosticTrackOrderViewed(
   currentPatient: any,
   latestStatus: string,
-  orderId: string
+  orderId: string,
+  source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary'
 ) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_TRACK_ORDER_VIEWED] = {
     'Patient UHID': g(currentPatient, 'uhid'),
     'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
     'Latest Order Status': latestStatus,
     'Order id': orderId,
+    Source: source,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TRACK_ORDER_VIEWED, eventAttributes);
 }
@@ -445,4 +460,49 @@ export function DiagnosticPaymentPageViewed(currentPatient: any, amount: string 
     'Order amount': amount,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED, eventAttributes);
+}
+
+export function DiagnosticOrderSummaryViewed(
+  amount: string | number,
+  orderId: string,
+  status: string
+) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED] = {
+    'Order amount': amount,
+    'Order id': orderId,
+    'Order status': status,
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED, eventAttributes);
+}
+
+export function DiagnosticViewReportClicked(
+  source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary',
+  reportGenerated: 'Yes' | 'No',
+  action: 'View Report' | 'Download Report PDF' | 'Share on Whatsapp' | 'Copy Link to PDF',
+  orderId?: string
+) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED] = {
+    Source: source,
+    'Report generated': reportGenerated,
+    'Action taken': action,
+  };
+  if (!!orderId) {
+    eventAttributes['Order id'] = orderId;
+  }
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED, eventAttributes);
+}
+
+export function DiagnosticTrackPhleboClicked(
+  orderId: string,
+  source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary',
+  currentPatient: any,
+  isOpen: 'Yes' | 'No'
+) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED] = {
+    'Order id': orderId,
+    Source: source,
+    UHID: currentPatient?.uhid,
+    'Link opened': isOpen,
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED, eventAttributes);
 }
