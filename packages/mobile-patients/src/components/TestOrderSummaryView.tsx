@@ -3,16 +3,13 @@ import React, { useEffect } from 'react';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList } from '../graphql/types/getDiagnosticOrderDetails';
 import moment from 'moment';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import {
-  WebEngageEventName,
-  WebEngageEvents,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { ScrollView } from 'react-native-gesture-handler';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { DIAGNOSTIC_ORDER_PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { DiagnosticOrderSummaryViewed } from '@aph/mobile-patients/src/components/Tests/Events';
 export interface LineItemPricing {
   packageMrp: number;
   pricingObj: any;
@@ -38,13 +35,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({
   const isPrepaid = orderDetails?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
 
   useEffect(() => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED] = {
-      'Order id:': orderDetails?.id,
-      'Order amount': grossCharges!,
-      'Sample Collection Date': orderDetails?.diagnosticDate,
-      'Order status': orderDetails?.orderStatus,
-    };
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED, eventAttributes);
+    DiagnosticOrderSummaryViewed(grossCharges, orderDetails?.id, orderDetails?.orderStatus);
   }, []);
 
   const getAllObjectForNull = orderDetails?.diagnosticOrderLineItems?.filter(

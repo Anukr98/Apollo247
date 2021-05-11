@@ -549,6 +549,10 @@
     "collectionText": "Track Order",
     "trackPhleboText": "Track Phlebo"
   },
+  "diagnosticCategoryTitle": {
+    "category" : "Category",
+    "categoryGrid": "Category_Scroll"
+  },
   "orders": {
     "urOrders": "MY ORDERS",
     "ratingHeader": "FEEDBACK",
