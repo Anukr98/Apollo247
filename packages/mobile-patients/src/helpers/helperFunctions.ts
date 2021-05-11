@@ -1621,6 +1621,10 @@ export const postWebEngageIfNewSession = (
   }
 };
 
+export const removeObjectProperty = (object: any, property: string) => {
+  return _.omit(object, property);
+};
+
 export const postWEGNeedHelpEvent = (
   currentPatient: GetCurrentPatients_getCurrentPatients_patients,
   source: WebEngageEvents[WebEngageEventName.NEED_HELP]['Source']

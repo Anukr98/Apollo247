@@ -37,6 +37,7 @@ import {
   getPhrHighlightText,
   phrSearchWebEngageEvents,
   postWebEngageIfNewSession,
+  removeObjectProperty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -352,7 +353,8 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
   };
 
   const onHealthCardItemPress = (selectedItem: MedicalBillsType) => {
-    postWebEngageIfNewSession('Bill', currentPatient, selectedItem, phrSession, setPhrSession);
+    const eventInputData = removeObjectProperty(selectedItem, 'billFiles');
+    postWebEngageIfNewSession('Bill', currentPatient, eventInputData, phrSession, setPhrSession);
     props.navigation.navigate(AppRoutes.HealthRecordDetails, {
       data: selectedItem,
       medicalBill: true,
@@ -370,11 +372,12 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
       .then((status) => {
         if (status) {
           getLatestMedicalBillRecords();
+          const eventInputData = removeObjectProperty(selectedItem, 'billFiles');
           postWebEngagePHR(
             currentPatient,
             WebEngageEventName.PHR_DELETE_BILLS,
             'Bill',
-            selectedItem
+            eventInputData
           );
         } else {
           setShowSpinner(false);
