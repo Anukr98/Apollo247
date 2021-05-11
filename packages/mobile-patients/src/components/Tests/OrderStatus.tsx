@@ -65,7 +65,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
   const moveToMyOrders = () => {
     props.navigation.navigate(AppRoutes.YourOrdersTest, {
-      isTest: true,
+      fromOrderSummary: true,
     });
   }
 
