@@ -725,7 +725,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             .add(maxDaysToShow, 'day')
             .toDate()}
           isVisible={showDisplaySchedule}
-          onClose={() => setDisplaySchedule(false)}
+          onClose={() => {
+            setDisplaySchedule(false);
+            setLoading?.(false);
+          }}
           slots={slots}
           zipCode={Number(getPincode!)}
           slotInfo={selectedTimeSlot}

@@ -56,6 +56,7 @@ import {
   isValidSearch,
   phrSearchWebEngageEvents,
   postWebEngageIfNewSession,
+  removeObjectProperty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -601,10 +602,11 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   };
 
   const onHealthCardItemPress = (selectedItem: any) => {
+    const eventInputData = removeObjectProperty(selectedItem, 'testResultFiles');
     postWebEngageIfNewSession(
       'Test Report',
       currentPatient,
-      selectedItem,
+      eventInputData,
       phrSession,
       setPhrSession
     );
@@ -659,11 +661,12 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
           const status = g(data, 'addPatientLabTestRecord', 'status');
           if (status) {
             getLatestLabAndHealthCheckRecords();
+            const eventInputData = removeObjectProperty(selectedItem, 'testResultFiles');
             postWebEngagePHR(
               currentPatient,
               WebEngageEventName.PHR_DELETE_TEST_REPORT,
               'Test Report',
-              selectedItem
+              eventInputData
             );
           } else {
             setShowSpinner(false);

@@ -320,7 +320,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         zipcode: pincode,
         landmark: landMark.trim(),
         mobileNumber: phoneNumber,
-        addressType: addressType! || PATIENT_ADDRESS_TYPE?.HOME,
+        addressType: addressType! || PATIENT_ADDRESS_TYPE.HOME,
         otherAddressType: optionalAddress,
         latitude: latitude,
         longitude: longitude,
