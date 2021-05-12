@@ -831,6 +831,8 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
 
         {showCircleActivation && renderCircleMembershipActivated()}
         {showCirclePlans && renderCircleSubscriptionPlans()}
+
+        {showCorporateActivation ? renderCorporateCard() : null}
         {(hdfcUserSubscriptions?._id || circleSubscription?._id) && (
           <ScrollView bounces={false}>
             <View>
@@ -842,7 +844,6 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
                 {hdfcUserSubscriptions?._id
                   ? renderMembershipCard(hdfcUserSubscriptions, false)
                   : null}
-                {showCorporateActivation ? renderCorporateCard(circleSubscription) : null}
               </View>
               {canUpgrade && (
                 <View>

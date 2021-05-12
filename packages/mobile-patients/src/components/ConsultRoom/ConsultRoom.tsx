@@ -787,6 +787,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     circleSubscriptionId,
     setHdfcSubscriptionId,
     setCorporateSubscription,
+    corporateSubscription,
     setCirclePlanValidity,
     circlePlanValidity,
     setCirclePaymentReference,
