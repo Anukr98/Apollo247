@@ -2454,7 +2454,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setTimeout(() => {
         AsyncStorage.getItem('callDisconnected').then((data) => {
           if (!JSON.parse(data || 'false')) {
-            setSnackbarState(true);
             callEndWebengageEvent('Network');
           }
         });
@@ -5786,9 +5785,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             !subscriberConnected.current &&
             !patientJoinedCall.current &&
             renderTextConnecting()}
-          {showDoctorProfile &&
-          !patientJoinedCall.current &&
-          (!subscriberConnected.current || isPaused !== '' || callToastStatus.current)
+          {!subscriberConnected.current || isPaused !== '' || callToastStatus.current
             ? renderToastMessages()
             : null}
           {!showVideo && renderDisableVideoSubscriber()}
@@ -5889,7 +5886,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const callTimerStarted = moment.utc(callTimer * 1000).format('mm : ss');
 
   const renderToastMessages = () => {
-    if (callStatus.current === disconnecting && callToastStatus.current === '') {
+    if (
+      (callStatus.current === disconnecting && callToastStatus.current === '') ||
+      (patientJoinedCall.current && !subscriberConnected.current)
+    ) {
       return;
     }
     return (
