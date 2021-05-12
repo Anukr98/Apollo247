@@ -833,8 +833,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
         {showCircleActivation && renderCircleMembershipActivated()}
         {showCirclePlans && renderCircleSubscriptionPlans()}
 
-        {showCorporateActivation ? renderCorporateCard() : null}
-        {(hdfcUserSubscriptions?._id || circleSubscription?._id) && (
+        {(hdfcUserSubscriptions?._id || circleSubscription?._id || showCorporateActivation) && (
           <ScrollView bounces={false}>
             <View>
               <View>
@@ -855,6 +854,8 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
                   <View style={{ marginTop: 15 }} />
                 </View>
               )}
+
+              {showCorporateActivation ? renderCorporateCard() : null}
             </View>
           </ScrollView>
         )}
