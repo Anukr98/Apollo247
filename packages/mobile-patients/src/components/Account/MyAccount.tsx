@@ -531,7 +531,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             fireProfileAccessedEvent('OneApollo Membership');
           }}
         />
-        {console.log('csk corp', corporateSubscription)}
         {!!(
           hdfcSubscriptionId ||
           circleSubscriptionId ||
