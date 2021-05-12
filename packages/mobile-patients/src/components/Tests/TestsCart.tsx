@@ -56,6 +56,7 @@ import {
   GET_DIAGNOSTIC_NEAREST_AREA,
   GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
   MODIFY_DIAGNOSTIC_ORDERS,
+  FIND_DIAGNOSTIC_SETTINGS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticsHCChargesVariables,
@@ -100,7 +101,7 @@ import {
   Alert,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlay';
+import { TestSlotSelectionOverlayNew } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlayNew';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -181,6 +182,10 @@ import {
   saveModifyDiagnosticOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/saveModifyDiagnosticOrder';
 import { processDiagnosticsCODOrder } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  findDiagnosticSettings,
+  findDiagnosticSettingsVariables,
+} from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
 const { width: screenWidth } = Dimensions.get('window');
 
 export interface areaObject {
@@ -301,6 +306,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [showAllPreviousItems, setShowAllPreviousItems] = useState<boolean>(true);
   const [isHcApiCalled, setHcApiCalled] = useState<boolean>(false);
 
+  const [phleboMin, setPhleboMin] = useState(0);
   const itemsWithHC = cartItems?.filter((item) => item!.collectionMethod == 'HC');
   const itemWithId = itemsWithHC?.map((item) => Number(item.id!));
 
@@ -366,6 +372,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     !!existingOrderDetails && setPatientId?.(existingOrderDetails?.patientId);
   }, []);
 
+  useEffect(() => {
+    fetchFindDiagnosticSettings();
+  }, []);
+
   const fetchTestReportGenDetails = async (_cartItemId: string | number[]) => {
     try {
       const removeSpaces =
@@ -423,6 +433,22 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       CommonBugFender('TestsCart_fetchTestReportGenDetails', e);
       setAlsoAddListData([]);
       setReportGenDetails([]);
+    }
+  };
+
+  const fetchFindDiagnosticSettings = async () => {
+    try {
+      const response = await client.query<findDiagnosticSettings, findDiagnosticSettingsVariables>({
+        query: FIND_DIAGNOSTIC_SETTINGS,
+        variables: {
+          phleboETAInMinutes: 0,
+        },
+        fetchPolicy: 'no-cache',
+      });
+      const phleboMin = g(response, 'data', 'findDiagnosticSettings', 'phleboETAInMinutes') || 45;
+      setPhleboMin(phleboMin);
+    } catch (error) {
+      CommonBugFender('TestsCart_fetchFindDiagnosticSettings', error);
     }
   };
 
@@ -501,7 +527,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   //check all webengage events
   useEffect(() => {
-    if (cartItems?.length) {
+    if (cartItems?.length && deliveryAddressId != '') {
+      const selectedAddressIndex = addresses?.findIndex(
+        (address) => address?.id == deliveryAddressId
+      );
+      const pinCodeFromAddress = addresses?.[selectedAddressIndex]?.zipcode!;
       DiagnosticCartViewed(
         currentPatient,
         cartItems,
@@ -513,19 +543,22 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         hcCharges,
         circlePlanValidity,
         circleSubscriptionId,
-        isDiagnosticCircleSubscription
+        isDiagnosticCircleSubscription,
+        pinCodeFromAddress
       );
     }
-  }, [hcCharges]);
+  }, [hcCharges, addresses]);
 
   const postwebEngageProceedToPayEvent = () => {
     const mode = 'Home Visit';
-    const area = !!existingOrderDetails
-      ? String(existingOrderDetails?.areaId)
-      : String((areaSelected as areaObject)?.value);
+    const areaId = !!existingOrderDetails
+      ? Number(existingOrderDetails?.areaId)
+      : Number((areaSelected as areaObject)?.key);
     const slotTime = !!existingOrderDetails
       ? moment(existingOrderDetails?.slotDateTimeInUTC).format('hh:mm')
       : selectedTimeSlot?.slotInfo?.startTime!;
+    const areaName = String((areaSelected as areaObject)?.value);
+
     DiagnosticProceedToPay(
       date,
       currentPatient,
@@ -536,7 +569,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       mode,
       pinCode,
       'Diagnostic',
-      area,
+      areaName,
+      areaId,
       hcCharges,
       slotTime
     );
@@ -561,13 +595,25 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     DiagnosticAreaSelected(selectedAddr, area);
   };
 
-  const setWebEnageEventForAppointmentTimeSlot = () => {
-    const diffInDays = date.getDate() - new Date().getDate();
-    const area = (areaSelected as any)?.value;
-    const timeSlot = selectedTimeSlot?.slotInfo?.startTime!;
+  const setWebEnageEventForAppointmentTimeSlot = (
+    mode: 'Automatic' | 'Manual',
+    slotDetails: TestSlot,
+    areaObject: areaObject | DiagnosticArea | any
+  ) => {
+    const area = String((areaObject as areaObject)?.value);
+    const timeSlot = !!slotDetails ? slotDetails?.slotInfo?.startTime! : 'No slot';
     const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
+    const selectionMode = mode;
+    const isSlotAvailable = slotDetails?.slotInfo?.startTime! ? 'Yes' : 'No';
 
-    DiagnosticAppointmentTimeSlot(selectedAddr, area, timeSlot, diffInDays);
+    DiagnosticAppointmentTimeSlot(
+      selectedAddr,
+      area,
+      timeSlot,
+      selectionMode,
+      isSlotAvailable,
+      currentPatient
+    );
   };
 
   useEffect(() => {
@@ -721,6 +767,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const getPinCodeServiceability = async () => {
+    console.log('in pincode serviceabiluty');
     const selectedAddressIndex = addresses?.findIndex(
       (address) => address?.id == deliveryAddressId
     );
@@ -1426,6 +1473,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             diagnosticEmployeeCode: slotDetails?.employeeCode,
             city: selectedAddr ? selectedAddr?.city! : '', // not using city from this in order place API
           });
+          setWebEnageEventForAppointmentTimeSlot('Automatic', slotDetails, areaObject);
           setLoading?.(false);
         }
 
@@ -1636,7 +1684,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <Text
             style={[
               styles.commonText,
-              customStyle ? styles.pricesBoldText : styles.pricesNormalText 
+              customStyle ? styles.pricesBoldText : styles.pricesNormalText,
             ]}
           >
             {title}
@@ -2157,7 +2205,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         subscriptionInclusionId: null,
         userSubscriptionId: circleSubscriptionId,
       };
-
       saveHomeCollectionBookingOrder(bookingOrderInfo)
         .then(async ({ data }) => {
           const getSaveHomeCollectionResponse = data?.saveDiagnosticBookHCOrder;
@@ -2940,6 +2987,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         onPressProceedtoPay={() => onPressProceedToPay()}
         onPressSelectDeliveryAddress={() => showAddressPopup()}
         showTime={showTime}
+        phleboMin={phleboMin}
         onPressTimeSlot={() => showTime && setDisplaySchedule(true)}
         onPressSelectArea={() => setShowSelectAreaOverlay(true)}
         isModifyCOD={
@@ -3111,7 +3159,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       {displaySchedule && (
-        <TestSlotSelectionOverlay
+        <TestSlotSelectionOverlayNew
           source={'Tests'}
           heading="Schedule Appointment"
           date={date}
@@ -3132,13 +3180,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               slotStartTime: slotInfo?.slotInfo?.startTime!,
               slotEndTime: slotInfo?.slotInfo?.endTime!,
               date: date.getTime(),
-              // employeeSlotId: parseInt(slotInfo.slotInfo.slot!),
               employeeSlotId: slotInfo?.slotInfo?.slot!,
               diagnosticBranchCode: slotInfo?.diagnosticBranchCode,
               diagnosticEmployeeCode: slotInfo?.employeeCode,
               city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
             });
-            setWebEnageEventForAppointmentTimeSlot();
+            setWebEnageEventForAppointmentTimeSlot('Manual', slotInfo, areaSelected);
             setDisplaySchedule(false);
           }}
         />

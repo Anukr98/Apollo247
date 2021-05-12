@@ -125,8 +125,7 @@
     "settingProfileTxt": "We’re setting up your profile. Please check back soon!",
     "couldNotLoadText": "Uh oh.. could't load!",
     "lowNetworkText": "We were unable to load the page properly because of low network. Please try again",
-    "noDiagnosticsAvailable":"Unfortunately, we do not have any diagnostic(s) available right now.",
-    
+    "noDiagnosticsAvailable": "Unfortunately, we do not have any diagnostic(s) available right now."
   },
   "components": {
     "medicineDetails": {
@@ -365,12 +364,12 @@
       ]
     }
   },
-  "needHelpScreen":{
-    "view_previous_tickets":"To view previous tickets ",
-    "click_here":"CLICK HERE",
-    "reopen_ticket":"REOPEN TICKET",
-    "whatsapp_with_us":"WHATSAPP WITH US",
-    "no_conversation_till_now":"No conversation till now !"
+  "needHelpScreen": {
+    "view_previous_tickets": "To view previous tickets ",
+    "click_here": "CLICK HERE",
+    "reopen_ticket": "REOPEN TICKET",
+    "whatsapp_with_us": "WHATSAPP WITH US",
+    "no_conversation_till_now": "No conversation till now !"
   },
   "doctor_search_listing": {
     "pleaseWait": "Please Wait!",
@@ -537,7 +536,7 @@
     "feedbackSubTxt": "Your feedback has been submitted. Thanks for your time.",
     "homeHomeCollectionDisclaimerTxt": "Home collection charges of upto ₹100 would be levied in case of order value less than ₹500",
     "itDoseCancelledText": "Canceled by phlebotomist as per the request",
-    "orderCancelledReasonText": "Order was cancelled -",
+    "orderCancelledReasonText": "Order was cancelled because of",
     "wantToReschedule": "• Do you want to Reschedule Appointment ?",
     "sampleSubmitted": "Sample Submitted",
     "reportGenrated": "Reports are ready",
@@ -553,6 +552,10 @@
     "previousCharges": "Previous Charges",
     "currentCharges": "Current Charges"
   },
+  "diagnosticCategoryTitle": {
+    "category" : "Category",
+    "categoryGrid": "Category_Scroll"
+  },
   "orders": {
     "urOrders": "MY ORDERS",
     "ratingHeader": "FEEDBACK",
@@ -563,7 +566,7 @@
     "add_to_cart": "ADD TO CART",
     "test_prec_req": "This test requires doctor’s prescription",
     "test_prec_not_req": "This test doesn't requires doctor’s prescription",
-    "go_to_help":"GO TO HELP"
+    "go_to_help": "GO TO HELP"
   },
   "defaultReasonList": [
     { "title": "Arrived very Late" },
@@ -602,6 +605,12 @@
     "refund_amount": "Refund amount",
     "discount_total": "Discount Total",
     "amount_to_be_paid_on_delivery": "Amount to be paid on delivery"
+  },
+  "Report": {
+    "view": "View Report",
+    "download": "Download Report PDF",
+    "share": "Share on Whatsapp",
+    "copy": "Copy Link to PDF"
   },
   "health_records_home": {
     "description": "Find all your health record(s) & prescription(s) in one place.",
@@ -1076,5 +1085,4 @@
     "CONSULT_ONLINE": "Consult Online",
     "MEET_IN_PERSON": "Meet In Person"
   }
-
 }

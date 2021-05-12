@@ -51,18 +51,19 @@ export const Coupon: React.FC<CouponProps> = (props) => {
       <TouchableOpacity style={styles.couponApplied} onPress={onPressApplyCoupon}>
         <View style={styles.rowStyle}>
           <CouponIcon style={{ marginVertical: 10 }} />
-          <View style={{ marginLeft: 10, marginVertical: 4 }}>
+          <View style={styles.couponMessageContainer}>
             <Text style={styles.couponAppliedText}>
               {couponDiscount > 0
                 ? `Coupon Applied : ${coupon?.coupon}`
                 : `Coupon : ${coupon?.coupon}`}
             </Text>
             {renderCouponMsg()}
-            {!!coupon?.successMessage && <View style={styles.itemSeperator} />}
             {!!coupon?.successMessage && (
-              <Text
-                style={theme.viewStyles.text('M', 13, '#01475B', 1, 27)}
-              >{`(${coupon?.successMessage})`}</Text>
+              <View style={styles.couponSuccessMessageContainer}>
+                <Text
+                  style={theme.viewStyles.text('M', 13, '#01475B', 1, 27)}
+                >{`(${coupon?.successMessage})`}</Text>
+              </View>
             )}
           </View>
         </View>
@@ -125,11 +126,11 @@ const styles = StyleSheet.create({
     marginRight: 10,
     marginTop: 5,
   },
-  itemSeperator: {
-    width: '170%',
-    height: 0.5,
-    backgroundColor: theme.colors.LIGHT_BLUE,
-    opacity: 0.5,
-    marginTop: 3,
+  couponSuccessMessageContainer: {
+    marginTop: 7,
+    borderTopColor: theme.colors.BORDER_BOTTOM_COLOR,
+    borderTopWidth: 0.5,
+    justifyContent: 'center',
   },
+  couponMessageContainer: { marginLeft: 10, marginVertical: 4, width: '95%' },
 });

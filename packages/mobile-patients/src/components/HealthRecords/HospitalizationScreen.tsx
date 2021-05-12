@@ -40,6 +40,7 @@ import {
   getPhrHighlightText,
   phrSearchWebEngageEvents,
   postWebEngageIfNewSession,
+  removeObjectProperty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -335,10 +336,11 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
   };
 
   const onHealthCardItemPress = (selectedItem: HospitalizationType) => {
+    const eventInputData = removeObjectProperty(selectedItem, 'hospitalizationFiles');
     postWebEngageIfNewSession(
       'Hospitalization',
       currentPatient,
-      selectedItem,
+      eventInputData,
       phrSession,
       setPhrSession
     );
@@ -382,11 +384,12 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
       .then((status) => {
         if (status) {
           getLatestHospitalizationRecords();
+          const eventInputData = removeObjectProperty(selectedItem, 'hospitalizationFiles');
           postWebEngagePHR(
             currentPatient,
             WebEngageEventName.PHR_DELETE_HOSPITALIZATIONS,
             'Hospitalization',
-            selectedItem
+            eventInputData
           );
         } else {
           setShowSpinner(false);

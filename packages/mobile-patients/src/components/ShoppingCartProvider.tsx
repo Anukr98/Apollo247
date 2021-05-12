@@ -63,6 +63,7 @@ export interface PhysicalPrescription {
 export interface EPrescription {
   id: string;
   uploadedUrl: string;
+  uploadedUrlArray: any;
   forPatient: string;
   date: string;
   medicines: string;
@@ -238,6 +239,8 @@ export interface ShoppingCartContextProps {
   setMaxCartValueForCOD: ((value: number) => void) | null;
   nonCodSKus: string[];
   setNonCodSKus: ((items: string[]) => void) | null;
+  asyncPincode: any;
+  setAsyncPincode: ((pincode: any) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -347,6 +350,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setMaxCartValueForCOD: null,
   nonCodSKus: [],
   setNonCodSKus: null,
+  asyncPincode: null,
+  setAsyncPincode: null,
 });
 
 const AsyncStorageKeys = {
@@ -463,7 +468,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
     null
   );
 
-  const [asyncPincode, setAsyncPincode] = useState<ShoppingCartContextProps['asyncPincode']>();
   const [minimumCartValue, setMinimumCartValue] = useState<
     ShoppingCartContextProps['minimumCartValue']
   >(0);
@@ -474,6 +478,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     ShoppingCartContextProps['maxCartValueForCOD']
   >(0);
   const [nonCodSKus, setNonCodSKus] = useState<ShoppingCartContextProps['nonCodSKus']>([]);
+  const [asyncPincode, setAsyncPincode] = useState<ShoppingCartContextProps['asyncPincode']>();
 
   const [isProuctFreeCouponApplied, setisProuctFreeCouponApplied] = useState<boolean>(false);
   const [orders, setOrders] = useState<ShoppingCartContextProps['orders']>([]);
@@ -1067,6 +1072,12 @@ export const ShoppingCartProvider: React.FC = (props) => {
     }
   }, [deliveryAddressId]);
 
+  useEffect(() => {
+    if (physicalPrescriptions?.length || ePrescriptions?.length) {
+      setPrescriptionType(PrescriptionType.UPLOADED);
+    }
+  }, [physicalPrescriptions, ePrescriptions]);
+
   const selectDefaultPlan = (plan: any) => {
     const defaultPlan = plan?.filter((item: any) => item.defaultPack === true);
     if (defaultPlan?.length > 0) {
@@ -1199,6 +1210,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setMaxCartValueForCOD,
         nonCodSKus,
         setNonCodSKus,
+        asyncPincode,
+        setAsyncPincode,
       }}
     >
       {props.children}

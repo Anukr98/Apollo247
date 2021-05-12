@@ -80,7 +80,13 @@ const screenWidth = Dimensions.get('window').width;
 export interface TestPackageForDetails extends TestPackage {
   collectionType: TEST_COLLECTION_TYPE;
   preparation: string;
-  source: 'Home Page' | 'Full Search' | 'Cart Page' | 'Partial Search' | 'Deeplink';
+  source:
+    | 'Home Page'
+    | 'Full Search'
+    | 'Cart Page'
+    | 'Partial Search'
+    | 'Deeplink'
+    | 'Category page';
   type: string;
   specialPrice?: string | number;
   circleRate?: string | number;
