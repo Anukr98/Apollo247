@@ -27,7 +27,6 @@ import {
   CrossPopup,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { DiagnosticViewReportClicked } from '../Events';
 
 export interface TestViewReportOverlayProps extends AphOverlayProps {
   onPressViewReport?: any;
@@ -82,12 +81,6 @@ export const TestViewReportOverlay: React.FC<TestViewReportOverlayProps> = (prop
             {viewReportItemsArray.map((item) => (
               <TouchableOpacity
                 onPress={async () => {
-                  DiagnosticViewReportClicked(
-                    'My Order',
-                    !!props.order?.labReportURL ? 'Yes' : 'No',
-                    item?.title,
-                    props.order?.id
-                  );
                   if (item?.title == string.Report.view || item?.title == string.Report.download) {
                     props.onPressViewReport();
                   } else if (item?.title == string.Report.share) {

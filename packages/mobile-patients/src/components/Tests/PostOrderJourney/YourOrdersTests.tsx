@@ -1359,6 +1359,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               isVisible={displayViewReport}
               onClose={() => setDisplayViewReport(false)}
               onPressViewReport={()=>{
+                DiagnosticViewReportClicked(
+                  'My Order',
+                  !!activeOrder?.labReportURL ? 'Yes' : 'No',
+                  'Download Report PDF'
+                );
                 _onPressViewReport(activeOrder);
               }}
             />
