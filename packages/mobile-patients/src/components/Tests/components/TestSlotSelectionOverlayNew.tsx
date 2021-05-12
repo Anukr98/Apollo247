@@ -200,7 +200,6 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     //for afternoon 12-17
     dropDownOptions = dropDownOptions.filter((item) => {
       if (time24(item) >= '12' && time24(item) < '17') {
-        console.log(`object`, time24(item));
         return item;
       }
     });
