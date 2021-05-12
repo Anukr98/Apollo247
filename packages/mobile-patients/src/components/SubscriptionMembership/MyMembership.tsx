@@ -780,7 +780,9 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             );
           }}
         >
-          <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>VIEW DETAILS</Text>
+          <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>
+            VIEW DETAILS ON WEB
+          </Text>
         </TouchableOpacity>
       </View>
     );
