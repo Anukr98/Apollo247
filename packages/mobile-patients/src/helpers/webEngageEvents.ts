@@ -197,6 +197,8 @@ export enum WebEngageEventName {
   DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
   DIAGNOSITC_HOME_PAGE_BANNER_CLICKED = 'Diagnostic home page banner',
   DIAGNOSTIC_PAYMENT_PAGE_VIEWED = 'Diagnostic payment page viewed',
+  DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED = 'Diagnostic Phlebo feedback submitted',
+  DIAGNOSTIC_PHLEBO_CALLING_CLICKED = 'Diagnostic Phlebo calling clicked',
   DIAGNOSTIC_ORDER_STATUS = 'Diagnostic Order Status',
   DIAGNOSTIC_TRACK_PHLEBO_CLICKED = 'Diagnostic Track Phlebo clicked',
 
@@ -1344,22 +1346,34 @@ export interface WebEngageEvents {
     UHID: string;
     'Order amount': string | number;
   };
-  [WebEngageEventName.DIAGNOSTIC_ORDER_STATUS]: {
-    'Display id': string;
-    'Order id': string;
-    'Order status': string;
-    'Patient Name': string;
-    'Payment Mode': 'Cash' | 'Prepaid';
-    SlotTimeInUTC: string | Date;
-    'Total price': string | number;
-    UHID: string;
+  [WebEngageEventName.DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED]: {
+    'Rating': string | number;
+    'Feedback': string | number;
+    'Phlebo Name': string;
+    'Order id': string | number;
+    'Phlebo id': string | number;
   };
-  [WebEngageEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED]: {
-    'Order id': string;
-    UHID: string;
-    'Link opened': 'Yes' | 'No';
-    Source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary';
+  [WebEngageEventName.DIAGNOSTIC_PHLEBO_CALLING_CLICKED]: {
+    'UHID': string;
+    'Order id': string | number;
+    'Phlebo Name': string;
   };
+  [WebEngageEventName.DIAGNOSTIC_ORDER_STATUS]:{  
+  'Display id':string;
+  'Order id': string;
+  'Order status': string;
+  'Patient Name': string;
+  'Payment Mode': 'Cash' | 'Prepaid';
+  'SlotTimeInUTC' : string| Date;
+  'Total price' : string |number;
+  'UHID' : string;
+}
+[WebEngageEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED]:{
+  'Order id': string;
+  'UHID': string;
+  'Link opened' : 'Yes' | 'No';
+  'Source': 'Home' | 'My Order' | 'Track Order' | 'Order Summary'
+}
 
   // ********** ConsultEvents ********** \\
   [WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM]: ConsultRoomDoctorPatientInfo;
