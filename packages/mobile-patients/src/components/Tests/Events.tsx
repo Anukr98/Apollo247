@@ -492,6 +492,35 @@ export function DiagnosticOrderSummaryViewed(
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED, eventAttributes);
 }
 
+export function DiagnosticAddTestClicked(orderId: string, currentPatient: any, status: string) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSITC_MODIFY_CLICKED] = {
+    'Order id': orderId,
+    UHID: currentPatient?.uhid,
+    'Order status': status,
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSITC_MODIFY_CLICKED, eventAttributes);
+}
+
+export function DiagnosticModifyOrder(
+  totalItems: number,
+  itemArray: string,
+  oldTotal: number,
+  newTotal: number,
+  hcUpdated: 'Yes' | 'No',
+  mode: 'Prepaid' | 'Cash'
+) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_MODIFY_ORDER] = {
+    'No of items Added': totalItems,
+    'Item ids in array': itemArray,
+    'Old order value': oldTotal,
+    'updated order value': newTotal,
+    'HC charge updated': hcUpdated,
+    'payment mode': mode,
+    'time of modification': new Date(),
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_MODIFY_ORDER, eventAttributes);
+}
+
 export function DiagnosticViewReportClicked(
   source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary',
   reportGenerated: 'Yes' | 'No',

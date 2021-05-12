@@ -197,6 +197,8 @@ export enum WebEngageEventName {
   DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
   DIAGNOSITC_HOME_PAGE_BANNER_CLICKED = 'Diagnostic home page banner',
   DIAGNOSTIC_PAYMENT_PAGE_VIEWED = 'Diagnostic payment page viewed',
+  DIAGNOSITC_MODIFY_CLICKED = 'Diagnostic modify clicked',
+  DIAGNOSTIC_MODIFY_ORDER = 'Diagnostic modify order',
   DIAGNOSTIC_ORDER_STATUS = 'Diagnostic Order Status',
   DIAGNOSTIC_TRACK_PHLEBO_CLICKED = 'Diagnostic Track Phlebo clicked',
 
@@ -1350,16 +1352,36 @@ export interface WebEngageEvents {
     'Order status': string;
     'Patient Name': string;
     'Payment Mode': 'Cash' | 'Prepaid';
-    SlotTimeInUTC: string | Date;
+    'SlotTimeInUTC': string | Date;
     'Total price': string | number;
-    UHID: string;
+    'UHID': string;
   };
   [WebEngageEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED]: {
     'Order id': string;
-    UHID: string;
+    'UHID': string;
     'Link opened': 'Yes' | 'No';
-    Source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary';
+    'Source': 'Home' | 'My Order' | 'Track Order' | 'Order Summary';
   };
+  [WebEngageEventName.DIAGNOSITC_MODIFY_CLICKED]:{
+    'UHID': string;
+    'Order id': string;
+    'Order status': string;
+  }
+  [WebEngageEventName.DIAGNOSTIC_MODIFY_ORDER]:{
+    'No of items Added': number,
+    'Item ids in array': string,
+    'Old order value': number,
+    'updated order value': number,
+    'HC charge updated' : 'Yes' | 'No'
+    'payment mode': 'Prepaid' | 'Cash',
+    'time of modification': string | Date
+  }
+[WebEngageEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED]:{
+  'Order id': string;
+  'UHID': string;
+  'Link opened' : 'Yes' | 'No';
+  'Source': 'Home' | 'My Order' | 'Track Order' | 'Order Summary'
+}
 
   // ********** ConsultEvents ********** \\
   [WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM]: ConsultRoomDoctorPatientInfo;

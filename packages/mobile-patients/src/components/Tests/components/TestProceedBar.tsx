@@ -108,7 +108,7 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
               {`The sample collection executive will reach between ${moment(timeSlotText).format(
                 'hh:mm A'
               )} - ${moment(timeSlotText)
-                .add(phleboMin, 'minutes')
+                .add(props.phleboMin, 'minutes')
                 .format('hh:mm A')} for collecting the samples`}
             </Text>
           </View>

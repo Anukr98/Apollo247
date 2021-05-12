@@ -147,6 +147,7 @@ import {
   DiagnosticAppointmentTimeSlot,
   DiagnosticAreaSelected,
   DiagnosticCartViewed,
+  DiagnosticModifyOrder,
   DiagnosticNonServiceableAddressSelected,
   DiagnosticPaymentInitiated,
   DiagnosticProceedToPay,
@@ -549,7 +550,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   }, [hcCharges, addresses]);
 
-  const postwebEngageProceedToPayEvent = () => {
+  function postwebEngageProceedToPayEvent() {
     const mode = 'Home Visit';
     const areaId = !!existingOrderDetails
       ? Number(existingOrderDetails?.areaId)
@@ -574,7 +575,24 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       hcCharges,
       slotTime
     );
-  };
+  }
+
+  function postwebEngageProceedToPayEventForModify() {
+    const previousTotalCharges = existingOrderDetails?.totalPrice;
+    const isHCUpdated = existingOrderDetails?.collectionCharges === hcCharges ? 'No' : 'Yes';
+    const paymentMode =
+      existingOrderDetails?.paymentType !== DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
+        ? 'Cash'
+        : 'Prepaid';
+    DiagnosticModifyOrder(
+      cartItemsWithId?.length,
+      cartItemsWithId?.join(', '),
+      previousTotalCharges,
+      grandTotal,
+      isHCUpdated,
+      paymentMode
+    );
+  }
 
   const setWebEngageEventForAddressNonServiceable = (pincode: string) => {
     const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
@@ -2070,15 +2088,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const bookDiagnosticOrder = async () => {
-    setshowSpinner(true);
-    //if modify order
-    if (!!existingOrderDetails) {
-      saveModifiedOrder();
-    }
-    //for normal flow
-    else {
-      saveHomeCollectionOrder();
-    }
+    saveHomeCollectionOrder();
   };
 
   function saveModifiedOrder() {
@@ -2135,7 +2145,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED],
     orderInfo: any
   ) {
-    DiagnosticPaymentInitiated('Cash', amount, 'Diagnostic', 'Diagnostic', 'Cash');
+    DiagnosticPaymentInitiated(amount, 'Diagnostic', 'Cash');
     try {
       const response = await processDiagnosticsCODOrder(client, orderId, amount);
       const { data } = response;
@@ -2327,6 +2337,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             orderDetails: orderInfo,
             modifyOrderDetails: existingOrderDetails,
             eventAttributes,
+            businessLine: 'diagnostics',
           });
         }
       }
@@ -2347,7 +2358,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       'Order id': orderId,
       Pincode: parseInt(selectedAddr?.zipcode!),
       'Patient UHID': g(currentPatient, 'id'),
-      'Total items in cart': cartItems?.length,
+      'Total items in order': cartItems?.length,
       'Order amount': grandTotal,
       'Appointment Date': !!existingOrderDetails
         ? moment(existingOrderDetails?.slotDateTimeInUTC).format('DD/MM/YYYY')
@@ -2419,8 +2430,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }
 
   const onPressProceedToPay = () => {
-    postwebEngageProceedToPayEvent();
-    proceedForBooking();
+    if (!!existingOrderDetails) {
+      postwebEngageProceedToPayEventForModify();
+      setshowSpinner(true);
+      saveModifiedOrder();
+    } else {
+      postwebEngageProceedToPayEvent();
+      proceedForBooking();
+    }
   };
 
   function removeDuplicateCartItems(itemIds: string, pricesOfEach: any) {
