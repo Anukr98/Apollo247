@@ -83,6 +83,7 @@ import {
 import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components/StatusCard';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 
+import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
 const DROP_DOWN_ARRAY_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
@@ -127,7 +128,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [showError, setError] = useState<boolean>(false);
   const [isViewReport, setIsViewReport] = useState<boolean>(false);
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
-
+  const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
   const scrollToSlots = () => {
     scrollViewRef.current &&
@@ -183,10 +184,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       updateRateDeliveryBtnVisibility();
     }
   }, []);
-  const copyToClipboard = (refId: string) => {
-    Clipboard.setString(refId);
-    setSnackbarState(true);
-  };
 
   useEffect(() => {
     if (selectedTab == string.orders.trackOrder && newList?.length > 0) {
@@ -589,9 +586,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     });
   };
 
-  const onPressButton = (buttonTitle: string) => {
+  const onPressButton = (buttonTitle?: string) => {
     // onPressViewReport();
     setIsViewReport(true)
+    setDisplayViewReport(true)
   };
 
   function postRatingGivenWebEngageEvent(rating: string, reason: string) {
@@ -681,26 +679,20 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       </MaterialMenu>
     );
   };
-  const viewReportItemsArray = [
-    {
-      icon: <ViewIcon />,
-      title: string.Report.view,
-    },
-    {
-      icon: <DownloadNew />,
-      title: string.Report.download,
-    },
-    {
-      icon: <ShareBlue />,
-      title: string.Report.share,
-    },
-    {
-      icon: <CopyBlue />,
-      title: string.Report.copy,
-    },
-  ];
   return (
     <View style={{ flex: 1 }}>
+      {displayViewReport && (
+            <TestViewReportOverlay
+              order={order}
+              heading=""
+              isVisible={displayViewReport}
+              onClose={() => setDisplayViewReport(false)}
+              onPressViewReport={()=>{
+                fetchTestReportResult()
+              }}
+            />
+        )
+      }
       <SafeAreaView style={theme.viewStyles.container}>
         <View style={styles.headerShadowContainer}>
           <Header
@@ -728,68 +720,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           {renderError()}
         </ScrollView>
         {selectedTab == string.orders.trackOrder ? renderBottomSection(order) : null}
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={isViewReport}
-          onRequestClose={() => {
-            setIsViewReport(false);
-          }}
-          onDismiss={() => {
-            setIsViewReport(false);
-          }}
-        >
-          <View style={styles.modalMainView}>
-            <View style={styles.reportModalView}>
-              <TouchableOpacity
-                style={{ alignSelf: 'flex-end' }}
-                onPress={() => {
-                  setIsViewReport(false);
-                }}
-              >
-                <Cross />
-              </TouchableOpacity>
-              <View style={styles.reportModalOptionsView}>
-                {viewReportItemsArray.map((item) => (
-                  <TouchableOpacity
-                    onPress={async () => {
-                      DiagnosticViewReportClicked(
-                        'My Order',
-                        !!order?.labReportURL ? 'Yes' : 'No',
-                        item?.title,
-                        order?.id
-                      );
-                      if (
-                        item?.title == string.Report.view ||
-                        item?.title == string.Report.download
-                      ) {
-                        onPressViewReport();
-                      } else if (item?.title == string.Report.share) {
-                        try {
-                          const whatsAppScheme = `whatsapp://send?text=${order?.labReportURL}`;
-                          const canOpenURL = await Linking.canOpenURL(whatsAppScheme);
-                          canOpenURL && Linking.openURL(whatsAppScheme);
-                        } catch (error) {}
-                      } else {
-                        copyToClipboard(
-                          order && order?.labReportURL ? order?.labReportURL : ''
-                        );
-                      }
-                      setIsViewReport(false);
-                    }}
-                    style={styles.itemView}
-                  >
-                    {item?.icon}
-                    <Text style={styles.itemTextStyle}>{item?.title}</Text>
-                    {snackbarState && item?.title == string.Report.copy ? (
-                      <Text style={styles.copyTextStyle}>Copied !!</Text>
-                    ) : null}
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-          </View>
-        </Modal>
       </SafeAreaView>
 
       {renderFeedbackPopup()}

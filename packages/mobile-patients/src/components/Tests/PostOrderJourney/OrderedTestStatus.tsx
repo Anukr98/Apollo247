@@ -42,7 +42,7 @@ import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpe
 import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
 import { RefundCard } from '@aph/mobile-patients/src/components/Tests/components/RefundCard';
 import { DiagnosticViewReportClicked } from '@aph/mobile-patients/src/components/Tests/Events';
-
+import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
 export interface TestStatusObject {
   id: string;
   displayId: string;
@@ -71,6 +71,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   const [isViewReport, setIsViewReport] = useState<boolean>(false);
   const [activeOrder, setActiveOrder] = useState<any>('');
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
+  const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
   const isPrepaid = orderSelected?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
 
   const [individualTestData, setIndividualTestData] = useState<any>([]);
@@ -276,16 +277,11 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
     DiagnosticViewReportClicked();
     if (visitId) {
       setActiveOrder(order)
-      setSnackbarState(false)
-      setIsViewReport(true)
+      setDisplayViewReport(true)
     } else {
       props.navigation.navigate(AppRoutes.HealthRecordsHome);
     }
   }
-  const copyToClipboard = (refId: string) => {
-    Clipboard.setString(refId);
-    setSnackbarState(true);
-  };
 
   const renderReportError = (message: string) => {
     showAphAlert!({
@@ -372,27 +368,21 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
       </View>
     );
   };
-  const viewReportItemsArray = [
-    {
-      icon: <ViewIcon />,
-      title: string.Report.view,
-    },
-    {
-      icon: <DownloadNew />,
-      title: string.Report.download,
-    },
-    {
-      icon: <ShareBlue />,
-      title: string.Report.share,
-    },
-    {
-      icon: <CopyBlue />,
-      title: string.Report.copy,
-    },
-  ];
 
   return (
     <View style={{ flex: 1 }}>
+      {displayViewReport && (
+            <TestViewReportOverlay
+              order={activeOrder}
+              heading=""
+              isVisible={displayViewReport}
+              onClose={() => setDisplayViewReport(false)}
+              onPressViewReport={()=>{
+                fetchTestReportResult(activeOrder);
+              }}
+            />
+        )
+      }
       <SafeAreaView style={theme.viewStyles.container}>
         <Header
           leftIcon="backArrow"
@@ -405,68 +395,6 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
           {renderOrders()}
           {renderRefund()}
         </ScrollView>
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={isViewReport}
-          onRequestClose={() => {
-            setIsViewReport(false);
-          }}
-          onDismiss={() => {
-            setIsViewReport(false);
-          }}
-        >
-          <View style={styles.modalMainView}>
-            <View style={styles.reportModalView}>
-              <TouchableOpacity
-                style={{ alignSelf: 'flex-end' }}
-                onPress={() => {
-                  setIsViewReport(false);
-                }}
-              >
-                <Cross />
-              </TouchableOpacity>
-              <View style={styles.reportModalOptionsView}>
-                {viewReportItemsArray.map((item) => (
-                  <TouchableOpacity
-                    onPress={async () => {
-                      DiagnosticViewReportClicked(
-                        'My Order',
-                        !!activeOrder?.labReportURL ? 'Yes' : 'No',
-                        item?.title,
-                        activeOrder?.id
-                      );
-                      if (
-                        item?.title == string.Report.view ||
-                        item?.title == string.Report.download
-                      ) {
-                        fetchTestReportResult(activeOrder);
-                      } else if (item?.title == string.Report.share) {
-                        try {
-                          const whatsAppScheme = `whatsapp://send?text=${activeOrder?.labReportURL}`;
-                          const canOpenURL = await Linking.canOpenURL(whatsAppScheme);
-                          canOpenURL && Linking.openURL(whatsAppScheme);
-                        } catch (error) {}
-                      } else {
-                        copyToClipboard(
-                          activeOrder && activeOrder?.labReportURL ? activeOrder?.labReportURL : ''
-                        );
-                      }
-                      setIsViewReport(false);
-                    }}
-                    style={styles.itemView}
-                  >
-                    {item?.icon}
-                    <Text style={styles.itemTextStyle}>{item?.title}</Text>
-                    {snackbarState && item?.title == string.Report.copy ? (
-                      <Text style={styles.copyTextStyle}>Copied !!</Text>
-                    ) : null}
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-          </View>
-        </Modal>
       </SafeAreaView>
       {loading && <Spinner />}
     </View>
