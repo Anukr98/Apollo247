@@ -361,7 +361,6 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
         })
         .then((data) => {
           setshowSpinner(false);
-          console.log('csk mem data', JSON.stringify(data));
           const groupPlans = g(
             data,
             'data',
@@ -757,7 +756,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           </Text>
           <ImageBackground
             source={{
-              uri: 'https://newassets.apollo247.com/images/ic_logo.png',
+              uri: corporatePlan?.[0]?.group_logo_url?.mobile_version,
             }}
             resizeMode="contain"
             style={styles.corpLogo}
