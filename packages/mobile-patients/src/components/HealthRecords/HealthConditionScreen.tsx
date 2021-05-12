@@ -47,6 +47,7 @@ import {
   getPhrHighlightText,
   phrSearchWebEngageEvents,
   postWebEngageIfNewSession,
+  removeObjectProperty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -463,12 +464,14 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
   };
 
   const postWebEngageEventsOnRecordPress = (headerTitle: string, selectedItem: any) => {
+    let eventInputData = {};
     switch (headerTitle) {
       case HEALTH_CONDITIONS_TITLE.ALLERGY:
+        eventInputData = removeObjectProperty(selectedItem, 'attachmentList');
         postWebEngageIfNewSession(
           'Allergy',
           currentPatient,
-          selectedItem,
+          eventInputData,
           phrSession,
           setPhrSession
         );
@@ -492,19 +495,21 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         );
         break;
       case HEALTH_CONDITIONS_TITLE.MEDICAL_CONDITION:
+        eventInputData = removeObjectProperty(selectedItem, 'medicationFiles');
         postWebEngageIfNewSession(
           'MedicalCondition',
           currentPatient,
-          selectedItem,
+          eventInputData,
           phrSession,
           setPhrSession
         );
         break;
       case HEALTH_CONDITIONS_TITLE.FAMILY_HISTORY:
+        eventInputData = removeObjectProperty(selectedItem, 'familyHistoryFiles');
         postWebEngageIfNewSession(
           'Family History',
           currentPatient,
-          selectedItem,
+          eventInputData,
           phrSession,
           setPhrSession
         );
@@ -537,11 +542,12 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
     selectedItem: any
   ) => {
     if (recordType === MedicalRecordType.ALLERGY) {
+      const eventInputData = removeObjectProperty(selectedItem, 'attachmentList');
       postWebEngagePHR(
         currentPatient,
         WebEngageEventName.PHR_DELETE_ALLERGY,
         'Allergy',
-        selectedItem
+        eventInputData
       );
     } else if (recordType === MedicalRecordType.MEDICATION) {
       postWebEngagePHR(
@@ -558,18 +564,20 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         selectedItem
       );
     } else if (recordType === MedicalRecordType.MEDICALCONDITION) {
+      const eventInputData = removeObjectProperty(selectedItem, 'medicationFiles');
       postWebEngagePHR(
         currentPatient,
         WebEngageEventName.PHR_DELETE_MEDICAL_CONDITION,
         'Medical Condition',
-        selectedItem
+        eventInputData
       );
     } else if (recordType === MedicalRecordType.FAMILY_HISTORY) {
+      const eventInputData = removeObjectProperty(selectedItem, 'familyHistoryFiles');
       postWebEngagePHR(
         currentPatient,
         WebEngageEventName.PHR_DELETE_FAMILY_HISTORY,
         'Family History',
-        selectedItem
+        eventInputData
       );
     }
   };

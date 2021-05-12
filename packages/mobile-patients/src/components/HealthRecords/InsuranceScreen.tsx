@@ -35,6 +35,7 @@ import {
   getPhrHighlightText,
   phrSearchWebEngageEvents,
   postWebEngageIfNewSession,
+  removeObjectProperty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -359,7 +360,14 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
   };
 
   const onHealthCardItemPress = (selectedItem: MedicalInsuranceType) => {
-    postWebEngageIfNewSession('Insurance', currentPatient, selectedItem, phrSession, setPhrSession);
+    const eventInputData = removeObjectProperty(selectedItem, 'insuranceFiles');
+    postWebEngageIfNewSession(
+      'Insurance',
+      currentPatient,
+      eventInputData,
+      phrSession,
+      setPhrSession
+    );
     props.navigation.navigate(AppRoutes.HealthRecordDetails, {
       data: selectedItem,
       medicalInsurance: true,
@@ -377,11 +385,12 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
       .then((status) => {
         if (status) {
           getLatestMedicalInsuranceRecords();
+          const eventInputData = removeObjectProperty(selectedItem, 'insuranceFiles');
           postWebEngagePHR(
             currentPatient,
             WebEngageEventName.PHR_DELETE_INSURANCE,
             'Insurance',
-            selectedItem
+            eventInputData
           );
         } else {
           setShowSpinner(false);

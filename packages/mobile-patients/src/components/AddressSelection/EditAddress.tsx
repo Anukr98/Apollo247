@@ -319,7 +319,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         zipcode: pincode,
         landmark: landMark.trim(),
         mobileNumber: phoneNumber,
-        addressType: addressType! || PATIENT_ADDRESS_TYPE?.HOME,
+        addressType: addressType! || PATIENT_ADDRESS_TYPE.HOME,
         otherAddressType: optionalAddress,
         latitude: latitude,
         longitude: longitude,
@@ -352,9 +352,9 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         //if pincode is changed.
         if (isAddressServiceable || addOnly) {
           setcity(isAddressServiceable?.city || '');
-          setDeliveryAddressId!(address?.id || '');
-          setNewAddressAdded!(address?.id || '');
-          setDiagnosticAddressId!(address?.id || '');
+          setDeliveryAddressId?.(address?.id || '');
+          setNewAddressAdded?.(address?.id || '');
+          setDiagnosticAddressId?.(address?.id || '');
           if (isComingFrom == 'My Account') {
             props.navigation.pop(3, { immediate: true });
             props.navigation.push(AppRoutes.AddressBook, { refetch: true });

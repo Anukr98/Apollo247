@@ -47,6 +47,7 @@ import {
   postWebEngagePHR,
   getSourceName,
   HEALTH_CONDITIONS_TITLE,
+  removeObjectProperty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import {
@@ -265,6 +266,58 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     : g(data, 'familyHistoryFiles')
     ? g(data, 'familyHistoryFiles')
     : [];
+
+  const propertyName = g(data, 'testResultFiles')
+    ? 'testResultFiles'
+    : g(data, 'healthCheckFiles')
+    ? 'healthCheckFiles'
+    : g(data, 'hospitalizationFiles')
+    ? 'hospitalizationFiles'
+    : g(data, 'prescriptionFiles')
+    ? 'prescriptionFiles'
+    : g(data, 'insuranceFiles')
+    ? 'insuranceFiles'
+    : g(data, 'billFiles')
+    ? 'billFiles'
+    : g(data, 'medicationFiles')
+    ? 'medicationFiles'
+    : g(data, 'attachmentList')
+    ? 'attachmentList'
+    : g(data, 'familyHistoryFiles')
+    ? 'familyHistoryFiles'
+    : '';
+
+  const webEngageSource = healthCheck
+    ? 'Health Check'
+    : hospitalization
+    ? 'Discharge Summary'
+    : prescriptions
+    ? 'Prescription'
+    : medicalBill
+    ? 'Bills'
+    : medicalInsurance
+    ? 'Insurance'
+    : 'Lab Test';
+
+  const webEngageEventName: WebEngageEventName = healthCheck
+    ? WebEngageEventName.PHR_DOWNLOAD_HEALTH_CHECKS
+    : hospitalization
+    ? WebEngageEventName.PHR_DOWNLOAD_HOSPITALIZATIONS
+    : prescriptions
+    ? WebEngageEventName.PHR_DOWNLOAD_DOCTOR_CONSULTATION
+    : medicalBill
+    ? WebEngageEventName.PHR_DOWNLOAD_BILLS
+    : medicalInsurance
+    ? WebEngageEventName.PHR_DOWNLOAD_INSURANCE
+    : healthCondition
+    ? healthHeaderTitle === HEALTH_CONDITIONS_TITLE.ALLERGY
+      ? WebEngageEventName.PHR_DOWNLOAD_ALLERGY
+      : healthHeaderTitle === HEALTH_CONDITIONS_TITLE.MEDICAL_CONDITION
+      ? WebEngageEventName.PHR_DOWNLOAD_MEDICAL_CONDITION
+      : healthHeaderTitle === HEALTH_CONDITIONS_TITLE.FAMILY_HISTORY
+      ? WebEngageEventName.PHR_DOWNLOAD_FAMILY_HISTORY
+      : WebEngageEventName.PHR_DOWNLOAD_TEST_REPORT
+    : WebEngageEventName.PHR_DOWNLOAD_TEST_REPORT;
 
   const file_name_text = healthCheck
     ? 'HealthSummary_'
@@ -611,6 +664,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + (fileName || 'Apollo_TestReport.zip')
         : dirs.DownloadDir + '/' + (fileName || 'Apollo_TestReport.zip');
     setLoading && setLoading(true);
+    let eventInputData = removeObjectProperty(data, propertyName);
     RNFetchBlob.config({
       fileCache: true,
       path: downloadPath,
@@ -626,7 +680,10 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       .fetch('GET', zipUrl)
       .then((res) => {
         setLoading && setLoading(false);
-        // postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, data);
+        postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, {
+          ...eventInputData,
+          zipUrl,
+        });
         Platform.OS === 'ios'
           ? RNFetchBlob.ios.previewDocument(res.path())
           : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
@@ -1083,36 +1140,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   };
 
   const downloadDocument = (pdfUrl: string = '') => {
-    const webEngageSource = healthCheck
-      ? 'Health Check'
-      : hospitalization
-      ? 'Discharge Summary'
-      : prescriptions
-      ? 'Prescription'
-      : medicalBill
-      ? 'Bills'
-      : medicalInsurance
-      ? 'Insurance'
-      : 'Lab Test';
-    const webEngageEventName: WebEngageEventName = healthCheck
-      ? WebEngageEventName.PHR_DOWNLOAD_HEALTH_CHECKS
-      : hospitalization
-      ? WebEngageEventName.PHR_DOWNLOAD_HOSPITALIZATIONS
-      : prescriptions
-      ? WebEngageEventName.PHR_DOWNLOAD_DOCTOR_CONSULTATION
-      : medicalBill
-      ? WebEngageEventName.PHR_DOWNLOAD_BILLS
-      : medicalInsurance
-      ? WebEngageEventName.PHR_DOWNLOAD_INSURANCE
-      : healthCondition
-      ? healthHeaderTitle === HEALTH_CONDITIONS_TITLE.ALLERGY
-        ? WebEngageEventName.PHR_DOWNLOAD_ALLERGY
-        : healthHeaderTitle === HEALTH_CONDITIONS_TITLE.MEDICAL_CONDITION
-        ? WebEngageEventName.PHR_DOWNLOAD_MEDICAL_CONDITION
-        : healthHeaderTitle === HEALTH_CONDITIONS_TITLE.FAMILY_HISTORY
-        ? WebEngageEventName.PHR_DOWNLOAD_FAMILY_HISTORY
-        : WebEngageEventName.PHR_DOWNLOAD_TEST_REPORT
-      : WebEngageEventName.PHR_DOWNLOAD_TEST_REPORT;
     const file_name = g(data, 'testResultFiles', '0', 'fileName')
       ? g(data, 'testResultFiles', '0', 'fileName')
       : g(data, 'healthCheckFiles', '0', 'fileName')
@@ -1132,6 +1159,9 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       : g(data, 'familyHistoryFiles', '0', 'fileName')
       ? g(data, 'familyHistoryFiles', '0', 'fileName')
       : '';
+
+    const eventInputData = removeObjectProperty(data, propertyName);
+
     const dirs = RNFetchBlob.fs.dirs;
 
     const fileName: string = getFileName(file_name, pdfUrl);
@@ -1157,7 +1187,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       })
       .then((res) => {
         setLoading && setLoading(false);
-        postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, data);
+        postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, eventInputData);
         Platform.OS === 'ios'
           ? RNFetchBlob.ios.previewDocument(res.path())
           : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));

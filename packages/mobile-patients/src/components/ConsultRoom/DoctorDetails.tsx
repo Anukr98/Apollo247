@@ -647,7 +647,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         setConsultType(ConsultMode.ONLINE);
       } else if (modeOfConsult.includes(ConsultMode.PHYSICAL)) {
         setConsultType(ConsultMode.PHYSICAL);
-        setOnlineSelected(false);
         set_follow_up_chat_message_visibility(false);
       } else {
         setConsultType(ConsultMode.BOTH);
@@ -663,9 +662,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const formatTime = (time: string) => {
     const IOSFormat = `${todayDate}T${time}.000Z`;
     return Moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('hh:mm A');
-  };
-  const formatDateTime = (time: string) => {
-    return Moment(new Date(time), 'HH:mm:ss.SSSz').format('hh:mm A');
   };
 
   const renderConsultType = () => {
