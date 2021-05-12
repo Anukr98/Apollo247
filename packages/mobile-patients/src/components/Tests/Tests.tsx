@@ -147,7 +147,7 @@ import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobil
 import {
   AppConfig,
   DIAGNOSITC_PHELBO_TRACKING_STATUS,
-  DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY,
+  DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY,
   DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
   stepsToBookArray,
 } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -2152,7 +2152,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     if (DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(item?.orderStatus)) {
       //track order
       navigateToTrackingScreen(item);
-    } else if (DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY.includes(item?.orderStatus)) {
+    } else if (DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(item?.orderStatus)) {
       //view report download
       try {
         if (!!item?.labReportURL && item?.labReportURL != '') {
@@ -2494,6 +2494,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 style={{ flex: 1, marginBottom: !!cartItems && cartItems?.length > 0 ? 30 : 0 }}
                 keyboardShouldPersistTaps="always"
                 showsVerticalScrollIndicator={false}
+                nestedScrollEnabled={true}
               >
                 {renderSections()}
                 {renderOverlay()}
