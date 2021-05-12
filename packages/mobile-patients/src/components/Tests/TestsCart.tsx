@@ -12,7 +12,7 @@ import {
   getAge,
   isAddressLatLngInValid,
   setAsyncPharmaLocation,
-} from '@aph/mobile-patients/src//helpers/helperFunctions';
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   DiagnosticArea,
@@ -328,6 +328,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
     fetchAddresses();
   }, []);
+
   useEffect(() => {
     fetchFindDiagnosticSettings();
   }, []);
@@ -490,6 +491,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const mode = 'Home Visit';
     const areaName = String((areaSelected as areaObject)?.value);
     const areaId = Number((areaSelected as areaObject)?.key);
+    const area = String((areaSelected as areaObject)?.value);
 
     DiagnosticProceedToPay(
       date,
@@ -924,7 +926,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             onPressOk: () => {
               hideAphAlert?.();
               const _itemIds = cartItems?.map((item) => Number(item?.id));
-
               !isEmptyObject(areaSelected)
                 ? checkSlotSelection(areaSelected, undefined, undefined, _itemIds)
                 : shouldShowArea
@@ -1517,14 +1518,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               </Text>
             </View>
           )}
-          {
-            <View style={styles.rowSpaceBetweenStyle}>
-              <Text style={styles.blueTextStyle}>Home Collection Charges</Text>
-              <Text style={styles.blueTextStyle}>
-                {string.common.Rs} {hcCharges.toFixed(2)}
-              </Text>
-            </View>
-          }
+          <View style={styles.rowSpaceBetweenStyle}>
+            <Text style={styles.blueTextStyle}>Home Collection Charges</Text>
+            <Text style={styles.blueTextStyle}>
+              {string.common.Rs} {hcCharges.toFixed(2)}
+            </Text>
+          </View>
+
           {normalSaving > 0 && (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>

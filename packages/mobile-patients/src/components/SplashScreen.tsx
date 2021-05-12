@@ -16,7 +16,7 @@ import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
 import { AppRoutes, getCurrentRoute } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import remoteConfig from '@react-native-firebase/remote-config';
 import SplashScreenView from 'react-native-splash-screen';
-import { BookingSource, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { Relation, BookingSource } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAuth } from '../hooks/authHooks';
 import { AppConfig, updateAppConfig, AppEnv } from '../strings/AppConfig';
 import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
@@ -387,6 +387,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       voipCallType.current = params?.[1]!;
       callPermissions();
       getAppointmentDataAndNavigate(params?.[0]!, true);
+    } else if (routeName == 'prohealth') {
+      fetchProhealthHospitalDetails(id);
     } else if (routeName === 'DoctorCallRejected') {
       setLoading!(true);
       const appointmentId = id?.split('+')?.[0];
@@ -526,7 +528,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               if (mePatient.firstName !== '') {
                 const isCircleMember: any = await AsyncStorage.getItem('isCircleMember');
                 if (routeName == 'prohealth' && id) {
-                  id = id.replace('mobileNumber', currentPatient?.mobileNumber || '');
+                  id = id?.replace('mobileNumber', currentPatient?.mobileNumber || '');
                 }
                 pushTheView(
                   props.navigation,
@@ -652,7 +654,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         firebaseAuth().onAuthStateChanged(async (user) => {
           if (user) {
             const jwtToken = await user.getIdToken(true).catch((error) => {
-              throw error;
+              CommonBugFender('SplashScreen_regenerateJWTToken', error);
             });
             const openUrl = AppConfig.Configuration.PROHEALTH_BOOKING_URL;
             let finalUrl;
@@ -882,6 +884,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'Reopen_Help_Max_Time_QA',
       PROD: 'Reopen_Help_Max_Time_Prod',
     },
+    Enable_Diagnostics_COD: {
+      QA: 'QA_Enable_Diagnostics_COD',
+      PROD: 'Enable_Diagnostics_COD',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1075,6 +1081,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         config.getNumber(key)
       );
       setAppConfig('followUp_Chat', 'FollowUp_Chat_Limit', (key) => config.getNumber(key));
+      setAppConfig('Enable_Diagnostics_COD', 'Enable_Diagnostics_COD', (key) =>
+        config.getBoolean(key)
+      );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';

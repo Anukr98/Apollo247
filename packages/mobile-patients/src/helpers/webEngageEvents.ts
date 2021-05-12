@@ -662,7 +662,7 @@ export interface ItemSearchedOnLanding extends DiagnosticUserInfo {
   'Keyword Entered': string;
   '# Results appeared': number;
   'Item in Results'?: object[];
-  'Popular'?: 'Yes' | 'No';
+  Popular?: 'Yes' | 'No';
 }
 
 export interface ItemClickedOnLanding extends DiagnosticUserInfo {
@@ -896,6 +896,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.SEARCH_ENTER_CLICK]: {
     keyword: string;
     numberofresults: number;
+    source: string;
   };
   [WebEngageEventName.PHARMACY_SEARCH_RESULTS]: {
     keyword: string;
@@ -1200,13 +1201,20 @@ export interface WebEngageEvents {
     'Category Name'?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION]: {
-    Source: 'Full Search' | 'Home Page' | 'Cart Page' | 'Partial Search' | 'Deeplink' | 'Popular search' | 'Category page';
+    Source:
+      | 'Full Search'
+      | 'Home Page'
+      | 'Cart Page'
+      | 'Partial Search'
+      | 'Deeplink'
+      | 'Popular search'
+      | 'Category page';
     'Item Name': string;
     'Item Type'?: string;
     'Item Code': string;
     'Patient Name': string;
     'Patient UHID': string;
-    'Item ID' : string | number;
+    'Item ID': string | number;
     'Item Price'?: number | string;
   };
 
@@ -1219,8 +1227,8 @@ export interface WebEngageEvents {
     'Total Discount': number;
     'Net after discount': number; //item total
     'Cart Items': object[];
-    'Pincode': string| number,
-    'UHID': string
+    Pincode: string | number;
+    UHID: string;
   };
   [WebEngageEventName.DIAGNOSTIC_AREA_SELECTED]: {
     'Address Pincode': number;
@@ -1230,9 +1238,9 @@ export interface WebEngageEvents {
     'Address Pincode': number;
     'Area Selected': string;
     'Time Selected': string;
-    'Slot selected': 'Manual'  | 'Automatic';
-    'Slot available': 'Yes'| 'No';
-    'UHID' : string;
+    'Slot selected': 'Manual' | 'Automatic';
+    'Slot available': 'Yes' | 'No';
+    UHID: string;
   };
   [WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED]: {
     'Patient Name selected': string;
@@ -1247,7 +1255,7 @@ export interface WebEngageEvents {
     'Pin Code': string | number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
     'Area Name': string;
-    'Area id': string | number,
+    'Area id': string | number;
     'Home collection charges'?: number;
     Discount?: number;
     'Collection Time Slot': string;
@@ -1257,13 +1265,17 @@ export interface WebEngageEvents {
     'Patient Name': string;
     'Latest Order Status': string;
     'Order id': string;
-    'Source': 'Home' | 'My Order' | 'Track Order' | 'Order Summary'
+    Source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary';
   };
   [WebEngageEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED]: {
     'Order id'?: string;
-    'Source': 'Home' | 'My Order' | 'Track Order' | 'Order Summary'
+    Source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary';
     'Report generated': 'Yes' | 'No';
-    'Action taken' : 'View Report' | "Download Report PDF" | "Share on Whatsapp" | "Copy Link to PDF"
+    'Action taken':
+      | 'View Report'
+      | 'Download Report PDF'
+      | 'Share on Whatsapp'
+      | 'Copy Link to PDF';
   };
   [WebEngageEventName.DIAGNOSTIC_FEEDBACK_GIVEN]: {
     'Patient UHID': string;
@@ -1274,7 +1286,15 @@ export interface WebEngageEvents {
   [WebEngageEventName.DIAGNOSTIC_ADD_TO_CART]: {
     'Item Name': string;
     'Item ID': string; // (SKUID)
-    Source: 'Home page' | 'Full search' | 'Details page' | 'Partial search' | 'Listing page' | 'Popular search' | 'Category page' | 'Prescription' ;
+    Source:
+      | 'Home page'
+      | 'Full search'
+      | 'Details page'
+      | 'Partial search'
+      | 'Listing page'
+      | 'Popular search'
+      | 'Category page'
+      | 'Prescription';
     Section?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
@@ -1288,7 +1308,7 @@ export interface WebEngageEvents {
     'Appointment time'?: string;
     'Item ids'?: any;
     'Total items in order': number;
-    'Payment type'?: string //for prepaid
+    'Payment type'?: string; //for prepaid
   };
   [WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
     Amount: number;
@@ -1311,7 +1331,7 @@ export interface WebEngageEvents {
     Pincode: string | number;
     Mode: 'Customer' | 'Automated';
   };
-  [WebEngageEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE]:{
+  [WebEngageEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE]: {
     'Item ID'?: string | number;
     'Item name'?: string;
     Pincode: string | number;
@@ -1323,7 +1343,7 @@ export interface WebEngageEvents {
     'Order id': string;
   };
   [WebEngageEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED]: {
-    'UHID': string;
+    UHID: string;
     'Order amount': string | number;
   };
   [WebEngageEventName.DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED]: {
@@ -2153,7 +2173,7 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
-    'Order Type': 'Cart'| 'Non-Cart';
+    'Order Type': 'Cart' | 'Non-Cart';
   };
   [WebEngageEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS]: {
     'Doctor Name': string;
