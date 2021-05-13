@@ -34,20 +34,9 @@ import {
   BackHandler,
   Text,
   Modal,
-  Linking,
-  Clipboard,
 } from 'react-native';
-import {
-  Down,
-  Up,
-  DownO,
-  CopyBlue,
-  DownloadNew,
-  ShareBlue,
-  ViewIcon,
-  Cross
-} from '@aph/mobile-patients/src/components/ui/Icons';
-import { NavigationScreenProps } from 'react-navigation';
+import { Down, DownO } from '@aph/mobile-patients/src/components/ui/Icons';
+import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import {
   CancellationDiagnosticsInput,
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
@@ -78,7 +67,7 @@ import {
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import _ from 'lodash';
+import _, { conformsTo } from 'lodash';
 import {
   cancelDiagnosticsOrder,
   cancelDiagnosticsOrderVariables,
@@ -171,11 +160,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const client = useApolloClient();
   const [orders, setOrders] = useState<any>(props.navigation.getParam('orders'));
-  const [isTest, setIsTest] = useState<any>(props.navigation.getParam('isTest'));
-  const [fromOrderSummary, setFromOrderSummary] = useState<any>(
-    props.navigation.getParam('fromOrderSummary')
-  );
-
   const [isPaitentList, setIsPaitentList] = useState<boolean>(false);
   const [isViewReport, setIsViewReport] = useState<boolean>(false);
   const [activeOrder, setActiveOrder] = useState<
@@ -193,6 +177,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [currentOffset, setCurrentOffset] = useState<number>(1);
   const [resultList, setResultList] = useState<(orderListByMobile | null)[] | null>([]);
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
+  const source = props.navigation.getParam('source');
 
   var rescheduleDate: Date,
     rescheduleSlotObject: {
@@ -224,12 +209,26 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     if (showSummaryPopupRef.current) {
       setSummaryPopup(false);
       return true;
+    } else if (source === AppRoutes.OrderStatus) {
+      props.navigation.dispatch(
+        StackActions.reset({
+          index: 1,
+          key: null,
+          actions: [
+            NavigationActions.navigate({
+              routeName: AppRoutes.ConsultRoom,
+            }),
+            NavigationActions.navigate({
+              routeName: AppRoutes.Tests,
+            }),
+          ],
+        })
+      );
+      return true;
     } else {
-      if (fromOrderSummary) {
-        props.navigation.popToTop();
-      }
+      props.navigation.goBack();
+      return false;
     }
-    return false;
   };
 
   useEffect(() => {
@@ -274,7 +273,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   }, [currentOffset]);
   const fetchOrders = async (isRefetch: boolean) => {
     try {
-      setLoading!(true);
+      setLoading?.(true);
       client
         .query<getDiagnosticOrdersListByMobile, getDiagnosticOrdersListByMobileVariables>({
           query: GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
@@ -1090,7 +1089,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       refundStatusArr: refundArray,
       comingFrom: AppRoutes.YourOrdersTest,
       showOrderSummaryTab: tab,
-      fromOrderSummary: fromOrderSummary
     });
   }
   const renderOrder = (
@@ -1201,7 +1199,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           setSnackbarState(false);
           setActiveOrder(order);
           setIsViewReport(true);
-          setDisplayViewReport(true)
+          setDisplayViewReport(true);
           // _onPressViewReport(order)
         }}
         phelboObject={order?.phleboDetailsObj}
@@ -1402,29 +1400,28 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     <View style={{ flex: 1 }}>
       {showDisplaySchedule && renderRescheduleOrderOverlay()}
       {displayViewReport && (
-            <TestViewReportOverlay
-              order={activeOrder}
-              heading=""
-              isVisible={displayViewReport}
-              onClose={() => setDisplayViewReport(false)}
-              onPressViewReport={()=>{
-                DiagnosticViewReportClicked(
-                  'My Order',
-                  !!activeOrder?.labReportURL ? 'Yes' : 'No',
-                  'Download Report PDF'
-                );
-                _onPressViewReport(activeOrder);
-              }}
-            />
-        )
-      }
+        <TestViewReportOverlay
+          order={activeOrder}
+          heading=""
+          isVisible={displayViewReport}
+          onClose={() => setDisplayViewReport(false)}
+          onPressViewReport={() => {
+            DiagnosticViewReportClicked(
+              'My Order',
+              !!activeOrder?.labReportURL ? 'Yes' : 'No',
+              'Download Report PDF'
+            );
+            _onPressViewReport(activeOrder);
+          }}
+        />
+      )}
       <SafeAreaView style={theme.viewStyles.container}>
         {props?.showHeader == false ? null : (
           <Header
             leftIcon="backArrow"
             title={string.orders.urOrders}
             container={{ borderBottomWidth: 0 }}
-            onPressLeftIcon={() => props.navigation.goBack()}
+            onPressLeftIcon={() => handleBack()}
           />
         )}
         {renderFilterArea()}

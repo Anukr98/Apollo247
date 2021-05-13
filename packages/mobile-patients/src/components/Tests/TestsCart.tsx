@@ -2256,8 +2256,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           });
         })
         .finally(() => {
-          setshowSpinner(false);
-          setLoading!(false);
+          setshowSpinner?.(false);
+          setLoading?.(false);
         });
     }
   };
@@ -2445,10 +2445,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const onPressProceedToPay = () => {
     if (!!existingOrderDetails) {
       postwebEngageProceedToPayEventForModify();
-      setshowSpinner(true);
+      setshowSpinner?.(true);
       saveModifiedOrder();
     } else {
       postwebEngageProceedToPayEvent();
+      setshowSpinner?.(true);
       proceedForBooking();
     }
   };
@@ -2781,7 +2782,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       : addresses?.[selectedAddressIndex]?.zipcode!;
 
     setPinCode?.(pinCode);
-    setLoading?.(true);
+    setshowSpinner?.(true);
+
     let newGrandTotal = !!existingOrderDetails
       ? totalCartPricesIncludingDiscount + totalModifiedItemPrices
       : grandTotal - hcCharges;
@@ -2821,11 +2823,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         setHcCharges?.(getCharges);
         setModifyHcCharges?.(updatedHcCharges);
       }
-      setLoading?.(false);
+      setshowSpinner?.(false);
       setHcApiCalled(true);
     } catch (error) {
-      setLoading?.(false);
       setHcApiCalled(true);
+      setshowSpinner?.(false);
     }
   };
 

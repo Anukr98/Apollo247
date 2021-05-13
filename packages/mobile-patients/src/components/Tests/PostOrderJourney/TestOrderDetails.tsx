@@ -11,11 +11,6 @@ import {
   More,
   OrderPlacedIcon,
   OrderTrackerSmallIcon,
-  CopyBlue,
-  DownloadNew,
-  ShareBlue,
-  ViewIcon,
-  Cross,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import _ from 'lodash';
 import {
@@ -54,7 +49,12 @@ import moment from 'moment';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import {
+  NavigationActions,
+  NavigationScreenProps,
+  ScrollView,
+  StackActions,
+} from 'react-navigation';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
@@ -111,9 +111,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const selectedOrder = props.navigation.getParam('selectedOrder');
   const refundStatusArr = props.navigation.getParam('refundStatusArr');
   const source = props.navigation.getParam('comingFrom');
-  const [fromOrderSummary, setFromOrderSummary] = useState<any>(
-    props.navigation.getParam('fromOrderSummary')
-  );
+
   const client = useApolloClient();
   const [selectedTab, setSelectedTab] = useState<string>(
     showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
@@ -125,11 +123,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const [scrollYValue, setScrollYValue] = useState(0);
   const [loading1, setLoading] = useState<boolean>(true);
-  const [labResults, setLabResults] = useState<
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response | null)[]
-    | null
-    | undefined
-  >([]);
   const [orderLevelStatus, setOrderLevelStatus] = useState([] as any);
   const [showInclusionStatus, setShowInclusionStatus] = useState<boolean>(false);
   const [showError, setError] = useState<boolean>(false);
@@ -140,6 +133,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     scrollViewRef.current &&
       scrollViewRef.current.scrollTo({ x: 0, y: scrollYValue, animated: true });
   };
+
+  console.log({ props });
 
   //for showing the order level status.
   const fetchOrderLevelStatus = () =>
@@ -253,7 +248,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           'labResults',
           'response'
         );
-        setLabResults(labResultsData);
         let resultForVisitNo = labResultsData?.find((item: any) => item?.identifier == getVisitId);
         !!resultForVisitNo
           ? props.navigation.navigate(AppRoutes.HealthRecordDetails, {
@@ -301,18 +295,29 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         });
     }
     if (goToHomeOnBack && source === AppRoutes.TestsCart) {
-      props.navigation.popToTop();
-      props.navigation.navigate(AppRoutes.YourOrdersTest, {
-        refetch: true,
-      });
+      props.navigation.dispatch(
+        StackActions.reset({
+          index: 2,
+          key: null,
+          actions: [
+            NavigationActions.navigate({
+              routeName: AppRoutes.ConsultRoom,
+            }),
+            NavigationActions.navigate({
+              routeName: AppRoutes.Tests,
+            }),
+            NavigationActions.navigate({
+              routeName: AppRoutes.YourOrdersTest,
+              params: { source: AppRoutes.TestsCart },
+            }),
+          ],
+        })
+      );
       return true;
     } else {
       props.navigation.goBack();
       return false;
     }
-    // props.navigation.setParams({ fromOrderSummary: fromOrderSummary });
-    // props.navigation.goBack();
-    // return false;
   };
 
   const updateRateDeliveryBtnVisibility = async () => {
