@@ -35,8 +35,7 @@ export const FreeDelivery: React.FC<FreeDeliveryProps> = (props) => {
   }
 
   function renderFreeDeliveryCard() {
-    return (!!isCircleSubscription || circleMembershipCharges) &&
-      (!coupon || coupon.circleBenefits) ? null : (
+    return (!!isCircleSubscription || circleMembershipCharges) && !coupon ? null : (
       <View style={styles.card}>
         <FreeShippingIcon style={{ width: 15, height: 15, marginTop: 3, marginRight: 3 }} />
         <Text

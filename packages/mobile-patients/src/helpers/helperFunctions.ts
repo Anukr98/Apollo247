@@ -2682,10 +2682,7 @@ export const validateCoupon = async (
       const response = await validateConsultCoupon(data);
       if (response.data.errorCode == 0) {
         if (response.data.response.valid) {
-          setCoupon!({
-            ...response?.data?.response,
-            message: message ? message : '',
-          });
+          setCoupon!({ ...response?.data?.response, message: message ? message : '' });
           res('success');
         } else {
           rej(response.data.response.reason);
