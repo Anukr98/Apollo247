@@ -361,7 +361,6 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
         })
         .then((data) => {
           setshowSpinner(false);
-          console.log('csk mem data', JSON.stringify(data));
           const groupPlans = g(
             data,
             'data',
@@ -757,7 +756,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           </Text>
           <ImageBackground
             source={{
-              uri: 'https://newassets.apollo247.com/images/ic_logo.png',
+              uri: corporatePlan?.[0]?.group_logo_url?.mobile_version,
             }}
             resizeMode="contain"
             style={styles.corpLogo}
@@ -781,7 +780,9 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             );
           }}
         >
-          <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>VIEW DETAILS</Text>
+          <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>
+            VIEW DETAILS ON WEB
+          </Text>
         </TouchableOpacity>
       </View>
     );
@@ -831,7 +832,8 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
 
         {showCircleActivation && renderCircleMembershipActivated()}
         {showCirclePlans && renderCircleSubscriptionPlans()}
-        {(hdfcUserSubscriptions?._id || circleSubscription?._id) && (
+
+        {(hdfcUserSubscriptions?._id || circleSubscription?._id || showCorporateActivation) && (
           <ScrollView bounces={false}>
             <View>
               <View>
@@ -842,7 +844,6 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
                 {hdfcUserSubscriptions?._id
                   ? renderMembershipCard(hdfcUserSubscriptions, false)
                   : null}
-                {showCorporateActivation ? renderCorporateCard(circleSubscription) : null}
               </View>
               {canUpgrade && (
                 <View>
@@ -853,6 +854,8 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
                   <View style={{ marginTop: 15 }} />
                 </View>
               )}
+
+              {showCorporateActivation ? renderCorporateCard() : null}
             </View>
           </ScrollView>
         )}
