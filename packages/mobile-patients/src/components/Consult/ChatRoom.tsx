@@ -735,9 +735,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [callMinimize, setCallMinimize] = useState<boolean>(false);
   const followChatLimit = AppConfig.Configuration.FollowUp_Chat_Limit || 4;
   const [availableMessages, setavailableMessages] = useState(followChatLimit);
+  const [currentCaseSheet, setcurrentCaseSheet] = useState<any>([]);
   let appointmentData: any = props.navigation.getParam('data');
   const caseSheet = followUpChatDaysCaseSheet(appointmentData.caseSheet);
+  const followUpChatDaysCurrentCaseSheet = followUpChatDaysCaseSheet(currentCaseSheet);
   const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
+  const currentCaseSheetChatDays = g(
+    followUpChatDaysCurrentCaseSheet,
+    '0' as any,
+    'followUpAfterInDays'
+  );
+  const followupDays = caseSheetChatDays || currentCaseSheetChatDays;
   const followUpAfterInDays =
     caseSheetChatDays || caseSheetChatDays === '0'
       ? caseSheetChatDays === '0'
@@ -791,7 +799,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [showCallAbandmentPopup, setShowCallAbandmentPopup] = useState(false);
   const [showConnectAlertPopup, setShowConnectAlertPopup] = useState(false);
   const [isConsultedWithDoctorBefore, setConsultedWithDoctorBefore] = useState(false);
-  const [currentCaseSheet, setcurrentCaseSheet] = useState<any>([]);
   const MedicinePrescriptions = currentCaseSheet?.filter(
     (item: any) => item?.medicinePrescription !== null
   );
@@ -1004,6 +1011,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       return true;
     }
   };
+
+  useEffect(() => {
+    currentCaseSheet && followupDays && analyzeMessages(messages);
+  }, [currentCaseSheet]);
 
   useEffect(() => {
     onCall.current = isCall || isAudioCall;
@@ -2653,15 +2664,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   const sendFollowUpChatGuideLines = () => {
-    if (guidelinesAdded) {
+    if (guidelinesAdded || !followupDays) {
       return;
     }
     setguidelinesAdded(true);
     const headerText = `If you have further queries related to your consultation, you may reach out to ${
       appointmentData?.doctorInfo?.displayName
-    } via texts for the next ${
-      Number(caseSheetChatDays) === 0 ? '1' : Number(caseSheetChatDays)
-    } day${Number(caseSheetChatDays) > 1 ? 's' : ''}.`;
+    } via texts for the next ${Number(followupDays) === 0 ? '1' : Number(followupDays)} day${
+      Number(followupDays) > 1 ? 's' : ''
+    }.`;
     sendMessage(sectionHeader, doctorId, headerText);
     setTimeout(() => {
       sendMessage(followUpChatGuideLines, doctorId);
