@@ -1003,7 +1003,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
               setDefaultCirclePlan?.(null);
               setCirclePlanSelected?.(null);
               setCircleMembershipCharges?.(0);
-              coupon?.circleBenefits && isCircleSubscription && setCoupon?.(null);
             }
           } else {
             setCoupon && setCoupon(null);
