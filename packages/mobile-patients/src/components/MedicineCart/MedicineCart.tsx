@@ -196,7 +196,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         pharmacyCircleAttributes!,
         pharmacyUserTypeAttribute!
       );
-    setIsCircleSubscription?.(false);
     if (!circleSubPlanId) {
       setCircleMembershipCharges && setCircleMembershipCharges(0);
     }
@@ -276,13 +275,15 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }, [couponProducts]);
 
   useEffect(() => {
-    if (!!coupon && !coupon?.circleBenefits) {
+    if (!!coupon) {
       setCircleMembershipCharges && setCircleMembershipCharges(0);
-      setIsCircleSubscription?.(false);
-    } else if (coupon?.circleBenefits) {
-      setIsCircleSubscription?.(true);
-    } else if (!circleSubscriptionId) {
-      setCircleMembershipCharges?.(circlePlanSelected?.currentSellingPrice);
+    } else {
+      if (!circleSubscriptionId) {
+        setCircleMembershipCharges &&
+          setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
+      } else {
+        setIsCircleSubscription && setIsCircleSubscription(true);
+      }
     }
   }, [coupon]);
 
@@ -996,10 +997,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         activeOpacity={0.7}
         style={styles.applyBenefits}
         onPress={() => {
-          if (
-            (!coupon && isCircleSubscription) ||
-            (coupon?.circleBenefits && isCircleSubscription)
-          ) {
+          if (!coupon && isCircleSubscription) {
             if (!circleSubscriptionId || cartTotalCashback) {
               setIsCircleSubscription?.(false);
               setDefaultCirclePlan?.(null);
@@ -1008,12 +1006,12 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
               coupon?.circleBenefits && isCircleSubscription && setCoupon?.(null);
             }
           } else {
-            !coupon?.circleBenefits && setCoupon?.(null);
-            setIsCircleSubscription?.(true);
+            setCoupon && setCoupon(null);
+            setIsCircleSubscription && setIsCircleSubscription(true);
           }
         }}
       >
-        {(!coupon && isCircleSubscription) || (coupon?.circleBenefits && isCircleSubscription) ? (
+        {!coupon && isCircleSubscription ? (
           <View style={{ flexDirection: 'row' }}>
             <CheckedIcon style={{ marginTop: 8, marginRight: 4 }} />
             <CareCashbackBanner

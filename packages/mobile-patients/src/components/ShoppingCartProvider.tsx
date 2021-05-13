@@ -82,7 +82,6 @@ export interface PharmaCoupon extends validatePharmaCoupon_validatePharmaCoupon 
   reason: String;
   freeDelivery: boolean;
   products: [];
-  circleBenefits: boolean;
 }
 
 export interface CartProduct {
