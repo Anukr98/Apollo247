@@ -179,7 +179,6 @@ import {
   preFetchSDK,
   createHyperServiceObject,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
-import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 
 import { CircleTypeCard1 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard1';
 import { CircleTypeCard2 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard2';

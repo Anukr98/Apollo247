@@ -399,6 +399,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         }
       }).filter((value: any) => value);
       return apps;
+    } else {
+      return [];
     }
   };
 
