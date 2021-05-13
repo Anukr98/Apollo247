@@ -486,8 +486,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         onPressUPIApp={onPressUPIApp}
         onPressPay={onPressVPAPay}
         setisVPAvalid={setisVPAvalid}
-        phonePeReady={phonePeReady}
-        googlePayReady={googlePayReady}
       />
     );
   };
