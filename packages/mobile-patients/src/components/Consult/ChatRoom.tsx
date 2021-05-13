@@ -2657,7 +2657,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       return;
     }
     setguidelinesAdded(true);
-    const headerText = `If you have further queries related to your consultation, you may reach out to ${appointmentData.doctorInfo.displayName} via texts for the next 7 days.`;
+    const headerText = `If you have further queries related to your consultation, you may reach out to ${
+      appointmentData.doctorInfo.displayName
+    } via texts for the next ${
+      Number(caseSheetChatDays) === 0 ? '1' : Number(caseSheetChatDays)
+    } day${Number(caseSheetChatDays) > 1 ? 's' : ''}.`;
     sendMessage(sectionHeader, doctorId, headerText);
     setTimeout(() => {
       sendMessage(followUpChatGuideLines, doctorId);
