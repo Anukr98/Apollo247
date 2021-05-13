@@ -106,6 +106,7 @@ import RNFetchBlob from 'rn-fetch-blob';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { HEALTH_CREDITS } from '../utils/AsyncStorageKey';
 import { getPatientByMobileNumber_getPatientByMobileNumber_patients } from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
+import CleverTap from 'clevertap-react-native';
 
 const width = Dimensions.get('window').width;
 
@@ -1468,6 +1469,7 @@ const webengage = new WebEngage();
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
+    CleverTap.recordEvent(eventName, attributes);
     webengage.track(eventName, attributes);
   } catch (error) {}
 };

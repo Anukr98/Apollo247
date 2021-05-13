@@ -16,4 +16,7 @@
 
     <!-- play store key -->
     <string name="truecaller_appkey">ZI9TSf24b50579dfd4a39bfd1156b07189ac2</string>
+
+    <string name="clevertap_account_id">TEST-9W8-97W-7Z6Z</string>
+    <string name="clevertap_token">TEST-0ac-b0c</string>
 </resources>

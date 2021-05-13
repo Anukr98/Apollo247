@@ -146,5 +146,9 @@
 	<string>VERBOSE</string>
 	<key>WEGManualIntegration</key>
 	<true/>
+	<key>CleverTapAccountID</key>
+	<string>TEST-9W8-97W-7Z6Z</string>
+	<key>CleverTapToken</key>
+	<string>TEST-0ac-b0c</string>
 </dict>
 </plist>

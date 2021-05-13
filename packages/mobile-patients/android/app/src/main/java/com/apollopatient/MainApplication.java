@@ -16,6 +16,7 @@ import com.microsoft.codepush.react.CodePush;
 import com.webengage.sdk.android.WebEngage;
 import com.webengage.sdk.android.WebEngageActivityLifeCycleCallbacks;
 import com.webengage.sdk.android.WebEngageConfig;
+import com.clevertap.android.sdk.ActivityLifecycleCallback;
 
 import java.util.List;
 
@@ -63,6 +64,8 @@ public class MainApplication extends Application implements ReactApplication {
 
     @Override
     public void onCreate() {
+        // Register the CleverTap ActivityLifecycleCallback; before calling super
+        ActivityLifecycleCallback.register(this);
         super.onCreate();
 
         SoLoader.init(this, /* native exopackage */ false);

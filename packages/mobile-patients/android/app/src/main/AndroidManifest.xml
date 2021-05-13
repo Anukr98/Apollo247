@@ -94,6 +94,13 @@
         </service>
         <service android:name=".RingtonePlayingService" />
 
+        <service
+            android:name="com.clevertap.android.sdk.pushnotification.fcm.FcmMessageListenerService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
+
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_notification_white" />
@@ -123,6 +130,12 @@
         <meta-data 
             android:name="com.truecaller.android.sdk.PartnerKey" 
             android:value="@string/truecaller_appkey" />
+        <meta-data
+            android:name="CLEVERTAP_ACCOUNT_ID"
+            android:value="@string/clevertap_account_id"/>
+        <meta-data
+            android:name="CLEVERTAP_TOKEN"
+            android:value="@string/clevertap_token"/>
 
     </application>
 
