@@ -27,9 +27,11 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { isIphone5s, setBugFenderLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DIAGNOSTIC_ORDER_FAILED_STATUS } from '@aph/mobile-patients/src/strings/AppConfig';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
+import { DiagnosticPhleboCallingClicked, DiagnosticPhleboTrackClicked } from '../Events';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 const screenWidth = Dimensions.get('window').width;
 const SHOW_OTP_ARRAY = [
@@ -81,6 +83,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     );
 
   const bookedOn = moment(props?.createdOn)?.format('Do MMM') || null;
+  const { currentPatient } = useAllCurrentPatients();
   const renderTopView = () => {
     return (
       <View style={styles.horizontalRow}>
@@ -301,7 +304,9 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       </View>
     );
   };
-
+  const postDiagnosticPhleboCallingClicked = (phleboName: string) => {
+    DiagnosticPhleboCallingClicked(currentPatient, props.orderId, phleboName);
+  };
   const showOTPContainer = () => {
     const phlObj = props?.phelboObject;
     const otpToShow = !!phlObj && phlObj?.PhelboOTP;
@@ -323,6 +328,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                   <TouchableOpacity
                     style={styles.callContainer}
                     onPress={() => {
+                      postDiagnosticPhleboCallingClicked(name)
                       Linking.openURL(`tel:${phoneNumber}`);
                     }}
                   >
@@ -359,7 +365,17 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                 {phleboTrackLink ? (
                   <TouchableOpacity
                     onPress={() => {
-                      Linking.openURL(phleboTrackLink);
+                      try {
+                        Linking.canOpenURL(phleboTrackLink).then((supported) => {
+                          if (supported) {
+                            Linking.openURL(phleboTrackLink);
+                          } else {
+                            setBugFenderLog('FAILED_OPEN_URL', phleboTrackLink);
+                          }
+                        });
+                      } catch (e) {
+                        setBugFenderLog('FAILED_OPEN_URL', phleboTrackLink);
+                      }
                     }}
                   >
                     <Text style={styles.trackStyle}>{nameFormater('track Phlebo', 'upper')}</Text>

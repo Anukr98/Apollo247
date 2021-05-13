@@ -341,6 +341,10 @@ export const ArrowRight: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_arrow_right.webp')} />
 );
 
+export const EmptySlot: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/emptyslots3x.webp')} />
+);
+
 export const ArrowRightGreen: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 12, width: 12, margin: 6 }}

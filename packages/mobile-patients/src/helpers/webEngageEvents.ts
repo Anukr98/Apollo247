@@ -199,6 +199,8 @@ export enum WebEngageEventName {
   DIAGNOSTIC_PAYMENT_PAGE_VIEWED = 'Diagnostic payment page viewed',
   DIAGNOSITC_MODIFY_CLICKED = 'Diagnostic modify clicked',
   DIAGNOSTIC_MODIFY_ORDER = 'Diagnostic modify order',
+  DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED = 'Diagnostic Phlebo feedback submitted',
+  DIAGNOSTIC_PHLEBO_CALLING_CLICKED = 'Diagnostic Phlebo calling clicked',
   DIAGNOSTIC_ORDER_STATUS = 'Diagnostic Order Status',
   DIAGNOSTIC_TRACK_PHLEBO_CLICKED = 'Diagnostic Track Phlebo clicked',
 
@@ -1376,6 +1378,28 @@ export interface WebEngageEvents {
     'payment mode': 'Prepaid' | 'Cash',
     'time of modification': string | Date
   }
+  [WebEngageEventName.DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED]: {
+    'Rating': string | number;
+    'Feedback': string | number;
+    'Phlebo Name': string;
+    'Order id': string | number;
+    'Phlebo id': string | number;
+  };
+  [WebEngageEventName.DIAGNOSTIC_PHLEBO_CALLING_CLICKED]: {
+    'UHID': string;
+    'Order id': string | number;
+    'Phlebo Name': string;
+  };
+  [WebEngageEventName.DIAGNOSTIC_ORDER_STATUS]:{  
+  'Display id':string;
+  'Order id': string;
+  'Order status': string;
+  'Patient Name': string;
+  'Payment Mode': 'Cash' | 'Prepaid';
+  'SlotTimeInUTC' : string| Date;
+  'Total price' : string |number;
+  'UHID' : string;
+}
 [WebEngageEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED]:{
   'Order id': string;
   'UHID': string;

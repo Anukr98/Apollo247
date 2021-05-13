@@ -752,6 +752,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       .add(followUpAfterInDays, 'days')
       .startOf('day')
       .isBefore(moment(new Date()).startOf('day'));
+
+  const isInFuture = moment(props.navigation.state.params!.data.appointmentDateTime).isAfter(
+    moment(new Date())
+  );
+
   const callType = props.navigation.state.params!.callType
     ? props.navigation.state.params!.callType
     : '';
@@ -1375,7 +1380,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, [currentPatientWithHistory, displayChatQuestions]);
 
   useEffect(() => {
-    if (!disableChat && status.current !== STATUS.COMPLETED) {
+    if (!disableChat && status.current !== STATUS.COMPLETED && isInFuture) {
       callPermissions();
     }
   }, []);
@@ -2449,7 +2454,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setTimeout(() => {
         AsyncStorage.getItem('callDisconnected').then((data) => {
           if (!JSON.parse(data || 'false')) {
-            setSnackbarState(true);
             callEndWebengageEvent('Network');
           }
         });
@@ -5781,9 +5785,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             !subscriberConnected.current &&
             !patientJoinedCall.current &&
             renderTextConnecting()}
-          {showDoctorProfile &&
-          !patientJoinedCall.current &&
-          (!subscriberConnected.current || isPaused !== '' || callToastStatus.current)
+          {!subscriberConnected.current || isPaused !== '' || callToastStatus.current
             ? renderToastMessages()
             : null}
           {!showVideo && renderDisableVideoSubscriber()}
@@ -5884,7 +5886,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const callTimerStarted = moment.utc(callTimer * 1000).format('mm : ss');
 
   const renderToastMessages = () => {
-    if (callStatus.current === disconnecting && callToastStatus.current === '') {
+    if (
+      (callStatus.current === disconnecting && callToastStatus.current === '') ||
+      (patientJoinedCall.current && !subscriberConnected.current)
+    ) {
       return;
     }
     return (
