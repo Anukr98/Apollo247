@@ -80,7 +80,9 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
         <View style={{ minHeight: 30 }}>
           <View style={styles.prepDataContainer}>
             <InfoIconRed style={styles.infoIconStyle} />
-            <Text style={styles.prepDataStyle}>{props.testPreparationData}</Text>
+            <Text numberOfLines={2} style={styles.prepDataStyle}>
+              {props.testPreparationData}
+            </Text>
           </View>
         </View>
       ) : null}
@@ -99,7 +101,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.cardViewStyle,
     padding: 16,
     margin: 16,
-    minHeight: 165,
+    minHeight: 172,
     width: winWidth - 32,
   },
   rowStyles: { flexDirection: 'row', justifyContent: 'space-between' },
@@ -128,7 +130,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   contentContainer: {
-    minHeight: 60,
+    minHeight: 70,
     justifyContent: 'center',
   },
 });
