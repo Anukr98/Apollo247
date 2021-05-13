@@ -57,7 +57,6 @@ import {
   setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 const { width } = Dimensions.get('window');
 import { useApolloClient } from 'react-apollo-hooks';
@@ -805,15 +804,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     <View style={theme.viewStyles.container}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-        {notificationAlert && (
-          <NotificationPermissionAlert
-            onPressOutside={() => setNotificationAlert(false)}
-            onButtonPress={() => {
-              setNotificationAlert(false);
-              Linking.openSettings();
-            }}
-          />
-        )}
         {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
         <ScrollView ref={scrollviewRef}>
           <View style={styles.doctorCard}>
