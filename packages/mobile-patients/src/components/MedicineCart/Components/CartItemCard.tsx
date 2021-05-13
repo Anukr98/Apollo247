@@ -127,7 +127,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   };
 
   const renderCareCashback = () => {
-    if (!!item.circleCashbackAmt && (!coupon || coupon.circleBenefits)) {
+    if (!!item.circleCashbackAmt && !coupon) {
       return (
         <CareCashbackBanner
           bannerText={`Extra ₹${item.circleCashbackAmt.toFixed(2)} Cashback`}
