@@ -114,6 +114,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       comingFrom: AppRoutes.TestsCart,
       showOrderSummaryTab: true,
       disableTrackOrder: true,
+      amount: orderDetails?.amount,
     });
   };
 

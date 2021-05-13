@@ -318,9 +318,6 @@ export function DiagnosticProceedToPay(
     'Home collection charges': collectionCharges,
     'Collection Time Slot': timeSlot,
   };
-  if (mode == 'Home Visit') {
-    eventAttributes['Delivery Date Time'] = date;
-  }
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED, eventAttributes);
 }
 
@@ -478,6 +475,34 @@ export function DiagnosticPaymentPageViewed(currentPatient: any, amount: string 
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED, eventAttributes);
 }
+export function DiagnosticPhleboFeedbackSubmitted(
+  rating: string | number,
+  feedback: string | number,
+  phleboName: string,
+  orderId: string | number,
+  phleboId: string | number
+) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED] = {
+    Rating: rating,
+    Feedback: feedback,
+    'Phlebo Name': phleboName,
+    'Order id': orderId,
+    'Phlebo id': phleboId,
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED, eventAttributes);
+}
+export function DiagnosticPhleboCallingClicked(
+  currentPatient: any,
+  orderId: string | number,
+  phleboName: string
+) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PHLEBO_CALLING_CLICKED] = {
+    UHID: g(currentPatient, 'uhid'),
+    'Order id': orderId,
+    'Phlebo Name': phleboName,
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PHLEBO_CALLING_CLICKED, eventAttributes);
+}
 
 export function DiagnosticOrderSummaryViewed(
   amount: string | number,
@@ -551,4 +576,12 @@ export function DiagnosticTrackPhleboClicked(
     'Link opened': isOpen,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED, eventAttributes);
+}
+
+export function DiagnosticUserPaymentAborted(currentPatient: any, orderId: string) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIGNOSTIC_PAYMENT_ABORTED] = {
+    'Order id': orderId,
+    UHID: currentPatient?.uhid,
+  };
+  postWebEngageEvent(WebEngageEventName.DIGNOSTIC_PAYMENT_ABORTED, eventAttributes);
 }

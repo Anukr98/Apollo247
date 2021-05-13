@@ -188,7 +188,7 @@ export enum WebEngageEventName {
 
   DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE = 'Address Non Serviceable on Diagnostic Cart Page',
   DIAGNOSTIC_AREA_SELECTED = 'Diagnostic Area Selected on Cart',
-  DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Diagonstic slot time selected',
+  DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Diagnostic slot time selected',
   DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic proceed to pay clicked',
   DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic Payment Initiated',
   DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
@@ -197,10 +197,13 @@ export enum WebEngageEventName {
   DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
   DIAGNOSITC_HOME_PAGE_BANNER_CLICKED = 'Diagnostic home page banner',
   DIAGNOSTIC_PAYMENT_PAGE_VIEWED = 'Diagnostic payment page viewed',
-  DIAGNOSITC_MODIFY_CLICKED = 'Diagnostic modify clicked',
-  DIAGNOSTIC_MODIFY_ORDER = 'Diagnostic modify order',
+  DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED = 'Diagnostic Phlebo feedback submitted',
+  DIAGNOSTIC_PHLEBO_CALLING_CLICKED = 'Diagnostic Phlebo calling clicked',
   DIAGNOSTIC_ORDER_STATUS = 'Diagnostic Order Status',
   DIAGNOSTIC_TRACK_PHLEBO_CLICKED = 'Diagnostic Track Phlebo clicked',
+  DIGNOSTIC_PAYMENT_ABORTED = 'Diagnostic payment aborted',
+  DIAGNOSITC_MODIFY_CLICKED = 'Diagnostic modify clicked',
+  DIAGNOSTIC_MODIFY_ORDER = 'Diagnostic modify order',
 
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
@@ -1251,7 +1254,6 @@ export interface WebEngageEvents {
     'Prescription Uploaded?': boolean;
     'Prescription Mandatory?': boolean;
     'Mode of Sample Collection': 'Home Visit' | 'Clinic Visit';
-    'Delivery Date Time'?: string | Date; // Optional (only if Home)
     'Pin Code': string | number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
     'Area Name': string;
@@ -1346,41 +1348,51 @@ export interface WebEngageEvents {
     UHID: string;
     'Order amount': string | number;
   };
-  [WebEngageEventName.DIAGNOSTIC_ORDER_STATUS]: {
-    'Display id': string;
-    'Order id': string;
-    'Order status': string;
-    'Patient Name': string;
-    'Payment Mode': 'Cash' | 'Prepaid';
-    'SlotTimeInUTC': string | Date;
-    'Total price': string | number;
-    'UHID': string;
+  [WebEngageEventName.DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED]: {
+    'Rating': string | number;
+    'Feedback': string | number;
+    'Phlebo Name': string;
+    'Order id': string | number;
+    'Phlebo id': string | number;
   };
-  [WebEngageEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED]: {
-    'Order id': string;
+  [WebEngageEventName.DIAGNOSTIC_PHLEBO_CALLING_CLICKED]: {
     'UHID': string;
-    'Link opened': 'Yes' | 'No';
-    'Source': 'Home' | 'My Order' | 'Track Order' | 'Order Summary';
+    'Order id': string | number;
+    'Phlebo Name': string;
   };
-  [WebEngageEventName.DIAGNOSITC_MODIFY_CLICKED]:{
-    'UHID': string;
-    'Order id': string;
-    'Order status': string;
-  }
-  [WebEngageEventName.DIAGNOSTIC_MODIFY_ORDER]:{
-    'No of items Added': number,
-    'Item ids in array': string,
-    'Old order value': number,
-    'updated order value': number,
-    'HC charge updated' : 'Yes' | 'No'
-    'payment mode': 'Prepaid' | 'Cash',
-    'time of modification': string | Date
-  }
+  [WebEngageEventName.DIAGNOSTIC_ORDER_STATUS]:{  
+  'Display id':string;
+  'Order id': string;
+  'Order status': string;
+  'Patient Name': string;
+  'Payment Mode': 'Cash' | 'Prepaid';
+  'SlotTimeInUTC' : string| Date;
+  'Total price' : string |number;
+  'UHID' : string;
+}
 [WebEngageEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED]:{
   'Order id': string;
   'UHID': string;
   'Link opened' : 'Yes' | 'No';
   'Source': 'Home' | 'My Order' | 'Track Order' | 'Order Summary'
+}
+[WebEngageEventName.DIGNOSTIC_PAYMENT_ABORTED]:{
+  'Order id': string;
+  'UHID': string;
+},
+[WebEngageEventName.DIAGNOSITC_MODIFY_CLICKED]:{
+  'UHID': string;
+  'Order id': string;
+  'Order status': string;
+}
+[WebEngageEventName.DIAGNOSTIC_MODIFY_ORDER]:{
+  'No of items Added': number,
+  'Item ids in array': string,
+  'Old order value': number,
+  'updated order value': number,
+  'HC charge updated' : 'Yes' | 'No'
+  'payment mode': 'Prepaid' | 'Cash',
+  'time of modification': string | Date
 }
 
   // ********** ConsultEvents ********** \\
