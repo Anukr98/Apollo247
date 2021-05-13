@@ -650,8 +650,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       })
       .catch((e: any) => {
         setLoading?.(false);
-        currentPatient && handleGraphQlError(e, 'Report is yet not available');
-        CommonBugFender('HealthRecordDetails_downloadPDFTestReport', e);
+        CommonBugFender('HealthRecordDetails_callConvertToZipApi', e);
       });
   };
 

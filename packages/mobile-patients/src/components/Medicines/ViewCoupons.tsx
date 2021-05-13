@@ -157,7 +157,6 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
   const [couponListError, setCouponListError] = useState<string>('');
   const [disableCouponsList, setDisableCouponsList] = useState<string[]>([]);
   const [showAllProductOffers, setShowAllProductOffers] = useState<boolean>(false);
-  const [circleCoupons, setCircleCoupons] = useState<pharma_coupon[]>([]); // circle coupons => applicable === 'APOLLO:Circle...'
   const [productOffers, setProductOffers] = useState<pharma_coupon[]>([]); // product offer coupons => frontendCategory === 'productOffers'
   const [couponList, setCouponList] = useState<pharma_coupon[]>([]); // normal coupons
   const [appliedCouponName, setAppliedCouponName] = useState<string>('');
@@ -208,21 +207,12 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     fetchConsultCoupons(data)
       .then((res: any) => {
         const coupons = res?.data?.response || [];
-        const circleCoupons = coupons.filter((coupon: pharma_coupon) =>
-          coupon?.applicable?.includes('APOLLO:Circle')
-        );
-        setCircleCoupons(circleCoupons || []);
-        const nonCircleCoupons =
-          coupons.filter((coupon: pharma_coupon) => !circleCoupons.includes(coupon)) || [];
-        const productOfferCoupons = nonCircleCoupons?.filter(
+        const productOfferCoupons = coupons?.filter(
           (coupon: pharma_coupon) => coupon?.frontEndCategory === 'productOffers'
         );
         setProductOffers(productOfferCoupons || []);
         const nonSpecialOfferCoupons =
-          coupons.filter(
-            (coupon: pharma_coupon) =>
-              !circleCoupons.includes(coupon) && !productOfferCoupons.includes(coupon)
-          ) || [];
+          coupons.filter((coupon: pharma_coupon) => !productOfferCoupons.includes(coupon)) || [];
         setCouponList(nonSpecialOfferCoupons || []);
         setShimmerLoading(false);
       })
@@ -464,9 +454,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
 
   const renderCouponList = () => (
     <View style={styles.cardStyle}>
-      {renderCardTitle(
-        !!circleCoupons?.length ? 'NOT APPLICABLE WITH CIRCLE BENEFITS' : 'COUPONS FOR YOU'
-      )}
+      {renderCardTitle('COUPONS FOR YOU')}
       {renderGeneralCoupons(couponList, true, false)}
     </View>
   );
@@ -479,13 +467,6 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
         showAllProductOffers,
         productOffers?.length > 2
       )}
-    </View>
-  );
-
-  const renderCircleCoupons = () => (
-    <View style={styles.cardStyle}>
-      {renderCardTitle('APPLICABLE WITH CIRCLE BENEFITS')}
-      {renderGeneralCoupons(circleCoupons, true, false)}
     </View>
   );
 
@@ -514,7 +495,6 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
           {renderInputWithValidation()}
           {shimmerLoading && couponViewShimmer()}
           {renderNoCouponsFound()}
-          {!!circleCoupons?.length && renderCircleCoupons()}
           {!!couponList?.length && renderCouponList()}
           {!!productOffers?.length && renderProductOffers()}
         </ScrollView>

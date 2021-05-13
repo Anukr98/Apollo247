@@ -38,7 +38,6 @@ export const OrderCardCarousel: React.FC<OrderCardCarousel> = (props) => {
       : [];
 
     const testPrepDataToShow = filterTestPrepData?.length ? filterTestPrepData?.join(', ') : null;
-
     return (
       <TouchableOpacity activeOpacity={1} onPress={() => {}} style={[{ width: winWidth }]}>
         <HomePageOrderStatusCard

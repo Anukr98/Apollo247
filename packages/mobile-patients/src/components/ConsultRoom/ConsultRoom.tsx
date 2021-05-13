@@ -759,6 +759,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setCircleCashback,
     circleSubscriptionId,
     setHdfcSubscriptionId,
+    setCorporateSubscription,
+    corporateSubscription,
     setCirclePlanValidity,
     circlePlanValidity,
     setCirclePaymentReference,
@@ -1734,6 +1736,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           };
           onAppLoad && logHomePageViewed(WEGAttributes);
         }
+
+        if (data?.Apollo247testcorporate) setCorporateSubscription(true);
 
         if (data?.HDFC?.[0]._id) {
           setHdfcSubscriptionId && setHdfcSubscriptionId(data?.HDFC?.[0]._id);
