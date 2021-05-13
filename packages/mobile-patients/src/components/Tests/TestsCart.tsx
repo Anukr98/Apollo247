@@ -191,6 +191,7 @@ import {
   makeAdressAsDefault,
   makeAdressAsDefaultVariables,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 const { width: screenWidth } = Dimensions.get('window');
 type Address = savePatientAddress_savePatientAddress_patientAddress;
 export interface areaObject {

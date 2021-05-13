@@ -53,16 +53,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
-import {
-  SafeAreaView,
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  Modal,
-  Linking,
-  Clipboard,
-} from 'react-native';
+import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -105,6 +96,7 @@ export interface TestOrderDetailsProps extends NavigationScreenProps {
   selectedOrder: object;
   refundStatusArr?: any;
   disableTrackOrder?: boolean;
+  comingFrom?: string;
 }
 {
 }
@@ -118,6 +110,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const selectedTest = props.navigation.getParam('selectedTest');
   const selectedOrder = props.navigation.getParam('selectedOrder');
   const refundStatusArr = props.navigation.getParam('refundStatusArr');
+  const source = props.navigation.getParam('comingFrom');
   const [fromOrderSummary, setFromOrderSummary] = useState<any>(
     props.navigation.getParam('fromOrderSummary')
   );
@@ -141,7 +134,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [showInclusionStatus, setShowInclusionStatus] = useState<boolean>(false);
   const [showError, setError] = useState<boolean>(false);
   const [isViewReport, setIsViewReport] = useState<boolean>(false);
-  const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
   const scrollToSlots = () => {
@@ -308,16 +300,19 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           setLoading?.(false);
         });
     }
-    // if (goToHomeOnBack) {
-    //   props.navigation.navigate('TESTS');
-    //   return true;
-    // } else {
-    //   props.navigation.goBack();
-    //   return false;
-    // }
-    props.navigation.setParams({ fromOrderSummary: fromOrderSummary });
-    props.navigation.goBack();
-    return false;
+    if (goToHomeOnBack && source === AppRoutes.TestsCart) {
+      props.navigation.popToTop();
+      props.navigation.navigate(AppRoutes.YourOrdersTest, {
+        refetch: true,
+      });
+      return true;
+    } else {
+      props.navigation.goBack();
+      return false;
+    }
+    // props.navigation.setParams({ fromOrderSummary: fromOrderSummary });
+    // props.navigation.goBack();
+    // return false;
   };
 
   const updateRateDeliveryBtnVisibility = async () => {

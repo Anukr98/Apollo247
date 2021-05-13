@@ -111,6 +111,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       setOrders: null,
       selectedOrder: null,
       refundStatusArr: [],
+      goToHomeOnBack: true,
       comingFrom: AppRoutes.TestsCart,
       showOrderSummaryTab: true,
       disableTrackOrder: true,
