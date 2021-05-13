@@ -550,7 +550,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       'Download Report PDF',
       order?.id
     );
-    if (order?.labReportURL && order?.labReportURL != '') {
+    if (!!order?.labReportURL && order?.labReportURL != '') {
       downloadLabTest(order?.labReportURL, appointmentDate, patientName);
     } else if (visitId) {
       fetchTestReportResult();

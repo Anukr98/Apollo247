@@ -2781,14 +2781,9 @@ export async function downloadDiagnosticReport(
           : dirs.DownloadDir + '/' + reportName;
 
       let msg = 'File is downloading..';
-      if (showToast) {
-        if (Platform.OS === 'android') {
+      if (showToast && Platform.OS === 'android') {
           ToastAndroid.show(msg, ToastAndroid.SHORT);
-        } else {
-          AlertIOS.alert(msg);
-        }
       }
-
       RNFetchBlob.config({
         fileCache: true,
         path: downloadPath,

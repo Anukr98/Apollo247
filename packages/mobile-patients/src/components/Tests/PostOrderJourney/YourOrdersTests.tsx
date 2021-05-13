@@ -160,7 +160,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const client = useApolloClient();
   const [orders, setOrders] = useState<any>(props.navigation.getParam('orders'));
   const [isTest, setIsTest] = useState<any>(props.navigation.getParam('isTest'));
-  const [fromOrderSummary, setFromOrderSummary] = useState<any>(props.navigation.getParam('fromOrderSummary'));
+  const [fromOrderSummary, setFromOrderSummary] = useState<any>(
+    props.navigation.getParam('fromOrderSummary')
+  );
 
   const [isPaitentList, setIsPaitentList] = useState<boolean>(false);
   const [isViewReport, setIsViewReport] = useState<boolean>(false);
@@ -212,7 +214,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       return true;
     } else {
       if (fromOrderSummary) {
-        props.navigation.popToTop()
+        props.navigation.popToTop();
       }
     }
     return false;
@@ -1216,7 +1218,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       / /g,
       '_'
     );
-    if (order?.labReportURL && order?.labReportURL != '') {
+    if (!!order?.labReportURL && order?.labReportURL != '') {
       downloadLabTest(order?.labReportURL, appointmentDate, patientName);
     } else if (visitId) {
       fetchTestReportResult(order);

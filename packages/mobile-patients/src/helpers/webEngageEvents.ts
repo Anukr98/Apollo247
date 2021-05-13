@@ -188,7 +188,7 @@ export enum WebEngageEventName {
 
   DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE = 'Address Non Serviceable on Diagnostic Cart Page',
   DIAGNOSTIC_AREA_SELECTED = 'Diagnostic Area Selected on Cart',
-  DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Diagonstic slot time selected',
+  DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Diagnostic slot time selected',
   DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic proceed to pay clicked',
   DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic Payment Initiated',
   DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
@@ -1251,7 +1251,6 @@ export interface WebEngageEvents {
     'Prescription Uploaded?': boolean;
     'Prescription Mandatory?': boolean;
     'Mode of Sample Collection': 'Home Visit' | 'Clinic Visit';
-    'Delivery Date Time'?: string | Date; // Optional (only if Home)
     'Pin Code': string | number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
     'Area Name': string;

@@ -31,7 +31,6 @@ import {
   CheckedIcon,
   CircleLogo,
   CouponIcon,
-  InfoIconRed,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -169,6 +168,7 @@ import {
   findDiagnosticSettings,
   findDiagnosticSettingsVariables,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
+import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/components/InfoMessage';
 const { width: screenWidth } = Dimensions.get('window');
 
 export interface areaObject {
@@ -1491,12 +1491,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const renderHomeCollectionDisclaimer = () => {
-    return (
-      <View style={styles.homeCollectionContainer}>
-        <InfoIconRed style={styles.infoIconStyle} />
-        <Text style={styles.phleboText}>{string.diagnostics.homeHomeCollectionDisclaimerTxt}</Text>
-      </View>
-    );
+    return <InfoMessage content={string.diagnostics.homeHomeCollectionDisclaimerTxt} />;
   };
 
   const renderTotalCharges = () => {
@@ -2824,15 +2819,6 @@ const styles = StyleSheet.create({
     marginVertical: '2%',
     paddingRight: 15,
   },
-  phleboText: {
-    ...theme.fonts.IBMPlexSansMedium(10),
-    lineHeight: 18,
-    letterSpacing: 0.1,
-    color: theme.colors.SHERPA_BLUE,
-    opacity: 0.7,
-    marginHorizontal: '2%',
-  },
-  infoIconStyle: { resizeMode: 'contain', height: 18, width: 18 },
   dashedBannerViewStyle: {
     ...cardViewStyle,
     marginHorizontal: 20,
@@ -2844,13 +2830,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderRadius: 5,
     borderStyle: 'dashed',
-  },
-  homeCollectionContainer: {
-    ...theme.viewStyles.cardViewStyle,
-    padding: 12,
-    margin: 16,
-    flexDirection: 'row',
-    backgroundColor: '#FCFDDA',
   },
   totalChargesContainer: {
     ...theme.viewStyles.cardViewStyle,

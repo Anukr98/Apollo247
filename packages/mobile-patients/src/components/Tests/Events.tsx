@@ -316,9 +316,6 @@ export function DiagnosticProceedToPay(
     'Home collection charges': collectionCharges,
     'Collection Time Slot': timeSlot,
   };
-  if (mode == 'Home Visit') {
-    eventAttributes['Delivery Date Time'] = date;
-  }
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED, eventAttributes);
 }
 
