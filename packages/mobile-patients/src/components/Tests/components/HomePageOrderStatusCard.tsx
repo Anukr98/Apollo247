@@ -69,7 +69,7 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
     <View style={styles.container}>
       <View style={styles.rowStyles}>
         <Text style={styles.heading1}>
-          {nameFormater(heading, 'title')} for {nameFormater(props.patientName!, 'title')}
+          {nameFormater(heading, 'default')} for {nameFormater(props.patientName!, 'title')}
         </Text>
         {image}
       </View>
