@@ -107,6 +107,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const selectedTest = props.navigation.getParam('selectedTest');
   const selectedOrder = props.navigation.getParam('selectedOrder');
   const refundStatusArr = props.navigation.getParam('refundStatusArr');
+  const [fromOrderSummary, setFromOrderSummary] = useState<any>(props.navigation.getParam('fromOrderSummary'));
   const client = useApolloClient();
   const [selectedTab, setSelectedTab] = useState<string>(
     showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
@@ -294,6 +295,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           setLoading?.(false);
         });
     }
+    props.navigation.setParams({ fromOrderSummary: fromOrderSummary });
     props.navigation.goBack();
     return false;
   };

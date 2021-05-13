@@ -1080,9 +1080,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       refundStatusArr: refundArray,
       comingFrom: AppRoutes.YourOrdersTest,
       showOrderSummaryTab: tab,
+      fromOrderSummary: fromOrderSummary
     });
   }
-
   const renderOrder = (
     order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList,
     index: number
