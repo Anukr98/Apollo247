@@ -45,6 +45,7 @@ import {
   DownloadNew,
   ShareBlue,
   ViewIcon,
+  Cross
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NavigationScreenProps } from 'react-navigation';
 import {
@@ -109,7 +110,7 @@ import {
   getOrderPhleboDetailsBulk,
   getOrderPhleboDetailsBulkVariables,
 } from '@aph/mobile-patients/src/graphql/types/getOrderPhleboDetailsBulk';
-
+import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
 export interface YourOrdersTestProps extends NavigationScreenProps {
   showHeader?: boolean;
 }
@@ -128,6 +129,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [date, setDate] = useState<Date>(new Date());
   const [showDisplaySchedule, setDisplaySchedule] = useState<boolean>(false);
+  const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number>(0);
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
@@ -1183,9 +1185,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPressReschedule={() => _onPressTestReschedule(order)}
         onPressViewDetails={() => _navigateToYourTestDetails(order, true)}
         onPressViewReport={() => {
-          setSnackbarState(true);
+          setSnackbarState(false);
           setActiveOrder(order);
           setIsViewReport(true);
+          setDisplayViewReport(true)
           // _onPressViewReport(order)
         }}
         phelboObject={order?.phleboDetailsObj}
@@ -1313,10 +1316,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   };
 
-  const copyToClipboard = (refId: string) => {
-    Clipboard.setString(refId);
-    setSnackbarState(true);
-  };
   const renderModalView = (item: any, index: number) => {
     return (
       <TouchableOpacity
@@ -1352,28 +1351,26 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       </TouchableOpacity>
     );
   };
-  const viewReportItemsArray = [
-    {
-      icon: <ViewIcon />,
-      title: string.Report.view,
-    },
-    {
-      icon: <DownloadNew />,
-      title: string.Report.download,
-    },
-    {
-      icon: <ShareBlue />,
-      title: string.Report.share,
-    },
-    {
-      icon: <CopyBlue />,
-      title: string.Report.copy,
-    },
-  ];
   return (
     <View style={{ flex: 1 }}>
       {showDisplaySchedule && renderRescheduleOrderOverlay()}
-
+      {displayViewReport && (
+            <TestViewReportOverlay
+              order={activeOrder}
+              heading=""
+              isVisible={displayViewReport}
+              onClose={() => setDisplayViewReport(false)}
+              onPressViewReport={()=>{
+                DiagnosticViewReportClicked(
+                  'My Order',
+                  !!activeOrder?.labReportURL ? 'Yes' : 'No',
+                  'Download Report PDF'
+                );
+                _onPressViewReport(activeOrder);
+              }}
+            />
+        )
+      }
       <SafeAreaView style={theme.viewStyles.container}>
         {props?.showHeader == false ? null : (
           <Header
@@ -1411,58 +1408,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   renderItem={({ item, index }) => renderModalView(item, index)}
                 />
               </View>
-            </View>
-          </View>
-        </Modal>
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={isViewReport}
-          onRequestClose={() => {
-            setIsViewReport(false);
-          }}
-          onDismiss={() => {
-            setIsViewReport(false);
-          }}
-        >
-          <View style={styles.modalMainView}>
-            <View style={styles.reportModalView}>
-              {viewReportItemsArray.map((item) => (
-                <TouchableOpacity
-                  onPress={async () => {
-                    DiagnosticViewReportClicked(
-                      'My Order',
-                      !!activeOrder?.labReportURL ? 'Yes' : 'No',
-                      item?.title,
-                      activeOrder?.id
-                    );
-                    if (
-                      item?.title == string.Report.view ||
-                      item?.title == string.Report.download
-                    ) {
-                      _onPressViewReport(activeOrder);
-                    } else if (item?.title == string.Report.share) {
-                      try {
-                        const whatsAppScheme = `whatsapp://send?text=${activeOrder?.labReportURL}`;
-                        const canOpenURL = await Linking.canOpenURL(whatsAppScheme);
-                        canOpenURL && Linking.openURL(whatsAppScheme);
-                      } catch (error) {}
-                    } else {
-                      copyToClipboard(
-                        activeOrder && activeOrder?.labReportURL ? activeOrder?.labReportURL : ''
-                      );
-                    }
-                    setIsViewReport(false);
-                  }}
-                  style={styles.itemView}
-                >
-                  {item?.icon}
-                  <Text style={styles.itemTextStyle}>{item?.title}</Text>
-                  {snackbarState && item?.title == string.Report.copy ? (
-                    <Text style={styles.copyTextStyle}>Copied !!</Text>
-                  ) : null}
-                </TouchableOpacity>
-              ))}
             </View>
           </View>
         </Modal>
@@ -1638,9 +1583,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     width: '100%',
     paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingVertical: 10,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
+  },
+  reportModalOptionsView: {
+    backgroundColor: 'white',
+    width: '100%',
   },
   itemView: {
     backgroundColor: 'white',
