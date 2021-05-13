@@ -302,7 +302,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   async function onPressWallet(wallet: string) {
     triggerWebengege('Prepaid', wallet);
     const token = await getClientToken();
-    InitiateWalletTxn(currentPatient?.id, token, paymentId, wallet);
+    wallet == 'PHONEPE' && phonePeReady
+      ? InitiateUPISDKTxn(currentPatient?.id, token, paymentId, wallet, 'ANDROID_PHONEPE')
+      : InitiateWalletTxn(currentPatient?.id, token, paymentId, wallet);
   }
 
   async function onPressUPIApp(app: any) {
@@ -312,15 +314,15 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     const sdkPresent =
       paymentCode == 'com.phonepe.app' && phonePeReady
         ? 'ANDROID_PHONEPE'
-        : paymentCode == 'com.google.android.apps.nbu.paisa.user' && googlePayReady
-        ? 'ANDROID_GOOGLEPAY'
-        : '';
+        : // : paymentCode == 'com.google.android.apps.nbu.paisa.user' && googlePayReady
+          // ? 'ANDROID_GOOGLEPAY'
+          '';
     const paymentMethod =
       paymentCode == 'com.phonepe.app'
         ? 'PHONEPE'
-        : paymentCode == 'com.google.android.apps.nbu.paisa.user'
-        ? 'GOOGLEPAY'
-        : '';
+        : // : paymentCode == 'com.google.android.apps.nbu.paisa.user'
+          // ? 'GOOGLEPAY'
+          '';
     sdkPresent
       ? InitiateUPISDKTxn(currentPatient?.id, token, paymentId, paymentMethod, sdkPresent)
       : InitiateUPIIntentTxn(currentPatient?.id, token, paymentId, paymentCode);
