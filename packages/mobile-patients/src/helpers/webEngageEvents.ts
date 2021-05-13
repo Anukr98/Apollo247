@@ -201,6 +201,7 @@ export enum WebEngageEventName {
   DIAGNOSTIC_PHLEBO_CALLING_CLICKED = 'Diagnostic Phlebo calling clicked',
   DIAGNOSTIC_ORDER_STATUS = 'Diagnostic Order Status',
   DIAGNOSTIC_TRACK_PHLEBO_CLICKED = 'Diagnostic Track Phlebo clicked',
+  DIGNOSTIC_PAYMENT_ABORTED = 'Diagnostic payment aborted',
 
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
@@ -1372,6 +1373,10 @@ export interface WebEngageEvents {
   'UHID': string;
   'Link opened' : 'Yes' | 'No';
   'Source': 'Home' | 'My Order' | 'Track Order' | 'Order Summary'
+}
+[WebEngageEventName.DIGNOSTIC_PAYMENT_ABORTED]:{
+  'Order id': string;
+  'UHID': string;
 }
 
   // ********** ConsultEvents ********** \\

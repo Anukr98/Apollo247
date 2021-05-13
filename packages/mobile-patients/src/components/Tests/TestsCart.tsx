@@ -1917,7 +1917,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED] = {
                 'Order id': orderId,
                 Pincode: Number(selectedAddr?.zipcode!),
-                'Patient UHID': g(currentPatient, 'id'),
+                'Patient UHID': currentPatient?.uhid,
                 'Order amount': grandTotal,
                 'Appointment Date': moment(orderDetails?.diagnosticDate!).format('DD/MM/YYYY'),
                 'Appointment time': slotStartTime!,

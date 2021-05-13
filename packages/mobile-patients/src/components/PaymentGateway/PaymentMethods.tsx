@@ -58,6 +58,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/createOrder';
 import { verifyVPA, verifyVPAVariables } from '@aph/mobile-patients/src/graphql/types/verifyVPA';
 import {
+  DiagnosticUserPaymentAborted,
   DiagnosticPaymentInitiated,
   DiagnosticPaymentPageViewed,
 } from '@aph/mobile-patients/src/components/Tests/Events';
@@ -158,6 +159,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const handlePaymentPending = (errorCode: string) => {
+    triggerUserPaymentAbortedEvent(errorCode);
     switch (errorCode) {
       case ('JP_002', 'JP_005', 'JP_009', 'JP_012'):
         // User aborted txn or no Internet or user had exceeded the limit of incorrect OTP submissions or txn failed at PG end
@@ -267,6 +269,13 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     DiagnosticPaymentInitiated(amount, 'Diagnostic', type);
   }
 
+  function triggerUserPaymentAbortedEvent(errorCode: string) {
+    //JP_002 -> User aborted payment
+    errorCode === 'JP_002' &&
+      businessLine === 'diagnostics' &&
+      DiagnosticUserPaymentAborted(currentPatient, orderId);
+  }
+
   async function onPressBank(bankCode: string) {
     triggerWebengege('Net Banking');
     const token = await getClientToken();
@@ -280,7 +289,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressUPIApp(app: any) {
-    triggerWebengege('UPI');
+    const methodName = app?.payment_method_code?.payment_method_name || 'UPI';
+    triggerWebengege(methodName);
     const token = await getClientToken();
     InitiateUPIIntentTxn(currentPatient?.id, token, paymentId, app.payment_method_code);
   }

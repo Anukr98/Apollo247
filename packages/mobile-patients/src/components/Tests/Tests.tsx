@@ -298,10 +298,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       fetchPolicy: 'no-cache',
     });
 
-  const setWebEngageEventOnSearchItem = (keyword: string, results: any[]) => {
-    DiagnosticHomePageSearchItem(currentPatient, keyword, results);
-  };
-
   const setWebEnageEventForPinCodeClicked = (
     mode: string,
     pincode: string,

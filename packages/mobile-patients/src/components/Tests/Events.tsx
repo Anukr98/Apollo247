@@ -531,3 +531,11 @@ export function DiagnosticTrackPhleboClicked(
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED, eventAttributes);
 }
+
+export function DiagnosticUserPaymentAborted(currentPatient: any, orderId: string) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIGNOSTIC_PAYMENT_ABORTED] = {
+    'Order id': orderId,
+    UHID: currentPatient?.uhid,
+  };
+  postWebEngageEvent(WebEngageEventName.DIGNOSTIC_PAYMENT_ABORTED, eventAttributes);
+}
