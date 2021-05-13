@@ -97,6 +97,7 @@ export interface getAppointmentData_getAppointmentData_appointmentsHistory_caseS
   sentToPatient: boolean | null;
   version: number | null;
   followUpAfterInDays: string | null;
+  doctorType: DoctorType | null;
   medicinePrescription: (getAppointmentData_getAppointmentData_appointmentsHistory_caseSheet_medicinePrescription | null)[] | null;
   diagnosticPrescription: (getAppointmentData_getAppointmentData_appointmentsHistory_caseSheet_diagnosticPrescription | null)[] | null;
 }

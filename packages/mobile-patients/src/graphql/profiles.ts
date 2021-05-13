@@ -3533,6 +3533,7 @@ export const GET_APPOINTMENT_DATA = gql`
           sentToPatient
           version
           followUpAfterInDays
+          doctorType
           medicinePrescription {
             id
             medicineName
