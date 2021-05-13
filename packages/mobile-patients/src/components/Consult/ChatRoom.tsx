@@ -2658,7 +2658,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
     setguidelinesAdded(true);
     const headerText = `If you have further queries related to your consultation, you may reach out to ${
-      appointmentData.doctorInfo.displayName
+      appointmentData?.doctorInfo?.displayName
     } via texts for the next ${
       Number(caseSheetChatDays) === 0 ? '1' : Number(caseSheetChatDays)
     } day${Number(caseSheetChatDays) > 1 ? 's' : ''}.`;
