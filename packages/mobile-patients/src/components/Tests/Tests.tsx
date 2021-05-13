@@ -211,6 +211,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setDiagnosticSlot,
     setAddresses: setTestAddress,
     addMultipleCartItems: addMultipleTestCartItems,
+    setCartPagePopulated,
   } = useDiagnosticsCart();
   const {
     cartItems: shopCartItems,
@@ -1238,6 +1239,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               city: address?.city,
               state: address?.state,
             };
+            setCartPagePopulated?.(false);
             setAsyncPincode(saveAddress);
             setDefaultAddress(address);
           }}

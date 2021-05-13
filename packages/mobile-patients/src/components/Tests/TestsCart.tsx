@@ -55,6 +55,7 @@ import {
   GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
   MODIFY_DIAGNOSTIC_ORDERS,
   FIND_DIAGNOSTIC_SETTINGS,
+  SET_DEFAULT_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticsHCChargesVariables,
@@ -186,8 +187,12 @@ import {
   findDiagnosticSettingsVariables,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
 import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/components/InfoMessage';
+import {
+  makeAdressAsDefault,
+  makeAdressAsDefaultVariables,
+} from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 const { width: screenWidth } = Dimensions.get('window');
-
+type Address = savePatientAddress_savePatientAddress_patientAddress;
 export interface areaObject {
   key: string | number;
   value: string | number;
@@ -3034,6 +3039,45 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setselectedTimeSlot(undefined);
   }
 
+  async function setDefaultAddress(address: Address) {
+    try {
+      const isSelectedAddressWithNoLatLng = isAddressLatLngInValid(address);
+      if (isSelectedAddressWithNoLatLng) {
+        //show the error
+        renderAlert(string.diagnostics.updateAddressLatLngMessage, 'updateLocation', address);
+      } else {
+        setLoading?.(true);
+        hideAphAlert?.();
+        const response = await client.query<makeAdressAsDefault, makeAdressAsDefaultVariables>({
+          query: SET_DEFAULT_ADDRESS,
+          variables: { patientAddressId: address?.id },
+          fetchPolicy: 'no-cache',
+        });
+        const { data } = response;
+        const patientAddress = data?.makeAdressAsDefault?.patientAddress;
+        const updatedAddresses = addresses.map((item) => ({
+          ...item,
+          defaultAddress: patientAddress?.id == item.id ? patientAddress?.defaultAddress : false,
+        }));
+        setAddresses?.(updatedAddresses);
+        setMedAddresses?.(updatedAddresses);
+        patientAddress?.defaultAddress && setDeliveryAddressId?.(patientAddress?.id);
+        setDiagnosticAreas?.([]);
+        setAreaSelected?.({});
+        setDiagnosticSlot?.(null);
+        setLoading?.(false);
+      }
+    } catch (error) {
+      setLoading?.(false);
+      CommonBugFender('setDefaultAddress_TestsCart', error);
+      showAphAlert!({
+        title: string.common.uhOh,
+        description:
+          "We're sorry! Unable to set delivery address. Please try again after some time",
+      });
+    }
+  }
+
   function showAddressPopup() {
     return showAphAlert?.({
       removeTopIcon: true,
@@ -3047,6 +3091,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           addresses={addresses}
           onPressSelectAddress={(_address) => {
             CommonLogEvent(AppRoutes.TestsCart, 'Check service availability');
+            setDefaultAddress(_address);
             const tests = cartItems?.filter(
               (item) => item.collectionMethod == TEST_COLLECTION_TYPE.CENTER
             );
