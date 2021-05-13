@@ -207,9 +207,9 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     fetchConsultCoupons(data)
       .then((res: any) => {
         const coupons = res?.data?.response || [];
-        const productOfferCoupons = coupons?.filter(
-          (coupon: pharma_coupon) => coupon?.frontEndCategory === 'productOffers'
-        );
+        const productOfferCoupons = !isFromConsult
+          ? coupons?.filter((coupon: pharma_coupon) => coupon?.frontEndCategory === 'productOffers')
+          : [];
         setProductOffers(productOfferCoupons || []);
         const nonSpecialOfferCoupons =
           coupons.filter((coupon: pharma_coupon) => !productOfferCoupons.includes(coupon)) || [];
