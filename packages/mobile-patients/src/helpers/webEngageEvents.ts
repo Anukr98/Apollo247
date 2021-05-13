@@ -188,7 +188,7 @@ export enum WebEngageEventName {
 
   DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE = 'Address Non Serviceable on Diagnostic Cart Page',
   DIAGNOSTIC_AREA_SELECTED = 'Diagnostic Area Selected on Cart',
-  DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Diagonstic slot time selected',
+  DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Diagnostic slot time selected',
   DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic proceed to pay clicked',
   DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic Payment Initiated',
   DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
@@ -201,6 +201,7 @@ export enum WebEngageEventName {
   DIAGNOSTIC_PHLEBO_CALLING_CLICKED = 'Diagnostic Phlebo calling clicked',
   DIAGNOSTIC_ORDER_STATUS = 'Diagnostic Order Status',
   DIAGNOSTIC_TRACK_PHLEBO_CLICKED = 'Diagnostic Track Phlebo clicked',
+  DIGNOSTIC_PAYMENT_ABORTED = 'Diagnostic payment aborted',
 
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
@@ -1251,7 +1252,6 @@ export interface WebEngageEvents {
     'Prescription Uploaded?': boolean;
     'Prescription Mandatory?': boolean;
     'Mode of Sample Collection': 'Home Visit' | 'Clinic Visit';
-    'Delivery Date Time'?: string | Date; // Optional (only if Home)
     'Pin Code': string | number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
     'Area Name': string;
@@ -1373,6 +1373,10 @@ export interface WebEngageEvents {
   'UHID': string;
   'Link opened' : 'Yes' | 'No';
   'Source': 'Home' | 'My Order' | 'Track Order' | 'Order Summary'
+}
+[WebEngageEventName.DIGNOSTIC_PAYMENT_ABORTED]:{
+  'Order id': string;
+  'UHID': string;
 }
 
   // ********** ConsultEvents ********** \\

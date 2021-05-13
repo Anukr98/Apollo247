@@ -542,12 +542,13 @@
     "reportGenrated": "Reports are ready",
     "bookingFor": "Booking",
     "sampleSubmittedContent": "Sample has been submitted to the lab.\nYou will be notified once your reports are ready.",
-    "viewReportContent": "'Your reports have been generated.",
+    "viewReportContent": "Your reports have been generated.",
     "collectionAppointmentContent": "Sample Collection appointment on",
     "viewReportText": "View Report",
     "sampleCollectedText": "Check Status",
     "collectionText": "Track Order",
-    "trackPhleboText": "Track Phlebo"
+    "trackPhleboText": "Track Phlebo",
+    "codDisableText" :"We are currently not allowing Cash On Delivery for home sample collections."
   },
   "diagnosticCategoryTitle": {
     "category" : "Category",

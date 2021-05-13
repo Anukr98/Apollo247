@@ -19,7 +19,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA3 as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -1223,7 +1223,6 @@ export const DIAGNOSTIC_FAILURE_STATUS_ARRAY = [
 export const DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY = [
   DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
-  DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
 ];
 
 export const DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY = [

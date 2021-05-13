@@ -316,9 +316,6 @@ export function DiagnosticProceedToPay(
     'Home collection charges': collectionCharges,
     'Collection Time Slot': timeSlot,
   };
-  if (mode == 'Home Visit') {
-    eventAttributes['Delivery Date Time'] = date;
-  }
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED, eventAttributes);
 }
 
@@ -533,4 +530,12 @@ export function DiagnosticTrackPhleboClicked(
     'Link opened': isOpen,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED, eventAttributes);
+}
+
+export function DiagnosticUserPaymentAborted(currentPatient: any, orderId: string) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIGNOSTIC_PAYMENT_ABORTED] = {
+    'Order id': orderId,
+    UHID: currentPatient?.uhid,
+  };
+  postWebEngageEvent(WebEngageEventName.DIGNOSTIC_PAYMENT_ABORTED, eventAttributes);
 }
