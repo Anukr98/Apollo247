@@ -11,6 +11,11 @@ import {
   More,
   OrderPlacedIcon,
   OrderTrackerSmallIcon,
+  CopyBlue,
+  DownloadNew,
+  ShareBlue,
+  ViewIcon,
+  Cross
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import _ from 'lodash';
 import {
@@ -48,7 +53,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
-import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity, Modal, Linking, Clipboard } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -78,6 +83,7 @@ import {
 import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components/StatusCard';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 
+import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
 const DROP_DOWN_ARRAY_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
@@ -120,7 +126,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [orderLevelStatus, setOrderLevelStatus] = useState([] as any);
   const [showInclusionStatus, setShowInclusionStatus] = useState<boolean>(false);
   const [showError, setError] = useState<boolean>(false);
-
+  const [isViewReport, setIsViewReport] = useState<boolean>(false);
+  const [snackbarState, setSnackbarState] = useState<boolean>(false);
+  const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
   const scrollToSlots = () => {
     scrollViewRef.current &&
@@ -578,9 +586,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     });
   };
 
-  const onPressButton = (buttonTitle: string) => {
-    DiagnosticViewReportClicked();
-    onPressViewReport();
+  const onPressButton = (buttonTitle?: string) => {
+    // onPressViewReport();
+    setIsViewReport(true)
+    setDisplayViewReport(true)
   };
 
   function postRatingGivenWebEngageEvent(rating: string, reason: string) {
@@ -670,9 +679,20 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       </MaterialMenu>
     );
   };
-
   return (
     <View style={{ flex: 1 }}>
+      {displayViewReport && (
+            <TestViewReportOverlay
+              order={order}
+              heading=""
+              isVisible={displayViewReport}
+              onClose={() => setDisplayViewReport(false)}
+              onPressViewReport={()=>{
+                fetchTestReportResult()
+              }}
+            />
+        )
+      }
       <SafeAreaView style={theme.viewStyles.container}>
         <View style={styles.headerShadowContainer}>
           <Header
@@ -731,6 +751,44 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: 28,
     marginRight: 18,
+  },
+  modalMainView: {
+    backgroundColor: 'rgba(100,100,100, 0.5)',
+    flex: 1,
+    justifyContent: 'flex-end',
+    // alignItems: 'center',
+    flexDirection: 'column',
+  },
+  reportModalView: {
+    backgroundColor: 'white',
+    width: '100%',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  },
+
+  reportModalOptionsView: {
+    backgroundColor: 'white',
+    width: '100%',
+  },
+  itemView: {
+    backgroundColor: 'white',
+    width: '100%',
+    padding: 10,
+    flexDirection: 'row',
+    alignContent: 'center',
+    borderBottomColor: '#e8e8e8',
+    borderBottomWidth: 1,
+  },
+  itemTextStyle: {
+    marginHorizontal: 10,
+    ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE),
+  },
+  copyTextStyle: {
+    marginHorizontal: 10,
+    textAlign: 'left',
+    ...theme.viewStyles.text('SB', 14, theme.colors.APP_GREEN),
   },
   verticalProgressLine: { flex: 1, width: 6, alignSelf: 'center' },
   statusIconStyle: {
