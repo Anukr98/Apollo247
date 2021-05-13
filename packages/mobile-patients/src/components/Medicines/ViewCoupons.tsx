@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   bottomViewCardBtn: {
-    height: 40,
+    height: 45,
     ...theme.viewStyles.cardViewStyle,
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   viewBtnText: {
-    ...theme.viewStyles.text('M', 15, theme.colors.SHERPA_BLUE),
+    ...theme.viewStyles.text('M', 16, theme.colors.SHERPA_BLUE),
   },
   titleContainer: {
     padding: 0,
@@ -511,9 +511,6 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
   );
 
   const renderCardTitle = (title: string, circleBenefitsApplicable: boolean) => {
-    const showCircleBenefitsInfo =
-      movedFrom === 'pharma' &&
-      ((circleSubscriptionId && circleStatus === 'active') || circlePlanSelected?.subPlanId);
     return (
       <ListItem
         bottomDivider
@@ -522,7 +519,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
         titleStyle={styles.heading}
         title={title}
         rightElement={
-          showCircleBenefitsInfo ? renderCircleBenefitsChipView(circleBenefitsApplicable) : <></>
+          movedFrom === 'pharma' ? renderCircleBenefitsChipView(circleBenefitsApplicable) : <></>
         }
       />
     );
