@@ -23,6 +23,7 @@ import {
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { couponViewShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import { ListItem } from 'react-native-elements';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {
@@ -36,6 +37,7 @@ const styles = StyleSheet.create({
   cardStyle: {
     ...theme.viewStyles.cardViewStyle,
     backgroundColor: theme.colors.WHITE,
+    marginVertical: 8,
   },
   separator: {
     height: 1,
@@ -121,6 +123,14 @@ const styles = StyleSheet.create({
   },
   viewBtnText: {
     ...theme.viewStyles.text('M', 16, theme.colors.SHERPA_BLUE),
+  },
+  titleContainer: {
+    padding: 0,
+    paddingLeft: 12,
+    paddingTop: 12,
+    paddingBottom: 8,
+    borderTopRightRadius: 10,
+    borderTopLeftRadius: 10,
   },
 });
 export interface pharma_coupon {
@@ -453,40 +463,41 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
   };
 
   const renderCouponList = () => (
-    <View>
+    <View style={styles.cardStyle}>
       {renderCardTitle(
         !!circleCoupons?.length ? 'NOT APPLICABLE WITH CIRCLE BENEFITS' : 'COUPONS FOR YOU'
       )}
-      <View style={styles.cardStyle}>{renderGeneralCoupons(couponList, true, false)}</View>
+      {renderGeneralCoupons(couponList, true, false)}
     </View>
   );
 
   const renderProductOffers = () => (
-    <View>
+    <View style={styles.cardStyle}>
       {renderCardTitle('PRODUCT OFFERS')}
-      <View style={styles.cardStyle}>
-        {renderGeneralCoupons(
-          showAllProductOffers ? productOffers : productOffers?.slice(0, 2),
-          showAllProductOffers,
-          productOffers?.length > 2
-        )}
-      </View>
+      {renderGeneralCoupons(
+        showAllProductOffers ? productOffers : productOffers?.slice(0, 2),
+        showAllProductOffers,
+        productOffers?.length > 2
+      )}
     </View>
   );
 
   const renderCircleCoupons = () => (
-    <View>
+    <View style={styles.cardStyle}>
       {renderCardTitle('APPLICABLE WITH CIRCLE BENEFITS')}
-      <View style={styles.cardStyle}>{renderGeneralCoupons(circleCoupons, true, false)}</View>
+      {renderGeneralCoupons(circleCoupons, true, false)}
     </View>
   );
 
   const renderCardTitle = (title: string) => {
     return (
-      <View style={{ marginVertical: 16 }}>
-        <Text style={styles.heading}>{title}</Text>
-        <View style={styles.separator} />
-      </View>
+      <ListItem
+        bottomDivider
+        Component={TouchableOpacity}
+        containerStyle={styles.titleContainer}
+        titleStyle={styles.heading}
+        title={title}
+      />
     );
   };
 
