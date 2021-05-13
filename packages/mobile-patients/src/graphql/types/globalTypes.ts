@@ -77,6 +77,18 @@ export enum BloodGroups {
   OPositive = "OPositive",
 }
 
+export enum BookingSource {
+  Apollo247_Android = "Apollo247_Android",
+  Apollo247_Ios = "Apollo247_Ios",
+  Apollo247_Web = "Apollo247_Web",
+}
+
+export enum BookingStatus {
+  COMPLETED = "COMPLETED",
+  FAILED = "FAILED",
+  INPROGRESS = "INPROGRESS",
+}
+
 export enum CODCity {
   CHENNAI = "CHENNAI",
 }
@@ -200,6 +212,13 @@ export enum FEEDBACKTYPE {
   CONSULT = "CONSULT",
   DIAGNOSTICS = "DIAGNOSTICS",
   PHARMACY = "PHARMACY",
+}
+
+export enum GENDER {
+  ALL = "ALL",
+  FEMALE = "FEMALE",
+  MALE = "MALE",
+  OTHER = "OTHER",
 }
 
 export enum Gender {
@@ -741,6 +760,7 @@ export interface AddAllergyRecordInput {
 }
 
 export interface AddCommentHelpdeskTicketInput {
+  ticketId: string;
   ticketNumber: string;
   comment: string;
 }
@@ -1029,6 +1049,36 @@ export interface DiagnosticLineItem {
   discAmount?: number | null;
   preTestingRequirement?: string | null;
   reportGenerationTime?: string | null;
+}
+
+export interface DiagnosticOrderInput {
+  patientId: string;
+  patientAddressId: string;
+  city: string;
+  cityId: string;
+  state: string;
+  stateId: string;
+  slotTimings: string;
+  employeeSlotId?: any | null;
+  diagnosticEmployeeCode: string;
+  diagnosticBranchCode: string;
+  totalPrice: number;
+  prescriptionUrl: string;
+  diagnosticDate: any;
+  centerName: string;
+  centerCode: string;
+  centerCity: string;
+  centerState: string;
+  centerLocality: string;
+  bookingSource?: BOOKINGSOURCE | null;
+  deviceType?: DEVICETYPE | null;
+  paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
+  items?: (DiagnosticLineItem | null)[] | null;
+  slotId?: string | null;
+  areaId?: number | null;
+  totalPriceExcludingDiscounts?: number | null;
+  userSubscriptionId?: string | null;
+  subscriptionInclusionId?: string | null;
 }
 
 export interface DiagnosticTestsOrdered {

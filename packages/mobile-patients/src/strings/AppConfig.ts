@@ -19,7 +19,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA3 as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -33,7 +33,7 @@ const paymentGatewayBaseUrl: string =
     : APP_ENV == AppEnv.QA5
     ? 'https://qa5pmt.apollo247.com'
     : APP_ENV == AppEnv.PERFORM
-    ? 'https://aspmt.apollo247.com'
+    ? 'https://perfpmt.apollo247.com'
     : APP_ENV == AppEnv.VAPT
     ? 'https://stagingpmt.apollo247.com'
     : APP_ENV == AppEnv.DEV
@@ -219,6 +219,7 @@ const appStaticVariables = {
   Reopen_Help_Max_Time: 24, // hrs
   Helpdesk_Chat_Confim_Msg:
     'Thank you for reaching out. As we are experiencing a heavy load, our team will get back to you in 24 to 48 hours.',
+  Enable_Diagnostics_COD: false,
 };
 
 const DEV_top_specialties = [
@@ -873,8 +874,8 @@ const ConfigurationProd = {
 const ConfigurationPERFORM = {
   TAGALYS_API_KEY: '050343bfa6dae87212fd64ee7809c2c8',
   TAGALYS_CLIENT_CODE: 'A029C7273776C78A',
-  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '',
-  CODE_PUSH_DEPLOYMENT_KEY_IOS: '',
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: 'b72foAZYvb6d0xOaqdvE_LHyaYiW5rsh_wGKM',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: 'of-02CUYoW4JfbgDXp4TwRN2mYfaZghf22hF-',
   PAYMENT_GATEWAY_BASE_URL: paymentGatewayBaseUrl,
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
@@ -1222,7 +1223,6 @@ export const DIAGNOSTIC_FAILURE_STATUS_ARRAY = [
 export const DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY = [
   DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED,
-  DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED
 ];
 
 export const DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY = [

@@ -6,6 +6,7 @@ import {
   BackHandler,
   NativeEventEmitter,
   ScrollView,
+  View,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -57,6 +58,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/createOrder';
 import { verifyVPA, verifyVPAVariables } from '@aph/mobile-patients/src/graphql/types/verifyVPA';
 import {
+  DiagnosticUserPaymentAborted,
   DiagnosticPaymentInitiated,
   DiagnosticPaymentPageViewed,
 } from '@aph/mobile-patients/src/components/Tests/Events';
@@ -64,12 +66,18 @@ import {
   initiateDiagonsticHCOrderPaymentVariables,
   initiateDiagonsticHCOrderPayment,
 } from '@aph/mobile-patients/src/graphql/types/initiateDiagonsticHCOrderPayment';
-import { paymentModeVersionCheck } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  isSmallDevice,
+  paymentModeVersionCheck,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/components/InfoMessage';
 
 const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {
   source?: string;
+  businessLine: 'consult' | 'diagnostics' | 'pharma' | 'subscription';
 }
 
 export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
@@ -79,6 +87,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const orderDetails = props.navigation.getParam('orderDetails');
   const eventAttributes = props.navigation.getParam('eventAttributes');
   const source = props.navigation.getParam('source');
+  const businessLine = props.navigation.getParam('businessLine');
   const { currentPatient } = useAllCurrentPatients();
   const [banks, setBanks] = useState<any>([]);
   const [loading, setloading] = useState<boolean>(true);
@@ -98,7 +107,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
       handleEventListener(resp);
     });
-    source === 'diagnostics' && DiagnosticPaymentPageViewed(currentPatient, amount);
+    businessLine === 'diagnostics' && DiagnosticPaymentPageViewed(currentPatient, amount);
     fecthPaymentOptions();
     fetchTopBanks();
     return () => eventListener.remove();
@@ -150,6 +159,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const handlePaymentPending = (errorCode: string) => {
+    triggerUserPaymentAbortedEvent(errorCode);
     switch (errorCode) {
       case ('JP_002', 'JP_005', 'JP_009', 'JP_012'):
         // User aborted txn or no Internet or user had exceeded the limit of incorrect OTP submissions or txn failed at PG end
@@ -255,30 +265,38 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     }
   };
 
-  function triggerWebengege(mode: 'Prepaid' | 'Cash', type: string) {
-    DiagnosticPaymentInitiated(mode, amount, 'Diagnostic', 'Diagnostic', type);
+  function triggerWebengege(type: string) {
+    DiagnosticPaymentInitiated(amount, 'Diagnostic', type);
+  }
+
+  function triggerUserPaymentAbortedEvent(errorCode: string) {
+    //JP_002 -> User aborted payment
+    errorCode === 'JP_002' &&
+      businessLine === 'diagnostics' &&
+      DiagnosticUserPaymentAborted(currentPatient, orderId);
   }
 
   async function onPressBank(bankCode: string) {
-    triggerWebengege('Prepaid', 'Net Banking');
+    triggerWebengege('Net Banking');
     const token = await getClientToken();
     InitiateNetBankingTxn(currentPatient?.id, token, paymentId, bankCode);
   }
 
   async function onPressWallet(wallet: string) {
-    triggerWebengege('Prepaid', wallet);
+    triggerWebengege(wallet);
     const token = await getClientToken();
     InitiateWalletTxn(currentPatient?.id, token, paymentId, wallet);
   }
 
   async function onPressUPIApp(app: any) {
-    triggerWebengege('Prepaid', 'UPI');
+    const methodName = app?.payment_method_code?.payment_method_name || 'UPI';
+    triggerWebengege(methodName);
     const token = await getClientToken();
     InitiateUPIIntentTxn(currentPatient?.id, token, paymentId, app.payment_method_code);
   }
 
   async function onPressVPAPay(VPA: string) {
-    triggerWebengege('Prepaid', VPA);
+    triggerWebengege('VPA Address');
     try {
       setisTxnProcessing(true);
       const response = await verifyVPA(VPA);
@@ -295,13 +313,13 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   }
 
   async function onPressCardPay(cardInfo: any) {
-    triggerWebengege('Prepaid', 'Card');
+    triggerWebengege('Card');
     const token = await getClientToken();
     InitiateCardTxn(currentPatient?.id, token, paymentId, cardInfo);
   }
 
   async function onPressPayByCash() {
-    triggerWebengege('Cash', 'Cash');
+    triggerWebengege('Cash');
     setisTxnProcessing(true);
     try {
       const response = await createJusPayOrder(PAYMENT_MODE.COD);
@@ -324,7 +342,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     const topBanks = paymentMethods?.find((item: any) => item?.name == 'NB');
     const methods = topBanks?.payment_methods?.map((item: any) => item?.payment_method_code) || [];
     const otherBanks = banks?.filter((item: any) => !methods?.includes(item?.paymentMethod));
-    triggerWebengege('Prepaid', 'Other Banks');
+    triggerWebengege('Net Banking');
     props.navigation.navigate(AppRoutes.OtherBanks, {
       paymentId: paymentId,
       amount: amount,
@@ -445,7 +463,24 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderPayByCash = () => {
-    return <PayByCash onPressPlaceOrder={onPressPayByCash} />;
+    const showCOD =
+      businessLine === 'diagnostics' && AppConfig.Configuration.Enable_Diagnostics_COD;
+    return (
+      <View>
+        {!showCOD && renderInfoMessage()}
+        <PayByCash onPressPlaceOrder={onPressPayByCash} disableCOD={!showCOD} />
+      </View>
+    );
+  };
+
+  const renderInfoMessage = () => {
+    return (
+      <InfoMessage
+        content={string.diagnostics.codDisableText}
+        textStyle={styles.textStyle}
+        iconStyle={styles.iconStyle}
+      />
+    );
   };
 
   const showTxnFailurePopUP = () => {
@@ -489,5 +524,18 @@ const styles = StyleSheet.create({
   header: {
     ...theme.viewStyles.cardViewStyle,
     borderRadius: 0,
+  },
+  textStyle: {
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 8.5 : 9),
+    lineHeight: isSmallDevice ? 13 : 14,
+    letterSpacing: 0.1,
+    color: theme.colors.SHERPA_BLUE,
+    opacity: 0.7,
+    marginHorizontal: '2%',
+  },
+  iconStyle: {
+    resizeMode: 'contain',
+    height: isSmallDevice ? 13 : 14,
+    width: isSmallDevice ? 13 : 14,
   },
 });

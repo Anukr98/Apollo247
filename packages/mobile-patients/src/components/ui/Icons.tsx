@@ -166,6 +166,16 @@ export const Night: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_night.webp')} />
 );
 
+export const MorningSelected: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_morning_active.webp')} />
+);
+export const AfternoonSelected: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_sun_active.webp')} />
+);
+export const NightSelected: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_night_active.webp')} />
+);
+
 export const MorningUnselected: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_morning_unselected.webp')} />
 );
@@ -329,6 +339,10 @@ export const TestInfoWhiteIcon: React.FC<IconProps> = (props) => (
 
 export const ArrowRight: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_arrow_right.webp')} />
+);
+
+export const EmptySlot: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/emptyslots3x.webp')} />
 );
 
 export const ArrowRightGreen: React.FC<IconProps> = (props) => (

@@ -65,9 +65,9 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
   const moveToMyOrders = () => {
     props.navigation.navigate(AppRoutes.YourOrdersTest, {
-      isTest: true,
+      fromOrderSummary: true,
     });
-  }
+  };
 
   useEffect(() => {
     postwebEngageCheckoutCompletedEvent();
@@ -101,6 +101,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       showOrderSummaryTab,
       orderId: orderId,
       comingFrom: AppRoutes.TestsCart,
+      amount: orderDetails?.amount,
     });
   };
 
@@ -233,7 +234,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       <View>
         <Spearator style={styles.separator} />
         <TouchableOpacity style={{ alignItems: 'center' }} onPress={() => moveToMyOrders()}>
-          <Text style={styles.homeScreen}>{nameFormater('Go to my orders','upper')}</Text>
+          <Text style={styles.homeScreen}>{nameFormater('Go to my orders', 'upper')}</Text>
         </TouchableOpacity>
       </View>
     );

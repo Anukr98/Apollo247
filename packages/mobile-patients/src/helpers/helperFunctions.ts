@@ -1289,8 +1289,7 @@ export const addTestsToCart = async (
   testPrescription: getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[], // testsIncluded will not come from API
   apolloClient: ApolloClient<object>,
   pincode?: string,
-  setLoading?: UIElementsContextProps['setLoading'],
-
+  setLoading?: UIElementsContextProps['setLoading']
 ) => {
   const searchQuery = (name: string, cityId: string) =>
     apolloClient.query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
@@ -1325,7 +1324,7 @@ export const addTestsToCart = async (
     const detailQueriesData = (await detailQueries)?.map(
       (item: any) => g(item, 'data', 'getInclusionsOfMultipleItems', 'inclusions', 'length') || 1 // updating testsIncluded
     );
-    setLoading?.(false)
+    setLoading?.(false);
     const finalArray: DiagnosticsCartItem[] = Array.from({
       length: searchQueriesData?.length,
     }).map((_, index) => {
@@ -1620,6 +1619,10 @@ export const postWebEngageIfNewSession = (
       );
     }
   }
+};
+
+export const removeObjectProperty = (object: any, property: string) => {
+  return _.omit(object, property);
 };
 
 export const postWEGNeedHelpEvent = (
@@ -2423,7 +2426,6 @@ export const filterHtmlContent = (content: string = '') => {
     .replace(/&gt;/g, '>')
     .replace(/&nbsp;/g, '</>')
     .replace(/\.t/g, '.')
-    .replace(/.rn/gi, '. ')
     .replace(/<\/>/gi, '');
 };
 export const isProductInStock = (product: MedicineProduct) => {
@@ -2680,10 +2682,7 @@ export const validateCoupon = async (
       const response = await validateConsultCoupon(data);
       if (response.data.errorCode == 0) {
         if (response.data.response.valid) {
-          setCoupon!({
-            ...response?.data?.response,
-            message: message ? message : '',
-          });
+          setCoupon!({ ...response?.data?.response, message: message ? message : '' });
           res('success');
         } else {
           rej(response.data.response.reason);
@@ -2779,14 +2778,9 @@ export async function downloadDiagnosticReport(
           : dirs.DownloadDir + '/' + reportName;
 
       let msg = 'File is downloading..';
-      if (showToast) {
-        if (Platform.OS === 'android') {
+      if (showToast && Platform.OS === 'android') {
           ToastAndroid.show(msg, ToastAndroid.SHORT);
-        } else {
-          AlertIOS.alert(msg);
-        }
       }
-
       RNFetchBlob.config({
         fileCache: true,
         path: downloadPath,
@@ -2822,12 +2816,12 @@ export async function downloadDiagnosticReport(
           PermissionsAndroid.RESULTS.DENIED
       ) {
         storagePermissionsToDownload(() => {
-          downloadDiagnosticReport(setLoading,pdfUrl, appointmentDate, patientName, true);
+          downloadDiagnosticReport(setLoading, pdfUrl, appointmentDate, patientName, true);
         });
       }
     }
   } catch (error) {
-    setLoading?.(false)
+    setLoading?.(false);
     CommonBugFender('YourOrderTests_downloadLabTest', error);
     throw new Error('Something went wrong');
   }

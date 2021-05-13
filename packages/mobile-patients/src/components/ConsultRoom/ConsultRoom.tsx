@@ -641,33 +641,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: 'white',
   },
-  proHealthOverlay: {
-    backgroundColor: 'rgba(0,0,0,0.8)',
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    justifyContent: 'flex-start',
-    flex: 1,
-    left: 0,
-    right: 0,
-    zIndex: 3000,
-  },
-  proHealthContainer: { marginHorizontal: 30, flexDirection: 'row', marginTop: 80 },
-  proHealthInnerContainer: {
-    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    borderBottomRightRadius: 10,
-    borderBottomLeftRadius: 10,
-    padding: 16,
-    width: width - 90,
-    maxHeight: height - 300,
-  },
-  proHealthPopUpHeading: { ...theme.viewStyles.text('SB', 16, theme.colors.SHERPA_BLUE, 1, 24) },
-  crossIconTouch: { alignSelf: 'flex-start', marginLeft: 20 },
-  listContainer: { padding: 10, paddingLeft: 0 },
-  listName: { ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 20) },
-  hospitalHeadingView: { marginBottom: 10, flexDirection: 'row' },
   proHealthBannerTouch: {
     backgroundColor: theme.colors.CLEAR,
     borderRadius: 12,
@@ -834,9 +807,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const saveDeviceNotificationToken = async (id: string) => {
     try {
       const savedToken = await AsyncStorage.getItem('deviceToken');
+      const oneTimeApiCall = await AsyncStorage.getItem('saveTokenDeviceApiCall');
       const token = await messaging().getToken();
-      if (savedToken && JSON.parse(savedToken) !== token) {
+      if (!oneTimeApiCall || !savedToken || (savedToken && JSON.parse(savedToken) !== token)) {
         saveTokenDevice(client, token, id);
+        await AsyncStorage.setItem('saveTokenDeviceApiCall', 'called');
       }
     } catch (error) {}
   };
@@ -993,12 +968,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         }
       });
     }
+
     if (params?.isFreeConsult) {
       checkPermissions(['camera', 'microphone']).then((response: any) => {
         const { camera, microphone } = response;
         if (camera === 'authorized' && microphone === 'authorized') {
           showFreeConsultOverlay(params);
-        } else {
+        } else if (!params?.isPhysicalConsultBooked) {
           overlyCallPermissions(
             currentPatient!.firstName!,
             params?.doctorName,
@@ -1011,6 +987,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               }
             }
           );
+        } else {
+          if (params?.doctorName) showFreeConsultOverlay(params);
         }
       });
     }
@@ -1051,7 +1029,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const { camera, microphone } = response;
         if (camera === 'authorized' && microphone === 'authorized') {
           showFreeConsultOverlay(params);
-        } else {
+        } else if (!params?.isPhysicalConsultBooked) {
           overlyCallPermissions(
             currentPatient!.firstName!,
             params?.doctorName,
@@ -1064,6 +1042,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               }
             }
           );
+        } else {
+          if (params?.doctorName) showFreeConsultOverlay(params);
         }
       });
     }
@@ -2213,7 +2193,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             }
             if (Platform.OS === 'ios') {
               if (tokenValue) {
-                Vitals.vitalsToExport(tokenValue, buildSpecify);
+                Vitals.vitalsToExport(tokenValue, buildSpecify, '247');
                 setTimeout(() => {
                   Vitals.goToReactNative(tokenValue);
                 }, 500);
@@ -2278,7 +2258,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         //call the sdk.
         if (Platform.OS === 'ios') {
           if (vitaToken) {
-            Vitals.vitalsToExport(vitaToken, buildSpecify);
+            Vitals.vitalsToExport(vitaToken, buildSpecify, 'prohealth');
             setTimeout(() => {
               Vitals.goToReactNative(vitaToken);
             }, 500);
@@ -2586,8 +2566,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderMenuOptions = () => {
-    let arrayList =
-      isProHealthActive && Platform.OS == 'android' ? listValuesForProHealth : listValues;
+    let arrayList = isProHealthActive ? listValuesForProHealth : listValues;
     return (
       <View
         style={{
@@ -3382,6 +3361,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           style={styles.proHealthBannerImage}
           source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_banner.png')}
           resizeMode={'stretch'}
+          borderRadius={10}
         ></ImageBackground>
       </TouchableOpacity>
     );
@@ -3489,6 +3469,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       CommonBugFender('opening_ProHealthwebView_ConsultRoom', e);
     }
   }
+
   const renderAllConsultedDoctors = () => {
     return <ConsultedDoctorsCard navigation={props.navigation} />;
   };

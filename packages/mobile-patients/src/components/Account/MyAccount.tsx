@@ -292,6 +292,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       AsyncStorage.removeItem('deeplink');
       AsyncStorage.removeItem('deeplinkReferalCode');
       AsyncStorage.removeItem('isCircleMember');
+      AsyncStorage.removeItem('saveTokenDeviceApiCall');
       AsyncStorage.removeItem(LOGIN_PROFILE);
       AsyncStorage.removeItem('PharmacyLocationPincode');
       AsyncStorage.setItem(SKIP_LOCATION_PROMPT, 'false');
