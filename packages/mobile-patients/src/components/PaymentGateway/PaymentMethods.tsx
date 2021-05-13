@@ -6,6 +6,7 @@ import {
   BackHandler,
   NativeEventEmitter,
   ScrollView,
+  Platform,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -25,6 +26,9 @@ import {
   InitiateUPIIntentTxn,
   InitiateVPATxn,
   InitiateCardTxn,
+  isGooglePayReady,
+  isPhonePeReady,
+  InitiateUPISDKTxn,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -85,6 +89,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [cardTypes, setCardTypes] = useState<any>([]);
   const [isVPAvalid, setisVPAvalid] = useState<boolean>(true);
   const [isCardValid, setisCardValid] = useState<boolean>(true);
+  const [phonePeReady, setphonePeReady] = useState<boolean>(false);
+  const [googlePayReady, setGooglePayReady] = useState<boolean>(false);
   const [availableUPIApps, setAvailableUPIapps] = useState([]);
   const paymentActions = ['nbTxn', 'walletTxn', 'upiTxn', 'cardTxn'];
   const { showAphAlert, hideAphAlert } = useUIElements();
@@ -97,6 +103,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     });
     fecthPaymentOptions();
     fetchTopBanks();
+    isPhonePeReady();
+    isGooglePayReady();
     return () => eventListener.remove();
   }, []);
 
@@ -124,6 +132,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         } else if (paymentActions.indexOf(action) != -1 && status) {
           handleTxnStatus(status, payload);
           setisTxnProcessing(false);
+        } else if (payload?.payload?.action == 'isDeviceReady') {
+          payload?.requestId == 'phonePe' && status && setphonePeReady(true);
+          payload?.requestId == 'googlePay' && status && setGooglePayReady(true);
         } else if (action == 'upiTxn' && !payload?.error && !status) {
           setAvailableUPIapps(payload?.payload?.availableApps || []);
         } else if (payload?.error) {
@@ -291,13 +302,30 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   async function onPressWallet(wallet: string) {
     triggerWebengege('Prepaid', wallet);
     const token = await getClientToken();
-    InitiateWalletTxn(currentPatient?.id, token, paymentId, wallet);
+    wallet == 'PHONEPE' && phonePeReady
+      ? InitiateUPISDKTxn(currentPatient?.id, token, paymentId, wallet, 'ANDROID_PHONEPE')
+      : InitiateWalletTxn(currentPatient?.id, token, paymentId, wallet);
   }
 
   async function onPressUPIApp(app: any) {
     triggerWebengege('Prepaid', 'UPI Intent');
     const token = await getClientToken();
-    InitiateUPIIntentTxn(currentPatient?.id, token, paymentId, app.payment_method_code);
+    const paymentCode = app?.payment_method_code;
+    const sdkPresent =
+      paymentCode == 'com.phonepe.app' && phonePeReady
+        ? 'ANDROID_PHONEPE'
+        : // : paymentCode == 'com.google.android.apps.nbu.paisa.user' && googlePayReady
+          // ? 'ANDROID_GOOGLEPAY'
+          '';
+    const paymentMethod =
+      paymentCode == 'com.phonepe.app'
+        ? 'PHONEPE'
+        : // : paymentCode == 'com.google.android.apps.nbu.paisa.user'
+          // ? 'GOOGLEPAY'
+          '';
+    sdkPresent
+      ? InitiateUPISDKTxn(currentPatient?.id, token, paymentId, paymentMethod, sdkPresent)
+      : InitiateUPIIntentTxn(currentPatient?.id, token, paymentId, paymentCode);
   }
 
   async function onPressVPAPay(VPA: string) {
@@ -375,6 +403,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       return [];
     }
   };
+
   const onPressRetryBooking = () => {
     hideAphAlert?.();
     businessLine == 'diagnostics' && props.navigation.goBack();
