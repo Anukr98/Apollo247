@@ -11,6 +11,7 @@ import {
   More,
   OrderPlacedIcon,
   OrderTrackerSmallIcon,
+  ClockIcon,
   CopyBlue,
   DownloadNew,
   ShareBlue,
@@ -84,6 +85,7 @@ import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 
 import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 const DROP_DOWN_ARRAY_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
@@ -488,13 +490,21 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                 return (
                   <>
                     {!!item?.itemName ? (
-                      <View style={styles.itemNameContainer}>
-                        <View style={{ width: '59%' }}>
-                          <Text style={styles.itemNameText}>
-                            {nameFormater(item?.itemName, 'default')}
-                          </Text>
+                      <View>
+                        <View style={styles.itemNameContainer}>
+                          <View style={{ width: '59%' }}>
+                            <Text style={styles.itemNameText}>
+                               Get your report by 9:00am Tue,11th May
+                            </Text>
+                          </View>
+                          <StatusCard titleText={item?.orderStatus} />
                         </View>
-                        <StatusCard titleText={item?.orderStatus} />
+                        <View style={styles.ratingContainer}>
+                          <View style={styles.reporttatContainer}>
+                            <ClockIcon />
+                            <Text style={styles.reportTextStyle}>{nameFormater(item?.itemName, 'default')}</Text>
+                          </View>
+                        </View>
                       </View>
                     ) : null}
                   </>
@@ -887,4 +897,20 @@ const styles = StyleSheet.create({
   },
   rateYourExpText: { ...theme.viewStyles.text('B', 14, theme.colors.APP_YELLOW) },
   feedbackTouch: { marginBottom: 2, width: '100%' },
+  ratingContainer: {
+    backgroundColor: '#FCFDDA',
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    borderRadius: 10,
+    padding: 10,
+  },
+  reportTextStyle: {
+    marginHorizontal:10,
+    ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 1, 16),
+  },
+  reporttatContainer: {
+    marginVertical: 5,
+    flexDirection:'row',
+    alignItems:'center',
+  },
 });

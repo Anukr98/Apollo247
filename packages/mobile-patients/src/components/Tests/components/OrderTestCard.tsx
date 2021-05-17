@@ -285,7 +285,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   const postDiagnosticPhleboCallingClicked = (phleboName: string) => {
     DiagnosticPhleboCallingClicked(currentPatient, props.orderId, phleboName);
   };
-  const showOTPContainer = () => {
+  const showDetailOTPContainer = () => {
     const phlObj = props?.phelboObject;
     const otpToShow = !!phlObj && phlObj?.PhelboOTP;
     const phoneNumber = !!phlObj && phlObj?.PhelbotomistMobile;
@@ -296,38 +296,51 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     if (checkEta) {
       phleboEta = moment(phlObj?.CheckInTime).format('YYYY-MM-DDTHH:mm:ss');
     }
+    const current = moment();
+    const slotime = moment(props.slotTime);
+    // calculate total duration
+    let duration = moment.duration(slotime.diff(current));
+    // duration in hours
+    let hours = parseInt(duration.asHours());
+    // duration in minutes
+    let minutes = parseInt(duration.asMinutes()) % 60;
+    const showDetailedinfo = hours == 0 && minutes < 60 && minutes > 0;
     return (
       <>
         {!!otpToShow && SHOW_OTP_ARRAY.includes(props.orderLevelStatus) ? (
           <>
-            <View style={styles.otpCallContainer}>
-              <View style={styles.detailContainer}>
-                {phoneNumber ? (
-                  <TouchableOpacity
-                    style={styles.callContainer}
-                    onPress={() => {
-                      postDiagnosticPhleboCallingClicked(name)
-                      Linking.openURL(`tel:${phoneNumber}`);
-                    }}
-                  >
-                    <WhiteProfile />
-                    <OrangeCall size="sm" style={styles.profileCircle} />
-                  </TouchableOpacity>
-                ) : null}
-                {name ? (
-                  <View style={styles.nameContainer}>
-                    <Text style={styles.nameTextHeadingStyles}>Phlebotomist Details</Text>
-                    <Text style={styles.nameTextStyles}>{name}</Text>
+            {showDetailedinfo ? (
+              <View style={styles.otpCallContainer}>
+                <View style={styles.detailContainer}>
+                  {phoneNumber ? (
+                    <TouchableOpacity
+                      style={styles.callContainer}
+                      onPress={() => {
+                        postDiagnosticPhleboCallingClicked(name);
+                        Linking.openURL(`tel:${phoneNumber}`);
+                      }}
+                    >
+                      <WhiteProfile />
+                      <OrangeCall size="sm" style={styles.profileCircle} />
+                    </TouchableOpacity>
+                  ) : null}
+                  {name ? (
+                    <View style={styles.nameContainer}>
+                      <Text style={styles.nameTextHeadingStyles}>Phlebotomist Details</Text>
+                      <Text style={styles.nameTextStyles}>{name}</Text>
+                    </View>
+                  ) : null}
+                </View>
+                {otpToShow ? (
+                  <View style={styles.otpBoxConatiner}>
+                    <Text style={styles.otpBoxTextStyle}>{'OTP'}</Text>
+                    <Text style={styles.otpBoxTextStyle}>{otpToShow}</Text>
                   </View>
                 ) : null}
               </View>
-              {otpToShow ? (
-                <View style={styles.otpBoxConatiner}>
-                  <Text style={styles.otpBoxTextStyle}>{'OTP'}</Text>
-                  <Text style={styles.otpBoxTextStyle}>{otpToShow}</Text>
-                </View>
-              ) : null}
-            </View>
+            ) : (
+              showOnlyOTPContainer()
+            )}
 
             {checkEta && props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN ? (
               <View style={styles.otpContainer}>
@@ -364,6 +377,15 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
           </>
         ) : null}
       </>
+    );
+  };
+  const showOnlyOTPContainer = () => {
+    const phlObj = props?.phelboObject;
+    const otpToShow = !!phlObj && phlObj?.PhelboOTP;
+    return (
+      <View style={styles.ratingContainer}>
+        <Text style={styles.otpBoxTextStyle}>OTP : {otpToShow}</Text>
+      </View>
     );
   };
 
@@ -448,7 +470,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         {renderCTAsView()}
       </View>
       {props.showAdditonalView || props.isCancelled ? renderAdditionalInfoView() : null}
-      {showOTPContainer()}
+      {showDetailOTPContainer()}
       {showRatingView()}
       {showReportTat()}
     </TouchableOpacity>
