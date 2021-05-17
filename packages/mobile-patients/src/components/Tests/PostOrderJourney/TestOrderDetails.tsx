@@ -487,17 +487,14 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
               </TouchableOpacity>
             </View>
             {showInclusionStatus &&
-              orderLevelStatus?.statusInclusions?.map((item: any) => {
-                const getItemReportTat = orderLevelStatus?.statusInclusions?.map(
-                  (
-                    order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems
-                  ) =>
-                    {
-                      if (order?.itemId == item?.itemId) {
-                        return order?.itemObj?.reportGenerationTime;
-                      }
-                    }
-                );
+              orderLevelStatus?.statusInclusions?.map((item: any,index: number) => {
+                let selectedItem = selectedOrder?.diagnosticOrderLineItems;
+                let itemReportTat = '';
+                itemReportTat = selectedItem.map((order: any) => {
+                  if (order?.itemId == item?.itemId) {
+                    return order?.itemObj?.reportGenerationTime;
+                  }
+                });
                 return (
                   <>
                     {!!item?.itemName ? (
@@ -513,7 +510,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                         <View style={styles.ratingContainer}>
                           <View style={styles.reporttatContainer}>
                             <ClockIcon />
-                            <Text style={styles.reportTextStyle}>{`Get your report by ${getItemReportTat()}`}</Text>
+                            <Text style={styles.reportTextStyle}>{`Get your report by ${itemReportTat?.[index]}`}</Text>
                           </View>
                         </View>
                       </View>
