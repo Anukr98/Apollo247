@@ -1290,8 +1290,7 @@ export const addTestsToCart = async (
   testPrescription: getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[], // testsIncluded will not come from API
   apolloClient: ApolloClient<object>,
   pincode?: string,
-  setLoading?: UIElementsContextProps['setLoading'],
-
+  setLoading?: UIElementsContextProps['setLoading']
 ) => {
   const searchQuery = (name: string, cityId: string) =>
     apolloClient.query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
@@ -1326,7 +1325,7 @@ export const addTestsToCart = async (
     const detailQueriesData = (await detailQueries)?.map(
       (item: any) => g(item, 'data', 'getInclusionsOfMultipleItems', 'inclusions', 'length') || 1 // updating testsIncluded
     );
-    setLoading?.(false)
+    setLoading?.(false);
     const finalArray: DiagnosticsCartItem[] = Array.from({
       length: searchQueriesData?.length,
     }).map((_, index) => {
@@ -1472,6 +1471,34 @@ export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Ob
     CleverTap.recordEvent(eventName, attributes);
     webengage.track(eventName, attributes);
   } catch (error) {}
+};
+
+export const onCleverTapUserLogin = (_currentPatient: any) => {
+  try {
+    const _userProfile = {
+      Name: _currentPatient?.firstName + ' ' + (_currentPatient?.lastName || ''),
+      UHID: _currentPatient?.uhid || '',
+      Identity: _currentPatient?.mobileNumber || '',
+      MobileNumber: _currentPatient?.mobileNumber || '',
+      Firstname: _currentPatient?.firstName || '',
+      ...(_currentPatient?.lastName && { Lastname: _currentPatient?.lastName }),
+      Relation: _currentPatient?.relation || '',
+      Gender:
+        _currentPatient?.gender == Gender.MALE
+          ? 'M'
+          : _currentPatient?.gender == Gender.FEMALE
+          ? 'F'
+          : '',
+      DOB: new Date(_currentPatient?.dateOfBirth),
+      ...(_currentPatient?.emailAddress && { Email: _currentPatient?.emailAddress }),
+      ...(_currentPatient?.photoUrl && { Photo: _currentPatient?.photoUrl }),
+      ...(_currentPatient?.createdDate && { CreatedDate: _currentPatient?.createdDate }),
+    };
+    console.log('_currentPatient', _currentPatient, _userProfile);
+    CleverTap.onUserLogin(_userProfile);
+  } catch (error) {
+    CommonBugFender('setCleverTapUserLogin', error);
+  }
 };
 
 export const postwebEngageAddToCartEvent = (
@@ -2824,12 +2851,12 @@ export async function downloadDiagnosticReport(
           PermissionsAndroid.RESULTS.DENIED
       ) {
         storagePermissionsToDownload(() => {
-          downloadDiagnosticReport(setLoading,pdfUrl, appointmentDate, patientName, true);
+          downloadDiagnosticReport(setLoading, pdfUrl, appointmentDate, patientName, true);
         });
       }
     }
   } catch (error) {
-    setLoading?.(false)
+    setLoading?.(false);
     CommonBugFender('YourOrderTests_downloadLabTest', error);
     throw new Error('Something went wrong');
   }
