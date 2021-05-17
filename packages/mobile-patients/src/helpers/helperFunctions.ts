@@ -1041,7 +1041,7 @@ const getlocationData = (
     (error) => {
       reject('Unable to get location.');
     },
-    { enableHighAccuracy: true, timeout: 10000 }
+    { accuracy: { android : 'balanced', ios:'best'} , enableHighAccuracy: true, timeout: 10000 }
   );
 };
 
