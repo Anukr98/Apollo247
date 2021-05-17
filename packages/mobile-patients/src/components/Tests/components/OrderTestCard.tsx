@@ -296,15 +296,10 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     if (checkEta) {
       phleboEta = moment(phlObj?.CheckInTime).format('hh:mm A');
     }
-    const current = moment();
-    const slotime = moment(props.slotTime);
-    // calculate total duration
-    let duration = moment.duration(slotime.diff(current));
-    // duration in hours
-    let hours = parseInt(duration.asHours());
-    // duration in minutes
-    let minutes = parseInt(duration.asMinutes()) % 60;
-    const showDetailedinfo = hours == 0 && minutes < 60 && minutes > 0;
+    const slotime = !!props.slotTime
+    ? moment(props?.slotTime) || null
+    : null;
+    const showDetailedinfo = !!slotime ? slotime.diff(moment(), 'minutes') < 60 && slotime.diff(moment(), 'minutes') > 0 : false
     return (
       <>
         {!!otpToShow && SHOW_OTP_ARRAY.includes(props.orderLevelStatus) ? (

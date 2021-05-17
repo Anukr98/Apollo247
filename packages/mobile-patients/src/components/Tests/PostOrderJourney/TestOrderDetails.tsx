@@ -490,7 +490,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
               orderLevelStatus?.statusInclusions?.map((item: any,index: number) => {
                 let selectedItem = selectedOrder?.diagnosticOrderLineItems;
                 let itemReportTat = '';
-                itemReportTat = selectedItem.map((order: any) => {
+                itemReportTat = selectedItem?.map((order: any) => {
                   if (order?.itemId == item?.itemId) {
                     return order?.itemObj?.reportGenerationTime;
                   }
@@ -502,17 +502,21 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                         <View style={styles.itemNameContainer}>
                           <View style={{ width: '59%' }}>
                             <Text style={styles.itemNameText}>
-                            {nameFormater(item?.itemName, 'default')}
+                              {nameFormater(item?.itemName, 'default')}
                             </Text>
                           </View>
                           <StatusCard titleText={item?.orderStatus} />
                         </View>
-                        <View style={styles.ratingContainer}>
-                          <View style={styles.reporttatContainer}>
-                            <ClockIcon />
-                            <Text style={styles.reportTextStyle}>{`Get your report by ${itemReportTat?.[index]}`}</Text>
+                        {itemReportTat?.[index] ? (
+                          <View style={styles.ratingContainer}>
+                            <View style={styles.reporttatContainer}>
+                              <ClockIcon />
+                              <Text
+                                style={styles.reportTextStyle}
+                              >{`Get your report by ${itemReportTat?.[index]}`}</Text>
+                            </View>
                           </View>
-                        </View>
+                        ) : null}
                       </View>
                     ) : null}
                   </>
