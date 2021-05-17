@@ -146,6 +146,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     apisToCall,
     homeScreenParamsOnPop,
     activeUserSubscriptions,
+    setauthToken,
   } = useAppCommonData();
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');

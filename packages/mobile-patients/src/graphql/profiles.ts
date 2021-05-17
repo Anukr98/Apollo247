@@ -3216,7 +3216,7 @@ export const ADD_FAMILY_HISTORY_RECORD = gql`
 
 export const CANCEL_APPOINTMENT = gql`
   mutation cancelAppointment($cancelAppointmentInput: CancelAppointmentInput!) {
-    cancelAppointmentV2(cancelAppointmentInput: $cancelAppointmentInput) {
+    cancelAppointment(cancelAppointmentInput: $cancelAppointmentInput) {
       status
     }
   }
