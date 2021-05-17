@@ -40,6 +40,7 @@ import {
   getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
 import { getDiagnosticOrdersListVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
+import { getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 import {
   downloadDiagnosticReport,
   g,
@@ -487,6 +488,16 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             </View>
             {showInclusionStatus &&
               orderLevelStatus?.statusInclusions?.map((item: any) => {
+                const getItemReportTat = orderLevelStatus?.statusInclusions?.map(
+                  (
+                    order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems
+                  ) =>
+                    {
+                      if (order?.itemId == item?.itemId) {
+                        return order?.itemObj?.reportGenerationTime;
+                      }
+                    }
+                );
                 return (
                   <>
                     {!!item?.itemName ? (
@@ -494,7 +505,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                         <View style={styles.itemNameContainer}>
                           <View style={{ width: '59%' }}>
                             <Text style={styles.itemNameText}>
-                               Get your report by 9:00am Tue,11th May
+                            {nameFormater(item?.itemName, 'default')}
                             </Text>
                           </View>
                           <StatusCard titleText={item?.orderStatus} />
@@ -502,7 +513,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                         <View style={styles.ratingContainer}>
                           <View style={styles.reporttatContainer}>
                             <ClockIcon />
-                            <Text style={styles.reportTextStyle}>{nameFormater(item?.itemName, 'default')}</Text>
+                            <Text style={styles.reportTextStyle}>{`Get your report by ${getItemReportTat()}`}</Text>
                           </View>
                         </View>
                       </View>
