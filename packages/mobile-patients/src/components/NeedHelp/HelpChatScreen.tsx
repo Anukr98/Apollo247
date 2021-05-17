@@ -2,25 +2,25 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Apollo247Icon, WhatsAppIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import moment from 'moment';
 import React, { useEffect, useState, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { ChatSend } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
-import { ORDER_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import moment from 'moment';
 import {
-  CommonBugFender,
-  DeviceHelper,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-
+  HELP_DESK_TICKET_STATUS,
+  ORDER_TYPE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   Alert,
   SafeAreaView,
   StyleSheet,
   TextInput,
   Text,
-  Platform,
   TouchableOpacity,
   Dimensions,
   View,
@@ -34,6 +34,7 @@ import { getHelpdeskTicketConversation } from '@aph/mobile-patients/src/graphql/
 import {
   ADD_COMMENTS_HELPDESK_TICKET,
   GET_HELPDESK_TICKET_CONVERSATION,
+  UPDATE_HELPDESK_TICKET,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import HTML from 'react-native-render-html';
 import { OrderStatusIndicator } from './OrderStatusIndicator';
@@ -43,6 +44,10 @@ import {
 } from '../../graphql/types/addCommentHelpdeskTicket';
 
 import { Snackbar } from 'react-native-paper';
+import {
+  updateHelpdeskTicketVariables,
+  updateHelpdeskTicket,
+} from '../../graphql/types/updateHelpdeskTicket';
 
 const { height, width } = Dimensions.get('window');
 
@@ -156,6 +161,7 @@ const styles = StyleSheet.create({
   ticketClosedFooterContainer: {
     alignSelf: 'center',
     margin: 20,
+    alignItems: 'center',
   },
   buttonStyles: {
     height: 40,
@@ -192,7 +198,21 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginLeft: 14,
   },
+  ticketClosedMessage: {
+    color: '#0087BA',
+    ...theme.fonts.IBMPlexSansRegular(14),
+    alignSelf: 'center',
+    textAlign: 'center',
+    marginTop: 10,
+  },
 });
+
+const BUSINESS = {
+  PHARMACY: 'Pharmacy',
+  VIRTUAL_CONSULTATION: 'Virtual Consultation',
+  PHYSICAL_CONSULTATION: 'Physical Consultation',
+  DIAGNOSTICS: 'Diagnostics',
+};
 
 export interface HelpChatProps extends NavigationScreenProps {}
 
@@ -207,13 +227,9 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
   );
   const [conversations, setConverstions] = useState<any>([]);
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
-  const { isIphoneX } = DeviceHelper();
   const [refreshing, setRefreshing] = useState(false);
 
-  const [heightList, setHeightList] = useState<number>(
-    isIphoneX() ? height - 166 : Platform.OS === 'ios' ? height - 141 : height - 141
-  );
-
+  const { showAphAlert } = useUIElements();
   const client = useApolloClient();
 
   useEffect(() => {
@@ -258,8 +274,28 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
   };
 
   const reopenClosedTicket = () => {
-    setIsTicketClosed(false);
-    setSnackbarState(true);
+    setLoading(true);
+
+    const updateHelpdeskInput = {
+      ticketId: ticket?.id || '',
+      status: HELP_DESK_TICKET_STATUS.Open,
+    };
+
+    client
+      .mutate<updateHelpdeskTicket, updateHelpdeskTicketVariables>({
+        mutation: UPDATE_HELPDESK_TICKET,
+        variables: { updateHelpdeskTicketInput: updateHelpdeskInput },
+        fetchPolicy: 'no-cache',
+      })
+      .then((response) => {
+        setLoading(false);
+        setIsTicketClosed(false);
+        setSnackbarState(true);
+      })
+      .catch((error) => {
+        setLoading(false);
+        CommonBugFender('HelpChatScreen_updateHelpdeskTicket', error);
+      });
   };
 
   const addCommentHelpdesk = (userComment: string) => {
@@ -267,6 +303,7 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
 
     const commentInput = {
       ticketNumber: ticket?.ticketNumber || '',
+      ticketId: ticket?.id || '',
       comment: userComment,
     };
 
@@ -285,11 +322,20 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
         setTimeout(() => {
           flatListRef.current! && flatListRef.current!.scrollToEnd();
         }, 500);
+
+        showCommentConfirmationAlert();
       })
       .catch((error) => {
         setLoading(false);
         CommonBugFender('HelpChatScreen_addCommentHelpdesk', error);
       });
+  };
+
+  const showCommentConfirmationAlert = () => {
+    showAphAlert!({
+      title: `Hi :)`,
+      description: AppConfig.Configuration.Helpdesk_Chat_Confim_Msg,
+    });
   };
 
   const addProxyCommentObject = (userComment: string) => {
@@ -354,30 +400,70 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
   };
 
   const renderReopenTicket = () => {
+    var reopenCTADisabled: boolean = false;
+
+    if (ticket.closedTime) {
+      var closedTime = moment(ticket.closedTime);
+      var nowTime = moment(new Date());
+      var duration = moment.duration(nowTime.diff(closedTime)).asHours();
+
+      var reopenHelpTicketMaxTime = AppConfig.Configuration.Reopen_Help_Max_Time || 24;
+      if (duration > reopenHelpTicketMaxTime) {
+        reopenCTADisabled = true;
+      }
+    }
+
     return (
       <View style={styles.ticketClosedFooterContainer}>
         <Button
           title={string.needHelpScreen.reopen_ticket}
           style={styles.buttonStyles}
+          disabled={reopenCTADisabled}
           titleTextStyle={styles.buttonTitleText}
           onPress={() => {
             reopenClosedTicket();
           }}
         />
+        {reopenCTADisabled ? (
+          <Text style={styles.ticketClosedMessage}>
+            This ticket is closed , if you still have issues in this order, please open a new
+            ticket.
+          </Text>
+        ) : null}
 
-        <TouchableOpacity style={styles.whatsWithUsContainer} onPress={() => onPressWhatsApp()}>
-          <WhatsAppIcon style={styles.whatsAppIcon} />
-          <Text style={styles.whatsWithUsText}>{string.needHelpScreen.whatsapp_with_us}</Text>
-        </TouchableOpacity>
+        {ticket?.customFields?.Business == BUSINESS.PHARMACY ||
+        ticket?.customFields?.Business == BUSINESS.VIRTUAL_CONSULTATION ||
+        ticket?.customFields?.Business == BUSINESS.PHYSICAL_CONSULTATION ||
+        ticket?.customFields?.Business == BUSINESS.DIAGNOSTICS ? (
+          <TouchableOpacity style={styles.whatsWithUsContainer} onPress={() => onPressWhatsApp()}>
+            <WhatsAppIcon style={styles.whatsAppIcon} />
+            <Text style={styles.whatsWithUsText}>{string.needHelpScreen.whatsapp_with_us}</Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
     );
   };
 
   const onPressWhatsApp = async () => {
     try {
-      const chatPreFilledMessage = `I want to know the status of my Help_Ticket regarding ticket Number ${ticket.ticketNumber}`;
-      const phoneNumber = '4041894343';
-      const whatsAppScheme = `whatsapp://send?text=${chatPreFilledMessage}&phone=91${phoneNumber}`;
+      let phoneNumber = '';
+      let message = '';
+
+      if (ticket?.customFields?.Business == BUSINESS.PHARMACY) {
+        phoneNumber = '914041894343';
+        message = `I want to know the status of my Help_ticket , Ticket Number : ${ticket.ticketNumber}`;
+      } else if (ticket?.customFields?.Business == BUSINESS.VIRTUAL_CONSULTATION) {
+        phoneNumber = '918047104009';
+        message = `I want to know the status of my VC_Help_ticket  , Ticket Number :  ${ticket.ticketNumber}`;
+      } else if (ticket?.customFields?.Business == BUSINESS.PHYSICAL_CONSULTATION) {
+        phoneNumber = '918047104009';
+        message = `I want to know the status of my PC_Help_ticket , Ticket Number:  ${ticket.ticketNumber}`;
+      } else if (ticket?.customFields?.Business == BUSINESS.DIAGNOSTICS) {
+        phoneNumber = '914048218743';
+        message = `I want to know the status of my Help_ticket , Ticket Number :  ${ticket.ticketNumber}`;
+      }
+
+      const whatsAppScheme = `whatsapp://send?text=${message}&phone=${phoneNumber}`;
       const canOpenURL = await Linking.canOpenURL(whatsAppScheme);
       canOpenURL && Linking.openURL(whatsAppScheme);
     } catch (error) {
@@ -480,14 +566,14 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
         )}
 
         <Snackbar
-          style={{ position: 'absolute', zIndex: 1001, bottom: -10 }}
+          style={{ position: 'absolute', zIndex: 1001, bottom: 100 }}
           visible={snackbarState}
           onDismiss={() => {
             setSnackbarState(false);
           }}
-          duration={4000}
+          duration={3000}
         >
-          Please add a comment to reopen ticket : {ticket.subject}
+          Ticket reopened,please add a comment to describe futher.
         </Snackbar>
       </SafeAreaView>
     </View>

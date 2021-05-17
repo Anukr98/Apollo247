@@ -119,6 +119,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     setPdpBreadCrumbs,
     addresses,
     productDiscount,
+    setAsyncPincode,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
@@ -565,6 +566,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             const addrComponents = data.results[0].address_components || [];
             const latLang = data.results[0].geometry.location || {};
             const response = getFormattedLocation(addrComponents, latLang, pinCode);
+            setAsyncPincode?.(response);
             setPharmacyLocation!(response);
             setAsyncPharmaLocation(response);
             setDeliveryAddressId!('');
@@ -858,6 +860,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   consumeType={medicineDetails?.consume_type}
                 />
               )}
+              {!!substitutes.length && !isInStock && (
+                <SimilarProducts
+                  heading={string.productDetailPage.PRODUCT_SUBSTITUTES}
+                  similarProducts={substitutes}
+                  navigation={props.navigation}
+                  composition={medicineDetails?.PharmaOverview?.[0]?.Composition}
+                  setShowSubstituteInfo={setShowSubstituteInfo}
+                />
+              )}
               <ProductInfo
                 name={medicineDetails?.name}
                 description={medicineDetails?.product_information}
@@ -878,7 +889,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 }
                 directionsOfUse={medicineDetails?.direction_for_use_dosage}
               />
-              {!!substitutes.length && (
+              {!!substitutes.length && isInStock && (
                 <SimilarProducts
                   heading={string.productDetailPage.PRODUCT_SUBSTITUTES}
                   similarProducts={substitutes}

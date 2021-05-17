@@ -514,7 +514,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderPayByCash = () => {
-    return businessLine != 'consult' ? <PayByCash onPressPlaceOrder={onPressPayByCash} /> : null;
+    return businessLine === 'diagnostics' && AppConfig.Configuration.Enable_Diagnostics_COD ? (
+      <PayByCash onPressPlaceOrder={onPressPayByCash} />
+    ) : null;
   };
 
   const showTxnFailurePopUP = () => {

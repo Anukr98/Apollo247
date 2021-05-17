@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     width: '100%',
     height: 48,
-    paddingHorizontal: 10,
+    paddingLeft: 10,
   },
   deliveryPinCodeContaner: {
     ...theme.viewStyles.cardContainer,
@@ -202,6 +202,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
 
+  const cityId = locationForDiagnostics?.cityId != '' ? locationForDiagnostics?.cityId : '9';
+
   useEffect(() => {
     if (!currentPatient) {
       getPatientApiCall();
@@ -249,11 +251,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
 
   const fetchPackageDetails = async (name: string, func: (product: any) => void) => {
     try {
-      const res: any = await getDiagnosticsSearchResults(
-        'diagnostic',
-        name,
-        parseInt(locationForDiagnostics?.cityId!, 10)
-      );
+      const res: any = await getDiagnosticsSearchResults('diagnostic', name, Number(cityId));
       if (res?.data?.success) {
         const product = g(res, 'data', 'data') || [];
         func && func(product);
@@ -319,10 +317,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const renderLocationNotServingPopup = () => {
     showAphAlert!({
       title: `Hi ${currentPatient && currentPatient.firstName},`,
-      description: string.diagnostics.nonServiceableMsg.replace(
-        '{{city_name}}',
-        g(locationDetails, 'displayName')!
-      ),
+      description: string.diagnostics.nonServiceableMsg.replace('{{city_name}}', 'in this area'),
     });
   };
 
@@ -330,11 +325,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     setShowMatchingMedicines(true);
     setIsLoading(true);
     try {
-      const res: any = await getDiagnosticsSearchResults(
-        'diagnostic',
-        _searchText,
-        parseInt(locationForDiagnostics?.cityId!, 10)
-      );
+      const res: any = await getDiagnosticsSearchResults('diagnostic', _searchText, Number(cityId));
 
       if (res?.data?.success) {
         const products = g(res, 'data', 'data') || [];

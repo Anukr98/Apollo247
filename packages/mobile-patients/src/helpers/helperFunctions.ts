@@ -2196,56 +2196,37 @@ export const overlyCallPermissions = (
         const microphoneYes = microphone === 'authorized';
         // Response is one of: 'authorized', 'denied', 'restricted', or 'undetermined'
         if (cameraNo && microphoneNo) {
-          RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
-            if (status) {
-              showPermissionPopUp(
-                string.callRelatedPermissions.allPermissions.replace('{0}', doctorName),
-                () => callPermissions(() => RNAppSignatureHelper.requestOverlayPermission())
-              );
-            } else {
-              showPermissionPopUp(
-                string.callRelatedPermissions.camAndMPPermission.replace('{0}', doctorName),
-                () => callPermissions()
-              );
-            }
-          });
+
+               // ----------- dont delete this commented  overlay permission block incase we decide to use again
+          // RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
+          //   if (status) {
+          //     showPermissionPopUp(
+          //       string.callRelatedPermissions.allPermissions.replace('{0}', doctorName),
+          //       () => callPermissions(() => RNAppSignatureHelper.requestOverlayPermission())
+          //     );
+          //   } 
+          // });
+
+
+          showPermissionPopUp(
+            string.callRelatedPermissions.camAndMPPermission.replace('{0}', doctorName),
+            () => callPermissions()
+          );
+
         } else if (cameraYes && microphoneNo) {
-          RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
-            if (status) {
-              showPermissionPopUp(
-                string.callRelatedPermissions.mpAndOverlayPermission.replace('{0}', doctorName),
-                () => callPermissions(() => RNAppSignatureHelper.requestOverlayPermission())
-              );
-            } else {
-              showPermissionPopUp(
-                string.callRelatedPermissions.onlyMPPermission.replace('{0}', doctorName),
-                () => callPermissions()
-              );
-            }
-          });
+
+          showPermissionPopUp(
+            string.callRelatedPermissions.onlyMPPermission.replace('{0}', doctorName),
+            () => callPermissions()
+          );
+
         } else if (cameraNo && microphoneYes) {
-          RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
-            if (status) {
-              showPermissionPopUp(
-                string.callRelatedPermissions.camAndOverlayPermission.replace('{0}', doctorName),
-                () => callPermissions(() => RNAppSignatureHelper.requestOverlayPermission())
-              );
-            } else {
-              showPermissionPopUp(
-                string.callRelatedPermissions.onlyCameraPermission.replace('{0}', doctorName),
-                () => callPermissions()
-              );
-            }
-          });
-        } else if (cameraYes && microphoneYes) {
-          RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
-            if (status) {
-              showPermissionPopUp(
-                string.callRelatedPermissions.onlyOverlayPermission.replace('{0}', doctorName),
-                () => RNAppSignatureHelper.requestOverlayPermission()
-              );
-            }
-          });
+
+          showPermissionPopUp(
+            string.callRelatedPermissions.onlyCameraPermission.replace('{0}', doctorName),
+            () => callPermissions()
+          );
+
         }
       })
       .catch((e) => {});
@@ -2602,26 +2583,14 @@ export const validateCoupon = async (
   message: string | undefined,
   pharmacyPincode: any,
   mobileNumber: string,
-  hdfcSubscriptionId: string,
-  circleSubscriptionId: string,
   setCoupon: ((coupon: PharmaCoupon | null) => void) | null,
   cartTotal: number,
   productDiscount: number,
   cartItems: ShoppingCartItem[],
-  hdfcStatus: string,
-  hdfcPlanId: string,
-  circleStatus: string,
-  circlePlanId: string,
-  setCouponProducts: ((items: CouponProducts[]) => void) | null
+  setCouponProducts: ((items: CouponProducts[]) => void) | null,
+  packageId: string[]
 ) => {
   CommonLogEvent(AppRoutes.ApplyCouponScene, 'Apply coupon');
-  let packageId: string[] = [];
-  if (hdfcSubscriptionId && hdfcStatus === 'active') {
-    packageId.push(`HDFC:${hdfcPlanId}`);
-  }
-  if (circleSubscriptionId && circleStatus === 'active') {
-    packageId.push(`APOLLO:${circlePlanId}`);
-  }
   const data = {
     mobile: mobileNumber,
     billAmount: (cartTotal - productDiscount).toFixed(2),
@@ -2808,4 +2777,16 @@ export const getHealthCredits = async () => {
   } catch (error) {
     return null;
   }
+};
+
+export const getPackageIds = (activeUserSubscriptions: any) => {
+  let packageIds: string[] = [];
+  activeUserSubscriptions &&
+    Object.keys(activeUserSubscriptions)?.forEach((subscription: string) => {
+      activeUserSubscriptions?.[subscription]?.forEach((item) => {
+        if (item?.status?.toLowerCase() === 'active')
+          packageIds.push(`${subscription?.toUpperCase()}:${item?.plan_id}`);
+      });
+    });
+  return packageIds;
 };

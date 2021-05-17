@@ -18,7 +18,7 @@ import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
 import { AppRoutes, getCurrentRoute } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import remoteConfig from '@react-native-firebase/remote-config';
 import SplashScreenView from 'react-native-splash-screen';
-import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { Relation, BookingSource } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAuth } from '../hooks/authHooks';
 import { AppConfig, updateAppConfig, AppEnv } from '../strings/AppConfig';
 import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
@@ -47,7 +47,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import { phrNotificationCountApi } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
-import { GET_APPOINTMENT_DATA } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_APPOINTMENT_DATA,
+  GET_PROHEALTH_HOSPITAL_BY_SLUG,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -70,6 +73,12 @@ import {
   SplashSyringe,
   SplashStethoscope,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  getProHealthHospitalBySlug,
+  getProHealthHospitalBySlugVariables,
+} from '@aph/mobile-patients/src/graphql/types/getProHealthHospitalBySlug';
+
+import firebaseAuth from '@react-native-firebase/auth';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 (function() {
@@ -381,6 +390,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       voipCallType.current = params?.[1]!;
       callPermissions();
       getAppointmentDataAndNavigate(params?.[0]!, true);
+    } else if (routeName == 'prohealth') {
+      fetchProhealthHospitalDetails(id);
     } else if (routeName === 'DoctorCallRejected') {
       setLoading!(true);
       const appointmentId = id?.split('+')?.[0];
@@ -517,7 +528,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             if (mePatient) {
               if (mePatient.firstName !== '') {
                 const isCircleMember: any = await AsyncStorage.getItem('isCircleMember');
-
+                if (routeName == 'prohealth' && id) {
+                  id = id?.replace('mobileNumber', currentPatient?.mobileNumber || '');
+                }
                 pushTheView(
                   props.navigation,
                   routeName,
@@ -603,6 +616,77 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         ],
       });
       CommonBugFender('SplashFetchingAppointmentData', error);
+    }
+  };
+
+  const fetchProhealthHospitalDetails = async (slugName: string) => {
+    setLoading?.(true);
+    try {
+      const response = await client.query<
+        getProHealthHospitalBySlug,
+        getProHealthHospitalBySlugVariables
+      >({
+        query: GET_PROHEALTH_HOSPITAL_BY_SLUG,
+        variables: {
+          hospitalSlug: slugName,
+        },
+        fetchPolicy: 'no-cache',
+      });
+      const { data } = response;
+      if (data?.getProHealthHospitalBySlug?.hospitals?.length) {
+        const getHospitalId = data?.getProHealthHospitalBySlug?.hospitals?.[0]?.id;
+        regenerateJWTToken(getHospitalId);
+      } else {
+        regenerateJWTToken();
+      }
+    } catch (error) {
+      regenerateJWTToken();
+      CommonBugFender('SplashScreen_fetchProhealthHospitalDetails', error);
+    }
+  };
+
+  const regenerateJWTToken = async (id?: string) => {
+    let deviceType =
+      Platform.OS == 'android' ? BookingSource?.Apollo247_Android : BookingSource?.Apollo247_Ios;
+    const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+
+    if (userLoggedIn == 'true') {
+      try {
+        firebaseAuth().onAuthStateChanged(async (user) => {
+          if (user) {
+            const jwtToken = await user.getIdToken(true).catch((error) => {
+              CommonBugFender('SplashScreen_regenerateJWTToken', error);
+            });
+            const openUrl = AppConfig.Configuration.PROHEALTH_BOOKING_URL;
+            let finalUrl;
+            if (!!id) {
+              finalUrl = openUrl.concat(
+                '?hospital_id=',
+                id,
+                '&utm_token=',
+                jwtToken,
+                '&utm_mobile_number=',
+                'mobileNumber',
+                '&deviceType=',
+                deviceType
+              );
+            } else {
+              finalUrl = openUrl.concat(
+                '?utm_token=',
+                jwtToken,
+                '&utm_mobile_number=',
+                'mobileNumber',
+                '&deviceType=',
+                deviceType
+              );
+            }
+            setLoading?.(false);
+            !!jwtToken && jwtToken != '' && getData('prohealth', finalUrl);
+          }
+        });
+      } catch (e) {
+        CommonBugFender('regenerateJWTToken_deepLink', e);
+      }
     }
   };
 
@@ -790,6 +874,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Sku_Non_COD',
       PROD: 'Sku_Non_COD',
     },
+    Helpdesk_Chat_Confim_Msg: {
+      QA: 'Helpdesk_Chat_Confim_Msg_QA',
+      PROD: 'Helpdesk_Chat_Confim_Msg_Prod',
+    },
+    Reopen_Help_Max_Time: {
+      QA: 'Reopen_Help_Max_Time_QA',
+      PROD: 'Reopen_Help_Max_Time_Prod',
+    },
+    Enable_Diagnostics_COD: {
+      QA: 'QA_Enable_Diagnostics_COD',
+      PROD: 'Enable_Diagnostics_COD',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -800,7 +896,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     const valueBasedOnEnv = config[_key] as RemoteConfigKeysType;
     return currentEnv === AppEnv.PROD
       ? valueBasedOnEnv.PROD
-      : currentEnv === AppEnv.QA || currentEnv === AppEnv.QA2 || currentEnv === AppEnv.QA3
+      : currentEnv === AppEnv.QA ||
+        currentEnv === AppEnv.QA2 ||
+        currentEnv === AppEnv.QA3 ||
+        currentEnv === AppEnv.QA5
       ? valueBasedOnEnv.QA || valueBasedOnEnv.PROD
       : valueBasedOnEnv.DEV || valueBasedOnEnv.QA || valueBasedOnEnv.PROD;
   };
@@ -915,12 +1014,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) => config.getNumber(key)
       );
 
-      setAppConfig(
-        'Min_Value_For_Pharmacy_Free_Packaging',
-        'MIN_CART_VALUE_FOR_FREE_PACKAGING',
-        (key) => config.getNumber(key)
-      );
-
       setAppConfig('Pharmacy_Delivery_Charges', 'DELIVERY_CHARGES', (key) => config.getNumber(key));
 
       setAppConfig('Pharmacy_Packaging_Charges', 'PACKAGING_CHARGES', (key) =>
@@ -935,6 +1028,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'top6_specailties',
         'TOP_SPECIALITIES',
         (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.TOP_SPECIALITIES
+      );
+
+      setAppConfig(
+        'Min_Value_For_Pharmacy_Free_Packaging',
+        'MIN_CART_VALUE_FOR_FREE_PACKAGING',
+        (key) => config.getNumber(key)
       );
 
       setAppConfig(
@@ -966,6 +1065,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       setAppConfig('Health_Credit_Expiration_Time', 'Health_Credit_Expiration_Time', (key) =>
         config.getNumber(key)
       );
+      setAppConfig('Reopen_Help_Max_Time', 'Reopen_Help_Max_Time', (key) => {
+        config.getNumber(key);
+      });
+
+      setAppConfig('Helpdesk_Chat_Confim_Msg', 'Helpdesk_Chat_Confim_Msg', (key) =>
+        config.getString(key)
+      );
 
       setAppConfig('Covid_Items', 'Covid_Items', (key) => config.getString(key));
       setAppConfig('Covid_Max_Slot_Days', 'Covid_Max_Slot_Days', (key) => config.getNumber(key));
@@ -973,6 +1079,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         config.getNumber(key)
       );
       setAppConfig('followUp_Chat', 'FollowUp_Chat_Limit', (key) => config.getNumber(key));
+      setAppConfig('Enable_Diagnostics_COD', 'Enable_Diagnostics_COD', (key) =>
+        config.getBoolean(key)
+      );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';

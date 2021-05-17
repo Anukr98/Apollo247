@@ -82,7 +82,7 @@ public class MainApplication extends Application implements ReactApplication {
                 });
 
                 WebEngageConfig webEngageConfig = new WebEngageConfig.Builder()
-                        .setWebEngageKey("in~~c2ab3529")
+                        .setWebEngageKey("in~~c2ab3533")
                         .setDebugMode(false) // only in development mode
                         .build();
 

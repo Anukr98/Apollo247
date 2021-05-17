@@ -254,6 +254,8 @@ export interface AppCommonDataContextProps {
   setNonCartTatText: ((str: string) => void) | null;
   nonCartDeliveryText: string;
   setNonCartDeliveryText: ((str: string) => void) | null;
+  activeUserSubscriptions: any;
+  setActiveUserSubscriptions: ((item: any) => void) | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -357,6 +359,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setNonCartTatText: null,
   nonCartDeliveryText: '',
   setNonCartDeliveryText: null,
+  activeUserSubscriptions: null,
+  setActiveUserSubscriptions: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
@@ -542,6 +546,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
     AppCommonDataContextProps['nonCartDeliveryText']
   >('');
 
+  const [activeUserSubscriptions, setActiveUserSubscriptions] = useState<
+    AppCommonDataContextProps['activeUserSubscriptions']
+  >(null);
+
   const [axdcCode, setAxdcCode] = useState<AppCommonDataContextProps['axdcCode']>('');
   const [circlePlanId, setCirclePlanId] = useState<AppCommonDataContextProps['circlePlanId']>('');
   const [healthCredits, setHealthCredits] = useState<AppCommonDataContextProps['healthCredits']>(
@@ -697,6 +705,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setNonCartTatText,
         nonCartDeliveryText,
         setNonCartDeliveryText,
+        activeUserSubscriptions,
+        setActiveUserSubscriptions,
       }}
     >
       {props.children}

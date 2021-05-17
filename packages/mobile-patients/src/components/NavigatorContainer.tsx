@@ -322,6 +322,7 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.MobileHelp]: {
     screen: NeedHelp,
+    path: 'MobileHelpPage',
   },
   [AppRoutes.NeedHelpPharmacyOrder]: {
     screen: NeedHelpPharmacyOrder,
