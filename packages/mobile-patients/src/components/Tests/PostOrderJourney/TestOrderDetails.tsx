@@ -710,7 +710,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           isVisible={displayViewReport}
           onClose={() => setDisplayViewReport(false)}
           onPressViewReport={() => {
-            fetchTestReportResult();
+            onPressViewReport()
           }}
         />
       )}
