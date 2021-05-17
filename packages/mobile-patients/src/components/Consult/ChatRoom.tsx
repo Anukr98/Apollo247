@@ -5567,16 +5567,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     return (
       !loading && (
         <JoinWaitingRoomView
-          onPress={() => {
-            patientJoinedCall.current = true;
-            joinCallHandler();
-            postAppointmentWEGEvent(WebEngageEventName.PATIENT_JOINED_CONSULT);
-          }}
+          onPress={() => onPressJoinBtn()}
           title={text}
-          rightTitle={ctaHeading}
+          rightBtnTitle={ctaHeading}
+          rightBtnStyle={{
+            paddingHorizontal: isDrCheckingRecords ? 12 : 20,
+          }}
+          onPressJoin={() => onPressJoinBtn()}
         />
       )
     );
+  };
+
+  const onPressJoinBtn = () => {
+    patientJoinedCall.current = true;
+    joinCallHandler();
+    postAppointmentWEGEvent(WebEngageEventName.PATIENT_JOINED_CONSULT);
   };
 
   const joinCallHandler = () => {
