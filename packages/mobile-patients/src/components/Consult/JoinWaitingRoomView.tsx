@@ -6,7 +6,6 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 
 export interface Props extends ListItemProps {
   rightBtnTitle: string;
-  rightBtnStyle?: StyleProp<ViewStyle>;
   onPressJoin: () => void;
 }
 
@@ -14,7 +13,7 @@ export const JoinWaitingRoomView: React.FC<Props> = ({ ...props }) => {
   const renderJoinBtn = () => {
     return (
       <Button
-        style={[styles.joinBtn, props.rightBtnStyle]}
+        style={styles.joinBtn}
         title={props.rightBtnTitle}
         titleTextStyle={styles.joinBtnTitle}
         onPress={() => props.onPressJoin()}
@@ -53,7 +52,7 @@ const styles = StyleSheet.create({
   },
   joinBtn: {
     width: 'auto',
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     height: 40,
   },
   joinBtnTitle: {

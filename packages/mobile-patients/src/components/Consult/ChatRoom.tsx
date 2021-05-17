@@ -5562,7 +5562,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const text = isDrCheckingRecords
       ? `${doctor} is online and going through your records!`
       : `${doctor} is Online!`;
-    const ctaHeading = isDrCheckingRecords ? 'JOIN WAIT ROOM' : 'JOIN';
+    const ctaHeading = isDrCheckingRecords ? 'JOIN CALL ROOM' : 'JOIN CALL';
 
     return (
       !loading && (
@@ -5570,9 +5570,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           onPress={() => onPressJoinBtn()}
           title={text}
           rightBtnTitle={ctaHeading}
-          rightBtnStyle={{
-            paddingHorizontal: isDrCheckingRecords ? 12 : 20,
-          }}
           onPressJoin={() => onPressJoinBtn()}
         />
       )
