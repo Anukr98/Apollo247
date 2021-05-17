@@ -1830,6 +1830,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
             testPreparationData
             packageCalculatedMrp
             inclusions
+            reportGenerationTime
           }
           pricingObj {
             mrp
@@ -1922,6 +1923,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
             testPreparationData
             packageCalculatedMrp
             inclusions
+            reportGenerationTime
           }
           pricingObj {
             mrp
@@ -2282,6 +2284,7 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
             testPreparationData
             packageCalculatedMrp
             inclusions
+            reportGenerationTime
           }
           diagnostics {
             id
