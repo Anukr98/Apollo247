@@ -1302,7 +1302,7 @@ export const addTestsToCart = async (
       },
       variables: {
         searchText: name,
-        cityID: 9, //will always check for hyderabad, so that items gets added to cart
+        cityID: AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID, //will always check for hyderabad, so that items gets added to cart
       },
       fetchPolicy: 'no-cache',
     });

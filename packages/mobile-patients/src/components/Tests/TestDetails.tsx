@@ -75,6 +75,7 @@ import {
   navigateToScreenWithEmptyStack,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const screenWidth = Dimensions.get('window').width;
 export interface TestPackageForDetails extends TestPackage {
@@ -196,7 +197,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         sourceHeaders,
       },
       variables: {
-        cityID: Number(cityId) || 9,
+        cityID: Number(cityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
         itemIDs: listOfId,
       },
       fetchPolicy: 'no-cache',
@@ -249,7 +250,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           sourceHeaders,
         },
         variables: {
-          cityID: parseInt(diagnosticServiceabilityData?.cityId!) || 9,
+          cityID:
+            Number(diagnosticServiceabilityData?.cityId!) ||
+            AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
           itemIDs: listOfIds,
         },
         fetchPolicy: 'no-cache',

@@ -292,7 +292,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         sourceHeaders,
       },
       variables: {
-        cityID: Number(cityId) || 9,
+        cityID: Number(cityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
         itemIDs: listOfId,
       },
       fetchPolicy: 'no-cache',
@@ -496,7 +496,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         currentPatient?.mobileNumber,
         3,
         Object.keys(serviceableObject)?.length === 0 && serviceableObject?.constructor === Object
-          ? 9
+          ? AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
           : serviceableObject?.cityId
       );
       if (res?.data?.data) {
@@ -588,7 +588,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         !!itemIds &&
           itemIds?.map((item: any) =>
             fetchPricesForCityId(
-              Number(cityId!) || 9,
+              Number(cityId!) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
               item?.length > 12 ? item?.slice(0, 12) : item
             )
           )
@@ -881,7 +881,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               DiagnosticAddresssSelected('New', 'Yes', pincode, 'Home page');
           } else {
             obj = {
-              cityId: '9',
+              cityId: String(AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID),
               stateId: '0',
               state: '',
               city: '',

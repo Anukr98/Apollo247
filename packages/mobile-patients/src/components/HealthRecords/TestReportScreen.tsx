@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   healthRecordTypeViewStyle: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
   searchListHeaderViewStyle: { marginHorizontal: 17, marginVertical: 15 },
   searchListHeaderTextStyle: { ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 21) },
-  phrNodataMainViewStyle: { marginTop: 59, backgroundColor: 'transparent' },
+  phrNodataMainViewStyle: { marginTop: 5, backgroundColor: 'transparent' },
   searchBarMainView: { flexDirection: 'row', alignItems: 'center' },
   doctorTestReportPHRTextStyle: {
     ...theme.viewStyles.text('R', 12, theme.colors.SKY_BLUE, 1, 14),
@@ -581,7 +581,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
             }}
             style={{ paddingLeft: 11 }}
           >
-            <SearchDarkPhrIcon style={{ width: 17.49, height: 17.49 }} />
+            <SearchDarkPhrIcon style={{ width: 17.4, height: 17.4 }} />
           </TouchableOpacity>
           {renderFilterView()}
         </View>

@@ -31,6 +31,7 @@ import {
   navigateToScreenWithEmptyStack,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface TestListingProps
   extends NavigationScreenProps<{
@@ -117,7 +118,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         sourceHeaders,
       },
       variables: {
-        cityID: Number(cityId) || 9,
+        cityID: Number(cityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
         itemIDs: listOfId,
       },
       fetchPolicy: 'no-cache',
@@ -128,7 +129,12 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     const itemIds = widgetsData?.diagnosticWidgetData?.map((item: any) => Number(item?.itemId));
 
     const res = Promise.all(
-      itemIds?.map((item: any) => fetchPricesForCityId(Number(cityId) || 9, item))
+      itemIds?.map((item: any) =>
+        fetchPricesForCityId(
+          Number(cityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
+          item
+        )
+      )
     );
 
     try {

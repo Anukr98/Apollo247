@@ -407,7 +407,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             context: {
               sourceHeaders,
             },
-            variables: { cityID: Number(addressCityId) || 9, itemIDs: _filterItemIds },
+            variables: {
+              cityID: Number(addressCityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
+              itemIDs: _filterItemIds,
+            },
             fetchPolicy: 'no-cache',
           })
           .then(({ data }) => {
@@ -1152,8 +1155,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       deliveryAddressId != ''
         ? Number(deliveryAddressCityId)
         : !!sourceScreen
-        ? 9
-        : Number(diagnosticServiceabilityData?.cityId! || '9');
+        ? AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
+        : Number(
+            diagnosticServiceabilityData?.cityId! ||
+              AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
+          );
 
     {
       setLoading?.(true);
@@ -2425,12 +2431,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             : DIAGNOSTIC_GROUP_PLAN.ALL,
           preTestingRequirement:
             !!reportGenDetails && reportGenDetails?.[index]?.itemPrepration
-            ? reportGenDetails?.[index]?.itemPrepration
-            : null,
+              ? reportGenDetails?.[index]?.itemPrepration
+              : null,
           reportGenerationTime:
             !!reportGenDetails && reportGenDetails?.[index]?.itemReportTat
-            ? reportGenDetails?.[index]?.itemReportTat
-            : null,
+              ? reportGenDetails?.[index]?.itemReportTat
+              : null,
         } as DiagnosticLineItem)
     );
     const itemPricingObject = !!existingOrderDetails
