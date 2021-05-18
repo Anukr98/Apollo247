@@ -306,7 +306,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                   <TouchableOpacity
                     style={styles.callContainer}
                     onPress={() => {
-                      postDiagnosticPhleboCallingClicked(name)
+                      postDiagnosticPhleboCallingClicked(name);
                       Linking.openURL(`tel:${phoneNumber}`);
                     }}
                   >

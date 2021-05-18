@@ -193,11 +193,15 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const [popularArray, setPopularArray] = useState([]);
   const [searchQuery, setSearchQuery] = useState({});
 
-  const { locationForDiagnostics, locationDetails } = useAppCommonData();
+  const {
+    locationForDiagnostics,
+    locationDetails,
+    diagnosticServiceabilityData,
+  } = useAppCommonData();
 
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const { addCartItem, removeCartItem, cartItems } = useDiagnosticsCart();
+  const { addCartItem, removeCartItem, cartItems, asyncDiagnosticPincode } = useDiagnosticsCart();
   const { cartItems: shopCartItems } = useShoppingCart();
   const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
@@ -318,9 +322,13 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   };
 
   const renderLocationNotServingPopup = () => {
-    showAphAlert!({
+    const cityName =
+      !!asyncDiagnosticPincode && asyncDiagnosticPincode?.city != ''
+        ? asyncDiagnosticPincode?.city
+        : 'this area';
+    showAphAlert?.({
       title: `Hi ${currentPatient && currentPatient.firstName},`,
-      description: string.diagnostics.nonServiceableMsg.replace('{{city_name}}', 'in this area'),
+      description: string.diagnostics.nonServiceableMsg.replace('{{city_name}}', cityName),
     });
   };
 
@@ -642,7 +650,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       );
       popularTests = popularArray?.filter((item: any) => item?.diagnostic_inclusions?.length == 1);
       if (popularTests?.length == 0) {
-        popularTests = popularArray
+        popularTests = popularArray;
       }
     }
 
