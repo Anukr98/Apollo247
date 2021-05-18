@@ -36,6 +36,8 @@ import {
   GET_INTERNAL_ORDER,
   UPDATE_APPOINTMENT,
   SAVE_PHLEBO_FEEDBACK,
+  PROCESS_DIAG_COD_ORDER,
+  CREATE_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -85,6 +87,10 @@ import {
   MedicalRecordType,
   UserState,
   BannerDisplayType,
+  ProcessDiagnosticHCOrderInput,
+  DIAGNOSTIC_ORDER_PAYMENT_TYPE,
+  PAYMENT_MODE,
+  OrderInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { insertMessageVariables } from '@aph/mobile-patients/src/graphql/types/insertMessage';
 import {
@@ -147,6 +153,8 @@ import {
   updateAppointment,
 } from '@aph/mobile-patients/src/graphql/types/updateAppointment';
 import { savePhleboFeedbackVariables, savePhleboFeedback_savePhleboFeedback } from '@aph/mobile-patients/src/graphql/types/savePhleboFeedback';
+import {  processDiagnosticHCOrder, processDiagnosticHCOrderVariables } from '@aph/mobile-patients/src/graphql/types/processDiagnosticHCOrder';
+import { createOrder, createOrderVariables } from '@aph/mobile-patients/src/graphql/types/createOrder';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -1122,6 +1130,37 @@ export const savePhleboFeedback = (
       phleboFeedback: feedback,
       diagnosticOrdersId: orderId,
     },
+    fetchPolicy: 'no-cache',
+  });
+};
+
+export const processDiagnosticsCODOrder =  (
+  client: ApolloClient<object>,
+  orderId: string, 
+  amount: number
+) => {
+  const processDiagnosticHCOrderInput: ProcessDiagnosticHCOrderInput = {
+    orderID: orderId,
+    paymentMode: DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD,
+    amount: amount,
+  };
+  return client.mutate<processDiagnosticHCOrder, processDiagnosticHCOrderVariables>({
+    mutation: PROCESS_DIAG_COD_ORDER,
+    variables: { processDiagnosticHCOrderInput: processDiagnosticHCOrderInput },
+    fetchPolicy: 'no-cache',
+  });
+}
+
+export const createJusPayOrder = (client: ApolloClient<object>,paymentId: string,paymentMode: PAYMENT_MODE, returnUrl:string) => {
+  const orderInput: OrderInput = {
+    payment_order_id: paymentId,
+    payment_mode: paymentMode,
+    is_mobile_sdk: true,
+    return_url: returnUrl,
+  };
+  return client.mutate<createOrder, createOrderVariables>({
+    mutation: CREATE_ORDER,
+    variables: { order_input: orderInput },
     fetchPolicy: 'no-cache',
   });
 };

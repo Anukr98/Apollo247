@@ -8,14 +8,10 @@ import { FeedbackPopup } from '@aph/mobile-patients/src/components/FeedbackPopup
 
 import {
   ArrowRight,
+  ClockIcon,
   More,
   OrderPlacedIcon,
   OrderTrackerSmallIcon,
-  CopyBlue,
-  DownloadNew,
-  ShareBlue,
-  ViewIcon,
-  Cross
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import _ from 'lodash';
 import {
@@ -39,6 +35,7 @@ import {
   getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
 import { getDiagnosticOrdersListVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
+import { getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 import {
   downloadDiagnosticReport,
   g,
@@ -53,8 +50,13 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
-import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity, Modal, Linking, Clipboard } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import {
+  NavigationActions,
+  NavigationScreenProps,
+  ScrollView,
+  StackActions,
+} from 'react-navigation';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
@@ -84,6 +86,7 @@ import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 
 import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 const DROP_DOWN_ARRAY_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
@@ -95,6 +98,8 @@ export interface TestOrderDetailsProps extends NavigationScreenProps {
   selectedTest?: any;
   selectedOrder: object;
   refundStatusArr?: any;
+  disableTrackOrder?: boolean;
+  comingFrom?: string;
 }
 {
 }
@@ -103,11 +108,13 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const orderId = props.navigation.getParam('orderId');
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
+  const disableTrackOrderTab = props.navigation.getParam('disableTrackOrder');
   const setOrders = props.navigation.getParam('setOrders');
   const selectedTest = props.navigation.getParam('selectedTest');
   const selectedOrder = props.navigation.getParam('selectedOrder');
   const refundStatusArr = props.navigation.getParam('refundStatusArr');
-  const [fromOrderSummary, setFromOrderSummary] = useState<any>(props.navigation.getParam('fromOrderSummary'));
+  const source = props.navigation.getParam('comingFrom');
+
   const client = useApolloClient();
   const [selectedTab, setSelectedTab] = useState<string>(
     showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
@@ -119,22 +126,18 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const [scrollYValue, setScrollYValue] = useState(0);
   const [loading1, setLoading] = useState<boolean>(true);
-  const [labResults, setLabResults] = useState<
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response | null)[]
-    | null
-    | undefined
-  >([]);
   const [orderLevelStatus, setOrderLevelStatus] = useState([] as any);
   const [showInclusionStatus, setShowInclusionStatus] = useState<boolean>(false);
   const [showError, setError] = useState<boolean>(false);
   const [isViewReport, setIsViewReport] = useState<boolean>(false);
-  const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
   const scrollToSlots = () => {
     scrollViewRef.current &&
       scrollViewRef.current.scrollTo({ x: 0, y: scrollYValue, animated: true });
   };
+
+  console.log({ props });
 
   //for showing the order level status.
   const fetchOrderLevelStatus = () =>
@@ -248,7 +251,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           'labResults',
           'response'
         );
-        setLabResults(labResultsData);
         let resultForVisitNo = labResultsData?.find((item: any) => item?.identifier == getVisitId);
         !!resultForVisitNo
           ? props.navigation.navigate(AppRoutes.HealthRecordDetails, {
@@ -295,9 +297,30 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           setLoading?.(false);
         });
     }
-    props.navigation.setParams({ fromOrderSummary: fromOrderSummary });
-    props.navigation.goBack();
-    return false;
+    if (goToHomeOnBack && source === AppRoutes.TestsCart) {
+      props.navigation.dispatch(
+        StackActions.reset({
+          index: 2,
+          key: null,
+          actions: [
+            NavigationActions.navigate({
+              routeName: AppRoutes.ConsultRoom,
+            }),
+            NavigationActions.navigate({
+              routeName: AppRoutes.Tests,
+            }),
+            NavigationActions.navigate({
+              routeName: AppRoutes.YourOrdersTest,
+              params: { source: AppRoutes.TestsCart },
+            }),
+          ],
+        })
+      );
+      return true;
+    } else {
+      props.navigation.goBack();
+      return false;
+    }
   };
 
   const updateRateDeliveryBtnVisibility = async () => {
@@ -484,17 +507,36 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
               </TouchableOpacity>
             </View>
             {showInclusionStatus &&
-              orderLevelStatus?.statusInclusions?.map((item: any) => {
+              orderLevelStatus?.statusInclusions?.map((item: any, index: number) => {
+                let selectedItem = selectedOrder?.diagnosticOrderLineItems;
+                let itemReportTat = '';
+                itemReportTat = selectedItem?.map((order: any) => {
+                  if (order?.itemId == item?.itemId) {
+                    return order?.itemObj?.reportGenerationTime;
+                  }
+                });
                 return (
                   <>
                     {!!item?.itemName ? (
-                      <View style={styles.itemNameContainer}>
-                        <View style={{ width: '59%' }}>
-                          <Text style={styles.itemNameText}>
-                            {nameFormater(item?.itemName, 'default')}
-                          </Text>
+                      <View>
+                        <View style={styles.itemNameContainer}>
+                          <View style={{ width: '59%' }}>
+                            <Text style={styles.itemNameText}>
+                              {nameFormater(item?.itemName, 'default')}
+                            </Text>
+                          </View>
+                          <StatusCard titleText={item?.orderStatus} />
                         </View>
-                        <StatusCard titleText={item?.orderStatus} />
+                        {itemReportTat?.[index] ? (
+                          <View style={styles.ratingContainer}>
+                            <View style={styles.reporttatContainer}>
+                              <ClockIcon />
+                              <Text
+                                style={styles.reportTextStyle}
+                              >{`Get your report by ${itemReportTat?.[index]}`}</Text>
+                            </View>
+                          </View>
+                        ) : null}
                       </View>
                     ) : null}
                   </>
@@ -590,8 +632,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   const onPressButton = (buttonTitle?: string) => {
     // onPressViewReport();
-    setIsViewReport(true)
-    setDisplayViewReport(true)
+    setIsViewReport(true);
+    setDisplayViewReport(true);
   };
 
   function postRatingGivenWebEngageEvent(rating: string, reason: string) {
@@ -684,17 +726,16 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       {displayViewReport && (
-            <TestViewReportOverlay
-              order={order}
-              heading=""
-              isVisible={displayViewReport}
-              onClose={() => setDisplayViewReport(false)}
-              onPressViewReport={()=>{
-                fetchTestReportResult()
-              }}
-            />
-        )
-      }
+        <TestViewReportOverlay
+          order={order}
+          heading=""
+          isVisible={displayViewReport}
+          onClose={() => setDisplayViewReport(false)}
+          onPressViewReport={() => {
+            onPressViewReport();
+          }}
+        />
+      )}
       <SafeAreaView style={theme.viewStyles.container}>
         <View style={styles.headerShadowContainer}>
           <Header
@@ -711,7 +752,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         <TabsComponent
           style={styles.tabsContainer}
           onChange={(title) => {
-            setSelectedTab(title);
+            !!disableTrackOrderTab ? setSelectedTab(string.orders.viewBill) : setSelectedTab(title);
           }}
           data={[{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]}
           selectedTab={selectedTab}
@@ -887,4 +928,20 @@ const styles = StyleSheet.create({
   },
   rateYourExpText: { ...theme.viewStyles.text('B', 14, theme.colors.APP_YELLOW) },
   feedbackTouch: { marginBottom: 2, width: '100%' },
+  ratingContainer: {
+    backgroundColor: '#FCFDDA',
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    borderRadius: 10,
+    padding: 10,
+  },
+  reportTextStyle: {
+    marginHorizontal: 10,
+    ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 1, 16),
+  },
+  reporttatContainer: {
+    marginVertical: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
 });

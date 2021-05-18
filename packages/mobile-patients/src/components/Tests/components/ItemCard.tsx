@@ -57,7 +57,7 @@ export interface ItemCardProps {
 }
 
 export const ItemCard: React.FC<ItemCardProps> = (props) => {
-  const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
+  const { cartItems, addCartItem, removeCartItem, modifiedOrderItemIds } = useDiagnosticsCart();
   const {
     data,
     isCircleSubscribed,
@@ -423,6 +423,10 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     pricesForItem: any,
     packageCalculatedMrp: number
   ) => {
+    const isAlreadyPartOfOrder =
+      !!modifiedOrderItemIds &&
+      modifiedOrderItemIds?.length &&
+      modifiedOrderItemIds?.find((id: number) => Number(id) == Number(item?.id));
     return (
       <Text
         style={[
@@ -432,12 +436,14 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
           },
         ]}
         onPress={() =>
-          isAddedToCart
+          isAlreadyPartOfOrder
+            ? {}
+            : isAddedToCart
             ? onPressRemoveFromCart(item)
             : onPressAddToCart(item, pricesForItem, packageCalculatedMrp)
         }
       >
-        {isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
+        {isAlreadyPartOfOrder ? 'ALREADY ADDED' : isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
       </Text>
     );
   };

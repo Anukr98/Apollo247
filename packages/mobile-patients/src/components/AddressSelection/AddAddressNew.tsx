@@ -98,7 +98,6 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
   const source = props.navigation.getParam('source');
   const ComingFrom = props.navigation.getParam('ComingFrom');
   const updateLatLng = props.navigation.getParam('updateLatLng');
-
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [latitude, setLatitude] = useState<number>(
     KeyName == 'Update' ? Number(addressDetails?.latitude! || 0) : 0
@@ -441,8 +440,8 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
       setLongitude(Number(region?.longitude! || 0));
       //on map drag, hit the google api to get the address from lat-long
       fetchAdressFromLatLongGoogleApi(
-        Number(region?.latitude! || 0),
-        Number(region?.longitude! || 0)
+        Number(region?.latitude! + latitudeDelta || 0),
+        Number(region?.longitude! + longitudeDelta || 0)
       );
     }
 
@@ -662,7 +661,7 @@ const styles = StyleSheet.create({
     marginLeft: -24,
     marginTop: -48,
     position: 'absolute',
-    top: '47%',
+    top: mapHeight / 1.6,
   },
   markerIcon: {
     height: 35,

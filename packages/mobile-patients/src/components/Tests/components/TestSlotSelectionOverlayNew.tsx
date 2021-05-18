@@ -471,10 +471,10 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   dateContainer: {
-    width: 75,
-    height: 75,
-    marginHorizontal: 10,
+    marginHorizontal: 5,
     borderRadius: 10,
+    paddingHorizontal: 30,
+    paddingVertical: 20,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: theme.colors.APP_GREEN,
@@ -562,6 +562,8 @@ const styles = StyleSheet.create({
     margin: 10,
     padding: 10,
   },
-  dateArrayContainer:{ flexDirection: 'row' },
-  
+  dateArrayContainer: {
+    flexDirection: 'row',
+    width: '100%',
+  },
 });

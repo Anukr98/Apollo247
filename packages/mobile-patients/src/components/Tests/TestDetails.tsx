@@ -137,6 +137,7 @@ export interface TestDetailsProps
     comingFrom?: string;
     itemName?: string;
     movedFrom?: string;
+    existingOrderDetails?: any;
   }> {}
 
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
@@ -147,6 +148,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     isDiagnosticCircleSubscription,
     testDetailsBreadCrumbs,
     setTestDetailsBreadCrumbs,
+    modifiedOrderItemIds,
   } = useDiagnosticsCart();
   const { pharmacyCircleAttributes } = useShoppingCart();
 
@@ -160,6 +162,12 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const isDeep = props.navigation.getParam('movedFrom');
   const itemId =
     movedFrom == AppRoutes.TestsCart ? testDetails?.ItemID : props.navigation.getParam('itemId');
+
+  const existingOrderDetails = props.navigation.getParam('existingOrderDetails');
+  const isAlreadyPartOfOrder =
+    !!modifiedOrderItemIds &&
+    modifiedOrderItemIds?.length &&
+    modifiedOrderItemIds?.find((id: number) => Number(id) == Number(itemId));
 
   const [cmsTestDetails, setCmsTestDetails] = useState((([] as unknown) as CMSTestDetails) || []);
   const [testInfo, setTestInfo] = useState(movedFrom == 'TestsCart' ? testDetails : ({} as any));
@@ -852,6 +860,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         navigation={props.navigation}
         headerText={nameFormater('TEST PACKAGE DETAIL', 'upper')}
         movedFrom={'testDetails'}
+        existingOrderDetails={existingOrderDetails}
       />
     );
   };
@@ -967,7 +976,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       discountToDisplay,
       'Details page'
     );
-    addCartItem!({
+    addCartItem?.({
       id: `${itemId!}`,
       mou: cmsTestDetails?.diagnosticInclusionName?.length + 1 || testInfo?.mou,
       name: cmsTestDetails?.diagnosticItemName || testInfo?.itemName,
@@ -1025,9 +1034,21 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           </ScrollView>
           <StickyBottomComponent>
             <Button
-              title={isAddedToCart ? 'PROCEED TO CART ' : 'ADD TO CART'}
+              title={
+                isAlreadyPartOfOrder
+                  ? 'ALREADY ADDED'
+                  : isAddedToCart
+                  ? 'PROCEED TO CART '
+                  : 'ADD TO CART'
+              }
               onPress={() =>
-                isAddedToCart ? props.navigation.navigate(AppRoutes.TestsCart) : onPressAddToCart()
+                isAlreadyPartOfOrder
+                  ? props.navigation.navigate(AppRoutes.TestsCart, {
+                      orderDetails: existingOrderDetails,
+                    })
+                  : isAddedToCart
+                  ? props.navigation.navigate(AppRoutes.TestsCart)
+                  : onPressAddToCart()
               }
             />
           </StickyBottomComponent>
