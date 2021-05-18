@@ -548,7 +548,8 @@
     "sampleCollectedText": "Check Status",
     "collectionText": "Track Order",
     "trackPhleboText": "Track Phlebo",
-    "codDisableText" :"We are currently not allowing Cash On Delivery for home sample collections."
+    "codDisableText" :"We are currently not allowing Cash On Delivery for home sample collections.",
+    "phleboCallingError": "Error while connecting to Phlebo. Please try again later."
   },
   "diagnosticCategoryTitle": {
     "category" : "Category",
