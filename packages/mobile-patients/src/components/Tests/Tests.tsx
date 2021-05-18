@@ -1321,11 +1321,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             <View style={{ flexDirection: 'row' }}>
               <View>
                 <Text style={styles.locationText}>{nameFormater(location, 'title')}</Text>
-                {/* {!serviceabilityMsg ? ( */}
                 <Spearator style={styles.locationTextUnderline} />
-                {/* ) : (
-                  <View style={{ height: 2 }} />
-                )} */}
               </View>
               <View style={styles.dropdownGreenContainer}>
                 <DropdownGreen />
