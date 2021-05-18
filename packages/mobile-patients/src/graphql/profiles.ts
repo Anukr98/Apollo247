@@ -2252,6 +2252,11 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           gender
           dateOfBirth
         }
+        attributesObj {
+          preTestingRequirement
+          reportGenerationTime
+          initialCollectionCharges
+        }
         patientAddressObj {
           addressLine1
           addressLine2

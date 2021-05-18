@@ -1150,6 +1150,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         key={order?.id}
         createdOn={order?.createdDate}
         orderLevelStatus={order?.orderStatus}
+        orderAttributesObj={order?.attributesObj}
         patientName={getPatientNameById(allCurrentPatients, order?.patientId)}
         gender={
           !!order?.patientObj?.gender

@@ -10,7 +10,8 @@ import {
   NightSelected,
   DropdownGreen,
   InfoIconRed,
-  EmptySlot
+  EmptySlot,
+  CrossPopup,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { GET_CUSTOMIZED_DIAGNOSTIC_SLOTS } from '@aph/mobile-patients/src/graphql/profiles';
@@ -78,25 +79,27 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   const itemId = props.itemId;
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id));
   const [selectedDate, setSelectedDate] = useState<string>(moment(date).format('DD') || '');
-  const [newSelectedSlot, setNewSelectedSlot] = useState('')
+  const [newSelectedSlot, setNewSelectedSlot] = useState(
+    `${formatTestSlot(slotInfo?.slotInfo?.startTime!)}` || ''
+  );
   type UniqueSlotType = typeof uniqueSlots[0];
-  
+
   var offsetDays = 0;
   var offsetDates = 0;
-  var offsetTimestamp = 0
-  let newDateArray: { days: string; dates: string; timestamp: string }[] = []
+  var offsetTimestamp = 0;
+  let newDateArray: { days: string; dates: string; timestamp: string }[] = [];
   while (offsetDates < 4) {
     newDateArray.push({
       days: moment()
-      .add(offsetDays++, 'days')
-      .format('ddd'),
+        .add(offsetDays++, 'days')
+        .format('ddd'),
       dates: moment()
-      .add(offsetDates++, 'days')
-      .format('DD'),
+        .add(offsetDates++, 'days')
+        .format('DD'),
       timestamp: moment()
-      .add(offsetTimestamp++, 'days')
-      .format()
-    })
+        .add(offsetTimestamp++, 'days')
+        .format(),
+    });
   }
   let monthHeading = `${moment().format('MMMM')} ${moment().format('YYYY')}`;
   const fetchSlots = (updatedDate?: Date) => {
@@ -191,10 +194,10 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     value: `${formatTestSlot(val.startTime)}`,
     data: val,
   }));
-  
-  const time24 = (item:any) => {
-    return moment(item?.value ,'hh:mm A').format('HH')
-  } 
+
+  const time24 = (item: any) => {
+    return moment(item?.value, 'hh:mm A').format('HH');
+  };
 
   if (selectedDayTab == 1) {
     //for afternoon 12-17
@@ -203,7 +206,6 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
         return item;
       }
     });
-    
   } else if (selectedDayTab == 2) {
     //for evening 17 - 6
     dropDownOptions = dropDownOptions.filter((item) => {
@@ -251,7 +253,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           ))}
         </View>
         <View>
-            {dropDownOptions?.length != 0 ? 
+          {dropDownOptions?.length != 0 ? (
             <FlatList
               keyExtractor={(_, index) => index.toString()}
               data={dropDownOptions}
@@ -259,23 +261,42 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
               contentContainerStyle={styles.timeContainer}
               numColumns={4}
               renderItem={({ item, index }) => (
-                <TouchableOpacity onPress={()=>{
-                  const selectedSlot = getTestSlotDetailsByTime(
-                    slots,
-                    (item?.data as UniqueSlotType)?.startTime,
-                    (item?.data as UniqueSlotType)?.endTime
-                  );
-                  setSlotInfo(selectedSlot);
-                  setNewSelectedSlot(item?.value);
-                }} style={[styles.dateContentStyle,{
-                  backgroundColor: newSelectedSlot == item?.value ? theme.colors.APP_GREEN : theme.colors.DEFAULT_BACKGROUND_COLOR,
-                }]}>
-                  <Text style={[styles.dateTextStyle,{
-                      color: newSelectedSlot == item?.value ? 'white' : theme.colors.SHERPA_BLUE,
-                    },]}>{item?.value}</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    const selectedSlot = getTestSlotDetailsByTime(
+                      slots,
+                      (item?.data as UniqueSlotType)?.startTime,
+                      (item?.data as UniqueSlotType)?.endTime
+                    );
+                    setSlotInfo(selectedSlot);
+                    setNewSelectedSlot(item?.value);
+                  }}
+                  style={[
+                    styles.dateContentStyle,
+                    {
+                      backgroundColor:
+                        newSelectedSlot == item?.value
+                          ? theme.colors.APP_GREEN
+                          : theme.colors.DEFAULT_BACKGROUND_COLOR,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.dateTextStyle,
+                      {
+                        color: newSelectedSlot == item?.value ? 'white' : theme.colors.SHERPA_BLUE,
+                      },
+                    ]}
+                  >
+                    {item?.value}
+                  </Text>
                 </TouchableOpacity>
               )}
-            /> : renderNoSlots()}
+            />
+          ) : (
+            renderNoSlots()
+          )}
         </View>
       </View>
     );
@@ -304,9 +325,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
       : new Date();
     return (
       <View>
-        <View
-          style={styles.monthHeading}
-        >
+        <View style={styles.monthHeading}>
           <Text
             style={{
               ...theme.fonts.IBMPlexSansMedium(15),
@@ -320,8 +339,10 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
             {newDateArray.map((item, index) => (
               <TouchableOpacity
                 onPress={() => {
-                  let newdate = moment(item?.timestamp).utc().toDate()
-                  
+                  let newdate = moment(item?.timestamp)
+                    .utc()
+                    .toDate();
+
                   setSelectedDate(item?.dates);
                   setDate(newdate);
                   setSlotInfo(undefined);
@@ -403,34 +424,42 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   return (
     <Overlay
       isVisible
-      onRequestClose={() => (props.onClose())}
+      onRequestClose={() => props.onClose()}
       windowBackgroundColor={'rgba(0, 0, 0, 0.6)'}
       containerStyle={{ marginBottom: 0 }}
       fullScreen
       transparent
       overlayStyle={styles.phrOverlayStyle}
     >
-      <View style={styles.containerStyle}>
-      <Text
-          style={[
-            {
-              ...theme.fonts.IBMPlexSansMedium(17),
-              color: theme.colors.LIGHT_BLUE,
-              padding: 15,
-            },
-            props.headingTextStyle,
-          ]}
-        >
-          {' '}
-          {props.heading}
-        </Text>
-        <ScrollView style={styles.containerContentStyle}>
-        {renderCalendarView()}
-        {infoPanel()}
-        {renderSlotSelectionView()}
-        </ScrollView>
-        {dropDownOptions.length ? renderBottomButton : null}
-      </View>
+      <>
+        <TouchableOpacity style={styles.closeContainer}
+          onPress={() => {
+            props.onClose();
+          }}>
+          <CrossPopup />
+        </TouchableOpacity>
+        <View style={styles.containerStyle}>
+          <Text
+            style={[
+              {
+                ...theme.fonts.IBMPlexSansMedium(17),
+                color: theme.colors.LIGHT_BLUE,
+                padding: 15,
+              },
+              props.headingTextStyle,
+            ]}
+          >
+            {' '}
+            {props.heading}
+          </Text>
+          <ScrollView style={styles.containerContentStyle}>
+            {renderCalendarView()}
+            {infoPanel()}
+            {renderSlotSelectionView()}
+          </ScrollView>
+          {dropDownOptions.length ? renderBottomButton : null}
+        </View>
+      </>
     </Overlay>
   );
 };
@@ -448,6 +477,12 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.WHITE,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
+  },
+  closeContainer: {
+    alignSelf: 'flex-end',
+    marginTop: 100,
+    marginHorizontal: 20,
+    position: 'absolute',
   },
   phrOverlayStyle: {
     padding: 0,
