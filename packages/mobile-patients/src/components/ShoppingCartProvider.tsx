@@ -82,7 +82,6 @@ export interface PharmaCoupon extends validatePharmaCoupon_validatePharmaCoupon 
   reason: String;
   freeDelivery: boolean;
   products: [];
-  circleBenefits: boolean;
 }
 
 export interface CartProduct {
@@ -219,6 +218,8 @@ export interface ShoppingCartContextProps {
   showCircleSubscribed: boolean;
   hdfcSubscriptionId: string;
   setHdfcSubscriptionId: ((id: string) => void) | null;
+  corporateSubscription: boolean;
+  setCorporateSubscription: (id: boolean) => void;
   circlePlanValidity: circleValidity | null;
   setCirclePlanValidity: ((validity: circleValidity) => void) | null;
   circlePaymentReference: any;
@@ -330,6 +331,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   showCircleSubscribed: false,
   hdfcSubscriptionId: '',
   setHdfcSubscriptionId: null,
+  corporateSubscription: false,
+  setCorporateSubscription: null,
   circlePlanValidity: null,
   setCirclePlanValidity: null,
   circlePaymentReference: null,
@@ -456,6 +459,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [hdfcSubscriptionId, setHdfcSubscriptionId] = useState<
     ShoppingCartContextProps['hdfcSubscriptionId']
   >('');
+  const [corporateSubscription, setCorporateSubscription] = useState<
+    ShoppingCartContextProps['corporateSubscription']
+  >(false);
   const [circlePaymentReference, setCirclePaymentReference] = useState<
     ShoppingCartContextProps['circlePaymentReference']
   >();
@@ -515,7 +521,11 @@ export const ShoppingCartProvider: React.FC = (props) => {
     if (cartItems.length) {
       // calculate circle cashback
       cartItems.forEach((item) => {
-        const finalPrice = (coupon && item.couponPrice) || item.specialPrice || item.price;
+        const finalPrice = item.specialPrice
+          ? item.price - item.specialPrice
+            ? item.specialPrice
+            : item.price
+          : item.price;
         let cashback = 0;
         const type_id = item?.productType?.toUpperCase();
         if (!!circleCashback && !!circleCashback[type_id]) {
@@ -1190,6 +1200,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         showCircleSubscribed,
         hdfcSubscriptionId,
         setHdfcSubscriptionId,
+        corporateSubscription,
+        setCorporateSubscription,
         circlePlanValidity,
         setCirclePlanValidity,
         circlePaymentReference,

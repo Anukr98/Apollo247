@@ -75,7 +75,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
   const moveToMyOrders = () => {
     props.navigation.navigate(AppRoutes.YourOrdersTest, {
-      fromOrderSummary: true,
+      source: AppRoutes.OrderStatus,
     });
   };
 
@@ -111,16 +111,20 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       setOrders: null,
       selectedOrder: null,
       refundStatusArr: [],
+      goToHomeOnBack: true,
       comingFrom: AppRoutes.TestsCart,
       showOrderSummaryTab: true,
       disableTrackOrder: true,
+      amount: orderDetails?.amount,
     });
   };
 
   const renderHeader = () => {
     return (
-      <View style={styles.header}>
-        <Text style={styles.name}>{`Hi, ${currentPatient?.firstName.slice(0, 10) || ''} :)`}</Text>
+      <View style={[styles.header]}>
+        <Text style={[styles.name]}>
+          {`Hi, ${currentPatient?.firstName.slice(0, 10) || ''} :)`}
+        </Text>
         <TouchableOpacity onPress={() => navigateToOrderDetails(true, orderDetails?.orderId!)}>
           <Text style={styles.orderSummary}>VIEW ORDER SUMMARY</Text>
         </TouchableOpacity>
@@ -283,7 +287,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'transparent',
     marginHorizontal: 20,
-    marginTop: 30,
+    marginTop: 40,
   },
   header: {
     flexDirection: 'row',
@@ -292,7 +296,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   name: {
-    ...theme.fonts.IBMPlexSansSemiBold(24),
+    ...theme.fonts.IBMPlexSansSemiBold(22),
     lineHeight: 31,
     color: '#02475B',
   },

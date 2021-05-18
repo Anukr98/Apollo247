@@ -49,7 +49,12 @@ import moment from 'moment';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import {
+  NavigationActions,
+  NavigationScreenProps,
+  ScrollView,
+  StackActions,
+} from 'react-navigation';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
@@ -78,6 +83,7 @@ import {
 import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components/StatusCard';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 
+import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
 const DROP_DOWN_ARRAY_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
@@ -90,6 +96,7 @@ export interface TestOrderDetailsProps extends NavigationScreenProps {
   selectedOrder: object;
   refundStatusArr?: any;
   disableTrackOrder?: boolean;
+  comingFrom?: string;
 }
 {
 }
@@ -103,6 +110,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const selectedTest = props.navigation.getParam('selectedTest');
   const selectedOrder = props.navigation.getParam('selectedOrder');
   const refundStatusArr = props.navigation.getParam('refundStatusArr');
+  const source = props.navigation.getParam('comingFrom');
+
   const client = useApolloClient();
   const [selectedTab, setSelectedTab] = useState<string>(
     showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
@@ -114,20 +123,18 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const [scrollYValue, setScrollYValue] = useState(0);
   const [loading1, setLoading] = useState<boolean>(true);
-  const [labResults, setLabResults] = useState<
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response | null)[]
-    | null
-    | undefined
-  >([]);
   const [orderLevelStatus, setOrderLevelStatus] = useState([] as any);
   const [showInclusionStatus, setShowInclusionStatus] = useState<boolean>(false);
   const [showError, setError] = useState<boolean>(false);
-
+  const [isViewReport, setIsViewReport] = useState<boolean>(false);
+  const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
   const scrollToSlots = () => {
     scrollViewRef.current &&
       scrollViewRef.current.scrollTo({ x: 0, y: scrollYValue, animated: true });
   };
+
+  console.log({ props });
 
   //for showing the order level status.
   const fetchOrderLevelStatus = () =>
@@ -241,7 +248,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           'labResults',
           'response'
         );
-        setLabResults(labResultsData);
         let resultForVisitNo = labResultsData?.find((item: any) => item?.identifier == getVisitId);
         !!resultForVisitNo
           ? props.navigation.navigate(AppRoutes.HealthRecordDetails, {
@@ -288,8 +294,25 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           setLoading?.(false);
         });
     }
-    if (goToHomeOnBack) {
-      props.navigation.navigate('TESTS');
+    if (goToHomeOnBack && source === AppRoutes.TestsCart) {
+      props.navigation.dispatch(
+        StackActions.reset({
+          index: 2,
+          key: null,
+          actions: [
+            NavigationActions.navigate({
+              routeName: AppRoutes.ConsultRoom,
+            }),
+            NavigationActions.navigate({
+              routeName: AppRoutes.Tests,
+            }),
+            NavigationActions.navigate({
+              routeName: AppRoutes.YourOrdersTest,
+              params: { source: AppRoutes.TestsCart },
+            }),
+          ],
+        })
+      );
       return true;
     } else {
       props.navigation.goBack();
@@ -557,7 +580,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       'Download Report PDF',
       order?.id
     );
-    if (order?.labReportURL && order?.labReportURL != '') {
+    if (!!order?.labReportURL && order?.labReportURL != '') {
       downloadLabTest(order?.labReportURL, appointmentDate, patientName);
     } else if (visitId) {
       fetchTestReportResult();
@@ -585,9 +608,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     });
   };
 
-  const onPressButton = (buttonTitle: string) => {
-    DiagnosticViewReportClicked();
-    onPressViewReport();
+  const onPressButton = (buttonTitle?: string) => {
+    // onPressViewReport();
+    setIsViewReport(true);
+    setDisplayViewReport(true);
   };
 
   function postRatingGivenWebEngageEvent(rating: string, reason: string) {
@@ -677,9 +701,19 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       </MaterialMenu>
     );
   };
-
   return (
     <View style={{ flex: 1 }}>
+      {displayViewReport && (
+        <TestViewReportOverlay
+          order={order}
+          heading=""
+          isVisible={displayViewReport}
+          onClose={() => setDisplayViewReport(false)}
+          onPressViewReport={() => {
+            onPressViewReport()
+          }}
+        />
+      )}
       <SafeAreaView style={theme.viewStyles.container}>
         <View style={styles.headerShadowContainer}>
           <Header
@@ -738,6 +772,44 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: 28,
     marginRight: 18,
+  },
+  modalMainView: {
+    backgroundColor: 'rgba(100,100,100, 0.5)',
+    flex: 1,
+    justifyContent: 'flex-end',
+    // alignItems: 'center',
+    flexDirection: 'column',
+  },
+  reportModalView: {
+    backgroundColor: 'white',
+    width: '100%',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  },
+
+  reportModalOptionsView: {
+    backgroundColor: 'white',
+    width: '100%',
+  },
+  itemView: {
+    backgroundColor: 'white',
+    width: '100%',
+    padding: 10,
+    flexDirection: 'row',
+    alignContent: 'center',
+    borderBottomColor: '#e8e8e8',
+    borderBottomWidth: 1,
+  },
+  itemTextStyle: {
+    marginHorizontal: 10,
+    ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE),
+  },
+  copyTextStyle: {
+    marginHorizontal: 10,
+    textAlign: 'left',
+    ...theme.viewStyles.text('SB', 14, theme.colors.APP_GREEN),
   },
   verticalProgressLine: { flex: 1, width: 6, alignSelf: 'center' },
   statusIconStyle: {

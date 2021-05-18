@@ -34,19 +34,9 @@ import {
   BackHandler,
   Text,
   Modal,
-  Linking,
-  Clipboard,
 } from 'react-native';
-import {
-  Down,
-  Up,
-  DownO,
-  CopyBlue,
-  DownloadNew,
-  ShareBlue,
-  ViewIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
-import { NavigationScreenProps } from 'react-navigation';
+import { Down, DownO } from '@aph/mobile-patients/src/components/ui/Icons';
+import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import {
   CancellationDiagnosticsInput,
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
@@ -77,7 +67,7 @@ import {
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import _ from 'lodash';
+import _, { conformsTo } from 'lodash';
 import {
   cancelDiagnosticsOrder,
   cancelDiagnosticsOrderVariables,
@@ -111,7 +101,7 @@ import {
   getOrderPhleboDetailsBulk,
   getOrderPhleboDetailsBulkVariables,
 } from '@aph/mobile-patients/src/graphql/types/getOrderPhleboDetailsBulk';
-
+import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
 export interface YourOrdersTestProps extends NavigationScreenProps {
   showHeader?: boolean;
 }
@@ -138,6 +128,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [date, setDate] = useState<Date>(new Date());
   const [showDisplaySchedule, setDisplaySchedule] = useState<boolean>(false);
+  const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number>(0);
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
@@ -169,11 +160,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const client = useApolloClient();
   const [orders, setOrders] = useState<any>(props.navigation.getParam('orders'));
-  const [isTest, setIsTest] = useState<any>(props.navigation.getParam('isTest'));
-  const [fromOrderSummary, setFromOrderSummary] = useState<any>(
-    props.navigation.getParam('fromOrderSummary')
-  );
-
   const [isPaitentList, setIsPaitentList] = useState<boolean>(false);
   const [isViewReport, setIsViewReport] = useState<boolean>(false);
   const [activeOrder, setActiveOrder] = useState<
@@ -191,6 +177,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [currentOffset, setCurrentOffset] = useState<number>(1);
   const [resultList, setResultList] = useState<(orderListByMobile | null)[] | null>([]);
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
+  const source = props.navigation.getParam('source');
 
   var rescheduleDate: Date,
     rescheduleSlotObject: {
@@ -222,12 +209,26 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     if (showSummaryPopupRef.current) {
       setSummaryPopup(false);
       return true;
+    } else if (source === AppRoutes.OrderStatus) {
+      props.navigation.dispatch(
+        StackActions.reset({
+          index: 1,
+          key: null,
+          actions: [
+            NavigationActions.navigate({
+              routeName: AppRoutes.ConsultRoom,
+            }),
+            NavigationActions.navigate({
+              routeName: AppRoutes.Tests,
+            }),
+          ],
+        })
+      );
+      return true;
     } else {
-      if (fromOrderSummary) {
-        props.navigation.popToTop();
-      }
+      props.navigation.goBack();
+      return false;
     }
-    return false;
   };
 
   useEffect(() => {
@@ -272,7 +273,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   }, [currentOffset]);
   const fetchOrders = async (isRefetch: boolean) => {
     try {
-      setLoading!(true);
+      setLoading?.(true);
       client
         .query<getDiagnosticOrdersListByMobile, getDiagnosticOrdersListByMobileVariables>({
           query: GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
@@ -1090,7 +1091,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       showOrderSummaryTab: tab,
     });
   }
-
   const renderOrder = (
     order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList,
     index: number
@@ -1196,9 +1196,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPressReschedule={() => _onPressTestReschedule(order)}
         onPressViewDetails={() => _navigateToYourTestDetails(order, true)}
         onPressViewReport={() => {
-          setSnackbarState(true);
+          setSnackbarState(false);
           setActiveOrder(order);
           setIsViewReport(true);
+          setDisplayViewReport(true);
           // _onPressViewReport(order)
         }}
         phelboObject={order?.phleboDetailsObj}
@@ -1260,7 +1261,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       / /g,
       '_'
     );
-    if (order?.labReportURL && order?.labReportURL != '') {
+    if (!!order?.labReportURL && order?.labReportURL != '') {
       downloadLabTest(order?.labReportURL, appointmentDate, patientName);
     } else if (visitId) {
       fetchTestReportResult(order);
@@ -1360,10 +1361,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   };
 
-  const copyToClipboard = (refId: string) => {
-    Clipboard.setString(refId);
-    setSnackbarState(true);
-  };
   const renderModalView = (item: any, index: number) => {
     return (
       <TouchableOpacity
@@ -1399,35 +1396,32 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       </TouchableOpacity>
     );
   };
-  const viewReportItemsArray = [
-    {
-      icon: <ViewIcon />,
-      title: string.Report.view,
-    },
-    {
-      icon: <DownloadNew />,
-      title: string.Report.download,
-    },
-    {
-      icon: <ShareBlue />,
-      title: string.Report.share,
-    },
-    {
-      icon: <CopyBlue />,
-      title: string.Report.copy,
-    },
-  ];
   return (
     <View style={{ flex: 1 }}>
       {showDisplaySchedule && renderRescheduleOrderOverlay()}
-
+      {displayViewReport && (
+        <TestViewReportOverlay
+          order={activeOrder}
+          heading=""
+          isVisible={displayViewReport}
+          onClose={() => setDisplayViewReport(false)}
+          onPressViewReport={() => {
+            DiagnosticViewReportClicked(
+              'My Order',
+              !!activeOrder?.labReportURL ? 'Yes' : 'No',
+              'Download Report PDF'
+            );
+            _onPressViewReport(activeOrder);
+          }}
+        />
+      )}
       <SafeAreaView style={theme.viewStyles.container}>
         {props?.showHeader == false ? null : (
           <Header
             leftIcon="backArrow"
             title={string.orders.urOrders}
             container={{ borderBottomWidth: 0 }}
-            onPressLeftIcon={() => props.navigation.goBack()}
+            onPressLeftIcon={() => handleBack()}
           />
         )}
         {renderFilterArea()}
@@ -1456,58 +1450,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   renderItem={({ item, index }) => renderModalView(item, index)}
                 />
               </View>
-            </View>
-          </View>
-        </Modal>
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={isViewReport}
-          onRequestClose={() => {
-            setIsViewReport(false);
-          }}
-          onDismiss={() => {
-            setIsViewReport(false);
-          }}
-        >
-          <View style={styles.modalMainView}>
-            <View style={styles.reportModalView}>
-              {viewReportItemsArray.map((item) => (
-                <TouchableOpacity
-                  onPress={async () => {
-                    DiagnosticViewReportClicked(
-                      'My Order',
-                      !!activeOrder?.labReportURL ? 'Yes' : 'No',
-                      item?.title,
-                      activeOrder?.id
-                    );
-                    if (
-                      item?.title == string.Report.view ||
-                      item?.title == string.Report.download
-                    ) {
-                      _onPressViewReport(activeOrder);
-                    } else if (item?.title == string.Report.share) {
-                      try {
-                        const whatsAppScheme = `whatsapp://send?text=${activeOrder?.labReportURL}`;
-                        const canOpenURL = await Linking.canOpenURL(whatsAppScheme);
-                        canOpenURL && Linking.openURL(whatsAppScheme);
-                      } catch (error) {}
-                    } else {
-                      copyToClipboard(
-                        activeOrder && activeOrder?.labReportURL ? activeOrder?.labReportURL : ''
-                      );
-                    }
-                    setIsViewReport(false);
-                  }}
-                  style={styles.itemView}
-                >
-                  {item?.icon}
-                  <Text style={styles.itemTextStyle}>{item?.title}</Text>
-                  {snackbarState && item?.title == string.Report.copy ? (
-                    <Text style={styles.copyTextStyle}>Copied !!</Text>
-                  ) : null}
-                </TouchableOpacity>
-              ))}
             </View>
           </View>
         </Modal>
@@ -1683,9 +1625,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     width: '100%',
     paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingVertical: 10,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
+  },
+  reportModalOptionsView: {
+    backgroundColor: 'white',
+    width: '100%',
   },
   itemView: {
     backgroundColor: 'white',

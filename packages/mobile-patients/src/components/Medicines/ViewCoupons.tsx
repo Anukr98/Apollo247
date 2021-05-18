@@ -4,7 +4,7 @@ import {
   ShoppingCartItem,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { Up, Down, SearchSendIcon, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Up, Down, SearchSendIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -22,19 +22,27 @@ import {
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { renderCouponViewShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import { couponViewShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { ListItem } from 'react-native-elements';
 
 const styles = StyleSheet.create({
+  bottonButtonContainer: {
+    alignSelf: 'center',
+    marginTop: 10,
+    marginBottom: 20, // statusBarHesight(),
+    width: '66%',
+    position: 'absolute',
+    bottom: 0,
+  },
   cardStyle: {
     ...theme.viewStyles.cardViewStyle,
     backgroundColor: theme.colors.WHITE,
     marginVertical: 8,
   },
-  textInputContainer: {
-    ...theme.viewStyles.cardViewStyle,
-    backgroundColor: theme.colors.WHITE,
-    padding: 16,
+  separator: {
+    height: 1,
+    opacity: 0.1,
+    backgroundColor: theme.colors.LIGHT_BLUE,
   },
   heading: {
     ...theme.viewStyles.text('SB', 13, theme.colors.SHERPA_BLUE),
@@ -74,6 +82,22 @@ const styles = StyleSheet.create({
     paddingTop: 2,
     letterSpacing: 0.04,
   },
+  careMessageContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    marginHorizontal: 20,
+    marginTop: 20,
+    padding: 10,
+    flexDirection: 'row',
+  },
+  pendingIconStyle: {
+    marginRight: 10,
+    marginTop: 5,
+  },
+  careMessage: {
+    ...theme.viewStyles.text('R', 13, '#01475B', 1, 20),
+    width: '90%',
+  },
   noCouponsAvailText: {
     ...theme.viewStyles.text('M', 13, theme.colors.FILTER_CARD_LABEL),
     margin: 20,
@@ -88,7 +112,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   bottomViewCardBtn: {
-    height: 40,
+    height: 45,
     ...theme.viewStyles.cardViewStyle,
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
@@ -98,7 +122,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   viewBtnText: {
-    ...theme.viewStyles.text('M', 15, theme.colors.SHERPA_BLUE),
+    ...theme.viewStyles.text('M', 16, theme.colors.SHERPA_BLUE),
   },
   titleContainer: {
     padding: 0,
@@ -107,25 +131,6 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     borderTopRightRadius: 10,
     borderTopLeftRadius: 10,
-  },
-  chipView1: {
-    backgroundColor: 'rgba(252, 183, 22, 0.1)',
-    padding: 4,
-  },
-  chipView2: {
-    backgroundColor: 'rgba(216, 216, 216, 0.4)',
-    padding: 4,
-  },
-  circleBenefitsView: {
-    flexDirection: 'row',
-  },
-  circleBenefits: {
-    ...theme.viewStyles.text('L', 11, '#373737', 1, 20),
-  },
-  circleLogo: {
-    resizeMode: 'contain',
-    width: 40,
-    height: 20,
   },
 });
 export interface pharma_coupon {
@@ -152,9 +157,6 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
   const [couponListError, setCouponListError] = useState<string>('');
   const [disableCouponsList, setDisableCouponsList] = useState<string[]>([]);
   const [showAllProductOffers, setShowAllProductOffers] = useState<boolean>(false);
-  const [showAllCouponList, setShowAllCouponList] = useState<boolean>(false);
-  const [showAllCircleCoupons, setShowAllCircleCoupons] = useState<boolean>(false);
-  const [circleCoupons, setCircleCoupons] = useState<pharma_coupon[]>([]); // circle coupons => applicable === 'APOLLO:Circle...'
   const [productOffers, setProductOffers] = useState<pharma_coupon[]>([]); // product offer coupons => frontendCategory === 'productOffers'
   const [couponList, setCouponList] = useState<pharma_coupon[]>([]); // normal coupons
   const [appliedCouponName, setAppliedCouponName] = useState<string>('');
@@ -171,7 +173,6 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     circleSubscriptionId,
     hdfcSubscriptionId,
     setIsFreeDelivery,
-    circlePlanSelected,
   } = useShoppingCart();
   const { showAphAlert, setLoading } = useUIElements();
   const [shimmerLoading, setShimmerLoading] = useState<boolean>(true);
@@ -192,8 +193,8 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
   if (hdfcSubscriptionId && hdfcStatus === 'active') {
     packageId.push(`HDFC:${hdfcPlanId}`);
   }
-  if ((circleSubscriptionId && circleStatus === 'active') || circlePlanSelected?.subPlanId) {
-    packageId.push(`APOLLO:${circlePlanId || circlePlanSelected?.subPlanId}`);
+  if (circleSubscriptionId && circleStatus === 'active') {
+    packageId.push(`APOLLO:${circlePlanId}`);
   }
 
   useEffect(() => {
@@ -206,21 +207,12 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     fetchConsultCoupons(data)
       .then((res: any) => {
         const coupons = res?.data?.response || [];
-        const circleCoupons = coupons.filter((coupon: pharma_coupon) =>
-          coupon?.applicable?.includes('APOLLO:Circle')
-        );
-        setCircleCoupons(circleCoupons || []);
-        const nonCircleCoupons =
-          coupons.filter((coupon: pharma_coupon) => !circleCoupons.includes(coupon)) || [];
-        const productOfferCoupons = nonCircleCoupons?.filter(
-          (coupon: pharma_coupon) => coupon?.frontEndCategory === 'productOffers'
-        );
+        const productOfferCoupons = !isFromConsult
+          ? coupons?.filter((coupon: pharma_coupon) => coupon?.frontEndCategory === 'productOffers')
+          : [];
         setProductOffers(productOfferCoupons || []);
         const nonSpecialOfferCoupons =
-          coupons.filter(
-            (coupon: pharma_coupon) =>
-              !circleCoupons.includes(coupon) && !productOfferCoupons.includes(coupon)
-          ) || [];
+          coupons.filter((coupon: pharma_coupon) => !productOfferCoupons.includes(coupon)) || [];
         setCouponList(nonSpecialOfferCoupons || []);
         setShimmerLoading(false);
       })
@@ -261,10 +253,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
         if (resp?.data?.errorCode == 0) {
           if (resp?.data?.response?.valid) {
             const successMessage = resp?.data?.response?.successMessage || '';
-            setCoupon!({
-              ...resp?.data?.response,
-              successMessage: successMessage,
-            });
+            setCoupon!({ ...g(resp?.data, 'response')!, successMessage: successMessage });
             setIsFreeDelivery?.(!!resp?.data?.response?.freeDelivery);
             props.navigation.goBack();
           } else {
@@ -360,7 +349,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     };
 
     return (
-      <View style={styles.textInputContainer}>
+      <View style={[styles.cardStyle, { padding: 16 }]}>
         <TextInputComponent
           value={couponText}
           onChangeText={(text) => {
@@ -405,26 +394,10 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     );
   };
 
-  const renderCircleBenefitsChipView = (applicable: boolean) => {
-    return (
-      <View style={applicable ? styles.chipView1 : styles.chipView2}>
-        {applicable ? (
-          <View style={styles.circleBenefitsView}>
-            <CircleLogo style={styles.circleLogo} />
-            <Text style={styles.circleBenefits}>{'benefits applicable'}</Text>
-          </View>
-        ) : (
-          <Text style={styles.circleBenefits}>{'Circle benefits not applicable'}</Text>
-        )}
-      </View>
-    );
-  };
-
   const renderGeneralCoupons = (
     coupons: pharma_coupon[],
     showAllCoupons: boolean,
-    showMoreLessButton: boolean,
-    onPressMoreLessButton: () => void
+    showMoreLessButton: boolean
   ) => {
     const couponsForYou = coupons;
     return couponsForYou?.map((coupon, i) => {
@@ -455,7 +428,12 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
             {i !== coupons?.length - 1 && <View style={styles.itemSeperator} />}
           </View>
           {showMoreLessButton && i === couponsForYou?.length - 1 ? (
-            <TouchableOpacity style={styles.bottomViewCardBtn} onPress={onPressMoreLessButton}>
+            <TouchableOpacity
+              style={styles.bottomViewCardBtn}
+              onPress={() => {
+                setShowAllProductOffers(!showAllProductOffers);
+              }}
+            >
               <Text style={styles.viewBtnText}>View{showAllCoupons ? ' less' : ' more'}</Text>
               {showAllCoupons ? <Up /> : <Down />}
             </TouchableOpacity>
@@ -476,44 +454,23 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
 
   const renderCouponList = () => (
     <View style={styles.cardStyle}>
-      {renderCardTitle('COUPONS FOR YOU', false)}
-      {renderGeneralCoupons(
-        showAllCouponList ? couponList : couponList?.slice(0, 2),
-        showAllCouponList,
-        couponList?.length > 2,
-        () => setShowAllCouponList(!showAllCouponList)
-      )}
+      {renderCardTitle('COUPONS FOR YOU')}
+      {renderGeneralCoupons(couponList, true, false)}
     </View>
   );
 
   const renderProductOffers = () => (
     <View style={styles.cardStyle}>
-      {renderCardTitle('PRODUCT OFFERS', false)}
+      {renderCardTitle('PRODUCT OFFERS')}
       {renderGeneralCoupons(
         showAllProductOffers ? productOffers : productOffers?.slice(0, 2),
         showAllProductOffers,
-        productOffers?.length > 2,
-        () => setShowAllProductOffers(!showAllProductOffers)
+        productOffers?.length > 2
       )}
     </View>
   );
 
-  const renderCircleCoupons = () => (
-    <View style={styles.cardStyle}>
-      {renderCardTitle('COUPONS FOR YOU', true)}
-      {renderGeneralCoupons(
-        showAllCircleCoupons ? circleCoupons : circleCoupons?.slice(0, 2),
-        showAllCircleCoupons,
-        circleCoupons?.length > 2,
-        () => setShowAllCircleCoupons(!showAllCircleCoupons)
-      )}
-    </View>
-  );
-
-  const renderCardTitle = (title: string, circleBenefitsApplicable: boolean) => {
-    const showCircleBenefitsInfo =
-      movedFrom === 'pharma' &&
-      ((circleSubscriptionId && circleStatus === 'active') || circlePlanSelected?.subPlanId);
+  const renderCardTitle = (title: string) => {
     return (
       <ListItem
         bottomDivider
@@ -521,9 +478,6 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
         containerStyle={styles.titleContainer}
         titleStyle={styles.heading}
         title={title}
-        rightElement={
-          showCircleBenefitsInfo ? renderCircleBenefitsChipView(circleBenefitsApplicable) : <></>
-        }
       />
     );
   };
@@ -539,9 +493,8 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
         />
         <ScrollView bounces={false} contentContainerStyle={{ padding: 15 }}>
           {renderInputWithValidation()}
-          {shimmerLoading && renderCouponViewShimmer()}
+          {shimmerLoading && couponViewShimmer()}
           {renderNoCouponsFound()}
-          {!!circleCoupons?.length && renderCircleCoupons()}
           {!!couponList?.length && renderCouponList()}
           {!!productOffers?.length && renderProductOffers()}
         </ScrollView>

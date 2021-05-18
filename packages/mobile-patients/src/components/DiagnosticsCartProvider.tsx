@@ -162,6 +162,12 @@ export interface DiagnosticsCartContextProps {
   newAddressAddedCartPage: string;
   setNewAddressAddedCartPage: ((value: string) => void) | null;
 
+  showSelectedArea: boolean;
+  setShowSelectedArea: ((value: boolean) => void) | null;
+
+  isCartPagePopulated: boolean;
+  setCartPagePopulated: ((value: boolean) => void) | null;
+
   modifiedOrderItemIds: [];
   setModifiedOrderItemIds: ((items: any | []) => void) | null;
 }
@@ -254,6 +260,11 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   setNewAddressAddedHomePage: null,
   newAddressAddedCartPage: '',
   setNewAddressAddedCartPage: null,
+
+  showSelectedArea: false,
+  setShowSelectedArea: null,
+  isCartPagePopulated: false,
+  setCartPagePopulated: null,
   modifiedOrderItemIds: [],
   setModifiedOrderItemIds: null,
 });
@@ -402,6 +413,14 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const addAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
     setAddresses([address, ...addresses]);
   };
+
+  const [showSelectedArea, setShowSelectedArea] = useState<
+    DiagnosticsCartContextProps['showSelectedArea']
+  >(false);
+
+  const [isCartPagePopulated, setCartPagePopulated] = useState<
+    DiagnosticsCartContextProps['isCartPagePopulated']
+  >(false);
 
   const [modifiedOrderItemIds, setModifiedOrderItemIds] = useState<
     DiagnosticsCartContextProps['modifiedOrderItemIds']
@@ -585,6 +604,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setNewAddressAddedHomePage('');
     setNewAddressAddedHomePage('');
     setShowSelectPatient(false);
+    setShowSelectedArea(false);
+    setCartPagePopulated(false);
+    setHcCharges(0);
   };
 
   useEffect(() => {
@@ -710,6 +732,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         setNewAddressAddedHomePage,
         newAddressAddedCartPage,
         setNewAddressAddedCartPage,
+        showSelectedArea,
+        setShowSelectedArea,
+        isCartPagePopulated,
+        setCartPagePopulated,
         modifiedOrderItemIds,
         setModifiedOrderItemIds,
       }}

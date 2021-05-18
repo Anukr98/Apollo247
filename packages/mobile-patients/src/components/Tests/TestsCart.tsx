@@ -33,10 +33,8 @@ import {
   CircleLogo,
   CouponIcon,
   Down,
-  InfoIconRed,
   Up,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
   CommonLogEvent,
@@ -57,6 +55,7 @@ import {
   GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
   MODIFY_DIAGNOSTIC_ORDERS,
   FIND_DIAGNOSTIC_SETTINGS,
+  SET_DEFAULT_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticsHCChargesVariables,
@@ -187,8 +186,14 @@ import {
   findDiagnosticSettings,
   findDiagnosticSettingsVariables,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
+import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/components/InfoMessage';
+import {
+  makeAdressAsDefault,
+  makeAdressAsDefaultVariables,
+} from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 const { width: screenWidth } = Dimensions.get('window');
-
+type Address = savePatientAddress_savePatientAddress_patientAddress;
 export interface areaObject {
   key: string | number;
   value: string | number;
@@ -251,6 +256,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setNewAddressAddedCartPage,
     showSelectPatient,
     setShowSelectPatient,
+    showSelectedArea,
+    setShowSelectedArea,
+    isCartPagePopulated,
+    setCartPagePopulated,
     modifyHcCharges,
     setModifyHcCharges,
   } = useDiagnosticsCart();
@@ -292,7 +301,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [orderDetails, setOrderDetails] = useState<orderDetails>();
   const [showInclusions, setShowInclusions] = useState<boolean>(false);
   const [duplicateNameArray, setDuplicateNameArray] = useState([] as any);
-  const [showAreaSelection, setShowAreaSelection] = useState<boolean>(false);
   const [showPatientListOverlay, setShowPatientListOverlay] = useState<boolean>(
     !!existingOrderDetails ? false : showSelectPatient ? false : true
   );
@@ -367,14 +375,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       );
       setShowPatientListOverlay(false);
     }
-    !!existingOrderDetails ? null : fetchAddresses();
-    //if modifiedOrder, then set the area selected.
-    !!existingOrderDetails && setAreaSelected?.({ key: existingOrderDetails?.areaId, value: '' });
-    !!existingOrderDetails && setPatientId?.(existingOrderDetails?.patientId);
-  }, []);
-
-  useEffect(() => {
-    fetchFindDiagnosticSettings();
+    //set the area & patient selected for modifiedOrder flow
+    if (!!existingOrderDetails) {
+      setAreaSelected?.({ key: existingOrderDetails?.areaId, value: '' });
+      setPatientId?.(existingOrderDetails?.patientId);
+    } else {
+      fetchAddresses();
+      fetchFindDiagnosticSettings();
+    }
   }, []);
 
   const fetchTestReportGenDetails = async (_cartItemId: string | number[]) => {
@@ -515,6 +523,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       deliveryAddressId != '' &&
       cartItems?.length > 0
     ) {
+      setCartPagePopulated?.(true);
+
       validateDiagnosticCoupon();
       fetchHC_ChargesForTest(selectedTimeSlot?.slotInfo?.slot!);
     }
@@ -660,6 +670,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setDeliveryAddressId?.('');
       setModifyHcCharges?.(0);
       setHcCharges?.(0);
+      setCartPagePopulated?.(false);
       setLoading?.(false);
     }
 
@@ -761,11 +772,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         ? null
         : isEmptyObject(areaSelected) == false
         ? checkSlotSelection(areaSelected, undefined, undefined, removedItems)
-        : showAreaSelection
+        : showSelectedArea
         ? fetchAreasForAddress(
             addresses?.[selectedAddressIndex]?.id,
             addresses?.[selectedAddressIndex]?.zipcode!,
-            showAreaSelection
+            showSelectedArea
           )
         : getAreas(removedItems);
       DiagnosticRemoveFromCartClicked(
@@ -783,9 +794,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       );
     }
   };
-
   const getPinCodeServiceability = async () => {
-    console.log('in pincode serviceabiluty');
     const selectedAddressIndex = addresses?.findIndex(
       (address) => address?.id == deliveryAddressId
     );
@@ -817,13 +826,16 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               .then(({ data }) => {
                 const diagnosticItems =
                   g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
-                if (serviceableData?.areaSelectionEnabled) {
-                  setShowAreaSelection(true);
+                if (!isCartPagePopulated) {
+                  if (serviceableData?.areaSelectionEnabled) {
+                    setShowSelectedArea?.(true);
+                  }
+                  //don't show the area and hit the nearestPCC api.
+                  else {
+                    setShowSelectedArea?.(false);
+                  }
                 }
-                //don't show the area and hit the nearestPCC api.
-                else {
-                  setShowAreaSelection(false);
-                }
+
                 updatePricesInCart(
                   diagnosticItems,
                   selectedAddressIndex,
@@ -909,7 +921,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setWebEngageEventForAddressNonServiceable(addresses?.[selectedAddressIndex]?.zipcode!);
 
       //if goes in the catch then show the area selection.
-      setShowAreaSelection(true);
+      setShowSelectedArea?.(true);
       fetchAreasForAddress(
         addresses?.[selectedAddressIndex]?.id,
         addresses?.[selectedAddressIndex]?.zipcode!,
@@ -1249,13 +1261,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         if (data?.getAreas?.status) {
           setDiagnosticAreas?.(getDiagnosticAreas);
         } else {
-          setDeliveryAddressId && setDeliveryAddressId('');
+          setDeliveryAddressId?.('');
           setDiagnosticAreas?.([]);
+          setCartPagePopulated?.(false);
           setAreaSelected?.({});
           setselectedTimeSlot(undefined);
           setLoading?.(false);
           setWebEngageEventForAddressNonServiceable(pincode);
-          showAphAlert!({
+          showAphAlert?.({
             title: string.common.uhOh,
             description: string.diagnostics.areaNotAvailableMessage,
           });
@@ -1265,6 +1278,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         setLoading?.(false);
         setDiagnosticAreas?.([]);
         setAreaSelected?.({});
+        setCartPagePopulated?.(false);
         setselectedTimeSlot(undefined);
         setWebEngageEventForAddressNonServiceable(pincode);
         CommonBugFender('TestsCart_getArea selection', e);
@@ -1394,7 +1408,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               }
               onPressRemove={() => {
                 CommonLogEvent(AppRoutes.TestsCart, 'Remove item from cart');
-                cartItems?.length == 0 ? setDeliveryAddressId!('') : null;
+                if (cartItems?.length == 0) {
+                  setDeliveryAddressId?.('');
+                }
                 onRemoveCartItem(test);
               }}
               isCardExpanded={true}
@@ -1492,6 +1508,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             city: selectedAddr ? selectedAddr?.city! : '', // not using city from this in order place API
           });
           setWebEnageEventForAppointmentTimeSlot('Automatic', slotDetails, areaObject);
+          setCartPagePopulated?.(true);
           setLoading?.(false);
         }
 
@@ -1520,9 +1537,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             },
           });
         } else {
-          setDeliveryAddressId && setDeliveryAddressId('');
+          setDeliveryAddressId?.('');
           setDiagnosticAreas?.([]);
           setAreaSelected?.({});
+          setCartPagePopulated?.(false);
           setselectedTimeSlot(undefined);
           showAphAlert!({
             title: string.common.uhOh,
@@ -1597,12 +1615,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const renderHomeCollectionDisclaimer = () => {
-    return (
-      <View style={styles.homeCollectionContainer}>
-        <InfoIconRed style={styles.infoIconStyle} />
-        <Text style={styles.phleboText}>{string.diagnostics.homeHomeCollectionDisclaimerTxt}</Text>
-      </View>
-    );
+    return <InfoMessage content={string.diagnostics.homeHomeCollectionDisclaimerTxt} />;
   };
 
   const renderPreviouslyAddedItems = () => {
@@ -2243,8 +2256,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           });
         })
         .finally(() => {
-          setshowSpinner(false);
-          setLoading!(false);
+          setshowSpinner?.(false);
+          setLoading?.(false);
         });
     }
   };
@@ -2432,10 +2445,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const onPressProceedToPay = () => {
     if (!!existingOrderDetails) {
       postwebEngageProceedToPayEventForModify();
-      setshowSpinner(true);
+      setshowSpinner?.(true);
       saveModifiedOrder();
     } else {
       postwebEngageProceedToPayEvent();
+      setshowSpinner?.(true);
       proceedForBooking();
     }
   };
@@ -2651,11 +2665,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         ? null
         : !isEmptyObject(areaSelected)
         ? checkSlotSelection(areaSelected, undefined, undefined, _itemIds)
-        : showAreaSelection
+        : showSelectedArea
         ? fetchAreasForAddress(
             addresses?.[selectedAddressIndex]?.id,
             addresses?.[selectedAddressIndex]?.zipcode!,
-            showAreaSelection
+            showSelectedArea
           )
         : getAreas(removedTestItemId);
       let removedItems = removedTestItemId?.join(', ');
@@ -2768,7 +2782,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       : addresses?.[selectedAddressIndex]?.zipcode!;
 
     setPinCode?.(pinCode);
-    setLoading?.(true);
+    setshowSpinner?.(true);
+
     let newGrandTotal = !!existingOrderDetails
       ? totalCartPricesIncludingDiscount + totalModifiedItemPrices
       : grandTotal - hcCharges;
@@ -2808,11 +2823,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         setHcCharges?.(getCharges);
         setModifyHcCharges?.(updatedHcCharges);
       }
-      setLoading?.(false);
+      setshowSpinner?.(false);
       setHcApiCalled(true);
     } catch (error) {
-      setLoading?.(false);
       setHcApiCalled(true);
+      setshowSpinner?.(false);
     }
   };
 
@@ -2864,7 +2879,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             <Text style={styles.patientDetailsTextStyle}>{addressText}</Text>
           </View>
         ) : null}
-        {!!existingOrderDetails ? null : showAreaSelection && !isEmptyObject(areaSelected) ? (
+        {!!existingOrderDetails ? null : showSelectedArea && !isEmptyObject(areaSelected) ? (
           <View style={styles.patientNameMainViewStyle}>
             <View style={styles.patientNameViewStyle}>
               <Text style={styles.patientNameTextStyle}>{string.diagnostics.areaText}</Text>
@@ -3027,6 +3042,45 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setselectedTimeSlot(undefined);
   }
 
+  async function setDefaultAddress(address: Address) {
+    try {
+      const isSelectedAddressWithNoLatLng = isAddressLatLngInValid(address);
+      if (isSelectedAddressWithNoLatLng) {
+        //show the error
+        renderAlert(string.diagnostics.updateAddressLatLngMessage, 'updateLocation', address);
+      } else {
+        setLoading?.(true);
+        hideAphAlert?.();
+        const response = await client.query<makeAdressAsDefault, makeAdressAsDefaultVariables>({
+          query: SET_DEFAULT_ADDRESS,
+          variables: { patientAddressId: address?.id },
+          fetchPolicy: 'no-cache',
+        });
+        const { data } = response;
+        const patientAddress = data?.makeAdressAsDefault?.patientAddress;
+        const updatedAddresses = addresses.map((item) => ({
+          ...item,
+          defaultAddress: patientAddress?.id == item.id ? patientAddress?.defaultAddress : false,
+        }));
+        setAddresses?.(updatedAddresses);
+        setMedAddresses?.(updatedAddresses);
+        patientAddress?.defaultAddress && setDeliveryAddressId?.(patientAddress?.id);
+        setDiagnosticAreas?.([]);
+        setAreaSelected?.({});
+        setDiagnosticSlot?.(null);
+        setLoading?.(false);
+      }
+    } catch (error) {
+      setLoading?.(false);
+      CommonBugFender('setDefaultAddress_TestsCart', error);
+      showAphAlert!({
+        title: string.common.uhOh,
+        description:
+          "We're sorry! Unable to set delivery address. Please try again after some time",
+      });
+    }
+  }
+
   function showAddressPopup() {
     return showAphAlert?.({
       removeTopIcon: true,
@@ -3040,6 +3094,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           addresses={addresses}
           onPressSelectAddress={(_address) => {
             CommonLogEvent(AppRoutes.TestsCart, 'Check service availability');
+            setDefaultAddress(_address);
             const tests = cartItems?.filter(
               (item) => item.collectionMethod == TEST_COLLECTION_TYPE.CENTER
             );
@@ -3067,11 +3122,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               } else {
                 AddressSelectedEvent(_address);
                 setDeliveryAddressId?.(_address?.id);
+                setCartPagePopulated?.(false);
                 setAsyncPharmaLocation(_address);
                 if (deliveryAddressId !== _address?.id) {
                   setDiagnosticAreas?.([]);
                   setAreaSelected?.({});
                   setDiagnosticSlot?.(null);
+                  setCartPagePopulated?.(false);
                 }
               }
             }
@@ -3121,11 +3178,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         ? null
         : !isEmptyObject(areaSelected)
         ? checkSlotSelection(areaSelected, undefined, undefined, _cartItemsWithId)
-        : showAreaSelection
+        : showSelectedArea
         ? fetchAreasForAddress(
             addresses?.[selectedAddressIndex]?.id,
             addresses?.[selectedAddressIndex]?.zipcode!,
-            showAreaSelection,
+            showSelectedArea,
             callReportGen ? _cartItemsWithId : undefined
           )
         : getAreas(callReportGen ? _cartItemsWithId : undefined);
@@ -3346,15 +3403,6 @@ const styles = StyleSheet.create({
     marginVertical: '2%',
     paddingRight: 15,
   },
-  phleboText: {
-    ...theme.fonts.IBMPlexSansMedium(10),
-    lineHeight: 18,
-    letterSpacing: 0.1,
-    color: theme.colors.SHERPA_BLUE,
-    opacity: 0.7,
-    marginHorizontal: '2%',
-  },
-  infoIconStyle: { resizeMode: 'contain', height: 18, width: 18 },
   dashedBannerViewStyle: {
     ...cardViewStyle,
     marginHorizontal: 20,
@@ -3366,13 +3414,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderRadius: 5,
     borderStyle: 'dashed',
-  },
-  homeCollectionContainer: {
-    ...theme.viewStyles.cardViewStyle,
-    padding: 12,
-    margin: 16,
-    flexDirection: 'row',
-    backgroundColor: '#FCFDDA',
   },
   totalChargesContainer: {
     ...theme.viewStyles.cardViewStyle,

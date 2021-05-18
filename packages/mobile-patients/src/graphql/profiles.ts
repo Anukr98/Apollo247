@@ -3524,6 +3524,9 @@ export const GET_APPOINTMENT_DATA = gql`
           id
           blobName
           sentToPatient
+          version
+          followUpAfterInDays
+          doctorType
           medicinePrescription {
             id
             medicineName

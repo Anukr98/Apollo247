@@ -2682,10 +2682,7 @@ export const validateCoupon = async (
       const response = await validateConsultCoupon(data);
       if (response.data.errorCode == 0) {
         if (response.data.response.valid) {
-          setCoupon!({
-            ...response?.data?.response,
-            message: message ? message : '',
-          });
+          setCoupon!({ ...response?.data?.response, message: message ? message : '' });
           res('success');
         } else {
           rej(response.data.response.reason);
@@ -2781,14 +2778,9 @@ export async function downloadDiagnosticReport(
           : dirs.DownloadDir + '/' + reportName;
 
       let msg = 'File is downloading..';
-      if (showToast) {
-        if (Platform.OS === 'android') {
+      if (showToast && Platform.OS === 'android') {
           ToastAndroid.show(msg, ToastAndroid.SHORT);
-        } else {
-          AlertIOS.alert(msg);
-        }
       }
-
       RNFetchBlob.config({
         fileCache: true,
         path: downloadPath,

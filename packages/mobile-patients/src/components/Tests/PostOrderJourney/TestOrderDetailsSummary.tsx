@@ -56,9 +56,9 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const setOrders = props.navigation.getParam('setOrders');
   const isComingFrom = props.navigation.getParam('comingFrom');
+  const amount = props.navigation.getParam('amount');
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
-
   const refetchOrders =
     props.navigation.getParam('refetch') ||
     useQuery<getDiagnosticOrdersList, getDiagnosticOrdersListVariables>(GET_DIAGNOSTIC_ORDER_LIST, {
