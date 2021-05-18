@@ -14,6 +14,7 @@ import android.os.Vibrator;
 import android.provider.Settings;
 import androidx.annotation.RequiresApi;
 
+import com.clevertap.android.sdk.CleverTapAPI;
 import com.facebook.react.ReactActivity;
 
 public class MainActivity extends ReactActivity {
@@ -51,6 +52,10 @@ public class MainActivity extends ReactActivity {
         if (bundle != null) {
             String referrerString = bundle.get(Intent.EXTRA_REFERRER) != null ? bundle.get(Intent.EXTRA_REFERRER).toString() : "";
             setReferrer(referrerString);
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            CleverTapAPI.createNotificationChannel(getApplicationContext(),"SaifPNTest","SaifPNChannel","Saif Push Notification Channel",NotificationManager.IMPORTANCE_MAX,true);
         }
 
         try {

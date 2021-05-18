@@ -13,6 +13,7 @@ import android.media.AudioManager;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.SystemClock;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
@@ -27,6 +28,8 @@ import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.clevertap.android.sdk.CleverTapAPI;
+import com.clevertap.android.sdk.pushnotification.NotificationInfo;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -56,6 +59,7 @@ public class MyFirebaseMessagingService
     public void onNewToken(String s) {
         super.onNewToken(s);
         WebEngage.get().setRegistrationID(s);
+        CleverTapAPI.getDefaultInstance(this).pushFcmRegistrationId(s,true);
     }
 
     @SuppressLint("MissingPermission")
@@ -87,6 +91,18 @@ public class MyFirebaseMessagingService
                 }
                 (new io.invertase.firebase.messaging.ReactNativeFirebaseMessagingService()).onMessageReceived(remoteMessage);
                 return;
+            }
+
+            if (remoteMessage.getData().size() > 0) {
+                Bundle extras = new Bundle();
+                for (Map.Entry<String, String> entry : remoteMessage.getData().entrySet()) {
+                    extras.putString(entry.getKey(), entry.getValue());
+                }
+                Log.e("TAG","onReceived Mesaage Called");
+                NotificationInfo info = CleverTapAPI.getNotificationInfo(extras);
+                if (info.fromCleverTap) {
+                    CleverTapAPI.createNotification(getApplicationContext(), extras);
+                }
             }
 
             Map<String, String> data = remoteMessage.getData();
