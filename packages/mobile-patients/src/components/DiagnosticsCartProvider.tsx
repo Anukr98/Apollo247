@@ -6,7 +6,6 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { Clinic, DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import {
@@ -81,6 +80,9 @@ export interface DiagnosticsCartContextProps {
 
   hcCharges: number;
   setHcCharges: ((id: number) => void) | null;
+
+  modifyHcCharges: number;
+  setModifyHcCharges: ((id: number) => void) | null;
 
   grandTotal: number;
 
@@ -165,6 +167,11 @@ export interface DiagnosticsCartContextProps {
 
   isCartPagePopulated: boolean;
   setCartPagePopulated: ((value: boolean) => void) | null;
+
+  asyncDiagnosticPincode: any;
+  setAsyncDiagnosticPincode: ((pincode: any) => void) | null;
+  modifiedOrderItemIds: [];
+  setModifiedOrderItemIds: ((items: any | []) => void) | null;
 }
 
 export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>({
@@ -188,6 +195,9 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
 
   hcCharges: 0,
   setHcCharges: null,
+
+  modifyHcCharges: 0,
+  setModifyHcCharges: null,
 
   grandTotal: 0,
 
@@ -252,10 +262,15 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   setNewAddressAddedHomePage: null,
   newAddressAddedCartPage: '',
   setNewAddressAddedCartPage: null,
+
   showSelectedArea: false,
   setShowSelectedArea: null,
   isCartPagePopulated: false,
   setCartPagePopulated: null,
+  asyncDiagnosticPincode: null,
+  setAsyncDiagnosticPincode: null,
+  modifiedOrderItemIds: [],
+  setModifiedOrderItemIds: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -292,6 +307,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   >('');
 
   const [hcCharges, setHcCharges] = useState<DiagnosticsCartContextProps['hcCharges']>(0);
+
+  const [modifyHcCharges, setModifyHcCharges] = useState<
+    DiagnosticsCartContextProps['modifyHcCharges']
+  >(0);
 
   const [deliveryType, setDeliveryType] = useState<DiagnosticsCartContextProps['deliveryType']>(
     null
@@ -336,6 +355,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
 
   const [testDetailsBreadCrumbs, setTestDetailsBreadCrumbs] = useState<
     DiagnosticsCartContextProps['testDetailsBreadCrumbs']
+  >();
+
+  const [asyncDiagnosticPincode, setAsyncDiagnosticPincode] = useState<
+    DiagnosticsCartContextProps['asyncDiagnosticPincode']
   >();
 
   const setDiagnosticClinic: DiagnosticsCartContextProps['setDiagnosticClinic'] = (item) => {
@@ -406,6 +429,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const [isCartPagePopulated, setCartPagePopulated] = useState<
     DiagnosticsCartContextProps['isCartPagePopulated']
   >(false);
+
+  const [modifiedOrderItemIds, setModifiedOrderItemIds] = useState<
+    DiagnosticsCartContextProps['modifiedOrderItemIds']
+  >([]);
 
   const setCartItems: DiagnosticsCartContextProps['setCartItems'] = (cartItems) => {
     _setCartItems(cartItems);
@@ -512,7 +539,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   );
 
   const deliveryCharges =
-    deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP ? 0 : cartTotal > 0 ? hcCharges : 0;
+    deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP ? 0 : cartTotal > 0 ? modifyHcCharges : 0;
 
   //carttotal
   const grandTotal = parseFloat(
@@ -579,6 +606,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setDiagnosticSlot(null);
     setAreaSelected({});
     setDiagnosticAreas([]);
+    setModifiedOrderItemIds([]);
+    setHcCharges?.(0);
+    setModifyHcCharges?.(0);
     setNewAddressAddedHomePage('');
     setNewAddressAddedHomePage('');
     setShowSelectPatient(false);
@@ -662,6 +692,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         diagnosticAreas,
         hcCharges,
         setHcCharges,
+        modifyHcCharges,
+        setModifyHcCharges,
         uploadPrescriptionRequired: false,
         ePrescriptions,
         addEPrescription,
@@ -712,6 +744,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         setShowSelectedArea,
         isCartPagePopulated,
         setCartPagePopulated,
+        asyncDiagnosticPincode,
+        setAsyncDiagnosticPincode,
+        modifiedOrderItemIds,
+        setModifiedOrderItemIds,
       }}
     >
       {props.children}

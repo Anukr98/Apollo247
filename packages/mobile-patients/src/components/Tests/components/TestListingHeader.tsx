@@ -13,9 +13,15 @@ export interface Props {
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
   movedFrom?: 'registration' | 'deeplink' | 'home' | 'testDetails';
   headerText?: string;
+  existingOrderDetails?: any;
 }
 
-export const TestListingHeader: React.FC<Props> = ({ navigation, movedFrom, headerText }) => {
+export const TestListingHeader: React.FC<Props> = ({
+  navigation,
+  movedFrom,
+  headerText,
+  existingOrderDetails,
+}) => {
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { cartItems } = useShoppingCart();
 
@@ -51,7 +57,13 @@ export const TestListingHeader: React.FC<Props> = ({ navigation, movedFrom, head
   const renderHeaderRightView = () => {
     const cartItemsCount = cartItems?.length + diagnosticCartItems?.length;
     const onPressCartIcon = () => {
-      navigation.navigate(AppRoutes.MedAndTestCart);
+      if (!!existingOrderDetails) {
+        navigation.navigate(AppRoutes.TestsCart, {
+          orderDetails: existingOrderDetails,
+        });
+      } else {
+        navigation.navigate(AppRoutes.MedAndTestCart);
+      }
     };
     const onPressSearchIcon = () => {
       navigation.navigate(AppRoutes.SearchTestScene);

@@ -69,6 +69,15 @@ interface OrderTestCardProps {
 
 export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   const [moreTests, setMoreTests] = useState<boolean>(false);
+  const { ordersData } = props;
+  //added if item is removed from phelbo app.
+  const filterOrderLineItem =
+    !!ordersData &&
+    ordersData?.filter(
+      (
+        item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems
+      ) => !item?.isRemoved
+    );
 
   const bookedOn = moment(props?.createdOn)?.format('Do MMM') || null;
   const { currentPatient } = useAllCurrentPatients();
@@ -95,8 +104,12 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
           </View>
         )}
         {props.showAddTest ? (
-          <TouchableOpacity activeOpacity={1} onPress={props.onPressAddTest}>
-            <Text style={styles.yellowText}>ADD TEST</Text>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={props.onPressAddTest}
+            style={styles.addTestTouch}
+          >
+            <Text style={styles.yellowText}>ADD MORE TEST</Text>
           </TouchableOpacity>
         ) : null}
       </View>
@@ -115,7 +128,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   const renderTestNames = () => {
     return (
       <>
-        {props.ordersData?.map(
+        {filterOrderLineItem?.map(
           (
             item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems,
             index: number
@@ -130,17 +143,18 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                       : !!item?.diagnostics?.itemName
                       ? nameFormater(item?.diagnostics?.itemName!, 'title')
                       : ''}{' '}
-                    {index == 1 &&
-                      props.ordersData?.length - 2 > 0 &&
-                      renderShowMore(props.ordersData, item?.itemName!)}
                   </Text>
+                  {!!item?.editOrderID ? renderNewTag() : null}
+                  {index == 1 &&
+                    filterOrderLineItem?.length - 2 > 0 &&
+                    renderShowMore(filterOrderLineItem, item?.itemName!)}
                 </>
               ) : null}
             </View>
           )
         )}
         {moreTests &&
-          props.ordersData?.map(
+          filterOrderLineItem?.map(
             (
               item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems,
               index: number
@@ -161,6 +175,14 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
           </Text>
         )}
       </>
+    );
+  };
+
+  const renderNewTag = () => {
+    return (
+      <View style={styles.newItemView}>
+        <Text style={styles.newText}>NEW</Text>
+      </View>
     );
   };
 
@@ -202,7 +224,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
   const renderPreparationData = () => {
     //remove duplicate test prep data.
-    const getPrepData = props.ordersData?.map(
+    const getPrepData = filterOrderLineItem?.map(
       (item: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems) =>
         item?.itemObj?.testPreparationData || item?.diagnostics?.testPreparationData!
     );
@@ -452,8 +474,12 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       <View key={props?.key?.toString()} style={{ padding: 16, paddingBottom: 12 }}>
         {renderTopView()}
         {renderMidView()}
-        {!!props.ordersData && props.ordersData?.length > 0 ? renderTestListView() : null}
-        {!!props.ordersData && props.ordersData?.length > 0 ? renderPreparationData() : null}
+        {!!ordersData && !!filterOrderLineItem && filterOrderLineItem?.length
+          ? renderTestListView()
+          : null}
+        {!!ordersData && !!filterOrderLineItem && filterOrderLineItem?.length
+          ? renderPreparationData()
+          : null}
         {!!props.orderLevelStatus && DIAGNOSTIC_ORDER_FAILED_STATUS.includes(props.orderLevelStatus)
           ? null
           : renderBottomView()}
@@ -527,7 +553,7 @@ const styles = StyleSheet.create({
     minHeight: 30,
   },
   testForText: {
-    ...theme.viewStyles.text('M', 13, colors.SHERPA_BLUE, 1, 18),
+    ...theme.viewStyles.text('SB', 13, colors.SHERPA_BLUE, 1, 18),
     letterSpacing: 0.3,
   },
   yellowText: { ...theme.viewStyles.yellowTextStyle, fontSize: screenWidth > 380 ? 13 : 12 },
@@ -664,5 +690,21 @@ const styles = StyleSheet.create({
   ratingTextStyle: {
     ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 1, 16),
   },
+  addTestTouch: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   patientNameView: { width: '67%', justifyContent: 'center' },
+  newItemView: {
+    backgroundColor: '#4CAF50',
+    height: 20,
+    width: 40,
+    borderRadius: 2,
+    borderColor: '#4CAF50',
+    justifyContent: 'center',
+  },
+  newText: {
+    ...theme.viewStyles.text('SB', 10, 'white'),
+    textAlign: 'center',
+  },
 });

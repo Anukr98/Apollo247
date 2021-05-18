@@ -70,6 +70,8 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_
   price: number | null;
   quantity: number | null;
   groupPlan: string | null;
+  editOrderID: string | null;
+  isRemoved: boolean | null;
   itemObj: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_itemObj | null;
   pricingObj: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_pricingObj | null)[] | null;
   diagnostics: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_diagnostics | null;
@@ -91,17 +93,10 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList 
   patientObj: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientObj | null;
   city: string | null;
   slotTimings: string;
-  employeeSlotId: string;
-  diagnosticEmployeeCode: string;
-  diagnosticBranchCode: string;
+  slotId: string | null;
   totalPrice: number;
   prescriptionUrl: string;
   diagnosticDate: any;
-  centerName: string;
-  centerCode: string;
-  centerCity: string;
-  centerState: string;
-  centerLocality: string;
   orderStatus: DIAGNOSTIC_ORDER_STATUS;
   orderType: string;
   displayId: number;
