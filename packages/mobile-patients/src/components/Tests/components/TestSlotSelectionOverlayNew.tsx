@@ -264,7 +264,6 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
                       (item?.data as UniqueSlotType)?.startTime,
                       (item?.data as UniqueSlotType)?.endTime
                     );
-                    console.log({ item });
                     setSlotInfo(selectedSlot);
                     setNewSelectedSlot(item?.value);
                   }}
