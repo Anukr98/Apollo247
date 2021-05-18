@@ -2424,13 +2424,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             ? item?.groupPlan
             : DIAGNOSTIC_GROUP_PLAN.ALL,
           preTestingRequirement:
-            !!reportGenDetails && reportGenDetails?.[index]?.itemReportTat
-              ? reportGenDetails?.[index]?.itemReportTat
-              : null,
-          reportGenerationTime:
             !!reportGenDetails && reportGenDetails?.[index]?.itemPrepration
-              ? reportGenDetails?.[index]?.itemPrepration
-              : null,
+            ? reportGenDetails?.[index]?.itemPrepration
+            : null,
+          reportGenerationTime:
+            !!reportGenDetails && reportGenDetails?.[index]?.itemReportTat
+            ? reportGenDetails?.[index]?.itemReportTat
+            : null,
         } as DiagnosticLineItem)
     );
     const itemPricingObject = !!existingOrderDetails

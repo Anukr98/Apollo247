@@ -1566,11 +1566,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
       !!data &&
       data?.diagnosticWidgetData?.length > 0 &&
       data?.diagnosticWidgetData?.find((item: any) => item?.diagnosticPricing);
-    const showViewAll = isPricesAvailable && data?.diagnosticWidgetData?.length > 2;
+    const showViewAll = !!isPricesAvailable && data?.diagnosticWidgetData?.length > 2;
     const lengthOfTitle = data?.diagnosticWidgetTitle?.length;
     return (
-      <View style={styles.widgetSpacing}>
-        {isPricesAvailable ? (
+      <View style={!!isPricesAvailable ? styles.widgetSpacing : {}}>
+        {!!isPricesAvailable ? (
           <>
             <SectionHeader
               leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
@@ -1626,11 +1626,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
       !!data &&
       data?.diagnosticWidgetData?.length > 0 &&
       data?.diagnosticWidgetData?.find((item: any) => item?.diagnosticPricing);
-    const showViewAll = isPricesAvailable && data?.diagnosticWidgetData?.length > 2;
+    const showViewAll = !!isPricesAvailable && data?.diagnosticWidgetData?.length > 2;
     const lengthOfTitle = data?.diagnosticWidgetTitle?.length;
 
     return (
-      <View style={styles.widgetSpacing}>
+      <View style={!!isPricesAvailable ? styles.widgetSpacing : {}}>
         {!!isPricesAvailable ? (
           <>
             <SectionHeader

@@ -536,7 +536,7 @@
     "feedbackSubTxt": "Your feedback has been submitted. Thanks for your time.",
     "homeHomeCollectionDisclaimerTxt": "Home collection charges of upto ₹100 would be levied in case of order value less than ₹500",
     "itDoseCancelledText": "Canceled by phlebotomist as per the request",
-    "orderCancelledReasonText": "Order was cancelled because of",
+    "orderCancelledReasonText": "Order was cancelled : ",
     "wantToReschedule": "• Do you want to Reschedule Appointment ?",
     "sampleSubmitted": "Sample Submitted",
     "reportGenrated": "Reports are ready",

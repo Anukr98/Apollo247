@@ -1309,7 +1309,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         initialNumToRender={10}
         ListEmptyComponent={renderNoOrders()}
         ListFooterComponent={
-          (orderListData?.length && orderListData?.length < 10) || loading || error
+          (orderListData?.length && orderListData?.length < 10) || loading || error || !orderListData?.length
             ? null
             : renderLoadMore()
         }

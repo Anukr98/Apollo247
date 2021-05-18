@@ -8,6 +8,7 @@ import { FeedbackPopup } from '@aph/mobile-patients/src/components/FeedbackPopup
 
 import {
   ArrowRight,
+  ClockIcon,
   More,
   OrderPlacedIcon,
   OrderTrackerSmallIcon,
@@ -34,6 +35,7 @@ import {
   getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
 import { getDiagnosticOrdersListVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
+import { getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 import {
   downloadDiagnosticReport,
   g,
@@ -84,6 +86,7 @@ import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 
 import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 const DROP_DOWN_ARRAY_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
@@ -504,17 +507,36 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
               </TouchableOpacity>
             </View>
             {showInclusionStatus &&
-              orderLevelStatus?.statusInclusions?.map((item: any) => {
+              orderLevelStatus?.statusInclusions?.map((item: any, index: number) => {
+                let selectedItem = selectedOrder?.diagnosticOrderLineItems;
+                let itemReportTat = '';
+                itemReportTat = selectedItem?.map((order: any) => {
+                  if (order?.itemId == item?.itemId) {
+                    return order?.itemObj?.reportGenerationTime;
+                  }
+                });
                 return (
                   <>
                     {!!item?.itemName ? (
-                      <View style={styles.itemNameContainer}>
-                        <View style={{ width: '59%' }}>
-                          <Text style={styles.itemNameText}>
-                            {nameFormater(item?.itemName, 'default')}
-                          </Text>
+                      <View>
+                        <View style={styles.itemNameContainer}>
+                          <View style={{ width: '59%' }}>
+                            <Text style={styles.itemNameText}>
+                              {nameFormater(item?.itemName, 'default')}
+                            </Text>
+                          </View>
+                          <StatusCard titleText={item?.orderStatus} />
                         </View>
-                        <StatusCard titleText={item?.orderStatus} />
+                        {itemReportTat?.[index] ? (
+                          <View style={styles.ratingContainer}>
+                            <View style={styles.reporttatContainer}>
+                              <ClockIcon />
+                              <Text
+                                style={styles.reportTextStyle}
+                              >{`Get your report by ${itemReportTat?.[index]}`}</Text>
+                            </View>
+                          </View>
+                        ) : null}
                       </View>
                     ) : null}
                   </>
@@ -710,7 +732,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           isVisible={displayViewReport}
           onClose={() => setDisplayViewReport(false)}
           onPressViewReport={() => {
-            onPressViewReport()
+            onPressViewReport();
           }}
         />
       )}
@@ -906,4 +928,20 @@ const styles = StyleSheet.create({
   },
   rateYourExpText: { ...theme.viewStyles.text('B', 14, theme.colors.APP_YELLOW) },
   feedbackTouch: { marginBottom: 2, width: '100%' },
+  ratingContainer: {
+    backgroundColor: '#FCFDDA',
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    borderRadius: 10,
+    padding: 10,
+  },
+  reportTextStyle: {
+    marginHorizontal: 10,
+    ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 1, 16),
+  },
+  reporttatContainer: {
+    marginVertical: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
 });

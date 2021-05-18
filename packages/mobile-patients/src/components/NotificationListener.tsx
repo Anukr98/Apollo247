@@ -771,7 +771,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         {
           const doctorName = data.doctorName;
           const userName = data.patientName;
-          overlyCallPermissions(userName, doctorName, showAphAlert, hideAphAlert, true);
+          //overlyCallPermissions(userName, doctorName, showAphAlert, hideAphAlert, true);
         }
         break;
       case 'webview':
