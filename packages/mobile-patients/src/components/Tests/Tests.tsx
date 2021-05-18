@@ -1233,7 +1233,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
           source={AppRoutes.Tests}
           addresses={addressList}
           onPressSelectAddress={(address) => {
-            console.log('ye wala hi save hua hoga..');
             const saveAddress = {
               pincode: address?.zipcode,
               id: address?.id,
