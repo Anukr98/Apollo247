@@ -157,7 +157,9 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
 
   const renderDeliveryDateTime = () => {
     return !!deliveryError ? (
-      <Text style={theme.viewStyles.text('R', 10, '#01475b')}>{deliveryError}</Text>
+      <Text style={{ ...theme.viewStyles.text('R', 10, '#01475b'), marginTop: 7 }}>
+        {deliveryError}
+      </Text>
     ) : !isInStock ? (
       <Text
         style={theme.viewStyles.text('R', 10, '#01475b')}
@@ -200,7 +202,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
       </View>
       {!!circleSubscriptionId && !!cashback && renderCareCashback()}
       {!!manufacturer && !isPharma && renderManufacturer()}
-      {renderDeliverTo()}
+      {isSellOnline && renderDeliverTo()}
       {!isBanned &&
         (showExpress ? renderExpress() : showDeliverySpinner ? null : renderDeliveryDateTime())}
     </View>

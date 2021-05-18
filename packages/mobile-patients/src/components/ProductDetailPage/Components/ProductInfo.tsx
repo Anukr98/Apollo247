@@ -203,7 +203,6 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
 
   return (
     <View style={styles.cardStyle}>
-      <Text style={styles.heading}>{isPharma ? `Medicine Detail` : `Product Detail`}</Text>
       {!!description && renderDescription()}
       {isPharma ? (
         <PharmaMedicineInfo
@@ -218,6 +217,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
         />
       ) : (
         <>
+          <Text style={styles.heading}>Product Detail</Text>
           {!!key_benefits && renderKeyBenefits()}
           {!!directionsOfUse && renderFmcgUses()}
           {!!storage && renderStorage()}
