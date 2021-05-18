@@ -137,8 +137,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       scrollViewRef.current.scrollTo({ x: 0, y: scrollYValue, animated: true });
   };
 
-  console.log({ props });
-
   //for showing the order level status.
   const fetchOrderLevelStatus = () =>
     client.query<getHCOrderFormattedTrackingHistory, getHCOrderFormattedTrackingHistoryVariables>({
