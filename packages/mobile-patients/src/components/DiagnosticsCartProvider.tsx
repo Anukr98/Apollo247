@@ -168,6 +168,8 @@ export interface DiagnosticsCartContextProps {
   isCartPagePopulated: boolean;
   setCartPagePopulated: ((value: boolean) => void) | null;
 
+  asyncDiagnosticPincode: any;
+  setAsyncDiagnosticPincode: ((pincode: any) => void) | null;
   modifiedOrderItemIds: [];
   setModifiedOrderItemIds: ((items: any | []) => void) | null;
 }
@@ -265,6 +267,8 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   setShowSelectedArea: null,
   isCartPagePopulated: false,
   setCartPagePopulated: null,
+  asyncDiagnosticPincode: null,
+  setAsyncDiagnosticPincode: null,
   modifiedOrderItemIds: [],
   setModifiedOrderItemIds: null,
 });
@@ -351,6 +355,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
 
   const [testDetailsBreadCrumbs, setTestDetailsBreadCrumbs] = useState<
     DiagnosticsCartContextProps['testDetailsBreadCrumbs']
+  >();
+
+  const [asyncDiagnosticPincode, setAsyncDiagnosticPincode] = useState<
+    DiagnosticsCartContextProps['asyncDiagnosticPincode']
   >();
 
   const setDiagnosticClinic: DiagnosticsCartContextProps['setDiagnosticClinic'] = (item) => {
@@ -736,6 +744,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         setShowSelectedArea,
         isCartPagePopulated,
         setCartPagePopulated,
+        asyncDiagnosticPincode,
+        setAsyncDiagnosticPincode,
         modifiedOrderItemIds,
         setModifiedOrderItemIds,
       }}
