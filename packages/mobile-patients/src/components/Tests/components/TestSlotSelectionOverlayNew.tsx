@@ -101,6 +101,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   const fetchSlots = (updatedDate?: Date) => {
     let dateToCheck = !!updatedDate ? updatedDate : date;
     if (!isVisible) return;
+    setSelectedDate(moment(dateToCheck).format('DD'));
     showSpinner(true);
     client
       .query<getDiagnosticSlotsCustomized, getDiagnosticSlotsCustomizedVariables>({
@@ -147,7 +148,6 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
         } else {
           setSlots(slotsArray);
           slotsArray?.length && setSlotInfo(slotsArray?.[0]);
-          setSelectedDate(moment(dateToCheck).format('DD'));
           showSpinner(false);
         }
       })
