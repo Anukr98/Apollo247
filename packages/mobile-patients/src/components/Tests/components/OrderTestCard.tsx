@@ -30,7 +30,10 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { isIphone5s, setBugFenderLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DIAGNOSTIC_ORDER_FAILED_STATUS } from '@aph/mobile-patients/src/strings/AppConfig';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
-import { DiagnosticPhleboCallingClicked, DiagnosticTrackPhleboClicked } from '@aph/mobile-patients/src/components/Tests/Events';
+import {
+  DiagnosticPhleboCallingClicked,
+  DiagnosticTrackPhleboClicked,
+} from '@aph/mobile-patients/src/components/Tests/Events';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 const screenWidth = Dimensions.get('window').width;
@@ -297,10 +300,10 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     if (checkEta) {
       phleboEta = moment(phlObj?.CheckInTime).format('hh:mm A');
     }
-    const slotime = !!props.slotTime
-    ? moment(props?.slotTime) || null
-    : null;
-    const showDetailedinfo = !!slotime ? slotime.diff(moment(), 'minutes') < 60 && slotime.diff(moment(), 'minutes') > 0 : false
+    const slotime = !!props.slotTime ? moment(props?.slotTime) || null : null;
+    const showDetailedinfo = !!slotime
+      ? slotime.diff(moment(), 'minutes') < 60 && slotime.diff(moment(), 'minutes') > 0
+      : false;
     return (
       <>
         {!!otpToShow && SHOW_OTP_ARRAY.includes(props.orderLevelStatus) ? (
@@ -350,15 +353,30 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                       try {
                         Linking.canOpenURL(phleboTrackLink).then((supported) => {
                           if (supported) {
-                            DiagnosticTrackPhleboClicked(props.orderId, 'My Order', currentPatient, 'Yes')
+                            DiagnosticTrackPhleboClicked(
+                              props.orderId,
+                              'My Order',
+                              currentPatient,
+                              'Yes'
+                            );
                             Linking.openURL(phleboTrackLink);
                           } else {
-                            DiagnosticTrackPhleboClicked(props.orderId, 'My Order', currentPatient, 'No')
+                            DiagnosticTrackPhleboClicked(
+                              props.orderId,
+                              'My Order',
+                              currentPatient,
+                              'No'
+                            );
                             setBugFenderLog('FAILED_OPEN_URL', phleboTrackLink);
                           }
                         });
                       } catch (e) {
-                        DiagnosticTrackPhleboClicked(props.orderId, 'My Order', currentPatient, 'No')
+                        DiagnosticTrackPhleboClicked(
+                          props.orderId,
+                          'My Order',
+                          currentPatient,
+                          'No'
+                        );
                         setBugFenderLog('FAILED_OPEN_URL', phleboTrackLink);
                       }
                     }}
@@ -388,8 +406,8 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     const phlObj = props?.phelboObject;
     const phleboRating = !!phlObj && phlObj?.PhleboRating;
     let checkRating = starCount.includes(phleboRating);
-    return props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED ? (
-      checkRating ? null : (
+    return props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED ? (
+      !!checkRating ? null : (
         <View style={styles.ratingContainer}>
           <Text style={styles.ratingTextStyle}>How was your Experience with Phlebo</Text>
           <View style={styles.startContainer}>
