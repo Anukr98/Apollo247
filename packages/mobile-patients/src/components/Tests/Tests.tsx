@@ -695,6 +695,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
       if (addresses?.length) {
         const deliveryAddress = addresses?.find((item) => item?.defaultAddress);
         if (deliveryAddress) {
+          setDeliveryAddressId?.(deliveryAddress?.id);
+
           //if location is not undefined in either of the three, then don't change address
           if (
             !asyncDiagnosticPincode?.pincode! &&
@@ -702,7 +704,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
             !locationDetails &&
             !pharmacyLocation
           ) {
-            setDeliveryAddressId?.(deliveryAddress?.id);
             checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'initialFetchAddress');
             setDiagnosticLocation?.(formatAddressToLocation(deliveryAddress));
             return;
@@ -720,13 +721,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setTestAddress?.(addressList);
       const deliveryAddress = addressList?.find((item) => item?.defaultAddress);
       if (deliveryAddress) {
+        setDeliveryAddressId?.(deliveryAddress?.id);
         if (
           !asyncDiagnosticPincode?.pincode! &&
           !diagnosticLocation &&
           !locationDetails &&
           !pharmacyLocation
         ) {
-          setDeliveryAddressId?.(deliveryAddress?.id);
           checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'fetchAddressResponse');
           setDiagnosticLocation?.(formatAddressToLocation(deliveryAddress));
         }
