@@ -368,9 +368,14 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             'response'
           );
           if (groupPlans) {
-            const hdfcPlan = groupPlans?.HDFC;
-            const circlePlan = groupPlans?.APOLLO;
-            const corprPlan = groupPlans?.Apollo247testcorporate;
+            let hdfcPlan = null;
+            let circlePlan = null;
+            let corprPlan = null;
+            for (let [key, value] of Object.entries(groupPlans)) {
+              if (key === 'HDFC') hdfcPlan = value;
+              else if (key === 'APOLLO') circlePlan = value;
+              else corprPlan = value;
+            }
 
             if (hdfcPlan) {
               const hdfcSubscription = setSubscriptionData(hdfcPlan[0]);
