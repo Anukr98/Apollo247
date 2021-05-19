@@ -36,7 +36,16 @@ import {
   Text,
   Modal,
 } from 'react-native';
-import { Down, DownO } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  Down,
+  Up,
+  DownO,
+  CopyBlue,
+  DownloadNew,
+  ShareBlue,
+  ViewIcon,
+  Cross,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import {
   CancellationDiagnosticsInput,
@@ -590,6 +599,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           setTodaySlotNotAvailable(true);
           setDisplaySchedule(true);
         } else {
+          setDisplaySchedule(true);
           todaySlotNotAvailable && setTodaySlotNotAvailable(false);
         }
 
@@ -1104,6 +1114,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       refundStatusArr: refundArray,
       comingFrom: AppRoutes.YourOrdersTest,
       showOrderSummaryTab: tab,
+      // fromOrderSummary: fromOrderSummary,
     });
   }
   const renderOrder = (
@@ -1173,6 +1184,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         key={order?.id}
         createdOn={order?.createdDate}
         orderLevelStatus={order?.orderStatus}
+        orderAttributesObj={order?.attributesObj}
         patientName={getPatientNameById(allCurrentPatients, order?.patientId)}
         gender={
           !!order?.patientObj?.gender

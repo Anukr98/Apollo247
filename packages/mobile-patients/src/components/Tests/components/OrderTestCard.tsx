@@ -33,6 +33,10 @@ import {
   DIAGNOSTIC_SHOW_OTP_STATUS,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
+import {
+  DiagnosticPhleboCallingClicked,
+  DiagnosticTrackPhleboClicked,
+} from '@aph/mobile-patients/src/components/Tests/Events';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 const screenWidth = Dimensions.get('window').width;
@@ -63,6 +67,7 @@ interface OrderTestCardProps {
   onPressAddTest?: () => void;
   onPressViewReport: () => void;
   phelboObject?: any;
+  orderAttributesObj?: any;
   onPressRatingStar: (star: number) => void;
   onPressCallOption: (name: string, number: string) => void;
 }
@@ -368,12 +373,30 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                       try {
                         Linking.canOpenURL(phleboTrackLink).then((supported) => {
                           if (supported) {
+                            DiagnosticTrackPhleboClicked(
+                              props.orderId,
+                              'My Order',
+                              currentPatient,
+                              'Yes'
+                            );
                             Linking.openURL(phleboTrackLink);
                           } else {
+                            DiagnosticTrackPhleboClicked(
+                              props.orderId,
+                              'My Order',
+                              currentPatient,
+                              'No'
+                            );
                             setBugFenderLog('FAILED_OPEN_URL', phleboTrackLink);
                           }
                         });
                       } catch (e) {
+                        DiagnosticTrackPhleboClicked(
+                          props.orderId,
+                          'My Order',
+                          currentPatient,
+                          'No'
+                        );
                         setBugFenderLog('FAILED_OPEN_URL', phleboTrackLink);
                       }
                     }}
@@ -404,34 +427,48 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     const phlObj = props?.phelboObject;
     const phleboRating = !!phlObj && phlObj?.PhleboRating;
     let checkRating = starCount.includes(phleboRating);
-    return props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED && !checkRating ? (
-      <View style={styles.ratingContainer}>
-        <Text style={styles.ratingTextStyle}>How was your Experience with Phlebo</Text>
-        <View style={styles.startContainer}>
-          {starCount.map((item) => (
-            <TouchableOpacity
-              onPress={() => {
-                props.onPressRatingStar(item);
-              }}
-            >
-              <StarEmpty style={{ margin: 5 }} />
-            </TouchableOpacity>
-          ))}
+    return props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED ? (
+      checkRating ? null : (
+        <View style={styles.ratingContainer}>
+          <Text style={styles.ratingTextStyle}>How was your Experience with Phlebo</Text>
+          <View style={styles.startContainer}>
+            {starCount.map((item) => (
+              <TouchableOpacity
+                onPress={() => {
+                  props.onPressRatingStar(item);
+                }}
+              >
+                <StarEmpty style={{ margin: 5 }} />
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
-      </View>
+      )
     ) : null;
   };
 
   const showReportTat = () => {
-    const report = !!props?.ordersData?.testPreparationData
-      ? props?.ordersData?.testPreparationData
+    const report = !!props?.orderAttributesObj?.reportGenerationTime
+      ? props?.orderAttributesObj?.reportGenerationTime
       : '';
-    return props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED && report ? (
+    const prepData = !!props?.orderAttributesObj?.preTestingRequirement
+      ? props?.orderAttributesObj?.preTestingRequirement
+      : '';
+    return props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED &&
+      (report || prepData) ? (
       <View style={styles.ratingContainer}>
-        <View style={styles.reporttatContainer}>
-          <ClockIcon />
-          <Text style={styles.reportTextStyle}>{report}</Text>
-        </View>
+        {report ? (
+          <View style={styles.reporttatContainer}>
+            <ClockIcon />
+            <Text style={styles.reportTextStyle}>{report}</Text>
+          </View>
+        ) : null}
+        {prepData ? (
+          <View style={styles.reporttatContainer}>
+            <InfoIconRed />
+            <Text style={styles.reportTextStyle}>{prepData}</Text>
+          </View>
+        ) : null}
       </View>
     ) : null;
   };

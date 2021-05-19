@@ -11,6 +11,7 @@ import {
   DropdownGreen,
   InfoIconRed,
   EmptySlot,
+  CrossPopup,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { GET_CUSTOMIZED_DIAGNOSTIC_SLOTS } from '@aph/mobile-patients/src/graphql/profiles';
@@ -76,7 +77,9 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   const itemId = props.itemId;
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id));
   const [selectedDate, setSelectedDate] = useState<string>(moment(date).format('DD') || '');
-  const [newSelectedSlot, setNewSelectedSlot] = useState('');
+  const [newSelectedSlot, setNewSelectedSlot] = useState(
+    `${formatTestSlot(slotInfo?.slotInfo?.startTime!)}` || ''
+  );
   type UniqueSlotType = typeof uniqueSlots[0];
 
   var offsetDays = 0;
@@ -427,27 +430,37 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
       transparent
       overlayStyle={styles.phrOverlayStyle}
     >
-      <View style={styles.containerStyle}>
-        <Text
-          style={[
-            {
-              ...theme.fonts.IBMPlexSansMedium(17),
-              color: theme.colors.LIGHT_BLUE,
-              padding: 15,
-            },
-            props.headingTextStyle,
-          ]}
+      <>
+        <TouchableOpacity
+          style={styles.closeContainer}
+          onPress={() => {
+            props.onClose();
+          }}
         >
-          {' '}
-          {props.heading}
-        </Text>
-        <ScrollView style={styles.containerContentStyle}>
-          {renderCalendarView()}
-          {infoPanel()}
-          {renderSlotSelectionView()}
-        </ScrollView>
-        {dropDownOptions.length ? renderBottomButton : null}
-      </View>
+          <CrossPopup />
+        </TouchableOpacity>
+        <View style={styles.containerStyle}>
+          <Text
+            style={[
+              {
+                ...theme.fonts.IBMPlexSansMedium(17),
+                color: theme.colors.LIGHT_BLUE,
+                padding: 15,
+              },
+              props.headingTextStyle,
+            ]}
+          >
+            {' '}
+            {props.heading}
+          </Text>
+          <ScrollView style={styles.containerContentStyle}>
+            {renderCalendarView()}
+            {infoPanel()}
+            {renderSlotSelectionView()}
+          </ScrollView>
+          {dropDownOptions.length ? renderBottomButton : null}
+        </View>
+      </>
     </Overlay>
   );
 };
@@ -465,6 +478,12 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.WHITE,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
+  },
+  closeContainer: {
+    alignSelf: 'flex-end',
+    marginTop: 100,
+    marginHorizontal: 20,
+    position: 'absolute',
   },
   phrOverlayStyle: {
     padding: 0,

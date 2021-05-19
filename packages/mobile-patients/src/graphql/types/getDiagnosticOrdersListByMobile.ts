@@ -18,6 +18,12 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   gender: string | null;
   dateOfBirth: string | null;
 }
+export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_attributesObj {
+  __typename: "AttributesObj";
+  preTestingRequirement: string;
+  reportGenerationTime: string;
+  initialCollectionCharges: number;
+}
 
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientAddressObj {
   __typename: "PatientAddressObj";
@@ -94,9 +100,9 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_phleboDetailsObj {
   __typename: "PhleboDetailsObj";
   PhelboOTP: string | null;
-  PhelbotomistName: string;
-  PhelbotomistMobile: string;
-  PhelbotomistTrackLink: string;
+  PhelbotomistName: string | null;
+  PhelbotomistMobile: string | null;
+  PhelbotomistTrackLink: string | null;
   TempRecording: string | null;
   CheckInTime: any | null;
   PhleboLatitude: number | null;

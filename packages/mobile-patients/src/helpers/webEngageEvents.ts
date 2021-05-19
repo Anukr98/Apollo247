@@ -1371,7 +1371,7 @@ export interface WebEngageEvents {
   'UHID' : string;
 }
 [WebEngageEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED]:{
-  'Order id': string;
+  'Order id': string | number;
   'UHID': string;
   'Link opened' : 'Yes' | 'No';
   'Source': 'Home' | 'My Order' | 'Track Order' | 'Order Summary'
