@@ -206,13 +206,14 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
         .map((item) => item.prismPrescriptionFileId)
         .filter((i) => i);
       const days = durationDays ? parseInt(durationDays) : null;
+      const appointmentIds = ePrescription?.length ? ePrescription?.map((item) => item?.id) : [];
 
       const prescriptionMedicineInput: savePrescriptionMedicineOrderOMSVariables = {
         prescriptionMedicineOMSInput: {
           patientId: currentPatient?.id || '',
           medicineDeliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
           ...(storeId ? { shopId: storeId } : {}),
-          appointmentId: '',
+          appointmentId: appointmentIds?.length ? appointmentIds.join(',') : '',
           patinetAddressId: deliveryAddressId || '',
           prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),
           prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),

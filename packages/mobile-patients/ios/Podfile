@@ -110,7 +110,7 @@ target 'ApolloPatient' do
 
   pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
 
-  pod 'react-native-appsflyer', :path => '../node_modules/react-native-appsflyer'
+  pod 'ReactNativeWebPFormat', :path => '../node_modules/react-native-webp-format'
 
   target 'NotificationService' do
       platform :ios, '10.0'

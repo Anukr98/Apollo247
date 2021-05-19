@@ -4,13 +4,11 @@ import {
   StyleSheet,
   View,
   Platform,
-  ActivityIndicator,
   Linking,
   AppStateStatus,
   AppState,
   DeviceEventEmitter,
   NativeModules,
-  Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import { NavigationScreenProps } from 'react-navigation';
@@ -60,7 +58,6 @@ import coerce from 'semver/functions/coerce';
 import RNCallKeep from 'react-native-callkeep';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import { string as localStrings } from '../strings/string';
-import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
 import Pubnub from 'pubnub';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import messaging from '@react-native-firebase/messaging';
@@ -77,7 +74,6 @@ import {
   getProHealthHospitalBySlug,
   getProHealthHospitalBySlugVariables,
 } from '@aph/mobile-patients/src/graphql/types/getProHealthHospitalBySlug';
-
 import firebaseAuth from '@react-native-firebase/auth';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
@@ -416,6 +412,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
       const params = id?.split('+');
       getAppointmentDataAndNavigate(params?.[0]!, false);
+    } else if (routeName == 'prohealth') {
+      fetchProhealthHospitalDetails(id!);
     } else {
       getData(routeName, id, isCall, timeout, mediaSource);
     }

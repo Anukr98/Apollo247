@@ -5,6 +5,6 @@ export const ApolloLogo: React.FC<Partial<ImageProps>> = (props) => (
   <Image
     style={{ width: 77, height: 57 }}
     {...props}
-    source={require('@aph/mobile-patients/src/images/apollo/apollo_logo.png')}
+    source={require('@aph/mobile-patients/src/images/apollo/apollo_logo.webp')}
   />
 );

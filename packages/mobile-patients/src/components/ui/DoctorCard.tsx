@@ -563,7 +563,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             <View>
               {isCircleDoctorOnSelectedConsultMode ? (
                 <ImageBackground
-                  source={require('@aph/mobile-patients/src/components/ui/icons/doctor_ring.png')}
+                  source={require('@aph/mobile-patients/src/components/ui/icons/doctor_ring.webp')}
                   style={[
                     styles.drImageBackground,
                     styles.drImageMargins,

@@ -10,6 +10,7 @@
 export interface getOrderPhleboDetailsBulk_getOrderPhleboDetailsBulk_orderPhleboDetailsBulk_orderPhleboDetails_diagnosticPhlebotomists {
   __typename: "DiagnosticPhlebotomists";
   name: string;
+  mobile: string | null;
 }
 
 export interface getOrderPhleboDetailsBulk_getOrderPhleboDetailsBulk_orderPhleboDetailsBulk_orderPhleboDetails {
@@ -17,6 +18,8 @@ export interface getOrderPhleboDetailsBulk_getOrderPhleboDetailsBulk_orderPhlebo
   diagnosticOrdersId: string;
   diagnosticPhlebotomists: getOrderPhleboDetailsBulk_getOrderPhleboDetailsBulk_orderPhleboDetailsBulk_orderPhleboDetails_diagnosticPhlebotomists;
   phleboOTP: string | null;
+  phleboTrackLink: string | null;
+  phleboRating: number | null;
 }
 
 export interface getOrderPhleboDetailsBulk_getOrderPhleboDetailsBulk_orderPhleboDetailsBulk_phleboEta {

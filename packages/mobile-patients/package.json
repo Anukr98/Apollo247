@@ -15,8 +15,11 @@
     "test": "jest",
     "typecheck": "tsc --project . --noEmit",
     "jetify": "jetify",
-    "android-dev": "adb reverse tcp:8081 tcp:8081 && react-native run-android",
-    "postinstall": "cat OTSubscriberViewManager.java > node_modules/opentok-react-native/android/src/main/java/com/opentokreactnative/OTSubscriberViewManager.java && cat opentok-react-native.podspec > node_modules/opentok-react-native/opentok-react-native.podspec && npx jetify && patch-package"
+    "android": "adb reverse tcp:8081 tcp:8081 && react-native run-android",
+    "ios": "npm run vitals:dev && react-native run-ios",
+    "vitals:dev": "cp -a ../apollo-vitals-ios-dev.framework/. ios/ApolloVitalsFramework.framework/",
+    "vitals": "git checkout -- ios/ApolloVitalsFramework.framework/ && git clean -d -f -- ios/ApolloVitalsFramework.framework/",
+    "postinstall": "cat OTSubscriberViewManager.java > node_modules/opentok-react-native/android/src/main/java/com/opentokreactnative/OTSubscriberViewManager.java && cat opentok-react-native.podspec > node_modules/opentok-react-native/opentok-react-native.podspec && npx jetify"
   },
   "devDependencies": {
     "@aph/api-schema": "file:../api-schema",
@@ -86,7 +89,7 @@
     "graphql": "^14.5.3",
     "graphql-tag": "^2.10.1",
     "hyper-sdk-react": "^2.0.10",
-    "jsc-android": "^245459.0.0",
+    "jsc-android": "^250230.2.1",
     "jwt-decode": "^2.2.0",
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
@@ -141,6 +144,7 @@
     "react-native-vector-icons": "^6.5.0",
     "react-native-voip-push-notification": "^2.1.0",
     "react-native-webengage": "^1.1.1",
+    "react-native-webp-format": "^1.1.2",
     "react-native-webview": "^8.0.3",
     "react-navigation": "^3.11.0",
     "rn-fetch-blob": "^0.12.0",

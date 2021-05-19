@@ -192,10 +192,10 @@ import {
   renderCircleShimmer,
   renderBannerShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import { ConsultedDoctorsCard } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultedDoctorsCard';
 import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
 import { AuthContextProps } from '@aph/mobile-patients/src/components/AuthProvider';
 import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
-import { ConsultedDoctorsCard } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultedDoctorsCard';
 
 const { Vitals } = NativeModules;
 
@@ -759,6 +759,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setCircleCashback,
     circleSubscriptionId,
     setHdfcSubscriptionId,
+    setCorporateSubscription,
+    corporateSubscription,
     setCirclePlanValidity,
     circlePlanValidity,
     setCirclePaymentReference,
@@ -966,12 +968,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         }
       });
     }
+
     if (params?.isFreeConsult) {
       checkPermissions(['camera', 'microphone']).then((response: any) => {
         const { camera, microphone } = response;
         if (camera === 'authorized' && microphone === 'authorized') {
           showFreeConsultOverlay(params);
-        } else {
+        } else if (!params?.isPhysicalConsultBooked) {
           overlyCallPermissions(
             currentPatient!.firstName!,
             params?.doctorName,
@@ -984,6 +987,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               }
             }
           );
+        } else {
+          if (params?.doctorName) showFreeConsultOverlay(params);
         }
       });
     }
@@ -1024,7 +1029,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const { camera, microphone } = response;
         if (camera === 'authorized' && microphone === 'authorized') {
           showFreeConsultOverlay(params);
-        } else {
+        } else if (!params?.isPhysicalConsultBooked) {
           overlyCallPermissions(
             currentPatient!.firstName!,
             params?.doctorName,
@@ -1037,6 +1042,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               }
             }
           );
+        } else {
+          if (params?.doctorName) showFreeConsultOverlay(params);
         }
       });
     }
@@ -1097,9 +1104,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         },
       });
       const appointmentCount = res?.data?.getPatientFutureAppointmentCount;
+
       if (appointmentCount) {
-        const inProgressAppointments = appointmentCount?.activeConsultsCount || 0;
-        if (inProgressAppointments > 0) {
+        const upcomingConsultsCount = appointmentCount?.upcomingConsultsCount || 0;
+        const upcomingPhysicalConsultsCount = appointmentCount?.upcomingPhysicalConsultsCount || 0;
+
+        if (upcomingConsultsCount - upcomingPhysicalConsultsCount > 0) {
           overlyCallPermissions(
             currentPatient!.firstName!,
             'the doctor',
@@ -1725,6 +1735,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             'Circle Plan type': '',
           };
           onAppLoad && logHomePageViewed(WEGAttributes);
+        }
+
+        for (let key of Object.keys(data)) {
+          if (key !== 'APOLLO' && key !== 'HDFC') setCorporateSubscription(true);
         }
 
         if (data?.HDFC?.[0]._id) {
@@ -2955,7 +2969,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             <View style={styles.circleButtonLeft}>
               <ImageBackground
                 style={styles.circleButtonImage}
-                source={require('../ui/icons/PathLeft.png')}
+                source={require('../ui/icons/PathLeft.webp')}
               />
             </View>
 
@@ -2969,7 +2983,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             <View style={styles.circleButtonRight}>
               <ImageBackground
                 style={styles.circleButtonImage}
-                source={require('../ui/icons/PathRight.png')}
+                source={require('../ui/icons/PathRight.webp')}
               />
             </View>
           </View>
@@ -3035,7 +3049,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <ImageBackground
           style={{ overflow: 'hidden', width: '100%', height: 150 }}
           resizeMode={'stretch'}
-          source={require('@aph/mobile-patients/src/images/home/healthcareEcosystem.png')}
+          source={require('@aph/mobile-patients/src/images/home/healthcareEcosystem.webp')}
         >
           <View style={{ paddingVertical: 16, paddingHorizontal: 16 }}>
             <Text

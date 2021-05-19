@@ -164,6 +164,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     setIsCircleSubscription,
     setCircleMembershipCharges,
     setCircleSubscriptionId,
+    setCorporateSubscription,
+    corporateSubscription,
     circleSubscriptionId,
     hdfcSubscriptionId,
     clearCartInfo,
@@ -385,7 +387,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               />
             ) : (
               <Image
-                source={require('@aph/mobile-patients/src/components/ui/icons/no-photo-icon-round.png')}
+                source={require('@aph/mobile-patients/src/components/ui/icons/no-photo-icon-round.webp')}
                 style={{ top: 10, height: 200, width: '100%' }}
                 resizeMode={'contain'}
               />
@@ -530,7 +532,12 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             fireProfileAccessedEvent('OneApollo Membership');
           }}
         />
-        {!!(hdfcSubscriptionId || circleSubscriptionId || isCircleExpired) && (
+        {!!(
+          hdfcSubscriptionId ||
+          circleSubscriptionId ||
+          isCircleExpired ||
+          corporateSubscription
+        ) && (
           <ListCard
             title={'My Memberships'}
             leftIcon={<MyMembershipIcon style={{ height: 20, width: 26 }} />}

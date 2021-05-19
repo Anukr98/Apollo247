@@ -1,7 +1,7 @@
 import { Remove } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, TouchableOpacity, View, BackHandler } from 'react-native';
 import { Header } from 'react-native-elements';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import { NavigationScreenProps } from 'react-navigation';
@@ -49,6 +49,15 @@ export interface ImageSliderScreenProps
 export const ImageSliderScreen: React.FC<ImageSliderScreenProps> = (props) => {
   const images = props.navigation.getParam('images', []);
   const heading = props.navigation.getParam('heading');
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
+    };
+  }, []);
+
+  const onPressHardwareBack = () => props.navigation.goBack();
 
   const [slideIndex, setSlideIndex] = useState(0);
 

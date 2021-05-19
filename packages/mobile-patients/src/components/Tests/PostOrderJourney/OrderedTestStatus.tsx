@@ -9,7 +9,7 @@ import moment from 'moment';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import _ from 'lodash';
-import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity, Linking } from 'react-native';
+import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity, Linking, Modal, Clipboard } from 'react-native';
 import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
 import {
   DIAGNOSTIC_ORDER_STATUS,
@@ -22,7 +22,14 @@ import {
   getTestOrderStatusText,
   handleGraphQlError,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { WhatsAppIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  WhatsAppIcon,
+  CopyBlue,
+  DownloadNew,
+  ShareBlue,
+  ViewIcon,
+  Cross,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   AppConfig,
   DIAGNOSTIC_ORDER_FAILED_STATUS,
@@ -35,7 +42,7 @@ import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpe
 import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
 import { RefundCard } from '@aph/mobile-patients/src/components/Tests/components/RefundCard';
 import { DiagnosticViewReportClicked } from '@aph/mobile-patients/src/components/Tests/Events';
-
+import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
 export interface TestStatusObject {
   id: string;
   displayId: string;
@@ -61,6 +68,10 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   const individualItemStatus = props.navigation.getParam('itemLevelStatus');
   const getRefundArray = props.navigation.getParam('refundStatusArr');
 
+  const [isViewReport, setIsViewReport] = useState<boolean>(false);
+  const [activeOrder, setActiveOrder] = useState<any>('');
+  const [snackbarState, setSnackbarState] = useState<boolean>(false);
+  const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
   const isPrepaid = orderSelected?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
 
   const [individualTestData, setIndividualTestData] = useState<any>([]);
@@ -265,7 +276,8 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
     const visitId = orderSelected?.visitNo;
     DiagnosticViewReportClicked();
     if (visitId) {
-      fetchTestReportResult(order);
+      setActiveOrder(order)
+      setDisplayViewReport(true)
     } else {
       props.navigation.navigate(AppRoutes.HealthRecordsHome);
     }
@@ -359,6 +371,18 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
+      {displayViewReport && (
+            <TestViewReportOverlay
+              order={activeOrder}
+              heading=""
+              isVisible={displayViewReport}
+              onClose={() => setDisplayViewReport(false)}
+              onPressViewReport={()=>{
+                fetchTestReportResult(activeOrder);
+              }}
+            />
+        )
+      }
       <SafeAreaView style={theme.viewStyles.container}>
         <Header
           leftIcon="backArrow"
@@ -450,5 +474,43 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 10,
     borderBottomRightRadius: 10,
     borderBottomLeftRadius: 10,
+  },
+  modalMainView: {
+    backgroundColor: 'rgba(100,100,100, 0.5)',
+    flex: 1,
+    justifyContent: 'flex-end',
+    // alignItems: 'center',
+    flexDirection: 'column',
+  },
+  reportModalView: {
+    backgroundColor: 'white',
+    width: '100%',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  },
+
+  reportModalOptionsView: {
+    backgroundColor: 'white',
+    width: '100%',
+  },
+  itemView: {
+    backgroundColor: 'white',
+    width: '100%',
+    padding: 10,
+    flexDirection: 'row',
+    alignContent: 'center',
+    borderBottomColor: '#e8e8e8',
+    borderBottomWidth: 1,
+  },
+  itemTextStyle: {
+    marginHorizontal: 10,
+    ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE),
+  },
+  copyTextStyle: {
+    marginHorizontal: 10,
+    textAlign: 'left',
+    ...theme.viewStyles.text('SB', 14, theme.colors.APP_GREEN),
   },
 });

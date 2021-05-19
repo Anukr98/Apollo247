@@ -28,6 +28,7 @@
     "chatWithUs": "Chat with us",
     "upload_more": "+ UPLOAD MORE",
     "date_placeholder_text": "DD MMM, YYYY",
+    "phr_max_file_text": "You can add maximum 10 files up-to 2 MB each",
     "select_text": "Select",
     "doctor_name_text": "Doctor name",
     "end_date_text": "End Date",
@@ -124,7 +125,8 @@
     "somethingWentWrong": "Something went wrong.",
     "settingProfileTxt": "We’re setting up your profile. Please check back soon!",
     "couldNotLoadText": "Uh oh.. could't load!",
-    "lowNetworkText": "We were unable to load the page properly because of low network. Please try again"
+    "lowNetworkText": "We were unable to load the page properly because of low network. Please try again",
+    "noDiagnosticsAvailable": "Unfortunately, we do not have any diagnostic(s) available right now."
   },
   "components": {
     "medicineDetails": {
@@ -363,12 +365,12 @@
       ]
     }
   },
-  "needHelpScreen":{
-    "view_previous_tickets":"To view previous tickets ",
-    "click_here":"CLICK HERE",
-    "reopen_ticket":"REOPEN TICKET",
-    "whatsapp_with_us":"WHATSAPP WITH US",
-    "no_conversation_till_now":"No conversation till now !"
+  "needHelpScreen": {
+    "view_previous_tickets": "To view previous tickets ",
+    "click_here": "CLICK HERE",
+    "reopen_ticket": "REOPEN TICKET",
+    "whatsapp_with_us": "WHATSAPP WITH US",
+    "no_conversation_till_now": "No conversation till now !"
   },
   "doctor_search_listing": {
     "pleaseWait": "Please Wait!",
@@ -535,19 +537,44 @@
     "feedbackSubTxt": "Your feedback has been submitted. Thanks for your time.",
     "homeHomeCollectionDisclaimerTxt": "Home collection charges of upto ₹100 would be levied in case of order value less than ₹500",
     "itDoseCancelledText": "Canceled by phlebotomist as per the request",
-    "orderCancelledReasonText": "Order was cancelled -",
-    "wantToReschedule": "• Do you want to Reschedule Appointment ?"
+    "orderCancelledReasonText": "Order was cancelled : ",
+    "wantToReschedule": "• Do you want to Reschedule Appointment ?",
+    "sampleSubmitted": "Sample Submitted",
+    "reportGenrated": "Reports are ready",
+    "bookingFor": "Booking",
+    "sampleSubmittedContent": "Sample has been submitted to the lab.\nYou will be notified once your reports are ready.",
+    "viewReportContent": "Your reports have been generated.",
+    "collectionAppointmentContent": "Sample Collection appointment on",
+    "viewReportText": "View Report",
+    "sampleCollectedText": "Check Status",
+    "collectionText": "Track Order",
+    "trackPhleboText": "Track Phlebo",
+    "codDisableText" :"We are currently not allowing Cash On Delivery for home sample collections."
+  },
+  "diagnosticCategoryTitle": {
+    "category" : "Category",
+    "categoryGrid": "Category_Scroll"
   },
   "orders": {
     "urOrders": "MY ORDERS",
+    "ratingHeader": "FEEDBACK",
+    "ratingDetailHeader": "Rate your Experience with our Phlebotomist",
     "trackOrder": "Track Order",
     "viewBill": "Order Summary",
     "call_us": "CALL US",
     "add_to_cart": "ADD TO CART",
     "test_prec_req": "This test requires doctor’s prescription",
     "test_prec_not_req": "This test doesn't requires doctor’s prescription",
-    "go_to_help":"GO TO HELP"
+    "go_to_help": "GO TO HELP"
   },
+  "defaultReasonList": [
+    { "title": "Arrived very Late" },
+    { "title": "Did not seem Well-Trained" },
+    { "title": "Phlebo was not Polite" },
+    { "title": "Didn’t Wear the PPE Kit or Gloves" },
+    { "title": "I have other Feedback" }
+  ],
+  "positiveReasonList": [{ "title": "I have Positive Feedback" }],
   "OrderSummery": {
     "total": "Total",
     "order": "ORDER",
@@ -577,6 +604,12 @@
     "refund_amount": "Refund amount",
     "discount_total": "Discount Total",
     "amount_to_be_paid_on_delivery": "Amount to be paid on delivery"
+  },
+  "Report": {
+    "view": "View Report",
+    "download": "Download Report PDF",
+    "share": "Share on Whatsapp",
+    "copy": "Copy Link to PDF"
   },
   "health_records_home": {
     "description": "Find all your health record(s) & prescription(s) in one place.",
@@ -1057,5 +1090,4 @@
     "CONSULT_ONLINE": "Consult Online",
     "MEET_IN_PERSON": "Meet In Person"
   }
-
 }

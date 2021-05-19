@@ -56,6 +56,7 @@ import {
   doRequestAndAccessLocation,
   formatToCartItem,
   g,
+  getPrescriptionItemQuantity,
   handleGraphQlError,
   medUnitFormatArray,
   nameFormater,
@@ -340,7 +341,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       });
   }, []);
 
-  const postWEGEvent = (type: 'medicine' | 'test' | 'download prescription') => {
+  const postWEGEvent = (
+    type: 'medicine' | 'test' | 'download prescription',
+    medOrderType?: WebEngageEvents[WebEngageEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS]['Order Type']
+  ) => {
     const requireCasesheetDetails =
       caseSheetDetails?.doctorType !== 'JUNIOR' ? caseSheetDetails : {};
     const eventAttributes:
@@ -372,6 +376,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       (eventAttributes as WebEngageEvents[WebEngageEventName.DOWNLOAD_PRESCRIPTION])[
         'Download Screen'
       ] = 'Prescription Details';
+    }
+    if (type == 'medicine' && medOrderType) {
+      (eventAttributes as WebEngageEvents[WebEngageEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS])[
+        'Order Type'
+      ] = medOrderType;
     }
     postWebEngageEvent(
       type == 'medicine'
@@ -594,6 +603,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       uploadedUrl: docUrl,
     } as EPrescription;
     const isCartOrder = medPrescription?.length === caseSheetDetails?.medicinePrescription?.length;
+    postWEGEvent('medicine', isCartOrder ? 'Cart' : 'Non-Cart');
 
     if (isCartOrder) {
       try {
@@ -603,7 +613,19 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         );
         const cartItems = response
           .filter(({ data }) => data?.productdp?.[0]?.id && data?.productdp?.[0]?.sku)
-          .map(({ data }) => formatToCartItem({ ...data?.productdp?.[0]!, image: '' }));
+          .map(({ data }, index) => ({
+            ...formatToCartItem({ ...data?.productdp?.[0]!, image: '' }),
+            quantity: getPrescriptionItemQuantity(
+              medPrescription?.[index]?.medicineUnit!,
+              medPrescription?.[index]?.medicineTimings!,
+              medPrescription?.[index]?.medicineDosage!,
+              medPrescription?.[index]?.medicineCustomDosage!,
+              medPrescription?.[index]?.medicineConsumptionDurationInDays!,
+              medPrescription?.[index]?.medicineConsumptionDurationUnit!,
+              parseInt(data?.productdp?.[0]?.mou || '1', 10)
+            ),
+          }));
+
         addMultipleCartItems?.(cartItems);
         setEPrescriptions?.([presToAdd]);
         setLoading?.(false);
@@ -783,7 +805,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               })}
               <TouchableOpacity
                 onPress={() => {
-                  postWEGEvent('medicine');
                   onAddToCart();
                 }}
               >
@@ -923,12 +944,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           <TouchableOpacity
             style={styles.orderMedicinesButton}
             onPress={() => {
-              postWEGEvent('medicine');
               onAddToCart();
             }}
           >
             <Text style={styles.orderMedicineText}>ORDER MEDICINES NOW</Text>
-            <Text style={styles.etaMsg}>(Delivery in 2-4 hours)</Text>
           </TouchableOpacity>
         </View>
       );
