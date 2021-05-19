@@ -11,7 +11,7 @@ import {
   ImageBackground,
 } from 'react-native';
 import { Overlay } from 'react-native-elements';
-import { ScrollView, NavigationScreenProps } from 'react-navigation';
+import { ScrollView } from 'react-navigation';
 import { EPrescription } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
@@ -22,15 +22,18 @@ import {
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  GET_PAST_CONSULTS_PRESCRIPTIONS,
-  GET_MEDICAL_PRISM_RECORD_V2,
+  GET_PAST_CONSULTS_PRESCRIPTIONS_BY_MOBILE,
+  GET_PRESCRIPTIONS_BY_MOBILE_NUMBER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
-  getPatientPastConsultsAndPrescriptions,
-  getPatientPastConsultsAndPrescriptionsVariables,
-  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet,
-  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems,
-} from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
+  getLinkedProfilesPastConsultsAndPrescriptionsByMobile,
+  getLinkedProfilesPastConsultsAndPrescriptionsByMobileVariables,
+  getLinkedProfilesPastConsultsAndPrescriptionsByMobile_getLinkedProfilesPastConsultsAndPrescriptionsByMobile_consults_caseSheet,
+  getLinkedProfilesPastConsultsAndPrescriptionsByMobile_getLinkedProfilesPastConsultsAndPrescriptionsByMobile_medicineOrders_medicineOrderLineItems,
+  getLinkedProfilesPastConsultsAndPrescriptionsByMobile_getLinkedProfilesPastConsultsAndPrescriptionsByMobile_medicineOrders,
+  getLinkedProfilesPastConsultsAndPrescriptionsByMobile_getLinkedProfilesPastConsultsAndPrescriptionsByMobile,
+  getLinkedProfilesPastConsultsAndPrescriptionsByMobile_getLinkedProfilesPastConsultsAndPrescriptionsByMobile_consults,
+} from '@aph/mobile-patients/src/graphql/types/getLinkedProfilesPastConsultsAndPrescriptionsByMobile';
 import { DoctorType, MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -38,11 +41,10 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import {
-  getPatientPrismMedicalRecords_V2,
-  getPatientPrismMedicalRecords_V2Variables,
-  getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response,
-  getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_prescriptions_response,
-} from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
+  getPrescriptionsByMobileNumber,
+  getPrescriptionsByMobileNumberVariables,
+  getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescriptions_response,
+} from '@aph/mobile-patients/src/graphql/types/getPrescriptionsByMobileNumber';
 import { TrackerBig } from '@aph/mobile-patients/src/components/ui/Icons';
 import Pdf from 'react-native-pdf';
 import { SelectEprescriptionCard } from '@aph/mobile-patients/src/components/Medicines/Components/SelectEprescriptionCard';
@@ -218,49 +220,44 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
   }, [props.selectedEprescriptionIds]);
 
   const { data, loading, error } = useQuery<
-    getPatientPastConsultsAndPrescriptions,
-    getPatientPastConsultsAndPrescriptionsVariables
-  >(GET_PAST_CONSULTS_PRESCRIPTIONS, {
+    getLinkedProfilesPastConsultsAndPrescriptionsByMobile,
+    getLinkedProfilesPastConsultsAndPrescriptionsByMobileVariables
+  >(GET_PAST_CONSULTS_PRESCRIPTIONS_BY_MOBILE, {
     variables: {
-      consultsAndOrdersInput: {
-        patient: currentPatient && currentPatient.id ? currentPatient.id : '',
+      consultsAndOrdersByMobileInput: {
+        mobileNumber: currentPatient?.mobileNumber,
       },
     },
     fetchPolicy: 'no-cache',
   });
 
   const { data: medPrismRecords, loading: medPrismloading, error: medPrismerror } = useQuery<
-    getPatientPrismMedicalRecords_V2,
-    getPatientPrismMedicalRecords_V2Variables
-  >(GET_MEDICAL_PRISM_RECORD_V2, {
+    getPrescriptionsByMobileNumber,
+    getPrescriptionsByMobileNumberVariables
+  >(GET_PRESCRIPTIONS_BY_MOBILE_NUMBER, {
     variables: {
-      patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-      records: props.showLabResults
-        ? [MedicalRecordType.PRESCRIPTION, MedicalRecordType.TEST_REPORT]
-        : [MedicalRecordType.PRESCRIPTION],
+      MobileNumber: currentPatient?.mobileNumber,
     },
     fetchPolicy: 'no-cache',
   });
-  const [labResults, setLabResults] = useState<
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response | null)[]
-    | null
-    | undefined
-  >([]);
   const [prescriptions, setPrescriptions] = useState<
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_prescriptions_response | null)[]
+    | (getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescriptions_response | null)[]
     | null
     | undefined
   >([]);
 
   useEffect(() => {
-    if (props.showLabResults) {
-      setLabResults(
-        g(medPrismRecords, 'getPatientPrismMedicalRecords_V2', 'labResults', 'response') || []
-      );
-    }
-    setPrescriptions(
-      g(medPrismRecords, 'getPatientPrismMedicalRecords_V2', 'prescriptions', 'response') || []
+    let mobilePrescriptions: getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescriptions_response[] = [];
+    medPrismRecords?.getPrescriptionsByMobileNumber?.forEach(
+      (
+        presc: getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescriptions_response
+      ) => {
+        if (presc?.prescriptions?.response?.length) {
+          mobilePrescriptions.push(...presc?.prescriptions?.response);
+        }
+      }
     );
+    setPrescriptions(mobilePrescriptions);
   }, [medPrismRecords]);
 
   useEffect(() => {
@@ -283,16 +280,11 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
       type: 'medical' | 'lab' | 'health' | 'hospital' | 'prescription';
       data: any;
     }[] = [];
-    if (props.showLabResults) {
-      labResults?.forEach((item) => {
-        mergeArray.push({ type: 'lab', data: item });
-      });
-    }
     prescriptions?.forEach((item) => {
       mergeArray.push({ type: 'prescription', data: item });
     });
     setCombination(sordByDate(mergeArray));
-  }, [labResults, prescriptions]);
+  }, [prescriptions]);
 
   const sordByDate = (
     array: { type: 'medical' | 'lab' | 'health' | 'hospital' | 'prescription'; data: any }[]
@@ -317,23 +309,46 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
   };
 
   const getMedicines = (
-    medicines: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems | null)[]
+    medicines: (getLinkedProfilesPastConsultsAndPrescriptionsByMobile_getLinkedProfilesPastConsultsAndPrescriptionsByMobile_medicineOrders_medicineOrderLineItems | null)[]
   ) =>
     medicines
       .filter((item) => item!.medicineName)
       .map((item) => item!.medicineName)
       .join(', ');
 
-  const ePrescriptions = g(data, 'getPatientPastConsultsAndPrescriptions', 'medicineOrders')! || [];
-  const ePrescriptionsFromConsults =
-    g(data, 'getPatientPastConsultsAndPrescriptions', 'consults')! || [];
+  const getMedicineOrdersPrescriptions = () => {
+    let orders: getLinkedProfilesPastConsultsAndPrescriptionsByMobile_getLinkedProfilesPastConsultsAndPrescriptionsByMobile_medicineOrders[] = [];
+    data?.getLinkedProfilesPastConsultsAndPrescriptionsByMobile?.forEach(
+      (
+        order: getLinkedProfilesPastConsultsAndPrescriptionsByMobile_getLinkedProfilesPastConsultsAndPrescriptionsByMobile
+      ) => {
+        if (order?.medicineOrders?.length) orders.push(order?.medicineOrders);
+      }
+    );
+    return orders;
+  };
+
+  const getConsultsPrescriptions = () => {
+    let orders: getLinkedProfilesPastConsultsAndPrescriptionsByMobile_getLinkedProfilesPastConsultsAndPrescriptionsByMobile_consults[] = [];
+    data?.getLinkedProfilesPastConsultsAndPrescriptionsByMobile?.forEach(
+      (
+        order: getLinkedProfilesPastConsultsAndPrescriptionsByMobile_getLinkedProfilesPastConsultsAndPrescriptionsByMobile
+      ) => {
+        if (order?.consults?.length) orders.push(...order?.consults);
+      }
+    );
+    return orders;
+  };
+
+  const ePrescriptions = getMedicineOrdersPrescriptions();
+  const ePrescriptionsFromConsults = getConsultsPrescriptions();
 
   const getCaseSheet = (
-    caseSheet: getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet[]
+    caseSheet: getLinkedProfilesPastConsultsAndPrescriptionsByMobile_getLinkedProfilesPastConsultsAndPrescriptionsByMobile_consults_caseSheet[]
   ) => caseSheet!.find((item) => item!.doctorType !== DoctorType.JUNIOR)!;
 
   const getBlobUrl = (
-    caseSheet: getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet[]
+    caseSheet: getLinkedProfilesPastConsultsAndPrescriptionsByMobile_getLinkedProfilesPastConsultsAndPrescriptionsByMobile_consults_caseSheet[]
   ) => {
     const url = caseSheet?.find(
       (casesheet) => !!casesheet?.blobName && casesheet?.doctorType !== DoctorType.JUNIOR
