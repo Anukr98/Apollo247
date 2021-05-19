@@ -394,11 +394,11 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   const showOnlyOTPContainer = () => {
     const phlObj = props?.phelboObject;
     const otpToShow = !!phlObj && phlObj?.PhelboOTP;
-    return (
+    return !!otpToShow && SHOW_OTP_ARRAY.includes(props.orderLevelStatus) ? (
       <View style={styles.ratingContainer}>
         <Text style={styles.otpBoxTextStyle}>OTP : {otpToShow}</Text>
       </View>
-    );
+    ) : null;
   };
 
   const showRatingView = () => {
@@ -498,9 +498,12 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         {renderCTAsView()}
       </View>
       {props.showAdditonalView || props.isCancelled ? renderAdditionalInfoView() : null}
-      {showDetailOTPContainer()}
-      {showRatingView()}
-      {showReportTat()}
+
+      {showOnlyOTPContainer()}
+      {/* reverting for the time being */}
+      {/* {showDetailOTPContainer()} */}
+      {/* {showRatingView()} */}
+      {/* {showReportTat()} */}
     </TouchableOpacity>
   );
 };
@@ -562,7 +565,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: 20,
     marginBottom: '2%',
-    minHeight: 30,
+    minHeight: 40,
   },
   testForText: {
     ...theme.viewStyles.text('M', 13, colors.SHERPA_BLUE, 1, 18),

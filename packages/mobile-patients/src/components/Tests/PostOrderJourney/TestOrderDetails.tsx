@@ -507,7 +507,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                           </View>
                           <StatusCard titleText={item?.orderStatus} />
                         </View>
-                        {itemReportTat?.[index] ? (
+                        {/* Reverting for a time being */}
+                        {/* {itemReportTat?.[index] ? (
                           <View style={styles.ratingContainer}>
                             <View style={styles.reporttatContainer}>
                               <ClockIcon />
@@ -516,7 +517,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                               >{`Get your report by ${itemReportTat?.[index]}`}</Text>
                             </View>
                           </View>
-                        ) : null}
+                        ) : null} */}
                       </View>
                     ) : null}
                   </>
