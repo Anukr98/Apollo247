@@ -152,6 +152,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
         } else {
           setSlots(slotsArray);
           slotsArray?.length && setSlotInfo(slotsArray?.[0]);
+          setNewSelectedSlot(`${formatTestSlot(slotsArray?.[0]?.slotInfo?.startTime!)}`);
           showSpinner(false);
         }
       })
@@ -432,10 +433,12 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
       overlayStyle={styles.phrOverlayStyle}
     >
       <>
-        <TouchableOpacity style={styles.closeContainer}
+        <TouchableOpacity
+          style={styles.closeContainer}
           onPress={() => {
             props.onClose();
-          }}>
+          }}
+        >
           <CrossPopup />
         </TouchableOpacity>
         <View style={styles.containerStyle}>
