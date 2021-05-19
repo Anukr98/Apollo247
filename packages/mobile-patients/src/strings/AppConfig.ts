@@ -12,6 +12,7 @@ export enum AppEnv {
   QA = 'QA',
   QA2 = 'QA2',
   QA3 = 'QA3',
+  QA4 = 'QA4',
   QA5 = 'QA5',
   PROD = 'PROD',
   PERFORM = 'PERFORM',
@@ -19,7 +20,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA4 as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -30,6 +31,8 @@ const paymentGatewayBaseUrl: string =
     ? 'https://qapmt.apollo247.com'
     : APP_ENV == AppEnv.QA3
     ? 'https://qathreepmt.apollo247.com'
+    : APP_ENV == AppEnv.QA4
+    ? 'https://qa4pmt.apollo247.com'
     : APP_ENV == AppEnv.QA5
     ? 'https://qa5pmt.apollo247.com'
     : APP_ENV == AppEnv.PERFORM

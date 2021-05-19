@@ -77,18 +77,6 @@ export enum BloodGroups {
   OPositive = "OPositive",
 }
 
-export enum BookingSource {
-  Apollo247_Android = "Apollo247_Android",
-  Apollo247_Ios = "Apollo247_Ios",
-  Apollo247_Web = "Apollo247_Web",
-}
-
-export enum BookingStatus {
-  COMPLETED = "COMPLETED",
-  FAILED = "FAILED",
-  INPROGRESS = "INPROGRESS",
-}
-
 export enum CODCity {
   CHENNAI = "CHENNAI",
 }
@@ -212,13 +200,6 @@ export enum FEEDBACKTYPE {
   CONSULT = "CONSULT",
   DIAGNOSTICS = "DIAGNOSTICS",
   PHARMACY = "PHARMACY",
-}
-
-export enum GENDER {
-  ALL = "ALL",
-  FEMALE = "FEMALE",
-  MALE = "MALE",
-  OTHER = "OTHER",
 }
 
 export enum Gender {
@@ -1046,39 +1027,8 @@ export interface DiagnosticLineItem {
   price?: number | null;
   quantity?: number | null;
   groupPlan?: string | null;
-  discAmount?: number | null;
   preTestingRequirement?: string | null;
   reportGenerationTime?: string | null;
-}
-
-export interface DiagnosticOrderInput {
-  patientId: string;
-  patientAddressId: string;
-  city: string;
-  cityId: string;
-  state: string;
-  stateId: string;
-  slotTimings: string;
-  employeeSlotId?: any | null;
-  diagnosticEmployeeCode: string;
-  diagnosticBranchCode: string;
-  totalPrice: number;
-  prescriptionUrl: string;
-  diagnosticDate: any;
-  centerName: string;
-  centerCode: string;
-  centerCity: string;
-  centerState: string;
-  centerLocality: string;
-  bookingSource?: BOOKINGSOURCE | null;
-  deviceType?: DEVICETYPE | null;
-  paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
-  items?: (DiagnosticLineItem | null)[] | null;
-  slotId?: string | null;
-  areaId?: number | null;
-  totalPriceExcludingDiscounts?: number | null;
-  userSubscriptionId?: string | null;
-  subscriptionInclusionId?: string | null;
 }
 
 export interface DiagnosticTestsOrdered {
@@ -1275,7 +1225,6 @@ export interface MedicineCartOMSInput {
   prescriptionType?: PrescriptionType | null;
   tatCity?: string | null;
   tatHours?: string | null;
-  appointmentId?: string | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -1635,7 +1584,6 @@ export interface SaveBookHomeCollectionOrderInput {
   areaId: number;
   collectionCharges: number;
   uniqueID?: string | null;
-  couponCode?: string | null;
   slotDateTimeInUTC: any;
   totalPriceExcludingDiscounts?: number | null;
   userSubscriptionId?: string | null;
@@ -1668,7 +1616,6 @@ export interface SaveMedicineOrderV2Input {
   healthCreditUsed?: number | null;
   shipments?: (MedicineOrderShipmentInput | null)[] | null;
   prescriptionType?: PrescriptionType | null;
-  appointmentId?: string | null;
 }
 
 export interface SavePatientNotificationSettingsInput {
