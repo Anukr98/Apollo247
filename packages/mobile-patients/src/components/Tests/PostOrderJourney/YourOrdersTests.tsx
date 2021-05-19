@@ -45,7 +45,7 @@ import {
   DownloadNew,
   ShareBlue,
   ViewIcon,
-  Cross
+  Cross,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NavigationScreenProps } from 'react-navigation';
 import {
@@ -566,6 +566,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           setTodaySlotNotAvailable(true);
           setDisplaySchedule(true);
         } else {
+          setDisplaySchedule(true);
           todaySlotNotAvailable && setTodaySlotNotAvailable(false);
         }
 
@@ -1080,7 +1081,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       refundStatusArr: refundArray,
       comingFrom: AppRoutes.YourOrdersTest,
       showOrderSummaryTab: tab,
-      fromOrderSummary: fromOrderSummary
+      fromOrderSummary: fromOrderSummary,
     });
   }
   const renderOrder = (
@@ -1189,7 +1190,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           setSnackbarState(false);
           setActiveOrder(order);
           setIsViewReport(true);
-          setDisplayViewReport(true)
+          setDisplayViewReport(true);
           // _onPressViewReport(order)
         }}
         phelboObject={order?.phleboDetailsObj}
@@ -1265,7 +1266,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         renderItem={({ item, index }) => renderOrder(item, index)}
         ListEmptyComponent={renderNoOrders()}
         ListFooterComponent={
-          (orderListData?.length && orderListData?.length < 10) || loading || error || !orderListData?.length
+          (orderListData?.length && orderListData?.length < 10) ||
+          loading ||
+          error ||
+          !orderListData?.length
             ? null
             : renderLoadMore()
         }
@@ -1356,22 +1360,21 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     <View style={{ flex: 1 }}>
       {showDisplaySchedule && renderRescheduleOrderOverlay()}
       {displayViewReport && (
-            <TestViewReportOverlay
-              order={activeOrder}
-              heading=""
-              isVisible={displayViewReport}
-              onClose={() => setDisplayViewReport(false)}
-              onPressViewReport={()=>{
-                DiagnosticViewReportClicked(
-                  'My Order',
-                  !!activeOrder?.labReportURL ? 'Yes' : 'No',
-                  'Download Report PDF'
-                );
-                _onPressViewReport(activeOrder);
-              }}
-            />
-        )
-      }
+        <TestViewReportOverlay
+          order={activeOrder}
+          heading=""
+          isVisible={displayViewReport}
+          onClose={() => setDisplayViewReport(false)}
+          onPressViewReport={() => {
+            DiagnosticViewReportClicked(
+              'My Order',
+              !!activeOrder?.labReportURL ? 'Yes' : 'No',
+              'Download Report PDF'
+            );
+            _onPressViewReport(activeOrder);
+          }}
+        />
+      )}
       <SafeAreaView style={theme.viewStyles.container}>
         {props?.showHeader == false ? null : (
           <Header

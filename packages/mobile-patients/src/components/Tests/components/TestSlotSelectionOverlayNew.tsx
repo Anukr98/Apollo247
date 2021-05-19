@@ -104,8 +104,8 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   let monthHeading = `${moment().format('MMMM')} ${moment().format('YYYY')}`;
   const fetchSlots = (updatedDate?: Date) => {
     let dateToCheck = !!updatedDate ? updatedDate : date;
-    setChangedDate(dateToCheck);
     if (!isVisible) return;
+    setSelectedDate(moment(dateToCheck).format('DD'));
     showSpinner(true);
     client
       .query<getDiagnosticSlotsCustomized, getDiagnosticSlotsCustomizedVariables>({
