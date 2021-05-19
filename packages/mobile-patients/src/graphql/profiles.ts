@@ -4797,6 +4797,7 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql`
           }
         }
         attributesObj{
+          reportGenerationTime
           preTestingRequirement
         }
       }

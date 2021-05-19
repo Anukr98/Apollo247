@@ -28,6 +28,7 @@ export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrd
 
 export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_attributesObj {
   __typename: "AttributesObj";
+  reportGenerationTime: string | null;
   preTestingRequirement: string | null;
 }
 
