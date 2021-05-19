@@ -4784,8 +4784,8 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql`
     getDiagnosticOpenOrdersList(mobileNumber: $mobileNumber, skip: $skip, take: $take) {
       openOrders {
         id
+        displayId
         patientId
-        paymentOrderId
         orderStatus
         slotDateTimeInUTC
         labReportURL
@@ -4800,6 +4800,10 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql`
             inclusions
             testPreparationData
           }
+        }
+        attributesObj{
+          reportGenerationTime
+          preTestingRequirement
         }
       }
     }
@@ -4833,8 +4837,8 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
     getDiagnosticClosedOrdersList(mobileNumber: $mobileNumber, skip: $skip, take: $take) {
       closedOrders {
         id
+        displayId
         patientId
-        paymentOrderId
         orderStatus
         slotDateTimeInUTC
         labReportURL
@@ -4849,6 +4853,9 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
             inclusions
             testPreparationData
           }
+        }
+        attributesObj{
+          reportGenerationTime
         }
       }
     }

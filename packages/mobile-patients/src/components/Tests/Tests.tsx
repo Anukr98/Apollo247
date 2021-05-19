@@ -163,7 +163,8 @@ import moment from 'moment';
 
 import AsyncStorage from '@react-native-community/async-storage';
 import { OrderCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/OrderCardCarousel';
-import { PrescriptionCardCarousel } from './components/PrescriptionCardCarousel';
+import { PrescriptionCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/PrescriptionCardCarousel';
+import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
 
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
@@ -279,6 +280,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const defaultAddress = addresses?.find((item) => item?.defaultAddress);
   const [pageLoading, setPageLoading] = useState<boolean>(false);
   const [isFocused, setIsFocused] = useState<boolean>(false);
+  const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
+  const [clickedItem, setClickedItem] = useState<any>([]);
 
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
 
@@ -692,6 +695,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
       if (addresses?.length) {
         const deliveryAddress = addresses?.find((item) => item?.defaultAddress);
         if (deliveryAddress) {
+          setDeliveryAddressId?.(deliveryAddress?.id);
+
           //if location is not undefined in either of the three, then don't change address
           if (
             !asyncDiagnosticPincode?.pincode! &&
@@ -699,7 +704,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
             !locationDetails &&
             !pharmacyLocation
           ) {
-            setDeliveryAddressId?.(deliveryAddress?.id);
             checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'initialFetchAddress');
             setDiagnosticLocation?.(formatAddressToLocation(deliveryAddress));
             return;
@@ -717,13 +721,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setTestAddress?.(addressList);
       const deliveryAddress = addressList?.find((item) => item?.defaultAddress);
       if (deliveryAddress) {
+        setDeliveryAddressId?.(deliveryAddress?.id);
         if (
           !asyncDiagnosticPincode?.pincode! &&
           !diagnosticLocation &&
           !locationDetails &&
           !pharmacyLocation
         ) {
-          setDeliveryAddressId?.(deliveryAddress?.id);
           checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'fetchAddressResponse');
           setDiagnosticLocation?.(formatAddressToLocation(deliveryAddress));
         }
@@ -1978,34 +1982,26 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   async function onPressOrderStatusOption(item: any) {
-    const appointmentDate = moment(item?.slotDateTimeInUTC)?.format('DD MMM YYYY');
-    const patientName = `${item?.patientObj?.firstName} ${item?.patientObj?.lastName}`;
     if (DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(item?.orderStatus)) {
       //track order
       navigateToTrackingScreen(item);
     } else if (DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(item?.orderStatus)) {
       //view report download
-      try {
-        if (!!item?.labReportURL && item?.labReportURL != '') {
-          await downloadDiagnosticReport(
-            setLoadingContext,
-            item?.labReportURL,
-            appointmentDate,
-            !!patientName ? patientName : '_',
-            true,
-            undefined
-          );
-        } else {
-          showAphAlert?.({
-            title: string.common.uhOh,
-            description: string.diagnostics.responseUnavailableForReport,
-          });
-        }
-      } catch (error) {
-        setLoadingContext?.(false);
-        CommonBugFender('Tests_onPressOrderStatusOption_downloadLabTest', error);
-      } finally {
-        setLoadingContext?.(false);
+      //need to remove the event once added
+      DiagnosticViewReportClicked(
+        'Home',
+        !!item?.labReportURL ? 'Yes' : 'No',
+        'Download Report PDF',
+        item?.id
+      );
+      if (!!item?.labReportURL && item?.labReportURL != '') {
+        setDisplayViewReport(true);
+        setClickedItem(item);
+      } else {
+        showAphAlert?.({
+          title: string.common.uhOh,
+          description: string.diagnostics.responseUnavailableForReport,
+        });
       }
     } else {
       if (DIAGNOSITC_PHELBO_TRACKING_STATUS.includes(item?.orderStatus)) {
@@ -2014,6 +2010,26 @@ export const Tests: React.FC<TestsProps> = (props) => {
       } else {
         navigateToTrackingScreen(item);
       }
+    }
+  }
+
+  async function onPressViewReport() {
+    const appointmentDate = moment(clickedItem?.slotDateTimeInUTC)?.format('DD MMM YYYY');
+    const patientName = `${clickedItem?.patientObj?.firstName} ${clickedItem?.patientObj?.lastName}`;
+    try {
+      await downloadDiagnosticReport(
+        setLoadingContext,
+        clickedItem?.labReportURL,
+        appointmentDate,
+        !!patientName ? patientName : '_',
+        true,
+        undefined
+      );
+    } catch (error) {
+      setLoadingContext?.(false);
+      CommonBugFender('Tests_onPressOrderStatusOption_downloadLabTest', error);
+    } finally {
+      setLoadingContext?.(false);
     }
   }
 
@@ -2305,6 +2321,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
+      {displayViewReport && (
+        <TestViewReportOverlay
+          order={clickedItem}
+          heading=""
+          isVisible={displayViewReport}
+          onClose={() => {
+            setDisplayViewReport(false);
+            setClickedItem([]);
+          }}
+          onPressViewReport={() => {
+            onPressViewReport();
+          }}
+        />
+      )}
       <SafeAreaView style={{ ...viewStyles.container }}>
         {pageLoading ? (
           <View style={{ backgroundColor: 'white' }}>

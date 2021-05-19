@@ -29,6 +29,7 @@ export const OrderCardCarousel: React.FC<OrderCardCarousel> = (props) => {
     item: getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders;
     index: number;
   }) => {
+    console.log({ item });
     const appointmentTime = moment(item?.slotDateTimeInUTC)?.format('DD MMM, hh:mm a');
     const testPrepData = item?.diagnosticOrderLineItems?.filter(
       (item) => !!item?.itemObj?.testPreparationData && item?.itemObj?.testPreparationData != ''
@@ -37,11 +38,13 @@ export const OrderCardCarousel: React.FC<OrderCardCarousel> = (props) => {
       ? testPrepData?.map((item) => item?.itemObj?.testPreparationData)
       : [];
 
-    const testPrepDataToShow = filterTestPrepData?.length ? filterTestPrepData?.join(', ') : null;
+    const testPrepDataToShow = filterTestPrepData?.length ? filterTestPrepData : null;
     return (
       <TouchableOpacity activeOpacity={1} onPress={() => {}} style={[{ width: winWidth }]}>
         <HomePageOrderStatusCard
+          orderId={item?.displayId}
           status={item?.orderStatus}
+          reportTat={item?.attributesObj?.reportGenerationTime!}
           patientName={`${item?.patientObj?.firstName} ${item?.patientObj?.lastName}`}
           appointmentTime={appointmentTime}
           key={item?.id}
