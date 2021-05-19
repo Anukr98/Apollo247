@@ -6,6 +6,7 @@ import com.BV.LinearGradient.LinearGradientPackage;
 import com.apollopatient.appsignature.RNAppSignatureHelperPackage;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.appsflyer.reactnative.RNAppsFlyerPackage;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.soloader.SoLoader;
