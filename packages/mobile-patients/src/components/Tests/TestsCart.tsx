@@ -1501,7 +1501,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       <View>
         {renderLabel('TOTAL CHARGES')}
         {/* {renderCouponView()} */}
-        {renderHomeCollectionDisclaimer()}
         {isDiagnosticCircleSubscription && circleSaving > 0 ? renderCircleMemberBanner() : null}
         <View
           style={[
@@ -1979,12 +1978,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             : DIAGNOSTIC_GROUP_PLAN.ALL,
           preTestingRequirement:
             !!reportGenDetails && reportGenDetails?.[index]?.itemPrepration
-            ? reportGenDetails?.[index]?.itemPrepration
-            : null,
+              ? reportGenDetails?.[index]?.itemPrepration
+              : null,
           reportGenerationTime:
             !!reportGenDetails && reportGenDetails?.[index]?.itemReportTat
-            ? reportGenDetails?.[index]?.itemReportTat
-            : null,
+              ? reportGenDetails?.[index]?.itemReportTat
+              : null,
         } as DiagnosticLineItem)
     );
     return pricesForItemArray;
