@@ -4732,6 +4732,7 @@ export const GET_PHLOBE_DETAILS = gql`
   query getOrderPhleboDetailsBulk($diagnosticOrdersIds: [String]!) {
     getOrderPhleboDetailsBulk(diagnosticOrdersIds: $diagnosticOrdersIds) {
       orderPhleboDetailsBulk {
+        allowCalling
         orderPhleboDetails {
           diagnosticOrdersId
           diagnosticPhlebotomists {
@@ -4950,6 +4951,16 @@ export const FIND_DIAGNOSTIC_SETTINGS = gql`
   query findDiagnosticSettings {
     findDiagnosticSettings {
       phleboETAInMinutes
+    }
+  }
+`;
+
+export const DIAGNOSITC_EXOTEL_CALLING = gql`
+  mutation diagnosticExotelCalling($orderId: ID!) {
+    diagnosticExotelCalling(orderId: $orderId){
+      errorMessage
+      sid
+      success
     }
   }
 `;

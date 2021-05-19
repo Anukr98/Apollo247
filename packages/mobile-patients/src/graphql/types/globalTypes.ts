@@ -1051,36 +1051,6 @@ export interface DiagnosticLineItem {
   reportGenerationTime?: string | null;
 }
 
-export interface DiagnosticOrderInput {
-  patientId: string;
-  patientAddressId: string;
-  city: string;
-  cityId: string;
-  state: string;
-  stateId: string;
-  slotTimings: string;
-  employeeSlotId?: any | null;
-  diagnosticEmployeeCode: string;
-  diagnosticBranchCode: string;
-  totalPrice: number;
-  prescriptionUrl: string;
-  diagnosticDate: any;
-  centerName: string;
-  centerCode: string;
-  centerCity: string;
-  centerState: string;
-  centerLocality: string;
-  bookingSource?: BOOKINGSOURCE | null;
-  deviceType?: DEVICETYPE | null;
-  paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
-  items?: (DiagnosticLineItem | null)[] | null;
-  slotId?: string | null;
-  areaId?: number | null;
-  totalPriceExcludingDiscounts?: number | null;
-  userSubscriptionId?: string | null;
-  subscriptionInclusionId?: string | null;
-}
-
 export interface DiagnosticTestsOrdered {
   itemId?: number | null;
   itemName?: string | null;
@@ -1172,6 +1142,7 @@ export interface FilterDoctorInput {
   searchText?: string | null;
   radius?: number | null;
   isCare?: boolean | null;
+  isSearchableOnHiddenDoctor?: boolean | null;
 }
 
 export interface Geolocation {
@@ -1704,6 +1675,7 @@ export interface SourceMetaData {
   source_identifier?: string | null;
   sub_plan_id?: string | null;
   purchase_type?: PlanPurchaseType | null;
+  activity: any;
 }
 
 export interface TrueCallerProfile {

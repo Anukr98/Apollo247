@@ -10,6 +10,7 @@ import {
   RESCHEDULE_DIAGNOSTIC_ORDER,
   GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
   GET_PHLOBE_DETAILS,
+  DIAGNOSITC_EXOTEL_CALLING,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticOrdersListByMobile,
@@ -78,6 +79,7 @@ import {
   rescheduleDiagnosticsOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/rescheduleDiagnosticsOrder';
 import {
+  DiagnosticPhleboCallingClicked,
   DiagnosticAddTestClicked,
   DiagnosticRescheduleOrder,
   DiagnosticViewReportClicked,
@@ -102,6 +104,11 @@ import {
   getOrderPhleboDetailsBulkVariables,
 } from '@aph/mobile-patients/src/graphql/types/getOrderPhleboDetailsBulk';
 import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
+import { callToExotelApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  diagnosticExotelCalling,
+  diagnosticExotelCallingVariables,
+} from '@aph/mobile-patients/src/graphql/types/diagnosticExotelCalling';
 export interface YourOrdersTestProps extends NavigationScreenProps {
   showHeader?: boolean;
 }
@@ -205,6 +212,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       fetchPolicy: 'no-cache',
     });
 
+  const callDiagnosticExotelCalling = (orderId: string) =>
+    client.mutate<diagnosticExotelCalling, diagnosticExotelCallingVariables>({
+      mutation: DIAGNOSITC_EXOTEL_CALLING,
+      context: {
+        sourceHeaders,
+      },
+      variables: { orderId: orderId },
+    });
+
   const handleBack = () => {
     if (showSummaryPopupRef.current) {
       setSummaryPopup(false);
@@ -271,6 +287,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   useEffect(() => {
     refetchOrders();
   }, [currentOffset]);
+
   const fetchOrders = async (isRefetch: boolean) => {
     try {
       setLoading?.(true);
@@ -349,45 +366,43 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           if (data?.data?.getOrderPhleboDetailsBulk?.orderPhleboDetailsBulk) {
             const orderPhleboDetailsBulk =
               data?.data?.getOrderPhleboDetailsBulk?.orderPhleboDetailsBulk;
-            ordersList?.forEach(
-              (
-                order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList
-              ) => {
-                const findOrder = orderPhleboDetailsBulk?.find(
-                  (phleboDetails: any) =>
-                    phleboDetails?.orderPhleboDetails !== null &&
-                    phleboDetails?.orderPhleboDetails?.diagnosticOrdersId === order?.id
-                );
-                if (findOrder && findOrder.orderPhleboDetails !== null) {
-                  if (order.phleboDetailsObj === null) {
-                    order.phleboDetailsObj = {
-                      PhelboOTP: null,
-                      PhelbotomistName: null,
-                      PhelbotomistMobile: null,
-                      PhelbotomistTrackLink: null,
-                      TempRecording: null,
-                      CheckInTime: null,
-                      PhleboLatitude: null,
-                      PhleboLongitude: null,
-                      PhleboRating: null,
-                      __typename: 'PhleboDetailsObj',
-                    };
-                  }
-                  order.phleboDetailsObj.PhelboOTP = findOrder?.orderPhleboDetails?.phleboOTP;
-                  order.phleboDetailsObj.PhelbotomistName =
-                    findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.name;
-                  order.phleboDetailsObj.PhelbotomistMobile =
-                    findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.mobile;
-                  order.phleboDetailsObj.PhelbotomistTrackLink =
-                    findOrder?.orderPhleboDetails?.phleboTrackLink;
-                  order.phleboDetailsObj.CheckInTime = findOrder?.phleboEta?.estimatedArrivalTime;
-                  order.phleboDetailsObj.PhleboRating = findOrder?.orderPhleboDetails?.phleboRating;
+            ordersList?.forEach((order: any) => {
+              const findOrder = orderPhleboDetailsBulk?.find(
+                (phleboDetails: any) =>
+                  phleboDetails?.orderPhleboDetails !== null &&
+                  phleboDetails?.orderPhleboDetails?.diagnosticOrdersId === order?.id
+              );
+              if (findOrder && findOrder.orderPhleboDetails !== null) {
+                if (order?.phleboDetailsObj === null) {
+                  order.phleboDetailsObj = {
+                    PhelboOTP: null,
+                    PhelbotomistName: null,
+                    PhelbotomistMobile: null,
+                    PhelbotomistTrackLink: null,
+                    TempRecording: null,
+                    CheckInTime: null,
+                    PhleboLatitude: null,
+                    PhleboLongitude: null,
+                    PhleboRating: null,
+                    allowCalling: null,
+                    __typename: 'PhleboDetailsObj',
+                  };
                 }
+                order.phleboDetailsObj.PhelboOTP = findOrder?.orderPhleboDetails?.phleboOTP;
+                order.phleboDetailsObj.PhelbotomistName =
+                  findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.name;
+                order.phleboDetailsObj.PhelbotomistMobile =
+                  findOrder?.orderPhleboDetails?.diagnosticPhlebotomists?.mobile;
+                order.phleboDetailsObj.PhelbotomistTrackLink =
+                  findOrder?.orderPhleboDetails?.phleboTrackLink;
+                order.phleboDetailsObj.CheckInTime = findOrder?.phleboEta?.estimatedArrivalTime;
+                order.phleboDetailsObj.PhleboRating = findOrder?.orderPhleboDetails?.phleboRating;
+                order.phleboDetailsObj.allowCalling = findOrder?.allowCalling;
               }
-            );
+            });
             setOrders(ordersList);
             setFilteredOrderList(ordersList);
-            setTimeout(() => setLoading!(false), isRefetch ? 1000 : 0);
+            setTimeout(() => setLoading?.(false), isRefetch ? 1000 : 0);
           } else {
             setOrders(ordersList);
             setFilteredOrderList(ordersList);
@@ -395,11 +410,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           }
         })
         .catch((error) => {
-          setLoading!(false);
+          setLoading?.(false);
           CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchPhleboObject`, error);
         });
     } catch (error) {
-      setLoading!(false);
+      setLoading?.(false);
       CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchPhleboObject`, error);
     }
   };
@@ -1209,6 +1224,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             orderDetails: order,
           });
         }}
+        onPressCallOption={(name, number) => _onPressPhleboCall(name, number, order?.id)}
         style={[
           { marginHorizontal: 20 },
           index < orders?.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
@@ -1217,6 +1233,37 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       />
     );
   };
+
+  function _onPressPhleboCall(phleboName: string, phoneNumber: string, orderId: string) {
+    //if allowCalling is true.
+    DiagnosticPhleboCallingClicked(currentPatient, orderId, phleboName);
+    _callDiagnosticExotelApi(phoneNumber, orderId);
+  }
+
+  async function _callDiagnosticExotelApi(phoneNumber: string, orderId: string) {
+    try {
+      setLoading?.(true);
+      const exotelResponse = await callDiagnosticExotelCalling(orderId);
+      if (exotelResponse?.data?.diagnosticExotelCalling) {
+        const callingResponse = exotelResponse?.data?.diagnosticExotelCalling;
+        if (callingResponse?.success) {
+        } else {
+          renderReportError(
+            !!callingResponse?.errorMessage && callingResponse?.errorMessage != ''
+              ? callingResponse?.errorMessage
+              : string.diagnostics.phleboCallingError
+          );
+        }
+      } else {
+        renderReportError(string.diagnostics.phleboCallingError);
+      }
+      setLoading?.(false);
+    } catch (error) {
+      setLoading?.(false);
+      renderReportError(string.diagnostics.phleboCallingError);
+      CommonBugFender('_callDiagnosticExotelApi_YourOrdersTests', error);
+    }
+  }
 
   function _onPressAddTest(
     order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList

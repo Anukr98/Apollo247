@@ -548,10 +548,11 @@
     "sampleCollectedText":"Check Status",
     "collectionText":"Track Order",
     "trackPhleboText": "Track Phlebo",
+    "codDisableText" :"We are currently not allowing Cash On Delivery for home sample collections.",
+    "phleboCallingError": "Error while connecting to Phlebo. Please try again later.",
     "modifyItemAlreadyExist": "Your cart has been updated, since it had duplicate items",
     "previousCharges": "Previous Charges",
-    "currentCharges": "Current Charges",
-    "codDisableText" :"We are currently not allowing Cash On Delivery for home sample collections."
+    "currentCharges": "Current Charges"
   },
   "diagnosticCategoryTitle": {
     "category" : "Category",

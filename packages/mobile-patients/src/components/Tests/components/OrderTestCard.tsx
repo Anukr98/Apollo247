@@ -28,21 +28,17 @@ import {
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { isIphone5s, setBugFenderLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { DIAGNOSTIC_ORDER_FAILED_STATUS } from '@aph/mobile-patients/src/strings/AppConfig';
+import {
+  DIAGNOSTIC_ORDER_FAILED_STATUS,
+  DIAGNOSTIC_SHOW_OTP_STATUS,
+} from '@aph/mobile-patients/src/strings/AppConfig';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
-import { DiagnosticPhleboCallingClicked, DiagnosticPhleboTrackClicked } from '../Events';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 const screenWidth = Dimensions.get('window').width;
-const SHOW_OTP_ARRAY = [
-  DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
-  DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
-  DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
-];
-
 interface OrderTestCardProps {
   orderId: string | number;
-  key: string | number;
+  key: string;
   createdOn: string | Date;
   orderLevelStatus: DIAGNOSTIC_ORDER_STATUS;
   patientName: string;
@@ -68,6 +64,7 @@ interface OrderTestCardProps {
   onPressViewReport: () => void;
   phelboObject?: any;
   onPressRatingStar: (star: number) => void;
+  onPressCallOption: (name: string, number: string) => void;
 }
 
 export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
@@ -304,9 +301,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       </View>
     );
   };
-  const postDiagnosticPhleboCallingClicked = (phleboName: string) => {
-    DiagnosticPhleboCallingClicked(currentPatient, props.orderId, phleboName);
-  };
+
   const showDetailOTPContainer = () => {
     const phlObj = props?.phelboObject;
     const otpToShow = !!phlObj && phlObj?.PhelboOTP;
@@ -319,27 +314,29 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       phleboEta = moment(phlObj?.CheckInTime).format('hh:mm A');
     }
     const slotime = !!props.slotTime ? moment(props?.slotTime) || null : null;
-    const showDetailedinfo = !!slotime
+    const showDetailedInfo = !!slotime
       ? slotime.diff(moment(), 'minutes') < 60 && slotime.diff(moment(), 'minutes') > 0
       : false;
+    const isCallingEnabled = !!phlObj ? phlObj?.allowCalling : false;
     return (
       <>
-        {!!otpToShow && SHOW_OTP_ARRAY.includes(props.orderLevelStatus) ? (
+        {!!otpToShow && DIAGNOSTIC_SHOW_OTP_STATUS.includes(props.orderLevelStatus) ? (
           <>
-            {showDetailedinfo ? (
+            {!!showDetailedInfo && showDetailedInfo ? (
               <View style={styles.otpCallContainer}>
                 <View style={styles.detailContainer}>
                   {phoneNumber ? (
-                    <TouchableOpacity
-                      style={styles.callContainer}
-                      onPress={() => {
-                        postDiagnosticPhleboCallingClicked(name);
-                        Linking.openURL(`tel:${phoneNumber}`);
-                      }}
-                    >
-                      <WhiteProfile />
-                      <OrangeCall size="sm" style={styles.profileCircle} />
-                    </TouchableOpacity>
+                    <View style={{ opacity: isCallingEnabled ? 1 : 0.5 }}>
+                      <TouchableOpacity
+                        style={styles.callContainer}
+                        onPress={() => {
+                          isCallingEnabled ? props.onPressCallOption(name, phoneNumber) : {};
+                        }}
+                      >
+                        <WhiteProfile />
+                        <OrangeCall size="sm" style={styles.profileCircle} />
+                      </TouchableOpacity>
+                    </View>
                   ) : null}
                   {name ? (
                     <View style={styles.nameContainer}>
@@ -391,6 +388,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       </>
     );
   };
+
   const showOnlyOTPContainer = () => {
     const phlObj = props?.phelboObject;
     const otpToShow = !!phlObj && phlObj?.PhelboOTP;
@@ -633,6 +631,8 @@ const styles = StyleSheet.create({
   },
   callContainer: {
     margin: 0,
+    height: 55,
+    width: 55,
   },
   nameContainer: {
     justifyContent: 'flex-start',
