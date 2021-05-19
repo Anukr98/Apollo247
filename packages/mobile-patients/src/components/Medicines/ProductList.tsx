@@ -56,7 +56,7 @@ export const ProductList: React.FC<Props> = ({
   const isPdp: boolean = addToCartSource === 'Similar Widget' || addToCartSource === 'Pharmacy PDP';
   const step: number = 3;
   const initData = data?.length > 4 ? data?.slice(0, step) : data;
-  const [dataToShow, setDataToShow] = useState(isPdp ? initData : data);
+  const [dataToShow, setDataToShow] = useState(initData);
   const [lastIndex, setLastIndex] = useState<number>(data?.length > 4 ? step : 0);
   const { currentPatient } = useAllCurrentPatients();
   const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
@@ -173,7 +173,7 @@ export const ProductList: React.FC<Props> = ({
 
   return (
     <FlatList
-      data={dataToShow}
+      data={isPdp ? dataToShow : data}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
       bounces={false}
