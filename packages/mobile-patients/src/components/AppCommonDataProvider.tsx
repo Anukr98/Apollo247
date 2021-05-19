@@ -244,6 +244,8 @@ export interface AppCommonDataContextProps {
   homeScreenParamsOnPop: any;
   cartBankOffer: string;
   setCartBankOffer: ((id: string) => void) | null;
+  authToken: string;
+  setauthToken: ((value: string) => void) | null;
   uploadPrescriptionOptions: UploadPrescriptionOptions[];
   setUploadPrescriptionOptions: ((prescription: UploadPrescriptionOptions[]) => void) | null;
   expectCallText: string;
@@ -347,6 +349,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   homeScreenParamsOnPop: null,
   cartBankOffer: '',
   setCartBankOffer: null,
+  authToken: '',
+  setauthToken: null,
   uploadPrescriptionOptions: [],
   setUploadPrescriptionOptions: null,
   expectCallText: '',
@@ -473,6 +477,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [phrSession, setPhrSession] = useState<AppCommonDataContextProps['phrSession']>('');
 
   const [doctorJoinedChat, setDoctorJoinedChat] = useState<boolean>(false);
+
+  const [authToken, setauthToken] = useState<AppCommonDataContextProps['authToken']>('');
 
   const setLocationDetails: AppCommonDataContextProps['setLocationDetails'] = (locationDetails) => {
     _setLocationDetails(locationDetails);
@@ -689,6 +695,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         homeScreenParamsOnPop,
         cartBankOffer,
         setCartBankOffer,
+        authToken,
+        setauthToken,
         uploadPrescriptionOptions,
         setUploadPrescriptionOptions,
         expectCallText,

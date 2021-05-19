@@ -156,21 +156,47 @@ export const BOOK_APPOINTMENT = gql`
   }
 `;
 
-export const MAKE_APPOINTMENT_PAYMENT = gql`
-  mutation makeAppointmentPayment($paymentInput: AppointmentPaymentInput) {
-    makeAppointmentPayment(paymentInput: $paymentInput) {
+export const BOOK_APPOINTMENT_WITH_SUBSCRIPTION = gql`
+  mutation bookAppointmentwithSubscription(
+    $bookAppointment: BookAppointmentInput!
+    $userSubscription: CreateUserSubscriptionInput!
+  ) {
+    bookAppointment(appointmentInput: $bookAppointment) {
       appointment {
         id
-        amountPaid
-        paymentRefId
-        paymentDateTime
-        responseCode
-        responseMessage
-        bankTxnId
-        orderId
-        appointment {
-          id
+        doctorId
+        appointmentDateTime
+        status
+        appointmentType
+        patientId
+        displayId
+        paymentOrderId
+      }
+    }
+    CreateUserSubscription(UserSubscription: $userSubscription) {
+      code
+      success
+      message
+      response {
+        _id
+        mobile_number
+        status
+        start_date
+        end_date
+        group_plan {
+          name
+          plan_id
         }
+      }
+    }
+  }
+`;
+
+export const MAKE_APPOINTMENT_PAYMENT = gql`
+  mutation makeAppointmentPaymentV2($paymentInput: AppointmentPaymentInputV2) {
+    makeAppointmentPaymentV2(paymentInput: $paymentInput) {
+      appointment {
+        id
       }
     }
   }
@@ -4079,6 +4105,16 @@ export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
           paymentStatus
           amountPaid
         }
+        PaymentOrders {
+          paymentRefId
+          paymentStatus
+          amountPaid
+          refund {
+            refundAmount
+            refundStatus
+            refundId
+          }
+        }
         doctor {
           name
         }
@@ -4549,7 +4585,6 @@ export const CREATE_ORDER = gql`
     }
   }
 `;
-
 export const GET_INTERNAL_ORDER = gql`
   query getOrderInternal($order_id: String!) {
     getOrderInternal(order_id: $order_id) {
@@ -4570,6 +4605,23 @@ export const GET_INTERNAL_ORDER = gql`
     }
   }
 `;
+
+export const GET_APPOINTMENT_INFO = gql`
+  query getAppointmentInfo($order_id: String!) {
+    getOrderInternal(order_id: $order_id) {
+      payment_order_id
+      payment_status
+      AppointmentDetails {
+        displayId
+        amountBreakup {
+          actual_price
+          slashed_price
+        }
+      }
+    }
+  }
+`;
+
 export const PROCESS_DIAG_COD_ORDER = gql`
   mutation processDiagnosticHCOrder($processDiagnosticHCOrderInput: ProcessDiagnosticHCOrderInput) {
     processDiagnosticHCOrder(processDiagnosticHCOrderInput: $processDiagnosticHCOrderInput) {

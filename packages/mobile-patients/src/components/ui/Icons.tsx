@@ -1782,6 +1782,14 @@ export const Emergency: React.FC<IconProps> = (props) => (
   />
 );
 
+export const PayTm: React.FC<IconProps> = (props) => (
+  <IconBase style={{ width: 63, height: 20 }} {...props} source={require('./icons/pay.png')} />
+);
+
+export const PayU: React.FC<IconProps> = (props) => (
+  <IconBase style={{ width: 42, height: 20 }} {...props} source={require('./icons/payu.png')} />
+);
+
 export const ExternalMeetingVideoCall: React.FC<IconProps> = (props) => (
   <IconBase
     size="sm"

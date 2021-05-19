@@ -190,7 +190,7 @@ export enum WebEngageEventName {
   DIAGNOSTIC_AREA_SELECTED = 'Diagnostic Area Selected on Cart',
   DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Diagnostic slot time selected',
   DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic proceed to pay clicked',
-  DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic Payment Initiated',
+  PAYMENT_INITIATED = 'Payment Initiated',
   DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
   DIAGNOSTIC_TRACK_ORDER_VIEWED = 'Diagnostic track Order viewed',
   DIAGNOSTIC_ORDER_RESCHEDULE = 'Diagnostic order reschedule - frontend',
@@ -1310,7 +1310,7 @@ export interface WebEngageEvents {
     'Total items in order': number;
     'Payment type'?: string; //for prepaid
   };
-  [WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
+  [WebEngageEventName.PAYMENT_INITIATED]: {
     Amount: number;
     LOB: string;
     type?: string;
@@ -1347,37 +1347,37 @@ export interface WebEngageEvents {
     'Order amount': string | number;
   };
   [WebEngageEventName.DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED]: {
-    'Rating': string | number;
-    'Feedback': string | number;
+    Rating: string | number;
+    Feedback: string | number;
     'Phlebo Name': string;
     'Order id': string | number;
     'Phlebo id': string | number;
   };
   [WebEngageEventName.DIAGNOSTIC_PHLEBO_CALLING_CLICKED]: {
-    'UHID': string;
+    UHID: string;
     'Order id': string | number;
     'Phlebo Name': string;
   };
-  [WebEngageEventName.DIAGNOSTIC_ORDER_STATUS]:{  
-  'Display id':string;
-  'Order id': string;
-  'Order status': string;
-  'Patient Name': string;
-  'Payment Mode': 'Cash' | 'Prepaid';
-  'SlotTimeInUTC' : string| Date;
-  'Total price' : string |number;
-  'UHID' : string;
-}
-[WebEngageEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED]:{
-  'Order id': string | number;
-  'UHID': string;
-  'Link opened' : 'Yes' | 'No';
-  'Source': 'Home' | 'My Order' | 'Track Order' | 'Order Summary'
-}
-[WebEngageEventName.DIGNOSTIC_PAYMENT_ABORTED]:{
-  'Order id': string;
-  'UHID': string;
-}
+  [WebEngageEventName.DIAGNOSTIC_ORDER_STATUS]: {
+    'Display id': string;
+    'Order id': string;
+    'Order status': string;
+    'Patient Name': string;
+    'Payment Mode': 'Cash' | 'Prepaid';
+    SlotTimeInUTC: string | Date;
+    'Total price': string | number;
+    UHID: string;
+  };
+  [WebEngageEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED]: {
+    'Order id': string | number;
+    UHID: string;
+    'Link opened': 'Yes' | 'No';
+    Source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary';
+  };
+  [WebEngageEventName.DIGNOSTIC_PAYMENT_ABORTED]: {
+    'Order id': string;
+    UHID: string;
+  };
 
   // ********** ConsultEvents ********** \\
   [WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM]: ConsultRoomDoctorPatientInfo;

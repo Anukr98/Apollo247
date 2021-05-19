@@ -254,6 +254,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     locationDetails,
     diagnosticServiceabilityData,
     diagnosticLocation,
+    setauthToken,
     setDoctorJoinedChat,
     isDiagnosticLocationServiceable,
   } = useAppCommonData();
@@ -1923,7 +1924,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 'Item ids': cartItemsWithId,
                 'Total items in order': cartItemsWithId?.length,
               };
-
+              setauthToken?.('');
               props.navigation.navigate(AppRoutes.PaymentMethods, {
                 paymentId: response?.data?.createOrderInternal?.payment_order_id!,
                 amount: grandTotal,
