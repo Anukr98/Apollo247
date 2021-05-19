@@ -1771,7 +1771,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       <View>
         {renderLabel('TOTAL CHARGES')}
         {/* {renderCouponView()} */}
-        {renderHomeCollectionDisclaimer()}
         {isDiagnosticCircleSubscription && circleSaving > 0 ? renderCircleMemberBanner() : null}
         <View
           style={[
