@@ -1737,7 +1737,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           onAppLoad && logHomePageViewed(WEGAttributes);
         }
 
-        if (data?.Apollo247testcorporate) setCorporateSubscription(true);
+        for (let key of Object.keys(data)) {
+          if (key !== 'APOLLO' && key !== 'HDFC') setCorporateSubscription(true);
+        }
 
         if (data?.HDFC?.[0]._id) {
           setHdfcSubscriptionId && setHdfcSubscriptionId(data?.HDFC?.[0]._id);
