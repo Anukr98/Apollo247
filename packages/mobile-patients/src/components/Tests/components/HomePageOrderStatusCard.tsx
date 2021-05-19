@@ -23,6 +23,7 @@ const AFTER_COLLECTION_STATUS = DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.concat(
 );
 
 interface HomePageOrderStatusCardProps {
+  orderId: string | number;
   status: DIAGNOSTIC_ORDER_STATUS;
   patientName?: string;
   appointmentTime?: string | Date;
@@ -68,8 +69,8 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
   return (
     <View style={styles.container}>
       <View style={styles.rowStyles}>
-        <Text style={styles.heading1}>
-          {nameFormater(heading, 'default')} for {nameFormater(props.patientName!, 'title')}
+        <Text style={[styles.heading1, { backgroundColor: 'red' }]}>
+          {nameFormater(props.patientName!, 'title')} : #{props.orderId}
         </Text>
         {image}
       </View>

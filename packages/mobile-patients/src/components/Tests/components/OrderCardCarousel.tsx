@@ -29,6 +29,7 @@ export const OrderCardCarousel: React.FC<OrderCardCarousel> = (props) => {
     item: getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders;
     index: number;
   }) => {
+    console.log({ item });
     const appointmentTime = moment(item?.slotDateTimeInUTC)?.format('DD MMM, hh:mm a');
     const testPrepData = item?.diagnosticOrderLineItems?.filter(
       (item) => !!item?.itemObj?.testPreparationData && item?.itemObj?.testPreparationData != ''
@@ -41,6 +42,7 @@ export const OrderCardCarousel: React.FC<OrderCardCarousel> = (props) => {
     return (
       <TouchableOpacity activeOpacity={1} onPress={() => {}} style={[{ width: winWidth }]}>
         <HomePageOrderStatusCard
+          orderId={item?.displayId}
           status={item?.orderStatus}
           patientName={`${item?.patientObj?.firstName} ${item?.patientObj?.lastName}`}
           appointmentTime={appointmentTime}
