@@ -1853,35 +1853,3 @@ export const MedicalHistoryIcon: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/medical-history.webp')}
   />
 );
-
-export const RefreshIcon: React.FC<IconProps> = (props) => (
-  <IconBase
-    size="sm"
-    {...props}
-    source={require('@aph/mobile-patients/src/components/ui/icons/ic_cached.png')}
-  />
-);
-
-export const AgentIcon: React.FC<IconProps> = (props) => (
-  <IconBase
-    {...props}
-    source={require('@aph/mobile-patients/src/components/ui/icons/agent_icon.png')}
-  />
-);
-
-export const ExternalMeetingVideoCall: React.FC<IconProps> = (props) => (
-  <IconBase
-    size="sm"
-    {...props}
-    source={require('@aph/mobile-patients/src/components/ui/icons/external_meeting_link.png')}
-  />
-);
-
-export const CopyIcon: React.FC<IconProps> = (props) => (
-  <IconBase
-    style={{ width: 15, height: 16.7, margin: 16 }}
-    size="sm"
-    {...props}
-    source={require('@aph/mobile-patients/src/components/ui/icons/copy_white.png')}
-  />
-);
