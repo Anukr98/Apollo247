@@ -427,8 +427,8 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     const phlObj = props?.phelboObject;
     const phleboRating = !!phlObj && phlObj?.PhleboRating;
     let checkRating = starCount.includes(phleboRating);
-    return props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED ? (
-      checkRating ? null : (
+    return props.orderLevelStatus === DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED ? (
+      !!checkRating ? null : (
         <View style={styles.ratingContainer}>
           <Text style={styles.ratingTextStyle}>How was your Experience with Phlebo</Text>
           <View style={styles.startContainer}>
