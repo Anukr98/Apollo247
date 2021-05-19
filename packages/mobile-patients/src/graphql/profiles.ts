@@ -2837,10 +2837,7 @@ export const GET_PRESCRIPTIONS_BY_MOBILE_NUMBER = gql`
             id
             fileName
             mimeType
-            # index
-            # content
-            # file_Url
-            # byteContent
+            file_Url
           }
           hospital_name
           hospitalId
