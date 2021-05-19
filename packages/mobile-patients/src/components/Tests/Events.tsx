@@ -518,7 +518,7 @@ export function DiagnosticViewReportClicked(
 }
 
 export function DiagnosticTrackPhleboClicked(
-  orderId: string,
+  orderId: string | number,
   source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary',
   currentPatient: any,
   isOpen: 'Yes' | 'No'
