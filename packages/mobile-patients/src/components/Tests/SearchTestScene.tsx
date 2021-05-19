@@ -54,7 +54,6 @@ import {
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import _ from 'lodash';
-import moment from 'moment';
 import { getPricesForItem, sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import { DiagnosticsSearchSuggestionItem } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticsSearchSuggestionItem';
 import { DiagnosticsNewSearch } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticsNewSearch';
@@ -63,6 +62,7 @@ import {
   DiagnosticItemSearched,
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface SearchTestSceneProps
   extends NavigationScreenProps<{
@@ -86,11 +86,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const [popularArray, setPopularArray] = useState([]);
   const [searchQuery, setSearchQuery] = useState({});
 
-  const {
-    locationForDiagnostics,
-    locationDetails,
-    diagnosticServiceabilityData,
-  } = useAppCommonData();
+  const { locationForDiagnostics, diagnosticServiceabilityData } = useAppCommonData();
 
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
@@ -108,7 +104,12 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
 
-  const cityId = locationForDiagnostics?.cityId != '' ? locationForDiagnostics?.cityId : '9';
+  const cityId =
+    locationForDiagnostics?.cityId != ''
+      ? locationForDiagnostics?.cityId
+      : !!diagnosticServiceabilityData && diagnosticServiceabilityData?.city != ''
+      ? diagnosticServiceabilityData?.cityId
+      : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID;
 
   useEffect(() => {
     if (!currentPatient) {
@@ -177,7 +178,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
 
   const fetchPopularDetails = async () => {
     try {
-      const res: any = await getDiagnosticsPopularResults('diagnostic');
+      const res: any = await getDiagnosticsPopularResults('diagnostic', Number(cityId));
       if (res?.data?.success) {
         const product = g(res, 'data', 'data') || [];
         setPopularArray(product);
