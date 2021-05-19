@@ -119,7 +119,6 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           moment(dateToCheck).format('YYYY-MM-DD') == dt && props.isReschdedule
             ? diagnosticSlots.filter((item) => item?.Timeslot != tm)
             : diagnosticSlots;
-
         const slotsArray: TestSlot[] = [];
         updatedDiagnosticSlots?.forEach((item) => {
           //all the hardcoded values are not returned by api.

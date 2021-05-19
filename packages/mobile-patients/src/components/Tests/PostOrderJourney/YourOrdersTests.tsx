@@ -568,7 +568,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           moment(date).format('YYYY-MM-DD') == dt
             ? diagnosticSlots.filter((item) => item?.Timeslot != tm)
             : diagnosticSlots;
-
         const slotsArray: TestSlot[] = [];
         updatedDiagnosticSlots?.forEach((item) => {
           slotsArray.push({
@@ -590,6 +589,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           setTodaySlotNotAvailable(true);
           setDisplaySchedule(true);
         } else {
+          setDisplaySchedule(true);
           todaySlotNotAvailable && setTodaySlotNotAvailable(false);
         }
 
