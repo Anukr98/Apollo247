@@ -886,6 +886,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         description: 'Please add document',
       });
       return false;
+    } else if (Images?.length > 10) {
+      showMaxFileUploadAlert();
+      return false;
     } else {
       return true;
     }
@@ -943,7 +946,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const isValidBillRecord = () => {
     setshowSpinner(false);
-    if (!dateOfTest) {
+    if (Images?.length > 10) {
+      showMaxFileUploadAlert();
+      return false;
+    } else if (!dateOfTest) {
       showAphAlert!({
         title: 'Alert!',
         description: 'Please enter record date',
@@ -966,9 +972,19 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     }
   };
 
+  const showMaxFileUploadAlert = () => {
+    showAphAlert!({
+      title: 'Alert!',
+      description: string.common.phr_max_file_text,
+    });
+  };
+
   const isValidInsuranceRecord = () => {
     setshowSpinner(false);
-    if (!dateOfTest) {
+    if (Images?.length > 10) {
+      showMaxFileUploadAlert();
+      return false;
+    } else if (!dateOfTest) {
       showAphAlert!({
         title: 'Alert!',
         description: 'Please enter record issue date',
@@ -1949,6 +1965,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         title: 'Alert!',
         description: 'Please select correct end date of allergy',
       });
+    } else if (allergyImage?.length > 10) {
+      showMaxFileUploadAlert();
+      return false;
     } else if (medicationCheckbox) {
       callMedicationApi();
     } else if (healthRestrictionCheckbox) {
@@ -2042,6 +2061,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         title: 'Alert!',
         description: 'Please select correct end date of condition',
       });
+    } else if (medicalConditionImage?.length > 10) {
+      showMaxFileUploadAlert();
+      return false;
     } else if (familyHistoryCheckbox) {
       callFamilyHistoryApi();
     } else if (allergyCheckbox) {
@@ -2071,6 +2093,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         title: 'Alert!',
         description: 'Please enter correct age',
       });
+    } else if (familyHistoryImage?.length > 10) {
+      showMaxFileUploadAlert();
+      return false;
     } else if (allergyCheckbox) {
       addAllergyRecord();
     } else if (medicationCheckbox) {
