@@ -2,7 +2,16 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect, useRef } from 'react';
-import { BackHandler, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  BackHandler,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ImageBackground,
+  Linking,
+} from 'react-native';
 import {
   NavigationScreenProps,
   StackActions,
@@ -143,6 +152,13 @@ const styles = StyleSheet.create({
     width: 100,
     height: 20,
   },
+  corpLogo: {
+    resizeMode: 'contain',
+    width: 100,
+    height: 30,
+    position: 'absolute',
+    right: -10,
+  },
   currentBenefits: {
     ...theme.viewStyles.text('B', 14, '#02475B', 1, 20, 0.35),
     paddingLeft: 20,
@@ -212,6 +228,8 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   const planPurchased = useRef<boolean | undefined>(false);
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const [showCircleActivation, setShowCircleActivation] = useState<boolean>(false);
+  const [showCorporateActivation, setShowCorporateActivation] = useState<boolean>(false);
+  const [corporatePlan, setCorporatePlan] = useState<any[]>([]);
 
   useEffect(() => {
     if (showHdfcSubscriptions) {
@@ -223,7 +241,6 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     }
     fetchCircleSavings();
     getUserSubscriptionsWithBenefits();
-    console.log('showSpinner: ', showSpinner);
   }, []);
 
   const fetchCircleSavings = async () => {
@@ -353,6 +370,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           if (groupPlans) {
             const hdfcPlan = groupPlans?.HDFC;
             const circlePlan = groupPlans?.APOLLO;
+            const corprPlan = groupPlans?.Apollo247testcorporate;
 
             if (hdfcPlan) {
               const hdfcSubscription = setSubscriptionData(hdfcPlan[0]);
@@ -378,6 +396,10 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
                 setIsCircleSubscription && setIsCircleSubscription(true);
               }
               setCircleSubscription && setCircleSubscription(circleSubscription);
+            }
+            if (corprPlan) {
+              setShowCorporateActivation(true);
+              setCorporatePlan(corprPlan);
             }
           }
         })
@@ -522,9 +544,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
         setUpgradePlans([...upgradePlans, subscription]);
       }
       return subscription;
-    } catch (e) {
-      console.log('ERROR: ', e);
-    }
+    } catch (e) {}
   };
 
   const getEllipseBulletPoint = (text: string, index: number, isExpired: boolean) => {
@@ -657,7 +677,6 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
               setShowAvailPopup(true);
             } else if (isRenew) {
               setShowCirclePlans(true);
-              console.log('upgrade in my membership clicked!', showCirclePlans);
             } else {
               props.navigation.navigate(AppRoutes.ConsultRoom, {});
               if (isActive && !isCare) {
@@ -728,6 +747,47 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     );
   };
 
+  const renderCorporateCard = () => {
+    return (
+      <View style={styles.cardStyle}>
+        <View style={styles.healthyLifeContainer}>
+          <Text style={[styles.planName, theme.viewStyles.text('B', 14, '#02475B', 1, 20, 0.35)]}>
+            CORPORATE MEMBERSHIP
+          </Text>
+          <ImageBackground
+            source={{
+              uri: corporatePlan?.[0]?.group_logo_url?.mobile_version,
+            }}
+            resizeMode="contain"
+            style={styles.corpLogo}
+          />
+        </View>
+        <View style={styles.subTextContainer}>
+          <Text
+            style={[theme.viewStyles.text('R', 12, '#000000', 1, 20, 0.35), { marginBottom: 5 }]}
+          >
+            Key Benefits you get...
+          </Text>
+          {corporatePlan.map((value: any, i: number) => {
+            return getEllipseBulletPoint(value.name, i, false);
+          })}
+        </View>
+        <TouchableOpacity
+          style={[styles.membershipButtons, { padding: 10, marginBottom: -1 }]}
+          onPress={() => {
+            Linking.openURL('https://www.apollo247.com/my-membership').catch((e: any) =>
+              CommonBugFender(`${AppRoutes.MyMembership}_Linking.openURL`, e)
+            );
+          }}
+        >
+          <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>
+            VIEW DETAILS ON WEB
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   const renderUpgradeButton = () => {
     return (
       <TouchableOpacity
@@ -772,7 +832,8 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
 
         {showCircleActivation && renderCircleMembershipActivated()}
         {showCirclePlans && renderCircleSubscriptionPlans()}
-        {(hdfcUserSubscriptions?._id || circleSubscription?._id) && (
+
+        {(hdfcUserSubscriptions?._id || circleSubscription?._id || showCorporateActivation) && (
           <ScrollView bounces={false}>
             <View>
               <View>
@@ -790,11 +851,11 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
                   {hdfcUpgradeUserSubscriptions.map((subscription: SubscriptionData) => {
                     return renderMembershipCard(subscription, true);
                   })}
-                  {/* {renderMembershipCard(hdfcUpgradeUserSubscriptions[0], true)} */}
                   <View style={{ marginTop: 15 }} />
-                  {/* {canUpgradeMultiplePlans && renderMembershipCard(premiumPlan, true)} */}
                 </View>
               )}
+
+              {showCorporateActivation ? renderCorporateCard() : null}
             </View>
           </ScrollView>
         )}

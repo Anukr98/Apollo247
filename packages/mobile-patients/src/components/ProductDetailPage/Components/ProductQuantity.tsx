@@ -5,7 +5,6 @@ import { getMaxQtyForMedicineItem } from '@aph/mobile-patients/src/helpers/helpe
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { DropdownBlueDown } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 
 export interface ProductQuantityProps {
   maxOrderQuantity: number;
@@ -22,7 +21,7 @@ export interface ProductQuantityProps {
   isSellOnline: boolean;
   isBanned: boolean;
   productForm: string;
-  deliveryError?: string;
+  onNotifyMeClick: () => void;
 }
 
 export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
@@ -41,10 +40,9 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
     isSellOnline,
     isBanned,
     productForm,
-    deliveryError,
+    onNotifyMeClick,
   } = props;
-  const { cartItems, updateCartItem } = useShoppingCart();
-  const { showAphAlert, hideAphAlert } = useUIElements();
+  const { cartItems } = useShoppingCart();
 
   const renderQuantity = () => {
     let maxQuantity: number = getMaxQtyForMedicineItem(maxOrderQuantity);
@@ -62,7 +60,6 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
           selectedTextStyle={{ ...theme.viewStyles.text('M', 16, '#00b38e') }}
           onPress={(selectedQuantity) => {
             setProductQuantity(selectedQuantity.value as number);
-            // itemAvailable && onUpdateQuantity(selectedQuantity.value as number);
           }}
         >
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -83,28 +80,20 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
   );
 
   const renderCartCTA = () => {
-    const showAddToCart = isInStock && !deliveryError;
-    const ctaText = showAddToCart ? 'ADD TO CART' : 'NOTIFY WHEN IN STOCK';
+    const ctaText = isInStock ? 'ADD TO CART' : 'NOTIFY WHEN IN STOCK';
     return (
       <View>
         <TouchableOpacity
           onPress={() => {
-            showAddToCart ? onAddToCart() : onNotifyMeClick(name);
+            isInStock ? onAddToCart() : onNotifyMeClick();
           }}
           activeOpacity={0.7}
-          style={showAddToCart ? styles.addToCartCta : styles.notifyCta}
+          style={isInStock ? styles.addToCartCta : styles.notifyCta}
         >
-          <Text style={showAddToCart ? styles.addToCartText : styles.notifyText}>{ctaText}</Text>
+          <Text style={isInStock ? styles.addToCartText : styles.notifyText}>{ctaText}</Text>
         </TouchableOpacity>
       </View>
     );
-  };
-
-  const onNotifyMeClick = (name: string) => {
-    showAphAlert!({
-      title: 'Okay! :)',
-      description: `You will be notified when ${name} is back in stock.`,
-    });
   };
 
   const onAddToCart = () => {
@@ -115,7 +104,6 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
     const existingCartItem = cartItems?.filter((item) => item?.id === sku);
     if (existingCartItem?.length) {
       existingCartItem?.[0]?.quantity = productQuantity;
-      // updateCartItem && updateCartItem({ id: sku, quantity });
     } else {
       onAddCartItem();
     }

@@ -10,7 +10,6 @@ import {
   View,
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-// import { isIphone5s } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({

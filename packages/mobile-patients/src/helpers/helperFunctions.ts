@@ -1,11 +1,7 @@
-import {
-  LocationData,
-  useAppCommonData,
-} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { LocationData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import DeviceInfo from 'react-native-device-info';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
-  getPackageData,
   getPlaceInfoByLatLng,
   GooglePlacesType,
   MedicineProduct,
@@ -25,16 +21,27 @@ import {
   DIAGNOSTIC_ORDER_STATUS,
   REFUND_STATUSES,
   MedicalRecordType,
+  MEDICINE_TIMINGS,
+  MEDICINE_CONSUMPTION_DURATION,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from 'react-native-geolocation-service';
 import NetInfo from '@react-native-community/netinfo';
 import moment from 'moment';
 import AsyncStorage from '@react-native-community/async-storage';
-import { Alert, Dimensions, Platform, Linking, NativeModules } from 'react-native';
+import {
+  Alert,
+  Dimensions,
+  Platform,
+  Linking,
+  NativeModules,
+  PermissionsAndroid,
+  ToastAndroid,
+  AlertIOS,
+} from 'react-native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import Permissions from 'react-native-permissions';
-import { DiagnosticsCartItem } from '../components/DiagnosticsCartProvider';
+import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription } from '../graphql/types/getCaseSheet';
 import { apiRoutes } from './apiRoutes';
 import {
@@ -43,10 +50,7 @@ import {
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
-import {
-  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails,
-  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems,
-} from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
+import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
 import {
   getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet,
   getPatientAllAppointments_getPatientAllAppointments_activeAppointments,
@@ -57,10 +61,8 @@ import { saveSearch, saveSearchVariables } from '@aph/mobile-patients/src/graphq
 import {
   searchDiagnosticsByCityID,
   searchDiagnosticsByCityIDVariables,
-  searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import {
-  GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
   SAVE_SEARCH,
   SEARCH_DIAGNOSTICS_BY_CITY_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -92,28 +94,22 @@ import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getLatestMedicineOrder';
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
-import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
-import { handleUniversalLinks } from './UniversalLinks';
-import {
-  getPincodeServiceability,
-  getPincodeServiceabilityVariables,
-} from '@aph/mobile-patients/src/graphql/types/getPincodeServiceability';
-import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '../graphql/types/getDiagnosticSlotsWithAreaID';
+import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsWithAreaID';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { NavigationScreenProps, NavigationActions, StackActions } from 'react-navigation';
+import { NavigationActions, StackActions } from 'react-navigation';
 import { differenceInYears, parse } from 'date-fns';
 import stripHtml from 'string-strip-html';
 import isLessThan from 'semver/functions/lt';
 import coerce from 'semver/functions/coerce';
+import RNFetchBlob from 'rn-fetch-blob';
+import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
+import { HEALTH_CREDITS } from '../utils/AsyncStorageKey';
+import { getPatientByMobileNumber_getPatientByMobileNumber_patients } from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
 
-const isRegExp = require('lodash/isRegExp');
-const escapeRegExp = require('lodash/escapeRegExp');
-const isString = require('lodash/isString');
 const width = Dimensions.get('window').width;
 
 const { RNAppSignatureHelper } = NativeModules;
-const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 let onInstallConversionDataCanceller: any;
 let onAppOpenAttributionCanceller: any;
 
@@ -269,6 +265,16 @@ export const getAge = (dob: string) => {
   let age = parse(dob);
   return differenceInYears(now, age);
 };
+
+export function isAddressLatLngInValid(address: any) {
+  let isInvalid =
+    address?.latitude == null ||
+    address?.longitude == null ||
+    address?.latitude == 0 ||
+    address?.longitude == 0;
+
+  return isInvalid;
+}
 
 export const formatAddressBookAddress = (
   address: savePatientAddress_savePatientAddress_patientAddress
@@ -631,7 +637,7 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
       statusString = 'Order Delivered';
       break;
     case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
-      statusString = 'Order Dispatched';
+      statusString = 'Out for Delivery';
       break;
     case MEDICINE_ORDER_STATUS.ORDER_BILLED:
       statusString = 'Order Billed and Packed';
@@ -642,20 +648,11 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
     case MEDICINE_ORDER_STATUS.READY_AT_STORE:
       statusString = 'Order Ready at Store';
       break;
-    case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
-      statusString = 'Order Delivered';
-      break;
-    case MEDICINE_ORDER_STATUS.RETURN_REQUESTED:
-      statusString = 'Return In-Process';
-      break;
     case MEDICINE_ORDER_STATUS.DELIVERY_ATTEMPTED:
       statusString = 'Delivery Attempted';
       break;
     case MEDICINE_ORDER_STATUS.RVP_ASSIGNED:
-      statusString = 'Pick-up Assigned';
-      break;
-    case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
-      statusString = 'Order Delivered';
+      statusString = 'Return Pickup Assigned';
       break;
     case MEDICINE_ORDER_STATUS.RETURN_PICKUP:
       statusString = 'Return Successful';
@@ -703,7 +700,6 @@ type TimeArray = {
 }[];
 
 export const divideSlots = (availableSlots: string[], date: Date) => {
-  // const todayDate = new Date().toDateString().split('T')[0];
   const todayDate = moment(new Date()).format('YYYY-MM-DD');
 
   const array: TimeArray = [
@@ -734,7 +730,6 @@ export const divideSlots = (availableSlots: string[], date: Date) => {
       todayDate === moment(date).format('YYYY-MM-DD') && //date.toDateString().split('T')[0] &&
       todayDate !== moment(IOSFormat).format('YYYY-MM-DD') //new Date(IOSFormat).toDateString().split('T')[0])
     ) {
-      // console.log('today past');
     } else {
       if (new Date() < new Date(IOSFormat)) {
         if (slotTime.isBetween(nightEndTime, afternoonStartTime)) {
@@ -772,7 +767,6 @@ export const handleGraphQlError = (
   error: any,
   message: string = 'Oops! seems like we are having an issue. Please try again.'
 ) => {
-  console.log({ error });
   Alert.alert('Uh oh.. :(', message);
 };
 
@@ -870,7 +864,6 @@ export function g(obj: any, ...props: string[]) {
 export const getNetStatus = async () => {
   const status = await NetInfo.fetch()
     .then((connectionInfo) => {
-      // console.log(connectionInfo, 'connectionInfo');
       return connectionInfo.isConnected;
     })
     .catch((e) => {
@@ -904,10 +897,14 @@ export const getDiffInMinutes = (doctorAvailableSlots: string) => {
 export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult' = 'Available') => {
   const isValidTime = moment(nextSlot).isValid();
   if (isValidTime) {
-    const current = moment(new Date());
+    const d = new Date();
+    const current = moment(d);
+    const hoursPassedToday = d.getHours();
+    const minPassedToday = hoursPassedToday * 60 + d.getMinutes();
     const difference = moment.duration(moment(nextSlot).diff(current));
     const differenceMinute = Math.ceil(difference.asMinutes());
     const diffDays = Math.ceil(difference.asDays());
+
     const isTomorrow = moment(nextSlot).isAfter(
       current
         .add(1, 'd')
@@ -923,7 +920,7 @@ export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult'
       return 'BOOK APPOINTMENT';
     } else if (differenceMinute >= 60 && !isTomorrow) {
       return `${type} at ${moment(nextSlot).format('hh:mm A')}`;
-    } else if (isTomorrow && diffDays < 2) {
+    } else if (isTomorrow && differenceMinute < 2880 - minPassedToday) {
       return `${type} Tomorrow${
         type === 'Available' ? ` at ${moment(nextSlot).format('hh:mm A')}` : ''
       }`;
@@ -993,7 +990,6 @@ export const distanceBwTwoLatLng = (lat1: number, lon1: number, lat2: number, lo
     Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const d = R * c; // Distance in km
-  console.log(`Distance in km(s): ${d}`);
   return d;
 };
 
@@ -1025,7 +1021,6 @@ const getlocationData = (
           const addrComponents =
             g(response, 'data', 'results', '0' as any, 'address_components') || [];
           if (addrComponents.length == 0) {
-            console.log('Unable to get location info using latitude & longitude from Google API.');
             reject('Unable to get location.');
           } else {
             resolve(
@@ -1044,11 +1039,9 @@ const getlocationData = (
         });
     },
     (error) => {
-      console.log('err5', error);
-
       reject('Unable to get location.');
     },
-    { enableHighAccuracy: true, timeout: 10000 }
+    { accuracy: { android : 'balanced', ios:'best'} , enableHighAccuracy: true, timeout: 10000 }
   );
 };
 
@@ -1187,6 +1180,15 @@ export const extractUrlFromString = (text: string): string | undefined => {
   return (text.match(urlRegex) || [])[0];
 };
 
+export const getUserType = (allCurrentPatients: any) => {
+  const isConsulted = allCurrentPatients?.filter(
+    (patient: getPatientByMobileNumber_getPatientByMobileNumber_patients) =>
+      patient?.isConsulted === true
+  );
+  const userType: string = isConsulted?.length > 0 ? 'Repeat' : 'New';
+  return userType;
+};
+
 export const reOrderMedicines = async (
   order:
     | getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails
@@ -1194,8 +1196,6 @@ export const reOrderMedicines = async (
   currentPatient: any,
   source: ReorderMedicines['source']
 ) => {
-  // Medicines
-  // use billedItems for delivered orders
   const billedItems = g(
     order,
     'medicineOrderShipments',
@@ -1288,7 +1288,8 @@ export const reOrderMedicines = async (
 export const addTestsToCart = async (
   testPrescription: getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[], // testsIncluded will not come from API
   apolloClient: ApolloClient<object>,
-  pincode: string
+  pincode?: string,
+  setLoading?: UIElementsContextProps['setLoading']
 ) => {
   const searchQuery = (name: string, cityId: string) =>
     apolloClient.query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
@@ -1309,26 +1310,26 @@ export const addTestsToCart = async (
     await getPackageInclusions(apolloClient, [Number(itemId)]);
 
   try {
-    const items = testPrescription.filter((val) => val.itemname).map((item) => item.itemname);
+    setLoading?.(true);
+    const items = testPrescription?.filter((val) => val?.itemname).map((item) => item?.itemname);
 
-    console.log('\n\n\n\n\ntestPrescriptionNames\n', items, '\n\n\n\n\n');
-
-    const searchQueries = Promise.all(items.map((item) => searchQuery(item!, '9')));
+    const searchQueries = Promise.all(items?.map((item) => searchQuery(item!, '9')));
     const searchQueriesData = (await searchQueries)
-      .map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
+      ?.map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
       // .filter((item, index) => g(item, 'itemName')! == items[index])
-      .filter((item) => !!item);
+      ?.filter((item) => !!item);
     const detailQueries = Promise.all(
-      searchQueriesData.map((item) => detailQuery(`${item.itemId}`))
+      searchQueriesData?.map((item) => detailQuery(`${item.itemId}`))
     );
-    const detailQueriesData = (await detailQueries).map(
-      (item) => g(item, 'data', 'getInclusionsOfMultipleItems', 'inclusions', 'length') || 1 // updating testsIncluded
+    const detailQueriesData = (await detailQueries)?.map(
+      (item: any) => g(item, 'data', 'getInclusionsOfMultipleItems', 'inclusions', 'length') || 1 // updating testsIncluded
     );
+    setLoading?.(false);
     const finalArray: DiagnosticsCartItem[] = Array.from({
-      length: searchQueriesData.length,
+      length: searchQueriesData?.length,
     }).map((_, index) => {
-      const s = searchQueriesData[index];
-      const testIncludedCount = detailQueriesData[index];
+      const s = searchQueriesData?.[index];
+      const testIncludedCount = detailQueriesData?.[index];
       return {
         id: `${s?.itemId}`,
         name: s?.itemName,
@@ -1341,10 +1342,10 @@ export const addTestsToCart = async (
       } as DiagnosticsCartItem;
     });
 
-    console.log('\n\n\n\n\n\nfinalArray-testPrescriptionNames\n', finalArray, '\n\n\n\n\n');
     return finalArray;
   } catch (error) {
     CommonBugFender('helperFunctions_addTestsToCart', error);
+    setLoading?.(false);
     throw 'error';
   }
 };
@@ -1466,12 +1467,8 @@ const webengage = new WebEngage();
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
-    const logContent = `[WebEngage Event] ${eventName}`;
-    console.log(logContent);
     webengage.track(eventName, attributes);
-  } catch (error) {
-    console.log('********* Unable to post WebEngageEvent *********', { error });
-  }
+  } catch (error) {}
 };
 
 export const postwebEngageAddToCartEvent = (
@@ -1624,6 +1621,10 @@ export const postWebEngageIfNewSession = (
   }
 };
 
+export const removeObjectProperty = (object: any, property: string) => {
+  return _.omit(object, property);
+};
+
 export const postWEGNeedHelpEvent = (
   currentPatient: GetCurrentPatients_getCurrentPatients_patients,
   source: WebEngageEvents[WebEngageEventName.NEED_HELP]['Source']
@@ -1642,12 +1643,10 @@ export const postWEGNeedHelpEvent = (
 };
 
 export const postWEGWhatsAppEvent = (whatsAppAllow: boolean) => {
-  console.log(whatsAppAllow, 'whatsAppAllow');
   webengage.user.setAttribute('whatsapp_opt_in', whatsAppAllow); //WhatsApp
 };
 
 export const postWEGReferralCodeEvent = (ReferralCode: string) => {
-  console.log(ReferralCode, 'Referral Code');
   webengage.user.setAttribute('Referral Code', ReferralCode); //Referralcode
 };
 
@@ -1680,8 +1679,6 @@ export const permissionHandler = (
 ) => {
   Permissions.request(permission)
     .then((message) => {
-      console.log(message, 'sdhu');
-
       if (message === 'authorized') {
         doRequest();
       } else if (message === 'denied' || message === 'restricted') {
@@ -1700,7 +1697,7 @@ export const permissionHandler = (
         ]);
       }
     })
-    .catch((e) => console.log(e, 'dsvunacimkl'));
+    .catch((e) => {});
 };
 
 export const callPermissions = (doRequest?: () => void) => {
@@ -1728,11 +1725,8 @@ export const storagePermissions = (doRequest?: () => void) => {
 export const InitiateAppsFlyer = (
   navigation: NavigationScreenProp<NavigationRoute<object>, object>
 ) => {
-  console.log('InitiateAppsFlyer');
   onInstallConversionDataCanceller = appsFlyer.onInstallConversionData((res) => {
     if (JSON.parse(res.data.is_first_launch || 'null') == true) {
-      console.log('res.data', res.data);
-      // if (res.data.af_dp !== undefined) {
       try {
         if (res.data.af_dp !== undefined) {
           AsyncStorage.setItem('deeplink', res.data.af_dp);
@@ -1741,35 +1735,18 @@ export const InitiateAppsFlyer = (
           AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
         }
 
-        console.log('res.data.af_dp', decodeURIComponent(res.data.af_dp));
         setBugFenderLog('APPS_FLYER_DEEP_LINK', res.data.af_dp);
         setBugFenderLog('APPS_FLYER_DEEP_LINK_Referral_Code', res.data.af_sub1);
 
-        // setBugFenderLog('APPS_FLYER_DEEP_LINK_decode', decodeURIComponent(res.data.af_dp));
         setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
       } catch (error) {}
-
-      // } else {
-      //   setBugFenderLog('APPS_FLYER_DEEP_LINK_decode_else');
-      // }
 
       if (res.data.af_status === 'Non-organic') {
         const media_source = res.data.media_source;
         const campaign = res.data.campaign;
-        console.log('media_source', media_source);
-        console.log('campaign', campaign);
-
-        // Alert.alert(
-        //   'This is first launch and a Non-Organic install. Media source: ' +
-        //     media_source +
-        //     ' Campaign: ' +
-        //     campaign
-        // );
       } else if (res.data.af_status === 'Organic') {
-        // Alert.alert('This is first launch and a Organic Install');
       }
     } else {
-      // Alert.alert('This is not first launch');
     }
   });
 
@@ -1779,12 +1756,8 @@ export const InitiateAppsFlyer = (
       isDebug: false,
       appId: Platform.OS === 'ios' ? '1496740273' : '',
     },
-    (result) => {
-      console.log('result', result);
-    },
-    (error) => {
-      console.error('error', error);
-    }
+    (result) => {},
+    (error) => {}
   );
 
   onAppOpenAttributionCanceller = appsFlyer.onAppOpenAttribution(async (res) => {
@@ -1798,7 +1771,6 @@ export const InitiateAppsFlyer = (
           AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
         }
 
-        console.log('res.data.af_dp_onAppOpenAttribution', decodeURIComponent(res.data.af_dp));
         setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK', res.data.af_dp);
         setBugFenderLog(
           'onAppOpenAttribution_APPS_FLYER_DEEP_LINK_Referral_Code',
@@ -1807,33 +1779,21 @@ export const InitiateAppsFlyer = (
 
         setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
       } catch (error) {}
-
-      const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
-      if (userLoggedIn == 'true') {
-        handleUniversalLinks(res.data, navigation);
-      }
     }
   });
 };
 
 export const UnInstallAppsFlyer = (newFirebaseToken: string) => {
-  // console.log('UnInstallAppsFlyer', newFirebaseToken);
-  appsFlyer.updateServerUninstallToken(newFirebaseToken, (success) => {
-    // console.log('UnInstallAppsFlyersuccess', success);
-  });
+  appsFlyer.updateServerUninstallToken(newFirebaseToken, (success) => {});
 };
 
 export const APPStateInActive = () => {
   if (Platform.OS === 'ios') {
-    console.log('APPStateInActive');
-
     appsFlyer.trackAppLaunch();
   }
 };
 
 export const APPStateActive = () => {
-  console.log('APPStateActive');
-
   if (onInstallConversionDataCanceller) {
     onInstallConversionDataCanceller();
     onInstallConversionDataCanceller = null;
@@ -1847,34 +1807,19 @@ export const APPStateActive = () => {
 export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Object) => {
   try {
     const logContent = `[AppsFlyer Event] ${eventName}`;
-    console.log(logContent);
     appsFlyer.trackEvent(
       eventName,
       attributes,
-      (res) => {
-        console.log('AppsFlyerEventSuccess', res);
-      },
-      (err) => {
-        console.error('AppsFlyerEventError', err);
-      }
+      (res) => {},
+      (err) => {}
     );
-  } catch (error) {
-    console.log('********* Unable to post AppsFlyerEvent *********', { error });
-  }
+  } catch (error) {}
 };
 
 export const SetAppsFlyerCustID = (patientId: string) => {
   try {
-    console.log('\n********* SetAppsFlyerCustID Start *********\n');
-    console.log(`SetAppsFlyerCustID ${patientId}`);
-    console.log('\n********* SetAppsFlyerCustID End *********\n');
-
-    appsFlyer.setCustomerUserId(patientId, (res) => {
-      console.log('AppsFlyerEventSuccess', res);
-    });
-  } catch (error) {
-    console.log('********* Unable to post AppsFlyerEvent *********', { error });
-  }
+    appsFlyer.setCustomerUserId(patientId, (res) => {});
+  } catch (error) {}
 };
 
 export const postAppsFlyerAddToCartEvent = (
@@ -1920,12 +1865,8 @@ export const setCrashlyticsAttributes = async (
 
 export const postFirebaseEvent = (eventName: FirebaseEventName, attributes: Object) => {
   try {
-    const logContent = `[Firebase Event] ${eventName}`;
-    console.log(logContent);
     analytics().logEvent(eventName, attributes);
-  } catch (error) {
-    console.log('********* Unable to post FirebaseEvent *********', { error });
-  }
+  } catch (error) {}
 };
 
 export const postFirebaseAddToCartEvent = (
@@ -2045,6 +1986,68 @@ export const getMaxQtyForMedicineItem = (qty?: number | string) => {
   return qty ? Number(qty) : AppConfig.Configuration.CART_ITEM_MAX_QUANTITY;
 };
 
+const getDaysCount = (type: MEDICINE_CONSUMPTION_DURATION | null) => {
+  return type == MEDICINE_CONSUMPTION_DURATION.MONTHS
+    ? 30
+    : type == MEDICINE_CONSUMPTION_DURATION.WEEKS
+    ? 7
+    : 1;
+};
+
+export const getPrescriptionItemQuantity = (
+  medicineUnit: MEDICINE_UNIT | null,
+  medicineTimings: (MEDICINE_TIMINGS | null)[] | null,
+  medicineDosage: string | null,
+  medicineCustomDosage: string | null /** E.g: (1-0-1/2-0.5), (1-0-2\3-3) etc.*/,
+  medicineConsumptionDurationInDays: string | null,
+  medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null,
+  mou: number // how many tablets per strip
+) => {
+  if (medicineUnit == MEDICINE_UNIT.TABLET || medicineUnit == MEDICINE_UNIT.CAPSULE) {
+    const medicineDosageMapping = medicineCustomDosage
+      ? medicineCustomDosage.split('-').map((item) => {
+          if (item.indexOf('/') > -1) {
+            const dosage = item.split('/').map((item) => Number(item));
+            return (dosage[0] || 1) / (dosage[1] || 1);
+          } else if (item.indexOf('\\') > -1) {
+            const dosage = item.split('\\').map((item) => Number(item));
+            return (dosage[0] || 1) / (dosage[1] || 1);
+          } else {
+            return Number(item);
+          }
+        })
+      : medicineDosage
+      ? Array.from({ length: 4 }).map(() => Number(medicineDosage))
+      : [1, 1, 1, 1];
+
+    const medicineTimingsPerDayCount =
+      (medicineTimings || []).reduce(
+        (currTotal, currItem) =>
+          currTotal +
+          (currItem == MEDICINE_TIMINGS.MORNING
+            ? medicineDosageMapping[0]
+            : currItem == MEDICINE_TIMINGS.NOON
+            ? medicineDosageMapping[1]
+            : currItem == MEDICINE_TIMINGS.EVENING
+            ? medicineDosageMapping[2]
+            : currItem == MEDICINE_TIMINGS.NIGHT
+            ? medicineDosageMapping[3]
+            : 1),
+        0
+      ) || 1;
+
+    const totalTabletsNeeded =
+      medicineTimingsPerDayCount *
+      Number(medicineConsumptionDurationInDays || '1') *
+      getDaysCount(medicineConsumptionDurationUnit);
+
+    return Math.ceil(totalTabletsNeeded / mou);
+  } else {
+    // 1 for other than tablet or capsule
+    return 1;
+  }
+};
+
 export const formatToCartItem = ({
   sku,
   name,
@@ -2099,6 +2102,7 @@ export const addPharmaItemToCart = (
     categoryId?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category ID'];
     categoryName?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category name'];
   },
+  itemsInCart?: string,
   onComplete?: () => void,
   pharmacyCircleAttributes?: PharmacyCircleEvent,
   onAddedSuccessfully?: () => void
@@ -2114,8 +2118,6 @@ export const addPharmaItemToCart = (
 
   const addToCart = () => {
     addCartItem!(cartItem);
-    console.log('>>>otherInfo?.categoryName', otherInfo?.categoryName);
-
     postwebEngageAddToCartEvent(
       {
         sku: cartItem.id,
@@ -2174,6 +2176,7 @@ export const addPharmaItemToCart = (
       const availability = g(res, 'data', 'response', '0' as any, 'exist');
       if (availability) {
         addToCart();
+        onAddedSuccessfully?.();
       } else {
         navigate();
       }
@@ -2188,9 +2191,9 @@ export const addPharmaItemToCart = (
           Response_Exist: exist ? 'Yes' : 'No',
           Response_MRP: mrp,
           Response_Qty: qty,
+          'Cart Items': JSON.stringify(itemsInCart) || '',
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
-        onAddedSuccessfully?.();
       } catch (error) {}
     })
     .catch(() => {
@@ -2266,7 +2269,6 @@ export const overlyCallPermissions = (
     };
     Permissions.checkMultiple(['camera', 'microphone'])
       .then((response) => {
-        console.log('Response===>', response);
         const { camera, microphone } = response;
         const cameraNo = camera === 'denied' || camera === 'undetermined';
         const microphoneNo = microphone === 'denied' || microphone === 'undetermined';
@@ -2274,56 +2276,30 @@ export const overlyCallPermissions = (
         const microphoneYes = microphone === 'authorized';
         // Response is one of: 'authorized', 'denied', 'restricted', or 'undetermined'
         if (cameraNo && microphoneNo) {
-          RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
-            if (status) {
-              showPermissionPopUp(
-                string.callRelatedPermissions.allPermissions.replace('{0}', doctorName),
-                () => callPermissions(() => RNAppSignatureHelper.requestOverlayPermission())
-              );
-            } else {
-              showPermissionPopUp(
-                string.callRelatedPermissions.camAndMPPermission.replace('{0}', doctorName),
-                () => callPermissions()
-              );
-            }
-          });
+          // ----------- dont delete this commented  overlay permission block incase we decide to use again
+          // RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
+          //   if (status) {
+          //     showPermissionPopUp(
+          //       string.callRelatedPermissions.allPermissions.replace('{0}', doctorName),
+          //       () => callPermissions(() => RNAppSignatureHelper.requestOverlayPermission())
+          //     );
+          //   }
+          // });
+
+          showPermissionPopUp(
+            string.callRelatedPermissions.camAndMPPermission.replace('{0}', doctorName),
+            () => callPermissions()
+          );
         } else if (cameraYes && microphoneNo) {
-          RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
-            if (status) {
-              showPermissionPopUp(
-                string.callRelatedPermissions.mpAndOverlayPermission.replace('{0}', doctorName),
-                () => callPermissions(() => RNAppSignatureHelper.requestOverlayPermission())
-              );
-            } else {
-              showPermissionPopUp(
-                string.callRelatedPermissions.onlyMPPermission.replace('{0}', doctorName),
-                () => callPermissions()
-              );
-            }
-          });
+          showPermissionPopUp(
+            string.callRelatedPermissions.onlyMPPermission.replace('{0}', doctorName),
+            () => callPermissions()
+          );
         } else if (cameraNo && microphoneYes) {
-          RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
-            if (status) {
-              showPermissionPopUp(
-                string.callRelatedPermissions.camAndOverlayPermission.replace('{0}', doctorName),
-                () => callPermissions(() => RNAppSignatureHelper.requestOverlayPermission())
-              );
-            } else {
-              showPermissionPopUp(
-                string.callRelatedPermissions.onlyCameraPermission.replace('{0}', doctorName),
-                () => callPermissions()
-              );
-            }
-          });
-        } else if (cameraYes && microphoneYes) {
-          RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
-            if (status) {
-              showPermissionPopUp(
-                string.callRelatedPermissions.onlyOverlayPermission.replace('{0}', doctorName),
-                () => RNAppSignatureHelper.requestOverlayPermission()
-              );
-            }
-          });
+          showPermissionPopUp(
+            string.callRelatedPermissions.onlyCameraPermission.replace('{0}', doctorName),
+            () => callPermissions()
+          );
         }
       })
       .catch((e) => {});
@@ -2421,29 +2397,6 @@ export const readableParam = (param: string) => {
     .replace(/-+$/, ''); // Trim - from end of text
 };
 
-const replaceString = (str: string, match: any, fn: any) => {
-  var curCharStart = 0;
-  var curCharLen = 0;
-  if (str === '') {
-    return str;
-  } else if (!str || !isString(str)) {
-    throw new TypeError('First argument to react-string-replace#replaceString must be a string');
-  }
-  var re = match;
-  if (!isRegExp(re)) {
-    re = new RegExp('(' + escapeRegExp(re) + ')', 'gi');
-  }
-  var result = str.split(re);
-  // Apply fn to all odd elements
-  for (var i = 1, length = result.length; i < length; i += 2) {
-    curCharLen = result[i].length;
-    curCharStart += result[i - 1].length;
-    result[i] = fn(result[i], i, curCharStart);
-    curCharStart += curCharLen;
-  }
-  return result;
-};
-
 export const monthDiff = (dateFrom: Date, dateTo: Date) => {
   return (
     dateTo.getMonth() - dateFrom.getMonth() + 12 * (dateTo.getFullYear() - dateFrom.getFullYear())
@@ -2473,7 +2426,6 @@ export const filterHtmlContent = (content: string = '') => {
     .replace(/&gt;/g, '>')
     .replace(/&nbsp;/g, '</>')
     .replace(/\.t/g, '.')
-    .replace(/.rn/gi, '. ')
     .replace(/<\/>/gi, '');
 };
 export const isProductInStock = (product: MedicineProduct) => {
@@ -2498,6 +2450,79 @@ export const takeToHomePage = (props: any) => {
     })
   );
 };
+
+export const navigateToHome = (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  params?: any,
+  forceRedirect?: boolean
+) => {
+  if (forceRedirect) {
+    goToConsultRoom(navigation, params);
+  } else {
+    const navigate = navigation.popToTop();
+    if (!navigate) {
+      goToConsultRoom(navigation, params);
+    }
+  }
+};
+
+const goToConsultRoom = (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  params?: any
+) => {
+  navigation.dispatch(
+    StackActions.reset({
+      index: 0,
+      key: null,
+      actions: [
+        NavigationActions.navigate({
+          routeName: AppRoutes.ConsultRoom,
+          params,
+        }),
+      ],
+    })
+  );
+};
+
+export const navigateToScreenWithEmptyStack = (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>,
+  screenName: string,
+  params?: any
+) => {
+  const navigate = navigation.popToTop({ immediate: true });
+  if (navigate) {
+    setTimeout(() => {
+      navigation.navigate(screenName, params);
+    }, 0);
+  } else {
+    navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [
+          NavigationActions.navigate({
+            routeName: screenName,
+            params,
+          }),
+        ],
+      })
+    );
+  }
+};
+
+export const apiCallEnums = {
+  circleSavings: 'GetCircleSavingsOfUserByMobile',
+  getAllBanners: 'GetAllGroupBannersOfUser',
+  getUserSubscriptions: 'GetSubscriptionsOfUserByStatus',
+  getUserSubscriptionsV2: 'GetAllUserSubscriptionsWithPlanBenefitsV2',
+  oneApollo: 'getOneApolloUser',
+  pharmacyUserType: 'getUserProfileType',
+  getPlans: 'GetPlanDetailsByPlanId',
+  plansCashback: 'GetCashbackDetailsOfPlanById',
+  patientAppointments: 'getPatientPersonalizedAppointments',
+  patientAppointmentsCount: 'getPatientFutureAppointmentCount',
+};
+
 export const isSmallDevice = width < 370;
 
 //customText needs to be shown for itemId = 8
@@ -2630,26 +2655,14 @@ export const validateCoupon = async (
   message: string | undefined,
   pharmacyPincode: any,
   mobileNumber: string,
-  hdfcSubscriptionId: string,
-  circleSubscriptionId: string,
   setCoupon: ((coupon: PharmaCoupon | null) => void) | null,
   cartTotal: number,
   productDiscount: number,
   cartItems: ShoppingCartItem[],
-  hdfcStatus: string,
-  hdfcPlanId: string,
-  circleStatus: string,
-  circlePlanId: string,
-  setCouponProducts: ((items: CouponProducts[]) => void) | null
+  setCouponProducts: ((items: CouponProducts[]) => void) | null,
+  packageId: string[]
 ) => {
   CommonLogEvent(AppRoutes.ApplyCouponScene, 'Apply coupon');
-  let packageId: string[] = [];
-  if (hdfcSubscriptionId && hdfcStatus === 'active') {
-    packageId.push(`HDFC:${hdfcPlanId}`);
-  }
-  if (circleSubscriptionId && circleStatus === 'active') {
-    packageId.push(`APOLLO:${circlePlanId}`);
-  }
   const data = {
     mobile: mobileNumber,
     billAmount: (cartTotal - productDiscount).toFixed(2),
@@ -2689,4 +2702,176 @@ export const validateCoupon = async (
       rej('Sorry, unable to validate coupon right now.');
     }
   });
+};
+
+export const setAsyncPharmaLocation = (address: any) => {
+  if (address) {
+    const saveAddress = {
+      pincode: address?.zipcode || address?.pincode,
+      id: address?.id,
+      city: address?.city,
+      state: address?.state,
+    };
+    AsyncStorage.setItem('PharmacyLocationPincode', JSON.stringify(saveAddress));
+  }
+};
+
+export const getPatientNameById = (allCurrentPatients: any, patientId: string) => {
+  const patientSelected = allCurrentPatients?.find(
+    (patient: { id: string }) => patient?.id === patientId
+  );
+
+  return patientSelected ? `${patientSelected?.firstName} ${patientSelected?.lastName}` : '';
+};
+
+export const requestReadSmsPermission = async () => {
+  try {
+    const resuts = await PermissionsAndroid.requestMultiple([
+      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+      PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+    ]);
+    if (resuts) {
+      return resuts;
+    }
+  } catch (error) {
+    CommonBugFender('HelperFunction_requestReadSmsPermission_try', error);
+  }
+};
+
+export const storagePermissionsToDownload = (doRequest?: () => void) => {
+  permissionHandler(
+    'storage',
+    'Enable storage from settings for downloading the test report',
+    () => {
+      doRequest && doRequest();
+    }
+  );
+};
+
+export async function downloadDiagnosticReport(
+  setLoading: UIElementsContextProps['setLoading'],
+  pdfUrl: string,
+  appointmentDate: string,
+  patientName: string,
+  showToast: boolean,
+  downloadFileName?: string
+) {
+  setLoading?.(true);
+  let result = Platform.OS === 'android' && (await requestReadSmsPermission());
+  try {
+    if (
+      (result &&
+        Platform.OS == 'android' &&
+        result?.[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] ===
+          PermissionsAndroid.RESULTS.GRANTED &&
+        result?.[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] ===
+          PermissionsAndroid.RESULTS.GRANTED) ||
+      Platform.OS == 'ios'
+    ) {
+      const dirs = RNFetchBlob.fs.dirs;
+      const reportName = !!downloadFileName
+        ? downloadFileName
+        : `Apollo247_${appointmentDate}_${patientName}.pdf`;
+      const downloadPath =
+        Platform.OS === 'ios'
+          ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + reportName
+          : dirs.DownloadDir + '/' + reportName;
+
+      let msg = 'File is downloading..';
+      if (showToast && Platform.OS === 'android') {
+          ToastAndroid.show(msg, ToastAndroid.SHORT);
+      }
+      RNFetchBlob.config({
+        fileCache: true,
+        path: downloadPath,
+        addAndroidDownloads: {
+          title: reportName,
+          useDownloadManager: true,
+          notification: true,
+          path: downloadPath,
+          mime: mimeType(downloadPath),
+          description: 'File downloaded by download manager.',
+        },
+      })
+        .fetch('GET', pdfUrl, {})
+        .then((res) => {
+          setLoading?.(false);
+          Platform.OS === 'ios'
+            ? RNFetchBlob.ios.previewDocument(res.path())
+            : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+        })
+        .catch((err) => {
+          setLoading?.(false);
+          CommonBugFender('TestOrderDetails_ViewReport', err);
+          handleGraphQlError(err);
+          throw new Error('Something went wrong');
+        });
+    } else {
+      if (
+        result &&
+        Platform.OS == 'android' &&
+        result?.[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] !==
+          PermissionsAndroid.RESULTS.DENIED &&
+        result?.[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] !==
+          PermissionsAndroid.RESULTS.DENIED
+      ) {
+        storagePermissionsToDownload(() => {
+          downloadDiagnosticReport(setLoading, pdfUrl, appointmentDate, patientName, true);
+        });
+      }
+    }
+  } catch (error) {
+    setLoading?.(false);
+    CommonBugFender('YourOrderTests_downloadLabTest', error);
+    throw new Error('Something went wrong');
+  }
+}
+
+export const persistHealthCredits = (healthCredit: number) => {
+  var healthCreditObj = {
+    healthCredit: healthCredit,
+    age: new Date().getTime(),
+  };
+  AsyncStorage.setItem(HEALTH_CREDITS, JSON.stringify(healthCreditObj));
+};
+
+export const getHealthCredits = async () => {
+  try {
+    var healthCreditObj: any = await AsyncStorage.getItem(HEALTH_CREDITS);
+
+    if (healthCreditObj != null && healthCreditObj != '') {
+      var healthCredit = JSON.parse?.(healthCreditObj);
+
+      if (healthCredit !== null) {
+        var age = healthCredit.age;
+        var ageDate = moment(age);
+        var nowDate = moment(new Date());
+        var duration = moment.duration(nowDate.diff(ageDate)).asMinutes();
+
+        if (duration < 0 || duration > AppConfig.Configuration.Health_Credit_Expiration_Time) {
+          return null; //Expired
+        } else {
+          return healthCredit;
+        }
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  } catch (error) {
+    return null;
+  }
+};
+
+export const getPackageIds = (activeUserSubscriptions: any) => {
+  let packageIds: string[] = [];
+  activeUserSubscriptions &&
+    Object.keys(activeUserSubscriptions)?.forEach((subscription: string) => {
+      activeUserSubscriptions?.[subscription]?.forEach((item) => {
+        if (item?.status?.toLowerCase() === 'active')
+          packageIds.push(`${subscription?.toUpperCase()}:${item?.plan_id}`);
+      });
+    });
+  return packageIds;
 };

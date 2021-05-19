@@ -9,6 +9,19 @@ import { DIAGNOSTIC_ORDER_STATUS, DIAGNOSTIC_ORDER_PAYMENT_TYPE, DIAGNOSTICS_TYP
 // GraphQL query operation: getDiagnosticOrdersList
 // ====================================================
 
+export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_phleboDetailsObj {
+  __typename: "PhleboDetailsObj";
+  PhelboOTP: string | null;
+  PhelbotomistName: string;
+  PhelbotomistMobile: string;
+  PhelbotomistTrackLink: string;
+  TempRecording: string | null;
+  CheckInTime: any | null;
+  PhleboLatitude: number | null;
+  PhleboLongitude: number | null;
+  PhleboRating: number | null;
+}
+
 export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderReschedule {
   __typename: "DiagnosticOrderReschedule";
   rescheduleDate: any | null;
@@ -43,6 +56,7 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diag
   testPreparationData: string | null;
   packageCalculatedMrp: number | null;
   inclusions: (number | null)[] | null;
+  reportGenerationTime: string | null;
 }
 
 export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_pricingObj {
@@ -117,6 +131,7 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList {
   visitNo: string | null;
   paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
   paymentOrderId: string | null;
+  phleboDetailsObj: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_phleboDetailsObj | null;
   diagnosticOrderReschedule: (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderReschedule | null)[] | null;
   diagnosticOrderCancellation: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderCancellation | null;
   diagnosticOrdersStatus: (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrdersStatus | null)[] | null;

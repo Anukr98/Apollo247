@@ -35,6 +35,7 @@ import {
   getPhrHighlightText,
   phrSearchWebEngageEvents,
   postWebEngageIfNewSession,
+  removeObjectProperty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -65,6 +66,7 @@ import {
   InsurancePhrSearchIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import ListEmptyComponent from '@aph/mobile-patients/src/components/HealthRecords/Components/ListEmptyComponent';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -162,6 +164,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
   const [prismAuthToken, setPrismAuthToken] = useState<string>(
     props.navigation?.getParam('authToken') || ''
   );
+  const [searchQuery, setSearchQuery] = useState({});
   const { phrSession, setPhrSession } = useAppCommonData();
 
   useEffect(() => {
@@ -203,9 +206,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         }
       })
       .catch((e) => {
-        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
-        const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
+        CommonBugFender('InsuranceScreen_GET_PRISM_AUTH_TOKEN', e);
       });
   };
 
@@ -239,7 +240,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         }
       })
       .catch((error) => {
-        console.log('searchPHRApiWithAuthToken Error', error);
+        CommonBugFender('InsuranceScreen_searchPHRApiWithAuthToken', error);
         getAuthToken();
         setSearchLoading(false);
       });
@@ -254,7 +255,13 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         return;
       }
       setSearchLoading(true);
-      const search = _.debounce(onSearchHealthRecords, 300);
+      const search = _.debounce(onSearchHealthRecords, 500);
+      setSearchQuery((prevSearch: any) => {
+        if (prevSearch.cancel) {
+          prevSearch.cancel();
+        }
+        return search;
+      });
       search(value);
     }
   };
@@ -297,9 +304,9 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         setShowSpinner(false);
       })
       .catch((error) => {
+        CommonBugFender('InsuranceScreen_getPatientPrismMedicalRecordsApi', error);
         setShowSpinner(false);
         setApiError(true);
-        console.log('error getPatientPrismMedicalRecordsApi', error);
         currentPatient && handleGraphQlError(error);
       });
   };
@@ -353,7 +360,14 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
   };
 
   const onHealthCardItemPress = (selectedItem: MedicalInsuranceType) => {
-    postWebEngageIfNewSession('Insurance', currentPatient, selectedItem, phrSession, setPhrSession);
+    const eventInputData = removeObjectProperty(selectedItem, 'insuranceFiles');
+    postWebEngageIfNewSession(
+      'Insurance',
+      currentPatient,
+      eventInputData,
+      phrSession,
+      setPhrSession
+    );
     props.navigation.navigate(AppRoutes.HealthRecordDetails, {
       data: selectedItem,
       medicalInsurance: true,
@@ -371,17 +385,19 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
       .then((status) => {
         if (status) {
           getLatestMedicalInsuranceRecords();
+          const eventInputData = removeObjectProperty(selectedItem, 'insuranceFiles');
           postWebEngagePHR(
             currentPatient,
             WebEngageEventName.PHR_DELETE_INSURANCE,
             'Insurance',
-            selectedItem
+            eventInputData
           );
         } else {
           setShowSpinner(false);
         }
       })
       .catch((error) => {
+        CommonBugFender('InsuranceScreen_deletePatientPrismMedicalRecords', error);
         setShowSpinner(false);
         currentPatient && handleGraphQlError(error);
       });
@@ -428,14 +444,6 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
     );
   };
 
-  const emptyListView = () => {
-    return apiError ? (
-      <PhrNoDataComponent noDataText={string.common.phr_api_error_text} phrErrorIcon />
-    ) : (
-      <PhrNoDataComponent />
-    );
-  };
-
   const renderMedicalInsuranceData = () => {
     return (
       <SectionList
@@ -444,7 +452,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 12, paddingHorizontal: 20 }}
         sections={localMedicalInsuranceData || []}
         renderItem={({ item, index }) => renderMedicalInsuranceItems(item, index)}
-        ListEmptyComponent={emptyListView}
+        ListEmptyComponent={ListEmptyComponent.getEmptyListComponent(showSpinner, apiError)}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
       />
     );

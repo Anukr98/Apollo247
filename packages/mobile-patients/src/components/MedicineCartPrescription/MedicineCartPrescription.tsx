@@ -30,6 +30,8 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
     ePrescriptions,
     setPhysicalPrescriptions,
     setEPrescriptions,
+    consultProfile,
+    setConsultProfile,
   } = useShoppingCart();
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
@@ -72,6 +74,10 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
         <PrescriptionOptions
           navigation={navigation}
           selectedOption={prescriptionType || PrescriptionType.UPLOADED}
+          patientId={consultProfile?.id || null}
+          onSelectPatient={(patient) => {
+            setConsultProfile(patient || null);
+          }}
           onSelectOption={(option, ePres, physPres) => {
             setPrescriptionType(option);
             if (option === PrescriptionType.CONSULT) {
@@ -120,9 +126,10 @@ export const MedicineCartPrescription: React.FC<Props> = ({ navigation }) => {
 
   const renderContinueButton = () => {
     const isDisabled = prescriptionType
-      ? prescriptionType === PrescriptionType.UPLOADED &&
-        physicalPrescriptions.length === 0 &&
-        ePrescriptions.length === 0
+      ? (prescriptionType === PrescriptionType.UPLOADED &&
+          physicalPrescriptions.length === 0 &&
+          ePrescriptions.length === 0) ||
+        (prescriptionType === PrescriptionType.CONSULT && !consultProfile?.id)
       : true;
     const title = [PrescriptionType.CONSULT, PrescriptionType.LATER].includes(prescriptionType!)
       ? 'CONTINUE WITHOUT PRESCRIPTION'

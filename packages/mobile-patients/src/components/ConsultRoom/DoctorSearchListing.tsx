@@ -21,8 +21,6 @@ import {
   SearchIcon,
   FamilyDoctorIcon,
   RetryButtonIcon,
-  TickIcon,
-  CircleLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
@@ -38,17 +36,13 @@ import {
   getPlatinumDoctor,
 } from '@aph/mobile-patients/src/graphql/types/getPlatinumDoctor';
 import {
-  DOCTOR_SPECIALITY_BY_FILTERS,
   GET_DOCTOR_LIST,
   GET_PLATINUM_DOCTOR,
   GET_DOCTORLIST_FILTERS,
   GET_PATIENT_ADDRESS_LIST,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
-  getDoctorsBySpecialtyAndFilters,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors,
-  getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsAvailability,
-  getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_specialty,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
 import { getDoctorList } from '@aph/mobile-patients/src/graphql/types/getDoctorList';
@@ -77,6 +71,7 @@ import {
   setWebEngageScreenNames,
   getDoctorShareMessage,
   postDoctorShareWEGEvents,
+  getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -114,7 +109,6 @@ import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEven
 import { getValuesArray } from '@aph/mobile-patients/src/utils/commonUtils';
 import _ from 'lodash';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { Switch } from '@aph/mobile-patients/src/components/ui/Switch';
 import { CirclePlanAddedToCart } from '@aph/mobile-patients/src/components/ui/CirclePlanAddedToCart';
 import {
   getPatientAddressList,
@@ -243,7 +237,6 @@ export type filterDataType = {
 
 export type locationType = { lat: number | string; lng: number | string };
 export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) => {
-  const specialistPluralTerm = props.navigation.getParam('specialistPluralTerm');
   const typeOfConsult = props.navigation.getParam('typeOfConsult');
   const doctorTypeFilter = props.navigation.getParam('doctorType');
   const cityFilter = props.navigation.getParam('city');
@@ -288,11 +281,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [filterMode, setfilterMode] = useState<ConsultMode>(ConsultMode.BOTH);
   const [searchQuery, setSearchQuery] = useState({});
 
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
-  const { generalPhysicians, ent, Urology, Dermatology } = useAppCommonData();
   const [showLocations, setshowLocations] = useState<boolean>(false);
-  const [value, setValue] = useState<boolean>(false);
   const [sortValue, setSortValue] = useState<string>('');
   const [searchIconClicked, setSearchIconClicked] = useState<boolean>(false);
   const [careDoctorsSwitch, setCareDoctorsSwitch] = useState<boolean>(false);
@@ -390,8 +381,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   }, [showCarePlanNotification]);
 
   useEffect(() => {
-    getDoctorOfTheHour();
-    fetchAddress();
+    if (doctorsType != 'PARTNERS') {
+      getDoctorOfTheHour(false);
+      fetchAddress(false, 'from effect');
+    }
   }, []);
 
   const getDoctorOfTheHour = async (partnerDoctor: boolean = false, state?: string) => {
@@ -408,7 +401,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       })
       .then(({ data }) => {
         const platinum_doctor = g(data, 'getPlatinumDoctor', 'doctors', '0' as any);
-        console.log('platinum doc data', JSON.stringify(data));
         if (platinum_doctor) {
           setPlatinumDoctor(platinum_doctor);
           postPlatinumDoctorWEGEvents(platinum_doctor, WebEngageEventName.DOH_Viewed, state);
@@ -422,7 +414,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       });
   };
 
-  async function fetchAddress() {
+  async function fetchAddress(partnerDoctor: boolean = false, from?: string) {
     try {
       if (locationDetails?.state) {
         return;
@@ -439,10 +431,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           ?.addressList as savePatientAddress_savePatientAddress_patientAddress[]) || [];
       const state = addressList?.[0]?.state;
       if (state) {
-        getDoctorOfTheHour(false, state);
+        await getDoctorOfTheHour(partnerDoctor, state);
       }
     } catch (error) {
-      console.log(error);
       CommonBugFender('DoctorSearchListing_fetchAddress', error);
     }
   }
@@ -683,7 +674,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       'Location permission': permissionType,
     };
     postWebEngageEvent(WebEngageEventName.LOCATION_PERMISSION, eventAttributes);
-    console.log('check event ', eventAttributes);
   };
 
   const fetchSpecialityFilterData = (
@@ -782,7 +772,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     const FilterInput: FilterDoctorInput = {
       patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
       specialty: props.navigation.getParam('specialityId') || '',
-      // city: SearchData[0].selectedOptions,
       pincode: pinCode || g(locationDetails, 'pincode') || null,
       doctorType:
         brandFilter === undefined || brandFilter === null
@@ -798,7 +787,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       gender: SearchData[5].selectedOptions,
       language: SearchData[6].selectedOptions,
       ...availableNow,
-      // consultMode: filterMode,
       ...specialtyName,
       ...geolocation,
       sort: sort,
@@ -830,21 +818,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           setPartnerDocsNumber(
             data.getDoctorList?.partnerDoctorCount ? data.getDoctorList?.partnerDoctorCount : 0
           ));
-        //log data
-
-        // const doctorInfo =
-        //   data &&
-        //   data.getDoctorsBySpecialtyAndFilters &&
-        //   data.getDoctorsBySpecialtyAndFilters.doctors === null
-        //     ? {}
-        //     : data &&
-        //       data.getDoctorsBySpecialtyAndFilters &&
-        //       data.getDoctorsBySpecialtyAndFilters.doctors &&
-        //       data.getDoctorsBySpecialtyAndFilters.doctors[0];
-        // filterOptions(data.getDoctorsBySpecialtyAndFilters.filters);
-
-        // setBugFenderLog('DOCTOR_FILTER_DATA', JSON.stringify(doctorInfo));
-        //end log data
       })
       .catch((e) => {
         CommonBugFender('DoctorSearchListing_fetchSpecialityFilterData', e);
@@ -1092,7 +1065,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               onPress={() => {
                 setSearchIconClicked(!searchIconClicked);
                 setDoctorSearch('');
-                // filterDoctors(doctorsList, doctorsType, '');
                 if (searchIconClicked) {
                   fetchSpecialityFilterData(
                     filterMode,
@@ -1134,14 +1106,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       userName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       userPhoneNumber: currentPatient?.mobileNumber,
     };
-
-    console.log(
-      'csk post event',
-      JSON.stringify(eventAttributes),
-      '------',
-      JSON.stringify(doctorData)
-    );
-
     postWebEngageEvent(eventName, eventAttributes);
   };
 
@@ -1161,6 +1125,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       'Doctor Speciality': doctorDetails?.specialtydisplayName,
       Rank: doctorDetails?.rowId,
       Is_TopDoc: !!isTopDoc ? 'Yes' : 'No',
+      User_Type: getUserType(allCurrentPatients),
     };
 
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {
@@ -1246,11 +1211,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         numberOfLines={numberOfLines}
         availableModes={rowData.consultMode}
         callSaveSearch={callSaveSearch}
-        onPress={() => {
+        onPress={(id: string, onlineConsult: boolean) => {
           postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List');
           props.navigation.navigate(AppRoutes.DoctorDetails, {
             doctorId: rowData.id,
             callSaveSearch: callSaveSearch,
+            consultModeSelected: onlineConsult ? ConsultMode.ONLINE : ConsultMode.PHYSICAL,
           });
         }}
         onPressShare={(doctorData) => onClickDoctorShare(doctorData, index + 1)}
@@ -1363,7 +1329,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
     return (
       <View style={{ flex: 1 }}>
-        {/* {doctorsType === 'APOLLO' && renderViewCareSwitch()} */}
         {doctorsType === 'APOLLO' && showCarePlanNotification && renderCirclePlanAddedToCartView()}
         {doctors.length > 0 && (
           <FlatList
@@ -1402,7 +1367,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const onEndReached = () => {
-    console.log('end reached');
     let totalDocs = doctorsType == 'APOLLO' ? apolloDocsNumber : partnerDocsNumber;
     if (!fetching && filteredDoctorsList.length < totalDocs) {
       setfetching(true);
@@ -1582,7 +1546,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           <View style={{ width: getWidth(20) }} />
           <Image
             style={localStyles.imageStyle}
-            source={require('@aph/mobile-patients/src/images/doctor/doctor_search_filler_img.png')}
+            source={require('@aph/mobile-patients/src/images/doctor/doctor_search_filler_img.webp')}
           />
         </View>
         <Text style={localStyles.pleaseWaitTextStyle}>
@@ -1642,6 +1606,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           <FamilyDoctorIcon style={{ width: 16.58, height: 24 }} />
           <Text style={styles.doctorOfTheHourTextStyle}>{doctorOfHourText}</Text>
         </View>
+
         <DoctorCard
           rowData={platinumDoctor}
           navigation={props.navigation}
@@ -1652,13 +1617,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           buttonStyle={buttonStyle}
           buttonTextStyle={buttonTextStyle}
           onPressShare={(doctorData) => onClickDoctorShare(doctorData, index + 1)}
-          onPress={() => {
+          onPress={(id: string, onlineConsult: boolean) => {
             postDoctorClickWEGEvent(platinumDoctor, 'List', true);
             postPlatinumDoctorWEGEvents(platinumDoctor, WebEngageEventName.DOH_Clicked);
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: platinumDoctor?.id,
               callSaveSearch: callSaveSearch,
               platinumDoctor: true,
+              consultModeSelected: onlineConsult ? ConsultMode.ONLINE : ConsultMode.PHYSICAL,
             });
           }}
           onPressConsultNowOrBookAppointment={(type) => {
@@ -1685,11 +1651,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           doctorShareRank
         );
       } else if (result.action === Share.dismissedAction) {
-        console.log('dismiss');
       }
-    } catch (error) {
-      console.log('onPressShareProfileButton Error', error.message);
-    }
+    } catch (error) {}
   };
 
   const onPressGoBackShareDoctor = (doctorData: any) => {
@@ -2007,13 +1970,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     if (doctorsType != 'APOLLO') {
       postTabBarClickWEGEvent('APOLLO');
       setDoctorsType('APOLLO');
-      // onPressAvailabiltyRadioButton();
       setFilteredDoctorsList([]);
       filterDoctors(doctorsList, 'APOLLO');
       scrollToTop();
       setPlatinumDoctor(null);
       getDoctorOfTheHour();
-      fetchAddress(); // this will get called when locationDetails?.state is null
+      fetchAddress(false, 'from apollo button press'); // this will get called when locationDetails?.state is null
     }
   };
 
@@ -2021,13 +1983,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     if (doctorsType != 'PARTNERS') {
       postTabBarClickWEGEvent('PARTNERS');
       setDoctorsType('PARTNERS');
-      // onPressNearByRadioButton(true);
       setFilteredDoctorsList([]);
       filterDoctors(doctorsList, 'PARTNERS');
       scrollToTop();
       setPlatinumDoctor(null);
       getDoctorOfTheHour(true);
-      fetchAddress();
+      fetchAddress(true, 'from partner button press');
     }
   };
 
@@ -2087,24 +2048,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     postWebEngageEvent(WebEngageEventName.VC_CIRCLE_FILTER, eventAttributes);
   };
 
-  const renderViewCareSwitch = () => {
-    return (
-      <View style={styles.rowContainer}>
-        <Text style={styles.careHeadingText}>View</Text>
-        <CircleLogo style={styles.careLogo} />
-        <Text style={[styles.careHeadingText, { marginLeft: 0 }]}>Doctors</Text>
-        <Switch
-          onChange={(value) => {
-            setCareDoctorsSwitch(value);
-            setFilterActionTaken(true);
-            filterCircleWebEngage();
-          }}
-          value={careDoctorsSwitch}
-        />
-      </View>
-    );
-  };
-
   return (
     <View style={styles.mainContainer}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -2117,12 +2060,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             renderSearchLoadingView()
           ) : (
             <View style={{ flex: 1 }}>
-              {/* <Text style={styles.consultHeadingText}>
-                {string.doctor_search_listing.consultBest.replace(
-                  '{0}',
-                  specialistPluralTerm || 'Doctors'
-                )}
-              </Text> */}
               {renderDoctorSearches(
                 onlineCheckBox
                   ? physicalCheckBox

@@ -3,8 +3,7 @@ import React, { useState } from 'react';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { CallConnectIcon, CallRingIcon, GroupCallIcon } from '../ui/Icons';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
-import { g, sGngageEvent } from '../../helpers/helperFunctions';
-import { AppConfig } from '../../strings/AppConfig';
+import { g } from '../../helpers/helperFunctions';
 import { useUIElements } from '../UIElementsProvider';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -148,7 +147,6 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
           props.onClose();
         }, 2000);
         props.successCallback();
-        console.log('initiateCallForPartner response', data);
       })
       .catch((e) => {
         props.onClose();
@@ -157,7 +155,6 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
           title: string.common.uhOh,
           description: 'We could not connect to the doctor now. Please try later.',
         });
-        console.log('initiateCallForPartner error', e);
       });
   };
 

@@ -13,21 +13,28 @@ interface PatientListOverlayProps {
   onPressAddNewProfile: () => void;
   onPressDone: (selectedPatient: any) => void;
   onPressClose: () => void;
+  onPressAndroidBack: () => void;
+  patientSelected?: any;
 }
 
 export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => {
-  const { onPressDone, onPressAddNewProfile, onPressClose } = props;
-  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
-  const [selectedPatient, setSelectedPatient] = useState<any>(null);
+  const {
+    onPressDone,
+    onPressAddNewProfile,
+    onPressClose,
+    onPressAndroidBack,
+    patientSelected,
+  } = props;
+  const { allCurrentPatients } = useAllCurrentPatients();
+  const [selectedPatient, setSelectedPatient] = useState<any>(patientSelected);
 
   const renderPatientListItem = ({ index, item }) => {
     const patientName = `${item?.firstName || ''} ${item?.lastName || ''}`;
     const genderAgeText = `${item?.gender || ''}, ${
       item?.dateOfBirth ? getAge(item?.dateOfBirth) || '' : ''
     }`;
-    const showGreenBg = selectedPatient?.id
-      ? selectedPatient?.id === item?.id
-      : currentPatient?.id === item?.id;
+    const showGreenBg = selectedPatient?.id === item?.id;
+
     const itemViewStyle = [
       styles.patientItemViewStyle,
       index === 0 && { marginTop: 12 },
@@ -52,7 +59,7 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
   return (
     <Overlay
       isVisible
-      onBackdropPress={onPressClose}
+      onRequestClose={() => (patientSelected?.id ? onPressClose() : onPressAndroidBack())}
       windowBackgroundColor={'rgba(0, 0, 0, 0.6)'}
       containerStyle={{ marginBottom: 0 }}
       fullScreen
@@ -60,7 +67,10 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
       overlayStyle={styles.phrOverlayStyle}
     >
       <View style={{ flex: 1 }}>
-        <TouchableOpacity style={{ flex: 1 }} onPress={onPressClose} />
+        <TouchableOpacity
+          style={{ flex: 1 }}
+          onPress={() => (patientSelected?.id ? onPressClose() : {})}
+        />
         <View style={styles.overlayViewStyle}>
           <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
             <View style={styles.mainViewStyle}>
@@ -77,6 +87,8 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
               </Text>
               <View style={styles.patientListCardStyle}>
                 <FlatList
+                  bounces={false}
+                  contentContainerStyle={{ paddingBottom: 20 }}
                   keyExtractor={(_, index) => index.toString()}
                   data={allCurrentPatients || []}
                   renderItem={renderPatientListItem}
@@ -84,7 +96,8 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
               </View>
               <Button
                 title={'DONE'}
-                onPress={() => onPressDone(selectedPatient || currentPatient)}
+                disabled={!selectedPatient?.id}
+                onPress={() => onPressDone(selectedPatient)}
                 style={styles.doneButtonViewStyle}
               />
             </View>

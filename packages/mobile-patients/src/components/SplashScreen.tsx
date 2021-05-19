@@ -4,7 +4,6 @@ import {
   StyleSheet,
   View,
   Platform,
-  ActivityIndicator,
   Linking,
   AppStateStatus,
   AppState,
@@ -12,18 +11,17 @@ import {
   NativeModules,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
 import { AppRoutes, getCurrentRoute } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import remoteConfig from '@react-native-firebase/remote-config';
 import SplashScreenView from 'react-native-splash-screen';
-import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { Relation, BookingSource } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAuth } from '../hooks/authHooks';
-import { AppConfig, updateAppConfig, PharmacyHomepageInfo, AppEnv } from '../strings/AppConfig';
+import { AppConfig, updateAppConfig, AppEnv } from '../strings/AppConfig';
 import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
 import { Button } from './ui/Button';
 import { useUIElements } from './UIElementsProvider';
-import { apiRoutes } from '../helpers/apiRoutes';
 import {
   CommonBugFender,
   setBugFenderLog,
@@ -39,7 +37,6 @@ import {
   callPermissions,
   UnInstallAppsFlyer,
   postFirebaseEvent,
-  readableParam,
   setCrashlyticsAttributes,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -51,10 +48,9 @@ import { phrNotificationCountApi } from '@aph/mobile-patients/src/helpers/client
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import {
   GET_APPOINTMENT_DATA,
-  GET_ALL_SPECIALTIES,
+  GET_PROHEALTH_HOSPITAL_BY_SLUG,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
-  ProductPageViewedSource,
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -63,17 +59,25 @@ import coerce from 'semver/functions/coerce';
 import RNCallKeep from 'react-native-callkeep';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import { string as localStrings } from '../strings/string';
-import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
 import Pubnub from 'pubnub';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import messaging from '@react-native-firebase/messaging';
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
+import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
+import { Animated, Easing } from 'react-native';
 import {
-  getAllSpecialties,
-  getAllSpecialties_getAllSpecialties,
-} from '@aph/mobile-patients/src/graphql/types/getAllSpecialties';
-import { getMedicineSku } from '@aph/mobile-patients/src/helpers/apiCalls';
+  SplashCapsule,
+  SplashSyringe,
+  SplashStethoscope,
+} from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  getProHealthHospitalBySlug,
+  getProHealthHospitalBySlugVariables,
+} from '@aph/mobile-patients/src/graphql/types/getProHealthHospitalBySlug';
+import firebaseAuth from '@react-native-firebase/auth';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+
 (function() {
   /**
    * Praktice.ai
@@ -83,11 +87,7 @@ import { getMedicineSku } from '@aph/mobile-patients/src/helpers/apiCalls';
    * [ Update ] => In the next version it will part of SDK, user will not be required to add this code-block
    */
   let globalObject;
-  // if (typeof global !== 'undefined') {
   globalObject = global;
-  // } else if (typeof window !== 'undefined' && window.document) {
-  // globalObject = window;
-  // }
   if (typeof Promise.prototype['finally'] === 'function') {
     return;
   }
@@ -112,8 +112,26 @@ const styles = StyleSheet.create({
   mainView: {
     flex: 1,
     alignItems: 'center',
+    backgroundColor: '#fff',
     alignSelf: 'center',
     justifyContent: 'center',
+  },
+  splashLogo: {
+    width: 152,
+    height: 117,
+    ...Platform.select({
+      android: {
+        top: -2,
+      },
+    }),
+  },
+  loaderContainer: {
+    position: 'absolute',
+    bottom: 50,
+  },
+  loader: {
+    width: 70,
+    height: 70,
   },
 });
 
@@ -132,6 +150,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const voipCallType = useRef<string>('');
   const voipDoctorName = useRef<string>('');
 
+  const [userLoggedIn, setUserLoggedIn] = useState<any | null>(null);
+
+  const [spinValue, setSpinValue] = useState(new Animated.Value(0));
+  const [animatedValue, setAnimatedValue] = useState(new Animated.Value(0));
+  const [springValue, setSpringAnimation] = useState(new Animated.Value(0));
+  const CONST_SPLASH_LOADER = [string.splash.CAPSULE, string.splash.SYRINGE, string.splash.STETHO];
+  const [selectedAnimationIndex, setSelectedAnimationIndex] = useState(0);
+
   const config: Pubnub.PubnubConfig = {
     origin: 'apollo.pubnubapi.com',
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
@@ -146,9 +172,22 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   useEffect(() => {
     takeToConsultRoom && getData('ConsultRoom', undefined, false);
+    configureAnimation();
   }, [takeToConsultRoom]);
 
   useEffect(() => {
+    if (CONST_SPLASH_LOADER[selectedAnimationIndex] == string.splash.SYRINGE) {
+      spinObject();
+    } else if (CONST_SPLASH_LOADER[selectedAnimationIndex] == string.splash.STETHO) {
+      springAnimation();
+    } else {
+      spinObject();
+    }
+  }, [selectedAnimationIndex]);
+
+  useEffect(() => {
+    prefetchUserMetadata();
+
     InitiateAppsFlyer(props.navigation);
     DeviceEventEmitter.addListener('accept', (params) => {
       if (getCurrentRoute() !== AppRoutes.ChatRoom) {
@@ -169,7 +208,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       PrefetchAPIReuqest({
         clientId: AppConfig.Configuration.PRAKTISE_API_KEY,
       })
-        .then((res: any) => console.log(res, 'PrefetchAPIReuqest'))
+        .then((res: any) => {})
         .catch((e: Error) => {
           CommonBugFender('SplashScreen_PrefetchAPIReuqest', e);
         });
@@ -208,7 +247,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       messaging()
         .getToken()
         .then((token) => {
-          console.log('token', token);
           AsyncStorage.setItem('deviceToken', JSON.stringify(token));
           UnInstallAppsFlyer(token);
         })
@@ -297,11 +335,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       Linking.getInitialURL()
         .then((url) => {
           setBugFenderLog('DEEP_LINK_URL', url);
+
           if (url) {
             try {
-              handleOpenURL(url);
+              if (Platform.OS === 'ios') InitiateAppsFlyer(props.navigation);
+              const data = handleOpenURL(url);
+              const { routeName, id, isCall, timeout, mediaSource } = data;
+              redirectRoute(routeName, id, isCall, timeout, mediaSource, data?.data);
               fireAppOpenedEvent(url);
-              console.log('linking', url);
             } catch (e) {}
           } else {
             settakeToConsultRoom(true);
@@ -314,9 +355,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       Linking.addEventListener('url', (event) => {
         try {
-          console.log('event', event);
           setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
-          handleOpenURL(event.url);
+          const data = handleOpenURL(event.url);
+          const { routeName, id, isCall, timeout, mediaSource } = data;
+          redirectRoute(routeName, id, isCall, timeout, mediaSource, data?.data);
           fireAppOpenedEvent(event.url);
         } catch (e) {}
       });
@@ -325,270 +367,56 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       CommonBugFender('SplashScreen_Linking_URL_try', error);
     }
   };
-  const handleOpenURL = (event: any) => {
-    try {
-      if (Platform.OS === 'ios') {
-        // for ios universal links
-        InitiateAppsFlyer(props.navigation);
-      }
-      let route;
 
-      const a = event.indexOf('https://www.apollo247.com');
-      if (a == 0) {
-        handleDeeplinkFormatTwo(event);
-      } else {
-        route = event.replace('apollopatients://', '');
-        const data = route.split('?');
-        setBugFenderLog('DEEP_LINK_DATA', data);
-        route = data[0];
-
-        let linkId = '';
-        let attributes = {
-          media_source: 'not set',
-        };
-        try {
-          if (data?.length >= 2) {
-            linkId = data[1]?.split('&');
-            const params = data[1]?.split('&');
-            const utmParams = params?.map((item: any) => item.split('='));
-            utmParams?.forEach(
-              (item: any) => item?.length == 2 && (attributes?.[item?.[0]] = item?.[1])
-            );
-            if (linkId.length > 0) {
-              linkId = linkId[0];
-              setBugFenderLog('DEEP_LINK_SPECIALITY_ID', linkId);
-            }
-          }
-        } catch (error) {}
-        console.log(linkId, 'linkId');
-
-        switch (route) {
-          case 'consult':
-          case 'Consult':
-            console.log('Consult');
-            getData('Consult', data.length === 2 ? linkId : undefined);
-            break;
-
-          case 'medicine':
-          case 'Medicine':
-            console.log('Medicine');
-            getData('Medicine', data.length === 2 ? linkId : undefined);
-            break;
-
-          case 'uploadprescription':
-          case 'UploadPrescription':
-            getData('UploadPrescription', data.length === 2 ? linkId : undefined);
-            break;
-
-          case 'medicinerecommendedsection':
-          case 'MedicineRecommendedSection':
-            getData('MedicineRecommendedSection');
-            break;
-
-          case 'test':
-          case 'Test':
-            getData('Test');
-            break;
-
-          case 'speciality':
-          case 'Speciality':
-            console.log('Speciality handleopen');
-            if (data.length === 2) getData('Speciality', linkId);
-            else getData('DoctorSearch');
-            break;
-
-          case 'doctor':
-          case 'Doctor':
-            console.log('Doctor handleopen');
-            if (data.length === 2)
-              getData('Doctor', linkId, undefined, undefined, attributes?.media_source);
-            break;
-
-          case 'doctorsearch':
-          case 'DoctorSearch':
-            console.log('DoctorSearch handleopen');
-            getData('DoctorSearch');
-            break;
-
-          case 'medicinesearch':
-          case 'MedicineSearch':
-            console.log('MedicineSearch handleopen');
-            getData('MedicineSearch', data.length === 2 ? linkId : undefined);
-            break;
-
-          case 'medicinedetail':
-          case 'MedicineDetail':
-            console.log('MedicineDetail handleopen');
-            getData('MedicineDetail', data.length === 2 ? linkId : undefined);
-            break;
-
-          case 'medicinecart':
-          case 'MedicineCart':
-            console.log('MedicineCart handleopen');
-            getData('MedicineCart', data.length === 2 ? linkId : undefined);
-            break;
-
-          case 'chatroom':
-          case 'ChatRoom':
-            if (data.length === 2) getAppointmentDataAndNavigate(linkId, false);
-            break;
-
-          case 'doctorcall':
-          case 'DoctorCall':
-            if (data.length === 2 && getCurrentRoute() !== AppRoutes.ChatRoom) {
-              const params = linkId.split('+');
-              voipCallType.current = params[1];
-              callPermissions();
-              getAppointmentDataAndNavigate(params[0], true);
-            }
-            break;
-
-          case 'doctorcallrejected':
-          case 'DoctorCallRejected':
-            {
-              setLoading!(true);
-              const appointmentId = linkId?.split('+')?.[0];
-              const config: Pubnub.PubnubConfig = {
-                origin: 'apollo.pubnubapi.com',
-                subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
-                publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
-                ssl: true,
-                restore: true,
-              };
-              const pubnub = new Pubnub(config);
-              pubnub.publish(
-                {
-                  message: { message: '^^#PATIENT_REJECTED_CALL' },
-                  channel: appointmentId,
-                  storeInHistory: true,
-                  sendByPost: true,
-                },
-                (status, response) => {
-                  setLoading!(false);
-                }
-              );
-            }
-            break;
-
-          case 'order':
-          case 'Order':
-            if (data.length === 2) getData('Order', linkId);
-            break;
-
-          case 'myorders':
-          case 'MyOrders':
-            getData('MyOrders');
-            break;
-
-          case 'webview':
-            if (data.length >= 1) {
-              let url = data[1].replace('param=', '');
-              getData('webview', url);
-            }
-            break;
-
-          case 'finddoctors':
-          case 'FindDoctors':
-            if (data.length === 2) getData('FindDoctors', linkId);
-            break;
-
-          case 'healthrecordshome':
-          case 'HealthRecordsHome':
-            console.log('HealthRecordsHome handleopen');
-            getData('HealthRecordsHome');
-            break;
-
-          case 'manageprofile':
-          case 'ManageProfile':
-            console.log('ManageProfile handleopen');
-            getData('ManageProfile');
-            break;
-
-          case 'oneapollomembership':
-          case 'OneApolloMembership':
-            getData('OneApolloMembership');
-            break;
-
-          case 'testdetails':
-          case 'TestDetails':
-            getData('TestDetails', data.length === 2 ? linkId : undefined);
-            break;
-
-          case 'consultdetails':
-          case 'ConsultDetails':
-            getData('ConsultDetails', data.length === 2 ? linkId : undefined);
-            break;
-
-          case 'circlemembershipdetails':
-          case 'CircleMembershipDetails':
-            getData('CircleMembershipDetails');
-            break;
-
-          case 'testlisting':
-          case 'TestListing':
-            getData('TestListing', data?.length === 2 ? linkId : undefined);
-            break;
-
-          case 'testreport':
-          case 'TestReport':
-            getData('TestReport', data?.length === 2 ? linkId : undefined);
-            break;
-
-          case 'mytestorders':
-          case 'MyTestOrders':
-            getData('MyTestOrders');
-            break;
-
-          default:
-            getData('ConsultRoom', undefined, true);
-            // webengage event
-            const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
-              source: 'deeplink',
-            };
-            postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
-            break;
+  const redirectRoute = (
+    routeName: string,
+    id?: string,
+    timeout?: boolean,
+    isCall?: boolean,
+    mediaSource?: string,
+    data?: any
+  ) => {
+    if (routeName === 'ChatRoom' && data?.length >= 1) {
+      getAppointmentDataAndNavigate(id!, false);
+    } else if (
+      routeName === 'DoctorCall' &&
+      data?.length >= 1 &&
+      getCurrentRoute() !== AppRoutes.ChatRoom
+    ) {
+      const params = id?.split('+');
+      voipCallType.current = params?.[1]!;
+      callPermissions();
+      getAppointmentDataAndNavigate(params?.[0]!, true);
+    } else if (routeName == 'prohealth') {
+      fetchProhealthHospitalDetails(id);
+    } else if (routeName === 'DoctorCallRejected') {
+      setLoading!(true);
+      const appointmentId = id?.split('+')?.[0];
+      const config: Pubnub.PubnubConfig = {
+        origin: 'apollo.pubnubapi.com',
+        subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
+        publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
+        ssl: true,
+        restore: true,
+      };
+      const pubnub = new Pubnub(config);
+      pubnub.publish(
+        {
+          message: { message: '^^#PATIENT_REJECTED_CALL' },
+          channel: appointmentId,
+          storeInHistory: true,
+          sendByPost: true,
+        },
+        (status, response) => {
+          setLoading!(false);
         }
-        console.log('route', route);
-      }
-    } catch (error) {}
-  };
-
-  const handleDeeplinkFormatTwo = (event: any) => {
-    const url = event.replace('https://www.apollo247.com/', '');
-    const data = url.split('/');
-    const route = data[0];
-    let linkId = '';
-    try {
-      if (data.length >= 2) {
-        linkId = data[1].split('&');
-        if (linkId.length > 0) {
-          linkId = linkId[0];
-        }
-      }
-    } catch (error) {}
-    switch (route) {
-      case 'medicines':
-        getData('Medicine');
-        break;
-      case 'prescription-review':
-        getData('UploadPrescription');
-        break;
-      case 'specialties':
-        linkId == '' ? getData('DoctorSearch') : getData('SpecialityByName', linkId);
-        break;
-      case 'doctors':
-        linkId == '' ? getData('DoctorSearch') : getData('DoctorByNameId', linkId);
-        break;
-      case 'medicine':
-        linkId == '' ? getData('Medicine') : getData('MedicineByName', linkId);
-        break;
-      default:
-        getData('ConsultRoom', undefined, true);
-        const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
-          source: 'deeplink',
-        };
-        postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
-        break;
+      );
+      const params = id?.split('+');
+      getAppointmentDataAndNavigate(params?.[0]!, false);
+    } else if (routeName == 'prohealth') {
+      fetchProhealthHospitalDetails(id!);
+    } else {
+      getData(routeName, id, isCall, timeout, mediaSource);
     }
   };
 
@@ -625,7 +453,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         const params = data[1].split('&');
         const utmParams = params.map((item: any) => item.split('='));
         utmParams.forEach((item: any) => item?.length == 2 && (attributes[item[0]] = item[1]));
-        console.log('attributes >>>', attributes);
         postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
       }
     } else if (b == 0) {
@@ -635,16 +462,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         const params = data[1].split('&');
         const utmParams = params.map((item: any) => item.split('='));
         utmParams.forEach((item: any) => item?.length == 2 && (attributes[item[0]] = item[1]));
-        console.log('attributes >>>', attributes);
         postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
       } else {
         const referrer = await NativeModules.GetReferrer.referrer();
         attributes['referrer'] = referrer;
-        console.log('attributes >>>', attributes);
         postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
       }
     } else {
-      console.log('attributes >>>', attributes);
       postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
     }
   }
@@ -656,21 +480,22 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     mediaSource?: string
   ) => {
     async function fetchData() {
-      // const onboarding = await AsyncStorage.getItem('onboarding');
-      const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
-      const signUp = await AsyncStorage.getItem('signUp');
-      const multiSignUp = await AsyncStorage.getItem('multiSignUp');
+      //we are prefetching the userLoggedIn because reading it from async storage was taking 400-500 ms
+      let userLoggedInState = userLoggedIn;
+      if (userLoggedInState == null) {
+        // if uninitilized then only read from Async Storage
+        userLoggedInState = await AsyncStorage.getItem('userLoggedIn');
+      }
+
       AsyncStorage.setItem('showSchduledPopup', 'false');
 
       const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
       const item = JSON.parse(retrievedItem || 'null');
+
       const currentPatientId: any = await AsyncStorage.getItem('selectUserId');
-
       const callByPrism: any = await AsyncStorage.getItem('callByPrism');
+
       let allPatients;
-
-      const isCircleMember: string | null = await AsyncStorage.getItem('isCircleMember');
-
       if (callByPrism === 'false') {
         allPatients =
           item && item.data && item.data.getPatientByMobileNumber
@@ -696,26 +521,34 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       setAllPatients(allPatients);
 
       setTimeout(
-        () => {
-          if (userLoggedIn == 'true') {
+        async () => {
+          if (userLoggedInState == 'true') {
             setshowSpinner(false);
-
             if (mePatient) {
               if (mePatient.firstName !== '') {
-                callPhrNotificationApi(currentPatient);
-                setCrashlyticsAttributes(mePatient);
+                const isCircleMember: any = await AsyncStorage.getItem('isCircleMember');
+                if (routeName == 'prohealth' && id) {
+                  id = id?.replace('mobileNumber', currentPatient?.mobileNumber || '');
+                }
                 pushTheView(
+                  props.navigation,
                   routeName,
                   id ? id : undefined,
                   isCall,
                   isCircleMember === 'yes',
-                  mediaSource
+                  mediaSource,
+                  voipCallType.current,
+                  voipAppointmentId
                 );
+                callPhrNotificationApi(currentPatient);
+                setCrashlyticsAttributes(mePatient);
               } else {
                 props.navigation.replace(AppRoutes.Login);
               }
             }
           } else {
+            const signUp: any = await AsyncStorage.getItem('signUp');
+            const multiSignUp: any = await AsyncStorage.getItem('multiSignUp');
             setshowSpinner(false);
 
             if (signUp == 'true') {
@@ -733,17 +566,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         timeout ? 2000 : 0
       );
     }
+
     fetchData();
   };
-  const handleEncodedURI = (encodedString: string) => {
-    const decodedString = decodeURIComponent(encodedString);
-    const splittedString = decodedString.split('+');
-    if (splittedString.length > 1) {
-      return splittedString;
-    } else {
-      return encodedString.split('%20');
-    }
+
+  const prefetchUserMetadata = async () => {
+    const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+    setUserLoggedIn(userLoggedIn);
   };
+
   const getAppointmentDataAndNavigate = async (appointmentId: string, isCall: boolean) => {
     try {
       setLoading!(true);
@@ -765,7 +596,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         title: string.common.uhOh,
         description: string.appointmentDataError,
         CTAs: [
-          { text: 'CANCEL', onPress: () => hideAphAlert!(), type: 'white-button' },
+          {
+            text: 'CANCEL',
+            onPress: () => {
+              hideAphAlert!();
+              props.navigation.navigate(AppRoutes.ConsultRoom);
+            },
+            type: 'white-button',
+          },
           {
             text: 'RETRY',
             onPress: () => {
@@ -780,257 +618,74 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
   };
 
-  const pushTheView = (
-    routeName: string,
-    id?: any,
-    isCall?: boolean,
-    isCircleMember?: boolean,
-    mediaSource?: string
-  ) => {
-    console.log('pushTheView', routeName);
-    setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
-    switch (routeName) {
-      case 'Consult':
-        console.log('Consult');
-        // if (id) {
-        //   props.navigation.navigate(AppRoutes.ConsultDetailsById, { id: id });
-        // } else
-        props.navigation.navigate('APPOINTMENTS');
-        break;
-
-      case 'Medicine':
-        console.log('Medicine');
-        props.navigation.navigate('MEDICINES');
-        break;
-
-      case 'UploadPrescription':
-        props.navigation.navigate('MEDICINES', { showUploadPrescriptionPopup: true });
-        break;
-
-      case 'MedicineRecommendedSection':
-        props.navigation.navigate('MEDICINES', { showRecommendedSection: true });
-        break;
-
-      case 'MedicineDetail':
-        console.log('MedicineDetail');
-        props.navigation.navigate(AppRoutes.ProductDetailPage, {
-          sku: id,
-          movedFrom: ProductPageViewedSource.DEEP_LINK,
-        });
-        break;
-
-      case 'Test':
-        console.log('Test');
-        props.navigation.navigate('TESTS');
-        break;
-
-      case 'ConsultRoom':
-        console.log('ConsultRoom');
-        props.navigation.replace(AppRoutes.ConsultRoom);
-        break;
-
-      case 'Speciality':
-        setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', id);
-        const filtersData = id ? handleEncodedURI(id) : '';
-        console.log('filtersData============', filtersData);
-        props.navigation.navigate(AppRoutes.DoctorSearchListing, {
-          specialityId: filtersData[0] ? filtersData[0] : '',
-          typeOfConsult: filtersData.length > 1 ? filtersData[1] : '',
-          doctorType: filtersData.length > 2 ? filtersData[2] : '',
-        });
-        // props.navigation.replace(AppRoutes.DoctorSearchListing, {
-        //   specialityId: id ? id : '',
-        // });
-        break;
-      case 'FindDoctors':
-        const cityBrandFilter = id ? handleEncodedURI(id) : '';
-        console.log('cityBrandFilter', cityBrandFilter);
-        props.navigation.navigate(AppRoutes.DoctorSearchListing, {
-          specialityId: cityBrandFilter[0] ? cityBrandFilter[0] : '',
-          city:
-            cityBrandFilter.length > 1 && !isUpperCase(cityBrandFilter[1])
-              ? cityBrandFilter[1]
-              : null,
-          brand:
-            cityBrandFilter.length > 2
-              ? cityBrandFilter[2]
-              : isUpperCase(cityBrandFilter[1])
-              ? cityBrandFilter[1]
-              : null,
-        });
-        break;
-      case 'Doctor':
-        props.navigation.navigate(AppRoutes.DoctorDetails, {
-          doctorId: id,
-          fromDeeplink: true,
-          mediaSource: mediaSource,
-        });
-        break;
-
-      case 'DoctorSearch':
-        props.navigation.navigate(AppRoutes.DoctorSearch);
-        break;
-
-      case 'MedicineSearch':
-        if (id) {
-          const [itemId, name] = id.split(',');
-          console.log(itemId, name);
-
-          props.navigation.navigate(AppRoutes.MedicineListing, {
-            category_id: itemId,
-            title: `${name ? name : 'Products'}`.toUpperCase(),
-            movedFrom: 'deeplink',
-          });
-        }
-        break;
-
-      case 'MedicineCart':
-        console.log('MedicineCart handleopen');
-        props.navigation.navigate(AppRoutes.MedicineCart, {
-          movedFrom: 'splashscreen',
-        });
-        break;
-      case 'ChatRoom':
-        props.navigation.navigate(AppRoutes.ChatRoom, {
-          data: id,
-          callType: voipCallType.current ? voipCallType.current.toUpperCase() : '',
-          prescription: '',
-          isCall: isCall,
-          isVoipCall: voipAppointmentId.current ? true : false,
-        });
-        break;
-      case 'Order':
-        props.navigation.navigate(AppRoutes.OrderDetailsScene, {
-          goToHomeOnBack: true,
-          orderAutoId: isNaN(id) ? '' : id,
-          billNumber: isNaN(id) ? id : '',
-        });
-        break;
-      case 'MyOrders':
-        props.navigation.navigate(AppRoutes.YourOrdersScene);
-        break;
-      case 'webview':
-        props.navigation.navigate(AppRoutes.CommonWebView, {
-          url: id,
-        });
-        break;
-
-      case 'HealthRecordsHome':
-        props.navigation.navigate('HEALTH RECORDS');
-        break;
-
-      case 'ManageProfile':
-        props.navigation.navigate(AppRoutes.ManageProfile);
-        break;
-
-      case 'OneApolloMembership':
-        props.navigation.navigate(AppRoutes.OneApolloMembership);
-        break;
-
-      case 'TestDetails':
-        props.navigation.navigate(AppRoutes.TestDetails, {
-          itemId: id,
-        });
-        break;
-
-      case 'ConsultDetails':
-        props.navigation.navigate(AppRoutes.ConsultDetails, {
-          CaseSheet: id,
-        });
-        break;
-      case 'DoctorCall':
-        props.navigation.navigate(AppRoutes.ChatRoom, {
-          data: id,
-          callType: voipCallType.current ? voipCallType.current.toUpperCase() : '',
-          prescription: '',
-          isCall: true,
-          isVoipCall: false,
-        });
-        break;
-      case 'SpecialityByName':
-        fetchSpecialities(id);
-        break;
-      case 'DoctorByNameId':
-        const docId = id.slice(-36);
-        props.navigation.navigate(AppRoutes.DoctorDetails, {
-          doctorId: docId,
-        });
-        break;
-      case 'MedicineByName':
-        getMedicineSKU(id);
-        break;
-      case 'CircleMembershipDetails':
-        if (isCircleMember) {
-          props.navigation.navigate(AppRoutes.MembershipDetails, {
-            membershipType: string.Circle.planName,
-            isActive: true,
-            comingFrom: 'Deeplink',
-          });
-        }
-        break;
-
-      case 'TestListing':
-        props.navigation.navigate(AppRoutes.TestListing, {
-          movedFrom: 'deeplink',
-          widgetName: id,
-        });
-        break;
-
-      case 'TestReport':
-        console.log('TestReport');
-        props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-          movedFrom: 'deeplink',
-          id: id,
-        });
-        break;
-
-      case 'MyTestOrders':
-        props.navigation.navigate(AppRoutes.YourOrdersTest);
-        break;
-
-      default:
-        break;
-    }
-  };
-
-  const fetchSpecialities = async (specialityName: string) => {
-    setshowSpinner(true);
+  const fetchProhealthHospitalDetails = async (slugName: string) => {
+    setLoading?.(true);
     try {
-      const response = await client.query<getAllSpecialties>({
-        query: GET_ALL_SPECIALTIES,
+      const response = await client.query<
+        getProHealthHospitalBySlug,
+        getProHealthHospitalBySlugVariables
+      >({
+        query: GET_PROHEALTH_HOSPITAL_BY_SLUG,
+        variables: {
+          hospitalSlug: slugName,
+        },
         fetchPolicy: 'no-cache',
       });
       const { data } = response;
-      if (data?.getAllSpecialties && data?.getAllSpecialties.length) {
-        const specialityId = getSpecialityId(specialityName, data?.getAllSpecialties);
-        props.navigation.navigate(AppRoutes.DoctorSearchListing, {
-          specialityId: specialityId,
-        });
+      if (data?.getProHealthHospitalBySlug?.hospitals?.length) {
+        const getHospitalId = data?.getProHealthHospitalBySlug?.hospitals?.[0]?.id;
+        regenerateJWTToken(getHospitalId);
+      } else {
+        regenerateJWTToken();
       }
     } catch (error) {
-      CommonBugFender('DoctorSearch_fetchSpecialities', error);
-      props.navigation.navigate(AppRoutes.ConsultRoom);
+      regenerateJWTToken();
+      CommonBugFender('SplashScreen_fetchProhealthHospitalDetails', error);
     }
   };
 
-  const getSpecialityId = (name: string, specialities: getAllSpecialties_getAllSpecialties[]) => {
-    const specialityObject = specialities.filter((item) => name == readableParam(item?.name));
-    return specialityObject[0].id ? specialityObject[0].id : '';
-  };
+  const regenerateJWTToken = async (id?: string) => {
+    let deviceType =
+      Platform.OS == 'android' ? BookingSource?.Apollo247_Android : BookingSource?.Apollo247_Ios;
+    const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
 
-  const getMedicineSKU = async (skuKey: string) => {
-    try {
-      const response = await getMedicineSku(skuKey);
-      const { data } = response;
-      data?.Message == 'Product available'
-        ? props.navigation.navigate(AppRoutes.ProductDetailPage, {
-            sku: data?.sku,
-            movedFrom: ProductPageViewedSource.DEEP_LINK,
-          })
-        : props.navigation.navigate('MEDICINES');
-    } catch (error) {
-      CommonBugFender('getMedicineSku', error);
-      props.navigation.navigate('MEDICINES');
+    if (userLoggedIn == 'true') {
+      try {
+        firebaseAuth().onAuthStateChanged(async (user) => {
+          if (user) {
+            const jwtToken = await user.getIdToken(true).catch((error) => {
+              CommonBugFender('SplashScreen_regenerateJWTToken', error);
+            });
+            const openUrl = AppConfig.Configuration.PROHEALTH_BOOKING_URL;
+            let finalUrl;
+            if (!!id) {
+              finalUrl = openUrl.concat(
+                '?hospital_id=',
+                id,
+                '&utm_token=',
+                jwtToken,
+                '&utm_mobile_number=',
+                'mobileNumber',
+                '&deviceType=',
+                deviceType
+              );
+            } else {
+              finalUrl = openUrl.concat(
+                '?utm_token=',
+                jwtToken,
+                '&utm_mobile_number=',
+                'mobileNumber',
+                '&deviceType=',
+                deviceType
+              );
+            }
+            setLoading?.(false);
+            !!jwtToken && jwtToken != '' && getData('prohealth', finalUrl);
+          }
+        });
+      } catch (e) {
+        CommonBugFender('regenerateJWTToken_deepLink', e);
+      }
     }
   };
 
@@ -1042,12 +697,22 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setCovidVaccineCta,
     setLoginSection,
     setCovidVaccineCtaV2,
+    setCartBankOffer,
+    setUploadPrescriptionOptions,
+    setExpectCallText,
+    setNonCartTatText,
+    setNonCartDeliveryText,
   } = useAppCommonData();
+  const {
+    setMinimumCartValue,
+    setMinCartValueForCOD,
+    setMaxCartValueForCOD,
+    setNonCodSKus,
+  } = useShoppingCart();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
       try {
         const settingsCalled: string | null = await AsyncStorage.getItem('settingsCalled');
-        console.log(settingsCalled, 'redolocartions');
         if (settingsCalled && settingsCalled === 'true') {
           doRequestAndAccessLocation()
             .then((response) => {
@@ -1163,10 +828,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'Covid_Vaccine_CTA_V2_QA',
       PROD: 'Covid_Vaccine_CTA_V2',
     },
-    followUp_Chat: {
-      QA: 'QA_FollowUp_Chat_Limit',
-      PROD: 'FollowUp_Chat_Limit',
-    },
     Covid_Items: {
       QA: 'QA_Covid_Items',
       PROD: 'Covid_Items',
@@ -1179,6 +840,54 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Non_Covid_Max_Slot_Days',
       PROD: 'Non_Covid_Max_Slot_Days',
     },
+    Cart_Bank_Offer_Text: {
+      QA: 'QA_CART_BANK_OFFER_TEXT',
+      PROD: 'CART_BANK_OFFER_TEXT',
+    },
+    followUp_Chat: {
+      QA: 'QA_FollowUp_Chat_Limit',
+      PROD: 'FollowUp_Chat_Limit',
+    },
+    uploadPrescription_Options: {
+      QA: 'QA_UploadPrescription_Options',
+      PROD: 'UploadPrescription_Options',
+    },
+    Health_Credit_Expiration_Time: {
+      QA: 'Health_Credit_Expiration_Time_QA',
+      PROD: 'Health_Credit_Expiration_Time_Prod',
+    },
+    Expect_Call_Text: {
+      QA: 'QA_Expect_Call_Text',
+      PROD: 'Expect_Call_Text',
+    },
+    Non_Cart_TAT_Text: {
+      QA: 'QA_Non_Cart_TAT_Text',
+      PROD: 'Non_Cart_TAT_Text',
+    },
+    Non_Cart_Delivery_Text: {
+      QA: 'QA_Non_Cart_Delivery_Text',
+      PROD: 'Non_Cart_Delivery_Text',
+    },
+    Mininum_Cart_Values: {
+      QA: 'QA_Mininum_Cart_Values',
+      PROD: 'Mininum_Cart_Values',
+    },
+    Sku_Non_COD: {
+      QA: 'QA_Sku_Non_COD',
+      PROD: 'Sku_Non_COD',
+    },
+    Helpdesk_Chat_Confim_Msg: {
+      QA: 'Helpdesk_Chat_Confim_Msg_QA',
+      PROD: 'Helpdesk_Chat_Confim_Msg_Prod',
+    },
+    Reopen_Help_Max_Time: {
+      QA: 'Reopen_Help_Max_Time_QA',
+      PROD: 'Reopen_Help_Max_Time_Prod',
+    },
+    Enable_Diagnostics_COD: {
+      QA: 'QA_Enable_Diagnostics_COD',
+      PROD: 'Enable_Diagnostics_COD',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1189,7 +898,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     const valueBasedOnEnv = config[_key] as RemoteConfigKeysType;
     return currentEnv === AppEnv.PROD
       ? valueBasedOnEnv.PROD
-      : currentEnv === AppEnv.QA || currentEnv === AppEnv.QA2 || currentEnv === AppEnv.QA3
+      : currentEnv === AppEnv.QA ||
+        currentEnv === AppEnv.QA2 ||
+        currentEnv === AppEnv.QA3 ||
+        currentEnv === AppEnv.QA5
       ? valueBasedOnEnv.QA || valueBasedOnEnv.PROD
       : valueBasedOnEnv.DEV || valueBasedOnEnv.QA || valueBasedOnEnv.PROD;
   };
@@ -1249,6 +961,49 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       needHelpReturnPharmaOrderSuccessMessage &&
         setNeedHelpReturnPharmaOrderSuccessMessage!(needHelpReturnPharmaOrderSuccessMessage);
 
+      const bankOfferText = getRemoteConfigValue('Cart_Bank_Offer_Text', (key) =>
+        config.getString(key)
+      );
+      bankOfferText && setCartBankOffer!(bankOfferText);
+
+      const uploadPrescriptionOptions = getRemoteConfigValue(
+        'uploadPrescription_Options',
+        (key) => JSON.parse(config.getString(key)) || []
+      );
+      uploadPrescriptionOptions && setUploadPrescriptionOptions!(uploadPrescriptionOptions);
+
+      const expectCallText = getRemoteConfigValue('Expect_Call_Text', (key) =>
+        config.getString(key)
+      );
+      expectCallText && setExpectCallText?.(expectCallText);
+
+      const nonCartTatText = getRemoteConfigValue('Non_Cart_TAT_Text', (key) =>
+        config.getString(key)
+      );
+      nonCartTatText && setNonCartTatText?.(nonCartTatText);
+
+      const nonCartDeliveryText = getRemoteConfigValue('Non_Cart_Delivery_Text', (key) =>
+        config.getString(key)
+      );
+      nonCartDeliveryText && setNonCartDeliveryText?.(nonCartDeliveryText);
+
+      const minMaxCartValues = getRemoteConfigValue(
+        'Mininum_Cart_Values',
+        (key) => JSON.parse(config.getString(key)) || {}
+      );
+
+      minMaxCartValues?.minCartValue && setMinimumCartValue?.(minMaxCartValues?.minCartValue);
+      minMaxCartValues?.minCartValueCOD &&
+        setMinCartValueForCOD?.(minMaxCartValues?.minCartValueCOD);
+      minMaxCartValues?.maxCartValueCOD &&
+        setMaxCartValueForCOD?.(minMaxCartValues?.maxCartValueCOD);
+
+      const nonCodSkuList = getRemoteConfigValue(
+        'Sku_Non_COD',
+        (key) => JSON.parse(config.getString(key)) || []
+      );
+      nonCodSkuList?.length && setNonCodSKus?.(nonCodSkuList);
+
       setAppConfig(
         'Min_Value_For_Pharmacy_Free_Delivery',
         'MIN_CART_VALUE_FOR_FREE_DELIVERY',
@@ -1258,12 +1013,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       setAppConfig(
         'min_value_to_nudge_users_to_avail_free_delivery',
         'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
-        (key) => config.getNumber(key)
-      );
-
-      setAppConfig(
-        'Min_Value_For_Pharmacy_Free_Packaging',
-        'MIN_CART_VALUE_FOR_FREE_PACKAGING',
         (key) => config.getNumber(key)
       );
 
@@ -1281,6 +1030,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'top6_specailties',
         'TOP_SPECIALITIES',
         (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.TOP_SPECIALITIES
+      );
+
+      setAppConfig(
+        'Min_Value_For_Pharmacy_Free_Packaging',
+        'MIN_CART_VALUE_FOR_FREE_PACKAGING',
+        (key) => config.getNumber(key)
       );
 
       setAppConfig(
@@ -1309,12 +1064,25 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         config.getBoolean(key)
       );
 
-      setAppConfig('followUp_Chat', 'FollowUp_Chat_Limit', (key) => config.getNumber(key));
+      setAppConfig('Health_Credit_Expiration_Time', 'Health_Credit_Expiration_Time', (key) =>
+        config.getNumber(key)
+      );
+      setAppConfig('Reopen_Help_Max_Time', 'Reopen_Help_Max_Time', (key) => {
+        config.getNumber(key);
+      });
+
+      setAppConfig('Helpdesk_Chat_Confim_Msg', 'Helpdesk_Chat_Confim_Msg', (key) =>
+        config.getString(key)
+      );
 
       setAppConfig('Covid_Items', 'Covid_Items', (key) => config.getString(key));
       setAppConfig('Covid_Max_Slot_Days', 'Covid_Max_Slot_Days', (key) => config.getNumber(key));
       setAppConfig('Non_Covid_Max_Slot_Days', 'Non_Covid_Max_Slot_Days', (key) =>
         config.getNumber(key)
+      );
+      setAppConfig('followUp_Chat', 'FollowUp_Chat_Limit', (key) => config.getNumber(key));
+      setAppConfig('Enable_Diagnostics_COD', 'Enable_Diagnostics_COD', (key) =>
+        config.getBoolean(key)
       );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
@@ -1376,7 +1144,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                 Platform.OS === 'ios'
                   ? 'https://apps.apple.com/in/app/apollo247/id1496740273'
                   : 'https://play.google.com/store/apps/details?id=com.apollo.patientapp'
-              ).catch((err) => console.log('An error occurred', err));
+              ).catch((err) => {});
             }}
           />
         </View>
@@ -1384,27 +1152,90 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     });
   };
 
+  const configureAnimation = () => {
+    const randomIndex = Math.floor(Math.random() * CONST_SPLASH_LOADER.length);
+    setSelectedAnimationIndex(randomIndex);
+    logoAnimation();
+  };
+
+  const spinObject = () => {
+    Animated.loop(
+      Animated.timing(spinValue, {
+        toValue: 1,
+        duration: 1000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    ).start();
+  };
+
+  let spin = spinValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  const springAnimation = () => {
+    Animated.loop(
+      Animated.spring(springValue, {
+        toValue: 1.4,
+        friction: 1,
+        useNativeDriver: true,
+      })
+    ).start();
+  };
+
+  const logoAnimation = () => {
+    Animated.timing(animatedValue, {
+      toValue: 1,
+      duration: 1300,
+      useNativeDriver: true,
+    }).start(() => {});
+  };
+
   return (
     <View style={styles.mainView}>
-      <SplashLogo
+      <Animated.View
         style={{
-          width: 152,
-          height: 117,
-          ...Platform.select({
-            android: {
-              top: 12,
+          transform: [
+            {
+              scale: animatedValue.interpolate({
+                inputRange: [0, 0.5, 1],
+                outputRange: [1, 1.6, 1],
+              }),
             },
-          }),
+          ],
         }}
-        resizeMode="contain"
-      />
-      {showSpinner ? (
-        <ActivityIndicator
-          animating={showSpinner}
-          size="large"
-          color="green"
-          style={{ bottom: 60, position: 'absolute' }}
-        />
+      >
+        <SplashLogo style={styles.splashLogo} resizeMode="contain" />
+      </Animated.View>
+
+      {CONST_SPLASH_LOADER[selectedAnimationIndex] == string.splash.STETHO ? (
+        <Animated.View
+          style={[
+            styles.loaderContainer,
+            {
+              transform: [
+                {
+                  scale: springValue,
+                },
+              ],
+            },
+          ]}
+        >
+          <SplashStethoscope style={styles.loader} />
+        </Animated.View>
+      ) : null}
+
+      {CONST_SPLASH_LOADER[selectedAnimationIndex] == string.splash.CAPSULE ? (
+        <Animated.View style={[styles.loaderContainer, { transform: [{ rotate: spin }] }]}>
+          <SplashCapsule style={styles.loader} />
+        </Animated.View>
+      ) : null}
+
+      {CONST_SPLASH_LOADER[selectedAnimationIndex] == string.splash.SYRINGE ? (
+        <Animated.View style={[styles.loaderContainer, { transform: [{ rotate: spin }] }]}>
+          <SplashSyringe style={styles.loader} />
+        </Animated.View>
       ) : null}
     </View>
   );

@@ -35,33 +35,18 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     flex: 1,
-    // alignItems: 'flex-end',
     justifyContent: 'flex-end',
-    // height: 100,
     backgroundColor: 'transparent',
-    // ...theme.viewStyles.container,
     zIndex: 1000,
   },
   mainView: {
     minHeight: 200,
-
-    // flex: 1,
-    // flex: 9,
-    // backgroundColor: 'transparent',
   },
   itemContainer: {
     minHeight: 200,
-    // margin: 20,
     paddingTop: 20,
     backgroundColor: 'white',
     alignItems: 'flex-start',
-    // justifyContent: 'space-around',
-    // borderRadius: 10,
-    // shadowColor: '#808080',
-    // shadowOffset: { width: 0, height: 5 },
-    // shadowOpacity: 0.4,
-    // shadowRadius: 10,
-    // elevation: 8,
   },
   descptionText: {
     marginTop: 10,
@@ -277,15 +262,7 @@ const slides: Slide[] = [
     onSubmitValidation: [/^\d{1,3}(\/|\\)\d{1,3}$/],
     validationMessage: 'Enter blood pressure in valid format (eg. 120/80)',
   },
-  // {
-  //   key: 'familyHistory',
-  //   index: 12,
-  //   title: 'Does anyone in your family suffer from — COPD,Cancer, Hypertension or Diabetes?',
-  //   buttonText: ['Yes', 'No'],
-  //   inputData: ['value'],
-  // },
 ];
-
 export interface ChatQuestionsProps {
   onDonePress: (values: { k: string; v: string[] }[]) => void;
   onItemDone?: (values: { k: string; v: string[] }) => void;
@@ -713,7 +690,6 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
           ref={appIntroSliderRef}
           extraData={refresh}
           paginationStyle={{ bottom: 10 }}
-          // hidePagination
           scrollEnabled={false}
           slides={slides}
           showPrevButton={false}

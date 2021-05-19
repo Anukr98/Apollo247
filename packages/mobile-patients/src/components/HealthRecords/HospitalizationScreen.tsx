@@ -40,6 +40,7 @@ import {
   getPhrHighlightText,
   phrSearchWebEngageEvents,
   postWebEngageIfNewSession,
+  removeObjectProperty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -64,6 +65,7 @@ import {
   HospitalPhrSearchIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import ListEmptyComponent from '@aph/mobile-patients/src/components/HealthRecords/Components/ListEmptyComponent';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -161,6 +163,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
   const [prismAuthToken, setPrismAuthToken] = useState<string>(
     props.navigation?.getParam('authToken') || ''
   );
+  const [searchQuery, setSearchQuery] = useState({});
   const { phrSession, setPhrSession } = useAppCommonData();
 
   useEffect(() => {
@@ -202,9 +205,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
         }
       })
       .catch((e) => {
-        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
-        const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
+        CommonBugFender('HospitalizationScreen_GET_PRISM_AUTH_TOKEN', e);
       });
   };
 
@@ -238,7 +239,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
         }
       })
       .catch((error) => {
-        console.log('searchPHRApiWithAuthToken Error', error);
+        CommonBugFender('HospitalizationScreen_searchPHRApiWithAuthToken', error);
         getAuthToken();
         setSearchLoading(false);
       });
@@ -253,7 +254,13 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
         return;
       }
       setSearchLoading(true);
-      const search = _.debounce(onSearchHealthRecords, 300);
+      const search = _.debounce(onSearchHealthRecords, 500);
+      setSearchQuery((prevSearch: any) => {
+        if (prevSearch.cancel) {
+          prevSearch.cancel();
+        }
+        return search;
+      });
       search(value);
     }
   };
@@ -329,10 +336,11 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
   };
 
   const onHealthCardItemPress = (selectedItem: HospitalizationType) => {
+    const eventInputData = removeObjectProperty(selectedItem, 'hospitalizationFiles');
     postWebEngageIfNewSession(
       'Hospitalization',
       currentPatient,
-      selectedItem,
+      eventInputData,
       phrSession,
       setPhrSession
     );
@@ -358,9 +366,9 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
         setShowSpinner(false);
       })
       .catch((error) => {
+        CommonBugFender('HospitalizationScreen_getPatientPrismMedicalRecordsApi', error);
         setShowSpinner(false);
         setApiError(true);
-        console.log('error getPatientPrismMedicalRecordsApi', error);
         currentPatient && handleGraphQlError(error);
       });
   };
@@ -376,17 +384,19 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
       .then((status) => {
         if (status) {
           getLatestHospitalizationRecords();
+          const eventInputData = removeObjectProperty(selectedItem, 'hospitalizationFiles');
           postWebEngagePHR(
             currentPatient,
             WebEngageEventName.PHR_DELETE_HOSPITALIZATIONS,
             'Hospitalization',
-            selectedItem
+            eventInputData
           );
         } else {
           setShowSpinner(false);
         }
       })
       .catch((error) => {
+        CommonBugFender('HospitalizationScreen_deletePatientPrismMedicalRecords', error);
         setShowSpinner(false);
         currentPatient && handleGraphQlError(error);
       });
@@ -544,14 +554,6 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
     );
   };
 
-  const emptyListView = () => {
-    return apiError ? (
-      <PhrNoDataComponent noDataText={string.common.phr_api_error_text} phrErrorIcon />
-    ) : (
-      <PhrNoDataComponent />
-    );
-  };
-
   const renderHospitalizationData = () => {
     return (
       <SectionList
@@ -560,7 +562,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 12, paddingHorizontal: 20 }}
         sections={localHospitalizationData || []}
         renderItem={({ item, index }) => renderHospitalizationItems(item, index)}
-        ListEmptyComponent={emptyListView}
+        ListEmptyComponent={ListEmptyComponent.getEmptyListComponent(showSpinner, apiError)}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
       />
     );

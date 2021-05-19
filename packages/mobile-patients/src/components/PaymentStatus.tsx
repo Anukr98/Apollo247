@@ -13,7 +13,7 @@ import {
 import { Copy } from '@aph/mobile-patients/src/components/ui/Icons';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import React, { useEffect, useState } from 'react';
-import { NavigationScreenProps, NavigationActions, StackActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { Success, Failure, Pending } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -32,6 +32,7 @@ import {
   postWebEngageEvent,
   postAppsFlyerEvent,
   postFirebaseEvent,
+  apiCallEnums,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEvents,
@@ -52,13 +53,12 @@ import {
   saveMedicineOrderOMSVariables,
 } from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderOMS';
 
-import {
-  MEDICINE_ORDER_PAYMENT_TYPE,
-  CODCity,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { MEDICINE_ORDER_PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { OrderPlacedPopUp } from '@aph/mobile-patients/src/components/ui/OrderPlacedPopUp';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -72,7 +72,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const [orderDateTime, setorderDateTime] = useState('');
   const [paymentMode, setPaymentMode] = useState<string>('');
   const client = useApolloClient();
-  const { success, failure, pending, aborted } = Payment;
+  const { success, failure, aborted } = Payment;
   const { showAphAlert, hideAphAlert } = useUIElements();
   const totalAmount = props.navigation.getParam('amount');
   const orderId = props.navigation.getParam('orderId');
@@ -84,8 +84,8 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const [codOrderProcessing, setcodOrderProcessing] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
-  const [copiedText, setCopiedText] = useState('');
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
+  const { apisToCall } = useAppCommonData();
   const {
     clearCartInfo,
     cartItems,
@@ -134,7 +134,6 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((res) => {
-        console.log(res.data.pharmaPaymentStatus);
         const paymentEventAttributes = {
           order_Id: orderId,
           order_AutoId: orderAutoId,
@@ -152,18 +151,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('fetchingTxnStutus', error);
-        console.log(error);
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [
-              NavigationActions.navigate({
-                routeName: AppRoutes.ConsultRoom,
-              }),
-            ],
-          })
-        );
+        moveToHome();
         renderErrorPopup(string.common.tryAgainLater);
       });
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -173,19 +161,16 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   }, []);
 
   const handleBack = () => {
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [
-          NavigationActions.navigate({
-            routeName: AppRoutes.ConsultRoom,
-          }),
-        ],
-      })
-    );
+    moveToHome();
     return true;
   };
+
+  const moveToHome = () => {
+    // use apiCallsEnum values here in order to make that api call in home screen
+    apisToCall.current = [apiCallEnums.circleSavings];
+    navigateToHome(props.navigation);
+  };
+
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
 
   const saveOrder = (orderInfo: saveMedicineOrderOMSVariables) =>
@@ -218,7 +203,6 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
       if (errorCode || errorMessage) {
         errorPopUp();
       } else {
-        console.log('inside success');
         handleOrderSuccess(`${orderAutoId}`);
         clearCartInfo?.();
       }
@@ -256,13 +240,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   };
 
   const handleOrderSuccess = (orderAutoId: string) => {
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      })
-    );
+    moveToHome();
     fireOrderSuccessEvent(orderAutoId);
     showAphAlert!({
       title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
@@ -301,10 +279,10 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
         ? 'Prescription Upload'
         : 'Not Applicable',
     };
-    postWebEngageEvent(
-      WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED,
-      pharmaCheckoutEventAttributes
-    );
+    postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, {
+      ...pharmaCheckoutEventAttributes,
+      'Cart Items': JSON.stringify(cartItems),
+    });
     postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, appsflyerEventAttributes);
     firePurchaseEvent();
   };
@@ -516,17 +494,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
     } else if (status == failure || status == aborted) {
       navigate(AppRoutes.MedicineCart);
     } else {
-      props.navigation.dispatch(
-        StackActions.reset({
-          index: 0,
-          key: null,
-          actions: [
-            NavigationActions.navigate({
-              routeName: AppRoutes.ConsultRoom,
-            }),
-          ],
-        })
-      );
+      moveToHome();
     }
   };
 

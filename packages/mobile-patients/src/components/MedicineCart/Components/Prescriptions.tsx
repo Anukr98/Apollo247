@@ -1,11 +1,17 @@
-import { PhysicalPrescriptionCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/PhysicalPrescriptionCard';
+import {
+  PhysicalPrescriptionCard,
+  PhysicalPrescriptionCardProps,
+} from '@aph/mobile-patients/src/components/MedicineCart/Components/PhysicalPrescriptionCard';
 import { PrescriptionInfoView } from '@aph/mobile-patients/src/components/MedicineCart/Components/PrescriptionInfoView';
 import {
   EPrescription,
   PhysicalPrescription,
   useShoppingCart,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { EPrescriptionCard } from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
+import {
+  EPrescriptionCard,
+  EPrescriptionCardProps,
+} from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
 import { PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -22,6 +28,8 @@ import {
 
 export interface PrescriptionsProps {
   onPressUploadMore?: () => void;
+  ePresProps?: Partial<EPrescriptionCardProps>;
+  myPresProps?: Partial<PhysicalPrescriptionCardProps>;
   hideHeader?: boolean;
   showSelectedOption?: boolean;
   isPlainStyle?: boolean;
@@ -35,8 +43,17 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
     removeEPrescription,
     removePhysicalPrescription,
     prescriptionType,
+    consultProfile,
   } = useShoppingCart();
-  const { onPressUploadMore, style, hideHeader, showSelectedOption, isPlainStyle } = props;
+  const {
+    onPressUploadMore,
+    ePresProps,
+    myPresProps,
+    style,
+    hideHeader,
+    showSelectedOption,
+    isPlainStyle,
+  } = props;
   const { currentPatient } = useAllCurrentPatients();
 
   const renderHeader = () => {
@@ -65,6 +82,7 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
         onRemove={() => {
           removePhysicalPrescription && removePhysicalPrescription(item.title);
         }}
+        {...myPresProps}
       />
     );
   };
@@ -97,6 +115,7 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
         onRemove={() => {
           removeEPrescription && removeEPrescription(item.id);
         }}
+        {...ePresProps}
       />
     );
   };
@@ -126,9 +145,10 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
 
   const renderPrescriptionInfo = () => {
     const isPrescriptionLater = prescriptionType === PrescriptionType.LATER;
+    const name = consultProfile?.firstName || currentPatient?.firstName;
     const title = isPrescriptionLater
       ? 'Share Prescription Later Selected'
-      : `Doctor Consult Option Selected for ${currentPatient?.firstName}`;
+      : `Doctor Consult Option Selected for ${name}`;
     const description = isPrescriptionLater
       ? 'You have to share prescription later for order to be verified successfully.'
       : 'An Apollo doctor will call you soon as they are available!';

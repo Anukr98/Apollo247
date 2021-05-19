@@ -4,7 +4,6 @@ import { Image, ImageProps, Platform } from 'react-native';
 export const SplashLogo: React.FC<Partial<ImageProps>> = (props) => (
   <Image
     style={{
-      // width: 150, height: 116
       width: 152,
       height: 117,
       ...Platform.select({
@@ -14,6 +13,6 @@ export const SplashLogo: React.FC<Partial<ImageProps>> = (props) => (
       }),
     }}
     {...props}
-    source={require('@aph/mobile-patients/src/images/apollo/splashLogo.png')}
+    source={require('@aph/mobile-patients/src/images/apollo/splashLogo.webp')}
   />
 );

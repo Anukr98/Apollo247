@@ -28,16 +28,15 @@ import {
 import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet_medicinePrescription } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { GET_PATIENT_ALL_APPOINTMENTS } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
-import { getPatinetAppointments_getPatinetAppointments_patinetAppointments } from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
 import {
   callPermissions,
-  getNetStatus,
   postWebEngageEvent,
   g,
   followUpChatDaysCaseSheet,
   getDiffInMinutes,
   overlyCallPermissions,
   isPastAppointment,
+  navigateToHome,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -62,6 +61,7 @@ import {
   Platform,
   Dimensions,
   SectionListData,
+  BackHandler,
 } from 'react-native';
 import { FlatList, NavigationEvents, NavigationScreenProps } from 'react-navigation';
 import {
@@ -87,6 +87,7 @@ import {
 import { NotificationListener } from '@aph/mobile-patients/src/components/NotificationListener';
 import _ from 'lodash';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { renderAppointmentShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 
 const { width, height } = Dimensions.get('window');
 
@@ -102,7 +103,6 @@ const styles = StyleSheet.create({
   seperatorStyle: {
     height: 2,
     backgroundColor: '#00b38e',
-    //marginTop: 5,
     marginHorizontal: 5,
     marginBottom: 6,
     marginRight: -5,
@@ -115,13 +115,12 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 16,
     color: theme.colors.SKY_BLUE,
-    ...theme.fonts.IBMPlexSansMedium(isIphone5s() ? 15 : 17),
+    ...theme.fonts.IBMPlexSansMedium(isIphone5s() ? 15 : 16.5),
     lineHeight: 24,
   },
   buttonStyles: {
     height: 40,
     width: 180,
-    // paddingHorizontal: 26
     marginTop: 16,
   },
   doctorView: {
@@ -391,6 +390,11 @@ const styles = StyleSheet.create({
     paddingRight: 3,
     marginTop: 7,
   },
+  filterIcon: {
+    width: 17,
+    height: 18,
+    marginTop: 10,
+  },
 });
 
 export interface ConsultProps extends NavigationScreenProps {
@@ -407,15 +411,15 @@ export interface AppointmentFilterObject {
   availability: string[] | null;
   doctorsList: string[] | null;
   specialtyList: string[] | null;
+  movedFrom?: string;
 }
 
 export type Appointment = getPatientAllAppointments_getPatientAllAppointments_activeAppointments;
 
 export const Consult: React.FC<ConsultProps> = (props) => {
-  const thingsToDo = string.consult_room.things_to_do.data;
-  const articles = string.consult_room.articles.data;
   const tabs = [{ title: 'Active' }, { title: 'Completed' }, { title: 'Cancelled' }];
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
+  const movedFrom = props.navigation.getParam('movedFrom');
 
   const [allAppointments, setAllAppointments] = useState<Appointment[]>([]);
   const [activeFollowUpAppointments, setActiveFollowUpAppointments] = useState<
@@ -441,9 +445,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
   const [filteredAppointmentsList, setFilteredAppointmentsList] = useState<Appointment[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   const { showAphAlert, hideAphAlert } = useUIElements();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
 
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [appointmentItem, setAppoinmentItem] = useState<Appointment | null>();
@@ -463,22 +467,28 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const client = useApolloClient();
 
   useEffect(() => {
-    console.log('current', currentPatient && currentPatient!.id);
-    console.log('profile', profile && profile!.id);
     if (currentPatient && profile) {
       if (currentPatient.id != profile.id) {
-        console.log('userchanged', currentPatient, profile);
-        setLoading && setLoading(true);
+        setPageLoading(true);
         fetchAppointments();
       }
     }
-    // if (consultations.length <= 0) {
-    //   if (currentPatient) {
-    //     fetchAppointments();
-    //   }
-    // }
     currentPatient && setProfile(currentPatient!);
   }, [currentPatient, props.navigation.state.params]);
+
+  useEffect(() => {
+    if (movedFrom === 'deeplink') {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+      return () => {
+        BackHandler.removeEventListener('hardwareBackPress', handleBack);
+      };
+    }
+  }, []);
+
+  const handleBack = () => {
+    navigateToHome(props.navigation, {}, movedFrom === 'deeplink');
+    return true;
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -496,7 +506,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       }
     }
     fetchData();
-    // callPermissions();
     try {
       setNewAppointmentTime(
         props.navigation.getParam('Data')
@@ -700,11 +709,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     );
   };
 
-  const inputData = {
-    patientId: currentPatient ? currentPatient!.id : '',
-    appointmentDate: moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD'),
-  };
-
   const fetchAppointments = async () => {
     try {
       let userId = await AsyncStorage.getItem('selectedProfileId');
@@ -722,16 +726,22 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       });
       const appointments = data?.getPatientAllAppointments;
 
-      const activeFollowUpAppointments =
-        appointments?.activeAppointments?.length || appointments?.followUpAppointments?.length
-          ? [
-              { type: 'Active', data: appointments?.activeAppointments! || [] },
-              { type: 'Follow-up Chat', data: appointments?.followUpAppointments! || [] },
-            ]
-          : [];
+      let isOnlineFutureOnly: any = [];
+      isOnlineFutureOnly = appointments?.activeAppointments?.filter(
+        (it) =>
+          moment(it?.appointmentDateTime).isAfter(moment(new Date())) &&
+          it?.appointmentType == 'ONLINE'
+      ).length;
+
+      const activeFollowUpAppointments = appointments?.activeAppointments?.length
+        ? [{ type: 'Active', data: appointments?.activeAppointments! || [] }]
+        : [];
       const activeAppointments = appointments?.activeAppointments! || [];
       const followUpAppointments = appointments?.followUpAppointments! || [];
-      const completedAppointments = appointments?.completedAppointments! || [];
+      const completedAppointments = [
+        ...followUpAppointments,
+        ...(appointments?.completedAppointments! || []),
+      ];
       const cancelledAppointments = appointments?.cancelledAppointments! || [];
       const allAppointments = [
         ...activeAppointments,
@@ -752,8 +762,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       setFilteredAppointmentsList(allAppointments);
       setAllAppointments(allAppointments);
       setLoading(false);
+      setPageLoading(false);
 
-      if (activeAppointments?.length || followUpAppointments?.length) {
+      if (isOnlineFutureOnly > 0) {
         if (Platform.OS === 'ios') {
           callPermissions();
         } else {
@@ -769,7 +780,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         }
       }
     } catch (error) {
-      setLoading(false);
+      setPageLoading(false);
     }
   };
 
@@ -800,15 +811,21 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
   const renderTodaysConsultations = () => {
     return (
-      <SectionList
-        keyExtractor={(_, index) => index.toString()}
-        contentContainerStyle={{ padding: 12, paddingTop: 0, marginTop: 0 }}
-        bounces={false}
-        sections={selectedTab === tabs[0].title ? activeFollowUpAppointments : []}
-        ListEmptyComponent={renderNoAppointments()}
-        renderSectionHeader={({ section }) => renderSectionHeader(section)}
-        renderItem={({ item, index }) => renderConsultationCard(item, index)}
-      />
+      <View>
+        {pageLoading ? (
+          renderAppointmentShimmer()
+        ) : (
+          <SectionList
+            keyExtractor={(_, index) => index.toString()}
+            contentContainerStyle={{ padding: 12, paddingTop: 0, marginTop: 0 }}
+            bounces={false}
+            sections={selectedTab === tabs[0].title ? activeFollowUpAppointments : []}
+            ListEmptyComponent={renderNoAppointments()}
+            renderSectionHeader={({ section }) => renderSectionHeader(section)}
+            renderItem={({ item, index }) => renderConsultationCard(item, index)}
+          />
+        )}
+      </View>
     );
   };
 
@@ -936,6 +953,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               callType: '',
               prescription: '',
               disableChat: item.doctorInfo && pastAppointmentItem,
+            })
+          : item.appointmentType === 'PHYSICAL'
+          ? props.navigation.navigate(AppRoutes.AppointmentDetailsPhysical, {
+              data: item,
+              from: 'Consult',
             })
           : props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: g(item, 'doctorId') || '',
@@ -1133,49 +1155,48 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           });
         }
       };
-      if(item.appointmentType==='PHYSICAL'){
-      return (
-        <View style={{ flexDirection: 'row' }}>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={{ flex: 1 }}
-            onPress={()=>{
-            props.navigation.navigate(AppRoutes.AppointmentDetailsPhysical,
-            {data: item,from: 'Consult'})
-            }}>
-            <Text style={styles.prepareForConsult}>
-            VIEW DETAILS
-            </Text>
-          </TouchableOpacity>
-        </View>
-      );
-
-      }
-      else
-      return (
-        <View style={{ flexDirection: 'row' }}>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={{ flex: 1 }}
-            onPress={onPressActiveUpcomingButtons}
-          >
-            <Text
-              style={[
-                styles.prepareForConsult,
-                {
-                  opacity: 1,
-                  paddingBottom: 0,
-                },
-              ]}
+      if (item.appointmentType === 'PHYSICAL') {
+        return (
+          <View style={{ flexDirection: 'row' }}>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={{ flex: 1 }}
+              onPress={() => {
+                props.navigation.navigate(AppRoutes.AppointmentDetailsPhysical, {
+                  data: item,
+                  from: 'Consult',
+                });
+              }}
             >
-              {item.isConsultStarted
-                ? string.common.continueConsult
-                : string.common.prepareForConsult}
-            </Text>
-            <Text style={styles.fillVitalsForConsult}>{getConsultationSubTexts()}</Text>
-          </TouchableOpacity>
-        </View>
-      );
+              <Text style={styles.prepareForConsult}>VIEW DETAILS</Text>
+            </TouchableOpacity>
+          </View>
+        );
+      } else
+        return (
+          <View style={{ flexDirection: 'row' }}>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={{ flex: 1 }}
+              onPress={onPressActiveUpcomingButtons}
+            >
+              <Text
+                style={[
+                  styles.prepareForConsult,
+                  {
+                    opacity: 1,
+                    paddingBottom: 0,
+                  },
+                ]}
+              >
+                {item.isConsultStarted
+                  ? string.common.continueConsult
+                  : string.common.prepareForConsult}
+              </Text>
+              <Text style={styles.fillVitalsForConsult}>{getConsultationSubTexts()}</Text>
+            </TouchableOpacity>
+          </View>
+        );
     };
 
     const renderPickAnotherButton = () => {
@@ -1208,7 +1229,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     };
 
     const onPressDoctorCardClick = () => {
-    console.log("csk item",item.appointmentType);
       postConsultCardEvents('Card Click', item);
       CommonLogEvent(AppRoutes.Consult, `Consult ${item.appointmentType} clicked`);
       if (item.doctorInfo && !pastAppointmentItem) {
@@ -1217,15 +1237,15 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               data: item,
               from: 'Consult',
             })
-          : item.appointmentType === 'PHYSICAL'?
-          (props.navigation.navigate(AppRoutes.AppointmentDetailsPhysical, {
-                        data: item,
-                        from: 'Consult',
-                      }))
-          :(props.navigation.navigate(AppRoutes.AppointmentDetails, {
+          : item.appointmentType === 'PHYSICAL'
+          ? props.navigation.navigate(AppRoutes.AppointmentDetailsPhysical, {
               data: item,
               from: 'Consult',
-            }));
+            })
+          : props.navigation.navigate(AppRoutes.AppointmentDetails, {
+              data: item,
+              from: 'Consult',
+            });
       }
     };
 
@@ -1341,7 +1361,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               </View>
             ) : null}
             {item.status == STATUS.PENDING ||
-            // dateIsAfterconsult ||
             item.status == STATUS.IN_PROGRESS ||
             item.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
             item.status == STATUS.NO_SHOW ||
@@ -1370,31 +1389,43 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
   const renderConsultations = () => {
     return (
-      <FlatList
-        keyExtractor={(_, index) => index.toString()}
-        contentContainerStyle={{ padding: 12, paddingTop: 0, marginTop: 14 }}
-        data={selectedTab === tabs[1].title ? completedAppointments : cancelledAppointments}
-        bounces={false}
-        removeClippedSubviews={true}
-        showsHorizontalScrollIndicator={false}
-        ListEmptyComponent={renderNoAppointments()}
-        renderItem={({ item, index }) => renderConsultationCard(item, index)}
-      />
+      <View>
+        {pageLoading ? (
+          renderAppointmentShimmer()
+        ) : (
+          <FlatList
+            keyExtractor={(_, index) => index.toString()}
+            contentContainerStyle={{ padding: 12, paddingTop: 0, marginTop: 14 }}
+            data={selectedTab === tabs[1].title ? completedAppointments : cancelledAppointments}
+            bounces={false}
+            removeClippedSubviews={true}
+            showsHorizontalScrollIndicator={false}
+            ListEmptyComponent={renderNoAppointments()}
+            renderItem={({ item, index }) => renderConsultationCard(item, index)}
+          />
+        )}
+      </View>
     );
   };
 
   const renderFilterConsultations = () => {
     return (
-      <FlatList
-        keyExtractor={(_, index) => index.toString()}
-        contentContainerStyle={{ padding: 12, paddingTop: 0, marginTop: 14 }}
-        data={filteredAppointmentsList}
-        bounces={false}
-        removeClippedSubviews={true}
-        showsHorizontalScrollIndicator={false}
-        ListEmptyComponent={renderNoAppointments()}
-        renderItem={({ item, index }) => renderConsultationCard(item, index)}
-      />
+      <View style={{ flexDirection: 'column' }}>
+        {pageLoading ? (
+          renderAppointmentShimmer()
+        ) : (
+          <FlatList
+            keyExtractor={(_, index) => index.toString()}
+            contentContainerStyle={{ padding: 12, paddingTop: 0, marginTop: 14 }}
+            data={filteredAppointmentsList}
+            bounces={false}
+            removeClippedSubviews={true}
+            showsHorizontalScrollIndicator={false}
+            ListEmptyComponent={renderNoAppointments()}
+            renderItem={({ item, index }) => renderConsultationCard(item, index)}
+          />
+        )}
+      </View>
     );
   };
 
@@ -1497,13 +1528,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           <TouchableOpacity activeOpacity={1} onPress={() => setIsFilterOpen(true)}>
             {filterLength > 0 ? (
               <>
-                <FilterGreenIcon style={{ width: 17, height: 18, marginTop: 8 }} />
+                <FilterGreenIcon style={styles.filterIcon} />
                 <View style={[styles.badgelabelView]}>
                   <Text style={styles.badgelabelText}>{filterLength}</Text>
                 </View>
               </>
             ) : (
-              <FilterDarkBlueIcon style={{ width: 17, height: 18, marginTop: 8 }} />
+              <FilterDarkBlueIcon style={styles.filterIcon} />
             )}
           </TouchableOpacity>
         </View>
@@ -1663,6 +1694,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         <Text style={styles.viewAnotherMemberTextStyle}>
           {'View appointments of another member?'}
         </Text>
+
         <ProfileList
           navigation={props.navigation}
           saveUserChange={true}
@@ -1680,13 +1712,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     <View style={{ flex: 1 }}>
       <NavigationEvents
         onDidFocus={(payload) => {
-          console.log('did focus', payload);
           if (callFetchAppointmentApi) {
-            setLoading && setLoading(true);
+            setPageLoading(true);
             fetchAppointments();
           }
         }}
-        onDidBlur={(payload) => console.log('did blur', payload)}
+        onDidBlur={(payload) => {}}
       />
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
         {renderTopView()}
@@ -1700,6 +1731,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         >
           {renderProfileChangeView()}
           {filterLength > 0 ? renderSelectedFilters() : renderTabSwitch()}
+
           <View>
             {filterLength === 0 ? renderSelectMemberView() : null}
             {filterLength > 0

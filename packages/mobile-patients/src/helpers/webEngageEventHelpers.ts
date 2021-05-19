@@ -92,6 +92,7 @@ export const postPhamracyCartAddressSelectedSuccess = (
   pharmacyCircleEvent: PharmacyCircleEvent,
   tatHrs: PhamracyCartAddressSelectedSuccess['TAT_Hrs'],
   pharmacyUserTypeAttribute: PharmacyUserTypeEvent,
+  itemsInCart: string,
   isSplitCart?: boolean,
   splitOrderDetails?: any
 ) => {
@@ -103,6 +104,7 @@ export const postPhamracyCartAddressSelectedSuccess = (
     'Delivery TAT': deliveryTat,
     TAT_Hrs: tatHrs,
     'Split Cart': !!isSplitCart ? 'Yes' : 'No',
+    'Cart Items': itemsInCart || '',
     ...pharmacyCircleEvent,
     ...pharmacyUserTypeAttribute,
     ...splitOrderDetails,

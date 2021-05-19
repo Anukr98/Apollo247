@@ -1,11 +1,6 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, BackHandler, View, ScrollView, TouchableOpacity } from 'react-native';
-import {
-  NavigationActions,
-  NavigationScreenProps,
-  SafeAreaView,
-  StackActions,
-} from 'react-navigation';
+import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
 import {
   CircleLogo,
   OrderPlacedCheckedIcon,
@@ -19,6 +14,9 @@ import moment from 'moment';
 import {
   formatTestSlotWithBuffer,
   postWebEngageEvent,
+  apiCallEnums,
+  navigateToHome,
+  nameFormater,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -26,6 +24,7 @@ import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEv
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { firePurchaseEvent } from '@aph/mobile-patients/src/components/Tests/Events';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export interface OrderStatusProps extends NavigationScreenProps {}
 
@@ -41,27 +40,33 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const orderCartSaving = orderDetails?.cartSaving!;
   const orderCircleSaving = orderDetails?.circleSaving!;
   const showCartSaving = orderCartSaving > 0 && orderDetails?.cartHasAll;
+  const { apisToCall } = useAppCommonData();
   const {
     isDiagnosticCircleSubscription,
     clearDiagnoticCartInfo,
     cartItems,
   } = useDiagnosticsCart();
   const { circleSubscriptionId } = useShoppingCart();
-  const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
+  const { setLoading } = useUIElements();
   const savings = isDiagnosticCircleSubscription
     ? Number(orderCartSaving) + Number(orderCircleSaving)
     : orderCartSaving;
   const couldBeSaved =
     !isDiagnosticCircleSubscription && orderCircleSaving > 0 && orderCircleSaving > orderCartSaving;
-  console.log('orderDetails >>>', orderDetails);
-  const navigateToHome = () => {
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      })
-    );
+  const moveToHome = () => {
+    // use apiCallsEnum values here in order to make that api call in home screen
+    apisToCall.current = [
+      apiCallEnums.circleSavings,
+      apiCallEnums.getAllBanners,
+      apiCallEnums.plansCashback,
+      apiCallEnums.getUserSubscriptions,
+    ];
+    navigateToHome(props.navigation);
+  };
+  const moveToMyOrders = () => {
+    props.navigation.navigate(AppRoutes.YourOrdersTest, {
+      fromOrderSummary: true,
+    });
   };
 
   useEffect(() => {
@@ -84,18 +89,19 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
 
   const handleBack = () => {
-    navigateToHome();
+    moveToMyOrders();
     return true;
   };
 
   const navigateToOrderDetails = (showOrderSummaryTab: boolean, orderId: string) => {
     setLoading?.(false);
-    //change here.
+    apisToCall.current = [apiCallEnums.circleSavings];
     props.navigation.navigate(AppRoutes.TestOrderDetailsSummary, {
       goToHomeOnBack: true,
       showOrderSummaryTab,
       orderId: orderId,
       comingFrom: AppRoutes.TestsCart,
+      amount: orderDetails?.amount,
     });
   };
 
@@ -227,8 +233,8 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     return (
       <View>
         <Spearator style={styles.separator} />
-        <TouchableOpacity style={{ alignItems: 'center' }} onPress={() => navigateToHome()}>
-          <Text style={styles.homeScreen}>GO TO HOMESCREEN</Text>
+        <TouchableOpacity style={{ alignItems: 'center' }} onPress={() => moveToMyOrders()}>
+          <Text style={styles.homeScreen}>{nameFormater('Go to my orders', 'upper')}</Text>
         </TouchableOpacity>
       </View>
     );

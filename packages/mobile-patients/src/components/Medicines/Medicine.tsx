@@ -102,6 +102,7 @@ import {
   postWebEngageEvent,
   productsThumbnailUrl,
   setWebEngageScreenNames,
+  setAsyncPharmaLocation,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -133,13 +134,21 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  BackHandler,
 } from 'react-native';
 import ContentLoader from 'react-native-easy-content-loader';
 import { Divider, Image, ListItem } from 'react-native-elements';
 import Carousel from 'react-native-snap-carousel';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 const { width: winWidth, height: winHeight } = Dimensions.get('window');
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
+
+import {
+  renderMedicineBannerShimmer,
+  renderMedicinesShimmer,
+} from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const styles = StyleSheet.create({
   buyAgain: {
@@ -234,7 +243,6 @@ type Address = savePatientAddress_savePatientAddress_patientAddress;
 
 export const Medicine: React.FC<MedicineProps> = (props) => {
   const focusSearch = props.navigation.getParam('focusSearch');
-  const showUploadPrescriptionPopup = props.navigation.getParam('showUploadPrescriptionPopup');
   const showRecommendedSection = props.navigation.getParam('showRecommendedSection');
   const comingFrom = props.navigation.getParam('comingFrom');
   const {
@@ -248,7 +256,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setLocationDetails,
     setAxdcCode,
     axdcCode,
-    circleSubscription,
     setBannerData,
     bannerData,
     pharmacyUserType,
@@ -260,8 +267,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     addCartItem,
     removeCartItem,
     updateCartItem,
-    addMultipleCartItems,
-    addMultipleEPrescriptions,
     addresses,
     setAddresses,
     deliveryAddressId,
@@ -285,13 +290,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     pharmacyCircleAttributes,
     setEPrescriptions,
     setPhysicalPrescriptions,
+    asyncPincode,
+    setAsyncPincode,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
     setIsDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
   const hdfc_values = string.Hdfc_values;
-  const cartItemsCount = cartItems.length + diagnosticCartItems.length;
+  const cartItemsCount = cartItems?.length + diagnosticCartItems?.length;
   const { currentPatient } = useAllCurrentPatients();
   const [allBrandData, setAllBrandData] = useState<Brand[]>([]);
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
@@ -300,6 +307,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [buyAgainProducts, setBuyAgainProducts] = useState<MedicineProduct[]>([]);
   const [buyAgainLoading, setBuyAgainLoading] = useState<boolean>(true);
   const [showCirclePopup, setShowCirclePopup] = useState<boolean>(false);
+  const [pageLoading, setPageLoading] = useState<boolean>(false);
 
   const [recommendedProducts, setRecommendedProducts] = useState<MedicineProduct[]>([]);
   const [data, setData] = useState<MedicinePageAPiResponse | null>(medicinePageAPiResponse);
@@ -312,6 +320,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const defaultAddress = addresses.find((item) => item.defaultAddress);
   const hasLocation = locationDetails || pharmacyLocation || defaultAddress;
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
+  const [isFocused, setIsFocused] = useState<boolean>(false);
   type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
   const postwebEngageCategoryClickedEvent = (
     categoryId: string,
@@ -335,6 +344,20 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       SectionName: sectionName,
     };
     postFirebaseEvent(FirebaseEventName.CATEGORY_CLICKED, firebaseEventAttributes);
+  };
+
+  useEffect(() => {
+    if (comingFrom === 'deeplink') {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+      return () => {
+        BackHandler.removeEventListener('hardwareBackPress', handleBack);
+      };
+    }
+  }, []);
+
+  const handleBack = () => {
+    navigateToHome(props.navigation, {}, comingFrom === 'deeplink');
+    return true;
   };
 
   const WebEngageEventAutoDetectLocation = (pincode: string, serviceable: boolean) => {
@@ -379,7 +402,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       let from = currentPatient.mobileNumber;
       let to = pharmacyPhoneNumber;
       let caller_id = AppConfig.Configuration.EXOTEL_CALLER_ID;
-      // const param = `fromPhone=${from}&toPhone=${to}&callerId=${caller_id}`;
       const param = {
         fromPhone: from,
         toPhone: to,
@@ -387,23 +409,25 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       };
       CalltheNearestPharmacyEvent();
       globalLoading!(true);
+      setPageLoading!(true);
+
       callToExotelApi(param)
         .then((response) => {
           hideAphAlert!();
           globalLoading!(false);
-          console.log('exotelCallAPI response', response, 'params', param);
+          setPageLoading!(false);
         })
         .catch((error) => {
           hideAphAlert!();
           globalLoading!(false);
+          setPageLoading!(false);
           showAphAlert!({
             title: string.common.uhOh,
             description: 'We could not connect to the pharmacy now. Please try later.',
           });
-          console.log('exotelCallAPI error', error, 'params', param);
         });
     };
-    globalLoading!(true);
+
     pinCodeServiceabilityApi247(pincode)
       .then(({ data: { response } }) => {
         const { servicable, axdcCode } = response;
@@ -414,7 +438,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         type == 'pincode' && webEngageDeliveryPincodeEntered(pincode, !!servicable);
         globalLoading!(false);
         if (!servicable) {
-          globalLoading!(true);
+          setPageLoading!(true);
           getNearByStoreDetailsApi(pincode)
             .then((response: any) => {
               showAphAlert!({
@@ -476,8 +500,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   </View>
                 ),
               });
-              globalLoading!(false);
-              console.log('getNearByStoreDetailsApi', response.data.phoneNumber.toString());
+              setPageLoading!(false);
             })
             .catch((error) => {
               showAphAlert!({
@@ -495,14 +518,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   },
                 ],
               });
-              globalLoading!(false);
-              console.log('getNearByStoreDetailsApi error', error);
+              setPageLoading!(false);
             });
         }
       })
       .catch((e) => {
         CommonBugFender('Medicine_pinCodeServiceabilityApi', e);
         setServiceabilityMsg('Sorry, unable to check serviceability.');
+        setPageLoading!(false);
       });
   };
 
@@ -519,8 +542,33 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    if (isFocused) {
+      const getAsyncLocationPincode = async () => {
+        const asyncLocationPincode: any = await AsyncStorage.getItem('PharmacyLocationPincode');
+        if (asyncLocationPincode) {
+          setAsyncPincode?.(JSON.parse(asyncLocationPincode));
+        }
+      };
+      getAsyncLocationPincode();
+    }
+  }, [isFocused]);
+
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      setIsFocused(true);
+    });
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+      setIsFocused(false);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      didBlur && didBlur.remove();
+    };
+  }, []);
+
+  useEffect(() => {
     // set cart items again to set item cashbacks and total cashback
-    if (cartItems.length) {
+    if (cartItems?.length) {
       setCartItems && setCartItems(cartItems);
     }
   }, [cartItems]);
@@ -562,20 +610,22 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, []);
 
   const getUserBanners = async () => {
-    const res: any = await getUserBannersList(
-      client,
-      currentPatient,
-      string.banner_context.PHARMACY_HOME
-    );
-    if (res) {
-      setBannerData && setBannerData(res);
-    } else {
+    try {
+      const res: any = await getUserBannersList(
+        client,
+        currentPatient,
+        string.banner_context.PHARMACY_HOME
+      );
+      if (res) {
+        setBannerData && setBannerData(res);
+      }
+    } catch (error) {
       setBannerData && setBannerData([]);
     }
   };
 
   const renderCarouselBanners = () => {
-    const showBanner = bannerData && bannerData.length > 0;
+    const showBanner = bannerData && bannerData?.length > 0;
     if (showBanner) {
       return (
         <CarouselBanners
@@ -606,7 +656,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   async function fetchAddress() {
     try {
-      if (addresses.length) {
+      if (addresses?.length) {
         const deliveryAddress = addresses.find((item) => item.defaultAddress);
         if (deliveryAddress) {
           setDeliveryAddressId!(deliveryAddress?.id);
@@ -615,7 +665,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           return;
         }
       }
-      globalLoading!(true);
+      setPageLoading!(true);
       const response = await client.query<getPatientAddressList, getPatientAddressListVariables>({
         query: GET_PATIENT_ADDRESS_LIST,
         variables: { patientId: currentPatient?.id },
@@ -631,17 +681,17 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       } else {
         checkLocation(addressList);
       }
-      globalLoading!(false);
+      setPageLoading!(false);
     } catch (error) {
       checkLocation(addresses);
-      globalLoading!(false);
+      setPageLoading!(false);
       CommonBugFender('fetching_Addresses_on_Medicine_Page', error);
     }
   }
 
   async function setDefaultAddress(address: Address) {
     try {
-      globalLoading!(true);
+      setPageLoading!(true);
       hideAphAlert!();
       const response = await client.query<makeAdressAsDefault, makeAdressAsDefaultVariables>({
         query: SET_DEFAULT_ADDRESS,
@@ -659,9 +709,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
       setPharmacyLocation!(formatAddressToLocation(deliveryAddress! || null));
       updateServiceability(address?.zipcode!);
-      globalLoading!(false);
+      setPageLoading!(false);
     } catch (error) {
-      globalLoading!(false);
+      setPageLoading!(false);
       checkLocation(addresses);
       CommonBugFender('set_default_Address_on_Medicine_Page', error);
       showAphAlert!({
@@ -690,6 +740,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <AccessLocation
           addresses={addressList}
           onPressSelectAddress={(address) => {
+            setAsyncPharmaLocation(address);
+            const saveAddress = {
+              pincode: address?.zipcode,
+              id: address?.id,
+              city: address?.city,
+              state: address?.state,
+            };
+            setAsyncPincode?.(saveAddress);
             setDefaultAddress(address);
           }}
           onPressEditAddress={(address) => {
@@ -732,7 +790,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   useEffect(() => {
-    if (!loading && banners.length) {
+    if (!loading && banners?.length) {
       ImageNative.getSize(
         productsThumbnailUrl(g(banners, '0' as any, 'image')!),
         (width, height) => {
@@ -759,13 +817,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     }
     try {
       setLoading(true);
+      setPageLoading(true);
       const resonse = (await getMedicinePageProducts(axdcCode, pinCode)).data;
       setData(resonse);
       setMedicinePageAPiResponse!(resonse);
       setLoading(false);
+      setPageLoading(false);
     } catch (e) {
       setError(e);
       setLoading(false);
+      setPageLoading(false);
       showAphAlert!({
         title: string.common.uhOh,
         description: "We're sorry! Unable to fetch products right now, please try later.",
@@ -814,7 +875,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               sell_online: 1,
             } as MedicineProduct)
         );
-      if (formattedRecommendedProducts.length >= 5) {
+      if (formattedRecommendedProducts?.length >= 5) {
         setRecommendedProducts(formattedRecommendedProducts);
         showRecommendedSection &&
           props.navigation.navigate(AppRoutes.MedicineListing, {
@@ -850,17 +911,18 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const autoDetectLocation = (addresses: addressListType) => {
-    globalLoading!(true);
+    setPageLoading!(true);
     doRequestAndAccessLocationModified()
       .then((response) => {
-        globalLoading!(false);
+        setPageLoading!(false);
+        response && setAsyncPincode?.(response);
         response && setPharmacyLocation!(response);
         response && !locationDetails && setLocationDetails!(response);
         setDeliveryAddressId!('');
         updateServiceability(response.pincode, 'autoDetect');
       })
       .catch((e) => {
-        globalLoading!(false);
+        setPageLoading!(false);
         checkLocation(addresses);
         CommonBugFender('Medicine__ALLOW_AUTO_DETECT', e);
         e &&
@@ -878,11 +940,18 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     getPlaceInfoByPincode(pincode)
       .then(({ data }) => {
         try {
-          console.log('data >>', data);
-          if (data.results.length) {
+          if (data?.results?.length) {
             const addrComponents = data.results[0].address_components || [];
             const latLang = data.results[0].geometry.location || {};
             const response = getFormattedLocation(addrComponents, latLang, pincode);
+            const saveAddress = {
+              pincode: pincode,
+              id: '',
+              city: response?.city,
+              state: response?.state,
+            };
+            setAsyncPharmaLocation(saveAddress);
+            setAsyncPincode?.(saveAddress);
             setPharmacyLocation!(response);
             setDeliveryAddressId!('');
             updateServiceability(pincode, 'pincode');
@@ -936,13 +1005,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => {
-          props.navigation.dispatch(
-            StackActions.reset({
-              index: 0,
-              key: null,
-              actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-            })
-          );
+          navigateToHome(props.navigation);
         }}
       >
         <HomeIcon style={{ height: 33, width: 33 }} />
@@ -963,16 +1026,20 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     const renderDeliverToLocationCTA = () => {
       let deliveryAddress = addresses.find((item) => item.id == deliveryAddressId);
-      const location = !deliveryAddress
+      const location = asyncPincode?.pincode
+        ? `${formatText(asyncPincode?.city || asyncPincode?.state || '', 18)} ${
+            asyncPincode?.pincode
+          }`
+        : !deliveryAddress
         ? pharmacyLocation?.pincode
           ? `${formatText(
               g(pharmacyLocation, 'city') || g(pharmacyLocation, 'state') || '',
               18
             )} ${g(pharmacyLocation, 'pincode')}`
-          : `${formatText(
-              g(locationDetails, 'city') || g(pharmacyLocation, 'state') || '',
-              18
-            )} ${g(locationDetails, 'pincode')}`
+          : `${formatText(g(locationDetails, 'city') || g(locationDetails, 'state') || '', 18)} ${g(
+              locationDetails,
+              'pincode'
+            )}`
         : `${formatText(deliveryAddress?.city || deliveryAddress?.state || '', 18)} ${
             deliveryAddress?.zipcode
           }`;
@@ -1019,7 +1086,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           activeOpacity={1}
           onPress={() =>
             props.navigation.navigate(
-              diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.MedicineCart
+              diagnosticCartItems?.length ? AppRoutes.MedAndTestCart : AppRoutes.MedicineCart
             )
           }
         >
@@ -1045,7 +1112,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         navigation={props.navigation}
         onSubmit={(selectedEPres) => {
           setSelectPrescriptionVisible(false);
-          if (selectedEPres.length == 0) {
+          if (selectedEPres?.length == 0) {
             return;
           }
           setEPrescriptions && setEPrescriptions(selectedEPres);
@@ -1098,12 +1165,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderBanners = () => {
     if (loading || bannerLoading) {
-      return (
-        <View style={[styles.sliderPlaceHolderStyle, { height: imgHeight }]}>
-          <Spinner style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }} />
-        </View>
-      );
-    } else if (banners.length && !isSelectPrescriptionVisible) {
+      return renderMedicineBannerShimmer();
+    } else if (banners?.length && !isSelectPrescriptionVisible) {
       return (
         <View style={{ marginBottom: 10 }}>
           <Carousel
@@ -1177,7 +1240,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             marginTop: 10,
             marginBottom: 16,
           },
-          medicineList.length > 0 && searchText
+          medicineList?.length > 0 && searchText
             ? {
                 elevation: 0,
               }
@@ -1212,7 +1275,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       });
     };
     return (
-      !!buyAgainSkuList.length && (
+      !!buyAgainSkuList?.length && (
         <BuyAgainSection
           products={buyAgainProducts}
           onPress={onPress}
@@ -1323,8 +1386,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderCategories = (title: string, categories: MedicinePageSection[]) => {
-    if (categories.length == 0) return null;
-    return (
+    return !!categories.length ? (
       <View>
         <SectionHeader leftText={title} />
         <FlatList
@@ -1354,11 +1416,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           }}
         />
       </View>
-    );
+    ) : null;
   };
 
   const getUserSubscriptionsByStatus = async () => {
-    globalLoading!(true);
+    setPageLoading!(true);
     try {
       const query: GetSubscriptionsOfUserByStatusVariables = {
         mobile_number: g(currentPatient, 'mobileNumber'),
@@ -1370,7 +1432,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         variables: query,
       });
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
-      globalLoading!(false);
+      setPageLoading!(false);
       if (data) {
         if (data?.APOLLO?.[0]._id) {
           setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
@@ -1403,14 +1465,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         }
       }
     } catch (error) {
-      globalLoading!(false);
+      setPageLoading!(false);
       CommonBugFender('ConsultRoom_GetSubscriptionsOfUserByStatus', error);
     }
   };
 
   const renderDealsOfTheDay = (title: string, dealsOfTheDay: DealsOfTheDaySection[]) => {
-    if (dealsOfTheDay.length == 0) return null;
-    return (
+    return !!dealsOfTheDay?.length ? (
       <View>
         <View style={{ marginBottom: 10 }} />
         <SectionHeader leftText={title} />
@@ -1458,12 +1519,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           }}
         />
       </View>
-    );
+    ) : null;
   };
 
   const renderHotSellers = (title: string, products: MedicineProduct[], categoryId?: number) => {
-    if (products.length == 0) return null;
-    return (
+    return !!products?.length ? (
       <View>
         <SectionHeader
           leftText={title}
@@ -1505,12 +1565,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           productPageViewedEventProps={{ 'Section Name': title } as ProductPageViewedEventProps}
         />
       </View>
-    );
+    ) : null;
   };
 
   const renderShopByBrand = (title: string, shopByBrand: MedicinePageSection[]) => {
-    if (shopByBrand.length == 0) return null;
-    return (
+    return !!shopByBrand?.length ? (
       <View>
         <SectionHeader
           leftText={title}
@@ -1556,7 +1615,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           }}
         />
       </View>
-    );
+    ) : null;
   };
 
   const [searchText, setSearchText] = useState<string>('');
@@ -1616,7 +1675,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
 
     const itemsNotFound =
-      searchSate == 'success' && searchText.length > 2 && medicineList.length == 0;
+      searchSate == 'success' && searchText.length > 2 && medicineList?.length == 0;
 
     return (
       <>
@@ -1710,20 +1769,21 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         productType: type_id,
         circleCashbackAmt: 0,
       },
-      pharmacyPincode!,
+      asyncPincode?.pincode || pharmacyPincode!,
       addCartItem,
       null,
       props.navigation,
       currentPatient,
       !!isPharmacyLocationServiceable,
       { source: 'Pharmacy Partial Search', categoryId: category_id },
+      JSON.stringify(cartItems),
       () => setItemsLoading({ ...itemsLoading, [sku]: false }),
       pharmacyCircleAttributes!
     );
   };
 
   const getItemQuantity = (id: string) => {
-    const foundItem = cartItems.find((item) => item.id == id);
+    const foundItem = cartItems?.find((item) => item.id == id);
     return foundItem ? foundItem.quantity : 0;
   };
 
@@ -1771,10 +1831,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         quantity={getItemQuantity(item.sku)}
         data={item}
         loading={itemsLoading[item.sku]}
-        showSeparator={index !== medicineList.length - 1}
+        showSeparator={index !== medicineList?.length - 1}
         style={{
           marginHorizontal: 20,
-          paddingBottom: index == medicineList.length - 1 ? 20 : 0,
+          paddingBottom: index == medicineList?.length - 1 ? 20 : 0,
         }}
         maxOrderQty={getMaxQtyForMedicineItem(item.MaxOrderQty)}
         removeCartItem={() => onRemoveCartItem(item.sku)}
@@ -1783,7 +1843,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderSearchResults = () => {
-    const showResults = !!searchText && searchText.length > 2 && medicineList.length > 0;
+    const showResults = !!searchText && searchText.length > 2 && medicineList?.length > 0;
     const isLoading = searchSate == 'load';
     return (
       <>
@@ -1837,9 +1897,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderSections = () => {
-    if (loading) {
-      return renderSectionLoader(200);
-    }
     if (!data) {
       return null;
     }
@@ -1914,16 +1971,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderOverlay = () => {
     const isNoResultsFound =
-      searchSate != 'load' && searchText.length > 2 && medicineList.length == 0;
+      searchSate != 'load' && searchText.length > 2 && medicineList?.length == 0;
 
     return (
-      (!!medicineList.length || searchSate == 'load' || isNoResultsFound) && (
+      (!!medicineList?.length || searchSate == 'load' || isNoResultsFound) && (
         <View style={theme.viewStyles.overlayStyle}>
           <TouchableOpacity
             activeOpacity={1}
             style={theme.viewStyles.overlayStyle}
             onPress={() => {
-              if (medicineList.length == 0 && !searchText) return;
+              if (medicineList?.length == 0 && !searchText) return;
               setSearchText('');
               setMedicineList([]);
               setSearchFocused(false);
@@ -2012,7 +2069,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               {!!circleSubscriptionId || isCircleSubscription ? 'Items' : 'Total items'}
             </Text>
             <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0)}>
-              {cartItems.length}
+              {cartItems?.length}
             </Text>
           </View>
           {!!circleSubscriptionId || isCircleSubscription ? (
@@ -2126,7 +2183,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setCircleSubPlanId && setCircleSubPlanId(plan?.subPlanId);
           } else {
             // if plan is removed
-            // setShowCareSelectPlans(false);
             setCircleMembershipCharges && setCircleMembershipCharges(0);
           }
         }}
@@ -2176,12 +2232,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           {renderSearchInput()}
           {renderSearchResults()}
         </View>
-        <View style={{ flex: 1, paddingBottom: !!cartItems.length ? 80 : 0 }}>
-          {renderSections()}
-          {renderOverlay()}
-          {!!cartItems.length && renderCircleCartDetails()}
-          {renderCategoryTree()}
-        </View>
+        {pageLoading ? (
+          renderMedicinesShimmer()
+        ) : (
+          <View style={{ flex: 1, paddingBottom: !!cartItems?.length ? 80 : 0 }}>
+            {renderSections()}
+            {renderOverlay()}
+            {!!cartItems?.length && renderCircleCartDetails()}
+            {renderCategoryTree()}
+          </View>
+        )}
       </SafeAreaView>
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
       {showCirclePopup && renderCircleMembershipPopup()}

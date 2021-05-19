@@ -15,7 +15,6 @@
 #import <React/RCTLinkingManager.h>
 #import <WebEngage/WebEngage.h>
 @import AppsFlyerLib;
-#import <FBSDKCoreKit/FBSDKCoreKit.h>
 #import <CodePush/CodePush.h>
 
 #if __has_include(<AppsFlyerLib/AppsFlyerTracker.h>) // from Pod
@@ -46,12 +45,31 @@
   rootViewController.view = rootView;
   self.window.rootViewController = rootViewController;
   [self.window makeKeyAndVisible];
-  //  [RNSplashScreen show];  // here
+  // [RNSplashScreen show];  // here
   [RNSplashScreen showSplash:@"LaunchScreen" inRootView:rootView];
   
   if ([FIRApp defaultApp] == nil) {
     [FIRApp configure];
   }
+  
+  //NEWLY ADDED PERMISSIONS FOR iOS 14
+   if (@available(iOS 14, *)) {
+     [ATTrackingManager requestTrackingAuthorizationWithCompletionHandler:^(ATTrackingManagerAuthorizationStatus status) {
+       switch (status) {
+         case ATTrackingManagerAuthorizationStatusAuthorized:
+           NSLog(@"%lu Authorised",(unsigned long)status);
+           break;
+         case ATTrackingManagerAuthorizationStatusDenied:
+           NSLog(@"%lu Denied",(unsigned long)status);
+           break;
+         case ATTrackingManagerAuthorizationStatusRestricted:
+           NSLog(@"%lu Restricted",(unsigned long)status);
+           break;
+         default:
+           break;
+       }
+     }];
+   }
   
   //  [[UNUserNotificationCenter currentNotificationCenter] setDelegate:self];
   
@@ -72,8 +90,6 @@
   }];
   
   [[WebEngage sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
-  [[FBSDKApplicationDelegate sharedInstance] application:application
-                           didFinishLaunchingWithOptions:launchOptions];
   
   return YES;
 }
@@ -224,10 +240,6 @@ API_AVAILABLE(ios(10.0)){
                            openURL:url
                  sourceApplication:options[UIApplicationOpenURLOptionsSourceApplicationKey]
                         annotation:options[UIApplicationOpenURLOptionsAnnotationKey]];
-    
-    if ([[FBSDKApplicationDelegate sharedInstance] application:application openURL:url options:options]) {
-      return YES;
-    }
   } @catch (NSException *exception) {
     NSLog(@"%@",exception );
   }

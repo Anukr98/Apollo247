@@ -25,7 +25,6 @@ import { PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalT
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import AsyncStorage from '@react-native-community/async-storage';
 import React, { useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Button, ButtonProps, Divider } from 'react-native-elements';
@@ -33,23 +32,27 @@ import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
 
 export interface Props {
   selectedOption: PrescriptionType | null;
+  patientId: string | null;
   onSelectOption: (
     option: PrescriptionType,
     ePres?: EPrescription[],
     physPres?: PhysicalPrescription[]
   ) => void;
+  onSelectPatient: (patient: GetCurrentPatients_getCurrentPatients_patients | null) => void;
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
 }
 
 export const PrescriptionOptions: React.FC<Props> = ({
   selectedOption,
+  patientId,
   onSelectOption,
+  onSelectPatient,
   navigation,
 }) => {
   const [myPrescriptionsVisible, setMyPrescriptionsVisible] = useState<boolean>(false);
   const { ePrescriptions, physicalPrescriptions } = useShoppingCart();
   const prescriptionPopupRef = useRef<UploadPrescriprionPopupRefProps | null>(null);
-  const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const cartPrescriptionOptions = AppConfig.Configuration.CART_PRESCRIPTION_OPTIONS;
 
   const renderHavePrescription = (title: string) => {
@@ -57,9 +60,10 @@ export const PrescriptionOptions: React.FC<Props> = ({
       <PrescriptionOption
         title={title}
         subtitle={renderHavePrescriptionDetails()}
-        onPress={() =>
-          onSelectOption(PrescriptionType.UPLOADED, ePrescriptions, physicalPrescriptions)
-        }
+        onPress={() => {
+          onSelectPatient(null);
+          onSelectOption(PrescriptionType.UPLOADED, ePrescriptions, physicalPrescriptions);
+        }}
         checked={selectedOption === PrescriptionType.UPLOADED}
         leftIcon={<RxPrescriptionIc resizeMode={'contain'} />}
       />
@@ -90,7 +94,6 @@ export const PrescriptionOptions: React.FC<Props> = ({
     ];
     return (
       <>
-        <Text style={styles.lightWeightBlue}>{'What is a valid prescription?'}</Text>
         <Text style={styles.blueMediumText}>{'Add Photos / PDF using:'}</Text>
         <View style={styles.buttonWrapper}>
           {buttons.map(({ title, icon, onPress }) => (
@@ -121,7 +124,10 @@ export const PrescriptionOptions: React.FC<Props> = ({
             </Text>
           </View>
         }
-        onPress={() => onSelectOption(PrescriptionType.LATER)}
+        onPress={() => {
+          onSelectPatient(null);
+          onSelectOption(PrescriptionType.LATER);
+        }}
         checked={selectedOption === PrescriptionType.LATER}
         leftIcon={
           <RxPrescriptionLaterIc resizeMode={'contain'} style={styles.rxPrescriptionLaterIc} />
@@ -178,7 +184,7 @@ export const PrescriptionOptions: React.FC<Props> = ({
       (allCurrentPatients as GetCurrentPatients_getCurrentPatients_patients[]) || [];
     const profiles: ButtonProps[] = allPatients.map((patient) => {
       const isAddNewMember = patient?.firstName?.toLowerCase() === '+add member';
-      const isSelectedProfile = patient?.id === currentPatient?.id;
+      const isSelectedProfile = patient?.id === patientId;
       const onPress = () => {
         if (isAddNewMember) {
           navigation.navigate(AppRoutes.EditProfile, {
@@ -186,10 +192,7 @@ export const PrescriptionOptions: React.FC<Props> = ({
             mobileNumber: currentPatient?.mobileNumber,
           });
         } else {
-          setCurrentPatientId(patient?.id);
-          AsyncStorage.setItem('selectUserId', patient?.id);
-          AsyncStorage.setItem('selectUserUHId', patient?.uhid!);
-          AsyncStorage.setItem('isNewProfile', 'yes');
+          onSelectPatient(patient);
         }
       };
       return {
@@ -254,6 +257,7 @@ export const PrescriptionOptions: React.FC<Props> = ({
         onClickClose={() => {}}
         onResponse={(selectedType, response) => {
           if (selectedType == 'CAMERA_AND_GALLERY') {
+            onSelectPatient(null);
             onSelectOption(PrescriptionType.UPLOADED, ePrescriptions, [
               ...response,
               ...physicalPrescriptions,

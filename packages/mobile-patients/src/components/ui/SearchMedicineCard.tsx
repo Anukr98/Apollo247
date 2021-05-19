@@ -23,13 +23,13 @@ const styles = StyleSheet.create({
   containerStyle: {
     ...theme.viewStyles.cardViewStyle,
     backgroundColor: theme.colors.WHITE,
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 7,
   },
   rowSpaceBetweenView: {
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    // alignItems: 'center',
   },
   flexStyle: {
     flex: 1,
@@ -39,7 +39,6 @@ const styles = StyleSheet.create({
     marginRight: 0,
     color: theme.colors.SHERPA_BLUE,
     ...theme.fonts.IBMPlexSansMedium(12),
-    // lineHeight: 24,
   },
   offTextStyle: {
     ...theme.viewStyles.text('M', 11, '#00B38E', 1, 20, 0),
@@ -53,8 +52,14 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   priceTextCollapseStyle: {
-    ...theme.viewStyles.text('M', 12, '#02475b', 0.5, 20, 0.04),
+    ...theme.viewStyles.text('SB', 12, '#02475b', 1, 20, 0.04),
     marginTop: 4,
+  },
+  specialPriceTextCollapseStyle: {
+    ...theme.viewStyles.text('M', 12, '#02475b', 1, 20, 0.04),
+    marginTop: 4,
+    marginLeft: 4,
+    letterSpacing: 0,
   },
   expressContainer: {
     position: 'absolute',
@@ -78,6 +83,16 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     backgroundColor: '#fff',
     elevation: 5,
+  },
+  imageContainer: {
+    width: 60,
+    marginRight: 28,
+    alignItems: 'center',
+    alignSelf: 'center',
+  },
+  medicineImageSize: {
+    height: 80,
+    width: 80,
   },
 });
 
@@ -106,15 +121,12 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
     price,
     special_price,
     thumbnail,
-    is_in_stock,
     sell_online,
     is_prescription_required,
     MaxOrderQty,
     quantity,
     containerStyle,
     onPress,
-    maxOrderQty,
-    removeCartItem,
     type_id,
     is_express,
     onPressAddToCart,
@@ -123,6 +135,7 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
     onPressSubtractQty,
     dc_availability,
     is_in_contract,
+    image,
   } = props;
 
   const isOutOfStock =
@@ -191,13 +204,13 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
   const renderMedicineIcon = () => {
     const isPrescriptionRequired = is_prescription_required == 1;
     return (
-      <View style={{ width: 40, marginRight: 12, alignItems: 'center', alignSelf: 'center' }}>
-        {thumbnail ? (
+      <View style={styles.imageContainer}>
+        {thumbnail || image ? (
           <Image
             PlaceholderContent={isPrescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
             placeholderStyle={{ backgroundColor: 'transparent' }}
-            source={{ uri: productsThumbnailUrl(thumbnail) }}
-            style={{ height: 40, width: 40 }}
+            source={{ uri: productsThumbnailUrl(thumbnail || image) }}
+            style={styles.medicineImageSize}
             resizeMode="contain"
           />
         ) : isPrescriptionRequired ? (
@@ -223,7 +236,7 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
         </Text>
         {!!special_price && (
           <>
-            <Text style={[styles.priceTextCollapseStyle, { marginLeft: 4, letterSpacing: 0 }]}>
+            <Text style={styles.specialPriceTextCollapseStyle}>
               {'('}
               <Text style={{ textDecorationLine: 'line-through' }}>{`MRP ${
                 string.common.Rs
@@ -255,7 +268,7 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
       <View style={{ flexDirection: 'row' }}>
         {renderMedicineIcon()}
         <View style={styles.flexStyle}>{renderTitleAndIcon()}</View>
-        <View style={{ width: 20 }}></View>
+        <View style={{ width: 10 }}></View>
         {!sell_online
           ? renderNotForSaleTag()
           : !quantity

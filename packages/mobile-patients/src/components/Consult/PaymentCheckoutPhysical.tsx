@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   SafeAreaView,
@@ -9,21 +9,14 @@ import {
   Dimensions,
   Image,
   TouchableOpacity,
-  Modal,
   Platform,
 } from 'react-native';
-import { ProfileList } from '../ui/ProfileList';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { dateFormatter } from '@aph/mobile-patients/src/utils/dateUtil';
-import { ConsultPriceBreakup } from '@aph/mobile-patients/src/components/ui/ConsultPriceBreakup';
 import {
-  CircleLogo,
   DoctorPlaceholderImage,
-  DropdownGreen,
-  LinkedUhidIcon,
-  OnlineAppointmentMarkerIcon,
   AppointmentCalendarIcon,
   PhysicalAppointmentMarkerIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -37,6 +30,9 @@ import {
   postWEGWhatsAppEvent,
   dataSavedUserID,
   postAppsFlyerEvent,
+  apiCallEnums,
+  navigateToHome,
+  getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
@@ -61,7 +57,6 @@ import {
   setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 const { width } = Dimensions.get('window');
 import { useApolloClient } from 'react-apollo-hooks';
@@ -89,12 +84,13 @@ import {
   AppsFlyerEvents,
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import messaging from '@react-native-firebase/messaging';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
   getAppointmentData,
   getAppointmentDataVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { saveConsultationLocation } from '@aph/mobile-patients/src/helpers/clientCalls';
 
 interface PaymentCheckoutPhysicalProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
@@ -132,7 +128,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   const isPhysicalConsult = isPhysicalConsultation(selectedTab);
   const [doctorDiscountedFees, setDoctorDiscountedFees] = useState<number>(0);
   const [showList, setShowList] = useState<boolean>(false);
-  const [showErrorSelect, setShowErrorSelect] = useState<boolean>(false);
+  const [showErrorSelect, setShowErrorSelect] = useState<boolean>(true); // default needs to be true to show select patient from the list
   const [isSelectedOnce, setIsSelectedOnce] = useState<boolean>(false);
   const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
   const [showProfilePopUp, setShowProfilePopUp] = useState<boolean>(false);
@@ -142,6 +138,9 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   const scrollviewRef = useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [gender, setGender] = useState<string>(currentPatient?.gender);
+  const { apisToCall, homeScreenParamsOnPop, locationDetails } = useAppCommonData();
+  const [patientListYPos, setPatientListYPos] = useState<number>(0);
+  const [patientProfiles, setPatientProfiles] = useState<any>([]);
 
   const circleDoctorDetails = calculateCircleDoctorPricing(
     doctor,
@@ -171,8 +170,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           couponDiscountFees +
           Number(circlePlanSelected?.currentSellingPrice)
       : amount;
-  const notSubscriberUserForCareDoctor =
-    isCircleDoctorOnSelectedConsultMode && !circleSubscriptionId && !circlePlanSelected;
 
   let finalAppointmentInput = appointmentInput;
   finalAppointmentInput['couponCode'] = coupon ? coupon : null;
@@ -190,17 +187,14 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   finalAppointmentInput['planPurchaseDetails'] =
     circlePlanSelected && isCircleDoctorOnSelectedConsultMode ? planPurchaseDetails : null;
 
-  const totalSavings =
-    isCircleDoctorOnSelectedConsultMode && (circleSubscriptionId || circlePlanSelected)
-      ? isOnlineConsult
-        ? onlineConsultDiscountedPrice + couponDiscountFees
-        : physicalConsultDiscountedPrice + couponDiscountFees
-      : couponDiscountFees;
-
   const client = useApolloClient();
   const { getPatientApiCall } = useAuth();
   const circleDiscount =
     (circleSubscriptionId || circlePlanSelected) && discountedPrice ? discountedPrice : 0;
+
+  useEffect(() => {
+    setPatientProfiles(moveSelectedToTop());
+  }, []);
 
   const renderPrice = () => {
     return (
@@ -224,7 +218,13 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
 
   const renderPatient = () => {
     return (
-      <View style={styles.subViewPopup}>
+      <View
+        onLayout={(event) => {
+          const layout = event.nativeEvent.layout;
+          setPatientListYPos(layout?.y);
+        }}
+        style={styles.subViewPopup}
+      >
         <View style={{ paddingHorizontal: 16 }}>
           <Text style={styles.priceBreakupTitle}>PATIENT DETAILS</Text>
         </View>
@@ -279,7 +279,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
               <Text style={styles.appointmentTimeStyle}>Meet In Person</Text>
             </View>
             <View style={styles.doctorPointers}>
-              <AppointmentCalendarIcon style={styles.doctorPointersImage} />
+              <AppointmentCalendarIcon style={[styles.doctorPointersImage, { marginTop: -1 }]} />
               <Text style={styles.appointmentTimeStyle}>
                 {dateFormatter(appointmentInput?.appointmentDateTime)}
               </Text>
@@ -349,7 +349,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
 
   const renderCTAs = () => (
     <View style={styles.aphAlertCtaViewStyle}>
-      {moveSelectedToTop()?.map((item: any, index: any, array: any) =>
+      {patientProfiles?.map((item: any, index: any, array: any) =>
         item.firstName !== '+ADD MEMBER' ? (
           <TouchableOpacity
             onPress={() => {
@@ -380,7 +380,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
                   : styles.ctaOrangeText2Style
               }
             >
-              {Math.round(moment().diff(item.dateOfBirth || 0, 'years', true))} ,{item.gender}
+              {Math.round(moment().diff(item.dateOfBirth || 0, 'years', true))}, {item.gender}
             </Text>
           </TouchableOpacity>
         ) : null
@@ -414,6 +414,9 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     finalAppointmentInput['patientId'] = onAdd?.id;
     setIsSelectedOnce(onAdd?.added);
     setShowErrorSelect(!onAdd?.added);
+    let patientData = patientProfiles;
+    patientData?.unshift(onAdd?.profileData);
+    setPatientProfiles(patientData);
   };
   const onSelectedProfile = (item: any) => {
     setshowSpinner(true);
@@ -421,70 +424,10 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     setShowProfilePopUp(false);
     setLoading && setLoading(false);
   };
-  const onProfileChange = () => {
-    setShowList(false);
-
-    setTimeout(() => {
-      setShowProfilePopUp(false);
-    }, 1000);
-  };
-
-  const renderProfileDrop = () => {
-    return (
-      <ProfileList
-        showList={showList}
-        menuHidden={() => setShowList(false)}
-        onProfileChange={onProfileChange}
-        navigation={props.navigation}
-        saveUserChange={true}
-        listContainerStyle={{ marginTop: Platform.OS === 'ios' ? 10 : 60 }}
-        childView={
-          <View
-            style={{
-              flexDirection: 'row',
-              paddingRight: 8,
-              borderRightWidth: 0,
-              borderRightColor: 'rgba(2, 71, 91, 0.2)',
-              backgroundColor: theme.colors.CLEAR,
-            }}
-          >
-            <Text style={styles.hiTextStyle}>{'Hi'}</Text>
-            <View style={styles.nameTextContainerStyle}>
-              <View style={{ flexDirection: 'row' }}>
-                <Text style={styles.nameTextStyle} numberOfLines={1}>
-                  {(currentPatient && currentPatient!.firstName + ' ' + currentPatient!.lastName) ||
-                    ''}
-                </Text>
-                {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
-                  <LinkedUhidIcon
-                    style={{
-                      width: 22,
-                      height: 20,
-                      marginLeft: 5,
-                      marginTop: Platform.OS === 'ios' ? 26 : 30,
-                    }}
-                    resizeMode={'contain'}
-                  />
-                ) : null}
-                <View style={{ paddingTop: 28 }}>
-                  <DropdownGreen />
-                </View>
-              </View>
-              <View style={styles.seperatorStyle} />
-            </View>
-          </View>
-        }
-        // setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
-        unsetloaderDisplay={true}
-      />
-    );
-  };
 
   const renderProfileListView = () => {
     return (
       <View>
-        {/*renderProfileDrop()*/}
-
         {showSpinner && (
           <Spinner style={{ backgroundColor: 'transparent' }} spinnerProps={{ size: 'small' }} />
         )}
@@ -495,46 +438,11 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     );
   };
 
-  const renderPriceBreakup = () => {
-    return (
-      <View>
-        <Text style={styles.priceBreakupTitle}>{string.common.totalCharges}</Text>
-        <View style={styles.seperatorLine} />
-        <ConsultPriceBreakup
-          doctor={doctor}
-          doctorFees={price}
-          selectedTab={selectedTab}
-          coupon={coupon}
-          couponDiscountFees={couponDiscountFees}
-          circleSubscriptionId={circleSubscriptionId}
-          planSelected={circlePlanSelected}
-        />
-
-        <Text style={styles.priceBreakupTitle}>{string.common.oneTimePhysicalCharge}</Text>
-      </View>
-    );
-  };
-
   const renderErrorPopup = (desc: string) =>
     showAphAlert!({
       title: 'Uh oh.. :(',
       description: `${desc || ''}`.trim(),
     });
-
-  const fireBaseFCM = async () => {
-    try {
-      const authStatus = await messaging().hasPermission();
-      const enabled =
-        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-      if (!enabled) {
-        setNotificationAlert(true);
-        await messaging().requestPermission();
-      }
-    } catch (error) {
-      CommonBugFender('ConsultOverlay_FireBaseFCM_Error', error);
-    }
-  };
 
   const renderBottomButton = () => {
     return (
@@ -550,6 +458,11 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   };
 
   const onPressPay = () => {
+    scrollviewRef.current.scrollTo({
+      x: 0,
+      y: patientListYPos + 5,
+      animated: true,
+    });
     // Pay Button Clicked	event
     if (isSelectedOnce) {
       postWebEngagePayButtonClickedEvent();
@@ -588,8 +501,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       AppRoutes.PaymentCheckoutPhysical,
       'ConsultOverlay onSubmitBookAppointment clicked'
     );
-
-    console.log('finalAppointmentInput', finalAppointmentInput);
 
     setLoading!(true);
     client
@@ -677,12 +588,12 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
-        console.log('makeAppointmentPayment', '\n', JSON.stringify(data!.makeAppointmentPayment));
         let eventAttributes = getConsultationBookedEventAttributes(
           paymentDateTime,
           g(data, 'makeAppointmentPayment', 'appointment', 'id')!
         );
         eventAttributes['Display ID'] = displayID;
+        eventAttributes['User_Type'] = getUserType(allCurrentPatients);
         postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
         postAppsFlyerEvent(
           AppsFlyerEventName.CONSULTATION_BOOKED,
@@ -692,6 +603,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           )
         );
         setLoading!(false);
+        if (!currentPatient?.isConsulted) getPatientApiCall();
         handleOrderSuccess(
           `${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`,
           g(data, 'makeAppointmentPayment', 'appointment', 'appointment', 'id')!
@@ -720,37 +632,30 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           if (appointmentData) {
             try {
               if (appointmentData?.[0]?.doctorInfo !== null) {
-                props.navigation.dispatch(
-                  StackActions.reset({
-                    index: 0,
-                    key: null,
-                    actions: [
-                      NavigationActions.navigate({
-                        routeName: AppRoutes.ConsultRoom,
-                        params: {
-                          isFreeConsult: true,
-                          isPhysicalConsultBooked: true,
-                          doctorName: doctorName,
-                          appointmentData: appointmentData[0],
-                          skipAutoQuestions: doctor?.skipAutoQuestions,
-                        },
-                      }),
-                    ],
-                  })
-                );
+                // use apiCallsEnum values here in order to make that api call in home screen
+                apisToCall.current = [
+                  apiCallEnums.patientAppointments,
+                  apiCallEnums.patientAppointmentsCount,
+                ];
+                const params = {
+                  isFreeConsult: true,
+                  isPhysicalConsultBooked: true,
+                  doctorName: doctorName,
+                  appointmentData: appointmentData[0],
+                  skipAutoQuestions: doctor?.skipAutoQuestions,
+                };
+                homeScreenParamsOnPop.current = params;
+                locationDetails && saveConsultationLocation(client, appointmentId, locationDetails);
+                navigateToHome(props.navigation, params);
               }
-            } catch (error) {
-              console.log('csk', error);
-            }
+            } catch (error) {}
           }
         } catch (error) {
           setLoading && setLoading(false);
-          console.log('csk', error);
           props.navigation.navigate('APPOINTMENTS');
         }
       })
       .catch((e) => {
-        console.log('Error occured while GetDoctorNextAvailableSlot', { e });
         setLoading && setLoading(false);
         props.navigation.navigate('APPOINTMENTS');
       });
@@ -775,7 +680,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   const getConsultationBookedEventAttributes = (time: string, id: string) => {
     const localTimeSlot = moment(new Date(time));
     let date = new Date(time);
-    // date = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
     const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
         return item.facility.facilityType === 'HOSPITAL';
@@ -785,7 +689,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       name: g(doctor, 'fullName')!,
       specialisation: g(doctor, 'specialty', 'name')!,
       category: g(doctor, 'doctorType')!, // send doctorType
-      // time: localTimeSlot.format('DD-MM-YYY, hh:mm A'),
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
@@ -813,6 +716,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       af_currency: 'INR',
       'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
       'Circle discount': circleDiscount,
+      User_Type: getUserType(allCurrentPatients),
     };
     return eventAttributes;
   };
@@ -826,9 +730,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         'APPOINTMENTS_CONSULTED_WITH_DOCTOR_BEFORE',
         JSON.stringify([...appointmentIds, appointmentId])
       );
-    } catch (error) {
-      console.log({ error });
-    }
+    } catch (error) {}
   };
 
   const whatsappAPICalled = () => {
@@ -843,12 +745,10 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
 
     whatsAppUpdateAPICall(client, optedFor, optedFor, userId ? userId : g(currentPatient, 'id'))
       .then(({ data }: any) => {
-        console.log(data, 'whatsAppUpdateAPICall');
         getPatientApiCall();
       })
       .catch((e: any) => {
         CommonBugFender('ConsultOverlay_whatsAppUpdateAPICall_error', e);
-        console.log('error', e);
       });
   };
 
@@ -871,8 +771,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       'Doctor City': g(doctor, 'city')!,
       'Type of Doctor': g(doctor, 'doctorType')!,
       'Doctor Specialty': g(doctor, 'specialty', 'name')!,
-      // 'Appointment Date': localTimeSlot.format('DD-MM-YYYY'),
-      // 'Appointment Time': localTimeSlot.format('hh:mm A'),
       'Actual Price': finalAppointmentInput?.actualAmount,
       'Discount used ?': !!coupon,
       'Discount coupon': coupon,
@@ -896,6 +794,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         doctorClinics?.length > 0 && doctor?.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics?.[0].facility?.city}`
           : '',
+      User_Type: getUserType(allCurrentPatients),
     };
     postWebEngageEvent(WebEngageEventName.PAY_BUTTON_CLICKED, eventAttributes);
     postFirebaseEvent(FirebaseEventName.PAY_BUTTON_CLICKED, eventAttributes);
@@ -905,15 +804,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     <View style={theme.viewStyles.container}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-        {notificationAlert && (
-          <NotificationPermissionAlert
-            onPressOutside={() => setNotificationAlert(false)}
-            onButtonPress={() => {
-              setNotificationAlert(false);
-              Linking.openSettings();
-            }}
-          />
-        )}
         {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
         <ScrollView ref={scrollviewRef}>
           <View style={styles.doctorCard}>
@@ -1042,12 +932,12 @@ const styles = StyleSheet.create({
   doctorPointers: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 6,
+    marginTop: 7,
   },
   doctorPointersImage: {
     width: 14,
     height: '100%',
-    marginRight: 4,
+    marginRight: 8,
   },
   drImageBackground: {
     height: 95,
@@ -1176,9 +1066,9 @@ const styles = StyleSheet.create({
   },
   errorSelectMessage: {
     textAlign: 'center',
-    ...theme.viewStyles.text('B', 12, '#E31E24', 1, 20),
-    marginHorizontal: 5,
+    ...theme.viewStyles.text('B', 14, '#E31E24', 1, 20),
     marginBottom: 5,
+    width: '100%',
   },
   ctaOrangeText2Style: {
     ...theme.viewStyles.text('R', 10, '#fc9916', 1, 20),

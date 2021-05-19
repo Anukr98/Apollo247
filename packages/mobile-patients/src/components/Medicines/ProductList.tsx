@@ -15,7 +15,7 @@ import {
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   FlatList,
   FlatListProps,
@@ -62,6 +62,8 @@ export const ProductList: React.FC<Props> = ({
     updateCartItem,
     removeCartItem,
     pharmacyCircleAttributes,
+    cartItems,
+    asyncPincode,
   } = useShoppingCart();
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
 
@@ -94,7 +96,7 @@ export const ProductList: React.FC<Props> = ({
     const { onAddedSuccessfully } = restOfProps;
     addPharmaItemToCart(
       formatToCartItem(item),
-      pharmacyPincode!,
+      asyncPincode?.pincode || pharmacyPincode!,
       addCartItem,
       setGlobalLoading,
       navigation,
@@ -106,6 +108,7 @@ export const ProductList: React.FC<Props> = ({
         categoryName: productPageViewedEventProps?.CategoryName,
         section: productPageViewedEventProps?.SectionName,
       },
+      JSON.stringify(cartItems),
       () => {},
       pharmacyCircleAttributes!,
       onAddedSuccessfully ? onAddedSuccessfully : () => {}
@@ -119,56 +122,63 @@ export const ProductList: React.FC<Props> = ({
     });
   };
 
-  const renderItem = (info: ListRenderItemInfo<MedicineProduct>) => {
-    const { item, index } = info;
-    const id = item.sku;
-    const qty = getCartItemQty(id);
-    const onPressAddQty = () => {
-      if (qty < item.MaxOrderQty) {
-        updateCartItem!({ id, quantity: qty + 1 });
-      }
-    };
-    const onPressSubtractQty = () => {
-      qty == 1 ? removeCartItem!(id) : updateCartItem!({ id, quantity: qty - 1 });
-    };
+  const renderItem = useCallback(
+    (info: ListRenderItemInfo<MedicineProduct>) => {
+      const { item, index } = info;
+      const id = item.sku;
+      const qty = getCartItemQty(id);
+      const onPressAddQty = () => {
+        if (qty < item.MaxOrderQty) {
+          updateCartItem!({ id, quantity: qty + 1 });
+        }
+      };
+      const onPressSubtractQty = () => {
+        qty == 1 ? removeCartItem!(id) : updateCartItem!({ id, quantity: qty - 1 });
+      };
 
-    const props: ProductCardProps = {
-      ...item,
-      quantity: qty,
-      onPress: () => onPress(item.sku),
-      onPressAddToCart: () => onPressAddToCart(item),
-      onPressAddQty: onPressAddQty,
-      onPressSubtractQty: onPressSubtractQty,
-      onPressNotify: () => onPressNotify(item.name),
-      onPressCashback: () => onPressCareCashback(),
-      containerStyle:
-        index === 0
-          ? styles.itemStartContainer
-          : index + 1 === data?.length
-          ? styles.itemEndContainer
-          : styles.itemContainer,
-    };
+      const props: ProductCardProps = {
+        ...item,
+        quantity: qty,
+        onPress: () => onPress(item.sku),
+        onPressAddToCart: () => onPressAddToCart(item),
+        onPressAddQty: onPressAddQty,
+        onPressSubtractQty: onPressSubtractQty,
+        onPressNotify: () => onPressNotify(item.name),
+        onPressCashback: () => onPressCareCashback(),
+        containerStyle:
+          index === 0
+            ? styles.itemStartContainer
+            : index + 1 === data?.length
+            ? styles.itemEndContainer
+            : styles.itemContainer,
+      };
 
-    return renderComponent ? (
-      renderComponent({ ...info, item: props })
-    ) : Component ? (
-      <Component {...props} />
-    ) : null;
-  };
+      return renderComponent ? (
+        renderComponent({ ...info, item: props })
+      ) : Component ? (
+        <Component {...props} />
+      ) : null;
+    },
+    [cartItems]
+  );
 
-  const renderItemSeparator = () => <View style={styles.itemSeparator} />;
+  const keyExtractor = useCallback(({ sku }) => `${sku}`, []);
+
+  const renderItemSeparator = useCallback(() => <View style={styles.itemSeparator} />, []);
 
   return (
     <FlatList
       data={data}
       renderItem={renderItem}
-      keyExtractor={({ sku }) => `${sku}`}
+      keyExtractor={keyExtractor}
       bounces={false}
       horizontal
       showsHorizontalScrollIndicator={false}
       removeClippedSubviews={true}
       ItemSeparatorComponent={renderItemSeparator}
       contentContainerStyle={[styles.flatListContainer, contentContainerStyle]}
+      maxToRenderPerBatch={4}
+      updateCellsBatchingPeriod={800}
       {...restOfProps}
     />
   );

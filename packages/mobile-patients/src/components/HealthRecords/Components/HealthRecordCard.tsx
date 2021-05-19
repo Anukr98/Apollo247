@@ -81,7 +81,6 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
     dateText,
     selfUpload,
     sourceName,
-    index,
     onOrderTestAndMedicinePress,
     onFollowUpPress,
     showFollowUp,
@@ -176,9 +175,11 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
               <HospitalUploadPhrIcon style={{ height: 14, width: 14, marginRight: 8 }} />
             )}
             <Text numberOfLines={1} style={styles.sourceNameTextStyle}>
-              {sourceName === string.common.clicnical_document_text
-                ? sourceName
-                : item?.siteDisplayName || '-'}
+              {selfUpload
+                ? sourceName === string.common.clicnical_document_text
+                  ? sourceName
+                  : item?.siteDisplayName || '-'
+                : sourceName}
             </Text>
           </View>
         )}

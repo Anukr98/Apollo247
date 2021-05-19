@@ -22,6 +22,7 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { HealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/HealthRecordCard';
 import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
 import { ProfileImageComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/ProfileImageComponent';
+import ListEmptyComponent from '@aph/mobile-patients/src/components/HealthRecords/Components/ListEmptyComponent';
 import {
   g,
   getPrescriptionDate,
@@ -36,6 +37,7 @@ import {
   getPhrHighlightText,
   phrSearchWebEngageEvents,
   postWebEngageIfNewSession,
+  removeObjectProperty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -163,6 +165,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
   const [prismAuthToken, setPrismAuthToken] = useState<string>(
     props.navigation?.getParam('authToken') || ''
   );
+  const [searchQuery, setSearchQuery] = useState({});
   const { phrSession, setPhrSession } = useAppCommonData();
 
   useEffect(() => {
@@ -204,9 +207,8 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
         }
       })
       .catch((e) => {
-        CommonBugFender('HealthRecordsHome_GET_PRISM_AUTH_TOKEN', e);
+        CommonBugFender('BillScreen_GET_PRISM_AUTH_TOKEN', e);
         const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
       });
   };
 
@@ -240,7 +242,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
         }
       })
       .catch((error) => {
-        console.log('searchPHRApiWithAuthToken Error', error);
+        CommonBugFender('BillScreen_searchPHRApiWithAuthToken', error);
         getAuthToken();
         setSearchLoading(false);
       });
@@ -255,7 +257,13 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
         return;
       }
       setSearchLoading(true);
-      const search = _.debounce(onSearchHealthRecords, 300);
+      const search = _.debounce(onSearchHealthRecords, 500);
+      setSearchQuery((prevSearch: any) => {
+        if (prevSearch.cancel) {
+          prevSearch.cancel();
+        }
+        return search;
+      });
       search(value);
     }
   };
@@ -296,9 +304,9 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
         setShowSpinner(false);
       })
       .catch((error) => {
+        CommonBugFender('BillScreen_getPatientPrismMedicalRecordsApi', error);
         setShowSpinner(false);
         setApiError(true);
-        console.log('error getPatientPrismMedicalRecordsApi', error);
         currentPatient && handleGraphQlError(error);
       });
   };
@@ -345,7 +353,8 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
   };
 
   const onHealthCardItemPress = (selectedItem: MedicalBillsType) => {
-    postWebEngageIfNewSession('Bill', currentPatient, selectedItem, phrSession, setPhrSession);
+    const eventInputData = removeObjectProperty(selectedItem, 'billFiles');
+    postWebEngageIfNewSession('Bill', currentPatient, eventInputData, phrSession, setPhrSession);
     props.navigation.navigate(AppRoutes.HealthRecordDetails, {
       data: selectedItem,
       medicalBill: true,
@@ -363,17 +372,19 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
       .then((status) => {
         if (status) {
           getLatestMedicalBillRecords();
+          const eventInputData = removeObjectProperty(selectedItem, 'billFiles');
           postWebEngagePHR(
             currentPatient,
             WebEngageEventName.PHR_DELETE_BILLS,
             'Bill',
-            selectedItem
+            eventInputData
           );
         } else {
           setShowSpinner(false);
         }
       })
       .catch((error) => {
+        CommonBugFender('BillScreen_deletePatientPrismMedicalRecords', error);
         setShowSpinner(false);
         currentPatient && handleGraphQlError(error);
       });
@@ -420,14 +431,6 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
     return <Text style={styles.sectionHeaderTitleStyle}>{sectionTitle}</Text>;
   };
 
-  const emptyListView = () => {
-    return apiError ? (
-      <PhrNoDataComponent noDataText={string.common.phr_api_error_text} phrErrorIcon />
-    ) : (
-      <PhrNoDataComponent />
-    );
-  };
-
   const renderMedicalBillsData = () => {
     return (
       <SectionList
@@ -436,7 +439,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 12, paddingHorizontal: 20 }}
         sections={localMedicalBillsData || []}
         renderItem={({ item, index }) => renderMedicalBillItems(item, index)}
-        ListEmptyComponent={emptyListView}
+        ListEmptyComponent={ListEmptyComponent.getEmptyListComponent(showSpinner, apiError)}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
       />
     );

@@ -1,13 +1,12 @@
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { SafeAreaView, Keyboard, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Overlay } from 'react-native-elements';
 import moment from 'moment';
 import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
-import { CalenderBlueIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CalenderBlueIcon, TestInfoIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 const {
@@ -43,14 +42,24 @@ interface PatientDetailsOverlayProps {
 
 export const PatientDetailsOverlay: React.FC<PatientDetailsOverlayProps> = (props) => {
   const { onPressDone, onPressClose, selectedPatient } = props;
-  const [date, setDate] = useState<Date>(new Date(selectedPatient?.dateOfBirth) || undefined);
+  const [date, setDate] = useState<Date | undefined>(
+    selectedPatient?.dateOfBirth ? new Date(selectedPatient?.dateOfBirth) : undefined
+  );
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
   const [gender, setGender] = useState<Gender>(selectedPatient?.gender || undefined);
   const patientDetailsText = `Details for ${selectedPatient?.firstName ||
     selectedPatient?.lastName ||
     ''}`;
+  const patientMissingDetailsText =
+    !date && !gender
+      ? 'Date of Birth and Gender is Missing'
+      : !date
+      ? 'Date of Birth is Missing'
+      : !gender
+      ? 'Gender is Missing'
+      : '';
   const patientFullName = `${selectedPatient?.firstName || ''} ${selectedPatient?.lastName}`;
-  const dateOfBirth = moment(selectedPatient?.dateOfBirth).format('DD/MM/YYYY');
+  const dateOfBirth = moment(date).format('DD/MM/YYYY');
 
   const renderDatePicker = () => {
     const dateTextStyle = [
@@ -67,7 +76,7 @@ export const PatientDetailsOverlay: React.FC<PatientDetailsOverlayProps> = (prop
               style={styles.placeholderViewStyle}
               onPress={() => {
                 Keyboard.dismiss();
-                !date && setIsDateTimePickerVisible(true);
+                !selectedPatient?.dateOfBirth && setIsDateTimePickerVisible(true);
               }}
             >
               <Text style={dateTextStyle}>{date !== undefined ? dateOfBirth : 'dd/mm/yyyy'}</Text>
@@ -120,10 +129,14 @@ export const PatientDetailsOverlay: React.FC<PatientDetailsOverlayProps> = (prop
     );
   };
 
+  const _onPressClose = () => {
+    return !selectedPatient?.dateOfBirth || !selectedPatient?.gender ? {} : onPressClose();
+  };
+
   return (
     <Overlay
       isVisible
-      onBackdropPress={onPressClose}
+      onRequestClose={_onPressClose}
       windowBackgroundColor={'rgba(0, 0, 0, 0.6)'}
       containerStyle={{ marginBottom: 0 }}
       fullScreen
@@ -131,11 +144,17 @@ export const PatientDetailsOverlay: React.FC<PatientDetailsOverlayProps> = (prop
       overlayStyle={styles.phrOverlayStyle}
     >
       <View style={{ flex: 1 }}>
-        <TouchableOpacity style={{ flex: 1 }} onPress={onPressClose} />
+        <TouchableOpacity style={{ flex: 1 }} onPress={_onPressClose} />
         <View style={styles.overlayViewStyle}>
           <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
             <View style={styles.mainViewStyle}>
               <Text style={styles.selectPatientNameTextStyle}>{patientDetailsText}</Text>
+              {patientMissingDetailsText ? (
+                <View style={styles.missingTextViewStyle}>
+                  <TestInfoIcon style={styles.timeIconStyle} />
+                  <Text style={styles.missingTextStyle}>{patientMissingDetailsText}</Text>
+                </View>
+              ) : null}
               <TextInputComponent
                 editable={false}
                 value={patientFullName}
@@ -149,7 +168,7 @@ export const PatientDetailsOverlay: React.FC<PatientDetailsOverlayProps> = (prop
               {renderGender()}
               <Button
                 title={'DONE'}
-                disabled={!date && !gender}
+                disabled={!date || !gender}
                 onPress={() => onPressDone(date, gender, selectedPatient)}
                 style={styles.doneButtonViewStyle}
               />
@@ -251,5 +270,19 @@ const styles = StyleSheet.create({
   },
   selectedButtonTitleStyle: {
     color: WHITE,
+  },
+  timeIconStyle: {
+    width: 16,
+    height: 16,
+  },
+  missingTextStyle: {
+    ...text('M', 10, SHERPA_BLUE, 0.6, 16),
+    marginLeft: 8,
+  },
+  missingTextViewStyle: {
+    flexDirection: 'row',
+    marginBottom: 8,
+    alignItems: 'center',
+    marginTop: 8,
   },
 });

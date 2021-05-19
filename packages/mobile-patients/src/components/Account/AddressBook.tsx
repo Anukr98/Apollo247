@@ -19,15 +19,13 @@ import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobil
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { useQuery } from 'react-apollo-hooks';
-import { BackHandler, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   nameFormater,
   formatAddressBookAddress,
   handleGraphQlError,
-  g,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
@@ -99,8 +97,12 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
     getPatientAddressList_getPatientAddressList_addressList[] | null
   >([]);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
-  const { setAddresses, addresses } = useShoppingCart();
-  const { setAddresses: setAdd } = useDiagnosticsCart();
+  const { setAddresses, addresses, deliveryAddressId, setDeliveryAddressId } = useShoppingCart();
+  const {
+    setAddresses: setAdd,
+    deliveryAddressId: diagnosticDeliveryAddressId,
+    setDeliveryAddressId: setDiagnosticDeliveryAddressId,
+  } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
 
   useEffect(() => {
@@ -125,13 +127,12 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
             setshowSpinner(false);
             setAddresses && setAddresses(addressList);
             setAdd && setAdd(addressList);
-          } else {
-            console.log('no result');
           }
         }
       })
       .catch((error) => {
-        console.log('error', error);
+        CommonBugFender('AddressBook__getAddressList', error);
+        setshowSpinner(false);
       });
   };
 
@@ -173,13 +174,17 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
       })
       .then((_data: any) => {
         getAddressList();
+        if (deliveryAddressId === address?.id) {
+          setDeliveryAddressId?.('');
+        } else if (diagnosticDeliveryAddressId === address?.id) {
+          setDiagnosticDeliveryAddressId?.('');
+        }
       })
       .catch((e) => {
         CommonBugFender('AddressBook_DELETE_PATIENT_ADDRESS', e);
-        console.log('Error occured while render Delete address', { e });
+        setshowSpinner(false);
         handleGraphQlError(e);
-      })
-      .finally(() => setshowSpinner(false));
+      });
   };
 
   const renderAddress = (
@@ -198,13 +203,14 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
         <View style={[styles.cardStyle]} key={index}>
           <View style={styles.outerAddressView}>
             <View style={{ marginTop: '2%' }}>
-              {address.addressType === PATIENT_ADDRESS_TYPE.HOME && (
+              {address?.addressType === PATIENT_ADDRESS_TYPE.HOME && (
                 <HomeAddressIcon style={styles.addressTypeIcon} />
               )}
-              {address.addressType === PATIENT_ADDRESS_TYPE.OFFICE && (
+              {address?.addressType === PATIENT_ADDRESS_TYPE.OFFICE && (
                 <OfficeAddressIcon style={[styles.addressTypeIcon, { marginTop: 3 }]} />
               )}
-              {address.addressType === PATIENT_ADDRESS_TYPE.OTHER && (
+              {(address?.addressType === PATIENT_ADDRESS_TYPE.OTHER ||
+                address?.addressType === null) && (
                 <LocationIcon style={[styles.addressTypeIcon, { height: 27, width: 25 }]} />
               )}
             </View>

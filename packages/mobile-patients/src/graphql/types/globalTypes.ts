@@ -47,11 +47,14 @@ export enum AppointmentType {
 }
 
 export enum BOOKINGSOURCE {
+  BOOKING_TOOL = "BOOKING_TOOL",
   MOBILE = "MOBILE",
   WEB = "WEB",
 }
 
 export enum BOOKING_SOURCE {
+  AP_IN = "AP_IN",
+  BOOKING_TOOL = "BOOKING_TOOL",
   MFINE = "MFINE",
   MOBILE = "MOBILE",
   ORDER_PUNCHING_TOOL = "ORDER_PUNCHING_TOOL",
@@ -72,6 +75,18 @@ export enum BloodGroups {
   BPositive = "BPositive",
   ONegative = "ONegative",
   OPositive = "OPositive",
+}
+
+export enum BookingSource {
+  Apollo247_Android = "Apollo247_Android",
+  Apollo247_Ios = "Apollo247_Ios",
+  Apollo247_Web = "Apollo247_Web",
+}
+
+export enum BookingStatus {
+  COMPLETED = "COMPLETED",
+  FAILED = "FAILED",
+  INPROGRESS = "INPROGRESS",
 }
 
 export enum CODCity {
@@ -137,6 +152,7 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   ORDER_COMPLETED = "ORDER_COMPLETED",
   ORDER_FAILED = "ORDER_FAILED",
   ORDER_INITIATED = "ORDER_INITIATED",
+  ORDER_MODIFIED = "ORDER_MODIFIED",
   ORDER_PLACED = "ORDER_PLACED",
   ORDER_RESCHEDULED = "ORDER_RESCHEDULED",
   ORDER_RESCHEDULED_REQUEST = "ORDER_RESCHEDULED_REQUEST",
@@ -146,7 +162,6 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   PAYMENT_SUCCESSFUL = "PAYMENT_SUCCESSFUL",
   PHLEBO_CHECK_IN = "PHLEBO_CHECK_IN",
   PHLEBO_COMPLETED = "PHLEBO_COMPLETED",
-  PHLEBO_ON_THE_WAY = "PHLEBO_ON_THE_WAY",
   PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
   REPORT_GENERATED = "REPORT_GENERATED",
@@ -199,6 +214,13 @@ export enum FEEDBACKTYPE {
   PHARMACY = "PHARMACY",
 }
 
+export enum GENDER {
+  ALL = "ALL",
+  FEMALE = "FEMALE",
+  MALE = "MALE",
+  OTHER = "OTHER",
+}
+
 export enum Gender {
   FEMALE = "FEMALE",
   MALE = "MALE",
@@ -211,6 +233,10 @@ export enum HDFC_CUSTOMER {
   OTP_NOT_GENERATED = "OTP_NOT_GENERATED",
 }
 
+export enum HELP_DESK_TICKET_STATUS {
+  Open = "Open",
+}
+
 export enum HealthRestrictionNature {
   Dietary = "Dietary",
   OTHER = "OTHER",
@@ -219,6 +245,7 @@ export enum HealthRestrictionNature {
 
 export enum LOGIN_TYPE {
   DOCTOR = "DOCTOR",
+  EMAIL = "EMAIL",
   PATIENT = "PATIENT",
 }
 
@@ -267,6 +294,49 @@ export enum MEDICINE_ORDER_PAYMENT_TYPE {
 export enum MEDICINE_ORDER_STATUS {
   CANCELLED = "CANCELLED",
   CANCEL_REQUEST = "CANCEL_REQUEST",
+  CONSULT_CANCELLED = "CONSULT_CANCELLED",
+  CONSULT_COMPLETED = "CONSULT_COMPLETED",
+  CONSULT_PENDING = "CONSULT_PENDING",
+  DELIVERED = "DELIVERED",
+  DELIVERY_ATTEMPTED = "DELIVERY_ATTEMPTED",
+  ITEMS_RETURNED = "ITEMS_RETURNED",
+  ON_HOLD = "ON_HOLD",
+  ORDER_BILLED = "ORDER_BILLED",
+  ORDER_CONFIRMED = "ORDER_CONFIRMED",
+  ORDER_FAILED = "ORDER_FAILED",
+  ORDER_INITIATED = "ORDER_INITIATED",
+  ORDER_PLACED = "ORDER_PLACED",
+  ORDER_VERIFIED = "ORDER_VERIFIED",
+  OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY",
+  PAYMENT_ABORTED = "PAYMENT_ABORTED",
+  PAYMENT_FAILED = "PAYMENT_FAILED",
+  PAYMENT_PENDING = "PAYMENT_PENDING",
+  PAYMENT_SUCCESS = "PAYMENT_SUCCESS",
+  PICKEDUP = "PICKEDUP",
+  PRESCRIPTION_CART_READY = "PRESCRIPTION_CART_READY",
+  PRESCRIPTION_UPLOADED = "PRESCRIPTION_UPLOADED",
+  PURCHASED_IN_STORE = "PURCHASED_IN_STORE",
+  QUOTE = "QUOTE",
+  READY_AT_STORE = "READY_AT_STORE",
+  READY_FOR_VERIFICATION = "READY_FOR_VERIFICATION",
+  READY_TO_SHIP = "READY_TO_SHIP",
+  RETURN_ACCEPTED = "RETURN_ACCEPTED",
+  RETURN_INITIATED = "RETURN_INITIATED",
+  RETURN_PENDING = "RETURN_PENDING",
+  RETURN_PICKUP = "RETURN_PICKUP",
+  RETURN_REQUESTED = "RETURN_REQUESTED",
+  RETURN_REQUEST_CREATED = "RETURN_REQUEST_CREATED",
+  RETURN_RTO = "RETURN_RTO",
+  RETURN_TO_ORIGIN = "RETURN_TO_ORIGIN",
+  RVP_ASSIGNED = "RVP_ASSIGNED",
+  SHIPPED = "SHIPPED",
+  VERIFICATION_DONE = "VERIFICATION_DONE",
+}
+
+export enum MEDICINE_ORDER_STATUS_CONSULT {
+  CANCELLED = "CANCELLED",
+  CANCEL_REQUEST = "CANCEL_REQUEST",
+  CONSULT_CANCELLED = "CONSULT_CANCELLED",
   CONSULT_COMPLETED = "CONSULT_COMPLETED",
   CONSULT_PENDING = "CONSULT_PENDING",
   DELIVERED = "DELIVERED",
@@ -689,6 +759,12 @@ export interface AddAllergyRecordInput {
   attachmentList?: (AllergyFileProperties | null)[] | null;
 }
 
+export interface AddCommentHelpdeskTicketInput {
+  ticketId: string;
+  ticketNumber: string;
+  comment: string;
+}
+
 export interface AddDiabeticQuestionnaireInput {
   patientId: string;
   plan?: string | null;
@@ -961,28 +1037,6 @@ export interface DeletePatientPrismMedicalRecordInput {
   recordType: MedicalRecordType;
 }
 
-export interface DiagnosticBookHomeCollectionInput {
-  patientId: string;
-  patientAddressId: string;
-  slotTimings: string;
-  totalPrice: number;
-  prescriptionUrl: string;
-  diagnosticDate: any;
-  bookingSource?: BOOKINGSOURCE | null;
-  deviceType?: DEVICETYPE | null;
-  paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
-  items?: (DiagnosticLineItem | null)[] | null;
-  slotId: string;
-  areaId: number;
-  homeCollectionCharges: number;
-  uniqueID?: string | null;
-  slotDateTimeInUTC?: any | null;
-  totalPriceExcludingDiscounts?: number | null;
-  userSubscriptionId?: string | null;
-  subscriptionInclusionId?: string | null;
-  attachmentData?: (Attachments | null)[] | null;
-}
-
 export interface DiagnosticInitiateOrderPayment {
   orderId?: string | null;
 }
@@ -992,6 +1046,9 @@ export interface DiagnosticLineItem {
   price?: number | null;
   quantity?: number | null;
   groupPlan?: string | null;
+  discAmount?: number | null;
+  preTestingRequirement?: string | null;
+  reportGenerationTime?: string | null;
 }
 
 export interface DiagnosticOrderInput {
@@ -1193,7 +1250,7 @@ export interface MedicineCartOMSInput {
   estimatedAmount?: number | null;
   patientId: string;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
-  bookingSource?: BOOKINGSOURCE | null;
+  bookingSource?: BOOKING_SOURCE | null;
   deviceType?: DEVICE_TYPE | null;
   appVersion?: string | null;
   patientAddressId?: string | null;
@@ -1218,6 +1275,7 @@ export interface MedicineCartOMSInput {
   prescriptionType?: PrescriptionType | null;
   tatCity?: string | null;
   tatHours?: string | null;
+  appointmentId?: string | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -1233,6 +1291,7 @@ export interface MedicineCartOMSItem {
   mou?: number | null;
   isMedicine: string;
   specialPrice: number;
+  subCategory?: string | null;
 }
 
 export interface MedicineOrderCancelOMSInput {
@@ -1576,6 +1635,7 @@ export interface SaveBookHomeCollectionOrderInput {
   areaId: number;
   collectionCharges: number;
   uniqueID?: string | null;
+  couponCode?: string | null;
   slotDateTimeInUTC: any;
   totalPriceExcludingDiscounts?: number | null;
   userSubscriptionId?: string | null;
@@ -1595,7 +1655,7 @@ export interface SaveMedicineOrderV2Input {
   patientId: string;
   estimatedAmount?: number | null;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
-  bookingSource?: BOOKINGSOURCE | null;
+  bookingSource?: BOOKING_SOURCE | null;
   deviceType?: DEVICE_TYPE | null;
   appVersion?: string | null;
   coupon?: string | null;
@@ -1608,6 +1668,7 @@ export interface SaveMedicineOrderV2Input {
   healthCreditUsed?: number | null;
   shipments?: (MedicineOrderShipmentInput | null)[] | null;
   prescriptionType?: PrescriptionType | null;
+  appointmentId?: string | null;
 }
 
 export interface SavePatientNotificationSettingsInput {
@@ -1682,6 +1743,11 @@ export interface UpdateAppointmentSessionInput {
   isUserJoining?: boolean | null;
 }
 
+export interface UpdateHelpdeskTicketInput {
+  ticketId: string;
+  status: HELP_DESK_TICKET_STATUS;
+}
+
 export interface UpdatePatientAddressInput {
   id: string;
   name?: string | null;
@@ -1713,6 +1779,7 @@ export interface UpdatePatientInput {
   relation?: Relation | null;
   photoUrl?: string | null;
   deviceCode?: string | null;
+  externalAuthId?: string | null;
   employeeId?: string | null;
   partnerId?: string | null;
   appsflyerId?: string | null;

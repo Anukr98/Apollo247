@@ -499,14 +499,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
         onBackdropPress={() => setShowPreview(false)}
       >
         {isPdfPrescription ? (
-          <Pdf
-            key={imageUrl}
-            onError={(error) => {
-              console.log(error);
-            }}
-            source={{ uri: imageUrl }}
-            style={styles.pdfPreview}
-          />
+          <Pdf key={imageUrl} source={{ uri: imageUrl }} style={styles.pdfPreview} />
         ) : (
           <ImageBackground
             source={{ uri: imageUrl }}
@@ -599,6 +592,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
           let urls = '';
           let prismImages = '';
           let fileName = '';
+          let urlsArray = [];
           if (type === 'lab') {
             date = data?.date;
             name = data?.labTestName || '-';
@@ -628,7 +622,11 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
             });
             message = message.slice(0, -1);
             prismImages = data?.id;
-            urls = data?.fileUrl ? data?.fileUrl : ''; //prismImages;
+            urls =
+              data?.testResultFiles?.length > 0
+                ? data?.testResultFiles?.map((item) => item?.file_Url)?.join(',')
+                : ''; //prismImages;
+            urlsArray = data?.testResultFiles || [];
           } else if (type === 'prescription') {
             date = data?.date;
             name = data?.prescriptionName || '-';
@@ -641,7 +639,11 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
             message += `---------------\n`;
             message = message.slice(0, -1);
             prismImages = data?.id;
-            urls = data?.fileUrl ? data?.fileUrl : ''; //prismImages;
+            urls =
+              data?.prescriptionFiles?.length > 0
+                ? data?.prescriptionFiles?.map((item) => item?.file_Url)?.join(',')
+                : ''; //prismImages;
+            urlsArray = data?.prescriptionFiles || [];
           } else if (type === 'medical') {
             date = data?.testDate;
             name = data?.testName;
@@ -696,6 +698,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
             prismPrescriptionFileId: prismImages,
             message: message,
             healthRecord: true,
+            uploadedUrlArray: urlsArray,
           } as EPrescription);
         }
       });

@@ -152,6 +152,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
     if (NextAvailableSlot && timeArray) {
       for (const i in timeArray) {
         if (timeArray[i].time.length > 0) {
+          props.setshowSpinner?.(false);
           if (timeArray[i].time.includes(NextAvailableSlot)) {
             setselectedtiming(timeArray[i].label);
             props.setselectedTimeSlot(NextAvailableSlot);
@@ -169,7 +170,6 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
     getNextAvailableSlots(client, props.doctor ? [props.doctor.id] : [], todayDate)
       .then(({ data }: any) => {
         try {
-          props.setshowSpinner && props.setshowSpinner(false);
           if (data[0] && data[0]!.physicalAvailableSlot) {
             const nextSlot = data[0]!.physicalAvailableSlot;
             const date2: Date = new Date(nextSlot);
@@ -180,12 +180,12 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
           }
         } catch (e) {
           CommonBugFender('ConsultPhysical_checkAvailabilitySlot_try', e);
+          props.setshowSpinner?.(false);
         }
       })
       .catch((e: any) => {
         CommonBugFender('ConsultPhysical_checkAvailabilitySlot', e);
         props.setshowSpinner && props.setshowSpinner(false);
-        console.log('error', e);
       });
   };
 
@@ -195,6 +195,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   }, []);
 
   const setTimeArrayData = async (availableSlots: string[], selectedDate: Date = date) => {
+    if (availableSlots?.length === 0) props.setshowSpinner?.(false);
     setselectedtiming(timeArray[0].label);
     const array = await divideSlots(availableSlots, selectedDate);
     settimeArray(array);
@@ -222,18 +223,17 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
             data.getDoctorPhysicalAvailableSlots &&
             data.getDoctorPhysicalAvailableSlots.availableSlots
           ) {
-            props.setshowSpinner(false);
             setTimeArrayData(data.getDoctorPhysicalAvailableSlots.availableSlots, selectedDate);
             setavailableSlots(data.getDoctorPhysicalAvailableSlots.availableSlots);
           }
         } catch (e) {
           CommonBugFender('ConsultPhysical_fetchPhysicalSlots_try', e);
+          props.setshowSpinner?.(false);
         }
       })
       .catch((e: any) => {
         CommonBugFender('ConsultPhysical_fetchPhysicalSlots', e);
         props.setshowSpinner(false);
-        console.log('error', e);
       });
   };
 
@@ -243,7 +243,6 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
     }
     const selectedTabSlots = (timeArray || []).find((item) => item.label == selectedtiming);
     if (selectedTabSlots && selectedTabSlots.time.length == 0) {
-      console.log('NO_SLOTS_FOUND - ConsultPhysical', selectedtiming);
       const data: getDoctorDetailsById_getDoctorDetailsById = props.doctor!;
       const eventAttributes: WebEngageEvents[WebEngageEventName.NO_SLOTS_FOUND] = {
         'Doctor Name': g(data, 'fullName')!,
@@ -254,7 +253,6 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
         'Consult Mode': 'Physical',
         'Hospital Name': g(data, 'doctorHospital', '0' as any, 'facility', 'name')!,
         'Hospital City': g(data, 'doctorHospital', '0' as any, 'facility', 'city')!,
-        // 'Consult ID': g(data, 'id')!,
         'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
         'Patient UHID': g(currentPatient, 'uhid'),
         Relation: g(currentPatient, 'relation'),

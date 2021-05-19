@@ -177,6 +177,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     cartItems,
     pinCode,
     pharmacyCircleAttributes,
+    asyncPincode,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
@@ -383,13 +384,14 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         maxOrderQty: MaxOrderQty,
         productType: type_id,
       },
-      pharmacyPincode!,
+      asyncPincode?.pincode || pharmacyPincode!,
       addCartItem,
       suggestionItem ? null : globalLoading,
       props.navigation,
       currentPatient,
       !!isPharmacyLocationServiceable,
       { source: 'Pharmacy Full Search', categoryId: category_id },
+      JSON.stringify(cartItems),
       suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined,
       pharmacyCircleAttributes!
     );
@@ -839,7 +841,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
                       })
                       .catch((err) => {
                         CommonBugFender('SearchByBrand_getProductsByCategoryApi', err);
-                        console.log(err, 'errr');
                       })
                       .finally(() => {
                         setIsLoading(false);

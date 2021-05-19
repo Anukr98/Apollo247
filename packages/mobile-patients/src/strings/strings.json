@@ -41,7 +41,7 @@
     "error_enter_number_text": "Please enter numeric values (eg. 0,1...)",
     "addPrescriptionText": "ADD PRESCRIPTION",
     "addTestReportText": "ADD TEST REPORT",
-    "doctorConsultPHRText": "Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room",
+    "doctorConsultPHRText": "For privacy reasons, reports uploaded here are for your view only. To share with doctors, please upload selected reports in your chat with the doctor.",
     "addDischargeSummaryText": "ADD DISCHARGE SUMMARY",
     "addHealthConditionText": "ADD HEALTH CONDITIONS",
     "addBillText": "ADD BILL",
@@ -122,8 +122,10 @@
     "contactCustomerCare1": "We are unable to confirm your order, since dob is missing against this profile. Please contact customer care to get it updated",
     "contactCustomerCare2": "We are unable to confirm your order, since gender is missing against this profile. Please contact customer care to get it updated",
     "somethingWentWrong": "Something went wrong.",
+    "settingProfileTxt": "We’re setting up your profile. Please check back soon!",
     "couldNotLoadText": "Uh oh.. could't load!",
-    "lowNetworkText": "We were unable to load the page properly because of low network. Please try again"
+    "lowNetworkText": "We were unable to load the page properly because of low network. Please try again",
+    "noDiagnosticsAvailable": "Unfortunately, we do not have any diagnostic(s) available right now."
   },
   "components": {
     "medicineDetails": {
@@ -362,6 +364,13 @@
       ]
     }
   },
+  "needHelpScreen": {
+    "view_previous_tickets": "To view previous tickets ",
+    "click_here": "CLICK HERE",
+    "reopen_ticket": "REOPEN TICKET",
+    "whatsapp_with_us": "WHATSAPP WITH US",
+    "no_conversation_till_now": "No conversation till now !"
+  },
   "doctor_search_listing": {
     "pleaseWait": "Please Wait!",
     "lookingForBestDoctors": "We are looking for the\nbest doctors for you :)",
@@ -463,12 +472,12 @@
       "latePhelbo": "Phlebo did not arrive on time",
       "editOrder": "Need to Modify Order Details",
       "userUnavailable": "I am not available right now",
-      "bookedByMistake":"Booked by Mistake",
-      "urgentReport" : "Need Report Urgently",
+      "bookedByMistake": "Booked by Mistake",
+      "urgentReport": "Need Report Urgently",
       "otherReasons": "Others (Please specify)"
     },
     "reasonForReschedule_TestOrder": {
-      "latePhelbo" : "Phlebo did not arrive on time",
+      "latePhelbo": "Phlebo did not arrive on time",
       "unavailable": "I am not available right now",
       "guidelinesNotFollowed": "I did not follow fasting requirement",
       "unableToProvideSample": "Not feeling well to provide sample",
@@ -488,7 +497,7 @@
     "areaText": "AREA",
     "addAddressText": "ADD ADDRESS",
     "totalAmountText": "Total Amount",
-    "timeSlotText": "TIME SLOT",
+    "timeSlotText": "APPOINTMENT TIME",
     "noSlotSelectedText": "No slot selected",
     "selectSlotText": "SELECT SLOT",
     "minorAgeText": "Lab tests cannot be booked for below 10 years",
@@ -512,30 +521,59 @@
     "noSlotAvailable": "Sorry! There are no slots available on {{date}}. Please choose another date.",
     "updateAddressLatLngMessage": "Unable to locate address. Please update.",
     "processingOrder": "We are taking longer than usual to confirm your order. Please check your order status after few minutes",
+    "cartPhelboTxt": "Sample collection executive to reach your home within 45 mins of your appointment time",
     "incorrectUserReport": "This report does not belongs to this user.",
     "unableToFetchReport": "We could not fetch your report. Please view report in my order section",
-    "cartPhelboTxt": "Sample collection executive to reach your home within 30 mins of your appointment time",
-    "reasonForReschedulingText" : "Reason for Rescheduling",
+    "reasonForReschedulingText": "Reason for Rescheduling",
     "reasonForCancellationText": "Reason for Cancellation",
-    "whatWudLikeText":"What would you like to do?",
-    "rescheduleBookingText":"Reschedule Booking",
+    "whatWudLikeText": "What would you like to do?",
+    "rescheduleBookingText": "Reschedule Booking",
     "cancelBookingText": "Cancel Booking",
-    "sureCancelText":"Are you sure you want to Cancel the booking?",
-    "rateYourExperience":"RATE YOUR DELIVERY EXPERIENCE",
-    "valueFeedbackTxt":"We value your feedback! :)",
-    "howWasExpTxt":"How was your overall experience -",
-    "feedbackSubTxt":"Your feedback has been submitted. Thanks for your time.",
-    "homeHomeCollectionDisclaimerTxt":"Home collection charges of upto ₹100 would be levied in case of order value less than ₹500"
+    "sureCancelText": "Are you sure you want to Cancel the booking?",
+    "rateYourExperience": "RATE YOUR DELIVERY EXPERIENCE",
+    "valueFeedbackTxt": "We value your feedback! :)",
+    "howWasExpTxt": "How was your overall experience -",
+    "feedbackSubTxt": "Your feedback has been submitted. Thanks for your time.",
+    "homeHomeCollectionDisclaimerTxt": "Home collection charges of upto ₹100 would be levied in case of order value less than ₹500",
+    "itDoseCancelledText": "Canceled by phlebotomist as per the request",
+    "orderCancelledReasonText": "Order was cancelled : ",
+    "wantToReschedule": "• Do you want to Reschedule Appointment ?",
+    "sampleSubmitted": "Sample Submitted",
+    "reportGenrated": "Reports are ready",
+    "bookingFor": "Booking",
+    "sampleSubmittedContent": "Sample has been submitted to the lab.\nYou will be notified once your reports are ready.",
+    "viewReportContent": "Your reports have been generated.",
+    "collectionAppointmentContent": "Sample Collection appointment on",
+    "viewReportText": "View Report",
+    "sampleCollectedText": "Check Status",
+    "collectionText": "Track Order",
+    "trackPhleboText": "Track Phlebo",
+    "codDisableText" :"We are currently not allowing Cash On Delivery for home sample collections."
+  },
+  "diagnosticCategoryTitle": {
+    "category" : "Category",
+    "categoryGrid": "Category_Scroll"
   },
   "orders": {
     "urOrders": "MY ORDERS",
+    "ratingHeader": "FEEDBACK",
+    "ratingDetailHeader": "Rate your Experience with our Phlebotomist",
     "trackOrder": "Track Order",
     "viewBill": "Order Summary",
     "call_us": "CALL US",
     "add_to_cart": "ADD TO CART",
     "test_prec_req": "This test requires doctor’s prescription",
-    "test_prec_not_req": "This test doesn't requires doctor’s prescription"
+    "test_prec_not_req": "This test doesn't requires doctor’s prescription",
+    "go_to_help": "GO TO HELP"
   },
+  "defaultReasonList": [
+    { "title": "Arrived very Late" },
+    { "title": "Did not seem Well-Trained" },
+    { "title": "Phlebo was not Polite" },
+    { "title": "Didn’t Wear the PPE Kit or Gloves" },
+    { "title": "I have other Feedback" }
+  ],
+  "positiveReasonList": [{ "title": "I have Positive Feedback" }],
   "OrderSummery": {
     "total": "Total",
     "order": "ORDER",
@@ -565,6 +603,12 @@
     "refund_amount": "Refund amount",
     "discount_total": "Discount Total",
     "amount_to_be_paid_on_delivery": "Amount to be paid on delivery"
+  },
+  "Report": {
+    "view": "View Report",
+    "download": "Download Report PDF",
+    "share": "Share on Whatsapp",
+    "copy": "Copy Link to PDF"
   },
   "health_records_home": {
     "description": "Find all your health record(s) & prescription(s) in one place.",
@@ -806,7 +850,8 @@
     "restartSymptomTrackerDiscription": "This will end your symptom tracking and you’ll have to start it again. Do you want to continue tracking your symptoms or go back?",
     "symptomTracker": "Symptom Tracker",
     "addAnotherSymptom": "Would you like to report another symptom?",
-    "removeSelectionPlaceholder": "Remove selection to type your own symptom"
+    "removeSelectionPlaceholder": "Remove selection to type your own symptom",
+    "topSpecialities": "Top Specialities"
   },
   "callRelatedPermissions": {
     "allPermissions": "For a smooth consultation experience with {0} and to ensure that you do not miss out your doctor's call, Apollo 247 needs your camera, microphone and call display permissions.",
@@ -991,12 +1036,30 @@
     "addNewAddressText": "Add New Address"
   },
   "aboutApolloList": [
-    { "title": "About Us", "url": "https://www.apollo247.com/aboutUs?isMobile=true" },
-    { "title": "Contact Us", "url": "https://www.apollo247.com/contact?isMobile=true" },
-    { "title": "FAQs", "url": "https://www.apollo247.com/faq?isMobile=true" },
-    { "title": "Terms and Conditions", "url": "https://www.apollo247.com/terms?isMobile=true" },
-    { "title": "Returns Policy", "url": "https://www.apollo247.com/returns?isMobile=true" },
-    { "title": "Privacy Policy", "url": "https://www.apollo247.com/privacy?isMobile=true" }
+    {
+      "title": "About Us",
+      "url": "https://www.apollo247.com/aboutUs?isMobile=true"
+    },
+    {
+      "title": "Contact Us",
+      "url": "https://www.apollo247.com/contact?isMobile=true"
+    },
+    {
+      "title": "FAQs",
+      "url": "https://www.apollo247.com/faq?isMobile=true"
+    },
+    {
+      "title": "Terms and Conditions",
+      "url": "https://www.apollo247.com/terms?isMobile=true"
+    },
+    {
+      "title": "Returns Policy",
+      "url": "https://www.apollo247.com/returns?isMobile=true"
+    },
+    {
+      "title": "Privacy Policy",
+      "url": "https://www.apollo247.com/privacy?isMobile=true"
+    }
   ],
   "truecaller": {
     "networkProblem": "There is a problem with network connection.",
@@ -1005,9 +1068,19 @@
     "tryAgainLater": "Something went wrong, please try again after sometime",
     "errorTitle": "Uh oh.. :("
   },
-  "externalMeetingLink":{
-    "click_to_open":"Dr. XYZ is inviting you to join a Zoom meeting. Please click here to join your consultation on the Zoom App or your browser.",
-    "tnc":"By Clicking on this link, you will provide a confirmation to join a recorded Audio/Video meeting on the external platform.",
-    "copied_to_clipboard":"Copied "
+  "externalMeetingLink": {
+    "click_to_open": "Dr. XYZ is inviting you to join a Zoom meeting. Please click here to join your consultation on the Zoom App or your browser.",
+    "tnc": "By Clicking on this link, you will provide a confirmation to join a recorded Audio/Video meeting on the external platform.",
+    "copied_to_clipboard": "Copied ",
+    "tryAgainLater": "Something went wrong, please try again after sometime"
+  },
+  "splash": {
+    "CAPSULE": "CAPSULE",
+    "SYRINGE": "SYRINGE",
+    "STETHO": "STETHO"
+  },
+  "consultModeTab": {
+    "CONSULT_ONLINE": "Consult Online",
+    "MEET_IN_PERSON": "Meet In Person"
   }
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, View, ActivityIndicator, NavState, BackHandler } from 'react-native';
+import { SafeAreaView, View, NavState, BackHandler } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { WebView } from 'react-native-webview';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -14,7 +14,6 @@ import {
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import string from '@aph/mobile-patients/src/strings/strings.json';
 
 export interface CommonWebViewProps extends NavigationScreenProps {}
 
@@ -94,7 +93,6 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
                 () =>
                   props.navigation.navigate(AppRoutes.CircleSubscription, {
                     from: 'Diagnostics',
-                    // source: string.banner_context.DIAGNOSTIC_HOME,
                     selectedPlan: selectedPlan,
                     action: 'PAY',
                   }),

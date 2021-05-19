@@ -10,7 +10,6 @@ import {
   ScrollView,
   TextStyle,
 } from 'react-native';
-// import { isIphone5s } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
@@ -21,13 +20,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     overflow: 'hidden',
     alignItems: 'center',
-    // marginTop: -5,
   },
   tabView: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    // marginTop: -5,
     height: 54,
     borderBottomWidth: 4,
     borderBottomColor: theme.colors.CLEAR,
@@ -65,7 +62,6 @@ export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
   const renderTabs = () => {
     return props.data.map((item, index) => {
       const isSelected = selected == item.title;
-      // const title = props.showIcons ? item.title : item;
       return (
         <TouchableOpacity
           activeOpacity={1}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CollapseView } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CollapseView';
@@ -6,10 +6,11 @@ import { Cash } from '@aph/mobile-patients/src/components/ui/Icons';
 
 export interface PayByCashProps {
   onPressPlaceOrder: () => void;
+  disableCOD?: boolean;
 }
 
 export const PayByCash: React.FC<PayByCashProps> = (props) => {
-  const { onPressPlaceOrder } = props;
+  const { onPressPlaceOrder, disableCOD } = props;
 
   const renderPaybyCash = () => {
     return (
@@ -30,7 +31,10 @@ export const PayByCash: React.FC<PayByCashProps> = (props) => {
 
   const renderChildComponent = () => {
     return (
-      <View style={styles.ChildComponent}>
+      <View
+        style={[styles.ChildComponent, { opacity: disableCOD ? 0.4 : 1 }]}
+        pointerEvents={disableCOD ? 'none' : 'auto'}
+      >
         {renderPaybyCash()}
         {renderPlaceOrder()}
       </View>

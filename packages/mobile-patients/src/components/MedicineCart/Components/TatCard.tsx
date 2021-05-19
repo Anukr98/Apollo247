@@ -6,6 +6,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import moment from 'moment';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { format } from 'date-fns';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export interface TatCardProps {
   deliveryTime: string;
@@ -24,6 +25,7 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
     isNonCartOrder,
   } = props;
   const { cartItems, orders } = useShoppingCart();
+  const { nonCartTatText } = useAppCommonData();
   const unServiceable = isNonCartOrder ? false : cartItems?.find((item) => item?.unserviceable);
   const isSplitCart: boolean = orders?.length > 1 ? true : false;
 
@@ -64,6 +66,20 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
       </View>
     );
   };
+
+  const getNonCartDeliveryTatText = () => {
+    if (nonCartTatText) {
+      return <Text style={styles.deliveryText}>{nonCartTatText}</Text>;
+    } else {
+      return (
+        <Text style={styles.deliveryText}>
+          {`Expected Delivery by `}
+          {deliveryTime ? getDeliveryDate() : getGenericDate()}
+        </Text>
+      );
+    }
+  };
+
   return (
     <TouchableOpacity
       activeOpacity={1}
@@ -78,10 +94,7 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
       >
         {!unServiceable &&
           (!!isNonCartOrder ? (
-            <Text style={styles.delivery}>
-              {`Expected Delivery by `}
-              {deliveryTime ? getDeliveryDate() : getGenericDate()}
-            </Text>
+            getNonCartDeliveryTatText()
           ) : !isSplitCart ? (
             <Text style={styles.delivery}>
               {`Deliver by :`}
@@ -141,5 +154,11 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: '#D4D4D4',
     borderRadius: 5,
+  },
+  deliveryText: {
+    width: '79%',
+    color: '#F7F8F5',
+    ...theme.fonts.IBMPlexSansRegular(14),
+    lineHeight: 18,
   },
 });

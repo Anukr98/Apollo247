@@ -70,7 +70,7 @@ export const StorePickup: React.FC<StorePickupProps> = (props) => {
           }
         })
         .catch((e) => {
-          CommonBugFender('YourCart_getPlaceInfoByLatLng', e);
+          CommonBugFender('StorePickup_getPlaceInfoByLatLng', e);
         });
     }
   }, []);
@@ -92,7 +92,6 @@ export const StorePickup: React.FC<StorePickupProps> = (props) => {
     );
 
   async function fetchPickupStores(pincode: string) {
-    console.log('fetching store pick up >>', pincode);
     if (isValidPinCode(pincode)) {
       setPinCode!(pincode);
       setzipcode(pincode);
@@ -104,7 +103,6 @@ export const StorePickup: React.FC<StorePickupProps> = (props) => {
           const { Stores } = data;
           fetchStoresInventory(Stores);
         } catch (error) {
-          console.log(error);
           setloading(false);
         }
       } else {
@@ -121,7 +119,6 @@ export const StorePickup: React.FC<StorePickupProps> = (props) => {
       cartItems
     );
     const storesInventory = response.map((item) => item.data);
-    console.log(storesInventory);
     const storesWithInventory = storesInventory.filter((item) => {
       const storeItems = g(item, 'itemDetails');
       return storeItems && areItemsAvailableInStore(storeItems);

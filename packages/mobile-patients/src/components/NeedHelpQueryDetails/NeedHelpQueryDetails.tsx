@@ -3,7 +3,7 @@ import { Breadcrumb } from '@aph/mobile-patients/src/components/MedicineListing/
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Helpers as NeedHelpHelpers } from '@aph/mobile-patients/src/components/NeedHelp';
 import { NeedHelpEmailPopup } from '@aph/mobile-patients/src/components/NeedHelpPharmacyOrder/NeedHelpEmailPopup';
-import { Helpers } from '@aph/mobile-patients/src/components/NeedHelpQueryDetails';
+import { Events, Helpers } from '@aph/mobile-patients/src/components/NeedHelpQueryDetails';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -24,6 +24,11 @@ import {
   SendHelpEmail,
   SendHelpEmailVariables,
 } from '@aph/mobile-patients/src/graphql/types/SendHelpEmail';
+import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -33,7 +38,7 @@ import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { FlatList, ListRenderItemInfo, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { Divider } from 'react-native-elements';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 
 export interface Props
   extends NavigationScreenProps<{
@@ -46,9 +51,11 @@ export interface Props
     medicineOrderStatus?: MEDICINE_ORDER_STATUS;
     isConsult?: boolean;
     medicineOrderStatusDate?: any;
+    sourcePage: WebEngageEvents[WebEngageEventName.HELP_TICKET_SUBMITTED]['Source_Page'];
   }> {}
 
 export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
+  const sourcePage = navigation.getParam('sourcePage') || 'My Account';
   const _queries = navigation.getParam('queries');
   const queryIdLevel1 = navigation.getParam('queryIdLevel1') || '';
   const queryIdLevel2 = navigation.getParam('queryIdLevel2') || '';
@@ -56,7 +63,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState(navigation.getParam('email') || '');
   const orderId = navigation.getParam('orderId') || '';
   const isOrderRelatedIssue = navigation.getParam('isOrderRelatedIssue') || false;
-  const [showEmailPopup, setShowEmailPopup] = useState<boolean>(false);
+  const [showEmailPopup, setShowEmailPopup] = useState<boolean>(email ? false : true);
+  const [requestEmailWithoutAction, setRequestEmailWithoutAction] = useState<boolean>(true);
   const medicineOrderStatus = navigation.getParam('medicineOrderStatus');
   const { saveNeedHelpQuery, getQueryData, getQueryDataByOrderStatus } = Helpers;
   const [queries, setQueries] = useState<NeedHelpHelpers.HelpSectionQuery[]>(_queries || []);
@@ -133,13 +141,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       unDismissable: true,
       onPressOk: () => {
         hideAphAlert!();
-        navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-          })
-        );
+        navigateToHome(navigation);
       },
     });
   };
@@ -162,10 +164,11 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           : parentQuery?.id == helpSectionQueryId.consult
           ? ORDER_TYPE.CONSULT
           : null;
+      const reason = subQueries?.find(({ id }) => id === selectedQueryId)?.title;
       const variables: SendHelpEmailVariables = {
         helpEmailInput: {
           category: parentQuery?.title,
-          reason: subQueries?.find(({ id }) => id === selectedQueryId)?.title,
+          reason,
           comments: comments,
           patientId: currentPatient?.id,
           email: email,
@@ -183,6 +186,12 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       if (orderType && queryOrderId) {
         saveNeedHelpQuery({ orderId: `${queryOrderId}`, orderType, createdDate: new Date() });
       }
+      Events.helpTicketSubmitted({
+        BU: parentQuery?.title!,
+        Order_Status: medicineOrderStatus,
+        Reason: reason!,
+        Source_Page: sourcePage,
+      });
     } catch (error) {
       setLoading!(false);
       onError();
@@ -286,6 +295,14 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
         });
         setSelectedQueryId('');
         setComments('');
+      } else if (item?.content?.text) {
+        navigation.navigate(AppRoutes.NeedHelpContentView, {
+          queryIdLevel1,
+          queryIdLevel2: item?.id,
+          queries,
+          email,
+          orderId,
+        });
       } else if (isReturnQuery) {
         navigation.navigate(AppRoutes.ReturnMedicineOrder, {
           orderId: orderId,
@@ -315,21 +332,24 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     }
     let data = getQueryDataByOrderStatus(subQueriesData, isOrderRelatedIssue, medicineOrderStatus);
     const showReturnOrder =
+      MEDICINE_ORDER_STATUS.DELIVERED &&
       !!medicineOrderStatusDate &&
       moment(new Date()).diff(moment(medicineOrderStatusDate), 'hours') <= 48;
-    if (showReturnOrder && medicineOrderStatus === MEDICINE_ORDER_STATUS.DELIVERED) {
+
+    if (!showReturnOrder) {
       data = data.filter((item) => item.id !== helpSectionQueryId.returnOrder);
     }
 
     return (
-      <FlatList
-        data={data}
-        renderItem={renderItem}
-        keyExtractor={(_, i) => `${i}`}
-        bounces={false}
-        ItemSeparatorComponent={renderDivider}
-        contentContainerStyle={styles.flatListContainer}
-      />
+      <View style={styles.flatListContainer}>
+        <FlatList
+          data={data}
+          renderItem={renderItem}
+          keyExtractor={(_, i) => `${i}`}
+          bounces={false}
+          ItemSeparatorComponent={renderDivider}
+        />
+      </View>
     );
   };
 
@@ -354,10 +374,16 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
     return showEmailPopup ? (
       <NeedHelpEmailPopup
         onRequestClose={() => setShowEmailPopup(false)}
+        onBackdropPress={() => setShowEmailPopup(false)}
         onPressSendORConfirm={(textEmail) => {
           setEmail(textEmail);
           setShowEmailPopup(false);
-          onSubmit(textEmail);
+
+          if (!requestEmailWithoutAction) {
+            onSubmitShowEmailPopup();
+          }
+
+          setRequestEmailWithoutAction(false);
         }}
       />
     ) : null;
@@ -381,6 +407,7 @@ const styles = StyleSheet.create({
   flatListContainer: {
     ...card(),
     marginTop: 10,
+    marginBottom: 150,
   },
   flatListItem: {
     ...text('M', 14, LIGHT_BLUE),
@@ -392,7 +419,6 @@ const styles = StyleSheet.create({
   heading: {
     ...text('M', 12, LIGHT_BLUE),
     marginHorizontal: 20,
-    marginTop: 5,
   },
   subHeading: {
     ...text('R', 11, LIGHT_BLUE, 1),
@@ -407,7 +433,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   submit: {
-    ...text('B', 13, APP_YELLOW),
+    ...text('B', 14, APP_YELLOW),
     textAlign: 'right',
     marginTop: 5,
     marginBottom: 12,

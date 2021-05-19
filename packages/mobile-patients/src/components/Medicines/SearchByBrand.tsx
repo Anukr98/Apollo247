@@ -7,7 +7,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CartIcon, Filter, SearchSendIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CartIcon, SearchSendIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { SearchMedicineCard } from '@aph/mobile-patients/src/components/ui/SearchMedicineCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
@@ -42,15 +42,12 @@ import {
   ViewStyle,
   ActivityIndicator,
 } from 'react-native';
-import { Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps, NavigationActions, StackActions } from 'react-navigation';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { ProductPageViewedEventProps } from '@aph/mobile-patients/src/components/Medicines/MedicineDetailsScene';
 import {
   isValidSearch,
   postWebEngageEvent,
-  postwebEngageAddToCartEvent,
-  postAppsFlyerAddToCartEvent,
   addPharmaItemToCart,
   g,
   getMaxQtyForMedicineItem,
@@ -151,6 +148,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     cartItems,
     pinCode,
     pharmacyCircleAttributes,
+    asyncPincode,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { getPatientApiCall } = useAuth();
@@ -196,7 +194,6 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       })
       .catch((err) => {
         CommonBugFender('SearchByBrand_getProductsByCategoryApi', err);
-        console.log(err, 'errr');
       })
       .finally(() => {
         setIsLoading(false);
@@ -259,13 +256,14 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         maxOrderQty: MaxOrderQty,
         productType: type_id,
       },
-      pharmacyPincode!,
+      asyncPincode?.pincode || pharmacyPincode!,
       addCartItem,
       suggestionItem ? null : globalLoading,
       props.navigation,
       currentPatient,
       !!isPharmacyLocationServiceable,
       { source: 'Pharmacy List', categoryId: category_id },
+      JSON.stringify(cartItems),
       suggestionItem ? () => setItemsLoading({ ...itemsLoading, [sku]: false }) : undefined,
       pharmacyCircleAttributes!
     );
@@ -326,7 +324,6 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           try {
             const MoveDoctor = props.navigation.getParam('movedFrom') || '';
 
-            console.log('MoveDoctor', MoveDoctor);
             if (MoveDoctor === 'registration') {
               props.navigation.dispatch(
                 StackActions.reset({
