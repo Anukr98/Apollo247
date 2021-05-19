@@ -21,6 +21,7 @@
 #import "RNCallKeep.h"
 #import "RNVoipPushNotificationManager.h"
 @import GoogleMaps;
+#import <AppTrackingTransparency/AppTrackingTransparency.h>
 
 @implementation AppDelegate
 
