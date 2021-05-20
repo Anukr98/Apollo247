@@ -537,13 +537,16 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderPayByCash = () => {
-    const showCOD =
-      businessLine === 'diagnostics' && AppConfig.Configuration.Enable_Diagnostics_COD;
+    const showDiagnosticsCOD = AppConfig.Configuration.Enable_Diagnostics_COD;
     return (
-      <View>
-        {!showCOD && renderInfoMessage()}
-        <PayByCash onPressPlaceOrder={onPressPayByCash} disableCOD={!showCOD} />
-      </View>
+      <>
+        {businessLine === 'diagnostics' ? (
+          <View>
+            {!showDiagnosticsCOD && renderInfoMessage()}
+            <PayByCash onPressPlaceOrder={onPressPayByCash} disableCOD={!showDiagnosticsCOD} />
+          </View>
+        ) : null}
+      </>
     );
   };
 
