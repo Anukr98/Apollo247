@@ -64,6 +64,7 @@ import {
   handleGraphQlError,
   TestSlot,
   nameFormater,
+  navigateToScreenWithEmptyStack,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DisabledTickIcon, TickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
@@ -216,7 +217,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       return true;
     } else {
       if (fromOrderSummary) {
-        props.navigation.popToTop();
+        navigateToScreenWithEmptyStack(props.navigation, 'TESTS');
       }
     }
     return false;
