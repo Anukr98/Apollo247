@@ -229,7 +229,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   useEffect(() => {
     const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      refetchOrders()
       BackHandler.addEventListener('hardwareBackPress', handleBack);
     });
     const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
