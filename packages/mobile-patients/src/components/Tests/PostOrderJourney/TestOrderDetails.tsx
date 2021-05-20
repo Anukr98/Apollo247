@@ -287,17 +287,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   );
 
   const handleBack = () => {
-    if (!goToHomeOnBack) {
-      fetchOrderDetails()
-        .then((data: any) => {
-          const _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
-          setOrders(_orders);
-        })
-        .catch((e: Error) => {
-          CommonBugFender('TestOrderDetails_fetchOrders', e);
-          setLoading?.(false);
-        });
-    }
     props.navigation.setParams({ fromOrderSummary: fromOrderSummary });
     props.navigation.goBack();
     return false;
