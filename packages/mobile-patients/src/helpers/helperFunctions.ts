@@ -325,7 +325,7 @@ export const isPastAppointment = (
   const followUpAfterInDays =
     caseSheetChatDays || caseSheetChatDays === '0'
       ? caseSheetChatDays === '0'
-        ? 0
+        ? -1
         : Number(caseSheetChatDays) - 1
       : 6;
   return (
@@ -1041,7 +1041,7 @@ const getlocationData = (
     (error) => {
       reject('Unable to get location.');
     },
-    { accuracy: { android : 'balanced', ios:'best'} , enableHighAccuracy: true, timeout: 10000 }
+    { accuracy: { android: 'balanced', ios: 'best' }, enableHighAccuracy: true, timeout: 10000 }
   );
 };
 
@@ -2773,7 +2773,7 @@ export async function downloadDiagnosticReport(
 
       let msg = 'File is downloading..';
       if (showToast && Platform.OS === 'android') {
-          ToastAndroid.show(msg, ToastAndroid.SHORT);
+        ToastAndroid.show(msg, ToastAndroid.SHORT);
       }
       RNFetchBlob.config({
         fileCache: true,

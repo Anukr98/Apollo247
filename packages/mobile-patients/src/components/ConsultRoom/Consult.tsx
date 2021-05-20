@@ -884,7 +884,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     const followUpAfterInDays =
       caseSheetChatDays || caseSheetChatDays === '0'
         ? caseSheetChatDays === '0'
-          ? 2
+          ? 1
           : Number(caseSheetChatDays) + 1
         : 8;
     const appointmentDateTime = moment

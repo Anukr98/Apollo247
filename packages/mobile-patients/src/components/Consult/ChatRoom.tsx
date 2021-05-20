@@ -2664,15 +2664,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   const sendFollowUpChatGuideLines = () => {
-    if (guidelinesAdded || !followupDays) {
+    if (guidelinesAdded || !followupDays || (followupDays && Number(followupDays) === 0)) {
       return;
     }
     setguidelinesAdded(true);
     const headerText = `If you have further queries related to your consultation, you may reach out to ${
       appointmentData?.doctorInfo?.displayName
-    } via texts for the next ${Number(followupDays) === 0 ? '1' : Number(followupDays)} day${
-      Number(followupDays) > 1 ? 's' : ''
-    }.`;
+    } via texts for the next ${Number(followupDays)} day${Number(followupDays) > 1 ? 's' : ''}.`;
     sendMessage(sectionHeader, doctorId, headerText);
     setTimeout(() => {
       sendMessage(followUpChatGuideLines, doctorId);
