@@ -29,7 +29,6 @@ import { ActivityIndicator, SafeAreaView, StyleSheet, Text, BackHandler } from '
 import { NavigationScreenProps } from 'react-navigation';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { isProductInStock } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AddedToCartToast } from '@aph/mobile-patients/src/components/ui/AddedToCartToast';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
@@ -81,7 +80,6 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const [filterOptions, setFilterOptions] = useState<Filter[]>([]);
   const [filterVisible, setFilterVisible] = useState<boolean>(false);
   const [showAddedToCart, setShowAddedToCart] = useState<boolean>(false);
-  const [isFocused, setIsFocused] = useState<boolean>(false);
 
   // global contexts
   const { currentPatient } = useAllCurrentPatients();
@@ -89,20 +87,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const { axdcCode } = useAppCommonData();
 
   useEffect(() => {
-    const didFocus = navigation.addListener('didFocus', (payload) => {
-      setIsFocused(true);
-    });
-    const didBlur = navigation.addListener('didBlur', (payload) => {
-      setIsFocused(false);
-    });
-    return () => {
-      didFocus && didFocus.remove();
-      didBlur && didBlur.remove();
-    };
-  }, [navigation]);
-
-  useEffect(() => {
-    if (categoryId && !searchText && isFocused) {
+    if (categoryId && !searchText) {
       searchProductsByCategory(
         categoryId,
         1,
@@ -114,7 +99,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     } else if (searchText.length >= 3) {
       searchProducts(searchText, 1, sortBy?.id || null, filterBy, filterOptions);
     }
-  }, [sortBy, filterBy, isFocused]);
+  }, [sortBy, filterBy]);
 
   useEffect(() => {
     if (categoryId && !searchText && movedFrom) {
