@@ -274,10 +274,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           },
           variables: {
             mobileNumber: currentPatient && currentPatient.mobileNumber,
-            // reverting for the time being
-            // paginated: true,
-            // limit: 10, 
-            // offset: currentOffset,
+            paginated: true,
+            limit: 10, 
+            offset: currentOffset,
           },
           fetchPolicy: 'no-cache',
         })
@@ -1267,16 +1266,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         extraData={orderListData}
         renderItem={({ item, index }) => renderOrder(item, index)}
         ListEmptyComponent={renderNoOrders()}
-        // Reverting for the time being
-
-        // ListFooterComponent={
-        //   (orderListData?.length && orderListData?.length < 10) ||
-        //   loading ||
-        //   error ||
-        //   !orderListData?.length
-        //     ? null
-        //     : renderLoadMore()
-        // }
+        ListFooterComponent={
+          (orderListData?.length && orderListData?.length < 10) ||
+          loading ||
+          error ||
+          !orderListData?.length
+            ? null
+            : renderLoadMore()
+        }
       />
     );
   };
@@ -1385,7 +1382,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             leftIcon="backArrow"
             title={string.orders.urOrders}
             container={{ borderBottomWidth: 0 }}
-            onPressLeftIcon={() => handleBack()}
+            onPressLeftIcon={() => {
+              if (fromOrderSummary) {
+                handleBack();
+              } else {
+                props.navigation.goBack();
+              }
+            }}
           />
         )}
         {renderFilterArea()}

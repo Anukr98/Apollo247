@@ -165,10 +165,16 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
         )}
 
         <ScrollView bounces={false} scrollEventThrottle={1}>
-          {phlObj?.diagnosticPhlebotomists?.name ? <View style={styles.phleboDetails}>
-            <UserOutline style={styles.icon} />
-            <Text style={styles.textStylePhlebo}>Phlebotomist • {`${phlObj?.diagnosticPhlebotomists?.name}`}</Text>
-          </View> : <View style={styles.phleboDetails}></View>}
+          {phlObj?.diagnosticPhlebotomists?.name ? (
+            <View style={styles.phleboDetails}>
+              <UserOutline style={styles.icon} />
+              <Text style={styles.textStylePhlebo}>
+                Phlebotomist • {`${phlObj?.diagnosticPhlebotomists?.name}`}
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.phleboDetails}></View>
+          )}
           <Text style={styles.textStyleHeading}>{string.orders.ratingDetailHeader}</Text>
           <View style={styles.startContainer}>
             {ratedStarsArray.map((item, index) => (
@@ -213,10 +219,10 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
           </View>
         </ScrollView>
         <View style={styles.submitCtaContainer}>
-          <Button 
+          <Button
             title={'SUBMIT FEEDBACK'}
-            onPress={()=>{
-              onSubmitFeedback(ratingStar,activeReason,orderDetail?.id)
+            onPress={() => {
+              onSubmitFeedback(ratingStar, activeReason, orderDetail?.id);
             }}
             disabled={checkDisability()}
           />
@@ -287,6 +293,7 @@ const styles = StyleSheet.create({
   },
   reasonTitle: {
     ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18),
+    textAlign: 'center'
   },
   inputContainer: {
     width: '70%',
