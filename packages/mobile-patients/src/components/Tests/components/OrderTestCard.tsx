@@ -587,7 +587,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: 20,
     marginBottom: '2%',
-    minHeight: 30,
+    minHeight: 40,
   },
   testForText: {
     ...theme.viewStyles.text('SB', 13, colors.SHERPA_BLUE, 1, 18),
@@ -731,7 +731,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  patientNameView: { width: '67%', justifyContent: 'center' },
+  patientNameView: { width: '65%', justifyContent: 'center' },
   newItemView: {
     backgroundColor: '#4CAF50',
     height: 20,

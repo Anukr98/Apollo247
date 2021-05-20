@@ -34,8 +34,6 @@ import {
   getDiagnosticOrderDetailsVariables,
   getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
-import { getDiagnosticOrdersListVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
-import { getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 import {
   downloadDiagnosticReport,
   g,
@@ -43,6 +41,7 @@ import {
   getTestOrderStatusText,
   handleGraphQlError,
   nameFormater,
+  navigateToScreenWithEmptyStack,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -109,7 +108,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
   const disableTrackOrderTab = props.navigation.getParam('disableTrackOrder');
-  const setOrders = props.navigation.getParam('setOrders');
   const selectedTest = props.navigation.getParam('selectedTest');
   const selectedOrder = props.navigation.getParam('selectedOrder');
   const refundStatusArr = props.navigation.getParam('refundStatusArr');
@@ -129,7 +127,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [orderLevelStatus, setOrderLevelStatus] = useState([] as any);
   const [showInclusionStatus, setShowInclusionStatus] = useState<boolean>(false);
   const [showError, setError] = useState<boolean>(false);
-  const [isViewReport, setIsViewReport] = useState<boolean>(false);
   const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
   const scrollToSlots = () => {
@@ -142,13 +139,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     client.query<getHCOrderFormattedTrackingHistory, getHCOrderFormattedTrackingHistoryVariables>({
       query: GET_ORDER_LEVEL_DIAGNOSTIC_STATUS,
       variables: { diagnosticOrderID: orderId },
-      fetchPolicy: 'no-cache',
-    });
-
-  const fetchOrderDetails = () =>
-    client.query<getDiagnosticOrderDetails, getDiagnosticOrdersListVariables>({
-      query: GET_DIAGNOSTIC_ORDER_LIST,
-      variables: { patientId: currentPatient && currentPatient.id },
       fetchPolicy: 'no-cache',
     });
 
@@ -285,35 +275,12 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   const handleBack = () => {
     if (!goToHomeOnBack) {
-      fetchOrderDetails()
-        .then((data: any) => {
-          const _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
-          setOrders(_orders);
-        })
-        .catch((e: Error) => {
-          CommonBugFender('TestOrderDetails_fetchOrders', e);
-          setLoading?.(false);
-        });
+      props.navigation.state.params?.onPressBack();
     }
     if (goToHomeOnBack && source === AppRoutes.TestsCart) {
-      props.navigation.dispatch(
-        StackActions.reset({
-          index: 2,
-          key: null,
-          actions: [
-            NavigationActions.navigate({
-              routeName: AppRoutes.ConsultRoom,
-            }),
-            NavigationActions.navigate({
-              routeName: AppRoutes.Tests,
-            }),
-            NavigationActions.navigate({
-              routeName: AppRoutes.YourOrdersTest,
-              params: { source: AppRoutes.TestsCart },
-            }),
-          ],
-        })
-      );
+      navigateToScreenWithEmptyStack(props.navigation, AppRoutes.YourOrdersTest, {
+        source: AppRoutes.OrderStatus,
+      });
       return true;
     } else {
       props.navigation.goBack();
@@ -629,8 +596,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const onPressButton = (buttonTitle?: string) => {
-    // onPressViewReport();
-    setIsViewReport(true);
     setDisplayViewReport(true);
   };
 

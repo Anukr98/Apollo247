@@ -36,16 +36,7 @@ import {
   Text,
   Modal,
 } from 'react-native';
-import {
-  Down,
-  Up,
-  DownO,
-  CopyBlue,
-  DownloadNew,
-  ShareBlue,
-  ViewIcon,
-  Cross,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { Down, DownO } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import {
   CancellationDiagnosticsInput,
@@ -63,6 +54,7 @@ import {
   handleGraphQlError,
   TestSlot,
   nameFormater,
+  navigateToScreenWithEmptyStack,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DisabledTickIcon, TickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
@@ -77,7 +69,7 @@ import {
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import _, { conformsTo } from 'lodash';
+import _ from 'lodash';
 import {
   cancelDiagnosticsOrder,
   cancelDiagnosticsOrderVariables,
@@ -113,7 +105,6 @@ import {
   getOrderPhleboDetailsBulkVariables,
 } from '@aph/mobile-patients/src/graphql/types/getOrderPhleboDetailsBulk';
 import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
-import { callToExotelApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   diagnosticExotelCalling,
   diagnosticExotelCallingVariables,
@@ -148,13 +139,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [selectedOrderId, setSelectedOrderId] = useState<number>(0);
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
-  const [showSummaryPopup, setSummaryPopup] = useState<boolean>(false);
   const [todaySlotNotAvailable, setTodaySlotNotAvailable] = useState<boolean>(false);
-  const showSummaryPopupRef = useRef<boolean>(false);
   const [rescheduleCount, setRescheduleCount] = useState<any>(null);
   const [rescheduledTime, setRescheduledTime] = useState<any>('');
-  const [selectedReasonForCancel, setSelectedReasonForCancel] = useState('');
-  const [commentForCancel, setCommentForCancel] = useState('');
 
   //new reschedule.
   const [showBottomOverlay, setShowBottomOverlay] = useState<boolean>(false);
@@ -167,7 +154,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [cancelReasonComment, setCancelReasonComment] = useState<string>('');
   const [selectRescheduleReason, setSelectRescheduleReason] = useState<string>('');
 
-  const [commentForReschedule, setCommentForReschedule] = useState('');
   const [refundStatusArr, setRefundStatusArr] = useState<any>(null);
   const [selectedOrder, setSelectedOrder] = useState<
     getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList
@@ -177,7 +163,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const client = useApolloClient();
   const [orders, setOrders] = useState<any>(props.navigation.getParam('orders'));
   const [isPaitentList, setIsPaitentList] = useState<boolean>(false);
-  const [isViewReport, setIsViewReport] = useState<boolean>(false);
   const [activeOrder, setActiveOrder] = useState<
     getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList
   >('');
@@ -192,7 +177,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   >(allCurrentPatients);
   const [currentOffset, setCurrentOffset] = useState<number>(1);
   const [resultList, setResultList] = useState<(orderListByMobile | null)[] | null>([]);
-  const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const source = props.navigation.getParam('source');
 
   var rescheduleDate: Date,
@@ -231,24 +215,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     });
 
   const handleBack = () => {
-    if (showSummaryPopupRef.current) {
-      setSummaryPopup(false);
-      return true;
-    } else if (source === AppRoutes.OrderStatus) {
-      props.navigation.dispatch(
-        StackActions.reset({
-          index: 1,
-          key: null,
-          actions: [
-            NavigationActions.navigate({
-              routeName: AppRoutes.ConsultRoom,
-            }),
-            NavigationActions.navigate({
-              routeName: AppRoutes.Tests,
-            }),
-          ],
-        })
-      );
+    if (source === AppRoutes.OrderStatus) {
+      navigateToScreenWithEmptyStack(props.navigation, 'TESTS');
       return true;
     } else {
       props.navigation.goBack();
@@ -257,12 +225,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   useEffect(() => {
-    showSummaryPopupRef.current = showSummaryPopup;
-  }, [showSummaryPopup]);
-
-  useEffect(() => {
     const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      refetchOrders()
       BackHandler.addEventListener('hardwareBackPress', handleBack);
     });
     const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
@@ -275,14 +238,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    fetchOrders(true);
-  }, []);
-
-  useEffect(() => {
     if (!currentPatient) {
       getPatientApiCall();
     }
   }, [currentPatient]);
+
   useEffect(() => {
     if (selectedPaitent == 'All') {
       setOrders(filteredOrderList);
@@ -290,6 +250,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       setOrders(fetchFilteredOrder());
     }
   }, [selectedPaitentId]);
+
   const refetchOrders = async () => {
     fetchOrders(true);
   };
@@ -338,12 +299,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           getPhlobeOTP(orderIdsArr, filteredOrderList, isRefetch);
         })
         .catch((error) => {
-          setLoading!(false);
+          setLoading?.(false);
           setError(true);
           CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrders`, error);
         });
     } catch (error) {
-      setLoading!(false);
+      setLoading?.(false);
       setError(true);
       CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrders`, error);
     }
@@ -412,7 +373,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             });
             setOrders(ordersList);
             setFilteredOrderList(ordersList);
-            setTimeout(() => setLoading?.(false), isRefetch ? 1000 : 0);
+            setTimeout(() => setLoading?.(false), 1000);
           } else {
             setOrders(ordersList);
             setFilteredOrderList(ordersList);
@@ -451,9 +412,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const onSubmitCancelOrder = (reason: string, comment: string) => {
     setLoading?.(true);
-    setSelectedReasonForCancel(reason);
-    setCommentForCancel(comment);
-
     const orderCancellationInput: CancellationDiagnosticsInput = {
       comment: comment?.length != 0 ? comment : '',
       orderId: String(selectedOrderId),
@@ -466,7 +424,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         if (cancelResponse == 'true') {
           setLoading!(true);
           setTimeout(() => refetchOrders(), 2000);
-          showAphAlert!({
+          showAphAlert?.({
             unDismissable: true,
             title: string.common.hiWithSmiley,
             description: string.diagnostics.orderCancelledSuccessText,
@@ -669,7 +627,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     const dateTimeInUTC = moment(formattedDate + ' ' + formatTime).toISOString();
     const dateTimeToShow = formattedDate + ', ' + moment(dateTimeInUTC).format('hh:mm A');
     const rescheduleDiagnosticsInput: RescheduleDiagnosticsInput = {
-      comment: commentForReschedule,
+      comment: '',
       date: formattedDate,
       dateTimeInUTC: dateTimeInUTC,
       orderId: String(selectedOrderId),
@@ -1114,7 +1072,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       refundStatusArr: refundArray,
       comingFrom: AppRoutes.YourOrdersTest,
       showOrderSummaryTab: tab,
-      // fromOrderSummary: fromOrderSummary,
+      onPressBack: refetchOrders,
     });
   }
   const renderOrder = (
@@ -1185,7 +1143,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         createdOn={order?.createdDate}
         orderLevelStatus={order?.orderStatus}
         orderAttributesObj={order?.attributesObj}
-        patientName={getPatientNameById(allCurrentPatients, order?.patientId)}
+        patientName={
+          !!order?.patientObj
+            ? `${order?.patientObj?.firstName} ${order?.patientObj?.lastName}`
+            : getPatientNameById(allCurrentPatients, order?.patientId)
+        }
         gender={
           !!order?.patientObj?.gender
             ? order?.patientObj?.gender === Gender.MALE
@@ -1223,11 +1185,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPressReschedule={() => _onPressTestReschedule(order)}
         onPressViewDetails={() => _navigateToYourTestDetails(order, true)}
         onPressViewReport={() => {
-          setSnackbarState(false);
           setActiveOrder(order);
-          setIsViewReport(true);
           setDisplayViewReport(true);
-          // _onPressViewReport(order)
         }}
         phelboObject={order?.phleboDetailsObj}
         onPressRatingStar={(star) => {

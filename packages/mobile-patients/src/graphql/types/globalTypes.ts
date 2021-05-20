@@ -669,6 +669,7 @@ export enum TEST_COLLECTION_TYPE {
 }
 
 export enum TRANSFER_INITIATED_TYPE {
+  ADMIN = "ADMIN",
   DOCTOR = "DOCTOR",
   PATIENT = "PATIENT",
 }
@@ -950,6 +951,7 @@ export interface BookRescheduleAppointmentInput {
   initiatedId: string;
   patientId: string;
   rescheduledId?: string | null;
+  rescheduleReason?: string | null;
 }
 
 export interface BookTransferAppointmentInput {
@@ -1047,7 +1049,6 @@ export interface DiagnosticLineItem {
   price?: number | null;
   quantity?: number | null;
   groupPlan?: string | null;
-  discAmount?: number | null;
   preTestingRequirement?: string | null;
   reportGenerationTime?: string | null;
 }
@@ -1607,7 +1608,6 @@ export interface SaveBookHomeCollectionOrderInput {
   areaId: number;
   collectionCharges: number;
   uniqueID?: string | null;
-  couponCode?: string | null;
   slotDateTimeInUTC: any;
   totalPriceExcludingDiscounts?: number | null;
   userSubscriptionId?: string | null;
@@ -1676,7 +1676,7 @@ export interface SourceMetaData {
   source_identifier?: string | null;
   sub_plan_id?: string | null;
   purchase_type?: PlanPurchaseType | null;
-  activity: any;
+  activity?: any | null;
 }
 
 export interface TrueCallerProfile {
@@ -1708,6 +1708,9 @@ export interface TrueCallerProfile {
 export interface UpdateAppointmentInput {
   appointmentId: string;
   patientLocation?: PatientLocation | null;
+  paymentOrderId?: string | null;
+  status?: STATUS | null;
+  discountedAmount?: number | null;
 }
 
 export interface UpdateAppointmentSessionInput {

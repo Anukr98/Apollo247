@@ -959,7 +959,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     });
     //passed zero till the time prices aren't updated.
     postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, 0, 0, 'Partial search');
-    addCartItem!({
+    addCartItem?.({
       id: `${itemId}`,
       name: stripHtml(itemName),
       price: pricesObject?.rate || 0,
