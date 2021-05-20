@@ -1385,7 +1385,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             leftIcon="backArrow"
             title={string.orders.urOrders}
             container={{ borderBottomWidth: 0 }}
-            onPressLeftIcon={() => props.navigation.goBack()}
+            onPressLeftIcon={() => {
+              if (fromOrderSummary) {
+                handleBack()
+              } else {
+                props.navigation.goBack();
+              }
+            }}
           />
         )}
         {renderFilterArea()}
