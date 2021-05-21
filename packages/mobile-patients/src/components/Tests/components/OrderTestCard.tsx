@@ -24,6 +24,8 @@ import {
   LocationOutline,
   StarEmpty,
   ClockIcon,
+  StarFillGreen,
+  StarEmptyGreen
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -403,11 +405,12 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
   const showRatingView = () => {
     const starCount = [1, 2, 3, 4, 5];
-    const ratedStarCount = [1, 2, 3, 4, 5];
     const phlObj = props?.phelboObject;
     const phleboRating = !!phlObj && phlObj?.PhleboRating;
     let checkRating = starCount.includes(phleboRating);
-    return props.orderLevelStatus = DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED ? (
+    const ratedStarCount = starCount.slice(0, phleboRating);
+    const unRatedStarCount = starCount.slice(phleboRating, starCount.length);
+    return props.orderLevelStatus != DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED ? (
       <View style={styles.ratingContainer}>
         <Text style={styles.ratingTextStyle}>
           {!!checkRating
@@ -415,19 +418,30 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
             : 'How was your Experience with Phlebo'}
         </Text>
         <View style={styles.startContainer}>
-          {!!checkRating
-            ? ratedStarCount.map((item) => (<View>
-              <StarEmpty style={{ margin: 5 }}/>
-            </View>))
-            : starCount.map((item) => (
-                <TouchableOpacity
-                  onPress={() => {
-                    props.onPressRatingStar(item);
-                  }}
-                >
-                  <StarEmpty style={{ margin: 5 }} />
-                </TouchableOpacity>
+          {!!checkRating ? (
+            <>
+              {ratedStarCount.map((item, index) => (
+                <View>
+                  <StarFillGreen style={{ margin: 5 }} />
+                </View>
               ))}
+              {unRatedStarCount.map((item, index) => (
+                <View>
+                  <StarEmpty style={{ margin: 5 }} />
+                </View>
+              ))}
+            </>
+          ) : (
+            starCount.map((item) => (
+              <TouchableOpacity
+                onPress={() => {
+                  props.onPressRatingStar(item);
+                }}
+              >
+                <StarEmpty style={{ margin: 5 }} />
+              </TouchableOpacity>
+            ))
+          )}
         </View>
       </View>
     ) : null;
