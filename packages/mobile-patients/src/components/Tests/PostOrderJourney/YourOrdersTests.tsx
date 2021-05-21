@@ -218,6 +218,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     } else {
       if (fromOrderSummary) {
         navigateToScreenWithEmptyStack(props.navigation, 'TESTS');
+        return true;
       }
     }
     return false;
