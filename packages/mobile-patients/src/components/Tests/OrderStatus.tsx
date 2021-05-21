@@ -5,6 +5,7 @@ import {
   CircleLogo,
   OrderPlacedCheckedIcon,
   OrderProcessingIcon,
+  InfoIconRed
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -25,6 +26,8 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { firePurchaseEvent } from '@aph/mobile-patients/src/components/Tests/Events';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { AppConfig } from '../../strings/AppConfig';
+import { colors } from '../../theme/colors';
 
 export interface OrderStatusProps extends NavigationScreenProps {}
 
@@ -247,6 +250,17 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       </View>
     );
   };
+  const enable_cancelellation_policy =
+    AppConfig.Configuration.Enable_Diagnostics_Cancellation_Policy;
+  const cancelellation_policy_text = AppConfig.Configuration.Diagnostics_Cancel_Policy_Text_Msg;
+  const renderCancelationPolicy = () => {
+    return (
+      <View style={styles.cancel_container}>
+        <InfoIconRed />
+        <Text style={styles.cancel_text}>{cancelellation_policy_text}</Text>
+      </View>
+    );
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -258,6 +272,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
             {renderBookingInfo()}
             {renderCartSavings()}
             {renderNoticeText()}
+            {enable_cancelellation_policy ? renderCancelationPolicy() : null}
             {backToHome()}
           </>
         </ScrollView>
@@ -288,6 +303,21 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansBold(14),
     lineHeight: 19,
     color: '#FC9916',
+  },
+  cancel_container: {
+    width:'98%',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    borderRadius: 10,
+    backgroundColor: '#FCFDDA',
+    padding: 10,
+    alignSelf:'center',
+    marginVertical:10,
+    elevation: 2
+  },
+  cancel_text: {
+    ...theme.viewStyles.text('M', 12, '#01475b', 0.6, 18),
+    marginHorizontal: 10,
   },
   orderPlaced: {
     flexDirection: 'row',
