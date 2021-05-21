@@ -1803,63 +1803,58 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const callDeleteHealthRecordFileApi = async () => {
     setshowSpinner(true);
-    try {
-      const _deleteRes = await Promise.all(
-        deleteFileArray?.map((_item) => {
-          if (_item?.index) {
-            const inputData: DeleteHealthRecordFilesInput = {
-              patientId: currentPatient?.id || '',
-              recordType: recordType,
-              recordId: selectedRecordID,
-              fileIndex: _item?.index,
-            };
-            client
-              .mutate<deleteHealthRecordFiles>({
-                mutation: DELETE_HEALTH_RECORD_FILES,
-                variables: {
-                  deleteHealthRecordFilesInput: inputData,
-                },
-              })
-              .then(({ data }) => {
-                const status = g(data, 'deleteHealthRecordFiles', 'status');
-                if (status) {
-                  return data;
-                }
-              })
-              .catch((e) => {
-                CommonBugFender('AddRecord_DELETE_HEALTH_RECORD_FILES', e);
-                setshowSpinner(false);
-                currentPatient && handleGraphQlError(e);
-              });
-          }
-        })
-      );
-      if (_deleteRes) {
-        setshowSpinner(false);
-        if (recordType === MedicalRecordType.PRESCRIPTION) {
-          addMedicalRecord();
-        } else if (recordType === MedicalRecordType.TEST_REPORT) {
-          addPatientLabTestRecords();
-        } else if (recordType === MedicalRecordType.HOSPITALIZATION) {
-          addPatientHospitalizationRecords();
-        } else if (recordType === MedicalRecordType.MEDICALBILL) {
-          addPatientBillRecords();
-        } else if (recordType === MedicalRecordType.MEDICALINSURANCE) {
-          addPatientInsuranceRecords();
-        } else if (
-          recordType === MedicalRecordType.ALLERGY ||
-          recordType === MedicalRecordType.MEDICALCONDITION ||
-          recordType === MedicalRecordType.FAMILY_HISTORY
-        ) {
-          callHealthConditionApis();
+    const _deleteRes = await Promise.all(
+      deleteFileArray?.map((_item) => {
+        if (_item?.index) {
+          const inputData: DeleteHealthRecordFilesInput = {
+            patientId: currentPatient?.id || '',
+            recordType: recordType,
+            recordId: selectedRecordID,
+            fileIndex: _item?.index,
+          };
+          client
+            .mutate<deleteHealthRecordFiles>({
+              mutation: DELETE_HEALTH_RECORD_FILES,
+              variables: {
+                deleteHealthRecordFilesInput: inputData,
+              },
+            })
+            .then(({ data }) => {
+              const status = g(data, 'deleteHealthRecordFiles', 'status');
+              if (status) {
+                return data;
+              }
+            })
+            .catch((e) => {
+              CommonBugFender('AddRecord_DELETE_HEALTH_RECORD_FILES', e);
+              setshowSpinner(false);
+              currentPatient && handleGraphQlError(e);
+            });
         }
-      } else {
-        setshowSpinner(false);
-        CommonBugFender('AddRecord_callDeleteHealthRecordFileApi', _deleteRes);
-        currentPatient && handleGraphQlError(_deleteRes);
+      })
+    );
+    if (_deleteRes) {
+      setshowSpinner(false);
+      if (recordType === MedicalRecordType.PRESCRIPTION) {
+        addMedicalRecord();
+      } else if (recordType === MedicalRecordType.TEST_REPORT) {
+        addPatientLabTestRecords();
+      } else if (recordType === MedicalRecordType.HOSPITALIZATION) {
+        addPatientHospitalizationRecords();
+      } else if (recordType === MedicalRecordType.MEDICALBILL) {
+        addPatientBillRecords();
+      } else if (recordType === MedicalRecordType.MEDICALINSURANCE) {
+        addPatientInsuranceRecords();
+      } else if (
+        recordType === MedicalRecordType.ALLERGY ||
+        recordType === MedicalRecordType.MEDICALCONDITION ||
+        recordType === MedicalRecordType.FAMILY_HISTORY
+      ) {
+        callHealthConditionApis();
       }
-    } catch (error) {
-      CommonBugFender('AddRecord_callDeleteHealthRecordFileApi', error);
+    } else {
+      setshowSpinner(false);
+      currentPatient && handleGraphQlError(e);
     }
   };
 
