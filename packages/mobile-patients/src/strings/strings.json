@@ -1032,7 +1032,8 @@
     "USE_GPS_TEXT": "Using GPS",
     "NO_RESULTS_FOUND": "No Results Found",
     "MARKER_TEXT": "MOVE MAP TO ADJUST",
-    "HELP_US_LOCATE_TEXT": "Help us locate your address"
+    "HELP_US_LOCATE_TEXT": "Identify your delivery location",
+    "CONFIRM_LOCATION_AND_PROCEED": "CONFIRM LOCATION AND PROCEED"
   },
   "accessLocationPopUp": {
     "chooseFromAddressText": "Choose from saved addresses",
