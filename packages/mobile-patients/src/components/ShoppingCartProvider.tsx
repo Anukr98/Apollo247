@@ -63,7 +63,6 @@ export interface PhysicalPrescription {
 export interface EPrescription {
   id: string;
   uploadedUrl: string;
-  uploadedUrlArray: any;
   forPatient: string;
   date: string;
   medicines: string;
