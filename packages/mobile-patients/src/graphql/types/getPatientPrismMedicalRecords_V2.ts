@@ -23,7 +23,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
-  index: string | null;
+  content: string | null;
   file_Url: string | null;
 }
 
@@ -60,7 +60,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
-  index: string | null;
+  content: string | null;
   file_Url: string | null;
 }
 
@@ -93,7 +93,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
-  index: string | null;
+  content: string | null;
   file_Url: string | null;
 }
 
@@ -127,7 +127,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
-  index: string | null;
+  content: string | null;
   file_Url: string | null;
 }
 
@@ -166,7 +166,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
-  index: string | null;
+  content: string | null;
   file_Url: string | null;
 }
 
@@ -197,7 +197,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
-  index: string | null;
+  content: string | null;
   file_Url: string | null;
 }
 
@@ -231,7 +231,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
-  index: string | null;
+  content: string | null;
   file_Url: string | null;
 }
 
@@ -314,7 +314,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
-  index: string | null;
+  content: string | null;
   file_Url: string | null;
 }
 
@@ -349,7 +349,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
-  index: string | null;
+  content: string | null;
   file_Url: string | null;
   byteContent: string | null;
   dateCreated: number | null;

@@ -2876,8 +2876,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
+            content
             file_Url
             # byteContent
           }
@@ -2904,8 +2903,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
+            content
             file_Url
             # byteContent
           }
@@ -2934,8 +2932,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
+            content
             file_Url
             # byteContent
             # dateCreated
@@ -2970,8 +2967,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
+            content
             file_Url
             # byteContent
             # dateCreated
@@ -2997,8 +2993,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
+            content
             file_Url
             # byteContent
             # dateCreated
@@ -3026,8 +3021,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
+            content
             file_Url
             # byteContent
             # dateCreated
@@ -3055,8 +3049,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
+            content
             file_Url
             # byteContent
             # dateCreated
@@ -3124,8 +3117,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
+            content
             file_Url
             # byteContent
             # dateCreated
@@ -3151,8 +3143,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
+            content
             file_Url
             byteContent
             dateCreated
