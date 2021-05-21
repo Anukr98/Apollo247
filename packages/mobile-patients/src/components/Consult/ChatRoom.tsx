@@ -2762,6 +2762,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           const msgs = res.messages;
           res.messages.forEach((element, index) => {
             let item = element.entry;
+            if (item.prismId) {
+              getPrismUrls(client, patientId, item.prismId)
+                .then((data: any) => {
+                  item.url = (data && data.urls[0]) || item.url;
+                })
+                .catch((e) => {
+                  CommonBugFender('ChatRoom_getPrismUrls', e);
+                });
+            }
             newmessage[newmessage.length] = item;
           });
           setLoading(false);
@@ -4208,20 +4217,73 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const openPopUp = (rowData: any) => {
     setLoading(true);
     if (rowData.url.match(/\.(pdf)$/) || rowData.fileType === 'pdf') {
-      setUrl(rowData.url);
-      setFileNamePDF(rowData.fileName || '');
-      setLoading(false);
-      setShowPDF(true);
+      if (rowData.prismId) {
+        getPrismUrls(client, patientId, rowData.prismId)
+          .then((data: any) => {
+            setUrl((data && data.urls[0]) || rowData.url);
+          })
+          .catch((e) => {
+            CommonBugFender('ChatRoom_OPEN_PDF', e);
+            setUrl(rowData.url);
+          })
+          .finally(() => {
+            setLoading(false);
+            setFileNamePDF(rowData.fileName || '');
+            setShowPDF(true);
+          });
+      } else {
+        setUrl(rowData.url);
+        setFileNamePDF(rowData.fileName || '');
+        setLoading(false);
+        setShowPDF(true);
+      }
     } else if (rowData.url.match(/\.(jpeg|jpg|gif|png|jfif)$/) || rowData.fileType === 'image') {
-      openImageZoomViewer(rowData.url, rowData.fileName || 'Image');
-      setUrl(rowData.url);
-      setLoading(false);
-      setPatientImageshow(false);
+      if (rowData.prismId) {
+        getPrismUrls(client, patientId, rowData.prismId)
+          .then((data: any) => {
+            openImageZoomViewer((data && data.urls[0]) || rowData.url, rowData.fileName || 'Image');
+            setUrl((data && data.urls[0]) || rowData.url);
+          })
+          .catch((e) => {
+            CommonBugFender('ChatRoom_OPEN_IMAGE', e);
+            openImageZoomViewer(rowData.url, rowData.fileName || 'Image');
+            setUrl(rowData.url);
+          })
+          .finally(() => {
+            setLoading(false);
+            setPatientImageshow(false);
+          });
+      } else {
+        openImageZoomViewer(rowData.url, rowData.fileName || 'Image');
+        setUrl(rowData.url);
+        setLoading(false);
+        setPatientImageshow(false);
+      }
     } else {
-      openImageZoomViewer(rowData.url, rowData.fileName || 'Image');
-      setUrl(rowData.url);
-      setLoading(false);
-      setPatientImageshow(false);
+      if (rowData.prismId) {
+        getPrismUrls(client, patientId, rowData.prismId)
+          .then((data: any) => {
+            openImageZoomViewer(rowData.url, rowData.fileName || 'Image');
+            setUrl(rowData.url);
+            setLoading(false);
+            setPatientImageshow(false);
+          })
+          .catch(() => {
+            openImageZoomViewer(rowData.url, rowData.fileName || 'Image');
+            setUrl(rowData.url);
+            setLoading(false);
+            setPatientImageshow(false);
+          })
+          .finally(() => {
+            setLoading(false);
+            setPatientImageshow(true);
+          });
+      } else {
+        openImageZoomViewer(rowData.url, rowData.fileName || 'Image');
+        setUrl(rowData.url);
+        setLoading(false);
+        setPatientImageshow(false);
+      }
     }
   };
 
@@ -6392,71 +6454,72 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         showLabResults
         navigation={props.navigation}
         onSubmit={(selectedEPres) => {
+          console.log('selectedEPres', selectedEPres);
           setSelectPrescriptionVisible(false);
           if (selectedEPres.length == 0) {
             return;
           } else {
-            setLoading(true);
-            selectedEPres.forEach(async (item) => {
+            selectedEPres.forEach((item) => {
+              const url = item?.uploadedUrl ? item?.uploadedUrl : '';
               const uploadedUrlArray = item?.uploadedUrlArray || [];
               const prism = item?.prismPrescriptionFileId ? item?.prismPrescriptionFileId : '';
+              const fileName = item?.fileName ? item?.fileName : '';
+              console.log('url', url, prism);
+              // url &&
+              //   url.map((item, index) => {
               if (uploadedUrlArray?.length) {
-                try {
-                  const uploadedUrlArrayResponse = await Promise.all(
-                    uploadedUrlArray?.map((_item) => {
-                      client
-                        .mutate({
-                          mutation: ADD_CHAT_DOCUMENTS,
-                          fetchPolicy: 'no-cache',
-                          variables: {
-                            prismFileId: prism,
-                            documentPath: _item?.file_Url,
-                            appointmentId: appointmentData?.id,
-                          },
-                        })
-                        .then((data) => {
-                          const prismFieldId = g(data?.data, 'addChatDocument', 'prismFileId');
-                          const documentPath = g(data?.data, 'addChatDocument', 'documentPath');
-                          const text = {
-                            id: patientId,
-                            message: imageconsult,
-                            fileType: _item?.fileName
-                              ? _item?.fileName?.toLowerCase()?.endsWith('.pdf')
-                                ? 'pdf'
-                                : 'image'
-                              : (documentPath ? documentPath : _item?.file_Url).match(/\.(pdf)$/)
-                              ? 'pdf'
-                              : 'image',
-                            fileName: _item?.fileName,
-                            prismId: (prismFieldId ? prismFieldId : prism) || '',
-                            url: documentPath ? documentPath : _item?.file_Url,
-                            messageDate: new Date(),
-                          };
-                          pubnub.publish(
-                            {
-                              channel: channel,
-                              message: text,
-                              storeInHistory: true,
-                              sendByPost: true,
-                            },
-                            (status, response) => {}
-                          );
-                          KeepAwake.activate();
-                        })
-                        .catch((e) => {
-                          console.log('erroe', e);
-                          setLoading(false);
-                          CommonBugFender(
-                            'ChatRoom_renderPrescriptionModal_ADD_CHAT_DOCUMENTSt',
-                            e
-                          );
-                        });
+                setLoading(true);
+                uploadedUrlArray?.map((_item) => {
+                  console.log(_item, 'item');
+                  client
+                    .mutate({
+                      mutation: ADD_CHAT_DOCUMENTS,
+                      fetchPolicy: 'no-cache',
+                      variables: {
+                        prismFileId: prism,
+                        documentPath: _item?.file_Url,
+                        appointmentId: appointmentData.id,
+                      },
                     })
-                  );
-                } catch (e) {
-                  setLoading(false);
-                  CommonBugFender('ChatRoom_renderPrescriptionModal_ADD_CHAT_DOCUMENTSt', e);
-                }
+                    .then((data) => {
+                      const prismFieldId = g(data.data!, 'addChatDocument', 'prismFileId');
+                      const documentPath = g(data.data!, 'addChatDocument', 'documentPath');
+                      console.log('data', data);
+                      const text = {
+                        id: patientId,
+                        message: imageconsult,
+                        fileType: _item?.fileName
+                          ? _item?.fileName?.toLowerCase()?.endsWith('.pdf')
+                            ? 'pdf'
+                            : 'image'
+                          : (documentPath ? documentPath : _item?.file_Url).match(/\.(pdf)$/)
+                          ? 'pdf'
+                          : 'image',
+                        fileName: _item?.fileName,
+                        prismId: (prismFieldId ? prismFieldId : prism) || '',
+                        url: documentPath ? documentPath : _item?.file_Url,
+                        messageDate: new Date(),
+                      };
+                      console.log('text', text);
+                      pubnub.publish(
+                        {
+                          channel: channel,
+                          message: text,
+                          storeInHistory: true,
+                          sendByPost: true,
+                        },
+                        (status, response) => {}
+                      );
+                      KeepAwake.activate();
+                      setLoading(false);
+                    })
+                    .catch((e) => {
+                      console.log('erroe', e);
+                      setLoading(false);
+                      CommonBugFender('ChatRoom_getPrismUrls_uploadDocument', e);
+                    });
+                });
+                setLoading(false);
               }
               item.message &&
                 pubnub.publish(
@@ -6478,7 +6541,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   }
                 );
             });
-            setLoading(false);
           }
         }}
         isVisible={true}
