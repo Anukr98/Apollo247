@@ -226,6 +226,58 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   const movedFrom = props.navigation.getParam('movedFrom');
   const displayId = props.navigation.getParam('id');
 
+  const propertyName = g(data, 'testResultFiles')
+    ? 'testResultFiles'
+    : g(data, 'healthCheckFiles')
+    ? 'healthCheckFiles'
+    : g(data, 'hospitalizationFiles')
+    ? 'hospitalizationFiles'
+    : g(data, 'prescriptionFiles')
+    ? 'prescriptionFiles'
+    : g(data, 'insuranceFiles')
+    ? 'insuranceFiles'
+    : g(data, 'billFiles')
+    ? 'billFiles'
+    : g(data, 'medicationFiles')
+    ? 'medicationFiles'
+    : g(data, 'attachmentList')
+    ? 'attachmentList'
+    : g(data, 'familyHistoryFiles')
+    ? 'familyHistoryFiles'
+    : '';
+
+  const webEngageSource = healthCheck
+    ? 'Health Check'
+    : hospitalization
+    ? 'Discharge Summary'
+    : prescriptions
+    ? 'Prescription'
+    : medicalBill
+    ? 'Bills'
+    : medicalInsurance
+    ? 'Insurance'
+    : 'Lab Test';
+
+  const webEngageEventName: WebEngageEventName = healthCheck
+    ? WebEngageEventName.PHR_DOWNLOAD_HEALTH_CHECKS
+    : hospitalization
+    ? WebEngageEventName.PHR_DOWNLOAD_HOSPITALIZATIONS
+    : prescriptions
+    ? WebEngageEventName.PHR_DOWNLOAD_DOCTOR_CONSULTATION
+    : medicalBill
+    ? WebEngageEventName.PHR_DOWNLOAD_BILLS
+    : medicalInsurance
+    ? WebEngageEventName.PHR_DOWNLOAD_INSURANCE
+    : healthCondition
+    ? healthHeaderTitle === HEALTH_CONDITIONS_TITLE.ALLERGY
+      ? WebEngageEventName.PHR_DOWNLOAD_ALLERGY
+      : healthHeaderTitle === HEALTH_CONDITIONS_TITLE.MEDICAL_CONDITION
+      ? WebEngageEventName.PHR_DOWNLOAD_MEDICAL_CONDITION
+      : healthHeaderTitle === HEALTH_CONDITIONS_TITLE.FAMILY_HISTORY
+      ? WebEngageEventName.PHR_DOWNLOAD_FAMILY_HISTORY
+      : WebEngageEventName.PHR_DOWNLOAD_TEST_REPORT
+    : WebEngageEventName.PHR_DOWNLOAD_TEST_REPORT;
+
   useEffect(() => {
     Platform.OS === 'android' && requestReadSmsPermission();
   });
