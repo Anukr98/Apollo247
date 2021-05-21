@@ -884,6 +884,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Enable_Diagnostics_COD',
       PROD: 'Enable_Diagnostics_COD',
     },
+    Enable_Diagnostics_Cancellation_Policy: {
+      QA: 'QA_Diagnostic_Cancellation_Policy',
+      PROD: 'Diagnostic_Cancellation_Policy',
+    },
+    Diagnostics_Cancel_Policy_Text_Msg: {
+      QA: 'QA_Diagnostics_Cancel_Policy_Text',
+      PROD: 'Diagnostics_Cancel_Policy_Text'
+    }
   };
 
   const getKeyBasedOnEnv = (
@@ -1079,6 +1087,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       setAppConfig('followUp_Chat', 'FollowUp_Chat_Limit', (key) => config.getNumber(key));
       setAppConfig('Enable_Diagnostics_COD', 'Enable_Diagnostics_COD', (key) =>
         config.getBoolean(key)
+      );
+      setAppConfig('Enable_Diagnostics_Cancellation_Policy', 'Enable_Diagnostics_Cancellation_Policy', (key) =>
+        config.getBoolean(key)
+      );
+      setAppConfig('Diagnostics_Cancel_Policy_Text_Msg', 'Diagnostics_Cancel_Policy_Text_Msg', (key) =>
+        config.getString(key)
       );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
