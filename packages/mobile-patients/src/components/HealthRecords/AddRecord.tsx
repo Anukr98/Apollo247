@@ -3983,13 +3983,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     };
 
     const onPressClickMorePhoto = () => {
+      setOpenCamera(true);
       setDisplayReviewPhotoPopup(false);
-      setTimeout(() => {
-        setdisplayOrderPopup(true);
-        setTimeout(() => {
-          setOpenCamera(true);
-        }, 200);
-      }, 200);
+      setdisplayOrderPopup(true);
     };
 
     return (
