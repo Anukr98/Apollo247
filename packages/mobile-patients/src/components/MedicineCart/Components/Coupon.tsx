@@ -132,5 +132,5 @@ const styles = StyleSheet.create({
     borderTopWidth: 0.5,
     justifyContent: 'center',
   },
-  couponMessageContainer: { marginLeft: 10, marginVertical: 4, width: '95%' },
+  couponMessageContainer: { marginLeft: 10, marginVertical: 4, flex: 1 },
 });
