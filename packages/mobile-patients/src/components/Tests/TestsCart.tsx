@@ -2757,7 +2757,7 @@ const styles = StyleSheet.create({
     // marginTop: 4,
     marginBottom: 12,
     padding: 16,
-    marginTop: 6,
+    marginTop: 10,
   },
   yellowTextStyle: {
     ...theme.viewStyles.yellowTextStyle,
