@@ -370,6 +370,15 @@ export const DropdownBlueDown: React.FC<IconProps> = (props) => (
 export const DropdownBlueUp: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_dropdown_blue_up.webp')} />
 );
+export const CrossOcta: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/octagon_3x.webp')} />
+);
+export const BlackArrowUp: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/blackarrowup_3x.webp')} />
+);
+export const BlackArrowDown: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/blackarrowdown_3x.webp')} />
+);
 
 export const PhrDropdownBlueUpIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_phr_blue_dropdown.webp')} />

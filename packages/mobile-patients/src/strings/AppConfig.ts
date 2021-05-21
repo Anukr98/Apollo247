@@ -220,6 +220,8 @@ const appStaticVariables = {
   Helpdesk_Chat_Confim_Msg:
     'Thank you for reaching out. As we are experiencing a heavy load, our team will get back to you in 24 to 48 hours.',
   Enable_Diagnostics_COD: false,
+  Enable_Diagnostics_Cancellation_Policy: false,
+  Diagnostics_Cancel_Policy_Text_Msg: 'For a full refund, you must cancel at least 6 hours before the appointment time. Cancellations made within 6 hours of appointment time will incur a fee of up to ₹ 200.'
 };
 
 const DEV_top_specialties = [
