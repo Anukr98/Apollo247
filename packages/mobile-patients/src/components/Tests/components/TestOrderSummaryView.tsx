@@ -1,10 +1,7 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
-import {
-  getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList,
-  getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
+import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
 import moment from 'moment';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { g, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -533,10 +530,13 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
             currentPatient?.firstName}`
         )}
         {renderItemsCard()}
-        {!!getPreviousLineItems && getPreviousLineItems?.length
+        {!!getModifiedLineItems &&
+        getModifiedLineItems?.length > 0 &&
+        !!getPreviousLineItems &&
+        getPreviousLineItems?.length > 0
           ? renderOrderBreakdownCard(getPreviousLineItems, string.diagnostics.previousCharges)
           : null}
-        {!!getModifiedLineItems && getModifiedLineItems?.length
+        {!!getModifiedLineItems && getModifiedLineItems?.length > 0
           ? renderOrderBreakdownCard(getModifiedLineItems, string.diagnostics.currentCharges)
           : null}
         {renderPricesCard()}

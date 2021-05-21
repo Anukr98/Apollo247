@@ -125,7 +125,8 @@
     "settingProfileTxt": "We’re setting up your profile. Please check back soon!",
     "couldNotLoadText": "Uh oh.. could't load!",
     "lowNetworkText": "We were unable to load the page properly because of low network. Please try again",
-    "noDiagnosticsAvailable": "Unfortunately, we do not have any diagnostic(s) available right now."
+    "noDiagnosticsAvailable": "Unfortunately, we do not have any diagnostic(s) available right now.",
+    "unableToSetDeliveryAddress" : "We're sorry! Unable to set delivery address. Please try again after some time"
   },
   "components": {
     "medicineDetails": {
@@ -555,7 +556,8 @@
     "phleboCallingError": "Error while connecting to Phlebo. Please try again later.",
     "modifyItemAlreadyExist": "Your cart has been updated, since it had duplicate items",
     "previousCharges": "Previous Charges",
-    "currentCharges": "Current Charges"
+    "currentCharges": "Current Charges",
+    "modifyDiscardText": "You were trying to modify the order. Would you like to discard and go back to home page?"
   },
   "diagnosticCategoryTitle": {
     "category" : "Category",

@@ -14,7 +14,10 @@ import {
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import AsyncStorage from '@react-native-community/async-storage';
+import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList } from '../graphql/types/getDiagnosticOrdersListByMobile';
 
+export interface orderList
+  extends getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList {}
 export interface DiagnosticsCartItem {
   id: string;
   name: string;
@@ -170,8 +173,11 @@ export interface DiagnosticsCartContextProps {
 
   asyncDiagnosticPincode: any;
   setAsyncDiagnosticPincode: ((pincode: any) => void) | null;
+
   modifiedOrderItemIds: [];
   setModifiedOrderItemIds: ((items: any | []) => void) | null;
+  modifiedOrder: any;
+  setModifiedOrder: ((items: orderList | any | {}) => void) | null;
 }
 
 export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>({
@@ -271,6 +277,8 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   setAsyncDiagnosticPincode: null,
   modifiedOrderItemIds: [],
   setModifiedOrderItemIds: null,
+  modifiedOrder: {},
+  setModifiedOrder: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -360,6 +368,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const [asyncDiagnosticPincode, setAsyncDiagnosticPincode] = useState<
     DiagnosticsCartContextProps['asyncDiagnosticPincode']
   >();
+
+  const [modifiedOrder, setModifiedOrder] = useState<DiagnosticsCartContextProps['modifiedOrder']>(
+    {}
+  );
 
   const setDiagnosticClinic: DiagnosticsCartContextProps['setDiagnosticClinic'] = (item) => {
     _setDiagnosticClinic(item);
@@ -614,7 +626,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setShowSelectPatient(false);
     setShowSelectedArea(false);
     setCartPagePopulated(false);
-    setHcCharges(0);
+    setModifiedOrder({});
   };
 
   useEffect(() => {
@@ -748,6 +760,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         setAsyncDiagnosticPincode,
         modifiedOrderItemIds,
         setModifiedOrderItemIds,
+        modifiedOrder,
+        setModifiedOrder,
       }}
     >
       {props.children}

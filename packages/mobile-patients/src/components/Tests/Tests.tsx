@@ -286,7 +286,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
 
   const [serviceableObject, setServiceableObject] = useState({} as any);
-  Object.keys(serviceableObject)?.length === 0 && serviceableObject?.constructor === Object;
 
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({

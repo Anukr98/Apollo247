@@ -20,7 +20,12 @@ import {
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import stripHtml from 'string-strip-html';
-import { g, nameFormater, isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  nameFormater,
+  isSmallDevice,
+  isEmptyObject,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
@@ -70,10 +75,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
 import HTML from 'react-native-render-html';
 import _ from 'lodash';
-import {
-  navigateToHome,
-  navigateToScreenWithEmptyStack,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
@@ -84,7 +86,7 @@ export interface TestPackageForDetails extends TestPackage {
   source:
     | 'Home Page'
     | 'Full Search'
-    | 'Cart Page'
+    | 'Cart page'
     | 'Partial Search'
     | 'Deeplink'
     | 'Category page';
@@ -138,7 +140,6 @@ export interface TestDetailsProps
     comingFrom?: string;
     itemName?: string;
     movedFrom?: string;
-    existingOrderDetails?: any;
   }> {}
 
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
@@ -150,6 +151,12 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     testDetailsBreadCrumbs,
     setTestDetailsBreadCrumbs,
     modifiedOrderItemIds,
+    modifiedOrder,
+    setModifyHcCharges,
+    setModifiedOrderItemIds,
+    setHcCharges,
+    setAreaSelected,
+    setModifiedOrder,
   } = useDiagnosticsCart();
   const { pharmacyCircleAttributes } = useShoppingCart();
 
@@ -157,14 +164,13 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   const testDetails = props.navigation.getParam('testDetails', {} as TestPackageForDetails);
   const testName = props.navigation.getParam('itemName');
-  const { setLoading: setLoadingContext } = useUIElements();
+  const { setLoading: setLoadingContext, showAphAlert, hideAphAlert } = useUIElements();
 
   const movedFrom = props.navigation.getParam('comingFrom');
   const isDeep = props.navigation.getParam('movedFrom');
   const itemId =
     movedFrom == AppRoutes.TestsCart ? testDetails?.ItemID : props.navigation.getParam('itemId');
 
-  const existingOrderDetails = props.navigation.getParam('existingOrderDetails');
   const isAlreadyPartOfOrder =
     !!modifiedOrderItemIds &&
     modifiedOrderItemIds?.length &&
@@ -176,6 +182,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [readMore, setReadMore] = useState(true);
   const [errorState, setErrorState] = useState(false);
   const [widgetsData, setWidgetsData] = useState([] as any);
+
+  const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
 
   const itemName =
     testDetails?.ItemName ||
@@ -363,9 +371,43 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const homeBreadCrumb: TestBreadcrumbLink = {
     title: 'Home',
     onPress: () => {
-      props.navigation.navigate('TESTS');
+      isModify ? showDiscardPopUp() : props.navigation.navigate('TESTS');
     },
   };
+
+  function showDiscardPopUp() {
+    showAphAlert?.({
+      title: string.common.hiWithSmiley,
+      description: string.diagnostics.modifyDiscardText,
+      CTAs: [
+        {
+          text: 'DISCARD',
+          onPress: () => {
+            hideAphAlert?.();
+            clearModifyDetails();
+          },
+          type: 'orange-button',
+        },
+        {
+          text: 'CANCEL',
+          onPress: () => {
+            hideAphAlert?.();
+          },
+          type: 'orange-button',
+        },
+      ],
+    });
+  }
+
+  function clearModifyDetails() {
+    setModifyHcCharges?.(0);
+    setModifiedOrderItemIds?.([]);
+    setHcCharges?.(0);
+    setAreaSelected?.({});
+    setModifiedOrder?.({});
+    //go back to homepage
+    props.navigation.navigate('TESTS');
+  }
 
   useEffect(() => {
     let breadcrumb: TestBreadcrumbLink[] = [homeBreadCrumb];
@@ -861,9 +903,13 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     return (
       <TestListingHeader
         navigation={props.navigation}
-        headerText={nameFormater('TEST PACKAGE DETAIL', 'upper')}
+        headerText={nameFormater(
+          !!modifiedOrder && !isEmptyObject(modifiedOrder)
+            ? 'MODIFIED ORDER'
+            : 'TEST PACKAGE DETAIL',
+          'upper'
+        )}
         movedFrom={'testDetails'}
-        existingOrderDetails={existingOrderDetails}
       />
     );
   };
@@ -952,7 +998,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               isServiceable={isDiagnosticLocationServiceable}
               isVertical={false}
               navigation={props.navigation}
-              source={'Details Page'}
+              source={'Details page'}
               sourceScreen={AppRoutes.TestDetails}
             />
           </>
@@ -1047,7 +1093,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               onPress={() =>
                 isAlreadyPartOfOrder
                   ? props.navigation.navigate(AppRoutes.TestsCart, {
-                      orderDetails: existingOrderDetails,
+                      orderDetails: modifiedOrder,
                     })
                   : isAddedToCart
                   ? props.navigation.navigate(AppRoutes.TestsCart)

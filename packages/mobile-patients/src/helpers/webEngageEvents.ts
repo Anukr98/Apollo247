@@ -1207,7 +1207,7 @@ export interface WebEngageEvents {
     Source:
       | 'Full Search'
       | 'Home Page'
-      | 'Cart Page'
+      | 'Cart page'
       | 'Partial Search'
       | 'Deeplink'
       | 'Popular search'
