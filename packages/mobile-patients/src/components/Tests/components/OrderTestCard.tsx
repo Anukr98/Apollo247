@@ -319,9 +319,10 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       phleboEta = moment(phlObj?.CheckInTime).format('hh:mm A');
     }
     const slotime = !!props.slotTime ? moment(props?.slotTime) || null : null;
-    const showDetailedInfo = !!slotime
-      ? slotime.diff(moment(), 'minutes') < 60 && slotime.diff(moment(), 'minutes') > 0
-      : false;
+    const showDetailedInfo = true;
+    // !!slotime
+    //   ? slotime.diff(moment(), 'minutes') < 60 && slotime.diff(moment(), 'minutes') > 0
+    //   : false;
     const isCallingEnabled = !!phlObj ? phlObj?.allowCalling : false;
     return (
       <>
