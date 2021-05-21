@@ -246,6 +246,8 @@ let isJdAllowed: boolean = true;
 let abondmentStarted = false;
 let jdAssigned: boolean = false;
 const bottomBtnContainerWidth = 267;
+const maxRetryAttempt: number = 15;
+let currentRetryAttempt: number = 1;
 
 type rescheduleType = {
   rescheduleCount: number;
@@ -6254,9 +6256,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
   };
 
-  const uploadDocument = (resource: any, base66: any, type: any) => {
+  const uploadDocument = (resource: any, base66?: any, type?: any) => {
     CommonLogEvent(AppRoutes.ChatRoom, 'Upload document');
-    resource.map((item: any) => {
+    resource?.map((item: any, index: number) => {
       if (
         item.fileType == 'jpg' ||
         item.fileType == 'jpeg' ||
@@ -6329,6 +6331,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }
           })
           .catch((e) => {
+            // adding retry
+            currentRetryAttempt <= maxRetryAttempt && uploadDocument([resource[index]]);
+            currentRetryAttempt++;
             CommonBugFender('ChatRoom_uploadDocument', e);
             setLoading(false);
             KeepAwake.activate();
