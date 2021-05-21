@@ -26,8 +26,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { firePurchaseEvent } from '@aph/mobile-patients/src/components/Tests/Events';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { AppConfig } from '../../strings/AppConfig';
-import { colors } from '../../theme/colors';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface OrderStatusProps extends NavigationScreenProps {}
 
