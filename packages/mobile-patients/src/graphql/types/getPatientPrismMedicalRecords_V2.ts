@@ -24,7 +24,6 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   fileName: string | null;
   mimeType: string | null;
   content: string | null;
-  file_Url: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response {
@@ -61,7 +60,6 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   fileName: string | null;
   mimeType: string | null;
   content: string | null;
-  file_Url: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_prescriptions_response {
@@ -94,7 +92,6 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   fileName: string | null;
   mimeType: string | null;
   content: string | null;
-  file_Url: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_healthChecks_response {
@@ -128,7 +125,6 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   fileName: string | null;
   mimeType: string | null;
   content: string | null;
-  file_Url: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_hospitalizations_response {
@@ -167,7 +163,6 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   fileName: string | null;
   mimeType: string | null;
   content: string | null;
-  file_Url: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalBills_response {
@@ -198,7 +193,6 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   fileName: string | null;
   mimeType: string | null;
   content: string | null;
-  file_Url: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalInsurances_response {
@@ -232,7 +226,6 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   fileName: string | null;
   mimeType: string | null;
   content: string | null;
-  file_Url: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalConditions_response {
@@ -315,7 +308,6 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   fileName: string | null;
   mimeType: string | null;
   content: string | null;
-  file_Url: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_allergies_response {
@@ -350,7 +342,6 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   fileName: string | null;
   mimeType: string | null;
   content: string | null;
-  file_Url: string | null;
   byteContent: string | null;
   dateCreated: number | null;
 }

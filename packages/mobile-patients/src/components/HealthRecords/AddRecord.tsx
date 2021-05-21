@@ -884,6 +884,12 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         description: 'Please add document',
       });
       return false;
+    } else if (Images?.length > 1) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Please add only one document',
+      });
+      return false;
     } else {
       return true;
     }
@@ -2160,7 +2166,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           >
             <Text style={[styles.plusTextStyle, id !== 1 && { color: '#FFFFFF' }]}>{'+'}</Text>
             <Text style={[styles.addMoreTextStyle, id !== 1 && { color: '#FFFFFF' }]}>
-              {imagesArray?.length > 0 ? 'UPLOAD MORE' : 'UPLOAD FILE'}
+              {'UPLOAD FILE'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -2185,10 +2191,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           horizontal
           renderItem={({ item, index }) => renderImagesRow(item, index, id)}
           keyExtractor={(_, index) => index.toString()}
-          ListFooterComponent={() => (imagesArray?.length > 3 ? null : renderAddMorePagesCard())}
+          ListFooterComponent={() => (imagesArray?.length > 0 ? null : renderAddMorePagesCard())}
         />
-        {/* UI for multiple images */}
-        {imagesArray?.length > 3 ? renderAddMorePagesCard() : null}
       </View>
     );
   };
@@ -3931,15 +3935,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               style={styles.bottomWhiteButtonStyle}
               titleTextStyle={styles.bottomWhiteButtonTextStyle}
             />
-            {/* UI for multiple images */}
-            <View style={styles.buttonSeperatorStyle} />
-            <View style={styles.bottomButtonStyle}>
-              <Button
-                onPress={onPressClickMorePhoto}
-                title={'CLICK MORE PHOTO'}
-                style={styles.bottomButtonStyle}
-              />
-            </View>
           </View>
         </View>
       </ScrollView>
@@ -3990,9 +3985,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             setDisplayReviewPhotoPopup(true);
             setCurrentImage(response[0]);
           }
-          // Logic for multiple images
-          setImages([...Images, ...response]);
           setImageUpdate(false);
+          setImages(response);
           setdisplayOrderPopup(false);
         }
       } else if (id === 2) {
@@ -4004,9 +3998,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             setReviewPopupID(2);
             setCurrentImage(response[0]);
           }
-          // Logic for multiple images
-          setAllergyImage([...allergyImage, ...response]);
           setImageUpdate(false);
+          setAllergyImage(response);
           setdisplayAllergyPopup(false);
         }
       } else if (id === 3) {
@@ -4018,9 +4011,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             setReviewPopupID(3);
             setCurrentImage(response[0]);
           }
-          // Logic for multiple images
-          setMedicalConditionImage([...medicalConditionImage, ...response]);
           setImageUpdate(false);
+          setMedicalConditionImage(response);
           setdisplayMedicalConditionPopup(false);
         }
       } else {
@@ -4032,9 +4024,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             setReviewPopupID(4);
             setCurrentImage(response[0]);
           }
-          // Logic for multiple images
-          setFamilyHistoryImage([...familyHistoryImage, ...response]);
           setImageUpdate(false);
+          setFamilyHistoryImage(response);
           setdisplayFamilyHistoryPopup(false);
         }
       }

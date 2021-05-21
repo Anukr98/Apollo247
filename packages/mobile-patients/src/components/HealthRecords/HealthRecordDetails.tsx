@@ -174,22 +174,6 @@ const styles = StyleSheet.create({
   mainViewStyle: {
     flex: 1,
   },
-  imagePlaceHolderStyle: {
-    height: 425,
-    width: '100%',
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-  },
-  imageStyle: {
-    width: '100%',
-    height: 425,
-  },
-  imageViewStyle: { marginHorizontal: 20, marginBottom: 15, marginTop: 15 },
-  pdfStyle: {
-    height: 425,
-    width: '100%',
-    backgroundColor: 'transparent',
-  },
 });
 
 export interface HealthRecordDetailsProps extends NavigationScreenProps {}
@@ -241,26 +225,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   //for deeplink
   const movedFrom = props.navigation.getParam('movedFrom');
   const displayId = props.navigation.getParam('id');
-
-  const imagesArray = g(data, 'testResultFiles')
-    ? g(data, 'testResultFiles')
-    : g(data, 'healthCheckFiles')
-    ? g(data, 'healthCheckFiles')
-    : g(data, 'hospitalizationFiles')
-    ? g(data, 'hospitalizationFiles')
-    : g(data, 'prescriptionFiles')
-    ? g(data, 'prescriptionFiles')
-    : g(data, 'insuranceFiles')
-    ? g(data, 'insuranceFiles')
-    : g(data, 'billFiles')
-    ? g(data, 'billFiles')
-    : g(data, 'medicationFiles')
-    ? g(data, 'medicationFiles')
-    : g(data, 'attachmentList')
-    ? g(data, 'attachmentList')
-    : g(data, 'familyHistoryFiles')
-    ? g(data, 'familyHistoryFiles')
-    : [];
 
   useEffect(() => {
     Platform.OS === 'android' && requestReadSmsPermission();
@@ -805,37 +769,72 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   };
 
   const renderImage = () => {
+    const file_name = g(data, 'testResultFiles', '0', 'fileName')
+      ? g(data, 'testResultFiles', '0', 'fileName')
+      : g(data, 'healthCheckFiles', '0', 'fileName')
+      ? g(data, 'healthCheckFiles', '0', 'fileName')
+      : g(data, 'hospitalizationFiles', '0', 'fileName')
+      ? g(data, 'hospitalizationFiles', '0', 'fileName')
+      : g(data, 'prescriptionFiles', '0', 'fileName')
+      ? g(data, 'prescriptionFiles', '0', 'fileName')
+      : g(data, 'insuranceFiles', '0', 'fileName')
+      ? g(data, 'insuranceFiles', '0', 'fileName')
+      : g(data, 'billFiles', '0', 'fileName')
+      ? g(data, 'billFiles', '0', 'fileName')
+      : g(data, 'medicationFiles', '0', 'fileName')
+      ? g(data, 'medicationFiles', '0', 'fileName')
+      : g(data, 'attachmentList', '0', 'fileName')
+      ? g(data, 'attachmentList', '0', 'fileName')
+      : g(data, 'familyHistoryFiles', '0', 'fileName')
+      ? g(data, 'familyHistoryFiles', '0', 'fileName')
+      : '';
     return (
-      <View>
+      <View
+        style={{
+          marginTop: 0,
+        }}
+      >
         <ScrollView>
-          {imagesArray?.map((item, index) => {
-            const file_name = item?.fileName || '';
-            const file_Url = item?.file_Url || '';
-            return file_name && file_name.toLowerCase().endsWith('.pdf') ? (
-              <View style={styles.imageViewStyle}>
-                <Pdf key={file_Url} source={{ uri: file_Url }} style={styles.pdfStyle} />
-              </View>
-            ) : (
-              <TouchableOpacity
-                activeOpacity={1}
-                onPress={() => {
-                  props.navigation.navigate(AppRoutes.ImageSliderScreen, {
-                    images: [file_Url],
-                    heading: file_name || 'Image',
-                  });
+          {file_name && file_name.toLowerCase().endsWith('.pdf') ? (
+            <View style={{ marginHorizontal: 20, marginBottom: 15, marginTop: 30 }}>
+              <Pdf
+                key={data.fileUrl}
+                source={{ uri: data.fileUrl }}
+                style={{
+                  height: 425,
+                  width: '100%',
+                  backgroundColor: 'transparent',
                 }}
-                style={styles.imageViewStyle}
-              >
-                <Image
-                  placeholderStyle={styles.imagePlaceHolderStyle}
-                  PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
-                  source={{ uri: file_Url }}
-                  style={styles.imageStyle}
-                  resizeMode="contain"
-                />
-              </TouchableOpacity>
-            );
-          })}
+              />
+            </View>
+          ) : (
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => {
+                props.navigation.navigate(AppRoutes.ImageSliderScreen, {
+                  images: [data.fileUrl],
+                  heading: file_name || 'Image',
+                });
+              }}
+              style={{ marginHorizontal: 20, marginBottom: 15, marginTop: 15 }}
+            >
+              <Image
+                placeholderStyle={{
+                  height: 425,
+                  width: '100%',
+                  alignItems: 'center',
+                  backgroundColor: 'transparent',
+                }}
+                PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
+                source={{ uri: data.fileUrl }}
+                style={{
+                  width: '100%',
+                  height: 425,
+                }}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+          )}
         </ScrollView>
       </View>
     );
