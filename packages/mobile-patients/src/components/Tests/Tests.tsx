@@ -998,6 +998,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setPageLoading!(false);
       if (data) {
         if (data?.APOLLO?.[0]._id) {
+          AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
           setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
           setIsCircleSubscription && setIsCircleSubscription(true);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
