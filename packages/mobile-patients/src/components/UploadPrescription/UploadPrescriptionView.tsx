@@ -12,8 +12,9 @@ import {
   Alert,
   Image,
   BackHandler,
+  ScrollView,
 } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { RNCamera as Camera } from 'react-native-camera';
 import {
   CameraClickButton,
@@ -251,11 +252,16 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
   });
 
   const clickPhoto = async () => {
-    const options = { quality: 0.5, base64: true, pauseAfterCapture: true };
-    const data = await _camera?.current?.takePictureAsync(options);
-    const clickedPhotoResponse = formatResponse([data], true);
-    setImageClickData(clickedPhotoResponse);
-    setPhotoBase64(data?.base64);
+    try {
+      CommonLogEvent('Inside UploadPrescriprionView clickPhoto function.');
+      const options = { quality: 0.5, base64: true, pauseAfterCapture: true };
+      const data = await _camera?.current?.takePictureAsync(options);
+      const clickedPhotoResponse = formatResponse([data], true);
+      setImageClickData(clickedPhotoResponse);
+      setPhotoBase64(data?.base64);
+    } catch (error) {
+      CommonBugFender('UploadPrescriprionView_clickPhoto', error);
+    }
   };
 
   const removeClickedPhoto = () => {
