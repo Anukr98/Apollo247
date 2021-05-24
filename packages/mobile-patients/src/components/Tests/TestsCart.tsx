@@ -502,6 +502,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       showAphAlert?.({
         title: string.common.hiWithSmiley,
         description: string.diagnostics.modifyDiscardText,
+        unDismissable: true,
         CTAs: [
           {
             text: 'DISCARD',
@@ -2602,17 +2603,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         ?.filter((item: any) => newItems?.includes(item?.itemId))
         .sort((a: any, b: any) => b?.price - a?.price);
 
-      //filter the items present in both (only in case of modify)
+      const itemsToRemove = getDuplicateItems?.splice(isModifyFlow ? 0 : 1);
 
-      const itemsToRemove = cartItems?.map((item) =>
-        getDuplicateItems?.splice(1, getDuplicateItems?.length - 1)
-      );
       const itemIdToRemove = itemsToRemove?.map((item: any) => item?.itemId);
-
       const updatedCartItems = cartItems?.filter(function(items: any) {
         return itemIdToRemove?.indexOf(Number(items?.id)) < 0;
       });
-
       //assuming get two values.
       let array = [] as any;
       cartItems?.forEach((cItem) => {
@@ -2627,9 +2623,17 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         });
       });
 
+      const duplicateItemNameForModify =
+        isModifyFlow &&
+        modifiedOrder?.diagnosticOrderLineItems?.find(
+          (item: any) => Number(item?.itemId) !== Number(array?.[0]?.removalId)
+        );
+
       const highPricesItem = cartItems?.map((cItem) =>
         Number(cItem?.id) == Number(getDuplicateItems?.[0]?.itemId)
           ? !!cItem?.name && nameFormater(cItem?.name, 'default')
+          : isModifyFlow
+          ? duplicateItemNameForModify?.name
           : ''
       );
       const higherPricesName = highPricesItem?.filter((item: any) => item != '')?.join(', ');
@@ -2641,7 +2645,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setDuplicateNameArray(arrayToSet);
 
       renderDuplicateMessage(duplicateTests, higherPricesName);
-      setLoading?.(false);
     } else {
       setLoading?.(false);
       hideAphAlert?.();
@@ -2652,7 +2655,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const renderDuplicateMessage = (duplicateTests: string, higherPricesName: string) => {
     showAphAlert?.({
       title: 'Your cart has been revised!',
-      description: `The "${duplicateTests}" has been removed from your cart as it is already included in another test "${higherPricesName}" in your cart. Kindly proceed to pay the revised amount`,
+      description: isModifyFlow
+        ? `The "${duplicateTests}" has been removed from your cart as it is already included in your order. Kindly proceed to pay the revised amount`
+        : `The "${duplicateTests}" has been removed from your cart as it is already included in another test "${higherPricesName}" in your cart. Kindly proceed to pay the revised amount`,
       onPressOk: () => {
         setLoading?.(false);
         hideAphAlert?.();

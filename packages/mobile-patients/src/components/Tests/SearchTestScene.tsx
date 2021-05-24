@@ -358,6 +358,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       showAphAlert?.({
         title: string.common.hiWithSmiley,
         description: string.diagnostics.modifyDiscardText,
+        unDismissable: true,
         CTAs: [
           {
             text: 'DISCARD',
