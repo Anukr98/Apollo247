@@ -1399,7 +1399,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const renderSliderItem = ({ item, index }: { item: any; index: number }) => {
     const handleOnPress = () => {
       //for routing to details page
-      console.log({ item });
       if (item?.redirectUrl && item?.redirectUrl != '') {
         const data = item?.redirectUrl?.split('=')?.[1];
         const extractData = data?.replace('apollopatients://', '');
