@@ -30,9 +30,11 @@ export const CommonLogEvent = async (title: string, data?: any) => {
 export const CommonBugFender = async (stringName: string, errorValue: Error) => {
   try {
     phoneNumber = phoneNumber || (await AsyncStorage.getItem('phoneNumber')) || '';
-    crashlytics().setUserId(phoneNumber);
-    crashlytics().log(stringName);
-    crashlytics().recordError(errorValue);
+    await crashlytics().setUserId(phoneNumber);
+    await crashlytics().setAttribute('issueId', stringName);
+    await crashlytics().log(stringName);
+    await crashlytics().recordError(errorValue);
+    await crashlytics().setAttribute('issueId', '');
   } catch (error) {}
 };
 
