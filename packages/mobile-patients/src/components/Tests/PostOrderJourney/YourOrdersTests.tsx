@@ -1504,6 +1504,7 @@ const styles = StyleSheet.create({
   },
   cancel_text: {
     ...theme.viewStyles.text('M', 12, '#01475b', 0.6, 16),
+    width:'90%',
     marginHorizontal: 5,
   },
   overlayHeadingText: {

@@ -316,6 +316,7 @@ const styles = StyleSheet.create({
   },
   cancel_text: {
     ...theme.viewStyles.text('M', 12, '#01475b', 0.6, 18),
+    width:'90%',
     marginHorizontal: 10,
   },
   orderPlaced: {
