@@ -410,7 +410,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     let checkRating = starCount.includes(phleboRating);
     const ratedStarCount = starCount.slice(0, phleboRating);
     const unRatedStarCount = starCount.slice(phleboRating, starCount.length);
-    return props.orderLevelStatus != DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED ? (
+    return props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED ? (
       <View style={styles.ratingContainer}>
         <Text style={styles.ratingTextStyle}>
           {!!checkRating
@@ -460,7 +460,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         {report ? (
           <View style={styles.reporttatContainer}>
             <ClockIcon />
-            <Text style={styles.reportTextStyle}>{report}</Text>
+            <Text style={styles.reportTextStyle}>{`Report Generation time - ${report}`}</Text>
           </View>
         ) : null}
         {prepData ? (
