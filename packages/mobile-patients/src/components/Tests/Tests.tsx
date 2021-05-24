@@ -1398,39 +1398,41 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderSliderItem = ({ item, index }: { item: any; index: number }) => {
     const handleOnPress = () => {
-      //for routing to details page
       if (item?.redirectUrl && item?.redirectUrl != '') {
-        const data = item?.redirectUrl?.split('=')?.[1];
-        const extractData = data?.replace('apollopatients://', '');
-        const getNavigationDetails = extractData?.split('?');
-        const route = getNavigationDetails?.[0];
-        let itemId = '';
-        try {
-          if (getNavigationDetails?.length >= 2) {
-            itemId = getNavigationDetails?.[1]?.split('&');
-            if (itemId.length > 0) {
-              itemId = itemId[0];
-            }
+        //for rtpcr - drive through - open webview
+        if (item?.redirectUrlText === 'WebView') {
+          try {
+            const openUrl = item?.redirectUrl || AppConfig.Configuration.RTPCR_Google_Form;
+            props.navigation.navigate(AppRoutes.CovidScan, {
+              covidUrl: openUrl,
+            });
+          } catch (e) {
+            aphConsole.log(e);
+            CommonBugFender('renderSliderItem_handleOnPress_Tests', e);
           }
-        } catch (error) {}
-        if (route == 'TestDetails') {
-          DiagnosticBannerClick(slideIndex + 1, Number(itemId));
-          props.navigation.navigate(AppRoutes.TestDetails, {
-            itemId: itemId,
-            comingFrom: AppRoutes.Tests,
-          });
         }
-      }
-      //for rtpcr - drive through (redirect url as null) - open webview
-      else if (item?.redirectUrl === null) {
-        try {
-          const openUrl = AppConfig.Configuration.RTPCR_Google_Form;
-          props.navigation.navigate(AppRoutes.CovidScan, {
-            covidUrl: openUrl,
-          });
-        } catch (e) {
-          aphConsole.log(e);
-          CommonBugFender('renderSliderItem_handleOnPress_Tests', e);
+        //redirect to details page
+        else {
+          const data = item?.redirectUrl?.split('=')?.[1];
+          const extractData = data?.replace('apollopatients://', '');
+          const getNavigationDetails = extractData?.split('?');
+          const route = getNavigationDetails?.[0];
+          let itemId = '';
+          try {
+            if (getNavigationDetails?.length >= 2) {
+              itemId = getNavigationDetails?.[1]?.split('&');
+              if (itemId.length > 0) {
+                itemId = itemId[0];
+              }
+            }
+          } catch (error) {}
+          if (route == 'TestDetails') {
+            DiagnosticBannerClick(slideIndex + 1, Number(itemId));
+            props.navigation.navigate(AppRoutes.TestDetails, {
+              itemId: itemId,
+              comingFrom: AppRoutes.Tests,
+            });
+          }
         }
       }
     };
