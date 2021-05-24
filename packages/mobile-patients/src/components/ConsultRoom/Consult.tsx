@@ -997,7 +997,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             activeOpacity={1}
             onPress={() => {
               setAppoinmentItem(item);
-              setdisplayoverlay(true);
+              props.navigation.navigate(AppRoutes.DoctorDetails, {
+                doctorId: item?.doctorId || item?.doctorInfo?.id,
+              });
               fireWebengageEvent(item, cancelConsulations ? 'cancel' : 'followup');
             }}
           >
@@ -1101,7 +1103,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             activeOpacity={1}
             onPress={() => {
               setAppoinmentItem(item);
-              setdisplayoverlay(true);
+              props.navigation.navigate(AppRoutes.DoctorDetails, {
+                doctorId: item?.doctorId || item?.doctorInfo?.id,
+              });
             }}
           >
             <Text
