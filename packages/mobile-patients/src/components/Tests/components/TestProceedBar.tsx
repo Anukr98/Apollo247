@@ -48,25 +48,31 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
   } = props;
 
   function getButtonTitle() {
-    return !deliveryAddressId
-      ? addresses?.length
-        ? string.diagnostics.selectAddressText
-        : string.diagnostics.addAddressText
-      : isEmptyObject(areaSelected)
-      ? string.diagnostics.selectAreaText
-      : isModifyCOD
-      ? `${string.placeOrder} (COD)`
-      : string.proceedToPay;
+    if (modifyOrderDetails) {
+      return isModifyCOD ? `${string.placeOrder} (COD)` : string.proceedToPay;
+    } else {
+      return !deliveryAddressId
+        ? addresses?.length
+          ? string.diagnostics.selectAddressText
+          : string.diagnostics.addAddressText
+        : isEmptyObject(areaSelected)
+        ? string.diagnostics.selectAreaText
+        : string.proceedToPay;
+    }
   }
 
   function onPressButton() {
-    return !deliveryAddressId
-      ? addresses?.length
-        ? onPressSelectDeliveryAddress?.()
-        : onPressAddDeliveryAddress?.()
-      : isEmptyObject(areaSelected)
-      ? onPressSelectArea?.()
-      : onPressProceedtoPay?.();
+    if (modifyOrderDetails) {
+      onPressProceedtoPay?.();
+    } else {
+      return !deliveryAddressId
+        ? addresses?.length
+          ? onPressSelectDeliveryAddress?.()
+          : onPressAddDeliveryAddress?.()
+        : isEmptyObject(areaSelected)
+        ? onPressSelectArea?.()
+        : onPressProceedtoPay?.();
+    }
   }
 
   const renderTimeSlot = () => {

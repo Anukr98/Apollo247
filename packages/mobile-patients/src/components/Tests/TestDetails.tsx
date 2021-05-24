@@ -379,6 +379,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     showAphAlert?.({
       title: string.common.hiWithSmiley,
       description: string.diagnostics.modifyDiscardText,
+      unDismissable: true,
       CTAs: [
         {
           text: 'DISCARD',
