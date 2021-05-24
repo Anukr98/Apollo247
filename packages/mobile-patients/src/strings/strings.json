@@ -475,6 +475,7 @@
       "userUnavailable": "I am not available right now",
       "bookedByMistake": "Booked by Mistake",
       "urgentReport": "Need Report Urgently",
+      "anotherChannel": "Booked from other channel",
       "otherReasons": "Others (Please specify)"
     },
     "reasonForReschedule_TestOrder": {
