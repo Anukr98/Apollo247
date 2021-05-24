@@ -23,6 +23,8 @@ import {
   LocationOutline,
   StarEmpty,
   ClockIcon,
+  StarFillGreen,
+  StarEmptyGreen
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -319,16 +321,15 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       phleboEta = moment(phlObj?.CheckInTime).format('hh:mm A');
     }
     const slotime = !!props.slotTime ? moment(props?.slotTime) || null : null;
-    const showDetailedInfo = true;
-    // !!slotime
-    //   ? slotime.diff(moment(), 'minutes') < 60 && slotime.diff(moment(), 'minutes') > 0
-    //   : false;
+    const showDetailedInfo = !!slotime
+      ? slotime.diff(moment(), 'minutes') < 60 && slotime.diff(moment(), 'minutes') > 0
+      : false;
     const isCallingEnabled = !!phlObj ? phlObj?.allowCalling : false;
     return (
       <>
         {!!otpToShow && DIAGNOSTIC_SHOW_OTP_STATUS.includes(props.orderLevelStatus) ? (
           <>
-            {!!showDetailedInfo && showDetailedInfo ? (
+            {showDetailedInfo || props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN ? (
               <View style={styles.otpCallContainer}>
                 <View style={styles.detailContainer}>
                   {phoneNumber ? (
@@ -416,11 +417,9 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   const showOnlyOTPContainer = () => {
     const phlObj = props?.phelboObject;
     const otpToShow = !!phlObj && phlObj?.PhelboOTP;
-    return (
       <View style={styles.ratingContainer}>
         <Text style={styles.otpBoxTextStyle}>OTP : {otpToShow}</Text>
       </View>
-    );
   };
 
   const showRatingView = () => {
@@ -428,12 +427,31 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     const phlObj = props?.phelboObject;
     const phleboRating = !!phlObj && phlObj?.PhleboRating;
     let checkRating = starCount.includes(phleboRating);
-    return props.orderLevelStatus === DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED ? (
-      !!checkRating ? null : (
-        <View style={styles.ratingContainer}>
-          <Text style={styles.ratingTextStyle}>How was your Experience with Phlebo</Text>
-          <View style={styles.startContainer}>
-            {starCount.map((item) => (
+    const ratedStarCount = starCount.slice(0, phleboRating);
+    const unRatedStarCount = starCount.slice(phleboRating, starCount.length);
+    return props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED ? (
+      <View style={styles.ratingContainer}>
+        <Text style={styles.ratingTextStyle}>
+          {!!checkRating
+            ? 'You have successfully rated the Phlebo Experience'
+            : 'How was your Experience with Phlebo'}
+        </Text>
+        <View style={styles.startContainer}>
+          {!!checkRating ? (
+            <>
+              {ratedStarCount.map((item, index) => (
+                <View>
+                  <StarFillGreen style={{ margin: 5 }} />
+                </View>
+              ))}
+              {unRatedStarCount.map((item, index) => (
+                <View>
+                  <StarEmpty style={{ margin: 5 }} />
+                </View>
+              ))}
+            </>
+          ) : (
+            starCount.map((item) => (
               <TouchableOpacity
                 onPress={() => {
                   props.onPressRatingStar(item);
@@ -441,10 +459,10 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
               >
                 <StarEmpty style={{ margin: 5 }} />
               </TouchableOpacity>
-            ))}
-          </View>
+            ))
+          )}
         </View>
-      )
+      </View>
     ) : null;
   };
 
@@ -461,7 +479,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         {report ? (
           <View style={styles.reporttatContainer}>
             <ClockIcon />
-            <Text style={styles.reportTextStyle}>{report}</Text>
+            <Text style={styles.reportTextStyle}>{`Report Generation time - ${report}`}</Text>
           </View>
         ) : null}
         {prepData ? (
@@ -524,6 +542,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         {renderCTAsView()}
       </View>
       {props.showAdditonalView || props.isCancelled ? renderAdditionalInfoView() : null}
+
       {showDetailOTPContainer()}
       {showRatingView()}
       {showReportTat()}

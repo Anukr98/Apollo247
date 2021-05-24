@@ -62,7 +62,7 @@ export const Copy: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/copy.webp')} />
 );
 export const CopyBlue: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/copy_blue.webp')} />
+  <IconBase size="sm" {...props} source={require('./icons/copy_blue_1.png')} />
 );
 export const DownloadNew: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/download.webp')} />
