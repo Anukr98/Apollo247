@@ -110,12 +110,13 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
 
   //add the cityId in case of modifyFlow
-  const cityId =
-    locationForDiagnostics?.cityId != ''
-      ? locationForDiagnostics?.cityId
-      : !!diagnosticServiceabilityData && diagnosticServiceabilityData?.city != ''
-      ? diagnosticServiceabilityData?.cityId
-      : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID;
+  const cityId = isModify
+    ? modifiedOrder?.cityId
+    : locationForDiagnostics?.cityId != ''
+    ? locationForDiagnostics?.cityId
+    : !!diagnosticServiceabilityData && diagnosticServiceabilityData?.city != ''
+    ? diagnosticServiceabilityData?.cityId
+    : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID;
 
   useEffect(() => {
     if (!currentPatient) {

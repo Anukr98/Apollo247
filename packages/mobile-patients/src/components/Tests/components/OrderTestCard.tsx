@@ -16,7 +16,6 @@ import moment from 'moment';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components/StatusCard';
-import { getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 import {
   InfoIconRed,
   WhiteProfile,
@@ -230,8 +229,9 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   const renderPreparationData = () => {
     //remove duplicate test prep data.
     const getPrepData = filterOrderLineItem?.map(
-      (item: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems) =>
-        item?.itemObj?.testPreparationData || item?.diagnostics?.testPreparationData!
+      (
+        item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems
+      ) => item?.itemObj?.testPreparationData || item?.diagnostics?.testPreparationData!
     );
     const filterData = [...new Set(getPrepData)];
     return (
