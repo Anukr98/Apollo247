@@ -23,7 +23,12 @@ import {
   TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
-import { aphConsole, g, isValidSearch } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  aphConsole,
+  g,
+  isEmptyObject,
+  isValidSearch,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { AxiosResponse } from 'axios';
@@ -41,6 +46,7 @@ import {
   View,
   ViewStyle,
   ListRenderItemInfo,
+  BackHandler,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
@@ -61,18 +67,14 @@ import {
   DiagnosticAddToCartEvent,
   DiagnosticItemSearched,
 } from '@aph/mobile-patients/src/components/Tests/Events';
-import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-
 export interface SearchTestSceneProps
   extends NavigationScreenProps<{
     searchText: string;
-    orderDetails?: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList;
   }> {}
 
 export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const searchTextFromProp = props.navigation.getParam('searchText');
-  const existingOrderDetails = props.navigation.getParam('orderDetails');
   const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>(searchTextFromProp);
   const [diagnosticResults, setDiagnosticResults] = useState<
@@ -99,17 +101,22 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     setHcCharges,
     setAreaSelected,
     asyncDiagnosticPincode,
+    setModifiedOrder,
+    modifiedOrder,
   } = useDiagnosticsCart();
   const { cartItems: shopCartItems } = useShoppingCart();
-  const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
+  const { showAphAlert, setLoading: setGlobalLoading, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
+  const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
 
-  const cityId =
-    locationForDiagnostics?.cityId != ''
-      ? locationForDiagnostics?.cityId
-      : !!diagnosticServiceabilityData && diagnosticServiceabilityData?.city != ''
-      ? diagnosticServiceabilityData?.cityId
-      : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID;
+  //add the cityId in case of modifyFlow
+  const cityId = isModify
+    ? modifiedOrder?.cityId
+    : locationForDiagnostics?.cityId != ''
+    ? locationForDiagnostics?.cityId
+    : !!diagnosticServiceabilityData && diagnosticServiceabilityData?.city != ''
+    ? diagnosticServiceabilityData?.cityId
+    : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID;
 
   useEffect(() => {
     if (!currentPatient) {
@@ -127,6 +134,19 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       fetchPopularDetails();
     }
     setWebEngageEventOnSearchItem('', []);
+  }, []);
+
+  useEffect(() => {
+    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+    const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+    return () => {
+      _didFocusSubscription && _didFocusSubscription.remove();
+      _willBlurSubscription && _willBlurSubscription.remove();
+    };
   }, []);
 
   useEffect(() => {
@@ -150,13 +170,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         aphConsole.log('Error occured', { error });
       });
   }, [currentPatient]);
-
-  const errorAlert = () => {
-    showAphAlert?.({
-      title: string.common.uhOh,
-      description: 'Unable to fetch popular tests and packages.',
-    });
-  };
 
   //for past item search
   const fetchPackageDetails = async (name: string, func: (product: any) => void) => {
@@ -195,7 +208,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   };
 
   const showGenericALert = (e: { response: AxiosResponse }) => {
-    showAphAlert!({
+    showAphAlert?.({
       title: string.common.uhOh,
       description: `Something went wrong.`,
     });
@@ -316,16 +329,16 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       <Header
         container={{ borderBottomWidth: 0 }}
         leftIcon={'backArrow'}
-        title={!!existingOrderDetails ? 'MODIFY ORDERS' : 'SEARCH TESTS'}
+        title={isModify ? 'MODIFY ORDERS' : 'SEARCH TESTS'}
         rightComponent={
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => {
                 CommonLogEvent(AppRoutes.SearchTestScene, 'Navigate to your cart');
-                !!existingOrderDetails
+                isModify
                   ? props.navigation.navigate(AppRoutes.TestsCart, {
-                      orderDetails: existingOrderDetails,
+                      orderDetails: modifiedOrder,
                     })
                   : props.navigation.navigate(AppRoutes.MedAndTestCart);
               }}
@@ -341,14 +354,41 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   };
 
   function handleBack() {
-    if (!!existingOrderDetails) {
-      setModifyHcCharges?.(0);
-      setModifiedOrderItemIds?.([]);
-      setHcCharges?.(0);
-      setAreaSelected?.({});
+    if (isModify) {
+      showAphAlert?.({
+        title: string.common.hiWithSmiley,
+        description: string.diagnostics.modifyDiscardText,
+        CTAs: [
+          {
+            text: 'DISCARD',
+            onPress: () => {
+              hideAphAlert?.();
+              clearModifyDetails();
+            },
+            type: 'orange-button',
+          },
+          {
+            text: 'CANCEL',
+            onPress: () => {
+              hideAphAlert?.();
+            },
+            type: 'orange-button',
+          },
+        ],
+      });
+    } else {
+      props.navigation.goBack();
     }
+  }
 
-    props.navigation.goBack();
+  function clearModifyDetails() {
+    setModifyHcCharges?.(0);
+    setModifiedOrderItemIds?.([]);
+    setHcCharges?.(0);
+    setAreaSelected?.({});
+    setModifiedOrder?.({});
+    //go back to homepage
+    props.navigation.navigate('TESTS', { focusSearch: true });
   }
 
   const isNoTestsFound = !isLoading && searchText?.length > 2 && searchResult;
@@ -429,7 +469,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             props.navigation.navigate(AppRoutes.TestDetails, {
               itemId: `${product?.itemId}`,
               comingFrom: AppRoutes.SearchTestScene,
-              existingOrderDetails: existingOrderDetails,
               testDetails: {
                 Rate: price,
                 specialPrice: specialPrice! || price,
@@ -491,7 +530,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             itemId: product?.diagnostic_item_id,
             source: 'Popular search',
             comingFrom: AppRoutes.SearchTestScene,
-            existingOrderDetails: existingOrderDetails,
           });
         }}
         onPressAddToCart={() => {
@@ -505,7 +543,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           paddingBottom: index == diagnosticResults?.length - 1 ? 20 : 0,
         }}
         onPressRemoveFromCart={() => onRemoveCartItem(product?.diagnostic_item_id)}
-        modifyOrderDetails={!!existingOrderDetails ? existingOrderDetails : null}
       />
     );
   };
@@ -610,7 +647,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             itemName: item?.diagnostic_item_name,
             source: 'Popular search',
             comingFrom: AppRoutes.SearchTestScene,
-            existingOrderDetails: existingOrderDetails,
           });
         }}
         onPressAddToCart={() => {
@@ -624,7 +660,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           paddingBottom: index == diagnosticResults?.length - 1 ? 20 : 0,
         }}
         onPressRemoveFromCart={() => removeCartItem!(`${item?.diagnostic_item_id}`)}
-        modifyOrderDetails={!!existingOrderDetails ? existingOrderDetails : null}
       />
     );
   };

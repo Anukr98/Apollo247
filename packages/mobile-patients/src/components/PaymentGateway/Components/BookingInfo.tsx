@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { formatSelectedAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  formatSelectedAddress,
+  isEmptyObject,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import moment from 'moment';
 
 export interface BookingInfoProps {
@@ -12,20 +15,21 @@ export interface BookingInfoProps {
 
 export const BookingInfo: React.FC<BookingInfoProps> = (props) => {
   const { LOB, modifyOrderDetails } = props;
+  const isDiagnosticModifyFlow = !!modifyOrderDetails && !isEmptyObject(modifyOrderDetails);
   const { addresses, deliveryAddressId, diagnosticSlot } = useDiagnosticsCart();
-  const selectedAddress = !!modifyOrderDetails
+  const selectedAddress = isDiagnosticModifyFlow
     ? !!modifyOrderDetails?.patientAddressObj
       ? modifyOrderDetails?.patientAddressObj
       : addresses.find((address) => address?.id == modifyOrderDetails?.patientAddressId)
     : addresses.find((address) => address?.id == deliveryAddressId);
 
   const renderHeading = () => {
-    const slotTime = !!modifyOrderDetails
+    const slotTime = isDiagnosticModifyFlow
       ? moment(modifyOrderDetails?.slotDateTimeInUTC).format('hh:mm')
       : diagnosticSlot?.slotStartTime;
 
     const slotDate = moment(
-      !!modifyOrderDetails ? modifyOrderDetails?.slotDateTimeInUTC : diagnosticSlot?.date
+      isDiagnosticModifyFlow ? modifyOrderDetails?.slotDateTimeInUTC : diagnosticSlot?.date
     ).format('D MMM, YYYY');
 
     const msg = LOB == 'Diag' ? `Slot booked for sample collection ${slotTime}, ${slotDate}` : '';

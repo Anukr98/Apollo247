@@ -35,7 +35,7 @@ import {
   INITIATE_DIAGNOSTIC_ORDER_PAYMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { AppRoutes } from '../NavigatorContainer';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { TxnFailed } from '@aph/mobile-patients/src/components/PaymentGateway/Components/TxnFailed';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -55,11 +55,13 @@ import {
   processDiagnosticsCODOrder,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
+  isEmptyObject,
   isSmallDevice,
   paymentModeVersionCheck,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/components/InfoMessage';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const { HyperSdkReact } = NativeModules;
 
@@ -68,11 +70,11 @@ export interface PaymentMethodsProps extends NavigationScreenProps {
 }
 
 export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
+  const { modifiedOrder } = useDiagnosticsCart();
   const paymentId = props.navigation.getParam('paymentId');
   const amount = props.navigation.getParam('amount');
   const orderId = props.navigation.getParam('orderId');
   const orderDetails = props.navigation.getParam('orderDetails');
-  const modifiedOrderDetails = props.navigation.getParam('modifyOrderDetails');
   const eventAttributes = props.navigation.getParam('eventAttributes');
   const businessLine = props.navigation.getParam('businessLine');
   const { currentPatient } = useAllCurrentPatients();
@@ -88,6 +90,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const FailedStatuses = ['AUTHENTICATION_FAILED', 'AUTHORIZATION_FAILED'];
+  const isDiagnosticModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
 
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
@@ -345,7 +348,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       isCOD: isCOD,
       eventAttributes,
       paymentStatus: paymentStatus,
-      isModify: !!modifiedOrderDetails ? modifiedOrderDetails : null,
+      isModify: isDiagnosticModify ? modifiedOrder : null,
     });
   };
 
@@ -367,7 +370,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderBookingInfo = () => {
-    return <BookingInfo LOB={'Diag'} modifyOrderDetails={modifiedOrderDetails} />;
+    return <BookingInfo LOB={'Diag'} modifyOrderDetails={modifiedOrder} />;
   };
 
   const showPaymentOptions = () => {
@@ -376,7 +379,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           const minVersion = item?.minimum_supported_version;
           switch (item?.name) {
             case 'COD':
-              return paymentModeVersionCheck(minVersion) && !!modifiedOrderDetails
+              return paymentModeVersionCheck(minVersion) && isDiagnosticModify
                 ? null
                 : renderPayByCash();
             case 'CARD':

@@ -4,10 +4,8 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Image } from 'react-native-elements';
-import { nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useDiagnosticsCart } from '../../DiagnosticsCartProvider';
-import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
-
+import { isEmptyObject, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 export interface DiagnosticsSearchSuggestionItemProps {
   onPress: () => void;
   onPressAddToCart: () => void;
@@ -16,15 +14,12 @@ export interface DiagnosticsSearchSuggestionItemProps {
   showSeparator?: boolean;
   loading?: boolean;
   data: any;
-  modifyOrderDetails?:
-    | getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems
-    | any;
 }
 
 export const DiagnosticsSearchSuggestionItem: React.FC<DiagnosticsSearchSuggestionItemProps> = (
   props
 ) => {
-  const { cartItems, modifiedOrderItemIds } = useDiagnosticsCart();
+  const { cartItems, modifiedOrderItemIds, modifiedOrder } = useDiagnosticsCart();
   const { data } = props;
   const name = data?.diagnostic_item_name || '';
   const imageUri = false;
@@ -82,7 +77,7 @@ export const DiagnosticsSearchSuggestionItem: React.FC<DiagnosticsSearchSuggesti
   };
 
   const renderAddToCartView = () => {
-    const isModifyOrder = !!props.modifyOrderDetails;
+    const isModifyOrder = !!modifiedOrder && !isEmptyObject(modifiedOrder);
     const getExisitingOrderItems = isModifyOrder
       ? !!modifiedOrderItemIds && modifiedOrderItemIds
       : [];

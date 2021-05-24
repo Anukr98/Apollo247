@@ -963,7 +963,7 @@ export const mhdMY = (
 };
 
 export const isEmptyObject = (object: Object) => {
-  return Object.keys(object).length === 0;
+  return Object.keys(object)?.length === 0 && object?.constructor === Object;
 };
 
 export const findAddrComponents = (

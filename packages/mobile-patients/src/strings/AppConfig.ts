@@ -220,7 +220,8 @@ const appStaticVariables = {
   Helpdesk_Chat_Confim_Msg:
     'Thank you for reaching out. As we are experiencing a heavy load, our team will get back to you in 24 to 48 hours.',
   Enable_Diagnostics_COD: false,
-  DIAGNOSTIC_DEFAULT_CITYID : 9
+  DIAGNOSTIC_DEFAULT_CITYID : 9,
+  RTPCR_Google_Form: 'https://docs.google.com/forms/d/e/1FAIpQLSd6VaqQ0GTQOdpBYMyh-wZwv8HHrr3W1Q_XCVSaooHXQGVsJQ/viewform'
 };
 
 const DEV_top_specialties = [

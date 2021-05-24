@@ -1754,112 +1754,6 @@ export const GET_DIAGNOSTIC_SLOTS = gql`
   }
 `;
 
-export const GET_DIAGNOSTIC_ORDER_LIST = gql`
-  query getDiagnosticOrdersList($patientId: String) {
-    getDiagnosticOrdersList(patientId: $patientId) {
-      ordersList {
-        id
-        patientAddressId
-        city
-        slotTimings
-        employeeSlotId
-        diagnosticEmployeeCode
-        diagnosticBranchCode
-        totalPrice
-        prescriptionUrl
-        diagnosticDate
-        centerName
-        centerCode
-        centerCity
-        centerState
-        centerLocality
-        orderStatus
-        orderType
-        displayId
-        createdDate
-        areaId
-        slotDateTimeInUTC
-        rescheduleCount
-        isRescheduled
-        collectionCharges
-        visitNo
-        paymentType
-        paymentOrderId
-        phleboDetailsObj {
-          PhelboOTP
-          PhelbotomistName
-          PhelbotomistMobile
-          PhelbotomistTrackLink
-          TempRecording
-          CheckInTime
-          PhleboLatitude
-          PhleboLongitude
-        }
-        diagnosticOrderReschedule {
-          rescheduleDate
-          rescheduleReason
-          comments
-        }
-        diagnosticOrderCancellation {
-          cancellationReason
-          cancelType
-          cancelByName
-          comments
-        }
-        diagnosticOrdersStatus {
-          id
-          orderStatus
-          itemId
-          itemName
-          packageId
-          packageName
-          hideStatus
-          statusMessage
-          statusDate
-        }
-        diagnosticOrderLineItems {
-          id
-          itemId
-          itemName
-          quantity
-          price
-          groupPlan
-          itemType
-          itemObj {
-            itemType
-            testPreparationData
-            packageCalculatedMrp
-            inclusions
-            reportGenerationTime
-          }
-          pricingObj {
-            mrp
-            price
-            groupPlan
-          }
-          diagnostics {
-            id
-            itemId
-            itemName
-            itemType
-            testDescription
-            testPreparationData
-            inclusions
-            diagnosticPricing {
-              mrp
-              price
-              groupPlan
-              status
-              startDate
-              endDate
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-
 export const GET_PACKAGE_INCLUSIONS = gql`
   query getInclusionsOfMultipleItems($itemID: [Int]!) {
     getInclusionsOfMultipleItems(itemID: $itemID) {
@@ -2235,6 +2129,7 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         isRescheduled
         rescheduleCount
         areaId
+        cityId
         patientId
         orderType
         totalPrice

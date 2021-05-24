@@ -581,7 +581,7 @@ export interface FirebaseEvents {
   [FirebaseEventName.DIAGNOSTIC_ITEM_VIEWED]: {
     PatientUHID: string;
     PatientName: string;
-    Source: 'Search Page' | 'Landing Page' | 'Cart Page';
+    Source: 'Search Page' | 'Landing Page' | 'Cart page';
     ItemName: string;
     ItemType: string;
     ItemCode: string;

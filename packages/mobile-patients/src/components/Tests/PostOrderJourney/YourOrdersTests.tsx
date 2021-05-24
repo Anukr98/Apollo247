@@ -37,7 +37,7 @@ import {
   Modal,
 } from 'react-native';
 import { Down, DownO } from '@aph/mobile-patients/src/components/ui/Icons';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import {
   CancellationDiagnosticsInput,
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
@@ -109,6 +109,8 @@ import {
   diagnosticExotelCalling,
   diagnosticExotelCallingVariables,
 } from '@aph/mobile-patients/src/graphql/types/diagnosticExotelCalling';
+
+type orderList = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList;
 export interface YourOrdersTestProps extends NavigationScreenProps {
   showHeader?: boolean;
 }
@@ -129,6 +131,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     cartItems,
     removeCartItem,
     setModifiedOrderItemIds,
+    setModifiedOrder,
   } = useDiagnosticsCart();
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
@@ -155,17 +158,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [selectRescheduleReason, setSelectRescheduleReason] = useState<string>('');
 
   const [refundStatusArr, setRefundStatusArr] = useState<any>(null);
-  const [selectedOrder, setSelectedOrder] = useState<
-    getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList
-  >();
+  const [selectedOrder, setSelectedOrder] = useState<orderList>();
   const [error, setError] = useState(false);
   const { getPatientApiCall } = useAuth();
   const client = useApolloClient();
   const [orders, setOrders] = useState<any>(props.navigation.getParam('orders'));
   const [isPaitentList, setIsPaitentList] = useState<boolean>(false);
-  const [activeOrder, setActiveOrder] = useState<
-    getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList
-  >('');
+  const [activeOrder, setActiveOrder] = useState<orderList>('');
   const [selectedPaitent, setSelectedPaitent] = useState<string>('All');
   const [selectedPaitentId, setSelectedPaitentId] = useState<string>('');
   const [orderListData, setOrderListData] = useState<(orderListByMobile | null)[] | null>([]);
@@ -260,6 +259,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   }, [currentOffset]);
 
   const fetchOrders = async (isRefetch: boolean) => {
+    //clear the modify data.
+    setModifiedOrder?.({});
+    setModifiedOrderItemIds?.([]);
+
     try {
       setLoading?.(true);
       client
@@ -453,42 +456,37 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       });
   };
 
-  const fetchTestReportResult = useCallback(
-    (order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList) => {
-      setLoading?.(true);
-      const getVisitId = order?.visitNo;
-      getPatientPrismMedicalRecordsApi(
-        client,
-        currentPatient?.id,
-        [MedicalRecordType.TEST_REPORT],
-        'Diagnostics'
-      )
-        .then((data: any) => {
-          const labResultsData = g(
-            data,
-            'getPatientPrismMedicalRecords_V2',
-            'labResults',
-            'response'
-          );
-          let resultForVisitNo = labResultsData?.find(
-            (item: any) => item?.identifier == getVisitId
-          );
-          setLoading?.(false);
-          !!resultForVisitNo
-            ? props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-                data: resultForVisitNo,
-                labResults: true,
-              })
-            : renderReportError(string.diagnostics.responseUnavailableForReport);
-        })
-        .catch((error) => {
-          CommonBugFender('YourOrdersTests_fetchTestReportsData', error);
-          currentPatient && handleGraphQlError(error);
-        })
-        .finally(() => setLoading?.(false));
-    },
-    []
-  );
+  const fetchTestReportResult = useCallback((order: orderList) => {
+    setLoading?.(true);
+    const getVisitId = order?.visitNo;
+    getPatientPrismMedicalRecordsApi(
+      client,
+      currentPatient?.id,
+      [MedicalRecordType.TEST_REPORT],
+      'Diagnostics'
+    )
+      .then((data: any) => {
+        const labResultsData = g(
+          data,
+          'getPatientPrismMedicalRecords_V2',
+          'labResults',
+          'response'
+        );
+        let resultForVisitNo = labResultsData?.find((item: any) => item?.identifier == getVisitId);
+        setLoading?.(false);
+        !!resultForVisitNo
+          ? props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+              data: resultForVisitNo,
+              labResults: true,
+            })
+          : renderReportError(string.diagnostics.responseUnavailableForReport);
+      })
+      .catch((error) => {
+        CommonBugFender('YourOrdersTests_fetchTestReportsData', error);
+        currentPatient && handleGraphQlError(error);
+      })
+      .finally(() => setLoading?.(false));
+  }, []);
 
   const renderReportError = (message: string) => {
     showAphAlert?.({
@@ -497,9 +495,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     });
   };
 
-  const checkIfPreTestingExists = (
-    order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList
-  ) => {
+  const checkIfPreTestingExists = (order: orderList) => {
     if (order != null) {
       const filterPreTestingData = order?.diagnosticOrderLineItems?.filter((items) =>
         items?.itemObj
@@ -592,6 +588,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         }
       });
   };
+
   const renderFilterArea = () => {
     return (
       <View style={styles.filterContainer}>
@@ -1048,10 +1045,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setSelectRescheduleOption(false);
   }
 
-  function _navigateToYourTestDetails(
-    order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList,
-    tab: boolean
-  ) {
+  function _navigateToYourTestDetails(order: orderList, tab: boolean) {
     const isPrepaid = order?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
     setLoading?.(true);
     if (isPrepaid && DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus)) {
@@ -1065,9 +1059,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setLoading?.(false);
     props.navigation.navigate(AppRoutes.TestOrderDetails, {
       orderId: order?.id,
-      setOrders: (
-        orders: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList[]
-      ) => setOrders(orders),
+      setOrders: (orders: orderList[]) => setOrders(orders),
       selectedOrder: order,
       refundStatusArr: refundArray,
       comingFrom: AppRoutes.YourOrdersTest,
@@ -1075,10 +1067,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       onPressBack: refetchOrders,
     });
   }
-  const renderOrder = (
-    order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList,
-    index: number
-  ) => {
+
+  const renderOrder = (order: orderList, index: number) => {
     if (order?.diagnosticOrderLineItems?.length == 0) {
       return <View style={{ paddingTop: 4 }} />;
     }
@@ -1236,10 +1226,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   }
 
-  function _onPressAddTest(
-    order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList
-  ) {
+  function _onPressAddTest(order: orderList) {
     DiagnosticAddTestClicked(order?.id, currentPatient, order?.orderStatus);
+
     //clear the cart, if it has some duplicate item present.
     const getOrderItems = order?.diagnosticOrderLineItems?.map(
       (
@@ -1253,23 +1242,38 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       !!getCartItemsWithId &&
       getCartItemsWithId?.length > 0 &&
       getOrderItems?.filter((val) => getCartItemsWithId?.includes(val));
+
+    updateModifyData(order, getOrderItems);
+
     if (!!isAlreadyPartOfOrder && isAlreadyPartOfOrder?.length > 0) {
       isAlreadyPartOfOrder?.map((id: number) => removeCartItem?.(String(id)));
-      renderReportError(string.diagnostics.modifyItemAlreadyExist);
+      showAphAlert?.({
+        onPressOk: () => {
+          hideAphAlert && hideAphAlert();
+          _navigateToSearchPage();
+        },
+        title: string.common.uhOh,
+        description: string.diagnostics.modifyItemAlreadyExist,
+      });
+    } else {
+      _navigateToSearchPage();
     }
-    //clear the hcCharges.
-    setHcCharges?.(0);
-    setModifyHcCharges?.(0);
-    setModifiedOrderItemIds?.(getOrderItems);
+  }
+
+  function _navigateToSearchPage() {
     props.navigation.navigate(AppRoutes.SearchTestScene, {
       searchText: '',
-      orderDetails: order,
     });
   }
 
-  function _onPressViewReport(
-    order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList
-  ) {
+  function updateModifyData(order: orderList, modifiedItems: any) {
+    setHcCharges?.(0);
+    setModifyHcCharges?.(0);
+    setModifiedOrder?.(order);
+    setModifiedOrderItemIds?.(modifiedItems);
+  }
+
+  function _onPressViewReport(order: orderList) {
     const visitId = order?.visitNo;
     const appointmentDetails = !!order?.slotDateTimeInUTC
       ? order?.slotDateTimeInUTC
