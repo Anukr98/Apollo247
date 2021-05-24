@@ -321,17 +321,15 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       phleboEta = moment(phlObj?.CheckInTime).format('hh:mm A');
     }
     const slotime = !!props.slotTime ? moment(props?.slotTime) || null : null;
-    const showDetailedInfo = true;
-    // !!slotime
-    //   ? slotime.diff(moment(), 'minutes') < 60 && slotime.diff(moment(), 'minutes') > 0
-    //   : false;
+    const showDetailedInfo = !!slotime
+      ? slotime.diff(moment(), 'minutes') < 60 && slotime.diff(moment(), 'minutes') > 0
+      : false;
     const isCallingEnabled = !!phlObj ? phlObj?.allowCalling : false;
     return (
       <>
         {!!otpToShow && DIAGNOSTIC_SHOW_OTP_STATUS.includes(props.orderLevelStatus) ? (
           <>
-           {/* props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN ? */}
-            {!!showDetailedInfo && showDetailedInfo ? (
+            {showDetailedInfo || props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN ? (
               <View style={styles.otpCallContainer}>
                 <View style={styles.detailContainer}>
                   {phoneNumber ? (
