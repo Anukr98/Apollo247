@@ -127,7 +127,6 @@ import {
   DiagnosticAddresssSelected,
   DiagnosticAddToCartEvent,
   DiagnosticBannerClick,
-  DiagnosticHomePageSearchItem,
   DiagnosticHomePageWidgetClicked,
   DiagnosticLandingPageViewedEvent,
   DiagnosticPinCodeClicked,
@@ -164,7 +163,8 @@ import moment from 'moment';
 
 import AsyncStorage from '@react-native-community/async-storage';
 import { OrderCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/OrderCardCarousel';
-import { PrescriptionCardCarousel } from './components/PrescriptionCardCarousel';
+import { PrescriptionCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/PrescriptionCardCarousel';
+import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
 
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
@@ -212,6 +212,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setAddresses: setTestAddress,
     addMultipleCartItems: addMultipleTestCartItems,
     setCartPagePopulated,
+    asyncDiagnosticPincode,
+    setAsyncDiagnosticPincode,
   } = useDiagnosticsCart();
   const {
     cartItems: shopCartItems,
@@ -223,6 +225,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setCirclePlanValidity,
     addresses,
     setAddresses,
+    asyncPincode,
   } = useShoppingCart();
 
   const {
@@ -269,8 +272,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [patientOpenOrders, setPatientOpenOrders] = useState([] as any);
   const [patientClosedOrders, setPatientClosedOrders] = useState([] as any);
 
-  const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
-  const [searchResult, setSearchResults] = useState<boolean>(false);
   const [isCurrentScreen, setCurrentScreen] = useState<string>('');
 
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
@@ -278,13 +279,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
   const defaultAddress = addresses?.find((item) => item?.defaultAddress);
   const [pageLoading, setPageLoading] = useState<boolean>(false);
-  const [asyncPincode, setAsyncPincode] = useState({});
   const [isFocused, setIsFocused] = useState<boolean>(false);
+  const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
+  const [clickedItem, setClickedItem] = useState<any>([]);
 
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
 
   const [serviceableObject, setServiceableObject] = useState({} as any);
-  Object.keys(serviceableObject)?.length === 0 && serviceableObject?.constructor === Object;
 
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
@@ -293,7 +294,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         sourceHeaders,
       },
       variables: {
-        cityID: Number(cityId) || 9,
+        cityID: Number(cityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
         itemIDs: listOfId,
       },
       fetchPolicy: 'no-cache',
@@ -344,21 +345,21 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }, [newAddressAddedHomePage]);
 
   /** added so that if phramacy code change, then this also changes. */
-  /**need to put a check if pincode is entered then that needs to be saved, and only change in pharama location comes here. */
   useEffect(() => {
-    setDiagnosticLocation?.(!!pharmacyLocation ? pharmacyLocation! : locationDetails!);
-    checkIsPinCodeServiceable(
-      !!pharmacyLocation ? pharmacyLocation?.pincode! : locationDetails?.pincode!,
-      'manual',
-      'initialPincode'
-    );
-  }, [pharmacyLocation]); //removed location details
+    let getLocationDetails = !!asyncPincode
+      ? asyncPincode
+      : !!pharmacyLocation
+      ? pharmacyLocation!
+      : locationDetails!;
+    setDiagnosticLocation?.(getLocationDetails);
+    setAsyncDiagnosticPincode?.(getLocationDetails);
+    checkIsPinCodeServiceable(getLocationDetails?.pincode, 'manual', 'pharmaPincode');
+  }, [asyncPincode]); //removed location details
 
   /**
    * fetch widgets
    */
   useEffect(() => {
-    getDiagnosticBanner();
     setBannerData && setBannerData([]);
     DiagnosticLandingPageViewedEvent(
       currentPatient,
@@ -387,9 +388,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
         const asyncLocationPincode: any = await AsyncStorage.getItem('PharmacyLocationPincode');
         if (asyncLocationPincode) {
           let getAsyncPincode = JSON.parse(asyncLocationPincode);
-          setAsyncPincode(JSON.parse(asyncLocationPincode));
+          setAsyncDiagnosticPincode?.(JSON.parse(asyncLocationPincode));
           //call only when they are different.
-          if (asyncPincode?.pincode === getAsyncPincode?.pincode) {
+          if (asyncDiagnosticPincode?.pincode === getAsyncPincode?.pincode) {
             return;
           } else {
             checkIsPinCodeServiceable(
@@ -399,10 +400,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 ? pharmacyLocation?.pincode!
                 : locationDetails?.pincode!,
               'manual',
-              'initalPicode'
+              'initalPincode'
             );
           }
-          setDiagnosticLocation!(!!pharmacyLocation ? pharmacyLocation! : locationDetails!);
+          setDiagnosticLocation?.(!!pharmacyLocation ? pharmacyLocation! : locationDetails!);
         }
       };
       getAsyncLocationPincode();
@@ -436,7 +437,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         ImageNative.getSize(
           item?.bannerImage,
           (width, height) => {
-            setImgHeight(height * (winWidth / width) + 20);
+            setImgHeight(Math.max(height * (winWidth / width) + 20, 180));
             setBannerLoading(false);
           },
           () => {
@@ -496,7 +497,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         currentPatient?.mobileNumber,
         3,
         Object.keys(serviceableObject)?.length === 0 && serviceableObject?.constructor === Object
-          ? 9
+          ? AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
           : serviceableObject?.cityId
       );
       if (res?.data?.data) {
@@ -515,9 +516,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   };
 
-  const getDiagnosticBanner = async () => {
+  const getDiagnosticBanner = async (cityId: number) => {
     try {
-      const res: any = await getLandingPageBanners('diagnostic');
+      const res: any = await getLandingPageBanners('diagnostic', Number(cityId));
+      //if true then only show it.
       if (res?.data?.success) {
         const bannerData = g(res, 'data', 'data');
         setBanners(bannerData);
@@ -588,7 +590,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         !!itemIds &&
           itemIds?.map((item: any) =>
             fetchPricesForCityId(
-              Number(cityId!) || 9,
+              Number(cityId!) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
               item?.length > 12 ? item?.slice(0, 12) : item
             )
           )
@@ -692,21 +694,22 @@ export const Tests: React.FC<TestsProps> = (props) => {
       if (addresses?.length) {
         const deliveryAddress = addresses?.find((item) => item?.defaultAddress);
         if (deliveryAddress) {
-          setDeliveryAddressId!(deliveryAddress?.id);
+          setDeliveryAddressId?.(deliveryAddress?.id);
+
           //if location is not undefined in either of the three, then don't change address
           if (
-            !asyncPincode?.pincode! &&
+            !asyncDiagnosticPincode?.pincode! &&
+            !diagnosticLocation &&
             !locationDetails &&
-            !pharmacyLocation &&
-            !diagnosticLocation
+            !pharmacyLocation
           ) {
             checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'initialFetchAddress');
-            setDiagnosticLocation!(formatAddressToLocation(deliveryAddress));
+            setDiagnosticLocation?.(formatAddressToLocation(deliveryAddress));
             return;
           }
         }
       }
-      setPageLoading!(true);
+      setPageLoading?.(true);
       const response = await client.query<getPatientAddressList, getPatientAddressListVariables>({
         query: GET_PATIENT_ADDRESS_LIST,
         variables: { patientId: currentPatient?.id },
@@ -719,10 +722,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
       if (deliveryAddress) {
         setDeliveryAddressId?.(deliveryAddress?.id);
         if (
-          !asyncPincode?.pincode! &&
+          !asyncDiagnosticPincode?.pincode! &&
+          !diagnosticLocation &&
           !locationDetails &&
-          !pharmacyLocation &&
-          !diagnosticLocation
+          !pharmacyLocation
         ) {
           checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'fetchAddressResponse');
           setDiagnosticLocation?.(formatAddressToLocation(deliveryAddress));
@@ -730,17 +733,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
       } else {
         checkLocation(addressList);
       }
-      setPageLoading!(false);
+      setPageLoading?.(false);
     } catch (error) {
       checkLocation(addresses);
-      setPageLoading!(false);
+      setPageLoading?.(false);
       CommonBugFender('fetching_Addresses_on_Test_Page', error);
     }
   }
 
   const updatePlaceInfoByPincode = (pincode: string, serviceableResponse: DiagnosticData) => {
     let isPinCodeServiceable = serviceableResponse?.city != '';
-
     getPlaceInfoByPincode(pincode)
       .then(({ data }) => {
         try {
@@ -749,7 +751,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
             const latLang = data?.results?.[0]?.geometry?.location || {};
             const response = getFormattedLocation(addrComponents, latLang, pincode);
             let setCity, setState;
-
             if (isDiagnosticLocationServiceable && diagnosticServiceabilityData == null) {
               setCity = diagnosticLocation?.city! || '';
               setState = diagnosticLocation?.state! || '';
@@ -761,7 +762,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               setState = response?.state || '';
             }
             (response.city = setCity), (response.state = setState);
-            setDiagnosticLocation!(response);
+            setDiagnosticLocation?.(response);
             !locationDetails && setLocationDetails!(response);
             const saveAddress = {
               pincode: pincode,
@@ -770,7 +771,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               state: setState,
             };
             setAsyncPharmaLocation(saveAddress);
-            setAsyncPincode(saveAddress);
+            setAsyncDiagnosticPincode?.(saveAddress);
             setLoadingContext?.(false);
           } else {
             let response = {
@@ -807,10 +808,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
               state: response?.state,
             };
             setAsyncPharmaLocation(saveAddress);
-            setAsyncPincode(saveAddress);
+            setAsyncDiagnosticPincode?.(saveAddress);
             setLoadingContext?.(false);
           }
         } catch (e) {
+          CommonBugFender('updatePlaceInfoByPincode_Tests', e);
           setLoadingContext?.(false);
           handleUpdatePlaceInfoByPincodeError(e);
         }
@@ -821,13 +823,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   /**check current location */
   const autoDetectLocation = (addresses: addressListType) => {
-    setPageLoading!(true);
+    setPageLoading?.(true);
     doRequestAndAccessLocationModified()
       .then((response) => {
         setPageLoading!(false);
         response && setDiagnosticLocation!(response);
         response && !locationDetails && setLocationDetails!(response);
-        setDeliveryAddressId!('');
+        setDeliveryAddressId?.('');
         checkIsPinCodeServiceable(response.pincode, 'Auto-select', 'autoDetect');
       })
       .catch((e) => {
@@ -837,7 +839,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         e &&
           typeof e == 'string' &&
           !e.includes('denied') &&
-          showAphAlert!({
+          showAphAlert?.({
             title: string.common.uhOh,
             description: e,
           });
@@ -872,8 +874,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
               city: serviceableData?.cityName || '',
             };
             setServiceableObject(obj);
-            setDiagnosticServiceabilityData!(obj);
-            setDiagnosticLocationServiceable!(true);
+            setDiagnosticServiceabilityData?.(obj);
+            setDiagnosticLocationServiceable?.(true);
             setServiceabilityMsg('');
             mode && setWebEnageEventForPinCodeClicked(mode, pincode, true);
             comingFrom == 'defaultAddress' &&
@@ -882,14 +884,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
               DiagnosticAddresssSelected('New', 'Yes', pincode, 'Home page');
           } else {
             obj = {
-              cityId: '9',
+              cityId: String(AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID),
               stateId: '0',
               state: '',
               city: '',
             };
             setServiceableObject(obj);
-            setPageLoading!(false);
-            setDiagnosticLocationServiceable!(false);
+            setPageLoading?.(false);
+            setDiagnosticLocationServiceable?.(false);
 
             isCurrentScreen == AppRoutes.Tests
               ? renderLocationNotServingPopUpForPincode(pincode)
@@ -903,6 +905,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             comingFrom == 'newAddress' &&
               DiagnosticAddresssSelected('New', 'No', pincode, 'Home page');
           }
+          getDiagnosticBanner(Number(serviceableData?.cityID));
           getHomePageWidgets(obj?.cityId);
           setshowLocationpopup(false);
           updatePlaceInfoByPincode(pincode, obj);
@@ -956,7 +959,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     });
     //passed zero till the time prices aren't updated.
     postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, 0, 0, 'Partial search');
-    addCartItem!({
+    addCartItem?.({
       id: `${itemId}`,
       name: stripHtml(itemName),
       price: pricesObject?.rate || 0,
@@ -1168,7 +1171,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         //show the error
         renderAlert(string.diagnostics.updateAddressLatLngMessage, 'updateLocation', address);
       } else {
-        setPageLoading(true);
+        setPageLoading?.(true);
         hideAphAlert?.();
         const response = await client.query<makeAdressAsDefault, makeAdressAsDefaultVariables>({
           query: SET_DEFAULT_ADDRESS,
@@ -1183,12 +1186,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }));
         setAddresses?.(updatedAddresses);
         setTestAddress?.(updatedAddresses);
-        patientAddress?.defaultAddress && setDeliveryAddressId!(patientAddress?.id);
+        patientAddress?.defaultAddress && setDeliveryAddressId?.(patientAddress?.id);
         setDiagnosticAreas?.([]);
         setAreaSelected?.({});
         setDiagnosticSlot?.(null);
         const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
-        setDiagnosticLocation!(formatAddressToLocation(deliveryAddress! || null));
+        setDiagnosticLocation?.(formatAddressToLocation(deliveryAddress! || null));
         checkIsPinCodeServiceable(address?.zipcode!, undefined, 'defaultAddress');
         setPageLoading(false);
       }
@@ -1196,7 +1199,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setPageLoading(false);
       checkLocation(addresses);
       CommonBugFender('set_default_Address_on_Medicine_Page', error);
-      showAphAlert!({
+      showAphAlert?.({
         title: string.common.uhOh,
         description:
           "We're sorry! Unable to set delivery address. Please try again after some time",
@@ -1212,7 +1215,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       showAccessLocationPopup(addresses, false);
   };
   const showAccessLocationPopup = (addressList: addressListType, pincodeInput?: boolean) => {
-    return showAphAlert!({
+    return showAphAlert?.({
       // unDismissable: isunDismissable(),
       removeTopIcon: true,
       onPressOutside: () => {
@@ -1223,9 +1226,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
           !locationDetails &&
           !diagnosticLocation &&
           !pharmacyLocation &&
-          !asyncPincode?.pincode!
+          !asyncDiagnosticPincode?.pincode!
         ) {
-          setDeliveryAddressId!('');
+          setDeliveryAddressId?.('');
           checkIsPinCodeServiceable('500034', undefined, 'noLocation');
         }
       },
@@ -1234,7 +1237,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
           source={AppRoutes.Tests}
           addresses={addressList}
           onPressSelectAddress={(address) => {
-            setAsyncPharmaLocation(address);
             const saveAddress = {
               pincode: address?.zipcode,
               id: address?.id,
@@ -1242,7 +1244,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               state: address?.state,
             };
             setCartPagePopulated?.(false);
-            setAsyncPincode(saveAddress);
+            setAsyncDiagnosticPincode?.(saveAddress);
             setDefaultAddress(address);
           }}
           onPressEditAddress={(address) => {
@@ -1252,21 +1254,21 @@ export const Tests: React.FC<TestsProps> = (props) => {
               source: 'Tests' as AddressSource,
               ComingFrom: AppRoutes.Tests,
             });
-            hideAphAlert!();
+            hideAphAlert?.();
           }}
           onPressAddAddress={() => {
             props.navigation.navigate(AppRoutes.AddAddressNew, {
               source: 'Tests' as AddressSource,
               addOnly: true,
             });
-            hideAphAlert!();
+            hideAphAlert?.();
           }}
           onPressCurrentLocaiton={() => {
-            hideAphAlert!();
+            hideAphAlert?.();
             autoDetectLocation(addressList);
           }}
           onPressPincode={() => {
-            hideAphAlert!();
+            hideAphAlert?.();
             showAccessLocationPopup(addressList, true);
           }}
         />
@@ -1290,9 +1292,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderDeliverToLocationCTA = () => {
     let deliveryAddress = addresses?.find((item) => item?.id == deliveryAddressId);
-    const location = asyncPincode?.pincode
-      ? `${formatText(asyncPincode?.city || asyncPincode?.state || '', 18)} ${
-          asyncPincode?.pincode
+    const location = asyncDiagnosticPincode?.pincode
+      ? `${formatText(asyncDiagnosticPincode?.city || asyncDiagnosticPincode?.state || '', 18)} ${
+          asyncDiagnosticPincode?.pincode
         }`
       : !deliveryAddress
       ? diagnosticLocation?.pincode
@@ -1323,11 +1325,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             <View style={{ flexDirection: 'row' }}>
               <View>
                 <Text style={styles.locationText}>{nameFormater(location, 'title')}</Text>
-                {!serviceabilityMsg ? (
-                  <Spearator style={styles.locationTextUnderline} />
-                ) : (
-                  <View style={{ height: 2 }} />
-                )}
+                <Spearator style={styles.locationTextUnderline} />
               </View>
               <View style={styles.dropdownGreenContainer}>
                 <DropdownGreen />
@@ -1383,7 +1381,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
             autoplayInterval={3000}
           />
           <View style={styles.landingBannerInnerView}>
-            {banners?.map((_, index) => (index == slideIndex ? renderDot(true) : renderDot(false)))}
+            {banners?.length > 1 &&
+              banners?.map((_, index) =>
+                index == slideIndex ? renderDot(true) : renderDot(false)
+              )}
           </View>
         </View>
       );
@@ -1395,25 +1396,40 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const renderSliderItem = ({ item, index }: { item: any; index: number }) => {
     const handleOnPress = () => {
       if (item?.redirectUrl && item?.redirectUrl != '') {
-        const data = item?.redirectUrl?.split('=')?.[1];
-        const extractData = data?.replace('apollopatients://', '');
-        const getNavigationDetails = extractData?.split('?');
-        const route = getNavigationDetails?.[0];
-        let itemId = '';
-        try {
-          if (getNavigationDetails?.length >= 2) {
-            itemId = getNavigationDetails?.[1]?.split('&');
-            if (itemId.length > 0) {
-              itemId = itemId[0];
-            }
+        //for rtpcr - drive through - open webview
+        if (item?.redirectUrlText === 'WebView') {
+          try {
+            const openUrl = item?.redirectUrl || AppConfig.Configuration.RTPCR_Google_Form;
+            props.navigation.navigate(AppRoutes.CovidScan, {
+              covidUrl: openUrl,
+            });
+          } catch (e) {
+            aphConsole.log(e);
+            CommonBugFender('renderSliderItem_handleOnPress_Tests', e);
           }
-        } catch (error) {}
-        if (route == 'TestDetails') {
-          DiagnosticBannerClick(slideIndex + 1, Number(itemId));
-          props.navigation.navigate(AppRoutes.TestDetails, {
-            itemId: itemId,
-            comingFrom: AppRoutes.Tests,
-          });
+        }
+        //redirect to details page
+        else {
+          const data = item?.redirectUrl?.split('=')?.[1];
+          const extractData = data?.replace('apollopatients://', '');
+          const getNavigationDetails = extractData?.split('?');
+          const route = getNavigationDetails?.[0];
+          let itemId = '';
+          try {
+            if (getNavigationDetails?.length >= 2) {
+              itemId = getNavigationDetails?.[1]?.split('&');
+              if (itemId.length > 0) {
+                itemId = itemId[0];
+              }
+            }
+          } catch (error) {}
+          if (route == 'TestDetails') {
+            DiagnosticBannerClick(slideIndex + 1, Number(itemId));
+            props.navigation.navigate(AppRoutes.TestDetails, {
+              itemId: itemId,
+              comingFrom: AppRoutes.Tests,
+            });
+          }
         }
       }
     };
@@ -1534,7 +1550,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       <>
         {!!isWidget1 ? renderWidgets(isWidget1) : null}
         {renderStepsToBook()}
-
         {renderCarouselBanners()}
         {!!isWidget2 ? renderWidgets(isWidget2) : null}
         {renderWhyBookUs()}
@@ -1752,7 +1767,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderBookingStepsModal = () => {
     const divisionFactor = winHeight > 750 ? 2.2 : winHeight > 650 ? 1.7 : 1.5;
-    return showAphAlert!({
+    return showAphAlert?.({
       unDismissable: false,
       removeTopIcon: true,
       children: (
@@ -1849,7 +1864,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setWidgetsData([]);
     setLoading?.(true);
     //if banners are not loaded, then refetch them.
-    banners?.length == 0 ? getDiagnosticBanner() : null;
+    banners?.length == 0 ? getDiagnosticBanner(serviceableObject?.cityId) : null;
     getHomePageWidgets(serviceableObject?.cityId);
     //call patients orders + prescriptions as well.
     fetchPatientOpenOrders();
@@ -1985,8 +2000,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   async function onPressOrderStatusOption(item: any) {
-    const appointmentDate = moment(item?.slotDateTimeInUTC)?.format('DD MMM YYYY');
-    const patientName = `${item?.patientObj?.firstName} ${item?.patientObj?.lastName}`;
     if (DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(item?.orderStatus)) {
       //track order
       navigateToTrackingScreen(item);
@@ -1998,27 +2011,21 @@ export const Tests: React.FC<TestsProps> = (props) => {
         item?.id
       );
       //view report download
-      try {
-        if (!!item?.labReportURL && item?.labReportURL != '') {
-          await downloadDiagnosticReport(
-            setLoadingContext,
-            item?.labReportURL,
-            appointmentDate,
-            !!patientName ? patientName : '_',
-            true,
-            undefined
-          );
-        } else {
-          showAphAlert?.({
-            title: string.common.uhOh,
-            description: string.diagnostics.responseUnavailableForReport,
-          });
-        }
-      } catch (error) {
-        setLoadingContext?.(false);
-        CommonBugFender('Tests_onPressOrderStatusOption_downloadLabTest', error);
-      } finally {
-        setLoadingContext?.(false);
+      //need to remove the event once added
+      DiagnosticViewReportClicked(
+        'Home',
+        !!item?.labReportURL ? 'Yes' : 'No',
+        'Download Report PDF',
+        item?.id
+      );
+      if (!!item?.labReportURL && item?.labReportURL != '') {
+        setDisplayViewReport(true);
+        setClickedItem(item);
+      } else {
+        showAphAlert?.({
+          title: string.common.uhOh,
+          description: string.diagnostics.responseUnavailableForReport,
+        });
       }
     } else {
       if (DIAGNOSITC_PHELBO_TRACKING_STATUS.includes(item?.orderStatus)) {
@@ -2027,6 +2034,26 @@ export const Tests: React.FC<TestsProps> = (props) => {
       } else {
         navigateToTrackingScreen(item);
       }
+    }
+  }
+
+  async function onPressViewReport() {
+    const appointmentDate = moment(clickedItem?.slotDateTimeInUTC)?.format('DD MMM YYYY');
+    const patientName = `${clickedItem?.patientObj?.firstName} ${clickedItem?.patientObj?.lastName}`;
+    try {
+      await downloadDiagnosticReport(
+        setLoadingContext,
+        clickedItem?.labReportURL,
+        appointmentDate,
+        !!patientName ? patientName : '_',
+        true,
+        undefined
+      );
+    } catch (error) {
+      setLoadingContext?.(false);
+      CommonBugFender('Tests_onPressOrderStatusOption_downloadLabTest', error);
+    } finally {
+      setLoadingContext?.(false);
     }
   }
 
@@ -2318,6 +2345,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
+      {displayViewReport && (
+        <TestViewReportOverlay
+          order={clickedItem}
+          heading=""
+          isVisible={displayViewReport}
+          onClose={() => {
+            setDisplayViewReport(false);
+            setClickedItem([]);
+          }}
+          onPressViewReport={() => {
+            onPressViewReport();
+          }}
+        />
+      )}
       <SafeAreaView style={{ ...viewStyles.container }}>
         {pageLoading ? (
           <View style={{ backgroundColor: 'white' }}>

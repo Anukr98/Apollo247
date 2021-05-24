@@ -14,7 +14,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Image } from 'react-native-elements';
-import { isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { isEmptyObject, isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   convertNumberToDecimal,
@@ -50,14 +50,15 @@ export interface ItemCardProps {
     | 'Partial search'
     | 'Listing page'
     | 'Category page'
-    | 'Prescription';
+    | 'Prescription'
+    | 'Cart page';
   sourceScreen: string;
   onPressAddToCartFromCart?: (item: any) => void;
   onPressRemoveItemFromCart?: (item: any) => void;
 }
 
 export const ItemCard: React.FC<ItemCardProps> = (props) => {
-  const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
+  const { cartItems, addCartItem, removeCartItem, modifiedOrderItemIds } = useDiagnosticsCart();
   const {
     data,
     isCircleSubscribed,
@@ -69,7 +70,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
   } = props;
 
   const actualItemsToShow =
-    source === 'Cart Page'
+    source === 'Cart page'
       ? data?.length > 0 && data?.filter((item: any) => item?.diagnosticPricing)
       : data?.diagnosticWidgetData?.length > 0 &&
         data?.diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
@@ -423,6 +424,10 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     pricesForItem: any,
     packageCalculatedMrp: number
   ) => {
+    const isAlreadyPartOfOrder =
+      !!modifiedOrderItemIds &&
+      modifiedOrderItemIds?.length &&
+      modifiedOrderItemIds?.find((id: number) => Number(id) == Number(item?.id));
     return (
       <Text
         style={[
@@ -432,12 +437,14 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
           },
         ]}
         onPress={() =>
-          isAddedToCart
+          isAlreadyPartOfOrder
+            ? {}
+            : isAddedToCart
             ? onPressRemoveFromCart(item)
             : onPressAddToCart(item, pricesForItem, packageCalculatedMrp)
         }
       >
-        {isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
+        {isAlreadyPartOfOrder ? 'ALREADY ADDED' : isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
       </Text>
     );
   };

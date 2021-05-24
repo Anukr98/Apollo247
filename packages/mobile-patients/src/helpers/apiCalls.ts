@@ -1072,9 +1072,9 @@ export const searchPHRApiWithAuthToken = (
   return Axios.get(searchPHRUrlWithAuthToke);
 };
 
-export const getLandingPageBanners = (pageName: string): Promise<AxiosResponse<any>> => {
+export const getLandingPageBanners = (pageName: string, cityId: number): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
-  const getBanners = `${baseurl}/banner/${pageName}`;
+  const getBanners = `${baseurl}/banner/${pageName}?city=${cityId}`;
   return Axios.get(getBanners, {
     headers: {
       Authorization: config.DRUPAL_CONFIG[1],
@@ -1095,9 +1095,9 @@ export const getDiagnosticsSearchResults = (
     },
   });
 };
-export const getDiagnosticsPopularResults = (pageName: string): Promise<AxiosResponse<any>> => {
+export const getDiagnosticsPopularResults = (pageName: string, cityId: number): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
-  const getSearchResults = `${baseurl}/${pageName}/popular-test-search`;
+  const getSearchResults = `${baseurl}/${pageName}/popular-test-search?city=${cityId}`;
   return Axios.get(getSearchResults, {
     headers: {
       Authorization: config.DRUPAL_CONFIG[1],

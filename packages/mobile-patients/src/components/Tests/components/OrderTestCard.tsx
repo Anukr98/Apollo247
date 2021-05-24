@@ -16,7 +16,6 @@ import moment from 'moment';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components/StatusCard';
-import { getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 import {
   InfoIconRed,
   WhiteProfile,
@@ -30,7 +29,10 @@ import {
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { isIphone5s, setBugFenderLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { DIAGNOSTIC_ORDER_FAILED_STATUS } from '@aph/mobile-patients/src/strings/AppConfig';
+import {
+  DIAGNOSTIC_ORDER_FAILED_STATUS,
+  DIAGNOSTIC_SHOW_OTP_STATUS,
+} from '@aph/mobile-patients/src/strings/AppConfig';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import {
   DiagnosticPhleboCallingClicked,
@@ -39,15 +41,9 @@ import {
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 const screenWidth = Dimensions.get('window').width;
-const SHOW_OTP_ARRAY = [
-  DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
-  DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
-  DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
-];
-
 interface OrderTestCardProps {
   orderId: string | number;
-  key: string | number;
+  key: string;
   createdOn: string | Date;
   orderLevelStatus: DIAGNOSTIC_ORDER_STATUS;
   patientName: string;
@@ -74,10 +70,20 @@ interface OrderTestCardProps {
   phelboObject?: any;
   orderAttributesObj?: any;
   onPressRatingStar: (star: number) => void;
+  onPressCallOption: (name: string, number: string) => void;
 }
 
 export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   const [moreTests, setMoreTests] = useState<boolean>(false);
+  const { ordersData } = props;
+  //added if item is removed from phelbo app.
+  const filterOrderLineItem =
+    !!ordersData &&
+    ordersData?.filter(
+      (
+        item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems
+      ) => !item?.isRemoved
+    );
 
   const bookedOn = moment(props?.createdOn)?.format('Do MMM') || null;
   const { currentPatient } = useAllCurrentPatients();
@@ -104,8 +110,12 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
           </View>
         )}
         {props.showAddTest ? (
-          <TouchableOpacity activeOpacity={1} onPress={props.onPressAddTest}>
-            <Text style={styles.yellowText}>ADD TEST</Text>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={props.onPressAddTest}
+            style={styles.addTestTouch}
+          >
+            <Text style={styles.yellowText}>ADD MORE TEST</Text>
           </TouchableOpacity>
         ) : null}
       </View>
@@ -124,7 +134,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   const renderTestNames = () => {
     return (
       <>
-        {props.ordersData?.map(
+        {filterOrderLineItem?.map(
           (
             item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems,
             index: number
@@ -139,17 +149,18 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                       : !!item?.diagnostics?.itemName
                       ? nameFormater(item?.diagnostics?.itemName!, 'title')
                       : ''}{' '}
-                    {index == 1 &&
-                      props.ordersData?.length - 2 > 0 &&
-                      renderShowMore(props.ordersData, item?.itemName!)}
                   </Text>
+                  {!!item?.editOrderID ? renderNewTag() : null}
+                  {index == 1 &&
+                    filterOrderLineItem?.length - 2 > 0 &&
+                    renderShowMore(filterOrderLineItem, item?.itemName!)}
                 </>
               ) : null}
             </View>
           )
         )}
         {moreTests &&
-          props.ordersData?.map(
+          filterOrderLineItem?.map(
             (
               item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems,
               index: number
@@ -170,6 +181,14 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
           </Text>
         )}
       </>
+    );
+  };
+
+  const renderNewTag = () => {
+    return (
+      <View style={styles.newItemView}>
+        <Text style={styles.newText}>NEW</Text>
+      </View>
     );
   };
 
@@ -211,9 +230,10 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
   const renderPreparationData = () => {
     //remove duplicate test prep data.
-    const getPrepData = props.ordersData?.map(
-      (item: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems) =>
-        item?.itemObj?.testPreparationData || item?.diagnostics?.testPreparationData!
+    const getPrepData = filterOrderLineItem?.map(
+      (
+        item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems
+      ) => item?.itemObj?.testPreparationData || item?.diagnostics?.testPreparationData!
     );
     const filterData = [...new Set(getPrepData)];
     return (
@@ -288,9 +308,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       </View>
     );
   };
-  const postDiagnosticPhleboCallingClicked = (phleboName: string) => {
-    DiagnosticPhleboCallingClicked(currentPatient, props.orderId, phleboName);
-  };
+
   const showDetailOTPContainer = () => {
     const phlObj = props?.phelboObject;
     const otpToShow = !!phlObj && phlObj?.PhelboOTP;
@@ -303,27 +321,31 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       phleboEta = moment(phlObj?.CheckInTime).format('hh:mm A');
     }
     const slotime = !!props.slotTime ? moment(props?.slotTime) || null : null;
-    const showDetailedinfo = !!slotime
-      ? slotime.diff(moment(), 'minutes') < 60 && slotime.diff(moment(), 'minutes') > 0
-      : false;
+    const showDetailedInfo = true;
+    // !!slotime
+    //   ? slotime.diff(moment(), 'minutes') < 60 && slotime.diff(moment(), 'minutes') > 0
+    //   : false;
+    const isCallingEnabled = !!phlObj ? phlObj?.allowCalling : false;
     return (
       <>
-        {!!otpToShow && SHOW_OTP_ARRAY.includes(props.orderLevelStatus) ? (
+        {!!otpToShow && DIAGNOSTIC_SHOW_OTP_STATUS.includes(props.orderLevelStatus) ? (
           <>
-            {showDetailedinfo || props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN ? (
+           {/* props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN ? */}
+            {!!showDetailedInfo && showDetailedInfo ? (
               <View style={styles.otpCallContainer}>
                 <View style={styles.detailContainer}>
                   {phoneNumber ? (
-                    <TouchableOpacity
-                      style={styles.callContainer}
-                      onPress={() => {
-                        postDiagnosticPhleboCallingClicked(name);
-                        Linking.openURL(`tel:${phoneNumber}`);
-                      }}
-                    >
-                      <WhiteProfile />
-                      <OrangeCall size="sm" style={styles.profileCircle} />
-                    </TouchableOpacity>
+                    <View style={{ opacity: isCallingEnabled ? 1 : 0.5 }}>
+                      <TouchableOpacity
+                        style={styles.callContainer}
+                        onPress={() => {
+                          isCallingEnabled ? props.onPressCallOption(name, phoneNumber) : {};
+                        }}
+                      >
+                        <WhiteProfile />
+                        <OrangeCall size="sm" style={styles.profileCircle} />
+                      </TouchableOpacity>
+                    </View>
                   ) : null}
                   {name ? (
                     <View style={styles.nameContainer}>
@@ -393,14 +415,13 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       </>
     );
   };
+
   const showOnlyOTPContainer = () => {
     const phlObj = props?.phelboObject;
     const otpToShow = !!phlObj && phlObj?.PhelboOTP;
-    return !!otpToShow && SHOW_OTP_ARRAY.includes(props.orderLevelStatus) ? (
       <View style={styles.ratingContainer}>
         <Text style={styles.otpBoxTextStyle}>OTP : {otpToShow}</Text>
       </View>
-    ) : null;
   };
 
   const showRatingView = () => {
@@ -511,8 +532,12 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       <View key={props?.key?.toString()} style={{ padding: 16, paddingBottom: 12 }}>
         {renderTopView()}
         {renderMidView()}
-        {!!props.ordersData && props.ordersData?.length > 0 ? renderTestListView() : null}
-        {!!props.ordersData && props.ordersData?.length > 0 ? renderPreparationData() : null}
+        {!!ordersData && !!filterOrderLineItem && filterOrderLineItem?.length
+          ? renderTestListView()
+          : null}
+        {!!ordersData && !!filterOrderLineItem && filterOrderLineItem?.length
+          ? renderPreparationData()
+          : null}
         {!!props.orderLevelStatus && DIAGNOSTIC_ORDER_FAILED_STATUS.includes(props.orderLevelStatus)
           ? null
           : renderBottomView()}
@@ -587,7 +612,7 @@ const styles = StyleSheet.create({
     minHeight: 40,
   },
   testForText: {
-    ...theme.viewStyles.text('M', 13, colors.SHERPA_BLUE, 1, 18),
+    ...theme.viewStyles.text('SB', 13, colors.SHERPA_BLUE, 1, 18),
     letterSpacing: 0.3,
   },
   yellowText: { ...theme.viewStyles.yellowTextStyle, fontSize: screenWidth > 380 ? 13 : 12 },
@@ -665,6 +690,8 @@ const styles = StyleSheet.create({
   },
   callContainer: {
     margin: 0,
+    height: 55,
+    width: 55,
   },
   nameContainer: {
     justifyContent: 'flex-start',
@@ -722,5 +749,21 @@ const styles = StyleSheet.create({
   ratingTextStyle: {
     ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 1, 16),
   },
-  patientNameView: { width: '67%', justifyContent: 'center' },
+  addTestTouch: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  patientNameView: { width: '65%', justifyContent: 'center' },
+  newItemView: {
+    backgroundColor: '#4CAF50',
+    height: 20,
+    width: 40,
+    borderRadius: 2,
+    borderColor: '#4CAF50',
+    justifyContent: 'center',
+  },
+  newText: {
+    ...theme.viewStyles.text('SB', 10, 'white'),
+    textAlign: 'center',
+  },
 });
