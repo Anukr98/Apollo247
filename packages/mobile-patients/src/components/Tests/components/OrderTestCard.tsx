@@ -310,7 +310,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       <>
         {!!otpToShow && SHOW_OTP_ARRAY.includes(props.orderLevelStatus) ? (
           <>
-            {showDetailedinfo ? (
+            {showDetailedinfo || props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN ? (
               <View style={styles.otpCallContainer}>
                 <View style={styles.detailContainer}>
                   {phoneNumber ? (
