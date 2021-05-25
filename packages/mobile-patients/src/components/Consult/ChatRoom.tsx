@@ -724,6 +724,18 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 8, theme.colors.WHITE),
     marginVertical: 9,
   },
+  manageCTAView: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  manageBtn: {
+    width: 66,
+    height: 21,
+    borderRadius: 5,
+    position: 'absolute',
+    right: 0,
+  },
 });
 
 const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/;
@@ -6818,6 +6830,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const renderManageCTA = (isDisabled: boolean = false) => {
+    return (
+      <View style={styles.manageCTAView}>
+        <Button
+          disabled={isDisabled}
+          title={'MANAGE'}
+          style={styles.manageBtn}
+          titleTextStyle={theme.viewStyles.text('SB', 12, theme.colors.WHITE)}
+          onPress={() => onPressCalender()}
+        />
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
       <StatusBar hidden={hideStatusBar} />
@@ -6933,11 +6959,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               disabled={doctorJoinedChat || status.current === STATUS.COMPLETED}
               onPress={() => onPressCalender()}
             >
-              {doctorJoinedChat || status.current === STATUS.COMPLETED ? (
-                <InactiveCalenderIcon style={styles.calenderIcon} />
-              ) : (
-                <ActiveCalenderIcon style={styles.calenderIcon} />
-              )}
+              {doctorJoinedChat || status.current === STATUS.COMPLETED
+                ? renderManageCTA(true)
+                : renderManageCTA()}
             </TouchableOpacity>
           }
         />
