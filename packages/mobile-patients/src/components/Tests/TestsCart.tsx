@@ -2587,7 +2587,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       .catch((e) => {
         //if api fails then also show the name... & remove..
         CommonBugFender('TestsCart_getDiagnosticsAvailability', e);
-        setLoading!(false);
+        setLoading?.(false);
         errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
       });
   }
@@ -2598,17 +2598,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       const newItems = getItemIds?.map((item: string) => Number(item));
 
       //get the prices for both the items,
-      let filterItemArray = isModifyFlow ? cartItemPrices : pricesForItem;
-      const getDuplicateItems = filterItemArray
+      const getDuplicateItems = pricesForItem
         ?.filter((item: any) => newItems?.includes(item?.itemId))
         .sort((a: any, b: any) => b?.price - a?.price);
 
-      const itemsToRemove = getDuplicateItems?.splice(isModifyFlow ? 0 : 1);
+      const itemsToRemove = getDuplicateItems?.splice(
+        isModifyFlow ? 0 : 1,
+        getDuplicateItems?.length - 1
+      );
 
       const itemIdToRemove = itemsToRemove?.map((item: any) => item?.itemId);
       const updatedCartItems = cartItems?.filter(function(items: any) {
         return itemIdToRemove?.indexOf(Number(items?.id)) < 0;
       });
+
       //assuming get two values.
       let array = [] as any;
       cartItems?.forEach((cItem) => {
