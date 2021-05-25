@@ -134,8 +134,8 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
         postDiagnosticPhleboFeedbackSubmitted(
           rating,
           feedback,
-          phlObj?.diagnosticPhlebotomists?.name,
-          orderDetail?.orderId,
+          phlObj?.PhelbotomistName,
+          orderDetail?.displayId,
           id
         );
         setLoading!(false);
