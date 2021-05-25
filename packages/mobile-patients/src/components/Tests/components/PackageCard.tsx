@@ -61,7 +61,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     data?.diagnosticWidgetData?.length > 0 &&
     data?.diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
 
-  const renderItemCard = (item: any) => {
+  const renderItemCard = (item: any, index: number) => {
     const getItem = item?.item;
     const getDiagnosticPricingForItem = getItem?.diagnosticPricing;
 
@@ -104,14 +104,14 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => onPress(getItem, packageMrpForItem, pricesForItem)}
-        key={getItem.itemId}
+        key={String(getItem?.itemId)}
         style={[
           styles.packageCardTouch,
           { width: Dimensions.get('window').width * (props.isVertical ? 0.9 : 0.8) },
           props?.isVertical ? {} : { marginLeft: item?.index == 0 ? 20 : 6 },
         ]}
       >
-        <View>
+        <View key={String(getItem?.itemId)}>
           <View style={{ minHeight: !!inclusions && inclusions?.length > 0 ? 100 : 0 }}>
             <View style={styles.topPackageView}>
               <View style={{ width: '75%' }}>

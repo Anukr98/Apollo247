@@ -289,9 +289,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   );
 
   const handleBack = () => {
-    if (!goToHomeOnBack) {
-      props.navigation.state.params?.onPressBack();
-    }
     if (goToHomeOnBack && source === AppRoutes.TestsCart) {
       navigateToScreenWithEmptyStack(props.navigation, AppRoutes.YourOrdersTest, {
         source: AppRoutes.OrderStatus,

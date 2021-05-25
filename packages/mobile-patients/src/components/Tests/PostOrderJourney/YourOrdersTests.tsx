@@ -274,7 +274,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           variables: {
             mobileNumber: currentPatient && currentPatient.mobileNumber,
             paginated: true,
-            limit: 10, 
+            limit: 10,
             offset: currentOffset,
           },
           fetchPolicy: 'no-cache',
@@ -1064,7 +1064,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       refundStatusArr: refundArray,
       comingFrom: AppRoutes.YourOrdersTest,
       showOrderSummaryTab: tab,
-      onPressBack: refetchOrders,
     });
   }
 
