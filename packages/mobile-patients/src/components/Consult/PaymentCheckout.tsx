@@ -1003,6 +1003,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       displayId: displayId,
       'coupon applied': coupon ? true : false,
       'Circle discount': circleDiscount,
+      User_Type: getUserType(allCurrentPatients),
     };
     return eventAttributes;
   };
