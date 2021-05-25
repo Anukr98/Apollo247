@@ -66,6 +66,7 @@ import {
   getDiagnosticOrderDetailsByDisplayIDVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetailsByDisplayID';
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { RenderPdf } from '@aph/mobile-patients/src/components/ui/RenderPdf';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -174,6 +175,27 @@ const styles = StyleSheet.create({
   mainViewStyle: {
     flex: 1,
   },
+  imagePlaceHolderStyle: {
+    height: 425,
+    width: '100%',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  imageStyle: {
+    width: '100%',
+    height: 425,
+  },
+  imageViewStyle: {
+    marginHorizontal: 30,
+    marginBottom: 15,
+    marginTop: 15,
+    backgroundColor: 'transparent',
+  },
+  pdfStyle: {
+    height: 425,
+    width: '100%',
+    backgroundColor: 'transparent',
+  },
 });
 
 export interface HealthRecordDetailsProps extends NavigationScreenProps {}
@@ -218,6 +240,9 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     ? props.navigation.state.params?.prescriptionSource
     : null;
   const [apiError, setApiError] = useState(false);
+  const [showPDF, setShowPDF] = useState<boolean>(false);
+  const [fileNamePDF, setFileNamePDF] = useState<string>('');
+  const [pdfFileUrl, setPdfFileUrl] = useState<string>('');
   const { currentPatient } = useAllCurrentPatients();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -848,17 +873,22 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       >
         <ScrollView>
           {file_name && file_name.toLowerCase().endsWith('.pdf') ? (
-            <View style={{ marginHorizontal: 20, marginBottom: 15, marginTop: 30 }}>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.imageViewStyle}
+              onPress={() => {
+                setShowPDF(true);
+                setPdfFileUrl(data?.fileUrl);
+                setFileNamePDF(file_name);
+              }}
+            >
               <Pdf
-                key={data.fileUrl}
-                source={{ uri: data.fileUrl }}
-                style={{
-                  height: 425,
-                  width: '100%',
-                  backgroundColor: 'transparent',
-                }}
+                key={data?.fileUrl}
+                source={{ uri: data?.fileUrl }}
+                style={styles.pdfStyle}
+                singlePage
               />
-            </View>
+            </TouchableOpacity>
           ) : (
             <TouchableOpacity
               activeOpacity={1}
@@ -1150,6 +1180,21 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     }
   };
 
+  const renderPdf = () => {
+    return showPDF ? (
+      <RenderPdf
+        uri={pdfFileUrl}
+        title={fileNamePDF || 'Document.pdf'}
+        isPopup={true}
+        setDisplayPdf={() => {
+          setShowPDF(false);
+          setPdfFileUrl('');
+        }}
+        navigation={props.navigation}
+      />
+    ) : null;
+  };
+
   if (data) {
     const headerTitle = healthCheck
       ? 'HEALTH SUMMARY'
@@ -1174,6 +1219,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             container={{ borderBottomWidth: 0 }}
             onPressLeftIcon={onGoBack}
           />
+          {renderPdf()}
           <ScrollView bounces={false}>
             {renderTestTopDetailsView()}
             {renderData()}
