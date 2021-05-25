@@ -19,7 +19,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA2 as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -221,8 +221,10 @@ const appStaticVariables = {
     'Thank you for reaching out. As we are experiencing a heavy load, our team will get back to you in 24 to 48 hours.',
   Enable_Diagnostics_COD: false,
   Enable_Diagnostics_Cancellation_Policy: false,
-  Diagnostics_Cancel_Policy_Text_Msg: 'For a full refund, you must cancel at least 6 hours before the appointment time. Cancellations made within 6 hours of appointment time will incur a fee of up to ₹ 200.',
-  RTPCR_Google_Form: 'https://docs.google.com/forms/d/e/1FAIpQLSd6VaqQ0GTQOdpBYMyh-wZwv8HHrr3W1Q_XCVSaooHXQGVsJQ/viewform'
+  Diagnostics_Cancel_Policy_Text_Msg:
+    'For a full refund, you must cancel at least 6 hours before the appointment time. Cancellations made within 6 hours of appointment time will incur a fee of up to ₹ 200.',
+  RTPCR_Google_Form:
+    'https://docs.google.com/forms/d/e/1FAIpQLSd6VaqQ0GTQOdpBYMyh-wZwv8HHrr3W1Q_XCVSaooHXQGVsJQ/viewform',
 };
 
 const DEV_top_specialties = [

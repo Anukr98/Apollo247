@@ -224,6 +224,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    // clearing it so that save firebase token to DB gets call every first time
+    AsyncStorage.removeItem('saveTokenDeviceApiCall');
     handleDeepLink();
     getDeviceToken();
   }, []);
@@ -890,8 +892,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     },
     Diagnostics_Cancel_Policy_Text_Msg: {
       QA: 'QA_Diagnostics_Cancel_Policy_Text',
-      PROD: 'Diagnostics_Cancel_Policy_Text'
-    }
+      PROD: 'Diagnostics_Cancel_Policy_Text',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1088,11 +1090,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       setAppConfig('Enable_Diagnostics_COD', 'Enable_Diagnostics_COD', (key) =>
         config.getBoolean(key)
       );
-      setAppConfig('Enable_Diagnostics_Cancellation_Policy', 'Enable_Diagnostics_Cancellation_Policy', (key) =>
-        config.getBoolean(key)
+      setAppConfig(
+        'Enable_Diagnostics_Cancellation_Policy',
+        'Enable_Diagnostics_Cancellation_Policy',
+        (key) => config.getBoolean(key)
       );
-      setAppConfig('Diagnostics_Cancel_Policy_Text_Msg', 'Diagnostics_Cancel_Policy_Text_Msg', (key) =>
-        config.getString(key)
+      setAppConfig(
+        'Diagnostics_Cancel_Policy_Text_Msg',
+        'Diagnostics_Cancel_Policy_Text_Msg',
+        (key) => config.getString(key)
       );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
