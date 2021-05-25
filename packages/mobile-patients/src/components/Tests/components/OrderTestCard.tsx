@@ -315,6 +315,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     const phoneNumber = !!phlObj && phlObj?.PhelbotomistMobile;
     const name = !!phlObj && phlObj?.PhelbotomistName;
     const phleboTrackLink = !!phlObj && phlObj?.PhelbotomistTrackLink;
+    const orderId = (props.orderId).toString()
     const checkEta = !!phlObj?.CheckInTime;
     let phleboEta = '';
     if (checkEta) {
@@ -376,7 +377,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                         Linking.canOpenURL(phleboTrackLink).then((supported) => {
                           if (supported) {
                             DiagnosticTrackPhleboClicked(
-                              props.orderId,
+                              orderId,
                               'My Order',
                               currentPatient,
                               'Yes'
@@ -384,7 +385,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                             Linking.openURL(phleboTrackLink);
                           } else {
                             DiagnosticTrackPhleboClicked(
-                              props.orderId,
+                              orderId,
                               'My Order',
                               currentPatient,
                               'No'
@@ -394,7 +395,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                         });
                       } catch (e) {
                         DiagnosticTrackPhleboClicked(
-                          props.orderId,
+                          orderId,
                           'My Order',
                           currentPatient,
                           'No'
