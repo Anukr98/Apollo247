@@ -806,8 +806,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const saveDeviceNotificationToken = async (id: string) => {
     try {
+      const savedToken = await AsyncStorage.getItem('deviceToken');
+      const oneTimeApiCall = await AsyncStorage.getItem('saveTokenDeviceApiCall');
       const token = await messaging().getToken();
-      saveTokenDevice(client, token, id);
+      if (!oneTimeApiCall || !savedToken || (savedToken && JSON.parse(savedToken) !== token)) {
+        saveTokenDevice(client, token, id);
+        await AsyncStorage.setItem('saveTokenDeviceApiCall', 'called');
+      }
     } catch (error) {}
   };
 
