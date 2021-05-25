@@ -55,6 +55,7 @@ import {
   TestSlot,
   nameFormater,
   navigateToScreenWithEmptyStack,
+  aphConsole,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DisabledTickIcon, TickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
@@ -448,6 +449,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         //refetch the orders
       })
       .catch((error) => {
+        aphConsole.log({ error });
         // DIAGNOSTIC_CANCELLATION_ALLOWED_BEFORE_IN_HOURS
         CommonBugFender('TestOrderDetails_callApiAndRefetchOrderDetails', error);
         handleGraphQlError(error);
@@ -642,6 +644,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     );
     rescheduleOrder(rescheduleDiagnosticsInput)
       .then((data) => {
+        aphConsole.log({ data });
         const rescheduleResponse = g(data, 'data', 'rescheduleDiagnosticsOrder');
         if (rescheduleResponse?.status == 'true' && rescheduleResponse?.rescheduleCount <= 3) {
           setTimeout(() => refetchOrders(), 2000);
@@ -671,6 +674,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         setSelectRescheduleReason('');
       })
       .catch((error) => {
+        aphConsole.log({ error });
         setSelectCancelReason('');
         setCancelReasonComment('');
         setSelectRescheduleReason('');
@@ -842,8 +846,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     let selectedOrderTime = selectedOrder?.slotDateTimeInUTC;
     selectedOrderTime = moment(selectedOrderTime);
     const current = moment();
-    const cancelReasonArray = moment(current).isAfter(selectedOrderTime) ? CANCELLATION_REASONS : PRE_CANCELLATION_REASONS
-    
+    const cancelReasonArray = moment(current).isAfter(selectedOrderTime)
+      ? CANCELLATION_REASONS
+      : PRE_CANCELLATION_REASONS;
+
     return (
       <View>
         <Text style={styles.overlayHeadingText}>
