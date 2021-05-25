@@ -1326,11 +1326,20 @@ export const TestsFeedBackData = {
 
 export const TestCancelReasons = {
   reasons: [
+    string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
     string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
-    string.diagnostics.reasonForCancel_TestOrder.editOrder,
+    string.diagnostics.reasonForCancel_TestOrder.bookedByMistake,
+    string.diagnostics.reasonForCancel_TestOrder.urgentReport,
+    string.diagnostics.reasonForCancel_TestOrder.anotherChannel,
+    string.diagnostics.reasonForCancel_TestOrder.otherReasons,
+  ],
+};
+export const TestCancelReasonsPre = {
+  reasons: [
     string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
     string.diagnostics.reasonForCancel_TestOrder.bookedByMistake,
     string.diagnostics.reasonForCancel_TestOrder.urgentReport,
+    string.diagnostics.reasonForCancel_TestOrder.anotherChannel,
     string.diagnostics.reasonForCancel_TestOrder.otherReasons,
   ],
 };

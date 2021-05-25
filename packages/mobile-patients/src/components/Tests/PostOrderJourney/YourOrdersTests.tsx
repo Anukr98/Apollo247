@@ -65,6 +65,7 @@ import {
   TestCancelReasons,
   TestReschedulingReasons,
   DIAGNOSTIC_CONFIRMED_STATUS,
+  TestCancelReasonsPre,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -118,6 +119,7 @@ export interface YourOrdersTestProps extends NavigationScreenProps {
 export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const RESCHEDULE_REASONS = TestReschedulingReasons.reasons;
   const CANCELLATION_REASONS = TestCancelReasons.reasons;
+  const PRE_CANCELLATION_REASONS = TestCancelReasonsPre.reasons;
   const CANCEL_RESCHEDULE_OPTION = [
     string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
     string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
@@ -837,13 +839,18 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const renderCancelReasons = () => {
     const selectedOrderRescheduleCount = selectedOrder?.rescheduleCount;
+    let selectedOrderTime = selectedOrder?.slotDateTimeInUTC;
+    selectedOrderTime = moment(selectedOrderTime);
+    const current = moment();
+    const cancelReasonArray = moment(current).isAfter(selectedOrderTime) ? CANCELLATION_REASONS : PRE_CANCELLATION_REASONS
+    
     return (
       <View>
         <Text style={styles.overlayHeadingText}>
           {string.diagnostics.reasonForCancellationText}
         </Text>
         <View style={styles.reasonsContainer}>
-          {CANCELLATION_REASONS?.map((item: string, index: number) => {
+          {cancelReasonArray?.map((item: string, index: number) => {
             return (
               <>
                 <TouchableOpacity
@@ -907,7 +914,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             style={styles.buttonStyle}
             disabled={
               selectCancelReason == string.diagnostics.reasonForCancel_TestOrder.otherReasons
-                ? cancelReasonComment?.trim() == ''
+                ? cancelReasonComment?.trim() == '' || cancelReasonComment.length <= 10
                 : selectCancelReason == ''
             }
             onPress={() => _onPressCancelNow()}
