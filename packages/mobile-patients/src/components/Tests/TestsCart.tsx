@@ -1016,8 +1016,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           } else {
             cartPriceToCompare = Number(cartItem?.specialPrice || cartItem?.price);
           }
-          console.log({ priceToCompare });
-          console.log({ cartPriceToCompare });
           if (priceToCompare !== cartPriceToCompare) {
             //mrp
             //show the prices changed pop-over
