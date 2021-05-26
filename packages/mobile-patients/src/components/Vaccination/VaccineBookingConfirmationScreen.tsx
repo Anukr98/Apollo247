@@ -402,9 +402,11 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
     try {
       const eventAttributes = {
         Source: VACCINE_BOOKING_SOURCE.MOBILE,
+        'Customer ID': bookingInfo?.patient_info?.id,
         'Cancelled By': 'User',
-        'Booking ID': appointmentId,
-        'Display Id': bookingInfo?.display_id,
+        'Booking Id': bookingInfo?.display_id,
+        'Vaccination Hospital': bookingInfo?.resource_session_details?.resource_detail?.name,
+        'Vaccination City': bookingInfo?.resource_session_details?.resource_detail?.city,
         'Vaccination Site':
           (bookingInfo?.resource_session_details?.resource_detail?.name || '') +
           (bookingInfo?.resource_session_details?.resource_detail?.street_line1 || '') +
@@ -418,8 +420,11 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
         'Customer Last Name': bookingInfo?.patient_info?.lastName.trim(),
         'Customer UHID': bookingInfo?.patient_info?.uhid,
         'Mobile Number': bookingInfo?.patient_info?.mobileNumber,
+        'Date Time': moment(bookingInfo?.resource_session_details?.start_date_time).toDate(),
         Date: moment(bookingInfo?.resource_session_details?.start_date_time).format('DD MMM,YYYY'),
         Slot: bookingInfo?.resource_session_details?.session_name,
+        'Time Slot': bookingInfo?.resource_session_details?.session_name,
+        Dose: bookingInfo?.dose_number,
       };
 
       postWebEngageEvent(WebEngageEventName.VACCINATION_CANCELLATION, eventAttributes);

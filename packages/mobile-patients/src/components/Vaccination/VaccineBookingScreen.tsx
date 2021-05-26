@@ -621,6 +621,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
           selectedDose == string.vaccineBooking.title_dose_1
             ? DOSE_NUMBER.FIRST
             : DOSE_NUMBER.SECOND,
+        'Date Time': moment(preferredDate).toDate(),
         Date: moment(preferredDate).format('DD MMM,YYYY'),
         'Vaccine Url': 'https://bit.ly/2QO9wuw',
         'Time Slot': selectedSlot?.session_name,
