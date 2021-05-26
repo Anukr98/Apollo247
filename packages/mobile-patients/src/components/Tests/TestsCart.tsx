@@ -835,7 +835,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
     if (!!pinCodeFromAddress) {
       setLoading?.(true);
-
       setPinCode?.(pinCodeFromAddress);
       client
         .query<getPincodeServiceability, getPincodeServiceabilityVariables>({
@@ -999,16 +998,26 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           const promoteCircle = pricesForItem?.promoteCircle; //if circle discount is more
           const promoteDiscount = pricesForItem?.promoteDiscount; // if special discount is more than others.
 
-          const priceToCompare = promoteCircle
-            ? circlePrice
-            : promoteDiscount
-            ? discountPrice
-            : price;
-          const cartPriceToCompare = promoteCircle
-            ? cartItem.circlePrice
-            : promoteDiscount
-            ? cartItem.discountPrice
-            : cartItem.price;
+          const priceToCompare =
+            isDiagnosticCircleSubscription && promoteCircle
+              ? circleSpecialPrice
+              : promoteDiscount
+              ? discountSpecialPrice
+              : specialPrice || price;
+
+          let cartPriceToCompare = 0;
+          if (
+            isDiagnosticCircleSubscription &&
+            cartItem?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+          ) {
+            cartPriceToCompare = Number(cartItem?.circleSpecialPrice);
+          } else if (cartItem?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT) {
+            cartPriceToCompare = Number(cartItem?.discountSpecialPrice);
+          } else {
+            cartPriceToCompare = Number(cartItem?.specialPrice || cartItem?.price);
+          }
+          console.log({ priceToCompare });
+          console.log({ cartPriceToCompare });
           if (priceToCompare !== cartPriceToCompare) {
             //mrp
             //show the prices changed pop-over

@@ -24,7 +24,6 @@ import {
   StarEmpty,
   ClockIcon,
   StarFillGreen,
-  StarEmptyGreen
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -315,7 +314,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     const phoneNumber = !!phlObj && phlObj?.PhelbotomistMobile;
     const name = !!phlObj && phlObj?.PhelbotomistName;
     const phleboTrackLink = !!phlObj && phlObj?.PhelbotomistTrackLink;
-    const orderId = (props.orderId).toString()
+    const orderId = props.orderId.toString();
     const checkEta = !!phlObj?.CheckInTime;
     let phleboEta = '';
     if (checkEta) {
@@ -330,7 +329,8 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       <>
         {!!otpToShow && DIAGNOSTIC_SHOW_OTP_STATUS.includes(props.orderLevelStatus) ? (
           <>
-            {showDetailedInfo || props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN ? (
+            {showDetailedInfo ||
+            props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN ? (
               <View style={styles.otpCallContainer}>
                 <View style={styles.detailContainer}>
                   {phoneNumber ? (
@@ -384,22 +384,12 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                             );
                             Linking.openURL(phleboTrackLink);
                           } else {
-                            DiagnosticTrackPhleboClicked(
-                              orderId,
-                              'My Order',
-                              currentPatient,
-                              'No'
-                            );
+                            DiagnosticTrackPhleboClicked(orderId, 'My Order', currentPatient, 'No');
                             setBugFenderLog('FAILED_OPEN_URL', phleboTrackLink);
                           }
                         });
                       } catch (e) {
-                        DiagnosticTrackPhleboClicked(
-                          orderId,
-                          'My Order',
-                          currentPatient,
-                          'No'
-                        );
+                        DiagnosticTrackPhleboClicked(orderId, 'My Order', currentPatient, 'No');
                         setBugFenderLog('FAILED_OPEN_URL', phleboTrackLink);
                       }
                     }}
@@ -418,9 +408,9 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   const showOnlyOTPContainer = () => {
     const phlObj = props?.phelboObject;
     const otpToShow = !!phlObj && phlObj?.PhelboOTP;
-      <View style={styles.ratingContainer}>
-        <Text style={styles.otpBoxTextStyle}>OTP : {otpToShow}</Text>
-      </View>
+    <View style={styles.ratingContainer}>
+      <Text style={styles.otpBoxTextStyle}>OTP : {otpToShow}</Text>
+    </View>;
   };
 
   const showRatingView = () => {
@@ -526,9 +516,9 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       activeOpacity={1}
       onPress={props.onPressCard}
       style={[styles.containerStyle, props.style]}
-      key={props?.key?.toString()}
+      key={props?.orderId}
     >
-      <View key={props?.key?.toString()} style={{ padding: 16, paddingBottom: 12 }}>
+      <View key={props?.orderId} style={{ padding: 16, paddingBottom: 12 }}>
         {renderTopView()}
         {renderMidView()}
         {!!ordersData && !!filterOrderLineItem && filterOrderLineItem?.length
