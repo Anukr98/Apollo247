@@ -3596,11 +3596,17 @@ export const UPLOAD_CHAT_FILE = gql`
 `;
 
 export const ADD_CHAT_DOCUMENTS = gql`
-  mutation addChatDocument($appointmentId: ID!, $documentPath: String, $prismFileId: String) {
+  mutation addChatDocument(
+    $appointmentId: ID!
+    $documentPath: String
+    $prismFileId: String
+    $fileName: String
+  ) {
     addChatDocument(
       appointmentId: $appointmentId
       documentPath: $documentPath
       prismFileId: $prismFileId
+      fileName: $fileName
     ) {
       id
       documentPath
