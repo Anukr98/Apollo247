@@ -286,6 +286,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginLeft: 7,
   },
+  couponBlock: {
+    height: 200,
+    borderRadius: 10,
+    width: '100%',
+    marginVertical: 10,
+  },
 });
 
 export const renderCovidVaccinationShimmer = () => {
@@ -692,3 +698,15 @@ export const CovidButtonShimmer = () => (
     shimmerStyle={styles.covidButtonShimmer}
   />
 );
+
+export const couponViewShimmer = () => {
+  return (
+    <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.couponBlock}
+      />
+    </View>
+  );
+};
