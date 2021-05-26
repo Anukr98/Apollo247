@@ -55,7 +55,10 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
       image = <MedicalHistoryIcon style={styles.iconStyle} />;
       content =
         status === DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED
-          ? string.diagnostics.partialReportContent?.replace('{{reportTat}}', reportTat! || '')
+          ? string.diagnostics.partialReportContent?.replace(
+              '{{reportTat}}',
+              reportTat! || '12-24 hr'
+            )
           : string.diagnostics.viewReportContent;
       options = string.diagnostics.viewReportText;
     } else {
