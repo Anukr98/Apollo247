@@ -44,7 +44,7 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
       image = <SampleTestTubesIcon style={styles.iconStyle} />;
       content = string.diagnostics.sampleSubmittedContent?.replace(
         '{{reportTat}}',
-        reportTat! || ''
+        reportTat! || '12-24 hr'
       );
       options = string.diagnostics.sampleCollectedText;
     } else if (DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(status)) {
@@ -140,7 +140,12 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
         {image}
       </View>
       <Text style={styles.statusHeading}>{nameFormater(heading, 'upper')} !</Text>
-      <View style={[styles.contentContainer]}>
+      <View
+        style={[
+          styles.contentContainer,
+          { minHeight: AFTER_COLLECTION_STATUS.includes(status) ? 60 : 40 },
+        ]}
+      >
         <Text style={styles.content1}>{content}</Text>
       </View>
       {prepData ? (
@@ -155,7 +160,7 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
           </View>
         </View>
       ) : !AFTER_COLLECTION_STATUS.includes(status) ? (
-        <View style={[styles.prepDataContainer, { marginVertical: 10 }]}>
+        <View style={styles.prepDataContainer}>
           <Text style={[styles.content1, { marginTop: 0 }]}>
             {string.diagnostics.noPrepRequiredText}
           </Text>
@@ -221,7 +226,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   contentContainer: {
-    minHeight: 40,
     justifyContent: 'center',
   },
   moreText: {
