@@ -335,8 +335,9 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
             {monthHeading}
           </Text>
           <View style={styles.dateArrayContainer}>
-            {newDateArray.map((item, index) => (
+            {newDateArray?.map((item, index) => (
               <TouchableOpacity
+                key={index.toString()}
                 onPress={() => {
                   let newdate = moment(item?.timestamp)
                     .utc()
@@ -507,7 +508,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   dateContainer: {
-    marginHorizontal: 5,
+    marginHorizontal: 1, //5
     borderRadius: 10,
     paddingHorizontal: 30,
     paddingVertical: 20,
