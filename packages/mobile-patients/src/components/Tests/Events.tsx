@@ -113,7 +113,8 @@ export function DiagnosticAddToCartEvent(
     | 'Listing page'
     | 'Popular search'
     | 'Category page'
-    | 'Prescription',
+    | 'Prescription'
+    | 'Cart page',
   section?: string
 ) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADD_TO_CART] = {

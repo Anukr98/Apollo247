@@ -1296,7 +1296,8 @@ export interface WebEngageEvents {
       | 'Listing page'
       | 'Popular search'
       | 'Category page'
-      | 'Prescription';
+      | 'Prescription'
+      | 'Cart page';
     Section?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {

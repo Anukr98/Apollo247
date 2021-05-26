@@ -135,7 +135,7 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
   };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} key={orderId.toString()}>
       <View style={[styles.rowStyles]}>
         <Text style={[styles.heading1]}>
           {nameFormater(patientName!, 'title')} : #{orderId}
