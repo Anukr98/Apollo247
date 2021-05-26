@@ -158,6 +158,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     setBannerData,
     setCircleSubscription,
     setPhrSession,
+    setCorporateSubscriptions,
   } = useAppCommonData();
   const { setIsDiagnosticCircleSubscription, clearDiagnoticCartInfo } = useDiagnosticsCart();
   const {
@@ -303,11 +304,16 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       setIsCircleSubscription && setIsCircleSubscription(false);
       setCircleMembershipCharges && setCircleMembershipCharges(0);
       setCircleSubscription && setCircleSubscription(null);
+      setCorporateSubscriptions && setCorporateSubscriptions([]);
       signOut();
       setTagalysConfig(null);
       setCircleSubscriptionId && setCircleSubscriptionId('');
       setPhrSession?.('');
       AsyncStorage.removeItem('circlePlanSelected');
+      AsyncStorage.removeItem('isCorporateSubscribed');
+      AsyncStorage.removeItem('VaccinationCmsIdentifier');
+      AsyncStorage.removeItem('VaccinationSubscriptionId');
+      AsyncStorage.removeItem('hasAgreedVaccineTnC');
       clearCartInfo && clearCartInfo();
       clearDiagnoticCartInfo && clearDiagnoticCartInfo();
       setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
@@ -532,21 +538,14 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             fireProfileAccessedEvent('OneApollo Membership');
           }}
         />
-        {!!(
-          hdfcSubscriptionId ||
-          circleSubscriptionId ||
-          isCircleExpired ||
-          corporateSubscription
-        ) && (
-          <ListCard
-            title={'My Memberships'}
-            leftIcon={<MyMembershipIcon style={{ height: 20, width: 26 }} />}
-            onPress={() => {
-              props.navigation.navigate(AppRoutes.MyMembership);
-              fireProfileAccessedEvent('My Memberships');
-            }}
-          />
-        )}
+        <ListCard
+          title={'My Memberships'}
+          leftIcon={<MyMembershipIcon style={{ height: 20, width: 26 }} />}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.MyMembership);
+            fireProfileAccessedEvent('My Memberships');
+          }}
+        />
         <ListCard
           title={'Need Help'}
           leftIcon={<NeedHelpIcon />}

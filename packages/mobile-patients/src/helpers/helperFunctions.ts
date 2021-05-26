@@ -1156,6 +1156,9 @@ export const statusBarHeight = () =>
 
 export const isValidSearch = (value: string) => /^([^ ]+[ ]{0,1}[^ ]*)*$/.test(value);
 
+export const isValidImageUrl = (value: string) =>
+  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/.test(value);
+
 export const isValidText = (value: string) =>
   /^([a-zA-Z0-9]+[ ]{0,1}[a-zA-Z0-9\-.\\/?,&]*)*$/.test(value);
 
@@ -2869,3 +2872,8 @@ export const getPackageIds = (activeUserSubscriptions: any) => {
     });
   return packageIds;
 };
+
+export const isSatisfyingEmailRegex = (value: string) =>
+  /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+    value
+  );

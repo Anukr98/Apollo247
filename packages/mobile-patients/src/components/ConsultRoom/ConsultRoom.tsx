@@ -191,6 +191,7 @@ import {
   renderCovidVaccinationShimmer,
   renderCircleShimmer,
   renderBannerShimmer,
+  CovidButtonShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { ConsultedDoctorsCard } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultedDoctorsCard';
 import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
@@ -734,6 +735,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     apisToCall,
     homeScreenParamsOnPop,
     setActiveUserSubscriptions,
+    corporateSubscriptions,
+    setCorporateSubscriptions,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -746,6 +749,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showList, setShowList] = useState<boolean>(false);
   const [isFindDoctorCustomProfile, setFindDoctorCustomProfile] = useState<boolean>(false);
   const [upgradePlans, setUpgradePlans] = useState<SubscriptionData[]>([]);
+  const [showCorporateVaccinationCta, setShowCorporateVaccinationCta] = useState<boolean>(false);
+  const [vaccinationCmsIdentifier, setVaccinationCmsIdentifier] = useState<string>('');
+  const [vaccinationSubscriptionId, setVaccinationSubscriptionId] = useState<string>('');
+  const [vaccinationSubscriptionName, setVaccinationSubscriptionName] = useState<string>('');
+  const [vaccinationSubscriptionPlanId, setVaccinationSubscriptionPlanId] = useState<string>('');
+  const [agreedToVaccineTnc, setAgreedToVaccineTnc] = useState<string>('');
+  const [userSubscriptionLoading, setUserSubscriptionLoading] = useState<boolean>(false);
 
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
@@ -818,6 +828,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   useEffect(() => {
     preFetchSDK(currentPatient?.id);
     getPatientApiCall();
+    setVaccineLoacalStorageData();
     try {
       createHyperServiceObject();
     } catch (error) {
@@ -929,10 +940,31 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   }
 
+  const setVaccineLoacalStorageData = () => {
+    AsyncStorage.getItem('hasAgreedVaccineTnC').then((data) => {
+      setAgreedToVaccineTnc(data);
+    });
+
+    AsyncStorage.getItem('VaccinationCmsIdentifier').then((data) => {
+      setVaccinationCmsIdentifier(data);
+    });
+
+    AsyncStorage.getItem('VaccinationSubscriptionId').then((data) => {
+      setVaccinationSubscriptionId(data);
+    });
+  };
+
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      setVaccineLoacalStorageData();
       checkApisToCall();
       getUserBanners();
+
+      AsyncStorage.getItem('verifyCorporateEmailOtpAndSubscribe').then((data) => {
+        if (JSON.parse(data || 'false') === true) {
+          getUserSubscriptionsWithBenefits();
+        }
+      });
     });
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       apisToCall.current = [];
@@ -1453,6 +1485,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const getUserSubscriptionsWithBenefits = () => {
+    setUserSubscriptionLoading(true);
     const mobile_number = g(currentPatient, 'mobileNumber');
     mobile_number &&
       client
@@ -1474,6 +1507,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           if (groupPlans) {
             const hdfcPlan = groupPlans?.HDFC;
             const circlePlan = groupPlans?.APOLLO;
+
+            let corporatePlan: SubscriptionData[] = [];
+            Object.keys(groupPlans).forEach((plan_name) => {
+              if (plan_name !== 'APOLLO' && plan_name !== 'HDFC') {
+                groupPlans[plan_name]?.forEach((subscription) => {
+                  const plan = setSubscriptionData(subscription, false, true);
+                  corporatePlan.push(plan);
+                });
+              }
+            });
+            if (corporatePlan.length) {
+              AsyncStorage.setItem('isCorporateSubscribed', 'yes');
+            } else {
+              AsyncStorage.setItem('isCorporateSubscribed', 'no');
+            }
+            setCorporateSubscriptions && setCorporateSubscriptions(corporatePlan);
 
             if (hdfcPlan) {
               const hdfcSubscription = setSubscriptionData(hdfcPlan[0]);
@@ -1501,8 +1550,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               setCircleSubscription && setCircleSubscription(circleSubscription);
             }
           }
+          setUserSubscriptionLoading(false);
         })
         .catch((e) => {
+          setUserSubscriptionLoading(false);
           CommonBugFender('ConsultRoom_getUserSubscriptionsWithBenefits', e);
         });
   };
@@ -1585,7 +1636,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return circleSubscptionData;
   };
 
-  const setSubscriptionData = (plan: any, isUpgradePlan?: boolean) => {
+  const setSubscriptionData = (plan: any, isUpgradePlan?: boolean, isCorporatePlan?: boolean) => {
     try {
       const group = plan.group;
       const groupData: GroupPlan = {
@@ -1598,6 +1649,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       if (benefits && benefits.length) {
         benefits.forEach((item: any) => {
           const ctaAction = g(item, 'cta_action');
+          if (g(ctaAction, 'meta', 'action') === string.common.CorporateVaccineBenefit) {
+            setShowCorporateVaccinationCta(true);
+
+            setVaccinationCmsIdentifier(item?.cms_identifier);
+            AsyncStorage.setItem('VaccinationCmsIdentifier', item?.cms_identifier);
+            AsyncStorage.setItem('VaccinationSubscriptionId', plan?._id);
+
+            setVaccinationSubscriptionId(plan?._id);
+            setVaccinationSubscriptionName(plan?.name);
+            setVaccinationSubscriptionPlanId(plan?.plan_id);
+          }
           const benefitCtaAction: BenefitCtaAction = {
             type: g(ctaAction, 'type'),
             action: g(ctaAction, 'meta', 'action'),
@@ -1616,6 +1678,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             availableCount: item!.available_count,
             refreshFrequency: item!.refresh_frequency,
             icon: item!.icon,
+            cmsIdentifier: item?.cms_identifier,
           };
           planBenefits.push(benefit);
         });
@@ -1636,6 +1699,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         benefits: planBenefits,
         coupons: plan!.coupons ? plan!.coupons : [],
         upgradeTransactionValue: plan?.plan_summary?.[0]?.upgrade_transaction_value,
+        isCorporate: !!isCorporatePlan,
+        corporateIcon: !!isCorporatePlan ? plan?.group_logo_url?.mobile_version : '',
       };
       const upgradeToPlan = g(plan, 'can_upgrade_to');
       if (g(upgradeToPlan, '_id')) {
@@ -3084,32 +3149,38 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderRemoteConfigItems = (item: any, index: number) => {
+    const isCorporateLoading =
+      userSubscriptionLoading && item?.action === string.vaccineBooking.CORPORATE_VACCINATION;
     return (
       <View
         key={index}
         style={{ marginBottom: index === covidVaccineCtaV2?.data?.length - 1 ? 15 : 0 }}
       >
-        <CovidButton
-          iconStyle={styles.covidIconStyle}
-          iconUrl={item?.colorReverse ? item?.reverseIconPath : item?.iconPath}
-          buttonStyle={[
-            styles.covidBtn,
-            {
-              backgroundColor: item?.colorReverse ? theme.colors.APP_YELLOW : theme.colors.WHITE,
-            },
-          ]}
-          iconBase={VaccineTracker}
-          btnTitleStyle={[
-            styles.covidBtnTitle,
-            {
-              color: item?.colorReverse ? theme.colors.WHITE : theme.colors.APP_YELLOW,
-            },
-          ]}
-          title={item?.title}
-          onPress={() => {
-            item?.docOnCall ? onPressCallDoctor(item) : handleCovidCTA(item);
-          }}
-        />
+        {isCorporateLoading ? (
+          CovidButtonShimmer()
+        ) : (
+          <CovidButton
+            iconStyle={styles.covidIconStyle}
+            iconUrl={item?.colorReverse ? item?.reverseIconPath : item?.iconPath}
+            buttonStyle={[
+              styles.covidBtn,
+              {
+                backgroundColor: item?.colorReverse ? theme.colors.APP_YELLOW : theme.colors.WHITE,
+              },
+            ]}
+            iconBase={VaccineTracker}
+            btnTitleStyle={[
+              styles.covidBtnTitle,
+              {
+                color: item?.colorReverse ? theme.colors.WHITE : theme.colors.APP_YELLOW,
+              },
+            ]}
+            title={item?.title}
+            onPress={() => {
+              item?.docOnCall ? onPressCallDoctor(item) : handleCovidCTA(item);
+            }}
+          />
+        )}
       </View>
     );
   };
@@ -3179,10 +3250,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <CovidRiskLevel style={{ width: 24, height: 24 }} />,
           'Check your risk level'
         )}
-        {renderCovidBlueButtons(
+        {/* {renderCovidBlueButtons(
           onPressHealthyLife,
           <HealthyLife style={{ width: 24, height: 24 }} />,
           `${AppConfig.Configuration.HdfcHealthLifeText}`
+        )} */}
+        {renderCovidBlueButtons(
+          onPressCorporateMembership,
+          <HealthyLife style={{ width: 24, height: 24 }} />,
+          `${AppConfig.Configuration.CorporateMembershipText}`
         )}
         {renderCovidBlueButtons(
           onPressKavach,
@@ -3209,7 +3285,30 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     };
     postHomeWEGEvent(WebEngageEventName.COVID_VACCINATION_SECTION_CLICKED, undefined, attibutes);
     try {
-      if (item?.url?.includes('apollopatients://')) {
+      if (item?.action === string.vaccineBooking.CORPORATE_VACCINATION) {
+        AsyncStorage.setItem('verifyCorporateEmailOtpAndSubscribe', 'false');
+        if (corporateSubscriptions?.length) {
+          if (agreedToVaccineTnc === 'yes') {
+            props.navigation.navigate(AppRoutes.BookedVaccineScreen, {
+              cmsIdentifier: vaccinationCmsIdentifier || '',
+              subscriptionId: vaccinationSubscriptionId || '',
+              isVaccineSubscription: !!vaccinationCmsIdentifier,
+              isCorporateSubscription: !!corporateSubscriptions?.length,
+            });
+          } else {
+            props.navigation.navigate(AppRoutes.VaccineTermsAndConditions, {
+              isCorporateSubscription: !!corporateSubscriptions?.length,
+            });
+          }
+        } else {
+          props.navigation.navigate(AppRoutes.BookedVaccineScreen, {
+            cmsIdentifier: vaccinationCmsIdentifier || '',
+            subscriptionId: vaccinationSubscriptionId || '',
+            isVaccineSubscription: !!vaccinationCmsIdentifier,
+            isCorporateSubscription: !!corporateSubscriptions?.length,
+          });
+        }
+      } else if (item?.url?.includes('apollopatients://')) {
         // handling speciality deeplink only on this phase
         const data = handleOpenURL(item?.url);
         const { routeName, id, isCall, mediaSource } = data;
@@ -3222,9 +3321,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           isCircleMember === 'yes',
           mediaSource
         );
-        return;
+      } else {
+        regenerateJWTToken('vaccine', item?.url);
       }
-      regenerateJWTToken('vaccine', item?.url);
     } catch (e) {}
   };
 
@@ -3269,6 +3368,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     } catch (e) {
       setBugFenderLog('CONSULT_ROOM_FAILED_OPEN_URL', urlToOpen);
     }
+  };
+
+  const onPressCorporateMembership = async () => {
+    props.navigation.navigate(AppRoutes.MyMembership);
   };
 
   const onPressKavach = () => {

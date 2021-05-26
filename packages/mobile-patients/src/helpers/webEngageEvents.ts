@@ -462,6 +462,11 @@ export enum WebEngageEventName {
   //Permissioon Events
   USER_ALLOWED_PERMISSION = 'User clicked on Allow for permissions',
   USER_DENIED_PERMISSION = 'User clicked on Not now for permissions',
+
+  //Vaccination Booking
+  VACCINATION_BOOKING_CONFIRMATION = 'Vaccine_Booking confirmation',
+  VACCINATION_CANCELLATION = 'Vaccine_Cancellation',
+
 }
 
 export interface PatientInfo {

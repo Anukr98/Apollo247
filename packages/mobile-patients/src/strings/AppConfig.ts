@@ -19,7 +19,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -167,6 +167,7 @@ const appStaticVariables = {
     consult: 'd70e6ee8-ecf1-4c75-ae00-2f968641f260',
     returnOrder: 'e2fc95ff-3ef5-4a9d-8fed-31609e426cbc',
     deliveryStatus: '3df5b586-ce39-478a-a5ec-1e525f5dc42a',
+    vaccination: 'd73f3dc4-bc92-11eb-8529-0242ac130003',
   },
   MED_ORDER_NON_CART_CALL_ME_OPTION_WHATSAPP_LINK:
     'https://api.whatsapp.com/send?phone=914041894343&text=I%20want%20to%20inform%20the%20pharmacist%20regarding%20my%20medicines',
@@ -181,11 +182,13 @@ const appStaticVariables = {
   returnUrl: 'https://aph-staging-web-patients.apollo247.com/ordersuccess',
   jusPaybaseUrl: 'https://api.juspay.in/cardbins',
   HdfcHealthLifeText: string.common.HdfcHealthLifeText,
+  CorporateMembershipText: string.common.CorporateMembershipText,
   EXPRESS_MAXIMUM_HOURS: 6,
   PACKAGING_CHARGES: 0,
   MIN_CART_VALUE_FOR_FREE_PACKAGING: 300,
   COVID_UPDATES: 'https://www.apollo247.com/blog/covid19-vaccines',
   APOLLO_TERMS_CONDITIONS: 'https://www.apollo247.com/terms?isMobile=true',
+  APOLLO_PRIVACY_POLICY: 'https://www.apollo247.com/privacy?isMobile=true',
   LOGIN_SECTION: loginSection,
   COVID_VACCINE_SECTION: covidVaccineSection,
   CART_PRESCRIPTION_OPTIONS: [
@@ -219,6 +222,9 @@ const appStaticVariables = {
   Reopen_Help_Max_Time: 24, // hrs
   Helpdesk_Chat_Confim_Msg:
     'Thank you for reaching out. As we are experiencing a heavy load, our team will get back to you in 24 to 48 hours.',
+  Vaccination_Cities_List: ['Delhi', 'Mumbai'],
+  Vaccine_Type: ['Covaxin', 'Covishield'],
+  Vaccine_Restrict_Self: true,
   Enable_Diagnostics_COD: false,
   Enable_Diagnostics_Cancellation_Policy: false,
   Diagnostics_Cancel_Policy_Text_Msg:
