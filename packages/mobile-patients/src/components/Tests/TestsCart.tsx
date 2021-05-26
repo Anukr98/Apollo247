@@ -403,7 +403,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const initiateHyperSDK = async () => {
     try {
       const isInitiated: boolean = await isSDKInitialised();
-      !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id);
+      const merchantId = AppConfig.Configuration.merchantId;
+      !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id, merchantId);
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }

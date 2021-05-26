@@ -6,6 +6,7 @@ import {
   BackHandler,
   NativeEventEmitter,
   ScrollView,
+  Platform,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -50,6 +51,7 @@ import {
   OrderInput,
   PAYMENT_MODE,
   VerifyVPA,
+  one_apollo_store_code,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   createOrder,
@@ -95,6 +97,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { paymentMethods, cardTypes, fetching } = useGetPaymentMethods();
   const [HCSelected, setHCSelected] = useState<boolean>(false);
   const [burnHc, setburnHc] = useState<number>(0);
+  const storeCode =
+    Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
     const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
@@ -134,6 +138,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         var payload = data.payload || {};
         const status = payload?.payload?.status;
         const action = payload?.payload?.action;
+        console.log('payload >>>', JSON.stringify(payload));
         if (action == 'getPaymentMethods' && !payload?.error) {
           const banks = payload?.payload?.paymentMethods?.filter(
             (item: any) => item?.paymentMethodType == 'NB'
@@ -206,14 +211,17 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     }
   };
 
-  const createJusPayOrder = (paymentMode: PAYMENT_MODE) => {
-    const orderInput: OrderInput = {
+  const createJusPayOrder = (cod: boolean) => {
+    const orderInput = {
       payment_order_id: paymentId,
-      payment_mode: paymentMode,
+      health_credits_used: HCSelected ? burnHc : 0,
+      cash_to_collect: cod ? amount : 0,
+      prepaid_amount: !cod ? amount : 0,
+      store_code: storeCode,
       is_mobile_sdk: true,
-      return_url: AppConfig.Configuration.returnUrl,
+      return_url: AppConfig.Configuration.baseUrl,
     };
-    return client.mutate<createOrder, createOrderVariables>({
+    return client.mutate({
       mutation: CREATE_ORDER,
       variables: { order_input: orderInput },
       fetchPolicy: 'no-cache',
@@ -237,18 +245,18 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     } catch (error) {}
   };
 
-  const processCODOrder = () => {
-    const processDiagnosticHCOrderInput: ProcessDiagnosticHCOrderInput = {
-      orderID: orderDetails?.orderId,
-      paymentMode: DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD,
-      amount: amount,
-    };
-    return client.mutate<processDiagnosticHCOrder, processDiagnosticHCOrderVariables>({
-      mutation: PROCESS_DIAG_COD_ORDER,
-      variables: { processDiagnosticHCOrderInput: processDiagnosticHCOrderInput },
-      fetchPolicy: 'no-cache',
-    });
-  };
+  // const processCODOrder = () => {
+  //   const processDiagnosticHCOrderInput: ProcessDiagnosticHCOrderInput = {
+  //     orderID: orderDetails?.orderId,
+  //     paymentMode: DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD,
+  //     amount: amount,
+  //   };
+  //   return client.mutate<processDiagnosticHCOrder, processDiagnosticHCOrderVariables>({
+  //     mutation: PROCESS_DIAG_COD_ORDER,
+  //     variables: { processDiagnosticHCOrderInput: processDiagnosticHCOrderInput },
+  //     fetchPolicy: 'no-cache',
+  //   });
+  // };
 
   const verifyVPA = (VPA: string) => {
     const verifyVPA: VerifyVPA = {
@@ -269,10 +277,10 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       setisTxnProcessing(true);
       try {
         businessLine == 'diagnostics' && initiateOrderPayment();
-        const response = await createJusPayOrder(PAYMENT_MODE.PREPAID);
+        const response = await createJusPayOrder(false);
         const { data } = response;
-        const { createOrder } = data;
-        const token = createOrder?.juspay?.client_auth_token;
+        const { createOrderV2 } = data;
+        const token = createOrderV2?.mobile_token?.client_auth_token;
         setauthToken?.(token);
         return token;
       } catch (e) {
@@ -332,17 +340,20 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     triggerWebengege('Cash', 'Cash');
     setisTxnProcessing(true);
     try {
-      const response = await createJusPayOrder(PAYMENT_MODE.COD);
+      const response = await createJusPayOrder(true);
       const { data } = response;
-      if (data?.createOrder?.success) {
-        const response = await processCODOrder();
-        const { data } = response;
-        data?.processDiagnosticHCOrder?.status
-          ? navigatetoOrderStatus(true, 'success')
-          : showTxnFailurePopUP();
-      } else {
-        showTxnFailurePopUP();
-      }
+      data?.createOrderV2?.payment_status == 'TXN_SUCCESS'
+        ? navigatetoOrderStatus(true, 'success')
+        : showTxnFailurePopUP();
+      // if (data?.createOrder?.success) {
+      //   const response = await processCODOrder();
+      //   const { data } = response;
+      //   data?.processDiagnosticHCOrder?.status
+      //     ? navigatetoOrderStatus(true, 'success')
+      //     : showTxnFailurePopUP();
+      // } else {
+      //   showTxnFailurePopUP();
+      // }
     } catch (e) {
       showTxnFailurePopUP();
     }
@@ -350,7 +361,12 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   async function onPressplaceHcOrder() {
     try {
-      const response = await createJusPayOrder(PAYMENT_MODE.COD);
+      setisTxnProcessing(true);
+      const response = await createJusPayOrder(false);
+      const { data } = response;
+      data?.createOrderV2?.payment_status == 'TXN_SUCCESS'
+        ? navigatetoOrderStatus(true, 'success')
+        : showTxnFailurePopUP();
     } catch (e) {
       showTxnFailurePopUP();
     }

@@ -177,7 +177,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   const initiateHyperSDK = async () => {
     try {
       const isInitiated: boolean = await isSDKInitialised();
-      !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id);
+      const merchantId = AppConfig.Configuration.pharmaMerchantId;
+      !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id, merchantId);
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
@@ -513,7 +514,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         props.navigation.navigate(AppRoutes.PaymentMethods, {
           paymentId: data?.data?.createOrderInternal?.payment_order_id!,
           amount: grandTotal,
-          orderDetails: getOrderDetails(),
+          orderDetails: getOrderDetails(orders),
           businessLine: 'pharma',
         });
       }
@@ -524,7 +525,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     }
   };
 
-  const getOrderDetails = () => {
+  const getOrderDetails = (orders: any) => {
     const orderDetails = {
       orders: orders,
       orderInfo: OrderInfo,
