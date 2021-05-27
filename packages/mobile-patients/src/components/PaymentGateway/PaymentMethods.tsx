@@ -70,13 +70,14 @@ export interface PaymentMethodsProps extends NavigationScreenProps {
 }
 
 export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
-  const { modifiedOrder } = useDiagnosticsCart();
+  const { modifiedOrder, deliveryAddressCityId } = useDiagnosticsCart();
   const paymentId = props.navigation.getParam('paymentId');
   const amount = props.navigation.getParam('amount');
   const orderId = props.navigation.getParam('orderId');
   const orderDetails = props.navigation.getParam('orderDetails');
   const eventAttributes = props.navigation.getParam('eventAttributes');
   const businessLine = props.navigation.getParam('businessLine');
+  const isDiagnostic = businessLine === 'diagnostics';
   const { currentPatient } = useAllCurrentPatients();
   const [banks, setBanks] = useState<any>([]);
   const [loading, setloading] = useState<boolean>(true);
@@ -91,16 +92,24 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const client = useApolloClient();
   const FailedStatuses = ['AUTHENTICATION_FAILED', 'AUTHORIZATION_FAILED'];
   const isDiagnosticModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
+  const [showPrepaid, setShowPrepaid] = useState<boolean>(isDiagnostic ? false : true);
+  const [showCOD, setShowCOD] = useState<boolean>(isDiagnostic ? false : true);
 
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
     const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
       handleEventListener(resp);
     });
-    businessLine === 'diagnostics' && DiagnosticPaymentPageViewed(currentPatient, amount);
     fecthPaymentOptions();
     fetchTopBanks();
     return () => eventListener.remove();
+  }, []);
+
+  useEffect(() => {
+    if (isDiagnostic) {
+      DiagnosticPaymentPageViewed(currentPatient, amount);
+      !!deliveryAddressCityId && deliveryAddressCityId != '' && getCityLevelPaymentConfig();
+    }
   }, []);
 
   useEffect(() => {
@@ -109,6 +118,20 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     });
     return () => BackHandler.removeEventListener('hardwareBackPress', () => null);
   }, []);
+
+  function getCityLevelPaymentConfig() {
+    let remoteData = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_PAYMENT_OPTION;
+    const getConfigPaymentValue = remoteData?.find(
+      (item) => Number(item?.cityId) === Number(deliveryAddressCityId)
+    );
+    if (!!getConfigPaymentValue) {
+      setShowPrepaid(getConfigPaymentValue?.prepaid);
+      setShowCOD(getConfigPaymentValue.cod);
+    } else {
+      setShowPrepaid(AppConfig.Configuration.Enable_Diagnostics_Prepaid);
+      setShowCOD(AppConfig.Configuration.Enable_Diagnostics_COD);
+    }
+  }
 
   const handleEventListener = (resp: any) => {
     var data = JSON.parse(resp);
@@ -239,9 +262,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   function triggerUserPaymentAbortedEvent(errorCode: string) {
     //JP_002 -> User aborted payment
-    errorCode === 'JP_002' &&
-      businessLine === 'diagnostics' &&
-      DiagnosticUserPaymentAborted(currentPatient, orderId);
+    errorCode === 'JP_002' && isDiagnostic && DiagnosticUserPaymentAborted(currentPatient, orderId);
   }
 
   async function onPressBank(bankCode: string) {
@@ -383,18 +404,24 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
                 ? null
                 : renderPayByCash();
             case 'CARD':
-              return paymentModeVersionCheck(minVersion) && renderCards();
+              return paymentModeVersionCheck(minVersion) && showPrepaid && renderCards();
             case 'WALLET':
               return (
-                paymentModeVersionCheck(minVersion) && renderWallets(item?.payment_methods || [])
+                paymentModeVersionCheck(minVersion) &&
+                showPrepaid &&
+                renderWallets(item?.payment_methods || [])
               );
             case 'UPI':
               return (
-                paymentModeVersionCheck(minVersion) && renderUPIPayments(filterUPIApps() || [])
+                paymentModeVersionCheck(minVersion) &&
+                showPrepaid &&
+                renderUPIPayments(filterUPIApps() || [])
               );
             case 'NB':
               return (
-                paymentModeVersionCheck(minVersion) && renderNetBanking(item?.payment_methods || [])
+                paymentModeVersionCheck(minVersion) &&
+                showPrepaid &&
+                renderNetBanking(item?.payment_methods || [])
               );
           }
         })
@@ -439,8 +466,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderPayByCash = () => {
-    const showCOD =
-      businessLine === 'diagnostics' && AppConfig.Configuration.Enable_Diagnostics_COD;
     return (
       <View>
         {!showCOD && renderInfoMessage()}
