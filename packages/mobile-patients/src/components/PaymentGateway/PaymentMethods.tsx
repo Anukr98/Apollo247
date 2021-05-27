@@ -55,6 +55,7 @@ import {
   processDiagnosticsCODOrder,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
+  getDiagnosticCityLevelPaymentOptions,
   isEmptyObject,
   isSmallDevice,
   paymentModeVersionCheck,
@@ -108,7 +109,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   useEffect(() => {
     if (isDiagnostic) {
       DiagnosticPaymentPageViewed(currentPatient, amount);
-      getCityLevelPaymentConfig();
+      setShowPrepaid(getDiagnosticCityLevelPaymentOptions(deliveryAddressCityId)?.prepaid);
+      setShowCOD(getDiagnosticCityLevelPaymentOptions(deliveryAddressCityId)?.cod);
     }
   }, []);
 
@@ -118,20 +120,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     });
     return () => BackHandler.removeEventListener('hardwareBackPress', () => null);
   }, []);
-
-  function getCityLevelPaymentConfig() {
-    let remoteData = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_PAYMENT_OPTION;
-    const getConfigPaymentValue = remoteData?.find(
-      (item) => Number(item?.cityId) === Number(deliveryAddressCityId)
-    );
-    if (!!getConfigPaymentValue) {
-      setShowPrepaid(getConfigPaymentValue?.prepaid);
-      setShowCOD(getConfigPaymentValue.cod);
-    } else {
-      setShowPrepaid(AppConfig.Configuration.Enable_Diagnostics_Prepaid);
-      setShowCOD(AppConfig.Configuration.Enable_Diagnostics_COD);
-    }
-  }
 
   const handleEventListener = (resp: any) => {
     var data = JSON.parse(resp);
