@@ -108,7 +108,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   useEffect(() => {
     if (isDiagnostic) {
       DiagnosticPaymentPageViewed(currentPatient, amount);
-      !!deliveryAddressCityId && deliveryAddressCityId != '' && getCityLevelPaymentConfig();
+      getCityLevelPaymentConfig();
     }
   }, []);
 
