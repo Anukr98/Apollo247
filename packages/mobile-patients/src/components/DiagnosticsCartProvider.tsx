@@ -159,6 +159,12 @@ export interface DiagnosticsCartContextProps {
   setNewAddressAddedHomePage: ((value: string) => void) | null;
   newAddressAddedCartPage: string;
   setNewAddressAddedCartPage: ((value: string) => void) | null;
+
+  showSelectedArea: boolean;
+  setShowSelectedArea: ((value: boolean) => void) | null;
+
+  isCartPagePopulated: boolean;
+  setCartPagePopulated: ((value: boolean) => void) | null;
 }
 
 export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>({
@@ -246,6 +252,10 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   setNewAddressAddedHomePage: null,
   newAddressAddedCartPage: '',
   setNewAddressAddedCartPage: null,
+  showSelectedArea: false,
+  setShowSelectedArea: null,
+  isCartPagePopulated: false,
+  setCartPagePopulated: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -389,6 +399,14 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setAddresses([address, ...addresses]);
   };
 
+  const [showSelectedArea, setShowSelectedArea] = useState<
+    DiagnosticsCartContextProps['showSelectedArea']
+  >(false);
+
+  const [isCartPagePopulated, setCartPagePopulated] = useState<
+    DiagnosticsCartContextProps['isCartPagePopulated']
+  >(false);
+
   const setCartItems: DiagnosticsCartContextProps['setCartItems'] = (cartItems) => {
     _setCartItems(cartItems);
     AsyncStorage.setItem(AsyncStorageKeys.cartItems, JSON.stringify(cartItems)).catch(() => {
@@ -404,8 +422,6 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setCartItems(newCartItems);
     //empty the slots and areas everytime due to dependency of api.
     setDiagnosticSlot(null);
-    setAreaSelected!({});
-    setDiagnosticAreas([]);
   };
 
   const addMultipleCartItems: DiagnosticsCartContextProps['addMultipleCartItems'] = (
@@ -426,8 +442,6 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     const newCartItems = cartItems?.filter((item) => Number(item?.id) !== Number(id));
     //empty the slots and areas everytime due to dependency of api.
     setDiagnosticSlot(null);
-    setAreaSelected!({});
-    setDiagnosticAreas!([]);
     setCartItems(newCartItems);
   };
   const updateCartItem: DiagnosticsCartContextProps['updateCartItem'] = (itemUpdates) => {
@@ -568,6 +582,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setNewAddressAddedHomePage('');
     setNewAddressAddedHomePage('');
     setShowSelectPatient(false);
+    setShowSelectedArea(false);
+    setCartPagePopulated(false);
+    setHcCharges(0);
   };
 
   useEffect(() => {
@@ -691,6 +708,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         setNewAddressAddedHomePage,
         newAddressAddedCartPage,
         setNewAddressAddedCartPage,
+        showSelectedArea,
+        setShowSelectedArea,
+        isCartPagePopulated,
+        setCartPagePopulated,
       }}
     >
       {props.children}

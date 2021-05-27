@@ -244,13 +244,13 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       >
         <ImageBackground
           style={{
-            height: imageHeight,
-            width: '100%',
+            aspectRatio: 16 / 7,
           }}
           source={{
             uri: bannerUri,
           }}
-          resizeMode={'stretch'}
+          resizeMode={'cover'}
+          borderRadius={10}
         >
           <View style={styles.bannerContainer}>
             {headerText1 ? renderBannerText(headerText1) : null}
@@ -604,7 +604,6 @@ const renderDot = (active: boolean) => (
 const styles = StyleSheet.create({
   hdfcBanner: {
     backgroundColor: theme.colors.CLEAR,
-    borderRadius: 12,
     marginTop: 10,
     marginHorizontal: 28,
     marginBottom: 15,
@@ -625,7 +624,7 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 4,
     marginHorizontal: 4,
-    marginTop: 8,
+    marginTop: 14,
     justifyContent: 'flex-start',
   },
   row: {

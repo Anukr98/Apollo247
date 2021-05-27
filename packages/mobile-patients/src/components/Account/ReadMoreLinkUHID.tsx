@@ -25,10 +25,10 @@ const styles = StyleSheet.create({
   },
 });
 
-const readMoreImagePart1 = require('@aph/mobile-patients/src/components/ui/icons/read_more/read-more-part1.png');
-const readMoreImagePart2 = require('@aph/mobile-patients/src/components/ui/icons/read_more/read-more-part2.png');
-const readMoreImagePart3 = require('@aph/mobile-patients/src/components/ui/icons/read_more/read-more-part3.png');
-const readMoreImagePart4 = require('@aph/mobile-patients/src/components/ui/icons/read_more/read-more-part4.png');
+const readMoreImagePart1 = require('@aph/mobile-patients/src/components/ui/icons/read_more/read-more-part1.webp');
+const readMoreImagePart2 = require('@aph/mobile-patients/src/components/ui/icons/read_more/read-more-part2.webp');
+const readMoreImagePart3 = require('@aph/mobile-patients/src/components/ui/icons/read_more/read-more-part3.webp');
+const readMoreImagePart4 = require('@aph/mobile-patients/src/components/ui/icons/read_more/read-more-part4.webp');
 
 export interface ReadMoreLinkUHIDProps extends NavigationScreenProps {}
 

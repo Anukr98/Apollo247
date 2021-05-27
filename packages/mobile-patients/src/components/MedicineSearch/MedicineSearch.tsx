@@ -69,6 +69,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     pinCode,
     pharmacyCircleAttributes,
     cartItems,
+    asyncPincode,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
 
@@ -301,7 +302,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       setItemsAddingToCart({ ...itemsAddingToCart, [item.sku]: true });
       addPharmaItemToCart(
         formatToCartItem(item),
-        pharmacyPincode!,
+        asyncPincode?.pincode || pharmacyPincode!,
         addCartItem,
         null,
         navigation,

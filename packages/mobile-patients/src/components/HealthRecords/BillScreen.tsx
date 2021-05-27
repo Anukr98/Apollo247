@@ -22,6 +22,7 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { HealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/HealthRecordCard';
 import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
 import { ProfileImageComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/ProfileImageComponent';
+import ListEmptyComponent from '@aph/mobile-patients/src/components/HealthRecords/Components/ListEmptyComponent';
 import {
   g,
   getPrescriptionDate,
@@ -36,6 +37,7 @@ import {
   getPhrHighlightText,
   phrSearchWebEngageEvents,
   postWebEngageIfNewSession,
+  removeObjectProperty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -351,7 +353,8 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
   };
 
   const onHealthCardItemPress = (selectedItem: MedicalBillsType) => {
-    postWebEngageIfNewSession('Bill', currentPatient, selectedItem, phrSession, setPhrSession);
+    const eventInputData = removeObjectProperty(selectedItem, 'billFiles');
+    postWebEngageIfNewSession('Bill', currentPatient, eventInputData, phrSession, setPhrSession);
     props.navigation.navigate(AppRoutes.HealthRecordDetails, {
       data: selectedItem,
       medicalBill: true,
@@ -369,11 +372,12 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
       .then((status) => {
         if (status) {
           getLatestMedicalBillRecords();
+          const eventInputData = removeObjectProperty(selectedItem, 'billFiles');
           postWebEngagePHR(
             currentPatient,
             WebEngageEventName.PHR_DELETE_BILLS,
             'Bill',
-            selectedItem
+            eventInputData
           );
         } else {
           setShowSpinner(false);
@@ -427,14 +431,6 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
     return <Text style={styles.sectionHeaderTitleStyle}>{sectionTitle}</Text>;
   };
 
-  const emptyListView = () => {
-    return apiError ? (
-      <PhrNoDataComponent noDataText={string.common.phr_api_error_text} phrErrorIcon />
-    ) : (
-      <PhrNoDataComponent />
-    );
-  };
-
   const renderMedicalBillsData = () => {
     return (
       <SectionList
@@ -443,7 +439,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 12, paddingHorizontal: 20 }}
         sections={localMedicalBillsData || []}
         renderItem={({ item, index }) => renderMedicalBillItems(item, index)}
-        ListEmptyComponent={emptyListView}
+        ListEmptyComponent={ListEmptyComponent.getEmptyListComponent(showSpinner, apiError)}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
       />
     );

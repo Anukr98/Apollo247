@@ -119,6 +119,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     setPdpBreadCrumbs,
     addresses,
     productDiscount,
+    setAsyncPincode,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
@@ -544,7 +545,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 
   const renderEmptyData = () => {
     return (
-      <View style={{ flex: 1, justifyContent: 'center' }}>
+      <View style={{ flex: 1, justifyContent: 'center', marginTop: 50 }}>
         <Card
           cardContainer={{ marginTop: 0 }}
           heading={'Uh oh! :('}
@@ -565,6 +566,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             const addrComponents = data.results[0].address_components || [];
             const latLang = data.results[0].geometry.location || {};
             const response = getFormattedLocation(addrComponents, latLang, pinCode);
+            setAsyncPincode?.(response);
             setPharmacyLocation!(response);
             setAsyncPharmaLocation(response);
             setDeliveryAddressId!('');
@@ -768,6 +770,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     });
   };
 
+  const onCompositionClick = () =>
+    props.navigation.push(AppRoutes.MedicineListing, {
+      searchText: medicineDetails?.PharmaOverview?.[0]?.Composition,
+      movedFrom: 'PDP Composition Hyperlink',
+    });
+
   let buttonRef = React.useRef<View>(null);
   return (
     <View style={{ flex: 1 }}>
@@ -776,7 +784,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         <View>
           {loading ? (
             <ActivityIndicator
-              style={{ flex: 1, alignItems: 'center' }}
+              style={{ flex: 1, alignItems: 'center', marginTop: 50 }}
               animating={loading}
               size="large"
               color="green"
@@ -856,6 +864,16 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   manufacturer={medicineDetails?.manufacturer}
                   composition={medicineDetails?.PharmaOverview?.[0]?.Composition}
                   consumeType={medicineDetails?.consume_type}
+                  onCompositionClick={onCompositionClick}
+                />
+              )}
+              {!!substitutes.length && !isInStock && (
+                <SimilarProducts
+                  heading={string.productDetailPage.PRODUCT_SUBSTITUTES}
+                  similarProducts={substitutes}
+                  navigation={props.navigation}
+                  composition={medicineDetails?.PharmaOverview?.[0]?.Composition}
+                  setShowSubstituteInfo={setShowSubstituteInfo}
                 />
               )}
               <ProductInfo
@@ -878,7 +896,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 }
                 directionsOfUse={medicineDetails?.direction_for_use_dosage}
               />
-              {!!substitutes.length && (
+              {!!substitutes.length && isInStock && (
                 <SimilarProducts
                   heading={string.productDetailPage.PRODUCT_SUBSTITUTES}
                   similarProducts={substitutes}
