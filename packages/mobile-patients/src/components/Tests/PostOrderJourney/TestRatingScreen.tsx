@@ -37,6 +37,7 @@ import _ from 'lodash';
 import { savePhleboFeedback } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { DiagnosticPhleboFeedbackSubmitted } from '@aph/mobile-patients/src/components/Tests/Events';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 
 export interface DiagnosticsOrderList
@@ -143,7 +144,9 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
           title: 'Feedback Sent!',
           description: 'Your feedback and review sent successfully.',
         });
-       props.navigation.goBack()
+        props.navigation.navigate(AppRoutes.YourOrdersTest, {
+          source: AppRoutes.TestRatingScreen,
+        });
       } catch (error) {
         setLoading!(false);
         showAphAlert!({
