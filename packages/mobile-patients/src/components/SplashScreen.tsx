@@ -888,6 +888,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Enable_Diagnostics_COD',
       PROD: 'Enable_Diagnostics_COD',
     },
+    Enable_Diagnostics_Prepaid: {
+      QA: 'QA_Enable_Diagnostics_Prepaid',
+      PROD: 'Enable_Diagnostics_Prepaid',
+    },
+    Diagnostics_CityLevel_Payment_Option: {
+      QA: 'QA_Diagnostics_City_Level_Payment_Option',
+      PROD: 'Diagnostics_City_Level_Payment_Option',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1083,6 +1091,17 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       setAppConfig('followUp_Chat', 'FollowUp_Chat_Limit', (key) => config.getNumber(key));
       setAppConfig('Enable_Diagnostics_COD', 'Enable_Diagnostics_COD', (key) =>
         config.getBoolean(key)
+      );
+      setAppConfig('Enable_Diagnostics_Prepaid', 'Enable_Diagnostics_Prepaid', (key) =>
+        config.getBoolean(key)
+      );
+
+      setAppConfig(
+        'Diagnostics_CityLevel_Payment_Option',
+        'DIAGNOSTICS_CITY_LEVEL_PAYMENT_OPTION',
+        (key) =>
+          JSON.parse(config.getString(key)) ||
+          AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_PAYMENT_OPTION
       );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;

@@ -90,7 +90,10 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   }, [movedFrom]);
 
   const fetchWidgets = async (title: string) => {
-    const createTitle = title?.replace(/ /g, '-')?.toLowerCase();
+    const createTitle = title
+      ?.trim()
+      ?.replace(/ /g, '-')
+      ?.toLowerCase();
     let widgetName = movedFrom == AppRoutes.Tests ? `home-${createTitle}` : `${createTitle}`;
     if (widgetType == 'Category' || widgetType == 'Category_Scroll') {
       widgetName = createTitle.toLowerCase();

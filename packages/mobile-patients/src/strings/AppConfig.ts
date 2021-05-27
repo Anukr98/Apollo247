@@ -221,7 +221,20 @@ const appStaticVariables = {
     'Thank you for reaching out. As we are experiencing a heavy load, our team will get back to you in 24 to 48 hours.',
   Enable_Diagnostics_COD: false,
   DIAGNOSTIC_DEFAULT_CITYID : 9,
-  RTPCR_Google_Form: 'https://docs.google.com/forms/d/e/1FAIpQLSd6VaqQ0GTQOdpBYMyh-wZwv8HHrr3W1Q_XCVSaooHXQGVsJQ/viewform'
+  RTPCR_Google_Form: 'https://docs.google.com/forms/d/e/1FAIpQLSd6VaqQ0GTQOdpBYMyh-wZwv8HHrr3W1Q_XCVSaooHXQGVsJQ/viewform',
+  Enable_Diagnostics_Prepaid: true,
+  DIAGNOSTICS_CITY_LEVEL_PAYMENT_OPTION: [
+    {
+      "cityId" : "9",
+      "prepaid" : false,
+      "cod" : true
+    },
+    {
+      "cityId": "287",
+      "prepaid": false,
+      "cod": true
+    }
+]
 };
 
 const DEV_top_specialties = [
