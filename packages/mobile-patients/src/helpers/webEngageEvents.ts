@@ -266,7 +266,7 @@ export enum WebEngageEventName {
   PHR_DELETE_INSURANCE = 'PHR Delete Insurance',
   PHR_LOAD_HEALTH_RECORDS = 'PHR Load Health Records',
   PHR_USER_LINKING = 'PHR User Linking',
-  PHR_USER_DELINKING = 'PHR User DeLinking -app',
+  PHR_USER_DELINKING = 'PHR User DeLinking',
   PHR_NO_OF_USERS_SEARCHED_GLOBAL = 'PHR No Of Users searched Global',
   PHR_NO_USERS_SEARCHED_LOCAL = 'PHR No Of Users searched Local {0}',
   PHR_NO_OF_USERS_CLICKED_ON_RECORDS = 'PHR users seen on records in {0}',
