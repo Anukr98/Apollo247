@@ -914,11 +914,11 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const handleCtaClick = (
     type: string,
     action: string,
-    message: string,
-    availableCount: number,
-    id: string,
+    message: string | null,
+    availableCount: number | null,
+    id: string | null,
     webengageevent: string | null,
-    attribute: string,
+    attribute: string | null,
     identifierCms?: string
   ) => {
     if (webengageevent) {
@@ -931,7 +931,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     }
 
     if (isCirclePlan) {
-      handleCircleWebengageEvents(attribute);
+      handleCircleWebengageEvents(attribute || '');
     }
 
     if (type == Hdfc_values.REDIRECT) {
@@ -987,8 +987,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       }
     } else if (type == Hdfc_values.CALL_API) {
       if (action == Hdfc_values.CALL_EXOTEL_API) {
-        if (availableCount > 0) {
-          setBenefitId(id);
+        if (availableCount && availableCount > 0) {
+          setBenefitId(id || '');
           setShowHdfcConnectPopup(true);
         } else {
           renderAlert(
@@ -1345,11 +1345,11 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
                 handleCtaClick(
                   benefit?.benefitCTAType,
                   benefit?.benefitCTAAction,
-                  '',
-                  2,
-                  '',
-                  '',
-                  '',
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
                   benefit?.benefitIdentifier
                 );
               }}
