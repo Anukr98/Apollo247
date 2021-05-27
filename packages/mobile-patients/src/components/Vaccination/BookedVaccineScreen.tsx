@@ -27,6 +27,7 @@ import {
   CurrencyIcon,
   Location,
   MaleIcon,
+  FemaleIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   CalendarShow,

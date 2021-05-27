@@ -918,7 +918,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     availableCount: number,
     id: string,
     webengageevent: string | null,
-    attribute: string
+    attribute: string,
+    identifierCms?: string
   ) => {
     if (webengageevent) {
       handleWebengageEvents(webengageevent);
@@ -934,7 +935,32 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     }
 
     if (type == Hdfc_values.REDIRECT) {
-      if (action == Hdfc_values.SPECIALITY_LISTING) {
+      if (action === string.common.CorporateVaccineBenefit) {
+        const currentBenefit = corporateSubscriptions[corporateIndex]?.benefits?.find(
+          (value) => value?.cmsIdentifier === identifierCms
+        );
+        if (agreedToVaccineTnc === 'yes') {
+          props.navigation.navigate(AppRoutes.BookedVaccineScreen, {
+            cmsIdentifier: currentBenefit?.cmsIdentifier || '',
+            subscriptionId: corporateSubscriptions[corporateIndex]?._id || '',
+            isVaccineSubscription: true,
+            isCorporateSubscription: true,
+          });
+        } else {
+          props.navigation.navigate(AppRoutes.VaccineTermsAndConditions, {
+            isCorporateSubscription: true,
+          });
+        }
+      } else if (action == 'MEMBERSHIP_DETAIL_CIRCLE') {
+        if (circleSubscriptionId) {
+          props.navigation.push(AppRoutes.MembershipDetails, {
+            membershipType: 'CIRCLE PLAN',
+            isActive: circleSubscription?.groupDetails?.isActive,
+            isExpired: circleSubscription?.subscriptionStatus === Circle.EXPIRED_STATUS,
+            comingFrom: AppRoutes.MembershipDetails,
+          });
+        }
+      } else if (action == Hdfc_values.SPECIALITY_LISTING) {
         props.navigation.navigate(AppRoutes.DoctorSearch);
       } else if (action == Hdfc_values.PHARMACY_LANDING) {
         props.navigation.navigate(
@@ -1316,7 +1342,16 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           {!!benefit.benefitCTALabel && (
             <TouchableOpacity
               onPress={() => {
-                handleCorporateBenefitClick(benefit);
+                handleCtaClick(
+                  benefit?.benefitCTAType,
+                  benefit?.benefitCTAAction,
+                  '',
+                  2,
+                  '',
+                  '',
+                  '',
+                  benefit?.benefitIdentifier
+                );
               }}
             >
               <Text style={styles.redeemButtonText}>{benefit.benefitCTALabel}</Text>
@@ -1325,35 +1360,6 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         </View>
       );
     });
-  };
-
-  const handleCorporateBenefitClick = async (benefit) => {
-    if (benefit?.benefitCTAAction === string.common.CorporateVaccineBenefit) {
-      const currentBenefit = corporateSubscriptions[corporateIndex]?.benefits?.find(
-        (value) => value?.cmsIdentifier === benefit?.benefitIdentifier
-      );
-      if (agreedToVaccineTnc === 'yes') {
-        props.navigation.navigate(AppRoutes.BookedVaccineScreen, {
-          cmsIdentifier: currentBenefit?.cmsIdentifier || '',
-          subscriptionId: corporateSubscriptions[corporateIndex]?._id || '',
-          isVaccineSubscription: true,
-          isCorporateSubscription: true,
-        });
-      } else {
-        props.navigation.navigate(AppRoutes.VaccineTermsAndConditions, {
-          isCorporateSubscription: true,
-        });
-      }
-    } else if (benefit?.benefitCTAAction?.includes('circle')) {
-      if (circleSubscriptionId) {
-        props.navigation.navigate(AppRoutes.MembershipDetails, {
-          membershipType: 'CIRCLE PLAN',
-          isActive: circleSubscription?.groupDetails?.isActive,
-          isExpired: circleSubscription?.subscriptionStatus === Circle.EXPIRED_STATUS,
-          comingFrom: AppRoutes.MembershipDetails,
-        });
-      }
-    }
   };
 
   const renderCorporateBanner = () => {
