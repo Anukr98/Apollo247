@@ -34,9 +34,7 @@ import {
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  GET_PAYMENT_METHODS,
   CREATE_ORDER,
-  PROCESS_DIAG_COD_ORDER,
   VERIFY_VPA,
   INITIATE_DIAGNOSTIC_ORDER_PAYMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -46,21 +44,9 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import { TxnFailed } from '@aph/mobile-patients/src/components/PaymentGateway/Components/TxnFailed';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
-  processDiagnosticHCOrder,
-  processDiagnosticHCOrderVariables,
-} from '@aph/mobile-patients/src/graphql/types/processDiagnosticHCOrder';
-import {
-  ProcessDiagnosticHCOrderInput,
-  DIAGNOSTIC_ORDER_PAYMENT_TYPE,
-  OrderInput,
-  PAYMENT_MODE,
   VerifyVPA,
   one_apollo_store_code,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  createOrder,
-  createOrderVariables,
-} from '@aph/mobile-patients/src/graphql/types/createOrder';
 import { verifyVPA, verifyVPAVariables } from '@aph/mobile-patients/src/graphql/types/verifyVPA';
 import { PaymentInitiated } from '@aph/mobile-patients/src/components/Tests/Events';
 import {
@@ -81,8 +67,6 @@ import {
   isSmallDevice,
   paymentModeVersionCheck,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import string from '@aph/mobile-patients/src/strings/strings.json';
-import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/components/InfoMessage';
 
 const { HyperSdkReact } = NativeModules;
 
@@ -124,7 +108,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     });
     businessLine === 'diagnostics' && DiagnosticPaymentPageViewed(currentPatient, amount);
     fecthPaymentOptions();
-    // fetchTopBanks();
     isPhonePeReady();
     isGooglePayReady();
     return () => eventListener.remove();
@@ -330,15 +313,19 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   async function onPressBank(bankCode: string) {
     triggerWebengege('Net Banking');
     const token = await getClientToken();
-    InitiateNetBankingTxn(currentPatient?.id, token, paymentId, bankCode);
+    token
+      ? InitiateNetBankingTxn(currentPatient?.id, token, paymentId, bankCode)
+      : renderErrorPopup();
   }
 
   async function onPressWallet(wallet: string) {
     triggerWebengege(wallet);
     const token = await getClientToken();
-    wallet == 'PHONEPE' && phonePeReady
-      ? InitiateUPISDKTxn(currentPatient?.id, token, paymentId, wallet, 'ANDROID_PHONEPE')
-      : InitiateWalletTxn(currentPatient?.id, token, paymentId, wallet);
+    token
+      ? wallet == 'PHONEPE' && phonePeReady
+        ? InitiateUPISDKTxn(currentPatient?.id, token, paymentId, wallet, 'ANDROID_PHONEPE')
+        : InitiateWalletTxn(currentPatient?.id, token, paymentId, wallet)
+      : renderErrorPopup();
   }
 
   async function onPressUPIApp(app: any) {
@@ -357,9 +344,11 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         : // : paymentCode == 'com.google.android.apps.nbu.paisa.user'
           // ? 'GOOGLEPAY'
           '';
-    sdkPresent
-      ? InitiateUPISDKTxn(currentPatient?.id, token, paymentId, paymentMethod, sdkPresent)
-      : InitiateUPIIntentTxn(currentPatient?.id, token, paymentId, paymentCode);
+    token
+      ? sdkPresent
+        ? InitiateUPISDKTxn(currentPatient?.id, token, paymentId, paymentMethod, sdkPresent)
+        : InitiateUPIIntentTxn(currentPatient?.id, token, paymentId, paymentCode)
+      : renderErrorPopup();
   }
 
   async function onPressVPAPay(VPA: string) {
@@ -369,7 +358,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       const response = await verifyVPA(VPA);
       if (response?.data?.verifyVPA?.status == 'VALID') {
         const token = await getClientToken();
-        InitiateVPATxn(currentPatient?.id, token, paymentId, VPA);
+        token ? InitiateVPATxn(currentPatient?.id, token, paymentId, VPA) : renderErrorPopup();
       } else {
         setisTxnProcessing(false);
         setisVPAvalid(false);
@@ -382,11 +371,10 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   async function onPressCardPay(cardInfo: any) {
     triggerWebengege('Card');
     const token = await getClientToken();
-    InitiateCardTxn(currentPatient?.id, token, paymentId, cardInfo);
+    token ? InitiateCardTxn(currentPatient?.id, token, paymentId, cardInfo) : renderErrorPopup();
   }
 
   async function onPressPayByCash() {
-    if (HCSelected) return;
     triggerWebengege('Cash');
     setisTxnProcessing(true);
     try {
@@ -588,29 +576,11 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderPayByCash = () => {
-    const showDiagnosticsCOD = AppConfig.Configuration.Enable_Diagnostics_COD;
     return (
-      <>
-        {businessLine != 'consult' ? (
-          <View>
-            {!showDiagnosticsCOD && renderInfoMessage()}
-            <PayByCash
-              HCselected={HCSelected}
-              onPressPlaceOrder={onPressPayByCash}
-              disableCOD={!showDiagnosticsCOD}
-            />
-          </View>
-        ) : null}
-      </>
-    );
-  };
-
-  const renderInfoMessage = () => {
-    return (
-      <InfoMessage
-        content={string.diagnostics.codDisableText}
-        textStyle={styles.textStyle}
-        iconStyle={styles.iconStyle}
+      <PayByCash
+        businessLine={businessLine}
+        HCselected={HCSelected}
+        onPressPlaceOrder={onPressPayByCash}
       />
     );
   };

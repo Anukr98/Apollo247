@@ -777,6 +777,7 @@ const ConfigurationQA5 = {
   PROHEALTH_BOOKING_URL: 'https://qa5patients.apollo247.com/apollo-prohealth',
   APOLLO_PRO_HEALTH_URL:
     'https://qa5patients.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+  baseUrl: 'https://aph-staging-web-patients.apollo247.com/ordersuccess',
 };
 
 // VAPT

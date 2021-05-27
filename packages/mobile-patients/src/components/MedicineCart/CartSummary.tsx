@@ -193,7 +193,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       ...OrderInfo,
       ...SubscriptionInfo,
     };
-    console.log('orderSubscriptionInput >>>', JSON.stringify(orderSubscriptionInput));
     return client.mutate({
       mutation: SAVE_ORDER_WITH_SUBSCRIPTION,
       variables: orderSubscriptionInput,
@@ -224,7 +223,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       total_amount: grandTotal,
       customer_id: currentPatient?.primaryPatientId || currentPatient?.id,
     };
-    console.log('orderInput >>>', JSON.stringify(orderInput));
     return client.mutate<createOrderInternal, createOrderInternalVariables>({
       mutation: CREATE_INTERNAL_ORDER,
       variables: { order: orderInput },
@@ -438,7 +436,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   };
 
   async function onPressProceedtoPay() {
-    console.log(' pay clicked <<<<<<');
     setloading(true);
     if (coupon && cartTotal > 0) {
       try {
@@ -497,11 +494,9 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         !circleSubscriptionId && circlePlanSelected
           ? await saveOrderWithSubscription()
           : await saveOrder();
-      console.log('response >>>', JSON.stringify(response));
       const { orders, transactionId, errorCode } = response?.data?.saveMedicineOrderV2 || {};
       const subscriptionId = response?.data?.CreateUserSubscription?.response?._id;
       const data = await createOrderInternal(orders, subscriptionId);
-      console.log('data >>>>', JSON.stringify(data));
       if (data?.data?.createOrderInternal?.success) {
         setauthToken?.('');
         props.navigation.navigate(AppRoutes.PaymentMethods, {
@@ -513,7 +508,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       }
       setloading(false);
     } catch (error) {
-      console.log('error >>>>', error);
       setloading(false);
     }
   };
