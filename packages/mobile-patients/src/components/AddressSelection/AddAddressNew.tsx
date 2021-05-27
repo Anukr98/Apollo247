@@ -38,8 +38,8 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 
-const FakeMarker = require('@aph/mobile-patients/src/components/ui/icons/ic-marker.png');
-const icon_gps = require('@aph/mobile-patients/src/components/ui/icons/ic_gps_fixed.png');
+const FakeMarker = require('@aph/mobile-patients/src/components/ui/icons/ic-marker.webp');
+const icon_gps = require('@aph/mobile-patients/src/components/ui/icons/ic_gps_fixed.webp');
 
 const screenHeight = Dimensions.get('window').height;
 
@@ -98,7 +98,6 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
   const source = props.navigation.getParam('source');
   const ComingFrom = props.navigation.getParam('ComingFrom');
   const updateLatLng = props.navigation.getParam('updateLatLng');
-
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [latitude, setLatitude] = useState<number>(
     KeyName == 'Update' ? Number(addressDetails?.latitude! || 0) : 0
@@ -555,7 +554,7 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
           />
         </View>
         <Button
-          title={'CONFIRM LOCATION'}
+          title={string.addressSelection.CONFIRM_LOCATION_AND_PROCEED}
           style={[
             styles.confirmButton,
             {
@@ -662,7 +661,7 @@ const styles = StyleSheet.create({
     marginLeft: -24,
     marginTop: -48,
     position: 'absolute',
-    top: screenHeight / 3,
+    top: mapHeight / 1.6,
   },
   markerIcon: {
     height: 35,

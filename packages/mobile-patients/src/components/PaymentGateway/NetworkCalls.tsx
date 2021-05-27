@@ -170,6 +170,32 @@ export const InitiateVPATxn = (
   HyperSdkReact.process(JSON.stringify(VPAPayload));
 };
 
+export const isGooglePayReady = () => {
+  const payload = {
+    requestId: 'googlePay',
+    service: AppConfig.Configuration.jusPayService,
+    payload: {
+      action: 'isDeviceReady',
+      sdkPresent: 'ANDROID_GOOGLEPAY',
+    },
+  };
+  console.log('payload >>', payload);
+  HyperSdkReact.process(JSON.stringify(payload));
+};
+
+export const isPhonePeReady = () => {
+  const payload = {
+    requestId: 'phonePe',
+    service: AppConfig.Configuration.jusPayService,
+    payload: {
+      action: 'isDeviceReady',
+      sdkPresent: 'ANDROID_PHONEPE',
+    },
+  };
+  console.log('payload >>', payload);
+  HyperSdkReact.process(JSON.stringify(payload));
+};
+
 export const fetchAvailableUPIApps = (requestId: string) => {
   const payload = {
     requestId: requestId,

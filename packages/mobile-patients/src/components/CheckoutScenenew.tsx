@@ -51,8 +51,8 @@ import {
   formatAddress,
   postAppsFlyerEvent,
   postFirebaseEvent,
-  getHealthCredits,
   persistHealthCredits,
+  getPackageIds,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -146,18 +146,16 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     pharmacyCircleAttributes,
     shipments,
     orders,
-    hdfcSubscriptionId,
     minCartValueForCOD,
     maxCartValueForCOD,
     nonCodSKus,
+    clearCartInfo,
   } = useShoppingCart();
   const {
     pharmacyUserTypeAttribute,
     pharmacyLocation,
     locationDetails,
-    hdfcStatus,
-    circleStatus,
-    hdfcPlanId,
+    activeUserSubscriptions,
   } = useAppCommonData();
 
   type bankOptions = {
@@ -264,12 +262,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   }, [cartItems]);
 
   const fetchHealthCredits = async () => {
-    var cachedHealthCredit: any = await getHealthCredits();
-    if (cachedHealthCredit != null) {
-      setAvailableHC(cachedHealthCredit.healthCredit);
-      return; // no need to call api
-    }
-
     client
       .query({
         query: GET_ONEAPOLLO_USER,
@@ -357,6 +349,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
       ...pharmacyCircleAttributes!,
+      ...pharmacyUserTypeAttribute,
     };
     return appsflyerEventAttributes;
   };
@@ -447,6 +440,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         } else {
           // Order-Success, Show popup here & clear cart info
           try {
+            clearCartInfo?.();
             postwebEngageCheckoutCompletedEvent(`${orderAutoId}`, orderId, isCOD);
             firePurchaseEvent(orderId);
           } catch (error) {}
@@ -528,6 +522,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               postwebEngageCheckoutCompletedEvent(`${order?.orderAutoId}`, order?.id!, isCOD);
               firePurchaseEvent(order?.id!);
             });
+            clearCartInfo?.();
           } catch (error) {}
           props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
             status: 'PAYMENT_PENDING',
@@ -607,13 +602,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     const selectedAddress = addresses?.find((item) => item?.id == deliveryAddressId);
     const pharmacyPincode =
       selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
-    let packageId: string[] = [];
-    if (hdfcSubscriptionId && hdfcStatus === 'active') {
-      packageId.push(`HDFC:${hdfcPlanId}`);
-    }
-    if (circleSubscriptionId && circleStatus === 'active') {
-      packageId.push(`APOLLO:${circlePlanId}`);
-    }
     const data = {
       mobile: g(currentPatient, 'mobileNumber'),
       billAmount: (cartTotal - productDiscount).toFixed(2),
@@ -626,7 +614,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         quantity: item?.quantity,
         specialPrice: item?.specialPrice || item?.price,
       })),
-      packageIds: packageId,
+      packageIds: activeUserSubscriptions ? getPackageIds(activeUserSubscriptions) : [],
       email: g(currentPatient, 'emailAddress'),
     };
     setLoading(true);
@@ -669,6 +657,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     setLoading && setLoading(true);
     const selectedStore = storeId && stores.find((item) => item.storeid == storeId);
     const { storename, address, workinghrs, phone, city, state, state_id } = selectedStore || {};
+    const appointmentIds = ePrescriptions?.map((item) => item?.id);
     const orderInfo: saveMedicineOrderOMSVariables = {
       medicineCartOMSInput: {
         tatType: tatType,
@@ -755,6 +744,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         appVersion: DeviceInfo.getVersion(),
         savedDeliveryCharge:
           !!isFreeDelivery || isCircleSubscription ? 0 : AppConfig.Configuration.DELIVERY_CHARGES,
+        appointmentId: appointmentIds?.length ? appointmentIds.join(',') : '',
       },
     };
 
@@ -793,6 +783,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         planPurchaseDetails: !!circleMembershipCharges ? planPurchaseDetails : null,
         healthCreditUsed: hcOrder ? getFormattedAmount(grandTotal) : 0,
         shipments: shipments,
+        appointmentId: appointmentIds?.length ? appointmentIds.join(',') : '',
       },
     };
 

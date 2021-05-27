@@ -57,8 +57,8 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Location } from './Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 
-const FakeMarker = require('../ui/icons/ic-marker.png');
-const icon_gps = require('../ui/icons/ic_gps_fixed.png');
+const FakeMarker = require('../ui/icons/ic-marker.webp');
+const icon_gps = require('../ui/icons/ic_gps_fixed.webp');
 
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;

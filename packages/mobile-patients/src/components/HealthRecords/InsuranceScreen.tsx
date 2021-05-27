@@ -35,6 +35,7 @@ import {
   getPhrHighlightText,
   phrSearchWebEngageEvents,
   postWebEngageIfNewSession,
+  removeObjectProperty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -65,6 +66,7 @@ import {
   InsurancePhrSearchIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import ListEmptyComponent from '@aph/mobile-patients/src/components/HealthRecords/Components/ListEmptyComponent';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -358,7 +360,14 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
   };
 
   const onHealthCardItemPress = (selectedItem: MedicalInsuranceType) => {
-    postWebEngageIfNewSession('Insurance', currentPatient, selectedItem, phrSession, setPhrSession);
+    const eventInputData = removeObjectProperty(selectedItem, 'insuranceFiles');
+    postWebEngageIfNewSession(
+      'Insurance',
+      currentPatient,
+      eventInputData,
+      phrSession,
+      setPhrSession
+    );
     props.navigation.navigate(AppRoutes.HealthRecordDetails, {
       data: selectedItem,
       medicalInsurance: true,
@@ -376,11 +385,12 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
       .then((status) => {
         if (status) {
           getLatestMedicalInsuranceRecords();
+          const eventInputData = removeObjectProperty(selectedItem, 'insuranceFiles');
           postWebEngagePHR(
             currentPatient,
             WebEngageEventName.PHR_DELETE_INSURANCE,
             'Insurance',
-            selectedItem
+            eventInputData
           );
         } else {
           setShowSpinner(false);
@@ -434,14 +444,6 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
     );
   };
 
-  const emptyListView = () => {
-    return apiError ? (
-      <PhrNoDataComponent noDataText={string.common.phr_api_error_text} phrErrorIcon />
-    ) : (
-      <PhrNoDataComponent />
-    );
-  };
-
   const renderMedicalInsuranceData = () => {
     return (
       <SectionList
@@ -450,7 +452,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 12, paddingHorizontal: 20 }}
         sections={localMedicalInsuranceData || []}
         renderItem={({ item, index }) => renderMedicalInsuranceItems(item, index)}
-        ListEmptyComponent={emptyListView}
+        ListEmptyComponent={ListEmptyComponent.getEmptyListComponent(showSpinner, apiError)}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
       />
     );

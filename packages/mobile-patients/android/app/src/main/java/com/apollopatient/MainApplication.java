@@ -6,6 +6,7 @@ import com.BV.LinearGradient.LinearGradientPackage;
 import com.apollopatient.appsignature.RNAppSignatureHelperPackage;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.horcrux.svg.SvgPackage;
 import com.appsflyer.reactnative.RNAppsFlyerPackage;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
@@ -82,7 +83,7 @@ public class MainApplication extends Application implements ReactApplication {
                 });
 
                 WebEngageConfig webEngageConfig = new WebEngageConfig.Builder()
-                        .setWebEngageKey("in~~c2ab3529")
+                        .setWebEngageKey("in~~c2ab3533")
                         .setDebugMode(false) // only in development mode
                         .build();
 

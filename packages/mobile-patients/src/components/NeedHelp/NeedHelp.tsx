@@ -214,6 +214,13 @@ export const NeedHelp: React.FC<Props> = (props) => {
   };
 
   useEffect(() => {
+    if (currentPatient?.emailAddress && !email) {
+      setEmail(currentPatient?.emailAddress);
+    }
+  }, [currentPatient?.emailAddress]);
+
+  useEffect(() => {
+    fetchHelpdeskTickets();
     fetchQueries();
     fetchOngoingQuery();
 
@@ -241,8 +248,8 @@ export const NeedHelp: React.FC<Props> = (props) => {
       .then((response) => {
         setHelpdeskTickets(
           response?.data?.getHelpdeskTickets?.tickets?.sort(function sortFunction(a: any, b: any) {
-            var dateA = new Date(a.createdTime).getDate();
-            var dateB = new Date(b.createdTime).getDate();
+            var dateA = new Date(a.createdTime);
+            var dateB = new Date(b.createdTime);
             return dateA > dateB ? -1 : 1;
           })
         );
@@ -400,7 +407,6 @@ export const NeedHelp: React.FC<Props> = (props) => {
   };
 
   const renderOrderStatusCard = (ticket: any) => {
-
     return (
       <TouchableOpacity
         onPress={() => {

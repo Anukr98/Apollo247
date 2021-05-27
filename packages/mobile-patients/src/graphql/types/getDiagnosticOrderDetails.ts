@@ -9,6 +9,13 @@ import { DIAGNOSTIC_ORDER_STATUS, DIAGNOSTIC_ORDER_PAYMENT_TYPE, DIAGNOSTICS_TYP
 // GraphQL query operation: getDiagnosticOrderDetails
 // ====================================================
 
+export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientObj {
+  __typename: "PatientObj";
+  firstName: string | null;
+  lastName: string | null;
+  gender: string | null;
+}
+
 export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_itemObj {
   __typename: "ItemObj";
   itemType: string | null;
@@ -80,6 +87,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList 
   id: string;
   patientId: string;
   patientAddressId: string;
+  patientObj: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientObj | null;
   city: string | null;
   slotTimings: string;
   employeeSlotId: string;

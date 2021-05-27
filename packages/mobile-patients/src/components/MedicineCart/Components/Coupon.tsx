@@ -15,13 +15,7 @@ export interface CouponProps {
 }
 
 export const Coupon: React.FC<CouponProps> = (props) => {
-  const {
-    coupon,
-    couponDiscount,
-    isProuctFreeCouponApplied,
-    isCircleSubscription,
-    circleMembershipCharges,
-  } = useShoppingCart();
+  const { coupon, couponDiscount, isProuctFreeCouponApplied } = useShoppingCart();
   const { onPressApplyCoupon, onPressRemove } = props;
 
   const renderApplyCoupon = () => {
@@ -34,18 +28,9 @@ export const Coupon: React.FC<CouponProps> = (props) => {
           </View>
           <ArrowRight />
         </TouchableOpacity>
-        {(!!isCircleSubscription || !!circleMembershipCharges) && renderCareMessage()}
       </View>
     );
   };
-
-  const renderCareMessage = () => (
-    <View style={styles.careMessageContainer}>
-      <Text style={styles.removeCircleText}>
-        You can either use Circle benefits or apply a Coupon code
-      </Text>
-    </View>
-  );
 
   const renderCouponMsg = () => {
     return !isProuctFreeCouponApplied ? (
@@ -66,13 +51,20 @@ export const Coupon: React.FC<CouponProps> = (props) => {
       <TouchableOpacity style={styles.couponApplied} onPress={onPressApplyCoupon}>
         <View style={styles.rowStyle}>
           <CouponIcon style={{ marginVertical: 10 }} />
-          <View style={{ marginLeft: 10, marginVertical: 4 }}>
+          <View style={styles.couponMessageContainer}>
             <Text style={styles.couponAppliedText}>
               {couponDiscount > 0
                 ? `Coupon Applied : ${coupon?.coupon}`
                 : `Coupon : ${coupon?.coupon}`}
             </Text>
             {renderCouponMsg()}
+            {!!coupon?.successMessage && (
+              <View style={styles.couponSuccessMessageContainer}>
+                <Text
+                  style={theme.viewStyles.text('M', 13, '#01475B', 1, 27)}
+                >{`(${coupon?.successMessage})`}</Text>
+              </View>
+            )}
           </View>
         </View>
         <TouchableOpacity style={{ marginTop: 10 }} onPress={onPressRemove}>
@@ -130,20 +122,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
-  careMessageContainer: {
-    flexDirection: 'row',
-    marginLeft: 8,
-    paddingBottom: 7,
-    justifyContent: 'flex-start',
-  },
   pendingIconStyle: {
     marginRight: 10,
     marginTop: 5,
   },
-  removeCircleText: {
-    width: '85%',
-    marginLeft: 40,
-    ...theme.viewStyles.text('M', 13, '#02475B', 1, 17),
-    flexWrap: 'wrap',
+  couponSuccessMessageContainer: {
+    marginTop: 7,
+    borderTopColor: theme.colors.BORDER_BOTTOM_COLOR,
+    borderTopWidth: 0.5,
+    justifyContent: 'center',
   },
+  couponMessageContainer: { marginLeft: 10, marginVertical: 4, flex: 1 },
 });

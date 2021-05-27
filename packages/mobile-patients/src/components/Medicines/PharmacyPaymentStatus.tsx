@@ -128,7 +128,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const [circlePlanDetails, setCirclePlanDetails] = useState({});
   const [codOrderProcessing, setcodOrderProcessing] = useState<boolean>(false);
-  const { apisToCall } = useAppCommonData();
+  const { apisToCall, pharmacyUserTypeAttribute } = useAppCommonData();
 
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
@@ -274,6 +274,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
       ...pharmacyCircleAttributes!,
+      ...pharmacyUserTypeAttribute,
     };
     return appsflyerEventAttributes;
   };

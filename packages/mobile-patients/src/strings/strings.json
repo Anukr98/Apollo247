@@ -41,7 +41,7 @@
     "error_enter_number_text": "Please enter numeric values (eg. 0,1...)",
     "addPrescriptionText": "ADD PRESCRIPTION",
     "addTestReportText": "ADD TEST REPORT",
-    "doctorConsultPHRText": "For privacy reasons, reports uploaded here are for your view only. To share with doctors, please upload selected reports in in your chat with the doctor.",
+    "doctorConsultPHRText": "For privacy reasons, reports uploaded here are for your view only. To share with doctors, please upload selected reports in your chat with the doctor.",
     "addDischargeSummaryText": "ADD DISCHARGE SUMMARY",
     "addHealthConditionText": "ADD HEALTH CONDITIONS",
     "addBillText": "ADD BILL",
@@ -119,12 +119,15 @@
     "pastSearches": "Past Searches",
     "topSpecialities": "Top Specialities",
     "HdfcHealthLifeText": "Explore HDFC HealthyLife",
+    "CorporateMembershipText": "Explore Corporate Membership",
     "contactCustomerCare1": "We are unable to confirm your order, since dob is missing against this profile. Please contact customer care to get it updated",
     "contactCustomerCare2": "We are unable to confirm your order, since gender is missing against this profile. Please contact customer care to get it updated",
     "somethingWentWrong": "Something went wrong.",
     "settingProfileTxt": "We’re setting up your profile. Please check back soon!",
     "couldNotLoadText": "Uh oh.. could't load!",
-    "lowNetworkText": "We were unable to load the page properly because of low network. Please try again"
+    "lowNetworkText": "We were unable to load the page properly because of low network. Please try again",
+    "CorporateVaccineBenefit": "DEPENDENT_VACCINATION_REG",
+    "noDiagnosticsAvailable": "Unfortunately, we do not have any diagnostic(s) available right now."
   },
   "components": {
     "medicineDetails": {
@@ -358,12 +361,12 @@
       ]
     }
   },
-  "needHelpScreen":{
-    "view_previous_tickets":"To view previous tickets ",
-    "click_here":"CLICK HERE",
-    "reopen_ticket":"REOPEN TICKET",
-    "whatsapp_with_us":"WHATSAPP WITH US",
-    "no_conversation_till_now":"No conversation till now !"
+  "needHelpScreen": {
+    "view_previous_tickets": "To view previous tickets ",
+    "click_here": "CLICK HERE",
+    "reopen_ticket": "REOPEN TICKET",
+    "whatsapp_with_us": "WHATSAPP WITH US",
+    "no_conversation_till_now": "No conversation till now !"
   },
   "doctor_search_listing": {
     "pleaseWait": "Please Wait!",
@@ -527,19 +530,55 @@
     "feedbackSubTxt": "Your feedback has been submitted. Thanks for your time.",
     "homeHomeCollectionDisclaimerTxt": "Home collection charges of upto ₹100 would be levied in case of order value less than ₹500",
     "itDoseCancelledText": "Canceled by phlebotomist as per the request",
-    "orderCancelledReasonText": "Order was cancelled -",
-    "wantToReschedule": "• Do you want to Reschedule Appointment ?"
+    "orderCancelledReasonText": "Order was cancelled : ",
+    "wantToReschedule": "• Do you want to Reschedule Appointment ?",
+    "sampleSubmitted": "Sample Submitted",
+    "reportGenrated": "Reports are ready",
+    "bookingFor": "Booking",
+    "sampleSubmittedContent": "Sample has been submitted to the lab.\nYou will be notified once your reports are ready.",
+    "viewReportContent": "Your reports have been generated.",
+    "collectionAppointmentContent": "Sample Collection appointment on",
+    "viewReportText": "View Report",
+    "sampleCollectedText": "Check Status",
+    "collectionText": "Track Order",
+    "trackPhleboText": "Track Phlebo",
+    "codDisableText": "We are currently not allowing Cash On Delivery for home sample collections."
+  },
+  "diagnosticCategoryTitle": {
+    "category": "Category",
+    "categoryGrid": "Category_Scroll"
   },
   "orders": {
     "urOrders": "MY ORDERS",
+    "ratingHeader": "FEEDBACK",
+    "ratingDetailHeader": "Rate your Experience with our Phlebotomist",
     "trackOrder": "Track Order",
     "viewBill": "Order Summary",
     "call_us": "CALL US",
     "add_to_cart": "ADD TO CART",
     "test_prec_req": "This test requires doctor’s prescription",
     "test_prec_not_req": "This test doesn't requires doctor’s prescription",
-    "go_to_help":"GO TO HELP"
+    "go_to_help": "GO TO HELP"
   },
+  "defaultReasonList": [{
+      "title": "Arrived very Late"
+    },
+    {
+      "title": "Did not seem Well-Trained"
+    },
+    {
+      "title": "Phlebo was not Polite"
+    },
+    {
+      "title": "Didn’t Wear the PPE Kit or Gloves"
+    },
+    {
+      "title": "I have other Feedback"
+    }
+  ],
+  "positiveReasonList": [{
+    "title": "I have Positive Feedback"
+  }],
   "OrderSummery": {
     "total": "Total",
     "order": "ORDER",
@@ -569,6 +608,12 @@
     "refund_amount": "Refund amount",
     "discount_total": "Discount Total",
     "amount_to_be_paid_on_delivery": "Amount to be paid on delivery"
+  },
+  "Report": {
+    "view": "View Report",
+    "download": "Download Report PDF",
+    "share": "Share on Whatsapp",
+    "copy": "Copy Link to PDF"
   },
   "health_records_home": {
     "description": "Find all your health record(s) & prescription(s) in one place.",
@@ -985,7 +1030,8 @@
     "USE_GPS_TEXT": "Using GPS",
     "NO_RESULTS_FOUND": "No Results Found",
     "MARKER_TEXT": "MOVE MAP TO ADJUST",
-    "HELP_US_LOCATE_TEXT": "Help us locate your address"
+    "HELP_US_LOCATE_TEXT": "Identify your delivery location",
+    "CONFIRM_LOCATION_AND_PROCEED": "CONFIRM LOCATION AND PROCEED"
   },
   "accessLocationPopUp": {
     "chooseFromAddressText": "Choose from saved addresses",
@@ -1041,6 +1087,117 @@
   "consultModeTab": {
     "CONSULT_ONLINE": "Consult Online",
     "MEET_IN_PERSON": "Meet In Person"
+  },
+  "vaccineBooking": {
+    "covid_vaccine_booking": "COVID VACCINE BOOKING",
+    "vaccine_details_bread_crumb": "Vaccine Details",
+    "booking_details": "Booking Details",
+    "select_city_mandatory": "Select City (Mandatory)",
+    "search_city": "Search city",
+    "select_a_hospital_clininc": "Select a Vaccination Site (Mandatory)",
+    "search_for_hospital_clinic": "Search for hospitals or clinic",
+    "select_preferred_date_for_getting_vaccinated": "Select the preferred date for getting vaccinated?",
+    "disclaimer": "Disclaimer",
+    "confirm_details": "Confirm details",
+    "proceed": "Proceed",
+    "done": "DONE",
+    "dose_2_info": "*Dose 2 auto selected. Based on Dose 1 selection",
+    "detail_confirmation": "Detail Confirmation",
+    "edit": "EDIT",
+    "hospital": "HOSPITAL",
+    "date_and_slot": "DATE & SLOT",
+    "slot_will_be_conveyed_before": "Slot will be conveyed 24 hours before date of vaccination ",
+    "who_is_the_patient": "Who is the patient?",
+    "name_of_the_paient_to_be_vaccinated": "Name of the person to be vaccinated",
+    "request_submitted": "Request Submitted",
+    "request_submission_failed": "Vaccination Booking Failed",
+    "request_submission_failed_message_1": "Booking couldn't be done. Please try again.",
+    "confirm_message": " We have taken your request and will confirm your booking in 24 - 48 hours.",
+    "download_details": "DOWNLOAD DETAILS",
+    "share_qr_code": "SHARE ",
+    "time_slot_info": "*Time slot for vaccination will be conveyed 24 hours before the date of vaccination",
+    "booking_number": "Booking Number",
+    "amount": "Amount",
+    "date_of_vaccination": "Date of vaccination",
+    "mode": "Mode",
+    "order_details": "ORDER DETAILS",
+    "hospitals_n_clinic_near_you": "HOSPITALS & CLINICS NEAR YOU",
+    "all_hospitals_n_clinc": "ALL HOSPITALS & CLINICS",
+    "no_sites_in_city": "Oops ! no available site in selected city ",
+    "no_slots": "Oops,no slots for this date.",
+    "choose_vaccination_dose_number": "Choose vaccination dose number (Mandatory)",
+    "select_vaccine_type_mandatory": "Select Vaccine type (Mandatory)",
+    "select_vaccine_type": "Select Vaccine type",
+    "select_vaccine_dose": "Choose vaccination dose number",
+    "title_dose_1": "Dose 1",
+    "title_dose_2": "Dose 2",
+    "select_vaccine_type_opt": "Select Vaccine type (Optional)",
+    "vaccine_type": "Vaccine type",
+    "title_no_booking": "NO BOOKINGS",
+    "no_vaccination_booking": "No Vaccination booking has been made for you or your family.",
+    "title_new_booking": "BOOK A SLOT",
+    "title_book_another_slot": "BOOK ANOTHER SLOT",
+    "view_qr_code_booking_details": "VIEW QR CODE & BOOKING DETAILS",
+    "date_and_time_slot": "Date & Slot of Vaccination",
+    "vaccine_details": "Vaccine details",
+    "slot_title": "Slot",
+    "dose_title": "Dose",
+    "choose_slot": "Choose slot",
+    "booking_has_been_confirmed": "Your booking has been confirmed !",
+    "booking_has_been_cancelled": "Your booking has been cancelled !",
+    "appointment_details": "APPOINTMENT DETAILS",
+    "site": "Site",
+    "resend_vaccine_booking_sms": "RESEND CONFIRMATION SMS",
+    "resend_confirmation_message": "In case this booking is for another family member you can send an SMS to their phone number here:",
+    "register_on_cowin": "REGISTER ON COWIN",
+    "cancel_booking": "CANCEL BOOKING",
+    "vaccination_site": "Vaccination Site",
+    "select_person_name": "Select Person’s Name",
+    "profile_selection_info": "Only 1 active appointment is allowed per user. If you are looking to reschedule, please cancel the existing appointment and book again.",
+    "error_title": "Oops !",
+    "cancel_title": "Booking cancelled",
+    "error_cancel_message": "Couldn't cancel the booking,please retry",
+    "cancel_success_message": "Successfully cancelled vaccination booking",
+    "no_vaccination_sites_available": "Currently, Vaccination sites  are not available for this city. Kindly select another city.",
+    "no_slots_available": "There are no available slots for this vaccination location. Kindly select another location.",
+    "no_date_slots_available": "Please choose a date to see the available slots.",
+    "cowin_enroll_text": "We do not have vaccine benefits enabled for your company. You can click on the button below to book a vaccination slot on CoWin. If you believe that you should be able to book, please raise a concern through your HR/Benefits team",
+    "cowin_cta_text": "ENROL ON COWIN",
+    "retail_customer_cowin_text": "As per government guidelines, beneficiaries need to register and schedule for vaccination on CoWin. Please click below to access CoWin.",
+    "retail_customer_corporate_text": "If your company has a corporate tie-up with Apollo, please use the following button to follow the corporate registration process.",
+    "enroll_corporate_cta_text": "ENROL FOR CORPORATE MEMBERSHIP",
+    "tnc_header_text": "Terms & Conditions",
+    "tnc_heading": "terms & conditions",
+    "tnc_subheading": "Please read all of our terms and conditions before doing anything.",
+    "tnc_subtext_1": "Apollo 24|7  Covid – 19 Vaccination Program registration and covered services are voluntary in nature.",
+    "tnc_subtext_2": "On accepting to proceed with the Apollo 24|7 Covid – 19 vaccination program, I agree and give my consent to the following:",
+    "tnc_content": [
+      "To receive/administer for myself the COVID – 19 vaccine, which is being facilitated by Apollo.",
+      "To voluntarily availing the Covid-19 vaccination out of my own free will, consent and risk and this is not being administered under duress, coercion or as an employment condition.",
+      "To assume full responsibility for taking the vaccination and for any reactions/ side effects/ contingency/consequences whatsoever arising from administering the vaccination.",
+      "To acknowledge and understand that Apollo makes no warranties, express or implied, including but not limited to, implied warranties of merchantability or fitness for a particular purpose regarding the vaccine or its effectiveness.",
+      "That I, for myself and my heirs, administrators, trustees, executors, assigns and successors in interest do hereby agree to release and hold harmless Apollo, its subsidiaries, affiliates, assigns, officers, employees, volunteers and agents from and against any and all contingencies, consequences, demands, damages, losses, costs, expenses, obligations, liabilities, claims, actions and cause of action (whether any of which is groundless or otherwise) of any nature whatsoever (including, without limitation, reasonable attorney’s fees and court costs) by reason of or resulting, in any way, from any and all acts, accidents, events, occurrences, omissions and the like related to, or arising out of, directly or indirectly, my receiving this COVID-19 vaccine."
+    ],
+    "tnc_error": "Without agreeing to the Terms and Conditions, you’ll not be able to register for vaccination. For any other query, please raise your issue in the help section.",
+    "instruction_heading": "INSTRUCTIONS FOR THE DAY OF VACCINATION",
+    "instruction_sub_heading": "Show this QR code or the Booking ID at the vaccination centre along with the following original documents:",
+    "instuction_document_list": [
+      "Government ID card",
+      "CoWIN Reference ID",
+      "Corporate ID card (if applicable)",
+      "Dose 1 certificate (if applicable)"
+    ],
+    "vaccination_instruction_url": "https://pages.apollo247.com/vaccination-instructions/",
+    "cowin_url": "https://selfregistration.cowin.gov.in",
+    "govt_guidlines_text_1": "As per government guidelines, it is mandatory to REGISTER yourself on CoWIN platform as well.",
+    "govt_guidlines_text_2": "You only need to register on CoWIN and share the registration ID at the Vaccination Centre",
+    "govt_guidlines_text_3": "Booking a slot is not required as you already have a confirmed slot with us.",
+    "not_eligible_for_corporate_benefits": "Given email ID is not eligible for corporate benefits. If you believe that this is not right, please raise a concern through your HR team.",
+    "sent_an_otp": "We have sent an OTP to your corporate email id. Please also check your spam folder, in case you don't see it in inbox.",
+    "not_able_sent_otp": "We are not able to send OTP to the given email ID. Please try again after some time. If this issue persists, send an email to corporate-helpdesk@apollo247.com and attach the screenshot of this error.",
+    "benefit_activated": "Your company benefit package has been activated. Please click below to access the same.",
+    "wrong_otp": "Seems you have entered wrong OTP.Please try with right one.",
+    "unable_to_validate": "We are unable to validate OTP right now. Please try again after some time. If this issue persists, send an email to corporate-helpdesk@apollo247.com and attach the screenshot of this error.",
+    "CORPORATE_VACCINATION": "CORPORATE_VACCINATION"
   }
-
 }

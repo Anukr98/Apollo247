@@ -34,6 +34,7 @@ import {
   apiCallEnums,
   navigateToHome,
   getUserType,
+  getPackageIds,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
@@ -140,15 +141,13 @@ interface PaymentCheckoutProps extends NavigationScreenProps {
 }
 export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const [coupon, setCoupon] = useState<string>('');
+  const [successMessage, setSuccessMessage] = useState<string>('');
   const {
     locationDetails,
-    hdfcPlanId,
-    circlePlanId,
-    hdfcStatus,
-    circleStatus,
-    setauthToken,
     apisToCall,
     homeScreenParamsOnPop,
+    activeUserSubscriptions,
+    setauthToken,
   } = useAppCommonData();
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
@@ -599,9 +598,10 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
             Alert.alert('Uh oh.. :(', 'Please select a slot to apply coupon.');
             return;
           }
-          props.navigation.navigate(AppRoutes.ApplyConsultCoupon, {
+          props.navigation.navigate(AppRoutes.ViewCoupons, {
             coupon: coupon,
             onApplyCoupon: onApplyCoupon,
+            movedFrom: 'consult',
           });
         }}
         showRemoveBtn={coupon ? true : false}
@@ -614,14 +614,18 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     setCoupon('');
     setCouponDiscountFees(0);
     setDoctorDiscountedFees(0);
+    setSuccessMessage('');
   };
 
   const renderCouponSavingsView = () => {
     return (
       <View style={styles.couponSavingView}>
-        <Text style={styles.amountSavedText}>
-          {string.common.savingsOnBill.replace('{amount}', `${couponDiscountFees}`)}
-        </Text>
+        {!!successMessage && <Text style={styles.successMessageStyle}>{successMessage}</Text>}
+        <View style={styles.couponDiscountView}>
+          <Text style={styles.amountSavedText}>
+            {string.common.savingsOnBill.replace('{amount}', `${couponDiscountFees}`)}
+          </Text>
+        </View>
       </View>
     );
   };
@@ -637,14 +641,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           ? onlineConsultSlashedPrice
           : physicalConsultSlashedPrice
         : Number(price);
-
-    let packageId: string[] = [];
-    if (hdfcSubscriptionId && hdfcStatus === 'active') {
-      packageId.push(`HDFC:${hdfcPlanId}`);
-    }
-    if (circleSubscriptionId && circleStatus === 'active') {
-      packageId.push(`APOLLO:${circlePlanId}`);
-    }
     const timeSlot =
       tabs[0].title === selectedTab &&
       isOnlineConsult &&
@@ -670,7 +666,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           rescheduling: false,
         },
       ],
-      packageIds: packageId,
+      packageIds: activeUserSubscriptions ? getPackageIds(activeUserSubscriptions) : [],
       email: g(currentPatient, 'emailAddress'),
     };
     return new Promise((res, rej) => {
@@ -682,6 +678,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           if (resp?.data?.errorCode == 0) {
             if (resp?.data?.response?.valid) {
               const revisedAmount = billAmount - Number(g(resp, 'data', 'response', 'discount')!);
+              const successMessage = resp?.data?.response?.successMessage || '';
+              setSuccessMessage(successMessage);
               setCoupon(coupon);
               setCouponDiscountFees(Number(g(resp, 'data', 'response', 'discount')!));
               setDoctorDiscountedFees(revisedAmount);
@@ -714,7 +712,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         })
         .catch((error) => {
           CommonBugFender('validatingConsultCoupon', error);
-          rej();
+          rej('Sorry, unable to validate coupon right now.');
           renderErrorPopup(string.common.tryAgainLater);
         });
     });
@@ -1006,6 +1004,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       displayId: displayId,
       'coupon applied': coupon ? true : false,
       'Circle discount': circleDiscount,
+      User_Type: getUserType(allCurrentPatients),
     };
     return eventAttributes;
   };
@@ -1258,10 +1257,19 @@ const styles = StyleSheet.create({
   },
   couponSavingView: {
     marginTop: 15,
+    borderTopWidth: 0.5,
+    borderColor: theme.colors.BORDER_BOTTOM_COLOR,
+    borderRadius: 3,
+    paddingVertical: 7,
+    justifyContent: 'center',
+    width: '100%',
+  },
+  couponDiscountView: {
+    marginTop: 5,
     borderWidth: 1,
     borderColor: theme.colors.SEARCH_UNDERLINE_COLOR,
     borderRadius: 3,
-    height: 32,
+    paddingVertical: 7,
     backgroundColor: 'rgba(0, 179, 142, 0.07)',
     justifyContent: 'center',
     width: '100%',
@@ -1395,4 +1403,5 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(17),
     lineHeight: 24,
   },
+  successMessageStyle: theme.viewStyles.text('R', 16, theme.colors.SEARCH_UNDERLINE_COLOR, 1, 27),
 });

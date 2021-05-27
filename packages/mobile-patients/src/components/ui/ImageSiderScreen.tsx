@@ -1,7 +1,7 @@
 import { Remove } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, TouchableOpacity, View, BackHandler, SafeAreaView } from 'react-native';
 import { Header } from 'react-native-elements';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import { NavigationScreenProps } from 'react-navigation';
@@ -50,6 +50,15 @@ export const ImageSliderScreen: React.FC<ImageSliderScreenProps> = (props) => {
   const images = props.navigation.getParam('images', []);
   const heading = props.navigation.getParam('heading');
 
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
+    };
+  }, []);
+
+  const onPressHardwareBack = () => props.navigation.goBack();
+
   const [slideIndex, setSlideIndex] = useState(0);
 
   const renderDot = (active: boolean) => (
@@ -58,33 +67,34 @@ export const ImageSliderScreen: React.FC<ImageSliderScreenProps> = (props) => {
 
   return (
     <View style={styles.container}>
-      {!!heading && (
-        <Header
-          barStyle="light-content"
-          containerStyle={styles.headerContainer}
-          leftComponent={
-            <TouchableOpacity activeOpacity={1} onPress={() => props.navigation.goBack()}>
-              <Remove style={{ tintColor: '#fff' }} />
-            </TouchableOpacity>
-          }
-          centerComponent={{ text: heading, style: styles.heading, numberOfLines: 1 }}
+      <SafeAreaView style={{ ...theme.viewStyles.container }}>
+        {!!heading && (
+          <Header
+            containerStyle={styles.headerContainer}
+            leftComponent={
+              <TouchableOpacity activeOpacity={1} onPress={() => props.navigation.goBack()}>
+                <Remove style={{ tintColor: '#fff' }} />
+              </TouchableOpacity>
+            }
+            centerComponent={{ text: heading, style: styles.heading, numberOfLines: 1 }}
+          />
+        )}
+        <ImageViewer
+          backgroundColor="#fff"
+          imageUrls={images.map((img) => ({
+            url: img,
+          }))}
+          onChange={(index) => {
+            Number.isInteger(index) && setSlideIndex(index!);
+          }}
+          renderIndicator={() => <></>}
         />
-      )}
-      <ImageViewer
-        backgroundColor="#fff"
-        imageUrls={images.map((img) => ({
-          url: img,
-        }))}
-        onChange={(index) => {
-          Number.isInteger(index) && setSlideIndex(index!);
-        }}
-        renderIndicator={() => <></>}
-      />
-      {images.length > 1 && (
-        <View style={styles.dotContainer}>
-          {images.map((_, index) => (index == slideIndex ? renderDot(true) : renderDot(false)))}
-        </View>
-      )}
+        {images.length > 1 && (
+          <View style={styles.dotContainer}>
+            {images.map((_, index) => (index == slideIndex ? renderDot(true) : renderDot(false)))}
+          </View>
+        )}
+      </SafeAreaView>
     </View>
   );
 };

@@ -39,7 +39,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 
-const icon_gps = require('@aph/mobile-patients/src/components/ui/icons/ic_gps_fixed.png');
+const icon_gps = require('@aph/mobile-patients/src/components/ui/icons/ic_gps_fixed.webp');
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
 

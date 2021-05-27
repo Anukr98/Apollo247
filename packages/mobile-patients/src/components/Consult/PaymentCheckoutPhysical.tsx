@@ -63,7 +63,6 @@ import {
   setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 const { width } = Dimensions.get('window');
 import { useApolloClient } from 'react-apollo-hooks';
@@ -385,7 +384,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
               <Text style={styles.appointmentTimeStyle}>Meet In Person</Text>
             </View>
             <View style={styles.doctorPointers}>
-              <AppointmentCalendarIcon style={styles.doctorPointersImage} />
+              <AppointmentCalendarIcon style={[styles.doctorPointersImage, { marginTop: -1 }]} />
               <Text style={styles.appointmentTimeStyle}>
                 {dateFormatter(appointmentInput?.appointmentDateTime)}
               </Text>
@@ -762,6 +761,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       displayId: displayId,
       'coupon applied': coupon ? true : false,
       'Circle discount': circleDiscount,
+      User_Type: getUserType(allCurrentPatients),
     };
     return eventAttributes;
   };
@@ -893,15 +893,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     <View style={theme.viewStyles.container}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-        {notificationAlert && (
-          <NotificationPermissionAlert
-            onPressOutside={() => setNotificationAlert(false)}
-            onButtonPress={() => {
-              setNotificationAlert(false);
-              Linking.openSettings();
-            }}
-          />
-        )}
         {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
         <ScrollView ref={scrollviewRef}>
           <View style={styles.doctorCard}>
@@ -1030,12 +1021,12 @@ const styles = StyleSheet.create({
   doctorPointers: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 6,
+    marginTop: 7,
   },
   doctorPointersImage: {
     width: 14,
     height: '100%',
-    marginRight: 4,
+    marginRight: 8,
   },
   drImageBackground: {
     height: 95,

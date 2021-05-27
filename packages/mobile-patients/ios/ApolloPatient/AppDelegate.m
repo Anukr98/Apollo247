@@ -21,6 +21,7 @@
 #import "RNCallKeep.h"
 #import "RNVoipPushNotificationManager.h"
 @import GoogleMaps;
+#import <AppTrackingTransparency/AppTrackingTransparency.h>
 
 @implementation AppDelegate
 
@@ -47,6 +48,25 @@
     [FIRApp configure];
   }
   
+  //NEWLY ADDED PERMISSIONS FOR iOS 14
+  if (@available(iOS 14, *)) {
+    [ATTrackingManager requestTrackingAuthorizationWithCompletionHandler:^(ATTrackingManagerAuthorizationStatus status) {
+      switch (status) {
+        case ATTrackingManagerAuthorizationStatusAuthorized:
+          NSLog(@"%lu Authorised",(unsigned long)status);
+          break;
+        case ATTrackingManagerAuthorizationStatusDenied:
+          NSLog(@"%lu Denied",(unsigned long)status);
+          break;
+        case ATTrackingManagerAuthorizationStatusRestricted:
+          NSLog(@"%lu Restricted",(unsigned long)status);
+          break;
+        default:
+          break;
+      }
+    }];
+  }
+  
   //  [[UNUserNotificationCenter currentNotificationCenter] setDelegate:self];
   
   UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
@@ -66,6 +86,7 @@
   }];
   
   [[WebEngage sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
+  
   return YES;
 }
 

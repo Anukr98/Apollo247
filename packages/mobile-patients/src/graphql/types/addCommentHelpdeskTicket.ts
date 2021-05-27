@@ -9,8 +9,13 @@ import { AddCommentHelpdeskTicketInput } from "./globalTypes";
 // GraphQL mutation operation: addCommentHelpdeskTicket
 // ====================================================
 
+export interface addCommentHelpdeskTicket_addCommentHelpdeskTicket {
+  __typename: "AddCommentHelpdeskTicketResponse";
+  status: string | null;
+}
+
 export interface addCommentHelpdeskTicket {
-  addCommentHelpdeskTicket: string | null;
+  addCommentHelpdeskTicket: addCommentHelpdeskTicket_addCommentHelpdeskTicket | null;
 }
 
 export interface addCommentHelpdeskTicketVariables {

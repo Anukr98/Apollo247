@@ -29,7 +29,6 @@ import { ActivityIndicator, SafeAreaView, StyleSheet, Text, BackHandler } from '
 import { NavigationScreenProps } from 'react-navigation';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { isProductInStock } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AddedToCartToast } from '@aph/mobile-patients/src/components/ui/AddedToCartToast';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
@@ -149,6 +148,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         MedicineListingEvents.searchEnterClick({
           keyword: searchText,
           numberofresults: data.product_count || 0,
+          source: movedFrom || '',
         });
       }
       MedicineListingEvents.tagalysSearch(currentPatient?.id, {
