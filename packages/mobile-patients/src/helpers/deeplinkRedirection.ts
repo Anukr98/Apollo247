@@ -263,6 +263,18 @@ export const handleOpenURL = (event: any) => {
         };
         break;
 
+      case 'corporatemembership':
+        return {
+          routeName: 'corporatemembership',
+        };
+        break;
+
+      case 'vaccinelisting':
+        return {
+          routeName: 'vaccinelisting',
+        };
+        break;
+
       case 'testlisting':
         return {
           routeName: 'TestListing',
@@ -337,7 +349,10 @@ export const pushTheView = (
   isCircleMember?: boolean,
   mediaSource?: string,
   voipCallType?: string,
-  voipAppointmentId?: MutableRefObject<string>
+  voipAppointmentId?: MutableRefObject<string>,
+  isCorporateSubscribed?: boolean,
+  vaccinationCmsIdentifier?: string,
+  vaccinationSubscriptionId?: string
 ) => {
   setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
   switch (routeName) {
@@ -484,6 +499,27 @@ export const pushTheView = (
       } else {
         navigation.replace(AppRoutes.ConsultRoom);
       }
+      break;
+    case 'corporatemembership':
+      if (isCorporateSubscribed) {
+        navigateToView(navigation, AppRoutes.MembershipDetails, {
+          membershipType: '',
+          isActive: true,
+          comingFrom: 'Deeplink',
+          isCorporatePlan: true,
+        });
+      } else {
+        navigation.replace(AppRoutes.ConsultRoom);
+      }
+      break;
+    case 'vaccinelisting':
+      navigateToView(navigation, AppRoutes.BookedVaccineScreen, {
+        cmsIdentifier: vaccinationCmsIdentifier || '',
+        subscriptionId: vaccinationSubscriptionId || '',
+        isVaccineSubscription: !!vaccinationCmsIdentifier,
+        isCorporateSubscription: !!isCorporateSubscribed,
+        comingFrom: 'deeplink',
+      });
       break;
     case 'TestListing':
       navigateToView(navigation, AppRoutes.TestListing, {

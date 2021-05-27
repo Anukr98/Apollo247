@@ -94,7 +94,6 @@ export const PrescriptionOptions: React.FC<Props> = ({
     ];
     return (
       <>
-        <Text style={styles.lightWeightBlue}>{'What is a valid prescription?'}</Text>
         <Text style={styles.blueMediumText}>{'Add Photos / PDF using:'}</Text>
         <View style={styles.buttonWrapper}>
           {buttons.map(({ title, icon, onPress }) => (

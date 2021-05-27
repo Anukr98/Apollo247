@@ -1,6 +1,20 @@
+import {
+  PhysicalPrescriptionCard,
+  PhysicalPrescriptionCardProps,
+} from '@aph/mobile-patients/src/components/MedicineCart/Components/PhysicalPrescriptionCard';
 import { PrescriptionInfoView } from '@aph/mobile-patients/src/components/MedicineCart/Components/PrescriptionInfoView';
+import {
+  EPrescription,
+  PhysicalPrescription,
+  useShoppingCart,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import {
+  EPrescriptionCard,
+  EPrescriptionCardProps,
+} from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
 import { PrescriptionType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import {
   ScrollView,
@@ -11,16 +25,11 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import {
-  useShoppingCart,
-  PhysicalPrescription,
-  EPrescription,
-} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { EPrescriptionCard } from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
-import { PhysicalPrescriptionCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/PhysicalPrescriptionCard';
+
 export interface PrescriptionsProps {
   onPressUploadMore?: () => void;
+  ePresProps?: Partial<EPrescriptionCardProps>;
+  myPresProps?: Partial<PhysicalPrescriptionCardProps>;
   hideHeader?: boolean;
   showSelectedOption?: boolean;
   isPlainStyle?: boolean;
@@ -36,7 +45,15 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
     prescriptionType,
     consultProfile,
   } = useShoppingCart();
-  const { onPressUploadMore, style, hideHeader, showSelectedOption, isPlainStyle } = props;
+  const {
+    onPressUploadMore,
+    ePresProps,
+    myPresProps,
+    style,
+    hideHeader,
+    showSelectedOption,
+    isPlainStyle,
+  } = props;
   const { currentPatient } = useAllCurrentPatients();
 
   const renderHeader = () => {
@@ -65,6 +82,7 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
         onRemove={() => {
           removePhysicalPrescription && removePhysicalPrescription(item.title);
         }}
+        {...myPresProps}
       />
     );
   };
@@ -97,6 +115,7 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
         onRemove={() => {
           removeEPrescription && removeEPrescription(item.id);
         }}
+        {...ePresProps}
       />
     );
   };

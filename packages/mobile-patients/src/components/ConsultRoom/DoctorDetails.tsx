@@ -1165,7 +1165,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                                 ? {
                                     uri: item.facility.imageUrl,
                                   }
-                                : require('@aph/mobile-patients/src/images/apollo/Hospital_Image.png')
+                                : require('@aph/mobile-patients/src/images/apollo/Hospital_Image.webp')
                             }
                             style={{
                               height: 136,
@@ -1334,7 +1334,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     arrayHistory = arrayHistory.filter((item) => {
       return item.status == 'COMPLETED';
     });
-
     if (arrayHistory.length > 0) {
       return (
         <View style={styles.cardView}>

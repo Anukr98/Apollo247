@@ -156,6 +156,7 @@ import {
   doRequestAndAccessLocation,
   handleGraphQlError,
   formatToCartItem,
+  getPrescriptionItemQuantity,
 } from '../../helpers/helperFunctions';
 import { mimeType } from '../../helpers/mimeType';
 import { FeedbackPopup } from '../FeedbackPopup';
@@ -245,6 +246,8 @@ let isJdAllowed: boolean = true;
 let abondmentStarted = false;
 let jdAssigned: boolean = false;
 const bottomBtnContainerWidth = 267;
+const maxRetryAttempt: number = 15;
+let currentRetryAttempt: number = 1;
 
 type rescheduleType = {
   rescheduleCount: number;
@@ -734,9 +737,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [callMinimize, setCallMinimize] = useState<boolean>(false);
   const followChatLimit = AppConfig.Configuration.FollowUp_Chat_Limit || 4;
   const [availableMessages, setavailableMessages] = useState(followChatLimit);
+  const [currentCaseSheet, setcurrentCaseSheet] = useState<any>([]);
   let appointmentData: any = props.navigation.getParam('data');
   const caseSheet = followUpChatDaysCaseSheet(appointmentData.caseSheet);
+  const followUpChatDaysCurrentCaseSheet = followUpChatDaysCaseSheet(currentCaseSheet);
   const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
+  const currentCaseSheetChatDays = g(
+    followUpChatDaysCurrentCaseSheet,
+    '0' as any,
+    'followUpAfterInDays'
+  );
+  const followupDays = caseSheetChatDays || currentCaseSheetChatDays;
   const followUpAfterInDays =
     caseSheetChatDays || caseSheetChatDays === '0'
       ? caseSheetChatDays === '0'
@@ -751,6 +762,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       .add(followUpAfterInDays, 'days')
       .startOf('day')
       .isBefore(moment(new Date()).startOf('day'));
+
+  const isInFuture = moment(props.navigation.state.params!.data.appointmentDateTime).isAfter(
+    moment(new Date())
+  );
+
   const callType = props.navigation.state.params!.callType
     ? props.navigation.state.params!.callType
     : '';
@@ -785,7 +801,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [showCallAbandmentPopup, setShowCallAbandmentPopup] = useState(false);
   const [showConnectAlertPopup, setShowConnectAlertPopup] = useState(false);
   const [isConsultedWithDoctorBefore, setConsultedWithDoctorBefore] = useState(false);
-  const [currentCaseSheet, setcurrentCaseSheet] = useState<any>([]);
   const MedicinePrescriptions = currentCaseSheet?.filter(
     (item: any) => item?.medicinePrescription !== null
   );
@@ -998,6 +1013,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       return true;
     }
   };
+
+  useEffect(() => {
+    currentCaseSheet && followupDays && analyzeMessages(messages);
+  }, [currentCaseSheet]);
 
   useEffect(() => {
     onCall.current = isCall || isAudioCall;
@@ -1374,7 +1393,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, [currentPatientWithHistory, displayChatQuestions]);
 
   useEffect(() => {
-    if (!disableChat && status.current !== STATUS.COMPLETED) {
+    if (!disableChat && status.current !== STATUS.COMPLETED && isInFuture) {
       callPermissions();
     }
   }, []);
@@ -2448,7 +2467,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setTimeout(() => {
         AsyncStorage.getItem('callDisconnected').then((data) => {
           if (!JSON.parse(data || 'false')) {
-            setSnackbarState(true);
             callEndWebengageEvent('Network');
           }
         });
@@ -2648,11 +2666,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   const sendFollowUpChatGuideLines = () => {
-    if (guidelinesAdded) {
+    if (guidelinesAdded || !followupDays || (followupDays && Number(followupDays) === 0)) {
       return;
     }
     setguidelinesAdded(true);
-    const headerText = `If you have further queries related to your consultation, you may reach out to ${appointmentData.doctorInfo.displayName} via texts for the next 7 days.`;
+    const headerText = `If you have further queries related to your consultation, you may reach out to ${
+      appointmentData?.doctorInfo?.displayName
+    } via texts for the next ${Number(followupDays)} day${Number(followupDays) > 1 ? 's' : ''}.`;
     sendMessage(sectionHeader, doctorId, headerText);
     setTimeout(() => {
       sendMessage(followUpChatGuideLines, doctorId);
@@ -3762,7 +3782,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const onAddToCart = async () => {
-    postWebEngageEvent(WebEngageEventName.ORDER_MEDICINES_IN_CONSULT_ROOM, UserInfo);
     const prrescriptions = caseSheet?.[0]?.medicinePrescription || MedicinePrescriptions || [];
     const medPrescription = prrescriptions.filter((item: any) => item!.id);
     const isCartOrder = medPrescription?.length === prrescriptions.length;
@@ -3789,7 +3808,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             const medicine = data?.productdp?.[0];
             return medicine?.id && medicine?.sku;
           })
-          .map(({ data }) => formatToCartItem({ ...data?.productdp?.[0]!, image: '' }));
+          .map(({ data }, index) => ({
+            ...formatToCartItem({ ...data?.productdp?.[0]!, image: '' }),
+            quantity: getPrescriptionItemQuantity(
+              medPrescription?.[index]?.medicineUnit,
+              medPrescription?.[index]?.medicineTimings,
+              medPrescription?.[index]?.medicineDosage,
+              medPrescription?.[index]?.medicineCustomDosage,
+              medPrescription?.[index]?.medicineConsumptionDurationInDays,
+              medPrescription?.[index]?.medicineConsumptionDurationUnit,
+              parseInt(data?.productdp?.[0]?.mou || '1', 10)
+            ),
+          }));
         addMultipleCartItems?.(cartItems);
         setEPrescriptions?.([presToAdd]);
         setLoading(false);
@@ -3808,6 +3838,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     props.navigation.navigate(AppRoutes.UploadPrescription, {
       ePrescriptionsProp: [presToAdd],
       type: 'E-Prescription',
+    });
+    postWebEngageEvent(WebEngageEventName.ORDER_MEDICINES_IN_CONSULT_ROOM, {
+      ...UserInfo,
+      'Order Type': isCartOrder ? 'Cart' : 'Non-Cart',
     });
   };
 
@@ -5590,21 +5624,24 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const text = isDrCheckingRecords
       ? `${doctor} is online and going through your records!`
       : `${doctor} is Online!`;
-    const ctaHeading = isDrCheckingRecords ? 'JOIN WAIT ROOM' : 'JOIN';
+    const ctaHeading = isDrCheckingRecords ? 'JOIN CALL ROOM' : 'JOIN CALL';
 
     return (
       !loading && (
         <JoinWaitingRoomView
-          onPress={() => {
-            patientJoinedCall.current = true;
-            joinCallHandler();
-            postAppointmentWEGEvent(WebEngageEventName.PATIENT_JOINED_CONSULT);
-          }}
+          onPress={() => onPressJoinBtn()}
           title={text}
-          rightTitle={ctaHeading}
+          rightBtnTitle={ctaHeading}
+          onPressJoin={() => onPressJoinBtn()}
         />
       )
     );
+  };
+
+  const onPressJoinBtn = () => {
+    patientJoinedCall.current = true;
+    joinCallHandler();
+    postAppointmentWEGEvent(WebEngageEventName.PATIENT_JOINED_CONSULT);
   };
 
   const joinCallHandler = () => {
@@ -5828,9 +5865,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             !subscriberConnected.current &&
             !patientJoinedCall.current &&
             renderTextConnecting()}
-          {showDoctorProfile &&
-          !patientJoinedCall.current &&
-          (!subscriberConnected.current || isPaused !== '' || callToastStatus.current)
+          {!subscriberConnected.current || isPaused !== '' || callToastStatus.current
             ? renderToastMessages()
             : null}
           {!showVideo && renderDisableVideoSubscriber()}
@@ -5931,7 +5966,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const callTimerStarted = moment.utc(callTimer * 1000).format('mm : ss');
 
   const renderToastMessages = () => {
-    if (callStatus.current === disconnecting && callToastStatus.current === '') {
+    if (
+      (callStatus.current === disconnecting && callToastStatus.current === '') ||
+      (patientJoinedCall.current && !subscriberConnected.current)
+    ) {
       return;
     }
     return (
@@ -6280,9 +6318,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
   };
 
-  const uploadDocument = (resource: any, base66: any, type: any) => {
+  const uploadDocument = (resource: any, base66?: any, type?: any) => {
     CommonLogEvent(AppRoutes.ChatRoom, 'Upload document');
-    resource.map((item: any) => {
+    resource?.map((item: any, index: number) => {
       if (
         item.fileType == 'jpg' ||
         item.fileType == 'jpeg' ||
@@ -6355,6 +6393,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }
           })
           .catch((e) => {
+            // adding retry
+            currentRetryAttempt <= maxRetryAttempt && uploadDocument([resource[index]]);
+            currentRetryAttempt++;
             CommonBugFender('ChatRoom_uploadDocument', e);
             setLoading(false);
             KeepAwake.activate();

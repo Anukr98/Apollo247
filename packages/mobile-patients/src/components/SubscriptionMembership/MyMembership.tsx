@@ -2,7 +2,16 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect, useRef } from 'react';
-import { BackHandler, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Image,
+  ImageBackground,
+  Linking,
+} from 'react-native';
 import {
   NavigationScreenProps,
   StackActions,
@@ -31,6 +40,7 @@ import {
   g,
   postWebEngageEvent,
   setCircleMembershipType,
+  isValidImageUrl,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AvailNowPopup } from './AvailNowPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -56,6 +66,8 @@ import {
 import { Hdfc_values } from '@aph/mobile-patients/src/strings/strings.json';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -103,6 +115,13 @@ const styles = StyleSheet.create({
     right: 16,
     top: 20,
   },
+  corporateIcon: {
+    resizeMode: 'contain',
+    width: 80,
+    height: 50,
+    position: 'absolute',
+    right: 10,
+  },
   subTextContainer: {
     marginTop: 10,
     paddingHorizontal: 16,
@@ -143,6 +162,13 @@ const styles = StyleSheet.create({
     width: 100,
     height: 20,
   },
+  corpLogo: {
+    resizeMode: 'contain',
+    width: 100,
+    height: 30,
+    position: 'absolute',
+    right: -10,
+  },
   currentBenefits: {
     ...theme.viewStyles.text('B', 14, '#02475B', 1, 20, 0.35),
     paddingLeft: 20,
@@ -167,6 +193,40 @@ const styles = StyleSheet.create({
     width: 70,
     height: 67,
   },
+  separatorStyle: {
+    height: 0.5,
+    width: '110%',
+    marginTop: 11,
+    backgroundColor: '#D6CEE3',
+  },
+  npMembershipText: {
+    width: '75%',
+    textAlign: 'center',
+    alignSelf: 'center',
+  },
+  activateSeparator: {
+    width: '90%',
+    marginVertical: 10,
+    marginBottom: 18,
+    alignSelf: 'center',
+  },
+  activateMembershipCtaContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  corporateCtaText: {
+    fontSize: 13,
+    lineHeight: 24,
+    marginVertical: 8,
+  },
+  corporateCta: {
+    width: '90%',
+    borderRadius: 8,
+    marginHorizontal: 20,
+    marginBottom: 20,
+  },
 });
 
 export interface MyMembershipProps extends NavigationScreenProps {
@@ -184,6 +244,9 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     setCircleSubscription,
     isRenew,
     healthCredits,
+    corporateSubscriptions,
+    setCorporateSubscriptions,
+    activeUserSubscriptions,
   } = useAppCommonData();
   const {
     circleSubscriptionId,
@@ -212,6 +275,8 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   const planPurchased = useRef<boolean | undefined>(false);
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const [showCircleActivation, setShowCircleActivation] = useState<boolean>(false);
+  const [showCorporateActivation, setShowCorporateActivation] = useState<boolean>(false);
+  const [corporatePlan, setCorporatePlan] = useState<any[]>([]);
 
   useEffect(() => {
     if (showHdfcSubscriptions) {
@@ -350,8 +415,30 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             'response'
           );
           if (groupPlans) {
-            const hdfcPlan = groupPlans?.HDFC;
-            const circlePlan = groupPlans?.APOLLO;
+            let hdfcPlan = null;
+            let circlePlan = null;
+            let corprPlan = null;
+            for (let [key, value] of Object.entries(groupPlans)) {
+              if (key === 'HDFC') hdfcPlan = value;
+              else if (key === 'APOLLO') circlePlan = value;
+              else corprPlan = value;
+            }
+
+            let corporatePlan: SubscriptionData[] = [];
+            Object.keys(groupPlans).forEach((plan_name) => {
+              if (plan_name !== 'APOLLO' && plan_name !== 'HDFC') {
+                groupPlans[plan_name]?.forEach((subscription) => {
+                  const plan = setSubscriptionData(subscription, false, true);
+                  corporatePlan.push(plan);
+                });
+              }
+            });
+            if (corporatePlan.length) {
+              AsyncStorage.setItem('isCorporateSubscribed', 'yes');
+            } else {
+              AsyncStorage.setItem('isCorporateSubscribed', 'no');
+            }
+            setCorporateSubscriptions && setCorporateSubscriptions(corporatePlan);
 
             if (hdfcPlan) {
               const hdfcSubscription = setSubscriptionData(hdfcPlan[0]);
@@ -377,6 +464,10 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
                 setIsCircleSubscription && setIsCircleSubscription(true);
               }
               setCircleSubscription && setCircleSubscription(circleSubscription);
+            }
+            if (corprPlan) {
+              setShowCorporateActivation(true);
+              setCorporatePlan(corprPlan);
             }
           }
         })
@@ -460,7 +551,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     return circleSubscptionData;
   };
 
-  const setSubscriptionData = (plan: any, isUpgradePlan?: boolean) => {
+  const setSubscriptionData = (plan: any, isUpgradePlan?: boolean, isCorporatePlan?: boolean) => {
     try {
       const group = plan.group;
       const groupData: GroupPlan = {
@@ -473,6 +564,13 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
       if (benefits && benefits.length) {
         benefits.forEach((item) => {
           const ctaAction = g(item, 'cta_action');
+          if (
+            g(ctaAction, 'meta', 'action') === strings.common.CorporateVaccineBenefit &&
+            isCorporatePlan
+          ) {
+            AsyncStorage.setItem('VaccinationCmsIdentifier', item?.cms_identifier);
+            AsyncStorage.setItem('VaccinationSubscriptionId', plan?._id);
+          }
           const benefitCtaAction: BenefitCtaAction = {
             type: g(ctaAction, 'type'),
             action: g(ctaAction, 'meta', 'action'),
@@ -491,6 +589,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             availableCount: item!.available_count,
             refreshFrequency: item!.refresh_frequency,
             icon: item!.icon,
+            cmsIdentifier: item?.cms_identifier,
           };
           planBenefits.push(benefit);
         });
@@ -511,6 +610,8 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
         benefits: planBenefits,
         coupons: plan!.coupons ? plan!.coupons : [],
         upgradeTransactionValue: plan?.plan_summary?.[0]?.upgrade_transaction_value,
+        isCorporate: !!isCorporatePlan,
+        corporateIcon: !!isCorporatePlan ? plan?.group_logo_url?.mobile_version : '',
       };
       const upgradeToPlan = g(plan, 'can_upgrade_to');
       if (g(upgradeToPlan, '_id')) {
@@ -541,7 +642,9 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     benefits: PlanBenefits[],
     subscriptionName: string,
     isCanUpgradeToPlan: boolean,
-    isExpired: boolean
+    isExpired: boolean,
+    isCorporate: boolean,
+    planId?: string
   ) => {
     return (
       <View style={styles.subTextContainer}>
@@ -563,6 +666,8 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
               isActive: isActive,
               isExpired: isExpired,
               comingFrom: 'My Memberships',
+              isCorporatePlan: !!isCorporate,
+              planId: planId || '',
             });
           }}
           style={styles.viewMoreText}
@@ -596,7 +701,9 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   const renderBottomButtons = (
     isActive: boolean,
     subscriptionName: string,
-    isCanUpgradeToPlan: boolean
+    isCanUpgradeToPlan: boolean,
+    isCorporate: boolean,
+    planId?: string
   ) => {
     const isCare = subscriptionName === Circle.planName;
     const buttonText = isCare
@@ -636,43 +743,69 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
               membershipType: subscriptionName,
               isActive: isActive,
               comingFrom: 'My Memberships',
+              isCorporatePlan: !!isCorporate,
+              planId: planId || '',
             });
           }}
         >
           <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>VIEW DETAILS</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={{ padding: 10 }}
-          onPress={() => {
-            if (isCanUpgradeToPlan) {
-              const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_HOW_TO_AVAIL_CLICKED] = {
-                'User ID': g(currentPatient, 'id'),
-                Plan: subscription_name?.substring(0, subscription_name.indexOf('+')),
-              };
-              postWebEngageEvent(WebEngageEventName.HDFC_HOW_TO_AVAIL_CLICKED, eventAttributes);
-              setUpgradeTransactionValue(transactionValue);
-              setShowAvailPopup(true);
-            } else if (isRenew) {
-              setShowCirclePlans(true);
-            } else {
-              props.navigation.navigate(AppRoutes.ConsultRoom, {});
-              if (isActive && !isCare) {
-                const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_EXPLORE_PLAN_CLICKED] = {
+        {!isCorporate && (
+          <TouchableOpacity
+            style={{ padding: 10 }}
+            onPress={() => {
+              if (isCanUpgradeToPlan) {
+                const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_HOW_TO_AVAIL_CLICKED] = {
                   'User ID': g(currentPatient, 'id'),
                   Plan: subscription_name?.substring(0, subscription_name.indexOf('+')),
                 };
-                postWebEngageEvent(WebEngageEventName.HDFC_EXPLORE_PLAN_CLICKED, eventAttributes);
+                postWebEngageEvent(WebEngageEventName.HDFC_HOW_TO_AVAIL_CLICKED, eventAttributes);
+                setUpgradeTransactionValue(transactionValue);
+                setShowAvailPopup(true);
+              } else if (isRenew) {
+                setShowCirclePlans(true);
+              } else {
+                props.navigation.navigate(AppRoutes.ConsultRoom, {});
+                if (isActive && !isCare) {
+                  const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_EXPLORE_PLAN_CLICKED] = {
+                    'User ID': g(currentPatient, 'id'),
+                    Plan: subscription_name?.substring(0, subscription_name.indexOf('+')),
+                  };
+                  postWebEngageEvent(WebEngageEventName.HDFC_EXPLORE_PLAN_CLICKED, eventAttributes);
+                }
               }
-            }
-          }}
-        >
-          <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>{buttonText}</Text>
-        </TouchableOpacity>
+            }}
+          >
+            <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>{buttonText}</Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   };
 
-  const renderMembershipCard = (subscription: any, isCanUpgradeToPlan: boolean) => {
+  const renderCorporateMembershipCards = () => {
+    return (
+      <View>
+        {corporateSubscriptions?.map((subscription: SubscriptionData) => {
+          return renderMembershipCard(
+            subscription,
+            false,
+            true,
+            subscription?.corporateIcon,
+            subscription?.planId
+          );
+        })}
+      </View>
+    );
+  };
+
+  const renderMembershipCard = (
+    subscription: any,
+    isCanUpgradeToPlan: boolean,
+    isCorporate?: boolean,
+    corporateIcon?: string,
+    planId?: string
+  ) => {
     const planBenefits = subscription?.benefits;
     const isCare = subscription?.name === Circle.planName;
     const isactive = isCare ? true : subscription?.isActive;
@@ -682,16 +815,17 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
       <View style={styles.cardStyle}>
         {isCircleExpiredPlan && <ExpiredBanner style={styles.expiredBanner} />}
         <View style={styles.healthyLifeContainer}>
-          {!isCare && (
+          {!isCare && !isCorporate && (
             <Text style={theme.viewStyles.text('B', 12, '#164884', 1, 20, 0.35)}>
               #ApolloHealthyLife
             </Text>
           )}
-          {isCare ? (
-            <CircleLogo style={styles.circleLogo} />
-          ) : (
-            <HdfcBankLogo style={styles.hdfcLogo} />
-          )}
+          {!isCorporate &&
+            (isCare ? (
+              <CircleLogo style={styles.circleLogo} />
+            ) : (
+              <HdfcBankLogo style={styles.hdfcLogo} />
+            ))}
         </View>
         <View style={styles.membershipCardContainer}>
           <Text
@@ -709,17 +843,80 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           >
             {subscription?.name}
           </Text>
-          {!isCare && (isCanUpgradeToPlan || !isActive) ? (
+          {!isCare && !isCorporate && (isCanUpgradeToPlan || !isActive) ? (
             <LockIcon style={styles.lockIcon} />
           ) : (
             <></>
           )}
+          {!!isCorporate && !!corporateIcon && isValidImageUrl(corporateIcon) && (
+            <Image
+              style={styles.corporateIcon}
+              source={{
+                uri: corporateIcon,
+              }}
+              resizeMode={'contain'}
+            />
+          )}
         </View>
         {!!planBenefits?.length &&
-          renderCardBody(planBenefits, subscription?.name, isCanUpgradeToPlan, isCircleExpiredPlan)}
+          renderCardBody(
+            planBenefits,
+            subscription?.name,
+            isCanUpgradeToPlan,
+            isCircleExpiredPlan,
+            !!isCorporate,
+            planId
+          )}
         {isCircleExpiredPlan || isRenew
           ? renderUpgradeButton()
-          : renderBottomButtons(isactive, subscription?.name, isCanUpgradeToPlan)}
+          : renderBottomButtons(
+              isactive,
+              subscription?.name,
+              isCanUpgradeToPlan,
+              !!isCorporate,
+              planId
+            )}
+      </View>
+    );
+  };
+
+  const renderCorporateCard = () => {
+    return (
+      <View style={styles.cardStyle}>
+        <View style={styles.healthyLifeContainer}>
+          <Text style={[styles.planName, theme.viewStyles.text('B', 14, '#02475B', 1, 20, 0.35)]}>
+            CORPORATE MEMBERSHIP
+          </Text>
+          <ImageBackground
+            source={{
+              uri: corporatePlan?.[0]?.group_logo_url?.mobile_version,
+            }}
+            resizeMode="contain"
+            style={styles.corpLogo}
+          />
+        </View>
+        <View style={styles.subTextContainer}>
+          <Text
+            style={[theme.viewStyles.text('R', 12, '#000000', 1, 20, 0.35), { marginBottom: 5 }]}
+          >
+            Key Benefits you get...
+          </Text>
+          {corporatePlan.map((value: any, i: number) => {
+            return getEllipseBulletPoint(value.name, i, false);
+          })}
+        </View>
+        <TouchableOpacity
+          style={[styles.membershipButtons, { padding: 10, marginBottom: -1 }]}
+          onPress={() => {
+            Linking.openURL('https://www.apollo247.com/my-membership').catch((e: any) =>
+              CommonBugFender(`${AppRoutes.MyMembership}_Linking.openURL`, e)
+            );
+          }}
+        >
+          <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>
+            VIEW DETAILS ON WEB
+          </Text>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -756,6 +953,30 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     );
   };
 
+  const renderActivateCorporateCta = () => {
+    return (
+      <View style={styles.activateMembershipCtaContainer}>
+        <View style={[styles.separatorStyle, styles.activateSeparator]} />
+        <Button
+          title={'ACTIVATE CORPORATE MEMBERSHIP'}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.ActivateCorporateMembership);
+          }}
+          titleTextStyle={styles.corporateCtaText}
+          style={styles.corporateCta}
+        />
+      </View>
+    );
+  };
+
+  const renderNoMembershipText = () => {
+    return (
+      <Text style={[styles.currentBenefits, styles.npMembershipText]}>
+        You do not have any Membership Subscriptions currenly.
+      </Text>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -768,33 +989,40 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
 
         {showCircleActivation && renderCircleMembershipActivated()}
         {showCirclePlans && renderCircleSubscriptionPlans()}
-        {(hdfcUserSubscriptions?._id || circleSubscription?._id) && (
-          <ScrollView bounces={false}>
+        <ScrollView bounces={false}>
+          <View>
             <View>
-              <View>
+              {!!circleSubscriptionId ||
+              !!hdfcUserSubscriptions?._id ||
+              !!corporateSubscriptions?.length ||
+              isCircleExpired ? (
                 <Text style={styles.currentBenefits}>CURRENT BENEFITS</Text>
-                {!!circleSubscriptionId || isCircleExpired
-                  ? renderMembershipCard(circleSubscription, false)
-                  : null}
-                {hdfcUserSubscriptions?._id
-                  ? renderMembershipCard(hdfcUserSubscriptions, false)
-                  : null}
-              </View>
-              {canUpgrade && (
-                <View>
-                  <Text style={styles.otherPlans}>OTHER PLANS</Text>
-                  {hdfcUpgradeUserSubscriptions.map((subscription: SubscriptionData) => {
-                    return renderMembershipCard(subscription, true);
-                  })}
-                  <View style={{ marginTop: 15 }} />
-                </View>
+              ) : (
+                renderNoMembershipText()
               )}
+              {!!circleSubscriptionId || isCircleExpired
+                ? renderMembershipCard(circleSubscription, false)
+                : null}
+              {hdfcUserSubscriptions?._id
+                ? renderMembershipCard(hdfcUserSubscriptions, false)
+                : null}
+              {!!corporateSubscriptions?.length && renderCorporateMembershipCards()}
             </View>
-          </ScrollView>
-        )}
+            {canUpgrade && (
+              <View>
+                <Text style={styles.otherPlans}>OTHER PLANS</Text>
+                {hdfcUpgradeUserSubscriptions.map((subscription: SubscriptionData) => {
+                  return renderMembershipCard(subscription, true);
+                })}
+                <View style={{ marginTop: 15 }} />
+              </View>
+            )}
+          </View>
+        </ScrollView>
         {showAvailPopup && renderAvailNowPopup()}
         {showSpinner && <Spinner />}
       </SafeAreaView>
+      {corporateSubscriptions?.length == 0 && renderActivateCorporateCta()}
     </View>
   );
 };

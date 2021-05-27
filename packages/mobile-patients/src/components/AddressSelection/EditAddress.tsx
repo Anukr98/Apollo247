@@ -164,6 +164,7 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     setDiagnosticAreas,
     setAreaSelected,
     setDiagnosticSlot,
+    setCartPagePopulated,
   } = useDiagnosticsCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { locationDetails, pharmacyLocation, diagnosticLocation } = useAppCommonData();
@@ -359,15 +360,13 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
             props.navigation.pop(3, { immediate: true });
             props.navigation.push(AppRoutes.AddressBook, { refetch: true });
           } else {
-            if (source == 'Tests') {
+            if (source == 'Tests' || source == 'Diagnostics Cart') {
               setNewAddressAddedHomePage?.(String(address?.zipcode!) || '');
               setNewAddressAddedCartPage?.('');
               setDiagnosticAreas?.([]);
               setAreaSelected?.({});
               setDiagnosticSlot?.(null);
-            } else if (source == 'Diagnostics Cart') {
-              setNewAddressAddedCartPage?.(String(address?.zipcode!) || '');
-              setNewAddressAddedHomePage?.('');
+              setCartPagePopulated?.(false);
             }
             props.navigation.pop(2, { immediate: true });
           }
@@ -556,7 +555,6 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
       onSavePress(); //navigate to map as change in address + name & number
     }
   };
-
   const onUpdateDetails = () => {
     if (props.navigation.getParam('KeyName') == 'Update' && addressData) {
       setshowSpinner(true);
@@ -629,18 +627,21 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
     addressList: savePatientAddress_savePatientAddress_patientAddress,
     keyName: string
   ) => {
-    const screenName = props.navigation.getParam('ComingFrom')!;
+    const screenName = props.navigation.getParam('ComingFrom');
     if (screenName != '') {
       if (sourceScreenName == AppRoutes.TestsCart) {
-        addressList?.latitude != null &&
-        addressList?.longitude != null &&
-        addressList?.latitude > 0 &&
-        addressList?.longitude > 0
-          ? setDiagnosticAddressId?.(addressList?.id || '')
-          : null;
+        if (
+          addressList?.latitude != null &&
+          addressList?.longitude != null &&
+          addressList?.latitude > 0 &&
+          addressList?.longitude > 0
+        ) {
+          setDiagnosticAddressId?.(addressList?.id || '');
+        }
         setDiagnosticAreas?.([]);
         setAreaSelected?.({});
         setDiagnosticSlot?.(null);
+        setCartPagePopulated?.(false);
       }
       setUpdatedAddressList(addressList, keyName);
       props.navigation.pop(2, { immediate: true }); //1
@@ -1109,9 +1110,9 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
                     fetchPolicy: 'no-cache',
                   })
                   .then((_data: any) => {
-                    setDeliveryAddressId!('');
-                    setNewAddressAdded!('');
-                    setDiagnosticAddressId!('');
+                    setDeliveryAddressId?.('');
+                    setNewAddressAdded?.('');
+                    setDiagnosticAddressId?.('');
                     _navigateToScreen(addressData!, 'fromDelete');
                   })
                   .catch((e) => {

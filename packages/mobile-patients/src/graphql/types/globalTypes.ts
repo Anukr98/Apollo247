@@ -77,18 +77,6 @@ export enum BloodGroups {
   OPositive = "OPositive",
 }
 
-export enum BookingSource {
-  Apollo247_Android = "Apollo247_Android",
-  Apollo247_Ios = "Apollo247_Ios",
-  Apollo247_Web = "Apollo247_Web",
-}
-
-export enum BookingStatus {
-  COMPLETED = "COMPLETED",
-  FAILED = "FAILED",
-  INPROGRESS = "INPROGRESS",
-}
-
 export enum CODCity {
   CHENNAI = "CHENNAI",
 }
@@ -214,13 +202,6 @@ export enum FEEDBACKTYPE {
   PHARMACY = "PHARMACY",
 }
 
-export enum GENDER {
-  ALL = "ALL",
-  FEMALE = "FEMALE",
-  MALE = "MALE",
-  OTHER = "OTHER",
-}
-
 export enum Gender {
   FEMALE = "FEMALE",
   MALE = "MALE",
@@ -325,7 +306,6 @@ export enum MEDICINE_ORDER_STATUS {
   RETURN_PENDING = "RETURN_PENDING",
   RETURN_PICKUP = "RETURN_PICKUP",
   RETURN_REQUESTED = "RETURN_REQUESTED",
-  RETURN_REQUEST_CREATED = "RETURN_REQUEST_CREATED",
   RETURN_RTO = "RETURN_RTO",
   RETURN_TO_ORIGIN = "RETURN_TO_ORIGIN",
   RVP_ASSIGNED = "RVP_ASSIGNED",
@@ -514,6 +494,15 @@ export enum PAYMENT_MODE {
   PREPAID = "PREPAID",
 }
 
+export enum PAYMENT_STATUS {
+  AUTO_REFUNDED = "AUTO_REFUNDED",
+  COD_COMPLETE = "COD_COMPLETE",
+  PAYMENT_NOT_INITIATED = "PAYMENT_NOT_INITIATED",
+  PENDING = "PENDING",
+  TXN_FAILURE = "TXN_FAILURE",
+  TXN_SUCCESS = "TXN_SUCCESS",
+}
+
 export enum PHARMACY_USER_TYPE {
   NEW = "NEW",
   REPEAT = "REPEAT",
@@ -657,6 +646,7 @@ export enum SubscriptionStatus {
   DEFERRED_ACTIVE = "DEFERRED_ACTIVE",
   DEFERRED_INACTIVE = "DEFERRED_INACTIVE",
   DISABLED = "DISABLED",
+  PARTIAL_PAYMENT = "PARTIAL_PAYMENT",
   PAYMENT_FAILED = "PAYMENT_FAILED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
   UPGRADED = "UPGRADED",
@@ -1735,6 +1725,9 @@ export interface TrueCallerProfile {
 export interface UpdateAppointmentInput {
   appointmentId: string;
   patientLocation?: PatientLocation | null;
+  paymentOrderId?: string | null;
+  status?: STATUS | null;
+  discountedAmount?: number | null;
 }
 
 export interface UpdateAppointmentSessionInput {
@@ -1814,6 +1807,17 @@ export interface voipPushTokenInput {
   voipToken?: string | null;
 }
 
+/** * current status of appointment */
+export enum APPOINTMENT_STATUS { BOOKED = "BOOKED", CANCELLED = "CANCELLED", COMPLETED = "COMPLETED", FAILED = "FAILED", VERIFIED = "VERIFIED",}
+/** * dose number first second */
+export enum DOSE_NUMBER { FIRST = "FIRST", SECOND = "SECOND",}
+/** * payment type for appointment */
+export enum PAYMENT_TYPE { CASHLESS = "CASHLESS", COD = "COD", PREPAID = "PREPAID",}
+/** * booking source */
+export enum VACCINE_BOOKING_SOURCE { AP_IN = "AP_IN", MOBILE = "MOBILE", WEB = "WEB",}
+/** * types of vaccine */
+export enum VACCINE_TYPE { COVAXIN = "COVAXIN", COVISHIELD = "COVISHIELD", SPUTNIK="SPUTNIK",MORDERNA="MORDERNA"}
+export interface CreateAppointmentInput { appointment_id?: string | null; patient_id: string; resource_session_id: string; dose_number: DOSE_NUMBER; booking_source?: VACCINE_BOOKING_SOURCE | null; corporate_name?: string | null;}
 //==============================================================
 // END Enums and Input Objects
 //==============================================================

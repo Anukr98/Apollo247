@@ -248,6 +248,50 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: 'center',
   },
+  vaccineAppointmentBlock: {
+    height: 210,
+    borderRadius: 10,
+    width: '100%',
+    marginVertical: 10,
+  },
+
+  vaccinesHospitalLoader: {
+    height: 110,
+    borderRadius: 10,
+    width: '100%',
+    marginVertical: 8,
+  },
+  vaccineDetailHeader: {
+    height: 214,
+    width: '100%',
+    marginHorizontal: 0,
+  },
+  vaccineHeaderMessage: {
+    height: 20,
+    borderRadius: 5,
+    marginTop: 10,
+    width: '40%',
+    alignSelf: 'center',
+  },
+  separatorStyle: {
+    height: 0.5,
+    width: '110%',
+    marginTop: 11,
+    backgroundColor: '#D6CEE3',
+  },
+  covidButtonShimmer: {
+    borderRadius: 10,
+    width: 145,
+    height: 42,
+    marginTop: 10,
+    marginLeft: 7,
+  },
+  couponBlock: {
+    height: 200,
+    borderRadius: 10,
+    width: '100%',
+    marginVertical: 10,
+  },
 });
 
 export const renderCovidVaccinationShimmer = () => {
@@ -291,7 +335,7 @@ export const renderCircleShimmer = () => {
         <View style={styles.subPlanOne}>
           <Image
             style={styles.circleLogo}
-            source={require('@aph/mobile-patients/src/components/ui/icons/circleLogo.png')}
+            source={require('@aph/mobile-patients/src/components/ui/icons/circleLogo.webp')}
           />
         </View>
 
@@ -545,5 +589,124 @@ export const renderConsultedDoctorsTitleShimmer = () => {
       LinearGradient={LinearGradient}
       shimmerStyle={{ paddingHorizontal: 20, width: 130 }}
     />
+  );
+};
+
+export const renderVaccinesHospitalSlotsLoaderShimmer = () => {
+  return (
+    <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
+      <ShimmerPlaceHolder
+        shimmerColors={[theme.colors.LIGHT_GRAY, theme.colors.WHITE]}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.vaccinesHospitalLoader}
+      />
+    </View>
+  );
+};
+
+export const renderVaccinesTimeSlotsLoaderShimmer = () => {
+  return (
+    <View style={{ marginVertical: 10 }}>
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={[styles.vaccinesHospitalLoader, { height: 90 }]}
+      />
+    </View>
+  );
+};
+
+export const renderVaccineBookingListShimmer = () => {
+  return (
+    <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.vaccineAppointmentBlock}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.vaccineAppointmentBlock}
+      />
+
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.vaccineAppointmentBlock}
+      />
+    </View>
+  );
+};
+
+export const renderVaccineDetailShimmer = () => {
+  return (
+    <View style={{}}>
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.vaccineDetailHeader}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={[styles.vaccineHeaderMessage, { width: '70%' }]}
+      />
+
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={[styles.vaccineHeaderMessage, { width: '40%', marginTop: 11 }]}
+      />
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={[styles.vaccineHeaderMessage, { width: '50%' }]}
+      />
+
+      <View style={styles.separatorStyle} />
+
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={[
+          styles.vaccineHeaderMessage,
+          { width: '40%', alignSelf: 'flex-start', marginTop: 20, marginHorizontal: 16 },
+        ]}
+      />
+
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={[styles.appointMentBlock, { marginHorizontal: 16 }]}
+      />
+
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={[styles.vaccineHeaderMessage, { marginTop: 10, width: '100%' }]}
+      />
+
+      <View style={styles.separatorStyle} />
+    </View>
+  );
+};
+
+export const CovidButtonShimmer = () => (
+  <ShimmerPlaceHolder
+    shimmerColors={['#CCC', theme.colors.BUTTON_BG]}
+    shimmerStyle={styles.covidButtonShimmer}
+  />
+);
+
+export const couponViewShimmer = () => {
+  return (
+    <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.couponBlock}
+      />
+    </View>
   );
 };

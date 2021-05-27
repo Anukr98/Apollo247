@@ -4,11 +4,7 @@ import { Dimensions, StyleSheet, Text, View, ScrollView } from 'react-native';
 import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
 import moment from 'moment';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import {
-  WebEngageEventName,
-  WebEngageEvents,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -17,6 +13,7 @@ import {
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
   DIAGNOSTIC_ORDER_STATUS,
   REFUND_STATUSES,
+  Gender,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components/StatusCard';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -26,6 +23,7 @@ import {
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { DiagnosticOrderSummaryViewed } from '@aph/mobile-patients/src/components/Tests/Events';
 
 export interface LineItemPricing {
   packageMrp: number;
@@ -44,17 +42,15 @@ export interface TestOrderSummaryViewProps {
 export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props) => {
   const { orderDetails, refundDetails } = props;
   const isPrepaid = orderDetails?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
-
+  const salutation = !!orderDetails?.patientObj?.gender
+    ? orderDetails?.patientObj?.gender === Gender.MALE
+      ? 'Mr. '
+      : 'Ms. '
+    : '';
   const { currentPatient } = useAllCurrentPatients();
 
   useEffect(() => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED] = {
-      'Order id:': orderDetails?.id,
-      'Order amount': grossCharges!,
-      'Sample Collection Date': orderDetails?.diagnosticDate,
-      'Order status': orderDetails?.orderStatus,
-    };
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED, eventAttributes);
+    DiagnosticOrderSummaryViewed(grossCharges, orderDetails?.id, orderDetails?.orderStatus);
   }, []);
 
   const getCircleObject = orderDetails?.diagnosticOrderLineItems?.filter(
@@ -388,7 +384,10 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       <View style={{ margin: 16 }}>
         {renderOrderId()}
         {renderSlotView()}
-        {renderHeading(`Tests for ${currentPatient?.firstName}`)}
+        {renderHeading(
+          `Tests for ${salutation != '' && salutation}${orderDetails?.patientObj?.firstName! ||
+            currentPatient?.firstName}`
+        )}
         {renderItemsCard()}
         {renderPricesCard()}
         {orderDetails?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED && !isPrepaid

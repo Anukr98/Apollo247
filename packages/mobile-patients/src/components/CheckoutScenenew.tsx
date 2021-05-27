@@ -149,6 +149,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     minCartValueForCOD,
     maxCartValueForCOD,
     nonCodSKus,
+    clearCartInfo,
   } = useShoppingCart();
   const {
     pharmacyUserTypeAttribute,
@@ -348,6 +349,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
       ...pharmacyCircleAttributes!,
+      ...pharmacyUserTypeAttribute,
     };
     return appsflyerEventAttributes;
   };
@@ -438,6 +440,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         } else {
           // Order-Success, Show popup here & clear cart info
           try {
+            clearCartInfo?.();
             postwebEngageCheckoutCompletedEvent(`${orderAutoId}`, orderId, isCOD);
             firePurchaseEvent(orderId);
           } catch (error) {}
@@ -519,6 +522,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               postwebEngageCheckoutCompletedEvent(`${order?.orderAutoId}`, order?.id!, isCOD);
               firePurchaseEvent(order?.id!);
             });
+            clearCartInfo?.();
           } catch (error) {}
           props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
             status: 'PAYMENT_PENDING',
@@ -653,6 +657,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     setLoading && setLoading(true);
     const selectedStore = storeId && stores.find((item) => item.storeid == storeId);
     const { storename, address, workinghrs, phone, city, state, state_id } = selectedStore || {};
+    const appointmentIds = ePrescriptions?.map((item) => item?.id);
     const orderInfo: saveMedicineOrderOMSVariables = {
       medicineCartOMSInput: {
         tatType: tatType,
@@ -739,6 +744,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         appVersion: DeviceInfo.getVersion(),
         savedDeliveryCharge:
           !!isFreeDelivery || isCircleSubscription ? 0 : AppConfig.Configuration.DELIVERY_CHARGES,
+        appointmentId: appointmentIds?.length ? appointmentIds.join(',') : '',
       },
     };
 
@@ -777,6 +783,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         planPurchaseDetails: !!circleMembershipCharges ? planPurchaseDetails : null,
         healthCreditUsed: hcOrder ? getFormattedAmount(grandTotal) : 0,
         shipments: shipments,
+        appointmentId: appointmentIds?.length ? appointmentIds.join(',') : '',
       },
     };
 
