@@ -2812,21 +2812,57 @@ export const GET_PRISM_AUTH_TOKEN = gql`
 `;
 
 export const GET_PRESCRIPTIONS_BY_MOBILE_NUMBER = gql`
-  query getPrescriptionsByMobileNumber($MobileNumber: String!, $recordId: String, $source: String) {
+  query getPrescriptionsByMobileNumber(
+    $MobileNumber: String!
+    $recordId: String!
+    $source: String!
+    $records: [MedicalRecordType]!
+  ) {
     getPrescriptionsByMobileNumber(
       MobileNumber: $MobileNumber
       recordId: $recordId
       source: $source
+      records: $records
     ) {
       patientId
-      prescriptions {
+      test_report {
+        response {
+          id
+          labTestName
+          labTestSource
+          packageId
+          packageName
+          labTestDate
+          date
+          labTestRefferedBy
+          siteDisplayName
+          tag
+          consultId
+          identifier
+          additionalNotes
+          observation
+          labTestResults {
+            parameterName
+            unit
+            result
+            range
+          }
+          fileUrl
+          testResultFiles {
+            id
+            fileName
+            mimeType
+          }
+        }
+        errorCode
+        errorMsg
+        errorType
+      }
+      prescription {
         response {
           id
           prescriptionName
           date
-          # dateOfPrescription
-          # startDate
-          # endDate
           prescribedBy
           notes
           prescriptionSource
@@ -2837,7 +2873,6 @@ export const GET_PRESCRIPTIONS_BY_MOBILE_NUMBER = gql`
             id
             fileName
             mimeType
-            file_Url
           }
           hospital_name
           hospitalId

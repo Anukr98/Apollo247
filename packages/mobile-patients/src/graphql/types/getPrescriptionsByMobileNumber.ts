@@ -1,3 +1,5 @@
+import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+
 /* tslint:disable */
 /* eslint-disable */
 // @generated
@@ -7,15 +9,65 @@
 // GraphQL query operation: getPrescriptionsByMobileNumber
 // ====================================================
 
-export interface getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescriptions_response_prescriptionFiles {
-  __typename: "PrecriptionFileParameters";
+export interface getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_test_report_response_labTestResults {
+  __typename: 'LabTestFileParameters';
+  parameterName: string | null;
+  unit: string | null;
+  result: string | null;
+  range: string | null;
+  outOfRange: boolean | null;
+}
+
+export interface getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_test_report_response_testResultFiles {
+  __typename: 'PrecriptionFileParameters';
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
 }
 
-export interface getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescriptions_response {
-  __typename: "PrescriptionsBaseResponse";
+export interface getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_test_report_response {
+  __typename: 'LabResultsBaseResponse';
+  id: string;
+  labTestName: string;
+  labTestSource: string;
+  packageId: string | null;
+  packageName: string | null;
+  date: any;
+  labTestRefferedBy: string | null;
+  siteDisplayName: string | null;
+  tag: string | null;
+  consultId: string | null;
+  identifier: string | null;
+  additionalNotes: string | null;
+  observation: string | null;
+  labTestResults:
+    | (getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_test_report_response_labTestResults | null)[]
+    | null;
+  fileUrl: string;
+  testResultFiles:
+    | (getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_test_report_response_testResultFiles | null)[]
+    | null;
+}
+
+export interface getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_test_report {
+  __typename: 'LabResultsDownloadResponse';
+  response:
+    | (getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_test_report_response | null)[]
+    | null;
+  errorCode: number;
+  errorMsg: string | null;
+  errorType: string | null;
+}
+
+export interface getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescription_response_prescriptionFiles {
+  __typename: 'PrecriptionFileParameters';
+  id: string | null;
+  fileName: string | null;
+  mimeType: string | null;
+}
+
+export interface getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescription_response {
+  __typename: 'PrescriptionsBaseResponse';
   id: string;
   prescriptionName: string;
   date: any;
@@ -25,31 +77,39 @@ export interface getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_p
   siteDisplayName: string | null;
   source: string;
   fileUrl: string;
-  prescriptionFiles: (getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescriptions_response_prescriptionFiles | null)[] | null;
+  prescriptionFiles:
+    | (getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescription_response_prescriptionFiles | null)[]
+    | null;
   hospital_name: string | null;
   hospitalId: string | null;
 }
 
-export interface getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescriptions {
-  __typename: "PrescriptionDownloadResponse";
-  response: (getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescriptions_response | null)[] | null;
+export interface getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescription {
+  __typename: 'PrescriptionDownloadResponse';
+  response:
+    | (getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescription_response | null)[]
+    | null;
   errorCode: number | null;
   errorMsg: string | null;
   errorType: string | null;
 }
 
 export interface getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber {
-  __typename: "ProfilePrescriptionsResult";
+  __typename: 'ProfilePrescriptionsResult';
   patientId: string | null;
-  prescriptions: getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescriptions | null;
+  test_report: getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_test_report | null;
+  prescription: getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescription | null;
 }
 
 export interface getPrescriptionsByMobileNumber {
-  getPrescriptionsByMobileNumber: (getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber | null)[] | null;
+  getPrescriptionsByMobileNumber:
+    | (getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber | null)[]
+    | null;
 }
 
 export interface getPrescriptionsByMobileNumberVariables {
   MobileNumber: string;
+  records: MedicalRecordType;
   recordId?: string | null;
   source?: string | null;
 }

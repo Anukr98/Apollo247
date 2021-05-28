@@ -43,7 +43,8 @@ import moment from 'moment';
 import {
   getPrescriptionsByMobileNumber,
   getPrescriptionsByMobileNumberVariables,
-  getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescriptions_response,
+  getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescription_response,
+  getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_test_report_response,
 } from '@aph/mobile-patients/src/graphql/types/getPrescriptionsByMobileNumber';
 import { TrackerBig } from '@aph/mobile-patients/src/components/ui/Icons';
 import Pdf from 'react-native-pdf';
@@ -237,27 +238,42 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
   >(GET_PRESCRIPTIONS_BY_MOBILE_NUMBER, {
     variables: {
       MobileNumber: currentPatient?.mobileNumber,
+      records: props?.showLabResults
+        ? [MedicalRecordType.PRESCRIPTION, MedicalRecordType.TEST_REPORT]
+        : [MedicalRecordType.PRESCRIPTION],
+      source: '',
+      recordId: '',
     },
     fetchPolicy: 'no-cache',
   });
+  const [labResults, setLabResults] = useState<
+    | (getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_test_report_response | null)[]
+    | null
+    | undefined
+  >([]);
   const [prescriptions, setPrescriptions] = useState<
-    | (getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescriptions_response | null)[]
+    | (getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescription_response | null)[]
     | null
     | undefined
   >([]);
 
   useEffect(() => {
-    let mobilePrescriptions: getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescriptions_response[] = [];
+    let mobilePrescriptions: getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescription_response[] = [];
+    let mobileTestReports: getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_test_report_response[] = [];
     medPrismRecords?.getPrescriptionsByMobileNumber?.forEach(
       (
-        presc: getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescriptions_response
+        presc: getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescription_response
       ) => {
-        if (presc?.prescriptions?.response?.length) {
-          mobilePrescriptions.push(...presc?.prescriptions?.response);
+        if (presc?.prescription?.response?.length) {
+          mobilePrescriptions.push(...presc?.prescription?.response);
+        }
+        if (presc?.test_report?.response?.length) {
+          mobileTestReports.push(presc?.test_report?.response);
         }
       }
     );
     setPrescriptions(mobilePrescriptions);
+    setLabResults(mobileTestReports);
   }, [medPrismRecords]);
 
   useEffect(() => {
@@ -280,11 +296,16 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
       type: 'medical' | 'lab' | 'health' | 'hospital' | 'prescription';
       data: any;
     }[] = [];
+    if (props.showLabResults) {
+      labResults?.forEach((item) => {
+        mergeArray.push({ type: 'lab', data: item });
+      });
+    }
     prescriptions?.forEach((item) => {
       mergeArray.push({ type: 'prescription', data: item });
     });
     setCombination(sordByDate(mergeArray));
-  }, [prescriptions]);
+  }, [labResults, prescriptions]);
 
   const sordByDate = (
     array: { type: 'medical' | 'lab' | 'health' | 'hospital' | 'prescription'; data: any }[]
