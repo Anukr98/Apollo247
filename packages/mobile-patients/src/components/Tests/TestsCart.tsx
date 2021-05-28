@@ -270,6 +270,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setAddresses: setMedAddresses,
     circleSubscriptionId,
     circlePlanValidity,
+    setAsyncPincode,
   } = useShoppingCart();
 
   const sourceScreen = props.navigation.getParam('comingFrom');
@@ -3162,6 +3163,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 setCartPagePopulated?.(false);
                 setAsyncPharmaLocation(_address);
                 setAsyncDiagnosticPincode?.(_address);
+                setAsyncPincode?.(_address);
                 if (deliveryAddressId !== _address?.id) {
                   setDiagnosticAreas?.([]);
                   setAreaSelected?.({});

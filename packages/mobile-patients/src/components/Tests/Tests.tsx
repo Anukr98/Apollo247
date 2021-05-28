@@ -226,6 +226,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     addresses,
     setAddresses,
     asyncPincode,
+    setAsyncPincode,
   } = useShoppingCart();
 
   const {
@@ -351,9 +352,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
       : !!pharmacyLocation
       ? pharmacyLocation!
       : locationDetails!;
-    setDiagnosticLocation?.(getLocationDetails);
-    setAsyncDiagnosticPincode?.(getLocationDetails);
-    checkIsPinCodeServiceable(getLocationDetails?.pincode, 'manual', 'pharmaPincode');
+    if (getLocationDetails?.pincode !== asyncDiagnosticPincode?.pincode) {
+      setDiagnosticLocation?.(getLocationDetails);
+      setAsyncDiagnosticPincode?.(getLocationDetails);
+      checkIsPinCodeServiceable(getLocationDetails?.pincode, 'manual', 'pharmaPincode');
+    }
   }, [asyncPincode]); //removed location details
 
   /**
@@ -384,6 +387,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         const asyncLocationPincode: any = await AsyncStorage.getItem('PharmacyLocationPincode');
         if (asyncLocationPincode) {
           let getAsyncPincode = JSON.parse(asyncLocationPincode);
+          setAsyncPincode?.(JSON.parse(asyncLocationPincode));
           setAsyncDiagnosticPincode?.(JSON.parse(asyncLocationPincode));
           //call only when they are different.
           if (asyncDiagnosticPincode?.pincode === getAsyncPincode?.pincode) {
@@ -765,6 +769,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               state: setState,
             };
             setAsyncPharmaLocation(saveAddress);
+            setAsyncPincode?.(saveAddress);
             setAsyncDiagnosticPincode?.(saveAddress);
             setLoadingContext?.(false);
           } else {
@@ -802,6 +807,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               state: response?.state,
             };
             setAsyncPharmaLocation(saveAddress);
+            setAsyncPincode?.(saveAddress);
             setAsyncDiagnosticPincode?.(saveAddress);
             setLoadingContext?.(false);
           }
@@ -1238,6 +1244,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               state: address?.state,
             };
             setCartPagePopulated?.(false);
+            setAsyncPincode?.(saveAddress);
             setAsyncDiagnosticPincode?.(saveAddress);
             setDefaultAddress(address);
           }}
