@@ -374,13 +374,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
       fetchAddress();
       fetchPatientOpenOrders();
       fetchPatientClosedOrders();
+      fetchPatientPrescriptions();
     }
   }, [currentPatient]);
-
-  useEffect(() => {
-    //fetch the doctor prescriptions for the current patient
-    fetchPatientPrescriptions();
-  }, [currentPatient, serviceableObject]);
 
   useEffect(() => {
     if (isFocused) {
@@ -496,9 +492,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         client,
         currentPatient?.mobileNumber,
         3,
-        Object.keys(serviceableObject)?.length === 0 && serviceableObject?.constructor === Object
-          ? AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
-          : serviceableObject?.cityId
+        AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
       );
       if (res?.data?.data) {
         const response = res?.data?.data?.getPatientLatestPrescriptions;
