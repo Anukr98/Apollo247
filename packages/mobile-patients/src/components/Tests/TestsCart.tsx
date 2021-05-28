@@ -155,7 +155,7 @@ import {
   DiagnosticCartViewed,
   DiagnosticModifyOrder,
   DiagnosticNonServiceableAddressSelected,
-  DiagnosticPaymentInitiated,
+  PaymentInitiated,
   DiagnosticProceedToPay,
   DiagnosticRemoveFromCartClicked,
 } from '@aph/mobile-patients/src/components/Tests/Events';
@@ -2188,7 +2188,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED],
     orderInfo: any
   ) {
-    DiagnosticPaymentInitiated(amount, 'Diagnostic', 'Cash');
+    PaymentInitiated(amount, 'Diagnostic', 'Cash');
     try {
       const response = await processDiagnosticsCODOrder(client, orderId, amount);
       const { data } = response;

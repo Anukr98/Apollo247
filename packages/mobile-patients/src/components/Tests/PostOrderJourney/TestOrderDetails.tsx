@@ -24,7 +24,6 @@ import {
   GetPatientFeedbackVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetPatientFeedback';
 import {
-  GET_DIAGNOSTIC_ORDER_LIST,
   GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
   GET_ORDER_LEVEL_DIAGNOSTIC_STATUS,
   GET_PATIENT_FEEDBACK,
@@ -192,21 +191,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   var orderStatusList: any[] = [];
   var refundArr: any[] = [];
   var newList: any[] = [];
-
-  useEffect(() => {
-    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      BackHandler.addEventListener('hardwareBackPress', handleBack);
-    });
-
-    const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    });
-
-    return () => {
-      _didFocusSubscription && _didFocusSubscription.remove();
-      _willBlurSubscription && _willBlurSubscription.remove();
-    };
-  }, []);
 
   const createRefundObject = () => {
     refundArr = [];

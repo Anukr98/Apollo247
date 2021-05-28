@@ -141,14 +141,21 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
             <View style={styles.rowStyle}>
               {index < 2 && !moreTests ? (
                 <>
-                  <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
-                  <Text style={styles.testName}>
-                    {!!item?.itemName
-                      ? nameFormater(item?.itemName!, 'title')
-                      : !!item?.diagnostics?.itemName
-                      ? nameFormater(item?.diagnostics?.itemName!, 'title')
-                      : ''}{' '}
-                  </Text>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      width: !!item?.editOrderID ? '68%' : '80%',
+                    }}
+                  >
+                    <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
+                    <Text style={styles.testName}>
+                      {!!item?.itemName
+                        ? nameFormater(item?.itemName!, 'title')
+                        : !!item?.diagnostics?.itemName
+                        ? nameFormater(item?.diagnostics?.itemName!, 'title')
+                        : ''}{' '}
+                    </Text>
+                  </View>
                   {!!item?.editOrderID ? renderNewTag() : null}
                   {index == 1 &&
                     filterOrderLineItem?.length - 2 > 0 &&
@@ -165,11 +172,12 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
               index: number
             ) => (
               <>
-                <View style={{ flexDirection: 'row' }}>
+                <View style={{ flexDirection: 'row', width: '86%' }}>
                   <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
                   <Text style={styles.testName}>
                     {!!item?.itemName ? nameFormater(item?.itemName!, 'title') : ''}{' '}
                   </Text>
+                  {!!item?.editOrderID ? renderNewTag() : null}
                 </View>
               </>
             )
@@ -554,8 +562,8 @@ const styles = StyleSheet.create({
   bulletStyle: {
     color: '#007C9D',
     fontSize: 5,
-    textAlign: 'center',
-    alignSelf: 'center',
+    alignSelf: 'flex-start',
+    marginTop: 4,
   },
   testName: {
     ...theme.viewStyles.text('M', isSmallDevice ? 11.5 : 12, '#007C9D', 1, 17),
@@ -745,7 +753,7 @@ const styles = StyleSheet.create({
   patientNameView: { width: '65%', justifyContent: 'center' },
   newItemView: {
     backgroundColor: '#4CAF50',
-    height: 20,
+    height: 18,
     width: 40,
     borderRadius: 2,
     borderColor: '#4CAF50',
