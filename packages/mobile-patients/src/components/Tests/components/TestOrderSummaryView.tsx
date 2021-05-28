@@ -697,7 +697,7 @@ const styles = StyleSheet.create({
   },
   newItemView: {
     backgroundColor: '#4CAF50',
-    height: 20,
+    height: 18,
     width: 40,
     borderRadius: 2,
     borderColor: '#4CAF50',
