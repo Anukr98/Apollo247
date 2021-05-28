@@ -1721,7 +1721,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setSearchText('');
           }}
           onChangeText={(value) => {
-            if (value.length >= 3) {
+            if (isValidSearch(value) && value.length >= 3) {
               setMedicineSearchLoading(true);
             }
             setSearchText(value);
