@@ -509,7 +509,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   dateContainer: {
-    marginHorizontal: 5,
+    marginHorizontal: width > 400 ? 5 : 1, //5
     borderRadius: 10,
     paddingHorizontal: 30,
     paddingVertical: 20,
