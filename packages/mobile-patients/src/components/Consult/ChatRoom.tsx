@@ -730,8 +730,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   manageBtn: {
-    width: 66,
-    height: 21,
+    width: 68,
+    height: 24,
     borderRadius: 5,
     position: 'absolute',
     right: 0,
