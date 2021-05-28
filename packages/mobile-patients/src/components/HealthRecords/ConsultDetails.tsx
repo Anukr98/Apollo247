@@ -603,6 +603,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       uploadedUrl: docUrl,
     } as EPrescription;
     const isCartOrder = medPrescription?.length === caseSheetDetails?.medicinePrescription?.length;
+    postWEGEvent('medicine', isCartOrder ? 'Cart' : 'Non-Cart');
 
     if (isCartOrder) {
       try {
@@ -645,7 +646,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       ePrescriptionsProp: [presToAdd],
       type: 'E-Prescription',
     });
-    postWEGEvent('medicine', isCartOrder ? 'Cart' : 'Non-Cart');
   };
 
   const medicineDescription = (
@@ -944,12 +944,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           <TouchableOpacity
             style={styles.orderMedicinesButton}
             onPress={() => {
-              postWEGEvent('medicine');
               onAddToCart();
             }}
           >
             <Text style={styles.orderMedicineText}>ORDER MEDICINES NOW</Text>
-            <Text style={styles.etaMsg}>(Delivery in 2-4 hours)</Text>
           </TouchableOpacity>
         </View>
       );

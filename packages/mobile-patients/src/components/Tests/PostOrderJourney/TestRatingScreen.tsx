@@ -35,6 +35,8 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import _ from 'lodash';
 import { savePhleboFeedback } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { DiagnosticPhleboFeedbackSubmitted } from '@aph/mobile-patients/src/components/Tests/Events';
 
 
 export interface DiagnosticsOrderList
@@ -57,6 +59,7 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
   const [unRatedStarsArray, setUnRatedStarsArray] = useState(starCount.slice(ratingStar, 5));
   const [activeReason, setActiveReason] = useState('');
   const [userInput, setUserInput] = useState('');
+  const { currentPatient } = useAllCurrentPatients();
   useEffect(() => {
     setLoading!(false);
   }, []);
@@ -115,10 +118,26 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
     } 
     return result
   }
+  const postDiagnosticPhleboFeedbackSubmitted = (
+    rating: string | number,
+    feedback: string | number,
+    phleboName: string,
+    orderId: string | number,
+    phleboId: string | number
+  ) => {
+    DiagnosticPhleboFeedbackSubmitted(rating, feedback, phleboName, orderId, phleboId);
+  };
   const onSubmitFeedback = async (rating: number,feedback: string,id: string) => {
     setLoading!(true);
       try {
         const response = await savePhleboFeedback(client,rating,feedback,id);
+        postDiagnosticPhleboFeedbackSubmitted(
+          rating,
+          feedback,
+          phlObj?.diagnosticPhlebotomists?.name,
+          orderDetail?.orderId,
+          id
+        );
         setLoading!(false);
         showAphAlert!({
           title: 'Feedback Sent!',

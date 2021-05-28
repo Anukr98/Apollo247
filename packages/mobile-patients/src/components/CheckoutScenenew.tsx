@@ -149,6 +149,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     minCartValueForCOD,
     maxCartValueForCOD,
     nonCodSKus,
+    clearCartInfo,
   } = useShoppingCart();
   const {
     pharmacyUserTypeAttribute,
@@ -348,6 +349,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
       ...pharmacyCircleAttributes!,
+      ...pharmacyUserTypeAttribute,
     };
     return appsflyerEventAttributes;
   };
@@ -438,6 +440,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         } else {
           // Order-Success, Show popup here & clear cart info
           try {
+            clearCartInfo?.();
             postwebEngageCheckoutCompletedEvent(`${orderAutoId}`, orderId, isCOD);
             firePurchaseEvent(orderId);
           } catch (error) {}
@@ -519,6 +522,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               postwebEngageCheckoutCompletedEvent(`${order?.orderAutoId}`, order?.id!, isCOD);
               firePurchaseEvent(order?.id!);
             });
+            clearCartInfo?.();
           } catch (error) {}
           props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
             status: 'PAYMENT_PENDING',
@@ -736,11 +740,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               subPlanId: circleSubPlanId || '',
             }
           : null,
-        totalCashBack:
-          (!coupon?.coupon && isCircleSubscription) ||
-          (coupon?.circleBenefits && isCircleSubscription)
-            ? Number(cartTotalCashback) || 0
-            : 0,
+        totalCashBack: !coupon?.coupon && isCircleSubscription ? Number(cartTotalCashback) || 0 : 0,
         appVersion: DeviceInfo.getVersion(),
         savedDeliveryCharge:
           !!isFreeDelivery || isCircleSubscription ? 0 : AppConfig.Configuration.DELIVERY_CHARGES,
@@ -1065,7 +1065,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         paddingHorizontal: 10,
         paddingVertical: 9,
         borderColor: '#00B38E',
-        borderWidth: 1,
+        borderWidth: 3,
+        borderStyle: 'dashed',
         margin: 0.05 * windowWidth,
       },
       rowSpaceBetween: {

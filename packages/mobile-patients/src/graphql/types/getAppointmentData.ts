@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { APPOINTMENT_TYPE, STATUS, APPOINTMENT_STATE, Gender, DoctorType } from "./globalTypes";
+import { APPOINTMENT_TYPE, STATUS, APPOINTMENT_STATE, Gender, DoctorType, MEDICINE_UNIT, MEDICINE_TIMINGS, MEDICINE_CONSUMPTION_DURATION } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getAppointmentData
@@ -76,6 +76,12 @@ export interface getAppointmentData_getAppointmentData_appointmentsHistory_caseS
   __typename: "MedicinePrescription";
   id: string | null;
   medicineName: string | null;
+  medicineUnit: MEDICINE_UNIT | null;
+  medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
+  medicineDosage: string | null;
+  medicineCustomDosage: string | null;
+  medicineConsumptionDurationInDays: string | null;
+  medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
 }
 
 export interface getAppointmentData_getAppointmentData_appointmentsHistory_caseSheet_diagnosticPrescription {
@@ -89,6 +95,9 @@ export interface getAppointmentData_getAppointmentData_appointmentsHistory_caseS
   id: string | null;
   blobName: string | null;
   sentToPatient: boolean | null;
+  version: number | null;
+  followUpAfterInDays: string | null;
+  doctorType: DoctorType | null;
   medicinePrescription: (getAppointmentData_getAppointmentData_appointmentsHistory_caseSheet_medicinePrescription | null)[] | null;
   diagnosticPrescription: (getAppointmentData_getAppointmentData_appointmentsHistory_caseSheet_diagnosticPrescription | null)[] | null;
 }

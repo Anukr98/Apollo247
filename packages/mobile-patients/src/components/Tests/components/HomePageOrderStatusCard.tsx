@@ -13,15 +13,14 @@ import { nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DIAGNOSTIC_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   DIAGNOSITC_PHELBO_TRACKING_STATUS,
-  DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY,
+  DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY,
   DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 const { width: winWidth } = Dimensions.get('window');
 
-const AFTER_COLLECTION_STATUS = [
-  DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY,
-  DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
-].flat(1);
+const AFTER_COLLECTION_STATUS = DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.concat(
+  DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY
+);
 
 interface HomePageOrderStatusCardProps {
   status: DIAGNOSTIC_ORDER_STATUS;
@@ -39,7 +38,7 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
       image = <SampleTestTubesIcon style={styles.iconStyle} />;
       content = string.diagnostics.sampleSubmittedContent;
       options = string.diagnostics.sampleCollectedText;
-    } else if (DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY.includes(status)) {
+    } else if (DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(status)) {
       heading = string.diagnostics.reportGenrated;
       image = <MedicalHistoryIcon style={styles.iconStyle} />;
       content = string.diagnostics.viewReportContent;
@@ -61,25 +60,33 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
   }
 
   const { heading, image, content, options } = getOrderStatusContent(props.status);
+  const prepData =
+    !!props.testPreparationData &&
+    props.testPreparationData != '' &&
+    !AFTER_COLLECTION_STATUS.includes(props.status);
+
   return (
     <View style={styles.container}>
       <View style={styles.rowStyles}>
         <Text style={styles.heading1}>
-          {nameFormater(heading, 'upper')} FOR {nameFormater(props.patientName!, 'title')}
+          {nameFormater(heading, 'default')} for {nameFormater(props.patientName!, 'title')}
         </Text>
         {image}
       </View>
-      <View>
-        <Text style={styles.content}>{content}</Text>
+      <View style={!prepData && styles.contentContainer}>
+        <Text style={prepData ? styles.content : styles.content1}>{content}</Text>
       </View>
-      {!!props.testPreparationData &&
-        props.testPreparationData != '' &&
-        !AFTER_COLLECTION_STATUS.includes(props.status) && (
+      {prepData ? (
+        <View style={{ minHeight: 30 }}>
           <View style={styles.prepDataContainer}>
             <InfoIconRed style={styles.infoIconStyle} />
-            <Text style={styles.prepDataStyle}>{props.testPreparationData}</Text>
+            <Text numberOfLines={2} style={styles.prepDataStyle}>
+              {props.testPreparationData}
+            </Text>
           </View>
-        )}
+        </View>
+      ) : null}
+
       <View style={styles.buttonView}>
         <TouchableOpacity onPress={props.onPressBookNow}>
           <Text style={styles.bookNowText}>{nameFormater(options, 'upper')}</Text>
@@ -94,7 +101,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.cardViewStyle,
     padding: 16,
     margin: 16,
-    minHeight: 150,
+    minHeight: 172,
     width: winWidth - 32,
   },
   rowStyles: { flexDirection: 'row', justifyContent: 'space-between' },
@@ -104,6 +111,10 @@ const styles = StyleSheet.create({
   },
   content: {
     ...theme.viewStyles.text('R', 12.5, colors.SHERPA_BLUE, 1, 18),
+    marginTop: 6,
+  },
+  content1: {
+    ...theme.viewStyles.text('R', 13, colors.SHERPA_BLUE, 1, 18),
     marginTop: 6,
   },
   buttonView: { alignSelf: 'flex-end', marginTop: 15 },
@@ -117,5 +128,9 @@ const styles = StyleSheet.create({
   prepDataStyle: {
     ...theme.viewStyles.text('R', 11, '#FF637B', 1, 14),
     marginHorizontal: 10,
+  },
+  contentContainer: {
+    minHeight: 70,
+    justifyContent: 'center',
   },
 });

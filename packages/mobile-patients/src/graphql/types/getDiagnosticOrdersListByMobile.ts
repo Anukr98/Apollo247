@@ -18,6 +18,12 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   gender: string | null;
   dateOfBirth: string | null;
 }
+export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_attributesObj {
+  __typename: "AttributesObj";
+  preTestingRequirement: string;
+  reportGenerationTime: string;
+  initialCollectionCharges: number;
+}
 
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientAddressObj {
   __typename: "PatientAddressObj";
@@ -91,13 +97,14 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_phleboDetailsObj {
   __typename: "PhleboDetailsObj";
   PhelboOTP: string | null;
-  PhelbotomistName: string;
-  PhelbotomistMobile: string;
-  PhelbotomistTrackLink: string;
+  PhelbotomistName: string | null;
+  PhelbotomistMobile: string | null;
+  PhelbotomistTrackLink: string | null;
   TempRecording: string | null;
   CheckInTime: any | null;
   PhleboLatitude: number | null;
   PhleboLongitude: number | null;
+  PhleboRating: number | null;
 }
 
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderReschedule {
@@ -132,6 +139,7 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   visitNo: string | null;
   labReportURL: string | null;
   patientObj: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj | null;
+  attributesObj: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_attributesObj | null;
   patientAddressObj: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientAddressObj | null;
   diagnosticOrdersStatus: (getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus | null)[] | null;
   diagnosticOrderLineItems: (getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems | null)[] | null;

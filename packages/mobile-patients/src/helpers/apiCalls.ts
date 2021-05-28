@@ -1072,9 +1072,22 @@ export const searchPHRApiWithAuthToken = (
   return Axios.get(searchPHRUrlWithAuthToke);
 };
 
-export const getLandingPageBanners = (pageName: string): Promise<AxiosResponse<any>> => {
+export const getCorporateMembershipData = (planId: string): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
-  const getBanners = `${baseurl}/banner/${pageName}`;
+  const corporateCmsUrl = `${baseurl}/corporate-package-benefit/${planId}`;
+  return Axios.get(corporateCmsUrl, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};
+
+export const getLandingPageBanners = (
+  pageName: string,
+  cityId: number
+): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getBanners = `${baseurl}/banner/${pageName}?city=${cityId}`;
   return Axios.get(getBanners, {
     headers: {
       Authorization: config.DRUPAL_CONFIG[1],

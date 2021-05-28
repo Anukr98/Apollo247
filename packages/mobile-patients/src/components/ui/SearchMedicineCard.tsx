@@ -135,6 +135,7 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
     onPressSubtractQty,
     dc_availability,
     is_in_contract,
+    image,
   } = props;
 
   const isOutOfStock =
@@ -204,11 +205,11 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
     const isPrescriptionRequired = is_prescription_required == 1;
     return (
       <View style={styles.imageContainer}>
-        {thumbnail ? (
+        {thumbnail || image ? (
           <Image
             PlaceholderContent={isPrescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
             placeholderStyle={{ backgroundColor: 'transparent' }}
-            source={{ uri: productsThumbnailUrl(thumbnail) }}
+            source={{ uri: productsThumbnailUrl(thumbnail || image) }}
             style={styles.medicineImageSize}
             resizeMode="contain"
           />

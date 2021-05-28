@@ -35,6 +35,33 @@ export interface SubscriptionData {
   coupons: PlanCoupons[];
   isActive: boolean;
   upgradeTransactionValue?: number | null;
+  isCorporate?: boolean;
+  corporateIcon?: string;
+}
+
+export interface CorporateSubscriptionData extends SubscriptionData {
+  corporateName?: string;
+  corporateLogo?: string;
+  bannerImage?: string;
+  packageName?: string;
+  bannerText?: string;
+  packFAQs?: CorporateFaq[];
+  packageBenefitData?: CorporateBenefits[];
+}
+
+export interface CorporateFaq {
+  faqQuestion: string;
+  faqAnswer: string;
+}
+
+export interface CorporateBenefits {
+  benefitName: string;
+  benefitShortDesc: string;
+  benefitIdentifier: string;
+  benefitImage: string;
+  benefitCTALabel: string;
+  benefitCTAType: string;
+  benefitCTAAction: string;
 }
 
 export interface GroupPlan {
@@ -64,6 +91,7 @@ export interface PlanBenefits {
   availableCount: number;
   refreshFrequency: number;
   icon: string | null;
+  cmsIdentifier?: string;
 }
 
 export interface BenefitCtaAction {
@@ -158,6 +186,8 @@ export interface AppCommonDataContextProps {
   setTotalCircleSavings: ((items: TotalCircleSavings) => void) | null;
   hdfcUpgradeUserSubscriptions: SubscriptionData[] | [];
   setHdfcUpgradeUserSubscriptions: ((items: SubscriptionData[]) => void) | null;
+  corporateSubscriptions: CorporateSubscriptionData[] | [];
+  setCorporateSubscriptions: ((items: CorporateSubscriptionData[]) => void) | null;
   circleSubscription: CicleSubscriptionData | null;
   setCircleSubscription: ((items: CicleSubscriptionData) => void) | null;
   bannerData: bannerType[] | null;
@@ -244,6 +274,8 @@ export interface AppCommonDataContextProps {
   homeScreenParamsOnPop: any;
   cartBankOffer: string;
   setCartBankOffer: ((id: string) => void) | null;
+  authToken: string;
+  setauthToken: ((value: string) => void) | null;
   uploadPrescriptionOptions: UploadPrescriptionOptions[];
   setUploadPrescriptionOptions: ((prescription: UploadPrescriptionOptions[]) => void) | null;
   expectCallText: string;
@@ -265,6 +297,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setTotalCircleSavings: null,
   hdfcUpgradeUserSubscriptions: [],
   setHdfcUpgradeUserSubscriptions: null,
+  corporateSubscriptions: [],
+  setCorporateSubscriptions: null,
   circleSubscription: null,
   setCircleSubscription: null,
   bannerData: null,
@@ -347,6 +381,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   homeScreenParamsOnPop: null,
   cartBankOffer: '',
   setCartBankOffer: null,
+  authToken: '',
+  setauthToken: null,
   uploadPrescriptionOptions: [],
   setUploadPrescriptionOptions: null,
   expectCallText: '',
@@ -384,6 +420,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
 
   const [hdfcUpgradeUserSubscriptions, _setHdfcUpgradeUserSubscriptions] = useState<
     AppCommonDataContextProps['hdfcUpgradeUserSubscriptions']
+  >([]);
+
+  const [corporateSubscriptions, _setCorporateSubscriptions] = useState<
+    AppCommonDataContextProps['corporateSubscriptions']
   >([]);
 
   const [circleSubscription, _setCircleSubscription] = useState<
@@ -474,6 +514,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
 
   const [doctorJoinedChat, setDoctorJoinedChat] = useState<boolean>(false);
 
+  const [authToken, setauthToken] = useState<AppCommonDataContextProps['authToken']>('');
+
   const setLocationDetails: AppCommonDataContextProps['setLocationDetails'] = (locationDetails) => {
     _setLocationDetails(locationDetails);
     AsyncStorage.setItem('locationDetails', JSON.stringify(locationDetails)).catch(() => {});
@@ -495,6 +537,12 @@ export const AppCommonDataProvider: React.FC = (props) => {
     hdfcUpgradeUserSubscriptions
   ) => {
     _setHdfcUpgradeUserSubscriptions(hdfcUpgradeUserSubscriptions);
+  };
+
+  const setCorporateSubscriptions: AppCommonDataContextProps['setCorporateSubscriptions'] = (
+    corporateSubscriptions
+  ) => {
+    _setCorporateSubscriptions(corporateSubscriptions);
   };
 
   const setCircleSubscription: AppCommonDataContextProps['setCircleSubscription'] = (
@@ -611,6 +659,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setTotalCircleSavings,
         hdfcUpgradeUserSubscriptions,
         setHdfcUpgradeUserSubscriptions,
+        corporateSubscriptions,
+        setCorporateSubscriptions,
         circleSubscription,
         setCircleSubscription,
         bannerData,
@@ -689,6 +739,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         homeScreenParamsOnPop,
         cartBankOffer,
         setCartBankOffer,
+        authToken,
+        setauthToken,
         uploadPrescriptionOptions,
         setUploadPrescriptionOptions,
         expectCallText,

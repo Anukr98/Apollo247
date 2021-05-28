@@ -47,6 +47,7 @@ import {
   postWebEngagePHR,
   getSourceName,
   HEALTH_CONDITIONS_TITLE,
+  removeObjectProperty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import {
@@ -70,6 +71,7 @@ import {
   getDiagnosticOrderDetailsByDisplayIDVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetailsByDisplayID';
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { RenderPdf } from '@aph/mobile-patients/src/components/ui/RenderPdf';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -188,7 +190,12 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 425,
   },
-  imageViewStyle: { marginHorizontal: 20, marginBottom: 15, marginTop: 15 },
+  imageViewStyle: {
+    marginHorizontal: 30,
+    marginBottom: 15,
+    marginTop: 15,
+    backgroundColor: 'transparent',
+  },
   pdfStyle: {
     height: 425,
     width: '100%',
@@ -238,6 +245,9 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     ? props.navigation.state.params?.prescriptionSource
     : null;
   const [apiError, setApiError] = useState(false);
+  const [showPDF, setShowPDF] = useState<boolean>(false);
+  const [fileNamePDF, setFileNamePDF] = useState<string>('');
+  const [pdfFileUrl, setPdfFileUrl] = useState<string>('');
   const { currentPatient } = useAllCurrentPatients();
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -266,6 +276,40 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     ? g(data, 'familyHistoryFiles')
     : [];
 
+  const propertyName = g(data, 'testResultFiles')
+    ? 'testResultFiles'
+    : g(data, 'healthCheckFiles')
+    ? 'healthCheckFiles'
+    : g(data, 'hospitalizationFiles')
+    ? 'hospitalizationFiles'
+    : g(data, 'prescriptionFiles')
+    ? 'prescriptionFiles'
+    : g(data, 'insuranceFiles')
+    ? 'insuranceFiles'
+    : g(data, 'billFiles')
+    ? 'billFiles'
+    : g(data, 'medicationFiles')
+    ? 'medicationFiles'
+    : g(data, 'attachmentList')
+    ? 'attachmentList'
+    : g(data, 'familyHistoryFiles')
+    ? 'familyHistoryFiles'
+    : '';
+
+  const eventInputData = removeObjectProperty(data, propertyName);
+
+  const webEngageSource = healthCheck
+    ? 'Health Check'
+    : hospitalization
+    ? 'Discharge Summary'
+    : prescriptions
+    ? 'Prescription'
+    : medicalBill
+    ? 'Bills'
+    : medicalInsurance
+    ? 'Insurance'
+    : 'Lab Test';
+
   const file_name_text = healthCheck
     ? 'HealthSummary_'
     : hospitalization
@@ -279,6 +323,26 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     : healthCondition
     ? 'HealthConditionReport_'
     : 'TestReport_';
+
+  const webEngageEventName: WebEngageEventName = healthCheck
+    ? WebEngageEventName.PHR_DOWNLOAD_HEALTH_CHECKS
+    : hospitalization
+    ? WebEngageEventName.PHR_DOWNLOAD_HOSPITALIZATIONS
+    : prescriptions
+    ? WebEngageEventName.PHR_DOWNLOAD_DOCTOR_CONSULTATION
+    : medicalBill
+    ? WebEngageEventName.PHR_DOWNLOAD_BILLS
+    : medicalInsurance
+    ? WebEngageEventName.PHR_DOWNLOAD_INSURANCE
+    : healthCondition
+    ? healthHeaderTitle === HEALTH_CONDITIONS_TITLE.ALLERGY
+      ? WebEngageEventName.PHR_DOWNLOAD_ALLERGY
+      : healthHeaderTitle === HEALTH_CONDITIONS_TITLE.MEDICAL_CONDITION
+      ? WebEngageEventName.PHR_DOWNLOAD_MEDICAL_CONDITION
+      : healthHeaderTitle === HEALTH_CONDITIONS_TITLE.FAMILY_HISTORY
+      ? WebEngageEventName.PHR_DOWNLOAD_FAMILY_HISTORY
+      : WebEngageEventName.PHR_DOWNLOAD_TEST_REPORT
+    : WebEngageEventName.PHR_DOWNLOAD_TEST_REPORT;
 
   useEffect(() => {
     Platform.OS === 'android' && requestReadSmsPermission();
@@ -598,7 +662,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       .catch((e: any) => {
         setLoading?.(false);
         currentPatient && handleGraphQlError(e, 'Report is yet not available');
-        CommonBugFender('HealthRecordDetails_downloadPDFTestReport', e);
+        CommonBugFender('HealthRecordDetails_callConvertToZipApi', e);
       });
   };
 
@@ -626,7 +690,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       .fetch('GET', zipUrl)
       .then((res) => {
         setLoading && setLoading(false);
-        // postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, data);
+        postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, eventInputData);
         Platform.OS === 'ios'
           ? RNFetchBlob.ios.previewDocument(res.path())
           : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
@@ -889,9 +953,22 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             const file_name = item?.fileName || '';
             const file_Url = item?.file_Url || '';
             return file_name && file_name.toLowerCase().endsWith('.pdf') ? (
-              <View style={styles.imageViewStyle}>
-                <Pdf key={file_Url} source={{ uri: file_Url }} style={styles.pdfStyle} />
-              </View>
+              <TouchableOpacity
+                activeOpacity={1}
+                style={styles.imageViewStyle}
+                onPress={() => {
+                  setShowPDF(true);
+                  setPdfFileUrl(data?.fileUrl);
+                  setFileNamePDF(file_name);
+                }}
+              >
+                <Pdf
+                  key={data?.fileUrl}
+                  source={{ uri: data?.fileUrl }}
+                  style={styles.pdfStyle}
+                  singlePage
+                />
+              </TouchableOpacity>
             ) : (
               <TouchableOpacity
                 activeOpacity={1}
@@ -1083,36 +1160,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   };
 
   const downloadDocument = (pdfUrl: string = '') => {
-    const webEngageSource = healthCheck
-      ? 'Health Check'
-      : hospitalization
-      ? 'Discharge Summary'
-      : prescriptions
-      ? 'Prescription'
-      : medicalBill
-      ? 'Bills'
-      : medicalInsurance
-      ? 'Insurance'
-      : 'Lab Test';
-    const webEngageEventName: WebEngageEventName = healthCheck
-      ? WebEngageEventName.PHR_DOWNLOAD_HEALTH_CHECKS
-      : hospitalization
-      ? WebEngageEventName.PHR_DOWNLOAD_HOSPITALIZATIONS
-      : prescriptions
-      ? WebEngageEventName.PHR_DOWNLOAD_DOCTOR_CONSULTATION
-      : medicalBill
-      ? WebEngageEventName.PHR_DOWNLOAD_BILLS
-      : medicalInsurance
-      ? WebEngageEventName.PHR_DOWNLOAD_INSURANCE
-      : healthCondition
-      ? healthHeaderTitle === HEALTH_CONDITIONS_TITLE.ALLERGY
-        ? WebEngageEventName.PHR_DOWNLOAD_ALLERGY
-        : healthHeaderTitle === HEALTH_CONDITIONS_TITLE.MEDICAL_CONDITION
-        ? WebEngageEventName.PHR_DOWNLOAD_MEDICAL_CONDITION
-        : healthHeaderTitle === HEALTH_CONDITIONS_TITLE.FAMILY_HISTORY
-        ? WebEngageEventName.PHR_DOWNLOAD_FAMILY_HISTORY
-        : WebEngageEventName.PHR_DOWNLOAD_TEST_REPORT
-      : WebEngageEventName.PHR_DOWNLOAD_TEST_REPORT;
     const file_name = g(data, 'testResultFiles', '0', 'fileName')
       ? g(data, 'testResultFiles', '0', 'fileName')
       : g(data, 'healthCheckFiles', '0', 'fileName')
@@ -1157,7 +1204,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       })
       .then((res) => {
         setLoading && setLoading(false);
-        postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, data);
+        postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, eventInputData);
         Platform.OS === 'ios'
           ? RNFetchBlob.ios.previewDocument(res.path())
           : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
@@ -1190,6 +1237,21 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     }
   };
 
+  const renderPdf = () => {
+    return showPDF ? (
+      <RenderPdf
+        uri={pdfFileUrl}
+        title={fileNamePDF || 'Document.pdf'}
+        isPopup={true}
+        setDisplayPdf={() => {
+          setShowPDF(false);
+          setPdfFileUrl('');
+        }}
+        navigation={props.navigation}
+      />
+    ) : null;
+  };
+
   if (data) {
     const headerTitle = healthCheck
       ? 'HEALTH SUMMARY'
@@ -1214,6 +1276,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             container={{ borderBottomWidth: 0 }}
             onPressLeftIcon={onGoBack}
           />
+          {renderPdf()}
           <ScrollView bounces={false}>
             {renderTestTopDetailsView()}
             {renderData()}

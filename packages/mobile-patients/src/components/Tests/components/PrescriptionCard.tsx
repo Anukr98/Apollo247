@@ -20,16 +20,24 @@ export const PrescriptionCard: React.FC<PrescriptionCardProps> = (props) => {
   return (
     <View style={styles.container}>
       <View style={styles.rowStyles}>
-        <View>
+        <View style={{ width: '85%' }}>
           {!!props.heading1 ? <Text style={styles.heading1}>{props.heading1}</Text> : null}
           {!!props.docName ? (
-            <Text style={styles.heading2}>{nameFormater(props.docName, 'upper')}</Text>
+            <View style={styles.doctorTextView}>
+              <Text numberOfLines={2} style={styles.heading2}>
+                {nameFormater(props.docName, 'upper')}
+              </Text>
+            </View>
           ) : null}
           {!!props.docQualification ? (
             <Text style={styles.heading3}>{nameFormater(props.docQualification, 'upper')}</Text>
           ) : null}
           {!!props.dateTime ? <Text style={styles.dateTimeTxt}>{props.dateTime}</Text> : null}
-          {!!props.patientName ? <Text style={styles.heading4}>{props.patientName}</Text> : null}
+          {!!props.patientName ? (
+            <Text numberOfLines={2} style={styles.heading4}>
+              {props.patientName}
+            </Text>
+          ) : null}
         </View>
         <View>
           <TouchableOpacity
@@ -56,9 +64,11 @@ const styles = StyleSheet.create({
     padding: 16,
     margin: 16,
     width: winWidth - 32,
+    minHeight: 200,
   },
   rowStyles: { flexDirection: 'row', justifyContent: 'space-between' },
   heading1: { ...theme.viewStyles.text('M', 12.5, colors.SHERPA_BLUE, 1, 20) },
+  doctorTextView: { minHeight: 50, justifyContent: 'center' },
   heading2: {
     ...theme.viewStyles.text('SB', 15, colors.SHERPA_BLUE, 1, 20),
     marginTop: 8,

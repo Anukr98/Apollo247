@@ -59,6 +59,7 @@ import {
   getPhrHighlightText,
   phrSearchWebEngageEvents,
   postWebEngageIfNewSession,
+  removeObjectProperty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   EPrescription,
@@ -823,10 +824,11 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   };
 
   const onHealthCardItemPress = (selectedItem: any) => {
+    const eventInputData = removeObjectProperty(selectedItem, 'prescriptionFiles');
     postWebEngageIfNewSession(
       'Doctor Consults',
       currentPatient,
-      selectedItem,
+      eventInputData,
       phrSession,
       setPhrSession
     );
@@ -859,11 +861,12 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       .then((status) => {
         if (status) {
           getLatestPrescriptionRecords();
+          const eventInputData = removeObjectProperty(selectedItem, 'prescriptionFiles');
           postWebEngagePHR(
             currentPatient,
             WebEngageEventName.PHR_DELETE_DOCTOR_CONSULTATION,
             'Doctor Consultation',
-            selectedItem
+            eventInputData
           );
         } else {
           setShowSpinner(false);

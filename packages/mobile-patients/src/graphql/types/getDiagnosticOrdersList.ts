@@ -19,6 +19,7 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_phle
   CheckInTime: any | null;
   PhleboLatitude: number | null;
   PhleboLongitude: number | null;
+  PhleboRating: number | null;
 }
 
 export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderReschedule {
@@ -55,6 +56,7 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diag
   testPreparationData: string | null;
   packageCalculatedMrp: number | null;
   inclusions: (number | null)[] | null;
+  reportGenerationTime: string | null;
 }
 
 export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_pricingObj {

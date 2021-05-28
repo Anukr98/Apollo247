@@ -274,7 +274,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                 isVertical={true}
                 columns={1}
                 navigation={props.navigation}
-                source={'Listing'}
+                source={'Listing page'}
                 sourceScreen={AppRoutes.TestListing}
               />
             ) : (
@@ -285,7 +285,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                 isVertical={true}
                 columns={2}
                 navigation={props.navigation}
-                source={'Listing'}
+                source={'Listing page'}
                 sourceScreen={AppRoutes.TestListing}
               />
             )}
