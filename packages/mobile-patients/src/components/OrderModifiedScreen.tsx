@@ -168,8 +168,11 @@ export const OrderModifiedScreen: React.FC<OrderModifiedScreenProps> = (props) =
     billedItems.forEach((item: any) => {
       orderedItems.forEach((product: any) => {
         if (item.itemId == product.medicineSKU) {
-          if (item.mrp != product.mrp || Math.ceil(item.issuedQty) != product.quantity) {
-            if (item.mrp != product.mrp) {
+          if (
+            Math.ceil(item.mrp) != Math.ceil(product.mrp) ||
+            Math.ceil(item.issuedQty) != product.quantity
+          ) {
+            if (Math.ceil(item.mrp) != Math.ceil(product.mrp)) {
               item['updatedprice'] = true;
               item['originalPrice'] = product.mrp;
             }
