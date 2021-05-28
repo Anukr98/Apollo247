@@ -244,7 +244,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       getPatientApiCall();
     }
   }, [currentPatient]);
-
+  
+  useEffect(() => {
+    if (source == AppRoutes.TestRatingScreen) {
+      refetchOrders();
+    }
+  }, [source])
   useEffect(() => {
     if (selectedPaitent == 'All') {
       setOrders(filteredOrderList);
