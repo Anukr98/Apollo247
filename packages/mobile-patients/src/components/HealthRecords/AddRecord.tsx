@@ -35,7 +35,7 @@ import {
   ADD_PATIENT_HEALTH_RESTRICTION_RECORD,
   ADD_PATIENT_MEDICAL_CONDITION_RECORD,
   ADD_PATIENT_MEDICATION_RECORD,
-  DELETE_HEALTH_RECORD_FILES,
+  DELETE_MULTIPLE_HEALTH_RECORD_FILES,
   ADD_FAMILY_HISTORY_RECORD,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { addPatientLabTestRecord } from '@aph/mobile-patients/src/graphql/types/addPatientLabTestRecord';
@@ -48,7 +48,7 @@ import { addPatientHealthRestrictionRecord } from '@aph/mobile-patients/src/grap
 import { addPatientMedicalConditionRecord } from '@aph/mobile-patients/src/graphql/types/addPatientMedicalConditionRecord';
 import { savePatientFamilyHistoryToPRISM } from '@aph/mobile-patients/src/graphql/types/savePatientFamilyHistoryToPRISM';
 import { addPatientMedicationRecord } from '@aph/mobile-patients/src/graphql/types/addPatientMedicationRecord';
-import { deleteHealthRecordFiles } from '@aph/mobile-patients/src/graphql/types/deleteHealthRecordFiles';
+import { deleteMultipleHealthRecordFiles } from '@aph/mobile-patients/src/graphql/types/deleteMultipleHealthRecordFiles';
 import {
   LabTestParameters,
   AddPrescriptionRecordInput,
@@ -59,7 +59,7 @@ import {
   AddPatientMedicalInsuranceRecordInput,
   AllergySeverity,
   AddAllergyRecordInput,
-  DeleteHealthRecordFilesInput,
+  DeleteMultipleHealthRecordFilesInput,
   AddMedicalConditionRecordInput,
   FamilyHistoryParameters,
   AddPatientHealthRestrictionRecordInput,
@@ -1791,66 +1791,50 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       });
   };
 
-  const callDeleteHealthRecordFileApi = async () => {
+  const callDeleteHealthRecordFileApi = () => {
     setshowSpinner(true);
-    try {
-      const _deleteRes = await Promise.all(
-        deleteFileArray?.map((_item) => {
-          if (_item?.index) {
-            const inputData: DeleteHealthRecordFilesInput = {
-              patientId: currentPatient?.id || '',
-              recordType: recordType,
-              recordId: selectedRecordID,
-              fileIndex: _item?.index,
-            };
-            client
-              .mutate<deleteHealthRecordFiles>({
-                mutation: DELETE_HEALTH_RECORD_FILES,
-                variables: {
-                  deleteHealthRecordFilesInput: inputData,
-                },
-              })
-              .then(({ data }) => {
-                const status = g(data, 'deleteHealthRecordFiles', 'status');
-                if (status) {
-                  return data;
-                }
-              })
-              .catch((e) => {
-                CommonBugFender('AddRecord_DELETE_HEALTH_RECORD_FILES', e);
-                setshowSpinner(false);
-                currentPatient && handleGraphQlError(e);
-              });
+    const deleteFileArrayIndex = deleteFileArray?.map((_item) => Number(_item?.index));
+    const inputData: DeleteMultipleHealthRecordFilesInput = {
+      patientId: currentPatient?.id || '',
+      recordType: recordType,
+      recordId: selectedRecordID,
+      fileIndexArray: deleteFileArrayIndex || [],
+    };
+    client
+      .mutate<deleteMultipleHealthRecordFiles>({
+        mutation: DELETE_MULTIPLE_HEALTH_RECORD_FILES,
+        variables: {
+          deleteMultipleHealthRecordFilesInput: inputData,
+        },
+      })
+      .then(({ data }) => {
+        const status = g(data, 'deleteMultipleHealthRecordFiles', 'status');
+        if (status) {
+          setshowSpinner(false);
+          if (recordType === MedicalRecordType.PRESCRIPTION) {
+            addMedicalRecord();
+          } else if (recordType === MedicalRecordType.TEST_REPORT) {
+            addPatientLabTestRecords();
+          } else if (recordType === MedicalRecordType.HOSPITALIZATION) {
+            addPatientHospitalizationRecords();
+          } else if (recordType === MedicalRecordType.MEDICALBILL) {
+            addPatientBillRecords();
+          } else if (recordType === MedicalRecordType.MEDICALINSURANCE) {
+            addPatientInsuranceRecords();
+          } else if (
+            recordType === MedicalRecordType.ALLERGY ||
+            recordType === MedicalRecordType.MEDICALCONDITION ||
+            recordType === MedicalRecordType.FAMILY_HISTORY
+          ) {
+            callHealthConditionApis();
           }
-        })
-      );
-      if (_deleteRes) {
-        setshowSpinner(false);
-        if (recordType === MedicalRecordType.PRESCRIPTION) {
-          addMedicalRecord();
-        } else if (recordType === MedicalRecordType.TEST_REPORT) {
-          addPatientLabTestRecords();
-        } else if (recordType === MedicalRecordType.HOSPITALIZATION) {
-          addPatientHospitalizationRecords();
-        } else if (recordType === MedicalRecordType.MEDICALBILL) {
-          addPatientBillRecords();
-        } else if (recordType === MedicalRecordType.MEDICALINSURANCE) {
-          addPatientInsuranceRecords();
-        } else if (
-          recordType === MedicalRecordType.ALLERGY ||
-          recordType === MedicalRecordType.MEDICALCONDITION ||
-          recordType === MedicalRecordType.FAMILY_HISTORY
-        ) {
-          callHealthConditionApis();
         }
-      } else {
+      })
+      .catch((e) => {
+        CommonBugFender('AddRecord_DELETE_MULTIPLE_HEALTH_RECORD_FILES', e);
         setshowSpinner(false);
-        CommonBugFender('AddRecord_callDeleteHealthRecordFileApi', _deleteRes);
-        currentPatient && handleGraphQlError(_deleteRes);
-      }
-    } catch (error) {
-      CommonBugFender('AddRecord_callDeleteHealthRecordFileApi', error);
-    }
+        currentPatient && handleGraphQlError(e);
+      });
   };
 
   const onSavePress = () => {
@@ -2146,27 +2130,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       }
       CommonLogEvent('ADD_RECORD', 'Set Images');
     };
-    const onPressRemoveIcon = () => {
-      if (
-        imageUpdate &&
-        (recordType === MedicalRecordType.MEDICALBILL ||
-          recordType === MedicalRecordType.MEDICALINSURANCE ||
-          recordType === MedicalRecordType.ALLERGY ||
-          recordType === MedicalRecordType.MEDICALCONDITION ||
-          recordType === MedicalRecordType.FAMILY_HISTORY)
-      ) {
-        Alert.alert('Alert!', 'Are you sure, you want to remove the attachment', [
-          { text: 'Yes', onPress: () => deleteImage() },
-          { text: 'No', onPress: () => {} },
-        ]);
-      } else {
-        deleteImage();
-      }
-    };
+
     return (
       <View style={[styles.addMoreImageViewStyle, { marginRight: 5 }]}>
         <View style={styles.imageViewStyle}>
-          <TouchableOpacity onPress={onPressRemoveIcon} style={styles.removeIconViewStyle}>
+          <TouchableOpacity onPress={deleteImage} style={styles.removeIconViewStyle}>
             <PhrRemoveBlueIcon style={{ width: 16, height: 16 }} />
           </TouchableOpacity>
           {fileType === 'pdf' || fileType === 'application/pdf' ? (
