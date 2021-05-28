@@ -135,6 +135,12 @@ import { ProHealthWebView } from '@aph/mobile-patients/src/components/ProHealthW
 import MyOrdersScreen from '@aph/mobile-patients/src/components/MyOrders/MyOrdersScreen';
 import { TestRatingScreen } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/TestRatingScreen';
 
+import { VaccineBookingScreen } from '@aph/mobile-patients/src/components/Vaccination/VaccineBookingScreen';
+import { VaccineBookingConfirmationScreen } from '@aph/mobile-patients//src/components/Vaccination/VaccineBookingConfirmationScreen';
+import { BookedVaccineScreen } from '@aph/mobile-patients//src/components/Vaccination/BookedVaccineScreen';
+import { ActivateCorporateMembership } from '@aph/mobile-patients//src/components/Vaccination/ActivateCorporateMembership';
+import { VaccineTermsAndConditions } from '@aph/mobile-patients//src/components/Vaccination/VaccineTermsAndConditions';
+
 export enum AppRoutes {
   Login = 'Login',
   ConsultRoom = 'ConsultRoom',
@@ -255,7 +261,12 @@ export enum AppRoutes {
   TestWidgetListing = 'TestWidgetListing',
   ProHealthWebView = 'ProHealthWebView',
   MyOrdersScreen = 'MyOrdersScreen',
-  TestRatingScreen = 'TestRatingScreen'
+  VaccineBookingScreen = 'VaccineBookingScreen',
+  VaccineBookingConfirmationScreen = 'VaccineBookingConfirmationScreen',
+  BookedVaccineScreen = 'BookedVaccineScreen',
+  ActivateCorporateMembership = 'ActivateCorporateMembership',
+  VaccineTermsAndConditions = 'VaccineTermsAndConditions',
+  TestRatingScreen = 'TestRatingScreen',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -651,6 +662,21 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.MyOrdersScreen]: {
     screen: MyOrdersScreen,
+  },
+  [AppRoutes.VaccineBookingScreen]: {
+    screen: VaccineBookingScreen,
+  },
+  [AppRoutes.VaccineBookingConfirmationScreen]: {
+    screen: VaccineBookingConfirmationScreen,
+  },
+  [AppRoutes.BookedVaccineScreen]: {
+    screen: BookedVaccineScreen,
+  },
+  [AppRoutes.ActivateCorporateMembership]: {
+    screen: ActivateCorporateMembership,
+  },
+  [AppRoutes.VaccineTermsAndConditions]: {
+    screen: VaccineTermsAndConditions,
   },
   [AppRoutes.TestRatingScreen]: {
     screen: TestRatingScreen,

@@ -1,3 +1,5 @@
+import { PharmaUserStatus } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+
 type YesOrNo = { value: 'Yes' | 'No' };
 
 export enum ProductPageViewedSource {
@@ -285,6 +287,7 @@ export interface AppsFlyerEvents {
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
     'Circle Cashback amount': number;
+    User_Type?: PharmaUserStatus;
   };
   [AppsFlyerEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
@@ -445,6 +448,7 @@ export interface AppsFlyerEvents {
     displayId: string;
     'coupon applied': boolean;
     'Circle discount': number;
+    User_Type: string;
   };
 
   [AppsFlyerEventName.FEATURED_TEST_CLICKED]: {

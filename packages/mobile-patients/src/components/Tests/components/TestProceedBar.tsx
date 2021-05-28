@@ -68,7 +68,7 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
         ? `${formatTestSlot(selectedTimeSlot?.slotInfo?.startTime!)}`
         : string.diagnostics.noSlotSelectedText
     }`;
-    const phleboMin = props.phleboMin
+    const phleboMin = props.phleboMin;
     return (
       <View style={styles.timeSlotMainViewStyle}>
         <View style={styles.timeSlotChangeViewStyle}>
@@ -87,7 +87,7 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
           </TouchableOpacity>
         </View>
         <Text style={styles.timeTextStyle}>{timeSlotText || ''}</Text>
-        {!!timeSlotText ? (
+        {!!timeSlotText && showTime && selectedTimeSlot?.slotInfo?.startTime ? (
           <View style={styles.infoIconViewStyle}>
             <TestInfoWhiteIcon style={styles.timeIconStyle} />
             <Text style={styles.infoTextStyle}>

@@ -31,7 +31,6 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
     variant,
   } = props;
 
-  const [showAllContent, setShowAllContent] = useState<boolean>(false);
   const pharmaUses = pharmaOverview?.HowToTake;
   const usesOfProduct = pharmaOverview?.Uses;
   const pharmaBenefits = pharmaOverview?.MedicinalBenefits;
@@ -40,6 +39,23 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
   const storage = pharmaOverview?.Storage;
   const coldChain = pharmaOverview?.ColdChain;
   const aboutProduct = pharmaOverview?.AboutProduct;
+
+  const showShowMore =
+    !!aboutProduct ||
+    !!usesOfProduct ||
+    !!pharmaUses ||
+    !!pharmaBenefits ||
+    !!storagePlace ||
+    !!storage ||
+    !!coldChain ||
+    !!key_ingredient ||
+    !!size ||
+    !!flavour_fragrance ||
+    !!colour ||
+    !!variant ||
+    !!pharmaSideEffects ||
+    !!pharmaOverview?.length;
+  const [showAllContent, setShowAllContent] = useState<boolean>(!showShowMore);
 
   const renderHtmlContent = (title: string, content: string) => (
     <View>
@@ -153,6 +169,7 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
 
   return (
     <View style={styles.cardStyle}>
+      <Text style={styles.heading}>Medicine Detail</Text>
       {!!aboutProduct && renderAbout()}
       {showAllContent && (
         <>
@@ -169,14 +186,14 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
           {!!pharmaOverview && renderPrecautionsAndWarnings()}
         </>
       )}
-      {renderShowMore()}
+      {showShowMore && renderShowMore()}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   cardStyle: {
-    marginVertical: 10,
+    marginBottom: 10,
   },
   subHeading: {
     ...theme.viewStyles.text('M', 16, '#02475B', 1, 25, 0.35),
@@ -191,5 +208,9 @@ const styles = StyleSheet.create({
   showMoreText: {
     ...theme.viewStyles.text('SB', 13, '#FC9916', 1, 25, 0.35),
     textAlign: 'right',
+  },
+  heading: {
+    ...theme.viewStyles.text('SB', 17, '#02475B', 1, 25, 0.35),
+    marginBottom: 2,
   },
 });

@@ -670,10 +670,10 @@ export const Down: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_accordion_down.webp')} />
 );
 export const DownO: React.FC<IconProps> = (props) => (
-  <IconBase size='sm' {...props} source={require('./icons/chevron-bottom3x.webp')} />
+  <IconBase size="sm" {...props} source={require('./icons/chevron-bottom3x.webp')} />
 );
 export const UserOutline: React.FC<IconProps> = (props) => (
-  <IconBase size='sm' {...props} source={require('./icons/user.webp')} />
+  <IconBase size="sm" {...props} source={require('./icons/user.webp')} />
 );
 
 export const Up: React.FC<IconProps> = (props) => (
@@ -782,7 +782,6 @@ export const Emoticon5: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/emoticons_13.webp')} />
 );
 
-
 export const OneApollo: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ width: 76, height: 59 }}
@@ -881,6 +880,10 @@ export const SearchDarkPhrIcon: React.FC<IconProps> = (props) => (
 
 export const ShareYellowDocIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/ic_share_yellow.webp')} />
+);
+
+export const ShareIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/ic_share.webp')} />
 );
 
 export const WhiteListViewIcon: React.FC<IconProps> = (props) => (
@@ -1885,4 +1888,20 @@ export const AgentIcon: React.FC<IconProps> = (props) => (
     {...props}
     source={require('@aph/mobile-patients/src/components/ui/icons/agent_icon.png')}
   />
+);
+
+export const NoVaccineBooking: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 155, height: 155 }}
+    {...props}
+    source={require('./icons/no_vaccine_booking.webp')}
+  />
+);
+
+export const CovidVaccine: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/covid_vaccine.webp')} />
+);
+
+export const VaccineBookingFailed: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/vacc_booking_failed.webp')} />
 );
