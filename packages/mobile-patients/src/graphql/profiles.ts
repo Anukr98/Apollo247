@@ -3636,6 +3636,15 @@ export const CANCEL_MEDICINE_ORDER_OMS = gql`
   }
 `;
 
+export const PHARMA_ORDER_MESSAGE = gql`
+  query pharmaOrderMessage($orderId: Int) {
+    pharmaOrderMessage(orderId: $orderId) {
+      message
+      title
+    }
+  }
+`;
+
 export const ALERT_MEDICINE_ORDER_PICKUP = gql`
   mutation alertMedicineOrderPickup($alertMedicineOrderPickupInput: AlertMedicineOrderPickupInput) {
     alertMedicineOrderPickup(alertMedicineOrderPickupInput: $alertMedicineOrderPickupInput) {
