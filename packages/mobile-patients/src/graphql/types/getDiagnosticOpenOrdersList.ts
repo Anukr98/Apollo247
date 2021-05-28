@@ -26,17 +26,25 @@ export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrd
   itemObj: getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_diagnosticOrderLineItems_itemObj | null;
 }
 
+export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_attributesObj {
+  __typename: "AttributesObj";
+  reportGenerationTime: string | null;
+  preTestingRequirement: string | null;
+}
+
 export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders {
   __typename: "DiagnosticOrders";
   id: string;
+  displayId: number;
   patientId: string;
-  paymentOrderId: string | null;
   orderStatus: DIAGNOSTIC_ORDER_STATUS;
   slotDateTimeInUTC: any | null;
   labReportURL: string | null;
   paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
+  paymentOrderId: string | null;
   patientObj: getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_patientObj | null;
   diagnosticOrderLineItems: (getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_diagnosticOrderLineItems | null)[] | null;
+  attributesObj: getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_attributesObj | null;
 }
 
 export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList {

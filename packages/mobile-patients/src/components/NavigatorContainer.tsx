@@ -87,7 +87,6 @@ import { SearchTestScene } from '@aph/mobile-patients/src/components/Tests/Searc
 import { YourOrdersTest } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/YourOrdersTests';
 import { OrderedTestStatus } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/OrderedTestStatus';
 import { TestOrderDetails } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/TestOrderDetails';
-import { TestOrderDetailsSummary } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/TestOrderDetailsSummary';
 import { ClinicSelection } from '@aph/mobile-patients/src/components/Tests/ClinicSelection';
 import {
   CommonLogEvent,
@@ -223,7 +222,6 @@ export enum AppRoutes {
   YourOrdersTest = 'YourOrdersTest',
   OrderedTestStatus = 'OrderedTestStatus',
   TestOrderDetails = 'TestOrderDetails',
-  TestOrderDetailsSummary = 'TestOrderDetailsSummary',
   ClinicSelection = 'ClinicSelection',
   RenderPdf = 'RenderPdf',
   Tests = 'Tests',
@@ -550,9 +548,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.TestOrderDetails]: {
     screen: TestOrderDetails,
-  },
-  [AppRoutes.TestOrderDetailsSummary]: {
-    screen: TestOrderDetailsSummary,
   },
   [AppRoutes.ClinicSelection]: {
     screen: ClinicSelection,

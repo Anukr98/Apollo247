@@ -2,9 +2,7 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { getReviewTag } from '@aph/mobile-patients/src/utils/commonUtils';
-import {
-  getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
+import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -17,7 +15,7 @@ import {
   ScrollView,
   Text,
   TextInput,
-  Alert
+  Alert,
 } from 'react-native';
 import {
   UserOutline,
@@ -37,7 +35,7 @@ import _ from 'lodash';
 import { savePhleboFeedback } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { DiagnosticPhleboFeedbackSubmitted } from '@aph/mobile-patients/src/components/Tests/Events';
-
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 export interface DiagnosticsOrderList
   extends getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList {
@@ -59,9 +57,9 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
   const [unRatedStarsArray, setUnRatedStarsArray] = useState(starCount.slice(ratingStar, 5));
   const [activeReason, setActiveReason] = useState('');
   const [userInput, setUserInput] = useState('');
-  const { currentPatient } = useAllCurrentPatients();
+
   useEffect(() => {
-    setLoading!(false);
+    setLoading?.(false);
   }, []);
 
   const client = useApolloClient();
@@ -105,19 +103,19 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
   const onStarRatingChange = (item: any) => {
     setRatingStar(item);
     setActiveReason('');
-    setUserInput('')
+    setUserInput('');
     setRatedStarsArray(starCount.slice(0, item));
     setUnRatedStarsArray(starCount.slice(item, 5));
   };
   const checkDisability = () => {
-    let result = false
+    let result = false;
     if (ratingStar == 0) {
-      result = true
-    } else if (activeReason == 'I have other Feedback' && userInput?.trim()?.length == 0){
-      result = true
-    } 
-    return result
-  }
+      result = true;
+    } else if (activeReason == 'I have other Feedback' && userInput?.trim()?.length == 0) {
+      result = true;
+    }
+    return result;
+  };
   const postDiagnosticPhleboFeedbackSubmitted = (
     rating: string | number,
     feedback: string | number,
@@ -127,31 +125,37 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
   ) => {
     DiagnosticPhleboFeedbackSubmitted(rating, feedback, phleboName, orderId, phleboId);
   };
-  const onSubmitFeedback = async (rating: number,feedback: string,id: string) => {
-    setLoading!(true);
-      try {
-        const response = await savePhleboFeedback(client,rating,feedback,id);
-        postDiagnosticPhleboFeedbackSubmitted(
-          rating,
-          feedback,
-          phlObj?.diagnosticPhlebotomists?.name,
-          orderDetail?.orderId,
-          id
-        );
-        setLoading!(false);
-        showAphAlert!({
-          title: 'Feedback Sent!',
-          description: 'Your feedback and review sent successfully.',
-        });
-       props.navigation.goBack()
-      } catch (error) {
-        setLoading!(false);
-        showAphAlert!({
-          title: 'Something went wrong',
-          description: 'Unable to send the feedback. Please try again.',
-        });
-      }
-  }
+  const onSubmitFeedback = async (rating: number, feedback: string, id: string) => {
+    setLoading?.(true);
+    try {
+      const response = await savePhleboFeedback(client, rating, feedback, id);
+      postDiagnosticPhleboFeedbackSubmitted(
+        rating,
+        feedback,
+        phlObj?.PhelbotomistName,
+        orderDetail?.displayId,
+        id
+      );
+      setLoading?.(false);
+      showAphAlert?.({
+        unDismissable: true,
+        title: 'Feedback Sent!',
+        description: 'Your feedback and review sent successfully.',
+        onPressOk: () => {
+          hideAphAlert?.();
+          props.navigation.state.params?.onPressBack &&
+            props.navigation.state.params?.onPressBack();
+          props.navigation.goBack();
+        },
+      });
+    } catch (error) {
+      setLoading?.(false);
+      showAphAlert?.({
+        title: string.common.somethingWentWrong,
+        description: 'Unable to send the feedback. Please try again.',
+      });
+    }
+  };
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -165,10 +169,16 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
         )}
 
         <ScrollView bounces={false} scrollEventThrottle={1}>
-          {phlObj?.diagnosticPhlebotomists?.name ? <View style={styles.phleboDetails}>
-            <UserOutline style={styles.icon} />
-            <Text style={styles.textStylePhlebo}>Phlebotomist • {`${phlObj?.diagnosticPhlebotomists?.name}`}</Text>
-          </View> : <View style={styles.phleboDetails}></View>}
+          {phlObj?.diagnosticPhlebotomists?.name ? (
+            <View style={styles.phleboDetails}>
+              <UserOutline style={styles.icon} />
+              <Text style={styles.textStylePhlebo}>
+                Phlebotomist • {`${phlObj?.diagnosticPhlebotomists?.name}`}
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.phleboDetails}></View>
+          )}
           <Text style={styles.textStyleHeading}>{string.orders.ratingDetailHeader}</Text>
           <View style={styles.startContainer}>
             {ratedStarsArray.map((item, index) => (
@@ -213,10 +223,10 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
           </View>
         </ScrollView>
         <View style={styles.submitCtaContainer}>
-          <Button 
+          <Button
             title={'SUBMIT FEEDBACK'}
-            onPress={()=>{
-              onSubmitFeedback(ratingStar,activeReason,orderDetail?.id)
+            onPress={() => {
+              onSubmitFeedback(ratingStar, activeReason, orderDetail?.id);
             }}
             disabled={checkDisability()}
           />
@@ -287,16 +297,17 @@ const styles = StyleSheet.create({
   },
   reasonTitle: {
     ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18),
+    textAlign: 'center',
   },
   inputContainer: {
     width: '70%',
   },
-  submitCtaContainer : {
-    width:'100%',
-    justifyContent:'center',
-    alignContent:'center',
+  submitCtaContainer: {
+    width: '100%',
+    justifyContent: 'center',
+    alignContent: 'center',
     alignItems: 'center',
-    padding:10,
-    backgroundColor:'white'
-  }
+    padding: 10,
+    backgroundColor: 'white',
+  },
 });

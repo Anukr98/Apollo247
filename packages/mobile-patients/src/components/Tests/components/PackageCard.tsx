@@ -1,5 +1,5 @@
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { CircleLogo, OfferIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
@@ -49,12 +49,13 @@ export interface PackageCardProps {
     | 'Partial search'
     | 'Listing page'
     | 'Category page'
-    | 'Prescription';
+    | 'Prescription'
+    | 'Cart page';
   sourceScreen: string;
 }
 
 export const PackageCard: React.FC<PackageCardProps> = (props) => {
-  const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
+  const { cartItems, addCartItem, removeCartItem, modifiedOrderItemIds } = useDiagnosticsCart();
   const { data, isCircleSubscribed, source, navigation, sourceScreen } = props;
   const actualItemsToShow =
     data?.diagnosticWidgetData?.length > 0 &&
@@ -103,14 +104,14 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => onPress(getItem, packageMrpForItem, pricesForItem)}
-        key={getItem.itemId}
+        key={getItem?.itemId.toString()}
         style={[
           styles.packageCardTouch,
           { width: Dimensions.get('window').width * (props.isVertical ? 0.9 : 0.8) },
           props?.isVertical ? {} : { marginLeft: item?.index == 0 ? 20 : 6 },
         ]}
       >
-        <View>
+        <View key={getItem?.itemId.toString()}>
           <View style={{ minHeight: !!inclusions && inclusions?.length > 0 ? 100 : 0 }}>
             <View style={styles.topPackageView}>
               <View style={{ width: '75%' }}>
@@ -412,6 +413,10 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     pricesForItem: any,
     packageCalculatedMrp: number
   ) => {
+    const isAlreadyPartOfOrder =
+      !!modifiedOrderItemIds &&
+      modifiedOrderItemIds?.length &&
+      modifiedOrderItemIds?.find((id: number) => Number(id) == Number(item?.id));
     return (
       <Text
         style={[
@@ -421,12 +426,14 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
           },
         ]}
         onPress={() =>
-          isAddedToCart
+          isAlreadyPartOfOrder
+            ? {}
+            : isAddedToCart
             ? onPressRemoveFromCart(item)
             : onPressAddToCart(item, pricesForItem, packageCalculatedMrp)
         }
       >
-        {isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
+        {isAlreadyPartOfOrder ? 'ALREADY ADDED' : isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
       </Text>
     );
   };
