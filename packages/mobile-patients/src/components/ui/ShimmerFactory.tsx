@@ -144,6 +144,10 @@ const styles = StyleSheet.create({
     width: '95%',
     margin: 10,
   },
+  orderNoticeView: { marginBottom: 5, flexDirection: 'row', justifyContent: 'space-between' },
+  orderNoticeIcon: { height: 15, width: '5%', borderRadius: 5 },
+  orderNoticeTitle: { height: 15, width: '93%', borderRadius: 5 },
+  orderNoticeDescription: { height: 45, width: '100%', borderRadius: 5 },
   sortBox: {
     borderWidth: 0.5,
     borderColor: theme.colors.ASTRONAUT_BLUE,
@@ -506,6 +510,24 @@ export const renderMedicineBannerShimmer = () => {
         <View style={styles.sliderDots} />
       </View>
     </View>
+  );
+};
+
+export const OrderDelayNoticeShimmer = () => {
+  return (
+    <>
+      <View style={styles.orderNoticeView}>
+        <ShimmerPlaceHolder LinearGradient={LinearGradient} shimmerStyle={styles.orderNoticeIcon} />
+        <ShimmerPlaceHolder
+          LinearGradient={LinearGradient}
+          shimmerStyle={styles.orderNoticeTitle}
+        />
+      </View>
+      <ShimmerPlaceHolder
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.orderNoticeDescription}
+      />
+    </>
   );
 };
 
