@@ -220,6 +220,11 @@ const styles = StyleSheet.create({
     padding: 10,
     alignItems: 'center',
   },
+  searchResults: {
+    paddingTop: 10.5,
+    maxHeight: 266,
+    backgroundColor: '#f7f8f5',
+  },
 });
 
 const filterBanners = (banners: OfferBannerSection[]) => {
@@ -1854,11 +1859,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           bounces={false}
           keyExtractor={(_, index) => `${index}`}
           showsVerticalScrollIndicator={true}
-          style={{
-            paddingTop: 10.5,
-            maxHeight: 266,
-            backgroundColor: '#f7f8f5',
-          }}
+          style={styles.searchResults}
           data={medicineList}
           extraData={itemsLoading}
           renderItem={renderSearchSuggestionItemView}
