@@ -244,12 +244,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       getPatientApiCall();
     }
   }, [currentPatient]);
-  
-  useEffect(() => {
-    if (source == AppRoutes.TestRatingScreen) {
-      refetchOrders();
-    }
-  }, [source])
+
   useEffect(() => {
     if (selectedPaitent == 'All') {
       setOrders(filteredOrderList);
@@ -1200,6 +1195,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           props.navigation.navigate(AppRoutes.TestRatingScreen, {
             ratingStar: star,
             orderDetails: order,
+            onPressBack: fetchOrders,
           });
         }}
         onPressCallOption={(name, number) => _onPressPhleboCall(name, number, order?.id)}
@@ -1214,7 +1210,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   function _onPressPhleboCall(phleboName: string, phoneNumber: string, orderId: string) {
     //if allowCalling is true.
-    const id = orderId.toString()
+    const id = orderId.toString();
     DiagnosticPhleboCallingClicked(currentPatient, id, phleboName);
     _callDiagnosticExotelApi(phoneNumber, orderId);
   }
