@@ -2190,6 +2190,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         ? _navigatetoOrderStatus(true, 'success', eventAttributes, orderInfo)
         : renderAlert(string.common.tryAgainLater);
     } catch (e) {
+      setLoading?.(false);
       renderAlert(string.common.tryAgainLater);
     }
   }
@@ -2200,6 +2201,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED],
     orderInfo: any
   ) {
+    setLoading?.(false);
     props.navigation.navigate(AppRoutes.OrderStatus, {
       isModify: isModifyFlow ? modifiedOrder : null,
       orderDetails: orderInfo,
@@ -2279,9 +2281,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             description: string.diagnostics.bookingOrderFailedMessage,
           });
           aphConsole.log({ error });
-        })
-        .finally(() => {
-          setLoading?.(false);
         });
     }
   };
@@ -2331,6 +2330,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     source: string
   ) {
     try {
+      setLoading?.(true);
       const orderId = getOrderId! || '';
       const displayId = getDisplayId! || '';
       const getPatientId =
@@ -2363,6 +2363,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           //call the process wali api & success page
           processModifiyCODOrder(orderId, grandTotal, eventAttributes, orderInfo);
         } else {
+          setLoading?.(false);
           props.navigation.navigate(AppRoutes.PaymentMethods, {
             paymentId: response?.data?.createOrderInternal?.payment_order_id!,
             amount: grandTotal,
@@ -2371,7 +2372,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             eventAttributes,
             businessLine: 'diagnostics',
           });
-          setTimeout(() => setLoading?.(false), 0);
         }
       }
     } catch (error) {
