@@ -1194,10 +1194,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPressAddTest={() => _onPressAddTest(order)}
         onPressReschedule={() => _onPressTestReschedule(order)}
         onPressViewDetails={() => _navigateToYourTestDetails(order, true)}
-        onPressViewReport={() => {
-          setActiveOrder(order);
-          setDisplayViewReport(true);
-        }}
+        onPressViewReport={() => _onPressViewReportAction(order)}
         phelboObject={order?.phleboDetailsObj}
         onPressRatingStar={(star) => {
           props.navigation.navigate(AppRoutes.TestRatingScreen, {
@@ -1295,8 +1292,19 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setModifiedOrderItemIds?.(modifiedItems);
   }
 
+  function _onPressViewReportAction(order: orderList) {
+    if (!!order?.labReportURL && order?.labReportURL != '') {
+      setActiveOrder(order);
+      setDisplayViewReport(true);
+    } else if (!!order?.visitNo && order?.visitNo != '') {
+      //directly open the phr section
+      fetchTestReportResult(order);
+    } else {
+      props.navigation.navigate(AppRoutes.HealthRecordsHome);
+    }
+  }
+
   function _onPressViewReport(order: orderList) {
-    const visitId = order?.visitNo;
     const appointmentDetails = !!order?.slotDateTimeInUTC
       ? order?.slotDateTimeInUTC
       : order?.diagnosticDate;
@@ -1305,13 +1313,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       / /g,
       '_'
     );
-    if (!!order?.labReportURL && order?.labReportURL != '') {
-      downloadLabTest(order?.labReportURL, appointmentDate, patientName);
-    } else if (visitId) {
-      fetchTestReportResult(order);
-    } else {
-      props.navigation.navigate(AppRoutes.HealthRecordsHome);
-    }
+    downloadLabTest(order?.labReportURL!, appointmentDate, patientName);
   }
 
   async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string) {
