@@ -1138,6 +1138,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       ) => item?.itemName
     );
 
+    const getSlotStartTime = (slot: string /*07:00-07:30 */) => {
+      return moment((slot?.split('-')[0] || '').trim(), 'hh:mm');
+    };
+
     return (
       <OrderTestCard
         orderId={order?.displayId}
@@ -1164,7 +1168,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         ordersData={order?.diagnosticOrderLineItems!}
         showPretesting={showPreTesting!}
         dateTime={!!order?.slotDateTimeInUTC ? order?.slotDateTimeInUTC : order?.diagnosticDate}
-        slotTime={!!order?.slotDateTimeInUTC ? order?.slotDateTimeInUTC : order?.slotTimings}
+        slotTime={
+          !!order?.slotDateTimeInUTC
+            ? order?.slotDateTimeInUTC
+            : getSlotStartTime(order?.slotTimings)
+        }
         isPrepaid={order?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT}
         isCancelled={currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
         cancelledReason={
