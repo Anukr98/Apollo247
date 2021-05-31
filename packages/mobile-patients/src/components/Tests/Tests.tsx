@@ -1991,6 +1991,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
       //track order
       navigateToTrackingScreen(item);
     } else if (DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(item?.orderStatus)) {
+      DiagnosticViewReportClicked(
+        'Home',
+        !!item?.labReportURL ? 'Yes' : 'No',
+        'Download Report PDF',
+        item?.id
+      );
       //view report download
       try {
         if (!!item?.labReportURL && item?.labReportURL != '') {

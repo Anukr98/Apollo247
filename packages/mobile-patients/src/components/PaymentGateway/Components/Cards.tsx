@@ -58,7 +58,8 @@ export const Cards: React.FC<CardsProps> = (props) => {
     const oldLength = cardNumber.length;
     if (
       (newlength == 4 || newlength == 9 || newlength == 14 || newlength == 19) &&
-      oldLength < newlength
+      oldLength < newlength &&
+      newlength < getMaxLength()
     ) {
       setCardNumber(text + '-');
     } else {

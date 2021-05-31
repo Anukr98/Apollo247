@@ -36,7 +36,7 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import _ from 'lodash';
 import { savePhleboFeedback } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { DiagnosticPhleboFeedbackSubmitted } from '../Events';
+import { DiagnosticPhleboFeedbackSubmitted } from '@aph/mobile-patients/src/components/Tests/Events';
 
 
 export interface DiagnosticsOrderList

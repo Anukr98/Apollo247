@@ -254,6 +254,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     locationDetails,
     diagnosticServiceabilityData,
     diagnosticLocation,
+    setauthToken,
     setDoctorJoinedChat,
     isDiagnosticLocationServiceable,
   } = useAppCommonData();
@@ -1501,7 +1502,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       <View>
         {renderLabel('TOTAL CHARGES')}
         {/* {renderCouponView()} */}
-        {renderHomeCollectionDisclaimer()}
         {isDiagnosticCircleSubscription && circleSaving > 0 ? renderCircleMemberBanner() : null}
         <View
           style={[
@@ -1924,7 +1924,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 'Item ids': cartItemsWithId,
                 'Total items in order': cartItemsWithId?.length,
               };
-
+              setauthToken?.('');
               props.navigation.navigate(AppRoutes.PaymentMethods, {
                 paymentId: response?.data?.createOrderInternal?.payment_order_id!,
                 amount: grandTotal,
@@ -1979,12 +1979,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             : DIAGNOSTIC_GROUP_PLAN.ALL,
           preTestingRequirement:
             !!reportGenDetails && reportGenDetails?.[index]?.itemPrepration
-            ? reportGenDetails?.[index]?.itemPrepration
-            : null,
+              ? reportGenDetails?.[index]?.itemPrepration
+              : null,
           reportGenerationTime:
             !!reportGenDetails && reportGenDetails?.[index]?.itemReportTat
-            ? reportGenDetails?.[index]?.itemReportTat
-            : null,
+              ? reportGenDetails?.[index]?.itemReportTat
+              : null,
         } as DiagnosticLineItem)
     );
     return pricesForItemArray;

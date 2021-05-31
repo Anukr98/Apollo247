@@ -28,6 +28,7 @@
     "chatWithUs": "Chat with us",
     "upload_more": "+ UPLOAD MORE",
     "date_placeholder_text": "DD MMM, YYYY",
+    "phr_max_file_text": "You can add maximum 10 files up-to 2 MB each",
     "select_text": "Select",
     "doctor_name_text": "Doctor name",
     "end_date_text": "End Date",
@@ -645,6 +646,12 @@
     "aborted": "PAYMENT_ABORTED",
     "askPermission1": "To make sure that you do not miss the call from Dr.",
     "askPermission2": " for your consultation, Apollo 247 needs to have \"full screen overlay\" permission to display call notifications."
+  },
+  "NewPaymentStatuses": {
+    "success": "TXN_SUCCESS",
+    "failure": "TXN_FAILURE",
+    "pending": "PENDING",
+    "refund": "AUTO_REFUNDED"
   },
   "PharmaPayment": {
     "success": "TXN_SUCCESS",

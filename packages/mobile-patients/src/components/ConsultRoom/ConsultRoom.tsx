@@ -1683,7 +1683,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             typeof paymentRef == 'string' ? JSON.parse(paymentRef) : paymentRef;
           AsyncStorage.setItem('isCircleMember', 'yes');
           setIsCircleMember && setIsCircleMember('yes');
-
+          AsyncStorage.removeItem('circlePlanSelected');
           let WEGAttributes = {};
           if (circleData?.status === 'active') {
             const circleMembershipType = setCircleMembershipType(
@@ -1737,7 +1737,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           onAppLoad && logHomePageViewed(WEGAttributes);
         }
 
-        if (data?.Apollo247testcorporate) setCorporateSubscription(true);
+        for (let key of Object.keys(data)) {
+          if (key !== 'APOLLO' && key !== 'HDFC') setCorporateSubscription(true);
+        }
 
         if (data?.HDFC?.[0]._id) {
           setHdfcSubscriptionId && setHdfcSubscriptionId(data?.HDFC?.[0]._id);
