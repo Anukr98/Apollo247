@@ -4600,31 +4600,6 @@ export const GET_PAYMENT_METHODS = gql`
   }
 `;
 
-// export const CREATE_ORDER = gql`
-//   mutation createOrder($order_input: OrderInput) {
-//     createOrder(order_input: $order_input) {
-//       ... on OrderSuccessResponsePrepaid {
-//         status_id
-//         status
-//         id
-//         payment_links {
-//           mobile
-//           web
-//         }
-//         order_id
-//         juspay {
-//           client_auth_token_expiry
-//           client_auth_token
-//         }
-//       }
-//       ... on OrderSuccessResponseCOD {
-//         order_id
-//         success
-//       }
-//     }
-//   }
-// `;
-
 export const CREATE_ORDER = gql`
   mutation createOrder($order_input: OrderInputV2) {
     createOrderV2(order_input: $order_input) {

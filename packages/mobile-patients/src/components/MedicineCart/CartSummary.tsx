@@ -125,15 +125,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
-  // const [storeType, setStoreType] = useState<string | undefined>(
-  //   props.navigation.getParam('tatType') || ''
-  // );
-  // const [storeDistance, setStoreDistance] = useState(
-  //   props.navigation.getParam('storeDistance') || 0
-  // );
-  // const [shopId, setShopId] = useState<string | undefined>(
-  //   props.navigation.getParam('shopId') || ''
-  // );
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>(false);
   const [lastCartItems, setlastCartItems] = useState(
@@ -459,12 +450,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       }
     }
     await availabilityTat(deliveryAddressId);
-    // props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
-    //   deliveryTime,
-    //   storeDistance: storeDistance,
-    //   tatType: storeType,
-    //   shopId: shopId,
-    // });
     let splitOrderDetails: any = {};
     if (orders?.length > 1) {
       orders?.forEach((order: any, index: number) => {

@@ -302,11 +302,11 @@ export const CheckedIcon: React.FC<IconProps> = (props) => (
 );
 
 export const CheckIcon: React.FC<IconProps> = (props) => (
-  <IconBase style={{ height: 18, width: 18 }} {...props} source={require('./icons/check.png')} />
+  <IconBase style={{ height: 18, width: 18 }} {...props} source={require('./icons/check.webp')} />
 );
 
 export const UnCheckIcon: React.FC<IconProps> = (props) => (
-  <IconBase style={{ height: 18, width: 18 }} {...props} source={require('./icons/uncheck.png')} />
+  <IconBase style={{ height: 18, width: 18 }} {...props} source={require('./icons/uncheck.webp')} />
 );
 
 export const WhiteTickIcon: React.FC<IconProps> = (props) => (

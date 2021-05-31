@@ -7,7 +7,11 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Up, Down, SearchSendIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  postWebEngageEvent,
+  getPackageIds,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -184,6 +188,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
     circlePlanId,
     hdfcStatus,
     circleStatus,
+    activeUserSubscriptions,
   } = useAppCommonData();
   const selectedAddress = addresses?.find((item) => item.id == deliveryAddressId);
   const pharmacyPincode =
@@ -199,7 +204,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
 
   useEffect(() => {
     const data = {
-      packageId: packageId?.join(),
+      packageId: activeUserSubscriptions ? getPackageIds(activeUserSubscriptions)?.join() : '',
       mobile: g(currentPatient, 'mobileNumber'),
       email: g(currentPatient, 'emailAddress'),
       type: isFromConsult ? 'Consult' : 'Pharmacy',
