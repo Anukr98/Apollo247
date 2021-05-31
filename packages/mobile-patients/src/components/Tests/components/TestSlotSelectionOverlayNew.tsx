@@ -1,6 +1,5 @@
-import { AphOverlay, AphOverlayProps } from '@aph/mobile-patients/src/components/ui/AphOverlay';
+import { AphOverlayProps } from '@aph/mobile-patients/src/components/ui/AphOverlay';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { CalendarView, CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
 import {
   Morning,
   Afternoon,
@@ -8,12 +7,9 @@ import {
   MorningSelected,
   AfternoonSelected,
   NightSelected,
-  DropdownGreen,
-  InfoIconRed,
   EmptySlot,
   CrossPopup,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { GET_CUSTOMIZED_DIAGNOSTIC_SLOTS } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   formatTestSlot,
@@ -42,6 +38,7 @@ import {
   getDiagnosticSlotsCustomizedVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsCustomized';
 import { Overlay } from 'react-native-elements';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 export interface TestSlotSelectionOverlayNewProps extends AphOverlayProps {
   zipCode: number;
@@ -58,7 +55,7 @@ export interface TestSlotSelectionOverlayNewProps extends AphOverlayProps {
   source?: string;
   isVisible: boolean;
 }
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewProps> = (props) => {
   const { isTodaySlotUnavailable, maxDate } = props;
   const { cartItems } = useDiagnosticsCart();
@@ -445,6 +442,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           </ScrollView>
           {dropDownOptions.length ? renderBottomButton : null}
         </View>
+        {spinner && <Spinner />}
       </>
     </Overlay>
   );
