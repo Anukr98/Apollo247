@@ -310,6 +310,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       setCircleSubscriptionId && setCircleSubscriptionId('');
       setPhrSession?.('');
       AsyncStorage.removeItem('circlePlanSelected');
+      AsyncStorage.removeItem('circleSubscriptionId');
       AsyncStorage.removeItem('isCorporateSubscribed');
       AsyncStorage.removeItem('VaccinationCmsIdentifier');
       AsyncStorage.removeItem('VaccinationSubscriptionId');

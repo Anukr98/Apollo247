@@ -144,6 +144,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     setCirclePlanSelected,
     setDefaultCirclePlan,
     circleSubscriptionId,
+    setCircleSubscriptionId,
     hdfcSubscriptionId,
     pharmacyCircleAttributes,
     newAddressAdded,
@@ -181,6 +182,14 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
   const [showCareSelectPlans, setShowCareSelectPlans] = useState<boolean>(true);
   const [tatResponse, setTatResponse] = useState<string>('');
+
+  useEffect(() => {
+    async function fetchCircleSubscriptionId() {
+      const circleSubscriptionID: any = await AsyncStorage.getItem('circleSubscriptionId');
+      setCircleSubscriptionId && setCircleSubscriptionId(circleSubscriptionID);
+    }
+    fetchCircleSubscriptionId();
+  }, []);
 
   useEffect(() => {
     fetchAddress();
