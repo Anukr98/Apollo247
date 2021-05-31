@@ -6,6 +6,8 @@ import {
   PLAN,
   PaymentStatus,
   one_apollo_store_code,
+  PrescriptionType,
+  MedicineCartOMSItem,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
@@ -17,6 +19,10 @@ import {
   saveMedicineOrderV2_saveMedicineOrderV2_orders,
 } from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderV2';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import {
+  saveMedicineOrderOMS,
+  saveMedicineOrderOMSVariables,
+} from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderOMS';
 
 export const useGetOrderInfo = () => {
   const { currentPatient } = useAllCurrentPatients();
@@ -31,11 +37,8 @@ export const useGetOrderInfo = () => {
     deliveryType,
     physicalPrescriptions,
     ePrescriptions,
-    uploadPrescriptionRequired,
     couponDiscount,
     productDiscount,
-    cartTotal,
-    addresses,
     stores,
     coupon,
     pinCode,
@@ -45,16 +48,10 @@ export const useGetOrderInfo = () => {
     circleSubscriptionId,
     isCircleSubscription,
     isFreeDelivery,
-    setIsCircleSubscription,
-    setDefaultCirclePlan,
-    setCirclePlanSelected,
-    setCircleMembershipCharges,
-    defaultCirclePlan,
     circlePlanSelected,
-    pharmacyCircleAttributes,
     shipments,
-    orders,
-    setIsFreeDelivery,
+    prescriptionType,
+    consultProfile,
   } = useShoppingCart();
 
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
@@ -120,5 +117,88 @@ export const useGetOrderInfo = () => {
     },
   };
 
-  return { OrderInfo, SubscriptionInfo };
+  const selectedStore = storeId && stores.find((item) => item.storeid == storeId);
+  const { storename, address, workinghrs, phone, city, state, state_id } = selectedStore || {};
+  const appointmentIds = ePrescriptions?.map((item) => item?.id);
+
+  const pickUpOrderInfo: saveMedicineOrderOMSVariables = {
+    medicineCartOMSInput: {
+      tatType: undefined,
+      storeDistanceKm: 0,
+      coupon: coupon ? coupon.coupon : '',
+      couponDiscount: coupon ? getFormattedAmount(couponDiscount) : 0,
+      productDiscount: getFormattedAmount(productDiscount) || 0,
+      quoteId: null,
+      patientId:
+        (prescriptionType === PrescriptionType.CONSULT && consultProfile?.id) ||
+        currentPatient?.id ||
+        '',
+      shopId: storeId || null,
+      shopAddress: selectedStore
+        ? {
+            storename,
+            address,
+            workinghrs,
+            phone,
+            city,
+            state,
+            zipcode: pinCode,
+            stateCode: state_id,
+          }
+        : null,
+      showPrescriptionAtStore: storeId ? showPrescriptionAtStore : false,
+      patientAddressId: deliveryAddressId,
+      medicineDeliveryType: deliveryType!,
+      devliveryCharges: deliveryCharges,
+      packagingCharges: packagingCharges,
+      estimatedAmount,
+      prescriptionType,
+      prescriptionImageUrl: [
+        ...physicalPrescriptions.map((item) => item.uploadedUrl),
+        ...ePrescriptions.map((item) => item.uploadedUrl),
+      ].join(','),
+      prismPrescriptionFileId: [
+        ...physicalPrescriptions.map((item) => item.prismPrescriptionFileId),
+        ...ePrescriptions.map((item) => item.prismPrescriptionFileId),
+      ].join(','),
+      orderTat: '',
+      items: cartItems.map((item) => {
+        const discountedPrice = getFormattedAmount(
+          coupon && item.couponPrice == 0
+            ? 0
+            : (coupon && item.couponPrice) || item.specialPrice || item.price
+        ); // since couponPrice & specialPrice can be undefined
+        return {
+          medicineSKU: item.id,
+          medicineName: item.name,
+          quantity: item.quantity,
+          mrp: getFormattedAmount(item.price),
+          price: discountedPrice,
+          specialPrice: Number(item.specialPrice || item.price),
+          itemValue: getFormattedAmount(item.price * item.quantity), // (multiply MRP with quantity)
+          itemDiscount: getFormattedAmount(
+            item.price * item.quantity - discountedPrice * item.quantity
+          ), // (diff of (MRP - discountedPrice) * quantity)
+          isPrescriptionNeeded: item.prescriptionRequired ? 1 : 0,
+          mou: Number(item.mou),
+          isMedicine: item.isMedicine ? '1' : '0',
+          couponFree: item?.isFreeCouponProduct ? 1 : 0,
+        } as MedicineCartOMSItem;
+      }),
+      bookingSource: BOOKINGSOURCE.MOBILE,
+      deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
+      // healthCreditUsed: hcOrder ? getFormattedAmount(grandTotal) : 0,
+      subscriptionDetails: circleSubscriptionId
+        ? { userSubscriptionId: circleSubscriptionId }
+        : null,
+      planPurchaseDetails: !!circleMembershipCharges ? planPurchaseDetails : null,
+      totalCashBack: !coupon?.coupon && isCircleSubscription ? Number(cartTotalCashback) || 0 : 0,
+      appVersion: DeviceInfo.getVersion(),
+      savedDeliveryCharge:
+        !!isFreeDelivery || isCircleSubscription ? 0 : AppConfig.Configuration.DELIVERY_CHARGES,
+      appointmentId: appointmentIds?.length ? appointmentIds.join(',') : '',
+    },
+  };
+
+  return { OrderInfo, SubscriptionInfo, pickUpOrderInfo };
 };

@@ -494,6 +494,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       setloading(false);
     } catch (error) {
       setloading(false);
+      renderAlert('Something went wrong. Please try again after some time');
     }
   };
 

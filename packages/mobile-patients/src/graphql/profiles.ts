@@ -1732,6 +1732,36 @@ export const SAVE_ORDER_WITH_SUBSCRIPTION = gql`
   }
 `;
 
+export const SAVE_PICKUP_ORDER_WITH_SUBSCRIPTION = gql`
+  mutation savePickUpOrderWithSubscription(
+    $medicineCartOMSInput: MedicineCartOMSInput!
+    $userSubscription: CreateUserSubscriptionInput!
+  ) {
+    saveMedicineOrderOMS(medicineCartOMSInput: $medicineCartOMSInput) {
+      errorCode
+      errorMessage
+      orderId
+      orderAutoId
+    }
+    CreateUserSubscription(UserSubscription: $userSubscription) {
+      code
+      success
+      message
+      response {
+        _id
+        mobile_number
+        status
+        start_date
+        end_date
+        group_plan {
+          name
+          plan_id
+        }
+      }
+    }
+  }
+`;
+
 export const SAVE_MEDICINE_ORDER_PAYMENT = gql`
   mutation SaveMedicineOrderPaymentMq($medicinePaymentMqInput: MedicinePaymentMqInput!) {
     SaveMedicineOrderPaymentMq(medicinePaymentMqInput: $medicinePaymentMqInput) {

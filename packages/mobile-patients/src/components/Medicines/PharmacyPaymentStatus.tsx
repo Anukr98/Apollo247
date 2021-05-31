@@ -136,10 +136,8 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
 
   useEffect(() => {
     setLoading(true);
-    const apiCall = isStorePickup
-      ? GET_PHARMA_TRANSACTION_STATUS
-      : GET_PHARMA_TRANSACTION_STATUS_V2;
-    const variables = isStorePickup ? { orderId: transId } : { paymentOrderId: transId };
+    const apiCall = GET_PHARMA_TRANSACTION_STATUS_V2;
+    const variables = { paymentOrderId: transId };
 
     client
       .query({
