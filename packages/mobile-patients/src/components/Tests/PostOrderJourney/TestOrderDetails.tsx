@@ -439,10 +439,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     const totalInclusions = orderLevelStatus?.statusInclusions?.length;
     const hasDiffStatusLevelInclusion =
       !!orderLevelStatus?.statusInclusions &&
-      totalInclusions > 0 &&
-      orderLevelStatus?.statusInclusions?.filter(
-        (item: any) => !DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(item?.orderStatus)
-      );
+      totalInclusions > 0;
 
     const isReportText = orderLevelStatus?.statusHistory?.find(
       (item: any) => item?.orderStatus == DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED
@@ -464,11 +461,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
     return (
       <>
-        {hasDiffStatusLevelInclusion?.length === 0 ? null : (
+        {!hasDiffStatusLevelInclusion ? null : (
           <View>
             {!showInclusionStatus ? <View style={styles.lineSeparator} /> : null}
 
-            <View style={styles.inclusionContainer}>
+            {reportText ? <View style={styles.inclusionContainer}>
               <TouchableOpacity
                 onPress={() => setShowInclusionStatus(!showInclusionStatus)}
                 activeOpacity={1}
@@ -482,21 +479,26 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                   }}
                 />
               </TouchableOpacity>
-            </View>
-            {showInclusionStatus &&
+            </View> : null}
+            {!showInclusionStatus &&
               orderLevelStatus?.statusInclusions?.map((item: any, index: number) => {
                 let selectedItem = selectedOrder?.diagnosticOrderLineItems;
                 let itemReportTat = '';
-                itemReportTat = selectedItem?.map((order: any) => {
-                  if (order?.itemId == item?.itemId) {
-                    return order?.itemObj?.reportGenerationTime;
-                  }
-                });
+                itemReportTat = selectedItem?.filter((order: any) => order?.itemId == item?.itemId);
                 return (
                   <>
                     {!!item?.itemName ? (
                       <View>
-                        <View style={styles.itemNameContainer}>
+                        <View
+                          style={[
+                            styles.itemNameContainer,
+                            {
+                              marginBottom: itemReportTat?.[index]?.itemObj?.reportGenerationTime
+                                ? 5
+                                : 16,
+                            },
+                          ]}
+                        >
                           <View style={{ width: '59%' }}>
                             <Text style={styles.itemNameText}>
                               {nameFormater(item?.itemName, 'default')}
@@ -504,13 +506,13 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                           </View>
                           <StatusCard titleText={item?.orderStatus} />
                         </View>
-                        {itemReportTat?.[index] ? (
+                        {itemReportTat?.[index]?.itemObj?.reportGenerationTime ? (
                           <View style={styles.ratingContainer}>
                             <View style={styles.reporttatContainer}>
                               <ClockIcon />
                               <Text
                                 style={styles.reportTextStyle}
-                              >{`Get your report by ${itemReportTat?.[index]}`}</Text>
+                              >{`Get your report by ${itemReportTat?.[index]?.itemObj?.reportGenerationTime}`}</Text>
                             </View>
                           </View>
                         ) : null}
@@ -887,7 +889,6 @@ const styles = StyleSheet.create({
   itemNameContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 16,
   },
   inclusionContainer: {
     marginBottom: 15,
@@ -905,10 +906,10 @@ const styles = StyleSheet.create({
   feedbackTouch: { marginBottom: 2, width: '100%' },
   ratingContainer: {
     backgroundColor: '#FCFDDA',
-    borderBottomLeftRadius: 8,
-    borderBottomRightRadius: 8,
     borderRadius: 10,
-    padding: 10,
+    marginBottom: 5,    
+    padding: 5,
+    elevation: 1
   },
   reportTextStyle: {
     marginHorizontal: 10,
