@@ -2,7 +2,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
 import { nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { BloodIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { WidgetLiverIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface WidgetCardProps {
@@ -26,7 +26,7 @@ export const WidgetCard: React.FC<WidgetCardProps> = (props) => {
         {itemIcon != '' ? (
           <Image resizeMode={'contain'} source={{ uri: itemIcon }} style={styles.image} />
         ) : (
-          <BloodIcon style={styles.image} resizeMode={'contain'} />
+          <WidgetLiverIcon style={styles.image} resizeMode={'contain'} />
         )}
       </View>
       <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>
