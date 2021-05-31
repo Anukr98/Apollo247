@@ -1692,6 +1692,41 @@ export const SAVE_MEDICINE_ORDER_OMS_V2 = gql`
       orders {
         id
         orderAutoId
+        estimatedAmount
+      }
+    }
+  }
+`;
+
+export const SAVE_ORDER_WITH_SUBSCRIPTION = gql`
+  mutation saveOrderWithSubscription(
+    $medicineOrderInput: SaveMedicineOrderV2Input!
+    $userSubscription: CreateUserSubscriptionInput!
+  ) {
+    saveMedicineOrderV2(medicineOrderInput: $medicineOrderInput) {
+      errorCode
+      errorMessage
+      transactionId
+      orders {
+        id
+        orderAutoId
+        estimatedAmount
+      }
+    }
+    CreateUserSubscription(UserSubscription: $userSubscription) {
+      code
+      success
+      message
+      response {
+        _id
+        mobile_number
+        status
+        start_date
+        end_date
+        group_plan {
+          name
+          plan_id
+        }
       }
     }
   }
@@ -4035,8 +4070,8 @@ export const GET_PHARMA_TRANSACTION_STATUS = gql`
 `;
 
 export const GET_PHARMA_TRANSACTION_STATUS_V2 = gql`
-  query pharmaPaymentStatusV2($transactionId: Int!) {
-    pharmaPaymentStatusV2(transactionId: $transactionId) {
+  query pharmaPaymentStatusV2($paymentOrderId: String) {
+    pharmaPaymentStatusV2(paymentOrderId: $paymentOrderId) {
       paymentRefId
       bankTxnId
       amountPaid
@@ -4536,29 +4571,18 @@ export const GET_PAYMENT_METHODS = gql`
 `;
 
 export const CREATE_ORDER = gql`
-  mutation createOrder($order_input: OrderInput) {
-    createOrder(order_input: $order_input) {
-      ... on OrderSuccessResponsePrepaid {
-        status_id
-        status
-        id
-        payment_links {
-          mobile
-          web
-        }
-        order_id
-        juspay {
-          client_auth_token_expiry
-          client_auth_token
-        }
-      }
-      ... on OrderSuccessResponseCOD {
-        order_id
-        success
+  mutation createOrder($order_input: OrderInputV2) {
+    createOrderV2(order_input: $order_input) {
+      payment_status
+      payment_order_id
+      mobile_token {
+        client_auth_token_expiry
+        client_auth_token
       }
     }
   }
 `;
+
 export const GET_INTERNAL_ORDER = gql`
   query getOrderInternal($order_id: String!) {
     getOrderInternal(order_id: $order_id) {

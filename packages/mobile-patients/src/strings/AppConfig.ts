@@ -17,9 +17,10 @@ export enum AppEnv {
   PERFORM = 'PERFORM',
   VAPT = 'VAPT',
   DEVReplica = 'DEVReplica',
+  QA6 = 'QA6',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA6 as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -40,6 +41,8 @@ const paymentGatewayBaseUrl: string =
     ? 'https://aph-dev-pmt.apollo247.com'
     : APP_ENV == AppEnv.DEVReplica
     ? 'https://devpmt.apollo247.com'
+    : APP_ENV == AppEnv.QA6
+    ? 'https://qa6pmt.apollo247.com '
     : 'https://aph-staging-pmt.apollo247.com';
 
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
@@ -178,8 +181,8 @@ const appStaticVariables = {
   SUBSCRIPTION_PG_SUCCESS: '/subscriptionpg-success?',
   clientId: Platform.OS == 'android' ? 'apollo247_android' : 'apollo247_ios',
   merchantId: 'apollo247',
+  pharmaMerchantId: 'apollopharm',
   jusPayService: 'in.juspay.ec',
-  returnUrl: 'https://aph-staging-web-patients.apollo247.com/ordersuccess',
   jusPaybaseUrl: 'https://api.juspay.in/cardbins',
   HdfcHealthLifeText: string.common.HdfcHealthLifeText,
   CorporateMembershipText: string.common.CorporateMembershipText,
@@ -557,6 +560,7 @@ const ConfigurationDev = {
   Covid_Items: QA_covid_items,
   CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
+  baseUrl: 'https://aph-staging-web-patients.apollo247.com',
 };
 
 // QA
@@ -613,6 +617,7 @@ const ConfigurationQA = {
   jusPayenvironment: 'sandbox',
   CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
+  baseUrl: 'https://aph-staging-web-patients.apollo247.com/ordersuccess',
 };
 
 // QA2
@@ -667,6 +672,7 @@ const ConfigurationQA2 = {
   jusPayenvironment: 'sandbox',
   CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
+  baseUrl: 'https://aph-staging-web-patients.apollo247.com',
 };
 
 // QA3
@@ -718,6 +724,7 @@ const ConfigurationQA3 = {
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+  baseUrl: 'https://aph-staging-web-patients.apollo247.com',
 };
 
 const ConfigurationQA5 = {
@@ -770,6 +777,7 @@ const ConfigurationQA5 = {
   PROHEALTH_BOOKING_URL: 'https://qa5patients.apollo247.com/apollo-prohealth',
   APOLLO_PRO_HEALTH_URL:
     'https://qa5patients.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
+  baseUrl: 'https://aph-staging-web-patients.apollo247.com/ordersuccess',
 };
 
 // VAPT
@@ -825,6 +833,7 @@ const ConfigurationVAPT = {
   Covid_Items: QA_covid_items,
   CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
   PROHEALTH_BOOKING_URL: 'https://stagingpatients.apollo247.com//apollo-prohealth',
+  baseUrl: 'https://aph-staging-web-patients.apollo247.com',
 };
 //Production
 const ConfigurationProd = {
@@ -879,6 +888,7 @@ const ConfigurationProd = {
   Covid_Items: Prod_covid_items,
   CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.prod.vitacloud.io',
   PROHEALTH_BOOKING_URL: 'https://www.apollo247.com/apollo-prohealth',
+  baseUrl: 'https://aph-staging-web-patients.apollo247.com',
 };
 
 //PERFORMANCE
@@ -935,6 +945,7 @@ const ConfigurationPERFORM = {
   Covid_Items: QA_covid_items,
   CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
+  baseUrl: 'https://aph-staging-web-patients.apollo247.com',
 };
 
 //DevelopmentReplica
@@ -991,6 +1002,7 @@ const ConfigurationDevReplica = {
   Covid_Items: QA_covid_items,
   CONDITIONAL_MANAGEMENT_PROHEALTH_BASE_URL: 'https://auth.play.vitacloud.io',
   PROHEALTH_BOOKING_URL: 'https://aph-staging-web-patients.apollo247.com/apollo-prohealth',
+  baseUrl: 'https://aph-staging-web-patients.apollo247.com',
 };
 
 const Configuration =
@@ -1010,6 +1022,8 @@ const Configuration =
     ? ConfigurationVAPT
     : APP_ENV == AppEnv.DEVReplica
     ? ConfigurationDevReplica
+    : APP_ENV == AppEnv.QA6
+    ? ConfigurationQA
     : ConfigurationDev;
 
 export const MedicineFeedBackData = {

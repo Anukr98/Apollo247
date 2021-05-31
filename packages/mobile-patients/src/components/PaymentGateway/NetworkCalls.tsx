@@ -22,13 +22,13 @@ export const createHyperServiceObject = () => {
   HyperSdkReact.createHyperServices();
 };
 
-export const initiateSDK = (customerId: string, requestId: string) => {
+export const initiateSDK = (customerId: string, requestId: string, merchantId: string) => {
   const initiatePayload = {
     requestId: requestId,
     service: AppConfig.Configuration.jusPayService,
     payload: {
       action: 'initiate',
-      merchantId: AppConfig.Configuration.merchantId,
+      merchantId: merchantId,
       clientId: AppConfig.Configuration.clientId,
       customerId: customerId, //Any unique refrences to current customer
       environment: AppConfig.Configuration.jusPayenvironment,
@@ -66,7 +66,7 @@ export const InitiateNetBankingTxn = (
       action: 'nbTxn',
       orderId: paymentOrderId,
       paymentMethod: bankCode,
-      endUrls: [AppConfig.Configuration.returnUrl],
+      endUrls: [AppConfig.Configuration.baseUrl],
       clientAuthToken: clientAuthToken,
     },
   };
@@ -85,7 +85,7 @@ export const InitiateCardTxn = (
     payload: {
       action: 'cardTxn',
       orderId: paymentOrderId,
-      endUrls: [AppConfig.Configuration.returnUrl],
+      endUrls: [AppConfig.Configuration.baseUrl],
       paymentMethod: cardInfo?.cardType,
       cardNumber: cardInfo?.cardNumber,
       cardExpMonth: cardInfo?.ExpMonth,
@@ -111,7 +111,7 @@ export const InitiateWalletTxn = (
       action: 'walletTxn',
       orderId: paymentOrderId,
       paymentMethod: wallet,
-      endUrls: [AppConfig.Configuration.returnUrl],
+      endUrls: [AppConfig.Configuration.baseUrl],
       clientAuthToken: clientAuthToken,
     },
   };
@@ -138,7 +138,7 @@ export const InitiateUPISDKTxn = (
       orderId: paymentOrderId,
       paymentMethod: paymentMethod,
       sdkPresent: sdkPresent,
-      endUrls: [AppConfig.Configuration.returnUrl],
+      endUrls: [AppConfig.Configuration.baseUrl],
       clientAuthToken: clientAuthToken,
     },
   };
@@ -162,7 +162,7 @@ export const InitiateVPATxn = (
       orderId: paymentOrderId,
       custVpa: VPA,
       upiSdkPresent: true,
-      endUrls: [AppConfig.Configuration.returnUrl],
+      endUrls: [AppConfig.Configuration.baseUrl],
       displayNote: 'UPI Collect',
       clientAuthToken: clientAuthToken,
     },

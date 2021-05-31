@@ -102,13 +102,12 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const [paymentRefId, setpaymentRefId] = useState<string>('');
   const [orderDateTime, setorderDateTime] = useState('');
   const [paymentMode, setPaymentMode] = useState('');
-  const deliveryTime = props.navigation.getParam('deliveryTime');
-  const orderInfo = props.navigation.getParam('orderInfo');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
-  const orders = props.navigation.getParam('orders');
   const price = props.navigation.getParam('price');
   const transId = props.navigation.getParam('transId');
-  const isStorePickup = props.navigation.getParam('isStorePickup');
+  const { orders, deliveryTime, orderInfo, isStorePickup } = props.navigation.getParam(
+    'orderDetails'
+  );
   const [circleSubscriptionID, setCircleSubscriptionID] = useState<string>('');
   const [isCircleBought, setIsCircleBought] = useState<boolean>(false);
   const [totalCashBack, setTotalCashBack] = useState<number>(0);
@@ -140,7 +139,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     const apiCall = isStorePickup
       ? GET_PHARMA_TRANSACTION_STATUS
       : GET_PHARMA_TRANSACTION_STATUS_V2;
-    const variables = isStorePickup ? { orderId: transId } : { transactionId: transId };
+    const variables = isStorePickup ? { orderId: transId } : { paymentOrderId: transId };
 
     client
       .query({
