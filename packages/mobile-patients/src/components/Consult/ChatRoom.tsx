@@ -246,6 +246,8 @@ let isJdAllowed: boolean = true;
 let abondmentStarted = false;
 let jdAssigned: boolean = false;
 const bottomBtnContainerWidth = 267;
+const maxRetryAttempt: number = 15;
+let currentRetryAttempt: number = 1;
 
 type rescheduleType = {
   rescheduleCount: number;
@@ -721,6 +723,18 @@ const styles = StyleSheet.create({
   externalMeetingLinkTnC: {
     ...theme.viewStyles.text('M', 8, theme.colors.WHITE),
     marginVertical: 9,
+  },
+  manageCTAView: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  manageBtn: {
+    width: 68,
+    height: 24,
+    borderRadius: 5,
+    position: 'absolute',
+    right: 0,
   },
 });
 
@@ -2664,15 +2678,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   const sendFollowUpChatGuideLines = () => {
-    if (guidelinesAdded || !followupDays) {
+    if (guidelinesAdded || !followupDays || (followupDays && Number(followupDays) === 0)) {
       return;
     }
     setguidelinesAdded(true);
     const headerText = `If you have further queries related to your consultation, you may reach out to ${
       appointmentData?.doctorInfo?.displayName
-    } via texts for the next ${Number(followupDays) === 0 ? '1' : Number(followupDays)} day${
-      Number(followupDays) > 1 ? 's' : ''
-    }.`;
+    } via texts for the next ${Number(followupDays)} day${Number(followupDays) > 1 ? 's' : ''}.`;
     sendMessage(sectionHeader, doctorId, headerText);
     setTimeout(() => {
       sendMessage(followUpChatGuideLines, doctorId);
@@ -2762,6 +2774,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           const msgs = res.messages;
           res.messages.forEach((element, index) => {
             let item = element.entry;
+            if (item.prismId) {
+              getPrismUrls(client, patientId, item.prismId)
+                .then((data: any) => {
+                  item.url = (data && data.urls[0]) || item.url;
+                })
+                .catch((e) => {
+                  CommonBugFender('ChatRoom_getPrismUrls', e);
+                });
+            }
             newmessage[newmessage.length] = item;
           });
           setLoading(false);
@@ -4208,20 +4229,73 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const openPopUp = (rowData: any) => {
     setLoading(true);
     if (rowData.url.match(/\.(pdf)$/) || rowData.fileType === 'pdf') {
-      setUrl(rowData.url);
-      setFileNamePDF(rowData.fileName || '');
-      setLoading(false);
-      setShowPDF(true);
+      if (rowData.prismId) {
+        getPrismUrls(client, patientId, rowData.prismId)
+          .then((data: any) => {
+            setUrl((data && data.urls[0]) || rowData.url);
+          })
+          .catch((e) => {
+            CommonBugFender('ChatRoom_OPEN_PDF', e);
+            setUrl(rowData.url);
+          })
+          .finally(() => {
+            setLoading(false);
+            setFileNamePDF(rowData.fileName || '');
+            setShowPDF(true);
+          });
+      } else {
+        setUrl(rowData.url);
+        setFileNamePDF(rowData.fileName || '');
+        setLoading(false);
+        setShowPDF(true);
+      }
     } else if (rowData.url.match(/\.(jpeg|jpg|gif|png|jfif)$/) || rowData.fileType === 'image') {
-      openImageZoomViewer(rowData.url, rowData.fileName || 'Image');
-      setUrl(rowData.url);
-      setLoading(false);
-      setPatientImageshow(false);
+      if (rowData.prismId) {
+        getPrismUrls(client, patientId, rowData.prismId)
+          .then((data: any) => {
+            openImageZoomViewer((data && data.urls[0]) || rowData.url, rowData.fileName || 'Image');
+            setUrl((data && data.urls[0]) || rowData.url);
+          })
+          .catch((e) => {
+            CommonBugFender('ChatRoom_OPEN_IMAGE', e);
+            openImageZoomViewer(rowData.url, rowData.fileName || 'Image');
+            setUrl(rowData.url);
+          })
+          .finally(() => {
+            setLoading(false);
+            setPatientImageshow(false);
+          });
+      } else {
+        openImageZoomViewer(rowData.url, rowData.fileName || 'Image');
+        setUrl(rowData.url);
+        setLoading(false);
+        setPatientImageshow(false);
+      }
     } else {
-      openImageZoomViewer(rowData.url, rowData.fileName || 'Image');
-      setUrl(rowData.url);
-      setLoading(false);
-      setPatientImageshow(false);
+      if (rowData.prismId) {
+        getPrismUrls(client, patientId, rowData.prismId)
+          .then((data: any) => {
+            openImageZoomViewer(rowData.url, rowData.fileName || 'Image');
+            setUrl(rowData.url);
+            setLoading(false);
+            setPatientImageshow(false);
+          })
+          .catch(() => {
+            openImageZoomViewer(rowData.url, rowData.fileName || 'Image');
+            setUrl(rowData.url);
+            setLoading(false);
+            setPatientImageshow(false);
+          })
+          .finally(() => {
+            setLoading(false);
+            setPatientImageshow(true);
+          });
+      } else {
+        openImageZoomViewer(rowData.url, rowData.fileName || 'Image');
+        setUrl(rowData.url);
+        setLoading(false);
+        setPatientImageshow(false);
+      }
     }
   };
 
@@ -6256,9 +6330,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
   };
 
-  const uploadDocument = (resource: any, base66: any, type: any) => {
+  const uploadDocument = (resource: any, base66?: any, type?: any) => {
     CommonLogEvent(AppRoutes.ChatRoom, 'Upload document');
-    resource.map((item: any) => {
+    resource?.map((item: any, index: number) => {
       if (
         item.fileType == 'jpg' ||
         item.fileType == 'jpeg' ||
@@ -6331,6 +6405,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }
           })
           .catch((e) => {
+            // adding retry
+            currentRetryAttempt <= maxRetryAttempt && uploadDocument([resource[index]]);
+            currentRetryAttempt++;
             CommonBugFender('ChatRoom_uploadDocument', e);
             setLoading(false);
             KeepAwake.activate();
@@ -6393,67 +6470,63 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           if (selectedEPres.length == 0) {
             return;
           } else {
-            setLoading(true);
-            selectedEPres.forEach(async (item) => {
-              const uploadedUrlArray = item?.uploadedUrlArray || [];
-              const prism = item?.prismPrescriptionFileId ? item?.prismPrescriptionFileId : '';
-              if (uploadedUrlArray?.length) {
-                try {
-                  const uploadedUrlArrayResponse = await Promise.all(
-                    uploadedUrlArray?.map((_item) => {
-                      client
-                        .mutate({
-                          mutation: ADD_CHAT_DOCUMENTS,
-                          fetchPolicy: 'no-cache',
-                          variables: {
-                            prismFileId: prism,
-                            documentPath: _item?.file_Url,
-                            appointmentId: appointmentData?.id,
-                          },
-                        })
-                        .then((data) => {
-                          const prismFieldId = g(data?.data, 'addChatDocument', 'prismFileId');
-                          const documentPath = g(data?.data, 'addChatDocument', 'documentPath');
-                          const text = {
-                            id: patientId,
-                            message: imageconsult,
-                            fileType: _item?.fileName
-                              ? _item?.fileName?.toLowerCase()?.endsWith('.pdf')
-                                ? 'pdf'
-                                : 'image'
-                              : (documentPath ? documentPath : _item?.file_Url).match(/\.(pdf)$/)
-                              ? 'pdf'
-                              : 'image',
-                            fileName: _item?.fileName,
-                            prismId: (prismFieldId ? prismFieldId : prism) || '',
-                            url: documentPath ? documentPath : _item?.file_Url,
-                            messageDate: new Date(),
-                          };
-                          pubnub.publish(
-                            {
-                              channel: channel,
-                              message: text,
-                              storeInHistory: true,
-                              sendByPost: true,
-                            },
-                            (status, response) => {}
-                          );
-                          KeepAwake.activate();
-                        })
-                        .catch((e) => {
-                          setLoading(false);
-                          CommonBugFender(
-                            'ChatRoom_renderPrescriptionModal_ADD_CHAT_DOCUMENTSt',
-                            e
-                          );
-                        });
-                    })
-                  );
-                } catch (e) {
-                  setLoading(false);
-                  CommonBugFender('ChatRoom_renderPrescriptionModal_ADD_CHAT_DOCUMENTSt', e);
-                }
+            selectedEPres.forEach((item) => {
+              const url = item.uploadedUrl ? item.uploadedUrl : '';
+              const prism = item.prismPrescriptionFileId ? item.prismPrescriptionFileId : '';
+              const fileName = item.fileName ? item.fileName : '';
+              // url &&
+              //   url.map((item, index) => {
+              if (url) {
+                setLoading(true);
+                client
+                  .mutate({
+                    mutation: ADD_CHAT_DOCUMENTS,
+                    fetchPolicy: 'no-cache',
+                    variables: {
+                      prismFileId: prism,
+                      documentPath: url,
+                      appointmentId: appointmentData.id,
+                    },
+                  })
+                  .then((data) => {
+                    const prismFieldId = g(data.data!, 'addChatDocument', 'prismFileId');
+                    const documentPath = g(data.data!, 'addChatDocument', 'documentPath');
+
+                    const text = {
+                      id: patientId,
+                      message: imageconsult,
+                      fileType: fileName
+                        ? fileName.toLowerCase().endsWith('.pdf')
+                          ? 'pdf'
+                          : 'image'
+                        : (documentPath ? documentPath : url).match(/\.(pdf)$/)
+                        ? 'pdf'
+                        : 'image',
+                      fileName: fileName,
+                      prismId: (prismFieldId ? prismFieldId : prism) || '',
+                      url: documentPath ? documentPath : url,
+                      messageDate: new Date(),
+                    };
+                    pubnub.publish(
+                      {
+                        channel: channel,
+                        message: text,
+                        storeInHistory: true,
+                        sendByPost: true,
+                      },
+                      (status, response) => {}
+                    );
+                    KeepAwake.activate();
+                    setLoading(false);
+                  })
+                  .catch((e) => {
+                    CommonBugFender('ChatRoom_getPrismUrls_uploadDocument', e);
+                  })
+                  .finally(() => {
+                    setLoading(false);
+                  });
               }
+              // });
               item.message &&
                 pubnub.publish(
                   {
@@ -6474,7 +6547,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   }
                 );
             });
-            setLoading(false);
           }
         }}
         isVisible={true}
@@ -6758,6 +6830,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const renderManageCTA = (isDisabled: boolean = false) => {
+    return (
+      <View style={styles.manageCTAView}>
+        <Button
+          disabled={isDisabled}
+          title={'MANAGE'}
+          style={styles.manageBtn}
+          titleTextStyle={theme.viewStyles.text('SB', 12, theme.colors.WHITE)}
+          onPress={() => onPressCalender()}
+        />
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
       <StatusBar hidden={hideStatusBar} />
@@ -6873,11 +6959,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               disabled={doctorJoinedChat || status.current === STATUS.COMPLETED}
               onPress={() => onPressCalender()}
             >
-              {doctorJoinedChat || status.current === STATUS.COMPLETED ? (
-                <InactiveCalenderIcon style={styles.calenderIcon} />
-              ) : (
-                <ActiveCalenderIcon style={styles.calenderIcon} />
-              )}
+              {doctorJoinedChat || status.current === STATUS.COMPLETED
+                ? renderManageCTA(true)
+                : renderManageCTA()}
             </TouchableOpacity>
           }
         />

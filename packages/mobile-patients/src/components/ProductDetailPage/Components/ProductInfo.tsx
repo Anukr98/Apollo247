@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, View, Text, Dimensions } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, Text, Dimensions, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { VegetarianIcon, NonVegetarianIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NewPharmaOverview } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -45,6 +45,40 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
     safety_information,
     directionsOfUse,
   } = props;
+
+  const pharmaUses = pharmaOverview?.HowToTake;
+  const usesOfProduct = pharmaOverview?.Uses;
+  const pharmaBenefits = pharmaOverview?.MedicinalBenefits;
+  const pharmaSideEffects = pharmaOverview?.SideEffects;
+  const storagePlace = pharmaOverview?.StoragePlace;
+  const pharma_storage = pharmaOverview?.Storage;
+  const coldChain = pharmaOverview?.ColdChain;
+  const aboutProduct = pharmaOverview?.AboutProduct;
+
+  const showShowMore =
+    !!key_benefits ||
+    !!directionsOfUse ||
+    !!storage ||
+    !!key_ingredient ||
+    !!safety_information ||
+    !!aboutProduct ||
+    !!usesOfProduct ||
+    !!pharmaUses ||
+    !!pharmaBenefits ||
+    !!storagePlace ||
+    !!pharma_storage ||
+    !!coldChain ||
+    !!pharmaSideEffects ||
+    !!pharmaOverview?.length;
+  const [showAllContent, setShowAllContent] = useState<boolean>(!showShowMore);
+
+  const renderShowMore = () => {
+    return (
+      <TouchableOpacity onPress={() => setShowAllContent(!showAllContent)}>
+        <Text style={styles.showMoreText}>{showAllContent ? `SHOW LESS` : `SHOW MORE`}</Text>
+      </TouchableOpacity>
+    );
+  };
 
   const renderDescription = () => {
     const descriptionHtml = filterHtmlContent(description);
@@ -205,19 +239,9 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
     <View style={styles.cardStyle}>
       <Text style={styles.heading}>{isPharma ? `Medicine Detail` : `Product Detail`}</Text>
       {!!description && renderDescription()}
-      {isPharma ? (
-        <PharmaMedicineInfo
-          name={name}
-          pharmaOverview={pharmaOverview}
-          vegetarian={vegetarian}
-          key_ingredient={key_ingredient}
-          size={size}
-          flavour_fragrance={flavour_fragrance}
-          colour={colour}
-          variant={variant}
-        />
-      ) : (
+      {showAllContent && (
         <>
+          <PharmaMedicineInfo name={name} pharmaOverview={pharmaOverview} />
           {!!key_benefits && renderKeyBenefits()}
           {!!directionsOfUse && renderFmcgUses()}
           {!!storage && renderStorage()}
@@ -230,6 +254,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
           {!!safety_information && renderSafetyInfo()}
         </>
       )}
+      {showShowMore && renderShowMore()}
       {renderOtherInformation()}
     </View>
   );
@@ -267,6 +292,10 @@ const styles = StyleSheet.create({
   },
   readMoreText: {
     ...theme.viewStyles.text('SB', 14, '#02475B', 1, 30),
+    textAlign: 'right',
+  },
+  showMoreText: {
+    ...theme.viewStyles.text('SB', 13, '#FC9916', 1, 25, 0.35),
     textAlign: 'right',
   },
 });

@@ -35,6 +35,7 @@ import { FirebaseEvents, FirebaseEventName } from '../helpers/firebaseEvents';
 import { ShoppingCartItem } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { saveMedicineOrderOMSVariables } from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderOMS';
 import { ONE_APOLLO_STORE_CODE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   container: {
@@ -89,6 +90,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isfocused, setisfocused] = useState<boolean>(false);
+  const { pharmacyUserTypeAttribute } = useAppCommonData();
 
   const handleBack = async () => {
     Alert.alert('Alert', 'Are you sure you want to change your payment mode?', [
@@ -179,6 +181,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
       ...pharmacyCircleAttributes!,
+      ...pharmacyUserTypeAttribute,
     };
     return appsflyerEventAttributes;
   };

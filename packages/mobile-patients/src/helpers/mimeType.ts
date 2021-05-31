@@ -15,10 +15,6 @@ const types = [
     extensions: ['png'],
     mime: 'image/png',
   },
-  {
-    extensions: ['zip'],
-    mime: 'application/zip',
-  },
 ];
 
 const extname = function(path: string) {

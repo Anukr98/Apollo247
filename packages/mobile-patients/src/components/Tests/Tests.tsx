@@ -358,7 +358,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
    * fetch widgets
    */
   useEffect(() => {
-    getDiagnosticBanner();
     setBannerData && setBannerData([]);
     DiagnosticLandingPageViewedEvent(
       currentPatient,
@@ -436,7 +435,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         ImageNative.getSize(
           item?.bannerImage,
           (width, height) => {
-            setImgHeight(height * (winWidth / width) + 20);
+            setImgHeight(Math.max(height * (winWidth / width) + 20, 180));
             setBannerLoading(false);
           },
           () => {
@@ -515,9 +514,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   };
 
-  const getDiagnosticBanner = async () => {
+  const getDiagnosticBanner = async (cityId: number) => {
     try {
-      const res: any = await getLandingPageBanners('diagnostic');
+      const res: any = await getLandingPageBanners('diagnostic', Number(cityId));
+      //if true then only show it.
       if (res?.data?.success) {
         const bannerData = g(res, 'data', 'data');
         setBanners(bannerData);
@@ -903,6 +903,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             comingFrom == 'newAddress' &&
               DiagnosticAddresssSelected('New', 'No', pincode, 'Home page');
           }
+          getDiagnosticBanner(Number(serviceableData?.cityID));
           getHomePageWidgets(obj?.cityId);
           setshowLocationpopup(false);
           updatePlaceInfoByPincode(pincode, obj);
@@ -1384,7 +1385,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
             autoplayInterval={3000}
           />
           <View style={styles.landingBannerInnerView}>
-            {banners?.map((_, index) => (index == slideIndex ? renderDot(true) : renderDot(false)))}
+            {banners?.length > 1 &&
+              banners?.map((_, index) =>
+                index == slideIndex ? renderDot(true) : renderDot(false)
+              )}
           </View>
         </View>
       );
@@ -1396,25 +1400,40 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const renderSliderItem = ({ item, index }: { item: any; index: number }) => {
     const handleOnPress = () => {
       if (item?.redirectUrl && item?.redirectUrl != '') {
-        const data = item?.redirectUrl?.split('=')?.[1];
-        const extractData = data?.replace('apollopatients://', '');
-        const getNavigationDetails = extractData?.split('?');
-        const route = getNavigationDetails?.[0];
-        let itemId = '';
-        try {
-          if (getNavigationDetails?.length >= 2) {
-            itemId = getNavigationDetails?.[1]?.split('&');
-            if (itemId.length > 0) {
-              itemId = itemId[0];
-            }
+        //for rtpcr - drive through - open webview
+        if (item?.redirectUrlText === 'WebView') {
+          try {
+            const openUrl = item?.redirectUrl || AppConfig.Configuration.RTPCR_Google_Form;
+            props.navigation.navigate(AppRoutes.CovidScan, {
+              covidUrl: openUrl,
+            });
+          } catch (e) {
+            aphConsole.log(e);
+            CommonBugFender('renderSliderItem_handleOnPress_Tests', e);
           }
-        } catch (error) {}
-        if (route == 'TestDetails') {
-          DiagnosticBannerClick(slideIndex + 1, Number(itemId));
-          props.navigation.navigate(AppRoutes.TestDetails, {
-            itemId: itemId,
-            comingFrom: AppRoutes.Tests,
-          });
+        }
+        //redirect to details page
+        else {
+          const data = item?.redirectUrl?.split('=')?.[1];
+          const extractData = data?.replace('apollopatients://', '');
+          const getNavigationDetails = extractData?.split('?');
+          const route = getNavigationDetails?.[0];
+          let itemId = '';
+          try {
+            if (getNavigationDetails?.length >= 2) {
+              itemId = getNavigationDetails?.[1]?.split('&');
+              if (itemId.length > 0) {
+                itemId = itemId[0];
+              }
+            }
+          } catch (error) {}
+          if (route == 'TestDetails') {
+            DiagnosticBannerClick(slideIndex + 1, Number(itemId));
+            props.navigation.navigate(AppRoutes.TestDetails, {
+              itemId: itemId,
+              comingFrom: AppRoutes.Tests,
+            });
+          }
         }
       }
     };
@@ -1850,7 +1869,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setWidgetsData([]);
     setLoading?.(true);
     //if banners are not loaded, then refetch them.
-    banners?.length == 0 ? getDiagnosticBanner() : null;
+    banners?.length == 0 ? getDiagnosticBanner(serviceableObject?.cityId) : null;
     getHomePageWidgets(serviceableObject?.cityId);
     //call patients orders + prescriptions as well.
     fetchPatientOpenOrders();
