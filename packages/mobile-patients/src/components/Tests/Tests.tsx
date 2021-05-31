@@ -2012,7 +2012,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   async function onPressOrderStatusOption(item: any) {
-    if (LOCAL_DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(item?.orderStatus)) {
+    if (DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(item?.orderStatus)) {
       //track order
       navigateToTrackingScreen(item);
     } else if (DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(item?.orderStatus)) {
@@ -2042,7 +2042,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
     } else {
       if (DIAGNOSITC_PHELBO_TRACKING_STATUS.includes(item?.orderStatus)) {
         //track phlebo
-        getPhelboDetails(item?.id, item);
+        item?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED
+          ? navigateToTrackingScreen(item)
+          : getPhelboDetails(item?.id, item);
       } else {
         navigateToTrackingScreen(item);
       }

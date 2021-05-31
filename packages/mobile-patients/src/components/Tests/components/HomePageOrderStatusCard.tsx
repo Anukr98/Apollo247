@@ -19,11 +19,8 @@ import {
 import { Overlay } from 'react-native-elements';
 const { width: winWidth } = Dimensions.get('window');
 
-const LOCAL_DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY = DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.concat(
-  DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED
-);
 const AFTER_COLLECTION_STATUS = DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.concat(
-  LOCAL_DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY
+  DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY
 );
 
 interface HomePageOrderStatusCardProps {
@@ -42,7 +39,7 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
 
   function getOrderStatusContent(status: DIAGNOSTIC_ORDER_STATUS) {
     var heading, image, content, options;
-    if (LOCAL_DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(status)) {
+    if (DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(status)) {
       heading = string.diagnostics.sampleSubmitted;
       image = <SampleTestTubesIcon style={styles.iconStyle} />;
       content = string.diagnostics.sampleSubmittedContent?.replace(
@@ -72,7 +69,9 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
         appointmentTime!
       );
       options = DIAGNOSITC_PHELBO_TRACKING_STATUS.includes(status)
-        ? string.diagnostics.trackPhleboText
+        ? status === DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED
+          ? string.diagnostics.sampleCollectedText
+          : string.diagnostics.trackPhleboText
         : string.diagnostics.collectionText;
     }
     return {

@@ -134,7 +134,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
           >
             <View style={{ flexDirection: 'row' }}>
               <View style={{ width: '69%' }}>
-                {imageUrl != '' ? (
+                {imageUrl == '' ? (
                   <WidgetLiverIcon style={styles.imageStyle} resizeMode={'contain'} />
                 ) : (
                   <Image
