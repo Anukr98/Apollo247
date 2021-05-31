@@ -1592,51 +1592,55 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <View style={!!isPricesAvailable ? styles.widgetSpacing : {}}>
         {!!isPricesAvailable ? (
-          <>
-            <SectionHeader
-              leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
-              leftTextStyle={[
-                styles.widgetHeading,
-                {
-                  ...theme.viewStyles.text(
-                    'B',
-                    !!lengthOfTitle && lengthOfTitle > 20 ? 13 : 16,
-                    theme.colors.SHERPA_BLUE,
-                    1,
-                    20
-                  ),
-                },
-              ]}
-              rightText={showViewAll ? 'VIEW ALL' : ''}
-              rightTextStyle={showViewAll ? styles.widgetViewAllText : {}}
-              onPressRightText={
-                showViewAll
-                  ? () => {
-                      props.navigation.navigate(AppRoutes.TestListing, {
-                        movedFrom: AppRoutes.Tests,
-                        data: data,
-                        cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
-                        widgetType: data?.diagnosticWidgetType,
-                      });
-                    }
-                  : undefined
-              }
-              style={showViewAll ? { paddingBottom: 1 } : {}}
-            />
-            {sectionLoading ? (
-              renderDiagnosticWidgetShimmer(true)
-            ) : (
-              <PackageCard
-                data={data}
-                isCircleSubscribed={isDiagnosticCircleSubscription}
-                isServiceable={isDiagnosticLocationServiceable}
-                isVertical={false}
-                navigation={props.navigation}
-                source={'Home page'}
-                sourceScreen={AppRoutes.Tests}
+          sectionLoading ? (
+            renderDiagnosticWidgetShimmer(true)
+          ) : (
+            <>
+              <SectionHeader
+                leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
+                leftTextStyle={[
+                  styles.widgetHeading,
+                  {
+                    ...theme.viewStyles.text(
+                      'B',
+                      !!lengthOfTitle && lengthOfTitle > 20 ? 13 : 16,
+                      theme.colors.SHERPA_BLUE,
+                      1,
+                      20
+                    ),
+                  },
+                ]}
+                rightText={showViewAll ? 'VIEW ALL' : ''}
+                rightTextStyle={showViewAll ? styles.widgetViewAllText : {}}
+                onPressRightText={
+                  showViewAll
+                    ? () => {
+                        props.navigation.navigate(AppRoutes.TestListing, {
+                          movedFrom: AppRoutes.Tests,
+                          data: data,
+                          cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+                          widgetType: data?.diagnosticWidgetType,
+                        });
+                      }
+                    : undefined
+                }
+                style={showViewAll ? { paddingBottom: 1 } : {}}
               />
-            )}
-          </>
+              {sectionLoading ? (
+                renderDiagnosticWidgetShimmer(true)
+              ) : (
+                <PackageCard
+                  data={data}
+                  isCircleSubscribed={isDiagnosticCircleSubscription}
+                  isServiceable={isDiagnosticLocationServiceable}
+                  isVertical={false}
+                  navigation={props.navigation}
+                  source={'Home page'}
+                  sourceScreen={AppRoutes.Tests}
+                />
+              )}
+            </>
+          )
         ) : null}
       </View>
     );
@@ -1653,51 +1657,55 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <View style={!!isPricesAvailable ? styles.widgetSpacing : {}}>
         {!!isPricesAvailable ? (
-          <>
-            <SectionHeader
-              leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
-              leftTextStyle={[
-                styles.widgetHeading,
-                {
-                  ...theme.viewStyles.text(
-                    'B',
-                    !!lengthOfTitle && lengthOfTitle > 20 ? 13 : 16,
-                    theme.colors.SHERPA_BLUE,
-                    1,
-                    20
-                  ),
-                },
-              ]}
-              rightText={showViewAll ? 'VIEW ALL' : ''}
-              rightTextStyle={showViewAll ? styles.widgetViewAllText : {}}
-              onPressRightText={
-                showViewAll
-                  ? () => {
-                      props.navigation.navigate(AppRoutes.TestListing, {
-                        movedFrom: AppRoutes.Tests,
-                        data: data,
-                        cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
-                        widgetType: data?.diagnosticWidgetType,
-                      });
-                    }
-                  : undefined
-              }
-              style={showViewAll ? { paddingBottom: 1 } : {}}
-            />
-            {sectionLoading ? (
-              renderDiagnosticWidgetShimmer(true)
-            ) : (
-              <ItemCard
-                data={data}
-                isCircleSubscribed={isDiagnosticCircleSubscription}
-                isServiceable={isDiagnosticLocationServiceable}
-                isVertical={false}
-                navigation={props.navigation}
-                source={'Home page'}
-                sourceScreen={AppRoutes.Tests}
+          sectionLoading ? (
+            renderDiagnosticWidgetShimmer(true)
+          ) : (
+            <>
+              <SectionHeader
+                leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
+                leftTextStyle={[
+                  styles.widgetHeading,
+                  {
+                    ...theme.viewStyles.text(
+                      'B',
+                      !!lengthOfTitle && lengthOfTitle > 20 ? 13 : 16,
+                      theme.colors.SHERPA_BLUE,
+                      1,
+                      20
+                    ),
+                  },
+                ]}
+                rightText={showViewAll ? 'VIEW ALL' : ''}
+                rightTextStyle={showViewAll ? styles.widgetViewAllText : {}}
+                onPressRightText={
+                  showViewAll
+                    ? () => {
+                        props.navigation.navigate(AppRoutes.TestListing, {
+                          movedFrom: AppRoutes.Tests,
+                          data: data,
+                          cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+                          widgetType: data?.diagnosticWidgetType,
+                        });
+                      }
+                    : undefined
+                }
+                style={showViewAll ? { paddingBottom: 1 } : {}}
               />
-            )}
-          </>
+              {sectionLoading ? (
+                renderDiagnosticWidgetShimmer(true)
+              ) : (
+                <ItemCard
+                  data={data}
+                  isCircleSubscribed={isDiagnosticCircleSubscription}
+                  isServiceable={isDiagnosticLocationServiceable}
+                  isVertical={false}
+                  navigation={props.navigation}
+                  source={'Home page'}
+                  sourceScreen={AppRoutes.Tests}
+                />
+              )}
+            </>
+          )
         ) : null}
       </View>
     );
