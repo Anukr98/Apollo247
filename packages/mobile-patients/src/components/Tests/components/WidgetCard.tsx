@@ -2,6 +2,8 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
 import { nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { BloodIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface WidgetCardProps {
   data: any;
@@ -10,7 +12,9 @@ export interface WidgetCardProps {
 
 export const WidgetCard: React.FC<WidgetCardProps> = (props) => {
   const { data, onPressWidget } = props;
-
+  const itemIcon = !!data?.itemIcon
+    ? data?.itemIcon
+    : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_ICON;
   return (
     <TouchableOpacity
       style={styles.container}
@@ -19,7 +23,11 @@ export const WidgetCard: React.FC<WidgetCardProps> = (props) => {
       }}
     >
       <View style={styles.circleView}>
-        <Image resizeMode={'contain'} source={{ uri: data?.itemIcon }} style={styles.image} />
+        {itemIcon != '' ? (
+          <Image resizeMode={'contain'} source={{ uri: itemIcon }} style={styles.image} />
+        ) : (
+          <BloodIcon style={styles.image} resizeMode={'contain'} />
+        )}
       </View>
       <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>
         {nameFormater(data?.itemTitle, 'default')}

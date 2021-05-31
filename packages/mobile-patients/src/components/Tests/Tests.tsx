@@ -25,6 +25,7 @@ import {
   ShieldIcon,
   Remove,
   DropdownGreen,
+  BloodIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -1590,7 +1591,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 {
                   ...theme.viewStyles.text(
                     'B',
-                    !!lengthOfTitle && lengthOfTitle > 20 ? 14 : 16,
+                    !!lengthOfTitle && lengthOfTitle > 20 ? 13 : 16,
                     theme.colors.SHERPA_BLUE,
                     1,
                     20
@@ -1651,7 +1652,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 {
                   ...theme.viewStyles.text(
                     'B',
-                    !!lengthOfTitle && lengthOfTitle > 20 ? 14 : 16,
+                    !!lengthOfTitle && lengthOfTitle > 20 ? 13 : 16,
                     theme.colors.SHERPA_BLUE,
                     1,
                     20
@@ -2262,6 +2263,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderGridComponent = (data: any, item: any, index: number) => {
+    const imageIcon = !!item?.itemIcon
+      ? item?.itemIcon
+      : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_ICON;
     return (
       <TouchableOpacity
         style={styles.gridPart}
@@ -2284,7 +2288,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }}
       >
         <View style={styles.circleView}>
-          <ImageNative resizeMode="contain" style={styles.image} source={{ uri: item.itemIcon }} />
+          {imageIcon != '' ? (
+            <ImageNative resizeMode="contain" style={styles.image} source={{ uri: imageIcon }} />
+          ) : (
+            <BloodIcon style={styles.image} resizeMode={'contain'} />
+          )}
         </View>
         <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>
           {nameFormater(item?.itemTitle, 'default')}

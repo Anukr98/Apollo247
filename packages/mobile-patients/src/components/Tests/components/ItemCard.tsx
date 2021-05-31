@@ -1,5 +1,5 @@
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
+import { BloodIcon, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
@@ -14,7 +14,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Image } from 'react-native-elements';
-import { isEmptyObject, isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   convertNumberToDecimal,
@@ -31,6 +31,7 @@ import {
   DiagnosticAddToCartEvent,
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface ItemCardProps {
   onPress?: (item: any) => void;
@@ -89,8 +90,9 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
       return null;
     }
 
-    const imageUrl =
-      getItem?.itemImageUrl || 'https://apolloaphstorage.blob.core.windows.net/organs/ic_liver.png';
+    const imageUrl = !!getItem?.itemImageUrl
+      ? getItem?.itemImageUrl
+      : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_ICON;
     const name = getItem?.itemTitle;
     const inclusions = getItem?.inclusionData;
 
@@ -129,11 +131,16 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
         >
           <View style={{ flexDirection: 'row' }}>
             <View style={{ width: '69%' }}>
-              <Image
-                placeholderStyle={styles.imagePlaceholderStyle}
-                source={{ uri: imageUrl }}
-                style={styles.imageStyle}
-              />
+              {imageUrl != '' ? (
+                <BloodIcon style={styles.imageStyle} resizeMode={'contain'} />
+              ) : (
+                <Image
+                  resizeMode={'contain'}
+                  placeholderStyle={styles.imagePlaceholderStyle}
+                  source={{ uri: imageUrl }}
+                  style={styles.imageStyle}
+                />
+              )}
             </View>
             {renderPercentageDiscount(
               promoteCircle && isCircleSubscribed

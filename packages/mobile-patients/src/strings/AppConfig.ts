@@ -234,7 +234,8 @@ const appStaticVariables = {
       "prepaid": false,
       "cod": true
     }
-]
+],
+DIAGNOSTIC_DEFAULT_ICON : "https://newassets.apollo247.com/organs/ic_blood.png"
 };
 
 const DEV_top_specialties = [
