@@ -1,5 +1,5 @@
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { BloodIcon, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
+import { WidgetLiverIcon, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
@@ -135,7 +135,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
             <View style={{ flexDirection: 'row' }}>
               <View style={{ width: '69%' }}>
                 {imageUrl != '' ? (
-                  <BloodIcon style={styles.imageStyle} resizeMode={'contain'} />
+                  <WidgetLiverIcon style={styles.imageStyle} resizeMode={'contain'} />
                 ) : (
                   <Image
                     resizeMode={'contain'}

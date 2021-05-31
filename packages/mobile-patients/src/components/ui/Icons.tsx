@@ -661,10 +661,10 @@ export const Down: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_accordion_down.webp')} />
 );
 export const DownO: React.FC<IconProps> = (props) => (
-  <IconBase size='sm' {...props} source={require('./icons/chevron-bottom3x.webp')} />
+  <IconBase size="sm" {...props} source={require('./icons/chevron-bottom3x.webp')} />
 );
 export const UserOutline: React.FC<IconProps> = (props) => (
-  <IconBase size='sm' {...props} source={require('./icons/user.webp')} />
+  <IconBase size="sm" {...props} source={require('./icons/user.webp')} />
 );
 
 export const Up: React.FC<IconProps> = (props) => (
@@ -772,7 +772,6 @@ export const Emoticon4: React.FC<IconProps> = (props) => (
 export const Emoticon5: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/emoticons_13.webp')} />
 );
-
 
 export const OneApollo: React.FC<IconProps> = (props) => (
   <IconBase
@@ -1867,5 +1866,12 @@ export const AgentIcon: React.FC<IconProps> = (props) => (
   <IconBase
     {...props}
     source={require('@aph/mobile-patients/src/components/ui/icons/agent_icon.png')}
+  />
+);
+
+export const WidgetLiverIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/ic_liver_icon.webp')}
   />
 );

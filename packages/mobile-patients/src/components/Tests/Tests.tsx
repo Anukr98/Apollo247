@@ -25,7 +25,7 @@ import {
   ShieldIcon,
   Remove,
   DropdownGreen,
-  BloodIcon,
+  WidgetLiverIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -159,6 +159,7 @@ import { WidgetCard } from '@aph/mobile-patients/src/components/Tests/components
 
 import {
   renderBannerShimmer,
+  renderDiagnosticWidgetShimmer,
   renderTestDiagonosticsShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import moment from 'moment';
@@ -546,6 +547,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         //call here the prices.
         fetchWidgetsPrices(sortWidgets, cityId);
       } else {
+        setSectionLoading(false);
         setWidgetsData([]);
         setLoading?.(false);
         setPageLoading?.(false);
@@ -557,6 +559,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setLoading?.(false);
       setReloadWidget(true);
       setPageLoading?.(false);
+      setSectionLoading(false);
     }
   };
 
@@ -852,6 +855,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     let obj = {} as DiagnosticData;
     if (!!pincode) {
       setPageLoading?.(true);
+      setSectionLoading(true); //for loading the widgets.
       client
         .query<getPincodeServiceability, getPincodeServiceabilityVariables>({
           query: GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
@@ -914,6 +918,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           CommonBugFender('getDiagnosticsPincodeServiceabilityError_Tests', e);
           setLoadingContext?.(false);
           setReloadWidget(true);
+          setSectionLoading(false);
         });
     }
   };
@@ -1619,7 +1624,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               style={showViewAll ? { paddingBottom: 1 } : {}}
             />
             {sectionLoading ? (
-              renderSectionLoader(188)
+              renderDiagnosticWidgetShimmer(true)
             ) : (
               <PackageCard
                 data={data}
@@ -1680,7 +1685,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               style={showViewAll ? { paddingBottom: 1 } : {}}
             />
             {sectionLoading ? (
-              renderSectionLoader(188)
+              renderDiagnosticWidgetShimmer(true)
             ) : (
               <ItemCard
                 data={data}
@@ -2295,7 +2300,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           {imageIcon != '' ? (
             <ImageNative resizeMode="contain" style={styles.image} source={{ uri: imageIcon }} />
           ) : (
-            <BloodIcon style={styles.image} resizeMode={'contain'} />
+            <WidgetLiverIcon style={styles.image} resizeMode={'contain'} />
           )}
         </View>
         <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>
