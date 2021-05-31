@@ -480,7 +480,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                 />
               </TouchableOpacity>
             </View> : null}
-            {!showInclusionStatus &&
+            {showInclusionStatus ||
               orderLevelStatus?.statusInclusions?.map((item: any, index: number) => {
                 let selectedItem = selectedOrder?.diagnosticOrderLineItems;
                 let itemReportTat = '';
