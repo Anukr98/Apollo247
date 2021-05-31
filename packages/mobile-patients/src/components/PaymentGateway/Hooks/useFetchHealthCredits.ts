@@ -14,7 +14,6 @@ export const useFetchHealthCredits = (
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const [healthCredits, setHealthCredits] = useState<number>(0);
-  //   const [fetchingHCs, setfetchingHcs] = useState<boolean>(true);
 
   const fetchHealthCredits = () => {
     return client.query<getOneApolloUser, getOneApolloUserVariables>({
@@ -31,7 +30,6 @@ export const useFetchHealthCredits = (
         setHealthCredits(response.data.getOneApolloUser.availableHC);
         persistHealthCredits(response.data.getOneApolloUser.availableHC);
       }
-      //   setfetchingHcs(false);
     } catch (error) {}
   };
 

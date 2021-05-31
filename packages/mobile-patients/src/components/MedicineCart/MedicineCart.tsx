@@ -166,12 +166,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
   const [lastCartItems, setlastCartItems] = useState('');
-  // const [storeType, setStoreType] = useState<string | undefined>('');
-  // const [storeDistance, setStoreDistance] = useState(0);
-  // const [shopId, setShopId] = useState<string | undefined>('');
-  // const [isfocused, setisfocused] = useState<boolean>(false);
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
-  // const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>(false);
   const [showStorePickupCard, setshowStorePickupCard] = useState<boolean>(false);
   const [suggestedProducts, setsuggestedProducts] = useState<MedicineProduct[]>([]);
   const [appState, setappState] = useState<string>('');
@@ -206,12 +201,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
-      // setisfocused(true);
       BackHandler.addEventListener('hardwareBackPress', handleBack);
       AppState.addEventListener('change', handleAppStateChange);
     });
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
-      // setisfocused(false);
       AppState.removeEventListener('change', handleAppStateChange);
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     });
@@ -293,10 +286,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       ? setIsFreeDelivery?.(true)
       : setIsFreeDelivery?.(false);
   }, [circleMembershipCharges, isCircleSubscription, coupon]);
-
-  // useEffect(() => {
-  //   onFinishUpload();
-  // }, [isPhysicalUploadComplete]);
 
   const handleAppStateChange = (nextAppState: AppStateStatus) => {
     setappState(nextAppState);
@@ -740,14 +729,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       });
   };
 
-  // const onFinishUpload = () => {
-  //   if (isPhysicalUploadComplete) {
-  //     setloading!(false);
-  //     setisPhysicalUploadComplete(false);
-  //     onPressProceedtoPay();
-  //   }
-  // };
-
   async function fetchProductSuggestions() {
     const categoryId = AppConfig.Configuration.PRODUCT_SUGGESTIONS_CATEGORYID;
     const pageCount = AppConfig.Configuration.PRODUCT_SUGGESTIONS_COUNT;
@@ -766,60 +747,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       CommonBugFender('MedicineCart_error_whilefetchingSuggestedProducts', error);
     }
   }
-
-  // const multiplePhysicalPrescriptionUpload = (prescriptions = physicalPrescriptions) => {
-  //   return Promise.all(
-  //     prescriptions.map((item) =>
-  //       client.mutate<uploadDocument>({
-  //         mutation: UPLOAD_DOCUMENT,
-  //         fetchPolicy: 'no-cache',
-  //         variables: {
-  //           UploadDocumentInput: {
-  //             base64FileInput: item.base64,
-  //             category: 'HealthChecks',
-  //             fileType: item.fileType == 'jpg' ? 'JPEG' : item.fileType.toUpperCase(),
-  //             patientId: currentPatient && currentPatient!.id,
-  //           },
-  //         },
-  //       })
-  //     )
-  //   );
-  // };
-
-  // async function uploadPhysicalPrescriptons() {
-  //   const prescriptions = physicalPrescriptions;
-  //   const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
-  //   if (unUploadedPres.length > 0) {
-  //     try {
-  //       setloading!(true);
-  //       const data = await multiplePhysicalPrescriptionUpload(unUploadedPres);
-  //       const uploadUrls = data.map((item) =>
-  //         item.data!.uploadDocument.status
-  //           ? {
-  //               fileId: item.data!.uploadDocument.fileId!,
-  //               url: item.data!.uploadDocument.filePath!,
-  //             }
-  //           : null
-  //       );
-  //       const newuploadedPrescriptions = unUploadedPres.map(
-  //         (item, index) =>
-  //           ({
-  //             ...item,
-  //             uploadedUrl: uploadUrls![index]!.url,
-  //             prismPrescriptionFileId: uploadUrls![index]!.fileId,
-  //           } as PhysicalPrescription)
-  //       );
-  //       setPhysicalPrescriptions && setPhysicalPrescriptions([...newuploadedPrescriptions]);
-  //       setisPhysicalUploadComplete(true);
-  //     } catch (error) {
-  //       CommonBugFender('MedicineCart_physicalPrescriptionUpload', error);
-  //       setloading!(false);
-  //       renderAlert('Error occurred while uploading prescriptions.');
-  //     }
-  //   } else {
-  //     onPressProceedtoPay();
-  //   }
-  // }
 
   function showAddressPopup() {
     showAphAlert!({
@@ -854,63 +781,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       ),
     });
   }
-
-  // async function onPressProceedtoPay() {
-  //   if (coupon) {
-  //     try {
-  //       const response = await validateCoupon(
-  //         coupon.coupon,
-  //         coupon.message,
-  //         pharmacyPincode,
-  //         g(currentPatient, 'mobileNumber'),
-  //         hdfcSubscriptionId,
-  //         circleSubscriptionId,
-  //         setCoupon,
-  //         cartTotal,
-  //         productDiscount,
-  //         cartItems,
-  //         hdfcStatus,
-  //         hdfcPlanId,
-  //         circleStatus,
-  //         circlePlanId,
-  //         setCouponProducts
-  //       );
-  //       if (response !== 'success') {
-  //         removeCouponWithAlert(response);
-  //       }
-  //     } catch (error) {
-  //       return;
-  //     }
-  //   }
-  //   let splitOrderDetails: any = {};
-  //   if (orders?.length > 1) {
-  //     orders?.forEach((order: any, index: number) => {
-  //       splitOrderDetails['Shipment_' + (index + 1) + '_Value'] =
-  //         getShipmentPrice(order?.items, cartItems) +
-  //         (order?.deliveryCharge || 0) +
-  //         (order?.packingCharges || 0);
-  //       splitOrderDetails['Shipment_' + (index + 1) + '_Items'] = order?.items?.length;
-  //     });
-  //   }
-  //   const isPrescriptionUploaded = physicalPrescriptions?.length > 0;
-  //   props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
-  //     deliveryTime,
-  //     storeDistance: storeDistance,
-  //     tatType: storeType,
-  //     shopId: shopId,
-  //   });
-  //   postwebEngageProceedToPayEvent(
-  //     shoppingCart,
-  //     false,
-  //     deliveryTime,
-  //     pharmacyCircleAttributes!,
-  //     pharmacyUserTypeAttribute!,
-  //     JSON.stringify(cartItems),
-  //     orders?.length > 1,
-  //     splitOrderDetails,
-  //     isPrescriptionUploaded
-  //   );
-  // }
 
   const headerRightComponent = () => {
     return (
@@ -1179,13 +1049,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           selectDeliveryAddressClickedEvent(currentPatient?.id, JSON.stringify(cartItems));
           showAddressPopup();
         }}
-        // onPressUploadPrescription={() => {
-        //   uploadPrescriptionClickedEvent(currentPatient?.id);
-        //   props.navigation.navigate(AppRoutes.MedicineCartPrescription);
-        // }}
-        // onPressProceedtoPay={() => {
-        //   physicalPrescriptions?.length > 0 ? uploadPhysicalPrescriptons() : onPressProceedtoPay();
-        // }}
         onPressUploadPrescription={redirectToUploadPrescription}
         deliveryTime={deliveryTime}
         onPressChangeAddress={showAddressPopup}
