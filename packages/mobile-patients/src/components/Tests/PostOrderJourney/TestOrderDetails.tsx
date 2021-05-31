@@ -483,8 +483,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             {showInclusionStatus ||
               orderLevelStatus?.statusInclusions?.map((item: any, index: number) => {
                 let selectedItem = selectedOrder?.diagnosticOrderLineItems;
-                let itemReportTat = '';
-                itemReportTat = selectedItem?.filter((order: any) => order?.itemId == item?.itemId);
                 return (
                   <>
                     {!!item?.itemName ? (
@@ -493,7 +491,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                           style={[
                             styles.itemNameContainer,
                             {
-                              marginBottom: itemReportTat?.[index]?.itemObj?.reportGenerationTime
+                              marginBottom: selectedItem?.[index]?.itemObj?.reportGenerationTime
                                 ? 5
                                 : 16,
                             },
@@ -506,13 +504,13 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                           </View>
                           <StatusCard titleText={item?.orderStatus} />
                         </View>
-                        {itemReportTat?.[index]?.itemObj?.reportGenerationTime ? (
+                        {selectedItem?.[index]?.itemObj?.reportGenerationTime ? (
                           <View style={styles.ratingContainer}>
                             <View style={styles.reporttatContainer}>
                               <ClockIcon />
                               <Text
                                 style={styles.reportTextStyle}
-                              >{`Get your report by ${itemReportTat?.[index]?.itemObj?.reportGenerationTime}`}</Text>
+                              >{`Get your report by ${selectedItem?.[index]?.itemObj?.reportGenerationTime}`}</Text>
                             </View>
                           </View>
                         ) : null}
