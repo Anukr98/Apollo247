@@ -1774,6 +1774,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const setNonCircleValues = () => {
     AsyncStorage.setItem('isCircleMember', 'no');
+    AsyncStorage.removeItem('circleSubscriptionId');
     setIsCircleMember && setIsCircleMember('no');
     setCircleSubscriptionId && setCircleSubscriptionId('');
     setIsCircleSubscription && setIsCircleSubscription(false);
