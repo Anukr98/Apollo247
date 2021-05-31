@@ -112,12 +112,6 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const { orders, deliveryTime, orderInfo, isStorePickup } = props.navigation.getParam(
     'orderDetails'
   );
-  console.log(
-    'orderDetails >>>>',
-    props.navigation.getParam('orderDetails'),
-    'transId >>>>>',
-    transId
-  );
   const [circleSubscriptionID, setCircleSubscriptionID] = useState<string>('');
   const [isCircleBought, setIsCircleBought] = useState<boolean>(false);
   const [totalCashBack, setTotalCashBack] = useState<number>(0);
@@ -146,10 +140,8 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
 
   useEffect(() => {
     setLoading(true);
-    const apiCall = isStorePickup
-      ? GET_PHARMA_TRANSACTION_STATUS
-      : GET_PHARMA_TRANSACTION_STATUS_V2;
-    const variables = isStorePickup ? { orderId: transId } : { paymentOrderId: transId };
+    const apiCall = GET_PHARMA_TRANSACTION_STATUS_V2;
+    const variables = { paymentOrderId: transId };
 
     client
       .query({
