@@ -69,7 +69,9 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
         appointmentTime!
       );
       options = DIAGNOSITC_PHELBO_TRACKING_STATUS.includes(status)
-        ? string.diagnostics.trackPhleboText
+        ? status === DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED
+          ? string.diagnostics.sampleCollectedText
+          : string.diagnostics.trackPhleboText
         : string.diagnostics.collectionText;
     }
     return {
@@ -125,7 +127,7 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
 
   const renderPrepData = (text: string, numberOfLines?: number) => {
     return (
-      <View style={[styles.innerPrepContainer, { marginVertical: !!numberOfLines ? 10 : 5 }]}>
+      <View style={[styles.innerPrepContainer, { marginVertical: !!numberOfLines ? 0 : 5 }]}>
         <InfoIconRed style={styles.infoIconStyle} />
         <Text numberOfLines={!!numberOfLines ? numberOfLines : 3} style={styles.prepDataStyle}>
           {nameFormater(text, 'title')}
@@ -164,11 +166,11 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
         </View>
       ) : !AFTER_COLLECTION_STATUS.includes(status) ? (
         <View style={styles.prepDataContainer}>
-          <Text style={[styles.content1, { marginTop: 0 }]}>
-            {string.diagnostics.noPrepRequiredText}
-          </Text>
+          <Text style={styles.content1}>{string.diagnostics.noPrepRequiredText}</Text>
         </View>
-      ) : null}
+      ) : (
+        <View style={{ marginVertical: 3 }} />
+      )}
 
       <View style={styles.buttonView}>
         <TouchableOpacity onPress={props.onPressBookNow}>
@@ -186,7 +188,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.cardViewStyle,
     padding: 16,
     margin: 16,
-    minHeight: 170,
+    minHeight: 175,
     width: winWidth - 32,
   },
   rowStyles: { flexDirection: 'row', justifyContent: 'space-between' },

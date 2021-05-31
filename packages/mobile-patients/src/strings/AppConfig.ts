@@ -243,7 +243,8 @@ const appStaticVariables = {
       "prepaid": false,
       "cod": true
     }
-]
+],
+DIAGNOSTIC_DEFAULT_ICON : "https://newassets.apollo247.com/organs/ic_blood.png"
 };
 
 const DEV_top_specialties = [
@@ -1278,7 +1279,7 @@ export const DIAGNOSTIC_STATUS_BEFORE_SUBMITTED = [
 
 export const DIAGNOSITC_PHELBO_TRACKING_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
-  DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED
 ];
 
 export const DIAGNOSTIC_SHOW_OTP_STATUS = [
