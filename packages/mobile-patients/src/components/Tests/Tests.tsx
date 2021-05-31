@@ -85,6 +85,7 @@ import {
 import { Image } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
 import {
+  DIAGNOSTIC_ORDER_STATUS,
   SEARCH_TYPE,
   TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -182,6 +183,9 @@ const whyBookUsArray = [
 ];
 
 const { width: winWidth, height: winHeight } = Dimensions.get('window');
+const LOCAL_DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY = DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.concat(
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED
+);
 
 export interface DiagnosticData {
   cityId: string;
@@ -371,11 +375,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   useEffect(() => {
     if (currentPatient) {
-      getUserBanners();
       fetchAddress();
       fetchPatientOpenOrders();
       fetchPatientClosedOrders();
       fetchPatientPrescriptions();
+      getUserBanners();
     }
   }, [currentPatient]);
 
@@ -591,8 +595,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
           )
       );
 
-      const response = (await res)?.map((item: any) =>
-        g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics')
+      const response = (await res)?.map(
+        (item: any) => g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics') || []
       );
       let newWidgetsData = [...filterWidgets];
 
@@ -1995,7 +1999,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   async function onPressOrderStatusOption(item: any) {
-    if (DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(item?.orderStatus)) {
+    if (LOCAL_DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(item?.orderStatus)) {
       //track order
       navigateToTrackingScreen(item);
     } else if (DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(item?.orderStatus)) {

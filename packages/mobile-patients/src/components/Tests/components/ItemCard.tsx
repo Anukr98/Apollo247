@@ -32,7 +32,9 @@ import {
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-
+const screenWidth = Dimensions.get('window').width;
+const CARD_WIDTH = screenWidth * 0.45;
+const CARD_HEIGHT = 230; //210
 export interface ItemCardProps {
   onPress?: (item: any) => void;
   isCircleSubscribed: boolean;
@@ -76,101 +78,104 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
       : data?.diagnosticWidgetData?.length > 0 &&
         data?.diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
 
-  const renderItemCard = (item: any) => {
-    const getItem = item?.item;
-    const getDiagnosticPricingForItem = getItem?.diagnosticPricing;
+  const renderItemCard = useCallback(
+    (item: any) => {
+      const getItem = item?.item;
+      const getDiagnosticPricingForItem = getItem?.diagnosticPricing;
 
-    if (getDiagnosticPricingForItem == undefined || getDiagnosticPricingForItem == null) {
-      return null;
-    }
-    const packageMrpForItem = getItem?.packageCalculatedMrp!;
-    const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
+      if (getDiagnosticPricingForItem == undefined || getDiagnosticPricingForItem == null) {
+        return null;
+      }
+      const packageMrpForItem = getItem?.packageCalculatedMrp!;
+      const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
 
-    if (!pricesForItem?.itemActive) {
-      return null;
-    }
+      if (!pricesForItem?.itemActive) {
+        return null;
+      }
 
-    const imageUrl = !!getItem?.itemImageUrl
-      ? getItem?.itemImageUrl
-      : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_ICON;
-    const name = getItem?.itemTitle;
-    const inclusions = getItem?.inclusionData;
+      const imageUrl = !!getItem?.itemImageUrl
+        ? getItem?.itemImageUrl
+        : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_ICON;
+      const name = getItem?.itemTitle;
+      const inclusions = getItem?.inclusionData;
 
-    const promoteCircle = pricesForItem?.promoteCircle;
-    const promoteDiscount = pricesForItem?.promoteDiscount;
-    const circleDiscount = pricesForItem?.circleDiscount;
-    const specialDiscount = pricesForItem?.specialDiscount;
-    const discount = pricesForItem?.discount;
+      const promoteCircle = pricesForItem?.promoteCircle;
+      const promoteDiscount = pricesForItem?.promoteDiscount;
+      const circleDiscount = pricesForItem?.circleDiscount;
+      const specialDiscount = pricesForItem?.specialDiscount;
+      const discount = pricesForItem?.discount;
 
-    const getMandatoryParamter =
-      !!inclusions &&
-      inclusions?.length > 0 &&
-      inclusions?.map((inclusion: any) =>
-        inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
+      const getMandatoryParamter =
+        !!inclusions &&
+        inclusions?.length > 0 &&
+        inclusions?.map((inclusion: any) =>
+          inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
+        );
+
+      const getMandatoryParameterCount =
+        !!getMandatoryParamter &&
+        getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
+
+      const isAddedToCart = !!cartItems?.find(
+        (items) => Number(items?.id) == Number(getItem?.itemId)
       );
 
-    const getMandatoryParameterCount =
-      !!getMandatoryParamter &&
-      getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
-
-    const isAddedToCart = !!cartItems?.find(
-      (items) => Number(items?.id) == Number(getItem?.itemId)
-    );
-
-    return (
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={() => onPress(getItem, packageMrpForItem, pricesForItem)}
-        key={item?.item?.itemId}
-      >
-        <View
-          style={[
-            styles.itemCardView,
-            props?.isVertical ? {} : { marginLeft: item?.index == 0 ? 20 : 6 },
-          ]}
+      return (
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => onPress(getItem, packageMrpForItem, pricesForItem)}
+          key={item?.item?.itemId}
         >
-          <View style={{ flexDirection: 'row' }}>
-            <View style={{ width: '69%' }}>
-              {imageUrl != '' ? (
-                <BloodIcon style={styles.imageStyle} resizeMode={'contain'} />
-              ) : (
-                <Image
-                  resizeMode={'contain'}
-                  placeholderStyle={styles.imagePlaceholderStyle}
-                  source={{ uri: imageUrl }}
-                  style={styles.imageStyle}
-                />
+          <View
+            style={[
+              styles.itemCardView,
+              props?.isVertical ? {} : { marginLeft: item?.index == 0 ? 20 : 6 },
+            ]}
+          >
+            <View style={{ flexDirection: 'row' }}>
+              <View style={{ width: '69%' }}>
+                {imageUrl != '' ? (
+                  <BloodIcon style={styles.imageStyle} resizeMode={'contain'} />
+                ) : (
+                  <Image
+                    resizeMode={'contain'}
+                    placeholderStyle={styles.imagePlaceholderStyle}
+                    source={{ uri: imageUrl }}
+                    style={styles.imageStyle}
+                  />
+                )}
+              </View>
+              {renderPercentageDiscount(
+                promoteCircle && isCircleSubscribed
+                  ? circleDiscount
+                  : promoteDiscount
+                  ? specialDiscount
+                  : discount
               )}
             </View>
-            {renderPercentageDiscount(
-              promoteCircle && isCircleSubscribed
-                ? circleDiscount
-                : promoteDiscount
-                ? specialDiscount
-                : discount
-            )}
-          </View>
-          <View style={{ minHeight: isSmallDevice ? 40 : 35 }}>
-            <Text style={styles.itemNameText} numberOfLines={2}>
-              {name}
-            </Text>
-          </View>
-          <View style={{ minHeight: isSmallDevice ? 25 : 30 }}>
-            {getMandatoryParameterCount > 0 ? (
-              <Text style={styles.parameterText}>
-                {getMandatoryParameterCount} {getMandatoryParameterCount == 1 ? 'test' : 'tests'}{' '}
-                included
+            <View style={{ minHeight: isSmallDevice ? 40 : 35 }}>
+              <Text style={styles.itemNameText} numberOfLines={2}>
+                {name}
               </Text>
-            ) : null}
-          </View>
-          <Spearator style={styles.horizontalSeparator} />
+            </View>
+            <View style={{ minHeight: isSmallDevice ? 25 : 30 }}>
+              {getMandatoryParameterCount > 0 ? (
+                <Text style={styles.parameterText}>
+                  {getMandatoryParameterCount} {getMandatoryParameterCount == 1 ? 'test' : 'tests'}{' '}
+                  included
+                </Text>
+              ) : null}
+            </View>
+            <Spearator style={styles.horizontalSeparator} />
 
-          {renderPricesView(pricesForItem, packageMrpForItem)}
-          {renderAddToCart(isAddedToCart, getItem, pricesForItem, packageMrpForItem)}
-        </View>
-      </TouchableOpacity>
-    );
-  };
+            {renderPricesView(pricesForItem, packageMrpForItem)}
+            {renderAddToCart(isAddedToCart, getItem, pricesForItem, packageMrpForItem)}
+          </View>
+        </TouchableOpacity>
+      );
+    },
+    [cartItems]
+  );
 
   const renderPercentageDiscount = (discount: string | number) => {
     return (
@@ -472,6 +477,15 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     }
   };
 
+  const getItemLayout = useCallback(
+    (data, index) => ({
+      length: props.isVertical ? CARD_WIDTH : CARD_HEIGHT,
+      offset: props.isVertical ? CARD_WIDTH * index : CARD_HEIGHT * index,
+      index,
+    }),
+    []
+  );
+
   const keyExtractor = useCallback((item: any, index: number) => `${index}`, []);
 
   return (
@@ -496,7 +510,9 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
             horizontal={!props.isVertical}
             data={actualItemsToShow}
             renderItem={renderItemCard}
-            maxToRenderPerBatch={3}
+            maxToRenderPerBatch={8}
+            initialNumToRender={3}
+            getItemLayout={getItemLayout}
           />
         ) : (
           renderError()
@@ -510,8 +526,8 @@ const styles = StyleSheet.create({
   itemCardView: {
     ...theme.viewStyles.card(12, 0),
     elevation: 10,
-    height: 230, //210
-    width: Dimensions.get('window').width * 0.45,
+    height: CARD_HEIGHT,
+    width: CARD_WIDTH,
     marginHorizontal: 4,
     marginRight: 10,
     alignItems: 'flex-start',
