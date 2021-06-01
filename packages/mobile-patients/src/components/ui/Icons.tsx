@@ -62,7 +62,7 @@ export const Copy: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/copy.webp')} />
 );
 export const CopyBlue: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/copy_blue.webp')} />
+  <IconBase size="sm" {...props} source={require('./icons/copy_blue_1.png')} />
 );
 export const DownloadNew: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/download.webp')} />
@@ -369,6 +369,15 @@ export const DropdownBlueDown: React.FC<IconProps> = (props) => (
 
 export const DropdownBlueUp: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_dropdown_blue_up.webp')} />
+);
+export const CrossOcta: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/octagon_3x.webp')} />
+);
+export const BlackArrowUp: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/blackarrowup_3x.webp')} />
+);
+export const BlackArrowDown: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/blackarrowdown_3x.webp')} />
 );
 
 export const PhrDropdownBlueUpIcon: React.FC<IconProps> = (props) => (
@@ -871,6 +880,10 @@ export const SearchDarkPhrIcon: React.FC<IconProps> = (props) => (
 
 export const ShareYellowDocIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/ic_share_yellow.webp')} />
+);
+
+export const ShareIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/ic_share.webp')} />
 );
 
 export const WhiteListViewIcon: React.FC<IconProps> = (props) => (
@@ -1860,4 +1873,35 @@ export const MedicalHistoryIcon: React.FC<IconProps> = (props) => (
     {...props}
     source={require('@aph/mobile-patients/src/components/ui/icons/medical-history.webp')}
   />
+);
+
+export const RefreshIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/ic_cached.png')}
+  />
+);
+
+export const AgentIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/agent_icon.png')}
+  />
+);
+
+export const NoVaccineBooking: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 155, height: 155 }}
+    {...props}
+    source={require('./icons/no_vaccine_booking.webp')}
+  />
+);
+
+export const CovidVaccine: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/covid_vaccine.webp')} />
+);
+
+export const VaccineBookingFailed: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/vacc_booking_failed.webp')} />
 );

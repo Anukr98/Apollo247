@@ -554,7 +554,7 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
           />
         </View>
         <Button
-          title={'CONFIRM LOCATION'}
+          title={string.addressSelection.CONFIRM_LOCATION_AND_PROCEED}
           style={[
             styles.confirmButton,
             {

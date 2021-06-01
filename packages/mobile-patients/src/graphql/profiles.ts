@@ -2823,14 +2823,6 @@ export const ADD_PATIENT_LAB_TEST_RECORD = gql`
   }
 `;
 
-export const PHR_COVERT_TO_ZIP = gql`
-  mutation convertToZip($fileUrls: [String]!, $uhid: String!) {
-    convertToZip(fileUrls: $fileUrls, uhid: $uhid) {
-      zipUrl
-    }
-  }
-`;
-
 export const GET_PRISM_AUTH_TOKEN = gql`
   query getPrismAuthToken($uhid: String!) {
     getPrismAuthToken(uhid: $uhid) {
@@ -2884,9 +2876,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
-            file_Url
+            content
             # byteContent
           }
         }
@@ -2912,9 +2902,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
-            file_Url
+            content
             # byteContent
           }
           hospital_name
@@ -2942,9 +2930,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
-            file_Url
+            content
             # byteContent
             # dateCreated
           }
@@ -2978,9 +2964,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
-            file_Url
+            content
             # byteContent
             # dateCreated
           }
@@ -3005,9 +2989,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
-            file_Url
+            content
             # byteContent
             # dateCreated
           }
@@ -3034,9 +3016,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
-            file_Url
+            content
             # byteContent
             # dateCreated
           }
@@ -3063,9 +3043,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
-            file_Url
+            content
             # byteContent
             # dateCreated
           }
@@ -3132,9 +3110,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
-            file_Url
+            content
             # byteContent
             # dateCreated
           }
@@ -3159,9 +3135,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
-            file_Url
+            content
             byteContent
             dateCreated
           }
@@ -5001,6 +4975,218 @@ export const FIND_DIAGNOSTIC_SETTINGS = gql`
   query findDiagnosticSettings {
     findDiagnosticSettings {
       phleboETAInMinutes
+    }
+  }
+`;
+
+export const GET_VACCINE_BOOKING_LIMIT = gql`
+  query GetBenefitAvailabilityInfoByCMSIdentifier(
+    $user_subscription_id: String!
+    $cms_identifier: String!
+  ) {
+    GetBenefitAvailabilityInfoByCMSIdentifier(
+      user_subscription_id: $user_subscription_id
+      cms_identifier: $cms_identifier
+    ) {
+      response
+    }
+  }
+`;
+
+export const VALIDATE_CORPORATE_DOMAIN = gql`
+  query getCMSIdentifierByDomain($email: String!) {
+    getCMSIdentifierByDomain(email: $email) {
+      success
+      groupIdentifier
+    }
+  }
+`;
+
+export const GENERATE_CORPORATE_OTP_MAIL = gql`
+  query GenerateOtpEmailId($email: String!) {
+    GenerateOtpEmailId(GenerateOtpEmailIdInput: { email: $email }) {
+      status
+      loginId
+      message
+    }
+  }
+`;
+
+export const VERIFY_CORPORATE_EMAIL_OTP_AND_SUBSCRIBE = gql`
+  query verifyCorporateEmailOtpAndSubscribe($corporateEmailOtpInput: CorporateEmailOtpInput!) {
+    verifyCorporateEmailOtpAndSubscribe(corporateEmailOtpInput: $corporateEmailOtpInput) {
+      status
+      reason
+      isBlocked
+      incorrectAttempts
+      isSubscriptionSkipped
+    }
+  }
+`;
+
+///---BELOW is pointed to vaccine endpoint-------->>
+
+//vaccinetype added
+export const GET_VACCINATION_SITES = gql`
+  query getResourcesList($city: String!, $vaccine_type: VACCINE_TYPE) {
+    getResourcesList(city: $city, vaccine_type: $vaccine_type) {
+      code
+      success
+      message
+      response {
+        id
+        name
+        created_at
+        city
+        is_corporate_site
+        street_line1
+        street_line2
+        street_line3
+      }
+    }
+  }
+`;
+//vaccinetype to add
+//resource_id
+export const GET_VACCINATION_AVAILABLE_DATES = gql`
+  query getResourcesSessionAvailableDate($resource_id: String!, $vaccine_type: VACCINE_TYPE) {
+    getResourcesSessionAvailableDate(resource_id: $resource_id, vaccine_type: $vaccine_type) {
+      code
+      success
+      message
+      response
+    }
+  }
+`;
+
+//vaccinetype to add
+// resource_id to change
+// session_date to change
+export const GET_VACCINATION_SLOTS = gql`
+  query getResourcesSessionAvailableByDate(
+    $resource_id: String!
+    $session_date: Date
+    $vaccine_type: VACCINE_TYPE
+  ) {
+    getResourcesSessionAvailableByDate(
+      resource_id: $resource_id
+      session_date: $session_date
+      vaccine_type: $vaccine_type
+    ) {
+      code
+      success
+      message
+      response {
+        start_date_time
+        end_date_time
+        session_name
+        id
+      }
+    }
+  }
+`;
+
+// pateint info to type
+export const SUBMIT_VACCINATION_BOOKING_REQUEST = gql`
+  mutation CreateAppointment($appointmentInput: CreateAppointmentInput!) {
+    CreateAppointment(appointmentInput: $appointmentInput) {
+      response {
+        display_id
+        id
+      }
+      success
+      code
+      message
+    }
+  }
+`;
+
+export const GET_VACCINATION_APPOINMENT_DETAILS = gql`
+  query GetAppointmentDetails($appointment_id: String!) {
+    GetAppointmentDetails(appointment_id: $appointment_id) {
+      message
+      code
+      response {
+        display_id
+        dose_number
+        patient_info {
+          firstName
+          lastName
+          age
+          gender
+          uhid
+          id
+          mobileNumber
+        }
+        status
+        payment_type
+        resource_session_details {
+          session_name
+          start_date_time
+          vaccine_type
+          resource_detail {
+            name
+            street_line1
+            street_line2
+            street_line3
+            city
+            state
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const CANCEL_VACCINATION_APPOINTMENT = gql`
+  mutation CancelAppointment($appointment_id: String, $display_id: Float) {
+    CancelAppointment(appointment_id: $appointment_id, display_id: $display_id) {
+      code
+      success
+      message
+      response {
+        id
+        status
+      }
+    }
+  }
+`;
+
+export const GET_ALL_VACCINATION_APPOINTMENTS = gql`
+  query GetAllAppointments {
+    GetAllAppointments {
+      code
+      success
+      message
+      response {
+        id
+        dose_number
+        resource_id
+        patient_info {
+          firstName
+          lastName
+          age
+          gender
+          uhid
+        }
+        status
+        payment_type
+        resource_session_details {
+          session_name
+          start_date_time
+          vaccine_type
+          resource_detail {
+            name
+            street_line1
+            street_line2
+            street_line3
+            city
+            state
+          }
+        }
+        display_id
+        payment_type
+      }
     }
   }
 `;

@@ -122,11 +122,6 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
     myConsultedDoctorsClickedWEBEngage(currentPatient, item, allCurrentPatients);
     props.navigation.navigate(AppRoutes.DoctorDetails, {
       doctorId: item?.id,
-      consultModeSelected:
-        item?.consultDetails?.consultMode === ConsultMode.ONLINE
-          ? ConsultMode.ONLINE
-          : ConsultMode.PHYSICAL,
-      showBookAppointment: true,
     });
   };
 

@@ -198,6 +198,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       displayId: `${displayId}`,
       'coupon applied': couponApplied,
       'Circle discount': circleDiscountedPrice,
+      User_Type: getUserType(allCurrentPatients),
     };
     return eventAttributes;
   };

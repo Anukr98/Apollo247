@@ -1773,6 +1773,17 @@ export interface voipPushTokenInput {
   voipToken?: string | null;
 }
 
+/** * current status of appointment */
+export enum APPOINTMENT_STATUS { BOOKED = "BOOKED", CANCELLED = "CANCELLED", COMPLETED = "COMPLETED", FAILED = "FAILED", VERIFIED = "VERIFIED",}
+/** * dose number first second */
+export enum DOSE_NUMBER { FIRST = "FIRST", SECOND = "SECOND",}
+/** * payment type for appointment */
+export enum PAYMENT_TYPE { CASHLESS = "CASHLESS", COD = "COD", PREPAID = "PREPAID",}
+/** * booking source */
+export enum VACCINE_BOOKING_SOURCE { AP_IN = "AP_IN", MOBILE = "MOBILE", WEB = "WEB",}
+/** * types of vaccine */
+export enum VACCINE_TYPE { COVAXIN = "COVAXIN", COVISHIELD = "COVISHIELD", SPUTNIK="SPUTNIK",MORDERNA="MORDERNA"}
+export interface CreateAppointmentInput { appointment_id?: string | null; patient_id: string; resource_session_id: string; dose_number: DOSE_NUMBER; booking_source?: VACCINE_BOOKING_SOURCE | null; corporate_name?: string | null;}
 //==============================================================
 // END Enums and Input Objects
 //==============================================================

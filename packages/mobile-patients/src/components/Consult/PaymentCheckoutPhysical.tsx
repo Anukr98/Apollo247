@@ -761,6 +761,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       displayId: displayId,
       'coupon applied': coupon ? true : false,
       'Circle discount': circleDiscount,
+      User_Type: getUserType(allCurrentPatients),
     };
     return eventAttributes;
   };

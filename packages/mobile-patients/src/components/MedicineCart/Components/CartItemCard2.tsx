@@ -49,7 +49,7 @@ export const CartItemCard2: React.FC<CartItemCard2Props> = (props) => {
   const renderImage = () => {
     const imageUrl = getImageUrl(item);
     return (
-      <View style={{ width: 80, justifyContent: 'center' }}>
+      <View style={styles.imageContainer}>
         {imageUrl ? (
           <Image
             PlaceholderContent={item.prescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginBottom: 9,
     flexDirection: 'row',
-    paddingRight: 10,
+    paddingHorizontal: 10,
     paddingVertical: 14,
     minHeight: 95,
   },
@@ -207,6 +207,10 @@ const styles = StyleSheet.create({
     marginBottom: 3,
     alignItems: 'flex-end',
     justifyContent: 'flex-end',
+  },
+  imageContainer: {
+    justifyContent: 'center',
+    width: 85,
   },
   quantityContainer: {
     height: 23,

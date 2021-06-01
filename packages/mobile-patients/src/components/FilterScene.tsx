@@ -215,13 +215,12 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
   const searchedData = (sectionsData: any, searchTerm = '') => {
     const finalData = sectionsData.reduce((result, sectionData) => {
       const { state, data } = sectionData;
+
       const filteredData = data.filter((item: any) => {
         let searchDataItem = state;
-
         searchDataItem = ''
           ? ''.split('.').reduce((prevVal, currVal) => prevVal[currVal], item)
           : item;
-
         return searchDataItem.toLowerCase().includes(searchTerm.toLowerCase());
       });
       if (filteredData.length !== 0) {
@@ -230,6 +229,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
           data: filteredData,
         });
       }
+
       return result;
     }, []);
     return finalData;
@@ -244,7 +244,9 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
           <TextInput
             style={{ marginLeft: 14 }}
             placeholder={'Search'}
-            onChangeText={(searchTerm) => setSearchTerm(searchTerm)}
+            onChangeText={(searchTerm) => {
+              setSearchTerm(searchTerm);
+            }}
           />
         </View>
         <SectionList
