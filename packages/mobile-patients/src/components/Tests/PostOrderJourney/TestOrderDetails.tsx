@@ -506,7 +506,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                           <StatusCard titleText={item?.orderStatus} />
                         </View>
                         {selectedItem?.[index]?.itemObj?.reportGenerationTime &&
-                        item?.orderStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB ? (
+                        DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(item?.orderStatus) ? (
                           <View style={styles.ratingContainer}>
                             <View style={styles.reporttatContainer}>
                               <ClockIcon />
