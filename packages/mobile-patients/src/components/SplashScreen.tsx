@@ -921,6 +921,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Diagnostics_Cancel_Policy_Text',
       PROD: 'Diagnostics_Cancel_Policy_Text',
     },
+    MaxCallRetryAttempt: {
+      QA: 'QA_Max_Call_Retry_Attempt',
+      PROD: 'Max_Call_Retry_Attempt',
+    },
     Enable_Diagnostics_Prepaid: {
       QA: 'QA_Enable_Diagnostics_Prepaid',
       PROD: 'Enable_Diagnostics_Prepaid',
@@ -1147,6 +1151,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'Diagnostics_Cancel_Policy_Text_Msg',
         (key) => config.getString(key)
       );
+      setAppConfig('MaxCallRetryAttempt', 'MaxCallRetryAttempt', (key) => config.getNumber(key));
 
       setAppConfig('Enable_Diagnostics_Prepaid', 'Enable_Diagnostics_Prepaid', (key) =>
         config.getBoolean(key)
