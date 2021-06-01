@@ -590,7 +590,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       phrSession,
       setPhrSession
     );
-    props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+    props.navigation.navigate(AppRoutes.TestReportViewScreen, {
       data: filterApplied === FILTER_TYPE.PARAMETER_NAME ? selectedItem?.data : selectedItem,
       labResults: true,
     });
