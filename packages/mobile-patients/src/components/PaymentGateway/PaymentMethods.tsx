@@ -468,9 +468,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           const minVersion = item?.minimum_supported_version;
           switch (item?.name) {
             case 'COD':
-              return paymentModeVersionCheck(minVersion) && isDiagnosticModify
+              return isDiagnosticModify
                 ? null
-                : renderPayByCash();
+                : paymentModeVersionCheck(minVersion) && renderPayByCash();
             case 'CARD':
               return paymentModeVersionCheck(minVersion) && showPrepaid && renderCards();
             case 'WALLET':
