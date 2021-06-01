@@ -9,6 +9,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { OrderSummary } from '@aph/mobile-patients/src/components/OrderSummaryView';
 import { RefundDetails } from '@aph/mobile-patients/src/components/RefundDetails';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { OrderDelayNoticeView } from '@aph/mobile-patients/src/components/MedicineOrderDetails';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { ChatWithUs } from '@aph/mobile-patients/src/components/ui/ChatWithUs';
@@ -2236,6 +2237,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               selectedTab={selectedTab}
             />
             {selectedTab == string.orders.trackOrder && renderOrderTrackTopView()}
+            {!!Number(orderAutoId) && (
+              <OrderDelayNoticeView
+                orderId={Number(orderAutoId)}
+                containerStyle={selectedTab === string.orders.viewBill && styles.hidden}
+              />
+            )}
             {renderInconvenienceView()}
             <ScrollView bounces={false} ref={scrollViewRef}>
               {selectedTab == string.orders.trackOrder
@@ -2411,6 +2418,11 @@ const styles = StyleSheet.create({
   queryText: {
     ...theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE),
     marginRight: 6,
+  },
+  hidden: {
+    height: 0,
+    width: 0,
+    overflow: 'hidden',
   },
   chatBtnTxt: {
     ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW),

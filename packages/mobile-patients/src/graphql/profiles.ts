@@ -156,21 +156,47 @@ export const BOOK_APPOINTMENT = gql`
   }
 `;
 
-export const MAKE_APPOINTMENT_PAYMENT = gql`
-  mutation makeAppointmentPayment($paymentInput: AppointmentPaymentInput) {
-    makeAppointmentPayment(paymentInput: $paymentInput) {
+export const BOOK_APPOINTMENT_WITH_SUBSCRIPTION = gql`
+  mutation bookAppointmentwithSubscription(
+    $bookAppointment: BookAppointmentInput!
+    $userSubscription: CreateUserSubscriptionInput!
+  ) {
+    bookAppointment(appointmentInput: $bookAppointment) {
       appointment {
         id
-        amountPaid
-        paymentRefId
-        paymentDateTime
-        responseCode
-        responseMessage
-        bankTxnId
-        orderId
-        appointment {
-          id
+        doctorId
+        appointmentDateTime
+        status
+        appointmentType
+        patientId
+        displayId
+        paymentOrderId
+      }
+    }
+    CreateUserSubscription(UserSubscription: $userSubscription) {
+      code
+      success
+      message
+      response {
+        _id
+        mobile_number
+        status
+        start_date
+        end_date
+        group_plan {
+          name
+          plan_id
         }
+      }
+    }
+  }
+`;
+
+export const MAKE_APPOINTMENT_PAYMENT = gql`
+  mutation makeAppointmentPaymentV2($paymentInput: AppointmentPaymentInputV2) {
+    makeAppointmentPaymentV2(paymentInput: $paymentInput) {
+      appointment {
+        id
       }
     }
   }
@@ -2685,14 +2711,6 @@ export const ADD_PATIENT_LAB_TEST_RECORD = gql`
   }
 `;
 
-export const PHR_COVERT_TO_ZIP = gql`
-  mutation convertToZip($fileUrls: [String]!, $uhid: String!) {
-    convertToZip(fileUrls: $fileUrls, uhid: $uhid) {
-      zipUrl
-    }
-  }
-`;
-
 export const GET_PRISM_AUTH_TOKEN = gql`
   query getPrismAuthToken($uhid: String!) {
     getPrismAuthToken(uhid: $uhid) {
@@ -2700,6 +2718,194 @@ export const GET_PRISM_AUTH_TOKEN = gql`
       errorMsg
       errorType
       response
+    }
+  }
+`;
+
+export const GET_PRESCRIPTIONS_BY_MOBILE_NUMBER = gql`
+  query getPrescriptionsByMobileNumber(
+    $MobileNumber: String!
+    $recordId: String!
+    $source: String!
+    $records: [MedicalRecordType]!
+  ) {
+    getPrescriptionsByMobileNumber(
+      MobileNumber: $MobileNumber
+      recordId: $recordId
+      source: $source
+      records: $records
+    ) {
+      patientId
+      test_report {
+        response {
+          id
+          labTestName
+          labTestSource
+          packageId
+          packageName
+          labTestDate
+          date
+          labTestRefferedBy
+          siteDisplayName
+          tag
+          consultId
+          identifier
+          additionalNotes
+          observation
+          labTestResults {
+            parameterName
+            unit
+            result
+            range
+          }
+          fileUrl
+          testResultFiles {
+            id
+            fileName
+            mimeType
+          }
+        }
+        errorCode
+        errorMsg
+        errorType
+      }
+      prescription {
+        response {
+          id
+          prescriptionName
+          date
+          prescribedBy
+          notes
+          prescriptionSource
+          siteDisplayName
+          source
+          fileUrl
+          prescriptionFiles {
+            id
+            fileName
+            mimeType
+          }
+          hospital_name
+          hospitalId
+        }
+        errorCode
+        errorMsg
+        errorType
+      }
+    }
+  }
+`;
+
+export const GET_PAST_CONSULTS_PRESCRIPTIONS_BY_MOBILE = gql`
+  query getLinkedProfilesPastConsultsAndPrescriptionsByMobile(
+    $consultsAndOrdersByMobileInput: PatientConsultsAndOrdersByMobileInput
+  ) {
+    getLinkedProfilesPastConsultsAndPrescriptionsByMobile(
+      consultsAndOrdersByMobileInput: $consultsAndOrdersByMobileInput
+    ) {
+      consults {
+        id
+        patientId
+        doctorId
+        appointmentDateTime
+        appointmentType
+        appointmentState
+        hospitalId
+        isFollowUp
+        followUpParentId
+        followUpTo
+        displayId
+        bookingDate
+        caseSheet {
+          notes
+          blobName
+          consultType
+          diagnosis {
+            name
+          }
+          diagnosticPrescription {
+            itemname
+          }
+          doctorId
+          doctorType
+          followUp
+          followUpAfterInDays
+          followUpDate
+          id
+
+          medicinePrescription {
+            id
+            externalId
+            medicineName
+            medicineDosage
+            medicineToBeTaken
+            medicineInstructions
+            medicineTimings
+            medicineUnit
+            medicineConsumptionDurationInDays
+            medicineConsumptionDuration
+            medicineFormTypes
+            medicineFrequency
+            medicineConsumptionDurationUnit
+            routeOfAdministration
+            medicineCustomDosage
+          }
+          symptoms {
+            symptom
+            since
+            howOften
+            severity
+          }
+        }
+        displayId
+        status
+        doctorInfo {
+          id
+          salutation
+          firstName
+          lastName
+          displayName
+          fullName
+          experience
+          city
+          onlineConsultationFees
+          physicalConsultationFees
+          photoUrl
+          qualification
+          specialty {
+            id
+            name
+            userFriendlyNomenclature
+            image
+          }
+          doctorHospital {
+            facility {
+              id
+              name
+            }
+          }
+        }
+      }
+      medicineOrders {
+        id
+        orderDateTime
+        quoteDateTime
+        deliveryType
+        currentStatus
+        orderType
+        estimatedAmount
+        prescriptionImageUrl
+        shopId
+        prismPrescriptionFileId
+        medicineOrderLineItems {
+          medicineSKU
+          medicineName
+          price
+          quantity
+          mrp
+          id
+        }
+      }
     }
   }
 `;
@@ -2746,9 +2952,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
-            file_Url
+            content
             # byteContent
           }
         }
@@ -2774,9 +2978,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
-            file_Url
+            content
             # byteContent
           }
           hospital_name
@@ -2804,9 +3006,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
-            file_Url
+            content
             # byteContent
             # dateCreated
           }
@@ -2840,9 +3040,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
-            file_Url
+            content
             # byteContent
             # dateCreated
           }
@@ -2867,9 +3065,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
-            file_Url
+            content
             # byteContent
             # dateCreated
           }
@@ -2896,9 +3092,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
-            file_Url
+            content
             # byteContent
             # dateCreated
           }
@@ -2925,9 +3119,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
-            file_Url
+            content
             # byteContent
             # dateCreated
           }
@@ -2994,9 +3186,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
-            file_Url
+            content
             # byteContent
             # dateCreated
           }
@@ -3021,9 +3211,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            # content
-            file_Url
+            content
             byteContent
             dateCreated
           }
@@ -3524,6 +3712,15 @@ export const CANCEL_MEDICINE_ORDER_OMS = gql`
   }
 `;
 
+export const PHARMA_ORDER_MESSAGE = gql`
+  query pharmaOrderMessage($orderId: Int) {
+    pharmaOrderMessage(orderId: $orderId) {
+      message
+      title
+    }
+  }
+`;
+
 export const ALERT_MEDICINE_ORDER_PICKUP = gql`
   mutation alertMedicineOrderPickup($alertMedicineOrderPickupInput: AlertMedicineOrderPickupInput) {
     alertMedicineOrderPickup(alertMedicineOrderPickupInput: $alertMedicineOrderPickupInput) {
@@ -3966,6 +4163,16 @@ export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
           paymentRefId
           paymentStatus
           amountPaid
+        }
+        PaymentOrders {
+          paymentRefId
+          paymentStatus
+          amountPaid
+          refund {
+            refundAmount
+            refundStatus
+            refundId
+          }
         }
         doctor {
           name
@@ -4437,7 +4644,6 @@ export const CREATE_ORDER = gql`
     }
   }
 `;
-
 export const GET_INTERNAL_ORDER = gql`
   query getOrderInternal($order_id: String!) {
     getOrderInternal(order_id: $order_id) {
@@ -4458,6 +4664,23 @@ export const GET_INTERNAL_ORDER = gql`
     }
   }
 `;
+
+export const GET_APPOINTMENT_INFO = gql`
+  query getAppointmentInfo($order_id: String!) {
+    getOrderInternal(order_id: $order_id) {
+      payment_order_id
+      payment_status
+      AppointmentDetails {
+        displayId
+        amountBreakup {
+          actual_price
+          slashed_price
+        }
+      }
+    }
+  }
+`;
+
 export const PROCESS_DIAG_COD_ORDER = gql`
   mutation processDiagnosticHCOrder($processDiagnosticHCOrderInput: ProcessDiagnosticHCOrderInput) {
     processDiagnosticHCOrder(processDiagnosticHCOrderInput: $processDiagnosticHCOrderInput) {
@@ -4862,6 +5085,217 @@ export const FIND_DIAGNOSTIC_SETTINGS = gql`
   }
 `;
 
+export const GET_VACCINE_BOOKING_LIMIT = gql`
+  query GetBenefitAvailabilityInfoByCMSIdentifier(
+    $user_subscription_id: String!
+    $cms_identifier: String!
+  ) {
+    GetBenefitAvailabilityInfoByCMSIdentifier(
+      user_subscription_id: $user_subscription_id
+      cms_identifier: $cms_identifier
+    ) {
+      response
+    }
+  }
+`;
+
+export const VALIDATE_CORPORATE_DOMAIN = gql`
+  query getCMSIdentifierByDomain($email: String!) {
+    getCMSIdentifierByDomain(email: $email) {
+      success
+      groupIdentifier
+    }
+  }
+`;
+
+export const GENERATE_CORPORATE_OTP_MAIL = gql`
+  query GenerateOtpEmailId($email: String!) {
+    GenerateOtpEmailId(GenerateOtpEmailIdInput: { email: $email }) {
+      status
+      loginId
+      message
+    }
+  }
+`;
+
+export const VERIFY_CORPORATE_EMAIL_OTP_AND_SUBSCRIBE = gql`
+  query verifyCorporateEmailOtpAndSubscribe($corporateEmailOtpInput: CorporateEmailOtpInput!) {
+    verifyCorporateEmailOtpAndSubscribe(corporateEmailOtpInput: $corporateEmailOtpInput) {
+      status
+      reason
+      isBlocked
+      incorrectAttempts
+      isSubscriptionSkipped
+    }
+  }
+`;
+
+///---BELOW is pointed to vaccine endpoint-------->>
+
+//vaccinetype added
+export const GET_VACCINATION_SITES = gql`
+  query getResourcesList($city: String!, $vaccine_type: VACCINE_TYPE) {
+    getResourcesList(city: $city, vaccine_type: $vaccine_type) {
+      code
+      success
+      message
+      response {
+        id
+        name
+        created_at
+        city
+        is_corporate_site
+        street_line1
+        street_line2
+        street_line3
+      }
+    }
+  }
+`;
+//vaccinetype to add
+//resource_id
+export const GET_VACCINATION_AVAILABLE_DATES = gql`
+  query getResourcesSessionAvailableDate($resource_id: String!, $vaccine_type: VACCINE_TYPE) {
+    getResourcesSessionAvailableDate(resource_id: $resource_id, vaccine_type: $vaccine_type) {
+      code
+      success
+      message
+      response
+    }
+  }
+`;
+
+//vaccinetype to add
+// resource_id to change
+// session_date to change
+export const GET_VACCINATION_SLOTS = gql`
+  query getResourcesSessionAvailableByDate(
+    $resource_id: String!
+    $session_date: Date
+    $vaccine_type: VACCINE_TYPE
+  ) {
+    getResourcesSessionAvailableByDate(
+      resource_id: $resource_id
+      session_date: $session_date
+      vaccine_type: $vaccine_type
+    ) {
+      code
+      success
+      message
+      response {
+        start_date_time
+        end_date_time
+        session_name
+        id
+      }
+    }
+  }
+`;
+
+// pateint info to type
+export const SUBMIT_VACCINATION_BOOKING_REQUEST = gql`
+  mutation CreateAppointment($appointmentInput: CreateAppointmentInput!) {
+    CreateAppointment(appointmentInput: $appointmentInput) {
+      response {
+        display_id
+        id
+      }
+      success
+      code
+      message
+    }
+  }
+`;
+
+export const GET_VACCINATION_APPOINMENT_DETAILS = gql`
+  query GetAppointmentDetails($appointment_id: String!) {
+    GetAppointmentDetails(appointment_id: $appointment_id) {
+      message
+      code
+      response {
+        display_id
+        dose_number
+        patient_info {
+          firstName
+          lastName
+          age
+          gender
+          uhid
+          id
+          mobileNumber
+        }
+        status
+        payment_type
+        resource_session_details {
+          session_name
+          start_date_time
+          vaccine_type
+          resource_detail {
+            name
+            street_line1
+            street_line2
+            street_line3
+            city
+            state
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const CANCEL_VACCINATION_APPOINTMENT = gql`
+  mutation CancelAppointment($appointment_id: String, $display_id: Float) {
+    CancelAppointment(appointment_id: $appointment_id, display_id: $display_id) {
+      code
+      success
+      message
+      response {
+        id
+        status
+      }
+    }
+  }
+`;
+
+export const GET_ALL_VACCINATION_APPOINTMENTS = gql`
+  query GetAllAppointments {
+    GetAllAppointments {
+      code
+      success
+      message
+      response {
+        id
+        dose_number
+        resource_id
+        patient_info {
+          firstName
+          lastName
+          age
+          gender
+          uhid
+        }
+        status
+        payment_type
+        resource_session_details {
+          session_name
+          start_date_time
+          vaccine_type
+          resource_detail {
+            name
+            street_line1
+            street_line2
+            street_line3
+            city
+            state
+          }
+        }
+        display_id
+        payment_type
+      }
+    }
+  }
+`;
 export const DIAGNOSITC_EXOTEL_CALLING = gql`
   mutation diagnosticExotelCalling($orderId: ID!) {
     diagnosticExotelCalling(orderId: $orderId){

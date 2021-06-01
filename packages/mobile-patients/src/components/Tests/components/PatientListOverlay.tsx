@@ -6,6 +6,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Overlay } from 'react-native-elements';
+import { CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
 
 const { SHERPA_BLUE, APP_YELLOW, CARD_BG, WHITE, APP_GREEN, CLEAR } = theme.colors;
 
@@ -15,6 +16,11 @@ interface PatientListOverlayProps {
   onPressClose: () => void;
   onPressAndroidBack: () => void;
   patientSelected?: any;
+  title?: string;
+  subTitle?: string;
+  excludeProfileListIds?: string[];
+  showCloseIcon: boolean;
+  onCloseIconPress: () => void;
 }
 
 export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => {
@@ -29,6 +35,10 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
   const [selectedPatient, setSelectedPatient] = useState<any>(patientSelected);
 
   const renderPatientListItem = ({ index, item }) => {
+    if (props.excludeProfileListIds?.includes(item?.uhid)) {
+      return null;
+    }
+
     const patientName = `${item?.firstName || ''} ${item?.lastName || ''}`;
     const genderAgeText = `${item?.gender || ''}, ${
       item?.dateOfBirth ? getAge(item?.dateOfBirth) || '' : ''
@@ -73,17 +83,28 @@ export const PatientListOverlay: React.FC<PatientListOverlayProps> = (props) => 
         />
         <View style={styles.overlayViewStyle}>
           <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
+            {props.showCloseIcon && (
+              <View style={{ alignSelf: 'flex-end' }}>
+                <TouchableOpacity
+                  style={{ width: 40, height: 40 }}
+                  onPress={props.onCloseIconPress}
+                >
+                  <CrossPopup style={{ width: 28, height: 28 }} />
+                </TouchableOpacity>
+              </View>
+            )}
+
             <View style={styles.mainViewStyle}>
               <View style={styles.selectPatientNameViewStyle}>
                 <Text style={styles.selectPatientNameTextStyle}>
-                  {string.diagnostics.selectPatientNameText}
+                  {props.title || string.diagnostics.selectPatientNameText}
                 </Text>
                 <Text style={styles.addMemberText} onPress={onPressAddNewProfile}>
                   {string.diagnostics.addMemberText}
                 </Text>
               </View>
               <Text style={styles.patientOrderTestMsgTextStyle}>
-                {string.diagnostics.patientTestOrderMsg}
+                {props.subTitle || string.diagnostics.patientTestOrderMsg}
               </Text>
               <View style={styles.patientListCardStyle}>
                 <FlatList

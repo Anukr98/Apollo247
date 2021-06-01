@@ -36,7 +36,7 @@ import {
   Text,
   Modal,
 } from 'react-native';
-import { Down, DownO } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Down, DownO, InfoIconRed } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NavigationScreenProps } from 'react-navigation';
 import {
   CancellationDiagnosticsInput,
@@ -929,7 +929,17 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       </View>
     );
   };
-
+  const enable_cancelellation_policy =
+    AppConfig.Configuration.Enable_Diagnostics_Cancellation_Policy;
+  const cancelellation_policy_text = AppConfig.Configuration.Diagnostics_Cancel_Policy_Text_Msg;
+  const renderCancelationPolicy = () => {
+    return (
+      <View style={styles.cancel_container}>
+        <InfoIconRed />
+        <Text style={styles.cancel_text}>{cancelellation_policy_text}</Text>
+      </View>
+    );
+  };
   const renderRescheduleCancelOptions = () => {
     const selectedOrderRescheduleCount = selectedOrder?.rescheduleCount;
     const setRescheduleCount = !!selectedOrderRescheduleCount
@@ -938,6 +948,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     return (
       <View>
         <Text style={styles.overlayHeadingText}>{string.diagnostics.whatWudLikeText}</Text>
+        {enable_cancelellation_policy ? renderCancelationPolicy() : null}
         <TouchableOpacity onPress={() => _onPressReschduleOption()} style={styles.optionsTouch}>
           <View>
             <View style={styles.rowStyle}>
@@ -1554,6 +1565,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
     borderColor: 'transparent',
+  },
+  cancel_container: {
+    width: '92%',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    borderRadius: 10,
+    backgroundColor: '#FCFDDA',
+    padding: 10,
+    margin: 10,
+    alignSelf: 'center',
+    elevation: 2,
+  },
+  cancel_text: {
+    ...theme.viewStyles.text('M', 12, '#01475b', 0.6, 16),
+    width: '90%',
+    marginHorizontal: 5,
   },
   overlayHeadingText: {
     ...theme.fonts.IBMPlexSansMedium(16),

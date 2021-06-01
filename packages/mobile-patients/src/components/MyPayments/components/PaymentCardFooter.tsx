@@ -41,14 +41,20 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
       const {
         appointmentDateTime,
         appointmentPayments,
+        PaymentOrders,
         doctor,
         appointmentType,
         appointmentRefunds,
       } = item;
+      const { refund } = PaymentOrders;
+      const refundInfo = refund?.length ? refund : appointmentRefunds;
       leftHeaderText = 'Dr. ' + doctor.name;
       type = appointmentType === 'ONLINE' ? 'Online Consult' : 'Clinic Visit';
       aptType = appointmentType;
-      if (!appointmentPayments || !appointmentPayments.length) {
+      const paymentInfo = Object.keys(PaymentOrders).length
+        ? PaymentOrders
+        : appointmentPayments[0];
+      if (!paymentInfo) {
         status = 'PENDING';
         return {
           leftHeaderText: leftHeaderText,
@@ -57,7 +63,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
           status: status,
           aptType: aptType,
         };
-      } else if (appointmentRefunds.length) {
+      } else if (refundInfo.length) {
         status = 'TXN_REFUND';
         return {
           leftHeaderText: leftHeaderText,
@@ -67,7 +73,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
           aptType: aptType,
         };
       } else {
-        status = appointmentPayments[0].paymentStatus;
+        status = paymentInfo?.paymentStatus;
         return {
           leftHeaderText: leftHeaderText,
           dateAndTime: getDate(appointmentDateTime),
@@ -192,8 +198,10 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
     const { status } = statusItemValues();
     const { buttonTitle } = getTitle();
     if (paymentFor === 'consult') {
-      const { appointmentRefunds } = item;
-      if ((status === SUCCESS || status === FAILED) && appointmentRefunds.length < 1) {
+      const { appointmentRefunds, PaymentOrders } = item;
+      const { refund } = PaymentOrders;
+      const refundInfo = refund?.length ? refund : appointmentRefunds;
+      if ((status === SUCCESS || status === FAILED) && refundInfo.length < 1) {
         return <CardFooterButton buttonTitle={buttonTitle} onPressAction={navigateTo} />;
       } else {
         return null;

@@ -337,8 +337,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   };
 
   useEffect(() => {
-    const filteredData = sortByTypeRecords(filterApplied);
-    if (filteredData) {
+    if (testReportMainData) {
       let finalData: { key: string; data: any[] }[] = [];
       if (filterApplied) {
         const filterAppliedString =
@@ -351,7 +350,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
             : filterApplied === FILTER_TYPE.PARAMETER_NAME
             ? 'parameterName'
             : 'labTestSource';
-        filteredData?.forEach((dataObject: any) => {
+        testReportMainData?.forEach((dataObject: any) => {
           const dataObjectArray: any[] = [];
           if (dataObject?.data?.labTestName && filterApplied === FILTER_TYPE.PARAMETER_NAME) {
             dataObject?.data?.labTestResults?.forEach((parameterObject: any) => {
@@ -398,9 +397,17 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
             }
           }
         });
+        finalData = finalData?.sort((data1: any, data2: any) => {
+          const filteredData1 = _.lowerCase(data1?.key);
+          const filteredData2 = _.lowerCase(data2?.key);
+          if (filterApplied === FILTER_TYPE.DATE) {
+            return filteredData1 > filteredData2 ? -1 : filteredData1 < filteredData2 ? 1 : 0;
+          }
+          return filteredData2 > filteredData1 ? -1 : filteredData2 < filteredData1 ? 1 : 0;
+        });
       } else {
         // render when no filter is applied
-        finalData = initialSortByDays('lab-results', filteredData, finalData);
+        finalData = initialSortByDays('lab-results', testReportMainData, finalData);
       }
       setLocalTestReportsData(finalData);
     }
@@ -411,7 +418,9 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       return filterAppliedString === 'labTestName'
         ? obj.healthCheckName
         : filterAppliedString === 'labTestSource'
-        ? obj.source
+        ? obj.source === '247self'
+          ? 'self'
+          : obj.source
         : filterAppliedString === 'packageName' || filterAppliedString === 'parameterName'
         ? null
         : obj[filterAppliedString];
@@ -423,35 +432,6 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         ? 'self'
         : obj[filterAppliedString];
     }
-  };
-
-  const sortByTypeRecords = (type: FILTER_TYPE | string) => {
-    return testReportMainData?.sort(({ data: data1 }, { data: data2 }) => {
-      const filteredData1 =
-        type === FILTER_TYPE.DATE
-          ? moment(data1?.date)
-              .toDate()
-              .getTime()
-          : type === FILTER_TYPE.TEST_NAME
-          ? _.lowerCase(data1?.labTestName || data1?.healthCheckName)
-          : type === FILTER_TYPE.SOURCE
-          ? _.lowerCase(data1?.labTestSource || data1?.source)
-          : _.lowerCase(data1?.packageName);
-      const filteredData2 =
-        type === FILTER_TYPE.DATE
-          ? moment(data2?.date)
-              .toDate()
-              .getTime()
-          : type === FILTER_TYPE.TEST_NAME
-          ? _.lowerCase(data2?.labTestName || data2?.healthCheckName)
-          : type === FILTER_TYPE.SOURCE
-          ? _.lowerCase(data2?.labTestSource || data2?.source)
-          : _.lowerCase(data2?.packageName);
-      if (type === FILTER_TYPE.DATE) {
-        return filteredData1 > filteredData2 ? -1 : filteredData1 < filteredData2 ? 1 : 0;
-      }
-      return filteredData2 > filteredData1 ? -1 : filteredData2 < filteredData1 ? 1 : 0;
-    });
   };
 
   const renderProfileImage = () => {

@@ -9,12 +9,13 @@ import {
 import moment from 'moment';
 
 export interface BookingInfoProps {
-  LOB: 'Diag' | 'Consult' | 'Pharma';
+  LOB: 'diagnostics' | 'consult' | 'Pharma';
+  orderDetails: any;
   modifyOrderDetails?: any;
 }
 
 export const BookingInfo: React.FC<BookingInfoProps> = (props) => {
-  const { LOB, modifyOrderDetails } = props;
+  const { LOB, orderDetails, modifyOrderDetails } = props;
   const isDiagnosticModifyFlow = !!modifyOrderDetails && !isEmptyObject(modifyOrderDetails);
   const { addresses, deliveryAddressId, diagnosticSlot } = useDiagnosticsCart();
   const selectedAddress = isDiagnosticModifyFlow
@@ -32,13 +33,20 @@ export const BookingInfo: React.FC<BookingInfoProps> = (props) => {
       isDiagnosticModifyFlow ? modifyOrderDetails?.slotDateTimeInUTC : diagnosticSlot?.date
     ).format('D MMM, YYYY');
 
-    const msg = LOB == 'Diag' ? `Slot booked for sample collection ${slotTime}, ${slotDate}` : '';
+    const msg =
+      LOB == 'diagnostics'
+        ? `Slot booked for sample collection ${slotTime}, ${slotDate}`
+        : LOB == 'consult'
+        ? `${orderDetails?.doctorName}'s appointment on ${moment(
+            orderDetails?.appointmentDateTime
+          ).format('DD MMM YYYY, h:mm A')} `
+        : '';
     return <Text style={styles.heading}>{msg}</Text>;
   };
 
   const renderSubText = () => {
-    const subTxt = LOB == 'Diag' ? formatSelectedAddress(selectedAddress!).slice(0, 60) : '';
-    return <Text style={styles.subTxt}>{subTxt}</Text>;
+    const subTxt = LOB == 'diagnostics' ? formatSelectedAddress(selectedAddress!).slice(0, 60) : '';
+    return !!subTxt ? <Text style={styles.subTxt}>{subTxt}</Text> : null;
   };
 
   return (
@@ -56,6 +64,7 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     marginHorizontal: 20,
     marginTop: 15,
+    alignItems: 'center',
   },
   heading: {
     ...theme.fonts.IBMPlexSansMedium(12),

@@ -771,7 +771,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   };
 
   const onCompositionClick = () =>
-    props.navigation.navigate(AppRoutes.MedicineListing, {
+    props.navigation.push(AppRoutes.MedicineListing, {
       searchText: medicineDetails?.PharmaOverview?.[0]?.Composition,
       movedFrom: 'PDP Composition Hyperlink',
     });

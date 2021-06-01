@@ -119,7 +119,7 @@ import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import Axios from 'axios';
 import _ from 'lodash';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Dimensions,
@@ -135,6 +135,7 @@ import {
   View,
   ViewStyle,
   BackHandler,
+  ActivityIndicator,
 } from 'react-native';
 import ContentLoader from 'react-native-easy-content-loader';
 import { Divider, Image, ListItem } from 'react-native-elements';
@@ -218,6 +219,11 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     padding: 10,
     alignItems: 'center',
+  },
+  searchResults: {
+    paddingTop: 10.5,
+    maxHeight: 266,
+    backgroundColor: '#f7f8f5',
   },
 });
 
@@ -1435,6 +1441,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       setPageLoading!(false);
       if (data) {
         if (data?.APOLLO?.[0]._id) {
+          AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
           setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
           setIsCircleSubscription && setIsCircleSubscription(true);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
@@ -1620,20 +1627,19 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const [searchText, setSearchText] = useState<string>('');
   const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
-  const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
   const [isSearchFocused, setSearchFocused] = useState(false);
   const [itemsLoading, setItemsLoading] = useState<{ [key: string]: boolean }>({});
-  const [searchQuery, setSearchQuery] = useState({});
+  const [medicineSearchLoading, setMedicineSearchLoading] = useState<boolean>(false);
 
   const onSearchMedicine = (_searchText: string) => {
-    setsearchSate('load');
+    setMedicineSearchLoading(true);
     getMedicineSearchSuggestionsApi(_searchText, axdcCode, pinCode)
       .then(({ data }) => {
         const products = data.products || [];
         const inStockProducts = products.filter((product) => !!isProductInStock(product));
         const outOfStockProducts = products.filter((product) => !isProductInStock(product));
         setMedicineList([...inStockProducts, ...outOfStockProducts]);
-        setsearchSate('success');
+        setMedicineSearchLoading(false);
         const eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH] = {
           keyword: _searchText,
           Source: 'Pharmacy Home',
@@ -1644,15 +1650,33 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       })
       .catch((e) => {
         CommonBugFender('Medicine_onSearchMedicine', e);
+        setMedicineSearchLoading(false);
         if (!Axios.isCancel(e)) {
-          setsearchSate('fail');
+          setMedicineSearchLoading(false);
         }
       });
   };
 
+  useEffect(() => {
+    debounce.current(searchText);
+  }, [searchText]);
+
+  const onSearch = (searchText: string) => {
+    if (searchText.length >= 3) {
+      onSearchMedicine(searchText);
+    } else {
+      setMedicineList([]);
+      setMedicineSearchLoading(false);
+    }
+  };
+
+  const debounce = useRef(_.debounce(onSearch, 300));
+
   const renderSearchInput = () => {
     const shouldEnableSearchSend = searchText.length > 2;
-    const rigthIconView = (
+    const rigthIconView = medicineSearchLoading ? (
+      <ActivityIndicator size={24} />
+    ) : (
       <TouchableOpacity
         activeOpacity={1}
         style={{
@@ -1675,7 +1699,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
 
     const itemsNotFound =
-      searchSate == 'success' && searchText.length > 2 && medicineList?.length == 0;
+      !medicineSearchLoading && searchText.length > 2 && medicineList?.length == 0;
 
     return (
       <>
@@ -1701,27 +1725,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setSearchFocused(false);
             setMedicineList([]);
             setSearchText('');
-            setsearchSate('success');
           }}
           onChangeText={(value) => {
-            if (isValidSearch(value)) {
-              setSearchText(value);
-              if (!(value && value.length > 2)) {
-                setMedicineList([]);
-                return;
-              }
-              const search = _.debounce(onSearchMedicine, 500);
-              if (value.length >= 3) {
-                setsearchSate('load');
-              } // this block is to fix no results errorMessage appearing while loading response
-              setSearchQuery((prevSearch: any) => {
-                if (prevSearch.cancel) {
-                  prevSearch.cancel();
-                }
-                return search;
-              });
-              search(value);
+            if (isValidSearch(value) && value.length >= 3) {
+              setMedicineSearchLoading(true);
             }
+            setSearchText(value);
           }}
           _rigthIconView={rigthIconView}
           placeholder="Search meds, brands &amp; more"
@@ -1836,63 +1845,44 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           marginHorizontal: 20,
           paddingBottom: index == medicineList?.length - 1 ? 20 : 0,
         }}
-        maxOrderQty={getMaxQtyForMedicineItem(item.MaxOrderQty)}
-        removeCartItem={() => onRemoveCartItem(item.sku)}
       />
     );
   };
 
   const renderSearchResults = () => {
     const showResults = !!searchText && searchText.length > 2 && medicineList?.length > 0;
-    const isLoading = searchSate == 'load';
+    if (!showResults) return null;
     return (
-      <>
-        {isLoading ? (
-          <View style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}>
-            {renderSectionLoader(330)}
-          </View>
-        ) : (
-          !!showResults && (
-            <View>
-              <FlatList
-                keyboardShouldPersistTaps="always"
-                // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
-                bounces={false}
-                keyExtractor={(_, index) => `${index}`}
-                showsVerticalScrollIndicator={true}
-                persistentScrollbar={true}
-                style={{
-                  paddingTop: 10.5,
-                  maxHeight: 266,
-                  backgroundColor: '#f7f8f5',
-                }}
-                data={medicineList}
-                extraData={itemsLoading}
-                renderItem={renderSearchSuggestionItemView}
-              />
-              <View style={styles.searchContainer}>
-                <TouchableOpacity
-                  onPress={() => {
-                    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SEARCH_RESULTS] = {
-                      keyword: searchText,
-                      Source: 'Pharmacy Home',
-                    };
-                    postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
-                    props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
-                    setSearchText('');
-                    setMedicineList([]);
-                  }}
-                  style={styles.viewAllContainer}
-                >
-                  <Text style={theme.viewStyles.text('B', 15, '#FCB716', 1, 20)}>
-                    VIEW ALL RESULTS
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )
-        )}
-      </>
+      <View>
+        <FlatList
+          keyboardShouldPersistTaps="always"
+          contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
+          bounces={false}
+          keyExtractor={(_, index) => `${index}`}
+          showsVerticalScrollIndicator={true}
+          style={styles.searchResults}
+          data={medicineList}
+          extraData={itemsLoading}
+          renderItem={renderSearchSuggestionItemView}
+        />
+        <View style={styles.searchContainer}>
+          <TouchableOpacity
+            onPress={() => {
+              const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SEARCH_RESULTS] = {
+                keyword: searchText,
+                Source: 'Pharmacy Home',
+              };
+              postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
+              props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
+              setSearchText('');
+              setMedicineList([]);
+            }}
+            style={styles.viewAllContainer}
+          >
+            <Text style={theme.viewStyles.text('B', 15, '#FCB716', 1, 20)}>VIEW ALL RESULTS</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     );
   };
 
@@ -1971,10 +1961,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderOverlay = () => {
     const isNoResultsFound =
-      searchSate != 'load' && searchText.length > 2 && medicineList?.length == 0;
+      !medicineSearchLoading && searchText.length > 2 && medicineList?.length == 0;
 
     return (
-      (!!medicineList?.length || searchSate == 'load' || isNoResultsFound) && (
+      (!!medicineList?.length || medicineSearchLoading || isNoResultsFound) && (
         <View style={theme.viewStyles.overlayStyle}>
           <TouchableOpacity
             activeOpacity={1}

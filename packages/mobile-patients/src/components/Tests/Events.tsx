@@ -370,13 +370,13 @@ export function DiagnosticAppointmentTimeSlot(
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED, eventAttributes);
 }
 
-export function DiagnosticPaymentInitiated(grandTotal: number, LOB: string, type: string) {
-  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
+export function PaymentInitiated(grandTotal: number, LOB: string, type: string) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.PAYMENT_INITIATED] = {
     Amount: grandTotal,
     LOB: LOB,
     type: type,
   };
-  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED, eventAttributes);
+  postWebEngageEvent(WebEngageEventName.PAYMENT_INITIATED, eventAttributes);
 }
 
 export function DiagnosticAddresssSelected(

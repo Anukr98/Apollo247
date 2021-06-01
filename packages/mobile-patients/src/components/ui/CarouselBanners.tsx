@@ -624,7 +624,7 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 4,
     marginHorizontal: 4,
-    marginTop: 8,
+    marginTop: 14,
     justifyContent: 'flex-start',
   },
   row: {

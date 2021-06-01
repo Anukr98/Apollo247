@@ -110,7 +110,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const renderLowerCont = () => {
     return (
       <View style={styles.lowerCountContainer}>
-        <View>
+        <View style={styles.lowerCountInnerView}>
           {renderQuantity()}
           {itemAvailable && !isProuctFreeCouponApplied && !!coupon && renderCoupon()}
           {(isCircleSubscription || !!circleMembershipCharges) && renderCareCashback()}
@@ -378,6 +378,9 @@ const styles = StyleSheet.create({
   lowerCountContainer: {
     flexDirection: 'row',
     justifyContent: width <= 360 ? 'space-around' : 'space-between',
+  },
+  lowerCountInnerView: {
+    flex: 1,
   },
   rxSymbolContainer: {
     position: 'absolute',

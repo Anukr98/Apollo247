@@ -325,7 +325,7 @@ export const isPastAppointment = (
   const followUpAfterInDays =
     caseSheetChatDays || caseSheetChatDays === '0'
       ? caseSheetChatDays === '0'
-        ? 0
+        ? -1
         : Number(caseSheetChatDays) - 1
       : 6;
   return (
@@ -1041,7 +1041,7 @@ const getlocationData = (
     (error) => {
       reject('Unable to get location.');
     },
-    { accuracy: { android : 'balanced', ios:'best'} , enableHighAccuracy: true, timeout: 10000 }
+    { accuracy: { android: 'balanced', ios: 'best' }, enableHighAccuracy: true, timeout: 10000 }
   );
 };
 
@@ -1155,6 +1155,9 @@ export const statusBarHeight = () =>
   Platform.OS === 'ios' ? (height === 812 || height === 896 ? 44 : 20) : 0;
 
 export const isValidSearch = (value: string) => /^([^ ]+[ ]{0,1}[^ ]*)*$/.test(value);
+
+export const isValidImageUrl = (value: string) =>
+  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/.test(value);
 
 export const isValidText = (value: string) =>
   /^([a-zA-Z0-9]+[ ]{0,1}[a-zA-Z0-9\-.\\/?,&]*)*$/.test(value);
@@ -1787,12 +1790,6 @@ export const UnInstallAppsFlyer = (newFirebaseToken: string) => {
   appsFlyer.updateServerUninstallToken(newFirebaseToken, (success) => {});
 };
 
-export const APPStateInActive = () => {
-  if (Platform.OS === 'ios') {
-    appsFlyer.trackAppLaunch();
-  }
-};
-
 export const APPStateActive = () => {
   if (onInstallConversionDataCanceller) {
     onInstallConversionDataCanceller();
@@ -1807,7 +1804,7 @@ export const APPStateActive = () => {
 export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Object) => {
   try {
     const logContent = `[AppsFlyer Event] ${eventName}`;
-    appsFlyer.trackEvent(
+    appsFlyer.logEvent(
       eventName,
       attributes,
       (res) => {},
@@ -2779,7 +2776,7 @@ export async function downloadDiagnosticReport(
 
       let msg = 'File is downloading..';
       if (showToast && Platform.OS === 'android') {
-          ToastAndroid.show(msg, ToastAndroid.SHORT);
+        ToastAndroid.show(msg, ToastAndroid.SHORT);
       }
       RNFetchBlob.config({
         fileCache: true,
@@ -2876,6 +2873,10 @@ export const getPackageIds = (activeUserSubscriptions: any) => {
   return packageIds;
 };
 
+export const isSatisfyingEmailRegex = (value: string) =>
+  /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+    value
+  );
 export const getDiagnosticCityLevelPaymentOptions = (cityId: string ) =>{
   let remoteData = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_PAYMENT_OPTION;
     const getConfigPaymentValue = remoteData?.find(

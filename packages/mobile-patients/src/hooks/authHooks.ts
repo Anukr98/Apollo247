@@ -26,6 +26,8 @@ export const useAuth = () => {
 
   const getFirebaseToken = useAuthContext().getFirebaseToken;
 
+  const authToken = useAuthContext().authToken;
+
   return {
     sendOtp,
     sendOtpError,
@@ -44,6 +46,7 @@ export const useAuth = () => {
     mobileAPICalled,
     setMobileAPICalled,
     getFirebaseToken,
+    authToken,
   };
 };
 

@@ -35,6 +35,9 @@ import {
   CheckedIcon,
   CircleLogo,
   CouponIcon,
+  CrossOcta,
+  BlackArrowUp,
+  BlackArrowDown,
   Down,
   Up,
 } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -152,7 +155,7 @@ import {
   DiagnosticCartViewed,
   DiagnosticModifyOrder,
   DiagnosticNonServiceableAddressSelected,
-  DiagnosticPaymentInitiated,
+  PaymentInitiated,
   DiagnosticProceedToPay,
   DiagnosticRemoveFromCartClicked,
 } from '@aph/mobile-patients/src/components/Tests/Events';
@@ -279,6 +282,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
   const { currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const [todaySlotNotAvailable, setTodaySlotNotAvailable] = useState<boolean>(false);
+  const [showCancellationPolicy, setShowCancellationPolicy] = useState<boolean>(false);
   const currentPatientId =
     !!modifiedOrder && !isEmptyObject(modifiedOrder)
       ? modifiedOrder?.patientId
@@ -288,6 +292,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     locationDetails,
     diagnosticServiceabilityData,
     diagnosticLocation,
+    setauthToken,
     setDoctorJoinedChat,
     isDiagnosticLocationServiceable,
     setDiagnosticLocation,
@@ -998,6 +1003,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           const promoteCircle = pricesForItem?.promoteCircle; //if circle discount is more
           const promoteDiscount = pricesForItem?.promoteDiscount; // if special discount is more than others.
 
+          //removed comparison of circle/discount/prices
           const priceToCompare =
             isDiagnosticCircleSubscription && promoteCircle
               ? circleSpecialPrice
@@ -2182,7 +2188,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED],
     orderInfo: any
   ) {
-    DiagnosticPaymentInitiated(amount, 'Diagnostic', 'Cash');
+    PaymentInitiated(amount, 'Diagnostic', 'Cash');
     try {
       const response = await processDiagnosticsCODOrder(client, orderId, amount);
       const { data } = response;
@@ -2356,6 +2362,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           amount: grandTotal,
         };
         const eventAttributes = createCheckOutEventAttributes(orderId, slotStartTime);
+        setauthToken?.('');
         if (
           source === 'modifyOrder' &&
           modifiedOrder?.paymentType !== DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
@@ -3267,7 +3274,30 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const maxDaysToShow = !!isCartHasCovidItem
     ? AppConfig.Configuration.Covid_Max_Slot_Days
     : AppConfig.Configuration.Non_Covid_Max_Slot_Days;
-
+  const enable_cancelellation_policy =
+    AppConfig.Configuration.Enable_Diagnostics_Cancellation_Policy;
+  const cancelellation_policy_text = AppConfig.Configuration.Diagnostics_Cancel_Policy_Text_Msg;
+  const renderCancellationPolicy = () => {
+    return (
+      <View style={styles.cancelPolicyContainer}>
+        <TouchableOpacity
+          onPress={() => {
+            setShowCancellationPolicy(!showCancellationPolicy);
+          }}
+          style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+        >
+          <View style={{ flexDirection: 'row', justifyContent: 'flex-start' }}>
+            <CrossOcta />
+            <Text style={styles.cancel_heading}>Cancellation Policy</Text>
+          </View>
+          {showCancellationPolicy ? <BlackArrowUp /> : <BlackArrowDown />}
+        </TouchableOpacity>
+        {showCancellationPolicy ? (
+          <Text style={styles.cancel_text}>{cancelellation_policy_text}</Text>
+        ) : null}
+      </View>
+    );
+  };
   return (
     <View style={{ flex: 1 }}>
       {displaySchedule && (
@@ -3313,6 +3343,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             {renderItemsInCart()}
             {isModifyFlow ? renderPreviouslyAddedItems() : null}
             {renderTotalCharges()}
+            {enable_cancelellation_policy ? renderCancellationPolicy() : null}
             {cartItems?.length > 0 ? renderAlsoAddItems() : null}
           </View>
           <View style={{ height: cartItems?.length > 0 ? 140 : 90 }} />
@@ -3336,6 +3367,26 @@ const styles = StyleSheet.create({
   labelTextStyle: {
     color: theme.colors.FILTER_CARD_LABEL,
     ...theme.fonts.IBMPlexSansBold(13),
+  },
+  cancel_heading: {
+    ...theme.viewStyles.text('SB', 16, '#01475b'),
+    marginHorizontal: 10,
+  },
+  cancel_text: {
+    ...theme.viewStyles.text('M', 12, '#01475b', 1, 18),
+    width: '90%',
+    textAlign: 'left',
+    alignSelf: 'flex-end',
+    marginHorizontal: 10,
+    marginVertical: 5,
+  },
+  cancelPolicyContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    marginHorizontal: 20,
+    // marginTop: 4,
+    marginBottom: 12,
+    padding: 16,
+    marginTop: 10,
   },
   yellowTextStyle: {
     ...theme.viewStyles.yellowTextStyle,

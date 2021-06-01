@@ -119,7 +119,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const [circlePlanDetails, setCirclePlanDetails] = useState({});
   const [codOrderProcessing, setcodOrderProcessing] = useState<boolean>(false);
-  const { apisToCall } = useAppCommonData();
+  const { apisToCall, pharmacyUserTypeAttribute } = useAppCommonData();
 
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
@@ -187,6 +187,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
       setCirclePlanDetails(data?.APOLLO?.[0]);
       setCircleSubscriptionID(data?.APOLLO?.[0]._id);
+      AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
     } catch (error) {
       CommonBugFender('ConsultRoom_getUserSubscriptionsByStatus', error);
     }
@@ -265,6 +266,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
       ...pharmacyCircleAttributes!,
+      ...pharmacyUserTypeAttribute,
     };
     return appsflyerEventAttributes;
   };

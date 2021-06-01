@@ -149,6 +149,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     minCartValueForCOD,
     maxCartValueForCOD,
     nonCodSKus,
+    clearCartInfo,
   } = useShoppingCart();
   const {
     pharmacyUserTypeAttribute,
@@ -348,6 +349,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       'Circle Cashback amount':
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
       ...pharmacyCircleAttributes!,
+      ...pharmacyUserTypeAttribute,
     };
     return appsflyerEventAttributes;
   };
@@ -438,6 +440,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         } else {
           // Order-Success, Show popup here & clear cart info
           try {
+            clearCartInfo?.();
             postwebEngageCheckoutCompletedEvent(`${orderAutoId}`, orderId, isCOD);
             firePurchaseEvent(orderId);
           } catch (error) {}
@@ -519,6 +522,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               postwebEngageCheckoutCompletedEvent(`${order?.orderAutoId}`, order?.id!, isCOD);
               firePurchaseEvent(order?.id!);
             });
+            clearCartInfo?.();
           } catch (error) {}
           props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
             status: 'PAYMENT_PENDING',

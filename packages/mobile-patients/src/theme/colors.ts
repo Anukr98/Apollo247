@@ -64,6 +64,8 @@ const Common = {
   WHITE: white,
   HEX_WHITE: hexWhite,
   SHERPA_BLUE: APP_Sherpa_Blue,
+  BLUMINE: '#14657A',
+  BLUE_BAYOUX: '#4B717C',
   APP_YELLOW_COLOR: '#fcb716',
   APP_YELLOW: tangerine_yellow,
   SHADOW_GRAY: shadowGray,
