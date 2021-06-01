@@ -958,16 +958,11 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
                 style={styles.imageViewStyle}
                 onPress={() => {
                   setShowPDF(true);
-                  setPdfFileUrl(data?.fileUrl);
+                  setPdfFileUrl(file_Url);
                   setFileNamePDF(file_name);
                 }}
               >
-                <Pdf
-                  key={data?.fileUrl}
-                  source={{ uri: data?.fileUrl }}
-                  style={styles.pdfStyle}
-                  singlePage
-                />
+                <Pdf key={file_Url} source={{ uri: file_Url }} style={styles.pdfStyle} singlePage />
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
