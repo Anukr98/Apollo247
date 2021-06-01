@@ -1913,3 +1913,10 @@ export const CovidVaccine: React.FC<IconProps> = (props) => (
 export const VaccineBookingFailed: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/vacc_booking_failed.webp')} />
 );
+
+export const WidgetLiverIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/ic_liver_icon.webp')}
+  />
+);

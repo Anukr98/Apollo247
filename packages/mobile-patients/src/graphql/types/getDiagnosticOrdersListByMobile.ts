@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { DIAGNOSTIC_ORDER_STATUS, DIAGNOSTICS_TYPE, DIAGNOSTIC_ORDER_PAYMENT_TYPE } from "./globalTypes";
+import { DIAGNOSTIC_ORDER_STATUS, DIAGNOSTIC_ORDER_PAYMENT_TYPE, DIAGNOSTICS_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getDiagnosticOrdersListByMobile
@@ -18,11 +18,12 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   gender: string | null;
   dateOfBirth: string | null;
 }
+
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_attributesObj {
   __typename: "AttributesObj";
-  preTestingRequirement: string;
-  reportGenerationTime: string;
-  initialCollectionCharges: number;
+  preTestingRequirement: string | null;
+  reportGenerationTime: string | null;
+  initialCollectionCharges: number | null;
 }
 
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientAddressObj {
@@ -54,6 +55,7 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   testPreparationData: string | null;
   packageCalculatedMrp: number | null;
   inclusions: (number | null)[] | null;
+  reportGenerationTime: string | null;
 }
 
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems_diagnostics_diagnosticPricing {
@@ -88,6 +90,8 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   groupPlan: string | null;
   price: number | null;
   itemType: DIAGNOSTICS_TYPE | null;
+  editOrderID: string | null;
+  isRemoved: boolean | null;
   itemObj: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems_itemObj | null;
   diagnostics: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems_diagnostics | null;
   testPreparationData: string | null;
@@ -97,9 +101,9 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_phleboDetailsObj {
   __typename: "PhleboDetailsObj";
   PhelboOTP: string | null;
-  PhelbotomistName: string | null;
-  PhelbotomistMobile: string | null;
-  PhelbotomistTrackLink: string | null;
+  PhelbotomistName: string;
+  PhelbotomistMobile: string;
+  PhelbotomistTrackLink: string;
   TempRecording: string | null;
   CheckInTime: any | null;
   PhleboLatitude: number | null;
@@ -129,34 +133,28 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   isRescheduled: boolean | null;
   rescheduleCount: number | null;
   areaId: number | null;
-  addressLine1: string | null;
-  addressLine2: string | null;
   patientId: string;
-  displayId: number;
+  orderType: string;
+  totalPrice: number;
+  orderStatus: DIAGNOSTIC_ORDER_STATUS;
+  createdDate: any;
+  paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
   diagnosticDate: any;
-  diagnosticBranchCode: string;
-  diagnosticEmployeeCode: string;
+  paymentOrderId: string | null;
+  patientAddressId: string;
+  displayId: number;
   visitNo: string | null;
   labReportURL: string | null;
+  slotTimings: string;
+  slotId: string | null;
+  slotDateTimeInUTC: any | null;
+  collectionCharges: number | null;
   patientObj: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj | null;
   attributesObj: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_attributesObj | null;
   patientAddressObj: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientAddressObj | null;
   diagnosticOrdersStatus: (getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus | null)[] | null;
   diagnosticOrderLineItems: (getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems | null)[] | null;
-  orderType: string;
-  totalPrice: number;
-  centerName: string;
-  centerState: string;
-  orderStatus: DIAGNOSTIC_ORDER_STATUS;
-  createdDate: any;
-  paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
-  centerLocality: string;
-  paymentOrderId: string | null;
-  patientAddressId: string;
   phleboDetailsObj: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_phleboDetailsObj | null;
-  slotTimings: string;
-  slotDateTimeInUTC: any | null;
-  collectionCharges: number | null;
   diagnosticOrderReschedule: (getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderReschedule | null)[] | null;
   diagnosticOrderCancellation: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderCancellation | null;
 }

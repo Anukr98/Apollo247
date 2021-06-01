@@ -1,6 +1,5 @@
-import { AphOverlay, AphOverlayProps } from '@aph/mobile-patients/src/components/ui/AphOverlay';
+import { AphOverlayProps } from '@aph/mobile-patients/src/components/ui/AphOverlay';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { CalendarView, CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
 import {
   Morning,
   Afternoon,
@@ -8,12 +7,9 @@ import {
   MorningSelected,
   AfternoonSelected,
   NightSelected,
-  DropdownGreen,
-  InfoIconRed,
   EmptySlot,
   CrossPopup,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { GET_CUSTOMIZED_DIAGNOSTIC_SLOTS } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   formatTestSlot,
@@ -42,6 +38,7 @@ import {
   getDiagnosticSlotsCustomizedVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsCustomized';
 import { Overlay } from 'react-native-elements';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 export interface TestSlotSelectionOverlayNewProps extends AphOverlayProps {
   zipCode: number;
@@ -56,8 +53,9 @@ export interface TestSlotSelectionOverlayNewProps extends AphOverlayProps {
   onSchedule: (date: Date, slotInfo: TestSlot) => void;
   itemId?: any[];
   source?: string;
+  isVisible: boolean;
 }
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewProps> = (props) => {
   const { isTodaySlotUnavailable, maxDate } = props;
   const { cartItems } = useDiagnosticsCart();
@@ -65,13 +63,10 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   const [slotInfo, setSlotInfo] = useState<TestSlot | undefined>(props.slotInfo);
   const [slots, setSlots] = useState<TestSlot[]>(props.slots);
   const [date, setDate] = useState<Date>(props.date);
-  const [changedDate, setChangedDate] = useState<Date>(props.date);
-  const [calendarType, setCalendarType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.MONTH);
   const [isDateAutoSelected, setIsDateAutoSelected] = useState(true);
   const client = useApolloClient();
   const [spinner, showSpinner] = useState(false);
   const { zipCode, onSchedule, isVisible, ...attributes } = props;
-  const aphOverlayProps: AphOverlayProps = { ...attributes, loading: spinner, isVisible };
   const uniqueSlots = getUniqueTestSlots(slots);
   const dt = moment(props.slotBooked!).format('YYYY-MM-DD') || null;
   const tm = moment(props.slotBooked!).format('hh:mm') || null;
@@ -102,6 +97,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     });
   }
   let monthHeading = `${moment().format('MMMM')} ${moment().format('YYYY')}`;
+
   const fetchSlots = (updatedDate?: Date) => {
     let dateToCheck = !!updatedDate ? updatedDate : date;
     if (!isVisible) return;
@@ -123,7 +119,6 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           moment(dateToCheck).format('YYYY-MM-DD') == dt && props.isReschdedule
             ? diagnosticSlots.filter((item) => item?.Timeslot != tm)
             : diagnosticSlots;
-
         const slotsArray: TestSlot[] = [];
         updatedDiagnosticSlots?.forEach((item) => {
           //all the hardcoded values are not returned by api.
@@ -152,7 +147,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
         } else {
           setSlots(slotsArray);
           slotsArray?.length && setSlotInfo(slotsArray?.[0]);
-          setNewSelectedSlot(`${formatTestSlot(slotsArray?.[0]?.slotInfo?.startTime!)}`);
+          setNewSelectedSlot(`${formatTestSlot(slotsArray?.[0]?.slotInfo?.startTime!)}` || '');
           showSpinner(false);
         }
       })
@@ -337,8 +332,9 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
             {monthHeading}
           </Text>
           <View style={styles.dateArrayContainer}>
-            {newDateArray.map((item, index) => (
+            {newDateArray?.map((item, index) => (
               <TouchableOpacity
+                key={index.toString()}
                 onPress={() => {
                   let newdate = moment(item?.timestamp)
                     .utc()
@@ -393,22 +389,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     );
   };
   const isDoneBtnDisabled = !date || !slotInfo;
-  const infoPanel = () => {
-    return (
-      <View style={styles.warningbox}>
-        <InfoIconRed />
-        <Text
-          style={{
-            ...theme.fonts.IBMPlexSansRegular(10),
-            color: theme.colors.LIGHT_BLUE,
-            padding: 10,
-          }}
-        >
-          Phelbo will arrive within 30 minutes of the slot time
-        </Text>
-      </View>
-    );
-  };
+
   const renderBottomButton = (
     <Button
       style={{ margin: 16, marginTop: 5, width: 'auto' }}
@@ -457,11 +438,11 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           </Text>
           <ScrollView style={styles.containerContentStyle}>
             {renderCalendarView()}
-            {infoPanel()}
             {renderSlotSelectionView()}
           </ScrollView>
           {dropDownOptions.length ? renderBottomButton : null}
         </View>
+        {spinner && <Spinner />}
       </>
     </Overlay>
   );

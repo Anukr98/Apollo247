@@ -296,6 +296,7 @@ const styles = StyleSheet.create({
     width: '100%',
     marginVertical: 10,
   },
+  rowStyle: { flexDirection: 'row', justifyContent: 'space-between' },
 });
 
 export const renderCovidVaccinationShimmer = () => {
@@ -728,6 +729,32 @@ export const couponViewShimmer = () => {
         shimmerColors={shimmerColors}
         LinearGradient={LinearGradient}
         shimmerStyle={styles.couponBlock}
+      />
+    </View>
+  );
+};
+
+export const renderDiagnosticWidgetShimmer = (showHeading: boolean) => {
+  return (
+    <View style={{ marginLeft: 16 }}>
+      {showHeading && (
+        <View style={styles.rowStyle}>
+          <ShimmerPlaceHolder
+            LinearGradient={LinearGradient}
+            shimmerColors={shimmerColors}
+            shimmerStyle={styles.diagnosticCard2}
+          />
+          <ShimmerPlaceHolder
+            LinearGradient={LinearGradient}
+            shimmerColors={shimmerColors}
+            shimmerStyle={styles.diagnosticCard2}
+          />
+        </View>
+      )}
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.diagnosticsCardBottom}
       />
     </View>
   );

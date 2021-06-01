@@ -658,6 +658,7 @@ export enum TEST_COLLECTION_TYPE {
 }
 
 export enum TRANSFER_INITIATED_TYPE {
+  ADMIN = "ADMIN",
   DOCTOR = "DOCTOR",
   PATIENT = "PATIENT",
 }
@@ -939,6 +940,7 @@ export interface BookRescheduleAppointmentInput {
   initiatedId: string;
   patientId: string;
   rescheduledId?: string | null;
+  rescheduleReason?: string | null;
 }
 
 export interface BookTransferAppointmentInput {
@@ -1036,39 +1038,8 @@ export interface DiagnosticLineItem {
   price?: number | null;
   quantity?: number | null;
   groupPlan?: string | null;
-  discAmount?: number | null;
   preTestingRequirement?: string | null;
   reportGenerationTime?: string | null;
-}
-
-export interface DiagnosticOrderInput {
-  patientId: string;
-  patientAddressId: string;
-  city: string;
-  cityId: string;
-  state: string;
-  stateId: string;
-  slotTimings: string;
-  employeeSlotId?: any | null;
-  diagnosticEmployeeCode: string;
-  diagnosticBranchCode: string;
-  totalPrice: number;
-  prescriptionUrl: string;
-  diagnosticDate: any;
-  centerName: string;
-  centerCode: string;
-  centerCity: string;
-  centerState: string;
-  centerLocality: string;
-  bookingSource?: BOOKINGSOURCE | null;
-  deviceType?: DEVICETYPE | null;
-  paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
-  items?: (DiagnosticLineItem | null)[] | null;
-  slotId?: string | null;
-  areaId?: number | null;
-  totalPriceExcludingDiscounts?: number | null;
-  userSubscriptionId?: string | null;
-  subscriptionInclusionId?: string | null;
 }
 
 export interface DiagnosticTestsOrdered {
@@ -1162,6 +1133,7 @@ export interface FilterDoctorInput {
   searchText?: string | null;
   radius?: number | null;
   isCare?: boolean | null;
+  isSearchableOnHiddenDoctor?: boolean | null;
 }
 
 export interface Geolocation {
@@ -1625,7 +1597,6 @@ export interface SaveBookHomeCollectionOrderInput {
   areaId: number;
   collectionCharges: number;
   uniqueID?: string | null;
-  couponCode?: string | null;
   slotDateTimeInUTC: any;
   totalPriceExcludingDiscounts?: number | null;
   userSubscriptionId?: string | null;
@@ -1694,6 +1665,7 @@ export interface SourceMetaData {
   source_identifier?: string | null;
   sub_plan_id?: string | null;
   purchase_type?: PlanPurchaseType | null;
+  activity?: any | null;
 }
 
 export interface TrueCallerProfile {
@@ -1800,6 +1772,16 @@ export interface prescriptionPrismFileProperties {
   fileName?: string | null;
   mimeType?: string | null;
   content?: string | null;
+}
+
+export interface saveModifyDiagnosticOrderInput {
+  orderId?: string | null;
+  collectionCharges?: number | null;
+  bookingSource?: DiagnosticsBookingSource | null;
+  deviceType?: DEVICETYPE | null;
+  items?: (DiagnosticLineItem | null)[] | null;
+  userSubscriptionId?: string | null;
+  subscriptionInclusionId?: string | null;
 }
 
 export interface voipPushTokenInput {

@@ -229,8 +229,22 @@ const appStaticVariables = {
   Enable_Diagnostics_Cancellation_Policy: false,
   Diagnostics_Cancel_Policy_Text_Msg:
     'For a full refund, you must cancel at least 6 hours before the appointment time. Cancellations made within 6 hours of appointment time will incur a fee of up to ₹ 200.',
-  RTPCR_Google_Form:
-    'https://docs.google.com/forms/d/e/1FAIpQLSd6VaqQ0GTQOdpBYMyh-wZwv8HHrr3W1Q_XCVSaooHXQGVsJQ/viewform',
+  DIAGNOSTIC_DEFAULT_CITYID : 9,
+  RTPCR_Google_Form: 'https://docs.google.com/forms/d/e/1FAIpQLSd6VaqQ0GTQOdpBYMyh-wZwv8HHrr3W1Q_XCVSaooHXQGVsJQ/viewform',
+  Enable_Diagnostics_Prepaid: true,
+  DIAGNOSTICS_CITY_LEVEL_PAYMENT_OPTION: [
+    {
+      "cityId" : "9",
+      "prepaid" : false,
+      "cod" : true
+    },
+    {
+      "cityId": "287",
+      "prepaid": false,
+      "cod": true
+    }
+],
+DIAGNOSTIC_DEFAULT_ICON : "https://newassets.apollo247.com/organs/ic_blood.png"
 };
 
 const DEV_top_specialties = [
@@ -1265,8 +1279,14 @@ export const DIAGNOSTIC_STATUS_BEFORE_SUBMITTED = [
 
 export const DIAGNOSITC_PHELBO_TRACKING_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
-  DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED
 ];
+
+export const DIAGNOSTIC_SHOW_OTP_STATUS = [
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
+]
 
 export const TestsNewFeedbackData = {
   options: [
@@ -1329,11 +1349,20 @@ export const TestsFeedBackData = {
 
 export const TestCancelReasons = {
   reasons: [
+    string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
     string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
-    string.diagnostics.reasonForCancel_TestOrder.editOrder,
+    string.diagnostics.reasonForCancel_TestOrder.bookedByMistake,
+    string.diagnostics.reasonForCancel_TestOrder.urgentReport,
+    string.diagnostics.reasonForCancel_TestOrder.anotherChannel,
+    string.diagnostics.reasonForCancel_TestOrder.otherReasons,
+  ],
+};
+export const TestCancelReasonsPre = {
+  reasons: [
     string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
     string.diagnostics.reasonForCancel_TestOrder.bookedByMistake,
     string.diagnostics.reasonForCancel_TestOrder.urgentReport,
+    string.diagnostics.reasonForCancel_TestOrder.anotherChannel,
     string.diagnostics.reasonForCancel_TestOrder.otherReasons,
   ],
 };

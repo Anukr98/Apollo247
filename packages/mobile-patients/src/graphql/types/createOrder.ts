@@ -9,6 +9,10 @@ import { OrderInput } from "./globalTypes";
 // GraphQL mutation operation: createOrder
 // ====================================================
 
+export interface createOrder_createOrder_OrderSuccessResponseZeroAmount {
+  __typename: "OrderSuccessResponseZeroAmount";
+}
+
 export interface createOrder_createOrder_OrderSuccessResponsePrepaid_payment_links {
   __typename: "PaymentLinks";
   mobile: string | null;
@@ -37,7 +41,7 @@ export interface createOrder_createOrder_OrderSuccessResponseCOD {
   success: boolean | null;
 }
 
-export type createOrder_createOrder = createOrder_createOrder_OrderSuccessResponsePrepaid | createOrder_createOrder_OrderSuccessResponseCOD;
+export type createOrder_createOrder = createOrder_createOrder_OrderSuccessResponseZeroAmount | createOrder_createOrder_OrderSuccessResponsePrepaid | createOrder_createOrder_OrderSuccessResponseCOD;
 
 export interface createOrder {
   createOrder: createOrder_createOrder | null;
