@@ -2884,7 +2884,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            file_Url
+            # content
             # byteContent
           }
         }
@@ -2910,7 +2912,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            file_Url
+            # content
             # byteContent
           }
           hospital_name
@@ -2972,7 +2976,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            file_Url
+            # content
             # byteContent
             # dateCreated
           }
@@ -2997,7 +3003,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            file_Url
+            # content
             # byteContent
             # dateCreated
           }
@@ -3024,7 +3032,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            file_Url
+            # content
             # byteContent
             # dateCreated
           }
@@ -3051,7 +3061,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            file_Url
+            # content
             # byteContent
             # dateCreated
           }
@@ -3118,7 +3130,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            file_Url
+            # content
             # byteContent
             # dateCreated
           }
@@ -3143,9 +3157,11 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
-            byteContent
-            dateCreated
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
           }
         }
       }
