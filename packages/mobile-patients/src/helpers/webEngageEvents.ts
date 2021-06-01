@@ -466,7 +466,6 @@ export enum WebEngageEventName {
   //Vaccination Booking
   VACCINATION_BOOKING_CONFIRMATION = 'Vaccine_Booking confirmation',
   VACCINATION_CANCELLATION = 'Vaccine_Cancellation',
-
 }
 
 export interface PatientInfo {
@@ -1319,6 +1318,12 @@ export interface WebEngageEvents {
     Amount: number;
     LOB: string;
     type?: string;
+    paymentOrderId: string;
+  };
+  [WebEngageEventName.PAYMENT_STATUS]: {
+    status: string;
+    LOB: string;
+    paymentOrderId: string;
   };
   [WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED]: {
     position: number;

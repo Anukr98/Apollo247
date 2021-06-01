@@ -37,6 +37,7 @@ import {
   getShipmentPrice,
   validateCoupon,
   getPackageIds,
+  getCheckoutCompletedEventAttributes,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   availabilityApi247,
@@ -484,11 +485,17 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       const data = await createOrderInternal(orders, subscriptionId);
       if (data?.data?.createOrderInternal?.success) {
         setauthToken?.('');
+        const paymentId = data?.data?.createOrderInternal?.payment_order_id!;
         props.navigation.navigate(AppRoutes.PaymentMethods, {
-          paymentId: data?.data?.createOrderInternal?.payment_order_id!,
+          paymentId: paymentId,
           amount: grandTotal,
           orderDetails: getOrderDetails(orders),
           businessLine: 'pharma',
+          checkoutEventAttributes: getCheckoutCompletedEventAttributes(
+            shoppingCart,
+            paymentId,
+            pharmacyUserTypeAttribute
+          ),
         });
       }
       setloading(false);
