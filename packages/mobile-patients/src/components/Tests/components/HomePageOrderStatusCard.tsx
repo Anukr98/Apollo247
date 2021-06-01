@@ -20,7 +20,8 @@ import { Overlay } from 'react-native-elements';
 const { width: winWidth } = Dimensions.get('window');
 
 const AFTER_COLLECTION_STATUS = DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.concat(
-  DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY
+  DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED
 );
 
 interface HomePageOrderStatusCardProps {
@@ -38,7 +39,9 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
   const [showPreparationModal, setShowPreparationModal] = useState<boolean>(false);
 
   function getOrderStatusContent(status: DIAGNOSTIC_ORDER_STATUS) {
+    const isSampleCollected = status === DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED;
     var heading, image, content, options;
+
     if (DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(status)) {
       heading = string.diagnostics.sampleSubmitted;
       image = <SampleTestTubesIcon style={styles.iconStyle} />;
@@ -62,12 +65,16 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
           : string.diagnostics.viewReportContent;
       options = string.diagnostics.viewReportText;
     } else {
-      heading = string.diagnostics.bookingFor;
+      heading = isSampleCollected
+        ? string.diagnostics.sampleCollected
+        : string.diagnostics.bookingFor;
       image = <AppointmentIcon style={styles.iconStyle} />;
-      content = string.diagnostics.collectionAppointmentContent?.replace(
-        '{{collectionTime}}',
-        appointmentTime!
-      );
+      content = isSampleCollected
+        ? string.diagnostics.sampleCollectedContent
+        : string.diagnostics.collectionAppointmentContent?.replace(
+            '{{collectionTime}}',
+            appointmentTime!
+          );
       options = DIAGNOSITC_PHELBO_TRACKING_STATUS.includes(status)
         ? status === DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED
           ? string.diagnostics.sampleCollectedText

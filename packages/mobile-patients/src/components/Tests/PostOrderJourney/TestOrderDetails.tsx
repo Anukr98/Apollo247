@@ -79,6 +79,7 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 
 import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 const DROP_DOWN_ARRAY_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
@@ -427,9 +428,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const renderInclusionLevelDropDown = (order: any) => {
     /**add condition for sample submitted if inclusion level same */
     const totalInclusions = orderLevelStatus?.statusInclusions?.length;
-    const hasDiffStatusLevelInclusion =
-      !!orderLevelStatus?.statusInclusions &&
-      totalInclusions > 0;
+    const hasDiffStatusLevelInclusion = !!orderLevelStatus?.statusInclusions && totalInclusions > 0;
 
     const isReportText = orderLevelStatus?.statusHistory?.find(
       (item: any) => item?.orderStatus == DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED
@@ -455,21 +454,23 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           <View>
             {!showInclusionStatus ? <View style={styles.lineSeparator} /> : null}
 
-            {reportText ? <View style={styles.inclusionContainer}>
-              <TouchableOpacity
-                onPress={() => setShowInclusionStatus(!showInclusionStatus)}
-                activeOpacity={1}
-                style={styles.viewRowStyle}
-              >
-                <Text style={styles.itemNameText}>{!!reportText ? reportText : ''}</Text>
-                <ArrowRight
-                  style={{
-                    transform: [{ rotate: showInclusionStatus ? '270deg' : '90deg' }],
-                    tintColor: 'black',
-                  }}
-                />
-              </TouchableOpacity>
-            </View> : null}
+            {reportText ? (
+              <View style={styles.inclusionContainer}>
+                <TouchableOpacity
+                  onPress={() => setShowInclusionStatus(!showInclusionStatus)}
+                  activeOpacity={1}
+                  style={styles.viewRowStyle}
+                >
+                  <Text style={styles.itemNameText}>{!!reportText ? reportText : ''}</Text>
+                  <ArrowRight
+                    style={{
+                      transform: [{ rotate: showInclusionStatus ? '270deg' : '90deg' }],
+                      tintColor: 'black',
+                    }}
+                  />
+                </TouchableOpacity>
+              </View>
+            ) : null}
             {showInclusionStatus ||
               orderLevelStatus?.statusInclusions?.map((item: any, index: number) => {
                 let selectedItem = selectedOrder?.diagnosticOrderLineItems;
@@ -494,7 +495,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                           </View>
                           <StatusCard titleText={item?.orderStatus} />
                         </View>
-                        {selectedItem?.[index]?.itemObj?.reportGenerationTime && item?.orderStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB ? (
+                        {selectedItem?.[index]?.itemObj?.reportGenerationTime &&
+                        item?.orderStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB ? (
                           <View style={styles.ratingContainer}>
                             <View style={styles.reporttatContainer}>
                               <ClockIcon />
@@ -541,7 +543,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       <StickyBottomComponent>
         <Button
           style={styles.buttonStyle}
-          onPress={() => onPressButton(buttonTitle)}
+          onPress={() => _onPressViewReportAction()}
           titleTextStyle={{
             ...theme.viewStyles.text('B', isIphone5s() ? 11 : 13, theme.colors.BUTTON_TEXT, 1, 24),
           }}
@@ -552,8 +554,18 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     );
   };
 
+  function _onPressViewReportAction() {
+    if (!!order?.labReportURL && order?.labReportURL != '') {
+      setDisplayViewReport(true);
+    } else if (!!order?.visitNo && order?.visitNo != '') {
+      //directly open the phr section
+      fetchTestReportResult();
+    } else {
+      props.navigation.navigate(AppRoutes.HealthRecordsHome);
+    }
+  }
+
   const onPressViewReport = () => {
-    const visitId = order?.visitNo;
     const appointmentDetails = !!order?.slotDateTimeInUTC
       ? order?.slotDateTimeInUTC
       : order?.diagnosticDate;
@@ -569,13 +581,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       'Download Report PDF',
       order?.id
     );
-    if (!!order?.labReportURL && order?.labReportURL != '') {
-      downloadLabTest(order?.labReportURL, appointmentDate, patientName);
-    } else if (visitId) {
-      fetchTestReportResult();
-    } else {
-      props.navigation.navigate(AppRoutes.HealthRecordsHome);
-    }
+    downloadLabTest(order?.labReportURL!, appointmentDate, patientName);
   };
 
   async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string) {
@@ -639,7 +645,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       !!g(orderDetails, 'totalPrice') && (
         <TestOrderSummaryView
           orderDetails={orderDetails}
-          onPressViewReport={onPressButton}
+          onPressViewReport={_onPressViewReportAction}
           refundDetails={refundStatusArr}
         />
       )
@@ -697,7 +703,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           isVisible={displayViewReport}
           onClose={() => setDisplayViewReport(false)}
           onPressViewReport={() => {
-            onPressViewReport();
+            _onPressViewReportAction();
           }}
         />
       )}
@@ -895,9 +901,9 @@ const styles = StyleSheet.create({
   ratingContainer: {
     backgroundColor: '#FCFDDA',
     borderRadius: 10,
-    marginBottom: 5,    
+    marginBottom: 5,
     padding: 5,
-    elevation: 1
+    elevation: 1,
   },
   reportTextStyle: {
     marginHorizontal: 10,
