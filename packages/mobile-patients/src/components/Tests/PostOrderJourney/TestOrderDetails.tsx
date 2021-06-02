@@ -16,7 +16,7 @@ import {
   DownloadNew,
   ShareBlue,
   ViewIcon,
-  Cross
+  Cross,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import _ from 'lodash';
 import {
@@ -55,7 +55,17 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
-import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity, Modal, Linking, Clipboard, BackHandler } from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  Modal,
+  Linking,
+  Clipboard,
+  BackHandler,
+} from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -110,7 +120,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const selectedTest = props.navigation.getParam('selectedTest');
   const selectedOrder = props.navigation.getParam('selectedOrder');
   const refundStatusArr = props.navigation.getParam('refundStatusArr');
-  const [fromOrderSummary, setFromOrderSummary] = useState<any>(props.navigation.getParam('fromOrderSummary'));
+  const [fromOrderSummary, setFromOrderSummary] = useState<any>(
+    props.navigation.getParam('fromOrderSummary')
+  );
   const client = useApolloClient();
   const [selectedTab, setSelectedTab] = useState<string>(
     showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
@@ -488,7 +500,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
               </TouchableOpacity>
             </View>
             {showInclusionStatus &&
-              orderLevelStatus?.statusInclusions?.map((item: any,index: number) => {
+              orderLevelStatus?.statusInclusions?.map((item: any, index: number) => {
                 let selectedItem = selectedOrder?.diagnosticOrderLineItems;
                 let itemReportTat = '';
                 itemReportTat = selectedItem?.map((order: any) => {
@@ -556,7 +568,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       <StickyBottomComponent>
         <Button
           style={styles.buttonStyle}
-          onPress={() => onPressButton(buttonTitle)}
+          onPress={() => _onPressViewReportAction()}
           titleTextStyle={{
             ...theme.viewStyles.text('B', isIphone5s() ? 11 : 13, theme.colors.BUTTON_TEXT, 1, 24),
           }}
@@ -567,8 +579,18 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     );
   };
 
+  function _onPressViewReportAction() {
+    if (!!order?.labReportURL && order?.labReportURL != '') {
+      setDisplayViewReport(true);
+    } else if (!!order?.visitNo && order?.visitNo != '') {
+      //directly open the phr section
+      fetchTestReportResult();
+    } else {
+      props.navigation.navigate(AppRoutes.HealthRecordsHome);
+    }
+  }
+
   const onPressViewReport = () => {
-    const visitId = order?.visitNo;
     const appointmentDetails = !!order?.slotDateTimeInUTC
       ? order?.slotDateTimeInUTC
       : order?.diagnosticDate;
@@ -584,13 +606,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       'Download Report PDF',
       order?.id
     );
-    if (!!order?.labReportURL && order?.labReportURL != '') {
-      downloadLabTest(order?.labReportURL, appointmentDate, patientName);
-    } else if (visitId) {
-      fetchTestReportResult();
-    } else {
-      props.navigation.navigate(AppRoutes.HealthRecordsHome);
-    }
+    downloadLabTest(order?.labReportURL!, appointmentDate, patientName);
   };
 
   async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string) {
@@ -610,12 +626,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       title: string.common.uhOh,
       description: message,
     });
-  };
-
-  const onPressButton = (buttonTitle?: string) => {
-    // onPressViewReport();
-    setIsViewReport(true)
-    setDisplayViewReport(true)
   };
 
   function postRatingGivenWebEngageEvent(rating: string, reason: string) {
@@ -656,7 +666,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       !!g(orderDetails, 'totalPrice') && (
         <TestOrderSummaryView
           orderDetails={orderDetails}
-          onPressViewReport={onPressButton}
+          onPressViewReport={_onPressViewReportAction}
           refundDetails={refundStatusArr}
         />
       )
@@ -708,17 +718,16 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       {displayViewReport && (
-            <TestViewReportOverlay
-              order={order}
-              heading=""
-              isVisible={displayViewReport}
-              onClose={() => setDisplayViewReport(false)}
-              onPressViewReport={()=>{
-                onPressViewReport()
-              }}
-            />
-        )
-      }
+        <TestViewReportOverlay
+          order={order}
+          heading=""
+          isVisible={displayViewReport}
+          onClose={() => setDisplayViewReport(false)}
+          onPressViewReport={() => {
+            onPressViewReport();
+          }}
+        />
+      )}
       <SafeAreaView style={theme.viewStyles.container}>
         <View style={styles.headerShadowContainer}>
           <Header
@@ -919,12 +928,12 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   reportTextStyle: {
-    marginHorizontal:10,
+    marginHorizontal: 10,
     ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 1, 16),
   },
   reporttatContainer: {
     marginVertical: 5,
-    flexDirection:'row',
-    alignItems:'center',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });
