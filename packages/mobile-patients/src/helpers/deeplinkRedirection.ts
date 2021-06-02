@@ -38,9 +38,15 @@ export const handleOpenURL = (event: any) => {
       media_source: 'not set',
     };
     const apolloUrl = 'https://www.apollo247.com';
+    const apolloPharmacyUrl = 'https://www.apollopharmacy.in';
     const a = event.indexOf(apolloUrl);
+    const b = event.indexOf(apolloPharmacyUrl);
     if (a == 0) {
       const url = event?.replace(`${apolloUrl}/`, '');
+      data = url?.split('/');
+      route = data?.[0];
+    } else if (b == 0) {
+      const url = event?.replace(`${apolloPharmacyUrl}/`, '');
       data = url?.split('/');
       route = data?.[0];
     } else {
@@ -74,9 +80,10 @@ export const handleOpenURL = (event: any) => {
         };
         break;
 
+      case 'otc':
       case 'medicine':
         return {
-          routeName: 'Medicine',
+          routeName: data.length === 2 ? 'MedicineDetail' : 'Medicine',
           id: data.length === 2 ? linkId : undefined,
         };
         break;
@@ -257,6 +264,7 @@ export const handleOpenURL = (event: any) => {
         };
         break;
 
+      case 'circle-membership':
       case 'circlemembershipdetails':
         return {
           routeName: 'CircleMembershipDetails',
@@ -323,15 +331,21 @@ export const handleOpenURL = (event: any) => {
         break;
 
       default:
-        const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
-          source: 'deeplink',
-        };
-        postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
-        return {
-          routeName: 'ConsultRoom',
-          id: undefined,
-          timeout: true,
-        };
+        if (b === 0) {
+          return {
+            routeName: 'Medicine',
+          };
+        } else {
+          const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
+            source: 'deeplink',
+          };
+          postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
+          return {
+            routeName: 'ConsultRoom',
+            id: undefined,
+            timeout: true,
+          };
+        }
         break;
     }
   } catch (error) {
