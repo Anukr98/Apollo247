@@ -2329,7 +2329,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
     ) {
       let sortedItemsIndex =
         data?.diagnosticWidgetData?.length - (data?.diagnosticWidgetData?.length % numColumns);
-      newGridData = data?.diagnosticWidgetData.slice(0, sortedItemsIndex);
+        if (sortedItemsIndex > numColumns * 2) {
+          newGridData = data?.diagnosticWidgetData.slice(0, numColumns * 2);
+        } else {
+          newGridData = data?.diagnosticWidgetData.slice(0, sortedItemsIndex);
+        }
     } else {
       newGridData = data?.diagnosticWidgetData;
     }
