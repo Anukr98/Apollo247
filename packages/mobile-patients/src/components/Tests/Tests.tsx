@@ -159,6 +159,7 @@ import { WidgetCard } from '@aph/mobile-patients/src/components/Tests/components
 
 import {
   renderBannerShimmer,
+  renderDiagnosticWidgetHeadingShimmer,
   renderDiagnosticWidgetShimmer,
   renderTestDiagonosticsShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
@@ -1593,10 +1594,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <View style={!!isPricesAvailable ? styles.widgetSpacing : {}}>
         {!!isPricesAvailable ? (
-          sectionLoading ? (
-            renderDiagnosticWidgetShimmer(true)
-          ) : (
-            <>
+          <>
+            {sectionLoading ? (
+              renderDiagnosticWidgetHeadingShimmer() //load heading
+            ) : (
               <SectionHeader
                 leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
                 leftTextStyle={[
@@ -1627,21 +1628,23 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 }
                 style={showViewAll ? { paddingBottom: 1 } : {}}
               />
-              {sectionLoading ? (
-                renderDiagnosticWidgetShimmer(true)
-              ) : (
-                <PackageCard
-                  data={data}
-                  isCircleSubscribed={isDiagnosticCircleSubscription}
-                  isServiceable={isDiagnosticLocationServiceable}
-                  isVertical={false}
-                  navigation={props.navigation}
-                  source={'Home page'}
-                  sourceScreen={AppRoutes.Tests}
-                />
-              )}
-            </>
-          )
+            )}
+            {sectionLoading ? (
+              renderDiagnosticWidgetShimmer(false) //to load package card
+            ) : (
+              <PackageCard
+                data={data}
+                isCircleSubscribed={isDiagnosticCircleSubscription}
+                isServiceable={isDiagnosticLocationServiceable}
+                isVertical={false}
+                navigation={props.navigation}
+                source={'Home page'}
+                sourceScreen={AppRoutes.Tests}
+              />
+            )}
+          </>
+        ) : sectionLoading ? (
+          renderDiagnosticWidgetShimmer(true) //to show overall widget
         ) : null}
       </View>
     );
@@ -1658,10 +1661,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <View style={!!isPricesAvailable ? styles.widgetSpacing : {}}>
         {!!isPricesAvailable ? (
-          sectionLoading ? (
-            renderDiagnosticWidgetShimmer(true)
-          ) : (
-            <>
+          <>
+            {sectionLoading ? (
+              renderDiagnosticWidgetHeadingShimmer() //load heading
+            ) : (
               <SectionHeader
                 leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
                 leftTextStyle={[
@@ -1692,21 +1695,23 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 }
                 style={showViewAll ? { paddingBottom: 1 } : {}}
               />
-              {sectionLoading ? (
-                renderDiagnosticWidgetShimmer(true)
-              ) : (
-                <ItemCard
-                  data={data}
-                  isCircleSubscribed={isDiagnosticCircleSubscription}
-                  isServiceable={isDiagnosticLocationServiceable}
-                  isVertical={false}
-                  navigation={props.navigation}
-                  source={'Home page'}
-                  sourceScreen={AppRoutes.Tests}
-                />
-              )}
-            </>
-          )
+            )}
+            {sectionLoading ? (
+              renderDiagnosticWidgetShimmer(false) //load package card
+            ) : (
+              <ItemCard
+                data={data}
+                isCircleSubscribed={isDiagnosticCircleSubscription}
+                isServiceable={isDiagnosticLocationServiceable}
+                isVertical={false}
+                navigation={props.navigation}
+                source={'Home page'}
+                sourceScreen={AppRoutes.Tests}
+              />
+            )}
+          </>
+        ) : sectionLoading ? (
+          renderDiagnosticWidgetShimmer(true) //load overall widget
         ) : null}
       </View>
     );

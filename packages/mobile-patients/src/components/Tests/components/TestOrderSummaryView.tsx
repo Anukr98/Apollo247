@@ -249,7 +249,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           {!!orderDetails?.totalPrice ? (
             <Text style={[styles.slotText, { textAlign: 'right' }]}>
               {string.common.Rs}
-              {convertNumberToDecimal(orderDetails?.totalPrice)}
+              {Number(orderDetails?.totalPrice).toFixed(2)}
             </Text>
           ) : null}
         </View>
@@ -270,7 +270,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       <View style={styles.orderSummaryView}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Text style={styles.itemHeading}> ITEM NAME</Text>
-          <Text style={styles.itemHeading}> MRP VALUE</Text>
+          <Text style={styles.itemHeading}> PRICE</Text>
         </View>
         {filterOrderLineItem?.map((item) => {
           return (
@@ -293,7 +293,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
               <View style={{ flex: 1, alignItems: 'flex-end' }}>
                 <Text style={styles.commonText}>
                   {string.common.Rs}
-                  {convertNumberToDecimal(g(item, 'price') || null)}
+                  {Number(item?.price)?.toFixed(2) || null}
                 </Text>
               </View>
             </View>
@@ -342,15 +342,16 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
             }
           >
             <Text style={styles.previousItemHeading}>
-              {nameFormater(firstItem, 'title')} {remainingItems > 0 && `+ ${remainingItems} more`}
+              {nameFormater(firstItem?.slice(0, isSmallDevice ? 27 : 30), 'title')}{' '}
+              {remainingItems > 0 && `+ ${remainingItems} more`}
             </Text>
             {(title === string.diagnostics.previousCharges && !showPreviousCard) ||
             (title === string.diagnostics.currentCharges && !showCurrCard) ? (
               <Text style={styles.closedViewTotal}>
                 {string.common.Rs}
                 {title === string.diagnostics.previousCharges
-                  ? Number(previousTotal! + orderDetails?.collectionCharges!)
-                  : Number(modifyTotal! + 0.0)}
+                  ? Number(previousTotal! + orderDetails?.collectionCharges!).toFixed(2)
+                  : Number(modifyTotal! + 0.0).toFixed(2)}
               </Text>
             ) : null}
             <View>
@@ -372,7 +373,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
             <>
               <View style={[styles.rowSpaceBetweenStyle, { marginBottom: 0 }]}>
                 <Text style={styles.itemHeading}> ITEM NAME</Text>
-                <Text style={styles.itemHeading}> MRP VALUE</Text>
+                <Text style={styles.itemHeading}> PRICE</Text>
               </View>
               {data?.map(
                 (
@@ -396,7 +397,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
                       <View style={{ flex: 1, alignItems: 'flex-end' }}>
                         <Text style={[styles.commonText, { lineHeight: 20 }]}>
                           {string.common.Rs}
-                          {convertNumberToDecimal(g(item, 'price') || null)}
+                          {Number(item?.price)?.toFixed(2) || null}
                         </Text>
                       </View>
                     </View>
@@ -406,19 +407,22 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
               <Spearator style={{ marginTop: 12, marginBottom: 12 }} />
               {renderPrices(
                 'Subtotal',
-                title === string.diagnostics.previousCharges ? previousTotal! : modifyTotal!
+                title === string.diagnostics.previousCharges ? previousTotal! : modifyTotal!,
+                false
               )}
               {renderPrices(
                 'Home collection Charges',
                 title === string.diagnostics.previousCharges
                   ? orderDetails?.collectionCharges!
-                  : 0.0
+                  : 0.0,
+                false
               )}
               {renderPrices(
                 'Total',
                 title === string.diagnostics.previousCharges
                   ? Number(previousTotal! + orderDetails?.collectionCharges!)
                   : Number(modifyTotal! + 0.0),
+                false,
                 true
               )}
             </>
@@ -428,7 +432,12 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     );
   };
 
-  const renderPrices = (title: string, price: string | number, customStyle?: boolean) => {
+  const renderPrices = (
+    title: string,
+    price: string | number,
+    isDiscount: boolean,
+    customStyle?: boolean
+  ) => {
     return (
       <View style={styles.pricesContainer}>
         <View style={{ width: '65%' }}>
@@ -464,8 +473,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
               },
             ]}
           >
+            {isDiscount && price > 0 ? '- ' : null}
             {string.common.Rs}
-            {convertNumberToDecimal(price)}
+            {Number(price).toFixed(2)}
           </Text>
         </View>
       </View>
@@ -477,13 +487,13 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       <View>
         {renderHeading('Total Charges')}
         <View style={styles.orderSummaryView}>
-          {renderPrices('Subtotal', grossCharges)}
-          {renderPrices('Circle Discount', totalCircleSaving)}
-          {renderPrices('Cart Savings', totalCartSaving)}
-          {renderPrices('Coupon Discount', totalDiscountSaving)}
-          {renderPrices('Home collection Charges', HomeCollectionCharges)}
+          {renderPrices('Total MRP', grossCharges, false)}
+          {renderPrices('Circle Discount', totalCircleSaving, true)}
+          {renderPrices('Cart Savings', totalCartSaving, true)}
+          {renderPrices('Coupon Discount', totalDiscountSaving, true)}
+          {renderPrices('Home collection Charges', HomeCollectionCharges, false)}
           <Spearator style={{ marginTop: 6, marginBottom: 6 }} />
-          {renderPrices('Total', orderDetails?.totalPrice, true)}
+          {renderPrices('Total', orderDetails?.totalPrice, false, true)}
         </View>
       </View>
     );
@@ -505,8 +515,8 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       <View>
         {renderHeading('Payment Mode')}
         <View style={styles.orderSummaryView}>
-          {renderPrices(txtToShow, orderDetails?.totalPrice)}
-          {!!refundText && renderPrices(refundText, refundDetails?.[0]?.amount)}
+          {renderPrices(txtToShow, orderDetails?.totalPrice, false)}
+          {!!refundText && renderPrices(refundText, refundDetails?.[0]?.amount, false)}
         </View>
       </View>
     );
@@ -711,14 +721,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 20,
-    height: 30,
+    // height: 30,
     alignItems: 'center',
   },
   previousItemHeading: {
     ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13 : 14),
     color: colors.SHERPA_BLUE,
     lineHeight: 22,
-    width: '76%',
+    width: '74%',
+    marginRight: 5,
   },
   arrowIconStyle: { height: 30, width: 30, resizeMode: 'contain' },
   rowSpaceBetweenStyle: {
