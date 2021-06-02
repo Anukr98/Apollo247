@@ -232,6 +232,19 @@ const appStaticVariables = {
   RTPCR_Google_Form:
     'https://docs.google.com/forms/d/e/1FAIpQLSd6VaqQ0GTQOdpBYMyh-wZwv8HHrr3W1Q_XCVSaooHXQGVsJQ/viewform',
   DIAGNOSTIC_DEFAULT_CITYID: 9,
+  Enable_Diagnostics_Prepaid: true,
+  DIAGNOSTICS_CITY_LEVEL_PAYMENT_OPTION: [
+    {
+      cityId: '9',
+      prepaid: false,
+      cod: true,
+    },
+    {
+      cityId: '287',
+      prepaid: false,
+      cod: true,
+    },
+  ],
 };
 
 const DEV_top_specialties = [
