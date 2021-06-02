@@ -4817,12 +4817,11 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql`
       openOrders {
         id
         patientId
-        paymentOrderId
+        displayId
         orderStatus
         slotDateTimeInUTC
         labReportURL
         paymentType
-        paymentOrderId
         patientObj {
           firstName
           lastName
@@ -4832,6 +4831,10 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql`
             inclusions
             testPreparationData
           }
+        }
+        attributesObj{
+          reportGenerationTime
+          preTestingRequirement
         }
       }
     }
@@ -4866,12 +4869,11 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
       closedOrders {
         id
         patientId
-        paymentOrderId
+        displayId
         orderStatus
         slotDateTimeInUTC
         labReportURL
         paymentType
-        paymentOrderId
         patientObj {
           firstName
           lastName
@@ -4881,6 +4883,10 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
             inclusions
             testPreparationData
           }
+        }
+        attributesObj{
+          reportGenerationTime
+          preTestingRequirement
         }
       }
     }
