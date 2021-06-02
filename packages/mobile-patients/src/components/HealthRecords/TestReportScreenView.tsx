@@ -664,7 +664,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                               rangeColorChanger === true ||
                               !item?.range
                                 ? '#F7F7F7'
-                                : resultColorChanger === tru
+                                : resultColorChanger === true
                                 ? theme.colors.COMPLETE_STATUS_BGK
                                 : theme.colors.FAILURE_STATUS_BGK,
                             color:
