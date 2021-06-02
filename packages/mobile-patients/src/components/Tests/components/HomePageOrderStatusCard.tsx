@@ -155,7 +155,7 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
       <View
         style={[
           styles.contentContainer,
-          { minHeight: AFTER_COLLECTION_STATUS.includes(status) ? 60 : 40 },
+          { minHeight: AFTER_COLLECTION_STATUS.includes(status) ? 60 : 30 },
         ]}
       >
         <Text style={styles.content1}>{content}</Text>
