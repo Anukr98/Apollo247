@@ -231,6 +231,7 @@ const appStaticVariables = {
     'For a full refund, you must cancel at least 6 hours before the appointment time. Cancellations made within 6 hours of appointment time will incur a fee of up to ₹ 200.',
   RTPCR_Google_Form:
     'https://docs.google.com/forms/d/e/1FAIpQLSd6VaqQ0GTQOdpBYMyh-wZwv8HHrr3W1Q_XCVSaooHXQGVsJQ/viewform',
+  DIAGNOSTIC_DEFAULT_CITYID: 9,
 };
 
 const DEV_top_specialties = [
