@@ -1,6 +1,9 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { permissionHandler } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  permissionHandler,
+  storagePermissions,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -23,6 +26,7 @@ import {
   postWebEngageEvent,
   getAge,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import RNFetchBlob from 'rn-fetch-blob';
 import {
   ActivityIndicator,
   Text,
@@ -74,6 +78,9 @@ import {
   GetBenefitAvailabilityInfoByCMSIdentifier,
   GetBenefitAvailabilityInfoByCMSIdentifierVariables,
 } from '../../graphql/types/GetBenefitAvailabilityInfoByCMSIdentifier';
+
+import RNHTMLtoPDF from 'react-native-html-to-pdf';
+import { Spinner } from '../ui/Spinner';
 
 const styles = StyleSheet.create({
   detailTitle: {
@@ -249,6 +256,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 10,
   },
+  generatePDFContainer: {
+    marginVertical: 10,
+    marginHorizontal: 16,
+    alignContent: 'flex-end',
+  },
+  generatePDFCta: {
+    ...theme.viewStyles.text('B', 14, '#FC9916', 1, 25, 0.35),
+    alignSelf: 'flex-end',
+  },
   headerBannerContainer: {
     height: 260,
     paddingVertical: 16,
@@ -298,10 +314,10 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
   const subscriptionId = props.navigation.getParam('subscriptionId');
   const [displayId, setDisplayId] = useState<number>(props.navigation.getParam('displayId'));
   const [loading, setLoading] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [resendSMSPhoneNumber, setResendSMSPhoneNumber] = useState('');
   const [bookingInfo, setBookingInfo] = useState<any>();
   const [qrCodeLink, setQRCodeLink] = useState<any>();
-  const [remainingVaccineSlots, setRemainingVaccineSlots] = useState<number>(0);
 
   const { showAphAlert, hideAphAlert } = useUIElements();
 
@@ -328,33 +344,6 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
       .finally(() => {
         setLoading(false);
       });
-  };
-
-  const fetchVaccinationLimit = () => {
-    if (
-      cmsIdentifier == undefined ||
-      cmsIdentifier == '' ||
-      subscriptionId == undefined ||
-      subscriptionId == ''
-    ) {
-      return;
-    }
-
-    client
-      .query<GetBenefitAvailabilityInfoByCMSIdentifier>({
-        query: GET_VACCINE_BOOKING_LIMIT,
-        variables: {
-          user_subscription_id: subscriptionId || '',
-          cms_identifier: cmsIdentifier || '',
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((response) => {
-        setRemainingVaccineSlots(
-          response?.data?.GetBenefitAvailabilityInfoByCMSIdentifier?.response?.remaining
-        );
-      })
-      .catch((error) => {});
   };
 
   const cancelVaccination = () => {
@@ -457,7 +446,6 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
 
   useEffect(() => {
     fetchVaccineBookingDetails();
-    fetchVaccinationLimit();
 
     setQRCodeLink(vaccinationADMINBaseUrl + 'booking-confirmation/' + displayId);
   }, []);
@@ -534,7 +522,7 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
     );
   };
 
-  const renderBookingDetailsMatrixItem = (title, value) => {
+  const renderBookingDetailsMatrixItem = (title: string, value: string) => {
     return (
       <View style={{ flexDirection: 'row', marginVertical: 3 }}>
         <Text style={styles.detailTitle}>{title}</Text>
@@ -629,6 +617,12 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
             ' , ' +
             (bookingInfo?.resource_session_details?.resource_detail?.state || '')
         )}
+
+        {renderBookingDetailsMatrixItem(
+          string.vaccineBooking.station,
+          bookingInfo?.resource_session_details?.station_name || '-'
+        )}
+
         {bookingInfo?.resource_session_details?.start_date_time
           ? renderBookingDetailsMatrixItem(
               string.vaccineBooking.date_of_vaccination,
@@ -648,6 +642,7 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
             )
           : null}
         {renderBookingDetailsMatrixItem(string.vaccineBooking.mode, bookingInfo?.payment_type)}
+
         {renderStatusStrip()}
 
         <View style={[styles.separatorStyle, { width: '100%' }]} />
@@ -719,6 +714,7 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
       </View>
     );
   };
+
   const renderInstructionForTheDayBlock = () => {
     return (
       <View style={styles.impInstructionContainer}>
@@ -765,6 +761,98 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
     );
   };
 
+  const generatePDF = async (htmlText: any) => {
+    let options = {
+      // html:
+      //   '<h1>Hi Prabhat </h1><p>You have successfully booked you vaccination.</p> <table style="width:100%"> <tr> <th>Firstname</th> <th>Lastname</th> <th>Age</th> </tr> <tr> <td>Jill</td> <td>Smith</td> <td>50</td> </tr> <tr> <td>Eve</td> <td>Jackson</td> <td>94</td> </tr> </table>',
+      html: htmlText,
+      fileName: 'apollo_vaccine_booking_' + displayId,
+      directory: 'Download',
+    };
+
+    let file = await RNHTMLtoPDF.convert(options);
+    return file;
+  };
+
+  const fetchHTMLText = () => {
+    setPdfLoading(true);
+
+    fetch('https://qathreepatients.apollo247.com/vaccine-booking/' + bookingInfo?.id)
+      .then((resp) => {
+        return resp.text();
+      })
+      .then((text) => {
+        setPdfLoading(true);
+        generatePDF(text)
+          .then((file) => {
+            showAphAlert!({
+              title: 'Great !',
+              description: string.vaccineBooking.success_generate_pdf + file.filePath,
+              showCloseIcon: true,
+              onCloseIconPress: () => {
+                hideAphAlert!();
+              },
+              CTAs: [
+                {
+                  text: 'OPEN',
+                  onPress: () => {
+                    try {
+                      hideAphAlert!();
+                      Platform.OS === 'ios'
+                        ? RNFetchBlob.ios.previewDocument(file.filePath)
+                        : RNFetchBlob.android.actionViewIntent(file.filePath, 'application/pdf');
+                    } catch (error) {
+                      showAphAlert!({
+                        title: 'Oops !',
+                        description: "Can't open file " + file.filePath,
+                      });
+                    }
+                  },
+                },
+              ],
+            });
+          })
+          .catch((error) => {
+            showAphAlert!({
+              title: 'Oops !',
+              description: string.vaccineBooking.unable_to_generate_pdf,
+            });
+          })
+          .finally(() => {
+            setPdfLoading(false);
+          });
+      })
+      .catch((error) => {
+        setPdfLoading(false);
+        showAphAlert!({
+          title: 'Oops !',
+          description: string.vaccineBooking.unable_to_generate_pdf,
+        });
+      })
+      .finally(() => {});
+  };
+
+  const renderGeneratePDFCTA = () => {
+    return (
+      <TouchableOpacity
+        style={styles.generatePDFContainer}
+        onPress={() => {
+          setTimeout(() => {
+            if (Platform.OS === 'android') {
+              storagePermissions(() => {
+                fetchHTMLText();
+              });
+            } else {
+              fetchHTMLText();
+            }
+          }, 100);
+        }}
+      >
+        <Text style={styles.generatePDFCta}> {string.vaccineBooking.booking_detail_pdf}</Text>
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={[theme.viewStyles.container, { backgroundColor: '#fff' }]}>
@@ -780,6 +868,8 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
 
               {renderConfirmationDetails()}
 
+              {/* {renderGeneratePDFCTA()} */}
+
               {/* Intententionally kept for future case */}
               {/* {bookingInfo?.status != BOOKING_STATUS.CANCELLED ? renderResendSMS() : null} */}
 
@@ -788,6 +878,7 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
             </ScrollView>
           </>
         )}
+        {pdfLoading ? <Spinner /> : null}
       </SafeAreaView>
     </View>
   );

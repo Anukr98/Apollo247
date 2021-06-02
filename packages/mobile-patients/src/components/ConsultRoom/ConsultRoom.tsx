@@ -752,6 +752,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showCorporateVaccinationCta, setShowCorporateVaccinationCta] = useState<boolean>(false);
   const [vaccinationCmsIdentifier, setVaccinationCmsIdentifier] = useState<string>('');
   const [vaccinationSubscriptionId, setVaccinationSubscriptionId] = useState<string>('');
+  const [vaccinationSubscriptionInclusionId, setVaccinationSubscriptionInclusionId] = useState<
+    string
+  >('');
   const [vaccinationSubscriptionName, setVaccinationSubscriptionName] = useState<string>('');
   const [vaccinationSubscriptionPlanId, setVaccinationSubscriptionPlanId] = useState<string>('');
   const [agreedToVaccineTnc, setAgreedToVaccineTnc] = useState<string>('');
@@ -951,6 +954,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
     AsyncStorage.getItem('VaccinationSubscriptionId').then((data) => {
       setVaccinationSubscriptionId(data);
+    });
+
+    AsyncStorage.getItem('VaccinationSubscriptionInclusionId').then((data) => {
+      setVaccinationSubscriptionInclusionId(data);
     });
   };
 
@@ -1654,9 +1661,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
             setVaccinationCmsIdentifier(item?.cms_identifier);
             AsyncStorage.setItem('VaccinationCmsIdentifier', item?.cms_identifier);
-            AsyncStorage.setItem('VaccinationSubscriptionId', plan?._id);
+            AsyncStorage.setItem('VaccinationSubscriptionInclusionId', item?._id);
+            AsyncStorage.setItem('VaccinationSubscriptionId', plan?.subscription_id);
 
-            setVaccinationSubscriptionId(plan?._id);
+            setVaccinationSubscriptionId(plan?.subscription_id);
+            setVaccinationSubscriptionInclusionId(item?._id);
             setVaccinationSubscriptionName(plan?.name);
             setVaccinationSubscriptionPlanId(plan?.plan_id);
           }
@@ -3151,6 +3160,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const renderRemoteConfigItems = (item: any, index: number) => {
     const isCorporateLoading =
       userSubscriptionLoading && item?.action === string.vaccineBooking.CORPORATE_VACCINATION;
+
     return (
       <View
         key={index}
@@ -3175,7 +3185,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 color: item?.colorReverse ? theme.colors.WHITE : theme.colors.APP_YELLOW,
               },
             ]}
-            title={item?.title}
+            title={
+              item?.title == 'Book Vaccination Slot'
+                ? corporateSubscriptions == undefined || corporateSubscriptions.length == 0
+                  ? 'Book Vaccination Slot'
+                  : corporateSubscriptions?.length >= 0 && !!vaccinationCmsIdentifier
+                  ? 'Book Vaccination Slot'
+                  : 'Register on Cowin'
+                : item?.title
+            }
             onPress={() => {
               item?.docOnCall ? onPressCallDoctor(item) : handleCovidCTA(item);
             }}
@@ -3284,26 +3302,33 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       'CTA Clicked': item?.title,
     };
     postHomeWEGEvent(WebEngageEventName.COVID_VACCINATION_SECTION_CLICKED, undefined, attibutes);
+
     try {
       if (item?.action === string.vaccineBooking.CORPORATE_VACCINATION) {
         AsyncStorage.setItem('verifyCorporateEmailOtpAndSubscribe', 'false');
         if (corporateSubscriptions?.length) {
-          if (agreedToVaccineTnc === 'yes') {
-            props.navigation.navigate(AppRoutes.BookedVaccineScreen, {
-              cmsIdentifier: vaccinationCmsIdentifier || '',
-              subscriptionId: vaccinationSubscriptionId || '',
-              isVaccineSubscription: !!vaccinationCmsIdentifier,
-              isCorporateSubscription: !!corporateSubscriptions?.length,
-            });
+          if (!!vaccinationCmsIdentifier) {
+            if (agreedToVaccineTnc === 'yes') {
+              props.navigation.navigate(AppRoutes.BookedVaccineScreen, {
+                cmsIdentifier: vaccinationCmsIdentifier || '',
+                subscriptionId: vaccinationSubscriptionId || '',
+                subscriptionInclusionId: vaccinationSubscriptionInclusionId || '',
+                isVaccineSubscription: !!vaccinationCmsIdentifier,
+                isCorporateSubscription: !!corporateSubscriptions?.length,
+              });
+            } else {
+              props.navigation.navigate(AppRoutes.VaccineTermsAndConditions, {
+                isCorporateSubscription: !!corporateSubscriptions?.length,
+              });
+            }
           } else {
-            props.navigation.navigate(AppRoutes.VaccineTermsAndConditions, {
-              isCorporateSubscription: !!corporateSubscriptions?.length,
-            });
+            Linking.openURL(string.vaccineBooking.cowin_url).catch((err) => {});
           }
         } else {
           props.navigation.navigate(AppRoutes.BookedVaccineScreen, {
             cmsIdentifier: vaccinationCmsIdentifier || '',
             subscriptionId: vaccinationSubscriptionId || '',
+            subscriptionInclusionId: vaccinationSubscriptionId || '',
             isVaccineSubscription: !!vaccinationCmsIdentifier,
             isCorporateSubscription: !!corporateSubscriptions?.length,
           });

@@ -114,6 +114,8 @@ target 'ApolloPatient' do
   pod 'ReactNativeWebPFormat', :path => '../node_modules/react-native-webp-format'
   pod 'react-native-appsflyer', :path => '../node_modules/react-native-appsflyer'
 
+  pod 'react-native-html-to-pdf', :path => '../node_modules/react-native-html-to-pdf'
+
   target 'NotificationService' do
       platform :ios, '10.0'
       pod 'WebEngageBannerPush'

@@ -5107,6 +5107,7 @@ export const GET_VACCINATION_APPOINMENT_DETAILS = gql`
       message
       code
       response {
+        id
         display_id
         dose_number
         patient_info {
@@ -5124,6 +5125,7 @@ export const GET_VACCINATION_APPOINMENT_DETAILS = gql`
           session_name
           start_date_time
           vaccine_type
+          station_name
           resource_detail {
             name
             street_line1
@@ -5168,6 +5170,7 @@ export const GET_ALL_VACCINATION_APPOINTMENTS = gql`
           age
           gender
           uhid
+          relation
         }
         status
         payment_type

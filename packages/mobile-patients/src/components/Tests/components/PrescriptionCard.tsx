@@ -20,7 +20,7 @@ export const PrescriptionCard: React.FC<PrescriptionCardProps> = (props) => {
   return (
     <View style={styles.container}>
       <View style={styles.rowStyles}>
-        <View>
+        <View style={{ width: '85%' }}>
           {!!props.heading1 ? <Text style={styles.heading1}>{props.heading1}</Text> : null}
           {!!props.docName ? (
             <View style={styles.doctorTextView}>
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
   },
   rowStyles: { flexDirection: 'row', justifyContent: 'space-between' },
   heading1: { ...theme.viewStyles.text('M', 12.5, colors.SHERPA_BLUE, 1, 20) },
-  doctorTextView: { minHeight: 50, justifyContent: 'center', alignItems: 'center' },
+  doctorTextView: { minHeight: 50, justifyContent: 'center' },
   heading2: {
     ...theme.viewStyles.text('SB', 15, colors.SHERPA_BLUE, 1, 20),
     marginTop: 8,
