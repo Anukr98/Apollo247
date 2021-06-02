@@ -564,15 +564,15 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
           </View>
           {data?.labTestResults?.map((item: any) => {
             const unit = item?.unit;
-            let minNum = convertToNum(item.range, 0);
-            let maxNum = convertToNum(item.range, 1);
-            let parseResult = parseInt(item.result);
+            let minNum = convertToNum(item?.range, 0);
+            let maxNum = convertToNum(item?.range, 1);
+            let parseResult = parseInt(item?.result);
             var resultColorChanger: boolean;
             var stringColorChanger: boolean;
             var rangeColorChanger: boolean;
             var columnDecider: boolean;
-            if (!!item.result) {
-              if (item.result.length > 14) {
+            if (!!item?.result) {
+              if (item?.result?.length > 14) {
                 stringColorChanger = true;
               } else {
                 parseResult >= minNum && parseResult <= maxNum
@@ -581,52 +581,54 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
               }
             }
 
-            if (!!item.range) {
+            if (!!item?.range) {
               var symbolSearch =
-                item.range.includes('<') || item.range.includes('>') || item.range.includes(':');
+                item?.range?.includes('<') ||
+                item?.range?.includes('>') ||
+                item?.range?.includes(':');
               if (symbolSearch) {
                 rangeColorChanger = true;
               } else {
                 rangeColorChanger = false;
               }
-              if (item.range.length > 30) {
+              if (item?.range?.length > 30) {
                 columnDecider = true;
               } else {
                 columnDecider = false;
               }
             }
 
-            return !!item.result ? (
+            return !!item?.result ? (
               <>
                 <View
                   style={[
                     styles.botContainer,
                     {
                       borderLeftColor:
-                        stringColorChanger === true || rangeColorChanger === true || !item.range
+                        stringColorChanger === true || rangeColorChanger === true || !item?.range
                           ? '#9B9B9B'
                           : resultColorChanger === true
                           ? '#16DE9B'
                           : '#D87878',
                       height:
-                        stringColorChanger === true && item.result.length > 100
+                        stringColorChanger === true && item?.result?.length > 100
                           ? 170
-                          : !!item.range && item.range.length > 30
+                          : !!item?.range && item?.range?.length > 30
                           ? 200
                           : 110,
                     },
                   ]}
                 >
                   <View style={styles.labelViewStyle}>
-                    <Text style={styles.labelStyle}>{item.parameterName}</Text>
+                    <Text style={styles.labelStyle}>{item?.parameterName}</Text>
                   </View>
                   <View
                     style={{
                       flexDirection: columnDecider ? 'column' : 'row',
                       height:
-                        stringColorChanger === true && item.result.length > 100 ? '50%' : '65%',
+                        stringColorChanger === true && item?.result?.length > 100 ? '50%' : '65%',
                       width:
-                        stringColorChanger === true && item.result.length > 60 ? '97%' : '100%',
+                        stringColorChanger === true && item?.result?.length > 60 ? '97%' : '100%',
                     }}
                   >
                     <View
@@ -643,7 +645,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                           styles.resultTextContainer,
                           {
                             bottom:
-                              stringColorChanger === true && item.result.length > 100
+                              stringColorChanger === true && item?.result?.length > 100
                                 ? 15
                                 : columnDecider
                                 ? 8
@@ -660,15 +662,15 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                             backgroundColor:
                               stringColorChanger === true ||
                               rangeColorChanger === true ||
-                              !item.range
+                              !item?.range
                                 ? '#F7F7F7'
-                                : resultColorChanger === true
+                                : resultColorChanger === tru
                                 ? theme.colors.COMPLETE_STATUS_BGK
                                 : theme.colors.FAILURE_STATUS_BGK,
                             color:
                               stringColorChanger === true ||
                               rangeColorChanger === true ||
-                              !item.range
+                              !item?.range
                                 ? theme.colors.ASTRONAUT_BLUE
                                 : resultColorChanger === true
                                 ? theme.colors.COMPLETE_STATUS_TEXT
@@ -679,17 +681,17 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                                 ? 64
                                 : undefined,
                             width:
-                              stringColorChanger === true && item.result.length > 100
+                              stringColorChanger === true && item?.result?.length > 100
                                 ? '100%'
                                 : undefined,
                           },
                         ]}
                       >
-                        {`${item.result}` || 'N/A'}
+                        {`${item?.result}` || 'N/A'}
                       </Text>
-                      {item.result.length > 100 ? (
+                      {item?.result?.length > 100 ? (
                         <TouchableOpacity
-                          onPress={() => renderReadMore(item.result)}
+                          onPress={() => renderReadMore(item?.result)}
                           style={[
                             styles.readMoreTouch,
                             { top: Platform.OS === 'android' ? 2 : 10 },
@@ -699,8 +701,8 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                         </TouchableOpacity>
                       ) : null}
                     </View>
-                    {!!item.range
-                      ? renderDataFromTestReports(item.range, unit, columnDecider)
+                    {!!item?.range
+                      ? renderDataFromTestReports(item?.range, unit, columnDecider)
                       : null}
                   </View>
                 </View>
