@@ -1,7 +1,7 @@
 import { CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Platform, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Overlay } from 'react-native-elements';
 
 const styles = StyleSheet.create({
@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   descText: {
-    ...theme.viewStyles.text('M', 16, '#01475B', 1, 19),
+    ...theme.viewStyles.text('M', 14, '#01475B', 1, 19),
     paddingHorizontal: 16,
     paddingTop: 15,
     textAlign: 'justify',
@@ -84,7 +84,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   renderHeader: {
-    ...theme.viewStyles.cardContainer,
     borderTopRightRadius: 10,
     borderTopLeftRadius: 10,
     backgroundColor: 'white',
@@ -97,7 +96,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(16),
     color: theme.colors.LIGHT_BLUE,
     alignSelf: 'flex-start',
-    left: 25,
+    left: 35,
     top: 5,
   },
   renderDescription: {

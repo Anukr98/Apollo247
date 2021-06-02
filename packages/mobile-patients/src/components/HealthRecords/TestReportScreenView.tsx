@@ -9,7 +9,7 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   PermissionsAndroid,
   Platform,
@@ -21,7 +21,11 @@ import {
   BackHandler,
   View,
 } from 'react-native';
-import { GET_LAB_RESULT_PDF } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID,
+  GET_LAB_RESULT_PDF,
+  PHR_COVERT_TO_ZIP,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import Pdf from 'react-native-pdf';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -39,17 +43,32 @@ import {
   handleGraphQlError,
   postWebEngagePHR,
   isSmallDevice,
+  removeObjectProperty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import {
   getLabResultpdf,
   getLabResultpdfVariables,
 } from '@aph/mobile-patients/src/graphql/types/getLabResultpdf';
+import {
+  convertToZip,
+  convertToZipVariables,
+} from '@aph/mobile-patients/src/graphql/types/convertToZip';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import _, { min } from 'lodash';
+import {
+  getPatientPrismMedicalRecordsApi,
+  getPatientPrismSingleMedicalRecordApi,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
+import {
+  getDiagnosticOrderDetailsByDisplayID,
+  getDiagnosticOrderDetailsByDisplayIDVariables,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetailsByDisplayID';
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { ResultTestReportsPopUp } from '@aph/mobile-patients/src/components/HealthRecords/Components/ResultTestReportsPopUp';
+import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { RenderPdf } from '@aph/mobile-patients/src/components/ui/RenderPdf';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -81,7 +100,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
     borderBottomColor: theme.colors.SEPARATOR_LINE,
     marginLeft: 18,
-    width: '85%',
+    width: '95%',
   },
   botContainer: {
     width: '100%',
@@ -104,18 +123,17 @@ const styles = StyleSheet.create({
   },
   resultTextContainer: {
     color: theme.colors.ASTRONAUT_BLUE,
-    ...theme.fonts.IBMPlexSansMedium(14),
+    ...theme.fonts.IBMPlexSansSemiBold(14),
     marginLeft: 18,
     textAlign: 'left',
   },
   descText: {
-    fontSize: 14,
-    fontFamily: 'IBMPlexSans-Medium',
+    ...theme.fonts.IBMPlexSansMedium(14),
     paddingHorizontal: 10,
     paddingTop: 5,
     textAlign: 'justify',
     left: 15,
-    borderRadius: 10,
+    borderRadius: 6,
     paddingVertical: 3,
   },
   verticleLine: {
@@ -126,8 +144,14 @@ const styles = StyleSheet.create({
   },
   rangeTextContainer: {
     color: theme.colors.ASTRONAUT_BLUE,
+    ...theme.fonts.IBMPlexSansSemiBold(14),
+    marginTop: 10,
+  },
+  rangeValueContainer: {
+    color: theme.colors.ASTRONAUT_BLUE,
     ...theme.fonts.IBMPlexSansMedium(14),
     marginTop: 10,
+    left: 3,
   },
   iconRender: {
     flexDirection: 'row',
@@ -192,6 +216,27 @@ const styles = StyleSheet.create({
     ...viewStyles.text('SB', 14, '#000000', 1, 30),
     marginRight: 10,
   },
+  imageViewStyle: {
+    marginHorizontal: 30,
+    marginBottom: 15,
+    marginTop: 15,
+    backgroundColor: 'transparent',
+  },
+  imagePlaceHolderStyle: {
+    height: 425,
+    width: '100%',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  imageStyle: {
+    width: '100%',
+    height: 425,
+  },
+  pdfStyle: {
+    height: 425,
+    width: '100%',
+    backgroundColor: 'transparent',
+  },
   doctorTextStyle: { ...viewStyles.text('R', 12, '#000000', 1, 21), marginTop: 6 },
   safeAreaViewStyle: {
     ...theme.viewStyles.container,
@@ -208,6 +253,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   const [showAdditionalNotes, setShowAdditionalNotes] = useState<boolean>(false);
   const [showReadMore, setShowReadMore] = useState<boolean>(false);
   const [showReadMoreData, setShowReadMoreData] = useState('');
+  const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [data, setData] = useState<any>(
     props.navigation.state.params ? props.navigation.state.params.data : {}
   );
@@ -215,16 +261,115 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
     ? props.navigation.state.params.labResults
     : false;
   const [apiError] = useState(false);
+  const [showPDF, setShowPDF] = useState<boolean>(false);
+  const [pdfFileUrl, setPdfFileUrl] = useState<string>('');
+  const [fileNamePDF, setFileNamePDF] = useState<string>('');
   const { currentPatient } = useAllCurrentPatients();
-  const { setLoading } = useUIElements();
   const client = useApolloClient();
 
   //for deeplink
   const movedFrom = props.navigation.getParam('movedFrom');
+  const displayId = props.navigation.getParam('id');
+  const webEngageSource = 'Lab Test';
+  const file_name_text = 'TestReport_';
+  const webEngageEventName: WebEngageEventName = WebEngageEventName.PHR_DOWNLOAD_TEST_REPORT;
+
+  const imagesArray = g(data, 'testResultFiles') ? g(data, 'testResultFiles') : [];
+  const propertyName = g(data, 'testResultFiles') ? 'testResultFiles' : '';
+  const eventInputData = removeObjectProperty(data, propertyName);
 
   useEffect(() => {
     Platform.OS === 'android' && requestReadSmsPermission();
   });
+
+  const getOrderDetails = async (displayId: string) => {
+    const res = await client.query<
+      getDiagnosticOrderDetailsByDisplayID,
+      getDiagnosticOrderDetailsByDisplayIDVariables
+    >({
+      query: GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID,
+      variables: {
+        displayId: Number(displayId),
+      },
+      fetchPolicy: 'no-cache',
+    });
+    return res;
+  };
+
+  useEffect(() => {
+    if (!!movedFrom && !!displayId && movedFrom == 'deeplink') {
+      fetchDiagnosticOrderDetails(displayId);
+    }
+  }, []);
+
+  const fetchDiagnosticOrderDetails = async (displayId: string) => {
+    setLoading?.(true);
+    try {
+      const res = await getOrderDetails(displayId);
+      const { data } = res;
+      const getData = g(data, 'getDiagnosticOrderDetailsByDisplayID', 'ordersList');
+      const visitId = getData?.visitNo;
+      if (currentPatient?.id === getData?.patientId) {
+        if (!!visitId) {
+          fetchTestReportResult(visitId);
+        } else {
+          setLoading?.(false);
+          renderError(string.diagnostics.unableToFetchReport, true);
+        }
+      } else {
+        setLoading?.(false);
+        renderError(string.diagnostics.incorrectUserReport, false);
+      }
+    } catch (error) {
+      CommonBugFender('RecordDetails_fetchDiagnosticOrderDetails_try', error);
+      setLoading?.(false);
+      renderError(string.diagnostics.unableToFetchReport, true);
+    }
+  };
+
+  const fetchTestReportResult = useCallback((visitId: string) => {
+    getPatientPrismMedicalRecordsApi(
+      client,
+      currentPatient?.id,
+      [MedicalRecordType.TEST_REPORT],
+      'Diagnostics'
+    )
+      .then((data: any) => {
+        const labResultsData = g(
+          data,
+          'getPatientPrismMedicalRecords_V2',
+          'labResults',
+          'response'
+        );
+        let resultForVisitNo = labResultsData?.find((item: any) => item?.identifier == visitId);
+        if (!!resultForVisitNo) {
+          setData(resultForVisitNo);
+          setLoading?.(false);
+        } else {
+          setLoading?.(false);
+          renderError(string.diagnostics.responseUnavailableForReport, false);
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('OrderedTestStatus_fetchTestReportsData', error);
+        currentPatient && handleGraphQlError(error);
+      })
+      .finally(() => setLoading?.(false));
+  }, []);
+
+  const renderError = (message: string, redirectToOrders: boolean) => {
+    showAphAlert?.({
+      unDismissable: true,
+      title: string.common.uhOh,
+      description: message,
+      onPressOk: () => {
+        hideAphAlert?.();
+        redirectToOrders
+          ? props.navigation.navigate(AppRoutes.YourOrdersTest)
+          : props.navigation.navigate(AppRoutes.ConsultRoom);
+      },
+    });
+  };
 
   const requestReadSmsPermission = async () => {
     try {
@@ -291,11 +436,6 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   const downloadPDFTestReport = () => {
     if (currentPatient?.id) {
       setLoading && setLoading(true);
-      if (Platform.OS === 'android') {
-        if (!!data?.fileUrl) {
-          downloadDocument();
-        }
-      }
       client
         .query<getLabResultpdf, getLabResultpdfVariables>({
           query: GET_LAB_RESULT_PDF,
@@ -306,41 +446,106 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         })
         .then(({ data }: any) => {
           if (data?.getLabResultpdf?.url) {
-            downloadDocument(data?.getLabResultpdf?.url);
+            imagesArray?.length === 0
+              ? downloadDocument(data?.getLabResultpdf?.url)
+              : callConvertToZipApi(data?.getLabResultpdf?.url);
           }
         })
         .catch((e: any) => {
           setLoading?.(false);
           currentPatient && handleGraphQlError(e, 'Report is yet not available');
+          CommonBugFender('HealthRecordDetails_downloadPDFTestReport', e);
         });
     }
   };
 
+  const callConvertToZipApi = (pdfUrl?: string) => {
+    setLoading?.(true);
+    const fileUrls = imagesArray?.map((item) => item?.file_Url);
+    pdfUrl && fileUrls?.push(pdfUrl);
+    client
+      .mutate<convertToZip, convertToZipVariables>({
+        mutation: PHR_COVERT_TO_ZIP,
+        variables: {
+          uhid: currentPatient?.uhid || '',
+          fileUrls: fileUrls,
+        },
+      })
+      .then(({ data }) => {
+        setLoading?.(false);
+        if (data?.convertToZip?.zipUrl) {
+          downloadZipFile(data?.convertToZip?.zipUrl);
+        }
+      })
+      .catch((e: any) => {
+        setLoading?.(false);
+        currentPatient && handleGraphQlError(e, 'Report is yet not available');
+        CommonBugFender('HealthRecordDetails_callConvertToZipApi', e);
+      });
+  };
+
+  const downloadZipFile = (zipUrl: string) => {
+    const dirs = RNFetchBlob.fs.dirs;
+    const fileName: string =
+      file_name_text + currentPatient?.uhid + '_' + new Date().getTime() + '.zip';
+    const downloadPath =
+      Platform.OS === 'ios'
+        ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + (fileName || 'Apollo_TestReport.zip')
+        : dirs.DownloadDir + '/' + (fileName || 'Apollo_TestReport.zip');
+    setLoading && setLoading(true);
+    RNFetchBlob.config({
+      fileCache: true,
+      path: downloadPath,
+      addAndroidDownloads: {
+        title: fileName,
+        useDownloadManager: true,
+        notification: true,
+        path: downloadPath,
+        mime: mimeType(downloadPath),
+        description: 'File downloaded by download manager.',
+      },
+    })
+      .fetch('GET', zipUrl)
+      .then((res) => {
+        setLoading && setLoading(false);
+        postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, eventInputData);
+        Platform.OS === 'ios'
+          ? RNFetchBlob.ios.previewDocument(res.path())
+          : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+      })
+      .catch((err) => {
+        CommonBugFender('HealthRecordDetails_downloadZipFile', err);
+        currentPatient && handleGraphQlError(err);
+        setLoading && setLoading(false);
+      })
+      .finally(() => {
+        setLoading && setLoading(false);
+      });
+  };
+
   const renderDownloadButton = () => {
     const buttonTitle = 'TEST REPORT';
-    const btnTitle = labResults && Platform.OS === 'ios' ? 'SAVE ' : 'DOWNLOAD ';
+    const btnTitle = 'DOWNLOAD ';
+    const _callDownloadDocumentApi = () => {
+      if (imagesArray?.length === 1) {
+        labResults ? downloadPDFTestReport() : downloadDocument();
+      } else {
+        labResults ? downloadPDFTestReport() : callConvertToZipApi();
+      }
+    };
     return (
       <View style={{ marginHorizontal: 40, marginBottom: 15, marginTop: 33 }}>
-        {!!data.fileUrl && labResults && Platform.OS === 'ios' ? (
-          <Button
-            title={'SAVE ATTACHMENT'}
-            style={{ marginBottom: 20 }}
-            onPress={() => downloadDocument()}
-          />
-        ) : null}
-        <Button
-          title={btnTitle + buttonTitle}
-          onPress={() => (labResults ? downloadPDFTestReport() : downloadDocument())}
-        />
+        <Button title={btnTitle + buttonTitle} onPress={_callDownloadDocumentApi} />
       </View>
     );
   };
 
   const renderDetailsFinding = () => {
     const convertToNum = (stringToNumber: string, item: number) => {
+      const letterCheck = !/[^a-zA-Z]/.test(stringToNumber);
       if (!!stringToNumber && stringToNumber.length <= 12) {
         var symbolSearch = stringToNumber.includes('<') || stringToNumber.includes('>');
-        if (!symbolSearch) {
+        if (!symbolSearch && !letterCheck) {
           const splitNum = stringToNumber.split('-')[item].trim();
           let numCoverter = parseInt(splitNum);
           return numCoverter;
@@ -359,15 +564,15 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
           </View>
           {data?.labTestResults?.map((item: any) => {
             const unit = item?.unit;
-            let minNum = convertToNum(item.range, 0);
-            let maxNum = convertToNum(item.range, 1);
-            let parseResult = parseInt(item.result);
+            let minNum = convertToNum(item?.range, 0);
+            let maxNum = convertToNum(item?.range, 1);
+            let parseResult = parseInt(item?.result);
             var resultColorChanger: boolean;
             var stringColorChanger: boolean;
             var rangeColorChanger: boolean;
             var columnDecider: boolean;
-            if (!!item.result) {
-              if (item.result.length > 14) {
+            if (!!item?.result) {
+              if (item?.result?.length > 14) {
                 stringColorChanger = true;
               } else {
                 parseResult >= minNum && parseResult <= maxNum
@@ -375,52 +580,55 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                   : (resultColorChanger = false);
               }
             }
-            if (!!item.range) {
+
+            if (!!item?.range) {
               var symbolSearch =
-                item.range.includes('<') || item.range.includes('>') || item.range.includes(':');
+                item?.range?.includes('<') ||
+                item?.range?.includes('>') ||
+                item?.range?.includes(':');
               if (symbolSearch) {
                 rangeColorChanger = true;
               } else {
                 rangeColorChanger = false;
               }
-              if (item.range.length > 30) {
+              if (item?.range?.length > 30) {
                 columnDecider = true;
               } else {
                 columnDecider = false;
               }
             }
 
-            return !!item.result ? (
+            return !!item?.result ? (
               <>
                 <View
                   style={[
                     styles.botContainer,
                     {
                       borderLeftColor:
-                        stringColorChanger === true || rangeColorChanger === true || !item.range
+                        stringColorChanger === true || rangeColorChanger === true || !item?.range
                           ? '#9B9B9B'
                           : resultColorChanger === true
                           ? '#16DE9B'
                           : '#D87878',
                       height:
-                        stringColorChanger === true && item.result.length > 100
+                        stringColorChanger === true && item?.result?.length > 100
                           ? 170
-                          : !!item.range && item.range.length > 30
+                          : !!item?.range && item?.range?.length > 30
                           ? 200
                           : 110,
                     },
                   ]}
                 >
                   <View style={styles.labelViewStyle}>
-                    <Text style={styles.labelStyle}>{item.parameterName}</Text>
+                    <Text style={styles.labelStyle}>{item?.parameterName}</Text>
                   </View>
                   <View
                     style={{
                       flexDirection: columnDecider ? 'column' : 'row',
                       height:
-                        stringColorChanger === true && item.result.length > 100 ? '50%' : '65%',
+                        stringColorChanger === true && item?.result?.length > 100 ? '50%' : '65%',
                       width:
-                        stringColorChanger === true && item.result.length > 60 ? '97%' : '100%',
+                        stringColorChanger === true && item?.result?.length > 60 ? '97%' : '100%',
                     }}
                   >
                     <View
@@ -437,7 +645,11 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                           styles.resultTextContainer,
                           {
                             bottom:
-                              stringColorChanger === true && item.result.length > 100 ? 15 : 0.5,
+                              stringColorChanger === true && item?.result?.length > 100
+                                ? 15
+                                : columnDecider
+                                ? 8
+                                : 0.5,
                           },
                         ]}
                       >
@@ -450,7 +662,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                             backgroundColor:
                               stringColorChanger === true ||
                               rangeColorChanger === true ||
-                              !item.range
+                              !item?.range
                                 ? '#F7F7F7'
                                 : resultColorChanger === true
                                 ? theme.colors.COMPLETE_STATUS_BGK
@@ -458,34 +670,39 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                             color:
                               stringColorChanger === true ||
                               rangeColorChanger === true ||
-                              !item.range
+                              !item?.range
                                 ? theme.colors.ASTRONAUT_BLUE
                                 : resultColorChanger === true
                                 ? theme.colors.COMPLETE_STATUS_TEXT
                                 : theme.colors.FAILURE_STATUS_TEXT,
                             lineHeight: stringColorChanger === true ? 21 : 18,
-                            fontFamily:
-                              stringColorChanger === true ? 'IBMPlexSans' : 'IBMPlexSans-Medium',
+                            height:
+                              stringColorChanger === true && Platform.OS === 'android'
+                                ? 64
+                                : undefined,
                             width:
-                              stringColorChanger === true && item.result.length > 100
+                              stringColorChanger === true && item?.result?.length > 100
                                 ? '100%'
                                 : undefined,
                           },
                         ]}
                       >
-                        {`${item.result}` || 'N/A'}
+                        {`${item?.result}` || 'N/A'}
                       </Text>
-                      {item.result.length > 100 ? (
+                      {item?.result?.length > 100 ? (
                         <TouchableOpacity
-                          onPress={() => renderReadMore(item.result)}
-                          style={styles.readMoreTouch}
+                          onPress={() => renderReadMore(item?.result)}
+                          style={[
+                            styles.readMoreTouch,
+                            { top: Platform.OS === 'android' ? 2 : 10 },
+                          ]}
                         >
                           <Text style={styles.readMoreText}>{'READ MORE'}</Text>
                         </TouchableOpacity>
                       ) : null}
                     </View>
-                    {!!item.range
-                      ? renderDataFromTestReports(item.range, unit, columnDecider)
+                    {!!item?.range
+                      ? renderDataFromTestReports(item?.range, unit, columnDecider)
                       : null}
                   </View>
                 </View>
@@ -513,7 +730,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
             ]}
           >
             <Text style={styles.rangeTextContainer}>{'Range:'}</Text>
-            <Text style={styles.rangeTextContainer}>{range ? `${range + `${unit}`}` : 'N/A'}</Text>
+            <Text style={styles.rangeValueContainer}>{range ? `${range + `${unit}`}` : 'N/A'}</Text>
           </View>
         </>
       );
@@ -544,44 +761,61 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
     );
   };
 
-  const renderImage = () => {
-    const file_name = g(data, 'testResultFiles', '0', 'fileName')
-      ? g(data, 'testResultFiles', '0', 'fileName')
-      : '';
-    return (
-      <View
-        style={{
-          marginTop: 0,
+  const renderPdf = () => {
+    return showPDF ? (
+      <RenderPdf
+        uri={pdfFileUrl}
+        title={fileNamePDF || 'Document.pdf'}
+        isPopup={true}
+        setDisplayPdf={() => {
+          setShowPDF(false);
+          setPdfFileUrl('');
         }}
-      >
+        navigation={props.navigation}
+      />
+    ) : null;
+  };
+
+  const renderImage = () => {
+    return (
+      <View>
         <ScrollView>
-          {file_name && file_name.toLowerCase().endsWith('.pdf') ? (
-            <View style={{ marginHorizontal: 20, marginBottom: 15, marginTop: 30 }}>
-              <Pdf key={data.fileUrl} source={{ uri: data.fileUrl }} style={styles.PDFRender} />
-            </View>
-          ) : (
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => {
-                props.navigation.navigate(AppRoutes.ImageSliderScreen, {
-                  images: [data.fileUrl],
-                  heading: file_name || 'Image',
-                });
-              }}
-              style={{ marginHorizontal: 20, marginBottom: 15, marginTop: 15 }}
-            >
-              <Image
-                placeholderStyle={styles.imageRender}
-                PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
-                source={{ uri: data.fileUrl }}
-                style={{
-                  width: '100%',
-                  height: 425,
+          {imagesArray?.map((item, index) => {
+            const file_name = item?.fileName || '';
+            const file_Url = item?.file_Url || '';
+            return file_name && file_name.toLowerCase().endsWith('.pdf') ? (
+              <TouchableOpacity
+                activeOpacity={1}
+                style={styles.imageViewStyle}
+                onPress={() => {
+                  setShowPDF(true);
+                  setPdfFileUrl(file_Url);
+                  setFileNamePDF(file_name);
                 }}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
-          )}
+              >
+                <Pdf key={file_Url} source={{ uri: file_Url }} style={styles.pdfStyle} singlePage />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={() => {
+                  props.navigation.navigate(AppRoutes.ImageSliderScreen, {
+                    images: [file_Url],
+                    heading: file_name || 'Image',
+                  });
+                }}
+                style={styles.imageViewStyle}
+              >
+                <Image
+                  placeholderStyle={styles.imagePlaceHolderStyle}
+                  PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
+                  source={{ uri: file_Url }}
+                  style={styles.imageStyle}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
       </View>
     );
@@ -592,8 +826,8 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       <View style={{ marginBottom: 20 }}>
         {data?.labTestResults?.length > 0 ? renderDetailsFinding() : null}
         {data?.additionalNotes ? renderTopLineReport() : null}
-        {!!data.fileUrl ? renderImage() : null}
-        {!!data.fileUrl || labResults ? renderDownloadButton() : null}
+        {imagesArray?.length > 0 ? renderImage() : null}
+        {imagesArray?.length > 0 || labResults ? renderDownloadButton() : null}
       </View>
     );
   };
@@ -619,10 +853,14 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         <View style={styles.doctorNameRender}>
           <Text style={styles.recordNameTextStyle}>{data?.labTestName}</Text>
           <View style={{ flexDirection: 'row' }}>
+            {!!data?.labTestRefferedBy ? (
+              <Text style={styles.doctorTextStyle}>
+                {'Dr. ' + data?.labTestRefferedBy || 'Dr. -'}
+              </Text>
+            ) : null}
             <Text style={styles.doctorTextStyle}>
-              {'Dr. ' + data?.labTestRefferedBy || 'Dr. -'}
+              {` ${!!data?.labTestRefferedBy ? '\u25CF' : ''} ` + data?.siteDisplayName}
             </Text>
-            <Text style={styles.doctorTextStyle}>{` ${'\u25CF'} ` + data?.siteDisplayName}</Text>
           </View>
         </View>
       </View>
@@ -644,8 +882,6 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   };
 
   const downloadDocument = (pdfUrl: string = '') => {
-    const webEngageSource = 'Lab Test';
-    const webEngageEventName = WebEngageEventName.PHR_DOWNLOAD_TEST_REPORT;
     const file_name = g(data, 'testResultFiles', '0', 'fileName')
       ? g(data, 'testResultFiles', '0', 'fileName')
       : '';
@@ -674,7 +910,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       })
       .then((res) => {
         setLoading && setLoading(false);
-        postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, data);
+        postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, eventInputData);
         Platform.OS === 'ios'
           ? RNFetchBlob.ios.previewDocument(res.path())
           : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
@@ -739,6 +975,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
             container={{ borderBottomWidth: 0 }}
             onPressLeftIcon={onGoBack}
           />
+          {renderPdf()}
           <ScrollView bounces={false}>
             {renderTestTopDetailsView()}
             {renderData()}
