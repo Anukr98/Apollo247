@@ -1460,7 +1460,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 onRemoveCartItem(test);
               }}
               isCardExpanded={true}
-              packOfCount={test.mou}
+              packOfCount={reportGenItem?.itemParameterCount}
               duplicateArray={duplicateNameArray}
             />
           );
