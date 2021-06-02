@@ -261,7 +261,9 @@ API_AVAILABLE(ios(10.0)){
    [[AppsFlyerAttribution shared] continueUserActivity:userActivity restorationHandler:restorationHandler];
 
   [RNCallKeep application:application continueUserActivity:userActivity restorationHandler:restorationHandler];
-  return true;
+  return [RCTLinkingManager application:application
+            continueUserActivity:userActivity
+              restorationHandler:restorationHandler];
 }
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
