@@ -737,24 +737,28 @@ export const couponViewShimmer = () => {
 export const renderDiagnosticWidgetShimmer = (showHeading: boolean) => {
   return (
     <View style={{ marginLeft: 16 }}>
-      {showHeading && (
-        <View style={styles.rowStyle}>
-          <ShimmerPlaceHolder
-            LinearGradient={LinearGradient}
-            shimmerColors={shimmerColors}
-            shimmerStyle={styles.diagnosticCard2}
-          />
-          <ShimmerPlaceHolder
-            LinearGradient={LinearGradient}
-            shimmerColors={shimmerColors}
-            shimmerStyle={styles.diagnosticCard2}
-          />
-        </View>
-      )}
+      {showHeading && renderDiagnosticWidgetHeadingShimmer()}
       <ShimmerPlaceHolder
         shimmerColors={shimmerColors}
         LinearGradient={LinearGradient}
         shimmerStyle={styles.diagnosticsCardBottom}
+      />
+    </View>
+  );
+};
+
+export const renderDiagnosticWidgetHeadingShimmer = () => {
+  return (
+    <View style={styles.rowStyle}>
+      <ShimmerPlaceHolder
+        LinearGradient={LinearGradient}
+        shimmerColors={shimmerColors}
+        shimmerStyle={styles.diagnosticCard2}
+      />
+      <ShimmerPlaceHolder
+        LinearGradient={LinearGradient}
+        shimmerColors={shimmerColors}
+        shimmerStyle={styles.diagnosticCard2}
       />
     </View>
   );
