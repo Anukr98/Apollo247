@@ -48,7 +48,6 @@ import {
   one_apollo_store_code,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { verifyVPA, verifyVPAVariables } from '@aph/mobile-patients/src/graphql/types/verifyVPA';
-import { PaymentInitiated } from '@aph/mobile-patients/src/components/Tests/Events';
 import {
   DiagnosticUserPaymentAborted,
   DiagnosticPaymentPageViewed,
@@ -67,7 +66,11 @@ import {
   isSmallDevice,
   paymentModeVersionCheck,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-
+import {
+  PaymentStatus,
+  PaymentInitiated,
+  PharmaOrderPlaced,
+} from '@aph/mobile-patients/src/components/PaymentGateway/Events';
 const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {
@@ -77,6 +80,7 @@ export interface PaymentMethodsProps extends NavigationScreenProps {
 
 export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const paymentId = props.navigation.getParam('paymentId');
+  const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
   const [amount, setAmount] = useState<number>(props.navigation.getParam('amount'));
   const orderDetails = props.navigation.getParam('orderDetails');
   const eventAttributes = props.navigation.getParam('eventAttributes');
@@ -101,6 +105,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [burnHc, setburnHc] = useState<number>(0);
   const storeCode =
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
+  const shoppingCart = useShoppingCart();
+
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
     const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
@@ -300,14 +306,14 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   function triggerWebengege(type: string) {
-    PaymentInitiated(amount, businessLine, type);
+    PaymentInitiated(amount, businessLine, type, paymentId);
   }
 
   function triggerUserPaymentAbortedEvent(errorCode: string) {
     //JP_002 -> User aborted payment
     errorCode === 'JP_002' &&
       businessLine === 'diagnostics' &&
-      DiagnosticUserPaymentAborted(currentPatient, orderId);
+      DiagnosticUserPaymentAborted(currentPatient, paymentId);
   }
 
   async function onPressBank(bankCode: string) {
@@ -449,6 +455,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const navigatetoOrderStatus = (isCOD: boolean, paymentStatus: string) => {
+    PaymentStatus(paymentStatus, businessLine, paymentId);
     switch (businessLine) {
       case 'diagnostics':
         props.navigation.navigate(AppRoutes.OrderStatus, {
@@ -466,12 +473,14 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         });
         break;
       case 'pharma':
+        paymentStatus == 'success' &&
+          PharmaOrderPlaced(checkoutEventAttributes, shoppingCart, paymentId, burnHc, false);
         props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
           status: paymentStatus,
           price: amount,
           transId: paymentId,
           orderDetails: orderDetails,
-          // checkoutEventAttributes: checkoutEventAttributes,
+          checkoutEventAttributes: checkoutEventAttributes,
         });
         break;
     }
@@ -587,6 +596,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const showTxnFailurePopUP = () => {
     setisTxnProcessing(false);
+    PaymentStatus('failure', businessLine, paymentId);
     showAphAlert?.({
       unDismissable: businessLine == 'diagnostics' ? true : false,
       removeTopIcon: true,

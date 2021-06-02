@@ -106,7 +106,7 @@ export enum FirebaseEventName {
   PURCHASE = 'purchase',
 
   //for address crash debugging
-  ADDADDRESS_LAT_LNG = 'AddAddressLatLng'
+  ADDADDRESS_LAT_LNG = 'AddAddressLatLng',
 }
 
 export interface PatientInfo {
@@ -670,8 +670,14 @@ export interface FirebaseEvents {
     LOB: string;
   };
 
-  [FirebaseEventName.ADDADDRESS_LAT_LNG]:{
+  [FirebaseEventName.ADDADDRESS_LAT_LNG]: {
     latitude: number;
     longitude: number;
-  }
+  };
+
+  [FirebaseEventName.PAYMENT_STATUS]: {
+    status: string;
+    LOB: string;
+    paymentOrderId: number;
+  };
 }
