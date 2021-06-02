@@ -1689,26 +1689,29 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             { paddingBottom: showAllPreviousItems ? 16 : 0 },
           ]}
         >
-          <View style={styles.previousItemInnerContainer}>
-            <Text style={styles.previousItemHeading}>
-              {nameFormater(firstItem, 'title')} {remainingItems > 0 && `+ ${remainingItems} more`}
-            </Text>
-            <TouchableOpacity
-              onPress={() => setShowAllPreviousItems(!showAllPreviousItems)}
-              style={styles.arrowTouch}
-            >
-              {showAllPreviousItems ? (
-                <Up style={styles.arrowIconStyle} />
-              ) : (
-                <Down style={styles.arrowIconStyle} />
-              )}
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            onPress={() => setShowAllPreviousItems(!showAllPreviousItems)}
+            style={styles.previousContainerTouch}
+          >
+            <View style={styles.previousItemInnerContainer}>
+              <Text style={styles.previousItemHeading}>
+                {nameFormater(firstItem?.slice(0, isSmallDevice ? 29 : 32), 'title')}{' '}
+                {remainingItems > 0 && `+ ${remainingItems} more`}
+              </Text>
+              <View style={styles.arrowTouch}>
+                {showAllPreviousItems ? (
+                  <Up style={styles.arrowIconStyle} />
+                ) : (
+                  <Down style={styles.arrowIconStyle} />
+                )}
+              </View>
+            </View>
+          </TouchableOpacity>
           {showAllPreviousItems ? (
             <>
               <View style={[styles.rowSpaceBetweenStyle, { marginBottom: 0 }]}>
                 <Text style={styles.itemHeading}> ITEM NAME</Text>
-                <Text style={styles.itemHeading}> MRP VALUE</Text>
+                <Text style={styles.itemHeading}> PRICE</Text>
               </View>
               {orderLineItems?.map((item: orderListLineItems) => {
                 return (
@@ -3520,6 +3523,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     marginTop: 12,
   },
+  previousContainerTouch: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   previousItemInnerContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -3551,7 +3559,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13 : 14),
     color: SHERPA_BLUE,
     lineHeight: 22,
-    width: '85%',
+    width: '87%',
   },
   arrowTouch: {
     width: 40,
