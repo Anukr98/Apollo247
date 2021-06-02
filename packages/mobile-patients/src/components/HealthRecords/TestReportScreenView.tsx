@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
     borderBottomColor: theme.colors.SEPARATOR_LINE,
     marginLeft: 18,
-    width: '85%',
+    width: '95%',
   },
   botContainer: {
     width: '100%',
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     paddingTop: 5,
     textAlign: 'justify',
     left: 15,
-    borderRadius: 10,
+    borderRadius: 6,
     paddingVertical: 3,
   },
   verticleLine: {
@@ -567,7 +567,6 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
             let minNum = convertToNum(item.range, 0);
             let maxNum = convertToNum(item.range, 1);
             let parseResult = parseInt(item.result);
-            console.log('minNum', minNum, maxNum);
             var resultColorChanger: boolean;
             var stringColorChanger: boolean;
             var rangeColorChanger: boolean;
@@ -675,7 +674,10 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                                 ? theme.colors.COMPLETE_STATUS_TEXT
                                 : theme.colors.FAILURE_STATUS_TEXT,
                             lineHeight: stringColorChanger === true ? 21 : 18,
-
+                            height:
+                              stringColorChanger === true && Platform.OS === 'android'
+                                ? 64
+                                : undefined,
                             width:
                               stringColorChanger === true && item.result.length > 100
                                 ? '100%'
@@ -688,7 +690,10 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                       {item.result.length > 100 ? (
                         <TouchableOpacity
                           onPress={() => renderReadMore(item.result)}
-                          style={styles.readMoreTouch}
+                          style={[
+                            styles.readMoreTouch,
+                            { top: Platform.OS === 'android' ? 2 : 10 },
+                          ]}
                         >
                           <Text style={styles.readMoreText}>{'READ MORE'}</Text>
                         </TouchableOpacity>
@@ -852,7 +857,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
               </Text>
             ) : null}
             <Text style={styles.doctorTextStyle}>
-              {` ${!!data?.labTestRefferedBy ? '\u25CF' : ''}` + data?.siteDisplayName}
+              {` ${!!data?.labTestRefferedBy ? '\u25CF' : ''} ` + data?.siteDisplayName}
             </Text>
           </View>
         </View>
