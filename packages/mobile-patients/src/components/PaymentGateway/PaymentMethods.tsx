@@ -260,19 +260,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     } catch (error) {}
   };
 
-  // const processCODOrder = () => {
-  //   const processDiagnosticHCOrderInput: ProcessDiagnosticHCOrderInput = {
-  //     orderID: orderDetails?.orderId,
-  //     paymentMode: DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD,
-  //     amount: amount,
-  //   };
-  //   return client.mutate<processDiagnosticHCOrder, processDiagnosticHCOrderVariables>({
-  //     mutation: PROCESS_DIAG_COD_ORDER,
-  //     variables: { processDiagnosticHCOrderInput: processDiagnosticHCOrderInput },
-  //     fetchPolicy: 'no-cache',
-  //   });
-  // };
-
   const verifyVPA = (VPA: string) => {
     const verifyVPA: VerifyVPA = {
       vpa: VPA,
@@ -384,20 +371,12 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     triggerWebengege('Cash');
     setisTxnProcessing(true);
     try {
+      businessLine == 'diagnostics' && initiateOrderPayment();
       const response = await createJusPayOrder(true);
       const { data } = response;
       data?.createOrderV2?.payment_status == 'TXN_SUCCESS'
         ? navigatetoOrderStatus(true, 'success')
         : showTxnFailurePopUP();
-      // if (data?.createOrder?.success) {
-      //   const response = await processCODOrder();
-      //   const { data } = response;
-      //   data?.processDiagnosticHCOrder?.status
-      //     ? navigatetoOrderStatus(true, 'success')
-      //     : showTxnFailurePopUP();
-      // } else {
-      //   showTxnFailurePopUP();
-      // }
     } catch (e) {
       showTxnFailurePopUP();
     }
