@@ -82,9 +82,10 @@ export const handleOpenURL = (event: any) => {
 
       case 'otc':
       case 'medicine':
+        const redirectToMedicineDetail = data.length === 2 && linkId.indexOf('-') === -1;
         return {
-          routeName: data.length === 2 ? 'MedicineDetail' : 'Medicine',
-          id: data.length === 2 ? linkId : undefined,
+          routeName: redirectToMedicineDetail ? 'MedicineDetail' : 'Medicine',
+          id: redirectToMedicineDetail ? linkId : undefined,
         };
         break;
 
