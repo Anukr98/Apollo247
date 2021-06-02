@@ -70,6 +70,8 @@ import { getPricesForItem, sourceHeaders } from '@aph/mobile-patients/src/utils/
 import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { DiagnosticsSearchSuggestionItem } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticsSearchSuggestionItem';
 import { DiagnosticsNewSearch } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticsNewSearch';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
     flex: 1,
@@ -193,7 +195,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const [popularArray, setPopularArray] = useState([]);
   const [searchQuery, setSearchQuery] = useState({});
 
-  const { locationForDiagnostics, locationDetails } = useAppCommonData();
+  const { locationForDiagnostics, diagnosticServiceabilityData } = useAppCommonData();
 
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
@@ -202,7 +204,12 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
 
-  const cityId = locationForDiagnostics?.cityId != '' ? locationForDiagnostics?.cityId : '9';
+  const cityId =
+    locationForDiagnostics?.cityId != ''
+      ? locationForDiagnostics?.cityId
+      : !!diagnosticServiceabilityData && diagnosticServiceabilityData?.city != ''
+      ? diagnosticServiceabilityData?.cityId
+      : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID;
 
   useEffect(() => {
     if (!currentPatient) {
@@ -268,7 +275,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   };
   const fetchPopularDetails = async () => {
     try {
-      const res: any = await getDiagnosticsPopularResults('diagnostic');
+      const res: any = await getDiagnosticsPopularResults('diagnostic', Number(cityId));
       if (res?.data?.success) {
         const product = g(res, 'data', 'data') || [];
         setPopularArray(product);
@@ -642,7 +649,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       );
       popularTests = popularArray?.filter((item: any) => item?.diagnostic_inclusions?.length == 1);
       if (popularTests?.length == 0) {
-        popularTests = popularArray
+        popularTests = popularArray;
       }
     }
 

@@ -22,6 +22,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_
   testPreparationData: string | null;
   packageCalculatedMrp: number | null;
   inclusions: (number | null)[] | null;
+  reportGenerationTime: string | null;
 }
 
 export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_pricingObj {
