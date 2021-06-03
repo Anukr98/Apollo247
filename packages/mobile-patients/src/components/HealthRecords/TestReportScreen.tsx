@@ -761,7 +761,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 12, paddingHorizontal: 20 }}
         sections={localTestReportsData || []}
         renderItem={({ item, index }) => renderTestReportsItems(item, index)}
-        ListEmptyComponent={<PhrNoDataComponent />}
+        ListEmptyComponent={renderEmptyView()}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
       />
     );
@@ -773,6 +773,14 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         <Spinner style={styles.loaderStyle} />
       </View>
     );
+  };
+
+  const renderEmptyView = () => {
+    if (!!testReportMainData) {
+      return null;
+    } else {
+      return <PhrNoDataComponent />;
+    }
   };
 
   const searchListHeaderView = () => {
@@ -789,7 +797,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
 
   const onClickSearchHealthCard = (item: any) => {
     const { healthrecordId } = item?.value;
-    props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+    props.navigation.navigate(AppRoutes.TestReportViewScreen, {
       healthrecordId: healthrecordId,
       healthRecordType: MedicalRecordType.TEST_REPORT,
       labResults: true,

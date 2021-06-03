@@ -1,10 +1,6 @@
 import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  LabTestIcon,
-  ShareBlueIcon,
-  ShareIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { LabTestIcon, ShareBlueIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -252,15 +248,9 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
   const [showAdditionalNotes, setShowAdditionalNotes] = useState<boolean>(false);
   const [showReadMore, setShowReadMore] = useState<boolean>(false);
+  const [apiError, setApiError] = useState(false);
   const [showReadMoreData, setShowReadMoreData] = useState('');
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
-  const [data, setData] = useState<any>(
-    props.navigation.state.params ? props.navigation.state.params.data : {}
-  );
-  const labResults = props.navigation.state.params
-    ? props.navigation.state.params.labResults
-    : false;
-  const [apiError] = useState(false);
   const [showPDF, setShowPDF] = useState<boolean>(false);
   const [pdfFileUrl, setPdfFileUrl] = useState<string>('');
   const [fileNamePDF, setFileNamePDF] = useState<string>('');
@@ -273,6 +263,22 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   const webEngageSource = 'Lab Test';
   const file_name_text = 'TestReport_';
   const webEngageEventName: WebEngageEventName = WebEngageEventName.PHR_DOWNLOAD_TEST_REPORT;
+
+  const [data, setData] = useState<any>(
+    props.navigation.state.params ? props.navigation.state.params.data : {}
+  );
+  const labResults = props.navigation.state.params
+    ? props.navigation.state.params.labResults
+    : false;
+  const healthrecordId = props.navigation.state.params
+    ? props.navigation.state.params?.healthrecordId
+    : '';
+  const healthRecordType = props.navigation.state.params
+    ? props.navigation.state.params?.healthRecordType
+    : '';
+  const prescriptionSource = props.navigation.state.params
+    ? props.navigation.state.params?.prescriptionSource
+    : null;
 
   const imagesArray = g(data, 'testResultFiles') ? g(data, 'testResultFiles') : [];
   const propertyName = g(data, 'testResultFiles') ? 'testResultFiles' : '';
@@ -299,6 +305,37 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   useEffect(() => {
     if (!!movedFrom && !!displayId && movedFrom == 'deeplink') {
       fetchDiagnosticOrderDetails(displayId);
+    }
+  }, []);
+
+  useEffect(() => {
+    // calling this api only for search records
+    if (healthrecordId) {
+      setLoading && setLoading(true);
+      getPatientPrismSingleMedicalRecordApi(
+        client,
+        currentPatient?.id,
+        [healthRecordType],
+        healthrecordId,
+        prescriptionSource
+      )
+        .then((_data: any) => {
+          const labResultsData = g(
+            _data,
+            'getPatientPrismMedicalRecords_V2',
+            'labResults',
+            'response',
+            '0' as any
+          );
+          setData(labResultsData);
+          data ? setApiError(false) : setApiError(true);
+        })
+        .catch((error) => {
+          setApiError(true);
+          CommonBugFender('HealthRecordsHome_fetchTestData', error);
+          currentPatient && handleGraphQlError(error);
+        })
+        .finally(() => setLoading && setLoading(false));
     }
   }, []);
 
@@ -542,7 +579,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
 
   const renderDetailsFinding = () => {
     const convertToNum = (stringToNumber: string, item: number) => {
-      const letterCheck = !/[^a-zA-Z]/.test(stringToNumber);
+      const letterCheck = /[^a-zA-Z]/.test(stringToNumber);
       if (!!stringToNumber && stringToNumber.length <= 12) {
         var symbolSearch = stringToNumber.includes('<') || stringToNumber.includes('>');
         if (!symbolSearch && !letterCheck) {
@@ -677,8 +714,10 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                                 : theme.colors.FAILURE_STATUS_TEXT,
                             lineHeight: stringColorChanger === true ? 21 : 18,
                             height:
-                              stringColorChanger === true && Platform.OS === 'android'
-                                ? 64
+                              stringColorChanger === true &&
+                              Platform.OS === 'android' &&
+                              item?.result?.length > 100
+                                ? 55
                                 : undefined,
                             width:
                               stringColorChanger === true && item?.result?.length > 100
