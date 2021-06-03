@@ -95,7 +95,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
       </View>
     ) : !isSellOnline ? (
       <View style={[styles.inStockContainer, { backgroundColor: '#890000' }]}>
-        <Text style={styles.stockText}>Not for Sale</Text>
+        <Text style={styles.stockText}>NOT AVAILABLE FOR ONLINE SALE</Text>
       </View>
     ) : isInStock ? (
       <View style={styles.inStockContainer}>
@@ -206,6 +206,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
       {!!manufacturer && !isPharma && renderManufacturer()}
       {isSellOnline && renderDeliverTo()}
       {!isBanned &&
+        isSellOnline &&
         (showExpress ? renderExpress() : showDeliverySpinner ? null : renderDeliveryDateTime())}
     </View>
   );
