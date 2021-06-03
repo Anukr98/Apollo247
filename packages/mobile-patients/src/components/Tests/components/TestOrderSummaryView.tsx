@@ -356,7 +356,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           {renderPrices('Coupon Discount', totalDiscountSaving, true)}
           {renderPrices('Home collection Charges', HomeCollectionCharges, false)}
           <Spearator style={{ marginTop: 6, marginBottom: 6 }} />
-          {renderPrices('Total', orderDetails?.totalPrice, true)}
+          {renderPrices('Total', orderDetails?.totalPrice, false, true)}
         </View>
       </View>
     );
