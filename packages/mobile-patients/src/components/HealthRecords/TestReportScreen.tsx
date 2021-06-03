@@ -789,7 +789,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
 
   const onClickSearchHealthCard = (item: any) => {
     const { healthrecordId } = item?.value;
-    props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+    props.navigation.navigate(AppRoutes.TestReportViewScreen, {
       healthrecordId: healthrecordId,
       healthRecordType: MedicalRecordType.TEST_REPORT,
       labResults: true,

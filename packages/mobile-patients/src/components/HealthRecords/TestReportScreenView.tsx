@@ -252,6 +252,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
   const [showAdditionalNotes, setShowAdditionalNotes] = useState<boolean>(false);
   const [showReadMore, setShowReadMore] = useState<boolean>(false);
+  const [apiError, setApiError] = useState(false);
   const [showReadMoreData, setShowReadMoreData] = useState('');
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [data, setData] = useState<any>(
@@ -260,7 +261,15 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   const labResults = props.navigation.state.params
     ? props.navigation.state.params.labResults
     : false;
-  const [apiError] = useState(false);
+  const healthrecordId = props.navigation.state.params
+    ? props.navigation.state.params?.healthrecordId
+    : '';
+  const healthRecordType = props.navigation.state.params
+    ? props.navigation.state.params?.healthRecordType
+    : '';
+  const prescriptionSource = props.navigation.state.params
+    ? props.navigation.state.params?.prescriptionSource
+    : null;
   const [showPDF, setShowPDF] = useState<boolean>(false);
   const [pdfFileUrl, setPdfFileUrl] = useState<string>('');
   const [fileNamePDF, setFileNamePDF] = useState<string>('');
@@ -299,6 +308,37 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   useEffect(() => {
     if (!!movedFrom && !!displayId && movedFrom == 'deeplink') {
       fetchDiagnosticOrderDetails(displayId);
+    }
+  }, []);
+
+  useEffect(() => {
+    // calling this api only for search records
+    if (healthrecordId) {
+      setLoading && setLoading(true);
+      getPatientPrismSingleMedicalRecordApi(
+        client,
+        currentPatient?.id,
+        [healthRecordType],
+        healthrecordId,
+        prescriptionSource
+      )
+        .then((_data: any) => {
+          const labResultsData = g(
+            _data,
+            'getPatientPrismMedicalRecords_V2',
+            'labResults',
+            'response',
+            '0' as any
+          );
+          setData(labResultsData);
+          data ? setApiError(false) : setApiError(true);
+        })
+        .catch((error) => {
+          setApiError(true);
+          CommonBugFender('HealthRecordsHome_fetchTestData', error);
+          currentPatient && handleGraphQlError(error);
+        })
+        .finally(() => setLoading && setLoading(false));
     }
   }, []);
 
@@ -840,6 +880,11 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         ).format(string.common.date_placeholder_text)}`}</Text>
       );
     };
+    const options = {
+      title: 'title',
+      url: 'www.apollopharmacy.in',
+    };
+    console.log('Share.share(options)');
     return (
       <View style={styles.topView}>
         <View style={styles.shareIconRender}>
