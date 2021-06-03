@@ -594,7 +594,6 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
             var resultColorChanger: boolean;
             var stringColorChanger: boolean;
             var rangeColorChanger: boolean;
-            var ress: boolean;
             var columnDecider: boolean;
             if (!!item?.range) {
               var symbolSearch =
