@@ -1,10 +1,6 @@
 import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  LabTestIcon,
-  ShareBlueIcon,
-  ShareIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { LabTestIcon, ShareBlueIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -255,6 +251,19 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   const [apiError, setApiError] = useState(false);
   const [showReadMoreData, setShowReadMoreData] = useState('');
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
+  const [showPDF, setShowPDF] = useState<boolean>(false);
+  const [pdfFileUrl, setPdfFileUrl] = useState<string>('');
+  const [fileNamePDF, setFileNamePDF] = useState<string>('');
+  const { currentPatient } = useAllCurrentPatients();
+  const client = useApolloClient();
+
+  //for deeplink
+  const movedFrom = props.navigation.getParam('movedFrom');
+  const displayId = props.navigation.getParam('id');
+  const webEngageSource = 'Lab Test';
+  const file_name_text = 'TestReport_';
+  const webEngageEventName: WebEngageEventName = WebEngageEventName.PHR_DOWNLOAD_TEST_REPORT;
+
   const [data, setData] = useState<any>(
     props.navigation.state.params ? props.navigation.state.params.data : {}
   );
@@ -270,18 +279,6 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   const prescriptionSource = props.navigation.state.params
     ? props.navigation.state.params?.prescriptionSource
     : null;
-  const [showPDF, setShowPDF] = useState<boolean>(false);
-  const [pdfFileUrl, setPdfFileUrl] = useState<string>('');
-  const [fileNamePDF, setFileNamePDF] = useState<string>('');
-  const { currentPatient } = useAllCurrentPatients();
-  const client = useApolloClient();
-
-  //for deeplink
-  const movedFrom = props.navigation.getParam('movedFrom');
-  const displayId = props.navigation.getParam('id');
-  const webEngageSource = 'Lab Test';
-  const file_name_text = 'TestReport_';
-  const webEngageEventName: WebEngageEventName = WebEngageEventName.PHR_DOWNLOAD_TEST_REPORT;
 
   const imagesArray = g(data, 'testResultFiles') ? g(data, 'testResultFiles') : [];
   const propertyName = g(data, 'testResultFiles') ? 'testResultFiles' : '';
@@ -582,7 +579,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
 
   const renderDetailsFinding = () => {
     const convertToNum = (stringToNumber: string, item: number) => {
-      const letterCheck = !/[^a-zA-Z]/.test(stringToNumber);
+      const letterCheck = /[^a-zA-Z]/.test(stringToNumber);
       if (!!stringToNumber && stringToNumber.length <= 12) {
         var symbolSearch = stringToNumber.includes('<') || stringToNumber.includes('>');
         if (!symbolSearch && !letterCheck) {
