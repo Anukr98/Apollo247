@@ -714,8 +714,10 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                                 : theme.colors.FAILURE_STATUS_TEXT,
                             lineHeight: stringColorChanger === true ? 21 : 18,
                             height:
-                              stringColorChanger === true && Platform.OS === 'android'
-                                ? 64
+                              stringColorChanger === true &&
+                              Platform.OS === 'android' &&
+                              item?.result?.length > 100
+                                ? 55
                                 : undefined,
                             width:
                               stringColorChanger === true && item?.result?.length > 100
