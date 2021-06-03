@@ -877,11 +877,6 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         ).format(string.common.date_placeholder_text)}`}</Text>
       );
     };
-    const options = {
-      title: 'title',
-      url: 'www.apollopharmacy.in',
-    };
-    console.log('Share.share(options)');
     return (
       <View style={styles.topView}>
         <View style={styles.shareIconRender}>
