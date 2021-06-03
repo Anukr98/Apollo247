@@ -26,4 +26,6 @@ export interface getDiagnosticSlotsCustomizedVariables {
   selectedDate: any;
   areaID: number;
   itemIds: number[];
+  latitude: number;
+  longitude: number;
 }

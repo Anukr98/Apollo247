@@ -54,10 +54,11 @@ export interface TestSlotSelectionOverlayNewProps extends AphOverlayProps {
   itemId?: any[];
   source?: string;
   isVisible: boolean;
+  addressDetails?: any;
 }
 const { width } = Dimensions.get('window');
 export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewProps> = (props) => {
-  const { isTodaySlotUnavailable, maxDate } = props;
+  const { isTodaySlotUnavailable, maxDate, addressDetails } = props;
   const { cartItems } = useDiagnosticsCart();
   const [selectedDayTab, setSelectedDayTab] = useState(0);
   const [slotInfo, setSlotInfo] = useState<TestSlot | undefined>(props.slotInfo);
@@ -100,6 +101,8 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
 
   const fetchSlots = (updatedDate?: Date) => {
     let dateToCheck = !!updatedDate ? updatedDate : date;
+    const getLatitude = addressDetails?.latitude! || 0;
+    const getLongitude = addressDetails?.longitude! || 0;
     if (!isVisible) return;
     setSelectedDate(moment(dateToCheck).format('DD'));
     showSpinner(true);
@@ -111,6 +114,8 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           selectedDate: moment(dateToCheck).format('YYYY-MM-DD'),
           areaID: Number(props.areaId!),
           itemIds: props.isReschdedule ? itemId! : cartItemsWithId,
+          latitude: Number(getLatitude),
+          longitude: Number(getLongitude),
         },
       })
       .then(({ data }) => {

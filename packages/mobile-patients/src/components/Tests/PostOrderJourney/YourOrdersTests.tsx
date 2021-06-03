@@ -519,6 +519,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       Number(item?.itemId)
     );
 
+    const getLatitude = selectedOrder?.patientAddressObj?.latitude! || 0;
+    const getLongitude = selectedOrder?.patientAddressObj?.longitude! || 0;
+
     client
       .query<getDiagnosticSlotsCustomized, getDiagnosticSlotsCustomizedVariables>({
         query: GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
@@ -527,6 +530,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           selectedDate: moment(date).format('YYYY-MM-DD'), //whether current date or the one which we gt fron diagnostiv api
           areaID: Number(selectedOrder?.areaId!),
           itemIds: orderItemId!,
+          latitude: Number(getLatitude),
+          longitude: Number(getLongitude),
         },
       })
       .then(({ data }) => {
@@ -734,6 +739,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           isReschdedule={true}
           itemId={orderItemId}
           slotBooked={selectedOrder?.slotDateTimeInUTC}
+          addressDetails={selectedOrder?.patientAddressObj}
           onSchedule={(date1: Date, slotInfo: TestSlot) => {
             rescheduleDate = slotInfo?.date;
             rescheduleSlotObject = {

@@ -34,6 +34,8 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   state: string | null;
   city: string | null;
   zipcode: number | null;
+  latitude: string | null;
+  longitude: string | null;
 }
 
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus {
@@ -108,7 +110,6 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   CheckInTime: any | null;
   PhleboLatitude: number | null;
   PhleboLongitude: number | null;
-  PhleboRating: number | null;
 }
 
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderReschedule {
@@ -133,6 +134,7 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   isRescheduled: boolean | null;
   rescheduleCount: number | null;
   areaId: number | null;
+  cityId: number | null;
   patientId: string;
   orderType: string;
   totalPrice: number;
