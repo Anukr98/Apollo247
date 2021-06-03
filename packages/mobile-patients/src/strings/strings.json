@@ -1208,7 +1208,7 @@
     "CORPORATE_VACCINATION": "CORPORATE_VACCINATION",
     "booking_detail_pdf":"DOWNLOAD PDF",
     "unable_to_generate_pdf":"Unable to generate booking pdf.",
-    "success_generate_pdf":"Successfully generated PDF ",
+    "success_generate_pdf":"Successfully generated vaccination booking PDF ",
     "dose_2_alert":"You will be given dose only after govt specified days. booking here does not confirm"
   }
 }
