@@ -133,7 +133,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
 
   const updateAmount = () => {
-    const redeemableAmount = grandTotal - deliveryCharges - packagingCharges;
+    const redeemableAmount = grandTotal;
     HCSelected
       ? healthCredits >= redeemableAmount
         ? (setburnHc(redeemableAmount), setAmount(amount - redeemableAmount))
