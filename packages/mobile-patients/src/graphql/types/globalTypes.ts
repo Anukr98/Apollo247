@@ -77,6 +77,18 @@ export enum BloodGroups {
   OPositive = "OPositive",
 }
 
+export enum BookingSource {
+  Apollo247_Android = "Apollo247_Android",
+  Apollo247_Ios = "Apollo247_Ios",
+  Apollo247_Web = "Apollo247_Web",
+}
+
+export enum BookingStatus {
+  COMPLETED = "COMPLETED",
+  FAILED = "FAILED",
+  INPROGRESS = "INPROGRESS",
+}
+
 export enum CODCity {
   CHENNAI = "CHENNAI",
 }
@@ -175,6 +187,13 @@ export enum DiagnosticsBookingSource {
   WEB = "WEB",
 }
 
+export enum DiagnosticsRescheduleSource {
+  AD = "AD",
+  MOBILE = "MOBILE",
+  OPS_DASHBOARD = "OPS_DASHBOARD",
+  WEB = "WEB",
+}
+
 export enum DiscountType {
   FLATPRICE = "FLATPRICE",
   PERCENT = "PERCENT",
@@ -200,6 +219,13 @@ export enum FEEDBACKTYPE {
   CONSULT = "CONSULT",
   DIAGNOSTICS = "DIAGNOSTICS",
   PHARMACY = "PHARMACY",
+}
+
+export enum GENDER {
+  ALL = "ALL",
+  FEMALE = "FEMALE",
+  MALE = "MALE",
+  OTHER = "OTHER",
 }
 
 export enum Gender {
@@ -306,6 +332,7 @@ export enum MEDICINE_ORDER_STATUS {
   RETURN_PENDING = "RETURN_PENDING",
   RETURN_PICKUP = "RETURN_PICKUP",
   RETURN_REQUESTED = "RETURN_REQUESTED",
+  RETURN_REQUEST_CREATED = "RETURN_REQUEST_CREATED",
   RETURN_RTO = "RETURN_RTO",
   RETURN_TO_ORIGIN = "RETURN_TO_ORIGIN",
   RVP_ASSIGNED = "RVP_ASSIGNED",
@@ -568,6 +595,7 @@ export enum REQUEST_ROLES {
   DOCTOR = "DOCTOR",
   JUNIOR = "JUNIOR",
   PATIENT = "PATIENT",
+  SECRETARY = "SECRETARY",
   SYSTEM = "SYSTEM",
 }
 
@@ -661,6 +689,7 @@ export enum TRANSFER_INITIATED_TYPE {
   ADMIN = "ADMIN",
   DOCTOR = "DOCTOR",
   PATIENT = "PATIENT",
+  SECRETARY = "SECRETARY",
 }
 
 export enum TRANSFER_STATUS {
@@ -863,6 +892,18 @@ export interface AddPrescriptionRecordInput {
   prescriptionFiles?: (prescriptionPrismFileProperties | null)[] | null;
 }
 
+export interface AddressObj {
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  addressType?: string | null;
+  zipcode?: number | null;
+  landmark?: string | null;
+  latitude?: string | null;
+  longitude?: string | null;
+  city?: string | null;
+  state?: string | null;
+}
+
 export interface AlertMedicineOrderPickupInput {
   orderId: number;
   patientId: string;
@@ -982,6 +1023,12 @@ export interface ConsultQueueInput {
   drugAllergies?: string | null;
   age?: number | null;
   gender?: Gender | null;
+}
+
+export interface CorporateEmailOtpInput {
+  id: string;
+  otp: string;
+  loginType: LOGIN_TYPE;
 }
 
 export interface CouponInput {
@@ -1426,6 +1473,13 @@ export interface PatientAppointmentsInput {
   appointmentDate: any;
 }
 
+export interface PatientConsultsAndOrdersByMobileInput {
+  mobileNumber: string;
+  filter?: CONSULTS_RX_SEARCH_FILTER[] | null;
+  offset?: number | null;
+  limit?: number | null;
+}
+
 export interface PatientConsultsAndOrdersInput {
   patient: string;
   filter?: CONSULTS_RX_SEARCH_FILTER[] | null;
@@ -1559,6 +1613,7 @@ export interface RescheduleDiagnosticsInput {
   patientId: string;
   reason?: string | null;
   slotId: string;
+  source?: DiagnosticsRescheduleSource | null;
 }
 
 export interface ReturnPharmaOrderInput {

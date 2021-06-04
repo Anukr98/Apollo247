@@ -535,10 +535,14 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const renderPayByCash = () => {
     return (
-      <View>
-        {!showCOD && renderInfoMessage()}
-        <PayByCash onPressPlaceOrder={onPressPayByCash} disableCOD={!showCOD} />
-      </View>
+      <>
+        {isDiagnostic ? (
+          <View>
+            {!showCOD && renderInfoMessage()}
+            <PayByCash onPressPlaceOrder={onPressPayByCash} disableCOD={!showCOD} />
+          </View>
+        ) : null}
+      </>
     );
   };
 

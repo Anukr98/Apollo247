@@ -1823,11 +1823,6 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         paymentType
         visitNo
         labReportURL
-        patientObj{
-          firstName
-          lastName
-          gender
-        }
         diagnosticOrderLineItems {
           id
           itemId
@@ -2189,10 +2184,13 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         patientAddressObj {
           addressLine1
           addressLine2
+          addressType
           landmark
           state
           city
           zipcode
+          latitude
+          longitude
         }
         diagnosticOrdersStatus {
           id
@@ -4738,8 +4736,8 @@ export const GET_DIAGNOSTIC_NEAREST_AREA = gql`
 `;
 
 export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS = gql`
-  query getDiagnosticSlotsCustomized($selectedDate: Date!, $areaID: Int!, $itemIds: [Int!]!) {
-    getDiagnosticSlotsCustomized(selectedDate: $selectedDate, areaID: $areaID, itemIds: $itemIds) {
+  query getDiagnosticSlotsCustomized($selectedDate: Date!, $areaID: Int!, $itemIds: [Int!]!, $patientAddressObj: AddressObj) {
+    getDiagnosticSlotsCustomized(selectedDate: $selectedDate, areaID: $areaID, itemIds: $itemIds, patientAddressObj: $patientAddressObj) {
       slots {
         Timeslot
         TimeslotID
@@ -5152,6 +5150,7 @@ export const GET_VACCINATION_SITES = gql`
     }
   }
 `;
+
 //vaccinetype to add
 //resource_id
 export const GET_VACCINATION_AVAILABLE_DATES = gql`
@@ -5192,7 +5191,7 @@ export const GET_VACCINATION_SLOTS = gql`
   }
 `;
 
-// pateint info to type
+// patient info to type
 export const SUBMIT_VACCINATION_BOOKING_REQUEST = gql`
   mutation CreateAppointment($appointmentInput: CreateAppointmentInput!) {
     CreateAppointment(appointmentInput: $appointmentInput) {
@@ -5296,6 +5295,7 @@ export const GET_ALL_VACCINATION_APPOINTMENTS = gql`
     }
   }
 `;
+
 export const DIAGNOSITC_EXOTEL_CALLING = gql`
   mutation diagnosticExotelCalling($orderId: ID!) {
     diagnosticExotelCalling(orderId: $orderId){

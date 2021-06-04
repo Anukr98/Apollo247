@@ -144,6 +144,7 @@ import {
   getPricesForItem,
   sourceHeaders,
   convertNumberToDecimal,
+  createAddressObject,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
@@ -187,12 +188,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/saveModifyDiagnosticOrder';
 import { processDiagnosticsCODOrder } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { findDiagnosticSettings } from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
-import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/components/InfoMessage';
 import {
   makeAdressAsDefault,
   makeAdressAsDefaultVariables,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 const { width: screenWidth } = Dimensions.get('window');
 type Address = savePatientAddress_savePatientAddress_patientAddress;
 export interface areaObject {
@@ -1486,8 +1485,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     let dateToCheck = !!changedDate && comingFrom != '' ? changedDate : new Date();
     const selectedArea = isModifyFlow ? modifiedOrder?.areaId : Number((areaObject as any).key!);
     setLoading?.(true);
-    const selectedAddressIndex = addresses?.findIndex(
-      (address) => address?.id == deliveryAddressId
+
+    const getAddressObject = createAddressObject(
+      isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr
     );
 
     client
@@ -1501,6 +1501,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           selectedDate: moment(dateToCheck).format('YYYY-MM-DD'),
           areaID: selectedArea,
           itemIds: _itemIds || cartItemsWithId,
+          patientAddressObj: getAddressObject,
         },
       })
       .then(({ data }) => {
@@ -1542,7 +1543,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           const slotDetails = slotsArray?.[0];
           slotsArray?.length && setselectedTimeSlot(slotDetails);
 
-          setDiagnosticSlot!({
+          setDiagnosticSlot?.({
             slotStartTime: slotDetails?.slotInfo?.startTime!,
             slotEndTime: slotDetails?.slotInfo?.endTime!,
             date: dateToCheck?.getTime(), //date
@@ -1557,19 +1558,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         }
 
         comingFrom == 'errorState' ? setDisplaySchedule(true) : null; //show slot popup
-        setDeliveryAddressId?.(addresses?.[selectedAddressIndex]?.id); //if not setting, then new address added is not selected
-        setPinCode?.(addresses?.[selectedAddressIndex]?.zipcode!);
+        setDeliveryAddressId?.(selectedAddr?.id!); //if not setting, then new address added is not selected
+        setPinCode?.(selectedAddr?.zipcode!);
       })
       .catch((e) => {
-        CommonBugFender('TestsCart_checkServicability', e);
+        aphConsole.log({ e });
+        CommonBugFender('TestsCart_checkSlotSelection', e);
         setDiagnosticSlot && setDiagnosticSlot(null);
         setselectedTimeSlot(undefined);
         const noHubSlots = g(e, 'graphQLErrors', '0', 'message') === 'NO_HUB_SLOTS';
         setLoading?.(false);
         if (noHubSlots) {
-          setDeliveryAddressId?.(addresses?.[selectedAddressIndex]?.id);
-          setPinCode?.(addresses?.[selectedAddressIndex]?.zipcode!);
-          showAphAlert!({
+          setDeliveryAddressId?.(selectedAddr?.id!);
+          setPinCode?.(selectedAddr?.zipcode!);
+          showAphAlert?.({
             title: string.common.uhOh,
             description: string.diagnostics.noSlotAvailable.replace(
               '{{date}}',
@@ -1581,12 +1583,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             },
           });
         } else {
+          CommonBugFender('TestCart_checkSlotSelection_NotHubSlotError', e);
           setDeliveryAddressId?.('');
           setDiagnosticAreas?.([]);
           setAreaSelected?.({});
           setCartPagePopulated?.(false);
           setselectedTimeSlot(undefined);
-          showAphAlert!({
+          showAphAlert?.({
             title: string.common.uhOh,
             description: string.diagnostics.bookingOrderFailedMessage,
           });
@@ -1656,10 +1659,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         </TouchableOpacity>
       </View>
     );
-  };
-
-  const renderHomeCollectionDisclaimer = () => {
-    return <InfoMessage content={string.diagnostics.homeHomeCollectionDisclaimerTxt} />;
   };
 
   const renderPreviouslyAddedItems = () => {
@@ -2175,6 +2174,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         }
       })
       .catch((error) => {
+        aphConsole.log({ error });
         CommonBugFender('TestsCart__saveModifiedOrder', error);
         setLoading?.(false);
         showAphAlert?.({
@@ -2282,6 +2282,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           }
         })
         .catch((error) => {
+          aphConsole.log({ error });
           CommonBugFender('TestsCart_saveHomeCollectionOrder', error);
           setLoading?.(false);
           showAphAlert?.({
@@ -2295,6 +2296,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   function apiHandleErrorFunction(input: any, data: any, source: string) {
+    console.log('po');
     let message = data?.errorMessageToDisplay || string.diagnostics.bookingOrderFailedMessage;
     //itemIds will only come in case of duplicate
     let itemIds = data?.attributes?.itemids;
@@ -3106,6 +3108,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         setLoading?.(false);
       }
     } catch (error) {
+      aphConsole.log({ error });
       setLoading?.(false);
       CommonBugFender('setDefaultAddress_TestsCart', error);
       showAphAlert?.({
@@ -3318,6 +3321,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           slots={slots}
           zipCode={parseInt(zipCode, 10)}
           slotInfo={selectedTimeSlot}
+          addressDetails={isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr}
           onSchedule={(date: Date, slotInfo: TestSlot) => {
             setDate(date);
             setselectedTimeSlot(slotInfo);

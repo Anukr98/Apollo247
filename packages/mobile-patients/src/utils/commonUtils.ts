@@ -1,5 +1,5 @@
 import { Platform } from 'react-native';
-import { ConsultMode, PLAN } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { AddressObj, ConsultMode, PLAN } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { DIAGNOSTIC_GROUP_PLAN, GooglePlacesType } from '@aph/mobile-patients/src/helpers/apiCalls';
 import moment from 'moment';
 import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -338,3 +338,17 @@ export const getReviewTag = (star: number) => {
       break;
   }
 };
+
+export const createAddressObject = (addressObject: any) => {
+  return {
+    addressLine1: addressObject?.addressLine1,
+    addressLine2: addressObject?.addressLine2,
+    addressType: addressObject?.addressType,
+    zipcode: Number(addressObject?.zipcode! || 0),
+    landmark: addressObject?.landmark,
+    latitude: String(addressObject?.latitude! || 0),
+    longitude: String(addressObject?.longitude! || 0),
+    city: addressObject?.city,
+    state: addressObject?.state,
+  } as AddressObj;
+}

@@ -3,7 +3,7 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
+import { createAddressObject, sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
@@ -45,6 +45,7 @@ import {
   MedicalRecordType,
   RescheduleDiagnosticsInput,
   Gender,
+  DiagnosticsRescheduleSource,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -429,7 +430,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         const cancelResponse = g(data, 'data', 'cancelDiagnosticsOrder', 'status');
         if (cancelResponse == 'true') {
           setLoading!(true);
-          setTimeout(() => refetchOrders(), 2000);
+          setTimeout(() => refetchOrders(), 1000);
           showAphAlert?.({
             unDismissable: true,
             title: string.common.hiWithSmiley,
@@ -515,6 +516,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     const dt = moment(selectedOrder?.slotDateTimeInUTC)?.format('YYYY-MM-DD') || null;
     const tm = moment(selectedOrder?.slotDateTimeInUTC)?.format('hh:mm') || null;
 
+    const getAddressObject = createAddressObject(selectedOrder?.patientAddressObj);
+
     const orderItemId = selectedOrder?.diagnosticOrderLineItems?.map((item) =>
       Number(item?.itemId)
     );
@@ -527,6 +530,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           selectedDate: moment(date).format('YYYY-MM-DD'), //whether current date or the one which we gt fron diagnostiv api
           areaID: Number(selectedOrder?.areaId!),
           itemIds: orderItemId!,
+          patientAddressObj: getAddressObject,
         },
       })
       .then(({ data }) => {
@@ -635,6 +639,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       patientId: g(currentPatient, 'id'),
       reason: selectRescheduleReason,
       slotId: employeeSlot,
+      source: DiagnosticsRescheduleSource.MOBILE,
     };
     DiagnosticRescheduleOrder(
       selectRescheduleReason,
@@ -647,7 +652,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         aphConsole.log({ data });
         const rescheduleResponse = g(data, 'data', 'rescheduleDiagnosticsOrder');
         if (rescheduleResponse?.status == 'true' && rescheduleResponse?.rescheduleCount <= 3) {
-          setTimeout(() => refetchOrders(), 2000);
+          setTimeout(() => refetchOrders(), 1000);
           setRescheduleCount(rescheduleResponse?.rescheduleCount);
           setRescheduledTime(dateTimeInUTC);
           showAphAlert?.({
@@ -734,6 +739,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           isReschdedule={true}
           itemId={orderItemId}
           slotBooked={selectedOrder?.slotDateTimeInUTC}
+          addressDetails={selectedOrder?.patientAddressObj}
           onSchedule={(date1: Date, slotInfo: TestSlot) => {
             rescheduleDate = slotInfo?.date;
             rescheduleSlotObject = {

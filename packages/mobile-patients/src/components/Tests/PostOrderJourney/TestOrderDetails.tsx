@@ -603,10 +603,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     });
   };
 
-  const onPressButton = (buttonTitle?: string) => {
-    setDisplayViewReport(true);
-  };
-
   function postRatingGivenWebEngageEvent(rating: string, reason: string) {
     DiagnosticFeedbackSubmitted(currentPatient, rating, reason);
   }
@@ -703,7 +699,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           isVisible={displayViewReport}
           onClose={() => setDisplayViewReport(false)}
           onPressViewReport={() => {
-            _onPressViewReportAction();
+            onPressViewReport();
           }}
         />
       )}
