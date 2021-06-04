@@ -289,6 +289,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       setIsCircleSubscription?.(false);
     } else if (coupon?.circleBenefits) {
       setIsCircleSubscription?.(true);
+    } else if (!coupon && circleSubscriptionId) {
+      setCircleMembershipCharges && setCircleMembershipCharges(0);
+      setIsCircleSubscription?.(true);
     } else if (!circleSubscriptionId) {
       setCircleMembershipCharges?.(circlePlanSelected?.currentSellingPrice);
     }
@@ -365,7 +368,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
                 productDiscount,
                 cartItems,
                 setCouponProducts,
-                getPackageIds(activeUserSubscriptions, circlePlanSelected)
+                getPackageIds(activeUserSubscriptions)
               );
             } catch (error) {
               return;
@@ -655,7 +658,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           productDiscount,
           cartItems,
           setCouponProducts,
-          getPackageIds(activeUserSubscriptions, circlePlanSelected)
+          getPackageIds(activeUserSubscriptions)
         );
         if (response !== 'success') {
           removeCouponWithAlert(response);
@@ -874,7 +877,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           productDiscount,
           cartItems,
           setCouponProducts,
-          getPackageIds(activeUserSubscriptions, circlePlanSelected)
+          getPackageIds(activeUserSubscriptions)
         );
         if (response !== 'success') {
           removeCouponWithAlert(response);
@@ -1003,6 +1006,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       <TouchableOpacity
         activeOpacity={0.7}
         style={styles.applyBenefits}
+        disabled={
+          (!coupon && isCircleSubscription) || (coupon?.circleBenefits && isCircleSubscription)
+        }
         onPress={() => {
           if (
             (!coupon && isCircleSubscription) ||
@@ -1155,7 +1161,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           productDiscount,
           cartItems,
           setCouponProducts,
-          getPackageIds(activeUserSubscriptions, circlePlanSelected)
+          getPackageIds(activeUserSubscriptions)
         );
         if (response === 'success') {
           redirect();
