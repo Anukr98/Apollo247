@@ -45,6 +45,7 @@ import {
   MedicalRecordType,
   RescheduleDiagnosticsInput,
   Gender,
+  DiagnosticsRescheduleSource,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -429,7 +430,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         const cancelResponse = g(data, 'data', 'cancelDiagnosticsOrder', 'status');
         if (cancelResponse == 'true') {
           setLoading!(true);
-          setTimeout(() => refetchOrders(), 2000);
+          setTimeout(() => refetchOrders(), 1000);
           showAphAlert?.({
             unDismissable: true,
             title: string.common.hiWithSmiley,
@@ -638,7 +639,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       patientId: g(currentPatient, 'id'),
       reason: selectRescheduleReason,
       slotId: employeeSlot,
+      source: DiagnosticsRescheduleSource.MOBILE,
     };
+    console.log({ rescheduleDiagnosticsInput });
     DiagnosticRescheduleOrder(
       selectRescheduleReason,
       formatTime,
@@ -650,7 +653,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         aphConsole.log({ data });
         const rescheduleResponse = g(data, 'data', 'rescheduleDiagnosticsOrder');
         if (rescheduleResponse?.status == 'true' && rescheduleResponse?.rescheduleCount <= 3) {
-          setTimeout(() => refetchOrders(), 2000);
+          setTimeout(() => refetchOrders(), 1000);
           setRescheduleCount(rescheduleResponse?.rescheduleCount);
           setRescheduledTime(dateTimeInUTC);
           showAphAlert?.({
