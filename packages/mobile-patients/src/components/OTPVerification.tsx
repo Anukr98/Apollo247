@@ -24,6 +24,8 @@ import {
   postFirebaseEvent,
   setFirebaseUserId,
   setCrashlyticsAttributes,
+  onCleverTapUserLogin,
+  setCleverTapAppsFlyerCustID,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -568,7 +570,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const moveScreenForward = (mePatient: any) => {
     AsyncStorage.setItem('logginHappened', 'true');
     setOpenFillerView(false);
-    SetAppsFlyerCustID(mePatient.primaryPatientId);
+    // commenting this to avoid setting of AppFlyerCustId twice
+    // SetAppsFlyerCustID(mePatient.primaryPatientId);
+    setCleverTapAppsFlyerCustID();
     postOtpSuccessAppsflyerEvet(mePatient.primaryPatientId);
     if (mePatient && mePatient.uhid && mePatient.uhid !== '') {
       if (mePatient.relation == null) {
@@ -579,6 +583,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         navigateTo(AppRoutes.MultiSignup);
       } else {
         AsyncStorage.setItem('userLoggedIn', 'true');
+        onCleverTapUserLogin(mePatient);
         deviceTokenAPI(mePatient.id);
         callPhrNotificationApi(mePatient?.id);
         fireUserLoggedInEvent(mePatient, 'Login');
@@ -594,6 +599,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         fireUserLoggedInEvent(mePatient, 'Registration');
       } else {
         AsyncStorage.setItem('userLoggedIn', 'true');
+        onCleverTapUserLogin(mePatient);
         deviceTokenAPI(mePatient.id);
         callPhrNotificationApi(mePatient?.id);
         navigateTo(AppRoutes.ConsultRoom);

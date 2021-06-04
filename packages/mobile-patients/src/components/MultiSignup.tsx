@@ -54,6 +54,7 @@ import {
   postWEGReferralCodeEvent,
   g,
   setFirebaseUserId,
+  onCleverTapUserLogin,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { TextInputComponent } from './ui/TextInputComponent';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -591,6 +592,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                   AsyncStorage.setItem('userLoggedIn', 'true'),
                   AsyncStorage.setItem('multiSignUp', 'false'),
                   AsyncStorage.setItem('gotIt', 'false'),
+                  onCleverTapUserLogin(data?.updatePatient?.patient),
                   createOneApolloUser(data?.updatePatient?.patient?.id!),
                   handleOpenURLs())
                 : null}

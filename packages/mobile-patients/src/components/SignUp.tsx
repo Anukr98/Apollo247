@@ -31,6 +31,7 @@ import {
   postFirebaseEvent,
   postWebEngageEvent,
   postWEGReferralCodeEvent,
+  onCleverTapUserLogin,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   ProductPageViewedSource,
@@ -645,6 +646,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
                       AsyncStorage.setItem('userLoggedIn', 'true'),
                       AsyncStorage.setItem('signUp', 'false'),
                       AsyncStorage.setItem('gotIt', patient ? 'true' : 'false'),
+                      onCleverTapUserLogin(data?.updatePatient?.patient),
                       createOneApolloUser(data?.updatePatient?.patient?.id!),
                       handleOpenURLs())
                     : null}

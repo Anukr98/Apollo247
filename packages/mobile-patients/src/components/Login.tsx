@@ -19,6 +19,8 @@ import {
   postFirebaseEvent,
   postWebEngageEvent,
   SetAppsFlyerCustID,
+  onCleverTapUserLogin,
+  setCleverTapAppsFlyerCustID,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { loginAPI } from '@aph/mobile-patients/src/helpers/loginCalls';
 import {
@@ -433,7 +435,9 @@ export const Login: React.FC<LoginProps> = (props) => {
 
   const moveScreenForward = async (mePatient: any, allPatients: any) => {
     AsyncStorage.setItem('logginHappened', 'true');
-    SetAppsFlyerCustID(mePatient.primaryPatientId);
+    // commenting this to avoid setting of AppFlyerCustId twice
+    // SetAppsFlyerCustID(mePatient.primaryPatientId);
+    setCleverTapAppsFlyerCustID();
     mePatient && (await AsyncStorage.setItem(LOGIN_PROFILE, JSON.stringify(mePatient)));
     if (mePatient && mePatient.uhid && mePatient.uhid !== '') {
       if (mePatient.relation == null) {
@@ -446,6 +450,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         } else {
           // existing user
           AsyncStorage.setItem('userLoggedIn', 'true');
+          onCleverTapUserLogin(mePatient);
           deviceTokenAPI(mePatient?.id);
           callPhrNotificationApi(mePatient?.id);
           truecallerWEBEngage(mePatient, 'login', null, allPatients);
