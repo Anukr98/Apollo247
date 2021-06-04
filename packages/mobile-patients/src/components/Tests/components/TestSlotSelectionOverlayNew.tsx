@@ -39,6 +39,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsCustomized';
 import { Overlay } from 'react-native-elements';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { createAddressObject } from '@aph/mobile-patients/src/utils/commonUtils';
 
 export interface TestSlotSelectionOverlayNewProps extends AphOverlayProps {
   zipCode: number;
@@ -101,8 +102,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
 
   const fetchSlots = (updatedDate?: Date) => {
     let dateToCheck = !!updatedDate ? updatedDate : date;
-    const getLatitude = addressDetails?.latitude! || 0;
-    const getLongitude = addressDetails?.longitude! || 0;
+    const getAddressObject = createAddressObject(addressDetails);
     if (!isVisible) return;
     setSelectedDate(moment(dateToCheck).format('DD'));
     showSpinner(true);
@@ -114,8 +114,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           selectedDate: moment(dateToCheck).format('YYYY-MM-DD'),
           areaID: Number(props.areaId!),
           itemIds: props.isReschdedule ? itemId! : cartItemsWithId,
-          latitude: Number(getLatitude),
-          longitude: Number(getLongitude),
+          patientAddressObj: getAddressObject,
         },
       })
       .then(({ data }) => {

@@ -30,6 +30,7 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   __typename: "PatientAddressObj";
   addressLine1: string | null;
   addressLine2: string | null;
+  addressType: string | null;
   landmark: string | null;
   state: string | null;
   city: string | null;

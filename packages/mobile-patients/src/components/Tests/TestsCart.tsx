@@ -144,6 +144,7 @@ import {
   getPricesForItem,
   sourceHeaders,
   convertNumberToDecimal,
+  createAddressObject,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
@@ -1485,12 +1486,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const selectedArea = isModifyFlow ? modifiedOrder?.areaId : Number((areaObject as any).key!);
     setLoading?.(true);
 
-    const getLatitude = isModifyFlow
-      ? modifiedOrder?.patientAddressObj?.latitude
-      : selectedAddr?.latitude! || 0;
-    const getLongitude = isModifyFlow
-      ? modifiedOrder?.patientAddressObj?.longitude
-      : selectedAddr?.longitude! || 0;
+    const getAddressObject = createAddressObject(
+      isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr
+    );
 
     client
       .query<getDiagnosticSlotsCustomized, getDiagnosticSlotsCustomizedVariables>({
@@ -1503,8 +1501,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           selectedDate: moment(dateToCheck).format('YYYY-MM-DD'),
           areaID: selectedArea,
           itemIds: _itemIds || cartItemsWithId,
-          latitude: Number(getLatitude),
-          longitude: Number(getLongitude),
+          patientAddressObj: getAddressObject,
         },
       })
       .then(({ data }) => {
@@ -1565,7 +1562,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         setPinCode?.(selectedAddr?.zipcode!);
       })
       .catch((e) => {
-        CommonBugFender('TestsCart_checkServicability', e);
+        aphConsole.log({ e });
+        CommonBugFender('TestsCart_checkSlotSelection', e);
         setDiagnosticSlot && setDiagnosticSlot(null);
         setselectedTimeSlot(undefined);
         const noHubSlots = g(e, 'graphQLErrors', '0', 'message') === 'NO_HUB_SLOTS';
@@ -1585,6 +1583,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             },
           });
         } else {
+          CommonBugFender('TestCart_checkSlotSelection_NotHubSlotError', e);
           setDeliveryAddressId?.('');
           setDiagnosticAreas?.([]);
           setAreaSelected?.({});
@@ -2175,6 +2174,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         }
       })
       .catch((error) => {
+        aphConsole.log({ error });
         CommonBugFender('TestsCart__saveModifiedOrder', error);
         setLoading?.(false);
         showAphAlert?.({
@@ -2282,6 +2282,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           }
         })
         .catch((error) => {
+          aphConsole.log({ error });
           CommonBugFender('TestsCart_saveHomeCollectionOrder', error);
           setLoading?.(false);
           showAphAlert?.({
@@ -2295,6 +2296,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   function apiHandleErrorFunction(input: any, data: any, source: string) {
+    console.log('po');
     let message = data?.errorMessageToDisplay || string.diagnostics.bookingOrderFailedMessage;
     //itemIds will only come in case of duplicate
     let itemIds = data?.attributes?.itemids;
@@ -3106,6 +3108,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         setLoading?.(false);
       }
     } catch (error) {
+      aphConsole.log({ error });
       setLoading?.(false);
       CommonBugFender('setDefaultAddress_TestsCart', error);
       showAphAlert?.({
@@ -3318,7 +3321,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           slots={slots}
           zipCode={parseInt(zipCode, 10)}
           slotInfo={selectedTimeSlot}
-          addressDetails={selectedAddr}
+          addressDetails={isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr}
           onSchedule={(date: Date, slotInfo: TestSlot) => {
             setDate(date);
             setselectedTimeSlot(slotInfo);

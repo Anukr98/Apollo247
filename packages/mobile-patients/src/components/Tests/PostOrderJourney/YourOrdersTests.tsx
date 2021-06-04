@@ -3,7 +3,7 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
+import { createAddressObject, sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
@@ -515,12 +515,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     const dt = moment(selectedOrder?.slotDateTimeInUTC)?.format('YYYY-MM-DD') || null;
     const tm = moment(selectedOrder?.slotDateTimeInUTC)?.format('hh:mm') || null;
 
+    const getAddressObject = createAddressObject(selectedOrder?.patientAddressObj);
+
     const orderItemId = selectedOrder?.diagnosticOrderLineItems?.map((item) =>
       Number(item?.itemId)
     );
-
-    const getLatitude = selectedOrder?.patientAddressObj?.latitude! || 0;
-    const getLongitude = selectedOrder?.patientAddressObj?.longitude! || 0;
 
     client
       .query<getDiagnosticSlotsCustomized, getDiagnosticSlotsCustomizedVariables>({
@@ -530,8 +529,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           selectedDate: moment(date).format('YYYY-MM-DD'), //whether current date or the one which we gt fron diagnostiv api
           areaID: Number(selectedOrder?.areaId!),
           itemIds: orderItemId!,
-          latitude: Number(getLatitude),
-          longitude: Number(getLongitude),
+          patientAddressObj: getAddressObject,
         },
       })
       .then(({ data }) => {
