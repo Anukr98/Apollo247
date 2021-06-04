@@ -604,7 +604,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
               if (letterCheck && !symbolSearch) {
                 minNum = item?.range.split('-')[0].trim();
                 maxNum = item?.range.split('-')[1].trim();
-                let parseResult = parseInt(item?.result);
+                let parseResult = Number(item?.result);
                 parseResult >= minNum && parseResult <= maxNum
                   ? (resultColorChanger = true)
                   : (resultColorChanger = false);
