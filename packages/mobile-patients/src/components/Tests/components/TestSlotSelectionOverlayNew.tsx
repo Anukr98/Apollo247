@@ -42,7 +42,6 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { createAddressObject } from '@aph/mobile-patients/src/utils/commonUtils';
 
 export interface TestSlotSelectionOverlayNewProps extends AphOverlayProps {
-  zipCode: number;
   maxDate: Date;
   date: Date;
   slotInfo?: TestSlot;
@@ -68,7 +67,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   const [isDateAutoSelected, setIsDateAutoSelected] = useState(true);
   const client = useApolloClient();
   const [spinner, showSpinner] = useState(false);
-  const { zipCode, onSchedule, isVisible, ...attributes } = props;
+  const { onSchedule, isVisible, ...attributes } = props;
   const uniqueSlots = getUniqueTestSlots(slots);
   const dt = moment(props.slotBooked!).format('YYYY-MM-DD') || null;
   const tm = moment(props.slotBooked!).format('hh:mm') || null;

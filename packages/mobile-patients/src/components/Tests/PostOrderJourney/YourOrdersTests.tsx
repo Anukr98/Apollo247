@@ -715,8 +715,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       ? AppConfig.Configuration.Covid_Max_Slot_Days
       : AppConfig.Configuration.Non_Covid_Max_Slot_Days;
 
-    const getPincode = selectedOrder?.patientAddressObj?.zipcode;
-
     return (
       <View style={{ flex: 1 }}>
         <TestSlotSelectionOverlayNew
@@ -734,7 +732,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             setLoading?.(false);
           }}
           slots={slots}
-          zipCode={Number(getPincode!)}
           slotInfo={selectedTimeSlot}
           isReschdedule={true}
           itemId={orderItemId}
