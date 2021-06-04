@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, FlatList, View, ScrollView } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, FlatList, View, ScrollView, Platform } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -19,6 +19,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/initiateDiagonsticHCOrderPayment';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { one_apollo_store_code } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 export interface OtherBanksProps extends NavigationScreenProps {}
 
@@ -28,11 +29,14 @@ export const OtherBanks: React.FC<OtherBanksProps> = (props) => {
   const banks = props.navigation.getParam('banks');
   const orderId = props.navigation.getParam('orderId');
   const businessLine = props.navigation.getParam('businessLine');
+  const burnHc = props.navigation.getParam('burnHc');
   const { authToken, setauthToken } = useAppCommonData();
   const [selectedBank, setSelectedBank] = useState<string>('');
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const [isTxnProcessing, setisTxnProcessing] = useState<boolean>(false);
+  const storeCode =
+    Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
 
   const onPressBank = (bank: any) => setSelectedBank(bank);
 
@@ -56,9 +60,12 @@ export const OtherBanks: React.FC<OtherBanksProps> = (props) => {
   const createJusPayOrder = (paymentMode: 'PREPAID' | 'COD') => {
     const orderInput = {
       payment_order_id: paymentId,
-      payment_mode: paymentMode,
+      health_credits_used: burnHc,
+      cash_to_collect: 0,
+      prepaid_amount: amount,
+      store_code: storeCode,
       is_mobile_sdk: true,
-      return_url: AppConfig.Configuration.returnUrl,
+      return_url: AppConfig.Configuration.baseUrl,
     };
     return client.mutate({
       mutation: CREATE_ORDER,

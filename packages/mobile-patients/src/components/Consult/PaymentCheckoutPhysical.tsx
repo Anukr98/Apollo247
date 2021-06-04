@@ -624,12 +624,26 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       const data = await createOrderInternal(apptmt?.id!, subscriptionId);
       if (data?.data?.createOrderInternal?.success) {
         const res = await createJusPayOrder(data?.data?.createOrderInternal?.payment_order_id!);
-        makePayment(
-          apptmt?.id!,
-          Number(amountToPay),
-          g(apptmt, 'appointmentDateTime'),
-          g(apptmt, 'displayId')!
+        let eventAttributes = getConsultationBookedEventAttributes(
+          apptmt?.appointmentDateTime,
+          apptmt?.id!
         );
+        eventAttributes['Display ID'] = apptmt?.displayId!;
+        eventAttributes['User_Type'] = getUserType(allCurrentPatients);
+        postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
+        postAppsFlyerEvent(
+          AppsFlyerEventName.CONSULTATION_BOOKED,
+          getConsultationBookedAppsFlyerEventAttributes(apptmt?.id!, apptmt?.displayId)
+        );
+        setLoading!(false);
+        if (!currentPatient?.isConsulted) getPatientApiCall();
+        handleOrderSuccess(`${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`, apptmt?.id!);
+        // makePayment(
+        //   apptmt?.id!,
+        //   Number(amountToPay),
+        //   g(apptmt, 'appointmentDateTime'),
+        //   g(apptmt, 'displayId')!
+        // );
       }
     } catch (error) {
       handleError(error);
