@@ -1120,6 +1120,7 @@
     "amount": "Amount",
     "date_of_vaccination": "Date of vaccination",
     "mode": "Mode",
+    "station": "Station",
     "order_details": "ORDER DETAILS",
     "hospitals_n_clinic_near_you": "HOSPITALS & CLINICS NEAR YOU",
     "all_hospitals_n_clinc": "ALL HOSPITALS & CLINICS",
@@ -1198,6 +1199,10 @@
     "benefit_activated": "Your company benefit package has been activated. Please click below to access the same.",
     "wrong_otp": "Seems you have entered wrong OTP.Please try with right one.",
     "unable_to_validate": "We are unable to validate OTP right now. Please try again after some time. If this issue persists, send an email to corporate-helpdesk@apollo247.com and attach the screenshot of this error.",
-    "CORPORATE_VACCINATION": "CORPORATE_VACCINATION"
+    "CORPORATE_VACCINATION": "CORPORATE_VACCINATION",
+    "booking_detail_pdf":"DOWNLOAD PDF",
+    "unable_to_generate_pdf":"Unable to generate booking pdf.",
+    "success_generate_pdf":"Successfully generated PDF ",
+    "dose_2_alert":"You will be given dose only after govt specified days. booking here does not confirm"
   }
 }

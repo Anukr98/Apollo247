@@ -17,7 +17,7 @@ import { AppRoutes, getCurrentRoute } from '@aph/mobile-patients/src/components/
 import remoteConfig from '@react-native-firebase/remote-config';
 import SplashScreenView from 'react-native-splash-screen';
 import { Relation, BookingSource } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { useAuth } from '../hooks/authHooks';
+import { useAuth, useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig, updateAppConfig, AppEnv } from '../strings/AppConfig';
 import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
 import { Button } from './ui/Button';
@@ -156,16 +156,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const [springValue, setSpringAnimation] = useState(new Animated.Value(0));
   const CONST_SPLASH_LOADER = [string.splash.CAPSULE, string.splash.SYRINGE, string.splash.STETHO];
   const [selectedAnimationIndex, setSelectedAnimationIndex] = useState(0);
-
-  const config: Pubnub.PubnubConfig = {
-    origin: 'apollo.pubnubapi.com',
-    subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
-    publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
-    restore: true,
-    ssl: true,
-    uuid: `PATIENT_${voipPatientId.current}`,
-  };
-  const pubnub = new Pubnub(config);
+  const { currentPatient } = useAllCurrentPatients();
 
   const { setPhrNotificationData } = useAppCommonData();
 
@@ -298,6 +289,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const onDisconnetCallAction = () => {
     fireWebengageEventForCallDecline();
     RNCallKeep.endAllCalls();
+    const config: Pubnub.PubnubConfig = {
+      origin: 'apollo.pubnubapi.com',
+      subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
+      publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
+      restore: true,
+      ssl: true,
+      uuid: `PATIENT_${voipPatientId?.current}`,
+    };
+    const pubnub = new Pubnub(config);
+
     pubnub.publish(
       {
         message: { message: '^^#PATIENT_REJECTED_CALL' },
@@ -399,6 +400,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
         ssl: true,
         restore: true,
+        uuid: `PATIENT_${currentPatient?.id}`,
       };
       const pubnub = new Pubnub(config);
       pubnub.publish(

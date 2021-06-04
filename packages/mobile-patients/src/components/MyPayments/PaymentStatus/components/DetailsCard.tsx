@@ -82,9 +82,7 @@ const DetailsCard: FC<DetailsCardProps> = (props) => {
       const { appointmentDateTime, appointmentPayments, appointmentRefunds, PaymentOrders } = item;
       const { refund } = PaymentOrders;
       const refundInfo = refund?.length ? refund : appointmentRefunds;
-      const paymentInfo = Object.keys(PaymentOrders).length
-        ? PaymentOrders
-        : appointmentPayments[0];
+      const paymentInfo = PaymentOrders?.paymentStatus ? PaymentOrders : appointmentPayments[0];
       if (!paymentInfo) {
         statusType = 'PENDING';
       } else {
