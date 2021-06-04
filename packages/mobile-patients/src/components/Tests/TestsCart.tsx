@@ -333,6 +333,17 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   var modifyPricesForItemArray;
   var slotBookedArray = ['slot', 'already', 'booked', 'select a slot'];
 
+  const isCovidItem = cartItemsWithId?.map((item) =>
+    AppConfig.Configuration.Covid_Items.includes(item)
+  );
+  const isCartHasCovidItem = isCovidItem?.find((item) => item === true);
+  const maxDaysToShow = !!isCartHasCovidItem
+    ? AppConfig.Configuration.Covid_Max_Slot_Days
+    : AppConfig.Configuration.Non_Covid_Max_Slot_Days;
+  const enable_cancelellation_policy =
+    AppConfig.Configuration.Enable_Diagnostics_Cancellation_Policy;
+  const cancelellation_policy_text = AppConfig.Configuration.Diagnostics_Cancel_Policy_Text_Msg;
+
   const saveHomeCollectionBookingOrder = (orderInfo: SaveBookHomeCollectionOrderInput) =>
     client.mutate<saveDiagnosticBookHCOrder, saveDiagnosticBookHCOrderVariables>({
       mutation: SAVE_DIAGNOSTIC_ORDER_NEW,
@@ -3269,20 +3280,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     : selectedAddr
     ? formatAddressWithLandmark(selectedAddr) || ''
     : '';
-  const zipCode = isModifyFlow
-    ? modifiedOrder?.patientAddressObj?.zipcode || '0'
-    : (deliveryAddressId && selectedAddr && selectedAddr?.zipcode) || '0';
 
-  const isCovidItem = cartItemsWithId?.map((item) =>
-    AppConfig.Configuration.Covid_Items.includes(item)
-  );
-  const isCartHasCovidItem = isCovidItem?.find((item) => item === true);
-  const maxDaysToShow = !!isCartHasCovidItem
-    ? AppConfig.Configuration.Covid_Max_Slot_Days
-    : AppConfig.Configuration.Non_Covid_Max_Slot_Days;
-  const enable_cancelellation_policy =
-    AppConfig.Configuration.Enable_Diagnostics_Cancellation_Policy;
-  const cancelellation_policy_text = AppConfig.Configuration.Diagnostics_Cancel_Policy_Text_Msg;
   const renderCancellationPolicy = () => {
     return (
       <View style={styles.cancelPolicyContainer}>
@@ -3319,7 +3317,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           isTodaySlotUnavailable={todaySlotNotAvailable}
           onClose={() => setDisplaySchedule(false)}
           slots={slots}
-          zipCode={parseInt(zipCode, 10)}
           slotInfo={selectedTimeSlot}
           addressDetails={isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr}
           onSchedule={(date: Date, slotInfo: TestSlot) => {

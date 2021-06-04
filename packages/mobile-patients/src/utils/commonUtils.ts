@@ -344,10 +344,10 @@ export const createAddressObject = (addressObject: any) => {
     addressLine1: addressObject?.addressLine1,
     addressLine2: addressObject?.addressLine2,
     addressType: addressObject?.addressType,
-    zipcode: Number(addressObject?.zipcode! || 0),
+    zipcode: addressObject?.zipcode! || "0",
     landmark: addressObject?.landmark,
-    latitude: String(addressObject?.latitude! || 0),
-    longitude: String(addressObject?.longitude! || 0),
+    latitude: Number(addressObject?.latitude! || 0),
+    longitude: Number(addressObject?.longitude! || 0),
     city: addressObject?.city,
     state: addressObject?.state,
   } as AddressObj;
