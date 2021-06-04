@@ -578,18 +578,6 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   };
 
   const renderDetailsFinding = () => {
-    const convertToNum = (stringToNumber: string, item: number) => {
-      const letterCheck = /[^a-zA-Z]/.test(stringToNumber);
-      if (!!stringToNumber && stringToNumber.length <= 12) {
-        var symbolSearch = stringToNumber.includes('<') || stringToNumber.includes('>');
-        if (!symbolSearch && !letterCheck) {
-          const splitNum = stringToNumber.split('-')[item].trim();
-          let numCoverter = parseInt(splitNum);
-          return numCoverter;
-        }
-      }
-    };
-
     const renderTestReportDetails = () => {
       return (
         <>
@@ -601,28 +589,26 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
           </View>
           {data?.labTestResults?.map((item: any) => {
             const unit = item?.unit;
-            let minNum = convertToNum(item?.range, 0);
-            let maxNum = convertToNum(item?.range, 1);
-            let parseResult = parseInt(item?.result);
+            var minNum: number;
+            var maxNum: number;
             var resultColorChanger: boolean;
             var stringColorChanger: boolean;
             var rangeColorChanger: boolean;
             var columnDecider: boolean;
-            if (!!item?.result) {
-              if (item?.result?.length > 14) {
-                stringColorChanger = true;
-              } else {
-                parseResult >= minNum && parseResult <= maxNum
-                  ? (resultColorChanger = true)
-                  : (resultColorChanger = false);
-              }
-            }
-
             if (!!item?.range) {
               var symbolSearch =
                 item?.range?.includes('<') ||
                 item?.range?.includes('>') ||
                 item?.range?.includes(':');
+              var letterCheck = item?.range?.includes('-');
+              if (letterCheck && !symbolSearch) {
+                minNum = item?.range.split('-')[0].trim();
+                maxNum = item?.range.split('-')[1].trim();
+                let parseResult = parseInt(item?.result);
+                parseResult >= minNum && parseResult <= maxNum
+                  ? (resultColorChanger = true)
+                  : (resultColorChanger = false);
+              }
               if (symbolSearch) {
                 rangeColorChanger = true;
               } else {
@@ -634,6 +620,11 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                 columnDecider = false;
               }
             }
+            if (!!item?.result) {
+              if (item?.result?.length > 14) {
+                stringColorChanger = true;
+              }
+            }
 
             return !!item?.result ? (
               <>
@@ -642,9 +633,12 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                     styles.botContainer,
                     {
                       borderLeftColor:
-                        stringColorChanger === true || rangeColorChanger === true || !item?.range
+                        stringColorChanger === true ||
+                        rangeColorChanger === true ||
+                        !item?.range ||
+                        item?.range === item?.result
                           ? '#9B9B9B'
-                          : resultColorChanger === true
+                          : resultColorChanger
                           ? '#16DE9B'
                           : '#D87878',
                       height:
@@ -699,17 +693,19 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                             backgroundColor:
                               stringColorChanger === true ||
                               rangeColorChanger === true ||
-                              !item?.range
+                              !item?.range ||
+                              item?.range === item?.result
                                 ? '#F7F7F7'
-                                : resultColorChanger === true
+                                : resultColorChanger
                                 ? theme.colors.COMPLETE_STATUS_BGK
                                 : theme.colors.FAILURE_STATUS_BGK,
                             color:
                               stringColorChanger === true ||
                               rangeColorChanger === true ||
-                              !item?.range
+                              !item?.range ||
+                              item?.range === item?.result
                                 ? theme.colors.ASTRONAUT_BLUE
-                                : resultColorChanger === true
+                                : resultColorChanger
                                 ? theme.colors.COMPLETE_STATUS_TEXT
                                 : theme.colors.FAILURE_STATUS_TEXT,
                             lineHeight: stringColorChanger === true ? 21 : 18,
