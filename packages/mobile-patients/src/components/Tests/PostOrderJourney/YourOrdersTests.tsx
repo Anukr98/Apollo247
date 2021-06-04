@@ -641,7 +641,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       slotId: employeeSlot,
       source: DiagnosticsRescheduleSource.MOBILE,
     };
-    console.log({ rescheduleDiagnosticsInput });
     DiagnosticRescheduleOrder(
       selectRescheduleReason,
       formatTime,
