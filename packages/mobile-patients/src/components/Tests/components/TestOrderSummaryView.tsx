@@ -4,11 +4,7 @@ import { Dimensions, StyleSheet, Text, View, ScrollView } from 'react-native';
 import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
 import moment from 'moment';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import {
-  WebEngageEventName,
-  WebEngageEvents,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -27,6 +23,7 @@ import {
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { DiagnosticOrderSummaryViewed } from '@aph/mobile-patients/src/components/Tests/Events';
 
 export interface LineItemPricing {
   packageMrp: number;
@@ -53,13 +50,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   const { currentPatient } = useAllCurrentPatients();
 
   useEffect(() => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED] = {
-      'Order id:': orderDetails?.id,
-      'Order amount': grossCharges!,
-      'Sample Collection Date': orderDetails?.diagnosticDate,
-      'Order status': orderDetails?.orderStatus,
-    };
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED, eventAttributes);
+    DiagnosticOrderSummaryViewed(grossCharges, orderDetails?.id, orderDetails?.orderStatus);
   }, []);
 
   const getCircleObject = orderDetails?.diagnosticOrderLineItems?.filter(
@@ -260,7 +251,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       <View style={styles.orderSummaryView}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Text style={styles.itemHeading}> ITEM NAME</Text>
-          <Text style={styles.itemHeading}> MRP VALUE</Text>
+          <Text style={styles.itemHeading}> PRICE</Text>
         </View>
         {orderLineItems?.map((item) => {
           return (
@@ -304,7 +295,12 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     );
   };
 
-  const renderPrices = (title: string, price: string | number, customStyle?: boolean) => {
+  const renderPrices = (
+    title: string,
+    price: string | number,
+    isDiscount: boolean,
+    customStyle?: boolean
+  ) => {
     return (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
         <View style={{ width: '65%' }}>
@@ -340,6 +336,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
               },
             ]}
           >
+            {isDiscount && price > 0 ? '- ' : null}
             {string.common.Rs}
             {convertNumberToDecimal(price)}
           </Text>
@@ -353,13 +350,13 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       <View>
         {renderHeading('Total Charges')}
         <View style={styles.orderSummaryView}>
-          {renderPrices('Subtotal', grossCharges)}
-          {renderPrices('Circle Discount', totalCircleSaving)}
-          {renderPrices('Cart Savings', totalCartSaving)}
-          {renderPrices('Coupon Discount', totalDiscountSaving)}
-          {renderPrices('Home collection Charges', HomeCollectionCharges)}
+          {renderPrices('Total MRP', grossCharges, false)}
+          {renderPrices('Circle Discount', totalCircleSaving, true)}
+          {renderPrices('Cart Savings', totalCartSaving, true)}
+          {renderPrices('Coupon Discount', totalDiscountSaving, true)}
+          {renderPrices('Home collection Charges', HomeCollectionCharges, false)}
           <Spearator style={{ marginTop: 6, marginBottom: 6 }} />
-          {renderPrices('Total', orderDetails?.totalPrice, true)}
+          {renderPrices('Total', orderDetails?.totalPrice, false, true)}
         </View>
       </View>
     );
@@ -381,8 +378,8 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       <View>
         {renderHeading('Payment Mode')}
         <View style={styles.orderSummaryView}>
-          {renderPrices(txtToShow, orderDetails?.totalPrice)}
-          {!!refundText && renderPrices(refundText, refundDetails?.[0]?.amount)}
+          {renderPrices(txtToShow, orderDetails?.totalPrice, false)}
+          {!!refundText && renderPrices(refundText, refundDetails?.[0]?.amount, false)}
         </View>
       </View>
     );

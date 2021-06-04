@@ -1,17 +1,33 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import { ListItem, ListItemProps } from 'react-native-elements';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 
-export interface Props extends ListItemProps {}
+export interface Props extends ListItemProps {
+  rightBtnTitle: string;
+  onPressJoin: () => void;
+}
 
 export const JoinWaitingRoomView: React.FC<Props> = ({ ...props }) => {
+  const renderJoinBtn = () => {
+    return (
+      <Button
+        style={styles.joinBtn}
+        title={props.rightBtnTitle}
+        titleTextStyle={styles.joinBtnTitle}
+        onPress={() => props.onPressJoin()}
+      />
+    );
+  };
+
   return (
     <ListItem
       containerStyle={styles.listItem}
       titleStyle={styles.leftText}
       rightTitleStyle={styles.rightText}
       {...props}
+      rightElement={renderJoinBtn()}
     />
   );
 };
@@ -21,7 +37,7 @@ const { SHERPA_BLUE, APP_YELLOW, HEADER_GREY } = theme.colors;
 const styles = StyleSheet.create({
   listItem: {
     paddingVertical: 8,
-    paddingHorizontal: 20,
+    paddingHorizontal: 12,
     margin: 0,
     backgroundColor: HEADER_GREY,
     alignItems: 'center',
@@ -33,5 +49,13 @@ const styles = StyleSheet.create({
   rightText: {
     ...text('B', 13, APP_YELLOW),
     textAlign: 'center',
+  },
+  joinBtn: {
+    width: 'auto',
+    paddingHorizontal: 12,
+    height: 40,
+  },
+  joinBtnTitle: {
+    ...theme.viewStyles.text('B', 13, theme.colors.WHITE),
   },
 });

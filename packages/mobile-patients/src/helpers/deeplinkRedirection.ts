@@ -38,9 +38,15 @@ export const handleOpenURL = (event: any) => {
       media_source: 'not set',
     };
     const apolloUrl = 'https://www.apollo247.com';
+    const apolloPharmacyUrl = 'https://www.apollopharmacy.in';
     const a = event.indexOf(apolloUrl);
+    const b = event.indexOf(apolloPharmacyUrl);
     if (a == 0) {
       const url = event?.replace(`${apolloUrl}/`, '');
+      data = url?.split('/');
+      route = data?.[0];
+    } else if (b == 0) {
+      const url = event?.replace(`${apolloPharmacyUrl}/`, '');
       data = url?.split('/');
       route = data?.[0];
     } else {
@@ -74,10 +80,12 @@ export const handleOpenURL = (event: any) => {
         };
         break;
 
+      case 'otc':
       case 'medicine':
+        const redirectToMedicineDetail = data.length === 2 && linkId.indexOf('-') === -1;
         return {
-          routeName: 'Medicine',
-          id: data.length === 2 ? linkId : undefined,
+          routeName: redirectToMedicineDetail ? 'MedicineDetail' : 'Medicine',
+          id: redirectToMedicineDetail ? linkId : undefined,
         };
         break;
 
@@ -257,9 +265,22 @@ export const handleOpenURL = (event: any) => {
         };
         break;
 
+      case 'circle-membership':
       case 'circlemembershipdetails':
         return {
           routeName: 'CircleMembershipDetails',
+        };
+        break;
+
+      case 'corporatemembership':
+        return {
+          routeName: 'corporatemembership',
+        };
+        break;
+
+      case 'vaccinelisting':
+        return {
+          routeName: 'vaccinelisting',
         };
         break;
 
@@ -296,25 +317,36 @@ export const handleOpenURL = (event: any) => {
             id: linkId,
             isCall: false,
             data: data,
-          }
-        }
-        else{
+          };
+        } else {
           return {
             routeName: 'prohealth',
-          }
+          };
         }
         break;
 
-      default:
-        const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
-          source: 'deeplink',
-        };
-        postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
+      case 'mobilehelp':
         return {
-          routeName: 'ConsultRoom',
-          id: undefined,
-          timeout: true,
+          routeName: 'mobilehelp',
         };
+        break;
+
+      default:
+        if (b === 0) {
+          return {
+            routeName: 'Medicine',
+          };
+        } else {
+          const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
+            source: 'deeplink',
+          };
+          postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
+          return {
+            routeName: 'ConsultRoom',
+            id: undefined,
+            timeout: true,
+          };
+        }
         break;
     }
   } catch (error) {
@@ -332,7 +364,10 @@ export const pushTheView = (
   isCircleMember?: boolean,
   mediaSource?: string,
   voipCallType?: string,
-  voipAppointmentId?: MutableRefObject<string>
+  voipAppointmentId?: MutableRefObject<string>,
+  isCorporateSubscribed?: boolean,
+  vaccinationCmsIdentifier?: string,
+  vaccinationSubscriptionId?: string
 ) => {
   setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
   switch (routeName) {
@@ -480,6 +515,27 @@ export const pushTheView = (
         navigation.replace(AppRoutes.ConsultRoom);
       }
       break;
+    case 'corporatemembership':
+      if (isCorporateSubscribed) {
+        navigateToView(navigation, AppRoutes.MembershipDetails, {
+          membershipType: '',
+          isActive: true,
+          comingFrom: 'Deeplink',
+          isCorporatePlan: true,
+        });
+      } else {
+        navigation.replace(AppRoutes.ConsultRoom);
+      }
+      break;
+    case 'vaccinelisting':
+      navigateToView(navigation, AppRoutes.BookedVaccineScreen, {
+        cmsIdentifier: vaccinationCmsIdentifier || '',
+        subscriptionId: vaccinationSubscriptionId || '',
+        isVaccineSubscription: !!vaccinationCmsIdentifier,
+        isCorporateSubscription: !!isCorporateSubscribed,
+        comingFrom: 'deeplink',
+      });
+      break;
     case 'TestListing':
       navigateToView(navigation, AppRoutes.TestListing, {
         movedFrom: 'deeplink',
@@ -496,7 +552,14 @@ export const pushTheView = (
       navigateToView(navigation, AppRoutes.YourOrdersTest);
       break;
     case 'prohealth':
-      navigateToView(navigation, AppRoutes.ProHealthWebView, {covidUrl : id,  goBackCallback: ()=>webViewGoBack(navigation), movedFrom: 'deeplink'})
+      navigateToView(navigation, AppRoutes.ProHealthWebView, {
+        covidUrl: id,
+        goBackCallback: () => webViewGoBack(navigation),
+        movedFrom: 'deeplink',
+      });
+      break;
+    case 'mobilehelp':
+      navigateToView(navigation, AppRoutes.MobileHelp);
       break;
     default:
       const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
@@ -508,7 +571,7 @@ export const pushTheView = (
   }
 };
 
-const  webViewGoBack = (navigation: NavigationScreenProp<NavigationRoute<object>, object>)=> {
+const webViewGoBack = (navigation: NavigationScreenProp<NavigationRoute<object>, object>) => {
   navigation.dispatch(
     StackActions.reset({
       index: 0,
@@ -520,7 +583,7 @@ const  webViewGoBack = (navigation: NavigationScreenProp<NavigationRoute<object>
       ],
     })
   );
-}
+};
 
 const navigateToView = (
   navigation: NavigationScreenProp<NavigationRoute<object>, object>,

@@ -18,6 +18,7 @@ import {
   initiateDiagonsticHCOrderPayment,
 } from '@aph/mobile-patients/src/graphql/types/initiateDiagonsticHCOrderPayment';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export interface OtherBanksProps extends NavigationScreenProps {}
 
@@ -26,6 +27,8 @@ export const OtherBanks: React.FC<OtherBanksProps> = (props) => {
   const amount = props.navigation.getParam('amount');
   const banks = props.navigation.getParam('banks');
   const orderId = props.navigation.getParam('orderId');
+  const businessLine = props.navigation.getParam('businessLine');
+  const { authToken, setauthToken } = useAppCommonData();
   const [selectedBank, setSelectedBank] = useState<string>('');
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
@@ -34,18 +37,20 @@ export const OtherBanks: React.FC<OtherBanksProps> = (props) => {
   const onPressBank = (bank: any) => setSelectedBank(bank);
 
   const initiateOrderPayment = async () => {
-    // Api is called to update the order status from Quote to Payment Pending
-    const input: initiateDiagonsticHCOrderPaymentVariables = {
-      diagnosticInitiateOrderPaymentInput: { orderId: orderId },
-    };
-    const res = await client.mutate<
-      initiateDiagonsticHCOrderPayment,
-      initiateDiagonsticHCOrderPaymentVariables
-    >({
-      mutation: INITIATE_DIAGNOSTIC_ORDER_PAYMENT,
-      variables: input,
-      fetchPolicy: 'no-cache',
-    });
+    try {
+      // Api is called to update the order status from Quote to Payment Pending
+      const input: initiateDiagonsticHCOrderPaymentVariables = {
+        diagnosticInitiateOrderPaymentInput: { orderId: orderId },
+      };
+      const res = await client.mutate<
+        initiateDiagonsticHCOrderPayment,
+        initiateDiagonsticHCOrderPaymentVariables
+      >({
+        mutation: INITIATE_DIAGNOSTIC_ORDER_PAYMENT,
+        variables: input,
+        fetchPolicy: 'no-cache',
+      });
+    } catch (error) {}
   };
 
   const createJusPayOrder = (paymentMode: 'PREPAID' | 'COD') => {
@@ -62,19 +67,31 @@ export const OtherBanks: React.FC<OtherBanksProps> = (props) => {
     });
   };
 
+  const getClientToken = async () => {
+    if (!!authToken) {
+      return authToken;
+    } else {
+      setisTxnProcessing(true);
+      try {
+        businessLine == 'diagnostics' && initiateOrderPayment();
+        const response = await createJusPayOrder('PREPAID');
+        const { data } = response;
+        const { createOrder } = data;
+        const token = createOrder?.juspay?.client_auth_token;
+        setauthToken?.(token);
+        return token;
+      } catch (e) {
+        setisTxnProcessing(false);
+        props.navigation.goBack();
+      }
+    }
+  };
+
   async function onPressPay(bank: any) {
     setisTxnProcessing(true);
     try {
-      initiateOrderPayment();
-      const response = await createJusPayOrder('PREPAID');
-      const { data } = response;
-      const { createOrder } = data;
-      InitiateNetBankingTxn(
-        currentPatient?.id,
-        createOrder?.juspay?.client_auth_token,
-        paymentId,
-        bank?.paymentMethod
-      );
+      const token = await getClientToken();
+      InitiateNetBankingTxn(currentPatient?.id, token, paymentId, bank?.paymentMethod);
       props.navigation.goBack();
     } catch (e) {
       setisTxnProcessing(false);

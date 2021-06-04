@@ -326,7 +326,7 @@ export const isPastAppointment = (
   const followUpAfterInDays =
     caseSheetChatDays || caseSheetChatDays === '0'
       ? caseSheetChatDays === '0'
-        ? 0
+        ? -1
         : Number(caseSheetChatDays) - 1
       : 6;
   return (
@@ -1042,7 +1042,7 @@ const getlocationData = (
     (error) => {
       reject('Unable to get location.');
     },
-    { enableHighAccuracy: true, timeout: 10000 }
+    { accuracy: { android: 'balanced', ios: 'best' }, enableHighAccuracy: true, timeout: 10000 }
   );
 };
 
@@ -1156,6 +1156,9 @@ export const statusBarHeight = () =>
   Platform.OS === 'ios' ? (height === 812 || height === 896 ? 44 : 20) : 0;
 
 export const isValidSearch = (value: string) => /^([^ ]+[ ]{0,1}[^ ]*)*$/.test(value);
+
+export const isValidImageUrl = (value: string) =>
+  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/.test(value);
 
 export const isValidText = (value: string) =>
   /^([a-zA-Z0-9]+[ ]{0,1}[a-zA-Z0-9\-.\\/?,&]*)*$/.test(value);
@@ -1651,6 +1654,10 @@ export const postWebEngageIfNewSession = (
   }
 };
 
+export const removeObjectProperty = (object: any, property: string) => {
+  return _.omit(object, property);
+};
+
 export const postWEGNeedHelpEvent = (
   currentPatient: GetCurrentPatients_getCurrentPatients_patients,
   source: WebEngageEvents[WebEngageEventName.NEED_HELP]['Source']
@@ -1813,12 +1820,6 @@ export const UnInstallAppsFlyer = (newFirebaseToken: string) => {
   appsFlyer.updateServerUninstallToken(newFirebaseToken, (success) => {});
 };
 
-export const APPStateInActive = () => {
-  if (Platform.OS === 'ios') {
-    appsFlyer.trackAppLaunch();
-  }
-};
-
 export const APPStateActive = () => {
   if (onInstallConversionDataCanceller) {
     onInstallConversionDataCanceller();
@@ -1833,7 +1834,7 @@ export const APPStateActive = () => {
 export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Object) => {
   try {
     const logContent = `[AppsFlyer Event] ${eventName}`;
-    appsFlyer.trackEvent(
+    appsFlyer.logEvent(
       eventName,
       attributes,
       (res) => {},
@@ -2452,7 +2453,6 @@ export const filterHtmlContent = (content: string = '') => {
     .replace(/&gt;/g, '>')
     .replace(/&nbsp;/g, '</>')
     .replace(/\.t/g, '.')
-    .replace(/.rn/gi, '. ')
     .replace(/<\/>/gi, '');
 };
 export const isProductInStock = (product: MedicineProduct) => {
@@ -2709,10 +2709,7 @@ export const validateCoupon = async (
       const response = await validateConsultCoupon(data);
       if (response.data.errorCode == 0) {
         if (response.data.response.valid) {
-          setCoupon!({
-            ...response?.data?.response,
-            message: message ? message : '',
-          });
+          setCoupon!({ ...response?.data?.response, message: message ? message : '' });
           res('success');
         } else {
           rej(response.data.response.reason);
@@ -2808,14 +2805,9 @@ export async function downloadDiagnosticReport(
           : dirs.DownloadDir + '/' + reportName;
 
       let msg = 'File is downloading..';
-      if (showToast) {
-        if (Platform.OS === 'android') {
-          ToastAndroid.show(msg, ToastAndroid.SHORT);
-        } else {
-          AlertIOS.alert(msg);
-        }
+      if (showToast && Platform.OS === 'android') {
+        ToastAndroid.show(msg, ToastAndroid.SHORT);
       }
-
       RNFetchBlob.config({
         fileCache: true,
         path: downloadPath,
@@ -2910,3 +2902,21 @@ export const getPackageIds = (activeUserSubscriptions: any) => {
     });
   return packageIds;
 };
+
+export const isSatisfyingEmailRegex = (value: string) =>
+  /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+    value
+);
+
+export const getDiagnosticCityLevelPaymentOptions = (cityId: string ) =>{
+  let remoteData = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_PAYMENT_OPTION;
+    const getConfigPaymentValue = remoteData?.find(
+      (item) => Number(item?.cityId) === Number(cityId)
+    );
+    const paymentValues = {
+      "prepaid" : !!getConfigPaymentValue ? getConfigPaymentValue?.prepaid :AppConfig.Configuration.Enable_Diagnostics_Prepaid,
+      "cod": !!getConfigPaymentValue ? getConfigPaymentValue.cod : AppConfig.Configuration.Enable_Diagnostics_COD
+    }
+    return paymentValues;
+}
+  

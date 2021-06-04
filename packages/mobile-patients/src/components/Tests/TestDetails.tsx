@@ -80,7 +80,13 @@ const screenWidth = Dimensions.get('window').width;
 export interface TestPackageForDetails extends TestPackage {
   collectionType: TEST_COLLECTION_TYPE;
   preparation: string;
-  source: 'Home Page' | 'Full Search' | 'Cart Page' | 'Partial Search' | 'Deeplink';
+  source:
+    | 'Home Page'
+    | 'Full Search'
+    | 'Cart Page'
+    | 'Partial Search'
+    | 'Deeplink'
+    | 'Category page';
   type: string;
   specialPrice?: string | number;
   circleRate?: string | number;
@@ -904,7 +910,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               isServiceable={isDiagnosticLocationServiceable}
               isVertical={false}
               navigation={props.navigation}
-              source={'Details Page'}
+              source={'Details page'}
               sourceScreen={AppRoutes.TestDetails}
             />
           </>

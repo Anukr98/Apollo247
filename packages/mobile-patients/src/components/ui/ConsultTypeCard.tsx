@@ -6,9 +6,7 @@ import {
   CTDoctor,
   CTCalender,
   CTPayment,
-  CTVideo,
   CTPrescription,
-  CTChat,
   OnlineHeader,
   CTLightGrayChat,
   CTLightGrayVideo,
@@ -18,16 +16,8 @@ import {
 } from './Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '../../theme/theme';
-import {
-  nextAvailability,
-  mhdMY,
-  g,
-  timeDiffFromNow,
-  postWebEngageEvent,
-} from '../../helpers/helperFunctions';
+import { nextAvailability, timeDiffFromNow } from '../../helpers/helperFunctions';
 import moment from 'moment';
-import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
-import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -90,11 +80,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 11,
   },
-  noteContainer:{
+  noteContainer: {
     margin: 12,
     padding: 2,
-    justifyContent:'center',
-    alignItems:'center'
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   buttonStyle: {
     width: '100%',
@@ -155,11 +145,9 @@ const styles = StyleSheet.create({
 });
 
 export interface ConsultTypeCardProps extends NavigationScreenProps {
-  onOnlinePress: () => void;
-  onPhysicalPress: () => void;
   isOnlineSelected: boolean;
   DoctorId: string;
-  chatDays: string;
+  chatDays: string | number;
   DoctorName: string | null;
   nextAppointemntOnlineTime: string;
   nextAppointemntInPresonTime: string;
@@ -169,15 +157,13 @@ export interface ConsultTypeCardProps extends NavigationScreenProps {
 }
 
 type stepsObject = {
-  image: Element;
-  description: string;
+  image?: Element;
+  description?: string;
   textColor?: string;
 };
 
 export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
   const {
-    onOnlinePress,
-    onPhysicalPress,
     isOnlineSelected,
     DoctorId,
     chatDays,
@@ -189,10 +175,8 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
     consultNowText,
   } = props;
 
-  const { currentPatient } = useAllCurrentPatients();
   const { showCircleSubscribed } = useShoppingCart();
 
-  const [consultDoctorName, setConsultDocotrName] = useState<string>(DoctorName ? DoctorName : '');
   const {
     isCircleDoctor,
     onlineConsultMRPPrice,
@@ -313,33 +297,34 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
             {question}
           </Text>
           {steps.map((i) => (
-            <View style={styles.stepsContainer}>
-              <View style={styles.stepsImageContainer}>{i.image}</View>
-              <Text
-                style={{
-                  flex: 1,
-                  ...theme.viewStyles.text(
-                    'M',
-                    12,
-                    i.textColor ? i.textColor : theme.colors.CONSUTL_STEPS,
-                    1,
-                    18,
-                    0
-                  ),
-                }}
-              >
-                {i.description}
-              </Text>
-            </View>
+            <>
+              {i?.description ? (
+                <View style={styles.stepsContainer}>
+                  <View style={styles.stepsImageContainer}>{i.image}</View>
+                  <Text
+                    style={{
+                      flex: 1,
+                      ...theme.viewStyles.text(
+                        'M',
+                        12,
+                        i.textColor ? i.textColor : theme.colors.CONSUTL_STEPS
+                      ),
+                    }}
+                  >
+                    {i.description}
+                  </Text>
+                </View>
+              ) : null}
+            </>
           ))}
         </View>
-        {!isOnlineSelected?(
-        <View style={styles.noteContainer}>
-        <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 16, 0)}>
-        Note: Pay at Reception is available.
-        </Text>
-        </View>
-        ):null}
+        {!isOnlineSelected ? (
+          <View style={styles.noteContainer}>
+            <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 16, 0)}>
+              Note: Pay at Reception is available.
+            </Text>
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -369,10 +354,15 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
           description: string.consultType.online.point5,
         },
         { image: <CTPrescription />, description: string.consultType.online.point6 },
-        {
-          image: <CTLightGrayChat />,
-          description: string.consultType.follow_up_chat_days_text.replace('{0}', chatDays),
-        },
+        chatDays !== 0
+          ? {
+              image: <CTLightGrayChat />,
+              description: string.consultType.follow_up_chat_days_text.replace(
+                '{0} days',
+                `${chatDays} day${chatDays && Number(chatDays) > 1 ? 's' : ''}`
+              ),
+            }
+          : {},
       ]
     );
   };
@@ -393,7 +383,6 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
           textColor: theme.colors.SKY_BLUE,
         },
         { image: <CTPrescription />, description: string.consultType.inperson.point5 },
-
       ]
     );
   };

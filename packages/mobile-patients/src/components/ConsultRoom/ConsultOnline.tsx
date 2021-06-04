@@ -147,10 +147,10 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
     if (NextAvailableSlot && timeArray) {
       for (const i in timeArray) {
         if (timeArray[i].time.length > 0) {
+          props.setshowSpinner?.(false);
           if (timeArray[i].time.includes(NextAvailableSlot)) {
             setselectedtiming(timeArray[i].label);
             props.setselectedTimeSlot(NextAvailableSlot);
-            props.setshowSpinner?.(false);
             break;
           }
         }

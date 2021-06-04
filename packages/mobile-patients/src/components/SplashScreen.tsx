@@ -16,8 +16,8 @@ import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
 import { AppRoutes, getCurrentRoute } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import remoteConfig from '@react-native-firebase/remote-config';
 import SplashScreenView from 'react-native-splash-screen';
-import { BookingSource, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { useAuth } from '../hooks/authHooks';
+import { Relation, BookingSource } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { useAuth, useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig, updateAppConfig, AppEnv } from '../strings/AppConfig';
 import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
 import { Button } from './ui/Button';
@@ -31,7 +31,6 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import {
   doRequestAndAccessLocation,
   InitiateAppsFlyer,
-  APPStateInActive,
   APPStateActive,
   postWebEngageEvent,
   callPermissions,
@@ -157,16 +156,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const [springValue, setSpringAnimation] = useState(new Animated.Value(0));
   const CONST_SPLASH_LOADER = [string.splash.CAPSULE, string.splash.SYRINGE, string.splash.STETHO];
   const [selectedAnimationIndex, setSelectedAnimationIndex] = useState(0);
-
-  const config: Pubnub.PubnubConfig = {
-    origin: 'apollo.pubnubapi.com',
-    subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
-    publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
-    restore: true,
-    ssl: true,
-    uuid: `PATIENT_${voipPatientId.current}`,
-  };
-  const pubnub = new Pubnub(config);
+  const { currentPatient } = useAllCurrentPatients();
 
   const { setPhrNotificationData } = useAppCommonData();
 
@@ -225,6 +215,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    // clearing it so that save firebase token to DB gets call every first time
+    AsyncStorage.removeItem('saveTokenDeviceApiCall');
     handleDeepLink();
     getDeviceToken();
   }, []);
@@ -297,6 +289,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const onDisconnetCallAction = () => {
     fireWebengageEventForCallDecline();
     RNCallKeep.endAllCalls();
+    const config: Pubnub.PubnubConfig = {
+      origin: 'apollo.pubnubapi.com',
+      subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
+      publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
+      restore: true,
+      ssl: true,
+      uuid: `PATIENT_${voipPatientId?.current}`,
+    };
+    const pubnub = new Pubnub(config);
+
     pubnub.publish(
       {
         message: { message: '^^#PATIENT_REJECTED_CALL' },
@@ -387,6 +389,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       voipCallType.current = params?.[1]!;
       callPermissions();
       getAppointmentDataAndNavigate(params?.[0]!, true);
+    } else if (routeName == 'prohealth') {
+      fetchProhealthHospitalDetails(id);
     } else if (routeName === 'DoctorCallRejected') {
       setLoading!(true);
       const appointmentId = id?.split('+')?.[0];
@@ -396,6 +400,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
         ssl: true,
         restore: true,
+        uuid: `PATIENT_${currentPatient?.id}`,
       };
       const pubnub = new Pubnub(config);
       pubnub.publish(
@@ -525,8 +530,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             if (mePatient) {
               if (mePatient.firstName !== '') {
                 const isCircleMember: any = await AsyncStorage.getItem('isCircleMember');
+                const isCorporateSubscribed: any = await AsyncStorage.getItem(
+                  'isCorporateSubscribed'
+                );
+                const vaccinationCmsIdentifier: any = await AsyncStorage.getItem(
+                  'VaccinationCmsIdentifier'
+                );
+                const vaccinationSubscriptionId: any = await AsyncStorage.getItem(
+                  'VaccinationSubscriptionId'
+                );
+
                 if (routeName == 'prohealth' && id) {
-                  id = id.replace('mobileNumber', currentPatient?.mobileNumber || '');
+                  id = id?.replace('mobileNumber', currentPatient?.mobileNumber || '');
                 }
                 pushTheView(
                   props.navigation,
@@ -536,7 +551,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                   isCircleMember === 'yes',
                   mediaSource,
                   voipCallType.current,
-                  voipAppointmentId
+                  voipAppointmentId,
+                  isCorporateSubscribed === 'yes',
+                  vaccinationCmsIdentifier,
+                  vaccinationSubscriptionId
                 );
                 callPhrNotificationApi(currentPatient);
                 setCrashlyticsAttributes(mePatient);
@@ -652,7 +670,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         firebaseAuth().onAuthStateChanged(async (user) => {
           if (user) {
             const jwtToken = await user.getIdToken(true).catch((error) => {
-              throw error;
+              CommonBugFender('SplashScreen_regenerateJWTToken', error);
             });
             const openUrl = AppConfig.Configuration.PROHEALTH_BOOKING_URL;
             let finalUrl;
@@ -726,9 +744,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             });
         }
       } catch {}
-    }
-    if (appState.match(/inactive|background/) && nextAppState === 'active') {
-      APPStateInActive();
     }
     if (appState.match(/active|foreground/) && nextAppState === 'background') {
       APPStateActive();
@@ -823,8 +838,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       PROD: 'Login_Section',
     },
     Covid_Vaccine_Cta_Key_V2: {
-      QA: 'Covid_Vaccine_CTA_V2_QA',
-      PROD: 'Covid_Vaccine_CTA_V2',
+      QA: 'Covid_Vaccine_CTA_V3_QA',
+      PROD: 'Covid_Vaccine_CTA_V3',
     },
     Covid_Items: {
       QA: 'QA_Covid_Items',
@@ -881,6 +896,35 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Reopen_Help_Max_Time: {
       QA: 'Reopen_Help_Max_Time_QA',
       PROD: 'Reopen_Help_Max_Time_Prod',
+    },
+    Vaccination_Cities: {
+      QA: 'Vaccination_Cities_QA',
+      PROD: 'Vaccination_Cities_Prod',
+    },
+    Vaccine_Type: {
+      QA: 'Vaccine_Type_QA',
+      PROD: 'Vaccine_Type_Prod',
+    },
+
+    Enable_Diagnostics_COD: {
+      QA: 'QA_Enable_Diagnostics_COD',
+      PROD: 'Enable_Diagnostics_COD',
+    },
+    Enable_Diagnostics_Cancellation_Policy: {
+      QA: 'QA_Diagnostic_Cancellation_Policy',
+      PROD: 'Diagnostic_Cancellation_Policy',
+    },
+    Diagnostics_Cancel_Policy_Text_Msg: {
+      QA: 'QA_Diagnostics_Cancel_Policy_Text',
+      PROD: 'Diagnostics_Cancel_Policy_Text',
+    },
+    Enable_Diagnostics_Prepaid: {
+      QA: 'QA_Enable_Diagnostics_Prepaid',
+      PROD: 'Enable_Diagnostics_Prepaid',
+    },
+    Diagnostics_CityLevel_Payment_Option: {
+      QA: 'QA_Diagnostics_City_Level_Payment_Option',
+      PROD: 'Diagnostics_City_Level_Payment_Option',
     },
   };
 
@@ -1061,8 +1105,17 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       setAppConfig('Health_Credit_Expiration_Time', 'Health_Credit_Expiration_Time', (key) =>
         config.getNumber(key)
       );
+
       setAppConfig('Reopen_Help_Max_Time', 'Reopen_Help_Max_Time', (key) => {
         config.getNumber(key);
+      });
+
+      setAppConfig('Vaccination_Cities', 'Vaccination_Cities_List', (key) => {
+        return JSON.parse(config.getString(key)) || AppConfig.Configuration.Vaccination_Cities_List;
+      });
+
+      setAppConfig('Vaccine_Type', 'Vaccine_Type', (key) => {
+        return JSON.parse(config.getString(key)) || AppConfig.Configuration.Vaccine_Type;
       });
 
       setAppConfig('Helpdesk_Chat_Confim_Msg', 'Helpdesk_Chat_Confim_Msg', (key) =>
@@ -1075,6 +1128,30 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         config.getNumber(key)
       );
       setAppConfig('followUp_Chat', 'FollowUp_Chat_Limit', (key) => config.getNumber(key));
+      setAppConfig('Enable_Diagnostics_COD', 'Enable_Diagnostics_COD', (key) =>
+        config.getBoolean(key)
+      );
+      setAppConfig(
+        'Enable_Diagnostics_Cancellation_Policy',
+        'Enable_Diagnostics_Cancellation_Policy',
+        (key) => config.getBoolean(key)
+      );
+      setAppConfig(
+        'Diagnostics_Cancel_Policy_Text_Msg',
+        'Diagnostics_Cancel_Policy_Text_Msg',
+        (key) => config.getString(key)
+      );
+
+      setAppConfig('Enable_Diagnostics_Prepaid', 'Enable_Diagnostics_Prepaid', (key) =>
+        config.getBoolean(key)
+      );
+      setAppConfig(
+        'Diagnostics_CityLevel_Payment_Option',
+        'DIAGNOSTICS_CITY_LEVEL_PAYMENT_OPTION',
+        (key) =>
+          JSON.parse(config.getString(key)) ||
+          AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_PAYMENT_OPTION
+      );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';

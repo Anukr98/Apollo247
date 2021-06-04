@@ -69,6 +69,7 @@ export interface AuthContextProps {
   mobileAPICalled: boolean;
   setMobileAPICalled: ((par: boolean) => void) | null;
   getFirebaseToken: (() => Promise<unknown>) | null;
+  authToken: string;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -94,6 +95,7 @@ export const AuthContext = React.createContext<AuthContextProps>({
   setMobileAPICalled: null,
 
   getFirebaseToken: null,
+  authToken: '',
 });
 
 let apolloClient: ApolloClient<NormalizedCacheObject>;
@@ -167,6 +169,7 @@ export const AuthProvider: React.FC = (props) => {
         return;
       }
     });
+
     const authLink = setContext(async (_, { headers }) => ({
       headers: {
         ...headers,
@@ -399,6 +402,8 @@ export const AuthProvider: React.FC = (props) => {
             setMobileAPICalled,
 
             getFirebaseToken,
+
+            authToken,
           }}
         >
           {props.children}
