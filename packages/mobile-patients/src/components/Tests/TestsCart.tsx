@@ -2239,6 +2239,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     ) {
       renderAlert(string.common.tryAgainLater);
       setLoading?.(false);
+    } else if (grandTotal == null || grandTotal == undefined) {
+      //do not call the api, if by any chance grandTotal is not a number
+      renderAlert(string.common.tryAgainLater);
+      setLoading?.(false);
     } else {
       const { slotStartTime, slotEndTime, employeeSlotId, date } = diagnosticSlot || {};
       const slotTimings = (slotStartTime && slotEndTime
