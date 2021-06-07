@@ -82,7 +82,7 @@ export const handleOpenURL = (event: any) => {
 
       case 'otc':
       case 'medicine':
-        const redirectToMedicineDetail = data.length === 2 && linkId.indexOf('-') === -1;
+        const redirectToMedicineDetail = data.length === 2;
         return {
           routeName: redirectToMedicineDetail ? 'MedicineDetail' : 'Medicine',
           id: redirectToMedicineDetail ? linkId : undefined,
@@ -384,8 +384,10 @@ export const pushTheView = (
       navigation.navigate('MEDICINES', { showRecommendedSection: true, comingFrom: 'deeplink' });
       break;
     case 'MedicineDetail':
+      const isUrlKey = id.indexOf('-') !== -1;
       navigateToView(navigation, AppRoutes.ProductDetailPage, {
-        sku: id,
+        sku: isUrlKey ? null : id,
+        urlKey: isUrlKey ? id : null,
         movedFrom: ProductPageViewedSource.DEEP_LINK,
       });
       break;

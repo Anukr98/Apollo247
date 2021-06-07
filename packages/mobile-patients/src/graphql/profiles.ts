@@ -1667,6 +1667,7 @@ export const GET_RECOMMENDED_PRODUCTS_LIST = gql`
         categoryName
         status
         mou
+        urlKey
       }
     }
   }
@@ -4832,7 +4833,7 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql`
             testPreparationData
           }
         }
-        attributesObj{
+        attributesObj {
           reportGenerationTime
           preTestingRequirement
         }
@@ -4884,7 +4885,7 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
             testPreparationData
           }
         }
-        attributesObj{
+        attributesObj {
           reportGenerationTime
           preTestingRequirement
         }
