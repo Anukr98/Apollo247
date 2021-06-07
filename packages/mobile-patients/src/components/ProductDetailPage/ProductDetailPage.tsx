@@ -261,14 +261,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const getMedicineDetails = (zipcode?: string, pinAcdxCode?: string) => {
     setLoading(true);
     if (urlKey) {
-      console.log('V2 api ==============');
       getMedicineDetailsApiV2(urlKey, pinAcdxCode || axdcCode, zipcode || pincode)
         .then(({ data }) => {
           const productDetails = g(data, 'productdp', '0' as any);
-          // console.log('url key ====== ', JSON.stringify(productDetails));
           if (productDetails) {
             setMedicineData(productDetails);
-            console.log('productDetails >>>> ', JSON.stringify(productDetails));
           } else if (data && data.message) {
             setMedicineError(data.message);
           }
@@ -657,6 +654,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       type_id,
       thumbnail,
       MaxOrderQty,
+      url_key,
     } = medicineDetails;
     addCartItem!({
       id: sku,
@@ -675,6 +673,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       isInStock: true,
       maxOrderQty: MaxOrderQty,
       productType: type_id,
+      url_key,
     });
     postwebEngageAddToCartEvent(
       medicineDetails,
