@@ -566,6 +566,26 @@ export const getMedicineDetailsApi = (
   );
 };
 
+export const getMedicineDetailsApiV2 = (
+  urlKey: string,
+  axdcCode?: string,
+  pincode?: string
+): Promise<AxiosResponse<MedicineProductDetailsResponse>> => {
+  return Axios.post(
+    `${config.MED_DETAIL[0]}/popcsrchpdpv2_api.php`,
+    {
+      params: urlKey,
+      axdcCode: axdcCode || '',
+      pincode: pincode || '',
+    },
+    {
+      headers: {
+        Authorization: config.MED_DETAIL[1],
+      },
+    }
+  );
+};
+
 let cancelSearchMedicineApi247: Canceler | undefined;
 export const searchMedicineApi = async (
   searchText: string,
@@ -1108,7 +1128,10 @@ export const getDiagnosticsSearchResults = (
     },
   });
 };
-export const getDiagnosticsPopularResults = (pageName: string, cityId: number): Promise<AxiosResponse<any>> => {
+export const getDiagnosticsPopularResults = (
+  pageName: string,
+  cityId: number
+): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
   const getSearchResults = `${baseurl}/${pageName}/popular-test-search?city=${cityId}`;
   return Axios.get(getSearchResults, {

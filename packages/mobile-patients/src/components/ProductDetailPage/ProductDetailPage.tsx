@@ -57,6 +57,7 @@ import {
   availabilityApi247,
   getDeliveryTAT247,
   TatApiInput247,
+  getMedicineDetailsApiV2,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
@@ -93,11 +94,12 @@ export type ProductPageViewedEventProps = Pick<
 
 export interface ProductDetailPageProps
   extends NavigationScreenProps<{
-    sku: string;
+    sku: string | null;
     movedFrom: ProductPageViewedSource;
     productPageViewedEventProps?: ProductPageViewedEventProps;
     deliveryError: string;
     sectionName?: string;
+    urlKey?: string;
   }> {}
 
 type PharmacyTatApiCalled = WebEngageEvents[WebEngageEventName.PHARMACY_TAT_API_CALLED];
@@ -105,9 +107,11 @@ type PharmacyTatApiCalled = WebEngageEvents[WebEngageEventName.PHARMACY_TAT_API_
 export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const movedFrom = props.navigation.getParam('movedFrom');
   const sku = props.navigation.getParam('sku');
+  const urlKey = props.navigation.getParam('urlKey');
   const sectionName = props.navigation.getParam('sectionName');
   const productPageViewedEventProps = props.navigation.getParam('productPageViewedEventProps');
   const _deliveryError = props.navigation.getParam('deliveryError');
+  const [composition, setComposition] = useState<string>('');
 
   const {
     cartItems,
@@ -175,6 +179,22 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   };
 
   useEffect(() => {
+    if (medicineDetails?.id) {
+      const pharmaOverview = medicineDetails?.PharmaOverview?.[0];
+      if (pharmaOverview?.generic && pharmaOverview?.Unit && pharmaOverview?.Strength) {
+        let compositions = '';
+        const generics = pharmaOverview?.generic?.split('+');
+        const strengths = pharmaOverview?.Strength?.split('+');
+        const units = pharmaOverview?.Unit?.split('+');
+        generics.forEach((value: string, index: number) => {
+          compositions = compositions + `${value}-${strengths[index].trim()}${units[index].trim()}`;
+        });
+        setComposition(compositions);
+      }
+    }
+  }, [medicineDetails]);
+
+  useEffect(() => {
     getMedicineDetails();
     fetchDeliveryTime(pincode, false);
     BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
@@ -240,32 +260,58 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 
   const getMedicineDetails = (zipcode?: string, pinAcdxCode?: string) => {
     setLoading(true);
-    getMedicineDetailsApi(sku, pinAcdxCode || axdcCode, zipcode || pincode)
-      .then(({ data }) => {
-        const productDetails = g(data, 'productdp', '0' as any);
-        if (productDetails) {
-          setMedicineDetails(productDetails || {});
-          setIsPharma(productDetails?.type_id.toLowerCase() === 'pharma');
-          trackTagalysViewEvent(productDetails);
-          savePastSearch(client, {
-            typeId: productDetails?.sku,
-            typeName: productDetails?.name,
-            type: SEARCH_TYPE.MEDICINE,
-            patient: currentPatient?.id,
-            image: productDetails?.thumbnail,
-          });
-        } else if (data && data.message) {
-          setMedicineError(data.message);
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        CommonBugFender('MedicineDetailsScene_getMedicineDetailsApi', err);
-        aphConsole.log('MedicineDetailsScene err\n', err);
-        setApiError(!!err);
-        setLoading(false);
-      });
+    if (urlKey) {
+      console.log('V2 api ==============');
+      getMedicineDetailsApiV2(urlKey, pinAcdxCode || axdcCode, zipcode || pincode)
+        .then(({ data }) => {
+          const productDetails = g(data, 'productdp', '0' as any);
+          // console.log('url key ====== ', JSON.stringify(productDetails));
+          if (productDetails) {
+            setMedicineData(productDetails);
+            console.log('productDetails >>>> ', JSON.stringify(productDetails));
+          } else if (data && data.message) {
+            setMedicineError(data.message);
+          }
+          setLoading(false);
+        })
+        .catch((err) => {
+          CommonBugFender('MedicineDetailsScene_getMedicineDetailsV2Api', err);
+          aphConsole.log('MedicineDetailsScene err\n', err);
+          setApiError(!!err);
+          setLoading(false);
+        });
+    } else {
+      getMedicineDetailsApi(sku, pinAcdxCode || axdcCode, zipcode || pincode)
+        .then(({ data }) => {
+          const productDetails = g(data, 'productdp', '0' as any);
+          if (productDetails) {
+            setMedicineData(productDetails);
+          } else if (data && data.message) {
+            setMedicineError(data.message);
+          }
+          setLoading(false);
+        })
+        .catch((err) => {
+          CommonBugFender('MedicineDetailsScene_getMedicineDetailsApi', err);
+          aphConsole.log('MedicineDetailsScene err\n', err);
+          setApiError(!!err);
+          setLoading(false);
+        });
+    }
     fetchSubstitutes();
+  };
+
+  const setMedicineData = (productDetails: MedicineProductDetails) => {
+    setMedicineDetails(productDetails || {});
+    setIsPharma(productDetails?.type_id.toLowerCase() === 'pharma');
+    trackTagalysViewEvent(productDetails);
+    savePastSearch(client, {
+      typeId: productDetails?.sku,
+      typeName: productDetails?.name,
+      type: SEARCH_TYPE.MEDICINE,
+      patient: currentPatient?.id,
+      image: productDetails?.thumbnail,
+    });
   };
 
   const homeBreadCrumb: BreadcrumbLink = {
@@ -772,7 +818,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 
   const onCompositionClick = () =>
     props.navigation.push(AppRoutes.MedicineListing, {
-      searchText: medicineDetails?.PharmaOverview?.[0]?.Composition,
+      searchText: medicineDetails?.PharmaOverview?.[0]?.Composition || composition,
       movedFrom: 'PDP Composition Hyperlink',
     });
 
@@ -862,7 +908,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               {isPharma && (
                 <PharmaManufacturer
                   manufacturer={medicineDetails?.manufacturer}
-                  composition={medicineDetails?.PharmaOverview?.[0]?.Composition}
+                  composition={medicineDetails?.PharmaOverview?.[0]?.Composition || composition}
                   consumeType={medicineDetails?.consume_type}
                   onCompositionClick={onCompositionClick}
                 />
@@ -872,7 +918,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   heading={string.productDetailPage.PRODUCT_SUBSTITUTES}
                   similarProducts={substitutes}
                   navigation={props.navigation}
-                  composition={medicineDetails?.PharmaOverview?.[0]?.Composition}
+                  composition={medicineDetails?.PharmaOverview?.[0]?.Composition || composition}
                   setShowSubstituteInfo={setShowSubstituteInfo}
                 />
               )}
@@ -901,7 +947,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   heading={string.productDetailPage.PRODUCT_SUBSTITUTES}
                   similarProducts={substitutes}
                   navigation={props.navigation}
-                  composition={medicineDetails?.PharmaOverview?.[0]?.Composition}
+                  composition={medicineDetails?.PharmaOverview?.[0]?.Composition || composition}
                   setShowSubstituteInfo={setShowSubstituteInfo}
                 />
               )}
