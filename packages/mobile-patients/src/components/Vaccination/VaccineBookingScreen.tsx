@@ -109,6 +109,7 @@ export interface VaccineBookingScreenProps
   subscriptionId: string;
   subscriptionInclusionId: string;
   excludeProfileListIds?: string[];
+  remainingVaccineSlots: number;
 }
 
 //styles
@@ -408,6 +409,8 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
   const subscriptionId = props.navigation.getParam('subscriptionId');
   const subscriptionInclusionId = props.navigation.getParam('subscriptionInclusionId');
   const excludeProfileListIds = props.navigation.getParam('excludeProfileListIds');
+  const remainingVaccineSlots = props.navigation.getParam('remainingVaccineSlots');
+
   const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
   const [requestSubmissionErrorAlert, setRequestSubmissionErrorAlert] = useState<boolean>(false);
   const [vaccineSiteList, setVaccineSiteList] = useState<any>([]);
@@ -452,7 +455,6 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
 
   const cityList = AppConfig.Configuration.Vaccination_Cities_List || [];
   const vaccineTypeList = AppConfig.Configuration.Vaccine_Type || [];
-  const restrictToSelfVaccination = AppConfig.Configuration.Vaccine_Restrict_Self;
 
   useEffect(() => {
     fetchVaccinationHospitalSites();
@@ -1121,21 +1123,17 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
   };
 
   const setUpSelectedPatient = (_selectedPatient: any) => {
-    if (restrictToSelfVaccination) {
-      if (_selectedPatient.relation != 'ME') {
-        showAphAlert &&
-          showAphAlert({
-            title: 'Oops!',
-            description:
-              'You can book a vaccination slot only for yourself. We will enable vaccination booking for family members soon.',
-            onPressOk: () => {
-              hideAphAlert!();
-              setShowPatientListOverlay(true);
-            },
-          });
-      } else {
-        setSelectedPatient(_selectedPatient);
-      }
+    if (remainingVaccineSlots == 0 && _selectedPatient?.relation != 'ME') {
+      showAphAlert &&
+        showAphAlert({
+          title: 'Oops!',
+          description:
+            'You can book a vaccination slot only for yourself as per your corporate package',
+          onPressOk: () => {
+            hideAphAlert!();
+            setShowPatientListOverlay(true);
+          },
+        });
     } else {
       setSelectedPatient(_selectedPatient);
     }

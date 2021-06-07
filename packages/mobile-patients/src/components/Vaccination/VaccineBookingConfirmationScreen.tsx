@@ -48,8 +48,7 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import {
   buildVaccineApolloClient,
   vaccinationADMINBaseUrl,
-  vaccinationApiBaseUrl,
-  vaccinationApiRoutes,
+  vaccineBookingPDFBaseUrl,
 } from '../Vaccination/VaccinationApolloClient';
 import {
   DOSE_NUMBER,
@@ -777,7 +776,7 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
   const fetchHTMLText = () => {
     setPdfLoading(true);
 
-    fetch('https://qathreepatients.apollo247.com/vaccine-booking/' + bookingInfo?.id)
+    fetch(vaccineBookingPDFBaseUrl + bookingInfo?.id)
       .then((resp) => {
         return resp.text();
       })
@@ -787,7 +786,7 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
           .then((file) => {
             showAphAlert!({
               title: 'Great !',
-              description: string.vaccineBooking.success_generate_pdf + file.filePath,
+              description: string.vaccineBooking.success_generate_pdf,
               showCloseIcon: true,
               onCloseIconPress: () => {
                 hideAphAlert!();
@@ -804,7 +803,7 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
                     } catch (error) {
                       showAphAlert!({
                         title: 'Oops !',
-                        description: "Can't open file " + file.filePath,
+                        description: "Can't open file .",
                       });
                     }
                   },
@@ -865,12 +864,10 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
           <>
             <ScrollView>
               {renderHeaderBanner()}
-
               {renderConfirmationDetails()}
+              {renderGeneratePDFCTA()}
 
-              {/* {renderGeneratePDFCTA()} */}
-
-              {/* Intententionally kept for future case */}
+              {/* Intententionally kept for future case  */}
               {/* {bookingInfo?.status != BOOKING_STATUS.CANCELLED ? renderResendSMS() : null} */}
 
               {renderImportantInfo()}

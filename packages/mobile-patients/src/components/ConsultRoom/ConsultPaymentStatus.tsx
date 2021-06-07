@@ -332,14 +332,16 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     try {
       let eventAttributes = webEngageEventAttributes;
       eventAttributes['Display ID'] = displayId;
-      eventAttributes['User_Type'] = getUserType(currentPatient);
+      eventAttributes['User_Type'] = getUserType(allCurrentPatients);
       postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, appsflyerEventAttributes);
       postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
       firePurchaseEvent(amountBreakup);
       eventAttributes['Dr of hour appointment'] = !!isDoctorsOfTheHourStatus ? 'Yes' : 'No';
       postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
       if (!currentPatient?.isConsulted) getPatientApiCall();
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   useEffect(() => {

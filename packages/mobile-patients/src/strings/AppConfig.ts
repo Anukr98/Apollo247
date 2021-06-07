@@ -224,13 +224,27 @@ const appStaticVariables = {
     'Thank you for reaching out. As we are experiencing a heavy load, our team will get back to you in 24 to 48 hours.',
   Vaccination_Cities_List: ['Delhi', 'Mumbai'],
   Vaccine_Type: ['Covaxin', 'Covishield'],
-  Vaccine_Restrict_Self: true,
   Enable_Diagnostics_COD: false,
   Enable_Diagnostics_Cancellation_Policy: false,
   Diagnostics_Cancel_Policy_Text_Msg:
     'For a full refund, you must cancel at least 6 hours before the appointment time. Cancellations made within 6 hours of appointment time will incur a fee of up to ₹ 200.',
   RTPCR_Google_Form:
     'https://docs.google.com/forms/d/e/1FAIpQLSd6VaqQ0GTQOdpBYMyh-wZwv8HHrr3W1Q_XCVSaooHXQGVsJQ/viewform',
+  MaxCallRetryAttempt: 5,
+  DIAGNOSTIC_DEFAULT_CITYID: 9,
+  Enable_Diagnostics_Prepaid: true,
+  DIAGNOSTICS_CITY_LEVEL_PAYMENT_OPTION: [
+    {
+      cityId: '9',
+      prepaid: false,
+      cod: true,
+    },
+    {
+      cityId: '287',
+      prepaid: false,
+      cod: true,
+    },
+  ],
 };
 
 const DEV_top_specialties = [
@@ -1329,11 +1343,20 @@ export const TestsFeedBackData = {
 
 export const TestCancelReasons = {
   reasons: [
+    string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
     string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
-    string.diagnostics.reasonForCancel_TestOrder.editOrder,
+    string.diagnostics.reasonForCancel_TestOrder.bookedByMistake,
+    string.diagnostics.reasonForCancel_TestOrder.urgentReport,
+    string.diagnostics.reasonForCancel_TestOrder.anotherChannel,
+    string.diagnostics.reasonForCancel_TestOrder.otherReasons,
+  ],
+};
+export const TestCancelReasonsPre = {
+  reasons: [
     string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
     string.diagnostics.reasonForCancel_TestOrder.bookedByMistake,
     string.diagnostics.reasonForCancel_TestOrder.urgentReport,
+    string.diagnostics.reasonForCancel_TestOrder.anotherChannel,
     string.diagnostics.reasonForCancel_TestOrder.otherReasons,
   ],
 };

@@ -19,8 +19,6 @@ import {
   MissedCallIcon,
   UploadHealthRecords,
   FreeArrowIcon,
-  ActiveCalenderIcon,
-  InactiveCalenderIcon,
   CallCollapseIcon,
   CallCameraIcon,
   AudioActiveIcon,
@@ -31,6 +29,8 @@ import {
   UserThumbnailIcon,
   CopyIcon,
   ExternalMeetingVideoCall,
+  InactiveCalenderIcon,
+  ActiveCalenderIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -157,6 +157,7 @@ import {
   handleGraphQlError,
   formatToCartItem,
   getPrescriptionItemQuantity,
+  getNetStatus,
 } from '../../helpers/helperFunctions';
 import { mimeType } from '../../helpers/mimeType';
 import { FeedbackPopup } from '../FeedbackPopup';
@@ -233,7 +234,9 @@ const { height, width } = Dimensions.get('window');
 
 const timer: number = 900;
 let timerId: any;
+let reconnectTimerId: any;
 let appointmentDiffMinTimerId: any;
+var networkCheckInterval: any = [];
 let notificationTimerId: any;
 let notificationIntervalId: any;
 let notify_async_key = 'notify_async';
@@ -248,6 +251,8 @@ let jdAssigned: boolean = false;
 const bottomBtnContainerWidth = 267;
 const maxRetryAttempt: number = 15;
 let currentRetryAttempt: number = 1;
+let savedTime: any;
+let currentTime: any;
 
 type rescheduleType = {
   rescheduleCount: number;
@@ -724,6 +729,24 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 8, theme.colors.WHITE),
     marginVertical: 9,
   },
+  publisherStyles: {
+    position: 'absolute',
+    top: 44,
+    right: 20,
+    width: 1,
+    height: 1,
+    zIndex: 1000,
+  },
+  callingView: {
+    position: 'absolute',
+    left: 0,
+    width: width,
+    height: 24,
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
 });
 
 const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/;
@@ -877,6 +900,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [doctorScheduleId, setDoctorScheduleId] = useState<string>('');
   const callStatus = useRef<string>('');
   const callToastStatus = useRef<string>('');
+  const isCallReconnecting = useRef<boolean>(false);
+  const maxCallRetryAttempt: number = AppConfig.Configuration.MaxCallRetryAttempt;
+  const currentCallRetryAttempt = useRef<number>(1);
   const isErrorToast = useRef<boolean>(false);
   const jrDoctorJoined = useRef<boolean>(false); // using ref to get the current updated values on event listeners
   const [displayChatQuestions, setDisplayChatQuestions] = useState<boolean>(false);
@@ -1645,6 +1671,65 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const client = useApolloClient();
 
+  const checkNetworkStatus = () => {
+    currentTime = new Date().getTime() / 1000; // in seconds
+    if (!savedTime || currentTime - savedTime >= 4) {
+      /**
+       *  In order to work retry logic correctly, we are checking time diff because in few of the cases this
+       *  is getting called twice because of event listeners.
+       * */
+      if (isCallReconnecting.current) {
+        if (currentCallRetryAttempt.current < maxCallRetryAttempt) {
+          currentCallRetryAttempt.current++;
+          // retrying
+          getNetStatus()
+            .then((status) => {
+              if (status) {
+                clearNetworkCheckInterval();
+                joinCallHandler();
+              }
+            })
+            .catch((e) => {
+              CommonBugFender('ChatRoom_checkNetworkStatus', e);
+            });
+        } else {
+          //retry time out
+          hideCallUI();
+          if (isAudio.current) {
+            handleEndAudioCall(false);
+          } else {
+            handleEndCall(false);
+          }
+          clearNetworkCheckInterval();
+        }
+      } else {
+        clearNetworkCheckInterval();
+      }
+    }
+    savedTime = currentTime;
+  };
+
+  const clearNetworkCheckInterval = () => {
+    networkCheckInterval?.map((intervalId: any) => {
+      BackgroundTimer.clearInterval(intervalId);
+      networkCheckInterval = [];
+    });
+  };
+
+  const hideCallUI = () => {
+    const zeroDimension = {
+      height: 0,
+      width: 0,
+    };
+    setTalkStyles(zeroDimension);
+    setSubscriberStyles(zeroDimension);
+    setPublisherStyles(zeroDimension);
+    setPipView(true);
+    setChatReceived(false);
+    setHideStatusBar(false);
+    resetCurrentRetryAttempt();
+  };
+
   const getSecretaryData = () => {
     getSecretaryDetailsByDoctor(client, doctorId)
       .then((apiResponse: any) => {
@@ -2330,7 +2415,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       patientJoinedCall.current = false;
       // subscriberConnected.current = false;
       endVoipCall();
-      eventsAfterConnectionDestroyed();
     },
     error: (error: string) => {
       openTokErrorWebEngageEvents(
@@ -2457,6 +2541,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         WebEngageEventName.PATIENT_SESSION_CONNECTION_CREATED,
         JSON.stringify(event)
       );
+      resetCurrentRetryAttempt();
       setSnackbarState(false);
     },
     connectionDestroyed: (event: string) => {
@@ -2482,11 +2567,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         WebEngageEventName.PATIENT_SESSION_DISCONNECTED,
         JSON.stringify(event)
       );
+      endVoipCall();
       eventsAfterConnectionDestroyed();
     },
     sessionReconnected: (event: string) => {
       openTokWebEngageEvents(WebEngageEventName.PATIENT_SESSION_RECONNECTED, JSON.stringify(event));
       setSnackbarState(false);
+      resetCurrentRetryAttempt();
       callToastStatus.current = 'Reconnected';
       callStatus.current = 'Connected';
       subscriberConnected.current = true;
@@ -2500,6 +2587,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         WebEngageEventName.PATIENT_SESSION_RECONNECTING,
         JSON.stringify(event)
       );
+      isCallReconnecting.current = true;
       callStatus.current = 'Reconnecting...';
       callToastStatus.current = 'Reconnecting Call...';
       setSessionReconnectMsg();
@@ -2522,7 +2610,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         WebEngageEventName.PATIENT_SESSION_STREAM_DESTROYED,
         JSON.stringify(event)
       );
-      eventsAfterConnectionDestroyed();
     },
     streamPropertyChanged: (event: OptntokChangeProp) => {
       callEndWebengageEvent('Network');
@@ -2551,6 +2638,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setCallMinimize(false);
       AsyncStorage.setItem('callDisconnected', 'true');
     },
+  };
+
+  const resetCurrentRetryAttempt = () => {
+    isCallReconnecting.current = false;
+    currentCallRetryAttempt.current = 1;
   };
 
   const callEndWebengageEvent = (
@@ -2590,6 +2682,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setChatReceived(false);
       setCallerAudio(true);
       setCallerVideo(true);
+      if (isCallReconnecting.current) {
+        networkCheckInterval.push(
+          BackgroundTimer.setInterval(() => {
+            checkNetworkStatus();
+          }, 5000)
+        );
+      }
     }, 2000);
   };
 
@@ -2654,6 +2753,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       thirtySecondTimer && clearTimeout(thirtySecondTimer);
       timerId && BackgroundTimer.clearInterval(timerId);
       intervalId && BackgroundTimer.clearInterval(intervalId);
+      clearNetworkCheckInterval();
       abondmentStarted = false;
       stopJoinTimer();
       updateNumberOfParticipants(USER_STATUS.LEAVING);
@@ -3232,6 +3332,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         message.message.message === 'Audio call ended' ||
         message.message.message === 'Video call ended'
       ) {
+        resetCurrentRetryAttempt();
         setTimeout(() => {
           setCallMinimize(false);
           AsyncStorage.setItem('callDisconnected', 'true');
@@ -3292,6 +3393,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setDoctorJoinedChat && setDoctorJoinedChat(false);
         setDoctorJoined(false);
       } else if (message.message.message === endCallMsg) {
+        resetCurrentRetryAttempt();
         callStatus.current = disconnecting;
         callToastStatus.current = '';
         subscriberConnected.current = false;
@@ -5780,33 +5882,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               isCamera2Capable: true, // Android only - default is false
             }}
           >
-            <OTPublisher
-              style={
-                !showVideo
-                  ? {}
-                  : !downgradeToAudio
-                  ? publisherStyles
-                  : {
-                      position: 'absolute',
-                      top: 44,
-                      right: 20,
-                      width: 1,
-                      height: 1,
-                      zIndex: 1000,
-                    }
-              }
-              properties={{
-                cameraPosition: cameraPosition,
-                publishVideo: !downgradeToAudio ? showVideo : false,
-                publishAudio: isPublishAudio,
-                audioVolume: 100,
-                name: g(currentPatient, 'firstName') || 'patient',
-                resolution: '640x480', // setting this resolution to avoid over heating of device
-                audioBitrate: 30000,
-                frameRate: 15,
-              }}
-              eventHandlers={publisherEventHandlers}
-            />
+            {renderOTPublisher()}
             <OTSubscriber
               style={
                 showDoctorProfile
@@ -5827,53 +5903,67 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
             />
           </OTSession>
-
-          {!PipView && (
-            <>
-              <View
-                style={{
-                  position: 'absolute',
-                  top: isIphoneX() ? 24 : 0,
-                  left: 0,
-                  width: width,
-                  height: 24,
-                  backgroundColor: 'transparent',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 1000,
-                }}
-              >
-                <Text style={{ color: 'transparent', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
-                  Time Left {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
-                  {seconds.toString().length < 2 ? '0' + seconds : seconds}
-                </Text>
-              </View>
-              {!subscriberConnected.current && (
-                <Text
-                  numberOfLines={1}
-                  style={[styles.connectingDoctorName, { marginTop: isIphoneX() ? 64 : 44 }]}
-                >
-                  {doctorName}
-                </Text>
-              )}
-            </>
-          )}
-          {!isPublishAudio && showVideo && renderShowNoAudioView()}
-          {subscriberConnected.current && renderSubscriberConnectedInfo()}
-
-          {showDoctorProfile &&
-            !subscriberConnected.current &&
-            !patientJoinedCall.current &&
-            renderTextConnecting()}
-          {!subscriberConnected.current || isPaused !== '' || callToastStatus.current
-            ? renderToastMessages()
-            : null}
-          {!showVideo && renderDisableVideoSubscriber()}
-          {showDoctorProfile && renderNoSubscriberConnectedThumbnail()}
-          {!PipView && renderChatNotificationIcon()}
-          {!PipView && renderBottomButtons()}
+          {callingScreenUI()}
         </View>
       </View>
+    );
+  };
+
+  const callingScreenUI = () => {
+    return (
+      <>
+        {!PipView && (
+          <>
+            <View style={[styles.callingView, { top: isIphoneX() ? 24 : 0 }]}>
+              <Text style={{ color: 'transparent', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
+                Time Left {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
+                {seconds.toString().length < 2 ? '0' + seconds : seconds}
+              </Text>
+            </View>
+            {!subscriberConnected.current && (
+              <Text
+                numberOfLines={1}
+                style={[styles.connectingDoctorName, { marginTop: isIphoneX() ? 64 : 44 }]}
+              >
+                {doctorName}
+              </Text>
+            )}
+          </>
+        )}
+        {!isPublishAudio && showVideo && renderShowNoAudioView()}
+        {subscriberConnected.current && renderSubscriberConnectedInfo()}
+
+        {showDoctorProfile &&
+          !subscriberConnected.current &&
+          !patientJoinedCall.current &&
+          renderTextConnecting()}
+        {!subscriberConnected.current || isPaused !== '' || callToastStatus.current
+          ? renderToastMessages()
+          : null}
+        {!showVideo && renderDisableVideoSubscriber()}
+        {showDoctorProfile && renderNoSubscriberConnectedThumbnail()}
+        {!PipView && renderChatNotificationIcon()}
+        {!PipView && renderBottomButtons()}
+      </>
+    );
+  };
+
+  const renderOTPublisher = () => {
+    return (
+      <OTPublisher
+        style={!showVideo ? {} : !downgradeToAudio ? publisherStyles : styles.publisherStyles}
+        properties={{
+          cameraPosition: cameraPosition,
+          publishVideo: !downgradeToAudio ? showVideo : false,
+          publishAudio: isPublishAudio,
+          audioVolume: 100,
+          name: g(currentPatient, 'firstName') || 'patient',
+          resolution: '640x480', // setting this resolution to avoid over heating of device
+          audioBitrate: 30000,
+          frameRate: 15,
+        }}
+        eventHandlers={publisherEventHandlers}
+      />
     );
   };
 
@@ -6129,6 +6219,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             callStatus.current = disconnecting;
             callToastStatus.current = 'You Disconnected the call';
             isErrorToast.current = true;
+            setTimeout(() => {
+              hideCallUI();
+            }, 2000);
             if (isAudio.current) {
               handleEndAudioCall();
             } else {
@@ -6161,14 +6254,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   }, [callTimer]);
 
-  const handleEndCall = () => {
+  const handleEndCall = (playSound: boolean = true) => {
     APICallAgain(false);
+    resetCurrentRetryAttempt();
     setTimeout(() => {
       makeUpdateAppointmentCall.current = false;
       setCallMinimize(false);
       AsyncStorage.setItem('callDisconnected', 'true');
       stopSound();
-      playDisconnectSound();
+      playSound && playDisconnectSound();
       setIsCall(false);
       setIsPublishAudio(true);
       setShowVideo(true);
@@ -6209,14 +6303,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }, 2000);
   };
 
-  const handleEndAudioCall = () => {
+  const handleEndAudioCall = (playSound: boolean = true) => {
     APICallAgain(false);
+    resetCurrentRetryAttempt();
     setTimeout(() => {
       makeUpdateAppointmentCall.current = false;
       setCallMinimize(false);
       AsyncStorage.setItem('callDisconnected', 'true');
       stopSound();
-      playDisconnectSound();
+      playSound && playDisconnectSound();
       setIsAudioCall(false);
       stopTimer();
       setHideStatusBar(false);
@@ -6818,6 +6913,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const renderReconnectingView = () => {
+    return (
+      <View style={[talkStyles, { zIndex: 1001 }]}>
+        <View style={{ flex: 1, flexDirection: 'row' }}>{callingScreenUI()}</View>
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
       <StatusBar hidden={hideStatusBar} />
@@ -7248,6 +7351,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         />
       )}
       {(isCall || isAudioCall) && VideoCall()}
+      {isCallReconnecting.current && renderReconnectingView()}
       {/* {isAudioCall && AudioCall()} */}
       {transferAccept && (
         <BottomPopUp

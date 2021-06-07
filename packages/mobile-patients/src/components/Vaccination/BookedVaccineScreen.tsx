@@ -250,8 +250,16 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
       }
 
       allCurrentPatients?.forEach((currentPatient: any) => {
-        if (currentPatient?.uhid == bookingItem?.patient_info?.uhid) {
-          setSelfBookingDone(true);
+        if (
+          currentPatient?.uhid == bookingItem?.patient_info?.uhid &&
+          currentPatient?.relation == 'ME'
+        ) {
+          if (
+            bookingItem?.status == BOOKING_STATUS.BOOKED ||
+            bookingItem?.status == BOOKING_STATUS.VERIFIED
+          ) {
+            setSelfBookingDone(true);
+          }
         }
       });
     });
@@ -324,28 +332,6 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
           }
         })
         .catch((error) => {});
-  };
-
-  const fetchVaccinationLimit = () => {
-    client
-      .query<GetBenefitAvailabilityInfoByCMSIdentifier>({
-        query: GET_VACCINE_BOOKING_LIMIT,
-        variables: {
-          user_subscription_id: subscriptionId || '',
-          cms_identifier: cmsIdentifier || '',
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((response) => {
-        setRemainingVaccineSlots(
-          response?.data?.GetBenefitAvailabilityInfoByCMSIdentifier?.response?.remaining
-        );
-
-        setTotalVaccineSlots(
-          response?.data?.GetBenefitAvailabilityInfoByCMSIdentifier?.response?.total
-        );
-      })
-      .catch((error) => {});
   };
 
   const showLoadingAlert = () => {
@@ -473,6 +459,7 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
                   subscriptionId: subscriptionId,
                   subscriptionInclusionId: subscriptionInclusionId,
                   excludeProfileListIds: excludeProfileListIds,
+                  remainingVaccineSlots: remainingVaccineSlots,
                 });
               } catch (e) {}
             }}
@@ -499,6 +486,7 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
                 subscriptionId: subscriptionId,
                 subscriptionInclusionId: subscriptionInclusionId,
                 excludeProfileListIds: excludeProfileListIds,
+                remainingVaccineSlots: remainingVaccineSlots,
               });
             } catch (e) {}
           }}
