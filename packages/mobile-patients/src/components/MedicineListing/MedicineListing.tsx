@@ -141,7 +141,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       }
     } catch (error) {
       CommonBugFender('getCategoryIdByName', error);
-      navigation.navigate('MEDICINES', { comingFrom: 'deeplink' });
+      renderAlert();
     }
   };
 
