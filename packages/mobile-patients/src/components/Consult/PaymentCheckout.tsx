@@ -12,7 +12,7 @@ import {
   Platform,
 } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { DoctorCheckoutCard } from '@aph/mobile-patients/src/components/ui/DoctorCheckoutCard';
 import { CareMembershipAdded } from '@aph/mobile-patients/src/components/ui/CareMembershipAdded';
@@ -31,7 +31,10 @@ import {
   postWEGWhatsAppEvent,
   dataSavedUserID,
   postAppsFlyerEvent,
+  apiCallEnums,
+  navigateToHome,
   getUserType,
+  getPackageIds,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
@@ -40,6 +43,8 @@ import {
   PLAN,
   OrderCreate,
   OrderVerticals,
+  PAYMENT_MODE,
+  OrderInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   calculateCircleDoctorPricing,
@@ -81,6 +86,7 @@ import {
 import {
   BOOK_APPOINTMENT,
   BOOK_APPOINTMENT_WITH_SUBSCRIPTION,
+  CREATE_ORDER,
   CREATE_USER_SUBSCRIPTION,
   CREATE_INTERNAL_ORDER,
   MAKE_APPOINTMENT_PAYMENT,
@@ -113,6 +119,11 @@ import {
   PaymentStatus,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import {
+  createOrder,
+  createOrderVariables,
+} from '@aph/mobile-patients/src/graphql/types/createOrder';
+import { saveConsultationLocation } from '@aph/mobile-patients/src/helpers/clientCalls';
 
 interface PaymentCheckoutProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
@@ -130,12 +141,13 @@ interface PaymentCheckoutProps extends NavigationScreenProps {
 }
 export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const [coupon, setCoupon] = useState<string>('');
+  const [successMessage, setSuccessMessage] = useState<string>('');
   const {
     locationDetails,
-    hdfcPlanId,
-    circlePlanId,
-    hdfcStatus,
-    circleStatus,
+    apisToCall,
+    homeScreenParamsOnPop,
+    activeUserSubscriptions,
+    setauthToken,
   } = useAppCommonData();
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
@@ -160,9 +172,11 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const [notificationAlert, setNotificationAlert] = useState(false);
   const scrollviewRef = useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
-  const [showErrorSelect, setShowErrorSelect] = useState<boolean>(false);
+  const [showErrorSelect, setShowErrorSelect] = useState<boolean>(true); // default needs to be true to show select patient from the list
   const [isSelectedOnce, setIsSelectedOnce] = useState<boolean>(false);
   const [gender, setGender] = useState<string>(currentPatient?.gender);
+  const [patientListYPos, setPatientListYPos] = useState<number>(0);
+  const [patientProfiles, setPatientProfiles] = useState<any>([]);
 
   const circleDoctorDetails = calculateCircleDoctorPricing(
     doctor,
@@ -239,6 +253,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   }, [circlePlanSelected]);
 
   useEffect(() => {
+    setPatientProfiles(moveSelectedToTop());
     fetchUserSpecificCoupon();
     initiateHyperSDK();
   }, []);
@@ -246,7 +261,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const initiateHyperSDK = async () => {
     try {
       const isInitiated: boolean = await isSDKInitialised();
-      !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id);
+      const merchantId = AppConfig.Configuration.merchantId;
+      !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id, merchantId);
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
@@ -310,6 +326,20 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     return client.mutate<createOrderInternal, createOrderInternalVariables>({
       mutation: CREATE_INTERNAL_ORDER,
       variables: { order: orderInput },
+    });
+  };
+
+  const createJusPayOrder = (paymentId: string) => {
+    const orderInput: OrderInput = {
+      payment_order_id: paymentId,
+      payment_mode: PAYMENT_MODE.PREPAID,
+      is_mobile_sdk: true,
+      return_url: AppConfig.Configuration.returnUrl,
+    };
+    return client.mutate<createOrder, createOrderVariables>({
+      mutation: CREATE_ORDER,
+      variables: { order_input: orderInput },
+      fetchPolicy: 'no-cache',
     });
   };
 
@@ -411,7 +441,13 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const renderPatient = () => {
     return (
-      <View style={styles.subViewPopup}>
+      <View
+        onLayout={(event) => {
+          const layout = event.nativeEvent.layout;
+          setPatientListYPos(layout?.y);
+        }}
+        style={styles.subViewPopup}
+      >
         <View style={{ paddingHorizontal: 6 }}>
           <Text style={styles.priceBreakupTitle}>PATIENT DETAILS</Text>
         </View>
@@ -432,7 +468,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const renderCTAs = () => (
     <View style={styles.aphAlertCtaViewStyle}>
-      {moveSelectedToTop()?.map((item: any, index: any, array: any) =>
+      {patientProfiles?.map((item: any, index: any, array: any) =>
         item.firstName !== '+ADD MEMBER' ? (
           <TouchableOpacity
             onPress={() => {
@@ -463,7 +499,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
                   : styles.ctaOrangeText2Style
               }
             >
-              {Math.round(moment().diff(item.dateOfBirth || 0, 'years', true))} ,{item.gender}
+              {Math.round(moment().diff(item.dateOfBirth || 0, 'years', true))}, {item.gender}
             </Text>
           </TouchableOpacity>
         ) : null
@@ -495,6 +531,9 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     finalAppointmentInput['patientId'] = onAdd?.id;
     setIsSelectedOnce(onAdd?.added);
     setShowErrorSelect(!onAdd?.added);
+    let patientData = patientProfiles;
+    patientData?.unshift(onAdd?.profileData);
+    setPatientProfiles(patientData);
   };
 
   const onSelectedProfile = (item: any) => {
@@ -559,9 +598,10 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
             Alert.alert('Uh oh.. :(', 'Please select a slot to apply coupon.');
             return;
           }
-          props.navigation.navigate(AppRoutes.ApplyConsultCoupon, {
+          props.navigation.navigate(AppRoutes.ViewCoupons, {
             coupon: coupon,
             onApplyCoupon: onApplyCoupon,
+            movedFrom: 'consult',
           });
         }}
         showRemoveBtn={coupon ? true : false}
@@ -574,14 +614,18 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     setCoupon('');
     setCouponDiscountFees(0);
     setDoctorDiscountedFees(0);
+    setSuccessMessage('');
   };
 
   const renderCouponSavingsView = () => {
     return (
       <View style={styles.couponSavingView}>
-        <Text style={styles.amountSavedText}>
-          {string.common.savingsOnBill.replace('{amount}', `${couponDiscountFees}`)}
-        </Text>
+        {!!successMessage && <Text style={styles.successMessageStyle}>{successMessage}</Text>}
+        <View style={styles.couponDiscountView}>
+          <Text style={styles.amountSavedText}>
+            {string.common.savingsOnBill.replace('{amount}', `${couponDiscountFees}`)}
+          </Text>
+        </View>
       </View>
     );
   };
@@ -597,14 +641,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           ? onlineConsultSlashedPrice
           : physicalConsultSlashedPrice
         : Number(price);
-
-    let packageId: string[] = [];
-    if (hdfcSubscriptionId && hdfcStatus === 'active') {
-      packageId.push(`HDFC:${hdfcPlanId}`);
-    }
-    if (circleSubscriptionId && circleStatus === 'active') {
-      packageId.push(`APOLLO:${circlePlanId}`);
-    }
     const timeSlot =
       tabs[0].title === selectedTab &&
       isOnlineConsult &&
@@ -618,7 +654,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       mobile: g(currentPatient, 'mobileNumber'),
       billAmount: billAmount,
       coupon: coupon,
-      // paymentType: 'CASH', //CASH,NetBanking, CARD, COD
       pinCode: locationDetails?.pincode,
       consultations: [
         {
@@ -631,7 +666,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           rescheduling: false,
         },
       ],
-      packageIds: packageId,
+      packageIds: activeUserSubscriptions ? getPackageIds(activeUserSubscriptions) : [],
       email: g(currentPatient, 'emailAddress'),
     };
     return new Promise((res, rej) => {
@@ -643,6 +678,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           if (resp?.data?.errorCode == 0) {
             if (resp?.data?.response?.valid) {
               const revisedAmount = billAmount - Number(g(resp, 'data', 'response', 'discount')!);
+              const successMessage = resp?.data?.response?.successMessage || '';
+              setSuccessMessage(successMessage);
               setCoupon(coupon);
               setCouponDiscountFees(Number(g(resp, 'data', 'response', 'discount')!));
               setDoctorDiscountedFees(revisedAmount);
@@ -675,7 +712,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         })
         .catch((error) => {
           CommonBugFender('validatingConsultCoupon', error);
-          rej();
+          rej('Sorry, unable to validate coupon right now.');
           renderErrorPopup(string.common.tryAgainLater);
         });
     });
@@ -716,6 +753,11 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   };
 
   const onPressPay = () => {
+    scrollviewRef.current.scrollTo({
+      x: 0,
+      y: patientListYPos - 10,
+      animated: true,
+    });
     if (isSelectedOnce) {
       // Pay Button Clicked	event
       postWebEngagePayButtonClickedEvent();
@@ -741,7 +783,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const verifyCoupon = async (fromPayment?: boolean) => {
     if (coupon) {
       try {
-        // await validateAndApplyCoupon(coupon, isOnlineConsult, true);
         setLoading!(true);
         await validateCoupon(coupon, true);
         !fromPayment && setLoading!(false);
@@ -779,7 +820,9 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           saveSearchSpeciality(client, doctor?.specialty?.id, patientId);
         }
       } catch (error) {}
+      const data = await createOrderInternal(apptmt?.id!, subscriptionId);
       if (amountToPay == 0) {
+        const res = await createJusPayOrder(data?.data?.createOrderInternal?.payment_order_id!);
         makePayment(
           apptmt?.id!,
           Number(amountToPay),
@@ -787,8 +830,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           `${apptmt?.displayId!}`
         );
       } else {
-        const data = await createOrderInternal(apptmt?.id!, subscriptionId);
         if (data?.data?.createOrderInternal?.success) {
+          setauthToken?.('');
           props.navigation.navigate(AppRoutes.PaymentMethods, {
             paymentId: data?.data?.createOrderInternal?.payment_order_id!,
             amount: amountToPay,
@@ -876,31 +919,23 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         variables: {
           paymentInput: {
             amountPaid: amountPaid,
-            paymentRefId: '',
             paymentStatus: 'TXN_SUCCESS',
             paymentDateTime: paymentDateTime,
             responseCode: coupon,
             responseMessage: 'Coupon applied',
-            bankTxnId: '',
             orderId: id,
           },
         },
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
-        let eventAttributes = getConsultationBookedEventAttributes(
-          paymentDateTime,
-          g(data, 'makeAppointmentPayment', 'appointment', 'id')!
-        );
+        let eventAttributes = getConsultationBookedEventAttributes(paymentDateTime, id);
         eventAttributes['Display ID'] = displayID;
-        eventAttributes['User_Type'] = getUserType(currentPatient);
+        eventAttributes['User_Type'] = getUserType(allCurrentPatients);
         postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
         postAppsFlyerEvent(
           AppsFlyerEventName.CONSULTATION_BOOKED,
-          getConsultationBookedAppsFlyerEventAttributes(
-            g(data, 'makeAppointmentPayment', 'appointment', 'id')!,
-            displayID
-          )
+          getConsultationBookedAppsFlyerEventAttributes(id, displayID)
         );
         setLoading!(false);
         if (!currentPatient?.isConsulted) getPatientApiCall();
@@ -929,23 +964,20 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           if (appointmentData) {
             try {
               if (appointmentData?.[0]?.doctorInfo !== null) {
-                props.navigation.dispatch(
-                  StackActions.reset({
-                    index: 0,
-                    key: null,
-                    actions: [
-                      NavigationActions.navigate({
-                        routeName: AppRoutes.ConsultRoom,
-                        params: {
-                          isFreeConsult: true,
-                          doctorName: doctorName,
-                          appointmentData: appointmentData[0],
-                          skipAutoQuestions: doctor?.skipAutoQuestions,
-                        },
-                      }),
-                    ],
-                  })
-                );
+                // use apiCallsEnum values here in order to make that api call in home screen
+                apisToCall.current = [
+                  apiCallEnums.patientAppointments,
+                  apiCallEnums.patientAppointmentsCount,
+                ];
+                const params = {
+                  isFreeConsult: true,
+                  doctorName: doctorName,
+                  appointmentData: appointmentData[0],
+                  skipAutoQuestions: doctor?.skipAutoQuestions,
+                };
+                homeScreenParamsOnPop.current = params;
+                locationDetails && saveConsultationLocation(client, appointmentId, locationDetails);
+                navigateToHome(props.navigation, params);
               }
             } catch (error) {}
           }
@@ -972,6 +1004,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       displayId: displayId,
       'coupon applied': coupon ? true : false,
       'Circle discount': circleDiscount,
+      User_Type: getUserType(allCurrentPatients),
     };
     return eventAttributes;
   };
@@ -1014,7 +1047,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const getConsultationBookedEventAttributes = (time: string, id: string) => {
     const localTimeSlot = moment(new Date(time));
     let date = new Date(time);
-    // date = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
     const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
         return item.facility.facilityType === 'HOSPITAL';
@@ -1024,7 +1056,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       name: g(doctor, 'fullName')!,
       specialisation: g(doctor, 'specialty', 'name')!,
       category: g(doctor, 'doctorType')!, // send doctorType
-      // time: localTimeSlot.format('DD-MM-YYY, hh:mm A'),
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
@@ -1052,7 +1083,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       af_currency: 'INR',
       'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
       'Circle discount': circleDiscount,
-      User_Type: getUserType(currentPatient),
+      User_Type: getUserType(allCurrentPatients),
     };
     return eventAttributes;
   };
@@ -1066,9 +1097,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         'APPOINTMENTS_CONSULTED_WITH_DOCTOR_BEFORE',
         JSON.stringify([...appointmentIds, appointmentId])
       );
-    } catch (error) {
-      console.log({ error });
-    }
+    } catch (error) {}
   };
 
   const whatsappAPICalled = () => {
@@ -1109,8 +1138,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       'Doctor City': g(doctor, 'city')!,
       'Type of Doctor': g(doctor, 'doctorType')!,
       'Doctor Specialty': g(doctor, 'specialty', 'name')!,
-      // 'Appointment Date': localTimeSlot.format('DD-MM-YYYY'),
-      // 'Appointment Time': localTimeSlot.format('hh:mm A'),
       'Actual Price': finalAppointmentInput?.actualAmount,
       'Discount used ?': !!coupon,
       'Discount coupon': coupon,
@@ -1134,7 +1161,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         doctorClinics?.length > 0 && doctor?.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics?.[0].facility?.city}`
           : '',
-      User_Type: getUserType(currentPatient),
+      User_Type: getUserType(allCurrentPatients),
     };
     postWebEngageEvent(WebEngageEventName.PAY_BUTTON_CLICKED, eventAttributes);
     postFirebaseEvent(FirebaseEventName.PAY_BUTTON_CLICKED, eventAttributes);
@@ -1230,10 +1257,19 @@ const styles = StyleSheet.create({
   },
   couponSavingView: {
     marginTop: 15,
+    borderTopWidth: 0.5,
+    borderColor: theme.colors.BORDER_BOTTOM_COLOR,
+    borderRadius: 3,
+    paddingVertical: 7,
+    justifyContent: 'center',
+    width: '100%',
+  },
+  couponDiscountView: {
+    marginTop: 5,
     borderWidth: 1,
     borderColor: theme.colors.SEARCH_UNDERLINE_COLOR,
     borderRadius: 3,
-    height: 32,
+    paddingVertical: 7,
     backgroundColor: 'rgba(0, 179, 142, 0.07)',
     justifyContent: 'center',
     width: '100%',
@@ -1322,9 +1358,9 @@ const styles = StyleSheet.create({
   },
   errorSelectMessage: {
     textAlign: 'center',
-    ...theme.viewStyles.text('B', 12, '#E31E24', 1, 20),
-    marginHorizontal: 5,
+    ...theme.viewStyles.text('B', 14, '#E31E24', 1, 20),
     marginBottom: 5,
+    width: '100%',
   },
   textViewStyle: {
     marginTop: 8,
@@ -1367,4 +1403,5 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(17),
     lineHeight: 24,
   },
+  successMessageStyle: theme.viewStyles.text('R', 16, theme.colors.SEARCH_UNDERLINE_COLOR, 1, 27),
 });

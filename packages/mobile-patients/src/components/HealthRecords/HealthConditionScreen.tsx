@@ -47,6 +47,7 @@ import {
   getPhrHighlightText,
   phrSearchWebEngageEvents,
   postWebEngageIfNewSession,
+  removeObjectProperty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -78,6 +79,7 @@ import { GET_PRISM_AUTH_TOKEN } from '@aph/mobile-patients/src/graphql/profiles'
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import moment from 'moment';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import ListEmptyComponent from '@aph/mobile-patients/src/components/HealthRecords/Components/ListEmptyComponent';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -192,6 +194,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
   const [prismAuthToken, setPrismAuthToken] = useState<string>(
     props.navigation?.getParam('authToken') || ''
   );
+  const [searchQuery, setSearchQuery] = useState({});
   const { phrSession, setPhrSession } = useAppCommonData();
 
   useEffect(() => {
@@ -261,8 +264,6 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
       })
       .catch((e) => {
         CommonBugFender('HealthConditionScreen_GET_PRISM_AUTH_TOKEN', e);
-        const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while fetching GET_PRISM_AUTH_TOKEN', error);
       });
   };
 
@@ -317,7 +318,6 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
       })
       .catch((error) => {
         CommonBugFender('HealthConditionScreen_searchPHRApiWithAuthToken', error);
-        console.log('searchPHRApiWithAuthToken Error', error);
         getAuthToken();
         setSearchLoading(false);
       });
@@ -333,6 +333,12 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
       }
       setSearchLoading(true);
       const search = _.debounce(onSearchHealthRecords, 500);
+      setSearchQuery((prevSearch: any) => {
+        if (prevSearch.cancel) {
+          prevSearch.cancel();
+        }
+        return search;
+      });
       search(value);
     }
   };
@@ -410,7 +416,6 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         CommonBugFender('HealthConditionScreen_getPatientPrismMedicalRecordsApi', error);
         setShowSpinner(false);
         setApiError(true);
-        console.log('error getPatientPrismMedicalRecordsApi', error);
         currentPatient && handleGraphQlError(error);
       });
   };
@@ -459,12 +464,14 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
   };
 
   const postWebEngageEventsOnRecordPress = (headerTitle: string, selectedItem: any) => {
+    let eventInputData = {};
     switch (headerTitle) {
       case HEALTH_CONDITIONS_TITLE.ALLERGY:
+        eventInputData = removeObjectProperty(selectedItem, 'attachmentList');
         postWebEngageIfNewSession(
           'Allergy',
           currentPatient,
-          selectedItem,
+          eventInputData,
           phrSession,
           setPhrSession
         );
@@ -488,19 +495,21 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         );
         break;
       case HEALTH_CONDITIONS_TITLE.MEDICAL_CONDITION:
+        eventInputData = removeObjectProperty(selectedItem, 'medicationFiles');
         postWebEngageIfNewSession(
           'MedicalCondition',
           currentPatient,
-          selectedItem,
+          eventInputData,
           phrSession,
           setPhrSession
         );
         break;
       case HEALTH_CONDITIONS_TITLE.FAMILY_HISTORY:
+        eventInputData = removeObjectProperty(selectedItem, 'familyHistoryFiles');
         postWebEngageIfNewSession(
           'Family History',
           currentPatient,
-          selectedItem,
+          eventInputData,
           phrSession,
           setPhrSession
         );
@@ -533,11 +542,12 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
     selectedItem: any
   ) => {
     if (recordType === MedicalRecordType.ALLERGY) {
+      const eventInputData = removeObjectProperty(selectedItem, 'attachmentList');
       postWebEngagePHR(
         currentPatient,
         WebEngageEventName.PHR_DELETE_ALLERGY,
         'Allergy',
-        selectedItem
+        eventInputData
       );
     } else if (recordType === MedicalRecordType.MEDICATION) {
       postWebEngagePHR(
@@ -554,18 +564,20 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         selectedItem
       );
     } else if (recordType === MedicalRecordType.MEDICALCONDITION) {
+      const eventInputData = removeObjectProperty(selectedItem, 'medicationFiles');
       postWebEngagePHR(
         currentPatient,
         WebEngageEventName.PHR_DELETE_MEDICAL_CONDITION,
         'Medical Condition',
-        selectedItem
+        eventInputData
       );
     } else if (recordType === MedicalRecordType.FAMILY_HISTORY) {
+      const eventInputData = removeObjectProperty(selectedItem, 'familyHistoryFiles');
       postWebEngagePHR(
         currentPatient,
         WebEngageEventName.PHR_DELETE_FAMILY_HISTORY,
         'Family History',
-        selectedItem
+        eventInputData
       );
     }
   };
@@ -686,14 +698,6 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
     );
   };
 
-  const emptyListView = () => {
-    return apiError ? (
-      <PhrNoDataComponent noDataText={string.common.phr_api_error_text} phrErrorIcon />
-    ) : (
-      <PhrNoDataComponent />
-    );
-  };
-
   const renderHealthCondtionsData = () => {
     return (
       <SectionList
@@ -702,7 +706,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 12, paddingHorizontal: 20 }}
         sections={localHealthRecordData || []}
         renderItem={({ item, index }) => renderHealthConditionItems(item, index)}
-        ListEmptyComponent={emptyListView}
+        ListEmptyComponent={ListEmptyComponent.getEmptyListComponent(showSpinner, apiError)}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
       />
     );

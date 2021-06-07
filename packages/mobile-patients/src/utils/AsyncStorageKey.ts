@@ -7,3 +7,5 @@ export const SKIP_LOCATION_PROMPT = 'SKIP_LOCATION_PROMPT';
  * so we are using this async key to store patient profile and fill details on the signup page.
  */
 export const LOGIN_PROFILE = 'LOGIN_PROFILE';
+
+export const HEALTH_CREDITS = 'HEALTH_CREDITS';

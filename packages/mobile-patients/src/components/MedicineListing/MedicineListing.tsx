@@ -25,12 +25,12 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, SafeAreaView, StyleSheet, Text } from 'react-native';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { ActivityIndicator, SafeAreaView, StyleSheet, Text, BackHandler } from 'react-native';
+import { NavigationScreenProps } from 'react-navigation';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { isProductInStock } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AddedToCartToast } from '@aph/mobile-patients/src/components/ui/AddedToCartToast';
+import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export type SortByOption = {
   id: string;
@@ -109,7 +109,13 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         CategoryName: pageTitle.toUpperCase(),
       });
     }
+    BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
+    };
   }, []);
+
+  const onPressHardwareBack = () => navigation.goBack();
 
   const searchProducts = async (
     searchText: string,
@@ -142,6 +148,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         MedicineListingEvents.searchEnterClick({
           keyword: searchText,
           numberofresults: data.product_count || 0,
+          source: movedFrom || '',
         });
       }
       MedicineListingEvents.tagalysSearch(currentPatient?.id, {
@@ -198,13 +205,10 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     productsApiResponse: MedicineProductsResponse
   ) => {
     const { products } = productsApiResponse;
-    const filteredProducts = products
-      ? products.filter((product: MedicineProduct) => isProductInStock(product))
-      : [];
     if (pageId == 1) {
-      setProducts(filteredProducts || []);
+      setProducts(products || []);
     } else {
-      setProducts([...existingProducts, ...(filteredProducts || [])]);
+      setProducts([...existingProducts, ...(products || [])]);
     }
   };
 
@@ -242,11 +246,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     const homeBreadCrumb: MedicineListingSectionsProps['breadCrumb'][0] = {
       title: 'Home',
       onPress: () => {
-        const resetAction = StackActions.reset({
-          index: 0,
-          actions: [NavigationActions.navigate({ routeName: AppRoutes.Medicine })],
-        });
-        navigation.dispatch(resetAction);
+        navigateToScreenWithEmptyStack(navigation, AppRoutes.Medicine);
       },
     };
 

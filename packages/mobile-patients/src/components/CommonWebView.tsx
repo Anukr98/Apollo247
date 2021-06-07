@@ -92,7 +92,8 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   const initiateHyperSDK = async () => {
     try {
       const isInitiated: boolean = await isSDKInitialised();
-      !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id);
+      const merchantId = AppConfig.Configuration.pharmaMerchantId;
+      !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id, merchantId);
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }

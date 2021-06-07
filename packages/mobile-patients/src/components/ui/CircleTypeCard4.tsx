@@ -1,23 +1,8 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, Image } from 'react-native';
+import React from 'react';
+import { View, StyleSheet, Text, Image } from 'react-native';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-
-import string from '@aph/mobile-patients/src/strings/strings.json';
-
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import moment from 'moment';
-import {
-  WebEngageEvents,
-  WebEngageEventName,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NavigationScreenProps } from 'react-navigation';
-import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
-import { timeDiffFromNow } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   planContainer: {
@@ -60,37 +45,8 @@ export interface CircleTypeCard4Props extends NavigationScreenProps {
   credits?: string;
 }
 
-type stepsObject = {
-  image: Element;
-  description: string;
-  textColor?: string;
-};
-
 export const CircleTypeCard4: React.FC<CircleTypeCard4Props> = (props) => {
-  const { onButtonPress, savings, expiry, credits } = props;
-
-  const { currentPatient } = useAllCurrentPatients();
-  const { showCircleSubscribed } = useShoppingCart();
-
-  const renderCard = (
-    headingImage: Element,
-    heading: string,
-    question: string,
-    time: string | null,
-    steps: stepsObject[]
-  ) => {
-    const timeDiff: Number = timeDiffFromNow(time || '');
-    const current = moment(new Date());
-    const isTomorrow = moment(time).isAfter(
-      current
-        .add(1, 'd')
-        .startOf('d')
-        .set({
-          hour: moment('06:00', 'HH:mm').get('hour'),
-          minute: moment('06:00', 'HH:mm').get('minute'),
-        })
-    );
-  };
+  const { onButtonPress, credits } = props;
 
   return (
     <View>
@@ -98,7 +54,7 @@ export const CircleTypeCard4: React.FC<CircleTypeCard4Props> = (props) => {
         <View style={styles.subPlanOne}>
           <Image
             style={styles.circleLogo}
-            source={require('@aph/mobile-patients/src/components/ui/icons/circleLogo.png')}
+            source={require('@aph/mobile-patients/src/components/ui/icons/circleLogo.webp')}
           />
         </View>
 

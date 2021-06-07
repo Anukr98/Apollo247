@@ -1,22 +1,9 @@
-//
-// Copyright © 2017-Present, Punchh, Inc.
-// All rights reserved.
-//
-'use strict';
-
-import { Dimensions, Platform } from 'react-native';
-import analytics from '@react-native-firebase/analytics';
-import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { AppConfig, AppEnv } from '@aph/mobile-patients/src/strings/AppConfig';
-import { Client } from 'bugsnag-react-native';
 import AsyncStorage from '@react-native-community/async-storage';
-import Bugfender from '@bugfender/rn-bugfender';
+import crashlytics from '@react-native-firebase/crashlytics';
+import { Dimensions, Platform } from 'react-native';
 
+let phoneNumber = '';
 const { height, width } = Dimensions.get('window');
-const bugsnag = new Client();
-const isReleaseOn = AppConfig.APP_ENV == AppEnv.PROD;
-
-Bugfender.init('brmAJ2pHunypOwF6EpcWyOf5mffsl2Ea');
 
 export const isIphone5s = () => height === 568;
 
@@ -32,67 +19,23 @@ export const DeviceHelper = () => {
 
 export const isIos = () => Platform.OS === 'ios';
 
-export const CommonLogEvent = async (stringName: string, parameterName: string) => {
-  if (isReleaseOn) {
-    try {
-      const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
-      analytics().logEvent(stringName, {
-        Button_Action: parameterName,
-        phoneNumber: storedPhoneNumber as string,
-      });
-    } catch (error) {
-      CommonBugFender('DeviceHelper_CommonLogEvent_try', error);
-      aphConsole.log('CommonLogEvent error', error);
-    }
-  }
+export const CommonLogEvent = async (title: string, data?: any) => {
+  try {
+    phoneNumber = phoneNumber || (await AsyncStorage.getItem('phoneNumber')) || '';
+    crashlytics().setUserId(phoneNumber);
+    crashlytics().log(`${title} - ${JSON.stringify(data)}`);
+  } catch (error) {}
 };
 
 export const CommonBugFender = async (stringName: string, errorValue: Error) => {
   try {
-    // const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
-    // bugsnag.notify(errorValue, function(report) {
-    //   report.metadata = {
-    //     stringName: {
-    //       viewSource:
-    //         Platform.OS === 'ios'
-    //           ? DEVICE_TYPE.IOS + ' ' + isEnvironment + ' ' + stringName
-    //           : DEVICE_TYPE.ANDROID + ' ' + isEnvironment + ' ' + stringName,
-    //       errorValue: errorValue as any,
-    //       phoneNumber: storedPhoneNumber as string,
-    //     },
-    //   };
-    // });
-    const phoneNumber = await AsyncStorage.getItem('phoneNumber');
-    const devicePlatform = Platform.OS === 'ios' ? 'iOS' : 'android';
-    const error = JSON.stringify(errorValue);
-    console.log('setBugFenderLog', error);
-    Bugfender.d(`${stringName} ${phoneNumber}`, `${devicePlatform} ${error}`);
-  } catch (error) {
-    aphConsole.log('CommonBugFender error', error);
-  }
+    phoneNumber = phoneNumber || (await AsyncStorage.getItem('phoneNumber')) || '';
+    await crashlytics().setUserId(phoneNumber);
+    await crashlytics().setAttribute('issueId', stringName);
+    await crashlytics().log(stringName);
+    await crashlytics().recordError(errorValue);
+    await crashlytics().setAttribute('issueId', '');
+  } catch (error) {}
 };
 
-export const CommonSetUserBugsnag = (phoneNumber: string) => {
-  try {
-    bugsnag.setUser(phoneNumber, phoneNumber);
-  } catch (error) {
-    aphConsole.log('CommonSetUserBugsnag error', error);
-  }
-};
-
-export const setBugFenderLog = async (stringName: string, errorValue?: any) => {
-  try {
-    const phoneNumber = await AsyncStorage.getItem('phoneNumber');
-    const devicePlatform = Platform.OS === 'ios' ? 'iOS' : 'android';
-    const error = JSON.stringify(errorValue);
-    console.log('setBugFenderLog', error);
-    Bugfender.d(`${stringName} ${phoneNumber}`, `${devicePlatform} ${error}`);
-  } catch (error) {
-    aphConsole.log('setBugFenderLog error', error);
-  }
-};
-
-export const setBugfenderPhoneNumber = async () => {
-  const phoneNumber = await AsyncStorage.getItem('phoneNumber');
-  Bugfender.setDeviceString('PHONE_NUMBER', phoneNumber);
-};
+export const setBugFenderLog = CommonLogEvent;

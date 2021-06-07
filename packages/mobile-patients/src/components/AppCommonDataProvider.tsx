@@ -1,8 +1,6 @@
 import { getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsCites';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-community/async-storage';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getDoctorsBySpecialtyAndFilters } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
 import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../graphql/types/getPatientPersonalizedAppointments';
 import { MedicinePageAPiResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -37,6 +35,33 @@ export interface SubscriptionData {
   coupons: PlanCoupons[];
   isActive: boolean;
   upgradeTransactionValue?: number | null;
+  isCorporate?: boolean;
+  corporateIcon?: string;
+}
+
+export interface CorporateSubscriptionData extends SubscriptionData {
+  corporateName?: string;
+  corporateLogo?: string;
+  bannerImage?: string;
+  packageName?: string;
+  bannerText?: string;
+  packFAQs?: CorporateFaq[];
+  packageBenefitData?: CorporateBenefits[];
+}
+
+export interface CorporateFaq {
+  faqQuestion: string;
+  faqAnswer: string;
+}
+
+export interface CorporateBenefits {
+  benefitName: string;
+  benefitShortDesc: string;
+  benefitIdentifier: string;
+  benefitImage: string;
+  benefitCTALabel: string;
+  benefitCTAType: string;
+  benefitCTAAction: string;
 }
 
 export interface GroupPlan {
@@ -66,6 +91,7 @@ export interface PlanBenefits {
   availableCount: number;
   refreshFrequency: number;
   icon: string | null;
+  cmsIdentifier?: string;
 }
 
 export interface BenefitCtaAction {
@@ -134,8 +160,13 @@ export interface TotalCircleSavings {
   callsUsed: number;
 }
 
-export type PharmaUserStatus = 'NEW' | 'REPEAT' | '';
+export interface UploadPrescriptionOptions {
+  id: string;
+  titile: string;
+  subTitle: string;
+}
 
+export type PharmaUserStatus = 'NEW' | 'REPEAT' | '';
 export type UploadPrescSource = 'Cart' | 'Upload Flow' | 'Re-Upload' | 'Non-cart' | 'Consult Flow';
 
 export interface PharmacyUserTypeEvent {
@@ -155,6 +186,8 @@ export interface AppCommonDataContextProps {
   setTotalCircleSavings: ((items: TotalCircleSavings) => void) | null;
   hdfcUpgradeUserSubscriptions: SubscriptionData[] | [];
   setHdfcUpgradeUserSubscriptions: ((items: SubscriptionData[]) => void) | null;
+  corporateSubscriptions: CorporateSubscriptionData[] | [];
+  setCorporateSubscriptions: ((items: CorporateSubscriptionData[]) => void) | null;
   circleSubscription: CicleSubscriptionData | null;
   setCircleSubscription: ((items: CicleSubscriptionData) => void) | null;
   bannerData: bannerType[] | null;
@@ -214,12 +247,6 @@ export interface AppCommonDataContextProps {
   setisSelected: ((arg0: any[]) => void) | null;
   isUHID: string[];
   setisUHID: ((arg0: string[]) => void) | null;
-  appointmentsPersonalized: getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails[];
-  setAppointmentsPersonalized:
-    | ((
-        items: getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails[]
-      ) => void)
-    | null;
   savePatientDetails: any;
   setSavePatientDetails: ((items: any) => void) | null;
   savePatientDetailsWithHistory: any;
@@ -243,8 +270,22 @@ export interface AppCommonDataContextProps {
   pharmacyUserType: PharmaUserStatus;
   setPharmacyUserType: ((type: PharmaUserStatus) => void) | null;
   pharmacyUserTypeAttribute: PharmacyUserTypeEvent | null;
+  apisToCall: any;
+  homeScreenParamsOnPop: any;
   cartBankOffer: string;
   setCartBankOffer: ((id: string) => void) | null;
+  authToken: string;
+  setauthToken: ((value: string) => void) | null;
+  uploadPrescriptionOptions: UploadPrescriptionOptions[];
+  setUploadPrescriptionOptions: ((prescription: UploadPrescriptionOptions[]) => void) | null;
+  expectCallText: string;
+  setExpectCallText: ((str: string) => void) | null;
+  nonCartTatText: string;
+  setNonCartTatText: ((str: string) => void) | null;
+  nonCartDeliveryText: string;
+  setNonCartDeliveryText: ((str: string) => void) | null;
+  activeUserSubscriptions: any;
+  setActiveUserSubscriptions: ((item: any) => void) | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -256,6 +297,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setTotalCircleSavings: null,
   hdfcUpgradeUserSubscriptions: [],
   setHdfcUpgradeUserSubscriptions: null,
+  corporateSubscriptions: [],
+  setCorporateSubscriptions: null,
   circleSubscription: null,
   setCircleSubscription: null,
   bannerData: null,
@@ -274,8 +317,6 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setMedicinePageAPiResponse: null,
   diagnosticsCities: [],
   setDiagnosticsCities: null,
-  appointmentsPersonalized: [],
-  setAppointmentsPersonalized: null,
   locationForDiagnostics: null,
   diagnosticServiceabilityData: null,
   setDiagnosticServiceabilityData: null,
@@ -336,14 +377,31 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   pharmacyUserType: '',
   setPharmacyUserType: null,
   pharmacyUserTypeAttribute: null,
+  apisToCall: [],
+  homeScreenParamsOnPop: null,
   cartBankOffer: '',
   setCartBankOffer: null,
+  authToken: '',
+  setauthToken: null,
+  uploadPrescriptionOptions: [],
+  setUploadPrescriptionOptions: null,
+  expectCallText: '',
+  setExpectCallText: null,
+  nonCartTatText: '',
+  setNonCartTatText: null,
+  nonCartDeliveryText: '',
+  setNonCartDeliveryText: null,
+  activeUserSubscriptions: null,
+  setActiveUserSubscriptions: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
   const [isCurrentLocationFetched, setCurrentLocationFetched] = useState<
     AppCommonDataContextProps['isCurrentLocationFetched']
   >(false);
+
+  const apisToCall = useRef<AppCommonDataContextProps['apisToCall']>([]);
+  const homeScreenParamsOnPop = useRef<AppCommonDataContextProps['homeScreenParamsOnPop']>([]);
 
   const [locationDetails, _setLocationDetails] = useState<
     AppCommonDataContextProps['locationDetails']
@@ -362,6 +420,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
 
   const [hdfcUpgradeUserSubscriptions, _setHdfcUpgradeUserSubscriptions] = useState<
     AppCommonDataContextProps['hdfcUpgradeUserSubscriptions']
+  >([]);
+
+  const [corporateSubscriptions, _setCorporateSubscriptions] = useState<
+    AppCommonDataContextProps['corporateSubscriptions']
   >([]);
 
   const [circleSubscription, _setCircleSubscription] = useState<
@@ -400,10 +462,6 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [isDiagnosticLocationServiceable, setDiagnosticLocationServiceable] = useState<
     AppCommonDataContextProps['isDiagnosticLocationServiceable']
   >();
-
-  const [appointmentsPersonalized, setAppointmentsPersonalized] = useState<
-    AppCommonDataContextProps['appointmentsPersonalized']
-  >([]);
 
   const [savePatientDetails, setSavePatientDetails] = useState<
     AppCommonDataContextProps['savePatientDetails']
@@ -456,11 +514,11 @@ export const AppCommonDataProvider: React.FC = (props) => {
 
   const [doctorJoinedChat, setDoctorJoinedChat] = useState<boolean>(false);
 
+  const [authToken, setauthToken] = useState<AppCommonDataContextProps['authToken']>('');
+
   const setLocationDetails: AppCommonDataContextProps['setLocationDetails'] = (locationDetails) => {
     _setLocationDetails(locationDetails);
-    AsyncStorage.setItem('locationDetails', JSON.stringify(locationDetails)).catch(() => {
-      console.log('Failed to save location in local storage.');
-    });
+    AsyncStorage.setItem('locationDetails', JSON.stringify(locationDetails)).catch(() => {});
   };
 
   const setHdfcUserSubscriptions: AppCommonDataContextProps['setHdfcUserSubscriptions'] = (
@@ -481,6 +539,12 @@ export const AppCommonDataProvider: React.FC = (props) => {
     _setHdfcUpgradeUserSubscriptions(hdfcUpgradeUserSubscriptions);
   };
 
+  const setCorporateSubscriptions: AppCommonDataContextProps['setCorporateSubscriptions'] = (
+    corporateSubscriptions
+  ) => {
+    _setCorporateSubscriptions(corporateSubscriptions);
+  };
+
   const setCircleSubscription: AppCommonDataContextProps['setCircleSubscription'] = (
     circleSubscription
   ) => {
@@ -498,31 +562,35 @@ export const AppCommonDataProvider: React.FC = (props) => {
     pharmacyLocation
   ) => {
     _setPharmacyLocation(pharmacyLocation);
-    AsyncStorage.setItem('pharmacyLocation', JSON.stringify(pharmacyLocation)).catch(() => {
-      console.log('Failed to save pharmacy location in local storage.');
-    });
+    AsyncStorage.setItem('pharmacyLocation', JSON.stringify(pharmacyLocation)).catch(() => {});
   };
 
   const setDiagnosticLocation: AppCommonDataContextProps['setDiagnosticLocation'] = (
     diagnosticLocation
   ) => {
     _setDiagnosticLocation(diagnosticLocation);
-    AsyncStorage.setItem('diagnosticLocation', JSON.stringify(diagnosticLocation)).catch(() => {
-      console.log('Failed to save diagnostic location in local storage.');
-    });
+    AsyncStorage.setItem('diagnosticLocation', JSON.stringify(diagnosticLocation)).catch(() => {});
   };
 
-  // const setDiagnosticLocationServiceable: AppCommonDataContextProps['setDiagnosticLocationServiceable'] = (
-  //   diagnosticLocation
-  // ) => {
-  //   // _setDiagnosticLocationServiceable(diagnosticLocation);
-  //   AsyncStorage.setItem(
-  //     'diagnosticPinCodeServiceability',
-  //     JSON.stringify(diagnosticLocation)
-  //   ).catch(() => {
-  //     console.log('Failed to save diagnostic pincode serviceablity in local storage.');
-  //   });
-  // };
+  const [uploadPrescriptionOptions, setUploadPrescriptionOptions] = useState<
+    AppCommonDataContextProps['uploadPrescriptionOptions']
+  >([]);
+
+  const [expectCallText, setExpectCallText] = useState<AppCommonDataContextProps['expectCallText']>(
+    ''
+  );
+
+  const [nonCartTatText, setNonCartTatText] = useState<AppCommonDataContextProps['nonCartTatText']>(
+    ''
+  );
+
+  const [nonCartDeliveryText, setNonCartDeliveryText] = useState<
+    AppCommonDataContextProps['nonCartDeliveryText']
+  >('');
+
+  const [activeUserSubscriptions, setActiveUserSubscriptions] = useState<
+    AppCommonDataContextProps['activeUserSubscriptions']
+  >(null);
 
   const [axdcCode, setAxdcCode] = useState<AppCommonDataContextProps['axdcCode']>('');
   const [circlePlanId, setCirclePlanId] = useState<AppCommonDataContextProps['circlePlanId']>('');
@@ -571,10 +639,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
         _setLocationDetails(JSON.parse(location || 'null'));
         _setPharmacyLocation(JSON.parse(pharmacyLocation || 'null'));
         _setDiagnosticLocation(JSON.parse(diagnosticLocation || 'null'));
-        // _setDiagnosticLocationServiceable(JSON.parse(diagnosticPinCodeServiceability || 'null'));
-      } catch (error) {
-        console.log('Failed to get location from local storage.');
-      }
+      } catch (error) {}
     };
     updateLocationFromStorage();
   }, []);
@@ -594,6 +659,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setTotalCircleSavings,
         hdfcUpgradeUserSubscriptions,
         setHdfcUpgradeUserSubscriptions,
+        corporateSubscriptions,
+        setCorporateSubscriptions,
         circleSubscription,
         setCircleSubscription,
         bannerData,
@@ -645,8 +712,6 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setisSelected,
         isUHID,
         setisUHID,
-        appointmentsPersonalized,
-        setAppointmentsPersonalized,
         savePatientDetails,
         setSavePatientDetails,
         doctorJoinedChat,
@@ -670,8 +735,22 @@ export const AppCommonDataProvider: React.FC = (props) => {
         pharmacyUserType,
         setPharmacyUserType,
         pharmacyUserTypeAttribute,
+        apisToCall,
+        homeScreenParamsOnPop,
         cartBankOffer,
         setCartBankOffer,
+        authToken,
+        setauthToken,
+        uploadPrescriptionOptions,
+        setUploadPrescriptionOptions,
+        expectCallText,
+        setExpectCallText,
+        nonCartTatText,
+        setNonCartTatText,
+        nonCartDeliveryText,
+        setNonCartDeliveryText,
+        activeUserSubscriptions,
+        setActiveUserSubscriptions,
       }}
     >
       {props.children}

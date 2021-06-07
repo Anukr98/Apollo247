@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
   Linking,
-  BackHandler,
+  Image,
 } from 'react-native';
 import {
   NavigationScreenProps,
@@ -36,6 +36,9 @@ import {
   CicleSubscriptionData,
   GroupPlan,
   SubscriptionData,
+  CorporateBenefits,
+  CorporateSubscriptionData,
+  CorporateFaq,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   g,
@@ -88,6 +91,7 @@ import { CircleMembershipActivation } from '@aph/mobile-patients/src/components/
 import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
+import { getCorporateMembershipData } from '@aph/mobile-patients/src/helpers/apiCalls';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -194,6 +198,38 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
   },
+  corporatePlanStyle: {
+    backgroundColor: theme.colors.WHITE,
+    padding: 10,
+  },
+  corporateImageStyle: {
+    width: 100,
+    height: 65,
+    resizeMode: 'contain',
+    marginBottom: 7,
+  },
+  corporateBanner: {
+    width: 200,
+    height: 180,
+    resizeMode: 'contain',
+  },
+  benefitsAvailableContainer: {
+    padding: 10,
+    backgroundColor: '#FFFFFF',
+  },
+  subscribeContent: {
+    marginHorizontal: 10,
+    paddingBottom: 20,
+  },
+  flexRow: {
+    flexDirection: 'row',
+  },
+  excalmationIcon: {
+    width: 20,
+    height: 20,
+    resizeMode: 'contain',
+    marginRight: 10,
+  },
 });
 
 export interface MembershipDetailsProps extends NavigationScreenProps {
@@ -202,16 +238,21 @@ export interface MembershipDetailsProps extends NavigationScreenProps {
   source?: string;
   isRenew: boolean;
   isExpired?: boolean;
+  comingFrom?: string;
+  isCorporatePlan?: boolean;
+  planId?: string;
 }
 
 export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
-  const membershipType = props.navigation.getParam('membershipType');
+  const [membershipType, setMembershipType] = useState(props.navigation.getParam('membershipType'));
+  const comingFrom = props.navigation.getParam('comingFrom');
+  const isCorporatePlan = props.navigation.getParam('isCorporatePlan');
+  const [planId, setPlanId] = useState(props.navigation.getParam('planId'));
   const isCirclePlan = membershipType === Circle.planName;
   const source = props.navigation.getParam('source');
   const isExpired = props.navigation.getParam('isExpired');
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const [showCircleActivation, setShowCircleActivation] = useState<boolean>(false);
-
   const {
     hdfcUserSubscriptions,
     circleSubscription,
@@ -222,6 +263,9 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     setCircleSubscription,
     setHdfcUpgradeUserSubscriptions,
     healthCredits,
+    isRenew,
+    corporateSubscriptions,
+    setCorporateSubscriptions,
   } = useAppCommonData();
   const {
     setHdfcPlanName,
@@ -250,7 +294,6 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const areBenefitsAvailable = !!benefits?.length;
   const areCouponsAvailable = !!coupons?.length;
   const [selectedTab, setSelectedTab] = useState<string>('Benefits Available');
-  const [isActiveCouponVisible, setIsActiveCouponVisible] = useState<boolean>(true);
   const [isHowToAvailVisible, setIsHowToAvailVisible] = useState<boolean>(true);
   const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
   const [showAvailPopup, setShowAvailPopup] = useState<boolean>(false);
@@ -262,17 +305,114 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const client = useApolloClient();
   const planValidity = useRef<string>('');
   const planPurchased = useRef<boolean | undefined>(false);
+  const [currentCorporatePlan, setCurrentCorporatePlan] = useState<CorporateSubscriptionData>(null);
+  const [corporateIndex, setCorporateIndex] = useState<number>(-1);
+  const [agreedToVaccineTnc, setAgreedToVaccineTnc] = useState<string>('');
 
   useEffect(() => {
+    isCirclePlan && postViewCircleWEGEvent();
     fetchCircleSavings();
     getUserSubscriptionsWithBenefits();
+    if (isCorporatePlan && planId) {
+      getCorporateCMSData();
+    }
   }, []);
+
+  useEffect(() => {
+    if (isCorporatePlan && planId) {
+      getCorporateCMSData();
+    }
+  }, [planId]);
 
   useEffect(() => {
     if (upgradePlans.length) {
       setHdfcUpgradeUserSubscriptions && setHdfcUpgradeUserSubscriptions(upgradePlans);
     }
   }, [upgradePlans]);
+
+  useEffect(() => {
+    const checkVaccineTncAgreed = async () => {
+      const hasAgreedVaccineTnC = await AsyncStorage.getItem('hasAgreedVaccineTnC');
+      if (hasAgreedVaccineTnC) {
+        setAgreedToVaccineTnc(hasAgreedVaccineTnC);
+      }
+    };
+    checkVaccineTncAgreed();
+  }, []);
+
+  const getCorporateCMSData = async () => {
+    try {
+      setLoading(true);
+      const res: any = await getCorporateMembershipData(planId);
+      if (res?.data?.success) {
+        const data = res?.data;
+        const corporateData = data?.corporateData;
+        const packageData = data?.packageData;
+        const benefits = packageData?.packageBenefitData;
+        const corporateFaqs = packageData?.packFAQs;
+        const copyCorporateSubscriptions = [...corporateSubscriptions];
+        const subscriptionIndex = corporateSubscriptions?.findIndex(
+          (subscription) => subscription?.name === data?.packageData?.packName
+        );
+        setCorporateIndex(subscriptionIndex);
+        let tempCorporateData = corporateSubscriptions[subscriptionIndex];
+        let corporateBenefits: CorporateBenefits[] = [];
+        if (benefits?.length) {
+          benefits?.forEach((item) => {
+            const benefit: CorporateBenefits = {
+              benefitName: item?.benefitName,
+              benefitShortDesc: item?.benefitShortDesc,
+              benefitIdentifier: item?.benefitIdentifier,
+              benefitImage: item?.benefitImage,
+              benefitCTALabel: item?.benefitCTALabel,
+              benefitCTAType: item?.benefitCTAType,
+              benefitCTAAction: item?.benefitCTAAction?.meta?.actionMobile,
+            };
+            corporateBenefits.push(benefit);
+          });
+        }
+        let faqs: CorporateFaq[] = [];
+        if (corporateFaqs?.length) {
+          corporateFaqs?.forEach((item) => {
+            const faq = {
+              faqQuestion: item?.packFaqQuestion,
+              faqAnswer: item?.packFaqAnswer,
+            };
+            faqs.push(faq);
+          });
+        }
+        const corporateDetails: CorporateSubscriptionData = {
+          ...tempCorporateData,
+          corporateName: corporateData?.corporateName,
+          corporateLogo: corporateData?.corporateLogo,
+          bannerImage: packageData?.packWebBanner, // need to change to packageData?.packMobileBanner
+          packageName: packageData?.packName,
+          bannerText: packageData?.packShortDesc,
+          packFAQs: faqs,
+          packageBenefitData: corporateBenefits,
+        };
+        setCurrentCorporatePlan(corporateDetails);
+        copyCorporateSubscriptions[parseInt(subscriptionIndex)] = corporateDetails;
+        setCorporateSubscriptions?.(copyCorporateSubscriptions);
+        setLoading(false);
+      }
+    } catch (error) {
+      setLoading(false);
+      renderAlert('Something went wrong, please try again later', true);
+      CommonBugFender('getCorporateCMSData_MembershipDetails', error);
+    }
+  };
+
+  const postViewCircleWEGEvent = () => {
+    postCircleWEGEvent(
+      currentPatient,
+      isExpired ? 'Expired' : isRenew ? 'About to Expire' : 'Not Expiring',
+      'viewed',
+      circlePlanValidity,
+      circleSubscriptionId,
+      comingFrom
+    );
+  };
 
   const handleBack = async () => {
     if (source) {
@@ -307,6 +447,18 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           if (groupPlans) {
             const hdfcPlan = groupPlans?.HDFC;
             const circlePlan = groupPlans?.APOLLO;
+
+            let corporatePlan: SubscriptionData[] = [];
+            Object.keys(groupPlans).forEach((plan_name) => {
+              if (plan_name !== 'APOLLO' && plan_name !== 'HDFC') {
+                groupPlans[plan_name]?.forEach((subscription) => {
+                  const plan = setSubscriptionData(subscription, false, true);
+                  corporatePlan.push(plan);
+                });
+              }
+            });
+            if (corporatePlan.length) AsyncStorage.setItem('isCorporateSubscribed', 'yes');
+            setCorporateSubscriptions && setCorporateSubscriptions(corporatePlan);
 
             if (hdfcPlan) {
               const hdfcSubscription = setSubscriptionData(hdfcPlan[0]);
@@ -415,7 +567,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     return circleSubscptionData;
   };
 
-  const setSubscriptionData = (plan: any, isUpgradePlan?: boolean) => {
+  const setSubscriptionData = (plan: any, isUpgradePlan?: boolean, isCorporate?: boolean) => {
     try {
       const group = plan.group;
       const groupData: GroupPlan = {
@@ -428,6 +580,15 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       if (benefits && benefits.length) {
         benefits.forEach((item) => {
           const ctaAction = g(item, 'cta_action');
+          if (
+            g(ctaAction, 'meta', 'action') === string.common.CorporateVaccineBenefit &&
+            isCorporatePlan
+          ) {
+            AsyncStorage.setItem('VaccinationCmsIdentifier', item?.cms_identifier);
+            AsyncStorage.setItem('VaccinationSubscriptionId', plan?._id);
+            setMembershipType(plan?.name);
+            setPlanId(plan?.plan_id);
+          }
           const benefitCtaAction: BenefitCtaAction = {
             type: g(ctaAction, 'type'),
             action: g(ctaAction, 'meta', 'action'),
@@ -446,6 +607,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
             availableCount: item!.available_count,
             refreshFrequency: item!.refresh_frequency,
             icon: item!.icon,
+            cmsIdentifier: item?.cms_identifier,
           };
           planBenefits.push(benefit);
         });
@@ -466,6 +628,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         benefits: planBenefits,
         coupons: plan!.coupons ? plan!.coupons : [],
         upgradeTransactionValue: plan?.plan_summary?.[0]?.upgrade_transaction_value,
+        isCorporate: !!isCorporate,
+        corporateIcon: !!isCorporate ? plan?.group_logo_url?.mobile_version : '',
       };
       const upgradeToPlan = g(plan, 'can_upgrade_to');
       if (g(upgradeToPlan, '_id')) {
@@ -476,9 +640,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         setUpgradePlans([...upgradePlans, subscription]);
       }
       return subscription;
-    } catch (e) {
-      console.log('ERROR: ', e);
-    }
+    } catch (e) {}
   };
 
   const fetchCircleSavings = async () => {
@@ -576,13 +738,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
 
   const renderBenefitsAvailable = () => {
     return (
-      <ScrollView
-        contentContainerStyle={{
-          padding: 10,
-          backgroundColor: '#FFFFFF',
-        }}
-        bounces={false}
-      >
+      <ScrollView contentContainerStyle={styles.benefitsAvailableContainer} bounces={false}>
         {isActivePlan ? (
           renderActivePlans()
         ) : (
@@ -629,12 +785,13 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     );
   };
 
-  const renderAlert = (message: string) => {
+  const renderAlert = (message: string, goBack?: boolean) => {
     showAphAlert!({
       title: 'Hi',
       description: message,
       onPressOk: () => {
         hideAphAlert!();
+        if (goBack) props.navigation.goBack();
       },
     });
   };
@@ -757,11 +914,12 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const handleCtaClick = (
     type: string,
     action: string,
-    message: string,
-    availableCount: number,
-    id: string,
+    message: string | null,
+    availableCount: number | null,
+    id: string | null,
     webengageevent: string | null,
-    attribute: string
+    attribute: string | null,
+    identifierCms?: string
   ) => {
     if (webengageevent) {
       handleWebengageEvents(webengageevent);
@@ -773,11 +931,36 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     }
 
     if (isCirclePlan) {
-      handleCircleWebengageEvents(attribute);
+      handleCircleWebengageEvents(attribute || '');
     }
 
     if (type == Hdfc_values.REDIRECT) {
-      if (action == Hdfc_values.SPECIALITY_LISTING) {
+      if (action === string.common.CorporateVaccineBenefit) {
+        const currentBenefit = corporateSubscriptions[corporateIndex]?.benefits?.find(
+          (value) => value?.cmsIdentifier === identifierCms
+        );
+        if (agreedToVaccineTnc === 'yes') {
+          props.navigation.navigate(AppRoutes.BookedVaccineScreen, {
+            cmsIdentifier: currentBenefit?.cmsIdentifier || '',
+            subscriptionId: corporateSubscriptions[corporateIndex]?._id || '',
+            isVaccineSubscription: true,
+            isCorporateSubscription: true,
+          });
+        } else {
+          props.navigation.navigate(AppRoutes.VaccineTermsAndConditions, {
+            isCorporateSubscription: true,
+          });
+        }
+      } else if (action == 'MEMBERSHIP_DETAIL_CIRCLE') {
+        if (circleSubscriptionId) {
+          props.navigation.push(AppRoutes.MembershipDetails, {
+            membershipType: 'CIRCLE PLAN',
+            isActive: circleSubscription?.groupDetails?.isActive,
+            isExpired: circleSubscription?.subscriptionStatus === Circle.EXPIRED_STATUS,
+            comingFrom: AppRoutes.MembershipDetails,
+          });
+        }
+      } else if (action == Hdfc_values.SPECIALITY_LISTING) {
         props.navigation.navigate(AppRoutes.DoctorSearch);
       } else if (action == Hdfc_values.PHARMACY_LANDING) {
         props.navigation.navigate(
@@ -804,8 +987,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       }
     } else if (type == Hdfc_values.CALL_API) {
       if (action == Hdfc_values.CALL_EXOTEL_API) {
-        if (availableCount > 0) {
-          setBenefitId(id);
+        if (availableCount && availableCount > 0) {
+          setBenefitId(id || '');
           setShowHdfcConnectPopup(true);
         } else {
           renderAlert(
@@ -856,13 +1039,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
 
   const renderSubscribeContent = () => {
     return (
-      <ScrollView
-        contentContainerStyle={{
-          marginHorizontal: 10,
-          paddingBottom: 20,
-        }}
-        bounces={false}
-      >
+      <ScrollView contentContainerStyle={styles.subscribeContent} bounces={false}>
         {renderMembershipBanner()}
         {areBenefitsAvailable && renderWhatWillYouGet()}
         {renderHowToAvail()}
@@ -883,19 +1060,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           }}
           style={styles.sectionsHeading}
         >
-          <View
-            style={{
-              flexDirection: 'row',
-            }}
-          >
-            <ExclamationGreen
-              style={{
-                width: 20,
-                height: 20,
-                resizeMode: 'contain',
-                marginRight: 10,
-              }}
-            />
+          <View style={styles.flexRow}>
+            <ExclamationGreen style={styles.excalmationIcon} />
             <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0.35)}>
               How To Avail
             </Text>
@@ -1069,7 +1235,6 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       .catch((error) => {
         setLoading!(false);
         setShowDiabeticQuestionaire(false);
-        console.log(error);
         showAphAlert!({
           title: string.common.uhOh,
           description: 'Error while connecting to the Doctor, Please try again',
@@ -1140,6 +1305,110 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     );
   };
 
+  const renderCorporatePlan = () => {
+    return (
+      <ScrollView bounces={false}>
+        {renderCorporateBanner()}
+        <View style={styles.corporatePlanStyle}>
+          {!!currentCorporatePlan?.packageBenefitData?.length && (
+            <>
+              <Text
+                style={theme.viewStyles.text('SB', 15, '#02475B', 1, 30, 0.35)}
+              >{`Dedicated benefits for You`}</Text>
+              {renderCorporateBenefits()}
+            </>
+          )}
+          {!!currentCorporatePlan?.packFAQs?.length && (
+            <FAQComponent data={currentCorporatePlan?.packFAQs} />
+          )}
+        </View>
+      </ScrollView>
+    );
+  };
+
+  const renderCorporateBenefits = () => {
+    return currentCorporatePlan?.packageBenefitData?.map((benefit: any) => {
+      return (
+        <View style={[styles.cardStyle, { marginVertical: 10 }]}>
+          <CardContent
+            heading={benefit?.benefitName}
+            bodyText={benefit?.benefitShortDesc}
+            icon={benefit?.benefitImage}
+            isActivePlan={true}
+            isExpired={false}
+            imageStyle={styles.corporateImageStyle}
+            isCorporateCard={true}
+          />
+          {!!benefit.benefitCTALabel && (
+            <TouchableOpacity
+              onPress={() => {
+                handleCtaClick(
+                  benefit?.benefitCTAType,
+                  benefit?.benefitCTAAction,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  benefit?.benefitIdentifier
+                );
+              }}
+            >
+              <Text style={styles.redeemButtonText}>{benefit.benefitCTALabel}</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      );
+    });
+  };
+
+  const renderCorporateBanner = () => {
+    const corporateStyles = StyleSheet.create({
+      bannerContainer: {
+        flexDirection: 'row',
+        backgroundColor: '#BDEDFF',
+        justifyContent: 'space-between',
+        paddingHorizontal: 10,
+        paddingTop: 10,
+        height: 220,
+      },
+      infoContainer: { width: '50%' },
+      corporateLogo: { width: 60, height: 40 },
+      subTextContainer: {
+        ...theme.viewStyles.text('SB', 18, '#02475B', 1, 30, 0.35),
+        paddingVertical: 5,
+      },
+      bannerText: {
+        ...theme.viewStyles.text('M', 15, '#02475B', 1, 18, 0.35),
+        paddingBottom: 5,
+      },
+      packageName: {
+        ...theme.viewStyles.text('SB', 19, '#02475B', 1, 25, 0.35),
+        paddingTop: 10,
+      },
+    });
+    return (
+      <View style={corporateStyles.bannerContainer}>
+        <View style={corporateStyles.infoContainer}>
+          <Image
+            style={corporateStyles.corporateLogo}
+            source={{ uri: currentCorporatePlan?.corporateLogo }}
+          />
+          <Text style={corporateStyles.subTextContainer}>
+            Hi
+            <Text
+              style={theme.viewStyles.text('SB', 18, '#3b8ca3', 1, 30, 0.35)}
+            >{` ${currentPatient?.firstName}`}</Text>
+            !
+          </Text>
+          <Text style={corporateStyles.bannerText}>{currentCorporatePlan?.bannerText}</Text>
+          <Text style={corporateStyles.packageName}>{currentCorporatePlan?.packageName}</Text>
+        </View>
+        <Image style={styles.corporateBanner} source={{ uri: currentCorporatePlan?.bannerImage }} />
+      </View>
+    );
+  };
+
   const renderCircleSubscriptionPlans = () => {
     return (
       <CircleMembershipPlans
@@ -1198,7 +1467,12 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeAreaStyle}>
         {renderHeader()}
-        {isCirclePlan ? renderCirclePlan() : renderHdfcMembershipDetails()}
+        {!loading &&
+          (isCirclePlan
+            ? renderCirclePlan()
+            : isCorporatePlan
+            ? renderCorporatePlan()
+            : renderHdfcMembershipDetails())}
       </SafeAreaView>
       {showHdfcConnectPopup && (
         <HdfcConnectPopup

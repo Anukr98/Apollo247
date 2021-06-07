@@ -16,14 +16,12 @@ import {
   SectionList,
   TextInput,
 } from 'react-native';
-import { Calendar, DateObject } from 'react-native-calendars';
 import { filterDataType } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearchListing';
 import { CalendarView } from '@aph/mobile-patients/src/components/ui/CalendarView';
 import moment from 'moment';
 import {
   CheckUnselectedIcon,
   CheckedIcon,
-  IconBase,
   CloseCal,
   SearchIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -112,7 +110,6 @@ const styles = StyleSheet.create({
   //start
   content: {
     flexDirection: 'row',
-    // flex: 0.7,
   },
   sectionHeaderStyles: {
     borderBottomWidth: 0.5,
@@ -179,12 +176,6 @@ const styles = StyleSheet.create({
   //end
 });
 
-type dataType = {
-  label: string;
-  options: string[];
-  selectedOptions: string[];
-}[];
-
 export interface FilterSceneProps {
   onClickClose: (arg0: filterDataType[]) => void;
   data: filterDataType[];
@@ -195,13 +186,6 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
   const [data, setData] = useState<filterDataType[]>(props.data);
   const [showCalander, setshowCalander] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const today = new Date().toISOString().slice(0, 10);
-  const [dateSelected, setdateSelected] = useState<object>({
-    [today]: {
-      selected: true,
-      selectedColor: theme.colors.APP_GREEN,
-    },
-  });
   const [date, setDate] = useState<Date>(new Date());
 
   const renderItem = (item: any, id: number) => (
@@ -231,13 +215,12 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
   const searchedData = (sectionsData: any, searchTerm = '') => {
     const finalData = sectionsData.reduce((result, sectionData) => {
       const { state, data } = sectionData;
+
       const filteredData = data.filter((item: any) => {
         let searchDataItem = state;
-
         searchDataItem = ''
           ? ''.split('.').reduce((prevVal, currVal) => prevVal[currVal], item)
           : item;
-
         return searchDataItem.toLowerCase().includes(searchTerm.toLowerCase());
       });
       if (filteredData.length !== 0) {
@@ -246,6 +229,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
           data: filteredData,
         });
       }
+
       return result;
     }, []);
     return finalData;
@@ -260,7 +244,9 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
           <TextInput
             style={{ marginLeft: 14 }}
             placeholder={'Search'}
-            onChangeText={(searchTerm) => setSearchTerm(searchTerm)}
+            onChangeText={(searchTerm) => {
+              setSearchTerm(searchTerm);
+            }}
           />
         </View>
         <SectionList
@@ -324,7 +310,6 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
     );
   };
 
-  // const { currentUser } = useAuth();
   const [menuItems, setMenuItems] = useState([
     { id: '0', name: 'City' },
     { id: '1', name: 'Brands' },

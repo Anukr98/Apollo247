@@ -5,7 +5,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { formatSelectedAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 
 export interface ProceedBarProps {
   onPressAddDeliveryAddress?: () => void;
@@ -17,6 +17,7 @@ export interface ProceedBarProps {
   screen?: string;
   onPressTatCard?: () => void;
   onPressReviewOrder?: () => void;
+  onPressAddMoreMedicines?: () => void;
 }
 
 export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
@@ -24,11 +25,11 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
     grandTotal,
     deliveryAddressId,
     uploadPrescriptionRequired,
-    physicalPrescriptions,
-    ePrescriptions,
+    prescriptionType,
     addresses,
     cartItems,
     orders,
+    minimumCartValue,
   } = useShoppingCart();
   const {
     onPressAddDeliveryAddress,
@@ -40,12 +41,16 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
     onPressTatCard,
     screen,
     onPressReviewOrder,
+    onPressAddMoreMedicines,
   } = props;
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const unServiceable = !!cartItems.find(
     ({ unavailableOnline, unserviceable }) => unavailableOnline || unserviceable
   );
-  const isSplitCart: boolean = orders?.length > 1 ? true : false;
+  const isValidCartValue =
+    !!minimumCartValue && screen === 'MedicineCart' && deliveryAddressId && addresses?.length
+      ? grandTotal >= minimumCartValue
+      : true;
 
   function getTitle() {
     return !deliveryAddressId
@@ -53,15 +58,15 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
         ? string.selectDeliveryAddress
         : string.addDeliveryAddress
       : isPrescriptionRequired()
-      ? string.uploadPrescription
-      : isSplitCart && screen == 'MedicineCart'
+      ? string.proceed
+      : screen == 'MedicineCart'
       ? string.reviewOrder
       : string.proceedToPay;
   }
 
   function isPrescriptionRequired() {
     if (uploadPrescriptionRequired) {
-      return physicalPrescriptions.length > 0 || ePrescriptions.length > 0 ? false : true;
+      return screen === 'MedicineCart' ? true : !prescriptionType;
     } else {
       return false;
     }
@@ -74,7 +79,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
         : onPressAddDeliveryAddress?.()
       : isPrescriptionRequired()
       ? onPressUploadPrescription?.()
-      : isSplitCart && screen == 'MedicineCart'
+      : screen == 'MedicineCart'
       ? onPressReviewOrder?.()
       : onPressProceedtoPay?.();
   }
@@ -89,7 +94,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
   };
 
   function isdisabled() {
-    if (cartItems && cartItems.length && !unServiceable) {
+    if (cartItems && cartItems.length && !unServiceable && isValidCartValue) {
       return false;
     } else {
       return true;
@@ -132,10 +137,23 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
     }
   };
 
+  const renderMinimumCartMessage = () => {
+    const toAdd = (minimumCartValue - grandTotal)?.toFixed(2);
+    return (
+      <View style={styles.minCartContainer}>
+        <Text style={styles.minCartMsg}>{`Add items worth ₹${toAdd} more to place an order`}</Text>
+        <TouchableOpacity onPress={onPressAddMoreMedicines!}>
+          <Text style={styles.addMoreText}>ADD MORE</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   return (
     <View style={styles.container}>
       {renderTatCard()}
       {deliveryAddressId != '' && isPrescriptionRequired() && renderPrescriptionMessage()}
+      {screen === 'MedicineCart' && !isValidCartValue && renderMinimumCartMessage()}
       <View style={styles.subContainer}>
         {renderTotal()}
         {renderButton()}
@@ -173,5 +191,26 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: '#02475B',
     marginVertical: 6,
+  },
+  minCartMsg: {
+    ...theme.fonts.IBMPlexSansMedium(16),
+    lineHeight: 24,
+    color: '#02475B',
+    marginVertical: 6,
+    width: '78%',
+  },
+  addMoreText: {
+    ...theme.fonts.IBMPlexSansBold(15),
+    lineHeight: 24,
+    color: theme.colors.APP_YELLOW,
+    marginVertical: 6,
+    width: '100%',
+  },
+  minCartContainer: {
+    backgroundColor: '#F7F8F5',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginHorizontal: 10,
+    alignItems: 'center',
   },
 });

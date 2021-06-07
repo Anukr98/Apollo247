@@ -9,14 +9,18 @@ export const apiBaseUrl =
     ? 'https://qaapi.apollo247.com/'
     : AppConfig.APP_ENV == AppEnv.QA3
     ? 'https://qathreeapi.apollo247.com/'
+    : AppConfig.APP_ENV == AppEnv.QA5
+    ? 'https://qa5api.apollo247.com/'
     : AppConfig.APP_ENV == AppEnv.PERFORM
-    ? 'https://asapi.apollo247.com/'
+    ? 'https://perfapi.apollo247.com/'
     : AppConfig.APP_ENV == AppEnv.VAPT
     ? 'https://stagingapi.apollo247.com/'
     : AppConfig.APP_ENV == AppEnv.DEV
     ? 'https://aph-dev-api.apollo247.com/'
     : AppConfig.APP_ENV == AppEnv.DEVReplica
     ? 'https://devapi.apollo247.com/'
+    : AppConfig.APP_ENV == AppEnv.QA6
+    ? 'https://qa6api.apollo247.com/'
     : 'http://localhost:4000';
 
 export const apiRoutes = {

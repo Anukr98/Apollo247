@@ -34,12 +34,12 @@ export const BookingInfo: React.FC<BookingInfoProps> = (props) => {
     return !!subTxt ? <Text style={styles.subTxt}>{subTxt}</Text> : null;
   };
 
-  return (
+  return LOB == 'diagnostics' || LOB == 'consult' ? (
     <View style={styles.card}>
       {renderHeading()}
       {renderSubText()}
     </View>
-  );
+  ) : null;
 };
 
 const styles = StyleSheet.create({

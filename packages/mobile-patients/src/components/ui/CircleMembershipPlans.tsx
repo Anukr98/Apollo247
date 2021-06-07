@@ -110,7 +110,6 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     setDefaultCirclePlan,
     defaultCirclePlan,
     selectDefaultPlan,
-    cartTotal,
     cartTotalCashback,
     setIsCircleSubscription,
     setCircleMembershipCharges,
@@ -119,6 +118,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     circleMembershipCharges,
     setCircleSubPlanId,
     circleSubscriptionId,
+    cartItems,
   } = useShoppingCart();
   const { setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
@@ -147,8 +147,6 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     }
     if (buyNow && props.membershipPlans?.length > 0) {
       setDefaultCirclePlan && setDefaultCirclePlan(null);
-      // selectDefaultPlan && selectDefaultPlan(props.membershipPlans);
-      // setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(true);
     }
     initiateHyperSDK();
   }, []);
@@ -434,18 +432,6 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
               </Text>
             </ImageBackground>
           </TouchableOpacity>
-          {/* {value?.saved_extra_on_lower_plan && (
-            <Text
-              style={[
-                styles.savingsText,
-                {
-                  top: iconDimension + 24,
-                },
-              ]}
-            >
-              Save {value?.saved_extra_on_lower_plan} extra
-            </Text>
-          )} */}
         </View>
         <TouchableOpacity onPress={() => onPressMembershipPlans(index)} style={styles.radioBtn}>
           <View
@@ -646,7 +632,6 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   };
 
   const openCircleWebView = () => {
-    console.log(isDiagnosticJourney);
     props.navigation.navigate(AppRoutes.CommonWebView, {
       url: isConsultJourney
         ? AppConfig.Configuration.CIRCLE_CONSULT_URL
@@ -773,6 +758,13 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
                   '{price}',
                   circlePlanSelected?.currentSellingPrice
                 )
+            : !cartItems?.length
+            ? !circlePlanSelected
+              ? string.circleDoctors.upgrade
+              : string.circleDoctors.upgradeWithPrice.replace(
+                  '{price}',
+                  circlePlanSelected?.currentSellingPrice
+                )
             : string.circleDoctors.addToCart
         }
         style={[
@@ -802,6 +794,18 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
               //   screenName: screenName,
               // });
               initiateCirclePurchase();
+            }
+          } else if (from === string.banner_context.PHARMACY_HOME) {
+            if (!cartItems?.length) {
+              props.navigation.navigate(AppRoutes.CircleSubscription, {
+                from: from,
+                soruce: source,
+                screenName: screenName,
+              });
+            } else {
+              setCircleMembershipCharges &&
+                setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
+              setCircleSubPlanId && setCircleSubPlanId(circlePlanSelected?.subPlanId);
             }
           } else {
             closeModal && closeModal();

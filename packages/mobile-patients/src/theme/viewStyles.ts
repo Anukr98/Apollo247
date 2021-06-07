@@ -14,7 +14,6 @@ export const viewStyles = {
     opacity: 0.1,
   },
   shadow: {
-    // shadowColor: colors.SHADOW_COLOR,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.8,
     shadowRadius: 5,

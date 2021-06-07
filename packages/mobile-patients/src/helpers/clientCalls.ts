@@ -9,7 +9,6 @@ import {
   GET_CALL_DETAILS,
   GET_DEVICE_TOKEN_COUNT,
   GET_PATIENT_APPOINTMENTS,
-  GET_PERSONALIZED_APPOITNMENTS,
   INSERT_MESSAGE,
   LINK_UHID,
   NEXT_AVAILABLE_SLOT,
@@ -29,6 +28,14 @@ import {
   GET_ALL_GROUP_BANNERS_OF_USER,
   GET_PACKAGE_INCLUSIONS,
   UPDATE_PATIENT_APP_VERSION,
+  GET_ALL_PRO_HEALTH_APPOINTMENTS,
+  GET_PATIENT_LATEST_PRESCRIPTION,
+  GET_DIAGNOSTIC_OPEN_ORDERLIST,
+  GET_DIAGNOSTIC_CLOSED_ORDERLIST,
+  GET_PHLOBE_DETAILS,
+  GET_INTERNAL_ORDER,
+  UPDATE_APPOINTMENT,
+  SAVE_PHLEBO_FEEDBACK,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -63,10 +70,6 @@ import {
   getPastAppointmentsCount,
   getPastAppointmentsCountVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPastAppointmentsCount';
-import {
-  getPatientPersonalizedAppointments,
-  getPatientPersonalizedAppointmentsVariables,
-} from '@aph/mobile-patients/src/graphql/types/getPatientPersonalizedAppointments';
 import { getPatinetAppointments } from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
 import {
   ConsultQueueInput,
@@ -98,12 +101,12 @@ import {
   getAppointmentRescheduleDetailsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentRescheduleDetails';
 import { saveSearch, saveSearchVariables } from '@aph/mobile-patients/src/graphql/types/saveSearch';
-import { saveDeviceToken, saveDeviceTokenVariables } from '../graphql/types/saveDeviceToken';
+import { saveDeviceToken, saveDeviceTokenVariables } from '@aph/mobile-patients/src/graphql/types/saveDeviceToken';
 import { Platform } from 'react-native';
 import {
   getSecretaryDetailsByDoctorId,
   getSecretaryDetailsByDoctorIdVariables,
-} from '../graphql/types/getSecretaryDetailsByDoctorId';
+} from '@aph/mobile-patients/src/graphql/types/getSecretaryDetailsByDoctorId';
 import {
   setAndGetNumberOfParticipants,
   setAndGetNumberOfParticipantsVariables,
@@ -117,7 +120,10 @@ import {
   GetAllGroupBannersOfUser,
   GetAllGroupBannersOfUserVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetAllGroupBannersOfUser';
-import { bannerType } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  bannerType,
+  LocationData,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   getInclusionsOfMultipleItems,
   getInclusionsOfMultipleItemsVariables,
@@ -129,6 +135,18 @@ import {
 import AsyncStorage from '@react-native-community/async-storage';
 import DeviceInfo from 'react-native-device-info';
 import appsFlyer from 'react-native-appsflyer';
+import { getAllProhealthAppointments, getAllProhealthAppointmentsVariables } from '@aph/mobile-patients/src/graphql/types/getAllProhealthAppointments';
+import { getPatientLatestPrescriptions, getPatientLatestPrescriptionsVariables } from '@aph/mobile-patients/src/graphql/types/getPatientLatestPrescriptions';
+import { getDiagnosticOpenOrdersList, getDiagnosticOpenOrdersListVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOpenOrdersList';
+import { getDiagnosticClosedOrdersList, getDiagnosticClosedOrdersListVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticClosedOrdersList';
+import {  getOrderPhleboDetailsBulk, getOrderPhleboDetailsBulkVariables } from '@aph/mobile-patients/src/graphql/types/getOrderPhleboDetailsBulk';
+import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
+import { getOrderInternal, getOrderInternalVariables } from '@aph/mobile-patients/src/graphql/types/getOrderInternal';
+import {
+  updateAppointmentVariables,
+  updateAppointment,
+} from '@aph/mobile-patients/src/graphql/types/updateAppointment';
+import { savePhleboFeedbackVariables, savePhleboFeedback_savePhleboFeedback } from '@aph/mobile-patients/src/graphql/types/savePhleboFeedback';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -160,7 +178,6 @@ export const getNextAvailableSlots = (
       })
       .catch((e) => {
         CommonBugFender('clientCalls_getNextAvailableSlots', e);
-        console.log('Error occured while searching Doctor', e);
         rej({ error: e });
       });
   });
@@ -377,7 +394,7 @@ export const getPatientPrismMedicalRecordsApi = (
         query: GET_MEDICAL_PRISM_RECORD_V2,
         context: {
           headers: {
-            callingsource: comingFrom == 'Diagnostics' ? "" : 'healthRecords',
+            callingsource: comingFrom == 'Diagnostics' ? '' : 'healthRecords',
           },
         },
         variables: {
@@ -601,7 +618,6 @@ export const whatsAppUpdateAPICall = (
       patientId: patientId,
     };
 
-    console.log('whatsAppUpdate', inputVariables);
     client
       .mutate<updateWhatsAppStatus>({
         mutation: UPDATE_WHATSAPP_STATUS,
@@ -633,7 +649,6 @@ export const updateExternalConnect = (
       appointmentId: appointmentID,
     };
 
-    console.log('inputVariables', inputVariables);
     client
       .mutate<updateSaveExternalConnect, updateSaveExternalConnectVariables>({
         mutation: UPDATE_SAVE_EXTERNAL_CONNECT,
@@ -672,29 +687,6 @@ export const getPastAppoinmentCount = (
       })
       .catch((e) => {
         CommonBugFender('clientCalls_getPastAppoinmentCount', e);
-        rej({ error: e });
-      });
-  });
-};
-
-export const getPatientPersonalizedAppointmentList = (
-  client: ApolloClient<object>,
-  patientUhid: string
-) => {
-  return new Promise((res, rej) => {
-    client
-      .query<getPatientPersonalizedAppointments, getPatientPersonalizedAppointmentsVariables>({
-        query: GET_PERSONALIZED_APPOITNMENTS,
-        variables: {
-          patientUhid: patientUhid,
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((data: any) => {
-        res({ data });
-      })
-      .catch((e) => {
-        CommonBugFender('clientCalls_getPatientPersonalizedAppointmentList', e);
         rej({ error: e });
       });
   });
@@ -756,7 +748,6 @@ export const saveTokenDevice = (client: ApolloClient<object>, token: any, patien
     deviceOS: '',
     patientId: patientId,
   };
-  console.log('input', input);
   return client.mutate<saveDeviceToken, saveDeviceTokenVariables>({
     mutation: SAVE_DEVICE_TOKEN,
     variables: {
@@ -907,6 +898,7 @@ const notifyAppVersion = async (
     const appVersion = DeviceInfo.getVersion();
     const appsflyerIdKey = `${currentPatient?.id}-appsflyerId`;
     const appsflyerSaved = await AsyncStorage.getItem(appsflyerIdKey);
+
     const variables = {
       appVersion,
       patientId: currentPatient?.id,
@@ -923,4 +915,213 @@ const notifyAppVersion = async (
       await AsyncStorage.setItem(appsflyerIdKey, appsflyerId!);
     }
   } catch (error) {}
+};
+
+export const getAllProHealthAppointments = (client: ApolloClient<object>, patientId: string) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getAllProhealthAppointments, getAllProhealthAppointmentsVariables>({
+        query: GET_ALL_PRO_HEALTH_APPOINTMENTS,
+        variables: {
+          patientId: patientId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_ getAllProHealthAppointments', e);
+        rej({ error: e });
+      });
+  });
+};
+
+export const getDiagnosticPatientPrescription = (
+  client: ApolloClient<object>,
+  mobileNumber: string,
+  limit: number,
+  cityId: number | string
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getPatientLatestPrescriptions, getPatientLatestPrescriptionsVariables>({
+        query: GET_PATIENT_LATEST_PRESCRIPTION,
+        context: {
+          sourceHeaders,
+        },
+        variables: {
+          mobileNumber: mobileNumber,
+          limit: limit,
+          cityId: Number(cityId),
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_getDiagnosticPatientPrescription', e);
+        rej({ error: e });
+      });
+  });
+};
+
+export const getDiagnosticOpenOrders = (
+  client: ApolloClient<object>,
+  mobileNumber: string,
+  skip: number,
+  take: number
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getDiagnosticOpenOrdersList, getDiagnosticOpenOrdersListVariables>({
+        query: GET_DIAGNOSTIC_OPEN_ORDERLIST,
+        context: {
+          sourceHeaders,
+        },
+        variables: {
+          mobileNumber: mobileNumber,
+          skip: skip, //for pagination
+          take : take // number of orders to show
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_getDiagnosticOpenOrders', e);
+        rej({ error: e });
+      });
+  });
+};
+
+export const getDiagnosticClosedOrders = (
+  client: ApolloClient<object>,
+  mobileNumber: string,
+  skip: number,
+  take: number
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getDiagnosticClosedOrdersList, getDiagnosticClosedOrdersListVariables>({
+        query: GET_DIAGNOSTIC_CLOSED_ORDERLIST,
+        context: {
+          sourceHeaders,
+        },
+        variables: {
+          mobileNumber: mobileNumber,
+          skip: skip, //for pagination
+          take : take // number of orders to show
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_getDiagnosticClosedOrders', e);
+        rej({ error: e });
+      });
+  });
+};
+
+export const getDiagnosticPhelboDetails = (
+  client: ApolloClient<object>,
+  orderId: any,
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getOrderPhleboDetailsBulk, getOrderPhleboDetailsBulkVariables>({
+        query: GET_PHLOBE_DETAILS,
+        context: {
+          sourceHeaders,
+        },
+        variables: {
+          diagnosticOrdersIds: orderId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_getDiagnosticPhelboDetails', e);
+        rej({ error: e });
+      });
+  });
+};
+
+export const getDiagnosticRefundOrders = (
+  client: ApolloClient<object>,
+  paymentId: any,
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getOrderInternal, getOrderInternalVariables>({
+        query: GET_INTERNAL_ORDER,
+        context: {
+          sourceHeaders,
+        },
+        variables: {
+          order_id: paymentId,
+         
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_getDiagnosticRefundOrders', e);
+        rej({ error: e });
+      });
+  });
+};
+
+export const saveConsultationLocation = async (
+  client: ApolloClient<object>,
+  appointmentId: string,
+  location: LocationData
+) => {
+  try {
+    const query: updateAppointmentVariables = {
+      appointmentInput: {
+        appointmentId,
+        patientLocation: {
+          city: location?.city,
+          pincode: Number(location?.pincode),
+        },
+      },
+    };
+    await client.query<updateAppointment>({
+      query: UPDATE_APPOINTMENT,
+      fetchPolicy: 'no-cache',
+      variables: query,
+    });
+  } catch (error) {
+    CommonBugFender('saveLocationWithConsultation', error);
+  }
+};
+export const savePhleboFeedback = (
+  client: ApolloClient<object>,
+  rating: number,
+  feedback: string,
+  orderId: string
+) => {
+  const inputVariables = {
+    phleboRating: rating,
+    phleboFeedback: feedback,
+    diagnosticOrdersId: orderId,
+  };
+  return client.mutate<savePhleboFeedback_savePhleboFeedback, savePhleboFeedbackVariables>({
+    mutation: SAVE_PHLEBO_FEEDBACK,
+    variables: {
+      phleboRating: rating,
+      phleboFeedback: feedback,
+      diagnosticOrdersId: orderId,
+    },
+    fetchPolicy: 'no-cache',
+  });
 };

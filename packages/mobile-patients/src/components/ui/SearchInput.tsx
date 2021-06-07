@@ -19,12 +19,13 @@ export const SearchInput: React.FC<SearchInputProps> = (props) => {
         ...theme.fonts.IBMPlexSansMedium(18),
       },
       inputContainerStyle: {
+        backgroundColor: '#F7F8F5',
+        borderWidth: 1,
+        borderColor: 'rgba(0, 0, 0, 0.1)',
         borderRadius: 5,
-        backgroundColor: '#f7f8f5',
         marginHorizontal: 10,
         paddingHorizontal: 16,
         paddingRight: 12,
-        borderBottomWidth: 0,
       },
       rightIconContainerStyle: {
         height: 24,

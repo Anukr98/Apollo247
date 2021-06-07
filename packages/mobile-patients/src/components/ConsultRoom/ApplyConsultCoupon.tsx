@@ -6,15 +6,7 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
-import {
-  SafeAreaView,
-  TouchableOpacity,
-  StyleSheet,
-  Text,
-  View,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
+import { SafeAreaView, TouchableOpacity, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import {
   RadioButtonIcon,
@@ -25,10 +17,9 @@ import { fetchConsultCoupons } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useAppCommonData } from '../AppCommonDataProvider';
-import { g } from '../../helpers/helperFunctions';
+import { g, getPackageIds } from '../../helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {
@@ -118,17 +109,8 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
   const [loading, setLoading] = useState<boolean>(true);
   const [validating, setValidating] = useState<boolean>(false);
   const { showAphAlert } = useUIElements();
-  const { hdfcPlanId, circlePlanId, hdfcStatus, circleStatus } = useAppCommonData();
-  const { circleSubscriptionId, hdfcSubscriptionId } = useShoppingCart();
+  const { activeUserSubscriptions } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
-
-  let packageId: string[] = [];
-  if (hdfcSubscriptionId && hdfcStatus === 'active') {
-    packageId.push(`HDFC:${hdfcPlanId}`);
-  }
-  if (circleSubscriptionId && circleStatus === 'active') {
-    packageId.push(`APOLLO:${circlePlanId}`);
-  }
 
   const renderErrorPopup = (desc: string) =>
     showAphAlert!({
@@ -138,20 +120,18 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
 
   useEffect(() => {
     const data = {
-      packageId: packageId.join(),
+      packageId: activeUserSubscriptions ? getPackageIds(activeUserSubscriptions)?.join() : '',
       mobile: g(currentPatient, 'mobileNumber'),
       email: g(currentPatient, 'emailAddress'),
       type: 'Consult',
     };
     fetchConsultCoupons(data)
       .then((res: any) => {
-        console.log(JSON.stringify(res.data), 'objobj');
         setcouponList(res.data.response);
         setLoading(false);
       })
       .catch((error) => {
         CommonBugFender('fetchingConsultCoupons', error);
-        console.log(error);
         props.navigation.goBack();
         renderErrorPopup(string.common.tryAgainLater);
       });
@@ -191,7 +171,6 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
     );
   };
 
-  // const isCouponTextValid = (couponText: string) => /^[a-zA-Z0-9]{4,15}$/.test(couponText);
   const isCouponTextValid = (couponText: string) => {
     if (couponText.length > 3 && couponText.length < 21) {
       return true;
@@ -226,7 +205,6 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
           textInputprops={{
             ...(!isValidCoupon && couponText.length > 0 ? { selectionColor: '#e50000' } : {}),
             maxLength: 20,
-            // autoFocus: true,
             autoCapitalize: 'characters',
           }}
           inputStyle={[
@@ -294,8 +272,6 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
     );
   };
 
-  const keyboardVerticalOffset = Platform.OS === 'android' ? { keyboardVerticalOffset: 20 } : {};
-
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -305,18 +281,11 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
           container={{ borderBottomWidth: 0 }}
           onPressLeftIcon={() => props.navigation.goBack()}
         />
-        {/* <KeyboardAvoidingView
-          behavior={'padding'}
-          style={{ flex: 1 }}
-          {...keyboardVerticalOffset}
-          enabled
-        > */}
         <View style={{ flex: 1 }}>
           <ScrollView bounces={false}>{renderCouponCard()}</ScrollView>
           {renderBottomButtons()}
         </View>
         {validating && <Spinner style={{ backgroundColor: 'rgba(0,0,0, 0)' }} />}
-        {/* </KeyboardAvoidingView> */}
       </SafeAreaView>
     </View>
   );

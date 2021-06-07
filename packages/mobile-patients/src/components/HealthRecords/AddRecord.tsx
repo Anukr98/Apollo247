@@ -74,6 +74,7 @@ import {
   postWebEngagePHR,
   handleGraphQlError,
   postWebEngageIfNewSession,
+  removeObjectProperty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -357,24 +358,6 @@ export enum MedicRecordType {
   HEALTHCHECK = 'HEALTHCHECK',
   HOSPITALIZATION = 'HOSPITALIZATION',
 }
-const RecordType: RecordTypeType[] = [
-  {
-    value: MedicRecordType.TEST_REPORT.toLowerCase().replace('_', ' '),
-    key: MedicRecordType.TEST_REPORT,
-  },
-  {
-    value: MedicRecordType.PRESCRIPTION.toLowerCase().replace('_', ' '),
-    key: MedicRecordType.PRESCRIPTION,
-  },
-  {
-    value: 'Health Check',
-    key: MedicRecordType.HEALTHCHECK,
-  },
-  {
-    value: 'Discharge Summary',
-    key: MedicRecordType.HOSPITALIZATION,
-  },
-];
 
 interface SeverityType {
   key: string;
@@ -512,8 +495,6 @@ export interface AddRecordProps
 
 export const AddRecord: React.FC<AddRecordProps> = (props) => {
   var fin = '';
-  const [showRecordDetails, setshowRecordDetails] = useState<boolean>(true);
-  const [showReportDetails, setshowReportDetails] = useState<boolean>(false);
   const [displayOrderPopup, setdisplayOrderPopup] = useState<boolean>(false);
   const [displayAllergyPopup, setdisplayAllergyPopup] = useState<boolean>(false);
   const [displayFamilyHistoryPopup, setdisplayFamilyHistoryPopup] = useState<boolean>(false);
@@ -524,7 +505,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [testName, settestName] = useState<string>('');
   const [docName, setDocName] = useState<string>('');
   const [locationName, setLocationName] = useState<string>('');
-  const [typeofRecord, settypeofRecord] = useState<MedicRecordType>(MedicRecordType.PRESCRIPTION);
   const [
     selectedRestrictionType,
     setSelectedRestrictionType,
@@ -536,7 +516,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [selectedSeverityType, setSelectedSeverityType] = useState<AllergySeverity | null>(null);
   const [dateOfTest, setdateOfTest] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
-  const [referringDoctor, setreferringDoctor] = useState<string>('');
   const [observations, setobservations] = useState<string>('');
   const [additionalNotes, setadditionalNotes] = useState<string>('');
   const [testRecordParameters, setTestRecordParameters] = useState<LabTestParameters[]>([]);
@@ -617,9 +596,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [callDeleteAttachmentApi, setCallDeleteAttachmentApi] = useState<boolean>(false);
   const [currentImage, setCurrentImage] = useState<PickerImage>(null);
   const [openCamera, setOpenCamera] = useState<boolean>(false);
-  const navigatedFrom = props.navigation.state.params!.navigatedFrom
-    ? props.navigation.state.params!.navigatedFrom
-    : '';
   const recordType = props.navigation.state.params
     ? props.navigation.state.params.recordType
     : false;
@@ -1122,18 +1098,19 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .then(({ data }) => {
         setshowSpinner(false);
         const status = g(data, 'addPatientPrescriptionRecord', 'status');
+        const eventInputData = removeObjectProperty(inputData, 'prescriptionFiles');
         if (status) {
           if (selectedRecord) {
             postWebEngagePHR(
               currentPatient,
               WebEngageEventName.PHR_UPDATE_DOCTOR_CONSULTATION,
               'Doctor Consultation',
-              inputData
+              eventInputData
             );
             postWebEngageIfNewSession(
               'Doctor Consultation',
               currentPatient,
-              inputData,
+              eventInputData,
               phrSession,
               setPhrSession
             );
@@ -1142,12 +1119,12 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               currentPatient,
               WebEngageEventName.PHR_ADD_DOCTOR_CONSULTATIONS,
               'Doctor Consultation',
-              inputData
+              eventInputData
             );
             postWebEngageIfNewSession(
               'Doctor Consultation',
               currentPatient,
-              inputData,
+              eventInputData,
               phrSession,
               setPhrSession
             );
@@ -1158,7 +1135,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .catch((e) => {
         CommonBugFender('AddRecord_ADD_PRESCRIPTION_RECORD', e);
         setshowSpinner(false);
-        console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
       });
   };
@@ -1192,6 +1168,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         },
       })
       .then(({ data }) => {
+        const eventInputData = removeObjectProperty(inputData, 'attachmentList');
         if (medicationCheckbox) {
           addMedicationRecord();
         } else if (healthRestrictionCheckbox) {
@@ -1207,12 +1184,12 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               currentPatient,
               WebEngageEventName.PHR_UPDATE_ALLERGY,
               'Allergy',
-              inputData
+              eventInputData
             );
             postWebEngageIfNewSession(
               'Allergy',
               currentPatient,
-              inputData,
+              eventInputData,
               phrSession,
               setPhrSession
             );
@@ -1221,12 +1198,12 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               currentPatient,
               WebEngageEventName.PHR_ADD_ALLERGY,
               'Allergy',
-              inputData
+              eventInputData
             );
             postWebEngageIfNewSession(
               'Allergy',
               currentPatient,
-              inputData,
+              eventInputData,
               phrSession,
               setPhrSession
             );
@@ -1237,7 +1214,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .catch((e) => {
         CommonBugFender('AddRecord_ADD_PATIENT_ALLERGY_RECORD', e);
         setshowSpinner(false);
-        console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
       });
   };
@@ -1315,7 +1291,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .catch((e) => {
         CommonBugFender('AddRecord_ADD_PATIENT_MEDICATION_RECORD', e);
         setshowSpinner(false);
-        console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
       });
   };
@@ -1390,7 +1365,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .catch((e) => {
         CommonBugFender('AddRecord_ADD_PATIENT_HEALTH_RESTRICTION_RECORD', e);
         setshowSpinner(false);
-        console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
       });
   };
@@ -1425,6 +1399,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         },
       })
       .then(({ data }) => {
+        const eventInputData = removeObjectProperty(inputData, 'medicationFiles');
         if (familyHistoryCheckbox) {
           addFamilyHistoryRecord();
         } else {
@@ -1434,12 +1409,12 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               currentPatient,
               WebEngageEventName.PHR_UPDATE_MEDICAL_CONDITION,
               'Medical Condition',
-              inputData
+              eventInputData
             );
             postWebEngageIfNewSession(
               'MedicalCondition',
               currentPatient,
-              inputData,
+              eventInputData,
               phrSession,
               setPhrSession
             );
@@ -1448,12 +1423,12 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               currentPatient,
               WebEngageEventName.PHR_ADD_MEDICAL_CONDITION,
               'Medical Condition',
-              inputData
+              eventInputData
             );
             postWebEngageIfNewSession(
               'MedicalCondition',
               currentPatient,
-              inputData,
+              eventInputData,
               phrSession,
               setPhrSession
             );
@@ -1464,7 +1439,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .catch((e) => {
         CommonBugFender('AddRecord_ADD_PATIENT_MEDICAL_CONDITION_RECORD', e);
         setshowSpinner(false);
-        console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
       });
   };
@@ -1493,17 +1467,18 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       })
       .then(({ data }) => {
         setshowSpinner(false);
+        const eventInputData = removeObjectProperty(inputData, 'attachmentList');
         if (selectedRecord) {
           postWebEngagePHR(
             currentPatient,
             WebEngageEventName.PHR_UPDATE_FAMILY_HISTORY,
             'Family History',
-            inputData
+            eventInputData
           );
           postWebEngageIfNewSession(
             'Family History',
             currentPatient,
-            inputData,
+            eventInputData,
             phrSession,
             setPhrSession
           );
@@ -1512,12 +1487,12 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             currentPatient,
             WebEngageEventName.PHR_ADD_FAMILY_HISTORY,
             'Family History',
-            inputData
+            eventInputData
           );
           postWebEngageIfNewSession(
             'Family History',
             currentPatient,
-            inputData,
+            eventInputData,
             phrSession,
             setPhrSession
           );
@@ -1527,7 +1502,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .catch((e) => {
         CommonBugFender('AddRecord_ADD_FAMILY_HISTORY_RECORD', e);
         setshowSpinner(false);
-        console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
       });
   };
@@ -1559,18 +1533,19 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .then(({ data }) => {
         setshowSpinner(false);
         const status = g(data, 'addPatientLabTestRecord', 'status');
+        const eventInputData = removeObjectProperty(inputData, 'testResultFiles');
         if (status) {
           if (selectedRecord) {
             postWebEngagePHR(
               currentPatient,
               WebEngageEventName.PHR_UPDATE_TEST_REPORT,
               'Test Report',
-              inputData
+              eventInputData
             );
             postWebEngageIfNewSession(
               'Test Report',
               currentPatient,
-              inputData,
+              eventInputData,
               phrSession,
               setPhrSession
             );
@@ -1579,12 +1554,12 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               currentPatient,
               WebEngageEventName.PHR_ADD_TEST_REPORT,
               'Test Report',
-              inputData
+              eventInputData
             );
             postWebEngageIfNewSession(
               'Test Report',
               currentPatient,
-              inputData,
+              eventInputData,
               phrSession,
               setPhrSession
             );
@@ -1595,7 +1570,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .catch((e) => {
         CommonBugFender('AddRecord_ADD_PATIENT_LAB_TEST_RECORD', e);
         setshowSpinner(false);
-        console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
       });
   };
@@ -1626,18 +1600,19 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .then(({ data }) => {
         setshowSpinner(false);
         const status = g(data, 'addPatientHospitalizationRecord', 'status');
+        const eventInputData = removeObjectProperty(inputData, 'hospitalizationFiles');
         if (status) {
           if (selectedRecord) {
             postWebEngagePHR(
               currentPatient,
               WebEngageEventName.PHR_UPDATE_HOSPITALIZATIONS,
               'Hospitalization',
-              inputData
+              eventInputData
             );
             postWebEngageIfNewSession(
               'Hospitalization',
               currentPatient,
-              inputData,
+              eventInputData,
               phrSession,
               setPhrSession
             );
@@ -1646,12 +1621,12 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               currentPatient,
               WebEngageEventName.PHR_ADD_HOSPITALIZATIONS,
               'Hospitalization',
-              inputData
+              eventInputData
             );
             postWebEngageIfNewSession(
               'Hospitalization',
               currentPatient,
-              inputData,
+              eventInputData,
               phrSession,
               setPhrSession
             );
@@ -1662,7 +1637,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .catch((e) => {
         CommonBugFender('AddRecord_ADD_PATIENT_HOSPITALIZATION_RECORD', e);
         setshowSpinner(false);
-        console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
       });
   };
@@ -1692,18 +1666,36 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .then(({ data }) => {
         setshowSpinner(false);
         const status = g(data, 'addPatientMedicalBillRecord', 'status');
+        const eventInputData = removeObjectProperty(inputData, 'billFiles');
         if (status) {
           if (selectedRecord) {
             postWebEngagePHR(
               currentPatient,
               WebEngageEventName.PHR_UPDATE_BILLS,
               'Bill',
-              inputData
+              eventInputData
             );
-            postWebEngageIfNewSession('Bill', currentPatient, inputData, phrSession, setPhrSession);
+            postWebEngageIfNewSession(
+              'Bill',
+              currentPatient,
+              eventInputData,
+              phrSession,
+              setPhrSession
+            );
           } else {
-            postWebEngagePHR(currentPatient, WebEngageEventName.PHR_ADD_BILLS, 'Bill', inputData);
-            postWebEngageIfNewSession('Bill', currentPatient, inputData, phrSession, setPhrSession);
+            postWebEngagePHR(
+              currentPatient,
+              WebEngageEventName.PHR_ADD_BILLS,
+              'Bill',
+              eventInputData
+            );
+            postWebEngageIfNewSession(
+              'Bill',
+              currentPatient,
+              eventInputData,
+              phrSession,
+              setPhrSession
+            );
           }
           gotoHealthRecordsHomeScreen();
         }
@@ -1711,7 +1703,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .catch((e) => {
         CommonBugFender('AddRecord_ADD_PATIENT_MEDICAL_BILL_RECORD', e);
         setshowSpinner(false);
-        console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
       });
   };
@@ -1747,18 +1738,19 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .then(({ data }) => {
         setshowSpinner(false);
         const status = g(data, 'addPatientMedicalInsuranceRecord', 'status');
+        const eventInputData = removeObjectProperty(inputData, 'insuranceFiles');
         if (status) {
           if (selectedRecord) {
             postWebEngagePHR(
               currentPatient,
               WebEngageEventName.PHR_UPDATE_INSURANCE,
               'Insurance',
-              inputData
+              eventInputData
             );
             postWebEngageIfNewSession(
               'Insurance',
               currentPatient,
-              inputData,
+              eventInputData,
               phrSession,
               setPhrSession
             );
@@ -1767,12 +1759,12 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               currentPatient,
               WebEngageEventName.PHR_ADD_INSURANCE,
               'Insurance',
-              inputData
+              eventInputData
             );
             postWebEngageIfNewSession(
               'Insurance',
               currentPatient,
-              inputData,
+              eventInputData,
               phrSession,
               setPhrSession
             );
@@ -1783,7 +1775,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .catch((e) => {
         CommonBugFender('AddRecord_ADD_PATIENT_MEDICAL_INSURANCE_RECORD', e);
         setshowSpinner(false);
-        console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
       });
   };
@@ -1829,7 +1820,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .catch((e) => {
         CommonBugFender('AddRecord_DELETE_HEALTH_RECORD_FILES', e);
         setshowSpinner(false);
-        console.log(JSON.stringify(e), 'eeeee');
         currentPatient && handleGraphQlError(e);
       });
   };
@@ -2203,8 +2193,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           keyExtractor={(_, index) => index.toString()}
           ListFooterComponent={() => (imagesArray?.length > 0 ? null : renderAddMorePagesCard())}
         />
-        {/* UI for multiple images */}
-        {/* {Images?.length > 3 ? renderAddMorePagesCard() : null} */}
       </View>
     );
   };
@@ -3947,15 +3935,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               style={styles.bottomWhiteButtonStyle}
               titleTextStyle={styles.bottomWhiteButtonTextStyle}
             />
-            {/* UI for multiple images */}
-            {/* <View style={styles.buttonSeperatorStyle} />
-            <View style={styles.bottomButtonStyle}>
-              <Button
-                onPress={onPressClickMorePhoto}
-                title={'CLICK MORE PHOTO'}
-                style={styles.bottomButtonStyle}
-              />
-            </View> */}
           </View>
         </View>
       </ScrollView>
@@ -4006,8 +3985,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             setDisplayReviewPhotoPopup(true);
             setCurrentImage(response[0]);
           }
-          // Logic for multiple images
-          // setImages([...Images, ...response]);
           setImageUpdate(false);
           setImages(response);
           setdisplayOrderPopup(false);
@@ -4021,8 +3998,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             setReviewPopupID(2);
             setCurrentImage(response[0]);
           }
-          // Logic for multiple images
-          // setImages([...Images, ...response]);
           setImageUpdate(false);
           setAllergyImage(response);
           setdisplayAllergyPopup(false);
@@ -4036,8 +4011,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             setReviewPopupID(3);
             setCurrentImage(response[0]);
           }
-          // Logic for multiple images
-          // setImages([...Images, ...response]);
           setImageUpdate(false);
           setMedicalConditionImage(response);
           setdisplayMedicalConditionPopup(false);
@@ -4051,8 +4024,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             setReviewPopupID(4);
             setCurrentImage(response[0]);
           }
-          // Logic for multiple images
-          // setImages([...Images, ...response]);
           setImageUpdate(false);
           setFamilyHistoryImage(response);
           setdisplayFamilyHistoryPopup(false);
@@ -4077,7 +4048,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         openCamera={openCamera}
         phrUpload={true}
         disabledOption="NONE"
-        //type=""
         heading={'Upload File'}
         instructionHeading={'Instructions For Uploading Prescriptions'}
         instructions={[

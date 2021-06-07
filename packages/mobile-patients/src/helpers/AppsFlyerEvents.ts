@@ -1,3 +1,5 @@
+import { PharmaUserStatus } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+
 type YesOrNo = { value: 'Yes' | 'No' };
 
 export enum ProductPageViewedSource {
@@ -192,13 +194,6 @@ export interface AppsFlyerEvents {
     BrandID?: string;
     categoryname?: string;
     categoryID?: string;
-    // 'Patient Name': string;
-    // 'Patient UHID': string;
-    // Relation: string;
-    // 'Patient Age': number;
-    // 'Patient Gender': string;
-    // 'Mobile Number': string;
-    // 'Customer ID': string;
   };
   [AppsFlyerEventName.PHARMACY_CART_VIEWED]: {
     'Customer ID': string;
@@ -282,16 +277,17 @@ export interface AppsFlyerEvents {
     Pincode: string | number;
   };
   [AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED]: {
-    'customer id': string;
+    'customer id'?: string;
     'cart size': number;
     af_revenue: number;
     af_currency: string;
     'order id': string;
-    orderAutoId: string;
+    orderAutoId?: string;
     'coupon applied': boolean;
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
     'Circle Cashback amount': number;
+    User_Type?: PharmaUserStatus;
   };
   [AppsFlyerEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
@@ -452,6 +448,7 @@ export interface AppsFlyerEvents {
     displayId: string;
     'coupon applied': boolean;
     'Circle discount': number;
+    User_Type: string;
   };
 
   [AppsFlyerEventName.FEATURED_TEST_CLICKED]: {
@@ -552,5 +549,12 @@ export interface AppsFlyerEvents {
     items: any;
     transaction_id: string;
     af_revenue: number;
+    af_currency: string;
+  };
+
+  [AppsFlyerEventName.PAYMENT_STATUS]: {
+    status: string;
+    LOB: string;
+    paymentOrderId: number;
   };
 }

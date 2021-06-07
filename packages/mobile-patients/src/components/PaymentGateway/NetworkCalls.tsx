@@ -1,7 +1,7 @@
 // import HyperSdkReact from '​hyper-sdk-react​';
 import { NativeModules } from 'react-native';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import Axios, { AxiosResponse } from 'axios';
+import Axios from 'axios';
 
 const { HyperSdkReact } = NativeModules;
 
@@ -22,13 +22,13 @@ export const createHyperServiceObject = () => {
   HyperSdkReact.createHyperServices();
 };
 
-export const initiateSDK = (customerId: string, requestId: string) => {
+export const initiateSDK = (customerId: string, requestId: string, merchantId: string) => {
   const initiatePayload = {
     requestId: requestId,
     service: AppConfig.Configuration.jusPayService,
     payload: {
       action: 'initiate',
-      merchantId: AppConfig.Configuration.merchantId,
+      merchantId: merchantId,
       clientId: AppConfig.Configuration.clientId,
       customerId: customerId, //Any unique refrences to current customer
       environment: AppConfig.Configuration.jusPayenvironment,
@@ -37,34 +37,6 @@ export const initiateSDK = (customerId: string, requestId: string) => {
   //It is highly recommended to initiate SDK from the order summary page
   HyperSdkReact.initiate(JSON.stringify(initiatePayload));
 };
-
-// export const handleEventListener = (resp: any) => {
-//   var data = JSON.parse(resp);
-//   var event: string = data.event || '';
-//   console.log('data >>>>', data);
-//   switch (event) {
-//     case 'show_loader':
-//       // show some loader here
-//       console.log('show_loader');
-//       break;
-//     case 'hide_loader':
-//       // hide the loader
-//       console.log('hide_loader');
-//       break;
-//     case 'initiate_result':
-//       var payload = data.payload || {};
-//       console.log('initiate_result: ', payload);
-//       // merchant code
-//       break;
-//     case 'process_result':
-//       var payload = data.payload || {};
-//       console.log('process_result: ', payload);
-//       // merchant code
-//       break;
-//     default:
-//       console.log('Unknown Event', data);
-//   }
-// };
 
 export const isSDKInitialised = () => {
   return HyperSdkReact.isInitialised();
@@ -94,11 +66,10 @@ export const InitiateNetBankingTxn = (
       action: 'nbTxn',
       orderId: paymentOrderId,
       paymentMethod: bankCode,
-      endUrls: [AppConfig.Configuration.returnUrl],
+      endUrls: [AppConfig.Configuration.baseUrl],
       clientAuthToken: clientAuthToken,
     },
   };
-  console.log('netBankingPayload >>>', netBankingPayload);
   HyperSdkReact.process(JSON.stringify(netBankingPayload));
 };
 
@@ -114,7 +85,7 @@ export const InitiateCardTxn = (
     payload: {
       action: 'cardTxn',
       orderId: paymentOrderId,
-      endUrls: [AppConfig.Configuration.returnUrl],
+      endUrls: [AppConfig.Configuration.baseUrl],
       paymentMethod: cardInfo?.cardType,
       cardNumber: cardInfo?.cardNumber,
       cardExpMonth: cardInfo?.ExpMonth,
@@ -140,11 +111,10 @@ export const InitiateWalletTxn = (
       action: 'walletTxn',
       orderId: paymentOrderId,
       paymentMethod: wallet,
-      endUrls: [AppConfig.Configuration.returnUrl],
+      endUrls: [AppConfig.Configuration.baseUrl],
       clientAuthToken: clientAuthToken,
     },
   };
-  console.log('walletPayload >>', walletPayload);
   HyperSdkReact.process(JSON.stringify(walletPayload));
 };
 
@@ -168,14 +138,13 @@ export const InitiateUPISDKTxn = (
       orderId: paymentOrderId,
       paymentMethod: paymentMethod,
       sdkPresent: sdkPresent,
-      endUrls: [AppConfig.Configuration.returnUrl],
+      endUrls: [AppConfig.Configuration.baseUrl],
       clientAuthToken: clientAuthToken,
     },
   };
   if (paymentMethod == 'GOOGLEPAY') {
     IntentPayload['payload']['allowedMethods'] = ['UPI'];
   }
-  console.log('IntentPayload >>', IntentPayload);
   HyperSdkReact.process(JSON.stringify(IntentPayload));
 };
 
@@ -193,13 +162,38 @@ export const InitiateVPATxn = (
       orderId: paymentOrderId,
       custVpa: VPA,
       upiSdkPresent: true,
-      endUrls: [AppConfig.Configuration.returnUrl],
+      endUrls: [AppConfig.Configuration.baseUrl],
       displayNote: 'UPI Collect',
       clientAuthToken: clientAuthToken,
     },
   };
-  console.log('VPAPayload >>', VPAPayload);
   HyperSdkReact.process(JSON.stringify(VPAPayload));
+};
+
+export const isGooglePayReady = () => {
+  const payload = {
+    requestId: 'googlePay',
+    service: AppConfig.Configuration.jusPayService,
+    payload: {
+      action: 'isDeviceReady',
+      sdkPresent: 'ANDROID_GOOGLEPAY',
+    },
+  };
+  console.log('payload >>', payload);
+  HyperSdkReact.process(JSON.stringify(payload));
+};
+
+export const isPhonePeReady = () => {
+  const payload = {
+    requestId: 'phonePe',
+    service: AppConfig.Configuration.jusPayService,
+    payload: {
+      action: 'isDeviceReady',
+      sdkPresent: 'ANDROID_PHONEPE',
+    },
+  };
+  console.log('payload >>', payload);
+  HyperSdkReact.process(JSON.stringify(payload));
 };
 
 export const fetchAvailableUPIApps = (requestId: string) => {

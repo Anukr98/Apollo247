@@ -18,7 +18,7 @@
 @end
 @interface RCT_EXTERN_MODULE(Vitals, NSObject)
 
-RCT_EXTERN_METHOD(vitalsToExport: (NSString)token buildSpecify:(NSString)specify)
+RCT_EXTERN_METHOD(vitalsToExport: (NSString)token buildSpecify:(NSString)specify comingFrom:(NSString)name)
 RCT_EXTERN_METHOD(goToReactNative: (NSString)token)
 
 @end

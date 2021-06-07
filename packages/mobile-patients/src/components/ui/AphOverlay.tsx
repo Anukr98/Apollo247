@@ -75,9 +75,6 @@ export const AphOverlay: React.FC<AphOverlayProps> = (props) => {
     );
   };
 
-  // const keyboardAvoidingViewProps =
-  //   Platform.OS == 'ios' ? { behavior: 'padding', keyboardVerticalOffset: 35 } : {};
-
   return (
     <Overlay
       onRequestClose={props.onClose}

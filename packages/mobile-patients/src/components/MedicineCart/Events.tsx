@@ -139,21 +139,13 @@ export function PharmacyCartViewedEvent(
 }
 
 export function PricemismatchEvent(cartItem: ShoppingCartItem, id: string, storeItemPrice: number) {
-  const isDiffLessOrGreaterThan25Percent = (num1: number, num2: number) => {
-    const diffP = ((num1 - num2) / num1) * 100;
-    const result = diffP > 25 || diffP < -25;
-    return result;
-  };
-  const isDiff = storeItemPrice
-    ? isDiffLessOrGreaterThan25Percent(cartItem.price, storeItemPrice)
-    : true;
   const eventAttributes: WebEngageEvents[WebEngageEventName.SKU_PRICE_MISMATCH] = {
     'Mobile Number': id,
     'Sku Id': cartItem.id,
     'Magento MRP': cartItem.price,
     'Magento Pack Size': Number(cartItem.mou),
     'Store API MRP': storeItemPrice,
-    'Price Change In Cart': isDiff ? 'No' : 'Yes',
+    'Price Change In Cart': 'Yes',
   };
   postWebEngageEvent(WebEngageEventName.SKU_PRICE_MISMATCH, eventAttributes);
 }

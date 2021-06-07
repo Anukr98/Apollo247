@@ -12,8 +12,9 @@ import {
   Alert,
   Image,
   BackHandler,
+  ScrollView,
 } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { RNCamera as Camera } from 'react-native-camera';
 import {
   CameraClickButton,
@@ -215,12 +216,7 @@ const MAX_FILE_SIZE = 2000000; // 2MB
 export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (props) => {
   const phyPrescriptionUploaded = props.navigation.getParam('phyPrescriptionUploaded') || [];
   const ePresscriptionUploaded = props.navigation.getParam('ePresscriptionUploaded') || [];
-  const {
-    ePrescriptions,
-    setEPrescriptions,
-    physicalPrescriptions,
-    setPhysicalPrescriptions,
-  } = useShoppingCart();
+  const { ePrescriptions } = useShoppingCart();
   const [photoBase64, setPhotoBase64] = useState<string>('');
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [isFocused, setIsFocused] = useState<boolean>(false);
@@ -256,11 +252,16 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
   });
 
   const clickPhoto = async () => {
-    const options = { quality: 0.5, base64: true, pauseAfterCapture: true };
-    const data = await _camera?.current?.takePictureAsync(options);
-    const clickedPhotoResponse = formatResponse([data], true);
-    setImageClickData(clickedPhotoResponse);
-    setPhotoBase64(data?.base64);
+    try {
+      CommonLogEvent('Inside UploadPrescriprionView clickPhoto function.');
+      const options = { quality: 0.5, base64: true, pauseAfterCapture: true };
+      const data = await _camera?.current?.takePictureAsync(options);
+      const clickedPhotoResponse = formatResponse([data], true);
+      setImageClickData(clickedPhotoResponse);
+      setPhotoBase64(data?.base64);
+    } catch (error) {
+      CommonBugFender('UploadPrescriprionView_clickPhoto', error);
+    }
   };
 
   const removeClickedPhoto = () => {
@@ -282,7 +283,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
                 setIsCameraAccessGranted(false);
               }
             })
-            .catch((e) => console.log(e, 'dsvunacimkl'));
+            .catch((e) => {});
         }}
       >
         <View style={styles.permissionBox}>
@@ -602,7 +603,6 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
       })
       .catch((e: Error) => {
         CommonBugFender('UploadPrescriprionPopup_onClickGallery', e);
-        console.log({ e });
         setShowSpinner(false);
       });
   };

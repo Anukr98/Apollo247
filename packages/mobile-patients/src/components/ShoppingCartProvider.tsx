@@ -2,6 +2,7 @@ import {
   MEDICINE_DELIVERY_TYPE,
   MedicineOrderShipmentInput,
   MedicineCartOMSItem,
+  PrescriptionType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { Store, GetStoreInventoryResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -10,10 +11,8 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import AsyncStorage from '@react-native-community/async-storage';
-import {
-  validatePharmaCoupon_validatePharmaCoupon,
-  validatePharmaCoupon_validatePharmaCoupon_pharmaLineItemsWithDiscountedPrice,
-} from '@aph/mobile-patients/src/graphql/types/validatePharmaCoupon';
+import { validatePharmaCoupon_validatePharmaCoupon } from '@aph/mobile-patients/src/graphql/types/validatePharmaCoupon';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { addToCartTagalysEvent } from '@aph/mobile-patients/src/helpers/Tagalys';
@@ -56,7 +55,6 @@ export interface CouponProducts {
 export interface PhysicalPrescription {
   title: string;
   fileType: string;
-  // path: string;
   base64: string;
   uploadedUrl?: string;
   prismPrescriptionFileId?: string;
@@ -65,7 +63,6 @@ export interface PhysicalPrescription {
 export interface EPrescription {
   id: string;
   uploadedUrl: string;
-  // forPatientId?: string;
   forPatient: string;
   date: string;
   medicines: string;
@@ -147,6 +144,8 @@ export interface ShoppingCartContextProps {
   packagingCharges: number;
   grandTotal: number;
   uploadPrescriptionRequired: boolean;
+  prescriptionType: PrescriptionType | null;
+  setPrescriptionType: (type: PrescriptionType | null) => void;
   isFreeDelivery: boolean;
   setIsFreeDelivery: ((value: boolean) => void) | null;
   circleCashback: CircleCashbackData | null;
@@ -163,13 +162,11 @@ export interface ShoppingCartContextProps {
   setStores: ((store: Store[]) => void) | null;
   storesInventory: GetStoreInventoryResponse[];
   setStoresInventory: ((store: GetStoreInventoryResponse[]) => void) | null;
-
   ePrescriptions: EPrescription[];
   addEPrescription: ((item: EPrescription) => void) | null;
   addMultipleEPrescriptions: ((items: EPrescription[]) => void) | null;
   setEPrescriptions: ((items: EPrescription[]) => void) | null;
   removeEPrescription: ((id: EPrescription['id']) => void) | null;
-
   addPhysicalPrescription: ((item: PhysicalPrescription) => void) | null;
   setPhysicalPrescriptions: ((items: PhysicalPrescription[]) => void) | null;
   updatePhysicalPrescription:
@@ -179,6 +176,8 @@ export interface ShoppingCartContextProps {
     | null;
   removePhysicalPrescription: ((base64: string) => void) | null;
   physicalPrescriptions: PhysicalPrescription[];
+  consultProfile: GetCurrentPatients_getCurrentPatients_patients | null;
+  setConsultProfile: (profile: GetCurrentPatients_getCurrentPatients_patients | null) => void;
 
   addAddress: ((address: savePatientAddress_savePatientAddress_patientAddress) => void) | null;
   deliveryAddressId: string;
@@ -187,26 +186,20 @@ export interface ShoppingCartContextProps {
   setdeliveryTime: ((date: string) => void) | null;
   newAddressAdded: string;
   setNewAddressAdded: ((id: string) => void) | null;
-
   addresses: savePatientAddress_savePatientAddress_patientAddress[];
   setAddresses:
     | ((addresses: savePatientAddress_savePatientAddress_patientAddress[]) => void)
     | null;
-
   storeId: string;
   setStoreId: ((id: string) => void) | null;
   pinCode: string;
   setPinCode: ((pinCode: string) => void) | null;
-
   coupon: PharmaCoupon | null;
   setCoupon: ((coupon: PharmaCoupon | null) => void) | null;
-
   deliveryType: MEDICINE_DELIVERY_TYPE | null;
   clearCartInfo: (() => void) | null;
-
   hdfcPlanName: string;
   setHdfcPlanName: ((id: string) => void) | null;
-
   isProuctFreeCouponApplied: boolean;
   circleSubscriptionId: string;
   setCircleSubscriptionId: ((id: string) => void) | null;
@@ -224,6 +217,8 @@ export interface ShoppingCartContextProps {
   showCircleSubscribed: boolean;
   hdfcSubscriptionId: string;
   setHdfcSubscriptionId: ((id: string) => void) | null;
+  corporateSubscription: boolean;
+  setCorporateSubscription: (id: boolean) => void;
   circlePlanValidity: circleValidity | null;
   setCirclePlanValidity: ((validity: circleValidity) => void) | null;
   circlePaymentReference: any;
@@ -234,6 +229,18 @@ export interface ShoppingCartContextProps {
   orders: any;
   setOrders: ((orders: any[]) => void) | null;
   shipments: (MedicineOrderShipmentInput | null)[];
+  asyncPincode: any;
+  setAsyncPincode: ((pincode: any) => void) | null;
+  minimumCartValue: number;
+  setMinimumCartValue: ((value: number) => void) | null;
+  minCartValueForCOD: number;
+  setMinCartValueForCOD: ((value: number) => void) | null;
+  maxCartValueForCOD: number;
+  setMaxCartValueForCOD: ((value: number) => void) | null;
+  nonCodSKus: string[];
+  setNonCodSKus: ((items: string[]) => void) | null;
+  asyncPincode: any;
+  setAsyncPincode: ((pincode: any) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -254,30 +261,29 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   packagingCharges: 0,
   grandTotal: 0,
   uploadPrescriptionRequired: false,
-
+  prescriptionType: null,
+  setPrescriptionType: () => {},
   couponProducts: [],
   setCouponProducts: null,
-
   ePrescriptions: [],
   addEPrescription: null,
   addMultipleEPrescriptions: null,
   setEPrescriptions: null,
   removeEPrescription: null,
-
   setPhysicalPrescriptions: null,
   addPhysicalPrescription: null,
   updatePhysicalPrescription: null,
   removePhysicalPrescription: null,
   physicalPrescriptions: [],
+  consultProfile: null,
+  setConsultProfile: () => {},
 
   stores: [],
   setStores: null,
   storesInventory: [],
   setStoresInventory: null,
-
   isFreeDelivery: false,
   setIsFreeDelivery: null,
-
   circleCashback: null,
   setCircleCashback: null,
   isCircleSubscription: false,
@@ -286,19 +292,15 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setCircleMembershipCharges: null,
   circleSubPlanId: '',
   setCircleSubPlanId: null,
-
   showPrescriptionAtStore: false,
   setShowPrescriptionAtStore: null,
   pinCode: '',
   setPinCode: null,
-
   addresses: [],
   setAddresses: null,
   addAddress: null,
-
   coupon: null,
   setCoupon: null,
-
   deliveryAddressId: '',
   setDeliveryAddressId: null,
   newAddressAdded: '',
@@ -307,10 +309,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setStoreId: null,
   deliveryType: null,
   clearCartInfo: null,
-
   hdfcPlanName: '',
   setHdfcPlanName: null,
-
   isProuctFreeCouponApplied: false,
   circleSubscriptionId: '',
   setCircleSubscriptionId: null,
@@ -330,6 +330,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   showCircleSubscribed: false,
   hdfcSubscriptionId: '',
   setHdfcSubscriptionId: null,
+  corporateSubscription: false,
+  setCorporateSubscription: null,
   circlePlanValidity: null,
   setCirclePlanValidity: null,
   circlePaymentReference: null,
@@ -340,6 +342,18 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   orders: [],
   setOrders: null,
   shipments: [],
+  asyncPincode: null,
+  setAsyncPincode: null,
+  minimumCartValue: 0,
+  setMinimumCartValue: null,
+  minCartValueForCOD: 0,
+  setMinCartValueForCOD: null,
+  maxCartValueForCOD: 0,
+  setMaxCartValueForCOD: null,
+  nonCodSKus: [],
+  setNonCodSKus: null,
+  asyncPincode: null,
+  setAsyncPincode: null,
 });
 
 const AsyncStorageKeys = {
@@ -359,6 +373,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [couponDiscount, setCouponDiscount] = useState<ShoppingCartContextProps['couponDiscount']>(
     0
   );
+  const [prescriptionType, setPrescriptionType] = useState<
+    ShoppingCartContextProps['prescriptionType']
+  >(null);
   const [productDiscount, setProductDiscount] = useState<
     ShoppingCartContextProps['productDiscount']
   >(0);
@@ -441,6 +458,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [hdfcSubscriptionId, setHdfcSubscriptionId] = useState<
     ShoppingCartContextProps['hdfcSubscriptionId']
   >('');
+  const [corporateSubscription, setCorporateSubscription] = useState<
+    ShoppingCartContextProps['corporateSubscription']
+  >(false);
   const [circlePaymentReference, setCirclePaymentReference] = useState<
     ShoppingCartContextProps['circlePaymentReference']
   >();
@@ -449,24 +469,32 @@ export const ShoppingCartProvider: React.FC = (props) => {
     ShoppingCartContextProps['pdpBreadCrumbs']
   >();
 
+  const [consultProfile, setConsultProfile] = useState<ShoppingCartContextProps['consultProfile']>(
+    null
+  );
+
+  const [minimumCartValue, setMinimumCartValue] = useState<
+    ShoppingCartContextProps['minimumCartValue']
+  >(0);
+  const [minCartValueForCOD, setMinCartValueForCOD] = useState<
+    ShoppingCartContextProps['minCartValueForCOD']
+  >(0);
+  const [maxCartValueForCOD, setMaxCartValueForCOD] = useState<
+    ShoppingCartContextProps['maxCartValueForCOD']
+  >(0);
+  const [nonCodSKus, setNonCodSKus] = useState<ShoppingCartContextProps['nonCodSKus']>([]);
+  const [asyncPincode, setAsyncPincode] = useState<ShoppingCartContextProps['asyncPincode']>();
+
   const [isProuctFreeCouponApplied, setisProuctFreeCouponApplied] = useState<boolean>(false);
   const [orders, setOrders] = useState<ShoppingCartContextProps['orders']>([]);
   const [shipments, setShipments] = useState<ShoppingCartContextProps['shipments']>([]);
   const setEPrescriptions: ShoppingCartContextProps['setEPrescriptions'] = (items) => {
     _setEPrescriptions(items);
-    AsyncStorage.setItem(AsyncStorageKeys.ePrescriptions, JSON.stringify(items)).catch(() => {
-      showGenericAlert('Failed to save E-Prescriptions in local storage.');
-    });
   };
 
   const setPhysicalPrescriptions: ShoppingCartContextProps['setPhysicalPrescriptions'] = (
     items
   ) => {
-    AsyncStorage.setItem(AsyncStorageKeys.physicalPrescriptions, JSON.stringify(items)).catch(
-      () => {
-        showGenericAlert('Failed to save Physical Prescriptions in local storage.');
-      }
-    );
     _setPhysicalPrescriptions(items);
   };
 
@@ -484,9 +512,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     const existingFilteredEPres = ePrescriptions.filter(
       (item) => !itemsToAdd.find((val) => val.id == item.id)
     );
-    // console.log('existingFilteredEPres\n', { existingFilteredEPres });
     const updatedEPres = [...existingFilteredEPres, ...itemsToAdd];
-    // console.log('updatedEPres\n', { updatedEPres });
     setEPrescriptions(updatedEPres);
   };
 
@@ -530,12 +556,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
     const existingFilteredCartItems = cartItems.filter(
       (item) => !itemsToAdd.find((val) => val.id == item.id)
     );
-    // console.log('existingFilteredCartItems\n', { existingFilteredCartItems });
     const newCartItems = [
       ...existingFilteredCartItems,
       ...itemsToAdd.filter((v, i, a) => a.findIndex((t) => t.id === v.id) === i),
     ];
-    // console.log('newCartItems\n', { newCartItems });
     newCartItems.forEach((i) =>
       addToCartTagalysEvent({ sku: i.id, quantity: i.quantity }, g(currentPatient, 'id'))
     );
@@ -594,11 +618,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const setOnHoldOptionOrder: ShoppingCartContextProps['setOnHoldOptionOrder'] = (items) => {
     const addOnHoldItems = [...onHoldOptionOrder, ...items];
     _setOnHoldOptionOrder(addOnHoldItems);
-    AsyncStorage.setItem(AsyncStorageKeys.onHoldOptionOrder, JSON.stringify(addOnHoldItems)).catch(
-      () => {
-        console.log('Failed to save on hold options in local storage.');
-      }
-    );
+    AsyncStorage.setItem(
+      AsyncStorageKeys.onHoldOptionOrder,
+      JSON.stringify(addOnHoldItems)
+    ).catch(() => {});
   };
 
   const cartTotal: ShoppingCartContextProps['cartTotal'] = parseFloat(
@@ -636,6 +659,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     isFreeDelivery ||
     deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP ||
     isCircleSubscription ||
+    circleMembershipCharges ||
     hdfcPlanName === string.Hdfc_values.PLATINUM_PLAN
       ? 0
       : cartTotal > 0 &&
@@ -743,6 +767,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setCouponProducts([]);
     setHdfcPlanName('');
     setdeliveryTime('');
+    setPrescriptionType(null);
+    setConsultProfile(null);
   };
 
   useEffect(() => {
@@ -798,7 +824,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
         shipmentPackagingfee -
         shipmentCouponDiscount -
         shipmentProductDiscount;
-      console.log('shipmentTotal >>>', shipmentTotal);
       shipment['shopId'] = order['storeCode'];
       shipment['tatType'] = order['storeType'];
       shipment['estimatedAmount'] = formatNumber(estimatedAmount);
@@ -918,18 +943,12 @@ export const ShoppingCartProvider: React.FC = (props) => {
       try {
         const cartItemsFromStorage = await AsyncStorage.multiGet([
           AsyncStorageKeys.cartItems,
-          AsyncStorageKeys.physicalPrescriptions,
-          AsyncStorageKeys.ePrescriptions,
           AsyncStorageKeys.onHoldOptionOrder,
         ]);
         const cartItems = cartItemsFromStorage[0][1];
-        const physicalPrescriptions = cartItemsFromStorage[1][1];
-        const ePrescriptions = cartItemsFromStorage[2][1];
-        const showOnHoldOptions = cartItemsFromStorage[3][1];
+        const showOnHoldOptions = cartItemsFromStorage[1][1];
 
         _setCartItems(JSON.parse(cartItems || 'null') || []);
-        _setPhysicalPrescriptions(JSON.parse(physicalPrescriptions || 'null') || []);
-        _setEPrescriptions(JSON.parse(ePrescriptions || 'null') || []);
         _setOnHoldOptionOrder(JSON.parse(showOnHoldOptions || 'null') || []);
       } catch (error) {
         CommonBugFender('ShoppingCartProvider_updateCartItemsFromStorage_try', error);
@@ -1062,6 +1081,12 @@ export const ShoppingCartProvider: React.FC = (props) => {
     }
   }, [deliveryAddressId]);
 
+  useEffect(() => {
+    if (physicalPrescriptions?.length || ePrescriptions?.length) {
+      setPrescriptionType(PrescriptionType.UPLOADED);
+    }
+  }, [physicalPrescriptions, ePrescriptions]);
+
   const selectDefaultPlan = (plan: any) => {
     const defaultPlan = plan?.filter((item: any) => item.defaultPack === true);
     if (defaultPlan?.length > 0) {
@@ -1104,22 +1129,24 @@ export const ShoppingCartProvider: React.FC = (props) => {
         deliveryCharges,
         packagingCharges,
         uploadPrescriptionRequired,
+        prescriptionType,
+        setPrescriptionType,
 
         couponProducts,
         setCouponProducts,
-
         ePrescriptions,
         addEPrescription,
         addMultipleEPrescriptions,
         removeEPrescription,
         setEPrescriptions,
+        consultProfile,
+        setConsultProfile,
 
         physicalPrescriptions,
         setPhysicalPrescriptions,
         addPhysicalPrescription,
         updatePhysicalPrescription,
         removePhysicalPrescription,
-
         addresses,
         setAddresses,
         addAddress,
@@ -1127,7 +1154,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setDeliveryAddressId,
         newAddressAdded,
         setNewAddressAdded,
-
         stores,
         setStores,
         storesInventory,
@@ -1146,16 +1172,12 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setCircleSubPlanId,
         showPrescriptionAtStore,
         setShowPrescriptionAtStore,
-
         pinCode,
         setPinCode,
-
         coupon,
         setCoupon,
-
         deliveryType,
         clearCartInfo,
-
         hdfcPlanName,
         setHdfcPlanName,
         isProuctFreeCouponApplied,
@@ -1177,6 +1199,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         showCircleSubscribed,
         hdfcSubscriptionId,
         setHdfcSubscriptionId,
+        corporateSubscription,
+        setCorporateSubscription,
         circlePlanValidity,
         setCirclePlanValidity,
         circlePaymentReference,
@@ -1187,6 +1211,18 @@ export const ShoppingCartProvider: React.FC = (props) => {
         orders,
         setOrders,
         shipments,
+        asyncPincode,
+        setAsyncPincode,
+        minimumCartValue,
+        setMinimumCartValue,
+        minCartValueForCOD,
+        setMinCartValueForCOD,
+        maxCartValueForCOD,
+        setMaxCartValueForCOD,
+        nonCodSKus,
+        setNonCodSKus,
+        asyncPincode,
+        setAsyncPincode,
       }}
     >
       {props.children}

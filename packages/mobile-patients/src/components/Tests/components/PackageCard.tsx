@@ -42,7 +42,14 @@ export interface PackageCardProps {
   isVertical: boolean;
   columns?: number;
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
-  source: string;
+  source:
+    | 'Home page'
+    | 'Full search'
+    | 'Details page'
+    | 'Partial search'
+    | 'Listing page'
+    | 'Category page'
+    | 'Prescription';
   sourceScreen: string;
 }
 
@@ -78,12 +85,12 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
         inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
       );
 
-    const getMandatoryParameterCount = getMandatoryParamter?.reduce(
-      (prevVal: any, curr: any) => prevVal + curr?.length,
-      0
-    );
+    const getMandatoryParameterCount =
+      !!getMandatoryParamter &&
+      getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
 
-    const getParamterData = getMandatoryParamter?.length > 0 && getMandatoryParamter?.flat(1);
+    const getParamterData =
+      !!getMandatoryParamter && getMandatoryParamter?.length > 0 && getMandatoryParamter?.flat(1);
     const dataToShow = getMandatoryParameterCount > 0 ? getParamterData : inclusions;
 
     const promoteCircle = pricesForItem?.promoteCircle;
@@ -104,18 +111,13 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
         ]}
       >
         <View>
-          <View style={{ minHeight: 100 }}>
+          <View style={{ minHeight: !!inclusions && inclusions?.length > 0 ? 100 : 0 }}>
             <View style={styles.topPackageView}>
               <View style={{ width: '75%' }}>
                 <Text style={styles.itemNameText} numberOfLines={2}>
                   {name}
                 </Text>
               </View>
-              {/* <Image
-              placeholderStyle={styles.imagePlaceholderStyle}
-              source={{ uri: imageUrl }}
-              style={styles.imageStyle}
-            /> */}
               {renderPercentageDiscount(
                 promoteCircle && isCircleSubscribed
                   ? circleDiscount
@@ -125,7 +127,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
               )}
             </View>
             {!!inclusions && inclusions?.length > 0 ? (
-              <View>
+              <View style={{ minHeight: isSmallDevice ? 90 : 95 }}>
                 <Text style={styles.inclusionsText}>
                   {getMandatoryParameterCount > 0
                     ? `TOTAL PARAMETERS : ${getMandatoryParameterCount}`
@@ -308,13 +310,18 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     const planToConsider = pricesForItem?.planToConsider;
     const discountToDisplay = pricesForItem?.discountToDisplay;
     const mrpToDisplay = pricesForItem?.mrpToDisplay;
+    const widgetType = data?.diagnosticWidgetType;
 
     DiagnosticAddToCartEvent(
       item?.itemTitle,
       `${item?.itemId}`,
       mrpToDisplay,
       discountToDisplay,
-      data?.diagnosticWidgetTitle
+      source,
+      widgetType === string.diagnosticCategoryTitle.categoryGrid ||
+        widgetType == string.diagnosticCategoryTitle.category
+        ? 'Category page'
+        : data?.diagnosticWidgetTitle
     );
 
     addCartItem!({
@@ -340,7 +347,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
   }
 
   function postHomePageWidgetClicked(name: string, id: string, section: string) {
-    DiagnosticHomePageWidgetClicked(name, id, section);
+    DiagnosticHomePageWidgetClicked(section, id, name);
   }
 
   function onPress(item: any, packageCalculatedMrp: number, pricesForItem: any) {

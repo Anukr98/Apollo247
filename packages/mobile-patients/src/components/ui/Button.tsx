@@ -10,7 +10,6 @@ import {
   View,
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-// import { isIphone5s } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
@@ -55,6 +54,8 @@ export interface ButtonProps {
   disabledStyle?: StyleProp<ViewStyle>;
   displayThorn?: boolean;
   thornStyle?: StyleProp<ViewStyle>;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
 }
 
 export const Button: React.FC<ButtonProps> = (props) => {
@@ -69,7 +70,9 @@ export const Button: React.FC<ButtonProps> = (props) => {
       onPress={props.disabled ? () => {} : props.onPress}
     >
       {props.displayThorn && <View style={[styles.thornStyle, props.thornStyle]} />}
+      {props.leftIcon ? props.leftIcon : null}
       <Text style={[styles.titleTextStyle, props.titleTextStyle]}>{props.title}</Text>
+      {props.rightIcon ? props.rightIcon : null}
     </TouchableOpacity>
   );
 };

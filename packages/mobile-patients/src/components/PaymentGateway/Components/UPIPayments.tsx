@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -11,7 +11,6 @@ import {
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CollapseView } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CollapseView';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { paymentModeVersionCheck } from '@aph/mobile-patients/src/helpers/helperFunctions';
 const { width } = Dimensions.get('window');
 const newWidth = width - 40;
 export interface UPIPaymentsProps {

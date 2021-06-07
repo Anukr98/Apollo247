@@ -10,7 +10,6 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { EPrescriptionCard } from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { CrossYellow, FileBig, GreenTickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
-import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
@@ -22,11 +21,12 @@ import {
   postWebEngageEvent,
   findAddrComponents,
   formatAddress,
+  setAsyncPharmaLocation,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Image,
@@ -58,6 +58,7 @@ import {
   MEDICINE_DELIVERY_TYPE,
   BOOKING_SOURCE,
   DEVICE_TYPE,
+  PrescriptionType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   uploadDocument,
@@ -117,14 +118,31 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(14),
   },
   textStyle: {
-    ...theme.fonts.IBMPlexSansMedium(11),
-    lineHeight: 14,
+    ...theme.fonts.IBMPlexSansMedium(14),
+    lineHeight: 17,
     color: '#979797',
   },
   subtitleStyle: {
-    ...theme.fonts.IBMPlexSansMedium(14),
+    ...theme.fonts.IBMPlexSansMedium(16),
     lineHeight: 20,
     color: theme.colors.SHERPA_BLUE,
+  },
+  textContainerStyle: {
+    padding: 20,
+    borderRadius: 10,
+    borderBottomColor: 'black',
+    marginTop: -20,
+    marginBottom: 20,
+  },
+  userCommentTextBoxStyle: {
+    ...theme.fonts.IBMPlexSansMedium(13),
+    borderWidth: 1,
+    padding: 10,
+    borderBottomWidth: 1,
+    borderRadius: 8,
+    borderColor: 'rgba(2,71,91, 0.3)',
+    backgroundColor: theme.colors.WHITE,
+    flexWrap: 'wrap',
   },
 });
 
@@ -148,7 +166,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const source = props.navigation.getParam('source') || '';
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const { pharmacyUserType } = useAppCommonData();
+  const { pharmacyUserType, uploadPrescriptionOptions } = useAppCommonData();
   const type = props.navigation.getParam('type') || '';
   const isPhysicalPresciptionProps = !!phyPrescriptionsProp.length;
   const isEPresciptionProps = !!ePrescriptionsProp.length;
@@ -175,6 +193,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     ePrescriptions,
     setEPrescriptions,
     physicalPrescriptions,
+    setPrescriptionType,
     setPhysicalPrescriptions,
     newAddressAdded,
     setNewAddressAdded,
@@ -188,14 +207,14 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const medicineDetailOptions = [
     {
-      id: NEED_ALL_MEDICINES,
-      title: 'Order all medicines from prescription',
-      subTitle: 'Order will be prepared with all the medicines as prescribed by the doctor',
-    },
-    {
       id: 'search',
       title: 'Search and select medicines by myself',
       subTitle: 'Browse and select medicines which you wish to purchase',
+    },
+    {
+      id: NEED_ALL_MEDICINES,
+      title: 'Order all medicines from prescription',
+      subTitle: 'Order will be prepared with all the medicines as prescribed by the doctor',
     },
     {
       id: CALL_ME,
@@ -203,7 +222,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       subTitle: 'Our pharmacist will call you to confirm the required items',
     },
   ];
-  const [selectedMedicineOption, setSelectedMedicineOption] = useState<string>('');
+  const [selectedMedicineOption, setSelectedMedicineOption] = useState<string>('search');
   const [numberOfPrescriptionClicked, setNumberOfPrescriptionClicked] = useState<number>(
     type === 'Camera' ? 1 : 0
   );
@@ -214,6 +233,9 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     props.navigation.getParam('showOptions') != undefined
       ? props.navigation.getParam('showOptions')
       : true;
+
+  const scrollviewRef = useRef<any>(null);
+  const [userComment, setUserComment] = useState<string>('');
 
   useEffect(() => {
     fetchAddress();
@@ -257,16 +279,13 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       if (deliveryAddress && !deliveryAddressId) {
         setDeliveryAddressId && setDeliveryAddressId(deliveryAddress?.id);
       }
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (error) {}
   }
 
   async function checkServicability(
     address: savePatientAddress_savePatientAddress_patientAddress,
     forceCheck?: boolean
   ) {
-    console.log('inside serviceability check >>>>>>');
     if (deliveryAddressId && deliveryAddressId == address.id && !forceCheck) {
       return;
     }
@@ -274,7 +293,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       setLoading?.(true);
       const response = await pinCodeServiceabilityApi247(address.zipcode!);
       const { data } = response;
-      console.log('data >>>>>', data);
       if (data?.response?.servicable) {
         setDeliveryAddressId && setDeliveryAddressId(address.id);
         setDefaultAddress(address);
@@ -286,7 +304,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         renderAlert(string.medicine_cart.pharmaAddressUnServiceableAlert);
       }
     } catch (error) {
-      console.log(error);
       setLoading?.(false);
     }
   }
@@ -343,7 +360,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       const e_Prescription = isEPresciptionProps ? EPrescriptionsProps : ePrescriptions;
       // Physical Prescription Upload
       const uploadedPhyPrescriptionsData = await uploadMultipleFiles(phyPrescription);
-      console.log('upload of prescriptions done');
 
       const uploadedPhyPrescriptions = uploadedPhyPrescriptionsData.length
         ? uploadedPhyPrescriptionsData.map((item) => g(item, 'data', 'uploadDocument'))
@@ -359,13 +375,18 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         .map((item) => item?.prismPrescriptionFileId)
         .filter((i) => i);
       const days = durationDays ? parseInt(durationDays) : null;
+      const optionSelected =
+        selectedMedicineOption === CALL_ME && !!userComment
+          ? `${prescriptionOption}, ${userComment}`?.trim()
+          : prescriptionOption;
+      const appointmentIds = e_Prescription.length ? e_Prescription?.map((item) => item?.id) : [];
 
       const prescriptionMedicineInput: savePrescriptionMedicineOrderOMSVariables = {
         prescriptionMedicineOMSInput: {
           patientId: (currentPatient && currentPatient.id) || '',
           medicineDeliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
           ...(storeId ? { shopId: storeId } : {}),
-          appointmentId: '',
+          appointmentId: appointmentIds?.length ? appointmentIds.join(',') : '',
           patinetAddressId: deliveryAddressId || '',
           prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),
           prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
@@ -373,7 +394,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           // Values for chennai order
           bookingSource: BOOKING_SOURCE.MOBILE,
           deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
-          prescriptionOptionSelected: prescriptionOption,
+          prescriptionOptionSelected: optionSelected,
           durationDays: prescriptionOption === 'duration' ? days : null,
           appVersion: DeviceInfo.getVersion(),
         },
@@ -436,7 +457,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         ...addresses.filter((item) => item.id != address.id),
       ];
       setAddresses!(newAddrList);
-      // setTestAddresses!(newAddrList);
       onComplete();
     } catch (error) {
       // Let the user order journey continue, even if no lat-lang.
@@ -453,7 +473,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         variables,
       })
       .then(({ data }) => {
-        console.log({ data });
         const { errorCode, orderAutoId } = g(data, 'savePrescriptionMedicineOrderOMS') || {};
         postwebEngageSubmitPrescriptionEvent(orderAutoId);
         if (errorCode) {
@@ -464,7 +483,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       })
       .catch((e) => {
         CommonBugFender('UploadPrescription_submitPrescriptionMedicineOrder', e);
-        console.log({ e });
         renderErrorAlert(`Something went wrong, please try later.`);
       })
       .finally(() => {
@@ -506,7 +524,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
             patientId: g(currentPatient, 'id')!,
           },
         };
-        console.log(JSON.stringify(variables));
         return client.mutate<uploadDocument, uploadDocumentVariables>({
           mutation: UPLOAD_DOCUMENT,
           fetchPolicy: 'no-cache',
@@ -562,7 +579,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   };
 
   const submitReuploadPrescription = (variables: ReUploadPrescriptionVariables) => {
-    console.log({ variables });
     setLoading!(true);
     client
       .mutate({
@@ -570,7 +586,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         variables,
       })
       .then(({ data }) => {
-        console.log({ data });
         if (!data.reUploadPrescription.success) {
           renderErrorAlert(`Something went wrong, please try later.`);
           return;
@@ -587,7 +602,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       .catch((e) => {
         setLoading!(false);
         CommonBugFender('UploadPrescription_submitPrescriptionMedicineOrder', e);
-        console.log({ e });
         renderErrorAlert(`Something went wrong, please try later.`);
       })
       .finally(() => {
@@ -737,7 +751,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         <SelectEPrescriptionModal
           displayPrismRecords={true}
           navigation={props.navigation}
-          // showConsultPrescriptionsOnly={true} // not showing e-prescriptions for non-cart flow
           onSubmit={(selectedEPres) => {
             setSelectPrescriptionVisible(false);
             if (selectedEPres.length == 0) {
@@ -755,6 +768,9 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   };
 
   const renderMedicineDetailOptions = () => {
+    const prescriptionOptions = uploadPrescriptionOptions?.length
+      ? uploadPrescriptionOptions
+      : medicineDetailOptions;
     return (
       <View style={styles.prescriptionCardStyle}>
         <View>{renderLabel('Choose a suitable option below', true)}</View>
@@ -768,7 +784,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
             margin: 16,
           }}
         >
-          {medicineDetailOptions.map((item, index, array) => {
+          {prescriptionOptions?.map((item, index, array) => {
             return (
               <RadioSelectionItem
                 key={item.id}
@@ -786,10 +802,11 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                       : item.id === NEED_ALL_MEDICINES
                       ? 'All Medicine'
                       : CALL_ME;
-                  if (optionSelected === CALL_ME) {
-                    setPrescriptionOption(CALL_ME);
-                  } else if (optionSelected === 'All Medicine') {
-                    setPrescriptionOption(SPECIFIED_DURATION);
+                  if (optionSelected === CALL_ME || optionSelected === 'All Medicine') {
+                    setTimeout(() => {
+                      scrollviewRef.current.scrollToEnd({ animated: true });
+                    }, 300);
+                    setPrescriptionOption(optionSelected);
                   }
                   const eventAttribute: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED] = {
                     OptionSelected: optionSelected,
@@ -1001,6 +1018,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           onPressSelectAddress={(address) => {
             checkServicability(address, false);
             nonCartAvailabilityTat(address?.zipcode);
+            setAsyncPharmaLocation(address);
             hideAphAlert!();
           }}
         />
@@ -1009,22 +1027,36 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   }
 
   const renderExpectCall = () => {
-    return selectedMedicineOption === CALL_ME ? <ExpectCall /> : null;
+    return selectedMedicineOption === CALL_ME || selectedMedicineOption === NEED_ALL_MEDICINES ? (
+      <ExpectCall />
+    ) : null;
   };
+
+  const renderUserCommentBox = () =>
+    selectedMedicineOption === CALL_ME ? (
+      <TextInputComponent
+        conatinerstyles={styles.textContainerStyle}
+        inputStyle={styles.userCommentTextBoxStyle}
+        value={`${userComment}`}
+        onChangeText={(userComment) => setUserComment(userComment)}
+        placeholder={'Start typing ...'}
+        label={'Please type your medicine needs below (optional)'}
+        numberOfLines={3}
+        multiline={true}
+        maxLength={150}
+      />
+    ) : null;
 
   const onPressProceed = () => {
     if (isPhysicalPresciptionProps) {
       setPhysicalPrescriptionsProps([...phyPrescriptionsProp]);
-      setPhysicalPrescriptions && setPhysicalPrescriptions([...phyPrescriptionsProp]);
-    } else {
-      setPhysicalPrescriptions && setPhysicalPrescriptions([...physicalPrescriptions]);
+      setPhysicalPrescriptions?.([...phyPrescriptionsProp]);
     }
     if (isEPresciptionProps) {
       setEPrescriptionsProps([...EPrescriptionsProps]);
-      setEPrescriptions && setEPrescriptions([...EPrescriptionsProps]);
-    } else {
-      setEPrescriptions && setEPrescriptions([...ePrescriptions]);
+      setEPrescriptions?.([...EPrescriptionsProps]);
     }
+    setPrescriptionType?.(PrescriptionType.UPLOADED);
     props.navigation.navigate(AppRoutes.MedicineSearch, {
       showButton: true,
       isReUpload: isComingFromReUpload,
@@ -1160,7 +1192,11 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
             }
           }}
         />
-        <ScrollView bounces={false} contentContainerStyle={{ paddingBottom: 150 }}>
+        <ScrollView
+          ref={scrollviewRef}
+          bounces={false}
+          contentContainerStyle={{ paddingBottom: 150 }}
+        >
           {renderPhysicalPrescriptions()}
           {renderEPrescriptions()}
           <Text
@@ -1187,6 +1223,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           </Text>
           {showMedicineDescription && renderMedicineDetailOptions()}
           {showMedicineDescription && renderExpectCall()}
+          {showMedicineDescription && renderUserCommentBox()}
         </ScrollView>
       </SafeAreaView>
       {isComingFromReUpload ? renderReUploadSubmitPrescription() : renderProceedBar()}

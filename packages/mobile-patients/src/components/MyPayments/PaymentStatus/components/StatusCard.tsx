@@ -7,7 +7,6 @@ import React, { FC, useState } from 'react';
 import { View, StyleSheet, Dimensions, TouchableOpacity, Clipboard } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { Payment } from '@aph/mobile-patients/src/strings/strings.json';
 import { Success, Failure, Pending, Refund } from '@aph/mobile-patients/src/components/ui/Icons';
 import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
 import { textComponent } from './GenericText';
@@ -24,12 +23,10 @@ interface StatusCardProps {
 }
 
 const windowWidth = Dimensions.get('window').width;
-const windowHeight = Dimensions.get('window').height;
 
 const StatusCard: FC<StatusCardProps> = (props) => {
   const { SUCCESS, FAILED, REFUND } = PaymentStatusConstants;
   const { paymentFailed, paymentPending, paymentSuccessful, paymentRefund } = LocalStrings;
-  const [copiedText, setCopiedText] = useState('');
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
@@ -45,19 +42,21 @@ const StatusCard: FC<StatusCardProps> = (props) => {
     if (paymentFor === 'consult') {
       const {
         appointmentPayments,
-        appointmentPaymentOrders,
+        PaymentOrders,
         actualAmount,
         displayId,
         discountedAmount,
         appointmentRefunds,
       } = item;
+      const { refund } = PaymentOrders;
+      const refundInfo = refund?.length ? refund : appointmentRefunds;
       orderID = 'Order ID: ' + String(displayId);
-      const paymentInfo = Object.keys(appointmentPaymentOrders).length
-        ? appointmentPaymentOrders
+      const paymentInfo = Object.keys(PaymentOrders).length
+        ? PaymentOrders
         : appointmentPayments[0];
       if (!paymentInfo) {
         status = 'PENDING';
-      } else if (appointmentRefunds.length) {
+      } else if (refundInfo.length) {
         const { paymentRefId, amountPaid } = paymentInfo;
         refId = paymentRefId;
         price = amountPaid;

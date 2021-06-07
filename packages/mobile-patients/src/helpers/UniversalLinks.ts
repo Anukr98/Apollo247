@@ -119,6 +119,18 @@ export const handleUniversalLinks = (
         pushTheView('ConsultDetails', navigation, data.length === 2 ? linkId : undefined);
         break;
 
+      case 'vaccinebooking':
+        pushTheView('VaccineBooking', navigation);
+
+      case 'VaccineBooking':
+        pushTheView('VaccineBooking', navigation, data.length === 2 ? linkId : undefined);
+
+      case 'vaccinebookingdetail':
+        pushTheView('VaccineBookingDetail', navigation, data.length === 2 ? linkId : undefined);
+
+      case 'VaccineBookingDetail':
+        pushTheView('VaccineBookingDetail', navigation, data.length === 2 ? linkId : undefined);
+
       default:
         pushTheView('ConsultRoom', navigation, undefined);
         break;
@@ -257,6 +269,17 @@ const pushTheView = (
     case 'ConsultDetails':
       navigation.navigate(AppRoutes.ConsultDetails, {
         CaseSheet: id,
+      });
+      break;
+
+    case 'VaccineBooking':
+      navigation.navigate(AppRoutes.VaccineBookingScreen, {});
+      break;
+
+    case 'VaccineBookingDetail':
+      navigation.navigate(AppRoutes.VaccineBookingConfirmationScreen, {
+        bookingId: id,
+        comingFrom: 'deeplink',
       });
       break;
 

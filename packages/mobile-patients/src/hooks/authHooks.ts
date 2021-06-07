@@ -26,6 +26,8 @@ export const useAuth = () => {
 
   const getFirebaseToken = useAuthContext().getFirebaseToken;
 
+  const authToken = useAuthContext().authToken;
+
   return {
     sendOtp,
     sendOtpError,
@@ -44,21 +46,17 @@ export const useAuth = () => {
     mobileAPICalled,
     setMobileAPICalled,
     getFirebaseToken,
+    authToken,
   };
 };
 
 export const useCurrentPatient = () => useAllCurrentPatients().currentPatient;
 
 export const useAllCurrentPatients = () => {
-  // const patientsArray = useAuthContext().allPatients;
-  // const mobileAPICalled = useAuthContext().mobileAPICalled;
-
-  // console.log('patientsArray', patientsArray);
   const getNewSelectedPatient = async () => {
     try {
       const isNewProfile = await AsyncStorage.getItem('isNewProfile');
       if (isNewProfile === 'yes') {
-        // console.log('allCurrentPatients==>', allCurrentPatients);
         const retrievedItem: any = await AsyncStorage.getItem('selectUserId');
         Promise.all([retrievedItem]).then((values) => {
           values[0] && setCurrentPatientId(values[0]);
@@ -69,38 +67,19 @@ export const useAllCurrentPatients = () => {
 
   const setCurrentPatientId = useAuthContext().setCurrentPatientId!;
   const currentPatientId = useAuthContext().currentPatientId;
-  // let allCurrentPatients: any;
   let currentPatient;
   let profileAllPatients;
   let currentPatientWithHistory;
 
   const { savePatientDetails, savePatientDetailsWithHistory } = useAppCommonData();
 
-  // useEffect(() => {
-  //   console.log('savePatientDetails', savePatientDetails);
-  // }, [savePatientDetails]);
-
   const allCurrentPatients = savePatientDetails;
   const allCurrentPatientsWithHistory = savePatientDetailsWithHistory;
-
-  // if (mobileAPICalled) {
-  //   allCurrentPatients =
-  //     patientsArray && patientsArray.data && patientsArray.data.getCurrentPatients
-  //       ? patientsArray.data.getCurrentPatients.patients
-  //       : null;
-  // } else {
-  //   allCurrentPatients =
-  //     patientsArray && patientsArray.data && patientsArray.data.getPatientByMobileNumber
-  //       ? patientsArray.data.getPatientByMobileNumber.patients
-  //       : null;
-  // }
 
   if (allCurrentPatients) {
     profileAllPatients = allCurrentPatients.filter((obj: any) => {
       return obj.isLinked === false;
     });
-
-    // console.log('unLinkedProfiles', allCurrentPatients);
 
     currentPatient = allCurrentPatients
       ? allCurrentPatients.find((patient: any) => patient.id === currentPatientId) ||
@@ -113,9 +92,6 @@ export const useAllCurrentPatients = () => {
       : null;
   }
 
-  // console.log('currentPatient', currentPatient);
-  // console.log('allCurrentPatients', allCurrentPatients);
-
   useEffect(() => {
     getNewSelectedPatient();
     if (!currentPatientId) {
@@ -125,8 +101,6 @@ export const useAllCurrentPatients = () => {
           allCurrentPatients[0]
         : null;
       setCurrentPatientId(defaultCurrentPatient ? defaultCurrentPatient.id : null);
-      // console.log('currentPatientId', currentPatientId);
-      // console.log('defaultCurrentPatient', defaultCurrentPatient);
     }
   }, [allCurrentPatients, currentPatientId, setCurrentPatientId]);
 
