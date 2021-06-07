@@ -102,7 +102,6 @@ const styles = StyleSheet.create({
   },
   cityChooser: {
     alignItems: 'center',
-    marginTop: 50,
   },
   cityDropDownContainer: {
     flexDirection: 'row',

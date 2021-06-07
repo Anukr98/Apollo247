@@ -18,7 +18,6 @@ const styles = StyleSheet.create({
   menuContainer: {
     width: width - 110,
     borderRadius: 10,
-    marginTop: 50,
     flexDirection: 'column',
     ...theme.viewStyles.shadowStyle,
     alignItems: 'center',
@@ -88,7 +87,7 @@ export const VaccineSlotChooser: React.FC<VaccineSlotChooserProps> = (props) => 
       {props.vaccineSlotList == null || props.vaccineSlotList.length == 0 ? (
         <Text style={styles.noSlotsLabel}>{string.vaccineBooking.no_slots}</Text>
       ) : null}
-      <ScrollView style={{ marginBottom: 24 }} bounces={false}>
+      <ScrollView style={{ marginBottom: 5 }} bounces={false}>
         {props.vaccineSlotList.map((vaccineSlot, index) => (
           <TouchableOpacity
             onPress={() => {
