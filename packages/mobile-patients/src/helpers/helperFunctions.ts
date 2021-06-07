@@ -107,6 +107,11 @@ import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { HEALTH_CREDITS } from '../utils/AsyncStorageKey';
 import { getPatientByMobileNumber_getPatientByMobileNumber_patients } from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
 import CleverTap from 'clevertap-react-native';
+import {
+  CleverTapEvents,
+  CleverTapEventName,
+  ReorderMedicines,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const width = Dimensions.get('window').width;
 
@@ -1471,8 +1476,13 @@ const webengage = new WebEngage();
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
-    CleverTap.recordEvent(eventName, attributes);
     webengage.track(eventName, attributes);
+  } catch (error) {}
+};
+
+export const postCleverTapEvent = (eventName: CleverTapEventName, attributes: Object) => {
+  try {
+    CleverTap.recordEvent(eventName, attributes);
   } catch (error) {}
 };
 
@@ -1535,13 +1545,13 @@ export const postwebEngageAddToCartEvent = (
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
 
-export const postWebEngagePHR = (
+export const postCleverTapPHR = (
   currentPatient: any,
-  webEngageEventName: WebEngageEventName,
+  cleverTapEventName: CleverTapEventName,
   source: string = '',
   data: any = {}
 ) => {
-  const eventAttributes: WebEngageEvents[WebEngageEventName.MEDICAL_RECORDS] = {
+  const eventAttributes: CleverTapEvents[CleverTapEventName.MEDICAL_RECORDS] = {
     ...data,
     Source: source,
     'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
@@ -1552,11 +1562,12 @@ export const postWebEngagePHR = (
     'Mobile Number': g(currentPatient, 'mobileNumber'),
     'Customer ID': g(currentPatient, 'id'),
   };
-  postWebEngageEvent(webEngageEventName, eventAttributes);
+  postWebEngageEvent(cleverTapEventName, eventAttributes);
+  postCleverTapEvent(cleverTapEventName, eventAttributes);
 };
 
-export const phrSearchWebEngageEvents = (
-  webEngageEventName: WebEngageEventName,
+export const phrSearchCleverTapEvents = (
+  cleverTapEventName: CleverTapEventName,
   currentPatient: any,
   searchKey: string
 ) => {
@@ -1570,7 +1581,8 @@ export const phrSearchWebEngageEvents = (
     'Mobile Number': g(currentPatient, 'mobileNumber'),
     'Customer ID': g(currentPatient, 'id'),
   };
-  postWebEngageEvent(webEngageEventName, eventAttributes);
+  postWebEngageEvent(cleverTapEventName, eventAttributes);
+  postCleverTapEvent(cleverTapEventName, eventAttributes);
 };
 
 export const getUsageKey = (type: string) => {
@@ -1594,7 +1606,7 @@ export const getUsageKey = (type: string) => {
   }
 };
 
-export const postWebEngageIfNewSession = (
+export const postCleverTapIfNewSession = (
   type: string,
   currentPatient: any,
   data: any,
@@ -1616,7 +1628,7 @@ export const postWebEngageIfNewSession = (
     const usageKey = getUsageKey(type);
     obj[usageKey] = sessionId;
     setPhrSession?.(JSON.stringify(obj));
-    postWebEngagePHR(
+    postCleverTapPHR(
       currentPatient,
       WebEngageEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS.replace(
         '{0}',
@@ -1637,7 +1649,7 @@ export const postWebEngageIfNewSession = (
       const newSessionObj = { ...sessionObj };
       newSessionObj[usageKey] = sessionId;
       setPhrSession?.(JSON.stringify(newSessionObj));
-      postWebEngagePHR(
+      postCleverTapPHR(
         currentPatient,
         WebEngageEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS.replace(
           '{0}',

@@ -30,9 +30,9 @@ import { HealthRecordCard } from '@aph/mobile-patients/src/components/HealthReco
 import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
 import { ProfileImageComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/ProfileImageComponent';
 import {
-  WebEngageEventName,
-  WebEngageEvents,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import {
   MedicalRecordType,
   AddLabTestRecordInput,
@@ -50,13 +50,14 @@ import {
   editDeleteData,
   getSourceName,
   handleGraphQlError,
-  postWebEngagePHR,
+  postCleverTapPHR,
   phrSortByDate,
   getPhrHighlightText,
   isValidSearch,
-  phrSearchWebEngageEvents,
-  postWebEngageIfNewSession,
+  phrSearchCleverTapEvents,
+  postCleverTapIfNewSession,
   removeObjectProperty,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -316,11 +317,11 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
           });
           setHealthRecordSearchResults(finalData);
           setSearchLoading(false);
-          phrSearchWebEngageEvents(
-            WebEngageEventName.PHR_NO_USERS_SEARCHED_LOCAL.replace(
+          phrSearchCleverTapEvents(
+            CleverTapEventName.PHR_NO_USERS_SEARCHED_LOCAL.replace(
               '{0}',
               'Test Reports'
-            ) as WebEngageEventName,
+            ) as CleverTapEventName,
             currentPatient,
             _searchText
           );
@@ -603,7 +604,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
 
   const onHealthCardItemPress = (selectedItem: any) => {
     const eventInputData = removeObjectProperty(selectedItem, 'testResultFiles');
-    postWebEngageIfNewSession(
+    postCleverTapIfNewSession(
       'Test Report',
       currentPatient,
       eventInputData,
@@ -662,9 +663,9 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
           if (status) {
             getLatestLabAndHealthCheckRecords();
             const eventInputData = removeObjectProperty(selectedItem, 'testResultFiles');
-            postWebEngagePHR(
+            postCleverTapPHR(
               currentPatient,
-              WebEngageEventName.PHR_DELETE_TEST_REPORT,
+              CleverTapEventName.PHR_DELETE_TEST_REPORT,
               'Test Report',
               eventInputData
             );
@@ -871,10 +872,11 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
           title={string.common.addTestReportText}
           onPress={() => {
             setCallApi(false);
-            const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {
+            const eventAttributes: CleverTapEvents[CleverTapEventName.ADD_RECORD] = {
               Source: 'Test Report',
             };
-            postWebEngageEvent(WebEngageEventName.ADD_RECORD, eventAttributes);
+            postWebEngageEvent(CleverTapEventName.ADD_RECORD, eventAttributes);
+            postCleverTapEvent(CleverTapEventName.ADD_RECORD, eventAttributes);
             props.navigation.navigate(AppRoutes.AddRecord, {
               navigatedFrom: 'Test Reports',
               recordType: MedicalRecordType.TEST_REPORT,

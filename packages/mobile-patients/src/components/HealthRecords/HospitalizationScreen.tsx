@@ -24,9 +24,9 @@ import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_hospi
 import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
 import { ProfileImageComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/ProfileImageComponent';
 import {
-  WebEngageEventName,
-  WebEngageEvents,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   g,
@@ -35,12 +35,13 @@ import {
   editDeleteData,
   handleGraphQlError,
   phrSortWithDate,
-  postWebEngagePHR,
+  postCleverTapPHR,
   isValidSearch,
   getPhrHighlightText,
-  phrSearchWebEngageEvents,
-  postWebEngageIfNewSession,
+  phrSearchCleverTapEvents,
+  postCleverTapIfNewSession,
   removeObjectProperty,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -225,11 +226,11 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
           });
           setHealthRecordSearchResults(finalData);
           setSearchLoading(false);
-          phrSearchWebEngageEvents(
-            WebEngageEventName.PHR_NO_USERS_SEARCHED_LOCAL.replace(
+          phrSearchCleverTapEvents(
+            CleverTapEventName.PHR_NO_USERS_SEARCHED_LOCAL.replace(
               '{0}',
               'Hospitalizations'
-            ) as WebEngageEventName,
+            ) as CleverTapEventName,
             currentPatient,
             _searchText
           );
@@ -337,7 +338,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
 
   const onHealthCardItemPress = (selectedItem: HospitalizationType) => {
     const eventInputData = removeObjectProperty(selectedItem, 'hospitalizationFiles');
-    postWebEngageIfNewSession(
+    postCleverTapIfNewSession(
       'Hospitalization',
       currentPatient,
       eventInputData,
@@ -385,9 +386,9 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
         if (status) {
           getLatestHospitalizationRecords();
           const eventInputData = removeObjectProperty(selectedItem, 'hospitalizationFiles');
-          postWebEngagePHR(
+          postCleverTapPHR(
             currentPatient,
-            WebEngageEventName.PHR_DELETE_HOSPITALIZATIONS,
+            CleverTapEventName.PHR_DELETE_HOSPITALIZATIONS,
             'Hospitalization',
             eventInputData
           );
@@ -580,10 +581,11 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
           title={string.common.addDischargeSummaryText}
           onPress={() => {
             setCallApi(false);
-            const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {
+            const eventAttributes: CleverTapEvents[CleverTapEventName.ADD_RECORD] = {
               Source: 'Hospitalization',
             };
-            postWebEngageEvent(WebEngageEventName.ADD_RECORD, eventAttributes);
+            postWebEngageEvent(CleverTapEventName.ADD_RECORD, eventAttributes);
+            postCleverTapEvent(CleverTapEventName.ADD_RECORD, eventAttributes);
             props.navigation.navigate(AppRoutes.AddRecord, {
               navigatedFrom: 'Hospitalization',
               recordType: MedicalRecordType.HOSPITALIZATION,

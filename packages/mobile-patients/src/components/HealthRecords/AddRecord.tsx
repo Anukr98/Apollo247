@@ -71,9 +71,9 @@ import {
 import {
   g,
   isValidText,
-  postWebEngagePHR,
+  postCleverTapPHR,
   handleGraphQlError,
-  postWebEngageIfNewSession,
+  postCleverTapIfNewSession,
   removeObjectProperty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
@@ -103,7 +103,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { Overlay, ListItem } from 'react-native-elements';
 import _ from 'lodash';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
@@ -1101,13 +1101,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         const eventInputData = removeObjectProperty(inputData, 'prescriptionFiles');
         if (status) {
           if (selectedRecord) {
-            postWebEngagePHR(
+            postCleverTapPHR(
               currentPatient,
-              WebEngageEventName.PHR_UPDATE_DOCTOR_CONSULTATION,
+              CleverTapEventName.PHR_UPDATE_DOCTOR_CONSULTATION,
               'Doctor Consultation',
               eventInputData
             );
-            postWebEngageIfNewSession(
+            postCleverTapIfNewSession(
               'Doctor Consultation',
               currentPatient,
               eventInputData,
@@ -1115,13 +1115,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               setPhrSession
             );
           } else {
-            postWebEngagePHR(
+            postCleverTapPHR(
               currentPatient,
-              WebEngageEventName.PHR_ADD_DOCTOR_CONSULTATIONS,
+              CleverTapEventName.PHR_ADD_DOCTOR_CONSULTATIONS,
               'Doctor Consultation',
               eventInputData
             );
-            postWebEngageIfNewSession(
+            postCleverTapIfNewSession(
               'Doctor Consultation',
               currentPatient,
               eventInputData,
@@ -1180,13 +1180,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         } else {
           setshowSpinner(false);
           if (selectedRecord) {
-            postWebEngagePHR(
+            postCleverTapPHR(
               currentPatient,
-              WebEngageEventName.PHR_UPDATE_ALLERGY,
+              CleverTapEventName.PHR_UPDATE_ALLERGY,
               'Allergy',
               eventInputData
             );
-            postWebEngageIfNewSession(
+            postCleverTapIfNewSession(
               'Allergy',
               currentPatient,
               eventInputData,
@@ -1194,13 +1194,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               setPhrSession
             );
           } else {
-            postWebEngagePHR(
+            postCleverTapPHR(
               currentPatient,
-              WebEngageEventName.PHR_ADD_ALLERGY,
+              CleverTapEventName.PHR_ADD_ALLERGY,
               'Allergy',
               eventInputData
             );
-            postWebEngageIfNewSession(
+            postCleverTapIfNewSession(
               'Allergy',
               currentPatient,
               eventInputData,
@@ -1257,13 +1257,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         } else {
           setshowSpinner(false);
           if (selectedRecord) {
-            postWebEngagePHR(
+            postCleverTapPHR(
               currentPatient,
-              WebEngageEventName.PHR_UPDATE_MEDICATION,
+              CleverTapEventName.PHR_UPDATE_MEDICATION,
               'Medication',
               inputData
             );
-            postWebEngageIfNewSession(
+            postCleverTapIfNewSession(
               'Medication',
               currentPatient,
               inputData,
@@ -1271,13 +1271,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               setPhrSession
             );
           } else {
-            postWebEngagePHR(
+            postCleverTapPHR(
               currentPatient,
-              WebEngageEventName.PHR_ADD_MEDICATION,
+              CleverTapEventName.PHR_ADD_MEDICATION,
               'Medication',
               inputData
             );
-            postWebEngageIfNewSession(
+            postCleverTapIfNewSession(
               'Medication',
               currentPatient,
               inputData,
@@ -1331,13 +1331,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         } else {
           setshowSpinner(false);
           if (selectedRecord) {
-            postWebEngagePHR(
+            postCleverTapPHR(
               currentPatient,
-              WebEngageEventName.PHR_UPDATE_HEALTH_RESTRICTIONS,
+              CleverTapEventName.PHR_UPDATE_HEALTH_RESTRICTIONS,
               'Health Restriction',
               inputData
             );
-            postWebEngageIfNewSession(
+            postCleverTapIfNewSession(
               'Restriction',
               currentPatient,
               inputData,
@@ -1345,13 +1345,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               setPhrSession
             );
           } else {
-            postWebEngagePHR(
+            postCleverTapPHR(
               currentPatient,
-              WebEngageEventName.PHR_ADD_HEALTH_RESTRICTIONS,
+              CleverTapEventName.PHR_ADD_HEALTH_RESTRICTIONS,
               'Health Restriction',
               inputData
             );
-            postWebEngageIfNewSession(
+            postCleverTapIfNewSession(
               'Restriction',
               currentPatient,
               inputData,
@@ -1405,13 +1405,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         } else {
           setshowSpinner(false);
           if (selectedRecord) {
-            postWebEngagePHR(
+            postCleverTapPHR(
               currentPatient,
-              WebEngageEventName.PHR_UPDATE_MEDICAL_CONDITION,
+              CleverTapEventName.PHR_UPDATE_MEDICAL_CONDITION,
               'Medical Condition',
               eventInputData
             );
-            postWebEngageIfNewSession(
+            postCleverTapIfNewSession(
               'MedicalCondition',
               currentPatient,
               eventInputData,
@@ -1419,13 +1419,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               setPhrSession
             );
           } else {
-            postWebEngagePHR(
+            postCleverTapPHR(
               currentPatient,
-              WebEngageEventName.PHR_ADD_MEDICAL_CONDITION,
+              CleverTapEventName.PHR_ADD_MEDICAL_CONDITION,
               'Medical Condition',
               eventInputData
             );
-            postWebEngageIfNewSession(
+            postCleverTapIfNewSession(
               'MedicalCondition',
               currentPatient,
               eventInputData,
@@ -1469,13 +1469,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         setshowSpinner(false);
         const eventInputData = removeObjectProperty(inputData, 'attachmentList');
         if (selectedRecord) {
-          postWebEngagePHR(
+          postCleverTapPHR(
             currentPatient,
-            WebEngageEventName.PHR_UPDATE_FAMILY_HISTORY,
+            CleverTapEventName.PHR_UPDATE_FAMILY_HISTORY,
             'Family History',
             eventInputData
           );
-          postWebEngageIfNewSession(
+          postCleverTapIfNewSession(
             'Family History',
             currentPatient,
             eventInputData,
@@ -1483,13 +1483,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             setPhrSession
           );
         } else {
-          postWebEngagePHR(
+          postCleverTapPHR(
             currentPatient,
-            WebEngageEventName.PHR_ADD_FAMILY_HISTORY,
+            CleverTapEventName.PHR_ADD_FAMILY_HISTORY,
             'Family History',
             eventInputData
           );
-          postWebEngageIfNewSession(
+          postCleverTapIfNewSession(
             'Family History',
             currentPatient,
             eventInputData,
@@ -1536,13 +1536,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         const eventInputData = removeObjectProperty(inputData, 'testResultFiles');
         if (status) {
           if (selectedRecord) {
-            postWebEngagePHR(
+            postCleverTapPHR(
               currentPatient,
-              WebEngageEventName.PHR_UPDATE_TEST_REPORT,
+              CleverTapEventName.PHR_UPDATE_TEST_REPORT,
               'Test Report',
               eventInputData
             );
-            postWebEngageIfNewSession(
+            postCleverTapIfNewSession(
               'Test Report',
               currentPatient,
               eventInputData,
@@ -1550,13 +1550,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               setPhrSession
             );
           } else {
-            postWebEngagePHR(
+            postCleverTapPHR(
               currentPatient,
-              WebEngageEventName.PHR_ADD_TEST_REPORT,
+              CleverTapEventName.PHR_ADD_TEST_REPORT,
               'Test Report',
               eventInputData
             );
-            postWebEngageIfNewSession(
+            postCleverTapIfNewSession(
               'Test Report',
               currentPatient,
               eventInputData,
@@ -1603,13 +1603,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         const eventInputData = removeObjectProperty(inputData, 'hospitalizationFiles');
         if (status) {
           if (selectedRecord) {
-            postWebEngagePHR(
+            postCleverTapPHR(
               currentPatient,
-              WebEngageEventName.PHR_UPDATE_HOSPITALIZATIONS,
+              CleverTapEventName.PHR_UPDATE_HOSPITALIZATIONS,
               'Hospitalization',
               eventInputData
             );
-            postWebEngageIfNewSession(
+            postCleverTapIfNewSession(
               'Hospitalization',
               currentPatient,
               eventInputData,
@@ -1617,13 +1617,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               setPhrSession
             );
           } else {
-            postWebEngagePHR(
+            postCleverTapPHR(
               currentPatient,
-              WebEngageEventName.PHR_ADD_HOSPITALIZATIONS,
+              CleverTapEventName.PHR_ADD_HOSPITALIZATIONS,
               'Hospitalization',
               eventInputData
             );
-            postWebEngageIfNewSession(
+            postCleverTapIfNewSession(
               'Hospitalization',
               currentPatient,
               eventInputData,
@@ -1669,13 +1669,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         const eventInputData = removeObjectProperty(inputData, 'billFiles');
         if (status) {
           if (selectedRecord) {
-            postWebEngagePHR(
+            postCleverTapPHR(
               currentPatient,
-              WebEngageEventName.PHR_UPDATE_BILLS,
+              CleverTapEventName.PHR_UPDATE_BILLS,
               'Bill',
               eventInputData
             );
-            postWebEngageIfNewSession(
+            postCleverTapIfNewSession(
               'Bill',
               currentPatient,
               eventInputData,
@@ -1683,13 +1683,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               setPhrSession
             );
           } else {
-            postWebEngagePHR(
+            postCleverTapPHR(
               currentPatient,
-              WebEngageEventName.PHR_ADD_BILLS,
+              CleverTapEventName.PHR_ADD_BILLS,
               'Bill',
               eventInputData
             );
-            postWebEngageIfNewSession(
+            postCleverTapIfNewSession(
               'Bill',
               currentPatient,
               eventInputData,
@@ -1741,13 +1741,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         const eventInputData = removeObjectProperty(inputData, 'insuranceFiles');
         if (status) {
           if (selectedRecord) {
-            postWebEngagePHR(
+            postCleverTapPHR(
               currentPatient,
-              WebEngageEventName.PHR_UPDATE_INSURANCE,
+              CleverTapEventName.PHR_UPDATE_INSURANCE,
               'Insurance',
               eventInputData
             );
-            postWebEngageIfNewSession(
+            postCleverTapIfNewSession(
               'Insurance',
               currentPatient,
               eventInputData,
@@ -1755,13 +1755,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               setPhrSession
             );
           } else {
-            postWebEngagePHR(
+            postCleverTapPHR(
               currentPatient,
-              WebEngageEventName.PHR_ADD_INSURANCE,
+              CleverTapEventName.PHR_ADD_INSURANCE,
               'Insurance',
               eventInputData
             );
-            postWebEngageIfNewSession(
+            postCleverTapIfNewSession(
               'Insurance',
               currentPatient,
               eventInputData,

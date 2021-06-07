@@ -43,7 +43,7 @@ import { ProfileImageComponent } from '@aph/mobile-patients/src/components/Healt
 import {
   g,
   handleGraphQlError,
-  postWebEngagePHR,
+  postCleverTapPHR,
   getSourceName,
   HEALTH_CONDITIONS_TITLE,
   removeObjectProperty,
@@ -53,7 +53,7 @@ import {
   getLabResultpdf,
   getLabResultpdfVariables,
 } from '@aph/mobile-patients/src/graphql/types/getLabResultpdf';
-import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import _ from 'lodash';
 import {
   getPatientPrismMedicalRecordsApi,
@@ -271,7 +271,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     ? 'familyHistoryFiles'
     : '';
 
-  const webEngageSource = healthCheck
+  const cleverTapSource = healthCheck
     ? 'Health Check'
     : hospitalization
     ? 'Discharge Summary'
@@ -283,25 +283,25 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     ? 'Insurance'
     : 'Lab Test';
 
-  const webEngageEventName: WebEngageEventName = healthCheck
-    ? WebEngageEventName.PHR_DOWNLOAD_HEALTH_CHECKS
+  const cleverTapEventName: CleverTapEventName = healthCheck
+    ? CleverTapEventName.PHR_DOWNLOAD_HEALTH_CHECKS
     : hospitalization
-    ? WebEngageEventName.PHR_DOWNLOAD_HOSPITALIZATIONS
+    ? CleverTapEventName.PHR_DOWNLOAD_HOSPITALIZATIONS
     : prescriptions
-    ? WebEngageEventName.PHR_DOWNLOAD_DOCTOR_CONSULTATION
+    ? CleverTapEventName.PHR_DOWNLOAD_DOCTOR_CONSULTATION
     : medicalBill
-    ? WebEngageEventName.PHR_DOWNLOAD_BILLS
+    ? CleverTapEventName.PHR_DOWNLOAD_BILLS
     : medicalInsurance
-    ? WebEngageEventName.PHR_DOWNLOAD_INSURANCE
+    ? CleverTapEventName.PHR_DOWNLOAD_INSURANCE
     : healthCondition
     ? healthHeaderTitle === HEALTH_CONDITIONS_TITLE.ALLERGY
-      ? WebEngageEventName.PHR_DOWNLOAD_ALLERGY
+      ? CleverTapEventName.PHR_DOWNLOAD_ALLERGY
       : healthHeaderTitle === HEALTH_CONDITIONS_TITLE.MEDICAL_CONDITION
-      ? WebEngageEventName.PHR_DOWNLOAD_MEDICAL_CONDITION
+      ? CleverTapEventName.PHR_DOWNLOAD_MEDICAL_CONDITION
       : healthHeaderTitle === HEALTH_CONDITIONS_TITLE.FAMILY_HISTORY
-      ? WebEngageEventName.PHR_DOWNLOAD_FAMILY_HISTORY
-      : WebEngageEventName.PHR_DOWNLOAD_TEST_REPORT
-    : WebEngageEventName.PHR_DOWNLOAD_TEST_REPORT;
+      ? CleverTapEventName.PHR_DOWNLOAD_FAMILY_HISTORY
+      : CleverTapEventName.PHR_DOWNLOAD_TEST_REPORT
+    : CleverTapEventName.PHR_DOWNLOAD_TEST_REPORT;
 
   useEffect(() => {
     Platform.OS === 'android' && requestReadSmsPermission();
@@ -1147,7 +1147,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       })
       .then((res) => {
         setLoading && setLoading(false);
-        postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, eventInputData);
+        postCleverTapPHR(currentPatient, cleverTapEventName, cleverTapSource, eventInputData);
         Platform.OS === 'ios'
           ? RNFetchBlob.ios.previewDocument(res.path())
           : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));

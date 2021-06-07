@@ -31,13 +31,14 @@ import {
   getSourceName,
   handleGraphQlError,
   phrSortWithDate,
-  postWebEngagePHR,
+  postCleverTapPHR,
   postWebEngageEvent,
   isValidSearch,
   getPhrHighlightText,
-  phrSearchWebEngageEvents,
-  postWebEngageIfNewSession,
+  phrSearchCleverTapEvents,
+  postCleverTapIfNewSession,
   removeObjectProperty,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -50,9 +51,9 @@ import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medic
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
-  WebEngageEventName,
-  WebEngageEvents,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import {
   getPrismAuthTokenVariables,
   getPrismAuthToken,
@@ -228,11 +229,11 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
           });
           setHealthRecordSearchResults(finalData);
           setSearchLoading(false);
-          phrSearchWebEngageEvents(
-            WebEngageEventName.PHR_NO_USERS_SEARCHED_LOCAL.replace(
+          phrSearchCleverTapEvents(
+            CleverTapEventName.PHR_NO_USERS_SEARCHED_LOCAL.replace(
               '{0}',
               'Bills'
-            ) as WebEngageEventName,
+            ) as CleverTapEventName,
             currentPatient,
             _searchText
           );
@@ -354,7 +355,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
 
   const onHealthCardItemPress = (selectedItem: MedicalBillsType) => {
     const eventInputData = removeObjectProperty(selectedItem, 'billFiles');
-    postWebEngageIfNewSession('Bill', currentPatient, eventInputData, phrSession, setPhrSession);
+    postCleverTapIfNewSession('Bill', currentPatient, eventInputData, phrSession, setPhrSession);
     props.navigation.navigate(AppRoutes.HealthRecordDetails, {
       data: selectedItem,
       medicalBill: true,
@@ -373,9 +374,9 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
         if (status) {
           getLatestMedicalBillRecords();
           const eventInputData = removeObjectProperty(selectedItem, 'billFiles');
-          postWebEngagePHR(
+          postCleverTapPHR(
             currentPatient,
-            WebEngageEventName.PHR_DELETE_BILLS,
+            CleverTapEventName.PHR_DELETE_BILLS,
             'Bill',
             eventInputData
           );
@@ -457,10 +458,11 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
           title={string.common.addBillText}
           onPress={() => {
             setCallApi(false);
-            const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {
+            const eventAttributes: CleverTapEvents[CleverTapEventName.ADD_RECORD] = {
               Source: 'Bill',
             };
-            postWebEngageEvent(WebEngageEventName.ADD_RECORD, eventAttributes);
+            postWebEngageEvent(CleverTapEventName.ADD_RECORD, eventAttributes);
+            postCleverTapEvent(CleverTapEventName.ADD_RECORD, eventAttributes);
             props.navigation.navigate(AppRoutes.AddRecord, {
               navigatedFrom: 'MedicalBill',
               recordType: MedicalRecordType.MEDICALBILL,

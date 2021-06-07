@@ -61,12 +61,13 @@ import {
   medUnitFormatArray,
   nameFormater,
   postWebEngageEvent,
-  postWebEngagePHR,
+  postCleverTapPHR,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
-  WebEngageEventName,
-  WebEngageEvents,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
@@ -343,14 +344,14 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
 
   const postWEGEvent = (
     type: 'medicine' | 'test' | 'download prescription',
-    medOrderType?: WebEngageEvents[WebEngageEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS]['Order Type']
+    medOrderType?: CleverTapEvents[CleverTapEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS]['Order Type']
   ) => {
     const requireCasesheetDetails =
       caseSheetDetails?.doctorType !== 'JUNIOR' ? caseSheetDetails : {};
     const eventAttributes:
-      | WebEngageEvents[WebEngageEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS]
-      | WebEngageEvents[WebEngageEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS]
-      | WebEngageEvents[WebEngageEventName.DOWNLOAD_PRESCRIPTION] = {
+      | CleverTapEvents[CleverTapEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS]
+      | CleverTapEvents[CleverTapEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS]
+      | CleverTapEvents[CleverTapEventName.DOWNLOAD_PRESCRIPTION] = {
       ...requireCasesheetDetails,
       'Doctor Name': g(data, 'fullName')!,
       'Speciality ID': g(data, 'specialty', 'id')!,
@@ -373,21 +374,29 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       'Customer ID': g(currentPatient, 'id'),
     };
     if (type == 'download prescription') {
-      (eventAttributes as WebEngageEvents[WebEngageEventName.DOWNLOAD_PRESCRIPTION])[
+      (eventAttributes as CleverTapEvents[CleverTapEventName.DOWNLOAD_PRESCRIPTION])[
         'Download Screen'
       ] = 'Prescription Details';
     }
     if (type == 'medicine' && medOrderType) {
-      (eventAttributes as WebEngageEvents[WebEngageEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS])[
+      (eventAttributes as CleverTapEvents[CleverTapEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS])[
         'Order Type'
       ] = medOrderType;
     }
     postWebEngageEvent(
       type == 'medicine'
-        ? WebEngageEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS
+        ? CleverTapEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS
         : type == 'test'
-        ? WebEngageEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS
-        : WebEngageEventName.DOWNLOAD_PRESCRIPTION,
+        ? CleverTapEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS
+        : CleverTapEventName.DOWNLOAD_PRESCRIPTION,
+      eventAttributes
+    );
+    postCleverTapEvent(
+      type == 'medicine'
+        ? CleverTapEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS
+        : type == 'test'
+        ? CleverTapEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS
+        : CleverTapEventName.DOWNLOAD_PRESCRIPTION,
       eventAttributes
     );
   };
@@ -1016,9 +1025,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       CommonLogEvent('CONSULT_DETAILS', 'No image');
     } else {
       postWEGEvent('download prescription');
-      postWebEngagePHR(
+      postCleverTapPHR(
         currentPatient,
-        WebEngageEventName.PHR_DOWNLOAD_DOCTOR_CONSULTATION,
+        CleverTapEventName.PHR_DOWNLOAD_DOCTOR_CONSULTATION,
         'Doctor Consultation',
         caseSheetDetails
       );
