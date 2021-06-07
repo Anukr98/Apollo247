@@ -29,6 +29,7 @@ export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_clo
 export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders_attributesObj {
   __typename: "AttributesObj";
   reportGenerationTime: string | null;
+  preTestingRequirement: string | null;
 }
 
 export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders {

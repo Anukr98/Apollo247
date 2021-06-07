@@ -2168,7 +2168,7 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         slotId
         slotDateTimeInUTC
         collectionCharges
-        patientObj{
+        patientObj {
           id
           uhid
           firstName
@@ -4736,8 +4736,18 @@ export const GET_DIAGNOSTIC_NEAREST_AREA = gql`
 `;
 
 export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS = gql`
-  query getDiagnosticSlotsCustomized($selectedDate: Date!, $areaID: Int!, $itemIds: [Int!]!, $patientAddressObj: AddressObj) {
-    getDiagnosticSlotsCustomized(selectedDate: $selectedDate, areaID: $areaID, itemIds: $itemIds, patientAddressObj: $patientAddressObj) {
+  query getDiagnosticSlotsCustomized(
+    $selectedDate: Date!
+    $areaID: Int!
+    $itemIds: [Int!]!
+    $patientAddressObj: AddressObj
+  ) {
+    getDiagnosticSlotsCustomized(
+      selectedDate: $selectedDate
+      areaID: $areaID
+      itemIds: $itemIds
+      patientAddressObj: $patientAddressObj
+    ) {
       slots {
         Timeslot
         TimeslotID
@@ -4906,7 +4916,6 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql`
         slotDateTimeInUTC
         labReportURL
         paymentType
-        paymentOrderId
         patientObj {
           firstName
           lastName
@@ -4917,7 +4926,7 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql`
             testPreparationData
           }
         }
-        attributesObj{
+        attributesObj {
           reportGenerationTime
           preTestingRequirement
         }
@@ -4959,7 +4968,6 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
         slotDateTimeInUTC
         labReportURL
         paymentType
-        paymentOrderId
         patientObj {
           firstName
           lastName
@@ -4970,15 +4978,16 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
             testPreparationData
           }
         }
-        attributesObj{
+        attributesObj {
           reportGenerationTime
+          preTestingRequirement
         }
       }
     }
   }
 `;
 
-export const MODIFY_DIAGNOSTIC_ORDERS = gql `
+export const MODIFY_DIAGNOSTIC_ORDERS = gql`
   mutation saveModifyDiagnosticOrder($saveModifyDiagnosticOrder: saveModifyDiagnosticOrderInput!) {
     saveModifyDiagnosticOrder(saveModifyDiagnosticOrder: $saveModifyDiagnosticOrder) {
       orderId
@@ -4989,8 +4998,9 @@ export const MODIFY_DIAGNOSTIC_ORDERS = gql `
         itemids
       }
     }
-  }`;
-  
+  }
+`;
+
 export const GET_PROHEALTH_HOSPITAL_BY_SLUG = gql`
   query getProHealthHospitalBySlug($hospitalSlug: String!) {
     getProHealthHospitalBySlug(hospitalSlug: $hospitalSlug) {
@@ -5212,6 +5222,7 @@ export const GET_VACCINATION_APPOINMENT_DETAILS = gql`
       message
       code
       response {
+        id
         display_id
         dose_number
         patient_info {
@@ -5229,6 +5240,7 @@ export const GET_VACCINATION_APPOINMENT_DETAILS = gql`
           session_name
           start_date_time
           vaccine_type
+          station_name
           resource_detail {
             name
             street_line1
@@ -5273,6 +5285,7 @@ export const GET_ALL_VACCINATION_APPOINTMENTS = gql`
           age
           gender
           uhid
+          relation
         }
         status
         payment_type
@@ -5298,7 +5311,7 @@ export const GET_ALL_VACCINATION_APPOINTMENTS = gql`
 
 export const DIAGNOSITC_EXOTEL_CALLING = gql`
   mutation diagnosticExotelCalling($orderId: ID!) {
-    diagnosticExotelCalling(orderId: $orderId){
+    diagnosticExotelCalling(orderId: $orderId) {
       errorMessage
       sid
       success

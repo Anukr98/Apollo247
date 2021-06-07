@@ -2886,14 +2886,17 @@ export const isSatisfyingEmailRegex = (value: string) =>
   /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
     value
   );
-export const getDiagnosticCityLevelPaymentOptions = (cityId: string ) =>{
+
+export const getDiagnosticCityLevelPaymentOptions = (cityId: string) => {
   let remoteData = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_PAYMENT_OPTION;
-    const getConfigPaymentValue = remoteData?.find(
-      (item) => Number(item?.cityId) === Number(cityId)
-    );
-    const paymentValues = {
-      "prepaid" : !!getConfigPaymentValue ? getConfigPaymentValue?.prepaid :AppConfig.Configuration.Enable_Diagnostics_Prepaid,
-      "cod": !!getConfigPaymentValue ? getConfigPaymentValue.cod : AppConfig.Configuration.Enable_Diagnostics_COD
-    }
-    return paymentValues;
-}
+  const getConfigPaymentValue = remoteData?.find((item) => Number(item?.cityId) === Number(cityId));
+  const paymentValues = {
+    prepaid: !!getConfigPaymentValue
+      ? getConfigPaymentValue?.prepaid
+      : AppConfig.Configuration.Enable_Diagnostics_Prepaid,
+    cod: !!getConfigPaymentValue
+      ? getConfigPaymentValue.cod
+      : AppConfig.Configuration.Enable_Diagnostics_COD,
+  };
+  return paymentValues;
+};

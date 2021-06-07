@@ -905,10 +905,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'Vaccine_Type_QA',
       PROD: 'Vaccine_Type_Prod',
     },
-    Vaccine_Restrict_Self: {
-      QA: 'Vaccine_Restrict_Self_QA',
-      PROD: 'Vaccine_Restrict_Self_Prod',
-    },
+
     Enable_Diagnostics_COD: {
       QA: 'QA_Enable_Diagnostics_COD',
       PROD: 'Enable_Diagnostics_COD',
@@ -1106,9 +1103,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
 
       setAppConfig('Enable_Conditional_Management', 'ENABLE_CONDITIONAL_MANAGEMENT', (key) =>
-        config.getBoolean(key)
-      );
-      setAppConfig('Vaccine_Restrict_Self', 'Vaccine_Restrict_Self', (key) =>
         config.getBoolean(key)
       );
 

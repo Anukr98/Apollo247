@@ -53,9 +53,7 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
       } = item;
       const { refund } = PaymentOrders;
       const refundInfo = refund?.length ? refund : appointmentRefunds;
-      const paymentInfo = Object.keys(PaymentOrders).length
-        ? PaymentOrders
-        : appointmentPayments[0];
+      const paymentInfo = PaymentOrders?.paymentStatus ? PaymentOrders : appointmentPayments[0];
       if (!paymentInfo) {
         status = 'PENDING';
       } else if (refundInfo.length) {

@@ -36,7 +36,17 @@ import {
   Text,
   Modal,
 } from 'react-native';
-import { Down, DownO, InfoIconRed } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  Down,
+  Up,
+  DownO,
+  CopyBlue,
+  DownloadNew,
+  ShareBlue,
+  ViewIcon,
+  Cross,
+  InfoIconRed,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { NavigationScreenProps } from 'react-navigation';
 import {
   CancellationDiagnosticsInput,
@@ -852,7 +862,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     const cancelReasonArray = moment(current).isAfter(selectedOrderTime)
       ? CANCELLATION_REASONS
       : PRE_CANCELLATION_REASONS;
-
     return (
       <View>
         <Text style={styles.overlayHeadingText}>

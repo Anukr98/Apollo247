@@ -68,6 +68,7 @@ import {
   DiagnosticItemSearched,
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+
 export interface SearchTestSceneProps
   extends NavigationScreenProps<{
     searchText: string;

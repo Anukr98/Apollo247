@@ -181,6 +181,17 @@ export const HospitalCalendarChooser: React.FC<HospitalCalendarChooserProps> = (
         isAvailable: props.availableDates.includes(newDayString),
         dateString: newDayString,
       });
+
+      if (
+        props.availableDates != undefined &&
+        props.availableDates.length > 0 &&
+        (props.availableDates[0] != undefined || props.availableDates[0] != '') &&
+        newDayString == props.availableDates[0]
+      ) {
+        setSelectedDateIndex(day);
+        props.onDateChoosed(props.availableDates[0]);
+        setSelectedSlot(undefined);
+      }
     }
     setMonthDates(arrDays);
   };

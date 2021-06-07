@@ -60,8 +60,8 @@ import {
   processDiagnosticsCODOrder,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
-  getDiagnosticCityLevelPaymentOptions,
   isEmptyObject,
+  getDiagnosticCityLevelPaymentOptions,
   isSmallDevice,
   paymentModeVersionCheck,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -99,7 +99,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { authToken, setauthToken } = useAppCommonData();
-  const FailedStatuses = ['AUTHENTICATION_FAILED', 'AUTHORIZATION_FAILED'];
   const isDiagnosticModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const [showPrepaid, setShowPrepaid] = useState<boolean>(isDiagnostic ? false : true);
   const [showCOD, setShowCOD] = useState<boolean>(isDiagnostic ? false : true);
@@ -463,6 +462,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const showPaymentOptions = () => {
+    //showPrepaid is true for all vertical except diagnostics
     return !!paymentMethods?.length
       ? paymentMethods.map((item: any) => {
           const minVersion = item?.minimum_supported_version;

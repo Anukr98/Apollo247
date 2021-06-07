@@ -224,7 +224,6 @@ const appStaticVariables = {
     'Thank you for reaching out. As we are experiencing a heavy load, our team will get back to you in 24 to 48 hours.',
   Vaccination_Cities_List: ['Delhi', 'Mumbai'],
   Vaccine_Type: ['Covaxin', 'Covishield'],
-  Vaccine_Restrict_Self: true,
   Enable_Diagnostics_COD: false,
   Enable_Diagnostics_Cancellation_Policy: false,
   Diagnostics_Cancel_Policy_Text_Msg:

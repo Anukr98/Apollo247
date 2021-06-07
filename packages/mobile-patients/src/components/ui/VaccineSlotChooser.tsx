@@ -1,6 +1,6 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, StyleProp, ViewStyle, Text } from 'react-native';
+import { StyleSheet, TouchableOpacity, StyleProp, ViewStyle, Text, ScrollView } from 'react-native';
 import Menu from 'react-native-material-menu';
 
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -10,7 +10,6 @@ const styles = StyleSheet.create({
     width: '80%',
     marginHorizontal: -10,
     borderRadius: 10,
-    maxHeight: 300,
     marginTop: 50,
     flexDirection: 'column',
     ...theme.viewStyles.shadowStyle,
@@ -81,19 +80,20 @@ export const VaccineSlotChooser: React.FC<VaccineSlotChooserProps> = (props) => 
       {props.vaccineSlotList == null || props.vaccineSlotList.length == 0 ? (
         <Text style={styles.noSlotsLabel}>{string.vaccineBooking.no_slots}</Text>
       ) : null}
-
-      {props.vaccineSlotList.map((vaccineSlot, index) => (
-        <TouchableOpacity
-          onPress={() => {
-            props.onVaccineTypeChoosed?.(vaccineSlot);
-            hideMenu();
-          }}
-        >
-          <Text style={styles.slotTitle}>
-            {vaccineSlot.session_name || 'Invalid slot session name'}
-          </Text>
-        </TouchableOpacity>
-      ))}
+      <ScrollView style={{ flex: 1 }} bounces={false}>
+        {props.vaccineSlotList.map((vaccineSlot, index) => (
+          <TouchableOpacity
+            onPress={() => {
+              props.onVaccineTypeChoosed?.(vaccineSlot);
+              hideMenu();
+            }}
+          >
+            <Text style={styles.slotTitle}>
+              {vaccineSlot.session_name || 'Invalid slot session name'}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
     </Menu>
   );
 };
