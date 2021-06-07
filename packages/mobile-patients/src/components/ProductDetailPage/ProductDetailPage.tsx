@@ -119,6 +119,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     setPdpBreadCrumbs,
     addresses,
     productDiscount,
+    asyncPincode,
     setAsyncPincode,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
@@ -156,7 +157,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(false);
   const [availabilityCalled, setAvailabilityCalled] = useState<string>('no');
 
-  const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
+  const pharmacyPincode =
+    g(asyncPincode, 'pincode') || g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
   const [pincode, setpincode] = useState<string>(pharmacyPincode || '');
   const [notServiceable, setNotServiceable] = useState<boolean>(false);
   const [deliveryTime, setdeliveryTime] = useState<string>('');
