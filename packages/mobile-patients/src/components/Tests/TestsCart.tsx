@@ -2017,6 +2017,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       isHcApiCalled
     : cartItems?.length > 0 &&
       forPatientId &&
+      isHcApiCalled &&
       !!(
         selectedPatient &&
         deliveryAddressId &&
@@ -2806,6 +2807,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const fetchHC_ChargesForTest = async (slotVal: string, modifiedItems?: any[]) => {
+    setLoading?.(true);
     const getModifiedId = !!modifiedItems && modifiedItems?.map((item) => Number(item?.itemId));
     const allItemId =
       !!getModifiedId && getModifiedId?.length ? cartItemsWithId.concat(getModifiedId) : itemWithId;
@@ -2832,7 +2834,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       : addresses?.[selectedAddressIndex]?.zipcode!;
 
     setPinCode?.(pinCode);
-    setLoading?.(true);
 
     let newGrandTotal = isModifyFlow
       ? totalCartPricesIncludingDiscount + totalModifiedItemPrices
