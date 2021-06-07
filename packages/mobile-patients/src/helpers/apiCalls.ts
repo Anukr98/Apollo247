@@ -1060,13 +1060,16 @@ export const getSymptomsTrackerResult = (
   return Axios.get(url);
 };
 
-export const getMedicineSku = (skuKey: string): Promise<AxiosResponse<any>> => {
+export const getMedicineCategoryIds = (
+  skuKey: string,
+  level: string
+): Promise<AxiosResponse<any>> => {
   return Axios({
     url: config.GET_SKU[0],
     method: 'POST',
     data: {
       params: skuKey,
-      level: 'product',
+      level,
     },
     headers: {
       Authorization: config.GET_SKU[1],
