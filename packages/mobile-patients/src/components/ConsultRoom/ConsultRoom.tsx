@@ -2438,8 +2438,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           if (getAllAppointments?.length > 0) {
             let getUpcomingAppointments = getAllAppointments?.filter(
               (item: any) =>
-                (item?.status === BookingStatus.COMPLETED ||
-                  item?.status === BookingStatus?.INPROGRESS) &&
+                (item?.status ===
+                  (!!BookingStatus.COMPLETED ? BookingStatus.COMPLETED : 'COMPLETED') ||
+                  (item?.status === !!BookingStatus?.INPROGRESS
+                    ? BookingStatus?.INPROGRESS
+                    : 'INPROGRESS')) &&
                 moment(item?.appointmentStartDateTimeUTC).diff(moment(), 'minutes') > 0
             );
             if (getUpcomingAppointments?.length > 0) {
@@ -3482,7 +3485,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const regenerateJWTToken = async (source: string, id?: string) => {
     let deviceType =
-      Platform.OS == 'android' ? BookingSource?.Apollo247_Android : BookingSource?.Apollo247_Ios;
+      Platform.OS == 'android'
+        ? !!BookingSource?.Apollo247_Android
+          ? BookingSource?.Apollo247_Android
+          : 'Apollo247_Android'
+        : !!BookingSource?.Apollo247_Ios
+        ? BookingSource?.Apollo247_Ios
+        : 'Apollo247_Ios';
     setLoading?.(true);
     const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
     if (userLoggedIn == 'true') {
