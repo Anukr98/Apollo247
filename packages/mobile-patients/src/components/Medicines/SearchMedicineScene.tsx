@@ -618,7 +618,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {});
           props.navigation.navigate(AppRoutes.ProductDetailPage, {
             sku: medicine.sku,
-            urlKey: medicine.url_key,
+            urlKey: medicine?.url_key,
             movedFrom: ProductPageViewedSource.FULL_SEARCH,
           });
         }}
@@ -695,7 +695,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {});
           props.navigation.navigate(AppRoutes.ProductDetailPage, {
             sku: medicine.sku,
-            urlKey: medicine.url_key,
+            urlKey: medicine?.url_key,
             movedFrom: ProductPageViewedSource.FULL_SEARCH,
           });
         }}
@@ -995,7 +995,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         onPress={() => {
           props.navigation.navigate(AppRoutes.ProductDetailPage, {
             sku: item.sku,
-            urlKey: item.url_key,
+            urlKey: item?.url_key,
             movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
           });
           resetSearchState();

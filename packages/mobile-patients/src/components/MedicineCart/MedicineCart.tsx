@@ -962,7 +962,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         setloading={setloading}
         onPressProduct={(item) => {
           props.navigation.navigate(AppRoutes.ProductDetailPage, {
-            urlKey: item.url_key,
+            urlKey: item?.url_key,
             sku: item.id,
             movedFrom: ProductPageViewedSource.CART,
           });

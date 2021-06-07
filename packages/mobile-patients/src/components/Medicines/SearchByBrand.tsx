@@ -356,7 +356,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       <MedicineSearchSuggestionItem
         onPress={() => {
           props.navigation.navigate(AppRoutes.ProductDetailPage, {
-            urlKey: item.url_key,
+            urlKey: item?.url_key,
             sku: item.sku,
             movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
           });
@@ -494,7 +494,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
             // handleGraphQlError(e);
           });
           props.navigation.navigate(AppRoutes.ProductDetailPage, {
-            urlKey: medicine.url_key,
+            urlKey: medicine?.url_key,
             sku: medicine.sku,
             movedFrom: ProductPageViewedSource.CATEGORY_OR_LISTING,
           });
@@ -568,7 +568,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           });
           props.navigation.navigate(AppRoutes.ProductDetailPage, {
             sku: medicine.sku,
-            urlKey: medicine.url_key,
+            urlKey: medicine?.url_key,
             movedFrom: ProductPageViewedSource.CATEGORY_OR_LISTING,
             productPageViewedEventProps: {
               'Category ID': category_id,

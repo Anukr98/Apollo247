@@ -2111,7 +2111,7 @@ export const addPharmaItemToCart = (
   const navigate = () => {
     navigation.push(AppRoutes.ProductDetailPage, {
       sku: cartItem.id,
-      urlKey: cartItem.url_key,
+      urlKey: cartItem?.url_key,
       deliveryError: outOfStockMsg,
     });
   };

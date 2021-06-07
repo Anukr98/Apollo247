@@ -1812,7 +1812,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         onPress={() => {
           CommonLogEvent(AppRoutes.Medicine, 'Search suggestion Item');
           props.navigation.navigate(AppRoutes.ProductDetailPage, {
-            urlKey: item.url_key,
+            urlKey: item?.url_key,
             sku: item.sku,
             movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
           });
