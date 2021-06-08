@@ -169,11 +169,11 @@ export const TestRatingScreen: React.FC<TestRatingScreenProps> = (props) => {
         )}
 
         <ScrollView bounces={false} scrollEventThrottle={1}>
-          {phlObj?.diagnosticPhlebotomists?.name ? (
+          {phlObj?.PhelbotomistName ? (
             <View style={styles.phleboDetails}>
               <UserOutline style={styles.icon} />
               <Text style={styles.textStylePhlebo}>
-                Phlebotomist • {`${phlObj?.diagnosticPhlebotomists?.name}`}
+                Phlebotomist • {`${phlObj?.PhelbotomistName}`}
               </Text>
             </View>
           ) : (
