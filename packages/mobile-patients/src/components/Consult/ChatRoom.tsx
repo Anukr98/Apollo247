@@ -5171,7 +5171,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       !rowData?.message ||
       patientRejectedCall === (rowData as any) ||
       callRelatedCodes.includes(rowData?.message) ||
-      (!automatedCodesToRender.includes(rowData?.message) && rowData?.message?.startsWith('^^#'))
+      (!automatedCodesToRender.includes(rowData?.message) && rowData?.message?.startsWith('^^#')) ||
+      (rowData?.automatedText === consultPatientStartedMsg && rowData?.message == 'welcome')
     ) {
       return null;
     }
