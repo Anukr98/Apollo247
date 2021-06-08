@@ -78,9 +78,8 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
   const renderTimeSlot = () => {
     const timeSlotText = modifyOrderDetails
       ? `${moment(modifyOrderDetails?.slotDateTimeInUTC)?.format('ddd, DD MMM, YYYY') ||
-          ''}, ${`${formatTestSlot(
-          modifyOrderDetails?.slotDateTimeInUTC! || modifyOrderDetails?.slotTimings
-        )}`}`
+          ''}, ${`${moment(modifyOrderDetails?.slotDateTimeInUTC).format('hh:mm a') ||
+          formatTestSlot(modifyOrderDetails?.slotTimings)}`}`
       : `${moment(selectedTimeSlot?.date).format('ddd, DD MMM, YYYY') || ''}, ${
           selectedTimeSlot?.slotInfo?.startTime
             ? `${formatTestSlot(selectedTimeSlot?.slotInfo?.startTime!)}`
