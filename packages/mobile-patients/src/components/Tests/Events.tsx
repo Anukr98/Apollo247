@@ -2,6 +2,7 @@ import moment from 'moment';
 import {
   g,
   postAppsFlyerEvent,
+  postCleverTapEvent,
   postFirebaseEvent,
   postWebEngageEvent,
   setCircleMembershipType,
@@ -10,6 +11,7 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
   AppsFlyerEventName,
@@ -42,6 +44,7 @@ export function DiagnosticLandingPageViewedEvent(
     eventAttributes['Source'] = source;
   }
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, eventAttributes);
 }
 
 export function DiagnosticHomePageSearchItem(currentPatient: any, keyword: string, results: any[]) {
@@ -54,6 +57,7 @@ export function DiagnosticHomePageSearchItem(currentPatient: any, keyword: strin
       '# Results appeared': results.length,
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED, eventAttributes);
+    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED, eventAttributes);
   }
 }
 
@@ -73,6 +77,10 @@ export function DiagnosticPinCodeClicked(
   };
   postWebEngageEvent(
     WebEngageEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR,
+    eventAttributes
+  );
+  postCleverTapEvent(
+    CleverTapEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR,
     eventAttributes
   );
 }
@@ -97,6 +105,7 @@ export function DiagnosticHomePageWidgetClicked(
     eventAttributes['Item Name'] = name;
   }
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED, eventAttributes);
 }
 
 export function DiagnosticAddToCartEvent(
@@ -123,6 +132,7 @@ export function DiagnosticAddToCartEvent(
     eventAttributes['Section'] = section;
   }
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
 
   const firebaseAttributes: FirebaseEvents[FirebaseEventName.DIAGNOSTIC_ADD_TO_CART] = {
     productname: name,
@@ -198,6 +208,7 @@ export function DiagnosticDetailsViewed(
     eventAttributes['Item Type'] = itemType;
   }
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
 
   const firebaseEventAttributes: FirebaseEvents[FirebaseEventName.PRODUCT_PAGE_VIEWED] = {
     PatientUHID: g(currentPatient, 'uhid'),
@@ -221,6 +232,7 @@ export function DiagnosticBannerClick(slideIndex: number, itemId: number) {
   };
 
   postWebEngageEvent(WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED, eventAttributes);
 }
 
 export function DiagnosticCartViewed(
@@ -263,6 +275,7 @@ export function DiagnosticCartViewed(
   }
   fireCircleBenifitAppliedEvent(currentPatient, validity, circleSubId, isCircle);
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CART_VIEWED, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_CART_VIEWED, eventAttributes);
 }
 
 function fireCircleBenifitAppliedEvent(
@@ -317,6 +330,7 @@ export function DiagnosticProceedToPay(
     'Collection Time Slot': timeSlot,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED, eventAttributes);
 }
 
 export function DiagnosticNonServiceableAddressSelected(
@@ -346,6 +360,7 @@ export function DiagnosticAreaSelected(selectedAddr: any, area: string) {
     'Area Selected': area,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_AREA_SELECTED, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_AREA_SELECTED, eventAttributes);
 }
 
 export function DiagnosticAppointmentTimeSlot(
@@ -389,10 +404,12 @@ export function DiagnosticAddresssSelected(
     Source: source,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE, eventAttributes);
 }
 
 export function DiagnosticAddToCartClicked() {
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE, {});
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE, {});
 }
 
 export function DiagnosticRemoveFromCartClicked(
@@ -408,6 +425,7 @@ export function DiagnosticRemoveFromCartClicked(
     Mode: mode,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE, eventAttributes);
 }
 
 export function DiagnosticRescheduleOrder(
@@ -439,6 +457,7 @@ export function DiagnosticTrackOrderViewed(
     Source: source,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TRACK_ORDER_VIEWED, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_TRACK_ORDER_VIEWED, eventAttributes);
 }
 
 export function DiagnosticFeedbackSubmitted(currentPatient: any, rating: string, reason: string) {
@@ -457,6 +476,7 @@ export function DiagnosticPaymentPageViewed(currentPatient: any, amount: string 
     'Order amount': amount,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED, eventAttributes);
 }
 export function DiagnosticPhleboFeedbackSubmitted(
   rating: string | number,
@@ -498,6 +518,7 @@ export function DiagnosticOrderSummaryViewed(
     'Order status': status,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED, eventAttributes);
 }
 
 export function DiagnosticViewReportClicked(
@@ -515,6 +536,7 @@ export function DiagnosticViewReportClicked(
     eventAttributes['Order id'] = orderId;
   }
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED, eventAttributes);
 }
 
 export function DiagnosticTrackPhleboClicked(

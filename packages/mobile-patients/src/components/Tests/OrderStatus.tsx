@@ -5,7 +5,7 @@ import {
   CircleLogo,
   OrderPlacedCheckedIcon,
   OrderProcessingIcon,
-  InfoIconRed
+  InfoIconRed,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -18,6 +18,7 @@ import {
   apiCallEnums,
   navigateToHome,
   nameFormater,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -27,6 +28,7 @@ import { firePurchaseEvent } from '@aph/mobile-patients/src/components/Tests/Eve
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 export interface OrderStatusProps extends NavigationScreenProps {}
 
@@ -88,6 +90,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       'Circle discount': circleSubscriptionId && orderCircleSaving ? orderCircleSaving : 0,
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED, attributes);
+    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_CHECKOUT_COMPLETED, attributes);
   };
 
   const handleBack = () => {
@@ -304,19 +307,19 @@ const styles = StyleSheet.create({
     color: '#FC9916',
   },
   cancel_container: {
-    width:'98%',
+    width: '98%',
     flexDirection: 'row',
     justifyContent: 'flex-start',
     borderRadius: 10,
     backgroundColor: '#FCFDDA',
     padding: 10,
-    alignSelf:'center',
-    marginVertical:10,
-    elevation: 2
+    alignSelf: 'center',
+    marginVertical: 10,
+    elevation: 2,
   },
   cancel_text: {
     ...theme.viewStyles.text('M', 12, '#01475b', 0.6, 18),
-    width:'90%',
+    width: '90%',
     marginHorizontal: 10,
   },
   orderPlaced: {

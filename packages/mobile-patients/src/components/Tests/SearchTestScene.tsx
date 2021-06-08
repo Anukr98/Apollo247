@@ -30,6 +30,7 @@ import {
   postWebEngageEvent,
   postFirebaseEvent,
   postAppsFlyerEvent,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -71,6 +72,7 @@ import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCal
 import { DiagnosticsSearchSuggestionItem } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticsSearchSuggestionItem';
 import { DiagnosticsNewSearch } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticsNewSearch';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -388,6 +390,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       Source: 'Popular search',
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
+    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
 
     const firebaseAttributes: FirebaseEvents[FirebaseEventName.DIAGNOSTIC_ADD_TO_CART] = {
       productname: name,
@@ -412,6 +415,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       Popular: keyword == '' ? 'Yes' : 'No',
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ITEM_SEARCHED, eventAttributes);
+    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ITEM_SEARCHED, eventAttributes);
   };
 
   const onAddCartItem = (
