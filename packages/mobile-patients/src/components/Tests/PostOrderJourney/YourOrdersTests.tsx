@@ -1681,9 +1681,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     padding: 8,
-    // border: 1px solid #BDBDBD;
-    // box-sizing: border-box;
-    // border-radius: 8px;
   },
   modalMainView: {
     backgroundColor: 'rgba(100,100,100, 0.5)',
@@ -1698,36 +1695,6 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-  },
-  reportModalView: {
-    backgroundColor: 'white',
-    width: '100%',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-  },
-  reportModalOptionsView: {
-    backgroundColor: 'white',
-    width: '100%',
-  },
-  itemView: {
-    backgroundColor: 'white',
-    width: '100%',
-    padding: 10,
-    flexDirection: 'row',
-    alignContent: 'center',
-    borderBottomColor: '#e8e8e8',
-    borderBottomWidth: 1,
-  },
-  itemTextStyle: {
-    marginHorizontal: 10,
-    ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE),
-  },
-  copyTextStyle: {
-    marginHorizontal: 10,
-    textAlign: 'left',
-    ...theme.viewStyles.text('SB', 14, theme.colors.APP_GREEN),
   },
   paitentCard: {
     backgroundColor: '#F7F8F5',

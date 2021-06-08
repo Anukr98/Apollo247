@@ -12,11 +12,6 @@ import {
   OrderPlacedIcon,
   OrderTrackerSmallIcon,
   ClockIcon,
-  CopyBlue,
-  DownloadNew,
-  ShareBlue,
-  ViewIcon,
-  Cross,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import _ from 'lodash';
 import {
@@ -770,50 +765,15 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.CARD_BG,
     borderBottomColor: 'rgba(2, 71, 91, 0.3)',
   },
-
   graphicalStatusViewStyle: {
     justifyContent: 'center',
     alignItems: 'center',
     width: 28,
     marginRight: 18,
   },
-  modalMainView: {
-    backgroundColor: 'rgba(100,100,100, 0.5)',
-    flex: 1,
-    justifyContent: 'flex-end',
-    // alignItems: 'center',
-    flexDirection: 'column',
-  },
-  reportModalView: {
-    backgroundColor: 'white',
-    width: '100%',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-  },
-
-  reportModalOptionsView: {
-    backgroundColor: 'white',
-    width: '100%',
-  },
-  itemView: {
-    backgroundColor: 'white',
-    width: '100%',
-    padding: 10,
-    flexDirection: 'row',
-    alignContent: 'center',
-    borderBottomColor: '#e8e8e8',
-    borderBottomWidth: 1,
-  },
   itemTextStyle: {
     marginHorizontal: 10,
     ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE),
-  },
-  copyTextStyle: {
-    marginHorizontal: 10,
-    textAlign: 'left',
-    ...theme.viewStyles.text('SB', 14, theme.colors.APP_GREEN),
   },
   verticalProgressLine: { flex: 1, width: 6, alignSelf: 'center' },
   statusIconStyle: {
@@ -857,19 +817,6 @@ const styles = StyleSheet.create({
     marginTop: 7,
     marginBottom: 8,
   },
-  statusLineSeperator: {
-    paddingHorizontal: 45,
-    marginTop: '8%',
-    paddingBottom: 25.5,
-  },
-  reportsGeneratedText: {
-    textAlign: 'center',
-    marginBottom: 6,
-    ...theme.viewStyles.text('M', 13, '#01475b', 1, 21),
-  },
-  rateDeliveryText: {
-    ...theme.viewStyles.text('B', isIphone5s() ? 11 : 13, theme.colors.BUTTON_TEXT, 1, 24),
-  },
   buttonStyle: {
     alignSelf: 'center',
     marginTop: -10,
@@ -877,7 +824,6 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     marginRight: 10,
   },
-
   noDataCard: {
     height: 'auto',
     shadowRadius: 0,
