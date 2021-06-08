@@ -380,13 +380,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setIsFocused(true);
       BackHandler.addEventListener('hardwareBackPress', handleBack);
     });
-    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+    const willBlur = props.navigation.addListener('willBlur', (payload) => {
       setIsFocused(false);
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     });
     return () => {
       didFocus && didFocus.remove();
-      didBlur && didBlur.remove();
+      willBlur && willBlur.remove();
     };
   }, []);
 
@@ -536,17 +536,19 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           },
         ],
       });
+    } else {
+      props.navigation.goBack();
     }
-    props.navigation.goBack();
+    return true;
   };
 
   function clearModifyDetails() {
+    setModifiedOrder?.(null);
     setPatientId?.(currentPatientId!);
     setModifyHcCharges?.(0);
     setModifiedOrderItemIds?.([]);
     setHcCharges?.(0);
     setAreaSelected?.({});
-    setModifiedOrder?.({});
     //go back to homepage
     props.navigation.navigate('TESTS', { focusSearch: true });
   }
