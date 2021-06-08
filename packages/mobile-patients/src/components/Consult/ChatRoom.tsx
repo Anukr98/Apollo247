@@ -754,7 +754,6 @@ const styles = StyleSheet.create({
     width: 68,
     height: 24,
     borderRadius: 5,
-    position: 'absolute',
     right: 0,
   },
 });
