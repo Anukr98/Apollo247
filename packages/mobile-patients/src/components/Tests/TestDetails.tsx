@@ -398,14 +398,15 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         },
       ],
     });
+    return true;
   }
 
   function clearModifyDetails() {
+    setModifiedOrder?.(null);
     setModifyHcCharges?.(0);
     setModifiedOrderItemIds?.([]);
     setHcCharges?.(0);
     setAreaSelected?.({});
-    setModifiedOrder?.({});
     //go back to homepage
     props.navigation.navigate('TESTS');
   }

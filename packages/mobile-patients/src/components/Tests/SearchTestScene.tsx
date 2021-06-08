@@ -381,14 +381,15 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     } else {
       props.navigation.goBack();
     }
+    return true;
   }
 
   function clearModifyDetails() {
+    setModifiedOrder?.(null);
     setModifyHcCharges?.(0);
     setModifiedOrderItemIds?.([]);
     setHcCharges?.(0);
     setAreaSelected?.({});
-    setModifiedOrder?.({});
     //go back to homepage
     props.navigation.navigate('TESTS', { focusSearch: true });
   }

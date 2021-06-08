@@ -264,7 +264,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const fetchOrders = async (isRefetch: boolean) => {
     //clear the modify data.
-    setModifiedOrder?.({});
+    setModifiedOrder?.(null);
     setModifiedOrderItemIds?.([]);
 
     try {
