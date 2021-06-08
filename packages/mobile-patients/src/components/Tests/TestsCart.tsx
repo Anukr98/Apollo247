@@ -2308,13 +2308,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
             description: string.diagnostics.bookingOrderFailedMessage,
           });
-          aphConsole.log({ error });
         });
     }
   };
 
   function apiHandleErrorFunction(input: any, data: any, source: string) {
-    console.log('po');
     let message = data?.errorMessageToDisplay || string.diagnostics.bookingOrderFailedMessage;
     //itemIds will only come in case of duplicate
     let itemIds = data?.attributes?.itemids;
@@ -2632,17 +2630,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const checkDuplicateItems_Level2 = (pricesForItem: any, getItemIds: any, cartItemPrices: any) => {
     //no inclusion level duplicates are found...
     if (getItemIds?.length > 0) {
+      const getCartItemsId = cartItemPrices?.map((item: any) => item?.itemId);
+      const getItemInCart = pricesForItem?.filter((item: any) =>
+        getCartItemsId?.includes(item?.itemId)
+      );
       const newItems = getItemIds?.map((item: string) => Number(item));
-
       //get the prices for both the items,
-      const getDuplicateItems = pricesForItem
+      const arrayToUse = isModifyFlow ? getItemInCart : pricesForItem;
+      const getDuplicateItems = arrayToUse
         ?.filter((item: any) => newItems?.includes(item?.itemId))
         .sort((a: any, b: any) => b?.price - a?.price);
 
-      const itemsToRemove = getDuplicateItems?.splice(
-        isModifyFlow ? 0 : 1,
-        getDuplicateItems?.length - 1
-      );
+      const itemsToRemove = isModifyFlow
+        ? getDuplicateItems
+        : getDuplicateItems?.splice(1, getDuplicateItems?.length - 1);
 
       const itemIdToRemove = itemsToRemove?.map((item: any) => item?.itemId);
       const updatedCartItems = cartItems?.filter(function(items: any) {
