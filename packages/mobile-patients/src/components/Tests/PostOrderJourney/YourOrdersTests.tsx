@@ -36,17 +36,7 @@ import {
   Text,
   Modal,
 } from 'react-native';
-import {
-  Down,
-  Up,
-  DownO,
-  CopyBlue,
-  DownloadNew,
-  ShareBlue,
-  ViewIcon,
-  Cross,
-  InfoIconRed,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { Down, DownO, InfoIconRed } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NavigationScreenProps } from 'react-navigation';
 import {
   CancellationDiagnosticsInput,

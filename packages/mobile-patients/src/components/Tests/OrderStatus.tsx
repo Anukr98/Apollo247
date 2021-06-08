@@ -5,7 +5,7 @@ import {
   CircleLogo,
   OrderPlacedCheckedIcon,
   OrderProcessingIcon,
-  InfoIconRed
+  InfoIconRed,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -76,7 +76,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     navigateToHome(props.navigation);
   };
   const moveToMyOrders = () => {
-    props.navigation.navigate(AppRoutes.YourOrdersTest, {
+    props.navigation.push(AppRoutes.YourOrdersTest, {
       source: AppRoutes.OrderStatus,
     });
   };
@@ -108,7 +108,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const navigateToOrderDetails = (showOrderSummaryTab: boolean, orderId: string) => {
     setLoading?.(false);
     apisToCall.current = [apiCallEnums.circleSavings];
-    props.navigation.navigate(AppRoutes.TestOrderDetails, {
+    props.navigation.push(AppRoutes.TestOrderDetails, {
       orderId: !!modifiedOrderDetails ? modifiedOrderDetails?.id : orderId,
       setOrders: null,
       selectedOrder: null,
@@ -320,19 +320,19 @@ const styles = StyleSheet.create({
     color: '#FC9916',
   },
   cancel_container: {
-    width:'98%',
+    width: '98%',
     flexDirection: 'row',
     justifyContent: 'flex-start',
     borderRadius: 10,
     backgroundColor: '#FCFDDA',
     padding: 10,
-    alignSelf:'center',
-    marginVertical:10,
-    elevation: 2
+    alignSelf: 'center',
+    marginVertical: 10,
+    elevation: 2,
   },
   cancel_text: {
     ...theme.viewStyles.text('M', 12, '#01475b', 0.6, 18),
-    width:'90%',
+    width: '90%',
     marginHorizontal: 10,
   },
   orderPlaced: {
