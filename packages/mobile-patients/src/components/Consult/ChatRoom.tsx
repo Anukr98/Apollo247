@@ -754,7 +754,6 @@ const styles = StyleSheet.create({
     width: 68,
     height: 24,
     borderRadius: 5,
-    position: 'absolute',
     right: 0,
   },
 });
@@ -5172,7 +5171,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       !rowData?.message ||
       patientRejectedCall === (rowData as any) ||
       callRelatedCodes.includes(rowData?.message) ||
-      (!automatedCodesToRender.includes(rowData?.message) && rowData?.message?.startsWith('^^#'))
+      (!automatedCodesToRender.includes(rowData?.message) && rowData?.message?.startsWith('^^#')) ||
+      (rowData?.automatedText === consultPatientStartedMsg && rowData?.message == 'welcome')
     ) {
       return null;
     }
