@@ -37,8 +37,13 @@ import {
   createOrderInternalVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
 import { CommonBugFender } from '../FunctionHelpers/DeviceHelper';
-import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import {
+  initiateSDK,
+  createHyperServiceObject,
+  terminateSDK,
+} from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 export interface CommonWebViewProps extends NavigationScreenProps {}
 
 export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
@@ -59,6 +64,7 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
     setCircleSubPlanId,
     setAutoCirlcePlanAdded,
   } = useShoppingCart();
+  const { showAphAlert } = useUIElements();
   const storeCode =
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
@@ -92,8 +98,12 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   const initiateHyperSDK = async () => {
     try {
       const isInitiated: boolean = await isSDKInitialised();
-      const merchantId = AppConfig.Configuration.pharmaMerchantId;
-      !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id, merchantId);
+      const merchantId = AppConfig.Configuration.merchantId;
+      isInitiated
+        ? (terminateSDK(),
+          setTimeout(() => createHyperServiceObject(), 1000),
+          setTimeout(() => initiateSDK(currentPatient?.id, currentPatient?.id, merchantId), 2000))
+        : initiateSDK(currentPatient?.id, currentPatient?.id, merchantId);
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
@@ -170,8 +180,16 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
         });
       }
     } catch (error) {
-      CommonBugFender('Circle_Purchase_Initiation_Failed', error);
+      setLoading(false);
+      renderAlert('Something went wrong. Please try again after some time');
     }
+  };
+
+  const renderAlert = (message: string) => {
+    showAphAlert!({
+      title: string.common.uhOh,
+      description: message,
+    });
   };
 
   const renderWebView = () => {

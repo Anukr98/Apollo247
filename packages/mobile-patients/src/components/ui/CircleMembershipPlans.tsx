@@ -57,7 +57,11 @@ import {
   createOrderInternal,
   createOrderInternalVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
-import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import {
+  initiateSDK,
+  createHyperServiceObject,
+  terminateSDK,
+} from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 
 const { width } = Dimensions.get('window');
@@ -154,7 +158,12 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   const initiateHyperSDK = async () => {
     try {
       const isInitiated: boolean = await isSDKInitialised();
-      !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id);
+      const merchantId = AppConfig.Configuration.merchantId;
+      isInitiated
+        ? (terminateSDK(),
+          setTimeout(() => createHyperServiceObject(), 1000),
+          setTimeout(() => initiateSDK(currentPatient?.id, currentPatient?.id, merchantId), 2000))
+        : initiateSDK(currentPatient?.id, currentPatient?.id, merchantId);
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
@@ -797,11 +806,12 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
             }
           } else if (from === string.banner_context.PHARMACY_HOME) {
             if (!cartItems?.length) {
-              props.navigation.navigate(AppRoutes.CircleSubscription, {
-                from: from,
-                soruce: source,
-                screenName: screenName,
-              });
+              // props.navigation.navigate(AppRoutes.CircleSubscription, {
+              //   from: from,
+              //   soruce: source,
+              //   screenName: screenName,
+              // });
+              initiateCirclePurchase();
             } else {
               setCircleMembershipCharges &&
                 setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
