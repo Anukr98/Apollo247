@@ -4,6 +4,7 @@ import { LabTestIcon, ShareBlueIcon } from '@aph/mobile-patients/src/components/
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import Share from 'react-native-share';
 import moment from 'moment';
 import React, { useEffect, useState, useCallback } from 'react';
 import {
@@ -88,9 +89,9 @@ const styles = StyleSheet.create({
     left: 15,
   },
   descriptionStyle: {
-    color: theme.colors.SKY_BLUE,
+    color: '#000000',
     lineHeight: 24,
-    ...theme.fonts.IBMPlexSansMedium(14),
+    ...theme.fonts.IBMPlexSansMedium(12),
   },
   labelViewStyle: {
     borderBottomWidth: 0,
@@ -254,6 +255,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   const [showPDF, setShowPDF] = useState<boolean>(false);
   const [pdfFileUrl, setPdfFileUrl] = useState<string>('');
   const [fileNamePDF, setFileNamePDF] = useState<string>('');
+  const [shareFile, setShareFile] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
 
@@ -456,7 +458,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
               marginHorizontal: 8,
             }
           }
-          headingStyle={{ ...viewStyles.text('SB', 18, theme.colors.LIGHT_BLUE, 1, 23) }}
+          headingStyle={{ ...viewStyles.text('SB', 14, '#000000', 1, 23) }}
           labelViewStyle={styles.collapseCardLabelViewStyle}
           onPress={() => setShowAdditionalNotes(!showAdditionalNotes)}
         >
@@ -470,7 +472,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
     );
   };
 
-  const downloadPDFTestReport = () => {
+  const downloadPDFTestReport = (fileShare?: boolean) => {
     if (currentPatient?.id) {
       setLoading && setLoading(true);
       client
@@ -484,8 +486,8 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         .then(({ data }: any) => {
           if (data?.getLabResultpdf?.url) {
             imagesArray?.length === 0
-              ? downloadDocument(data?.getLabResultpdf?.url)
-              : callConvertToZipApi(data?.getLabResultpdf?.url);
+              ? downloadDocument(data?.getLabResultpdf?.url, fileShare)
+              : callConvertToZipApi(data?.getLabResultpdf?.url, fileShare);
           }
         })
         .catch((e: any) => {
@@ -496,7 +498,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
     }
   };
 
-  const callConvertToZipApi = (pdfUrl?: string) => {
+  const callConvertToZipApi = (pdfUrl?: string, fileShare?: boolean) => {
     setLoading?.(true);
     const fileUrls = imagesArray?.map((item) => item?.file_Url);
     pdfUrl && fileUrls?.push(pdfUrl);
@@ -511,7 +513,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       .then(({ data }) => {
         setLoading?.(false);
         if (data?.convertToZip?.zipUrl) {
-          downloadZipFile(data?.convertToZip?.zipUrl);
+          downloadZipFile(data?.convertToZip?.zipUrl, fileShare);
         }
       })
       .catch((e: any) => {
@@ -521,7 +523,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       });
   };
 
-  const downloadZipFile = (zipUrl: string) => {
+  const downloadZipFile = (zipUrl: string, fileShare?: boolean) => {
     const dirs = RNFetchBlob.fs.dirs;
     const fileName: string =
       file_name_text + currentPatient?.uhid + '_' + new Date().getTime() + '.zip';
@@ -533,22 +535,37 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
     RNFetchBlob.config({
       fileCache: true,
       path: downloadPath,
-      addAndroidDownloads: {
-        title: fileName,
-        useDownloadManager: true,
-        notification: true,
-        path: downloadPath,
-        mime: mimeType(downloadPath),
-        description: 'File downloaded by download manager.',
-      },
+      addAndroidDownloads:
+        !fileShare && fileShare === undefined
+          ? {
+              title: fileName,
+              useDownloadManager: true,
+              notification: true,
+              path: downloadPath,
+              mime: mimeType(downloadPath),
+              description: 'File downloaded by download manager.',
+            }
+          : undefined,
     })
       .fetch('GET', zipUrl)
       .then((res) => {
         setLoading && setLoading(false);
         postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, eventInputData);
-        Platform.OS === 'ios'
-          ? RNFetchBlob.ios.previewDocument(res.path())
-          : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+        const shareOptions = {
+          title: mimeType(res.path()),
+          url: `file://${res.path()}`,
+          failOnCancel: false,
+          showAppsToView: true,
+        };
+        if (fileShare!! && fileShare === true) {
+          Platform.OS === 'ios'
+            ? RNFetchBlob.ios.previewDocument(res.path())
+            : Share.open(shareOptions);
+        } else {
+          Platform.OS === 'ios'
+            ? RNFetchBlob.ios.previewDocument(res.path())
+            : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+        }
       })
       .catch((err) => {
         CommonBugFender('HealthRecordDetails_downloadZipFile', err);
@@ -765,7 +782,9 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
             ]}
           >
             <Text style={styles.rangeTextContainer}>{'Range:'}</Text>
-            <Text style={styles.rangeValueContainer}>{range ? `${range + `${unit}`}` : 'N/A'}</Text>
+            <Text style={styles.rangeValueContainer}>
+              {range ? `${range + ` ${unit}`}` : 'N/A'}
+            </Text>
           </View>
         </>
       );
@@ -879,7 +898,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       <View style={styles.topView}>
         <View style={styles.shareIconRender}>
           <TouchableOpacity
-            onPress={() => (labResults ? downloadPDFTestReport() : downloadDocument())}
+            onPress={() => (labResults ? downloadPDFTestReport(true) : downloadDocument())}
           >
             <ShareBlueIcon size={'sm'} style={{ width: 16, height: 16 }} />
           </TouchableOpacity>
@@ -916,12 +935,11 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
           file_name;
   };
 
-  const downloadDocument = (pdfUrl: string = '') => {
+  const downloadDocument = (pdfUrl: string = '', fileShare?: boolean) => {
     const file_name = g(data, 'testResultFiles', '0', 'fileName')
       ? g(data, 'testResultFiles', '0', 'fileName')
       : '';
     const dirs = RNFetchBlob.fs.dirs;
-
     const fileName: string = getFileName(file_name, pdfUrl);
     const downloadPath =
       Platform.OS === 'ios'
@@ -931,14 +949,17 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
     RNFetchBlob.config({
       fileCache: true,
       path: downloadPath,
-      addAndroidDownloads: {
-        title: fileName,
-        useDownloadManager: true,
-        notification: true,
-        path: downloadPath,
-        mime: mimeType(downloadPath),
-        description: 'File downloaded by download manager.',
-      },
+      addAndroidDownloads:
+        !fileShare && fileShare === undefined
+          ? {
+              title: fileName,
+              useDownloadManager: true,
+              notification: true,
+              path: downloadPath,
+              mime: mimeType(downloadPath),
+              description: 'File downloaded by download manager.',
+            }
+          : undefined,
     })
       .fetch('GET', labResults ? pdfUrl || data?.fileUrl : data.fileUrl, {
         //some headers ..
@@ -946,9 +967,22 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       .then((res) => {
         setLoading && setLoading(false);
         postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, eventInputData);
-        Platform.OS === 'ios'
-          ? RNFetchBlob.ios.previewDocument(res.path())
-          : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+        const shareOptions = {
+          title: mimeType(res.path()),
+          url: `file://${res.path()}`,
+          failOnCancel: false,
+          showAppsToView: true,
+        };
+
+        if (!!fileShare && fileShare === true) {
+          Platform.OS === 'ios'
+            ? RNFetchBlob.ios.previewDocument(res.path())
+            : Share.open(shareOptions);
+        } else {
+          Platform.OS === 'ios'
+            ? RNFetchBlob.ios.previewDocument(res.path())
+            : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+        }
       })
       .catch((err) => {
         CommonBugFender('ConsultDetails_renderFollowUp', err);
