@@ -416,9 +416,11 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   const showOnlyOTPContainer = () => {
     const phlObj = props?.phelboObject;
     const otpToShow = !!phlObj && phlObj?.PhelboOTP;
-    <View style={styles.ratingContainer}>
-      <Text style={styles.otpBoxTextStyle}>OTP : {otpToShow}</Text>
-    </View>;
+    return (
+      <View style={styles.ratingContainer}>
+        <Text style={styles.otpBoxTextStyle}>OTP : {otpToShow}</Text>
+      </View>
+    );
   };
 
   const showRatingView = () => {

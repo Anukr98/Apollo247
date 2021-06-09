@@ -14,6 +14,7 @@ export const AmountCard: React.FC<AmountCardProps> = (props) => {
     productDiscount,
     grandTotal,
     circleMembershipCharges,
+    coupon,
     isCircleSubscription,
     packagingCharges,
   } = useShoppingCart();
@@ -52,7 +53,7 @@ export const AmountCard: React.FC<AmountCardProps> = (props) => {
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <View>
           <Text style={styles.text}>Delivery charges</Text>
-          {(isCircleSubscription || !!circleMembershipCharges) &&
+          {(isCircleSubscription || (!!circleMembershipCharges && !coupon)) &&
             amountToPay < minValueForFreeDelivery && (
               <Text style={styles.circleMessage}>(Free for Circle Members)</Text>
             )}

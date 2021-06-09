@@ -57,7 +57,7 @@ export const Savings: React.FC<SavingsProps> = (props) => {
   };
 
   const renderSavingDetails = () => {
-    const isCircle = isCircleSubscription || circleMembershipCharges;
+    const isCircle = isCircleSubscription || (circleMembershipCharges && !coupon);
     return (
       <>
         {!!isCircle && (
