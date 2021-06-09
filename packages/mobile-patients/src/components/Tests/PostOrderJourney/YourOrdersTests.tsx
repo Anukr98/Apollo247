@@ -220,11 +220,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const handleBack = () => {
     if (source === AppRoutes.OrderStatus) {
       navigateToScreenWithEmptyStack(props.navigation, 'TESTS');
-      return true;
     } else {
       props.navigation.goBack();
-      return false;
     }
+    return true;
   };
 
   useEffect(() => {
@@ -278,7 +277,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           variables: {
             mobileNumber: currentPatient && currentPatient.mobileNumber,
             paginated: true,
-            limit: 10,
+            limit: 200,
             offset: currentOffset,
           },
           fetchPolicy: 'no-cache',

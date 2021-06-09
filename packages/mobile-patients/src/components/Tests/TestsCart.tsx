@@ -2165,7 +2165,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   function saveModifiedOrder() {
-    const calHcChargers = modifiedOrder?.collectionCharges === 0 ? hcCharges : 0.0;
+    // const calHcChargers = modifiedOrder?.collectionCharges === 0 ? hcCharges :  0.0;
+    //since we need to pass the overall collection charges applied.
+    const calHcChargers =
+      modifiedOrder?.collectionCharges === 0
+        ? hcCharges
+        : modifiedOrder?.collectionCharges + modifyHcCharges;
+
     const slotTimings = modifiedOrder?.slotDateTimeInUTC;
     const slotStartTime = modifiedOrder?.slotDateTimeInUTC;
     const allItems = cartItems?.find(
@@ -2392,7 +2398,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           cartSaving: cartSaving,
           circleSaving: circleSaving,
           cartHasAll: items != undefined ? true : false,
-          amount: grandTotal,
+          amount: grandTotal, //actual amount to be payed by customer (topay)
         };
         const eventAttributes = createCheckOutEventAttributes(orderId, slotStartTime);
         setauthToken?.('');
@@ -2879,13 +2885,19 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           ? calculateModifiedOrderHomeCollectionCharges(getCharges)
           : getCharges;
 
+        // const updatedHcCharges =
+        //   isModifyFlow &&
+        //   modifiedOrder?.collectionCharges > 0 &&
+        //   (getCharges === 0 || getCharges > 0)
+        //     ? -modifiedOrder?.collectionCharges
+        //     : getCharges;
+
         const updatedHcCharges =
           isModifyFlow &&
           modifiedOrder?.collectionCharges > 0 &&
           (getCharges === 0 || getCharges > 0)
-            ? -modifiedOrder?.collectionCharges
+            ? 0
             : getCharges;
-
         setHcCharges?.(getCharges);
         setModifyHcCharges?.(updatedHcCharges); //used for calculating subtotal & topay
       }

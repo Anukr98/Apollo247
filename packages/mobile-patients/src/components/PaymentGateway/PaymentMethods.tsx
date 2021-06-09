@@ -118,8 +118,18 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   useEffect(() => {
     if (isDiagnostic) {
       DiagnosticPaymentPageViewed(currentPatient, amount);
-      setShowPrepaid(getDiagnosticCityLevelPaymentOptions(deliveryAddressCityId)?.prepaid);
-      setShowCOD(getDiagnosticCityLevelPaymentOptions(deliveryAddressCityId)?.cod);
+      //modify -> always show prepaid
+      // modify -> not to show cod
+      setShowPrepaid(
+        isDiagnosticModify
+          ? true
+          : getDiagnosticCityLevelPaymentOptions(deliveryAddressCityId)?.prepaid
+      );
+      setShowCOD(
+        isDiagnosticModify
+          ? false
+          : getDiagnosticCityLevelPaymentOptions(deliveryAddressCityId)?.cod
+      );
     }
   }, []);
 

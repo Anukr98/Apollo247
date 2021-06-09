@@ -282,11 +282,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       navigateToScreenWithEmptyStack(props.navigation, AppRoutes.YourOrdersTest, {
         source: AppRoutes.OrderStatus,
       });
-      return true;
     } else {
       props.navigation.goBack();
-      return false;
     }
+    return true;
   };
   useEffect(() => {
     const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
