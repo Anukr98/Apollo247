@@ -277,7 +277,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           variables: {
             mobileNumber: currentPatient && currentPatient.mobileNumber,
             paginated: true,
-            limit: 200,
+            limit: 10,
             offset: currentOffset,
           },
           fetchPolicy: 'no-cache',
