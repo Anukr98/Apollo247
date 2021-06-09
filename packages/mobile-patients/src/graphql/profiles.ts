@@ -1667,6 +1667,7 @@ export const GET_RECOMMENDED_PRODUCTS_LIST = gql`
         categoryName
         status
         mou
+        urlKey
       }
     }
   }

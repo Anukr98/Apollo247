@@ -2061,6 +2061,7 @@ export const formatToCartItem = ({
   thumbnail,
   image,
   sell_online,
+  url_key,
 }: MedicineProduct): ShoppingCartItem => {
   return {
     id: sku,
@@ -2076,6 +2077,7 @@ export const formatToCartItem = ({
     productType: type_id,
     isInStock: is_in_stock == 1,
     unavailableOnline: sell_online == 0,
+    url_key,
   };
 };
 
@@ -2112,6 +2114,7 @@ export const addPharmaItemToCart = (
   const navigate = () => {
     navigation.push(AppRoutes.ProductDetailPage, {
       sku: cartItem.id,
+      urlKey: cartItem?.url_key,
       deliveryError: outOfStockMsg,
     });
   };
