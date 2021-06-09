@@ -54,6 +54,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
   const pharma_storage = pharmaOverview?.Storage;
   const coldChain = pharmaOverview?.ColdChain;
   const aboutProduct = pharmaOverview?.AboutProduct;
+  const productDescription = description || pharmaOverview?.AboutProduct;
 
   const showShowMore =
     !!key_benefits ||
@@ -81,12 +82,12 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
   };
 
   const renderDescription = () => {
-    const descriptionHtml = filterHtmlContent(description);
+    const descriptionHtml = filterHtmlContent(productDescription);
     const text = descriptionHtml.replace(/(<([^>]+)>)/gi, ' ').trim();
     return (
       !!text.length && (
         <View>
-          <Text style={styles.subHeading}>Description</Text>
+          <Text style={styles.subHeading}>{isPharma ? `About ${name}` : `Description`}</Text>
           <HTML
             html={descriptionHtml}
             baseFontStyle={{
@@ -237,8 +238,10 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
 
   return (
     <View style={styles.cardStyle}>
-      <Text style={styles.heading}>{isPharma ? `Medicine Detail` : `Product Detail`}</Text>
-      {!!description && renderDescription()}
+      {!!showShowMore && (!!productDescription || !!vegetarian) && (
+        <Text style={styles.heading}>{isPharma ? `Medicine Detail` : `Product Detail`}</Text>
+      )}
+      {!!productDescription && renderDescription()}
       {showAllContent && (
         <>
           <PharmaMedicineInfo name={name} pharmaOverview={pharmaOverview} />
