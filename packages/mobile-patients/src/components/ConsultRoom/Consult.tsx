@@ -37,6 +37,7 @@ import {
   overlyCallPermissions,
   isPastAppointment,
   navigateToHome,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -84,6 +85,7 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { NotificationListener } from '@aph/mobile-patients/src/components/NotificationListener';
 import _ from 'lodash';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -705,6 +707,14 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         : type == 'Continue Consult'
         ? WebEngageEventName.CONTINUE_CONSULT_CLICKED
         : WebEngageEventName.FILL_MEDICAL_DETAILS,
+      eventAttributes
+    );
+    postCleverTapEvent(
+      type == 'Card Click'
+        ? CleverTapEventName.CONSULT_CARD_CLICKED
+        : type == 'Continue Consult'
+        ? CleverTapEventName.CONTINUE_CONSULT_CLICKED
+        : CleverTapEventName.FILL_MEDICAL_DETAILS,
       eventAttributes
     );
   };

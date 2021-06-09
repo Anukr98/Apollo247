@@ -116,6 +116,12 @@ export enum CleverTapEventName {
   LOGIN_WITH_TRUECALLER_CLICKED = 'Login with truecaller clicked',
   MY_CONSULTED_DOCTORS_CLICKED = 'My doctor clicked',
 
+  //Consult Events
+  CONSULT_DOCTOR_PROFILE_VIEWED = 'Consult Doctor Profile viewed',
+  CONSULT_PAYMENT_MODE_SELECTED = 'Consult booking payment mode selected',
+  CONSULT_CARD_CLICKED = 'Consult Card Clicked',
+  CONSULT_REPORT_UPLOAD_IN_CHATROOM = 'Consult report upload in chatroom',
+
   //Doctor Share Events
   SHARE_CLICK_DOC_LIST_SCREEN = 'Share clicked doc list screen',
   SHARE_PROFILE_CLICKED_DOC_LIST = 'Share profile clicked doc list',
@@ -287,7 +293,6 @@ export enum CleverTapEventName {
   CART_PRESCRIPTION_OPTION_SELECTED_PROCEED_CLICKED = 'Cart Prescription Option Selected & Proceed Click',
   ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS = 'PHR Order Meds Prescription Detail',
   ORDER_TESTS_FROM_PRESCRIPTION_DETAILS = 'PHR Order Tests Prescription Detail',
-  CONSULT_CARD_CLICKED = 'Consult Card Clicked',
   CONTINUE_CONSULT_CLICKED = 'Continue Consult Clicked',
   CHAT_WITH_DOCTOR = 'Chat with Doctor',
   FILL_MEDICAL_DETAILS = 'Fill Medical Details',
@@ -323,7 +328,6 @@ export enum CleverTapEventName {
   // Payments Events
   PAYMENT_INSTRUMENT = 'Payment Instrument',
   PAYMENT_STATUS = 'Payment Status',
-  CONSULT_PAYMENT_MODE_SELECTED = 'Consult booking payment mode selected',
   PAYMENT_FAILED_AND_CONVERTED_TO_COD = 'Payment Failed & Converted to COD',
   // Deeplink Events
   HOME_PAGE_VIEWED = 'Pharmacy Home page viewed',
@@ -544,6 +548,7 @@ export interface ConsultRoomDoctorPatientInfo {
   'Patient Gender': string;
   'Hospital Name': string;
   'Hospital City': string;
+  Source: 'Camera' | 'Gallery' | 'PHR Section';
 }
 
 export interface AutoSelectLocation extends UserInfo {
@@ -1385,6 +1390,7 @@ export interface CleverTapEvents {
   };
 
   // ********** ConsultEvents ********** \\
+  [CleverTapEventName.CONSULT_REPORT_UPLOAD_IN_CHATROOM]: ConsultRoomDoctorPatientInfo;
   [CleverTapEventName.UPLOAD_RECORDS_CLICK_CHATROOM]: ConsultRoomDoctorPatientInfo;
   [CleverTapEventName.TAKE_PHOTO_CLICK_CHATROOM]: ConsultRoomDoctorPatientInfo;
   [CleverTapEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM]: ConsultRoomDoctorPatientInfo;
@@ -2261,6 +2267,27 @@ export interface CleverTapEvents {
     'Doctor ID': string;
     'Media Source': string;
     User_Type: string;
+  };
+  [CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor ID': string;
+    'Media Source': string;
+    User_Type: string;
+    Fee: number;
+    'Doctor Category': DoctorType;
+    Rank: number | string;
+    Is_TopDoc?: YesOrNo;
+    Source: 'Deeplink' | 'Doctor Card clicked';
+    'Doctor card clicked': YesOrNo;
+    DOTH: 'T' | 'F';
+    'Doctor Tab': 'Apollo Tab' | 'Doctor Partner Tab' | 'NA';
   };
   [CleverTapEventName.SEARCH_SUGGESTIONS]: {
     'Patient Name': string;

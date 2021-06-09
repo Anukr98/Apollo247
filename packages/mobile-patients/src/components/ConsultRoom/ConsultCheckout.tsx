@@ -21,6 +21,7 @@ import {
   g,
   postFirebaseEvent,
   getUserType,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import { bookAppointment } from '@aph/mobile-patients/src/graphql/types/bookAppointment';
@@ -29,6 +30,7 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import moment from 'moment';
 import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -275,6 +277,10 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           };
           postWebEngageEvent(
             WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED,
+            paymentModeEventAttribute
+          );
+          postCleverTapEvent(
+            CleverTapEventName.CONSULT_PAYMENT_MODE_SELECTED,
             paymentModeEventAttribute
           );
         } catch (error) {}

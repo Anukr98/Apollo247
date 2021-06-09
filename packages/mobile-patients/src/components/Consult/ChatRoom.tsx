@@ -109,6 +109,10 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -157,6 +161,7 @@ import {
   handleGraphQlError,
   formatToCartItem,
   getPrescriptionItemQuantity,
+  postCleverTapEvent,
 } from '../../helpers/helperFunctions';
 import { mimeType } from '../../helpers/mimeType';
 import { FeedbackPopup } from '../FeedbackPopup';
@@ -1109,12 +1114,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       | WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM
       | WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM
       | WebEngageEventName.UPLOAD_PHR_CLICK_CHATROOM
+      | CleverTapEventName.CONSULT_REPORT_UPLOAD_IN_CHATROOM,
+    Source?: string
   ) => {
     const eventAttributes:
       | WebEngageEvents[WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM]
       | WebEngageEvents[WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM]
       | WebEngageEvents[WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM]
-      | WebEngageEvents[WebEngageEventName.UPLOAD_PHR_CLICK_CHATROOM] = {
+      | WebEngageEvents[WebEngageEventName.UPLOAD_PHR_CLICK_CHATROOM]
+      | CleverTapEvents[CleverTapEventName.CONSULT_REPORT_UPLOAD_IN_CHATROOM] = {
       'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       'Patient Age': Math.round(
@@ -1141,8 +1149,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         'facility',
         'city'
       )!,
+      ...(Source && { Source: Source }),
     };
     postWebEngageEvent(type, eventAttributes);
+    if (Source) {
+      postCleverTapEvent(type, eventAttributes);
+    }
   };
 
   const openTokWebEngageEvents = (
@@ -6432,16 +6444,30 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           setDropdownVisible(false);
           if (selectedType == 'CAMERA_AND_GALLERY') {
             if (type !== undefined) {
-              if (type === 'Camera')
+              if (type === 'Camera') {
                 consultWebEngageEvents(WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM);
-              if (type === 'Gallery')
+                consultWebEngageEvents(
+                  CleverTapEventName.CONSULT_REPORT_UPLOAD_IN_CHATROOM,
+                  'Camera'
+                );
+              }
+              if (type === 'Gallery') {
                 consultWebEngageEvents(WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM);
+                consultWebEngageEvents(
+                  CleverTapEventName.CONSULT_REPORT_UPLOAD_IN_CHATROOM,
+                  'Gallery'
+                );
+              }
             }
             uploadDocument(response, response[0].base64, response[0].fileType);
             //updatePhysicalPrescriptions(response);
           } else {
             setSelectPrescriptionVisible(true);
             consultWebEngageEvents(WebEngageEventName.UPLOAD_PHR_CLICK_CHATROOM);
+            consultWebEngageEvents(
+              CleverTapEventName.CONSULT_REPORT_UPLOAD_IN_CHATROOM,
+              'PHR Section'
+            );
           }
         }}
       />

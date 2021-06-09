@@ -43,6 +43,7 @@ import {
   nextAvailability,
   getDoctorShareMessage,
   getUserType,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -96,6 +97,7 @@ import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/G
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { DoctorShareComponent } from '@aph/mobile-patients/src/components/ConsultRoom/Components/DoctorShareComponent';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { CleverTapEventName, CleverTapEvents } from '../../helpers/CleverTapEvents';
 
 const { height, width } = Dimensions.get('window');
 
@@ -633,7 +635,31 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Media Source': mediaSource,
       User_Type: getUserType(allCurrentPatients),
     };
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED] = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient Age': Math.round(
+        Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Doctor ID': g(doctorDetails, 'id')!,
+      'Doctor Name': g(doctorDetails, 'fullName')!,
+      'Speciality Name': g(doctorDetails, 'specialty', 'name')!,
+      'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
+      'Media Source': mediaSource,
+      User_Type: getUserType(allCurrentPatients),
+      Fee: Number(doctorDetails?.onlineConsultationFees),
+      Source: 'Deeplink',
+      'Doctor card clicked': 'No',
+      Rank: 'NA',
+      Is_TopDoc: doctorDetails?.doctorsOfTheHourStatus ? 'Yes' : 'No',
+      DOTH: doctorDetails?.doctorsOfTheHourStatus ? 'T' : 'F',
+      'Doctor Tab': 'NA',
+      'Doctor Category': doctorDetails?.doctorType,
+    };
     postWebEngageEvent(WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK, eventAttributes);
+    postCleverTapEvent(CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED, cleverTapEventAttributes);
   };
 
   const setAvailableModes = (availabilityMode: any) => {
