@@ -582,7 +582,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       );
       //if any of cart item has 0 price -> don't call hcApi
       const isCartUpdated = cartItems?.find((item) => Number(item?.price) === 0);
-      console.log({ isCartUpdated });
       isCartUpdated == undefined && fetchHC_ChargesForTest(modifiedOrder?.slotId, modifyOrderItems);
     }
   }, [cartItems]);
