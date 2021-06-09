@@ -93,7 +93,7 @@
     "jwt-decode": "^2.2.0",
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
-    "opentok-react-native": "0.14.0",
+    "opentok-react-native": "0.17.2",
     "promise.allsettled": "^1.0.2",
     "pubnub": "^4.27.1",
     "react": "16.9.0",
