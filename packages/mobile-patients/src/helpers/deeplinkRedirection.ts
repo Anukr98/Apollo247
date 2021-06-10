@@ -45,7 +45,7 @@ export const handleOpenURL = (event: any) => {
 
     try {
       if (data?.length >= 2) {
-        linkId = data?.[1]?.split('&');
+        linkId = data?.[1]?.split('?');
         const params = data[1]?.split('&');
         const utmParams = params?.map((item: any) => item.split('='));
         utmParams?.forEach(
