@@ -22,7 +22,6 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
   const storagePlace = pharmaOverview?.StoragePlace;
   const storage = pharmaOverview?.Storage;
   const coldChain = pharmaOverview?.ColdChain;
-  const aboutProduct = pharmaOverview?.AboutProduct;
 
   const renderHtmlContent = (title: string, content: string) => (
     <View>
@@ -35,12 +34,6 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
       />
     </View>
   );
-
-  const renderAbout = () => {
-    const medicine_about = filterHtmlContent(aboutProduct);
-    let medicineAbout = medicine_about.replace(/\$name/gi, name);
-    return !!medicineAbout.length && renderHtmlContent(`About ${name}`, medicineAbout);
-  };
 
   const renderUses = () => {
     const medicine_use = filterHtmlContent(pharmaUses);
@@ -85,7 +78,6 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
 
   return (
     <View style={styles.cardStyle}>
-      {!!aboutProduct && renderAbout()}
       {!!usesOfProduct && renderUsesOfProduct()}
       {(!!pharmaUses || !!pharmaBenefits) && renderUses()}
       {(!!storagePlace || !!storage || !!coldChain) && renderStorage()}
