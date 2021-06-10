@@ -106,7 +106,7 @@ type PharmacyTatApiCalled = WebEngageEvents[WebEngageEventName.PHARMACY_TAT_API_
 
 export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const movedFrom = props.navigation.getParam('movedFrom');
-  const sku = props.navigation.getParam('sku');
+  const [sku, setSku] = useState(props.navigation.getParam('sku'));
   const urlKey = props.navigation.getParam('urlKey');
   const sectionName = props.navigation.getParam('sectionName');
   const productPageViewedEventProps = props.navigation.getParam('productPageViewedEventProps');
@@ -198,12 +198,18 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 
   useEffect(() => {
     getMedicineDetails();
-    fetchDeliveryTime(pincode, false);
+    if (sku) fetchDeliveryTime(pincode, false);
     BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
     };
   }, []);
+
+  useEffect(() => {
+    if (sku && movedFrom === ProductPageViewedSource.DEEP_LINK) {
+      fetchDeliveryTime(pincode, false);
+    }
+  }, [sku]);
 
   const onPressHardwareBack = () => props.navigation.goBack();
 
@@ -267,6 +273,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         .then(({ data }) => {
           const productDetails = g(data, 'productdp', '0' as any);
           if (productDetails) {
+            setSku(productDetails?.sku);
             setMedicineData(productDetails);
           } else if (data && data.message) {
             setMedicineError(data.message);
