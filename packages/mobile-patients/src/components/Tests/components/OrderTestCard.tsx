@@ -144,7 +144,8 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                   <View
                     style={{
                       flexDirection: 'row',
-                      width: !!item?.editOrderID ? '68%' : '80%',
+                      minWidth: 0,
+                      maxWidth: !!item?.editOrderID ? '68%' : '80%',
                     }}
                   >
                     <Text style={styles.bulletStyle}>{'\u2B24'}</Text>

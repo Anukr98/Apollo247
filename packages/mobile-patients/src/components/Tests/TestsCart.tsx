@@ -554,18 +554,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }
 
   useEffect(() => {
-    if (cartItemsWithId?.length > 0) {
+    if (cartItemsWithId?.length > 0 && !isModifyFlow) {
       fetchPackageDetails(cartItemsWithId, null, 'diagnosticServiceablityChange');
     }
   }, [diagnosticServiceabilityData]);
 
   useEffect(() => {
-    if (isModifyFlow && modifiedOrder?.slotId && modifiedOrder?.areaId && cartItems?.length > 0) {
-      //for modify order
-      const modifyOrderItems = modifiedOrder?.diagnosticOrderLineItems?.map(
-        (item: orderListLineItems) => item
-      );
-      fetchHC_ChargesForTest(modifiedOrder?.slotId, modifyOrderItems);
+    if (isModifyFlow) {
+      return;
     } else if (
       selectedTimeSlot?.slotInfo?.slot! &&
       areaSelected &&
@@ -573,11 +569,23 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       cartItems?.length > 0
     ) {
       setCartPagePopulated?.(true);
-
       validateDiagnosticCoupon();
       fetchHC_ChargesForTest(selectedTimeSlot?.slotInfo?.slot!);
     }
   }, [diagnosticSlot, deliveryAddressId, cartItems, addresses]);
+
+  //called only for the modify flow.
+  useEffect(() => {
+    if (isModifyFlow && modifiedOrder?.slotId && modifiedOrder?.areaId && cartItems?.length > 0) {
+      const modifyOrderItems = modifiedOrder?.diagnosticOrderLineItems?.map(
+        (item: orderListLineItems) => item
+      );
+      //if any of cart item has 0 price -> don't call hcApi
+      const isCartUpdated = cartItems?.find((item) => Number(item?.price) === 0);
+      console.log({ isCartUpdated });
+      isCartUpdated == undefined && fetchHC_ChargesForTest(modifiedOrder?.slotId, modifyOrderItems);
+    }
+  }, [cartItems]);
 
   useEffect(() => {
     if ((isModifyFlow || deliveryAddressId != '') && isFocused) {
@@ -1117,7 +1125,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         isItemDisable = false;
         const _itemIds = cartItems?.map((item) => Number(item?.id));
         isModifyFlow
-          ? null
+          ? setLoading?.(false)
           : !isEmptyObject(areaSelected)
           ? checkSlotSelection(areaSelected, undefined, undefined, _itemIds)
           : shouldShowArea
@@ -1798,7 +1806,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const getHcCharges = (): number => {
-    if (hcCharges === 0 && isModifyFlow && modifiedOrder?.collectionCharges > 0) {
+    if (cartItems?.length == 0) {
+      return 0.0;
+    } else if (hcCharges === 0 && isModifyFlow && modifiedOrder?.collectionCharges > 0) {
       return modifiedOrder?.collectionCharges;
     } else if (hcCharges > 0 && isModifyFlow && modifiedOrder?.collectionCharges > 0) {
       return 0.0;
@@ -1844,7 +1854,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                     styles.blueTextStyle,
                     {
                       textDecorationLine:
-                        isModifyFlow && modifiedOrder?.collectionCharges > 0 && hcCharges === 0
+                        isModifyFlow &&
+                        modifiedOrder?.collectionCharges > 0 &&
+                        hcCharges === 0 &&
+                        cartItems?.length > 0
                           ? 'line-through'
                           : 'none',
                     },
@@ -2152,7 +2165,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   function saveModifiedOrder() {
-    const calHcChargers = modifiedOrder?.collectionCharges === 0 ? hcCharges : 0.0;
+    // const calHcChargers = modifiedOrder?.collectionCharges === 0 ? hcCharges :  0.0;
+    //since we need to pass the overall collection charges applied.
+    const calHcChargers =
+      modifiedOrder?.collectionCharges === 0
+        ? hcCharges
+        : modifiedOrder?.collectionCharges + modifyHcCharges;
+
     const slotTimings = modifiedOrder?.slotDateTimeInUTC;
     const slotStartTime = modifiedOrder?.slotDateTimeInUTC;
     const allItems = cartItems?.find(
@@ -2160,7 +2179,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL ||
         item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
     );
-
     setLoading?.(true);
     const modifyBookingInput: saveModifyDiagnosticOrderInput = {
       orderId: modifiedOrder?.id,
@@ -2308,13 +2326,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
             description: string.diagnostics.bookingOrderFailedMessage,
           });
-          aphConsole.log({ error });
         });
     }
   };
 
   function apiHandleErrorFunction(input: any, data: any, source: string) {
-    console.log('po');
     let message = data?.errorMessageToDisplay || string.diagnostics.bookingOrderFailedMessage;
     //itemIds will only come in case of duplicate
     let itemIds = data?.attributes?.itemids;
@@ -2382,7 +2398,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           cartSaving: cartSaving,
           circleSaving: circleSaving,
           cartHasAll: items != undefined ? true : false,
-          amount: grandTotal,
+          amount: grandTotal, //actual amount to be payed by customer (topay)
         };
         const eventAttributes = createCheckOutEventAttributes(orderId, slotStartTime);
         setauthToken?.('');
@@ -2632,17 +2648,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const checkDuplicateItems_Level2 = (pricesForItem: any, getItemIds: any, cartItemPrices: any) => {
     //no inclusion level duplicates are found...
     if (getItemIds?.length > 0) {
+      const getCartItemsId = cartItemPrices?.map((item: any) => item?.itemId);
+      const getItemInCart = pricesForItem?.filter((item: any) =>
+        getCartItemsId?.includes(item?.itemId)
+      );
       const newItems = getItemIds?.map((item: string) => Number(item));
-
       //get the prices for both the items,
-      const getDuplicateItems = pricesForItem
+      const arrayToUse = isModifyFlow ? getItemInCart : pricesForItem;
+      const getDuplicateItems = arrayToUse
         ?.filter((item: any) => newItems?.includes(item?.itemId))
         .sort((a: any, b: any) => b?.price - a?.price);
 
-      const itemsToRemove = getDuplicateItems?.splice(
-        isModifyFlow ? 0 : 1,
-        getDuplicateItems?.length - 1
-      );
+      const itemsToRemove = isModifyFlow
+        ? getDuplicateItems
+        : getDuplicateItems?.splice(1, getDuplicateItems?.length - 1);
 
       const itemIdToRemove = itemsToRemove?.map((item: any) => item?.itemId);
       const updatedCartItems = cartItems?.filter(function(items: any) {
@@ -2866,13 +2885,19 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           ? calculateModifiedOrderHomeCollectionCharges(getCharges)
           : getCharges;
 
+        // const updatedHcCharges =
+        //   isModifyFlow &&
+        //   modifiedOrder?.collectionCharges > 0 &&
+        //   (getCharges === 0 || getCharges > 0)
+        //     ? -modifiedOrder?.collectionCharges
+        //     : getCharges;
+
         const updatedHcCharges =
           isModifyFlow &&
           modifiedOrder?.collectionCharges > 0 &&
           (getCharges === 0 || getCharges > 0)
-            ? -modifiedOrder?.collectionCharges
+            ? 0
             : getCharges;
-
         setHcCharges?.(getCharges);
         setModifyHcCharges?.(updatedHcCharges); //used for calculating subtotal & topay
       }

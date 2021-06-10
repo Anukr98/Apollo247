@@ -76,6 +76,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     navigateToHome(props.navigation);
   };
   const moveToMyOrders = () => {
+    props.navigation.popToTop({ immediate: true }); //if not added, stack was getting cleared.
     props.navigation.push(AppRoutes.YourOrdersTest, {
       source: AppRoutes.OrderStatus,
     });
@@ -108,6 +109,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const navigateToOrderDetails = (showOrderSummaryTab: boolean, orderId: string) => {
     setLoading?.(false);
     apisToCall.current = [apiCallEnums.circleSavings];
+    props.navigation.popToTop({ immediate: true });
     props.navigation.push(AppRoutes.TestOrderDetails, {
       orderId: !!modifiedOrderDetails ? modifiedOrderDetails?.id : orderId,
       setOrders: null,
