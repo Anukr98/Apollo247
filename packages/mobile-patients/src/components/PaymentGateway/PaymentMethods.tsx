@@ -30,6 +30,7 @@ import {
   isGooglePayReady,
   isPhonePeReady,
   InitiateUPISDKTxn,
+  fetchSavedCards,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -103,6 +104,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { paymentMethods, cardTypes, fetching } = useGetPaymentMethods();
   const [HCSelected, setHCSelected] = useState<boolean>(false);
   const [burnHc, setburnHc] = useState<number>(0);
+  const [savedCards, setSavedCards] = useState<any>([]);
   const storeCode =
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
   const shoppingCart = useShoppingCart();
@@ -116,6 +118,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     fecthPaymentOptions();
     isPhonePeReady();
     isGooglePayReady();
+    FetchSavedCards();
     return () => eventListener.remove();
   }, []);
 
@@ -141,33 +144,73 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       : (setAmount(props.navigation.getParam('amount')), setburnHc(0));
   };
 
+  const FetchSavedCards = async () => {
+    const token = await getClientToken(true);
+    token && fetchSavedCards(currentPatient?.id, token);
+  };
+
   const handleEventListener = (resp: any) => {
     var data = JSON.parse(resp);
     var event: string = data.event || '';
     switch (event) {
       case 'process_result':
         var payload = data.payload || {};
-        const status = payload?.payload?.status;
-        const action = payload?.payload?.action;
-        console.log('payload >>>', JSON.stringify(payload));
-        if (action == 'getPaymentMethods' && !payload?.error) {
-          const banks = payload?.payload?.paymentMethods?.filter(
-            (item: any) => item?.paymentMethodType == 'NB'
-          );
-          setBanks(banks);
-        } else if (paymentActions.indexOf(action) != -1 && status) {
-          handleTxnStatus(status, payload);
-          setisTxnProcessing(false);
-        } else if (payload?.payload?.action == 'isDeviceReady') {
-          payload?.requestId == 'phonePe' && status && setphonePeReady(true);
-          payload?.requestId == 'googlePay' && status && setGooglePayReady(true);
-        } else if (action == 'upiTxn' && !payload?.error && !status) {
-          setAvailableUPIapps(payload?.payload?.availableApps || []);
-        } else if (payload?.error) {
-          handleError(payload?.errorMessage);
-        }
+        handleResponsePayload(payload);
+        // const status = payload?.payload?.status;
+        // const action = payload?.payload?.action;
+        // if (action == 'getPaymentMethods' && !payload?.error) {
+        //   const banks = payload?.payload?.paymentMethods?.filter(
+        //     (item: any) => item?.paymentMethodType == 'NB'
+        //   );
+        //   setBanks(banks);
+        // } else if (paymentActions.indexOf(action) != -1 && status) {
+        //   handleTxnStatus(status, payload);
+        //   setisTxnProcessing(false);
+        // } else if (payload?.payload?.action == 'isDeviceReady') {
+        //   payload?.requestId == 'phonePe' && status && setphonePeReady(true);
+        //   payload?.requestId == 'googlePay' && status && setGooglePayReady(true);
+        // } else if (action == 'upiTxn' && !payload?.error && !status) {
+        //   setAvailableUPIapps(payload?.payload?.availableApps || []);
+        // } else if (payload?.error) {
+        //   handleError(payload?.errorMessage);
+        // }
         break;
       default:
+    }
+  };
+
+  const handleResponsePayload = (payload: any) => {
+    console.log('payload >>>', JSON.stringify(payload));
+    const status = payload?.payload?.status;
+    const action = payload?.payload?.action;
+    switch (action) {
+      case 'getPaymentMethods':
+        if (!payload?.error) {
+          const paymentMethods = payload?.payload?.paymentMethods || [];
+          const banks = paymentMethods?.filter((item: any) => item?.paymentMethodType == 'NB');
+          setBanks(banks);
+        }
+        break;
+      case 'nbTxn':
+      case 'walletTxn':
+      case 'cardTxn':
+        handleTxnStatus(status, payload);
+        setisTxnProcessing(false);
+        break;
+      case 'upiTxn':
+        status
+          ? (handleTxnStatus(status, payload), setisTxnProcessing(false))
+          : !payload?.error && setAvailableUPIapps(payload?.payload?.availableApps || []);
+        break;
+      case 'isDeviceReady':
+        payload?.requestId == 'phonePe' && status && setphonePeReady(true);
+        payload?.requestId == 'googlePay' && status && setGooglePayReady(true);
+        break;
+      case 'cardList':
+        setSavedCards(payload?.payload?.cards || []);
+        break;
+      default:
+        payload?.error && handleError(payload?.errorMessage);
     }
   };
 
@@ -272,11 +315,11 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     });
   };
 
-  const getClientToken = async () => {
+  const getClientToken = async (backgroundCall?: boolean) => {
     if (!!authToken) {
       return authToken;
     } else {
-      setisTxnProcessing(true);
+      !backgroundCall && setisTxnProcessing(true);
       try {
         businessLine == 'diagnostics' && initiateOrderPayment();
         const response = await createJusPayOrder(false);
@@ -361,10 +404,12 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     }
   }
 
-  async function onPressCardPay(cardInfo: any) {
+  async function onPressCardPay(cardInfo: any, saveCard: boolean) {
     triggerWebengege('Card');
     const token = await getClientToken();
-    token ? InitiateCardTxn(currentPatient?.id, token, paymentId, cardInfo) : renderErrorPopup();
+    token
+      ? InitiateCardTxn(currentPatient?.id, token, paymentId, cardInfo, saveCard)
+      : renderErrorPopup();
   }
 
   async function onPressPayByCash() {
@@ -545,6 +590,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const renderCards = () => {
     return (
       <Cards
+        savedCards={savedCards}
         onPressPayNow={onPressCardPay}
         cardTypes={cardTypes}
         isCardValid={isCardValid}

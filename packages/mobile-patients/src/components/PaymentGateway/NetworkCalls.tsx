@@ -77,7 +77,8 @@ export const InitiateCardTxn = (
   requestId: string,
   clientAuthToken: string,
   paymentOrderId: string,
-  cardInfo: any
+  cardInfo: any,
+  saveCard: boolean
 ) => {
   const cardPayload = {
     requestId: requestId,
@@ -91,7 +92,7 @@ export const InitiateCardTxn = (
       cardExpMonth: cardInfo?.ExpMonth,
       cardExpYear: cardInfo?.ExpYear,
       cardSecurityCode: cardInfo?.CVV,
-      saveToLocker: false,
+      saveToLocker: saveCard ? true : false,
       clientAuthToken: clientAuthToken,
     },
   };
@@ -226,6 +227,18 @@ export const InitiateUPIIntentTxn = (
       showLoader: false,
       payWithApp: packageName,
       displayNote: 'Payment to Apollo247',
+      clientAuthToken: clientAuthToken,
+    },
+  };
+  HyperSdkReact.process(JSON.stringify(payload));
+};
+
+export const fetchSavedCards = (requestId: string, clientAuthToken: string) => {
+  const payload = {
+    requestId: requestId,
+    service: AppConfig.Configuration.jusPayService,
+    payload: {
+      action: 'cardList',
       clientAuthToken: clientAuthToken,
     },
   };

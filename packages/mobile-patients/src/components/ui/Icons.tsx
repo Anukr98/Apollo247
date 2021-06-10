@@ -1913,3 +1913,23 @@ export const CovidVaccine: React.FC<IconProps> = (props) => (
 export const VaccineBookingFailed: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/vacc_booking_failed.webp')} />
 );
+
+export const Card: React.FC<IconProps> = (props) => (
+  <IconBase style={{ width: 28, height: 28 }} {...props} source={require('./icons/card.webp')} />
+);
+
+export const CircleCheckIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 18, width: 18 }}
+    {...props}
+    source={require('./icons/circleCheck.webp')}
+  />
+);
+
+export const CircleUncheckIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 18, width: 18 }}
+    {...props}
+    source={require('./icons/circleUncheck.webp')}
+  />
+);
