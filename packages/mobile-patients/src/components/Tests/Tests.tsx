@@ -2079,12 +2079,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   function navigateToTrackingScreen(item: any) {
     DiagnosticTrackOrderViewed(currentPatient, item?.orderStatus, item?.id, 'Home');
-    props.navigation.navigate(AppRoutes.TestOrderDetails, {
-      orderId: item?.id,
-      selectedOrder: item,
-      refundStatusArr: [], //since we don't get cancelled or failed orders
-      comingFrom: AppRoutes.YourOrdersTest,
-      showOrderSummaryTab: false,
+    props.navigation.navigate(AppRoutes.YourOrdersTest,{
+      isTest: true
     });
   }
 
