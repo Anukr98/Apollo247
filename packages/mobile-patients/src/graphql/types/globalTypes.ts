@@ -896,10 +896,10 @@ export interface AddressObj {
   addressLine1?: string | null;
   addressLine2?: string | null;
   addressType?: string | null;
-  zipcode?: number | null;
+  zipcode?: string | null;
   landmark?: string | null;
-  latitude?: string | null;
-  longitude?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   city?: string | null;
   state?: string | null;
 }
@@ -1831,6 +1831,7 @@ export interface prescriptionPrismFileProperties {
 
 export interface saveModifyDiagnosticOrderInput {
   orderId?: string | null;
+  amountToPay?: number | null;
   collectionCharges?: number | null;
   bookingSource?: DiagnosticsBookingSource | null;
   deviceType?: DEVICETYPE | null;

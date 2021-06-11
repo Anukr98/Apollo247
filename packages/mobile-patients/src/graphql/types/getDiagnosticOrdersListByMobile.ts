@@ -34,9 +34,9 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   landmark: string | null;
   state: string | null;
   city: string | null;
-  zipcode: number | null;
-  latitude: string | null;
-  longitude: string | null;
+  zipcode: string | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus {

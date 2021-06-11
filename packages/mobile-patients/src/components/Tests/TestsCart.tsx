@@ -2187,6 +2187,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       items: createItemPrice()?.itemPricingObject,
       userSubscriptionId: circleSubscriptionId,
       subscriptionInclusionId: null,
+      amountToPay: grandTotal, //total amount payed
     };
     saveModifyOrder?.(modifyBookingInput)
       .then((data) => {
