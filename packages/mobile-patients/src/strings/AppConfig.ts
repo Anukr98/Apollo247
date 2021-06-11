@@ -179,7 +179,7 @@ const appStaticVariables = {
   clientId: Platform.OS == 'android' ? 'apollo247_android' : 'apollo247_ios',
   merchantId: 'apollo247',
   jusPayService: 'in.juspay.ec',
-  returnUrl: 'https://aph-staging-web-patients.apollo247.com/ordersuccess',
+  returnUrl: 'https://www.apollo247.com',
   jusPaybaseUrl: 'https://api.juspay.in/cardbins',
   HdfcHealthLifeText: string.common.HdfcHealthLifeText,
   CorporateMembershipText: string.common.CorporateMembershipText,

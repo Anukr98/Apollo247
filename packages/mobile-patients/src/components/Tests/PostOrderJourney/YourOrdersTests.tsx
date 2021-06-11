@@ -465,7 +465,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     const getVisitId = order?.visitNo;
     getPatientPrismMedicalRecordsApi(
       client,
-      currentPatient?.id,
+      order?.patientId,
       [MedicalRecordType.TEST_REPORT],
       'Diagnostics'
     )

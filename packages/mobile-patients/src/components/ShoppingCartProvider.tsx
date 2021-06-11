@@ -37,6 +37,7 @@ export interface ShoppingCartItem {
   isFreeCouponProduct?: boolean;
   applicable?: boolean;
   circleCashbackAmt?: number;
+  url_key?: string;
 }
 
 export interface CouponProducts {
