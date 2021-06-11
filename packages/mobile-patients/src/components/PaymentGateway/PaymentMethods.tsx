@@ -27,6 +27,7 @@ import {
   InitiateUPIIntentTxn,
   InitiateVPATxn,
   InitiateCardTxn,
+  InitiateSavedCardTxn,
   isGooglePayReady,
   isPhonePeReady,
   InitiateUPISDKTxn,
@@ -404,11 +405,19 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     }
   }
 
-  async function onPressCardPay(cardInfo: any, saveCard: boolean) {
+  async function onPressNewCardPayNow(cardInfo: any, saveCard: boolean) {
     triggerWebengege('Card');
     const token = await getClientToken();
     token
       ? InitiateCardTxn(currentPatient?.id, token, paymentId, cardInfo, saveCard)
+      : renderErrorPopup();
+  }
+
+  async function onPressSavedCardPayNow(cardInfo: any, cvv: string) {
+    triggerWebengege('Card');
+    const token = await getClientToken();
+    token
+      ? InitiateSavedCardTxn(currentPatient?.id, token, paymentId, cardInfo, cvv)
       : renderErrorPopup();
   }
 
@@ -591,7 +600,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     return (
       <Cards
         savedCards={savedCards}
-        onPressPayNow={onPressCardPay}
+        onPressNewCardPayNow={onPressNewCardPayNow}
+        onPressSavedCardPayNow={onPressSavedCardPayNow}
         cardTypes={cardTypes}
         isCardValid={isCardValid}
         setisCardValid={setisCardValid}

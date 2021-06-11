@@ -1933,3 +1933,11 @@ export const CircleUncheckIcon: React.FC<IconProps> = (props) => (
     source={require('./icons/circleUncheck.webp')}
   />
 );
+
+export const CardCVV: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 206, width: 268 }}
+    {...props}
+    source={require('./icons/CardCVV.webp')}
+  />
+);

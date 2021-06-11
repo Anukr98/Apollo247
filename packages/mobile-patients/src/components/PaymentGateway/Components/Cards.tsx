@@ -5,7 +5,8 @@ import { CollapseView } from '@aph/mobile-patients/src/components/PaymentGateway
 import { NewCard } from '@aph/mobile-patients/src/components/PaymentGateway/Components/NewCard';
 import { SavedCard } from '@aph/mobile-patients/src/components/PaymentGateway/Components/SavedCard';
 export interface CardsProps {
-  onPressPayNow: (cardInfo: any, saveCard: boolean) => void;
+  onPressNewCardPayNow: (cardInfo: any, saveCard: boolean) => void;
+  onPressSavedCardPayNow: (cardInfo: any, cvv: string) => void;
   cardTypes: any;
   isCardValid: boolean;
   setisCardValid: (value: boolean) => void;
@@ -13,14 +14,21 @@ export interface CardsProps {
 }
 
 export const Cards: React.FC<CardsProps> = (props) => {
-  const { onPressPayNow, cardTypes, isCardValid, setisCardValid, savedCards } = props;
+  const {
+    onPressNewCardPayNow,
+    onPressSavedCardPayNow,
+    cardTypes,
+    isCardValid,
+    setisCardValid,
+    savedCards,
+  } = props;
   const [selectedCardToken, setSelectedCardToken] = useState<string>('');
   const [newCardSelected, setNewCardSelected] = useState<boolean>(false);
 
   const renderSavedCards = () => {
     return savedCards?.map((item: any) => (
       <SavedCard
-        onPressSavedCardPayNow={onPressPayNow}
+        onPressSavedCardPayNow={onPressSavedCardPayNow}
         cardTypes={cardTypes}
         selectedCardToken={selectedCardToken}
         onPressSavedCard={(cardInfo) => (
@@ -34,7 +42,7 @@ export const Cards: React.FC<CardsProps> = (props) => {
   const renderNewCard = () => {
     return (
       <NewCard
-        onPressNewCardPayNow={onPressPayNow}
+        onPressNewCardPayNow={onPressNewCardPayNow}
         cardTypes={cardTypes}
         isCardValid={isCardValid}
         setisCardValid={setisCardValid}

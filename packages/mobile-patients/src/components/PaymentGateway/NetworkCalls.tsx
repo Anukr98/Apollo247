@@ -244,3 +244,40 @@ export const fetchSavedCards = (requestId: string, clientAuthToken: string) => {
   };
   HyperSdkReact.process(JSON.stringify(payload));
 };
+
+export const deleteCard = (requestId: string, clientAuthToken: string, cardToken: string) => {
+  const payload = {
+    requestId: requestId,
+    service: AppConfig.Configuration.jusPayService,
+    payload: {
+      action: 'deleteCard',
+      cardToken: cardToken,
+      clientAuthToken: clientAuthToken,
+    },
+  };
+  HyperSdkReact.process(JSON.stringify(payload));
+};
+
+export const InitiateSavedCardTxn = (
+  requestId: string,
+  clientAuthToken: string,
+  paymentOrderId: string,
+  cardInfo: any,
+  cvv: string
+) => {
+  const payload = {
+    requestId: requestId,
+    service: AppConfig.Configuration.jusPayService,
+    payload: {
+      action: 'cardTxn',
+      orderId: paymentOrderId,
+      paymentMethod: cardInfo?.cardBrand,
+      endUrls: [AppConfig.Configuration.baseUrl],
+      cardToken: cardInfo?.cardToken,
+      cardSecurityCode: cvv,
+      clientAuthToken: clientAuthToken,
+    },
+  };
+  console.log('payload >>', payload);
+  HyperSdkReact.process(JSON.stringify(payload));
+};

@@ -4,7 +4,9 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CircleCheckIcon, CircleUncheckIcon } from '@aph/mobile-patients/src/components/ui/Icons';
-
+import { TextInput } from 'react-native-gesture-handler';
+import { CvvPopUp } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CvvPopUp';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 export interface SavedCardProps {
   onPressSavedCardPayNow: (cardInfo: any, saveCard: any) => void;
   cardTypes: any;
@@ -22,6 +24,16 @@ export const SavedCard: React.FC<SavedCardProps> = (props) => {
     onPressSavedCard,
   } = props;
   const cardSelected = cardInfo?.cardToken == selectedCardToken ? true : false;
+  const [cvv, setcvv] = useState<string>('');
+  const { showAphAlert, hideAphAlert } = useUIElements();
+
+  const showCVVPopUP = () => {
+    showAphAlert?.({
+      unDismissable: false,
+      removeTopIcon: true,
+      children: <CvvPopUp onPressOk={() => hideAphAlert?.()} />,
+    });
+  };
 
   const renderCardIcon = () => {
     const image_url =
@@ -29,23 +41,67 @@ export const SavedCard: React.FC<SavedCardProps> = (props) => {
       cardTypes?.find((item: any) => item?.payment_method_code == cardInfo?.cardBrand)?.image_url;
     return <Image source={{ uri: image_url }} resizeMode={'contain'} style={styles.cardIcon} />;
   };
+  console.log(cardTypes);
+
+  const renderCardNo = () => {
+    return (
+      <Text style={styles.cardNo}>
+        {cardInfo?.cardNumber?.slice(-7)}
+        {' • '}
+        {cardInfo?.cardIssuer + cardInfo?.cardType}
+        {' Card'}
+      </Text>
+    );
+  };
 
   const renderCardInfo = () => {
     return (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <View style={{}}>
+        <View>
           <View style={{ flexDirection: 'row' }}>
             {renderCardIcon()}
-            <Text style={styles.cardNo}>
-              {cardInfo?.cardNumber?.slice(-7)?.toLowerCase()}
-              {' • '}
-              {cardInfo?.cardIssuer + cardInfo?.cardType}
-            </Text>
+            {renderCardNo()}
           </View>
-          <Text style={styles.name}>{cardInfo?.nameOnCard}</Text>
+          <Text style={styles.name}>{cardInfo?.nameOnCard || 'User'}</Text>
         </View>
         {cardSelected ? <CircleCheckIcon /> : <CircleUncheckIcon />}
       </View>
+    );
+  };
+
+  const renderCvvInput = () => {
+    return (
+      <TextInput
+        style={styles.cvvInput}
+        secureTextEntry={true}
+        keyboardType={'numeric'}
+        placeholder={'CVV'}
+        placeholderTextColor={'rgba(1,71,91,0.3)'}
+        maxLength={4}
+        onChangeText={(text) => setcvv(text)}
+      />
+    );
+  };
+
+  const renderPayNow = () => {
+    return (
+      <View style={{ alignItems: 'flex-end' }}>
+        <Button
+          disabled={cvv?.length < 3}
+          title={'PAY NOW'}
+          titleTextStyle={styles.payNow}
+          onPress={() => onPressSavedCardPayNow(cardInfo, cvv)}
+          style={styles.buttonStyle}
+        />
+      </View>
+    );
+  };
+
+  const renderWhatscvv = () => {
+    return (
+      <TouchableOpacity onPress={() => showCVVPopUP()}>
+        <Text style={styles.whatscvv}>What is CVV ?</Text>
+      </TouchableOpacity>
     );
   };
 
@@ -57,6 +113,17 @@ export const SavedCard: React.FC<SavedCardProps> = (props) => {
           onPress={() => onPressSavedCard(cardInfo)}
         >
           {renderCardInfo()}
+          {cardSelected && (
+            <>
+              <View
+                style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 }}
+              >
+                {renderCvvInput()}
+                {renderPayNow()}
+              </View>
+              {renderWhatscvv()}
+            </>
+          )}
         </TouchableOpacity>
       </View>
     );
@@ -76,7 +143,7 @@ const styles = StyleSheet.create({
   },
   cardNo: {
     ...theme.fonts.IBMPlexSansMedium(14),
-    lineHeight: 18,
+    lineHeight: 16,
     color: '#01475B',
     letterSpacing: 1,
     marginLeft: 8,
@@ -87,9 +154,41 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     color: '#01475B',
     marginTop: 4,
+    marginLeft: 41,
   },
   cardIcon: {
-    // height: 35,
-    width: 30,
+    width: 33,
   },
+  cvvInput: {
+    borderWidth: 2,
+    borderColor: '#00B38E',
+    borderRadius: 4,
+    height: 40,
+    marginLeft: 41,
+    width: 100,
+    backgroundColor: '#fff',
+    paddingLeft: 12,
+    ...theme.fonts.IBMPlexSansMedium(14),
+    lineHeight: 18,
+    color: '#01475B',
+  },
+  payNow: {
+    ...theme.fonts.IBMPlexSansBold(14),
+    lineHeight: 24,
+    color: '#fff',
+  },
+  buttonStyle: {
+    width: 100,
+    // paddingHorizontal: 18,
+    borderRadius: 5,
+  },
+  whatscvv: {
+    ...theme.fonts.IBMPlexSansMedium(10),
+    lineHeight: 13,
+    letterSpacing: 1,
+    color: '#FCA317',
+    marginLeft: 41,
+    marginTop: 11,
+  },
+  cvvInputCont: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 },
 });
