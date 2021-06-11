@@ -201,6 +201,8 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
   const _searchInputRef = useRef(null);
+  const [apiError, setApiError] = useState(false);
+
   const [healthRecordSearchResults, setHealthRecordSearchResults] = useState<any>([]);
   const [prismAuthToken, setPrismAuthToken] = useState<string>(
     props.navigation?.getParam('authToken') || ''
@@ -227,6 +229,8 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   useEffect(() => {
     if (testReportsData?.length > 0) {
       setTestReportMainData(testReportsData);
+    } else {
+      setApiError(true);
     }
   }, [testReportsData]);
 
@@ -898,6 +902,9 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         <Text style={styles.doctorTestReportPHRTextStyle}>
           {string.common.doctorConsultPHRText}
         </Text>
+        {apiError ? (
+          <PhrNoDataComponent noDataText={string.common.phr_api_error_text} phrErrorIcon />
+        ) : null}
         {searchText?.length > 2 ? renderHealthRecordSearchResults() : renderTestReportsMainView()}
       </SafeAreaView>
     </View>
