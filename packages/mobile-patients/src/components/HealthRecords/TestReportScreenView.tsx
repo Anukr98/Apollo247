@@ -663,6 +663,8 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                           ? 170
                           : !!item?.range && item?.range?.length > 30
                           ? 200
+                          : !!item?.range && item?.range?.length > 100
+                          ? 240
                           : 110,
                     },
                   ]}
@@ -900,7 +902,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
           <TouchableOpacity
             onPress={() => (labResults ? downloadPDFTestReport(true) : downloadDocument())}
           >
-            <ShareBlueIcon size={'sm'} style={{ width: 16, height: 16 }} />
+            <ShareBlueIcon size={'md'} style={{ width: 22, height: 22 }} />
           </TouchableOpacity>
         </View>
         <View style={styles.dateViewRender}>{renderDateView()}</View>
