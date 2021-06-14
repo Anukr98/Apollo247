@@ -460,37 +460,42 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       });
   };
 
-  const fetchTestReportResult = useCallback((order: orderList) => {
-    setLoading?.(true);
-    const getVisitId = order?.visitNo;
-    getPatientPrismMedicalRecordsApi(
-      client,
-      order?.patientId,
-      [MedicalRecordType.TEST_REPORT],
-      'Diagnostics'
-    )
-      .then((data: any) => {
-        const labResultsData = g(
-          data,
-          'getPatientPrismMedicalRecords_V2',
-          'labResults',
-          'response'
-        );
-        let resultForVisitNo = labResultsData?.find((item: any) => item?.identifier == getVisitId);
-        setLoading?.(false);
-        !!resultForVisitNo
-          ? props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-              data: resultForVisitNo,
-              labResults: true,
-            })
-          : renderReportError(string.diagnostics.responseUnavailableForReport);
-      })
-      .catch((error) => {
-        CommonBugFender('YourOrdersTests_fetchTestReportsData', error);
-        currentPatient && handleGraphQlError(error);
-      })
-      .finally(() => setLoading?.(false));
-  }, []);
+  const fetchTestReportResult = useCallback(
+    (order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList) => {
+      setLoading?.(true);
+      const getVisitId = order?.visitNo;
+      getPatientPrismMedicalRecordsApi(
+        client,
+        !!order?.patientId ? order?.patientId : currentPatient?.id,
+        [MedicalRecordType.TEST_REPORT],
+        'Diagnostics'
+      )
+        .then((data: any) => {
+          const labResultsData = g(
+            data,
+            'getPatientPrismMedicalRecords_V2',
+            'labResults',
+            'response'
+          );
+          let resultForVisitNo = labResultsData?.find(
+            (item: any) => item?.identifier == getVisitId
+          );
+          setLoading?.(false);
+          !!resultForVisitNo
+            ? props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+                data: resultForVisitNo,
+                labResults: true,
+              })
+            : renderReportError(string.diagnostics.responseUnavailableForReport);
+        })
+        .catch((error) => {
+          CommonBugFender('YourOrdersTests_fetchTestReportsData', error);
+          currentPatient && handleGraphQlError(error);
+        })
+        .finally(() => setLoading?.(false));
+    },
+    []
+  );
 
   const renderReportError = (message: string) => {
     showAphAlert?.({
