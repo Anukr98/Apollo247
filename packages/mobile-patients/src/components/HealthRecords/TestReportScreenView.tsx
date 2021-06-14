@@ -612,6 +612,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
             var stringColorChanger: boolean;
             var rangeColorChanger: boolean;
             var columnDecider: boolean;
+            var numberOfLineBreaks: any;
             if (!!item?.range) {
               var symbolSearch =
                 item?.range?.includes('<') ||
@@ -626,6 +627,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                   ? (resultColorChanger = true)
                   : (resultColorChanger = false);
               }
+
               if (symbolSearch) {
                 rangeColorChanger = true;
               } else {
@@ -641,8 +643,8 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
               if (item?.result?.length > 14) {
                 stringColorChanger = true;
               }
+              numberOfLineBreaks = (item?.result?.match(/\n/g) || []).length;
             }
-
             return !!item?.result ? (
               <>
                 <View
@@ -661,11 +663,11 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                       height:
                         stringColorChanger === true && item?.result?.length > 100
                           ? 170
-                          : !!item?.range && item?.range?.length > 30
-                          ? 200
-                          : !!item?.range && item?.range?.length > 100
-                          ? 240
-                          : 110,
+                          : !!item.range && item?.range?.length > 40
+                          ? 220
+                          : !!item.result && numberOfLineBreaks > 3
+                          ? 180
+                          : 120,
                     },
                   ]}
                 >
@@ -685,7 +687,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                       style={[
                         styles.resultViewContainer,
                         {
-                          width: stringColorChanger === true ? '100%' : '45%',
+                          width: stringColorChanger === true ? '95%' : '45%',
                           top: 2,
                         },
                       ]}
@@ -733,6 +735,8 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                               Platform.OS === 'android' &&
                               item?.result?.length > 100
                                 ? 55
+                                : !!item.result && numberOfLineBreaks > 3
+                                ? 80
                                 : undefined,
                             width:
                               stringColorChanger === true && item?.result?.length > 100
@@ -784,9 +788,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
             ]}
           >
             <Text style={styles.rangeTextContainer}>{'Range:'}</Text>
-            <Text style={styles.rangeValueContainer}>
-              {range ? `${range + ` ${unit}`}` : 'N/A'}
-            </Text>
+            <Text style={styles.rangeValueContainer}>{`${range + ` ${unit}`}`}</Text>
           </View>
         </>
       );
