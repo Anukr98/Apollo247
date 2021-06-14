@@ -404,6 +404,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     props.navigation.navigate(AppRoutes.OtherBanks, {
       paymentId: paymentId,
       amount: amount,
+      burnHc: burnHc,
       banks: otherBanks,
       orderId: orderDetails?.orderId,
       businessLine: businessLine,
