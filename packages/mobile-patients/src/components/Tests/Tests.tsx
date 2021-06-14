@@ -358,9 +358,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
       : !!pharmacyLocation
       ? pharmacyLocation!
       : locationDetails!;
-    setDiagnosticLocation?.(getLocationDetails);
-    setAsyncDiagnosticPincode?.(getLocationDetails);
-    checkIsPinCodeServiceable(getLocationDetails?.pincode, 'manual', 'pharmaPincode');
+    if (getLocationDetails?.pincode === asyncDiagnosticPincode?.pincode) {
+      setDiagnosticLocation?.(getLocationDetails);
+      setAsyncDiagnosticPincode?.(getLocationDetails);
+      checkIsPinCodeServiceable(getLocationDetails?.pincode, 'manual', 'pharmaPincode');
+    }
   }, [asyncPincode]); //removed location details
 
   /**
