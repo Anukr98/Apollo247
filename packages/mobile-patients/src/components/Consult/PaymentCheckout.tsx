@@ -826,13 +826,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       const data = await createOrderInternal(apptmt?.id!, subscriptionId);
       if (amountToPay == 0) {
         const res = await createJusPayOrder(data?.data?.createOrderInternal?.payment_order_id!);
-        // makePayment(
-        //   apptmt?.id!,
-        //   Number(amountToPay),
-        //   apptmt?.appointmentDateTime,
-        //   `${apptmt?.displayId!}`
-        // );
-        console.log('res >>>', res);
         if (res?.data?.createOrderV2?.payment_status == 'TXN_SUCCESS') {
           let eventAttributes = getConsultationBookedEventAttributes(
             apptmt?.appointmentDateTime,
