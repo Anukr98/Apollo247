@@ -271,7 +271,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
           const patientDetails = profileAllPatients.filter(
             (patient) => patient?.id === presc?.patientId
           );
-          if (patientDetails[0]?.firstName) patientName = patientDetails[0]?.firstName;
+          if (patientDetails?.[0]?.firstName) patientName = patientDetails?.[0]?.firstName;
         }
         const prescriptions = prescriptionList.map(
           (
