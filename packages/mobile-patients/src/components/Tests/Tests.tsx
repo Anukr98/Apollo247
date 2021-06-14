@@ -1933,23 +1933,52 @@ export const Tests: React.FC<TestsProps> = (props) => {
           //removed code for e-prescriptions
         }
         if (testPrescription?.length == unAvailableItemsArray?.length) {
-          Alert.alert(string.common.uhOh, string.common.noDiagnosticsAvailable);
-        } else if (unAvailableItems) {
-          Alert.alert(
-            string.common.uhOh,
-            `Out of ${testPrescription?.length} diagnostic(s), you are trying to order, following diagnostic(s) are not available.\n\n${unAvailableItems}\n`
-          );
+          showAphAlert?.({
+            title: string.common.uhOh,
+            description: string.common.noDiagnosticsAvailable,
+            onPressOk: () => {
+              _navigateToTestCart();
+            },
+            onPressOutside: () => {
+              _navigateToTestCart();
+            },
+          });
+        } else {
+          //in case of if any unavailable items or all are present
+          const lengthOfAvailableItems = tests?.length;
+          const testAdded = tests?.map((item) => nameFormater(item?.name), 'title').join('\n');
+          showAphAlert?.({
+            title:
+              !!lengthOfAvailableItems && lengthOfAvailableItems > 0
+                ? `${lengthOfAvailableItems} ${
+                    lengthOfAvailableItems > 1 ? 'items' : 'item'
+                  } added to your cart`
+                : string.common.uhOh,
+            description: unAvailableItems
+              ? `Below items are added to your cart: \n${testAdded} \n Search for the remaining diagnositc tests and add to the cart.`
+              : `Below items are added to your cart: \n${testAdded}`,
+            onPressOk: () => {
+              _navigateToTestCart();
+            },
+            onPressOutside: () => {
+              _navigateToTestCart();
+            },
+          });
         }
         const getItemNames = tests?.map((item) => item?.name)?.join(', ');
         const getItemIds = tests?.map((item) => Number(item?.id))?.join(', ');
         setLoadingContext?.(false);
         DiagnosticAddToCartEvent(getItemNames, getItemIds, 0, 0, 'Prescription');
-        props.navigation.navigate(AppRoutes.TestsCart);
       })
       .catch((e) => {
         setLoadingContext?.(false);
         handleGraphQlError(e);
       });
+  }
+
+  function _navigateToTestCart() {
+    hideAphAlert?.();
+    props.navigation.navigate(AppRoutes.TestsCart);
   }
 
   const getFileName = (item: any) => {
@@ -2079,8 +2108,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   function navigateToTrackingScreen(item: any) {
     DiagnosticTrackOrderViewed(currentPatient, item?.orderStatus, item?.id, 'Home');
-    props.navigation.navigate(AppRoutes.YourOrdersTest,{
-      isTest: true
+    props.navigation.navigate(AppRoutes.YourOrdersTest, {
+      isTest: true,
     });
   }
 
@@ -2330,11 +2359,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
     ) {
       let sortedItemsIndex =
         data?.diagnosticWidgetData?.length - (data?.diagnosticWidgetData?.length % numColumns);
-        if (sortedItemsIndex > numColumns * 2) {
-          newGridData = data?.diagnosticWidgetData.slice(0, numColumns * 2);
-        } else {
-          newGridData = data?.diagnosticWidgetData.slice(0, sortedItemsIndex);
-        }
+      if (sortedItemsIndex > numColumns * 2) {
+        newGridData = data?.diagnosticWidgetData.slice(0, numColumns * 2);
+      } else {
+        newGridData = data?.diagnosticWidgetData.slice(0, sortedItemsIndex);
+      }
     } else {
       newGridData = data?.diagnosticWidgetData;
     }

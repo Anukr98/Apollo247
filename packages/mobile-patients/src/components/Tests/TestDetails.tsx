@@ -773,9 +773,17 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       cmsTestDetails?.diagnosticInclusionName?.length > 0;
     const inclusions = isInclusionPrsent && cmsTestDetails?.diagnosticInclusionName;
 
-    const getMandatoryParamter = cmsTestDetails?.diagnosticInclusionName?.map((inclusion: any) =>
-      inclusion?.TestObservation?.filter((item: any) => item?.mandatoryValue === '1')
+    const filterParamters = cmsTestDetails?.diagnosticInclusionName?.filter(
+      (item: any) => !!item?.TestObservation && item?.TestObservation != ''
     );
+
+    const getMandatoryParamter =
+      !!filterParamters &&
+      filterParamters?.length > 0 &&
+      filterParamters?.map((inclusion: any) =>
+        inclusion?.TestObservation?.filter((item: any) => item?.mandatoryValue === '1')
+      );
+
     const getMandatoryParameterCount = getMandatoryParamter?.reduce(
       (prevVal: any, curr: any) => prevVal + curr?.length,
       0
@@ -866,6 +874,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const renderParamterData = (item: any, inclusions: any, index: number, showOption: boolean) => {
     const getMandatoryParameters =
       item?.TestObservation?.length > 0 &&
+      item?.TestObservation != '' &&
       item?.TestObservation?.filter((obs: any) => obs?.mandatoryValue === '1');
     return (
       <>
