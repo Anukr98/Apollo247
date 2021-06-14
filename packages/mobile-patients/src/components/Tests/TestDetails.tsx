@@ -781,13 +781,14 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       !!filterParamters &&
       filterParamters?.length > 0 &&
       filterParamters?.map((inclusion: any) =>
-        inclusion?.TestObservation?.filter((item: any) => item?.mandatoryValue === '1')
+        !!inclusion?.TestObservation
+          ? inclusion?.TestObservation?.filter((item: any) => item?.mandatoryValue === '1')
+          : []
       );
 
-    const getMandatoryParameterCount = getMandatoryParamter?.reduce(
-      (prevVal: any, curr: any) => prevVal + curr?.length,
-      0
-    );
+    const getMandatoryParameterCount =
+      !!getMandatoryParamter &&
+      getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
 
     return (
       <>
