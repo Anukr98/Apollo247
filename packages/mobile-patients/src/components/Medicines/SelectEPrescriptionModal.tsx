@@ -52,6 +52,11 @@ import { SelectEprescriptionCard } from '@aph/mobile-patients/src/components/Med
 
 const { width, height } = Dimensions.get('window');
 
+export interface PrescriptionsList
+  extends getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescription_response {
+  patientName?: string;
+}
+
 const styles = StyleSheet.create({
   noDataCard: {
     height: 'auto',
@@ -199,7 +204,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
   const loadRecordsStep = 12;
   const [healthRecordIndex, setHealthRecordIndex] = useState<number>(loadRecordsStep);
   const [refreshHealthRecords, setRefreshHealthRecords] = useState<boolean>(false);
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, profileAllPatients } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const DATE_FORMAT = 'DD MMM YYYY';
 
@@ -252,26 +257,33 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     | undefined
   >([]);
   const [prescriptions, setPrescriptions] = useState<
-    | (getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescription_response | null)[]
-    | null
-    | undefined
+    (PrescriptionsList | null)[] | null | undefined
   >([]);
 
   useEffect(() => {
-    let mobilePrescriptions: getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescription_response[] = [];
+    let mobilePrescriptions: PrescriptionsList[] = [];
     let mobileTestReports: getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_test_report_response[] = [];
-    medPrismRecords?.getPrescriptionsByMobileNumber?.forEach(
-      (
-        presc: getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescription_response
-      ) => {
-        if (presc?.prescription?.response?.length) {
-          mobilePrescriptions.push(...presc?.prescription?.response);
+    medPrismRecords?.getPrescriptionsByMobileNumber?.forEach((presc: PrescriptionsList) => {
+      let prescriptionList = presc?.prescription?.response;
+      if (prescriptionList?.length) {
+        let patientName = '';
+        if (profileAllPatients && profileAllPatients?.length) {
+          const patientDetails = profileAllPatients.filter(
+            (patient) => patient?.id === presc?.patientId
+          );
+          if (patientDetails?.[0]?.firstName) patientName = patientDetails?.[0]?.firstName;
         }
-        if (presc?.test_report?.response?.length) {
-          mobileTestReports.push(presc?.test_report?.response);
-        }
+        const prescriptions = prescriptionList.map(
+          (
+            prescription: getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_prescription_response
+          ) => ({ ...prescription, patientName })
+        );
+        mobilePrescriptions.push(...prescriptions);
       }
-    );
+      if (presc?.test_report?.response?.length) {
+        mobileTestReports.push(presc?.test_report?.response);
+      }
+    });
     setPrescriptions(mobilePrescriptions);
     setLabResults(mobileTestReports);
   }, [medPrismRecords]);
@@ -461,6 +473,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
       data?.sourceName || data?.source || data?.labTestSource ? currentPatient?.firstName : '';
     const isPdf = data?.fileUrl?.split('.')?.pop() === 'pdf';
     const heading =
+      data?.patientName ||
       uploadedBy ||
       data?.testName ||
       data?.issuingDoctor ||
