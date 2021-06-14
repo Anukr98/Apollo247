@@ -19,6 +19,7 @@ import {
   GET_PLAN_DETAILS_BY_PLAN_ID,
   CREATE_USER_SUBSCRIPTION,
   CREATE_INTERNAL_ORDER,
+  CREATE_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -316,35 +317,54 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     });
   };
 
+  const createJusPayOrder = (paymentId: string) => {
+    const orderInput = {
+      payment_order_id: paymentId,
+      health_credits_used: amountToPay,
+      cash_to_collect: 0,
+      prepaid_amount: 0,
+      store_code: storeCode,
+      is_mobile_sdk: true,
+      return_url: AppConfig.Configuration.baseUrl,
+    };
+    return client.mutate({
+      mutation: CREATE_ORDER,
+      variables: { order_input: orderInput },
+      fetchPolicy: 'no-cache',
+    });
+  };
+
+  const createUserSubscription = () => {
+    const purchaseInput = {
+      userSubscription: {
+        mobile_number: currentPatient?.mobileNumber,
+        plan_id: planId,
+        sub_plan_id: defaultCirclePlan
+          ? defaultCirclePlan?.subPlanId
+          : circlePlanSelected?.subPlanId,
+        storeCode,
+        FirstName: currentPatient?.firstName,
+        LastName: currentPatient?.lastName,
+        payment_reference: {
+          amount_paid: amountToPay,
+          payment_status: PaymentStatus.PENDING,
+          purchase_via_HC: false,
+          HC_used: 0,
+        },
+        transaction_date_time: new Date().toISOString(),
+      },
+    };
+    return client.mutate<CreateUserSubscription, CreateUserSubscriptionVariables>({
+      mutation: CREATE_USER_SUBSCRIPTION,
+      variables: purchaseInput,
+      fetchPolicy: 'no-cache',
+    });
+  };
+
   const initiateCirclePurchase = async () => {
     try {
       setSpinning(true);
-      const purchaseInput = {
-        userSubscription: {
-          mobile_number: currentPatient?.mobileNumber,
-          plan_id: planId,
-          sub_plan_id: defaultCirclePlan
-            ? defaultCirclePlan?.subPlanId
-            : circlePlanSelected?.subPlanId,
-          storeCode,
-          FirstName: currentPatient?.firstName,
-          LastName: currentPatient?.lastName,
-          payment_reference: {
-            amount_paid: amountToPay,
-            payment_status: PaymentStatus.PENDING,
-            purchase_via_HC: false,
-            HC_used: 0,
-          },
-          transaction_date_time: new Date().toISOString(),
-        },
-      };
-      const response = await client.mutate<CreateUserSubscription, CreateUserSubscriptionVariables>(
-        {
-          mutation: CREATE_USER_SUBSCRIPTION,
-          variables: purchaseInput,
-          fetchPolicy: 'no-cache',
-        }
-      );
+      const response = await createUserSubscription();
       const subscriptionId = g(response, 'data', 'CreateUserSubscription', 'response', '_id');
       const data = await createOrderInternal(subscriptionId);
       const orderInfo = {
@@ -698,38 +718,20 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   const onPurchasePlanThroughHC = async () => {
     setLoading && setLoading(true);
     try {
-      const res = await client.mutate<CreateUserSubscription, CreateUserSubscriptionVariables>({
-        mutation: CREATE_USER_SUBSCRIPTION,
-        variables: {
-          userSubscription: {
-            mobile_number: currentPatient?.mobileNumber,
-            plan_id: planId,
-            sub_plan_id: defaultCirclePlan
-              ? defaultCirclePlan?.subPlanId
-              : circlePlanSelected?.subPlanId,
-            storeCode,
-            FirstName: currentPatient?.firstName,
-            LastName: currentPatient?.lastName,
-            payment_reference: {
-              amount_paid: 0,
-              payment_status: PaymentStatus.TXN_SUCCESS,
-              purchase_via_HC: true,
-              HC_used: amountToPay,
-            },
-            transaction_date_time: new Date().toISOString(),
-          },
-        },
-        fetchPolicy: 'no-cache',
-      });
-      setLoading && setLoading(false);
-
-      const data = res?.data?.CreateUserSubscription;
-      if (data?.success) {
+      const response = await createUserSubscription();
+      const subscriptionId = g(response, 'data', 'CreateUserSubscription', 'response', '_id');
+      const data = await createOrderInternal(subscriptionId);
+      const res = await createJusPayOrder(data?.data?.createOrderInternal?.payment_order_id!);
+      setLoading?.(false);
+      if (res?.data?.createOrderV2?.payment_status == 'TXN_SUCCESS') {
         onPurchaseWithHCCallback!(res);
         if (isRenew || circleSubscription?.status?.toLowerCase() === 'disabled') {
           const circlePlanValidity = {
-            startDate: data?.response?.start_date,
-            endDate: data?.response?.end_date,
+            startDate: moment(new Date(), 'DD-MM-YYYY'),
+            endDate: moment(new Date(), 'DD-MM-YYYY').add(
+              circlePlanSelected?.valid_duration || defaultCirclePlan?.valid_duration,
+              'days'
+            ),
           };
           postCircleWEGEvent(
             currentPatient,
