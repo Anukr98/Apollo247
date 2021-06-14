@@ -613,6 +613,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
             var rangeColorChanger: boolean;
             var columnDecider: boolean;
             var numberOfLineBreaks: any;
+            var letterCheck: any;
             if (!!item?.range) {
               var symbolSearch =
                 item?.range?.includes('<') ||
@@ -655,7 +656,8 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                         stringColorChanger === true ||
                         rangeColorChanger === true ||
                         !item?.range ||
-                        item?.range === item?.result
+                        item?.range === item?.result ||
+                        !letterCheck
                           ? '#9B9B9B'
                           : resultColorChanger
                           ? '#16DE9B'
@@ -715,7 +717,8 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                               stringColorChanger === true ||
                               rangeColorChanger === true ||
                               !item?.range ||
-                              item?.range === item?.result
+                              item?.range === item?.result ||
+                              !letterCheck
                                 ? '#F7F7F7'
                                 : resultColorChanger
                                 ? theme.colors.COMPLETE_STATUS_BGK
@@ -724,7 +727,8 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                               stringColorChanger === true ||
                               rangeColorChanger === true ||
                               !item?.range ||
-                              item?.range === item?.result
+                              item?.range === item?.result ||
+                              !letterCheck
                                 ? theme.colors.ASTRONAUT_BLUE
                                 : resultColorChanger
                                 ? theme.colors.COMPLETE_STATUS_TEXT
