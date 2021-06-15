@@ -1920,3 +1920,10 @@ export const WidgetLiverIcon: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/ic_liver_icon.webp')}
   />
 );
+
+export const GreenClock: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/green_clock.webp')}
+  />
+);

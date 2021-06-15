@@ -6,6 +6,8 @@ import {
   Success,
   Copy,
   CircleLogo,
+  AlertIcon,
+  GreenClock,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -120,6 +122,22 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const [circlePlanDetails, setCirclePlanDetails] = useState({});
   const [codOrderProcessing, setcodOrderProcessing] = useState<boolean>(false);
   const { apisToCall, pharmacyUserTypeAttribute } = useAppCommonData();
+
+  const [showSubstituteMessage, setShowSubstituteMessage] = useState<boolean>(true);
+  const [substituteTime, setSubstituteTime] = useState<number>(10);
+
+  useEffect(() => {
+    if (!!substituteTime && showSubstituteMessage) {
+      const interval = setInterval(() => {
+        if (substituteTime < 1) {
+          clearInterval(interval);
+        } else {
+          setSubstituteTime((substituteTime) => substituteTime - 1);
+        }
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [substituteTime]);
 
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
@@ -615,6 +633,120 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     );
   };
 
+  const substituteItemsCard = () => {
+    const substituteStyles = StyleSheet.create({
+      substituteCard: {
+        marginVertical: 0.03 * windowWidth,
+        marginHorizontal: 0.06 * windowWidth,
+        backgroundColor: '#fff',
+        flex: 1,
+        borderRadius: 10,
+        shadowColor: '#808080',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.4,
+        shadowRadius: 8,
+        elevation: 6,
+      },
+      noticeContainer: {
+        justifyContent: 'flex-start',
+        flexDirection: 'row',
+        borderBottomWidth: 0.3,
+        borderBottomColor: theme.colors.SHADE_GREY,
+      },
+      alertIcon: {
+        resizeMode: 'contain',
+        width: 20,
+        height: 20,
+        marginRight: 7,
+        marginLeft: 10,
+      },
+      noticeText: {
+        ...theme.viewStyles.text('SB', 15, theme.colors.ASTRONAUT_BLUE, 1, 20),
+        paddingBottom: 10,
+      },
+      messageBody: {
+        justifyContent: 'flex-start',
+        margin: 10,
+        paddingBottom: 10,
+        borderBottomWidth: 0.3,
+        borderBottomColor: theme.colors.SHADE_GREY,
+      },
+      buttonStyle: {
+        height: 0.06 * windowHeight,
+        paddingHorizontal: 10,
+        paddingVertical: 7,
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#808080',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.4,
+        shadowRadius: 4,
+      },
+      buttonAgreeStyle: {
+        backgroundColor: '#fcb716',
+        marginHorizontal: 15,
+      },
+      buttonNotAgreeStyle: {
+        backgroundColor: '#ffffff',
+        borderWidth: 2,
+        borderColor: '#fcb716',
+        marginHorizontal: 15,
+        marginTop: 10,
+      },
+      timeoutTextContainer: { marginHorizontal: 15, marginTop: 10, flexDirection: 'row' },
+      greenClockIcon: {
+        resizeMode: 'contain',
+        width: 20,
+        height: 20,
+      },
+    });
+    const message =
+      'Some items in your cart are heavily in demand. Incase if local unavailability, do you agree to receiving substitute products for the same?';
+    return (
+      <View style={substituteStyles.substituteCard}>
+        <View style={{ marginVertical: 15 }}>
+          <View style={substituteStyles.noticeContainer}>
+            <AlertIcon style={substituteStyles.alertIcon} />
+            <Text style={substituteStyles.noticeText}>NOTICE</Text>
+          </View>
+          <View>
+            <View style={substituteStyles.messageBody}>
+              {textComponent(message, undefined, theme.colors.ASTRONAUT_BLUE, false)}
+            </View>
+          </View>
+          <View>
+            <TouchableOpacity
+              style={[substituteStyles.buttonAgreeStyle, substituteStyles.buttonStyle]}
+              onPress={() => {}}
+            >
+              <Text style={{ ...theme.viewStyles.text('SB', 15, '#ffffff', 1, 24) }}>
+                Yes, Agree to Receiving Substitutes
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[substituteStyles.buttonNotAgreeStyle, substituteStyles.buttonStyle]}
+              onPress={() => {}}
+            >
+              <Text style={{ ...theme.viewStyles.text('SB', 15, '#fcb716', 1, 24) }}>
+                No, I want the Exact items Delivered
+              </Text>
+            </TouchableOpacity>
+            <View style={substituteStyles.timeoutTextContainer}>
+              <Text style={theme.viewStyles.text('SB', 14, theme.colors.APP_GREEN, 1, 24)}>
+                Please Let us Know Within the Next{' '}
+                <GreenClock style={substituteStyles.greenClockIcon} />
+                <Text style={theme.viewStyles.text('B', 14, theme.colors.APP_GREEN, 1, 24)}>
+                  {`${substituteTime} seconds`}
+                </Text>
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   const renderNote = () => {
     let noteText = '';
     if (status === failure) {
@@ -752,6 +884,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         {!loading ? (
           <View style={styles.container}>
             <ScrollView style={styles.container}>
+              {showSubstituteMessage && !!substituteTime && substituteItemsCard()}
               {renderStatusCard()}
               {status === 'PAYMENT_SUCCESS' && isCircleBought
                 ? renderAddedCirclePlanWithValidity()
