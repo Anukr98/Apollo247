@@ -38,6 +38,7 @@ const isSmallDevice = width < 370;
 export interface TestOrderSummaryViewProps {
   orderDetails: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList;
   onPressViewReport?: () => void;
+  onPressDownloadInvoice?: any;
   refundDetails?: any;
 }
 
@@ -531,7 +532,10 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   };
   const renderInvoiceDownload = () => {
     return (
-      <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10 }}>
+      <TouchableOpacity
+        style={styles.downloadInvoice}
+        onPress={() => props.onPressDownloadInvoice()}
+      >
         <Text style={styles.yellowText}>DOWNLOAD INVOICE</Text>
         <DownloadOrange style={{ width: 14, height: 14, marginHorizontal: 10 }} />
       </TouchableOpacity>
@@ -541,7 +545,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   return (
     <ScrollView style={{ flex: 1 }}>
       <View style={{ margin: 16 }}>
-        {DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(orderDetails?.orderStatus) ? renderInvoiceDownload() : null}
+        {DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(orderDetails?.orderStatus) && orderDetails?.invoiceURL ? renderInvoiceDownload() : null}
         {renderOrderId()}
         {renderSlotView()}
         {renderHeading(
@@ -585,6 +589,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     marginLeft: isSmallDevice ? 16 : 20,
   },
+  downloadInvoice: { flexDirection: 'row', alignItems: 'center', marginVertical: 10 },
   orderName: {
     opacity: 0.6,
     paddingRight: 10,

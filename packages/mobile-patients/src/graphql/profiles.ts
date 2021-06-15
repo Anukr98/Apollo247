@@ -1831,6 +1831,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         slotDateTimeInUTC
         paymentType
         visitNo
+        invoiceURL
         labReportURL
         diagnosticOrderLineItems {
           id

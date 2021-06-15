@@ -573,6 +573,17 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       props.navigation.navigate(AppRoutes.HealthRecordsHome);
     }
   }
+  const onPressInvoice = () => {
+    const appointmentDetails = !!order?.slotDateTimeInUTC
+      ? order?.slotDateTimeInUTC
+      : order?.diagnosticDate;
+    const appointmentDate = moment(appointmentDetails)?.format('DD MMM YYYY');
+    const patientName = getPatientNameById(allCurrentPatients, order?.patientId!)?.replace(
+      / /g,
+      '_'
+    );
+    downloadLabTest(order?.invoiceURL!, appointmentDate, patientName);
+  };
 
   const onPressViewReport = () => {
     const appointmentDetails = !!order?.slotDateTimeInUTC
@@ -651,6 +662,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         <TestOrderSummaryView
           orderDetails={orderDetails}
           onPressViewReport={_onPressViewReportAction}
+          onPressDownloadInvoice={onPressInvoice}
           refundDetails={refundStatusArr}
         />
       )
