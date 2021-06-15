@@ -358,7 +358,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       : !!pharmacyLocation
       ? pharmacyLocation!
       : locationDetails!;
-    if (getLocationDetails?.pincode === asyncDiagnosticPincode?.pincode) {
+    if (getLocationDetails?.pincode !== asyncDiagnosticPincode?.pincode) {
       setDiagnosticLocation?.(getLocationDetails);
       setAsyncDiagnosticPincode?.(getLocationDetails);
       checkIsPinCodeServiceable(getLocationDetails?.pincode, 'manual', 'pharmaPincode');
