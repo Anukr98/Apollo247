@@ -355,9 +355,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
   useEffect(() => {
     let getLocationDetails = !!asyncPincode
       ? asyncPincode
-      : !!pharmacyLocation
-      ? pharmacyLocation!
-      : locationDetails!;
+      : !!locationDetails
+      ? locationDetails
+      : pharmacyLocation!;
     if (getLocationDetails?.pincode !== asyncDiagnosticPincode?.pincode) {
       setDiagnosticLocation?.(getLocationDetails);
       setAsyncDiagnosticPincode?.(getLocationDetails);
