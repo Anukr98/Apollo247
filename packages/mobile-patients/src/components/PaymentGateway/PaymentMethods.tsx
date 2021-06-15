@@ -463,18 +463,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         });
         break;
       case 'subscription':
-        // props.navigation.dispatch(
-        //   StackActions.reset({
-        //     index: 0,
-        //     key: null,
-        //     actions: [
-        //       NavigationActions.navigate({
-        //         routeName: AppRoutes.ConsultRoom,
-        //         params: orderDetails?.circleParams,
-        //       }),
-        //     ],
-        //   })
-        // );
         const params = orderDetails?.circleParams;
         goToConsultRoom(props.navigation, params);
         break;
@@ -499,9 +487,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderBookingInfo = () => {
-    return businessLine == 'diagnostics' || businessLine == 'consult' ? (
-      <BookingInfo LOB={businessLine} orderDetails={orderDetails} />
-    ) : null;
+    return <BookingInfo LOB={businessLine} orderDetails={orderDetails} />;
   };
 
   const showPaymentOptions = () => {

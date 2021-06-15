@@ -799,20 +799,10 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
               closeModal && closeModal();
               onPurchasePlanThroughHC();
             } else {
-              // props.navigation.navigate(AppRoutes.CircleSubscription, {
-              //   from: from,
-              //   soruce: source,
-              //   screenName: screenName,
-              // });
               initiateCirclePurchase();
             }
           } else if (from === string.banner_context.PHARMACY_HOME) {
             if (!cartItems?.length) {
-              // props.navigation.navigate(AppRoutes.CircleSubscription, {
-              //   from: from,
-              //   soruce: source,
-              //   screenName: screenName,
-              // });
               initiateCirclePurchase();
             } else {
               setCircleMembershipCharges &&

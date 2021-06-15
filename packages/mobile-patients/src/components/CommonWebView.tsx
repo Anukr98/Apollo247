@@ -216,16 +216,7 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
             const responseData = selectedPlan;
             fireCirclePlanSelectedEvent();
             if (action == 'PAY') {
-              setTimeout(
-                () => initiateCirclePurchase(selectedPlan),
-                // props.navigation.navigate(AppRoutes.CircleSubscription, {
-                //   from: 'Diagnostics',
-                //   // source: string.banner_context.DIAGNOSTIC_HOME,
-                //   selectedPlan: selectedPlan,
-                //   action: 'PAY',
-                // }),
-                0
-              );
+              initiateCirclePurchase(selectedPlan);
             } else {
               setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
               setDefaultCirclePlan && setDefaultCirclePlan(null);
