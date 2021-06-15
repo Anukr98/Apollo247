@@ -135,7 +135,11 @@ import {
   sourceHeaders,
   convertNumberToDecimal,
 } from '@aph/mobile-patients/src/utils/commonUtils';
-import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import {
+  initiateSDK,
+  terminateSDK,
+  createHyperServiceObject,
+} from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import {
   DiagnosticAddresssSelected,
@@ -418,7 +422,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     try {
       const isInitiated: boolean = await isSDKInitialised();
       const merchantId = AppConfig.Configuration.merchantId;
-      !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id, merchantId);
+      isInitiated
+        ? (terminateSDK(),
+          setTimeout(() => createHyperServiceObject(), 1000),
+          setTimeout(() => initiateSDK(currentPatient?.id, currentPatient?.id, merchantId), 2000))
+        : initiateSDK(currentPatient?.id, currentPatient?.id, merchantId);
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }

@@ -65,6 +65,7 @@ import { useGetPaymentMethods } from '@aph/mobile-patients/src/components/Paymen
 import {
   isSmallDevice,
   paymentModeVersionCheck,
+  goToConsultRoom,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PaymentStatus,
@@ -276,7 +277,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     if (!!authToken) {
       return authToken;
     } else {
-      setisTxnProcessing(true);
       try {
         businessLine == 'diagnostics' && initiateOrderPayment();
         const response = await createJusPayOrder(false);
@@ -462,6 +462,10 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           orderDetails: orderDetails,
           checkoutEventAttributes: checkoutEventAttributes,
         });
+        break;
+      case 'subscription':
+        const params = orderDetails?.circleParams;
+        goToConsultRoom(props.navigation, params);
         break;
     }
   };

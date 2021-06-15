@@ -112,7 +112,11 @@ import {
   createOrderInternal,
   createOrderInternalVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
-import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import {
+  initiateSDK,
+  terminateSDK,
+  createHyperServiceObject,
+} from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import {
   one_apollo_store_code,
@@ -262,7 +266,11 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     try {
       const isInitiated: boolean = await isSDKInitialised();
       const merchantId = AppConfig.Configuration.merchantId;
-      !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id, merchantId);
+      isInitiated
+        ? (terminateSDK(),
+          setTimeout(() => createHyperServiceObject(), 1000),
+          setTimeout(() => initiateSDK(currentPatient?.id, currentPatient?.id, merchantId), 2000))
+        : initiateSDK(currentPatient?.id, currentPatient?.id, merchantId);
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
