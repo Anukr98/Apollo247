@@ -115,7 +115,9 @@ export enum WebEngageEventName {
   TRUECALLER_APOLLO247_LOGIN_ERRORS = 'Apollo247 truecaller login errors',
   LOGIN_WITH_TRUECALLER_CLICKED = 'Login with truecaller clicked',
   MY_CONSULTED_DOCTORS_CLICKED = 'My doctor clicked',
-
+  VIEW_PROFILE_SLOT_SCREEN = 'View Profile Slot Screen',
+  VIEW_AVAILABLE_SLOTS = 'View Available Slots',
+  VIEW_SLOTS_CLICKED = 'View Slots Clicked',
   //Doctor Share Events
   SHARE_CLICK_DOC_LIST_SCREEN = 'Share clicked doc list screen',
   SHARE_PROFILE_CLICKED_DOC_LIST = 'Share profile clicked doc list',
@@ -1365,40 +1367,40 @@ export interface WebEngageEvents {
     'Order id': string | number;
     'Phlebo Name': string;
   };
-  [WebEngageEventName.DIAGNOSTIC_ORDER_STATUS]:{  
-  'Display id':string;
-  'Order id': string;
-  'Order status': string;
-  'Patient Name': string;
-  'Payment Mode': 'Cash' | 'Prepaid';
-  'SlotTimeInUTC' : string| Date;
-  'Total price' : string |number;
-  'UHID' : string;
-}
-[WebEngageEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED]:{
-  'Order id': string | number;
-  'UHID': string;
-  'Link opened' : 'Yes' | 'No';
-  'Source': 'Home' | 'My Order' | 'Track Order' | 'Order Summary'
-}
-[WebEngageEventName.DIGNOSTIC_PAYMENT_ABORTED]:{
-  'Order id': string;
-  'UHID': string;
-},
-[WebEngageEventName.DIAGNOSITC_MODIFY_CLICKED]:{
-  'UHID': string;
-  'Order id': string;
-  'Order status': string;
-}
-[WebEngageEventName.DIAGNOSTIC_MODIFY_ORDER]:{
-  'No of items Added': number,
-  'Item ids in array': string,
-  'Old order value': number,
-  'updated order value': number,
-  'HC charge updated' : 'Yes' | 'No'
-  'payment mode': 'Prepaid' | 'Cash',
-  'time of modification': string | Date
-}
+  [WebEngageEventName.DIAGNOSTIC_ORDER_STATUS]: {
+    'Display id': string;
+    'Order id': string;
+    'Order status': string;
+    'Patient Name': string;
+    'Payment Mode': 'Cash' | 'Prepaid';
+    SlotTimeInUTC: string | Date;
+    'Total price': string | number;
+    UHID: string;
+  };
+  [WebEngageEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED]: {
+    'Order id': string | number;
+    UHID: string;
+    'Link opened': 'Yes' | 'No';
+    Source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary';
+  };
+  [WebEngageEventName.DIGNOSTIC_PAYMENT_ABORTED]: {
+    'Order id': string;
+    UHID: string;
+  };
+  [WebEngageEventName.DIAGNOSITC_MODIFY_CLICKED]: {
+    UHID: string;
+    'Order id': string;
+    'Order status': string;
+  };
+  [WebEngageEventName.DIAGNOSTIC_MODIFY_ORDER]: {
+    'No of items Added': number;
+    'Item ids in array': string;
+    'Old order value': number;
+    'updated order value': number;
+    'HC charge updated': 'Yes' | 'No';
+    'payment mode': 'Prepaid' | 'Cash';
+    'time of modification': string | Date;
+  };
 
   // ********** ConsultEvents ********** \\
   [WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM]: ConsultRoomDoctorPatientInfo;
@@ -2629,5 +2631,49 @@ export interface WebEngageEvents {
       _247_Flag: boolean | undefined;
       'Consult Mode': string;
     };
+  };
+
+  [WebEngageEventName.VIEW_PROFILE_SLOT_SCREEN]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    User_Type: string;
+    'Doctor Name': string;
+    'Doctor Id': string;
+    'Doctor Speciality': string;
+  };
+
+  [WebEngageEventName.VIEW_AVAILABLE_SLOTS]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    User_Type: string;
+    'Doctor Name': string;
+    'Doctor Id': string;
+    'Doctor Speciality': string;
+    'Landing screen date': string;
+  };
+
+  [WebEngageEventName.VIEW_SLOTS_CLICKED]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    User_Type: string;
+    'Doctor Name': string;
+    'Doctor Id': string;
+    'Doctor Speciality': string;
+    'Bucket viewed': string;
   };
 }

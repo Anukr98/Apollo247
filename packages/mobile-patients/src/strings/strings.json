@@ -1116,7 +1116,9 @@
   },
   "consultModeTab": {
     "CONSULT_ONLINE": "Consult Online",
-    "MEET_IN_PERSON": "Meet In Person"
+    "MEET_IN_PERSON": "Meet In Person",
+    "VIDEO_CONSULT": "Video Consult",
+    "HOSPITAL_VISIT": "Hospital Visit"
   },
   "vaccineBooking": {
     "covid_vaccine_booking": "COVID VACCINE BOOKING",

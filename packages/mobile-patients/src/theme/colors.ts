@@ -120,6 +120,7 @@ const Common = {
   COMPLETE_STATUS_BGK: '#E3FCEF',
   INTERMITTENT_STATUS_BGK: '#FFF0B3',
   ICE_BERG: '#DFF4F4',
+  GRAYED: '#CBCBCB',
 };
 
 const Header = {

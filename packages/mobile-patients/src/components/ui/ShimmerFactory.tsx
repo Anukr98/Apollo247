@@ -296,7 +296,31 @@ const styles = StyleSheet.create({
     width: '100%',
     marginVertical: 10,
   },
-  rowStyle: { flexDirection: 'row', justifyContent: 'space-between' },
+  doctorDetails: {
+    height: 105,
+    width: '100%',
+  },
+  dateSlots: {
+    height: 54,
+    width: 101,
+    borderRadius: 10,
+  },
+  totalSlots: {
+    marginLeft: 20,
+    width: 100,
+    height: 15,
+  },
+  slotsButton: {
+    ...theme.viewStyles.cardViewStyle,
+    width: 90,
+    marginRight: 8,
+    marginTop: 12,
+    height: 40,
+  },
+  rowStyle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
 });
 
 export const renderCovidVaccinationShimmer = () => {
@@ -731,6 +755,46 @@ export const renderCouponViewShimmer = () => {
         shimmerStyle={styles.couponBlock}
       />
     </View>
+  );
+};
+
+export const renderDoctorDetailsShimmer = (style: any) => {
+  return (
+    <ShimmerPlaceHolder
+      shimmerColors={shimmerColors}
+      LinearGradient={LinearGradient}
+      shimmerStyle={[styles.doctorDetails, style]}
+    />
+  );
+};
+
+export const renderDateSlotsShimmer = () => {
+  return (
+    <ShimmerPlaceHolder
+      shimmerColors={shimmerColors}
+      LinearGradient={LinearGradient}
+      shimmerStyle={styles.dateSlots}
+    />
+  );
+};
+
+export const renderTotalSlotsShimmer = () => {
+  return (
+    <ShimmerPlaceHolder
+      shimmerColors={shimmerColors}
+      LinearGradient={LinearGradient}
+      shimmerStyle={styles.totalSlots}
+    />
+  );
+};
+
+export const renderSlotItemShimmer = () => {
+  return (
+    <ShimmerPlaceHolder
+      shimmerColors={shimmerColors}
+      LinearGradient={LinearGradient}
+      shimmerStyle={styles.slotsButton}
+    />
   );
 };
 

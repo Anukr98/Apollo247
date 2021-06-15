@@ -4,7 +4,13 @@ import { DIAGNOSTIC_GROUP_PLAN, GooglePlacesType } from '@aph/mobile-patients/sr
 import moment from 'moment';
 import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import DeviceInfo from 'react-native-device-info';
-import { Emoticon1, Emoticon2, Emoticon3, Emoticon4, Emoticon5 } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  Emoticon1,
+  Emoticon2,
+  Emoticon3,
+  Emoticon4,
+  Emoticon5,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 
 export const getValuesArray = (arr: any) => {
   const finalArr = arr.map((item: any) => item.name);
@@ -318,7 +324,11 @@ export const findAddrComponents = (
 };
 
 export const isPhysicalConsultation = (consultMode: string) => {
-  return consultMode === 'Visit Clinic' || consultMode === 'Meet In Person';
+  return (
+    consultMode === 'Visit Clinic' ||
+    consultMode === 'Meet In Person' ||
+    consultMode === 'Hospital Visit'
+  );
 };
 
 export const getReviewTag = (star: number) => {
@@ -334,7 +344,7 @@ export const getReviewTag = (star: number) => {
     case 5:
       return 'EXCELLENT';
     default:
-      return ''
+      return '';
       break;
   }
 };
