@@ -511,12 +511,19 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       refundDetails?.[0]?.status === REFUND_STATUSES.SUCCESS &&
       'Amount Refunded';
 
+    const isOrderModified = orderDetails?.diagnosticOrderLineItems?.find(
+      (item) => !!item?.editOrderID && item?.editOrderID
+    );
+    const refundAmountToShow = !!isOrderModified
+      ? orderDetails?.totalPrice
+      : refundDetails?.[0]?.amount;
+
     return (
       <View>
         {renderHeading('Payment Mode')}
         <View style={styles.orderSummaryView}>
           {renderPrices(txtToShow, orderDetails?.totalPrice, false)}
-          {!!refundText && renderPrices(refundText, refundDetails?.[0]?.amount, false)}
+          {!!refundText && renderPrices(refundText, refundAmountToShow, false)}
         </View>
       </View>
     );
