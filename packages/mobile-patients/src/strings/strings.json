@@ -521,6 +521,7 @@
     "fastReport": "Fast & Accurate Reports",
     "fastReportSubText": "Get reports in 12 to 24 hours. View or download on app anytime",
     "orderSuccessPhaleboText": "*The phlebotomist will call you prior to starting his journey to confirm your availability",
+    "invoiceTimelineText": "Invoice will be available to download after the sample is submitted in the lab",
     "unableToFetchStatus": "Something went wrong. We are unable to fetch status",
     "noSlotAvailable": "Sorry! There are no slots available on {{date}}. Please choose another date.",
     "updateAddressLatLngMessage": "Unable to locate address. Please update.",
