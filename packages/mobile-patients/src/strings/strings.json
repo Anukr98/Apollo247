@@ -476,6 +476,7 @@
       "editOrder": "Need to Modify Order Details",
       "userUnavailable": "I am not available",
       "bookedByMistake": "Booked by Mistake",
+      "lesserPrice": "Got lesser price elsewhere",
       "urgentReport": "Need Report Urgently",
       "anotherChannel": "Booked from other channel",
       "otherReasons": "Others (Please specify)"

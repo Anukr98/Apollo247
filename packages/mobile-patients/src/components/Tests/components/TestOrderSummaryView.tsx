@@ -24,7 +24,7 @@ import {
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DiagnosticOrderSummaryViewed } from '@aph/mobile-patients/src/components/Tests/Events';
-import { Down, Up } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Down, Up, DownloadOrange } from '@aph/mobile-patients/src/components/ui/Icons';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
 export interface LineItemPricing {
@@ -529,10 +529,19 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       </View>
     );
   };
+  const renderInvoiceDownload = () => {
+    return (
+      <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10 }}>
+        <Text style={styles.yellowText}>DOWNLOAD INVOICE</Text>
+        <DownloadOrange style={{ width: 14, height: 14, marginHorizontal: 10 }} />
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <ScrollView style={{ flex: 1 }}>
       <View style={{ margin: 16 }}>
+        {DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(orderDetails?.orderStatus) ? renderInvoiceDownload() : null}
         {renderOrderId()}
         {renderSlotView()}
         {renderHeading(
@@ -715,6 +724,10 @@ const styles = StyleSheet.create({
   },
   newText: {
     ...theme.viewStyles.text('SB', 10, 'white'),
+    textAlign: 'center',
+  },
+  yellowText: {
+    ...theme.viewStyles.text('SB', 14, colors.APP_YELLOW),
     textAlign: 'center',
   },
   previousItemInnerContainer: {
