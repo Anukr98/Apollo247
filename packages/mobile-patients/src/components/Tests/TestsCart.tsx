@@ -108,6 +108,7 @@ import {
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { TestSlotSelectionOverlayNew } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlayNew';
+import { TestPremiumSlotOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestPremiumSlotOverlay';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -302,6 +303,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
 
   const [displaySchedule, setDisplaySchedule] = useState<boolean>(false);
+  const [displayPremiumOverlay, setDisplayPremiumOverlay] = useState<boolean>(false);
   const [date, setDate] = useState<Date>(new Date());
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>();
   const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
@@ -3351,20 +3353,32 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           slotInfo={selectedTimeSlot}
           addressDetails={isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr}
           onSchedule={(date: Date, slotInfo: TestSlot) => {
-            setDate(date);
-            setselectedTimeSlot(slotInfo);
-            setDiagnosticSlot!({
-              slotStartTime: slotInfo?.slotInfo?.startTime!,
-              slotEndTime: slotInfo?.slotInfo?.endTime!,
-              date: date.getTime(),
-              employeeSlotId: slotInfo?.slotInfo?.slot!,
-              diagnosticBranchCode: slotInfo?.diagnosticBranchCode,
-              diagnosticEmployeeCode: slotInfo?.employeeCode,
-              city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
-            });
-            setWebEnageEventForAppointmentTimeSlot('Manual', slotInfo, areaSelected);
+            // setDate(date);
+            // setselectedTimeSlot(slotInfo);
+            // setDiagnosticSlot!({
+            //   slotStartTime: slotInfo?.slotInfo?.startTime!,
+            //   slotEndTime: slotInfo?.slotInfo?.endTime!,
+            //   date: date.getTime(),
+            //   employeeSlotId: slotInfo?.slotInfo?.slot!,
+            //   diagnosticBranchCode: slotInfo?.diagnosticBranchCode,
+            //   diagnosticEmployeeCode: slotInfo?.employeeCode,
+            //   city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
+            // });
+            // setWebEnageEventForAppointmentTimeSlot('Manual', slotInfo, areaSelected);
             setDisplaySchedule(false);
+            setDisplayPremiumOverlay(true);
           }}
+        />
+      )}
+      {displayPremiumOverlay && (
+        <TestPremiumSlotOverlay
+          isVisible={displayPremiumOverlay}
+          source={'Tests'}
+          heading="Confirm Your Appointment"
+          onGoBack={() => {
+            setDisplayPremiumOverlay(false), setDisplaySchedule(true);
+          }}
+          onClose={() => setDisplayPremiumOverlay(false)}
         />
       )}
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
