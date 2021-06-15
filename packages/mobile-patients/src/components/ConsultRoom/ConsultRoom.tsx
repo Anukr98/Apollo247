@@ -173,10 +173,6 @@ import {
   addVoipPushTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/addVoipPushToken';
 import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
-import {
-  preFetchSDK,
-  createHyperServiceObject,
-} from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 
 import { CircleTypeCard1 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard1';
 import { CircleTypeCard2 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard2';
@@ -829,14 +825,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   useEffect(() => {
-    preFetchSDK(currentPatient?.id);
     getPatientApiCall();
     setVaccineLoacalStorageData();
-    try {
-      createHyperServiceObject();
-    } catch (error) {
-      CommonBugFender('ErrorWhilecreatingHyperServiceObject', error);
-    }
   }, []);
 
   //for prohealth option
