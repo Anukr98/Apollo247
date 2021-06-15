@@ -325,8 +325,17 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const renderRefund = () => {
+    const isOrderModified = orderDetails?.diagnosticOrderLineItems?.find(
+      (item) => !!item?.editOrderID && item?.editOrderID
+    );
     if (!!orderLevelStatus && !_.isEmpty(orderLevelStatus) && refundStatusArr?.length > 0) {
-      return <RefundCard refundArray={refundStatusArr} />;
+      return (
+        <RefundCard
+          refundArray={refundStatusArr}
+          isModified={!!isOrderModified ? true : false}
+          totalPrice={orderDetails?.totalPrice}
+        />
+      );
     }
   };
 
