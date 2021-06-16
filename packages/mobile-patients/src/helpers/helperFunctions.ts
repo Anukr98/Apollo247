@@ -1369,7 +1369,7 @@ export const addTestsToCart = async (
     setLoading?.(true);
     const items = testPrescription?.filter((val) => val?.itemname)?.map((item) => item?.itemname);
     const formattedItemNames = items?.map((item) => item)?.join('|');
-    const searchQueries: any = await getDiagnosticDoctorPrescriptionResults(formattedItemNames, 9);
+    const searchQueries: any = await getDiagnosticDoctorPrescriptionResults(formattedItemNames, AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID);
 
     if (searchQueries?.data?.success) {
       const searchResults = searchQueries?.data?.data;
