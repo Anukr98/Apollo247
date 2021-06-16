@@ -3983,7 +3983,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             <View style={styles.bottomButtonStyle}>
               <Button
                 onPress={onPressClickMorePhoto}
-                title={'CLICK MORE PHOTO'}
+                title={string.health_records_home.clickPhotos}
                 style={styles.bottomButtonStyle}
               />
             </View>
