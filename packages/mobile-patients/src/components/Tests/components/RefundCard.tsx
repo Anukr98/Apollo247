@@ -8,34 +8,40 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 interface RefundCardProps {
   refundArray: any;
   styleObj?: any;
+  isModified?: boolean;
+  totalPrice?: number;
 }
 
 export const RefundCard: React.FC<RefundCardProps> = (props) => {
+  const { refundArray, isModified, totalPrice } = props;
   const getFormattedTime = (time: string) => {
     return moment(time).format('hh:mm A');
   };
 
   const dateToUse =
-    props.refundArray?.[0]?.status == REFUND_STATUSES.SUCCESS
-      ? props.refundArray?.[0]?.updated_at
-      : props.refundArray?.[0]?.created_at;
+    refundArray?.[0]?.status == REFUND_STATUSES.SUCCESS
+      ? refundArray?.[0]?.updated_at
+      : refundArray?.[0]?.created_at;
   const date = moment(dateToUse).format(`DD-MM-YYYY`);
   const time = getFormattedTime(dateToUse);
   const dtm = date + ', ' + time;
   const refundText =
-    props.refundArray?.[0].status == REFUND_STATUSES.SUCCESS
+    refundArray?.[0].status == REFUND_STATUSES.SUCCESS
       ? string.diagnostics.refundSuccessText
       : string.diagnostics.refundInitiateText;
   const refundProccessText =
-    props.refundArray?.[0].status == REFUND_STATUSES.SUCCESS
+    refundArray?.[0].status == REFUND_STATUSES.SUCCESS
       ? 'Refund Proccessd on: '
       : 'Refund Initiated on: ';
+
+  const refundAmountToShow =
+    !!isModified && isModified && !!totalPrice ? totalPrice : refundArray?.[0]?.amount;
 
   return (
     <>
       <View style={styles.container}>
         <Text style={styles.refundText}>
-          {refundText.replace('{{refundAmount}}', props.refundArray?.[0]?.amount)}
+          {refundText.replace('{{refundAmount}}', refundAmountToShow)}
         </Text>
         <Text style={styles.proccessDate}>
           {refundProccessText} <Text style={{ color: theme.colors.APP_GREEN }}>{dtm}</Text>
@@ -59,3 +65,7 @@ const styles = StyleSheet.create({
     color: theme.colors.SHERPA_BLUE,
   },
 });
+
+RefundCard.defaultProps = {
+  isModified: false,
+};

@@ -296,7 +296,42 @@ const styles = StyleSheet.create({
     width: '100%',
     marginVertical: 10,
   },
-  rowStyle: { flexDirection: 'row', justifyContent: 'space-between' },
+  doctorDetails: {
+    height: 105,
+    width: '100%',
+  },
+  dateSlots: {
+    height: 54,
+    width: 101,
+    borderRadius: 10,
+  },
+  totalSlots: {
+    marginLeft: 20,
+    width: 100,
+    height: 15,
+  },
+  slotsButton: {
+    ...theme.viewStyles.cardViewStyle,
+    width: 90,
+    marginRight: 8,
+    marginTop: 12,
+    height: 40,
+  },
+  rowStyle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  consultCtaStyle: {
+    ...theme.viewStyles.cardViewStyle,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 15,
+    flexDirection: 'row',
+    minHeight: 59,
+    width: width / 2 - 22,
+    marginRight: 12,
+    marginBottom: 12,
+    alignItems: 'center',
+  },
 });
 
 export const renderCovidVaccinationShimmer = () => {
@@ -734,6 +769,46 @@ export const renderCouponViewShimmer = () => {
   );
 };
 
+export const renderDoctorDetailsShimmer = (style: any) => {
+  return (
+    <ShimmerPlaceHolder
+      shimmerColors={shimmerColors}
+      LinearGradient={LinearGradient}
+      shimmerStyle={[styles.doctorDetails, style]}
+    />
+  );
+};
+
+export const renderDateSlotsShimmer = () => {
+  return (
+    <ShimmerPlaceHolder
+      shimmerColors={shimmerColors}
+      LinearGradient={LinearGradient}
+      shimmerStyle={styles.dateSlots}
+    />
+  );
+};
+
+export const renderTotalSlotsShimmer = () => {
+  return (
+    <ShimmerPlaceHolder
+      shimmerColors={shimmerColors}
+      LinearGradient={LinearGradient}
+      shimmerStyle={styles.totalSlots}
+    />
+  );
+};
+
+export const renderSlotItemShimmer = () => {
+  return (
+    <ShimmerPlaceHolder
+      shimmerColors={shimmerColors}
+      LinearGradient={LinearGradient}
+      shimmerStyle={styles.slotsButton}
+    />
+  );
+};
+
 export const renderDiagnosticWidgetShimmer = (showHeading: boolean) => {
   return (
     <View style={{ marginLeft: 16 }}>
@@ -761,5 +836,15 @@ export const renderDiagnosticWidgetHeadingShimmer = () => {
         shimmerStyle={styles.diagnosticCard2}
       />
     </View>
+  );
+};
+
+export const consultWidgetShimmer = () => {
+  return (
+    <ShimmerPlaceHolder
+      shimmerColors={shimmerColors}
+      LinearGradient={LinearGradient}
+      shimmerStyle={styles.consultCtaStyle}
+    />
   );
 };

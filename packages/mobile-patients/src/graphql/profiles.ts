@@ -270,6 +270,10 @@ export const GET_AVAILABLE_SLOTS = gql`
   query getDoctorAvailableSlots($DoctorAvailabilityInput: DoctorAvailabilityInput!) {
     getDoctorAvailableSlots(DoctorAvailabilityInput: $DoctorAvailabilityInput) {
       availableSlots
+      slotCounts {
+        date
+        slotCount
+      }
     }
   }
 `;
@@ -1395,6 +1399,10 @@ export const GET_DOCTOR_PHYSICAL_AVAILABLE_SLOTS = gql`
       DoctorPhysicalAvailabilityInput: $DoctorPhysicalAvailabilityInput
     ) {
       availableSlots
+      slotCounts {
+        date
+        slotCount
+      }
     }
   }
 `;
@@ -1842,6 +1850,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         slotDateTimeInUTC
         paymentType
         visitNo
+        invoiceURL
         labReportURL
         diagnosticOrderLineItems {
           id

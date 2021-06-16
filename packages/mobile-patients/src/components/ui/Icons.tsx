@@ -781,6 +781,9 @@ export const Emoticon4: React.FC<IconProps> = (props) => (
 export const Emoticon5: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/emoticons_13.webp')} />
 );
+export const DownloadOrange: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/download_o_3x.webp')} />
+);
 
 export const OneApollo: React.FC<IconProps> = (props) => (
   <IconBase
@@ -1477,14 +1480,6 @@ export const TickIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_tick.webp')} />
 );
 
-export const OffToggle: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/off_toggle.webp')} />
-);
-
-export const OnToggle: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/on_toggle.webp')} />
-);
-
 export const BlueTick: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_check_blue.webp')} />
 );
@@ -1926,4 +1921,28 @@ export const GreenClock: React.FC<IconProps> = (props) => (
     {...props}
     source={require('@aph/mobile-patients/src/components/ui/icons/green_clock.webp')}
   />
+);
+
+export const LocationGrey: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/location_grey.webp')} />
+);
+
+export const Sort: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/sort.webp')} />
+);
+
+export const Toggle: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/rightToggle.webp')} />
+);
+
+export const LeftToggle: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/leftToggle.webp')} />
+);
+
+export const VideoConsult: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/videoConsult.webp')} />
+);
+
+export const YellowRightArrow: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/yellowRightArrow.webp')} />
 );

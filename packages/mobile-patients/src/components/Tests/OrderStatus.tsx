@@ -278,6 +278,14 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       </View>
     );
   };
+  const renderInvoiceTimeline = () => {
+    return (
+      <View style={styles.cancel_container}>
+        <InfoIconRed />
+        <Text style={styles.cancel_text}>{string.diagnostics.invoiceTimelineText}</Text>
+      </View>
+    )
+  }
 
   return (
     <View style={{ flex: 1 }}>
@@ -290,6 +298,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
             {renderCartSavings()}
             {renderNoticeText()}
             {enable_cancelellation_policy ? renderCancelationPolicy() : null}
+            {renderInvoiceTimeline()}
             {backToHome()}
           </>
         </ScrollView>

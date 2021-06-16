@@ -19,7 +19,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA5 as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -114,6 +114,11 @@ const covidVaccineSection = {
     },
   ],
 };
+
+const homeScreenConsultationCTAs = [
+  { physicalCTA: 'Hospital Visit', backgroundColor: '#C6EAFE' },
+  { onlineCTA: 'Video Consult', backgroundColor: '#FECF62' },
+];
 
 const QA_covid_items = [2596, 2598, 2462, 2388, 2419, 2411, 2410, 2539, 2446, 2614, 2462, 2613];
 const Prod_covid_items = [2539, 2446, 2410, 2411, 2419, 2613];
@@ -246,6 +251,7 @@ const appStaticVariables = {
     },
   ],
   DIAGNOSTIC_DEFAULT_ICON: 'https://newassets.apollo247.com/organs/ic_blood.png',
+  HomeScreenConsultationCTAs: homeScreenConsultationCTAs,
 };
 
 const DEV_top_specialties = [
@@ -1352,18 +1358,18 @@ export const TestCancelReasons = {
   reasons: [
     string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
     string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
-    string.diagnostics.reasonForCancel_TestOrder.bookedByMistake,
-    string.diagnostics.reasonForCancel_TestOrder.urgentReport,
     string.diagnostics.reasonForCancel_TestOrder.anotherChannel,
+    string.diagnostics.reasonForCancel_TestOrder.urgentReport,
+    string.diagnostics.reasonForCancel_TestOrder.lesserPrice,
     string.diagnostics.reasonForCancel_TestOrder.otherReasons,
   ],
 };
 export const TestCancelReasonsPre = {
   reasons: [
     string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
-    string.diagnostics.reasonForCancel_TestOrder.bookedByMistake,
-    string.diagnostics.reasonForCancel_TestOrder.urgentReport,
     string.diagnostics.reasonForCancel_TestOrder.anotherChannel,
+    string.diagnostics.reasonForCancel_TestOrder.urgentReport,
+    string.diagnostics.reasonForCancel_TestOrder.lesserPrice,
     string.diagnostics.reasonForCancel_TestOrder.otherReasons,
   ],
 };

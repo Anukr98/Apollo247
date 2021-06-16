@@ -343,6 +343,7 @@ const styles = StyleSheet.create({
 export interface DoctorSearchProps
   extends NavigationScreenProps<{
     movedFrom?: string;
+    isOnlineConsultMode: boolean;
   }> {}
 
 export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
@@ -381,6 +382,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [savedSearchedSuggestions, setSearchSuggestions] = useState<string>('');
   const [searchedBucket, setSearchedBucket] = useState<string>('');
   const clickedBucket = useRef<string>('');
+  const isOnlineConsultMode = props.navigation.getParam('isOnlineConsultMode');
 
   useEffect(() => {
     if (!currentPatient) {
@@ -1363,6 +1365,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       specialityName: name,
       callSaveSearch: callSaveSearch,
       specialistPluralTerm,
+      isOnlineConsultMode,
     });
   };
 
@@ -1527,6 +1530,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     } else {
       props.navigation.navigate('DoctorSearchListing', {
         specialities: [item?.speciality],
+        isOnlineConsultMode,
       });
     }
   };

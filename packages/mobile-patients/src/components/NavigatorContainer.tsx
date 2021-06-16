@@ -133,6 +133,7 @@ import { OrderStatus } from '@aph/mobile-patients/src/components/Tests/OrderStat
 import { ProHealthWebView } from '@aph/mobile-patients/src/components/ProHealthWebView';
 import MyOrdersScreen from '@aph/mobile-patients/src/components/MyOrders/MyOrdersScreen';
 import { TestRatingScreen } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/TestRatingScreen';
+import { SlotSelection } from '@aph/mobile-patients/src/components/Consult/SlotSelection';
 
 import { VaccineBookingScreen } from '@aph/mobile-patients/src/components/Vaccination/VaccineBookingScreen';
 import { VaccineBookingConfirmationScreen } from '@aph/mobile-patients//src/components/Vaccination/VaccineBookingConfirmationScreen';
@@ -259,12 +260,13 @@ export enum AppRoutes {
   TestWidgetListing = 'TestWidgetListing',
   ProHealthWebView = 'ProHealthWebView',
   MyOrdersScreen = 'MyOrdersScreen',
+  TestRatingScreen = 'TestRatingScreen',
+  SlotSelection = 'SlotSelection',
   VaccineBookingScreen = 'VaccineBookingScreen',
   VaccineBookingConfirmationScreen = 'VaccineBookingConfirmationScreen',
   BookedVaccineScreen = 'BookedVaccineScreen',
   ActivateCorporateMembership = 'ActivateCorporateMembership',
   VaccineTermsAndConditions = 'VaccineTermsAndConditions',
-  TestRatingScreen = 'TestRatingScreen',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -675,6 +677,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.TestRatingScreen]: {
     screen: TestRatingScreen,
+  },
+  [AppRoutes.SlotSelection]: {
+    screen: SlotSelection,
   },
 };
 
