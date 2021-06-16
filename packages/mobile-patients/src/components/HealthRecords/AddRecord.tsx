@@ -1083,7 +1083,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const getUpdatedImageArray = () => {
     let imagesArray = [] as any;
-    const ImagesArrayList =
+    const imagesArrayList =
       recordType === MedicalRecordType.FAMILY_HISTORY
         ? familyHistoryImage
         : recordType === MedicalRecordType.MEDICALCONDITION
@@ -1091,7 +1091,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         : recordType === MedicalRecordType.ALLERGY
         ? allergyImage
         : Images;
-    ImagesArrayList?.forEach((_itemImage) => {
+    imagesArrayList?.forEach((_itemImage) => {
       updatedImageArray?.forEach((item: any) => {
         if (_itemImage?.title == item?.title) {
           let imageObj = {} as any;
