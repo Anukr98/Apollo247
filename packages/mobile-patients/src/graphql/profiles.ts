@@ -2411,6 +2411,14 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT = gql`
   }
 `;
 
+export const PHR_COVERT_TO_ZIP = gql`
+  mutation convertToZip($fileUrls: [String]!, $uhid: String!) {
+    convertToZip(fileUrls: $fileUrls, uhid: $uhid) {
+      zipUrl
+    }
+  }
+`;
+
 export const RE_UPLOAD_PRESCRIPTION = gql`
   mutation ReUploadPrescription($prescriptionInput: PrescriptionReUploadInput) {
     reUploadPrescription(prescriptionInput: $prescriptionInput) {
