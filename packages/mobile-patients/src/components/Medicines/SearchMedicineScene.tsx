@@ -359,7 +359,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       type_id,
       MaxOrderQty,
       category_id,
-      url_key,
     } = item;
     savePastSeacrh(sku, name).catch((e) => {
       aphConsole.log({ e });
@@ -384,7 +383,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         isInStock: true,
         maxOrderQty: MaxOrderQty,
         productType: type_id,
-        url_key,
       },
       asyncPincode?.pincode || pharmacyPincode!,
       addCartItem,
@@ -618,7 +616,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {});
           props.navigation.navigate(AppRoutes.ProductDetailPage, {
             sku: medicine.sku,
-            urlKey: medicine?.url_key,
             movedFrom: ProductPageViewedSource.FULL_SEARCH,
           });
         }}
@@ -695,7 +692,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {});
           props.navigation.navigate(AppRoutes.ProductDetailPage, {
             sku: medicine.sku,
-            urlKey: medicine?.url_key,
             movedFrom: ProductPageViewedSource.FULL_SEARCH,
           });
         }}
@@ -995,7 +991,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         onPress={() => {
           props.navigation.navigate(AppRoutes.ProductDetailPage, {
             sku: item.sku,
-            urlKey: item?.url_key,
             movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
           });
           resetSearchState();

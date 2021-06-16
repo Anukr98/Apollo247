@@ -3,15 +3,16 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-// ====================================================
-// GraphQL query operation: findDiagnosticSettings
-// ====================================================
 
-export interface findDiagnosticSettings_findDiagnosticSettings {
-  __typename: "findDiagnosticSettingsResult";
-  phleboETAInMinutes: number | null;
-}
+// ====================================================
+// GraphQL mutation operation: findDiagnosticSettings
+// ====================================================
 
 export interface findDiagnosticSettings {
-  findDiagnosticSettings: findDiagnosticSettings_findDiagnosticSettings;
+  __typename: "findDiagnosticSettings";
+  findDiagnosticSettings: findDiagnosticSettingsVariables;
 }
+export interface findDiagnosticSettingsVariables {
+    phleboETAInMinutes: number;
+}
+ 

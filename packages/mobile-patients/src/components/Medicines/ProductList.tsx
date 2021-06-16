@@ -72,14 +72,13 @@ export const ProductList: React.FC<Props> = ({
   } = useShoppingCart();
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
 
-  const onPress = (sku: string, urlKey: string) => {
+  const onPress = (sku: string) => {
     if (movedFrom === ProductPageViewedSource.SIMILAR_PRODUCTS) {
       navigation.replace(AppRoutes.ProductDetailPage, {
         sku,
         movedFrom,
         sectionName,
         productPageViewedEventProps,
-        urlKey,
       });
     } else {
       navigation.push(AppRoutes.ProductDetailPage, {
@@ -87,7 +86,6 @@ export const ProductList: React.FC<Props> = ({
         movedFrom,
         sectionName,
         productPageViewedEventProps,
-        urlKey,
       });
     }
   };
@@ -146,7 +144,7 @@ export const ProductList: React.FC<Props> = ({
       const props: ProductCardProps = {
         ...item,
         quantity: qty,
-        onPress: () => onPress(item.sku, item.url_key),
+        onPress: () => onPress(item.sku),
         onPressAddToCart: () => onPressAddToCart(item),
         onPressAddQty: onPressAddQty,
         onPressSubtractQty: onPressSubtractQty,

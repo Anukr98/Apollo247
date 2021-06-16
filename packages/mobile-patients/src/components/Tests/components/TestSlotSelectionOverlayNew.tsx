@@ -393,7 +393,22 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     );
   };
   const isDoneBtnDisabled = !date || !slotInfo;
-
+  const infoPanel = () => {
+    return (
+      <View style={styles.warningbox}>
+        <InfoIconRed />
+        <Text
+          style={{
+            ...theme.fonts.IBMPlexSansRegular(10),
+            color: theme.colors.LIGHT_BLUE,
+            padding: 10,
+          }}
+        >
+          Phelbo will arrive within 30 minutes of the slot time
+        </Text>
+      </View>
+    );
+  };
   const renderBottomButton = (
     <Button
       style={{ margin: 16, marginTop: 5, width: 'auto' }}
@@ -442,6 +457,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           </Text>
           <ScrollView style={styles.containerContentStyle}>
             {renderCalendarView()}
+            {infoPanel()}
             {renderSlotSelectionView()}
           </ScrollView>
           {dropDownOptions.length ? renderBottomButton : null}

@@ -42,7 +42,6 @@ import {
   postWebEngageEvent,
   getAge,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-
 import { ProfileList } from '../ui/ProfileList';
 import DeviceInfo from 'react-native-device-info';
 import {
@@ -107,9 +106,7 @@ export interface VaccineBookingScreenProps
   }> {
   cmsIdentifier: string;
   subscriptionId: string;
-  subscriptionInclusionId: string;
   excludeProfileListIds?: string[];
-  remainingVaccineSlots: number;
 }
 
 //styles
@@ -359,7 +356,6 @@ const styles = StyleSheet.create({
   cityChooser: {
     alignItems: 'center',
     marginTop: 50,
-    marginBottom: 16,
   },
   cityDropDownContainer: {
     flexDirection: 'row',
@@ -407,10 +403,7 @@ const styles = StyleSheet.create({
 export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props) => {
   const cmsIdentifier = props.navigation.getParam('cmsIdentifier');
   const subscriptionId = props.navigation.getParam('subscriptionId');
-  const subscriptionInclusionId = props.navigation.getParam('subscriptionInclusionId');
   const excludeProfileListIds = props.navigation.getParam('excludeProfileListIds');
-  const remainingVaccineSlots = props.navigation.getParam('remainingVaccineSlots');
-
   const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
   const [requestSubmissionErrorAlert, setRequestSubmissionErrorAlert] = useState<boolean>(false);
   const [vaccineSiteList, setVaccineSiteList] = useState<any>([]);
@@ -455,6 +448,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
 
   const cityList = AppConfig.Configuration.Vaccination_Cities_List || [];
   const vaccineTypeList = AppConfig.Configuration.Vaccine_Type || [];
+  const restrictToSelfVaccination = AppConfig.Configuration.Vaccine_Restrict_Self;
 
   useEffect(() => {
     fetchVaccinationHospitalSites();
@@ -575,8 +569,6 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
       dose_number:
         selectedDose == string.vaccineBooking.title_dose_1 ? DOSE_NUMBER.FIRST : DOSE_NUMBER.SECOND,
       booking_source: VACCINE_BOOKING_SOURCE.MOBILE,
-      subscription_inclusion_id: subscriptionInclusionId,
-      user_subscription_id: subscriptionId,
     };
 
     apolloVaccineClient
@@ -600,8 +592,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
           } catch (e) {
             setRequestSubmissionErrorAlert(true);
           }
-
-          postBookingConfirmationEvent(response.data?.CreateAppointment?.response?.display_id || 0);
+          postBookingConfirmationEvent(response.data?.CreateAppointment?.response?.display_id);
         } else {
           setRequestSubmissionErrorAlert(true);
         }
@@ -614,14 +605,14 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
       });
   };
 
-  const postBookingConfirmationEvent = (displayId: number) => {
+  const postBookingConfirmationEvent = (displayId: string) => {
     try {
       const eventAttributes = {
         'Customer ID': selectedPatient?.id || '',
         'Customer First Name': selectedPatient?.firstName.trim(),
         'Customer Last Name': selectedPatient?.lastName.trim(),
         'Customer UHID': selectedPatient?.uhid,
-        'Booking Id': displayId,
+        'Booking Id ': displayId,
         'Mobile Number': selectedPatient?.mobileNumber,
         'Vaccination Hospital': selectedHospitalSite,
         'Vaccination City': selectedCity,
@@ -633,8 +624,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
         'Date Time': moment(preferredDate).toDate(),
         Date: moment(preferredDate).format('DD MMM,YYYY'),
         'Vaccine Url': 'https://bit.ly/2QO9wuw',
-        Slot: selectedSlot?.session_name.toString(),
-        'Time Slot': selectedSlot?.session_name.toString(),
+        'Time Slot': selectedSlot?.session_name,
         ...(selectedVaccineType != '' && {
           'Vaccine type': getVaccineType(selectedVaccineType),
         }),
@@ -743,22 +733,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
         <VaccineDoseChooser
           menuContainerStyle={styles.cityChooser}
           onDoseChoosed={(dose) => {
-            if (dose == string.vaccineBooking.title_dose_2) {
-              showAphAlert!({
-                title: 'Alert!',
-                showCloseIcon: true,
-                onCloseIconPress: () => {
-                  hideAphAlert!();
-                },
-                description: string.vaccineBooking.dose_2_alert,
-                onPressOk: () => {
-                  hideAphAlert!();
-                  setSelectedDose(dose);
-                },
-              });
-            } else {
-              setSelectedDose(dose);
-            }
+            setSelectedDose(dose);
           }}
         >
           <View style={styles.cityDropDownContainer}>
@@ -888,7 +863,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
           availableDates.length == 0 &&
           availableDatesLoading == false ? (
             <Text style={styles.errorMessageSiteDate}>
-              {string.vaccineBooking.no_slots_available}{' '}
+              {string.vaccineBooking.no_vaccination_sites_available}{' '}
             </Text>
           ) : null}
         </HospitalChooserMaterialMenu>
@@ -1123,17 +1098,21 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
   };
 
   const setUpSelectedPatient = (_selectedPatient: any) => {
-    if (remainingVaccineSlots == 0 && _selectedPatient?.relation != 'ME') {
-      showAphAlert &&
-        showAphAlert({
-          title: 'Oops!',
-          description:
-            'You can book a vaccination slot only for yourself as per your corporate package',
-          onPressOk: () => {
-            hideAphAlert!();
-            setShowPatientListOverlay(true);
-          },
-        });
+    if (restrictToSelfVaccination) {
+      if (_selectedPatient.relation != 'ME') {
+        showAphAlert &&
+          showAphAlert({
+            title: 'Oops!',
+            description:
+              'You can book a vaccination slot only for yourself. We will enable vaccination booking for family members soon.',
+            onPressOk: () => {
+              hideAphAlert!();
+              setShowPatientListOverlay(true);
+            },
+          });
+      } else {
+        setSelectedPatient(_selectedPatient);
+      }
     } else {
       setSelectedPatient(_selectedPatient);
     }

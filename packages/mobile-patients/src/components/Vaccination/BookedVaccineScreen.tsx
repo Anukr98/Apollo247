@@ -8,7 +8,6 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { default as Moment, default as moment } from 'moment';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import DeviceInfo from 'react-native-device-info';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Props as BreadcrumbProps } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
 import {
   Text,
@@ -20,11 +19,6 @@ import {
   FlatList,
   Linking,
 } from 'react-native';
-import {
-  GetAllUserSubscriptionsWithPlanBenefitsV2,
-  GetAllUserSubscriptionsWithPlanBenefitsV2Variables,
-} from '@aph/mobile-patients/src/graphql/types/GetAllUserSubscriptionsWithPlanBenefitsV2';
-
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { renderVaccineBookingListShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -35,7 +29,6 @@ import {
   MaleIcon,
   FemaleIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
   CalendarShow,
   CovidVaccine,
@@ -48,7 +41,6 @@ import { GetAllAppointments } from '@aph/mobile-patients/src/graphql/types/GetAl
 import {
   GET_ALL_VACCINATION_APPOINTMENTS,
   GET_VACCINE_BOOKING_LIMIT,
-  GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetBenefitAvailabilityInfoByCMSIdentifier } from '@aph/mobile-patients/src/graphql/types/GetBenefitAvailabilityInfoByCMSIdentifier';
 
@@ -57,7 +49,6 @@ export interface BookedVaccineScreenProps
     breadCrumb: BreadcrumbProps['links'];
     cmsIdentifier?: string;
     subscriptionId?: string;
-    subscriptionInclusionId?: string;
     isCorporateSubscription?: boolean;
     isVaccineSubscription?: boolean;
     comingFrom?: string;
@@ -74,24 +65,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  proceedContainer: {
-    marginTop: 50,
-  },
-  poceedInfoText: {
-    ...theme.viewStyles.text('M', 13, theme.colors.SHERPA_BLUE),
-    textAlign: 'center',
-    marginHorizontal: 32,
-  },
-
-  poceedErrorText: {
-    ...theme.viewStyles.text('R', 13, '#890000'),
-    textAlign: 'center',
-    marginHorizontal: 32,
-    marginBottom: 16,
-  },
   proceedButton: {
     width: 300,
-    marginTop: 16,
+    marginTop: 50,
     marginHorizontal: 40,
     alignSelf: 'center',
     marginBottom: 24,
@@ -133,9 +109,8 @@ const styles = StyleSheet.create({
   },
   bookedUserName: {
     ...theme.viewStyles.text('R', 18, theme.colors.SKY_BLUE),
-    width: 300,
+    width: 150,
   },
-
   bookedUserPhone: {
     ...theme.viewStyles.text('R', 14, '#575F64'),
   },
@@ -180,8 +155,6 @@ const styles = StyleSheet.create({
 export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) => {
   const cmsIdentifier = props.navigation.getParam('cmsIdentifier');
   const subscriptionId = props.navigation.getParam('subscriptionId');
-  const subscriptionInclusionId = props.navigation.getParam('subscriptionInclusionId');
-
   const comingFrom = props.navigation.getParam('comingFrom');
   const [isCorporateSubscription, setCorporateSubscription] = useState<boolean>(
     props.navigation.getParam('isCorporateSubscription') || false
@@ -190,14 +163,11 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
     props.navigation.getParam('isVaccineSubscription') || false
   );
 
-  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const flatListRef = useRef<FlatList<any> | undefined | null>();
   const [loading, setLoading] = useState<boolean>(false);
   const [bookingList, setBookingList] = useState<any>([]);
   const [excludeProfileListIds, setExcludeProfileListIds] = useState<any>([]);
-  const [remainingVaccineSlots, setRemainingVaccineSlots] = useState<number>(0);
-  const [totalVaccineSlots, setTotalVaccineSlots] = useState<number>(-1);
-  const [isSelfBookingDone, setSelfBookingDone] = useState<boolean>(false);
+  const [remainingVaccineSlots, setRemainingVaccineSlots] = useState<number>(10);
 
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { authToken } = useAuth();
@@ -219,6 +189,8 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
   }, []);
 
   useEffect(() => {
+    fetchVaccinationLimit();
+
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       AsyncStorage.getItem('verifyCorporateEmailOtpAndSubscribe').then((data) => {
         if (JSON.parse(data || 'false') === true) {
@@ -226,8 +198,6 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
           setVaccineSubscription(true);
         }
         fetchAllAppointments();
-        // fetchVaccinationLimit();
-        getUserSubscriptionsWithBenefits();
       });
     });
 
@@ -237,8 +207,6 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
   }, []);
 
   useEffect(() => {
-    //console.log('check allCurrentPatients-- ', allCurrentPatients);
-
     setExcludeProfileListIds([]);
     let excludeProfileList: string[] = [];
     bookingList?.forEach((bookingItem: any) => {
@@ -248,20 +216,6 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
       ) {
         excludeProfileList.push(bookingItem?.patient_info?.uhid);
       }
-
-      allCurrentPatients?.forEach((currentPatient: any) => {
-        if (
-          currentPatient?.uhid == bookingItem?.patient_info?.uhid &&
-          currentPatient?.relation == 'ME'
-        ) {
-          if (
-            bookingItem?.status == BOOKING_STATUS.BOOKED ||
-            bookingItem?.status == BOOKING_STATUS.VERIFIED
-          ) {
-            setSelfBookingDone(true);
-          }
-        }
-      });
     });
     setExcludeProfileListIds(excludeProfileList);
   }, [bookingList]);
@@ -290,48 +244,22 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
       });
   };
 
-  const getUserSubscriptionsWithBenefits = () => {
-    const mobile_number = g(currentPatient, 'mobileNumber');
-    mobile_number &&
-      client
-        .query<
-          GetAllUserSubscriptionsWithPlanBenefitsV2,
-          GetAllUserSubscriptionsWithPlanBenefitsV2Variables
-        >({
-          query: GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
-          variables: { mobile_number },
-          fetchPolicy: 'no-cache',
-        })
-        .then((data) => {
-          const groupPlans = g(
-            data,
-            'data',
-            'GetAllUserSubscriptionsWithPlanBenefitsV2',
-            'response'
-          );
-
-          if (groupPlans) {
-            Object.keys(groupPlans).forEach((plan_name) => {
-              if (plan_name !== 'APOLLO' && plan_name !== 'HDFC') {
-                groupPlans[plan_name]?.forEach((plan: any) => {
-                  const benefits = plan.benefits;
-                  if (benefits && benefits.length) {
-                    benefits.forEach((item: any) => {
-                      const ctaAction = g(item, 'cta_action');
-                      if (
-                        g(ctaAction, 'meta', 'action') === string.common.CorporateVaccineBenefit
-                      ) {
-                        setRemainingVaccineSlots(item?.attribute_type?.remaining);
-                        setTotalVaccineSlots(item?.attribute_type?.total);
-                      }
-                    });
-                  }
-                });
-              }
-            });
-          }
-        })
-        .catch((error) => {});
+  const fetchVaccinationLimit = () => {
+    client
+      .query<GetBenefitAvailabilityInfoByCMSIdentifier>({
+        query: GET_VACCINE_BOOKING_LIMIT,
+        variables: {
+          user_subscription_id: subscriptionId || '',
+          cms_identifier: cmsIdentifier || '',
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((response) => {
+        setRemainingVaccineSlots(
+          response?.data?.GetBenefitAvailabilityInfoByCMSIdentifier?.response?.remaining
+        );
+      })
+      .catch((error) => {});
   };
 
   const showLoadingAlert = () => {
@@ -438,41 +366,22 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
 
   const renderNewBooking = (checkForRemaininVaccineSlots: boolean) => {
     if (checkForRemaininVaccineSlots) {
-      return (
-        <View style={styles.proceedContainer}>
-          {totalVaccineSlots != -1 ? (
-            <Text style={styles.poceedInfoText}>
-              Your corporate has made a provision to book for a total of {totalVaccineSlots} family
-              members only.
-            </Text>
-          ) : null}
-
-          <Button
-            title={string.vaccineBooking.title_new_booking}
-            style={styles.proceedButton}
-            disabled={checkBookSlotByFamilySlotAvaialbilty()}
-            onPress={() => {
-              try {
-                goToPreviousScreen();
-                props.navigation.navigate(AppRoutes.VaccineBookingScreen, {
-                  cmsIdentifier: cmsIdentifier,
-                  subscriptionId: subscriptionId,
-                  subscriptionInclusionId: subscriptionInclusionId,
-                  excludeProfileListIds: excludeProfileListIds,
-                  remainingVaccineSlots: remainingVaccineSlots,
-                });
-              } catch (e) {}
-            }}
-          />
-          {checkBookSlotByFamilySlotAvaialbilty() ? (
-            <Text style={styles.poceedErrorText}>
-              Sorry! You have used up all your alloted booking slots. In case there has been some
-              issue, you will have to cancel one of your bookings and make a new booking in its
-              place. The second booking may not guarantee the same slot.{' '}
-            </Text>
-          ) : null}
-        </View>
-      );
+      return remainingVaccineSlots > 0 ? (
+        <Button
+          title={string.vaccineBooking.title_new_booking}
+          style={styles.proceedButton}
+          onPress={() => {
+            try {
+              goToPreviousScreen();
+              props.navigation.navigate(AppRoutes.VaccineBookingScreen, {
+                cmsIdentifier: cmsIdentifier,
+                subscriptionId: subscriptionId,
+                excludeProfileListIds: excludeProfileListIds,
+              });
+            } catch (e) {}
+          }}
+        />
+      ) : null;
     } else {
       return (
         <Button
@@ -484,29 +393,12 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
               props.navigation.navigate(AppRoutes.VaccineBookingScreen, {
                 cmsIdentifier: cmsIdentifier,
                 subscriptionId: subscriptionId,
-                subscriptionInclusionId: subscriptionInclusionId,
                 excludeProfileListIds: excludeProfileListIds,
-                remainingVaccineSlots: remainingVaccineSlots,
               });
             } catch (e) {}
           }}
         />
       );
-    }
-  };
-
-  const checkBookSlotByFamilySlotAvaialbilty = () => {
-    //check for isSelfBookingDone-- if yes --> then let the proceed
-    //check for isSelfBookingDone-  if no --->then check for remainingSlots
-    // if remainingSlots>0 then enable , else disable and show sorry message
-    if (isSelfBookingDone) {
-      if (remainingVaccineSlots > 0) {
-        return false; //enable button
-      } else {
-        return true; //disable button
-      }
-    } else {
-      return false; //enable button
     }
   };
 
@@ -613,14 +505,7 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
           <View style={styles.bookedUserInfo}>
             <Text style={styles.bookedUserName}>
               {bookingItem?.patient_info?.firstName} {bookingItem?.patient_info?.lastName}
-              {bookingItem?.patient_info?.relation != undefined &&
-              bookingItem?.patient_info?.relation != 'ME'
-                ? ' | ' +
-                  bookingItem?.patient_info?.relation?.[0].toUpperCase() +
-                  bookingItem?.patient_info?.relation?.substring(1).toLowerCase()
-                : ''}
             </Text>
-
             {bookingItem?.display_id && (
               <Text style={styles.bookedUserPhone}>{bookingItem?.display_id}</Text>
             )}
@@ -634,10 +519,6 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
                   bookingItem?.status == BOOKING_STATUS.REJECTED
                     ? '#890000'
                     : '#00B38E',
-              },
-              {
-                alignSelf: bookingItem?.patient_info?.relation != 'ME' ? 'flex-end' : 'flex-start',
-                marginBottom: bookingItem?.patient_info?.relation != 'ME' ? -8 : 0,
               },
             ]}
           >
@@ -708,12 +589,6 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
   return (
     <SafeAreaView style={theme.viewStyles.container}>
       {renderHeader(props)}
-
-      {/* 
-      renderEnrollOnCowin happens for 
-           isCorporateSubscription- true
-           isVaccineSubscription--false
-       */}
 
       {isCorporateSubscription == false ? (
         renderRetailCustomerView()

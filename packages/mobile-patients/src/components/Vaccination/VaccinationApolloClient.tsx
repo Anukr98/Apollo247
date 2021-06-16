@@ -18,11 +18,6 @@ export const vaccinationADMINBaseUrl =
     ? 'https://vaccination-admin.apollo247.com/'
     : 'https://vaccination-qa1-admin.apollo247.com/';
 
-export const vaccineBookingPDFBaseUrl =
-  AppConfig.APP_ENV == AppEnv.PROD
-    ? 'https://www.apollo247.com/vaccine-booking/'
-    : 'https://qathreepatients.apollo247.com/vaccine-booking/';
-
 export const vaccinationApiRoutes = {
   graphql: () => `${vaccinationApiBaseUrl}/graphql`,
 };

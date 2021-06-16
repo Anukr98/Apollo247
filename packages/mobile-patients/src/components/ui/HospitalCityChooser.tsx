@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     width: '80%',
     marginHorizontal: -10,
     borderRadius: 10,
-    maxHeight: 500,
+    maxHeight: 300,
     marginTop: 50,
     flexDirection: 'column',
     ...theme.viewStyles.shadowStyle,
@@ -182,7 +182,7 @@ export const HospitalCityChooser: React.FC<HospitalCityChooserProps> = (props) =
 
   const renderCityList = () => {
     return (
-      <View style={{ marginBottom: 16 }}>
+      <View>
         {/* <Text style={styles.stateLabel}>State</Text> */}
         {renderCityListItem()}
         {/* <Text style={styles.stateLabel}>City Name</Text>
@@ -210,9 +210,7 @@ export const HospitalCityChooser: React.FC<HospitalCityChooserProps> = (props) =
           <ActivityIndicator animating={true} size="large" color="green" />
         </View>
       ) : (
-        <ScrollView style={{ flexGrow: 1, marginBottom: 10 }} bounces={false}>
-          {renderCityList()}
-        </ScrollView>
+        <ScrollView>{renderCityList()}</ScrollView>
       )}
     </Menu>
   );

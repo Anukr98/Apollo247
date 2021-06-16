@@ -46,7 +46,7 @@ import {
   ShareBlue,
   ViewIcon,
   Cross,
-  InfoIconRed,
+  InfoIconRed
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NavigationScreenProps } from 'react-navigation';
 import {
@@ -75,7 +75,6 @@ import {
   DIAGNOSTIC_ORDER_FAILED_STATUS,
   TestCancelReasons,
   TestReschedulingReasons,
-  TestCancelReasonsPre,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -114,7 +113,6 @@ import {
   getOrderPhleboDetailsBulkVariables,
 } from '@aph/mobile-patients/src/graphql/types/getOrderPhleboDetailsBulk';
 import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
-type orderList = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList;
 export interface YourOrdersTestProps extends NavigationScreenProps {
   showHeader?: boolean;
 }
@@ -122,7 +120,6 @@ export interface YourOrdersTestProps extends NavigationScreenProps {
 export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const RESCHEDULE_REASONS = TestReschedulingReasons.reasons;
   const CANCELLATION_REASONS = TestCancelReasons.reasons;
-  const PRE_CANCELLATION_REASONS = TestCancelReasonsPre.reasons;
   const CANCEL_RESCHEDULE_OPTION = [
     string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
     string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
@@ -281,7 +278,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             mobileNumber: currentPatient && currentPatient.mobileNumber,
             // reverting for the time being
             // paginated: true,
-            // limit: 10,
+            // limit: 10, 
             // offset: currentOffset,
           },
           fetchPolicy: 'no-cache',
@@ -474,7 +471,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       const getVisitId = order?.visitNo;
       getPatientPrismMedicalRecordsApi(
         client,
-        !!order?.patientId ? order?.patientId : currentPatient?.id,
+        currentPatient?.id,
         [MedicalRecordType.TEST_REPORT],
         'Diagnostics'
       )
@@ -856,19 +853,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const renderCancelReasons = () => {
     const selectedOrderRescheduleCount = selectedOrder?.rescheduleCount;
-    let selectedOrderTime = selectedOrder?.slotDateTimeInUTC;
-    selectedOrderTime = moment(selectedOrderTime);
-    const current = moment();
-    const cancelReasonArray = moment(current).isAfter(selectedOrderTime)
-      ? CANCELLATION_REASONS
-      : PRE_CANCELLATION_REASONS;
     return (
       <View>
         <Text style={styles.overlayHeadingText}>
           {string.diagnostics.reasonForCancellationText}
         </Text>
         <View style={styles.reasonsContainer}>
-          {cancelReasonArray?.map((item: string, index: number) => {
+          {CANCELLATION_REASONS?.map((item: string, index: number) => {
             return (
               <>
                 <TouchableOpacity
@@ -932,7 +923,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             style={styles.buttonStyle}
             disabled={
               selectCancelReason == string.diagnostics.reasonForCancel_TestOrder.otherReasons
-                ? cancelReasonComment?.trim() == '' || cancelReasonComment?.length < 10
+                ? cancelReasonComment?.trim() == ''
                 : selectCancelReason == ''
             }
             onPress={() => _onPressCancelNow()}
@@ -951,7 +942,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         <Text style={styles.cancel_text}>{cancelellation_policy_text}</Text>
       </View>
     );
-  };
+  }
   const renderRescheduleCancelOptions = () => {
     const selectedOrderRescheduleCount = selectedOrder?.rescheduleCount;
     const setRescheduleCount = !!selectedOrderRescheduleCount
@@ -1169,10 +1160,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       ) => item?.itemName
     );
 
-    const getSlotStartTime = (slot: string /*07:00-07:30 */) => {
-      return moment((slot?.split('-')[0] || '').trim(), 'hh:mm');
-    };
-
     return (
       <OrderTestCard
         orderId={order?.displayId}
@@ -1192,11 +1179,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         ordersData={order?.diagnosticOrderLineItems!}
         showPretesting={showPreTesting!}
         dateTime={!!order?.slotDateTimeInUTC ? order?.slotDateTimeInUTC : order?.diagnosticDate}
-        slotTime={
-          !!order?.slotDateTimeInUTC
-            ? order?.slotDateTimeInUTC
-            : getSlotStartTime(order?.slotTimings)
-        }
+        slotTime={!!order?.slotDateTimeInUTC ? order?.slotDateTimeInUTC : order?.slotTimings}
         isPrepaid={order?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT}
         isCancelled={currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
         cancelledReason={
@@ -1219,7 +1202,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         onPressReschedule={() => _onPressTestReschedule(order)}
         onPressViewDetails={() => _navigateToYourTestDetails(order, true)}
         onPressViewReport={() => {
-          _onPressViewReportAction(order);
+          setSnackbarState(false);
+          setActiveOrder(order);
+          setIsViewReport(true);
+          setDisplayViewReport(true);
+          // _onPressViewReport(order)
         }}
         phelboObject={order?.phleboDetailsObj}
         onPressRatingStar={(star) => {
@@ -1239,19 +1226,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   function _onPressAddTest() {}
 
-  function _onPressViewReportAction(order: orderList) {
-    if (!!order?.labReportURL && order?.labReportURL != '') {
-      setActiveOrder(order);
-      setDisplayViewReport(true);
-    } else if (!!order?.visitNo && order?.visitNo != '') {
-      //directly open the phr section
-      fetchTestReportResult(order);
-    } else {
-      props.navigation.navigate(AppRoutes.HealthRecordsHome);
-    }
-  }
-
-  function _onPressViewReport(order: orderList) {
+  function _onPressViewReport(
+    order: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList
+  ) {
+    const visitId = order?.visitNo;
     const appointmentDetails = !!order?.slotDateTimeInUTC
       ? order?.slotDateTimeInUTC
       : order?.diagnosticDate;
@@ -1260,7 +1238,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       / /g,
       '_'
     );
-    downloadLabTest(order?.labReportURL!, appointmentDate, patientName);
+    if (!!order?.labReportURL && order?.labReportURL != '') {
+      downloadLabTest(order?.labReportURL, appointmentDate, patientName);
+    } else if (visitId) {
+      fetchTestReportResult(order);
+    } else {
+      props.navigation.navigate(AppRoutes.HealthRecordsHome);
+    }
   }
 
   async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string) {
@@ -1416,7 +1400,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             container={{ borderBottomWidth: 0 }}
             onPressLeftIcon={() => {
               if (fromOrderSummary) {
-                handleBack();
+                handleBack()
               } else {
                 props.navigation.goBack();
               }
@@ -1516,11 +1500,11 @@ const styles = StyleSheet.create({
     padding: 10,
     margin: 10,
     alignSelf: 'center',
-    elevation: 2,
+    elevation: 2
   },
   cancel_text: {
     ...theme.viewStyles.text('M', 12, '#01475b', 0.6, 16),
-    width: '90%',
+    width:'90%',
     marginHorizontal: 5,
   },
   overlayHeadingText: {

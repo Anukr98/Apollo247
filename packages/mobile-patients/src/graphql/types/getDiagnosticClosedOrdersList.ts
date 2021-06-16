@@ -26,24 +26,17 @@ export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_clo
   itemObj: getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders_diagnosticOrderLineItems_itemObj | null;
 }
 
-export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders_attributesObj {
-  __typename: "AttributesObj";
-  reportGenerationTime: string | null;
-  preTestingRequirement: string | null;
-}
-
 export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders {
   __typename: "DiagnosticOrders";
   id: string;
   patientId: string;
-  displayId: number;
+  paymentOrderId: string | null;
   orderStatus: DIAGNOSTIC_ORDER_STATUS;
   slotDateTimeInUTC: any | null;
   labReportURL: string | null;
   paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
   patientObj: getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders_patientObj | null;
   diagnosticOrderLineItems: (getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders_diagnosticOrderLineItems | null)[] | null;
-  attributesObj: getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders_attributesObj | null;
 }
 
 export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList {

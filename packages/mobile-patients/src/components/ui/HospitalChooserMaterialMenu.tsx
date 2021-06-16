@@ -290,7 +290,7 @@ export const HospitalChooserMaterialMenu: React.FC<HospitalChooserMaterialMenuPr
           <ActivityIndicator animating={true} size="large" color="green" />
         </View>
       ) : (
-        <ScrollView style={{ flexGrow: 1, marginBottom: 10 }} bounces={false}>
+        <ScrollView>
           <>
             {renderFilterStrip()}
             {renderDataList()}

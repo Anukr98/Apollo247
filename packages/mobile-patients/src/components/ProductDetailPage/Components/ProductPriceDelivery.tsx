@@ -159,10 +159,10 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
 
   const renderDeliveryDateTime = () => {
     return !!deliveryError ? (
-      <Text style={theme.viewStyles.text('R', 14, '#01475b')}>{deliveryError}</Text>
+      <Text style={theme.viewStyles.text('R', 10, '#01475b')}>{deliveryError}</Text>
     ) : !isInStock ? (
       <Text
-        style={theme.viewStyles.text('R', 14, '#01475b')}
+        style={theme.viewStyles.text('R', 10, '#01475b')}
       >{`Sorry, this item is out of stock in your area.`}</Text>
     ) : !!deliveryTime ? (
       <Text style={theme.viewStyles.text('M', 14, '#01475b', 1, 20, 0)}>

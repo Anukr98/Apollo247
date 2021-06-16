@@ -37,7 +37,6 @@ export interface ShoppingCartItem {
   isFreeCouponProduct?: boolean;
   applicable?: boolean;
   circleCashbackAmt?: number;
-  url_key?: string;
 }
 
 export interface CouponProducts {
@@ -64,6 +63,7 @@ export interface PhysicalPrescription {
 export interface EPrescription {
   id: string;
   uploadedUrl: string;
+  uploadedUrlArray: any;
   forPatient: string;
   date: string;
   medicines: string;

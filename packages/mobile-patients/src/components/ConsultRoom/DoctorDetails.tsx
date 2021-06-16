@@ -385,7 +385,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     defaultCirclePlan,
     showCircleSubscribed,
   } = useShoppingCart();
-  const chatDays = doctorDetails?.chatDays;
+
   const isPayrollDoctor = doctorDetails?.doctorType === DoctorType.PAYROLL;
   const isPhysical =
     doctorDetails &&
@@ -669,7 +669,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       <ConsultTypeCard
         isOnlineSelected={onlineSelected}
         DoctorId={doctorId}
-        chatDays={chatDays}
+        chatDays={g(doctorDetails, 'chatDays') ? g(doctorDetails, 'chatDays')!.toString() : '7'}
         DoctorName={doctorDetails ? doctorDetails.fullName : ''}
         nextAppointemntOnlineTime={availableTime}
         nextAppointemntInPresonTime={physicalAvailableTime}
@@ -805,8 +805,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         doctorDetails.firstName +
         ' ' +
         string.consultType.follow_up_chat_message.replace(
-          '{0} days',
-          `${chatDays} day${chatDays && Number(chatDays) > 1 ? 's' : ''}`
+          '{0}',
+          g(doctorDetails, 'chatDays') ? g(doctorDetails, 'chatDays')!.toString() : '7'
         );
 
       return (
@@ -871,12 +871,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 )}
               </View>
               <View style={styles.separatorStyle} />
-              {follow_up_chat_message_visibility && chatDays && Number(chatDays) > 0 ? (
+              {follow_up_chat_message_visibility && (
                 <View style={styles.followUpChatMessageViewStyle}>
                   <CTGrayChat style={styles.followUpChatImageStyle} />
                   <Text style={styles.followUpChatMessageStyle}>{followUpChatMessage}</Text>
                 </View>
-              ) : null}
+              )}
               <View
                 style={[
                   styles.onlineConsultView,

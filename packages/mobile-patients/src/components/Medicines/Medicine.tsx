@@ -873,7 +873,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   : 'PL',
               mou: item?.mou,
               sell_online: 1,
-              url_key: item?.urlKey,
             } as MedicineProduct)
         );
       if (formattedRecommendedProducts?.length >= 5) {
@@ -1748,7 +1747,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       thumbnail,
       MaxOrderQty,
       category_id,
-      url_key,
     } = item;
     setItemsLoading({ ...itemsLoading, [sku]: true });
     addPharmaItemToCart(
@@ -1770,7 +1768,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         maxOrderQty: MaxOrderQty,
         productType: type_id,
         circleCashbackAmt: 0,
-        url_key,
       },
       asyncPincode?.pincode || pharmacyPincode!,
       addCartItem,
@@ -1812,7 +1809,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         onPress={() => {
           CommonLogEvent(AppRoutes.Medicine, 'Search suggestion Item');
           props.navigation.navigate(AppRoutes.ProductDetailPage, {
-            urlKey: item?.url_key,
             sku: item.sku,
             movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
           });

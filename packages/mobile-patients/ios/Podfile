@@ -5,7 +5,7 @@ $RNFirebaseAsStaticFramework = true
 
 target 'ApolloPatient' do
   # Comment the next line if you don't want to use dynamic frameworks
-  use_frameworks!
+   use_frameworks!
 
   # Pods for ApolloPatient
   
@@ -55,6 +55,7 @@ target 'ApolloPatient' do
   pod 'youtube-ios-player-helper', '~> 0.1.4'
   pod 'TwilioChatClient', '2.6.6'
   pod 'JWTDecode', '~> 2.4'
+  pod 'OpenTok', '2.17.0'
   pod 'Stylish'
  
   pod 'rn-fetch-blob', :path => '../node_modules/rn-fetch-blob'
@@ -109,11 +110,11 @@ target 'ApolloPatient' do
 
   pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
 
+  pod 'RNShare', :path => '../node_modules/react-native-share/RNShare.podspec'
+
   pod 'RNSVG', :path => '../node_modules/react-native-svg'
   pod 'ReactNativeWebPFormat', :path => '../node_modules/react-native-webp-format'
   pod 'react-native-appsflyer', :path => '../node_modules/react-native-appsflyer'
-
-  pod 'react-native-html-to-pdf', :path => '../node_modules/react-native-html-to-pdf'
 
   target 'NotificationService' do
       platform :ios, '10.0'
@@ -131,27 +132,3 @@ end
 pre_install do |installer|
   Pod::Installer::Xcode::TargetValidator.send(:define_method, :verify_no_static_framework_transitive_dependencies) {}
 end
-
-# post_install do |installer|
-#   ## Fix for XCode 12.5
-#   find_and_replace("../node_modules/react-native/React/CxxBridge/RCTCxxBridge.mm",
-#   "_initializeModules:(NSArray<id<RCTBridgeModule>> *)modules", "_initializeModules:(NSArray<Class> *)modules")
-
-#   find_and_replace("../node_modules/react-native/React/CxxBridge/RCTCxxBridge.mm",
-#   "_initializeModules:(NSArray<id<RCTBridgeModule>> *)modules", "_initializeModules:(NSArray<Class> *)modules")
-#   find_and_replace("../node_modules/react-native/ReactCommon/turbomodule/core/platform/ios/RCTTurboModuleManager.mm",
-#   "RCTBridgeModuleNameForClass(module))", "RCTBridgeModuleNameForClass(Class(module)))")
-# end
-
-# def find_and_replace(dir, findstr, replacestr)
-#   Dir[dir].each do |name|
-#       text = File.read(name)
-#       replace = text.gsub(findstr,replacestr)
-#       if text != replace
-#           puts "Fix: " + name
-#           File.open(name, "w") { |file| file.puts replace }
-#           STDOUT.flush
-#       end
-#   end
-#   Dir[dir + '*/'].each(&method(:find_and_replace))
-# end
