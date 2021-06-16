@@ -1761,7 +1761,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               })}
               <Spearator style={{ marginTop: 12, marginBottom: 12 }} />
               {renderPrices('Subtotal', previousSubTotal)}
-              {renderPrices('Home collection Charges', previousCollectionCharges)}
+              {renderPrices('Collection and hygiene charges', previousCollectionCharges)}
               {renderPrices('Total', previousTotalCharges, true)}
             </>
           ) : null}
@@ -1848,7 +1848,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           )}
           {
             <View style={styles.rowSpaceBetweenStyle}>
-              <Text style={[styles.blueTextStyle, { width: '60%' }]}>Home Collection Charges</Text>
+              <Text style={[styles.blueTextStyle, { width: '60%' }]}>Collection and hygiene charges</Text>
               <View style={{ flexDirection: 'row' }}>
                 <Text
                   style={[

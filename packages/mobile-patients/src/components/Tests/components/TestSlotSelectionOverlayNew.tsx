@@ -180,12 +180,6 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
       inactiveImage: <Afternoon />,
       title: 'Afternoon',
     },
-    {
-      tab: 2,
-      activeImage: <NightSelected />,
-      inactiveImage: <Night />,
-      title: 'Evening',
-    },
   ];
 
   let dropDownOptions = uniqueSlots?.map((val) => ({
@@ -202,13 +196,6 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     //for afternoon 12-17
     dropDownOptions = dropDownOptions.filter((item) => {
       if (time24(item) >= '12' && time24(item) < '17') {
-        return item;
-      }
-    });
-  } else if (selectedDayTab == 2) {
-    //for evening 17 - 6
-    dropDownOptions = dropDownOptions.filter((item) => {
-      if (time24(item) >= '17' && time24(item) < '06') {
         return item;
       }
     });
