@@ -1180,7 +1180,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         }
         showAddTest={
           order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED ||
-          DIAGNOSTIC_CONFIRMED_STATUS.includes(order?.orderStatus)
+          order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED
         }
         ordersData={order?.diagnosticOrderLineItems!}
         showPretesting={showPreTesting!}
