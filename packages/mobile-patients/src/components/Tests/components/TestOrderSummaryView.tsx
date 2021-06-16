@@ -537,7 +537,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
         onPress={() => props.onPressDownloadInvoice()}
       >
         <Text style={styles.yellowText}>DOWNLOAD INVOICE</Text>
-        <DownloadOrange style={{ width: 14, height: 14, marginHorizontal: 10 }} />
+        <DownloadOrange style={styles.downloadOrange} />
       </TouchableOpacity>
     );
   };
@@ -583,6 +583,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     marginTop: height * 0.04, //0.22
   },
+  downloadOrange:{ width: 14, height: 14, marginHorizontal: 10 },
   hideText: {
     ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13.5 : 16),
     color: '#02475b',
