@@ -112,7 +112,7 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
   return (
     <View>
       <View style={styles.flexRow}>
-        {renderQuantity()}
+        {isSellOnline && renderQuantity()}
         {!!packSize && !!productForm && !!packForm && renderPackSize()}
       </View>
       {isSellOnline && !isBanned && renderCartCTA()}
