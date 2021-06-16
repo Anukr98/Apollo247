@@ -1667,6 +1667,7 @@ export const GET_RECOMMENDED_PRODUCTS_LIST = gql`
         categoryName
         status
         mou
+        urlKey
       }
     }
   }
@@ -2823,14 +2824,6 @@ export const ADD_PATIENT_LAB_TEST_RECORD = gql`
   }
 `;
 
-export const PHR_COVERT_TO_ZIP = gql`
-  mutation convertToZip($fileUrls: [String]!, $uhid: String!) {
-    convertToZip(fileUrls: $fileUrls, uhid: $uhid) {
-      zipUrl
-    }
-  }
-`;
-
 export const GET_PRISM_AUTH_TOKEN = gql`
   query getPrismAuthToken($uhid: String!) {
     getPrismAuthToken(uhid: $uhid) {
@@ -2884,9 +2877,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            file_Url
-            # content
+            content
             # byteContent
           }
         }
@@ -2912,9 +2903,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            file_Url
-            # content
+            content
             # byteContent
           }
           hospital_name
@@ -2976,9 +2965,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            file_Url
-            # content
+            content
             # byteContent
             # dateCreated
           }
@@ -3003,9 +2990,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            file_Url
-            # content
+            content
             # byteContent
             # dateCreated
           }
@@ -3032,9 +3017,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            file_Url
-            # content
+            content
             # byteContent
             # dateCreated
           }
@@ -3061,9 +3044,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            file_Url
-            # content
+            content
             # byteContent
             # dateCreated
           }
@@ -3130,9 +3111,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            file_Url
-            # content
+            content
             # byteContent
             # dateCreated
           }
@@ -3157,11 +3136,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            index
-            file_Url
-            # content
-            # byteContent
-            # dateCreated
+            content
+            byteContent
+            dateCreated
           }
         }
       }
@@ -3172,18 +3149,6 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
 export const DELETE_HEALTH_RECORD_FILES = gql`
   mutation deleteHealthRecordFiles($deleteHealthRecordFilesInput: DeleteHealthRecordFilesInput) {
     deleteHealthRecordFiles(deleteHealthRecordFilesInput: $deleteHealthRecordFilesInput) {
-      status
-    }
-  }
-`;
-
-export const DELETE_MULTIPLE_HEALTH_RECORD_FILES = gql`
-  mutation deleteMultipleHealthRecordFiles(
-    $deleteMultipleHealthRecordFilesInput: DeleteMultipleHealthRecordFilesInput
-  ) {
-    deleteMultipleHealthRecordFiles(
-      deleteMultipleHealthRecordFilesInput: $deleteMultipleHealthRecordFilesInput
-    ) {
       status
     }
   }
@@ -3643,17 +3608,11 @@ export const UPLOAD_CHAT_FILE = gql`
 `;
 
 export const ADD_CHAT_DOCUMENTS = gql`
-  mutation addChatDocument(
-    $appointmentId: ID!
-    $documentPath: String
-    $prismFileId: String
-    $fileName: String
-  ) {
+  mutation addChatDocument($appointmentId: ID!, $documentPath: String, $prismFileId: String) {
     addChatDocument(
       appointmentId: $appointmentId
       documentPath: $documentPath
       prismFileId: $prismFileId
-      fileName: $fileName
     ) {
       id
       documentPath
@@ -4859,12 +4818,11 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql`
       openOrders {
         id
         patientId
-        paymentOrderId
+        displayId
         orderStatus
         slotDateTimeInUTC
         labReportURL
         paymentType
-        paymentOrderId
         patientObj {
           firstName
           lastName
@@ -4874,6 +4832,10 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql`
             inclusions
             testPreparationData
           }
+        }
+        attributesObj {
+          reportGenerationTime
+          preTestingRequirement
         }
       }
     }
@@ -4908,12 +4870,11 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
       closedOrders {
         id
         patientId
-        paymentOrderId
+        displayId
         orderStatus
         slotDateTimeInUTC
         labReportURL
         paymentType
-        paymentOrderId
         patientObj {
           firstName
           lastName
@@ -4923,6 +4884,10 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
             inclusions
             testPreparationData
           }
+        }
+        attributesObj {
+          reportGenerationTime
+          preTestingRequirement
         }
       }
     }
@@ -5149,6 +5114,7 @@ export const GET_VACCINATION_APPOINMENT_DETAILS = gql`
       message
       code
       response {
+        id
         display_id
         dose_number
         patient_info {
@@ -5166,6 +5132,7 @@ export const GET_VACCINATION_APPOINMENT_DETAILS = gql`
           session_name
           start_date_time
           vaccine_type
+          station_name
           resource_detail {
             name
             street_line1
@@ -5210,6 +5177,7 @@ export const GET_ALL_VACCINATION_APPOINTMENTS = gql`
           age
           gender
           uhid
+          relation
         }
         status
         payment_type

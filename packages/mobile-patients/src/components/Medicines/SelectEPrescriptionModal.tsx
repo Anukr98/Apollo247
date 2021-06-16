@@ -592,7 +592,6 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
           let urls = '';
           let prismImages = '';
           let fileName = '';
-          let urlsArray = [];
           if (type === 'lab') {
             date = data?.date;
             name = data?.labTestName || '-';
@@ -622,11 +621,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
             });
             message = message.slice(0, -1);
             prismImages = data?.id;
-            urls =
-              data?.testResultFiles?.length > 0
-                ? data?.testResultFiles?.map((item) => item?.file_Url)?.join(',')
-                : ''; //prismImages;
-            urlsArray = data?.testResultFiles || [];
+            urls = data?.fileUrl ? data?.fileUrl : ''; //prismImages;
           } else if (type === 'prescription') {
             date = data?.date;
             name = data?.prescriptionName || '-';
@@ -639,11 +634,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
             message += `---------------\n`;
             message = message.slice(0, -1);
             prismImages = data?.id;
-            urls =
-              data?.prescriptionFiles?.length > 0
-                ? data?.prescriptionFiles?.map((item) => item?.file_Url)?.join(',')
-                : ''; //prismImages;
-            urlsArray = data?.prescriptionFiles || [];
+            urls = data?.fileUrl ? data?.fileUrl : ''; //prismImages;
           } else if (type === 'medical') {
             date = data?.testDate;
             name = data?.testName;
@@ -698,7 +689,6 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
             prismPrescriptionFileId: prismImages,
             message: message,
             healthRecord: true,
-            uploadedUrlArray: urlsArray,
           } as EPrescription);
         }
       });
