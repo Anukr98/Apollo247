@@ -2,7 +2,6 @@ import {
   AppCommonDataContextProps,
   LocationData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import DeviceInfo from 'react-native-device-info';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   getPlaceInfoByLatLng,
@@ -42,7 +41,6 @@ import {
   NativeModules,
   PermissionsAndroid,
   ToastAndroid,
-  AlertIOS,
 } from 'react-native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import Permissions from 'react-native-permissions';
@@ -64,12 +62,7 @@ import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import ApolloClient from 'apollo-client';
 import { saveSearch, saveSearchVariables } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import {
-  searchDiagnosticsByCityID,
-  searchDiagnosticsByCityIDVariables,
-} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
-import {
   SAVE_SEARCH,
-  SEARCH_DIAGNOSTICS_BY_CITY_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
@@ -1411,7 +1404,6 @@ export const addTestsToCart = async (
       return [];
     }
   } catch (error) {
-    aphConsole.log({ error });
     CommonBugFender('helperFunctions_addTestsToCart', error);
     setLoading?.(false);
     throw 'error';
