@@ -245,6 +245,7 @@ const appStaticVariables = {
       cod: true,
     },
   ],
+  DIAGNOSTIC_DEFAULT_ICON: 'https://newassets.apollo247.com/organs/ic_blood.png',
 };
 
 const DEV_top_specialties = [
@@ -719,7 +720,7 @@ const ConfigurationQA3 = {
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://qapatients.apollo247.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
-  CONSULT_COUPON_BASE_URL: 'https://validcoupon.apollo247.com',
+  CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
   COVID_VACCINE_TRACKER_URL: 'https://www.apollo247.com/covid-vaccine-tracker',
@@ -770,7 +771,7 @@ const ConfigurationQA5 = {
     'https://qa5patients.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://qa5patients.apollo247.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
-  CONSULT_COUPON_BASE_URL: 'https://validcoupon.apollo247.com',
+  CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
   KAVACH_URL:
     'https://qa5patients.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
@@ -1282,6 +1283,12 @@ export const DIAGNOSITC_PHELBO_TRACKING_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
 ];
 
+export const DIAGNOSTIC_SHOW_OTP_STATUS = [
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
+];
+
 export const TestsNewFeedbackData = {
   options: [
     'Wrong Report recieved',
@@ -1345,18 +1352,18 @@ export const TestCancelReasons = {
   reasons: [
     string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
     string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
-    string.diagnostics.reasonForCancel_TestOrder.bookedByMistake,
-    string.diagnostics.reasonForCancel_TestOrder.urgentReport,
     string.diagnostics.reasonForCancel_TestOrder.anotherChannel,
+    string.diagnostics.reasonForCancel_TestOrder.urgentReport,
+    string.diagnostics.reasonForCancel_TestOrder.lesserPrice,
     string.diagnostics.reasonForCancel_TestOrder.otherReasons,
   ],
 };
 export const TestCancelReasonsPre = {
   reasons: [
     string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
-    string.diagnostics.reasonForCancel_TestOrder.bookedByMistake,
-    string.diagnostics.reasonForCancel_TestOrder.urgentReport,
     string.diagnostics.reasonForCancel_TestOrder.anotherChannel,
+    string.diagnostics.reasonForCancel_TestOrder.urgentReport,
+    string.diagnostics.reasonForCancel_TestOrder.lesserPrice,
     string.diagnostics.reasonForCancel_TestOrder.otherReasons,
   ],
 };

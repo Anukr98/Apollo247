@@ -1,19 +1,9 @@
 import React from 'react';
-import {
-  ActivityIndicator,
-  View,
-  StyleProp,
-  ViewStyle,
-  Text,
-  StyleSheet,
-  Dimensions,
-  Image,
-} from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Image } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { createShimmerPlaceholder } from 'react-native-shimmer-placeholder';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CovidOrange } from '@aph/mobile-patients/src/components/ui/Icons';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { cardWidth } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultedDoctorsCard';
 
 const { width, height } = Dimensions.get('window');
@@ -291,6 +281,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     width: '100%',
     marginVertical: 10,
+  },
+  rowStyle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
 });
 
@@ -706,6 +700,36 @@ export const couponViewShimmer = () => {
         shimmerColors={shimmerColors}
         LinearGradient={LinearGradient}
         shimmerStyle={styles.couponBlock}
+      />
+    </View>
+  );
+};
+
+export const renderDiagnosticWidgetShimmer = (showHeading: boolean) => {
+  return (
+    <View style={{ marginLeft: 16 }}>
+      {showHeading && renderDiagnosticWidgetHeadingShimmer()}
+      <ShimmerPlaceHolder
+        shimmerColors={shimmerColors}
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.diagnosticsCardBottom}
+      />
+    </View>
+  );
+};
+
+export const renderDiagnosticWidgetHeadingShimmer = () => {
+  return (
+    <View style={styles.rowStyle}>
+      <ShimmerPlaceHolder
+        LinearGradient={LinearGradient}
+        shimmerColors={shimmerColors}
+        shimmerStyle={styles.diagnosticCard2}
+      />
+      <ShimmerPlaceHolder
+        LinearGradient={LinearGradient}
+        shimmerColors={shimmerColors}
+        shimmerStyle={styles.diagnosticCard2}
       />
     </View>
   );

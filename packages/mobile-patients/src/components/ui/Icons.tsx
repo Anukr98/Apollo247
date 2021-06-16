@@ -781,6 +781,9 @@ export const Emoticon4: React.FC<IconProps> = (props) => (
 export const Emoticon5: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/emoticons_13.webp')} />
 );
+export const DownloadOrange: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/download_o_3x.webp')} />
+);
 
 export const OneApollo: React.FC<IconProps> = (props) => (
   <IconBase
@@ -1904,4 +1907,11 @@ export const CovidVaccine: React.FC<IconProps> = (props) => (
 
 export const VaccineBookingFailed: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/vacc_booking_failed.webp')} />
+);
+
+export const WidgetLiverIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/ic_liver_icon.webp')}
+  />
 );

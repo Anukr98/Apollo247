@@ -1,5 +1,6 @@
-import { LocationData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import DeviceInfo from 'react-native-device-info';
+import {
+  LocationData,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   getPlaceInfoByLatLng,
@@ -10,6 +11,7 @@ import {
   MedicineOrderBilledItem,
   availabilityApi247,
   validateConsultCoupon,
+  getDiagnosticDoctorPrescriptionResults,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -23,6 +25,7 @@ import {
   MedicalRecordType,
   MEDICINE_TIMINGS,
   MEDICINE_CONSUMPTION_DURATION,
+  TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from 'react-native-geolocation-service';
@@ -37,7 +40,6 @@ import {
   NativeModules,
   PermissionsAndroid,
   ToastAndroid,
-  AlertIOS,
 } from 'react-native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import Permissions from 'react-native-permissions';
@@ -59,12 +61,7 @@ import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import ApolloClient from 'apollo-client';
 import { saveSearch, saveSearchVariables } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import {
-  searchDiagnosticsByCityID,
-  searchDiagnosticsByCityIDVariables,
-} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
-import {
   SAVE_SEARCH,
-  SEARCH_DIAGNOSTICS_BY_CITY_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
@@ -963,7 +960,7 @@ export const mhdMY = (
 };
 
 export const isEmptyObject = (object: Object) => {
-  return Object.keys(object).length === 0;
+  return Object.keys(object)?.length === 0 && object?.constructor === Object;
 };
 
 export const findAddrComponents = (
@@ -1294,58 +1291,45 @@ export const addTestsToCart = async (
   pincode?: string,
   setLoading?: UIElementsContextProps['setLoading']
 ) => {
-  const searchQuery = (name: string, cityId: string) =>
-    apolloClient.query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
-      query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
-      context: {
-        headers: {
-          source: Platform.OS,
-          source_version: DeviceInfo.getVersion(),
-        },
-      },
-      variables: {
-        searchText: name,
-        cityID: 9, //will always check for hyderabad, so that items gets added to cart
-      },
-      fetchPolicy: 'no-cache',
-    });
   const detailQuery = async (itemId: string) =>
     await getPackageInclusions(apolloClient, [Number(itemId)]);
-
   try {
     setLoading?.(true);
-    const items = testPrescription?.filter((val) => val?.itemname).map((item) => item?.itemname);
+    const items = testPrescription?.filter((val) => val?.itemname)?.map((item) => item?.itemname);
+    const formattedItemNames = items?.map((item) => item)?.join('|');
+    const searchQueries: any = await getDiagnosticDoctorPrescriptionResults(formattedItemNames, AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID);
 
-    const searchQueries = Promise.all(items?.map((item) => searchQuery(item!, '9')));
-    const searchQueriesData = (await searchQueries)
-      ?.map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
-      // .filter((item, index) => g(item, 'itemName')! == items[index])
-      ?.filter((item) => !!item);
-    const detailQueries = Promise.all(
-      searchQueriesData?.map((item) => detailQuery(`${item.itemId}`))
-    );
-    const detailQueriesData = (await detailQueries)?.map(
-      (item: any) => g(item, 'data', 'getInclusionsOfMultipleItems', 'inclusions', 'length') || 1 // updating testsIncluded
-    );
-    setLoading?.(false);
-    const finalArray: DiagnosticsCartItem[] = Array.from({
-      length: searchQueriesData?.length,
-    }).map((_, index) => {
-      const s = searchQueriesData?.[index];
-      const testIncludedCount = detailQueriesData?.[index];
-      return {
-        id: `${s?.itemId}`,
-        name: s?.itemName,
-        price: s?.rate,
-        specialPrice: undefined,
-        mou: testIncludedCount,
-        thumbnail: '',
-        collectionMethod: s?.collectionType,
-        inclusions: s?.inclusions == null ? [Number(s?.itemId)] : s?.inclusions,
-      } as DiagnosticsCartItem;
-    });
-
-    return finalArray;
+    if (searchQueries?.data?.success) {
+      const searchResults = searchQueries?.data?.data;
+      const searchQueriesData = searchResults?.filter((item: any) => !!item);
+      const detailQueries = Promise.all(
+        searchQueriesData?.map((item: any) => detailQuery(`${item.itemId}`))
+      );
+      const detailQueriesData = (await detailQueries)?.map(
+        (item: any) => g(item, 'data', 'getInclusionsOfMultipleItems', 'inclusions', 'length') || 1 // updating testsIncluded
+      );
+      setLoading?.(false);
+      const finalArray: DiagnosticsCartItem[] = Array.from({
+        length: searchQueriesData?.length,
+      }).map((_, index) => {
+        const s = searchQueriesData?.[index];
+        const testIncludedCount = detailQueriesData?.[index];
+        return {
+          id: `${s?.diagnostic_item_id}`,
+          name: s?.diagnostic_item_name,
+          price: 0,
+          specialPrice: undefined,
+          mou: testIncludedCount,
+          thumbnail: '',
+          collectionMethod: TEST_COLLECTION_TYPE.HC,
+          inclusions: s?.inclusions == null ? [Number(s?.diagnostic_item_id)] : s?.inclusions,
+        } as DiagnosticsCartItem;
+      });
+      return finalArray;
+    } else {
+      setLoading?.(false);
+      return [];
+    }
   } catch (error) {
     CommonBugFender('helperFunctions_addTestsToCart', error);
     setLoading?.(false);

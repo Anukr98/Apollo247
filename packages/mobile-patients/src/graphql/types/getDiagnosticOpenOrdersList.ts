@@ -35,8 +35,8 @@ export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrd
 export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders {
   __typename: "DiagnosticOrders";
   id: string;
-  patientId: string;
   displayId: number;
+  patientId: string;
   orderStatus: DIAGNOSTIC_ORDER_STATUS;
   slotDateTimeInUTC: any | null;
   labReportURL: string | null;
