@@ -1400,7 +1400,6 @@ export const addTestsToCart = async (
       return finalArray;
     } else {
       setLoading?.(false);
-      handleGraphQlError(string.common.tryAgainLater);
       return [];
     }
   } catch (error) {
