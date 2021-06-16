@@ -89,8 +89,8 @@ import {
   BannerDisplayType,
   ProcessDiagnosticHCOrderInput,
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
-  OrderInput,
   PAYMENT_MODE,
+  OrderInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { insertMessageVariables } from '@aph/mobile-patients/src/graphql/types/insertMessage';
 import {
@@ -153,7 +153,7 @@ import {
   updateAppointment,
 } from '@aph/mobile-patients/src/graphql/types/updateAppointment';
 import { savePhleboFeedbackVariables, savePhleboFeedback_savePhleboFeedback } from '@aph/mobile-patients/src/graphql/types/savePhleboFeedback';
-import { processDiagnosticHCOrder, processDiagnosticHCOrderVariables } from '@aph/mobile-patients/src/graphql/types/processDiagnosticHCOrder';
+import {  processDiagnosticHCOrder, processDiagnosticHCOrderVariables } from '@aph/mobile-patients/src/graphql/types/processDiagnosticHCOrder';
 import { createOrder, createOrderVariables } from '@aph/mobile-patients/src/graphql/types/createOrder';
 
 export const getNextAvailableSlots = (

@@ -1,10 +1,9 @@
 import { Platform } from 'react-native';
-import { ConsultMode, PLAN } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { AddressObj, ConsultMode, PLAN } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { DIAGNOSTIC_GROUP_PLAN, GooglePlacesType } from '@aph/mobile-patients/src/helpers/apiCalls';
 import moment from 'moment';
 import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import DeviceInfo from 'react-native-device-info';
-import { Emoticon1, Emoticon2, Emoticon3, Emoticon4, Emoticon5 } from '@aph/mobile-patients/src/components/ui/Icons';
 
 export const getValuesArray = (arr: any) => {
   const finalArr = arr.map((item: any) => item.name);
@@ -334,7 +333,7 @@ export const getReviewTag = (star: number) => {
     case 5:
       return 'EXCELLENT';
     default:
-      return ''
+      return '';
       break;
   }
 };

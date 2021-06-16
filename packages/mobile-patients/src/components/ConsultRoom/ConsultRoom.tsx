@@ -2235,9 +2235,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           : null;
     }
 
-    const patientDetails = allPatients
+    const patientDetails_primary = allPatients
       ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
       : null;
+
+    const patientDetails = currentPatient;
 
     const fullName = `${g(patientDetails, 'firstName') || ''}%20${g(patientDetails, 'lastName') ||
       ''}`;
