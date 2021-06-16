@@ -81,6 +81,7 @@ import {
   Alert,
   Linking,
   FlatList,
+  Modal,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
@@ -169,6 +170,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { OrderCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/OrderCardCarousel';
 import { PrescriptionCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/PrescriptionCardCarousel';
 import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
+import { DiagnosticLocation } from './components/DiagnosticLocation';
 
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
@@ -1295,6 +1297,32 @@ export const Tests: React.FC<TestsProps> = (props) => {
     });
   };
 
+  const [showLocationPopup, setLocationPopup] = useState<boolean>(false);
+
+  const renderLocationSearch = () => {
+    return (
+      <Modal
+        animationType="slide"
+        transparent={false}
+        visible={showLocationPopup}
+        onRequestClose={() => {
+          setLocationPopup(false);
+        }}
+        onDismiss={() => {
+          setLocationPopup(false);
+        }}
+      >
+        <SafeAreaView style={{ flex: 1 }}>
+          <DiagnosticLocation goBack={handleLocationBack} />
+        </SafeAreaView>
+      </Modal>
+    );
+  };
+
+  function handleLocationBack() {
+    setLocationPopup(false);
+  }
+
   const formatText = (text: string, count: number) =>
     text.length > count ? `${text.slice(0, count)}...` : text;
 
@@ -1324,7 +1352,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
           <TouchableOpacity
             style={{ marginTop: -7.5 }}
             onPress={() => {
-              showAccessLocationPopup(addresses, false);
+              // showAccessLocationPopup(addresses, false);
+              setLocationPopup(true);
             }}
           >
             <Text numberOfLines={1} style={styles.deliverToText}>
@@ -2447,6 +2476,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             </View>
           </>
         )}
+        {showLocationPopup && renderLocationSearch()}
       </SafeAreaView>
       {showbookingStepsModal ? renderBookingStepsModal() : null}
     </View>
