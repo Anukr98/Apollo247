@@ -878,10 +878,6 @@ export const SearchDarkPhrIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/ic_search_dark_phr.webp')} />
 );
 
-export const ShareBlueIcon: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/share_icon.webp')} />
-);
-
 export const ShareYellowDocIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/ic_share_yellow.webp')} />
 );

@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.cardViewStyle,
     backgroundColor: '#f7f8f5',
     padding: 16,
-    marginTop: 10,
+    marginTop: 5,
     marginBottom: 10,
   },
   calendarArrowContainer: {
@@ -55,13 +55,13 @@ const styles = StyleSheet.create({
 
   monthDayContainer_Selected: {
     paddingHorizontal: 10,
-    paddingVertical: 18,
+    paddingVertical: 10,
     backgroundColor: '#00B38E',
     borderRadius: 10,
   },
   monthDayContainer_UnSelected: {
     paddingHorizontal: 10,
-    paddingVertical: 18,
+    paddingVertical: 10,
   },
 
   monthDate_Unavailable: {
@@ -102,7 +102,6 @@ const styles = StyleSheet.create({
   },
   cityChooser: {
     alignItems: 'center',
-    marginTop: 50,
   },
   cityDropDownContainer: {
     flexDirection: 'row',
@@ -181,6 +180,17 @@ export const HospitalCalendarChooser: React.FC<HospitalCalendarChooserProps> = (
         isAvailable: props.availableDates.includes(newDayString),
         dateString: newDayString,
       });
+
+      if (
+        props.availableDates != undefined &&
+        props.availableDates.length > 0 &&
+        (props.availableDates[0] != undefined || props.availableDates[0] != '') &&
+        newDayString == props.availableDates[0]
+      ) {
+        setSelectedDateIndex(day);
+        props.onDateChoosed(props.availableDates[0]);
+        setSelectedSlot(undefined);
+      }
     }
     setMonthDates(arrDays);
   };

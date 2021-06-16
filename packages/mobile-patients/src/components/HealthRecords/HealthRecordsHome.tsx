@@ -1749,7 +1749,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           onPressBack: onBackArrowPressed,
         });
       case MedicalRecordType.TEST_REPORT:
-        return props.navigation.navigate(AppRoutes.TestReportViewScreen, {
+        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
           healthrecordId: healthrecordId,
           healthRecordType: MedicalRecordType.TEST_REPORT,
           labResults: true,

@@ -23,8 +23,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
-  index: string | null;
-  file_Url: string | null;
+  content: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response {
@@ -60,8 +59,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
-  index: string | null;
-  file_Url: string | null;
+  content: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_prescriptions_response {
@@ -126,8 +124,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
-  index: string | null;
-  file_Url: string | null;
+  content: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_hospitalizations_response {
@@ -165,8 +162,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
-  index: string | null;
-  file_Url: string | null;
+  content: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalBills_response {
@@ -196,8 +192,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
-  index: string | null;
-  file_Url: string | null;
+  content: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalInsurances_response {
@@ -230,8 +225,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
-  index: string | null;
-  file_Url: string | null;
+  content: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalConditions_response {
@@ -313,8 +307,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
-  index: string | null;
-  file_Url: string | null;
+  content: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_allergies_response {
@@ -348,8 +341,9 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
-  index: string | null;
-  file_Url: string | null;
+  content: string | null;
+  byteContent: string | null;
+  dateCreated: number | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_familyHistory_response {
