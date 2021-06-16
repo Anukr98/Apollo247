@@ -643,6 +643,7 @@
   "health_records_home": {
     "description": "Find all your health record(s) & prescription(s) in one place.",
     "view_consult": "VIEW CONSULT",
+    "clickPhotos": "CLICK MORE PHOTOS",
     "order_medicine": "ORDER MEDICINES",
     "order_medicine_msg": "Try our Express Delivery in 2-4 hours",
     "order_test": "ORDER TESTS",

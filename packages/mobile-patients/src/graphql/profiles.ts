@@ -2298,6 +2298,14 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT = gql`
   }
 `;
 
+export const PHR_COVERT_TO_ZIP = gql`
+  mutation convertToZip($fileUrls: [String]!, $uhid: String!) {
+    convertToZip(fileUrls: $fileUrls, uhid: $uhid) {
+      zipUrl
+    }
+  }
+`;
+
 export const RE_UPLOAD_PRESCRIPTION = gql`
   mutation ReUploadPrescription($prescriptionInput: PrescriptionReUploadInput) {
     reUploadPrescription(prescriptionInput: $prescriptionInput) {
@@ -2764,7 +2772,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            file_Url
+            # content
             # byteContent
           }
         }
@@ -2790,7 +2800,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            file_Url
+            # content
             # byteContent
           }
           hospital_name
@@ -2852,7 +2864,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            file_Url
+            # content
             # byteContent
             # dateCreated
           }
@@ -2877,7 +2891,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            file_Url
+            # content
             # byteContent
             # dateCreated
           }
@@ -2904,7 +2920,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            file_Url
+            # content
             # byteContent
             # dateCreated
           }
@@ -2931,7 +2949,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            file_Url
+            # content
             # byteContent
             # dateCreated
           }
@@ -2998,7 +3018,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            file_Url
+            # content
             # byteContent
             # dateCreated
           }
@@ -3023,9 +3045,11 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
-            byteContent
-            dateCreated
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
           }
         }
       }
@@ -3036,6 +3060,18 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
 export const DELETE_HEALTH_RECORD_FILES = gql`
   mutation deleteHealthRecordFiles($deleteHealthRecordFilesInput: DeleteHealthRecordFilesInput) {
     deleteHealthRecordFiles(deleteHealthRecordFilesInput: $deleteHealthRecordFilesInput) {
+      status
+    }
+  }
+`;
+
+export const DELETE_MULTIPLE_HEALTH_RECORD_FILES = gql`
+  mutation deleteMultipleHealthRecordFiles(
+    $deleteMultipleHealthRecordFilesInput: DeleteMultipleHealthRecordFilesInput
+  ) {
+    deleteMultipleHealthRecordFiles(
+      deleteMultipleHealthRecordFilesInput: $deleteMultipleHealthRecordFilesInput
+    ) {
       status
     }
   }
@@ -3495,11 +3531,17 @@ export const UPLOAD_CHAT_FILE = gql`
 `;
 
 export const ADD_CHAT_DOCUMENTS = gql`
-  mutation addChatDocument($appointmentId: ID!, $documentPath: String, $prismFileId: String) {
+  mutation addChatDocument(
+    $appointmentId: ID!
+    $documentPath: String
+    $prismFileId: String
+    $fileName: String
+  ) {
     addChatDocument(
       appointmentId: $appointmentId
       documentPath: $documentPath
       prismFileId: $prismFileId
+      fileName: $fileName
     ) {
       id
       documentPath
@@ -4730,10 +4772,6 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql`
             inclusions
             testPreparationData
           }
-        }
-        attributesObj {
-          reportGenerationTime
-          preTestingRequirement
         }
       }
     }

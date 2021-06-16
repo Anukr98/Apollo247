@@ -1062,6 +1062,13 @@ export interface DeleteHealthRecordFilesInput {
   recordId?: string | null;
 }
 
+export interface DeleteMultipleHealthRecordFilesInput {
+  fileIndexArray?: (number | null)[] | null;
+  patientId: string;
+  recordType: MedicalRecordType;
+  recordId?: string | null;
+}
+
 export interface DeletePatientPrismMedicalRecordInput {
   id?: string | null;
   patientId: string;
