@@ -321,6 +321,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
+  consultCtaStyle: {
+    ...theme.viewStyles.cardViewStyle,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 15,
+    flexDirection: 'row',
+    minHeight: 59,
+    width: width / 2 - 22,
+    marginRight: 12,
+    marginBottom: 12,
+    alignItems: 'center',
+  },
 });
 
 export const renderCovidVaccinationShimmer = () => {
@@ -825,5 +836,15 @@ export const renderDiagnosticWidgetHeadingShimmer = () => {
         shimmerStyle={styles.diagnosticCard2}
       />
     </View>
+  );
+};
+
+export const consultWidgetShimmer = () => {
+  return (
+    <ShimmerPlaceHolder
+      shimmerColors={shimmerColors}
+      LinearGradient={LinearGradient}
+      shimmerStyle={styles.consultCtaStyle}
+    />
   );
 };

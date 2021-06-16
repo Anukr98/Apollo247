@@ -894,6 +894,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Non_Cart_Delivery_Text',
       PROD: 'Non_Cart_Delivery_Text',
     },
+    HomeScreenConsultationCTAs: {
+      QA: 'Home_Screen_Consultation_CTAs_QA',
+      PROD: 'Home_Screen_Consultation_CTAs_Prod',
+    },
     Mininum_Cart_Values: {
       QA: 'QA_Mininum_Cart_Values',
       PROD: 'Mininum_Cart_Values',
@@ -1002,6 +1006,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) => JSON.parse(config.getString(key)) || AppConfig.Configuration.COVID_VACCINE_SECTION
       );
       covidVaccineCtaV2 && setCovidVaccineCtaV2!(covidVaccineCtaV2);
+
+      setAppConfig('HomeScreenConsultationCTAs', 'HomeScreenConsultationCTAs', (key) =>
+        JSON.parse(config.getString(key))
+      );
 
       const loginSection = getRemoteConfigValue(
         'Login_Section_Key',
