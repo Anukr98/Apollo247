@@ -872,51 +872,33 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         }}
       >
         <ScrollView>
-          {file_name && file_name.toLowerCase().endsWith('.pdf') ? (
-            <TouchableOpacity
-              activeOpacity={1}
-              style={styles.imageViewStyle}
-              onPress={() => {
-                setShowPDF(true);
-                setPdfFileUrl(data?.fileUrl);
-                setFileNamePDF(file_name);
-              }}
-            >
-              <Pdf
-                key={data?.fileUrl}
-                source={{ uri: data?.fileUrl }}
-                style={styles.pdfStyle}
-                singlePage
-              />
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => {
-                props.navigation.navigate(AppRoutes.ImageSliderScreen, {
-                  images: [data.fileUrl],
-                  heading: file_name || 'Image',
-                });
-              }}
-              style={{ marginHorizontal: 20, marginBottom: 15, marginTop: 15 }}
-            >
-              <Image
-                placeholderStyle={{
-                  height: 425,
-                  width: '100%',
-                  alignItems: 'center',
-                  backgroundColor: 'transparent',
+          {imagesArray?.map((item, index) => {
+            const file_name = item?.fileName || '';
+            const file_Url = item?.file_Url || '';
+            return file_name && file_name.toLowerCase().endsWith('.pdf') ? (
+              <TouchableOpacity
+                activeOpacity={1}
+                style={styles.imageViewStyle}
+                onPress={() => {
+                  setShowPDF(true);
+                  setPdfFileUrl(file_Url);
+                  setFileNamePDF(file_name);
                 }}
-                PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
-                source={{ uri: data.fileUrl }}
-                style={{
-                  width: '100%',
-                  height: 425,
+              >
+                <Pdf key={file_Url} source={{ uri: file_Url }} style={styles.pdfStyle} singlePage />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={() => {
+                  props.navigation.navigate(AppRoutes.ImageSliderScreen, {
+                    images: [file_Url],
+                    heading: file_name || 'Image',
+                  });
                 }}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
-          )}
+              ></TouchableOpacity>
+            );
+          })}
         </ScrollView>
       </View>
     );
