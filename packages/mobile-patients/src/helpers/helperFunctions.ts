@@ -13,6 +13,7 @@ import {
   MedicineOrderBilledItem,
   availabilityApi247,
   validateConsultCoupon,
+  getDiagnosticDoctorPrescriptionResults,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -26,6 +27,7 @@ import {
   MedicalRecordType,
   MEDICINE_TIMINGS,
   MEDICINE_CONSUMPTION_DURATION,
+  TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from 'react-native-geolocation-service';
@@ -1368,59 +1370,48 @@ export const addTestsToCart = async (
   pincode?: string,
   setLoading?: UIElementsContextProps['setLoading']
 ) => {
-  const searchQuery = (name: string, cityId: string) =>
-    apolloClient.query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
-      query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
-      context: {
-        headers: {
-          source: Platform.OS,
-          source_version: DeviceInfo.getVersion(),
-        },
-      },
-      variables: {
-        searchText: name,
-        cityID: AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID, //will always check for hyderabad, so that items gets added to cart
-      },
-      fetchPolicy: 'no-cache',
-    });
   const detailQuery = async (itemId: string) =>
     await getPackageInclusions(apolloClient, [Number(itemId)]);
-
   try {
     setLoading?.(true);
-    const items = testPrescription?.filter((val) => val?.itemname).map((item) => item?.itemname);
+    const items = testPrescription?.filter((val) => val?.itemname)?.map((item) => item?.itemname);
+    const formattedItemNames = items?.map((item) => item)?.join('|');
+    const searchQueries: any = await getDiagnosticDoctorPrescriptionResults(formattedItemNames, 9);
 
-    const searchQueries = Promise.all(items?.map((item) => searchQuery(item!, '9')));
-    const searchQueriesData = (await searchQueries)
-      ?.map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
-      // .filter((item, index) => g(item, 'itemName')! == items[index])
-      ?.filter((item) => !!item);
-    const detailQueries = Promise.all(
-      searchQueriesData?.map((item) => detailQuery(`${item.itemId}`))
-    );
-    const detailQueriesData = (await detailQueries)?.map(
-      (item: any) => g(item, 'data', 'getInclusionsOfMultipleItems', 'inclusions', 'length') || 1 // updating testsIncluded
-    );
-    setLoading?.(false);
-    const finalArray: DiagnosticsCartItem[] = Array.from({
-      length: searchQueriesData?.length,
-    }).map((_, index) => {
-      const s = searchQueriesData?.[index];
-      const testIncludedCount = detailQueriesData?.[index];
-      return {
-        id: `${s?.itemId}`,
-        name: s?.itemName,
-        price: s?.rate,
-        specialPrice: undefined,
-        mou: testIncludedCount,
-        thumbnail: '',
-        collectionMethod: s?.collectionType,
-        inclusions: s?.inclusions == null ? [Number(s?.itemId)] : s?.inclusions,
-      } as DiagnosticsCartItem;
-    });
-
-    return finalArray;
+    if (searchQueries?.data?.success) {
+      const searchResults = searchQueries?.data?.data;
+      const searchQueriesData = searchResults?.filter((item: any) => !!item);
+      const detailQueries = Promise.all(
+        searchQueriesData?.map((item: any) => detailQuery(`${item.itemId}`))
+      );
+      const detailQueriesData = (await detailQueries)?.map(
+        (item: any) => g(item, 'data', 'getInclusionsOfMultipleItems', 'inclusions', 'length') || 1 // updating testsIncluded
+      );
+      setLoading?.(false);
+      const finalArray: DiagnosticsCartItem[] = Array.from({
+        length: searchQueriesData?.length,
+      }).map((_, index) => {
+        const s = searchQueriesData?.[index];
+        const testIncludedCount = detailQueriesData?.[index];
+        return {
+          id: `${s?.diagnostic_item_id}`,
+          name: s?.diagnostic_item_name,
+          price: 0,
+          specialPrice: undefined,
+          mou: testIncludedCount,
+          thumbnail: '',
+          collectionMethod: TEST_COLLECTION_TYPE.HC,
+          inclusions: s?.inclusions == null ? [Number(s?.diagnostic_item_id)] : s?.inclusions,
+        } as DiagnosticsCartItem;
+      });
+      return finalArray;
+    } else {
+      setLoading?.(false);
+      handleGraphQlError(string.common.tryAgainLater);
+      return [];
+    }
   } catch (error) {
+    aphConsole.log({ error });
     CommonBugFender('helperFunctions_addTestsToCart', error);
     setLoading?.(false);
     throw 'error';
