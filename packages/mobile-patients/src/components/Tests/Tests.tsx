@@ -357,9 +357,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
   useEffect(() => {
     let getLocationDetails = !!asyncPincode
       ? asyncPincode
-      : !!pharmacyLocation
-      ? pharmacyLocation!
-      : locationDetails!;
+      : !!locationDetails
+      ? locationDetails
+      : pharmacyLocation!;
     if (getLocationDetails?.pincode !== asyncDiagnosticPincode?.pincode) {
       setDiagnosticLocation?.(getLocationDetails);
       setAsyncDiagnosticPincode?.(getLocationDetails);
@@ -1986,7 +1986,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   } added to your cart`
                 : string.common.uhOh,
             description: unAvailableItems
-              ? `Below items are added to your cart: \n${testAdded} \n Search for the remaining diagnositc tests and add to the cart.`
+              ? `Below items are added to your cart: \n${testAdded} \nSearch for the remaining diagnositc tests and add to the cart.`
               : `Below items are added to your cart: \n${testAdded}`,
             onPressOk: () => {
               _navigateToTestCart();

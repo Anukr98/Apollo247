@@ -1212,3 +1212,27 @@ export const getDiagnosticCartItemReportGenDetails = (
     },
   });
 };
+
+export const getDiagnosticDoctorPrescriptionResults = (
+  itemNames: string,
+  cityId?: number
+): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getSearchResults = `${baseurl}/diagnostic/diagnosticdoctoritemsearch`;
+  const obj = {
+    keyword: itemNames,
+      city: cityId
+  }
+  return Axios.post(
+    getSearchResults,
+    {
+      keyword: itemNames,
+      city: cityId
+    },
+    {
+      headers: {
+        Authorization: config.DRUPAL_CONFIG[1],
+      },
+    }
+  );
+};

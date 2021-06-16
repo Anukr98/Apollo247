@@ -583,7 +583,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                   } added to your cart`
                 : string.common.uhOh,
             description: unAvailableItems
-              ? `Below items are added to your cart: \n${testAdded} \n Search for the remaining diagnositc tests and add to the cart.`
+              ? `Below items are added to your cart: \n${testAdded} \nSearch for the remaining diagnositc tests and add to the cart.`
               : `Below items are added to your cart: \n${testAdded}`,
             onPressOk: () => {
               _navigateToTestCart();
