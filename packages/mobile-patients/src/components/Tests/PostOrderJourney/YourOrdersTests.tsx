@@ -1087,7 +1087,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   function performNavigation(order: any, tab: boolean, refundArray?: any) {
     setLoading?.(false);
-    props.navigation.navigate(AppRoutes.TestOrderDetails, {
+    props.navigation.push(AppRoutes.TestOrderDetails, {
       orderId: order?.id,
       setOrders: (orders: orderList[]) => setOrders(orders),
       selectedOrder: order,
