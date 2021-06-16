@@ -123,6 +123,7 @@ const styles = StyleSheet.create({
   checkboxViewStyle: {
     flexDirection: 'row',
     marginVertical: 5,
+    alignItems: 'center',
   },
   checkboxTextStyle: {
     ...theme.viewStyles.text('M', 15, '#02475b'),
@@ -132,6 +133,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
+    height: 40,
   },
   // menu Column - left
   menuColumn: {
@@ -141,7 +143,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.CARD_BG,
   },
   menuItem: {
-    paddingVertical: 21,
+    height: 60,
     paddingRight: 12,
     paddingLeft: 30,
     justifyContent: 'space-between',
@@ -173,7 +175,10 @@ const styles = StyleSheet.create({
   availabilityTextStyle: {
     ...theme.viewStyles.text('M', 15, '#02475b'),
   },
-  //end
+  searchTextInput: {
+    ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE),
+    marginLeft: 10,
+  },
 });
 
 export interface FilterSceneProps {
@@ -242,7 +247,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
         <View style={styles.searchInputStyles}>
           <SearchIcon />
           <TextInput
-            style={{ marginLeft: 14 }}
+            style={styles.searchTextInput}
             placeholder={'Search'}
             onChangeText={(searchTerm) => {
               setSearchTerm(searchTerm);
