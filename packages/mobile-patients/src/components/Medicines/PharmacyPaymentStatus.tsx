@@ -143,6 +143,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     props.navigation.getParam('substitutionTime') || 0
   );
   const [showSubstituteConfirmation, setShowSubstituteConfirmation] = useState<boolean>(false);
+  const isSplitCart: boolean = orders?.length > 1 ? true : false;
 
   useEffect(() => {
     if (!!substituteTime && showSubstituteMessage) {
@@ -738,7 +739,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
               onPress={() => {
                 const params: updateMedicineOrderSubstitutionVariables = {
                   transactionId: transId,
-                  orderId: transId,
+                  orderId: isSplitCart ? null : transId,
                   substitution: SUBSTITUTION_RESPONSE.OK,
                 };
                 updateOrderSubstitution(params);
@@ -755,7 +756,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
               onPress={() => {
                 const params: updateMedicineOrderSubstitutionVariables = {
                   transactionId: transId,
-                  orderId: transId,
+                  orderId: isSplitCart ? null : transId,
                   substitution: SUBSTITUTION_RESPONSE.NOT_OK,
                 };
                 updateOrderSubstitution(params);
