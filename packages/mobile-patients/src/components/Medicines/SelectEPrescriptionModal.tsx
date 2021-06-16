@@ -21,10 +21,10 @@ import {
   CommonLogEvent,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {
-  GET_PAST_CONSULTS_PRESCRIPTIONS_BY_MOBILE,
-  GET_PRESCRIPTIONS_BY_MOBILE_NUMBER,
-} from '@aph/mobile-patients/src/graphql/profiles';
+// import {
+//   // GET_PAST_CONSULTS_PRESCRIPTIONS_BY_MOBILE,
+//   // GET_PRESCRIPTIONS_BY_MOBILE_NUMBER,
+// } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getLinkedProfilesPastConsultsAndPrescriptionsByMobile,
   getLinkedProfilesPastConsultsAndPrescriptionsByMobileVariables,
@@ -225,32 +225,35 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     }
   }, [props.selectedEprescriptionIds]);
 
-  const { data, loading, error } = useQuery<
-    getLinkedProfilesPastConsultsAndPrescriptionsByMobile,
-    getLinkedProfilesPastConsultsAndPrescriptionsByMobileVariables
-  >(GET_PAST_CONSULTS_PRESCRIPTIONS_BY_MOBILE, {
-    variables: {
-      consultsAndOrdersByMobileInput: {
-        mobileNumber: currentPatient?.mobileNumber,
-      },
-    },
-    fetchPolicy: 'no-cache',
-  });
+  // const { data, loading, error } = useQuery<
+  //   getLinkedProfilesPastConsultsAndPrescriptionsByMobile,
+  //   getLinkedProfilesPastConsultsAndPrescriptionsByMobileVariables
+  // >(GET_PAST_CONSULTS_PRESCRIPTIONS_BY_MOBILE, {
+  //   variables: {
+  //     consultsAndOrdersByMobileInput: {
+  //       mobileNumber: currentPatient?.mobileNumber,
+  //     },
+  //   },
+  //   fetchPolicy: 'no-cache',
+  // });
 
-  const { data: medPrismRecords, loading: medPrismloading, error: medPrismerror } = useQuery<
-    getPrescriptionsByMobileNumber,
-    getPrescriptionsByMobileNumberVariables
-  >(GET_PRESCRIPTIONS_BY_MOBILE_NUMBER, {
-    variables: {
-      MobileNumber: currentPatient?.mobileNumber,
-      records: props?.showLabResults
-        ? [MedicalRecordType.PRESCRIPTION, MedicalRecordType.TEST_REPORT]
-        : [MedicalRecordType.PRESCRIPTION],
-      source: '',
-      recordId: '',
-    },
-    fetchPolicy: 'no-cache',
-  });
+  // const { data: medPrismRecords, loading: medPrismloading, error: medPrismerror } = useQuery<
+  //   getPrescriptionsByMobileNumber,
+  //   getPrescriptionsByMobileNumberVariables
+  // >(GET_PRESCRIPTIONS_BY_MOBILE_NUMBER, {
+  //   variables: {
+  //     MobileNumber: currentPatient?.mobileNumber,
+  //     records: props?.showLabResults
+  //       ? [MedicalRecordType.PRESCRIPTION, MedicalRecordType.TEST_REPORT]
+  //       : [MedicalRecordType.PRESCRIPTION],
+  //     source: '',
+  //     recordId: '',
+  //   },
+  //   fetchPolicy: 'no-cache',
+  // });
+  const data = {};
+  const loading = false;
+  const error = ``;
   const [labResults, setLabResults] = useState<
     | (getPrescriptionsByMobileNumber_getPrescriptionsByMobileNumber_test_report_response | null)[]
     | null

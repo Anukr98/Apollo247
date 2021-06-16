@@ -18,6 +18,7 @@ import {
   GET_PHARMA_TRANSACTION_STATUS_V2,
   SAVE_MEDICINE_ORDER_OMS_V2,
   SAVE_MEDICINE_ORDER_PAYMENT_V2,
+  UPDATE_MEDICINE_ORDER_SUBSTITUTION,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { apiCallEnums, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -80,6 +81,15 @@ import {
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  updateMedicineOrderSubstitution,
+  updateMedicineOrderSubstitutionVariables,
+} from '@aph/mobile-patients/src/graphql/types/updateMedicineOrderSubstitution';
+
+enum SUBSTITUTION_RESPONSE {
+  OK = 'OK',
+  NOT_OK = 'not-OK',
+}
 
 export interface PharmacyPaymentStatusProps extends NavigationScreenProps {}
 
@@ -123,8 +133,16 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const [codOrderProcessing, setcodOrderProcessing] = useState<boolean>(false);
   const { apisToCall, pharmacyUserTypeAttribute } = useAppCommonData();
 
-  const [showSubstituteMessage, setShowSubstituteMessage] = useState<boolean>(true);
-  const [substituteTime, setSubstituteTime] = useState<number>(10);
+  const [showSubstituteMessage, setShowSubstituteMessage] = useState<boolean>(
+    props.navigation.getParam('showSubstituteMessage') || false
+  );
+  const [substituteMessage, setSubstituteMessage] = useState<string>(
+    props.navigation.getParam('substitutionMessage') || ''
+  );
+  const [substituteTime, setSubstituteTime] = useState<number>(
+    props.navigation.getParam('substitutionTime') || 0
+  );
+  const [showSubstituteConfirmation, setShowSubstituteConfirmation] = useState<boolean>(false);
 
   useEffect(() => {
     if (!!substituteTime && showSubstituteMessage) {
@@ -701,8 +719,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         height: 20,
       },
     });
-    const message =
-      'Some items in your cart are heavily in demand. Incase if local unavailability, do you agree to receiving substitute products for the same?';
+
     return (
       <View style={substituteStyles.substituteCard}>
         <View style={{ marginVertical: 15 }}>
@@ -712,13 +729,22 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
           </View>
           <View>
             <View style={substituteStyles.messageBody}>
-              {textComponent(message, undefined, theme.colors.ASTRONAUT_BLUE, false)}
+              {textComponent(substituteMessage, undefined, theme.colors.ASTRONAUT_BLUE, false)}
             </View>
           </View>
           <View>
             <TouchableOpacity
               style={[substituteStyles.buttonAgreeStyle, substituteStyles.buttonStyle]}
-              onPress={() => {}}
+              onPress={() => {
+                const params: updateMedicineOrderSubstitutionVariables = {
+                  transactionId: transId,
+                  orderId: transId,
+                  substitution: SUBSTITUTION_RESPONSE.OK,
+                };
+                updateOrderSubstitution(params);
+                setShowSubstituteMessage(false);
+                setShowSubstituteConfirmation(true);
+              }}
             >
               <Text style={{ ...theme.viewStyles.text('SB', 15, '#ffffff', 1, 24) }}>
                 Yes, Agree to Receiving Substitutes
@@ -726,7 +752,16 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
             </TouchableOpacity>
             <TouchableOpacity
               style={[substituteStyles.buttonNotAgreeStyle, substituteStyles.buttonStyle]}
-              onPress={() => {}}
+              onPress={() => {
+                const params: updateMedicineOrderSubstitutionVariables = {
+                  transactionId: transId,
+                  orderId: transId,
+                  substitution: SUBSTITUTION_RESPONSE.NOT_OK,
+                };
+                updateOrderSubstitution(params);
+                setShowSubstituteMessage(false);
+                setShowSubstituteConfirmation(true);
+              }}
             >
               <Text style={{ ...theme.viewStyles.text('SB', 15, '#fcb716', 1, 24) }}>
                 No, I want the Exact items Delivered
@@ -746,6 +781,27 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       </View>
     );
   };
+
+  const renderSubstituteSnackBar = () => {
+    return (
+      <Snackbar
+        style={{ position: 'absolute', zIndex: 1001, backgroundColor: theme.colors.GRAY }}
+        visible={showSubstituteConfirmation}
+        onDismiss={() => {
+          setShowSubstituteConfirmation(false);
+        }}
+        duration={3000}
+      >
+        Response Received.
+      </Snackbar>
+    );
+  };
+
+  const updateOrderSubstitution = (paymentInfo: updateMedicineOrderSubstitutionVariables) =>
+    client.mutate<updateMedicineOrderSubstitution, updateMedicineOrderSubstitutionVariables>({
+      mutation: UPDATE_MEDICINE_ORDER_SUBSTITUTION,
+      variables: paymentInfo,
+    });
 
   const renderNote = () => {
     let noteText = '';
@@ -899,6 +955,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
               {status != failure && status != aborted && appointmentCard()}
               {renderNote()}
               {status == failure || status == aborted ? renderRetryPayment() : renderButton()}
+              {renderSubstituteSnackBar()}
             </ScrollView>
           </View>
         ) : (

@@ -1690,10 +1690,29 @@ export const SAVE_MEDICINE_ORDER_OMS_V2 = gql`
       errorCode
       errorMessage
       transactionId
+      isSubstitution
+      substitutionTime
+      substitutionMessage
       orders {
         id
         orderAutoId
       }
+    }
+  }
+`;
+
+export const UPDATE_MEDICINE_ORDER_SUBSTITUTION = gql`
+  mutation updateMedicineOrderSubstitution(
+    $transactionId: Int
+    $orderId: Int
+    $substitution: String
+  ) {
+    updateMedicineOrderSubstitution(
+      transactionId: $transactionId
+      orderId: $orderId
+      substitution: $substitution
+    ) {
+      message
     }
   }
 `;
@@ -5094,19 +5113,19 @@ export const FIND_DIAGNOSTIC_SETTINGS = gql`
   }
 `;
 
-export const GET_VACCINE_BOOKING_LIMIT = gql`
-  query GetBenefitAvailabilityInfoByCMSIdentifier(
-    $user_subscription_id: String!
-    $cms_identifier: String!
-  ) {
-    GetBenefitAvailabilityInfoByCMSIdentifier(
-      user_subscription_id: $user_subscription_id
-      cms_identifier: $cms_identifier
-    ) {
-      response
-    }
-  }
-`;
+// export const GET_VACCINE_BOOKING_LIMIT = gql`
+//   query GetBenefitAvailabilityInfoByCMSIdentifier(
+//     $user_subscription_id: String!
+//     $cms_identifier: String!
+//   ) {
+//     GetBenefitAvailabilityInfoByCMSIdentifier(
+//       user_subscription_id: $user_subscription_id
+//       cms_identifier: $cms_identifier
+//     ) {
+//       response
+//     }
+//   }
+// `;
 
 export const VALIDATE_CORPORATE_DOMAIN = gql`
   query getCMSIdentifierByDomain($email: String!) {
