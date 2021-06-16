@@ -127,7 +127,8 @@
     "couldNotLoadText": "Uh oh.. could't load!",
     "lowNetworkText": "We were unable to load the page properly because of low network. Please try again",
     "CorporateVaccineBenefit": "DEPENDENT_VACCINATION_REG",
-    "noDiagnosticsAvailable": "Unfortunately, we do not have any diagnostic(s) available right now."
+    "noDiagnosticsAvailable": "Unfortunately, we do not have any diagnostic(s) available right now.",
+    "unableToSetDeliveryAddress": "We're sorry! Unable to set delivery address. Please try again after some time"
   },
   "components": {
     "medicineDetails": {
@@ -475,6 +476,7 @@
       "editOrder": "Need to Modify Order Details",
       "userUnavailable": "I am not available",
       "bookedByMistake": "Booked by Mistake",
+      "lesserPrice": "Got lesser price elsewhere",
       "urgentReport": "Need Report Urgently",
       "anotherChannel": "Booked from other channel",
       "otherReasons": "Others (Please specify)"
@@ -520,6 +522,7 @@
     "fastReport": "Fast & Accurate Reports",
     "fastReportSubText": "Get reports in 12 to 24 hours. View or download on app anytime",
     "orderSuccessPhaleboText": "*The phlebotomist will call you prior to starting his journey to confirm your availability",
+    "invoiceTimelineText": "Invoice will be available to download after the sample is submitted in the lab",
     "unableToFetchStatus": "Something went wrong. We are unable to fetch status",
     "noSlotAvailable": "Sorry! There are no slots available on {{date}}. Please choose another date.",
     "updateAddressLatLngMessage": "Unable to locate address. Please update.",
@@ -555,6 +558,11 @@
     "collectionText": "Track Order",
     "trackPhleboText": "Track Phlebo",
     "codDisableText": "We are currently not allowing Cash On Delivery for home sample collections.",
+    "phleboCallingError": "Error while connecting to Phlebo. Please try again later.",
+    "modifyItemAlreadyExist": "Your cart has been updated, since it had duplicate items",
+    "previousCharges": "Previous Charges",
+    "currentCharges": "Current Charges",
+    "modifyDiscardText": "You were trying to modify the order. Would you like to discard and go back to home page?",
     "sampleCollected": "Sample Collected",
     "sampleCollectedContent": "Our phlebotomist has successfully collected the samples."
   },
@@ -1110,7 +1118,9 @@
   },
   "consultModeTab": {
     "CONSULT_ONLINE": "Consult Online",
-    "MEET_IN_PERSON": "Meet In Person"
+    "MEET_IN_PERSON": "Meet In Person",
+    "VIDEO_CONSULT": "Video Consult",
+    "HOSPITAL_VISIT": "Hospital Visit"
   },
   "vaccineBooking": {
     "covid_vaccine_booking": "COVID VACCINE BOOKING",

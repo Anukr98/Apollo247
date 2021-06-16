@@ -34,31 +34,15 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   GET_PAYMENT_METHODS,
-  CREATE_ORDER,
-  PROCESS_DIAG_COD_ORDER,
   VERIFY_VPA,
   INITIATE_DIAGNOSTIC_ORDER_PAYMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { AppRoutes } from '../NavigatorContainer';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { TxnFailed } from '@aph/mobile-patients/src/components/PaymentGateway/Components/TxnFailed';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import {
-  processDiagnosticHCOrder,
-  processDiagnosticHCOrderVariables,
-} from '@aph/mobile-patients/src/graphql/types/processDiagnosticHCOrder';
-import {
-  ProcessDiagnosticHCOrderInput,
-  DIAGNOSTIC_ORDER_PAYMENT_TYPE,
-  OrderInput,
-  PAYMENT_MODE,
-  VerifyVPA,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  createOrder,
-  createOrderVariables,
-} from '@aph/mobile-patients/src/graphql/types/createOrder';
+import { PAYMENT_MODE, VerifyVPA } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { verifyVPA, verifyVPAVariables } from '@aph/mobile-patients/src/graphql/types/verifyVPA';
 import { PaymentInitiated } from '@aph/mobile-patients/src/components/Tests/Events';
 import {
@@ -72,6 +56,11 @@ import {
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { SecureTags } from '@aph/mobile-patients/src/components/PaymentGateway/Components/SecureTag';
 import {
+  createJusPayOrder,
+  processDiagnosticsCODOrder,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  isEmptyObject,
   getDiagnosticCityLevelPaymentOptions,
   isSmallDevice,
   paymentModeVersionCheck,
@@ -83,18 +72,16 @@ import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/Diagnost
 const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {
-  source?: string;
   businessLine: 'consult' | 'diagnostics' | 'pharma' | 'subscription';
 }
 
 export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
-  const { deliveryAddressCityId } = useDiagnosticsCart();
+  const { modifiedOrder, deliveryAddressCityId } = useDiagnosticsCart();
   const paymentId = props.navigation.getParam('paymentId');
   const amount = props.navigation.getParam('amount');
   const orderId = props.navigation.getParam('orderId');
   const orderDetails = props.navigation.getParam('orderDetails');
   const eventAttributes = props.navigation.getParam('eventAttributes');
-  const source = props.navigation.getParam('source');
   const businessLine = props.navigation.getParam('businessLine');
   const isDiagnostic = businessLine === 'diagnostics';
   const { currentPatient } = useAllCurrentPatients();
@@ -112,7 +99,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { authToken, setauthToken } = useAppCommonData();
-  const FailedStatuses = ['AUTHENTICATION_FAILED', 'AUTHORIZATION_FAILED'];
+  const isDiagnosticModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const [showPrepaid, setShowPrepaid] = useState<boolean>(isDiagnostic ? false : true);
   const [showCOD, setShowCOD] = useState<boolean>(isDiagnostic ? false : true);
 
@@ -131,8 +118,18 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   useEffect(() => {
     if (isDiagnostic) {
       DiagnosticPaymentPageViewed(currentPatient, amount);
-      setShowPrepaid(getDiagnosticCityLevelPaymentOptions(deliveryAddressCityId)?.prepaid);
-      setShowCOD(getDiagnosticCityLevelPaymentOptions(deliveryAddressCityId)?.cod);
+      //modify -> always show prepaid
+      // modify -> not to show cod
+      setShowPrepaid(
+        isDiagnosticModify
+          ? true
+          : getDiagnosticCityLevelPaymentOptions(deliveryAddressCityId)?.prepaid
+      );
+      setShowCOD(
+        isDiagnosticModify
+          ? false
+          : getDiagnosticCityLevelPaymentOptions(deliveryAddressCityId)?.cod
+      );
     }
   }, []);
 
@@ -242,20 +239,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     setloading(false);
   };
 
-  const createJusPayOrder = (paymentMode: PAYMENT_MODE) => {
-    const orderInput: OrderInput = {
-      payment_order_id: paymentId,
-      payment_mode: paymentMode,
-      is_mobile_sdk: true,
-      return_url: AppConfig.Configuration.returnUrl,
-    };
-    return client.mutate<createOrder, createOrderVariables>({
-      mutation: CREATE_ORDER,
-      variables: { order_input: orderInput },
-      fetchPolicy: 'no-cache',
-    });
-  };
-
   const initiateOrderPayment = async () => {
     // Api is called to update the order status from Quote to Payment Pending
     try {
@@ -271,19 +254,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         fetchPolicy: 'no-cache',
       });
     } catch (error) {}
-  };
-
-  const processCODOrder = () => {
-    const processDiagnosticHCOrderInput: ProcessDiagnosticHCOrderInput = {
-      orderID: orderDetails?.orderId,
-      paymentMode: DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD,
-      amount: amount,
-    };
-    return client.mutate<processDiagnosticHCOrder, processDiagnosticHCOrderVariables>({
-      mutation: PROCESS_DIAG_COD_ORDER,
-      variables: { processDiagnosticHCOrderInput: processDiagnosticHCOrderInput },
-      fetchPolicy: 'no-cache',
-    });
   };
 
   const verifyVPA = (VPA: string) => {
@@ -305,7 +275,12 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       setisTxnProcessing(true);
       try {
         businessLine == 'diagnostics' && initiateOrderPayment();
-        const response = await createJusPayOrder(PAYMENT_MODE.PREPAID);
+        const response = await createJusPayOrder(
+          client,
+          paymentId,
+          PAYMENT_MODE.PREPAID,
+          AppConfig.Configuration.returnUrl
+        );
         const { data } = response;
         const { createOrder } = data;
         const token = createOrder?.juspay?.client_auth_token;
@@ -389,10 +364,15 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     triggerWebengege('Cash');
     setisTxnProcessing(true);
     try {
-      const response = await createJusPayOrder(PAYMENT_MODE.COD);
+      const response = await await createJusPayOrder(
+        client,
+        paymentId,
+        PAYMENT_MODE.COD,
+        AppConfig.Configuration.returnUrl
+      );
       const { data } = response;
       if (data?.createOrder?.success) {
-        const response = await processCODOrder();
+        const response = await processDiagnosticsCODOrder(client, orderId, amount);
         const { data } = response;
         data?.processDiagnosticHCOrder?.status
           ? navigatetoOrderStatus(true, 'success')
@@ -451,6 +431,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           isCOD: isCOD,
           eventAttributes,
           paymentStatus: paymentStatus,
+          isModify: isDiagnosticModify ? modifiedOrder : null,
         });
         break;
       case 'consult':
@@ -481,7 +462,13 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderBookingInfo = () => {
-    return <BookingInfo LOB={businessLine} orderDetails={orderDetails} />;
+    return (
+      <BookingInfo
+        LOB={businessLine}
+        orderDetails={orderDetails}
+        modifyOrderDetails={modifiedOrder}
+      />
+    );
   };
 
   const showPaymentOptions = () => {
@@ -491,7 +478,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           const minVersion = item?.minimum_supported_version;
           switch (item?.name) {
             case 'COD':
-              return paymentModeVersionCheck(minVersion) && renderPayByCash();
+              return isDiagnosticModify
+                ? null
+                : paymentModeVersionCheck(minVersion) && renderPayByCash();
             case 'CARD':
               return paymentModeVersionCheck(minVersion) && showPrepaid && renderCards();
             case 'WALLET':

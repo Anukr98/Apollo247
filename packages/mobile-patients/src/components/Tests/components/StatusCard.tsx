@@ -4,7 +4,7 @@ import {
   nameFormater,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
-  DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY,
+  DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY,
   DIAGNOSTIC_FAILURE_STATUS_ARRAY,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -24,7 +24,7 @@ export const StatusCard: React.FC<StatusCardProps> = (props) => {
       style={[
         styles.container,
         {
-          backgroundColor: DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY.includes(props.titleText)
+          backgroundColor: DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(props.titleText)
             ? colors.COMPLETE_STATUS_BGK
             : DIAGNOSTIC_FAILURE_STATUS_ARRAY.includes(props.titleText)
             ? colors.FAILURE_STATUS_BGK
@@ -36,7 +36,7 @@ export const StatusCard: React.FC<StatusCardProps> = (props) => {
         style={[
           styles.titleStyle,
           {
-            color: DIAGNOSTIC_FULLY_DONE_STATUS_ARRAY.includes(props.titleText)
+            color: DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(props.titleText)
               ? colors.COMPLETE_STATUS_TEXT
               : DIAGNOSTIC_FAILURE_STATUS_ARRAY.includes(props.titleText)
               ? colors.FAILURE_STATUS_TEXT

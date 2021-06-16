@@ -338,3 +338,17 @@ export const getReviewTag = (star: number) => {
       break;
   }
 };
+
+export const createAddressObject = (addressObject: any) => {
+  return {
+    addressLine1: addressObject?.addressLine1,
+    addressLine2: addressObject?.addressLine2,
+    addressType: addressObject?.addressType,
+    zipcode: addressObject?.zipcode! || "0",
+    landmark: addressObject?.landmark,
+    latitude: Number(addressObject?.latitude! || 0),
+    longitude: Number(addressObject?.longitude! || 0),
+    city: addressObject?.city,
+    state: addressObject?.state,
+  } as AddressObj;
+}

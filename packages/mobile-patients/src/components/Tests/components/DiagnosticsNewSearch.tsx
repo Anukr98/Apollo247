@@ -1,12 +1,10 @@
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { AddIcon, RemoveIconOrange, TestsIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { AddIcon, RemoveIconOrange } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
-import { Image } from 'react-native-elements';
-import { nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { isEmptyObject, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-
 export interface DiagnosticsNewSearchProps {
   onPress: () => void;
   onPressAddToCart: () => void;
@@ -14,11 +12,11 @@ export interface DiagnosticsNewSearchProps {
   style?: ViewStyle;
   showSeparator?: boolean;
   loading?: boolean;
-  data: any; //define the interface
+  data: any;
 }
 
 export const DiagnosticsNewSearch: React.FC<DiagnosticsNewSearchProps> = (props) => {
-  const { cartItems } = useDiagnosticsCart();
+  const { cartItems, modifiedOrderItemIds, modifiedOrder } = useDiagnosticsCart();
   const { data } = props;
   const name = data?.diagnostic_item_name || '';
   const imageUri = false;
@@ -42,30 +40,32 @@ export const DiagnosticsNewSearch: React.FC<DiagnosticsNewSearchProps> = (props)
     );
   };
 
-  const renderIconOrImage = () => {
-    return (
-      <View style={styles.iconOrImageContainerStyle}>
-        {imageUri ? (
-          <Image
-            placeholderStyle={theme.viewStyles.imagePlaceholderStyle}
-            source={{ uri: imageUri }}
-            style={styles.imageIcon}
-            resizeMode="contain"
-          />
-        ) : (
-          <TestsIcon />
-        )}
-      </View>
-    );
-  };
-
   const renderAddToCartView = () => {
+    const isModifyOrder = !!modifiedOrder && !isEmptyObject(modifiedOrder);
+    const getExisitingOrderItems = isModifyOrder
+      ? !!modifiedOrderItemIds && modifiedOrderItemIds
+      : [];
+    const isAlreadyPartOfOrder =
+      getExisitingOrderItems?.length > 0 &&
+      getExisitingOrderItems?.find((id: number) => Number(id) == Number(data?.diagnostic_item_id));
     return (
       <TouchableOpacity
         activeOpacity={1}
-        onPress={isAddedToCart ? props.onPressRemoveFromCart : props.onPressAddToCart}
+        onPress={
+          isAlreadyPartOfOrder
+            ? () => {}
+            : isAddedToCart
+            ? props.onPressRemoveFromCart
+            : props.onPressAddToCart
+        }
       >
-        {isAddedToCart ? <RemoveIconOrange /> : <AddIcon />}
+        {isAlreadyPartOfOrder ? (
+          <RemoveIconOrange />
+        ) : isAddedToCart ? (
+          <RemoveIconOrange />
+        ) : (
+          <AddIcon />
+        )}
       </TouchableOpacity>
     );
   };
