@@ -119,6 +119,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     pharmacyCircleAttributes,
     setDeliveryAddressId,
     addCartItem,
+    updateCartItem,
     pdpBreadCrumbs,
     setPdpBreadCrumbs,
     addresses,
@@ -228,24 +229,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, [props.navigation]);
 
   useEffect(() => {
-    if (cartItems?.length) {
-      const filteredCartItems = cartItems?.filter((item) => item?.id == medicineDetails?.sku);
-      setSkuInCart(filteredCartItems);
-    }
-  }, [medicineDetails]);
-
-  useEffect(() => {
     if (medicineDetails?.sku && availabilityCalled === 'yes') {
       postProductPageViewedEvent(pincode, isInStock);
     }
   }, [medicineDetails, availabilityCalled]);
-
-  useEffect(() => {
-    if (cartItems?.length) {
-      const filteredCartItems = cartItems?.filter((item) => item?.id == medicineDetails?.sku);
-      setSkuInCart(filteredCartItems);
-    }
-  }, [cartItems]);
 
   useEffect(() => {
     if (axdcCode && medicineDetails?.sku) {
@@ -681,25 +668,29 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       MaxOrderQty,
       url_key,
     } = medicineDetails;
-    addCartItem!({
-      id: sku,
-      mou,
-      name,
-      price: price,
-      specialPrice: special_price
-        ? typeof special_price == 'string'
-          ? Number(special_price)
-          : special_price
-        : undefined,
-      prescriptionRequired: is_prescription_required == '1',
-      isMedicine: (type_id || '').toLowerCase() == 'pharma',
-      quantity: productQuantity,
-      thumbnail: thumbnail,
-      isInStock: true,
-      maxOrderQty: MaxOrderQty,
-      productType: type_id,
-      url_key,
-    });
+    if (cartItems.find(({ id }) => id === sku)) {
+      updateCartItem?.({ id: sku, quantity: productQuantity });
+    } else {
+      addCartItem!({
+        id: sku,
+        mou,
+        name,
+        price: price,
+        specialPrice: special_price
+          ? typeof special_price == 'string'
+            ? Number(special_price)
+            : special_price
+          : undefined,
+        prescriptionRequired: is_prescription_required == '1',
+        isMedicine: (type_id || '').toLowerCase() == 'pharma',
+        quantity: productQuantity,
+        thumbnail: thumbnail,
+        isInStock: true,
+        maxOrderQty: MaxOrderQty,
+        productType: type_id,
+        url_key,
+      });
+    }
     postwebEngageAddToCartEvent(
       medicineDetails,
       'Pharmacy PDP',
@@ -845,6 +836,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       searchText: medicineDetails?.PharmaOverview?.[0]?.Composition || composition,
       movedFrom: 'PDP Composition Hyperlink',
     });
+
+  const showProceedButton = medicineDetails?.sku
+    ? !!cartItems.find(({ id }) => id === medicineDetails?.sku)
+    : false;
 
   let buttonRef = React.useRef<View>(null);
   return (
@@ -1016,11 +1011,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               />
             )}
         </View>
-        {!loading &&
-          !isEmptyObject(medicineDetails) &&
-          !!medicineDetails.id &&
-          !!skuInCart.length &&
-          renderBottomButton()}
+        {!loading && showProceedButton && renderBottomButton()}
       </SafeAreaView>
       {showAddedToCart && (
         <Overlay
