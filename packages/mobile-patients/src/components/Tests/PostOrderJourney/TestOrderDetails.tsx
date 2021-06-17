@@ -12,6 +12,7 @@ import {
   OrderPlacedIcon,
   OrderTrackerSmallIcon,
   ClockIcon,
+  DownO
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import _ from 'lodash';
 import {
@@ -117,6 +118,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const [scrollYValue, setScrollYValue] = useState(0);
+  const [testListValue, setTestListValue] = useState(3);
   const [loading1, setLoading] = useState<boolean>(true);
   const [orderLevelStatus, setOrderLevelStatus] = useState([] as any);
   const [showInclusionStatus, setShowInclusionStatus] = useState<boolean>(false);
@@ -148,6 +150,13 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     callOrderLevelStatusApi();
     callOrderDetailsApi();
   }, []);
+  useEffect(() => {
+    if (orderLevelStatus?.statusInclusions && orderLevelStatus?.statusInclusions?.length > 3) {
+      setTestListValue(3);
+    } else {
+      setTestListValue(orderLevelStatus?.statusInclusions?.length);
+    }
+  }, [orderLevelStatus?.statusInclusions?.length]);
 
   async function callOrderLevelStatusApi() {
     try {
@@ -499,45 +508,49 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
               </View>
             ) : null}
             {showInclusionStatus ||
-              orderLevelStatus?.statusInclusions?.map((item: any, index: number) => {
-                let selectedItem = selectedOrder?.diagnosticOrderLineItems;
-                return (
-                  <>
-                    {!!item?.itemName ? (
-                      <View>
-                        <View
-                          style={[
-                            styles.itemNameContainer,
-                            {
-                              marginBottom: selectedItem?.[index]?.itemObj?.reportGenerationTime
-                                ? 5
-                                : 16,
-                            },
-                          ]}
-                        >
-                          <View style={{ width: '59%' }}>
-                            <Text style={styles.itemNameText}>
-                              {nameFormater(item?.itemName, 'default')}
-                            </Text>
-                          </View>
-                          <StatusCard titleText={item?.orderStatus} />
-                        </View>
-                        {selectedItem?.[index]?.itemObj?.reportGenerationTime &&
-                        DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(item?.orderStatus) ? (
-                          <View style={styles.ratingContainer}>
-                            <View style={styles.reporttatContainer}>
-                              <ClockIcon />
-                              <Text
-                                style={styles.reportTextStyle}
-                              >{`Get your report by ${selectedItem?.[index]?.itemObj?.reportGenerationTime}`}</Text>
+              orderLevelStatus?.statusInclusions
+                ?.slice(0, testListValue)
+                ?.map((item: any, index: number) => {
+                  let selectedItem = selectedOrder?.diagnosticOrderLineItems;
+                  return (
+                    <>
+                      {!!item?.itemName ? (
+                        <View>
+                          <View
+                            style={[
+                              styles.itemNameContainer,
+                              {
+                                marginBottom: selectedItem?.[index]?.itemObj?.reportGenerationTime
+                                  ? 5
+                                  : 16,
+                              },
+                            ]}
+                          >
+                            <View style={{ width: '59%' }}>
+                              <Text style={styles.itemNameText}>
+                                {nameFormater(item?.itemName, 'default')}
+                              </Text>
                             </View>
+                            <StatusCard titleText={item?.orderStatus} />
                           </View>
-                        ) : null}
-                      </View>
-                    ) : null}
-                  </>
-                );
-              })}
+                        </View>
+                      ) : null}
+                    </>
+                  );
+                })}
+            {testListValue != orderLevelStatus?.statusInclusions?.length &&
+            orderLevelStatus?.statusInclusions?.length > 3 ? (
+              <TouchableOpacity
+                onPress={() => {
+                  setTestListValue(orderLevelStatus?.statusInclusions?.length);
+                }}
+                style={styles.moreContainer}
+              >
+                <Text style={styles.yellowText}>{`+ ${orderLevelStatus?.statusInclusions?.length -
+                  testListValue} MORE TESTS`}</Text>
+                <DownO />
+              </TouchableOpacity>
+            ) : null}
           </View>
         )}
       </>
@@ -786,6 +799,15 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 5,
     zIndex: 1,
+  },
+  yellowText: {
+    ...theme.viewStyles.text('SB', 14, colors.APP_YELLOW),
+    textAlign: 'center',
+  },
+  moreContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   tabsContainer: {
     ...theme.viewStyles.cardViewStyle,
