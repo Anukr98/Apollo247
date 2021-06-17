@@ -1176,12 +1176,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       : `Dr ${params?.doctorName}`;
     let physical = false;
     const appointmentDate = moment(appointmentDateTime).format('Do MMMM YYYY');
-    const appointmentTime = moment(appointmentDateTime).format('h:mm a');
+    const appointmentTime = moment(appointmentDateTime).format('h:mm A');
     const diffMins = Math.ceil(moment(appointmentDateTime).diff(moment(), 'minutes', true));
     let hospitalLocation = '';
     let description = `Your online appointment with ${doctorName} is confirmed for ${appointmentDate} at ${appointmentTime}. You can expect your appointment to start between ${moment(
       appointmentDateTime
-    ).format('h:mm')} - ${moment(appointmentDateTime)
+    ).format('h:mm A')} - ${moment(appointmentDateTime)
       .add('15', 'minutes')
       .format('h:mm A')} via an audio/video call.`;
     if (diffMins >= 30 && !isJdQuestionsComplete) {
