@@ -592,7 +592,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     if ((isModifyFlow || deliveryAddressId != '') && isFocused) {
       getPinCodeServiceability();
     }
-  }, [deliveryAddressId, addresses, isFocused]);
+  }, [addresses, isFocused]);
 
   //check all webengage events
   useEffect(() => {
