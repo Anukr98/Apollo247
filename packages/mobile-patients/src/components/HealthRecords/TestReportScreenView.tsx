@@ -634,7 +634,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
               } else {
                 rangeColorChanger = false;
               }
-              if (item?.range?.length > 30) {
+              if (item?.range?.length > 40) {
                 columnDecider = true;
               } else {
                 columnDecider = false;
