@@ -48,7 +48,6 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
   const unServiceable = !!cartItems.find(
     ({ unavailableOnline, unserviceable }) => unavailableOnline || unserviceable
   );
-  const isValidCartTotal = screen === 'MedicineCart' && isValidCartValue;
 
   function getTitle() {
     return !deliveryAddressId
@@ -92,7 +91,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
   };
 
   function isdisabled() {
-    if (cartItems && cartItems.length && !unServiceable && isValidCartTotal) {
+    if (cartItems && cartItems.length && !unServiceable && isValidCartValue) {
       return false;
     } else {
       return true;
@@ -127,7 +126,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
           deliveryTime={orders?.[0]?.tat}
           deliveryAddress={formatSelectedAddress(selectedAddress!)}
           onPressChangeAddress={onPressChangeAddress!}
-          onPressTatCard={screen === 'MedicineCart' && isValidCartTotal ? onPressTatCard : () => {}}
+          onPressTatCard={screen === 'MedicineCart' && isValidCartValue ? onPressTatCard : () => {}}
         />
       );
     } else {
@@ -151,7 +150,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
     <View style={styles.container}>
       {renderTatCard()}
       {deliveryAddressId != '' && isPrescriptionRequired() && renderPrescriptionMessage()}
-      {screen === 'MedicineCart' && !isValidCartTotal && renderMinimumCartMessage()}
+      {screen === 'MedicineCart' && !isValidCartValue && renderMinimumCartMessage()}
       <View style={styles.subContainer}>
         {renderTotal()}
         {renderButton()}
