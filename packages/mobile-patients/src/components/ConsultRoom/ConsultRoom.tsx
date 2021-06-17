@@ -1176,11 +1176,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       : `Dr ${params?.doctorName}`;
     let physical = false;
     const appointmentDate = moment(appointmentDateTime).format('Do MMMM YYYY');
-    const appointmentTime = moment(appointmentDateTime).format('h:mm a');
+    const appointmentTime = moment(appointmentDateTime).format('h:mm A');
+    const diffMins = Math.ceil(moment(appointmentDateTime).diff(moment(), 'minutes', true));
     let hospitalLocation = '';
-    let description = `Your appointment has been successfully booked with ${doctorName} for ${appointmentDate} at ${appointmentTime}. Please be in the consult room before the appointment time.`;
-    if (!isJdQuestionsComplete && !skipAutoQuestions) {
-      description = `Your appointment has been successfully booked with ${doctorName} for ${appointmentDate} at ${appointmentTime}. Please go to the consult room to answer a few medical questions.`;
+    let description = `Your online appointment with ${doctorName} is confirmed for ${appointmentDate} at ${appointmentTime}. You can expect your appointment to start between ${moment(
+      appointmentDateTime
+    ).format('h:mm A')} - ${moment(appointmentDateTime)
+      .add('15', 'minutes')
+      .format('h:mm A')} via an audio/video call.`;
+    if (diffMins >= 30 && !isJdQuestionsComplete) {
+      description = `${description} Please go to the consult to answer a few medical questions.`;
     }
     if (isPhysicalConsultBooked) {
       hospitalLocation = doctorInfo?.doctorHospital?.[0]?.facility?.name;

@@ -19,6 +19,7 @@ import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
   DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY,
+  DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
   DIAGNOSTIC_STATUS_BEFORE_SUBMITTED,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
@@ -552,7 +553,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   return (
     <ScrollView style={{ flex: 1 }}>
       <View style={{ margin: 16 }}>
-        {DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(orderDetails?.orderStatus) && orderDetails?.invoiceURL ? renderInvoiceDownload() : null}
+        {(DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(orderDetails?.orderStatus) || DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(orderDetails?.orderStatus)) && orderDetails?.invoiceURL ? renderInvoiceDownload() : null}
         {renderOrderId()}
         {renderSlotView()}
         {renderHeading(
