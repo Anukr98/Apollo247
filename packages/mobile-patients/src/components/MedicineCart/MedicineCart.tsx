@@ -1187,7 +1187,11 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           props.navigation.navigate('MEDICINES');
         }}
         onPressTatCard={() => {
-          physicalPrescriptions?.length > 0 ? uploadPhysicalPrescriptons() : onPressReviewOrder();
+          uploadPrescriptionRequired
+            ? redirectToUploadPrescription()
+            : physicalPrescriptions?.length > 0
+            ? uploadPhysicalPrescriptons()
+            : onPressReviewOrder();
         }}
       />
     );
