@@ -477,7 +477,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           setloading!(false);
           setTatResponse(response[0]?.tat);
           addressSelectedEvent(selectedAddress, response[0]?.tat, response);
-          addressChange && NavigateToCartSummary();
           updatePricesAfterTat(inventoryData, updatedCartItems);
         } catch (error) {
           setloading!(false);
