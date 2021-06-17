@@ -538,6 +538,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     if (pharmacyPincode) {
       updateServiceability(pharmacyPincode);
       setPinCode && setPinCode(pharmacyPincode);
+      getUserSubscriptionsByStatus();
     }
   }, []);
 
@@ -1436,6 +1437,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       setPageLoading!(false);
       if (data) {
         if (data?.APOLLO?.[0]._id) {
+          AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
           setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
           setIsCircleSubscription && setIsCircleSubscription(true);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);

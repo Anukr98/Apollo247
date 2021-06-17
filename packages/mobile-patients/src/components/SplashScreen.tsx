@@ -76,6 +76,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getProHealthHospitalBySlug';
 import firebaseAuth from '@react-native-firebase/auth';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import {
+  preFetchSDK,
+  createHyperServiceObject,
+} from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 
 (function() {
   /**
@@ -225,6 +229,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     if (isIos()) {
       initializeCallkit();
       handleVoipEventListeners();
+    }
+  }, []);
+
+  useEffect(() => {
+    preFetchSDK(currentPatient?.id);
+    try {
+      createHyperServiceObject();
+    } catch (error) {
+      CommonBugFender('ErrorWhilecreatingHyperServiceObject', error);
     }
   }, []);
 
