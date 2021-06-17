@@ -1022,7 +1022,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   function onPressAddToCart() {
     const specialPrice = testInfo?.specialPrice!;
     const price = testInfo?.Rate!;
-    const circlePrice = testInfo?.circlePrice!;
+    const circlePrice = testInfo?.circlePrice! || testInfo?.circleRate!;
     const circleSpecialPrice = testInfo?.circleSpecialPrice!;
     const discountPrice = testInfo?.discountPrice!;
     const discountSpecialPrice = testInfo?.discountSpecialPrice!;
