@@ -47,18 +47,8 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useApolloClient, useQuery } from 'react-apollo-hooks';
-import {
-  SafeAreaView,
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  Modal,
-  Linking,
-  Clipboard,
-  BackHandler,
-} from 'react-native';
+import { useApolloClient } from 'react-apollo-hooks';
+import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity, BackHandler } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -133,6 +123,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [showError, setError] = useState<boolean>(false);
   const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
+  const [orderDetails, setOrderDetails] = useState([] as any);
   const scrollToSlots = () => {
     scrollViewRef.current &&
       scrollViewRef.current.scrollTo({ x: 0, y: scrollYValue, animated: true });
@@ -146,8 +137,16 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       fetchPolicy: 'no-cache',
     });
 
+  const fetchOrderDetails = () =>
+    client.query<getDiagnosticOrderDetails, getDiagnosticOrderDetailsVariables>({
+      query: GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
+      variables: { diagnosticOrderId: orderId },
+      fetchPolicy: 'no-cache',
+    });
+
   useEffect(() => {
     callOrderLevelStatusApi();
+    callOrderDetailsApi();
   }, []);
 
   async function callOrderLevelStatusApi() {
@@ -169,6 +168,27 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     }
   }
 
+  async function callOrderDetailsApi() {
+    try {
+      setLoading?.(true);
+      let response = await fetchOrderDetails();
+      if (!!response && response?.data && !response?.errors) {
+        let getOrderDetails = response?.data?.getDiagnosticOrderDetails?.ordersList;
+        setOrderDetails(getOrderDetails);
+        setError(false);
+      } else {
+        setOrderDetails([]);
+        setError(true);
+      }
+      setLoading?.(false);
+    } catch (error) {
+      setLoading?.(false);
+      setOrderDetails([]);
+      setError(true);
+      CommonBugFender('getDiagnosticOrderDetails_TestOrderDetails', error);
+    }
+  }
+
   useEffect(() => {
     if (!currentPatient) {
       getPatientApiCall();
@@ -187,17 +207,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       DiagnosticTrackOrderViewed(currentPatient, latestStatus, orderId, 'Track Order');
     }
   }, [selectedTab]);
-
-  const { data, loading } = useQuery<getDiagnosticOrderDetails, getDiagnosticOrderDetailsVariables>(
-    GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
-    {
-      variables: { diagnosticOrderId: orderId },
-    }
-  );
-  const order = g(data, 'getDiagnosticOrderDetails', 'ordersList');
-
-  const orderDetails = ((!loading && order) ||
-    {}) as getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList;
 
   var orderStatusList: any[] = [];
   var refundArr: any[] = [];
@@ -573,9 +582,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   function _onPressViewReportAction() {
-    if (!!order?.labReportURL && order?.labReportURL != '') {
+    if (!!selectedOrder?.labReportURL && selectedOrder?.labReportURL != '') {
       setDisplayViewReport(true);
-    } else if (!!order?.visitNo && order?.visitNo != '') {
+    } else if (!!selectedOrder?.visitNo && selectedOrder?.visitNo != '') {
       //directly open the phr section
       fetchTestReportResult();
     } else {
@@ -583,34 +592,34 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     }
   }
   const onPressInvoice = () => {
-    const appointmentDetails = !!order?.slotDateTimeInUTC
-      ? order?.slotDateTimeInUTC
-      : order?.diagnosticDate;
+    const appointmentDetails = !!orderDetails?.slotDateTimeInUTC
+      ? orderDetails?.slotDateTimeInUTC
+      : orderDetails?.diagnosticDate;
     const appointmentDate = moment(appointmentDetails)?.format('DD MMM YYYY');
-    const patientName = getPatientNameById(allCurrentPatients, order?.patientId!)?.replace(
+    const patientName = getPatientNameById(allCurrentPatients, orderDetails?.patientId!)?.replace(
       / /g,
       '_'
     );
-    downloadLabTest(order?.invoiceURL!, appointmentDate, patientName);
+    downloadLabTest(orderDetails?.invoiceURL!, appointmentDate, patientName);
   };
 
   const onPressViewReport = () => {
-    const appointmentDetails = !!order?.slotDateTimeInUTC
-      ? order?.slotDateTimeInUTC
-      : order?.diagnosticDate;
+    const appointmentDetails = !!orderDetails?.slotDateTimeInUTC
+      ? orderDetails?.slotDateTimeInUTC
+      : orderDetails?.diagnosticDate;
     const appointmentDate = moment(appointmentDetails)?.format('DD MMM YYYY');
-    const patientName = getPatientNameById(allCurrentPatients, order?.patientId!)?.replace(
+    const patientName = getPatientNameById(allCurrentPatients, orderDetails?.patientId!)?.replace(
       / /g,
       '_'
     );
     //need to remove the event once added
     DiagnosticViewReportClicked(
       'Track Order',
-      !!order?.labReportURL ? 'Yes' : 'No',
+      !!orderDetails?.labReportURL ? 'Yes' : 'No',
       'Download Report PDF',
-      order?.id
+      orderDetails?.id
     );
-    downloadLabTest(order?.labReportURL!, appointmentDate, patientName);
+    downloadLabTest(orderDetails?.labReportURL!, appointmentDate, patientName);
   };
 
   async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string) {
@@ -724,7 +733,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     <View style={{ flex: 1 }}>
       {displayViewReport && (
         <TestViewReportOverlay
-          order={order}
+          order={orderDetails}
           heading=""
           isVisible={displayViewReport}
           onClose={() => setDisplayViewReport(false)}
@@ -759,11 +768,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
           {renderError()}
         </ScrollView>
-        {selectedTab == string.orders.trackOrder ? renderBottomSection(order) : null}
+        {selectedTab == string.orders.trackOrder ? renderBottomSection(orderDetails) : null}
       </SafeAreaView>
 
       {renderFeedbackPopup()}
-      {(loading || loading1) && <Spinner style={{ zIndex: 200 }} />}
+      {loading1 && <Spinner style={{ zIndex: 200 }} />}
     </View>
   );
 };
