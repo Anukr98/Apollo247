@@ -40,6 +40,7 @@ import {
   BlackArrowDown,
   Down,
   Up,
+  InfoIconBlue
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
@@ -193,6 +194,7 @@ import {
   makeAdressAsDefaultVariables,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 const { width: screenWidth } = Dimensions.get('window');
 type Address = savePatientAddress_savePatientAddress_patientAddress;
 export interface areaObject {
@@ -283,6 +285,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const { currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const [todaySlotNotAvailable, setTodaySlotNotAvailable] = useState<boolean>(false);
   const [showCancellationPolicy, setShowCancellationPolicy] = useState<boolean>(false);
+  const [showPriceMismatch, setShowPriceMismatch] = useState<boolean>(false);
   const currentPatientId =
     !!modifiedOrder && !isEmptyObject(modifiedOrder)
       ? modifiedOrder?.patientId
@@ -1047,13 +1050,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             //mrp
             //show the prices changed pop-over
             isPriceChange = true;
-            showAphAlert?.({
-              unDismissable: true,
-              title: string.common.uhOh,
-              description: string.diagnostics.pricesChangedMessage,
-              onPressOk: () => {
-                hideAphAlert?.();
-                const _itemIds = cartItems?.map((item) => Number(item?.id));
+            setShowPriceMismatch(true)
+            const _itemIds = cartItems?.map((item) => Number(item?.id));
                 isModifyFlow
                   ? null
                   : !isEmptyObject(areaSelected)
@@ -1065,8 +1063,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                       shouldShowArea
                     )
                   : getAreas();
-              },
-            });
             updateCartItem?.({
               id: results?.[isItemInCart]
                 ? String(results?.[isItemInCart]?.itemId)
@@ -1098,13 +1094,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           const disabledCartItemIds = disabledCartItems?.map((item) => item.id);
           setLoading?.(false);
           removeDisabledCartItems(disabledCartItemIds);
-
-          showAphAlert?.({
-            title: string.common.uhOh,
-            description: string.diagnostics.pricesChangedMessage,
-            onPressOk: () => {
-              hideAphAlert?.();
-              const _itemIds = cartItems?.map((item) => Number(item?.id));
+          setShowPriceMismatch(true);
+          const _itemIds = cartItems?.map((item) => Number(item?.id));
 
               isModifyFlow
                 ? null
@@ -1117,8 +1108,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                     shouldShowArea
                   )
                 : getAreas();
-            },
-          });
         }
       });
       if (!isItemDisable && !isPriceChange) {
@@ -2949,6 +2938,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           </View>
         ) : null}
         {addressText ? (
+          <>
           <View style={styles.patientNameMainViewStyle}>
             <View style={styles.patientNameViewStyle}>
               <Text style={styles.patientNameTextStyle}>{string.diagnostics.homeVisitText}</Text>
@@ -2959,7 +2949,17 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               )}
             </View>
             <Text style={styles.patientDetailsTextStyle}>{addressText}</Text>
+            
           </View>
+          {showPriceMismatch ? (
+              <View
+                style={styles.blueView}
+              >
+                <InfoIconBlue style={{ width: 18, height: 18 }} />
+                <Text style={styles.lbTextStyle}>{string.diagnostics.pricesChangedMessage}</Text>
+              </View>
+            ) : null}
+          </>
         ) : null}
         {isModifyFlow ? null : showSelectedArea && !isEmptyObject(areaSelected) ? (
           <View style={styles.patientNameMainViewStyle}>
@@ -3439,6 +3439,10 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     alignSelf: 'center',
   },
+  lbTextStyle: {
+    ...theme.viewStyles.text('SB', 14, colors.SHERPA_BLUE, 0.5),
+    marginHorizontal: 5
+  },
   dateTextStyle: {
     ...theme.fonts.IBMPlexSansMedium(14),
     color: theme.colors.SHERPA_BLUE,
@@ -3531,6 +3535,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginVertical: '2%',
     paddingRight: 15,
+  },
+  blueView: {
+    flexDirection: 'row',
+    backgroundColor: '#E0F0FF',
+    marginTop: -5,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
   },
   dashedBannerViewStyle: {
     ...cardViewStyle,

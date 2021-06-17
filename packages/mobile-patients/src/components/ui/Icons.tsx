@@ -1759,6 +1759,9 @@ export const ClockIcon: React.FC<IconProps> = (props) => (
 export const InfoIconRed: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_info.webp')} />
 );
+export const InfoIconBlue: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_info_blue_2x.webp')} />
+);
 export const WhyBookUs: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/whyBookUsDetail_Icon.webp')} />
 );
