@@ -769,27 +769,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const caseSheet = followUpChatDaysCaseSheet(appointmentData.caseSheet);
   const followUpChatDaysCurrentCaseSheet = followUpChatDaysCaseSheet(currentCaseSheet);
   const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
+
   const currentCaseSheetChatDays = g(
     followUpChatDaysCurrentCaseSheet,
     '0' as any,
     'followUpAfterInDays'
   );
   const followupDays = caseSheetChatDays || currentCaseSheetChatDays;
-  const followUpAfterInDays =
-    caseSheetChatDays || caseSheetChatDays === '0'
-      ? caseSheetChatDays === '0'
-        ? 0
-        : Number(caseSheetChatDays) - 1
-      : 6;
+  const followUpAfterInDays = caseSheetChatDays ? Number(caseSheetChatDays) : 7;
   const fromSearchAppointmentScreen =
     props.navigation.getParam('fromSearchAppointmentScreen') || false;
   const disableChat =
     props.navigation.getParam('disableChat') ||
     moment(new Date(appointmentData.appointmentDateTime))
       .add(followUpAfterInDays, 'days')
-      .startOf('day')
-      .isBefore(moment(new Date()).startOf('day'));
-
+      .isSameOrBefore(moment(new Date()));
   const isInFuture = moment(props.navigation.state.params!.data.appointmentDateTime).isAfter(
     moment(new Date())
   );
