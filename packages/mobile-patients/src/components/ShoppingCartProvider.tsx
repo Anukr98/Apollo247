@@ -144,6 +144,7 @@ export interface ShoppingCartContextProps {
   deliveryCharges: number;
   packagingCharges: number;
   grandTotal: number;
+  isValidCartValue: boolean;
   uploadPrescriptionRequired: boolean;
   prescriptionType: PrescriptionType | null;
   setPrescriptionType: (type: PrescriptionType | null) => void;
@@ -261,6 +262,7 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   deliveryCharges: 0,
   packagingCharges: 0,
   grandTotal: 0,
+  isValidCartValue: true,
   uploadPrescriptionRequired: false,
   prescriptionType: null,
   setPrescriptionType: () => {},
@@ -699,6 +701,15 @@ export const ShoppingCartProvider: React.FC = (props) => {
         ).toFixed(2)
       );
 
+  const isValidCartValue =
+    !!minimumCartValue &&
+    deliveryAddressId &&
+    addresses?.length &&
+    grandTotal &&
+    grandTotal !== deliveryCharges
+      ? grandTotal >= minimumCartValue
+      : true;
+
   const uploadPrescriptionRequired =
     cartItems.findIndex((item) => item.prescriptionRequired) != -1 ||
     !!physicalPrescriptions.length ||
@@ -1125,6 +1136,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         cartTotalOfRxProducts,
         cartDiscountTotal, //discounted or price total
         grandTotal,
+        isValidCartValue,
         couponDiscount,
         productDiscount,
         deliveryCharges,

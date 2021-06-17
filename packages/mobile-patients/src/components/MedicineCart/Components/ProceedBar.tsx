@@ -30,6 +30,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
     cartItems,
     orders,
     minimumCartValue,
+    isValidCartValue,
   } = useShoppingCart();
   const {
     onPressAddDeliveryAddress,
@@ -47,10 +48,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
   const unServiceable = !!cartItems.find(
     ({ unavailableOnline, unserviceable }) => unavailableOnline || unserviceable
   );
-  const isValidCartValue =
-    !!minimumCartValue && screen === 'MedicineCart' && deliveryAddressId && addresses?.length
-      ? grandTotal >= minimumCartValue
-      : true;
+  const isValidCartTotal = screen === 'MedicineCart' && isValidCartValue;
 
   function getTitle() {
     return !deliveryAddressId
@@ -94,7 +92,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
   };
 
   function isdisabled() {
-    if (cartItems && cartItems.length && !unServiceable && isValidCartValue) {
+    if (cartItems && cartItems.length && !unServiceable && isValidCartTotal) {
       return false;
     } else {
       return true;
@@ -129,7 +127,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
           deliveryTime={orders?.[0]?.tat}
           deliveryAddress={formatSelectedAddress(selectedAddress!)}
           onPressChangeAddress={onPressChangeAddress!}
-          onPressTatCard={screen === 'MedicineCart' && isValidCartValue ? onPressTatCard : () => {}}
+          onPressTatCard={screen === 'MedicineCart' && isValidCartTotal ? onPressTatCard : () => {}}
         />
       );
     } else {
@@ -153,7 +151,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
     <View style={styles.container}>
       {renderTatCard()}
       {deliveryAddressId != '' && isPrescriptionRequired() && renderPrescriptionMessage()}
-      {screen === 'MedicineCart' && !isValidCartValue && renderMinimumCartMessage()}
+      {screen === 'MedicineCart' && !isValidCartTotal && renderMinimumCartMessage()}
       <View style={styles.subContainer}>
         {renderTotal()}
         {renderButton()}
