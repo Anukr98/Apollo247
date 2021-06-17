@@ -410,7 +410,7 @@ export const pushTheView = (
       break;
     case 'Speciality':
       setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', id);
-      const filtersData = id ? handleEncodedURI(id) : '';
+      let filtersData = id ? getParamData(id) : '';
       navigateToView(navigation, AppRoutes.DoctorSearchListing, {
         specialityId: filtersData[0] ? filtersData[0] : '',
         typeOfConsult: filtersData.length > 1 ? filtersData[1] : '',
@@ -623,4 +623,9 @@ const handleEncodedURI = (encodedString: string) => {
   } else {
     return encodedString.split('%20');
   }
+};
+
+const getParamData = (paramString: string) => {
+  const paramArray = paramString.split('&');
+  return paramArray;
 };
