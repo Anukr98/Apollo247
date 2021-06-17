@@ -1939,3 +1939,27 @@ export const VideoConsult: React.FC<IconProps> = (props) => (
 export const YellowRightArrow: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/yellowRightArrow.webp')} />
 );
+
+export const HomeLocationIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/home.webp')}
+  />
+);
+
+export const WorkLocationIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/location_pin.webp')}
+  />
+);
+
+export const MapLocationIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/work.webp')}
+  />
+);

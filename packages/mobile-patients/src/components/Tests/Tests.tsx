@@ -142,6 +142,7 @@ import { PackageCard } from '@aph/mobile-patients/src/components/Tests/component
 import {
   getPatientAddressList,
   getPatientAddressListVariables,
+  getPatientAddressList_getPatientAddressList_addressList,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
@@ -1313,7 +1314,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }}
       >
         <SafeAreaView style={{ flex: 1 }}>
-          <DiagnosticLocation goBack={handleLocationBack} />
+          <DiagnosticLocation
+            goBack={handleLocationBack}
+            addressList={addresses as getPatientAddressList_getPatientAddressList_addressList}
+          />
         </SafeAreaView>
       </Modal>
     );
