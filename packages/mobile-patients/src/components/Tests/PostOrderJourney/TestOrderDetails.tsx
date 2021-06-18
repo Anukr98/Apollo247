@@ -315,8 +315,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         const response = await client.query<GetPatientFeedback, GetPatientFeedbackVariables>({
           query: GET_PATIENT_FEEDBACK,
           variables: {
-            patientId: g(currentPatient, 'id') || '',
-            transactionId: `${selectedTest?.id}`,
+            patientId: !!selectedOrder?.patientId
+              ? selectedOrder?.patientId
+              : currentPatient?.id || '',
+            transactionId: `${selectedOrder?.id}`,
           },
           fetchPolicy: 'no-cache',
         });
@@ -327,7 +329,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       }
       setLoading?.(false);
     } catch (error) {
-      setLoading!(false);
+      setLoading?.(false);
       CommonBugFender(`${AppRoutes.OrderDetailsScene}_updateRateDeliveryBtnVisibility`, error);
     }
   };
