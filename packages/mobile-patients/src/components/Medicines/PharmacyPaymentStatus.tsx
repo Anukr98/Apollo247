@@ -6,8 +6,6 @@ import {
   Success,
   Copy,
   CircleLogo,
-  AlertIcon,
-  GreenClock,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -62,7 +60,10 @@ import {
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { OrderPlacedPopUp } from '@aph/mobile-patients/src/components/ui/OrderPlacedPopUp';
-import { MEDICINE_ORDER_PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  MEDICINE_ORDER_PAYMENT_TYPE,
+  MEDICINE_ORDER_STATUS,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   AppsFlyerEventName,
   AppsFlyerEvents,
@@ -85,6 +86,7 @@ import {
   updateMedicineOrderSubstitution,
   updateMedicineOrderSubstitutionVariables,
 } from '@aph/mobile-patients/src/graphql/types/updateMedicineOrderSubstitution';
+import { SubstituteItemsCard } from '@aph/mobile-patients/src/components/Medicines/Components/SubstituteItemsCard';
 
 enum SUBSTITUTION_RESPONSE {
   OK = 'OK',
@@ -142,6 +144,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const [substituteTime, setSubstituteTime] = useState<number>(
     props.navigation.getParam('substitutionTime') || 0
   );
+  const [transactionId, setTransactionId] = useState(null);
   const [showSubstituteConfirmation, setShowSubstituteConfirmation] = useState<boolean>(false);
   const isSplitCart: boolean = orders?.length > 1 ? true : false;
 
@@ -193,9 +196,15 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         setpaymentRefId(pharmaPaymentStatus?.paymentRefId);
         setStatus(pharmaPaymentStatus?.paymentStatus);
         setPaymentMode(pharmaPaymentStatus?.paymentMode);
+        setTransactionId(pharmaPaymentStatus?.bankTxnId);
         setIsCircleBought(!!pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
         setTotalCashBack(pharmaPaymentStatus?.planPurchaseDetails?.totalCashBack);
         setLoading(false);
+        firePaymentStatusPageViewedEvent(
+          pharmaPaymentStatus?.paymentStatus,
+          pharmaPaymentStatus?.bankTxnId,
+          pharmaPaymentStatus?.paymentMode
+        );
         fireCirclePlanActivatedEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
         fireCirclePurchaseEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
       })
@@ -257,6 +266,44 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       apiCallEnums.plansCashback,
     ];
     navigateToHome(props.navigation);
+  };
+
+  const firePaymentStatusPageViewedEvent = (
+    status: string,
+    transactionId: number,
+    paymentMode: string
+  ) => {
+    const paymentStatus =
+      status == MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS
+        ? 'Success'
+        : status == MEDICINE_ORDER_STATUS.PAYMENT_FAILED
+        ? 'Payment Failed'
+        : status == 'PAYMENT_STATUS_NOT_KNOWN' // for COD
+        ? 'Payment Status Not Known'
+        : 'Payment Aborted';
+    const paymentType = paymentMode == MEDICINE_ORDER_PAYMENT_TYPE.COD ? 'COD' : 'Cashless';
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_POST_CART_PAGE_VIEWED] = {
+      Status: paymentStatus,
+      'Payment type': paymentType,
+      'Transaction ID': transactionId,
+      'Order ID 1': transId,
+      'Order ID 2': isSplitCart ? transId : null,
+      'Substitution Option Shown': showSubstituteMessage ? 'Yes' : 'No',
+    };
+    postWebEngageEvent(WebEngageEventName.PHARMACY_POST_CART_PAGE_VIEWED, eventAttributes);
+  };
+
+  const fireSubstituteResponseEvent = (action: string) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ORDER_SUBSTITUTE_OPTION_CLICKED] = {
+      'Transaction ID': transactionId,
+      'Order ID 1': transId,
+      'Order ID 2': isSplitCart ? transId : null,
+      'Substitute Action Taken': action == SUBSTITUTION_RESPONSE.OK ? 'Agree' : 'Disagree',
+    };
+    postWebEngageEvent(
+      WebEngageEventName.PHARMACY_ORDER_SUBSTITUTE_OPTION_CLICKED,
+      eventAttributes
+    );
   };
 
   const fireCirclePlanActivatedEvent = (planPurchased: boolean) => {
@@ -653,133 +700,15 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const substituteItemsCard = () => {
-    const substituteStyles = StyleSheet.create({
-      substituteCard: {
-        marginVertical: 0.03 * windowWidth,
-        marginHorizontal: 0.06 * windowWidth,
-        backgroundColor: '#fff',
-        flex: 1,
-        borderRadius: 10,
-        shadowColor: '#808080',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.4,
-        shadowRadius: 8,
-        elevation: 6,
-      },
-      noticeContainer: {
-        justifyContent: 'flex-start',
-        flexDirection: 'row',
-        borderBottomWidth: 0.3,
-        borderBottomColor: theme.colors.SHADE_GREY,
-      },
-      alertIcon: {
-        resizeMode: 'contain',
-        width: 20,
-        height: 20,
-        marginRight: 7,
-        marginLeft: 10,
-      },
-      noticeText: {
-        ...theme.viewStyles.text('SB', 15, theme.colors.ASTRONAUT_BLUE, 1, 20),
-        paddingBottom: 10,
-      },
-      messageBody: {
-        justifyContent: 'flex-start',
-        margin: 10,
-        paddingBottom: 10,
-        borderBottomWidth: 0.3,
-        borderBottomColor: theme.colors.SHADE_GREY,
-      },
-      buttonStyle: {
-        height: 0.06 * windowHeight,
-        paddingHorizontal: 10,
-        paddingVertical: 7,
-        borderRadius: 10,
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: '#808080',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.4,
-        shadowRadius: 4,
-      },
-      buttonAgreeStyle: {
-        backgroundColor: '#fcb716',
-        marginHorizontal: 15,
-      },
-      buttonNotAgreeStyle: {
-        backgroundColor: '#ffffff',
-        borderWidth: 2,
-        borderColor: '#fcb716',
-        marginHorizontal: 15,
-        marginTop: 10,
-      },
-      timeoutTextContainer: { marginHorizontal: 15, marginTop: 10, flexDirection: 'row' },
-      greenClockIcon: {
-        resizeMode: 'contain',
-        width: 20,
-        height: 20,
-      },
-    });
-
     return (
-      <View style={substituteStyles.substituteCard}>
-        <View style={{ marginVertical: 15 }}>
-          <View style={substituteStyles.noticeContainer}>
-            <AlertIcon style={substituteStyles.alertIcon} />
-            <Text style={substituteStyles.noticeText}>NOTICE</Text>
-          </View>
-          <View>
-            <View style={substituteStyles.messageBody}>
-              {textComponent(substituteMessage, undefined, theme.colors.ASTRONAUT_BLUE, false)}
-            </View>
-          </View>
-          <View>
-            <TouchableOpacity
-              style={[substituteStyles.buttonAgreeStyle, substituteStyles.buttonStyle]}
-              onPress={() => {
-                const params: updateMedicineOrderSubstitutionVariables = {
-                  transactionId: transId,
-                  orderId: isSplitCart ? null : transId,
-                  substitution: SUBSTITUTION_RESPONSE.OK,
-                };
-                updateOrderSubstitution(params);
-                setShowSubstituteMessage(false);
-                setShowSubstituteConfirmation(true);
-              }}
-            >
-              <Text style={{ ...theme.viewStyles.text('SB', 15, '#ffffff', 1, 24) }}>
-                Yes, Agree to Receiving Substitutes
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[substituteStyles.buttonNotAgreeStyle, substituteStyles.buttonStyle]}
-              onPress={() => {
-                const params: updateMedicineOrderSubstitutionVariables = {
-                  transactionId: transId,
-                  orderId: isSplitCart ? null : transId,
-                  substitution: SUBSTITUTION_RESPONSE.NOT_OK,
-                };
-                updateOrderSubstitution(params);
-                setShowSubstituteMessage(false);
-                setShowSubstituteConfirmation(true);
-              }}
-            >
-              <Text style={{ ...theme.viewStyles.text('SB', 15, '#fcb716', 1, 24) }}>
-                No, I want the Exact items Delivered
-              </Text>
-            </TouchableOpacity>
-            <View style={substituteStyles.timeoutTextContainer}>
-              <Text style={theme.viewStyles.text('SB', 14, theme.colors.APP_GREEN, 1, 24)}>
-                Please Let us Know Within the Next{' '}
-                <GreenClock style={substituteStyles.greenClockIcon} />
-                <Text style={theme.viewStyles.text('B', 14, theme.colors.APP_GREEN, 1, 24)}>
-                  {`${substituteTime} seconds`}
-                </Text>
-              </Text>
-            </View>
-          </View>
-        </View>
-      </View>
+      <SubstituteItemsCard
+        transactionId={transId}
+        substituteMessage={substituteMessage}
+        substituteTime={substituteTime}
+        updateOrderSubstitution={updateOrderSubstitution}
+        setShowSubstituteMessage={setShowSubstituteMessage}
+        setShowSubstituteConfirmation={setShowSubstituteConfirmation}
+      />
     );
   };
 
@@ -798,11 +727,21 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     );
   };
 
-  const updateOrderSubstitution = (paymentInfo: updateMedicineOrderSubstitutionVariables) =>
-    client.mutate<updateMedicineOrderSubstitution, updateMedicineOrderSubstitutionVariables>({
-      mutation: UPDATE_MEDICINE_ORDER_SUBSTITUTION,
-      variables: paymentInfo,
-    });
+  const updateOrderSubstitution = (paymentInfo: updateMedicineOrderSubstitutionVariables) => {
+    client
+      .mutate<updateMedicineOrderSubstitution, updateMedicineOrderSubstitutionVariables>({
+        mutation: UPDATE_MEDICINE_ORDER_SUBSTITUTION,
+        variables: paymentInfo,
+      })
+      .then((data) => {
+        if (data?.data?.updateMedicineOrderSubstitution?.message === 'success') {
+          fireSubstituteResponseEvent(paymentInfo?.substitution);
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('updateMedicineOrderSubstitution Error', error);
+      });
+  };
 
   const renderNote = () => {
     let noteText = '';
