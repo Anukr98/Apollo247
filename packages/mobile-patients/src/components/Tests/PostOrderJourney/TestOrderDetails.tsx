@@ -486,7 +486,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       <>
         {!hasDiffStatusLevelInclusion ? null : (
           <View>
-            {!showInclusionStatus ? <View style={styles.lineSeparator} /> : null}
+            <View style={styles.lineSeparator} />
               <View style={styles.inclusionContainer}>
                 <TouchableOpacity
                   onPress={() => setShowInclusionStatus(!showInclusionStatus)}
