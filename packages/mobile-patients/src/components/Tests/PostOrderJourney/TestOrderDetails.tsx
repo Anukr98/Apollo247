@@ -469,8 +469,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       (item: any) => item?.orderStatus === DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB
     );
 
-    const sampleSubmittedInclusions = orderLevelStatus?.statusInclusions?.filter(
-      (item: any) => DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(item?.orderStatus)
+    const sampleSubmittedInclusions = orderLevelStatus?.statusInclusions?.filter((item: any) =>
+      DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(item?.orderStatus)
     );
 
     const reportText =
@@ -482,57 +482,59 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           sampleSubmittedInclusions?.length == orderLevelStatus?.statusInclusions?.length
         ? 'All samples are submitted'
         : !!sampleSubmittedInclusions && sampleSubmittedInclusions?.length > 0
-        ? `${sampleSubmittedInclusions?.length} ${sampleSubmittedInclusions?.length == 1 ? 'test' : 'tests' } in order are sample submitted `
+        ? `${sampleSubmittedInclusions?.length} ${
+            sampleSubmittedInclusions?.length == 1 ? 'test' : 'tests'
+          } in order are sample submitted `
         : '';
     return (
       <>
         {!hasDiffStatusLevelInclusion ? null : (
           <View>
             <View style={styles.lineSeparator} />
-              <View style={styles.inclusionContainer}>
-                <TouchableOpacity
-                  onPress={() => setShowInclusionStatus(!showInclusionStatus)}
-                  activeOpacity={1}
-                  style={styles.viewRowStyle}
-                >
-                  <Text style={styles.itemNameText}>{!!reportText ? reportText : ''}</Text>
-                  <ArrowRight
-                    style={{
-                      transform: [{ rotate: showInclusionStatus ? '270deg' : '90deg' }],
-                      tintColor: 'black',
-                    }}
-                  />
-                </TouchableOpacity>
-              </View>
+            <View style={styles.inclusionContainer}>
+              <TouchableOpacity
+                onPress={() => setShowInclusionStatus(!showInclusionStatus)}
+                activeOpacity={1}
+                style={styles.viewRowStyle}
+              >
+                <Text style={styles.itemNameText}>{!!reportText ? reportText : ''}</Text>
+                <ArrowRight
+                  style={{
+                    transform: [{ rotate: showInclusionStatus ? '270deg' : '90deg' }],
+                    tintColor: 'black',
+                  }}
+                />
+              </TouchableOpacity>
+            </View>
             {showInclusionStatus &&
               orderLevelStatus?.statusInclusions?.map((item: any, index: number) => {
-                  let selectedItem = selectedOrder?.diagnosticOrderLineItems;
-                  return (
-                    <>
-                      {!!item?.itemName ? (
-                        <View>
-                          <View
-                            style={[
-                              styles.itemNameContainer,
-                              {
-                                marginBottom: selectedItem?.[index]?.itemObj?.reportGenerationTime
-                                  ? 5
-                                  : 16,
-                              },
-                            ]}
-                          >
-                            <View style={{ width: '59%' }}>
-                              <Text style={styles.itemNameText}>
-                                {nameFormater(item?.itemName, 'default')}
-                              </Text>
-                            </View>
-                            <StatusCard titleText={item?.orderStatus} />
+                let selectedItem = selectedOrder?.diagnosticOrderLineItems;
+                return (
+                  <>
+                    {!!item?.itemName ? (
+                      <View>
+                        <View
+                          style={[
+                            styles.itemNameContainer,
+                            {
+                              marginBottom: selectedItem?.[index]?.itemObj?.reportGenerationTime
+                                ? 5
+                                : 16,
+                            },
+                          ]}
+                        >
+                          <View style={{ width: '59%' }}>
+                            <Text style={styles.itemNameText}>
+                              {nameFormater(item?.itemName, 'default')}
+                            </Text>
                           </View>
+                          <StatusCard titleText={item?.orderStatus} />
                         </View>
-                      ) : null}
-                    </>
-                  );
-                })}
+                      </View>
+                    ) : null}
+                  </>
+                );
+              })}
           </View>
         )}
       </>
@@ -653,6 +655,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             imageComponent: '',
           }}
           transactionId={orderId}
+          patientId={!!selectedOrder?.patientId ? selectedOrder?.patientid : currentPatient?.id}
           type={FEEDBACKTYPE.DIAGNOSTICS}
           isVisible={showFeedbackPopup}
           onComplete={(ratingStatus, ratingOption) => {
