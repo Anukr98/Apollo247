@@ -1698,10 +1698,29 @@ export const SAVE_MEDICINE_ORDER_OMS_V2 = gql`
       errorCode
       errorMessage
       transactionId
+      isSubstitution
+      substitutionTime
+      substitutionMessage
       orders {
         id
         orderAutoId
       }
+    }
+  }
+`;
+
+export const UPDATE_MEDICINE_ORDER_SUBSTITUTION = gql`
+  mutation updateMedicineOrderSubstitution(
+    $transactionId: Int
+    $orderId: Int
+    $substitution: String
+  ) {
+    updateMedicineOrderSubstitution(
+      transactionId: $transactionId
+      orderId: $orderId
+      substitution: $substitution
+    ) {
+      message
     }
   }
 `;
