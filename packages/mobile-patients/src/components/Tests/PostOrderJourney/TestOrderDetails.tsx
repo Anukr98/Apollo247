@@ -11,8 +11,6 @@ import {
   More,
   OrderPlacedIcon,
   OrderTrackerSmallIcon,
-  ClockIcon,
-  DownO
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import _ from 'lodash';
 import {
@@ -118,7 +116,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const [scrollYValue, setScrollYValue] = useState(0);
-  const [testListValue, setTestListValue] = useState(3);
   const [loading1, setLoading] = useState<boolean>(true);
   const [orderLevelStatus, setOrderLevelStatus] = useState([] as any);
   const [showInclusionStatus, setShowInclusionStatus] = useState<boolean>(false);
@@ -150,13 +147,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     callOrderLevelStatusApi();
     callOrderDetailsApi();
   }, []);
-  useEffect(() => {
-    if (orderLevelStatus?.statusInclusions && orderLevelStatus?.statusInclusions?.length > 3) {
-      setTestListValue(3);
-    } else {
-      setTestListValue(orderLevelStatus?.statusInclusions?.length);
-    }
-  }, [orderLevelStatus?.statusInclusions?.length]);
 
   async function callOrderLevelStatusApi() {
     try {
@@ -477,20 +467,26 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       (item: any) => item?.orderStatus === DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB
     );
 
+    const sampleSubmittedInclusions = orderLevelStatus?.statusInclusions?.filter(
+      (item: any) => DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(item?.orderStatus)
+    );
+
     const reportText =
       !!pendingReportInclusions && pendingReportInclusions?.length > 0 && isReportText
         ? `Report pending for ${pendingReportInclusions?.length} of ${totalInclusions}`
         : !!sampleRejectedInclusions && sampleRejectedInclusions?.length > 0
         ? `${sampleRejectedInclusions?.length} test in order rejected `
+        : !!sampleSubmittedInclusions &&
+          sampleSubmittedInclusions?.length == orderLevelStatus?.statusInclusions?.length
+        ? 'All samples are submitted'
+        : !!sampleSubmittedInclusions && sampleSubmittedInclusions?.length > 0
+        ? `${sampleSubmittedInclusions?.length} ${sampleSubmittedInclusions?.length == 1 ? 'test' : 'tests' } in order are sample submitted `
         : '';
-
     return (
       <>
         {!hasDiffStatusLevelInclusion ? null : (
           <View>
             {!showInclusionStatus ? <View style={styles.lineSeparator} /> : null}
-
-            {reportText ? (
               <View style={styles.inclusionContainer}>
                 <TouchableOpacity
                   onPress={() => setShowInclusionStatus(!showInclusionStatus)}
@@ -506,11 +502,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                   />
                 </TouchableOpacity>
               </View>
-            ) : null}
-            {showInclusionStatus ||
-              orderLevelStatus?.statusInclusions
-                ?.slice(0, testListValue)
-                ?.map((item: any, index: number) => {
+            {showInclusionStatus &&
+              orderLevelStatus?.statusInclusions?.map((item: any, index: number) => {
                   let selectedItem = selectedOrder?.diagnosticOrderLineItems;
                   return (
                     <>
@@ -538,19 +531,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                     </>
                   );
                 })}
-            {testListValue != orderLevelStatus?.statusInclusions?.length &&
-            orderLevelStatus?.statusInclusions?.length > 3 ? (
-              <TouchableOpacity
-                onPress={() => {
-                  setTestListValue(orderLevelStatus?.statusInclusions?.length);
-                }}
-                style={styles.moreContainer}
-              >
-                <Text style={styles.yellowText}>{`+ ${orderLevelStatus?.statusInclusions?.length -
-                  testListValue} MORE TESTS`}</Text>
-                <DownO />
-              </TouchableOpacity>
-            ) : null}
           </View>
         )}
       </>
@@ -893,7 +873,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   inclusionContainer: {
-    marginBottom: 15,
     marginTop: 10,
   },
   rowStyle: { flexDirection: 'row' },
