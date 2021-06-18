@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { APPOINTMENT_TYPE, STATUS, APPOINTMENT_STATE, DoctorType, Gender, DOCTOR_ONLINE_STATUS, AccountType, ConsultMode, ConsultType, WeekDay } from "./globalTypes";
+import { APPOINTMENT_TYPE, STATUS, APPOINTMENT_STATE, DoctorType, Gender, DOCTOR_ONLINE_STATUS, AccountType, ConsultMode, ConsultType, WeekDay, MEDICINE_UNIT, MEDICINE_TIMINGS, MEDICINE_CONSUMPTION_DURATION } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getPatientAllAppointments
@@ -174,6 +174,12 @@ export interface getPatientAllAppointments_getPatientAllAppointments_cancelledAp
   __typename: "MedicinePrescription";
   id: string | null;
   medicineName: string | null;
+  medicineUnit: MEDICINE_UNIT | null;
+  medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
+  medicineDosage: string | null;
+  medicineCustomDosage: string | null;
+  medicineConsumptionDurationInDays: string | null;
+  medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
 }
 
 export interface getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_caseSheet_diagnosticPrescription {
@@ -382,6 +388,12 @@ export interface getPatientAllAppointments_getPatientAllAppointments_followUpApp
   __typename: "MedicinePrescription";
   id: string | null;
   medicineName: string | null;
+  medicineUnit: MEDICINE_UNIT | null;
+  medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
+  medicineDosage: string | null;
+  medicineCustomDosage: string | null;
+  medicineConsumptionDurationInDays: string | null;
+  medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
 }
 
 export interface getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_caseSheet_diagnosticPrescription {
@@ -590,6 +602,12 @@ export interface getPatientAllAppointments_getPatientAllAppointments_activeAppoi
   __typename: "MedicinePrescription";
   id: string | null;
   medicineName: string | null;
+  medicineUnit: MEDICINE_UNIT | null;
+  medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
+  medicineDosage: string | null;
+  medicineCustomDosage: string | null;
+  medicineConsumptionDurationInDays: string | null;
+  medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
 }
 
 export interface getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet_diagnosticPrescription {
@@ -798,6 +816,12 @@ export interface getPatientAllAppointments_getPatientAllAppointments_completedAp
   __typename: "MedicinePrescription";
   id: string | null;
   medicineName: string | null;
+  medicineUnit: MEDICINE_UNIT | null;
+  medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
+  medicineDosage: string | null;
+  medicineCustomDosage: string | null;
+  medicineConsumptionDurationInDays: string | null;
+  medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
 }
 
 export interface getPatientAllAppointments_getPatientAllAppointments_completedAppointments_caseSheet_diagnosticPrescription {

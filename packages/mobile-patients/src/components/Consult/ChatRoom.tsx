@@ -5438,12 +5438,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
           <View style={styles.externalMeetingLinkCTAWrapper}>
             <TouchableOpacity
-              style={styles.externalMeetingLinkMeetingCTAContainer}
+              style={[styles.externalMeetingLinkMeetingCTAContainer, { flex: 0.9 }]}
               onPress={() => onMeetingLinkClicked(rowData)}
             >
               <Text style={styles.exeternalMeetingLinkMeetingCTAText}>{rowData.url}</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => onLinkCopyClicked(rowData)}>
+            <TouchableOpacity style={{ flex: 0.1 }} onPress={() => onLinkCopyClicked(rowData)}>
               <CopyIcon />
             </TouchableOpacity>
           </View>

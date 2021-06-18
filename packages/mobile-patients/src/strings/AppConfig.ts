@@ -12,6 +12,7 @@ export enum AppEnv {
   QA = 'QA',
   QA2 = 'QA2',
   QA3 = 'QA3',
+  QA4 = 'QA4',
   QA5 = 'QA5',
   PROD = 'PROD',
   PERFORM = 'PERFORM',
@@ -30,6 +31,8 @@ const paymentGatewayBaseUrl: string =
     ? 'https://qapmt.apollo247.com'
     : APP_ENV == AppEnv.QA3
     ? 'https://qathreepmt.apollo247.com'
+    : APP_ENV == AppEnv.QA4
+    ? 'https://qa4pmt.apollo247.com'
     : APP_ENV == AppEnv.QA5
     ? 'https://qa5pmt.apollo247.com'
     : APP_ENV == AppEnv.PERFORM
