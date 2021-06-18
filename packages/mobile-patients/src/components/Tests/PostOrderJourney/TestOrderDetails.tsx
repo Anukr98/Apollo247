@@ -330,7 +330,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       setLoading?.(false);
     } catch (error) {
       setLoading?.(false);
-      CommonBugFender(`${AppRoutes.OrderDetailsScene}_updateRateDeliveryBtnVisibility`, error);
+      CommonBugFender(`${AppRoutes.TestOrderDetails}_updateRateDeliveryBtnVisibility`, error);
     }
   };
 
@@ -655,7 +655,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             imageComponent: '',
           }}
           transactionId={orderId}
-          patientId={!!selectedOrder?.patientId ? selectedOrder?.patientid : currentPatient?.id}
+          patientId={!!selectedOrder?.patientId ? selectedOrder?.patientId : currentPatient?.id}
           type={FEEDBACKTYPE.DIAGNOSTICS}
           isVisible={showFeedbackPopup}
           onComplete={(ratingStatus, ratingOption) => {
