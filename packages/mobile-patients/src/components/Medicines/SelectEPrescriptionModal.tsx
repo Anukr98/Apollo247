@@ -281,7 +281,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
         mobilePrescriptions.push(...prescriptions);
       }
       if (presc?.test_report?.response?.length) {
-        mobileTestReports.push(presc?.test_report?.response);
+        mobileTestReports.push(...presc?.test_report?.response);
       }
     });
     setPrescriptions(mobilePrescriptions);
@@ -474,13 +474,13 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     const isPdf = data?.fileUrl?.split('.')?.pop() === 'pdf';
     const heading =
       data?.patientName ||
-      uploadedBy ||
+      data?.labTestName ||
       data?.testName ||
       data?.issuingDoctor ||
       data?.location ||
       data?.diagnosisNotes ||
       data?.healthCheckName ||
-      data?.labTestName ||
+      uploadedBy ||
       data?.prescriptionName;
     const dateOfPrescription = moment(
       data?.date || data?.testDate || data?.appointmentDate || data?.dateOfHospitalization
