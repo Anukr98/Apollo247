@@ -383,6 +383,7 @@ export function DiagnosticAppointmentTimeSlot(
     UHID: currentPatient?.uhid,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED, eventAttributes);
 }
 
 export function PaymentInitiated(grandTotal: number, LOB: string, type: string) {
@@ -392,6 +393,7 @@ export function PaymentInitiated(grandTotal: number, LOB: string, type: string) 
     type: type,
   };
   postWebEngageEvent(WebEngageEventName.PAYMENT_INITIATED, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.PAYMENT_INITIATED, eventAttributes);
 }
 
 export function DiagnosticAddresssSelected(
@@ -444,6 +446,7 @@ export function DiagnosticRescheduleOrder(
     'Order id': orderId,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ORDER_RESCHEDULE, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ORDER_RESCHEDULE, eventAttributes);
 }
 
 export function DiagnosticTrackOrderViewed(
@@ -471,6 +474,7 @@ export function DiagnosticFeedbackSubmitted(currentPatient: any, rating: string,
     'Thing to Improve selected': reason,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_FEEDBACK_GIVEN, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_FEEDBACK_GIVEN, eventAttributes);
 }
 
 export function DiagnosticItemSearched(
@@ -486,6 +490,7 @@ export function DiagnosticItemSearched(
     Popular: keyword == '' ? 'Yes' : 'No',
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ITEM_SEARCHED, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ITEM_SEARCHED, eventAttributes);
 }
 
 export function DiagnosticPaymentPageViewed(currentPatient: any, amount: string | number) {
@@ -511,6 +516,7 @@ export function DiagnosticPhleboFeedbackSubmitted(
     'Phlebo id': phleboId,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED, eventAttributes);
 }
 export function DiagnosticPhleboCallingClicked(
   currentPatient: any,
@@ -523,6 +529,7 @@ export function DiagnosticPhleboCallingClicked(
     'Phlebo Name': phleboName,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PHLEBO_CALLING_CLICKED, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PHLEBO_CALLING_CLICKED, eventAttributes);
 }
 
 export function DiagnosticOrderSummaryViewed(
@@ -599,6 +606,7 @@ export function DiagnosticTrackPhleboClicked(
     'Link opened': isOpen,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED, eventAttributes);
 }
 
 export function DiagnosticUserPaymentAborted(currentPatient: any, orderId: string) {
@@ -607,4 +615,5 @@ export function DiagnosticUserPaymentAborted(currentPatient: any, orderId: strin
     UHID: currentPatient?.uhid,
   };
   postWebEngageEvent(WebEngageEventName.DIGNOSTIC_PAYMENT_ABORTED, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIGNOSTIC_PAYMENT_ABORTED, eventAttributes);
 }
