@@ -1038,11 +1038,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
     ];
 
-    const isNotTatBreach = tatInfo == null ? true : moment(tatInfo!).isSameOrAfter(moment(), 'day');
-    const shouldScrollToSlot = (isNotTatBreach: boolean) => {
-      !isNotTatBreach && statusToConsiderTatBreach.includes(orderDetails.currentStatus!)
-        ? null
-        : scrollToSlots();
+    const shouldScrollToSlot = () => {
+      if (statusToConsiderTatBreach.includes(orderDetails.currentStatus!)) scrollToSlots();
     };
 
     let statusList = orderStatusList
@@ -1051,7 +1048,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       )
       .concat([]);
     order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-      ? shouldScrollToSlot(isNotTatBreach!)
+      ? shouldScrollToSlot()
       : scrollToSlots();
 
     if (
@@ -1065,7 +1062,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         )
         .concat([]);
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED) {
       statusList = orderStatusList
@@ -1125,7 +1122,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               ]
         );
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED) {
       statusList = orderStatusList
@@ -1176,7 +1173,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               ]
         );
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     }
     //added for on-hold
@@ -1228,7 +1225,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               ]
         );
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_VERIFIED) {
       statusList = orderStatusList
@@ -1268,7 +1265,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               ]
         );
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.READY_AT_STORE) {
       statusList = orderStatusList
@@ -1283,7 +1280,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
         ]);
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED) {
       statusList = orderStatusList
@@ -1303,7 +1300,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
         ]);
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY) {
       statusList = orderStatusList
@@ -1318,7 +1315,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
         ]);
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     } else if (
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
@@ -1330,7 +1327,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         )
         .concat([]);
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     }
 
