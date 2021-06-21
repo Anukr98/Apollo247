@@ -42,6 +42,7 @@ import {
   postFirebaseEvent,
   postWebEngageEvent,
   getUserType,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -83,6 +84,10 @@ import {
   ProceduresAndSymptomsResult,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 var allSettled = require('promise.allsettled');
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const styles = StyleSheet.create({
   searchContainer: {
@@ -1314,6 +1319,30 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       User_Type: getUserType(allCurrentPatients),
     };
 
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED] = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Doctor ID': g(doctorDetails, 'id')!,
+      'Doctor Name': g(doctorDetails, 'displayName')!,
+      'Speciality Name': doctorDetails?.specialtydisplayName,
+      'Speciality ID': 'NA',
+      'Media Source': 'NA',
+      User_Type: getUserType(allCurrentPatients),
+      Fee: Number(doctorDetails?.onlineConsultationFees),
+      Source: 'Doctor Card clicked',
+      'Doctor card clicked': 'Yes',
+      Rank: doctorDetails?.rowId,
+      Is_TopDoc: 'No',
+      DOTH: 'F',
+      'Doctor Tab': 'NA',
+      'Doctor Category': doctorDetails?.doctorType,
+    };
+
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {
       DoctorName: doctorDetails.fullName!,
       Source: source,
@@ -1342,6 +1371,10 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       postFirebaseEvent(FirebaseEventName.BOOK_APPOINTMENT, eventAttributesFirebase);
     } else {
       postWebEngageEvent(WebEngageEventName.DOCTOR_CLICKED, eventAttributes);
+      postCleverTapEvent(
+        CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED,
+        cleverTapEventAttributes
+      );
       const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.DOCTOR_CLICKED] = {
         'customer id': currentPatient ? currentPatient.id : '',
         'doctor id': doctorDetails.id,

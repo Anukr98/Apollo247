@@ -119,8 +119,17 @@ export enum CleverTapEventName {
   //Consult Events
   CONSULT_DOCTOR_PROFILE_VIEWED = 'Consult Doctor Profile viewed',
   CONSULT_PAYMENT_MODE_SELECTED = 'Consult booking payment mode selected',
-  CONSULT_CARD_CLICKED = 'Consult Card Clicked',
+  CONSULT_CARD_CLICKED = 'Consult Card clicked',
   CONSULT_REPORT_UPLOAD_IN_CHATROOM = 'Consult report upload in chatroom',
+  CONSULT_FEEDBACK_GIVEN = 'Consult feedback Given',
+  CONSULT_RESCHEDULED_BY_THE_PATIENT = 'Consult Reschedule by the patient',
+  CONSULT_RESCHEDULE_CLICKED = 'Consult Reschedule clicked',
+  CONSULT_CANCEL_CLICKED_BY_PATIENT = 'Consult cancel clicked by patient',
+  CONTINUE_CONSULTATION_CLICKED = 'Consult continue clicked by patient',
+  CONSULT_CANCELLED_BY_PATIENT = 'Consult cancelled by patient',
+
+  // Symptom Tracker Events
+  SYMPTOM_TRACKER_SELECT_ANOTHER_MEMBER_CLICKED = 'Symptom_Select other member clicke',
 
   //Doctor Share Events
   SHARE_CLICK_DOC_LIST_SCREEN = 'Share clicked doc list screen',
@@ -281,15 +290,12 @@ export enum CleverTapEventName {
   PHR_NO_OF_USERS_CLICKED_ON_RECORDS = 'PHR users seen on records in {0}',
 
   // ConsultRoom Events
-  CONSULTATION_CANCELLED_BY_CUSTOMER = 'Consultation Cancelled by Customer',
-  CONSULTATION_RESCHEDULED_BY_CUSTOMER = 'Consultation Rescheduled by Customer',
   COMPLETED_AUTOMATED_QUESTIONS = 'Completed Automated Questions',
   JD_COMPLETED = 'JD Completed',
   CHAT_WITH_US = 'Chat with us',
   PRESCRIPTION_RECEIVED = 'Prescription Received',
   SD_CONSULTATION_STARTED = 'SD Consultation Started',
   SD_VIDEO_CALL_STARTED = 'SD Video call started',
-  CONSULT_FEEDBACK_GIVEN = 'Consult feedback Given',
   DOWNLOAD_PRESCRIPTION = 'Download Prescription',
   VIEW_PRESCRIPTION_IN_CONSULT_DETAILS = 'View Prescription in Consult Details',
   CART_PRESCRIPTION_OPTION_SELECTED_PROCEED_CLICKED = 'Cart Prescription Option Selected & Proceed Click',
@@ -298,9 +304,7 @@ export enum CleverTapEventName {
   CONTINUE_CONSULT_CLICKED = 'Continue Consult Clicked',
   CHAT_WITH_DOCTOR = 'Chat with Doctor',
   FILL_MEDICAL_DETAILS = 'Fill Medical Details',
-  RESCHEDULE_CLICKED = 'Reschedule Clicked',
-  CANCEL_CONSULTATION_CLICKED = 'Cancel Consultation Clicked',
-  CONTINUE_CONSULTATION_CLICKED = 'Continue Consultation Clicked',
+
   NO_SLOTS_FOUND = 'No Slots Found',
   DOCTOR_RESCHEDULE_CLAIM_REFUND = 'Doctor reschedule and Claim Refund button click',
   DOCTOR_CONNECT_TAB_CLICKED = 'Doctor Connect Tab Clicked',
@@ -388,7 +392,6 @@ export enum CleverTapEventName {
   // Symptom Tracker Events
   SYMPTOM_TRACKER_PAGE_CLICKED = 'Track symptoms clicked',
   SYMPTOM_TRACKER_FOR_MYSELF = 'Myself clicked SC',
-  SYMPTOM_TRACKER_SELECT_ANOTHER_MEMBER_CLICKED = 'select other member clicked SC',
   SYMPTOM_TRACKER_INFO_CLICKED = 'information sign clicked SC',
   SYMPTOM_TRACKER_MOST_TROUBLING_SYMPTOM_CLICKED = 'symptom troubling most clicked SC',
   SYMPTOM_TRACKER_SUGGESTED_SYMPTOMS_CLICKED = 'suggested symptoms clicked SC',
@@ -1874,7 +1877,7 @@ export interface CleverTapEvents {
     'Doctor Mobile Number': string;
   };
 
-  [CleverTapEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER]: {
+  [CleverTapEventName.CONSULT_RESCHEDULED_BY_THE_PATIENT]: {
     'Doctor Name': string;
     'Speciality Name': string;
     'Speciality ID': string;

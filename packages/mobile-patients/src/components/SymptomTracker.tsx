@@ -26,7 +26,11 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  postCleverTapEvent,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
   WebEngageEvents,
@@ -50,6 +54,7 @@ import {
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AlertPopup } from '@aph/mobile-patients/src/components/ui/AlertPopup';
 import { Overlay } from 'react-native-elements';
+import { CleverTapEventName } from '../helpers/CleverTapEvents';
 
 const roundCountViewDimension = 30;
 const howItWorksArrData = [
@@ -452,6 +457,10 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
             const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_SELECT_ANOTHER_MEMBER_CLICKED] = patientInfoAttributes;
             postWebEngageEvent(
               WebEngageEventName.SYMPTOM_TRACKER_SELECT_ANOTHER_MEMBER_CLICKED,
+              eventAttributes
+            );
+            postCleverTapEvent(
+              CleverTapEventName.SYMPTOM_TRACKER_SELECT_ANOTHER_MEMBER_CLICKED,
               eventAttributes
             );
             setShowProfilePopUp(true);

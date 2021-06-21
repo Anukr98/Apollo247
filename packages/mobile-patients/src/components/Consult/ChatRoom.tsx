@@ -6833,6 +6833,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       'Rating Reason': reason,
     };
     postWebEngageEvent(WebEngageEventName.CONSULT_FEEDBACK_GIVEN, eventAttributes);
+    postCleverTapEvent(CleverTapEventName.CONSULT_FEEDBACK_GIVEN, eventAttributes);
   };
 
   const postAppointmentWEGEvents = (
