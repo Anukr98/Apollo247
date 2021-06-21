@@ -12,8 +12,12 @@ import {
   getAge,
   isAddressLatLngInValid,
   setAsyncPharmaLocation,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+  isSmallDevice,
+} from '@aph/mobile-patients/src//helpers/helperFunctions';
+import {
+  LocationData,
+  useAppCommonData,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   DiagnosticArea,
   DiagnosticsCartItem,
@@ -34,8 +38,10 @@ import {
   CrossOcta,
   BlackArrowUp,
   BlackArrowDown,
+  Down,
+  Up,
+  InfoIconBlue
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
   CommonLogEvent,
@@ -54,7 +60,9 @@ import {
   EDIT_PROFILE,
   GET_DIAGNOSTIC_NEAREST_AREA,
   GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
+  MODIFY_DIAGNOSTIC_ORDERS,
   FIND_DIAGNOSTIC_SETTINGS,
+  SET_DEFAULT_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticsHCChargesVariables,
@@ -72,6 +80,8 @@ import {
   OrderCreate,
   OrderVerticals,
   DiagnosticsBookingSource,
+  DIAGNOSTIC_ORDER_PAYMENT_TYPE,
+  saveModifyDiagnosticOrderInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
@@ -95,6 +105,7 @@ import {
   Platform,
   ScrollView,
   Alert,
+  BackHandler,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { TestSlotSelectionOverlayNew } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlayNew';
@@ -134,6 +145,7 @@ import {
   getPricesForItem,
   sourceHeaders,
   convertNumberToDecimal,
+  createAddressObject,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
@@ -143,7 +155,9 @@ import {
   DiagnosticAppointmentTimeSlot,
   DiagnosticAreaSelected,
   DiagnosticCartViewed,
+  DiagnosticModifyOrder,
   DiagnosticNonServiceableAddressSelected,
+  PaymentInitiated,
   DiagnosticProceedToPay,
   DiagnosticRemoveFromCartClicked,
 } from '@aph/mobile-patients/src/components/Tests/Events';
@@ -167,13 +181,22 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/editProfile';
 import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import AsyncStorage from '@react-native-community/async-storage';
+import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
+import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import {
-  findDiagnosticSettings,
-  findDiagnosticSettingsVariables,
-} from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
-import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/components/InfoMessage';
+  saveModifyDiagnosticOrder,
+  saveModifyDiagnosticOrderVariables,
+} from '@aph/mobile-patients/src/graphql/types/saveModifyDiagnosticOrder';
+import { processDiagnosticsCODOrder } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { findDiagnosticSettings } from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
+import {
+  makeAdressAsDefault,
+  makeAdressAsDefaultVariables,
+} from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 const { width: screenWidth } = Dimensions.get('window');
-
+type Address = savePatientAddress_savePatientAddress_patientAddress;
 export interface areaObject {
   key: string | number;
   value: string | number;
@@ -191,6 +214,8 @@ export interface orderDetails {
 export interface TestsCartProps extends NavigationScreenProps {
   comingFrom?: string;
 }
+
+type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
 
 export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const {
@@ -239,6 +264,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setShowSelectedArea,
     isCartPagePopulated,
     setCartPagePopulated,
+    modifyHcCharges,
+    setModifyHcCharges,
+    modifiedOrder,
+    setModifiedOrder,
+    setAsyncDiagnosticPincode,
+    setModifiedOrderItemIds,
   } = useDiagnosticsCart();
   const {
     setAddresses: setMedAddresses,
@@ -247,12 +278,18 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   } = useShoppingCart();
 
   const sourceScreen = props.navigation.getParam('comingFrom');
+  const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
+
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
   const { currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const [todaySlotNotAvailable, setTodaySlotNotAvailable] = useState<boolean>(false);
   const [showCancellationPolicy, setShowCancellationPolicy] = useState<boolean>(false);
-  const currentPatientId = currentPatient && currentPatient?.id;
+  const [showPriceMismatch, setShowPriceMismatch] = useState<boolean>(false);
+  const currentPatientId =
+    !!modifiedOrder && !isEmptyObject(modifiedOrder)
+      ? modifiedOrder?.patientId
+      : currentPatient && currentPatient?.id;
   const client = useApolloClient();
   const {
     locationDetails,
@@ -261,15 +298,16 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setauthToken,
     setDoctorJoinedChat,
     isDiagnosticLocationServiceable,
+    setDiagnosticLocation,
   } = useAppCommonData();
 
   const { getPatientApiCall } = useAuth();
 
-  const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
+  const { setLoading, showAphAlert, hideAphAlert, loading } = useUIElements();
 
+  const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [displaySchedule, setDisplaySchedule] = useState<boolean>(false);
   const [date, setDate] = useState<Date>(new Date());
-  const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>();
   const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
   const [addressCityId, setAddressCityId] = useState<string>(deliveryAddressCityId);
@@ -278,21 +316,38 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [showInclusions, setShowInclusions] = useState<boolean>(false);
   const [duplicateNameArray, setDuplicateNameArray] = useState([] as any);
   const [showPatientListOverlay, setShowPatientListOverlay] = useState<boolean>(
-    showSelectPatient ? false : true
+    isModifyFlow ? false : showSelectPatient ? false : true
   );
   const [showPatientDetailsOverlay, setShowPatientDetailsOverlay] = useState<boolean>(false);
-  const [selectedPatient, setSelectedPatient] = useState<any>(null);
+  const [selectedPatient, setSelectedPatient] = useState<any>(
+    isModifyFlow ? modifiedOrder?.patientObj : null
+  );
   const [showSelectAreaOverlay, setShowSelectAreaOverlay] = useState<boolean>(false);
   const [reportGenDetails, setReportGenDetails] = useState<any>([]);
   const [alsoAddListData, setAlsoAddListData] = useState<any>([]);
   const [isFocused, setIsFocused] = useState<boolean>(false);
+  const [showAllPreviousItems, setShowAllPreviousItems] = useState<boolean>(true);
+  const [isHcApiCalled, setHcApiCalled] = useState<boolean>(false);
+
   const [phleboMin, setPhleboMin] = useState(0);
   const itemsWithHC = cartItems?.filter((item) => item!.collectionMethod == 'HC');
   const itemWithId = itemsWithHC?.map((item) => Number(item.id!));
 
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   var pricesForItemArray;
+  var modifyPricesForItemArray;
   var slotBookedArray = ['slot', 'already', 'booked', 'select a slot'];
+
+  const isCovidItem = cartItemsWithId?.map((item) =>
+    AppConfig.Configuration.Covid_Items.includes(item)
+  );
+  const isCartHasCovidItem = isCovidItem?.find((item) => item === true);
+  const maxDaysToShow = !!isCartHasCovidItem
+    ? AppConfig.Configuration.Covid_Max_Slot_Days
+    : AppConfig.Configuration.Non_Covid_Max_Slot_Days;
+  const enable_cancelellation_policy =
+    AppConfig.Configuration.Enable_Diagnostics_Cancellation_Policy;
+  const cancelellation_policy_text = AppConfig.Configuration.Diagnostics_Cancel_Policy_Text_Msg;
 
   const saveHomeCollectionBookingOrder = (orderInfo: SaveBookHomeCollectionOrderInput) =>
     client.mutate<saveDiagnosticBookHCOrder, saveDiagnosticBookHCOrderVariables>({
@@ -312,6 +367,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       variables: { order: orders },
     });
 
+  const saveModifyOrder = (orderInfo: saveModifyDiagnosticOrderInput) =>
+    client.mutate<saveModifyDiagnosticOrder, saveModifyDiagnosticOrderVariables>({
+      mutation: MODIFY_DIAGNOSTIC_ORDERS,
+      context: {
+        sourceHeaders,
+      },
+      variables: { saveModifyDiagnosticOrder: orderInfo },
+    });
+
   useEffect(() => {
     initiateHyperSDK();
   }, [currentPatient]);
@@ -319,22 +383,30 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setIsFocused(true);
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
     });
-    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+    const willBlur = props.navigation.addListener('willBlur', (payload) => {
       setIsFocused(false);
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
     });
     return () => {
       didFocus && didFocus.remove();
-      didBlur && didBlur.remove();
+      willBlur && willBlur.remove();
     };
   }, []);
 
   useEffect(() => {
     if (showSelectPatient && currentPatient) {
-      setSelectedPatient(currentPatient);
+      setSelectedPatient(isModifyFlow ? modifiedOrder?.patientObj : currentPatient);
       setShowPatientListOverlay(false);
     }
-    fetchAddresses();
+    //set the area & patient selected for modifiedOrder flow
+    if (isModifyFlow) {
+      setAreaSelected?.({ key: modifiedOrder?.areaId, value: '' });
+      setPatientId?.(modifiedOrder?.patientId);
+    } else {
+      fetchAddresses();
+    }
     fetchFindDiagnosticSettings();
   }, []);
 
@@ -360,7 +432,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             context: {
               sourceHeaders,
             },
-            variables: { cityID: Number(addressCityId) || 9, itemIDs: _filterItemIds },
+            variables: {
+              cityID: Number(addressCityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
+              itemIDs: _filterItemIds,
+            },
             fetchPolicy: 'no-cache',
           })
           .then(({ data }) => {
@@ -400,7 +475,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const fetchFindDiagnosticSettings = async () => {
     try {
-      const response = await client.query<findDiagnosticSettings, findDiagnosticSettingsVariables>({
+      const response = await client.query<findDiagnosticSettings>({
         query: FIND_DIAGNOSTIC_SETTINGS,
         variables: {
           phleboETAInMinutes: 0,
@@ -442,35 +517,87 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const handleBack = () => {
-    props.navigation.goBack();
+    //modify order
+    if (isModifyFlow) {
+      showAphAlert?.({
+        title: string.common.hiWithSmiley,
+        description: string.diagnostics.modifyDiscardText,
+        unDismissable: true,
+        CTAs: [
+          {
+            text: 'DISCARD',
+            onPress: () => {
+              hideAphAlert?.();
+              clearModifyDetails();
+            },
+            type: 'orange-button',
+          },
+          {
+            text: 'CANCEL',
+            onPress: () => {
+              hideAphAlert?.();
+            },
+            type: 'orange-button',
+          },
+        ],
+      });
+    } else {
+      props.navigation.goBack();
+    }
+    return true;
   };
 
+  function clearModifyDetails() {
+    setModifiedOrder?.(null);
+    setPatientId?.(currentPatientId!);
+    setModifyHcCharges?.(0);
+    setModifiedOrderItemIds?.([]);
+    setHcCharges?.(0);
+    setAreaSelected?.({});
+    //go back to homepage
+    props.navigation.navigate('TESTS', { focusSearch: true });
+  }
+
   useEffect(() => {
-    if (cartItemsWithId?.length > 0) {
+    if (cartItemsWithId?.length > 0 && !isModifyFlow) {
       fetchPackageDetails(cartItemsWithId, null, 'diagnosticServiceablityChange');
     }
   }, [diagnosticServiceabilityData]);
 
   useEffect(() => {
-    if (
+    if (isModifyFlow) {
+      return;
+    } else if (
       selectedTimeSlot?.slotInfo?.slot! &&
       areaSelected &&
       deliveryAddressId != '' &&
       cartItems?.length > 0
     ) {
       setCartPagePopulated?.(true);
-
       validateDiagnosticCoupon();
       fetchHC_ChargesForTest(selectedTimeSlot?.slotInfo?.slot!);
     }
   }, [diagnosticSlot, deliveryAddressId, cartItems, addresses]);
 
+  //called only for the modify flow.
   useEffect(() => {
-    if (deliveryAddressId != '' && isFocused) {
+    if (isModifyFlow && modifiedOrder?.slotId && modifiedOrder?.areaId && cartItems?.length > 0) {
+      const modifyOrderItems = modifiedOrder?.diagnosticOrderLineItems?.map(
+        (item: orderListLineItems) => item
+      );
+      //if any of cart item has 0 price -> don't call hcApi
+      const isCartUpdated = cartItems?.find((item) => Number(item?.price) === 0);
+      isCartUpdated == undefined && fetchHC_ChargesForTest(modifiedOrder?.slotId, modifyOrderItems);
+    }
+  }, [cartItems]);
+
+  useEffect(() => {
+    if ((isModifyFlow || deliveryAddressId != '') && isFocused) {
       getPinCodeServiceability();
     }
-  }, [deliveryAddressId, addresses, isFocused]);
+  }, [addresses, isFocused]);
 
+  //check all webengage events
   useEffect(() => {
     if (cartItems?.length && deliveryAddressId != '') {
       const selectedAddressIndex = addresses?.findIndex(
@@ -494,11 +621,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   }, [hcCharges, addresses]);
 
-  const postwebEngageProceedToPayEvent = () => {
+  function postwebEngageProceedToPayEvent() {
     const mode = 'Home Visit';
+    const areaId = isModifyFlow
+      ? Number(modifiedOrder?.areaId)
+      : Number((areaSelected as areaObject)?.key);
+    const slotTime = isModifyFlow
+      ? moment(modifiedOrder?.slotDateTimeInUTC).format('hh:mm')
+      : selectedTimeSlot?.slotInfo?.startTime!;
     const areaName = String((areaSelected as areaObject)?.value);
-    const areaId = Number((areaSelected as areaObject)?.key);
-    const area = String((areaSelected as areaObject)?.value);
 
     DiagnosticProceedToPay(
       date,
@@ -513,9 +644,26 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       areaName,
       areaId,
       hcCharges,
-      selectedTimeSlot?.slotInfo?.startTime!
+      slotTime
     );
-  };
+  }
+
+  function postwebEngageProceedToPayEventForModify() {
+    const previousTotalCharges = modifiedOrder?.totalPrice;
+    const isHCUpdated = modifiedOrder?.collectionCharges === hcCharges ? 'No' : 'Yes';
+    const paymentMode =
+      modifiedOrder?.paymentType !== DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
+        ? 'Cash'
+        : 'Prepaid';
+    DiagnosticModifyOrder(
+      cartItemsWithId?.length,
+      cartItemsWithId?.join(', '),
+      previousTotalCharges,
+      grandTotal,
+      isHCUpdated,
+      paymentMode
+    );
+  }
 
   const setWebEngageEventForAddressNonServiceable = (pincode: string) => {
     const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
@@ -568,8 +716,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       }
     }
   }, [cartItems?.length, addressCityId]);
-
   useEffect(() => {
+    if (isModifyFlow) {
+      return;
+    }
     setPatientId!(currentPatientId!);
   }, [currentPatientId]);
 
@@ -579,29 +729,35 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setDiagnosticAreas?.([]);
       setAreaSelected?.({});
       setDeliveryAddressId?.('');
+      setModifyHcCharges?.(0);
       setHcCharges?.(0);
       setCartPagePopulated?.(false);
       setLoading?.(false);
     }
-    if (deliveryAddressId) {
-      if (diagnosticSlot) {
-        setDate(new Date(diagnosticSlot?.date));
-        setselectedTimeSlot({
-          date: new Date(diagnosticSlot?.date),
-          diagnosticBranchCode: '',
-          employeeCode: diagnosticSlot?.diagnosticEmployeeCode,
-          employeeName: '', // not sending name to API hence keeping empty
-          slotInfo: {
-            __typename: 'SlotInfo',
-            endTime: diagnosticSlot?.slotEndTime,
-            slot: String(diagnosticSlot?.employeeSlotId),
-            startTime: diagnosticSlot?.slotStartTime,
-            status: 'empty',
-          },
-        });
-      } else {
-        setDate(new Date());
-        setselectedTimeSlot(undefined);
+
+    if (isModifyFlow) {
+      return;
+    } else {
+      if (deliveryAddressId) {
+        if (diagnosticSlot) {
+          setDate(new Date(diagnosticSlot?.date));
+          setselectedTimeSlot({
+            date: new Date(diagnosticSlot?.date),
+            diagnosticBranchCode: '',
+            employeeCode: diagnosticSlot?.diagnosticEmployeeCode,
+            employeeName: '', // not sending name to API hence keeping empty
+            slotInfo: {
+              __typename: 'SlotInfo',
+              endTime: diagnosticSlot?.slotEndTime,
+              slot: String(diagnosticSlot?.employeeSlotId),
+              startTime: diagnosticSlot?.slotStartTime,
+              status: 'empty',
+            },
+          });
+        } else {
+          setDate(new Date());
+          setselectedTimeSlot(undefined);
+        }
       }
     }
   }, [deliveryAddressId, diagnosticSlot, cartItems, addresses]);
@@ -624,6 +780,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         },
       });
     } else {
+      setLoading?.(false);
       showAphAlert?.({
         title: string.common.uhOh,
         description: message,
@@ -671,7 +828,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       const selectedAddressIndex = addresses?.findIndex(
         (address) => address?.id == deliveryAddressId
       );
-      isEmptyObject(areaSelected) == false
+      isModifyFlow
+        ? null
+        : isEmptyObject(areaSelected) == false
         ? checkSlotSelection(areaSelected, undefined, undefined, removedItems)
         : showSelectedArea
         ? fetchAreasForAddress(
@@ -699,10 +858,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const selectedAddressIndex = addresses?.findIndex(
       (address) => address?.id == deliveryAddressId
     );
-    const pinCodeFromAddress = addresses?.[selectedAddressIndex]?.zipcode!;
+    const pinCodeFromAddress = isModifyFlow
+      ? modifiedOrder?.patientAddressObj?.zipcode!
+      : addresses?.[selectedAddressIndex]?.zipcode!;
+
     if (!!pinCodeFromAddress) {
-      setPinCode?.(pinCodeFromAddress);
       setLoading?.(true);
+      setPinCode?.(pinCodeFromAddress);
       client
         .query<getPincodeServiceability, getPincodeServiceabilityVariables>({
           query: GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
@@ -755,7 +917,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             newAddressAddedCartPage != '' && setNewAddressAddedCartPage?.('');
           } else {
             setLoading?.(false);
-            showAphAlert!({
+            showAphAlert?.({
               unDismissable: true,
               title: string.common.uhOh,
               description: string.diagnostics.nonServiceableConfigPinCodeMsg.replace(
@@ -884,19 +1046,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           } else {
             cartPriceToCompare = Number(cartItem?.specialPrice || cartItem?.price);
           }
-
           if (priceToCompare !== cartPriceToCompare) {
             //mrp
             //show the prices changed pop-over
             isPriceChange = true;
-            showAphAlert!({
-              unDismissable: true,
-              title: string.common.uhOh,
-              description: string.diagnostics.pricesChangedMessage,
-              onPressOk: () => {
-                hideAphAlert?.();
-                const _itemIds = cartItems?.map((item) => Number(item?.id));
-                !isEmptyObject(areaSelected)
+            setShowPriceMismatch(true)
+            const _itemIds = cartItems?.map((item) => Number(item?.id));
+                isModifyFlow
+                  ? null
+                  : !isEmptyObject(areaSelected)
                   ? checkSlotSelection(areaSelected, undefined, undefined, _itemIds)
                   : shouldShowArea
                   ? fetchAreasForAddress(
@@ -905,8 +1063,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                       shouldShowArea
                     )
                   : getAreas();
-              },
-            });
             updateCartItem?.({
               id: results?.[isItemInCart]
                 ? String(results?.[isItemInCart]?.itemId)
@@ -938,14 +1094,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           const disabledCartItemIds = disabledCartItems?.map((item) => item.id);
           setLoading?.(false);
           removeDisabledCartItems(disabledCartItemIds);
+          setShowPriceMismatch(true);
+          const _itemIds = cartItems?.map((item) => Number(item?.id));
 
-          showAphAlert?.({
-            title: string.common.uhOh,
-            description: string.diagnostics.pricesChangedMessage,
-            onPressOk: () => {
-              hideAphAlert?.();
-              const _itemIds = cartItems?.map((item) => Number(item?.id));
-              !isEmptyObject(areaSelected)
+              isModifyFlow
+                ? null
+                : !isEmptyObject(areaSelected)
                 ? checkSlotSelection(areaSelected, undefined, undefined, _itemIds)
                 : shouldShowArea
                 ? fetchAreasForAddress(
@@ -954,15 +1108,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                     shouldShowArea
                   )
                 : getAreas();
-            },
-          });
         }
       });
       if (!isItemDisable && !isPriceChange) {
         isPriceChange = false;
         isItemDisable = false;
         const _itemIds = cartItems?.map((item) => Number(item?.id));
-        !isEmptyObject(areaSelected)
+        isModifyFlow
+          ? setLoading?.(false)
+          : !isEmptyObject(areaSelected)
           ? checkSlotSelection(areaSelected, undefined, undefined, _itemIds)
           : shouldShowArea
           ? fetchAreasForAddress(
@@ -983,18 +1137,21 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           borderRadius: 0,
         }}
         leftIcon={'backArrow'}
-        title={'TESTS CART'}
+        title={isModifyFlow ? 'MODIFY ORDERS' : 'TESTS CART'}
         titleStyle={{ marginLeft: 20 }}
         rightComponent={
           <View>
-            <TouchableOpacity activeOpacity={1} onPress={() => _navigateToHomePage()}>
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => (isModifyFlow ? _navigateToSearch() : _navigateToHomePage())}
+            >
               <Text
                 style={{
                   ...theme.fonts.IBMPlexSansSemiBold(13),
                   color: theme.colors.APP_YELLOW,
                 }}
               >
-                ADD ITEMS
+                ADD TESTS
               </Text>
             </TouchableOpacity>
           </View>
@@ -1003,6 +1160,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       />
     );
   };
+
+  function _navigateToSearch() {
+    DiagnosticAddToCartClicked();
+    props.navigation.navigate(AppRoutes.SearchTestScene, {
+      searchText: '',
+    });
+  }
 
   function _navigateToHomePage() {
     DiagnosticAddToCartClicked();
@@ -1041,8 +1205,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       deliveryAddressId != ''
         ? Number(deliveryAddressCityId)
         : !!sourceScreen
-        ? 9
-        : Number(diagnosticServiceabilityData?.cityId! || '9');
+        ? AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
+        : Number(
+            diagnosticServiceabilityData?.cityId! ||
+              AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
+          );
+
     {
       setLoading?.(true);
       client
@@ -1081,8 +1249,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
                 const planToConsider = pricesForItem?.planToConsider;
 
-                updateCartItem!({
-                  id: item?.itemId!.toString() || product?.[0]?.id!,
+                updateCartItem?.({
+                  id: item?.itemId?.toString() || product?.[0]?.id!,
                   name: item?.itemName,
                   price: price,
                   thumbnail: '',
@@ -1105,13 +1273,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           } else {
             errorAlert();
           }
+          setLoading?.(false);
         })
         .catch((e) => {
           CommonBugFender('TestsCart_fetchPackageDetails', e);
+          setLoading?.(false);
           errorAlert();
-        })
-        .finally(() => {
-          setLoading!(false);
         });
     }
   };
@@ -1230,12 +1397,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             index == 0 ? { marginTop: 20 } : {},
             index == array.length - 1 ? { marginBottom: 20 } : {},
           ];
-          const imageUrl =
-            test.thumbnail && !test.thumbnail.includes('/default/placeholder')
-              ? test.thumbnail.startsWith('http')
-                ? test.thumbnail
-                : `${AppConfig.Configuration.IMAGES_BASE_URL}${test.thumbnail}`
-              : '';
+
           const sellingPrice = !promoteCircle
             ? promoteDiscount && discountSpecialPrice != discountPrice
               ? discountSpecialPrice!
@@ -1276,7 +1438,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                         collectionType: test?.collectionMethod,
                         preparation: product?.testPreparationData,
                         testDescription: product?.testDescription,
-                        source: 'Cart Page',
+                        source: 'Cart page',
                         type: product?.itemType,
                         packageMrp: itemPackageMrp,
                         mrpToDisplay: mrpToDisplay,
@@ -1308,7 +1470,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 onRemoveCartItem(test);
               }}
               isCardExpanded={true}
-              packOfCount={test.mou}
+              packOfCount={reportGenItem?.itemParameterCount}
               duplicateArray={duplicateNameArray}
             />
           );
@@ -1332,9 +1494,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       : AppConfig.Configuration.Non_Covid_Max_Slot_Days;
 
     let dateToCheck = !!changedDate && comingFrom != '' ? changedDate : new Date();
+    const selectedArea = isModifyFlow ? modifiedOrder?.areaId : Number((areaObject as any).key!);
     setLoading?.(true);
-    const selectedAddressIndex = addresses?.findIndex(
-      (address) => address?.id == deliveryAddressId
+
+    const getAddressObject = createAddressObject(
+      isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr
     );
 
     client
@@ -1346,8 +1510,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         fetchPolicy: 'no-cache',
         variables: {
           selectedDate: moment(dateToCheck).format('YYYY-MM-DD'),
-          areaID: Number((areaObject as any).key!),
+          areaID: selectedArea,
           itemIds: _itemIds || cartItemsWithId,
+          patientAddressObj: getAddressObject,
         },
       })
       .then(({ data }) => {
@@ -1389,7 +1554,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           const slotDetails = slotsArray?.[0];
           slotsArray?.length && setselectedTimeSlot(slotDetails);
 
-          setDiagnosticSlot!({
+          setDiagnosticSlot?.({
             slotStartTime: slotDetails?.slotInfo?.startTime!,
             slotEndTime: slotDetails?.slotInfo?.endTime!,
             date: dateToCheck?.getTime(), //date
@@ -1404,19 +1569,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         }
 
         comingFrom == 'errorState' ? setDisplaySchedule(true) : null; //show slot popup
-        setDeliveryAddressId?.(addresses?.[selectedAddressIndex]?.id); //if not setting, then new address added is not selected
-        setPinCode?.(addresses?.[selectedAddressIndex]?.zipcode!);
+        setDeliveryAddressId?.(selectedAddr?.id!); //if not setting, then new address added is not selected
+        setPinCode?.(selectedAddr?.zipcode!);
       })
       .catch((e) => {
-        CommonBugFender('TestsCart_checkServicability', e);
+        aphConsole.log({ e });
+        CommonBugFender('TestsCart_checkSlotSelection', e);
         setDiagnosticSlot && setDiagnosticSlot(null);
         setselectedTimeSlot(undefined);
         const noHubSlots = g(e, 'graphQLErrors', '0', 'message') === 'NO_HUB_SLOTS';
         setLoading?.(false);
         if (noHubSlots) {
-          setDeliveryAddressId?.(addresses?.[selectedAddressIndex]?.id);
-          setPinCode?.(addresses?.[selectedAddressIndex]?.zipcode!);
-          showAphAlert!({
+          setDeliveryAddressId?.(selectedAddr?.id!);
+          setPinCode?.(selectedAddr?.zipcode!);
+          showAphAlert?.({
             title: string.common.uhOh,
             description: string.diagnostics.noSlotAvailable.replace(
               '{{date}}',
@@ -1428,12 +1594,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             },
           });
         } else {
+          CommonBugFender('TestCart_checkSlotSelection_NotHubSlotError', e);
           setDeliveryAddressId?.('');
           setDiagnosticAreas?.([]);
           setAreaSelected?.({});
           setCartPagePopulated?.(false);
           setselectedTimeSlot(undefined);
-          showAphAlert!({
+          showAphAlert?.({
             title: string.common.uhOh,
             description: string.diagnostics.bookingOrderFailedMessage,
           });
@@ -1505,8 +1672,139 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
-  const renderHomeCollectionDisclaimer = () => {
-    return <InfoMessage content={string.diagnostics.homeHomeCollectionDisclaimerTxt} />;
+  const renderPreviouslyAddedItems = () => {
+    const previousAddedItemsCount =
+      isModifyFlow && modifiedOrder?.diagnosticOrderLineItems?.length > 10
+        ? `${modifiedOrder?.diagnosticOrderLineItems?.length}`
+        : `0${modifiedOrder?.diagnosticOrderLineItems?.length}`;
+    const remainingItems = modifiedOrder?.diagnosticOrderLineItems?.length - 1;
+    const firstItem = modifiedOrder?.diagnosticOrderLineItems?.[0]?.itemName;
+    const orderLineItems = modifiedOrder?.diagnosticOrderLineItems! || [];
+    const subTotalArray = modifiedOrder?.diagnosticOrderLineItems?.map((item: orderListLineItems) =>
+      Number(item?.price)
+    );
+    const previousSubTotal = subTotalArray?.reduce(
+      (preVal: number, curVal: number) => preVal + curVal,
+      0
+    );
+    const previousCollectionCharges = modifiedOrder?.collectionCharges;
+    const previousTotalCharges = modifiedOrder?.totalPrice;
+    return (
+      <View>
+        {renderLabel('PREVIOUSLY ADDED TO CART', previousAddedItemsCount)}
+        <View
+          style={[
+            styles.totalChargesContainer,
+            styles.previousItemContainer,
+            { paddingBottom: showAllPreviousItems ? 16 : 0 },
+          ]}
+        >
+          <TouchableOpacity
+            onPress={() => setShowAllPreviousItems(!showAllPreviousItems)}
+            style={styles.previousContainerTouch}
+          >
+            <View style={styles.previousItemInnerContainer}>
+              <Text style={styles.previousItemHeading}>
+                {nameFormater(firstItem?.slice(0, isSmallDevice ? 29 : 32), 'title')}{' '}
+                {remainingItems > 0 && `+ ${remainingItems} more`}
+              </Text>
+              <View style={styles.arrowTouch}>
+                {showAllPreviousItems ? (
+                  <Up style={styles.arrowIconStyle} />
+                ) : (
+                  <Down style={styles.arrowIconStyle} />
+                )}
+              </View>
+            </View>
+          </TouchableOpacity>
+          {showAllPreviousItems ? (
+            <>
+              <View style={[styles.rowSpaceBetweenStyle, { marginBottom: 0 }]}>
+                <Text style={styles.itemHeading}> ITEM NAME</Text>
+                <Text style={styles.itemHeading}> PRICE</Text>
+              </View>
+              {orderLineItems?.map((item: orderListLineItems) => {
+                return (
+                  <View style={styles.commonTax}>
+                    <View style={{ width: '65%' }}>
+                      <Text style={styles.commonText}>
+                        {nameFormater(
+                          !!item?.itemName ? item?.itemName! : item?.diagnostics?.itemName!,
+                          'title'
+                        )}
+                      </Text>
+                      {!!item?.itemObj?.inclusions && (
+                        <Text style={styles.inclusionsText}>
+                          Inclusions : {item?.itemObj?.inclusions?.length}
+                        </Text>
+                      )}
+                    </View>
+                    <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                      <Text style={[styles.commonText, { lineHeight: 20 }]}>
+                        {string.common.Rs}
+                        {convertNumberToDecimal(g(item, 'price') || null)}
+                      </Text>
+                    </View>
+                  </View>
+                );
+              })}
+              <Spearator style={{ marginTop: 12, marginBottom: 12 }} />
+              {renderPrices('Subtotal', previousSubTotal)}
+              {renderPrices('Collection and hygiene charges', previousCollectionCharges)}
+              {renderPrices('Total', previousTotalCharges, true)}
+            </>
+          ) : null}
+        </View>
+      </View>
+    );
+  };
+
+  const renderPrices = (title: string, price: string | number, customStyle?: boolean) => {
+    return (
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
+        <View style={{ width: '65%' }}>
+          <Text
+            style={[
+              styles.commonText,
+              customStyle ? styles.pricesBoldText : styles.pricesNormalText,
+            ]}
+          >
+            {title}
+          </Text>
+        </View>
+        <View style={{ flex: 1, alignItems: 'flex-end' }}>
+          <Text
+            style={[
+              styles.commonText,
+              {
+                ...theme.viewStyles.text(
+                  customStyle ? 'B' : 'M',
+                  customStyle ? 14 : 12,
+                  SHERPA_BLUE,
+                  1,
+                  customStyle ? 20 : 18
+                ),
+              },
+            ]}
+          >
+            {string.common.Rs}
+            {convertNumberToDecimal(price)}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
+  const getHcCharges = (): number => {
+    if (cartItems?.length == 0) {
+      return 0.0;
+    } else if (hcCharges === 0 && isModifyFlow && modifiedOrder?.collectionCharges > 0) {
+      return modifiedOrder?.collectionCharges;
+    } else if (hcCharges > 0 && isModifyFlow && modifiedOrder?.collectionCharges > 0) {
+      return 0.0;
+    } else {
+      return hcCharges;
+    }
   };
 
   const renderTotalCharges = () => {
@@ -1537,13 +1835,36 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               </Text>
             </View>
           )}
-          <View style={styles.rowSpaceBetweenStyle}>
-            <Text style={styles.blueTextStyle}>Home Collection Charges</Text>
-            <Text style={styles.blueTextStyle}>
-              {string.common.Rs} {hcCharges.toFixed(2)}
-            </Text>
-          </View>
-
+          {
+            <View style={styles.rowSpaceBetweenStyle}>
+              <Text style={[styles.blueTextStyle, { width: '60%' }]}>Collection and hygiene charges</Text>
+              <View style={{ flexDirection: 'row' }}>
+                <Text
+                  style={[
+                    styles.blueTextStyle,
+                    {
+                      textDecorationLine:
+                        isModifyFlow &&
+                        modifiedOrder?.collectionCharges > 0 &&
+                        hcCharges === 0 &&
+                        cartItems?.length > 0
+                          ? 'line-through'
+                          : 'none',
+                    },
+                  ]}
+                >
+                  {string.common.Rs} {getHcCharges()?.toFixed(2)}
+                </Text>
+                {/* {!!existingOrderDetails &&
+                existingOrderDetails?.collectionCharges > 0 &&
+                modifyOrderHcCharges === 0 ? (
+                  <Text style={styles.strikedThroughHC}>
+                    ({string.common.Rs} {modifyHcCharges?.toFixed(2)})
+                  </Text>
+                ) : null} */}
+              </View>
+            </View>
+          }
           {normalSaving > 0 && (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
@@ -1682,20 +2003,36 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
-  const disableProceedToPay = !(
-    cartItems?.length > 0 &&
-    forPatientId &&
-    !!(
-      selectedPatient &&
-      deliveryAddressId &&
-      selectedTimeSlot &&
-      selectedTimeSlot?.date &&
-      selectedTimeSlot?.slotInfo?.startTime
-    ) &&
-    (uploadPrescriptionRequired
-      ? physicalPrescriptions.length > 0 || ePrescriptions.length > 0
-      : true)
-  );
+  function isCartPricesUpdated() {
+    if (cartItems?.length) {
+      let filterNotUpdatedItems = cartItems?.filter((item) => Number(item?.price) === 0);
+      if (filterNotUpdatedItems?.length > 0) {
+        return false;
+      } else {
+        return true;
+      }
+    }
+  }
+
+  const disableProceedToPay = !(isModifyFlow
+    ? cartItems?.length > 0 &&
+      isCartPricesUpdated() &&
+      modifiedOrder?.slotId &&
+      modifiedOrder?.areaId &&
+      isHcApiCalled
+    : cartItems?.length > 0 &&
+      forPatientId &&
+      isHcApiCalled &&
+      !!(
+        selectedPatient &&
+        deliveryAddressId &&
+        selectedTimeSlot &&
+        selectedTimeSlot?.date &&
+        selectedTimeSlot?.slotInfo?.startTime
+      ) &&
+      (uploadPrescriptionRequired
+        ? physicalPrescriptions.length > 0 || ePrescriptions.length > 0
+        : true));
 
   const multiplePhysicalPrescriptionUpload = (prescriptions = physicalPrescriptions) => {
     return Promise.all(
@@ -1747,8 +2084,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         .catch((e) => {
           CommonBugFender('TestsCart_physicalPrescriptionUpload', e);
           aphConsole.log({ e });
-          setLoading!(false);
-          showAphAlert!({
+          setLoading?.(false);
+          showAphAlert?.({
             title: string.common.uhOh,
             description: 'Error occurred while uploading prescriptions.',
           });
@@ -1814,9 +2151,98 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const bookDiagnosticOrder = async () => {
-    setshowSpinner(true);
     saveHomeCollectionOrder();
   };
+
+  function saveModifiedOrder() {
+    // const calHcChargers = modifiedOrder?.collectionCharges === 0 ? hcCharges :  0.0;
+    //since we need to pass the overall collection charges applied.
+    const calHcChargers =
+      modifiedOrder?.collectionCharges === 0
+        ? hcCharges
+        : modifiedOrder?.collectionCharges + modifyHcCharges;
+
+    const slotTimings = modifiedOrder?.slotDateTimeInUTC;
+    const slotStartTime = modifiedOrder?.slotDateTimeInUTC;
+    const allItems = cartItems?.find(
+      (item) =>
+        item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL ||
+        item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+    );
+    setLoading?.(true);
+    const modifyBookingInput: saveModifyDiagnosticOrderInput = {
+      orderId: modifiedOrder?.id,
+      collectionCharges: calHcChargers,
+      bookingSource: DiagnosticsBookingSource.MOBILE,
+      deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
+      items: createItemPrice()?.itemPricingObject,
+      userSubscriptionId: circleSubscriptionId,
+      subscriptionInclusionId: null,
+      amountToPay: grandTotal, //total amount payed
+    };
+    saveModifyOrder?.(modifyBookingInput)
+      .then((data) => {
+        const getModifyResponse = data?.data?.saveModifyDiagnosticOrder;
+        if (!getModifyResponse?.status) {
+          apiHandleErrorFunction(modifyBookingInput, getModifyResponse, 'modifyOrder');
+        } else {
+          callCreateInternalOrder(
+            getModifyResponse?.orderId!,
+            getModifyResponse?.displayId!,
+            slotTimings,
+            allItems,
+            slotStartTime!,
+            'modifyOrder'
+          );
+        }
+      })
+      .catch((error) => {
+        aphConsole.log({ error });
+        CommonBugFender('TestsCart__saveModifiedOrder', error);
+        setLoading?.(false);
+        showAphAlert?.({
+          unDismissable: true,
+          title: `Hi ${g(currentPatient, 'firstName') || ''}!`, //existing order patient
+          description: string.diagnostics.bookingOrderFailedMessage,
+        });
+      });
+  }
+
+  async function processModifiyCODOrder(
+    orderId: string,
+    amount: number,
+    eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED],
+    orderInfo: any
+  ) {
+    PaymentInitiated(amount, 'Diagnostic', 'Cash');
+    try {
+      const response = await processDiagnosticsCODOrder(client, orderId, amount);
+      const { data } = response;
+      data?.processDiagnosticHCOrder?.status
+        ? _navigatetoOrderStatus(true, 'success', eventAttributes, orderInfo)
+        : renderAlert(string.common.tryAgainLater);
+    } catch (e) {
+      setLoading?.(false);
+      renderAlert(string.common.tryAgainLater);
+    }
+  }
+
+  function _navigatetoOrderStatus(
+    isCOD: boolean,
+    paymentStatus: string,
+    eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED],
+    orderInfo: any
+  ) {
+    setLoading?.(false);
+    props.navigation.navigate(AppRoutes.OrderStatus, {
+      isModify: isModifyFlow ? modifiedOrder : null,
+      orderDetails: orderInfo,
+      isCOD: isCOD,
+      eventAttributes,
+      paymentStatus: paymentStatus,
+    });
+  }
+
   const saveHomeCollectionOrder = () => {
     //for circle members if unique id is blank, show error
     if (
@@ -1824,7 +2250,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       (validateCouponUniqueId == '' || validateCouponUniqueId == null)
     ) {
       renderAlert(string.common.tryAgainLater);
-      setshowSpinner(false);
+      setLoading?.(false);
+    } else if (grandTotal == null || grandTotal == undefined) {
+      //do not call the api, if by any chance grandTotal is not a number
+      renderAlert(string.common.tryAgainLater);
+      setLoading?.(false);
     } else {
       const { slotStartTime, slotEndTime, employeeSlotId, date } = diagnosticSlot || {};
       const slotTimings = (slotStartTime && slotEndTime
@@ -1852,120 +2282,164 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         diagnosticDate: formattedDate,
         bookingSource: DiagnosticsBookingSource.MOBILE,
         deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
-        items: createItemPrice(),
+        items: createItemPrice()?.itemPricingObject,
         slotId: employeeSlotId?.toString() || '0',
         areaId: (areaSelected || ({} as any)).key!,
         collectionCharges: hcCharges,
         totalPriceExcludingDiscounts: totalPriceExcludingAnyDiscounts + hcCharges,
         subscriptionInclusionId: null,
         userSubscriptionId: circleSubscriptionId,
-        // prismPrescriptionFileId: [
-        //   ...physicalPrescriptions.map((item) => item.prismPrescriptionFileId),
-        //   ...ePrescriptions.map((item) => item.prismPrescriptionFileId),
-        // ].join(','),
       };
       saveHomeCollectionBookingOrder(bookingOrderInfo)
         .then(async ({ data }) => {
+          aphConsole.log({ data });
+          const getSaveHomeCollectionResponse = data?.saveDiagnosticBookHCOrder;
           // in case duplicate test, price mismatch, address mismatch, slot issue
-          if (!data?.saveDiagnosticBookHCOrder?.status) {
-            let message =
-              data?.saveDiagnosticBookHCOrder?.errorMessageToDisplay ||
-              string.diagnostics.bookingOrderFailedMessage;
-            //itemIds will only come in case of duplicate
-            let itemIds = data?.saveDiagnosticBookHCOrder?.attributes?.itemids;
-            if (itemIds?.length! > 0) {
-              showAphAlert?.({
-                unDismissable: true,
-                title: string.common.uhOh,
-                description: message,
-                onPressOk: () => {
-                  removeDuplicateCartItems(itemIds!, bookingOrderInfo?.items);
-                },
-              });
-            } else {
-              if (
-                slotBookedArray.some((item) => message?.includes(item)) ||
-                message.includes('slot has been booked')
-              ) {
-                showAphAlert?.({
-                  title: string.common.uhOh,
-                  description: message,
-                  onPressOutside: () => {
-                    checkSlotSelection(areaSelected, '', 'errorState');
-                    hideAphAlert?.();
-                  },
-                  onPressOk: () => {
-                    checkSlotSelection(areaSelected, '', 'errorState');
-                    hideAphAlert?.();
-                  },
-                });
-              } else {
-                renderAlert(message);
-              }
-            }
+          if (!getSaveHomeCollectionResponse?.status) {
+            apiHandleErrorFunction(bookingOrderInfo, getSaveHomeCollectionResponse, 'saveOrder');
           } else {
-            const orderId = data?.saveDiagnosticBookHCOrder?.orderId || '';
-            const displayId = data?.saveDiagnosticBookHCOrder?.displayId || '';
-            const orders: OrderVerticals = {
-              diagnostics: [
-                { order_id: orderId, amount: grandTotal, patient_id: currentPatient?.id },
-              ],
-            };
-            const orderInput: OrderCreate = {
-              orders: orders,
-              total_amount: grandTotal,
-              customer_id: currentPatient?.primaryPatientId || currentPatient?.id,
-            };
-            const response = await createOrderInternal(orderInput);
-            if (response?.data?.createOrderInternal?.success) {
-              const orderInfo = {
-                orderId: orderId,
-                displayId: displayId,
-                diagnosticDate: date!,
-                slotTime: slotTimings!,
-                cartSaving: cartSaving,
-                circleSaving: circleSaving,
-                cartHasAll: allItems != undefined ? true : false,
-                amount: grandTotal,
-              };
-              const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED] = {
-                'Order id': orderId,
-                Pincode: Number(selectedAddr?.zipcode!),
-                'Patient UHID': currentPatient?.uhid,
-                'Order amount': grandTotal,
-                'Appointment Date': moment(orderDetails?.diagnosticDate!).format('DD/MM/YYYY'),
-                'Appointment time': slotStartTime!,
-                'Item ids': cartItemsWithId,
-                'Total items in order': cartItemsWithId?.length,
-              };
-              setauthToken?.('');
-              props.navigation.navigate(AppRoutes.PaymentMethods, {
-                paymentId: response?.data?.createOrderInternal?.payment_order_id!,
-                amount: grandTotal,
-                orderId: orderId,
-                orderDetails: orderInfo,
-                eventAttributes,
-                businessLine: 'diagnostics',
-              });
-            }
+            callCreateInternalOrder(
+              getSaveHomeCollectionResponse?.orderId!,
+              getSaveHomeCollectionResponse?.displayId!,
+              slotTimings,
+              allItems,
+              slotStartTime!,
+              'saveOrder'
+            );
           }
         })
         .catch((error) => {
-          CommonBugFender('TestsCheckoutScene_saveOrder', error);
-          setshowSpinner(false);
-          setLoading!(false);
-          showAphAlert!({
+          aphConsole.log({ error });
+          CommonBugFender('TestsCart_saveHomeCollectionOrder', error);
+          setLoading?.(false);
+          showAphAlert?.({
             unDismissable: true,
             title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
             description: string.diagnostics.bookingOrderFailedMessage,
           });
-        })
-        .finally(() => {
-          setshowSpinner(false);
-          setLoading!(false);
         });
     }
   };
+
+  function apiHandleErrorFunction(input: any, data: any, source: string) {
+    let message = data?.errorMessageToDisplay || string.diagnostics.bookingOrderFailedMessage;
+    //itemIds will only come in case of duplicate
+    let itemIds = data?.attributes?.itemids;
+    if (itemIds?.length! > 0) {
+      showAphAlert?.({
+        unDismissable: true,
+        title: string.common.uhOh,
+        description: message,
+        onPressOk: () => {
+          removeDuplicateCartItems(itemIds!, input?.items);
+        },
+      });
+    } else {
+      if (
+        slotBookedArray.some((item) => message?.includes(item)) ||
+        message.includes('slot has been booked')
+      ) {
+        showAphAlert?.({
+          title: string.common.uhOh,
+          description: message,
+          onPressOutside: () => {
+            checkSlotSelection(areaSelected, '', 'errorState');
+            hideAphAlert?.();
+          },
+          onPressOk: () => {
+            checkSlotSelection(areaSelected, '', 'errorState');
+            hideAphAlert?.();
+          },
+        });
+      } else {
+        renderAlert(message);
+      }
+    }
+  }
+
+  async function callCreateInternalOrder(
+    getOrderId: string,
+    getDisplayId: string,
+    slotTimings: string,
+    items: any,
+    slotStartTime: string,
+    source: string
+  ) {
+    try {
+      setLoading?.(true);
+      const orderId = getOrderId! || '';
+      const displayId = getDisplayId! || '';
+      const getPatientId =
+        source === 'modifyOrder' && isModifyFlow ? modifiedOrder?.patientId : currentPatient?.id;
+      const orders: OrderVerticals = {
+        diagnostics: [{ order_id: orderId, amount: grandTotal, patient_id: getPatientId }],
+      };
+      const orderInput: OrderCreate = {
+        orders: orders,
+        total_amount: grandTotal,
+        customer_id: currentPatient?.primaryPatientId || getPatientId,
+      };
+      const response = await createOrderInternal(orderInput);
+      if (response?.data?.createOrderInternal?.success) {
+        const orderInfo = {
+          orderId: orderId,
+          displayId: displayId,
+          diagnosticDate: date!,
+          slotTime: slotTimings!,
+          cartSaving: cartSaving,
+          circleSaving: circleSaving,
+          cartHasAll: items != undefined ? true : false,
+          amount: grandTotal, //actual amount to be payed by customer (topay)
+        };
+        const eventAttributes = createCheckOutEventAttributes(orderId, slotStartTime);
+        setauthToken?.('');
+        if (
+          source === 'modifyOrder' &&
+          modifiedOrder?.paymentType !== DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
+        ) {
+          //call the process wali api & success page
+          processModifiyCODOrder(orderId, grandTotal, eventAttributes, orderInfo);
+        } else {
+          setLoading?.(false);
+          props.navigation.navigate(AppRoutes.PaymentMethods, {
+            paymentId: response?.data?.createOrderInternal?.payment_order_id!,
+            amount: grandTotal,
+            orderId: orderId,
+            orderDetails: orderInfo,
+            eventAttributes,
+            businessLine: 'diagnostics',
+          });
+        }
+      }
+    } catch (error) {
+      CommonBugFender('TestCart_callInternalOrder', error);
+      setLoading?.(false);
+      aphConsole.log({ error });
+      showAphAlert?.({
+        unDismissable: true,
+        title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
+        description: string.diagnostics.bookingOrderFailedMessage,
+      });
+    }
+  }
+
+  function createCheckOutEventAttributes(orderId: string, slotStartTime?: string) {
+    const attributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED] = {
+      'Order id': orderId,
+      Pincode: parseInt(selectedAddr?.zipcode!),
+      'Patient UHID': g(currentPatient, 'id'),
+      'Total items in order': cartItems?.length,
+      'Order amount': grandTotal,
+      'Appointment Date': isModifyFlow
+        ? moment(modifiedOrder?.slotDateTimeInUTC).format('DD/MM/YYYY')
+        : moment(orderDetails?.diagnosticDate!).format('DD/MM/YYYY'),
+      'Appointment time': isModifyFlow
+        ? moment(modifiedOrder?.slotDateTimeInUTC).format('hh:mm')
+        : slotStartTime!,
+      'Item ids': cartItemsWithId,
+    };
+    return attributes;
+  }
 
   const removeDisabledCartItems = (disabledCartItemIds: string[]) => {
     hideAphAlert!();
@@ -1974,7 +2448,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
+  //change this for modified orders
   function createItemPrice() {
+    modifyPricesForItemArray =
+      isModifyFlow &&
+      modifiedOrder?.diagnosticOrderLineItems?.map(
+        (item: orderListLineItems) =>
+          ({
+            itemId: Number(item?.itemId),
+            price: item?.price,
+            quantity: 1,
+            groupPlan: item?.groupPlan,
+          } as DiagnosticLineItem)
+      );
+
     pricesForItemArray = cartItems?.map(
       (item, index) =>
         ({
@@ -2001,19 +2488,32 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               : null,
         } as DiagnosticLineItem)
     );
-    return pricesForItemArray;
+    const itemPricingObject = isModifyFlow
+      ? [modifyPricesForItemArray, pricesForItemArray].flat(1)
+      : pricesForItemArray;
+    return {
+      itemPricingObject,
+      pricesForItemArray,
+    };
   }
 
   const onPressProceedToPay = () => {
-    postwebEngageProceedToPayEvent();
-    proceedForBooking();
+    setLoading?.(true);
+    if (isModifyFlow) {
+      postwebEngageProceedToPayEventForModify();
+      saveModifiedOrder();
+    } else {
+      postwebEngageProceedToPayEvent();
+      proceedForBooking();
+    }
   };
 
   function removeDuplicateCartItems(itemIds: string, pricesOfEach: any) {
     //can be used only when itdose starts returning all id
     const getItemIds = itemIds?.split(',');
     const allInclusions = cartItems?.map((item) => item?.inclusions);
-    const getPricesForItem = createItemPrice();
+    const getPricesForItem = createItemPrice()?.itemPricingObject;
+    const getCartItemPrices = createItemPrice()?.pricesForItemArray;
 
     const mergedInclusions = allInclusions?.flat(1); //from array level to single array
     const duplicateItems_1 = mergedInclusions?.filter(
@@ -2022,18 +2522,19 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
     const duplicateItems = [...new Set(duplicateItems_1)];
     hideAphAlert?.();
-
+    setLoading?.(false);
     if (duplicateItems?.length) {
-      checkDuplicateItems_Level1(getPricesForItem, duplicateItems, getItemIds);
+      checkDuplicateItems_Level1(getPricesForItem, duplicateItems, getItemIds, getCartItemPrices);
     } else {
-      checkDuplicateItems_Level2(getPricesForItem, getItemIds);
+      checkDuplicateItems_Level2(getPricesForItem, getItemIds, getCartItemPrices);
     }
   }
 
   function checkDuplicateItems_Level1(
     getPricesForItem: any,
     duplicateItems: any,
-    itemIdFromBackend: any
+    itemIdFromBackend: any,
+    getCartItemPrices: any
   ) {
     //search for duplicate items in cart. (single tests added)
     let duplicateItemIds = cartItems?.filter((item) => duplicateItems?.includes(Number(item?.id)));
@@ -2095,7 +2596,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         //if not found at inclusion level, then show whatever is coming from api.
         if (higherPricesItems?.length == 0) {
           setLoading?.(false);
-          checkDuplicateItems_Level2(getPricesForItem, itemIdFromBackend);
+          checkDuplicateItems_Level2(getPricesForItem, itemIdFromBackend, getCartItemPrices);
         } else {
           //there can be case, that they are found in the inclusion level.
           const formattedHigherPriceItemName = higherPricesItems?.map(
@@ -2130,24 +2631,30 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       .catch((e) => {
         //if api fails then also show the name... & remove..
         CommonBugFender('TestsCart_getDiagnosticsAvailability', e);
-        setLoading!(false);
+        setLoading?.(false);
         errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
       });
   }
 
-  const checkDuplicateItems_Level2 = (pricesForItem: any, getItemIds: any) => {
+  const checkDuplicateItems_Level2 = (pricesForItem: any, getItemIds: any, cartItemPrices: any) => {
     //no inclusion level duplicates are found...
     if (getItemIds?.length > 0) {
+      const getCartItemsId = cartItemPrices?.map((item: any) => item?.itemId);
+      const getItemInCart = pricesForItem?.filter((item: any) =>
+        getCartItemsId?.includes(item?.itemId)
+      );
       const newItems = getItemIds?.map((item: string) => Number(item));
-
       //get the prices for both the items,
-      const getDuplicateItems = pricesForItem
+      const arrayToUse = isModifyFlow ? getItemInCart : pricesForItem;
+      const getDuplicateItems = arrayToUse
         ?.filter((item: any) => newItems?.includes(item?.itemId))
         .sort((a: any, b: any) => b?.price - a?.price);
 
-      const itemsToRemove = getDuplicateItems?.splice(1, getDuplicateItems?.length - 1);
-      const itemIdToRemove = itemsToRemove?.map((item: any) => item?.itemId);
+      const itemsToRemove = isModifyFlow
+        ? getDuplicateItems
+        : getDuplicateItems?.splice(1, getDuplicateItems?.length - 1);
 
+      const itemIdToRemove = itemsToRemove?.map((item: any) => item?.itemId);
       const updatedCartItems = cartItems?.filter(function(items: any) {
         return itemIdToRemove?.indexOf(Number(items?.id)) < 0;
       });
@@ -2166,9 +2673,17 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         });
       });
 
+      const duplicateItemNameForModify =
+        isModifyFlow &&
+        modifiedOrder?.diagnosticOrderLineItems?.find(
+          (item: any) => Number(item?.itemId) !== Number(array?.[0]?.removalId)
+        );
+
       const highPricesItem = cartItems?.map((cItem) =>
         Number(cItem?.id) == Number(getDuplicateItems?.[0]?.itemId)
           ? !!cItem?.name && nameFormater(cItem?.name, 'default')
+          : isModifyFlow
+          ? duplicateItemNameForModify?.name
           : ''
       );
       const higherPricesName = highPricesItem?.filter((item: any) => item != '')?.join(', ');
@@ -2190,7 +2705,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const renderDuplicateMessage = (duplicateTests: string, higherPricesName: string) => {
     showAphAlert?.({
       title: 'Your cart has been revised!',
-      description: `The "${duplicateTests}" has been removed from your cart as it is already included in another test "${higherPricesName}" in your cart. Kindly proceed to pay the revised amount`,
+      description: isModifyFlow
+        ? `The "${duplicateTests}" has been removed from your cart as it is already included in your order. Kindly proceed to pay the revised amount`
+        : `The "${duplicateTests}" has been removed from your cart as it is already included in another test "${higherPricesName}" in your cart. Kindly proceed to pay the revised amount`,
       onPressOk: () => {
         setLoading?.(false);
         hideAphAlert?.();
@@ -2207,7 +2724,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         (address) => address?.id == deliveryAddressId
       );
       const _itemIds = updatedCartItems?.map((item: any) => Number(item?.id));
-      !isEmptyObject(areaSelected)
+      isModifyFlow
+        ? null
+        : !isEmptyObject(areaSelected)
         ? checkSlotSelection(areaSelected, undefined, undefined, _itemIds)
         : showSelectedArea
         ? fetchAreasForAddress(
@@ -2299,14 +2818,39 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   };
 
-  const fetchHC_ChargesForTest = async (slotVal: string) => {
+  const fetchHC_ChargesForTest = async (slotVal: string, modifiedItems?: any[]) => {
+    !loading && setShowSpinner?.(true);
+    const getModifiedId = !!modifiedItems && modifiedItems?.map((item) => Number(item?.itemId));
+    const allItemId =
+      !!getModifiedId && getModifiedId?.length ? cartItemsWithId.concat(getModifiedId) : itemWithId;
+    const getModifiedItemPrices = !!modifiedItems && modifiedItems?.map((item) => item?.price);
+
+    const totalModifiedItemPrices =
+      !!getModifiedItemPrices &&
+      getModifiedItemPrices?.length &&
+      getModifiedItemPrices?.reduce((prevVal, currVal) => currVal + prevVal, 0);
+
+    //only for modified order (grandTotal - hc)
+    const totalCartPricesIncludingDiscount =
+      totalPriceExcludingAnyDiscounts +
+      couponDiscount -
+      cartSaving -
+      (isDiagnosticCircleSubscription ? circleSaving : 0);
+
+    setHcApiCalled(false);
     const selectedAddressIndex = addresses?.findIndex(
       (address) => address?.id == deliveryAddressId
     );
-    const pinCodeFromAddress = addresses?.[selectedAddressIndex]?.zipcode!;
+    const pinCodeFromAddress = isModifyFlow
+      ? modifiedOrder?.patientAddressObj?.zipcode!
+      : addresses?.[selectedAddressIndex]?.zipcode!;
+
     setPinCode?.(pinCode);
-    setLoading?.(true);
-    let newGrandTotal = grandTotal - hcCharges;
+
+    let newGrandTotal = isModifyFlow
+      ? totalCartPricesIncludingDiscount + totalModifiedItemPrices
+      : grandTotal - hcCharges;
+
     try {
       const HomeCollectionChargesApi = await client.query<
         getDiagnosticsHCCharges,
@@ -2317,7 +2861,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           sourceHeaders,
         },
         variables: {
-          itemIDs: itemWithId,
+          itemIDs: allItemId,
           totalCharges: newGrandTotal, //removed cartTotal due APP-7386
           slotID: slotVal!,
           pincode: Number(pinCodeFromAddress),
@@ -2327,14 +2871,46 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
       let getCharges = g(HomeCollectionChargesApi.data, 'getDiagnosticsHCCharges', 'charges') || 0;
       if (getCharges != null) {
+        //add a check for calulating home collection charges.
+        let recalculatedHC = isModifyFlow
+          ? calculateModifiedOrderHomeCollectionCharges(getCharges)
+          : getCharges;
+
+        // const updatedHcCharges =
+        //   isModifyFlow &&
+        //   modifiedOrder?.collectionCharges > 0 &&
+        //   (getCharges === 0 || getCharges > 0)
+        //     ? -modifiedOrder?.collectionCharges
+        //     : getCharges;
+
+        const updatedHcCharges =
+          isModifyFlow &&
+          modifiedOrder?.collectionCharges > 0 &&
+          (getCharges === 0 || getCharges > 0)
+            ? 0
+            : getCharges;
         setHcCharges?.(getCharges);
+        setModifyHcCharges?.(updatedHcCharges); //used for calculating subtotal & topay
       }
+      setShowSpinner(false);
       setLoading?.(false);
+      setHcApiCalled(true);
     } catch (error) {
+      setShowSpinner(false);
+      setHcApiCalled(true);
       setLoading?.(false);
-      // renderAlert(`Something went wrong, unable to fetch Home collection charges.`);
     }
   };
+
+  function calculateModifiedOrderHomeCollectionCharges(charges: number) {
+    const previousCharges = modifiedOrder?.collectionCharges;
+    const currentCharges = charges;
+    //100 - 50 => 50 (p > c)
+    //100 - 100 => 0 (p = c)
+    //50 - 100 => |-50| (p < c)
+    return Math.abs(previousCharges - currentCharges);
+  }
+
   const renderPatientDetails = () => {
     const patientDetailsText = selectedPatient
       ? `${selectedPatient?.firstName || ''} ${selectedPatient?.lastName ||
@@ -2348,26 +2924,44 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <View style={styles.patientNameMainViewStyle}>
             <View style={styles.patientNameViewStyle}>
               <Text style={styles.patientNameTextStyle}>{string.diagnostics.patientNameText}</Text>
-              <Text style={styles.changeTextStyle} onPress={() => setShowPatientListOverlay(true)}>
-                {string.diagnostics.changeText}
-              </Text>
+              {isModifyFlow ? null : (
+                <Text
+                  style={styles.changeTextStyle}
+                  onPress={() => setShowPatientListOverlay(true)}
+                >
+                  {string.diagnostics.changeText}
+                </Text>
+              )}
             </View>
             <Text style={styles.patientDetailsTextStyle}>{patientDetailsText}</Text>
             <Text style={styles.testReportMsgStyle}>{string.diagnostics.testReportMsgText}</Text>
           </View>
         ) : null}
         {addressText ? (
+          <>
           <View style={styles.patientNameMainViewStyle}>
             <View style={styles.patientNameViewStyle}>
               <Text style={styles.patientNameTextStyle}>{string.diagnostics.homeVisitText}</Text>
-              <Text style={styles.changeTextStyle} onPress={() => showAddressPopup()}>
-                {string.diagnostics.changeText}
-              </Text>
+              {isModifyFlow ? null : (
+                <Text style={styles.changeTextStyle} onPress={() => showAddressPopup()}>
+                  {string.diagnostics.changeText}
+                </Text>
+              )}
             </View>
             <Text style={styles.patientDetailsTextStyle}>{addressText}</Text>
+            
           </View>
+          {showPriceMismatch ? (
+              <View
+                style={styles.blueView}
+              >
+                <InfoIconBlue style={{ width: 18, height: 18 }} />
+                <Text style={styles.lbTextStyle}>{string.diagnostics.pricesChangedMessage}</Text>
+              </View>
+            ) : null}
+          </>
         ) : null}
-        {showSelectedArea && !isEmptyObject(areaSelected) ? (
+        {isModifyFlow ? null : showSelectedArea && !isEmptyObject(areaSelected) ? (
           <View style={styles.patientNameMainViewStyle}>
             <View style={styles.patientNameViewStyle}>
               <Text style={styles.patientNameTextStyle}>{string.diagnostics.areaText}</Text>
@@ -2484,7 +3078,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             })
             .catch((e) => {
               setLoading?.(false);
-              showAphAlert!({
+              showAphAlert?.({
                 title: 'Network Error!',
                 description: 'Please try again later.',
               });
@@ -2496,7 +3090,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const renderTestProceedBar = () => {
-    const showTime = deliveryAddressId && areaSelected && !isEmptyObject(areaSelected);
+    const showTime = isModifyFlow
+      ? modifiedOrder?.areaId && modifiedOrder?.slotDateTimeInUTC
+      : deliveryAddressId && areaSelected && !isEmptyObject(areaSelected);
     return cartItems?.length > 0 ? (
       <TestProceedBar
         selectedTimeSlot={selectedTimeSlot}
@@ -2508,6 +3104,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         phleboMin={phleboMin}
         onPressTimeSlot={() => showTime && setDisplaySchedule(true)}
         onPressSelectArea={() => setShowSelectAreaOverlay(true)}
+        isModifyCOD={
+          isModifyFlow
+            ? modifiedOrder?.paymentType !== DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
+            : false
+        }
+        modifyOrderDetails={isModifyFlow ? modifiedOrder : null}
       />
     ) : null;
   };
@@ -2522,6 +3124,60 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setselectedTimeSlot(undefined);
   }
 
+  async function setDefaultAddress(address: Address) {
+    try {
+      const isSelectedAddressWithNoLatLng = isAddressLatLngInValid(address);
+      if (isSelectedAddressWithNoLatLng) {
+        //show the error
+        renderAlert(string.diagnostics.updateAddressLatLngMessage, 'updateLocation', address);
+      } else {
+        setLoading?.(true);
+        hideAphAlert?.();
+        const response = await client.query<makeAdressAsDefault, makeAdressAsDefaultVariables>({
+          query: SET_DEFAULT_ADDRESS,
+          variables: { patientAddressId: address?.id },
+          fetchPolicy: 'no-cache',
+        });
+        const { data } = response;
+        const patientAddress = data?.makeAdressAsDefault?.patientAddress;
+        const updatedAddresses = addresses.map((item) => ({
+          ...item,
+          defaultAddress: patientAddress?.id == item.id ? patientAddress?.defaultAddress : false,
+        }));
+        setAddresses?.(updatedAddresses);
+        setMedAddresses?.(updatedAddresses);
+        patientAddress?.defaultAddress && setDeliveryAddressId?.(patientAddress?.id);
+        setDiagnosticAreas?.([]);
+        setAreaSelected?.({});
+        setDiagnosticSlot?.(null);
+        const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
+        setDiagnosticLocation?.(formatAddressToLocation(deliveryAddress! || null));
+        setLoading?.(false);
+      }
+    } catch (error) {
+      aphConsole.log({ error });
+      setLoading?.(false);
+      CommonBugFender('setDefaultAddress_TestsCart', error);
+      showAphAlert?.({
+        title: string.common.uhOh,
+        description: string.common.unableToSetDeliveryAddress,
+      });
+    }
+  }
+
+  const formatAddressToLocation = (address: Address): LocationData => ({
+    displayName: address?.city!,
+    latitude: address?.latitude!,
+    longitude: address?.longitude!,
+    area: '',
+    city: address?.city!,
+    state: address?.state!,
+    stateCode: address?.stateCode!,
+    country: '',
+    pincode: address?.zipcode!,
+    lastUpdated: new Date().getTime(),
+  });
+
   function showAddressPopup() {
     return showAphAlert?.({
       removeTopIcon: true,
@@ -2535,6 +3191,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           addresses={addresses}
           onPressSelectAddress={(_address) => {
             CommonLogEvent(AppRoutes.TestsCart, 'Check service availability');
+            setDefaultAddress(_address);
             const tests = cartItems?.filter(
               (item) => item.collectionMethod == TEST_COLLECTION_TYPE.CENTER
             );
@@ -2564,6 +3221,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 setDeliveryAddressId?.(_address?.id);
                 setCartPagePopulated?.(false);
                 setAsyncPharmaLocation(_address);
+                setAsyncDiagnosticPincode?.(_address);
                 if (deliveryAddressId !== _address?.id) {
                   setDiagnosticAreas?.([]);
                   setAreaSelected?.({});
@@ -2614,7 +3272,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       const selectedAddressIndex = addresses?.findIndex(
         (address) => address?.id == deliveryAddressId
       );
-      !isEmptyObject(areaSelected)
+      isModifyFlow
+        ? null
+        : !isEmptyObject(areaSelected)
         ? checkSlotSelection(areaSelected, undefined, undefined, _cartItemsWithId)
         : showSelectedArea
         ? fetchAreasForAddress(
@@ -2629,7 +3289,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const renderAlsoAddItems = () => {
     return (
-      <View>
+      <View style={{ flex: 1 }}>
         {alsoAddListData?.length > 0 ? renderAlsoAddListHeader() : null}
         <ItemCard
           onPressAddToCartFromCart={(item) => _fetchAreasAndReportGenDetails(item, true)}
@@ -2639,7 +3299,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           isServiceable={isDiagnosticLocationServiceable}
           isVertical={false}
           navigation={props.navigation}
-          source={'Cart Page'}
+          source={'Cart page'}
           sourceScreen={AppRoutes.TestsCart}
         />
       </View>
@@ -2651,19 +3311,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
-  const addressText = selectedAddr ? formatAddressWithLandmark(selectedAddr) || '' : '';
-  const zipCode = (deliveryAddressId && selectedAddr && selectedAddr?.zipcode) || '0';
+  const addressText = isModifyFlow
+    ? formatAddressWithLandmark(modifiedOrder?.patientAddressObj) || ''
+    : selectedAddr
+    ? formatAddressWithLandmark(selectedAddr) || ''
+    : '';
 
-  const isCovidItem = cartItemsWithId?.map((item) =>
-    AppConfig.Configuration.Covid_Items.includes(item)
-  );
-  const isCartHasCovidItem = isCovidItem?.find((item) => item === true);
-  const maxDaysToShow = !!isCartHasCovidItem
-    ? AppConfig.Configuration.Covid_Max_Slot_Days
-    : AppConfig.Configuration.Non_Covid_Max_Slot_Days;
-  const enable_cancelellation_policy =
-    AppConfig.Configuration.Enable_Diagnostics_Cancellation_Policy;
-  const cancelellation_policy_text = AppConfig.Configuration.Diagnostics_Cancel_Policy_Text_Msg;
   const renderCancellationPolicy = () => {
     return (
       <View style={styles.cancelPolicyContainer}>
@@ -2700,8 +3353,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           isTodaySlotUnavailable={todaySlotNotAvailable}
           onClose={() => setDisplaySchedule(false)}
           slots={slots}
-          zipCode={parseInt(zipCode, 10)}
           slotInfo={selectedTimeSlot}
+          addressDetails={isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr}
           onSchedule={(date: Date, slotInfo: TestSlot) => {
             setDate(date);
             setselectedTimeSlot(slotInfo);
@@ -2728,6 +3381,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <View style={{ marginVertical: 16 }}>
             {renderPatientDetails()}
             {renderItemsInCart()}
+            {isModifyFlow ? renderPreviouslyAddedItems() : null}
             {renderTotalCharges()}
             {enable_cancelellation_policy ? renderCancellationPolicy() : null}
             {cartItems?.length > 0 ? renderAlsoAddItems() : null}
@@ -2735,8 +3389,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <View style={{ height: cartItems?.length > 0 ? 140 : 90 }} />
         </ScrollView>
         {renderTestProceedBar()}
+        {showSpinner && <Spinner />}
       </SafeAreaView>
-      {showSpinner && <Spinner />}
     </View>
   );
 };
@@ -2783,6 +3437,11 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(screenWidth < 380 ? 14 : 16),
     color: theme.colors.SHERPA_BLUE,
     lineHeight: 24,
+    alignSelf: 'center',
+  },
+  lbTextStyle: {
+    ...theme.viewStyles.text('SB', 14, colors.SHERPA_BLUE, 0.5),
+    marginHorizontal: 5
   },
   dateTextStyle: {
     ...theme.fonts.IBMPlexSansMedium(14),
@@ -2877,6 +3536,15 @@ const styles = StyleSheet.create({
     marginVertical: '2%',
     paddingRight: 15,
   },
+  blueView: {
+    flexDirection: 'row',
+    backgroundColor: '#E0F0FF',
+    marginTop: -5,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+  },
   dashedBannerViewStyle: {
     ...cardViewStyle,
     marginHorizontal: 20,
@@ -2901,5 +3569,67 @@ const styles = StyleSheet.create({
     ...text('B', 13, SHERPA_BLUE, 1, 16.9),
     marginHorizontal: 20,
     marginTop: 24,
+  },
+  previousItemContainer: {
+    marginBottom: 20,
+    marginTop: 12,
+  },
+  previousContainerTouch: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  previousItemInnerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+    height: 30,
+    alignItems: 'center',
+  },
+  arrowIconStyle: { height: 30, width: 30, resizeMode: 'contain' },
+  itemHeading: {
+    ...theme.viewStyles.text('M', 11, SHERPA_BLUE, 1, 15),
+    letterSpacing: 0.28,
+  },
+  commonTax: {
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 18,
+  },
+  commonText: {
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 11 : 12),
+    color: SHERPA_BLUE,
+    marginBottom: 5,
+    lineHeight: 18,
+  },
+  inclusionsText: {
+    ...theme.viewStyles.text('R', 11, SHERPA_BLUE, 1, 15),
+  },
+  previousItemHeading: {
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13 : 14),
+    color: SHERPA_BLUE,
+    lineHeight: 22,
+    width: '87%',
+  },
+  arrowTouch: {
+    width: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  strikedThroughHC: {
+    ...theme.fonts.IBMPlexSansMedium(screenWidth < 380 ? 10 : 11),
+    color: theme.colors.SHERPA_BLUE,
+    lineHeight: 16,
+    opacity: 0.5,
+    alignSelf: 'center',
+    textDecorationLine: 'line-through',
+    marginLeft: 6,
+  },
+  pricesNormalText: {
+    ...theme.viewStyles.text('M', 12, SHERPA_BLUE, 1, 18),
+  },
+  pricesBoldText: {
+    ...theme.viewStyles.text('B', 14, SHERPA_BLUE, 1, 20),
   },
 });

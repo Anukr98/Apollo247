@@ -76,6 +76,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getProHealthHospitalBySlug';
 import firebaseAuth from '@react-native-firebase/auth';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import {
+  preFetchSDK,
+  createHyperServiceObject,
+} from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 
 (function() {
   /**
@@ -225,6 +229,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     if (isIos()) {
       initializeCallkit();
       handleVoipEventListeners();
+    }
+  }, []);
+
+  useEffect(() => {
+    preFetchSDK(currentPatient?.id);
+    try {
+      createHyperServiceObject();
+    } catch (error) {
+      CommonBugFender('ErrorWhilecreatingHyperServiceObject', error);
     }
   }, []);
 
@@ -918,6 +931,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Diagnostics_Cancel_Policy_Text',
       PROD: 'Diagnostics_Cancel_Policy_Text',
     },
+    MaxCallRetryAttempt: {
+      QA: 'QA_Max_Call_Retry_Attempt',
+      PROD: 'Max_Call_Retry_Attempt',
+    },
     Enable_Diagnostics_Prepaid: {
       QA: 'QA_Enable_Diagnostics_Prepaid',
       PROD: 'Enable_Diagnostics_Prepaid',
@@ -1140,6 +1157,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'Diagnostics_Cancel_Policy_Text_Msg',
         'Diagnostics_Cancel_Policy_Text_Msg',
         (key) => config.getString(key)
+      );
+      setAppConfig('MaxCallRetryAttempt', 'MaxCallRetryAttempt', (key) => config.getNumber(key));
+
+      setAppConfig('Enable_Diagnostics_Prepaid', 'Enable_Diagnostics_Prepaid', (key) =>
+        config.getBoolean(key)
+      );
+      setAppConfig(
+        'Diagnostics_CityLevel_Payment_Option',
+        'DIAGNOSTICS_CITY_LEVEL_PAYMENT_OPTION',
+        (key) =>
+          JSON.parse(config.getString(key)) ||
+          AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_PAYMENT_OPTION
       );
 
       setAppConfig('Enable_Diagnostics_Prepaid', 'Enable_Diagnostics_Prepaid', (key) =>

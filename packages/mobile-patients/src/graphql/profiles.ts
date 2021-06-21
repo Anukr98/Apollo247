@@ -1667,6 +1667,7 @@ export const GET_RECOMMENDED_PRODUCTS_LIST = gql`
         categoryName
         status
         mou
+        urlKey
       }
     }
   }
@@ -1780,112 +1781,6 @@ export const GET_DIAGNOSTIC_SLOTS = gql`
   }
 `;
 
-export const GET_DIAGNOSTIC_ORDER_LIST = gql`
-  query getDiagnosticOrdersList($patientId: String) {
-    getDiagnosticOrdersList(patientId: $patientId) {
-      ordersList {
-        id
-        patientAddressId
-        city
-        slotTimings
-        employeeSlotId
-        diagnosticEmployeeCode
-        diagnosticBranchCode
-        totalPrice
-        prescriptionUrl
-        diagnosticDate
-        centerName
-        centerCode
-        centerCity
-        centerState
-        centerLocality
-        orderStatus
-        orderType
-        displayId
-        createdDate
-        areaId
-        slotDateTimeInUTC
-        rescheduleCount
-        isRescheduled
-        collectionCharges
-        visitNo
-        paymentType
-        paymentOrderId
-        phleboDetailsObj {
-          PhelboOTP
-          PhelbotomistName
-          PhelbotomistMobile
-          PhelbotomistTrackLink
-          TempRecording
-          CheckInTime
-          PhleboLatitude
-          PhleboLongitude
-        }
-        diagnosticOrderReschedule {
-          rescheduleDate
-          rescheduleReason
-          comments
-        }
-        diagnosticOrderCancellation {
-          cancellationReason
-          cancelType
-          cancelByName
-          comments
-        }
-        diagnosticOrdersStatus {
-          id
-          orderStatus
-          itemId
-          itemName
-          packageId
-          packageName
-          hideStatus
-          statusMessage
-          statusDate
-        }
-        diagnosticOrderLineItems {
-          id
-          itemId
-          itemName
-          quantity
-          price
-          groupPlan
-          itemType
-          itemObj {
-            itemType
-            testPreparationData
-            packageCalculatedMrp
-            inclusions
-            reportGenerationTime
-          }
-          pricingObj {
-            mrp
-            price
-            groupPlan
-          }
-          diagnostics {
-            id
-            itemId
-            itemName
-            itemType
-            testDescription
-            testPreparationData
-            inclusions
-            diagnosticPricing {
-              mrp
-              price
-              groupPlan
-              status
-              startDate
-              endDate
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-
 export const GET_PACKAGE_INCLUSIONS = gql`
   query getInclusionsOfMultipleItems($itemID: [Int]!) {
     getInclusionsOfMultipleItems(itemID: $itemID) {
@@ -1916,17 +1811,10 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         }
         city
         slotTimings
-        employeeSlotId
-        diagnosticEmployeeCode
-        diagnosticBranchCode
+        slotId
         totalPrice
         prescriptionUrl
         diagnosticDate
-        centerName
-        centerCode
-        centerCity
-        centerState
-        centerLocality
         orderStatus
         orderType
         displayId
@@ -1935,6 +1823,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         slotDateTimeInUTC
         paymentType
         visitNo
+        invoiceURL
         labReportURL
         diagnosticOrderLineItems {
           id
@@ -1944,6 +1833,8 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           price
           quantity
           groupPlan
+          editOrderID
+          isRemoved
           itemObj {
             itemType
             testPreparationData
@@ -2261,15 +2152,24 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         isRescheduled
         rescheduleCount
         areaId
-        addressLine1
-        addressLine2
+        cityId
         patientId
+        orderType
+        totalPrice
+        orderStatus
+        createdDate
+        paymentType
+        diagnosticDate
+        paymentOrderId
+        patientAddressId
         displayId
         diagnosticDate
-        diagnosticBranchCode
-        diagnosticEmployeeCode
         visitNo
         labReportURL
+        slotTimings
+        slotId
+        slotDateTimeInUTC
+        collectionCharges
         patientObj {
           id
           uhid
@@ -2286,10 +2186,13 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
         patientAddressObj {
           addressLine1
           addressLine2
+          addressType
           landmark
           state
           city
           zipcode
+          latitude
+          longitude
         }
         diagnosticOrdersStatus {
           id
@@ -2310,6 +2213,8 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           groupPlan
           price
           itemType
+          editOrderID
+          isRemoved
           itemObj {
             itemType
             testPreparationData
@@ -2338,18 +2243,6 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           testPreparationData
           packageCalculatedMrp
         }
-        orderType
-        totalPrice
-        centerName
-        centerState
-        orderStatus
-        createdDate
-        paymentType
-        diagnosticDate
-        centerLocality
-        paymentOrderId
-        paymentOrderId
-        patientAddressId
         phleboDetailsObj {
           PhelboOTP
           PhelbotomistName
@@ -2360,11 +2253,6 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           PhleboLatitude
           PhleboLongitude
         }
-        slotTimings
-        slotDateTimeInUTC
-        collectionCharges
-        diagnosticBranchCode
-        diagnosticEmployeeCode
         diagnosticOrderReschedule {
           rescheduleDate
           rescheduleReason
@@ -2406,6 +2294,14 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_SHIPMENT = gql`
           trackingProvider
         }
       }
+    }
+  }
+`;
+
+export const PHR_COVERT_TO_ZIP = gql`
+  mutation convertToZip($fileUrls: [String]!, $uhid: String!) {
+    convertToZip(fileUrls: $fileUrls, uhid: $uhid) {
+      zipUrl
     }
   }
 `;
@@ -2876,7 +2772,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            file_Url
+            # content
             # byteContent
           }
         }
@@ -2902,7 +2800,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            file_Url
+            # content
             # byteContent
           }
           hospital_name
@@ -2964,7 +2864,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            file_Url
+            # content
             # byteContent
             # dateCreated
           }
@@ -2989,7 +2891,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            file_Url
+            # content
             # byteContent
             # dateCreated
           }
@@ -3016,7 +2920,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            file_Url
+            # content
             # byteContent
             # dateCreated
           }
@@ -3043,7 +2949,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            file_Url
+            # content
             # byteContent
             # dateCreated
           }
@@ -3110,7 +3018,9 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
+            index
+            file_Url
+            # content
             # byteContent
             # dateCreated
           }
@@ -3135,9 +3045,11 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             id
             fileName
             mimeType
-            content
-            byteContent
-            dateCreated
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
           }
         }
       }
@@ -3148,6 +3060,18 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
 export const DELETE_HEALTH_RECORD_FILES = gql`
   mutation deleteHealthRecordFiles($deleteHealthRecordFilesInput: DeleteHealthRecordFilesInput) {
     deleteHealthRecordFiles(deleteHealthRecordFilesInput: $deleteHealthRecordFilesInput) {
+      status
+    }
+  }
+`;
+
+export const DELETE_MULTIPLE_HEALTH_RECORD_FILES = gql`
+  mutation deleteMultipleHealthRecordFiles(
+    $deleteMultipleHealthRecordFilesInput: DeleteMultipleHealthRecordFilesInput
+  ) {
+    deleteMultipleHealthRecordFiles(
+      deleteMultipleHealthRecordFilesInput: $deleteMultipleHealthRecordFilesInput
+    ) {
       status
     }
   }
@@ -3607,11 +3531,17 @@ export const UPLOAD_CHAT_FILE = gql`
 `;
 
 export const ADD_CHAT_DOCUMENTS = gql`
-  mutation addChatDocument($appointmentId: ID!, $documentPath: String, $prismFileId: String) {
+  mutation addChatDocument(
+    $appointmentId: ID!
+    $documentPath: String
+    $prismFileId: String
+    $fileName: String
+  ) {
     addChatDocument(
       appointmentId: $appointmentId
       documentPath: $documentPath
       prismFileId: $prismFileId
+      fileName: $fileName
     ) {
       id
       documentPath
@@ -4653,8 +4583,18 @@ export const GET_DIAGNOSTIC_NEAREST_AREA = gql`
 `;
 
 export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS = gql`
-  query getDiagnosticSlotsCustomized($selectedDate: Date!, $areaID: Int!, $itemIds: [Int!]!) {
-    getDiagnosticSlotsCustomized(selectedDate: $selectedDate, areaID: $areaID, itemIds: $itemIds) {
+  query getDiagnosticSlotsCustomized(
+    $selectedDate: Date!
+    $areaID: Int!
+    $itemIds: [Int!]!
+    $patientAddressObj: AddressObj
+  ) {
+    getDiagnosticSlotsCustomized(
+      selectedDate: $selectedDate
+      areaID: $areaID
+      itemIds: $itemIds
+      patientAddressObj: $patientAddressObj
+    ) {
       slots {
         Timeslot
         TimeslotID
@@ -4770,6 +4710,7 @@ export const GET_PHLOBE_DETAILS = gql`
   query getOrderPhleboDetailsBulk($diagnosticOrdersIds: [String]!) {
     getOrderPhleboDetailsBulk(diagnosticOrdersIds: $diagnosticOrdersIds) {
       orderPhleboDetailsBulk {
+        allowCalling
         orderPhleboDetails {
           diagnosticOrdersId
           diagnosticPhlebotomists {
@@ -4816,8 +4757,8 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql`
     getDiagnosticOpenOrdersList(mobileNumber: $mobileNumber, skip: $skip, take: $take) {
       openOrders {
         id
-        patientId
         displayId
+        patientId
         orderStatus
         slotDateTimeInUTC
         labReportURL
@@ -4832,7 +4773,7 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql`
             testPreparationData
           }
         }
-        attributesObj{
+        attributesObj {
           reportGenerationTime
           preTestingRequirement
         }
@@ -4868,8 +4809,8 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
     getDiagnosticClosedOrdersList(mobileNumber: $mobileNumber, skip: $skip, take: $take) {
       closedOrders {
         id
-        patientId
         displayId
+        patientId
         orderStatus
         slotDateTimeInUTC
         labReportURL
@@ -4884,10 +4825,24 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
             testPreparationData
           }
         }
-        attributesObj{
+        attributesObj {
           reportGenerationTime
           preTestingRequirement
         }
+      }
+    }
+  }
+`;
+
+export const MODIFY_DIAGNOSTIC_ORDERS = gql`
+  mutation saveModifyDiagnosticOrder($saveModifyDiagnosticOrder: saveModifyDiagnosticOrderInput!) {
+    saveModifyDiagnosticOrder(saveModifyDiagnosticOrder: $saveModifyDiagnosticOrder) {
+      orderId
+      displayId
+      status
+      errorMessageToDisplay
+      attributes {
+        itemids
       }
     }
   }
@@ -5052,6 +5007,7 @@ export const GET_VACCINATION_SITES = gql`
     }
   }
 `;
+
 //vaccinetype to add
 //resource_id
 export const GET_VACCINATION_AVAILABLE_DATES = gql`
@@ -5092,7 +5048,7 @@ export const GET_VACCINATION_SLOTS = gql`
   }
 `;
 
-// pateint info to type
+// patient info to type
 export const SUBMIT_VACCINATION_BOOKING_REQUEST = gql`
   mutation CreateAppointment($appointmentInput: CreateAppointmentInput!) {
     CreateAppointment(appointmentInput: $appointmentInput) {
@@ -5196,6 +5152,16 @@ export const GET_ALL_VACCINATION_APPOINTMENTS = gql`
         display_id
         payment_type
       }
+    }
+  }
+`;
+
+export const DIAGNOSITC_EXOTEL_CALLING = gql`
+  mutation diagnosticExotelCalling($orderId: ID!) {
+    diagnosticExotelCalling(orderId: $orderId) {
+      errorMessage
+      sid
+      success
     }
   }
 `;

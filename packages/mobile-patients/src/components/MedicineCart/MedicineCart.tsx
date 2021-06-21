@@ -144,6 +144,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     setCirclePlanSelected,
     setDefaultCirclePlan,
     circleSubscriptionId,
+    setCircleSubscriptionId,
     hdfcSubscriptionId,
     pharmacyCircleAttributes,
     newAddressAdded,
@@ -181,6 +182,14 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
   const [showCareSelectPlans, setShowCareSelectPlans] = useState<boolean>(true);
   const [tatResponse, setTatResponse] = useState<string>('');
+
+  useEffect(() => {
+    async function fetchCircleSubscriptionId() {
+      const circleSubscriptionID: any = await AsyncStorage.getItem('circleSubscriptionId');
+      setCircleSubscriptionId && setCircleSubscriptionId(circleSubscriptionID);
+    }
+    fetchCircleSubscriptionId();
+  }, []);
 
   useEffect(() => {
     fetchAddress();
@@ -468,7 +477,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           setloading!(false);
           setTatResponse(response[0]?.tat);
           addressSelectedEvent(selectedAddress, response[0]?.tat, response);
-          addressChange && NavigateToCartSummary();
           updatePricesAfterTat(inventoryData, updatedCartItems);
         } catch (error) {
           setloading!(false);
@@ -962,6 +970,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         setloading={setloading}
         onPressProduct={(item) => {
           props.navigation.navigate(AppRoutes.ProductDetailPage, {
+            urlKey: item?.url_key,
             sku: item.id,
             movedFrom: ProductPageViewedSource.CART,
           });
@@ -1184,6 +1193,13 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         onPressReviewOrder={onPressReviewOrder}
         onPressAddMoreMedicines={() => {
           props.navigation.navigate('MEDICINES');
+        }}
+        onPressTatCard={() => {
+          uploadPrescriptionRequired
+            ? redirectToUploadPrescription()
+            : physicalPrescriptions?.length > 0
+            ? uploadPhysicalPrescriptons()
+            : onPressReviewOrder();
         }}
       />
     );

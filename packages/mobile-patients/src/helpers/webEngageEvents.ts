@@ -202,6 +202,8 @@ export enum WebEngageEventName {
   DIAGNOSTIC_ORDER_STATUS = 'Diagnostic Order Status',
   DIAGNOSTIC_TRACK_PHLEBO_CLICKED = 'Diagnostic Track Phlebo clicked',
   DIGNOSTIC_PAYMENT_ABORTED = 'Diagnostic payment aborted',
+  DIAGNOSITC_MODIFY_CLICKED = 'Diagnostic modify clicked',
+  DIAGNOSTIC_MODIFY_ORDER = 'Diagnostic modify order',
 
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
@@ -1209,7 +1211,7 @@ export interface WebEngageEvents {
     Source:
       | 'Full Search'
       | 'Home Page'
-      | 'Cart Page'
+      | 'Cart page'
       | 'Partial Search'
       | 'Deeplink'
       | 'Popular search'
@@ -1298,7 +1300,8 @@ export interface WebEngageEvents {
       | 'Listing page'
       | 'Popular search'
       | 'Category page'
-      | 'Prescription';
+      | 'Prescription'
+      | 'Cart page';
     Section?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
@@ -1381,6 +1384,20 @@ export interface WebEngageEvents {
   [WebEngageEventName.DIGNOSTIC_PAYMENT_ABORTED]: {
     'Order id': string;
     UHID: string;
+  };
+  [WebEngageEventName.DIAGNOSITC_MODIFY_CLICKED]: {
+    UHID: string;
+    'Order id': string;
+    'Order status': string;
+  };
+  [WebEngageEventName.DIAGNOSTIC_MODIFY_ORDER]: {
+    'No of items Added': number;
+    'Item ids in array': string;
+    'Old order value': number;
+    'updated order value': number;
+    'HC charge updated': 'Yes' | 'No';
+    'payment mode': 'Prepaid' | 'Cash';
+    'time of modification': string | Date;
   };
 
   // ********** ConsultEvents ********** \\
@@ -2247,6 +2264,14 @@ export interface WebEngageEvents {
     User_Type?: PharmaUserStatus;
     Pincode?: string;
     serviceable: YesOrNo;
+    TATDay?: number | null;
+    TatHour?: number | null;
+    TatDateTime?: Date | string;
+    ProductType?: string;
+    MaxOrderQuantity?: number;
+    MRP?: number;
+    SpecialPrice?: number | null;
+    CircleCashback?: number;
   };
   [WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
     'Patient Name': string;

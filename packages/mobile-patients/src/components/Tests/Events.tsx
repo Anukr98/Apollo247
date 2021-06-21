@@ -19,6 +19,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { circleValidity } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 
 function createPatientAttributes(currentPatient: any) {
   const patientAttributes = {
@@ -119,8 +120,10 @@ export function DiagnosticAddToCartEvent(
     | 'Details page'
     | 'Partial search'
     | 'Listing page'
+    | 'Popular search'
     | 'Category page'
-    | 'Prescription',
+    | 'Prescription'
+    | 'Cart page',
   section?: string
 ) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADD_TO_CART] = {
@@ -183,7 +186,7 @@ export function DiagnosticDetailsViewed(
   source:
     | 'Full Search'
     | 'Home Page'
-    | 'Cart Page'
+    | 'Cart page'
     | 'Partial Search'
     | 'Deeplink'
     | 'Popular search'
@@ -470,6 +473,21 @@ export function DiagnosticFeedbackSubmitted(currentPatient: any, rating: string,
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_FEEDBACK_GIVEN, eventAttributes);
 }
 
+export function DiagnosticItemSearched(
+  currentPatient: any,
+  keyword: string,
+  results: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
+) {
+  const getPatientAttributes = createPatientAttributes(currentPatient);
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ITEM_SEARCHED] = {
+    ...getPatientAttributes,
+    'Keyword Entered': keyword,
+    '# Results appeared': results?.length,
+    Popular: keyword == '' ? 'Yes' : 'No',
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ITEM_SEARCHED, eventAttributes);
+}
+
 export function DiagnosticPaymentPageViewed(currentPatient: any, amount: string | number) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED] = {
     UHID: g(currentPatient, 'uhid'),
@@ -519,6 +537,35 @@ export function DiagnosticOrderSummaryViewed(
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED, eventAttributes);
   postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED, eventAttributes);
+}
+
+export function DiagnosticAddTestClicked(orderId: string, currentPatient: any, status: string) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSITC_MODIFY_CLICKED] = {
+    'Order id': orderId,
+    UHID: currentPatient?.uhid,
+    'Order status': status,
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSITC_MODIFY_CLICKED, eventAttributes);
+}
+
+export function DiagnosticModifyOrder(
+  totalItems: number,
+  itemArray: string,
+  oldTotal: number,
+  newTotal: number,
+  hcUpdated: 'Yes' | 'No',
+  mode: 'Prepaid' | 'Cash'
+) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_MODIFY_ORDER] = {
+    'No of items Added': totalItems,
+    'Item ids in array': itemArray,
+    'Old order value': oldTotal,
+    'updated order value': newTotal,
+    'HC charge updated': hcUpdated,
+    'payment mode': mode,
+    'time of modification': new Date(),
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_MODIFY_ORDER, eventAttributes);
 }
 
 export function DiagnosticViewReportClicked(

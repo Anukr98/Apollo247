@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, View, Text, Dimensions } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, Text, Dimensions, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { VegetarianIcon, NonVegetarianIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NewPharmaOverview } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -46,13 +46,48 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
     directionsOfUse,
   } = props;
 
+  const pharmaUses = pharmaOverview?.HowToTake;
+  const usesOfProduct = pharmaOverview?.Uses;
+  const pharmaBenefits = pharmaOverview?.MedicinalBenefits;
+  const pharmaSideEffects = pharmaOverview?.SideEffects;
+  const storagePlace = pharmaOverview?.StoragePlace;
+  const pharma_storage = pharmaOverview?.Storage;
+  const coldChain = pharmaOverview?.ColdChain;
+  const aboutProduct = pharmaOverview?.AboutProduct;
+  const productDescription = description || pharmaOverview?.AboutProduct;
+
+  const showShowMore =
+    !!key_benefits ||
+    !!directionsOfUse ||
+    !!storage ||
+    !!key_ingredient ||
+    !!safety_information ||
+    !!aboutProduct ||
+    !!usesOfProduct ||
+    !!pharmaUses ||
+    !!pharmaBenefits ||
+    !!storagePlace ||
+    !!pharma_storage ||
+    !!coldChain ||
+    !!pharmaSideEffects ||
+    !!pharmaOverview?.length;
+  const [showAllContent, setShowAllContent] = useState<boolean>(!showShowMore);
+
+  const renderShowMore = () => {
+    return (
+      <TouchableOpacity onPress={() => setShowAllContent(!showAllContent)}>
+        <Text style={styles.showMoreText}>{showAllContent ? `SHOW LESS` : `SHOW MORE`}</Text>
+      </TouchableOpacity>
+    );
+  };
+
   const renderDescription = () => {
-    const descriptionHtml = filterHtmlContent(description);
+    const descriptionHtml = filterHtmlContent(productDescription);
     const text = descriptionHtml.replace(/(<([^>]+)>)/gi, ' ').trim();
     return (
       !!text.length && (
         <View>
-          <Text style={styles.subHeading}>Description</Text>
+          <Text style={styles.subHeading}>{isPharma ? `About ${name}` : `Description`}</Text>
           <HTML
             html={descriptionHtml}
             baseFontStyle={{
@@ -203,21 +238,13 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
 
   return (
     <View style={styles.cardStyle}>
-      <Text style={styles.heading}>{isPharma ? `Medicine Detail` : `Product Detail`}</Text>
-      {!!description && renderDescription()}
-      {isPharma ? (
-        <PharmaMedicineInfo
-          name={name}
-          pharmaOverview={pharmaOverview}
-          vegetarian={vegetarian}
-          key_ingredient={key_ingredient}
-          size={size}
-          flavour_fragrance={flavour_fragrance}
-          colour={colour}
-          variant={variant}
-        />
-      ) : (
+      {!!showShowMore && (!!productDescription || !!vegetarian) && (
+        <Text style={styles.heading}>{isPharma ? `Medicine Detail` : `Product Detail`}</Text>
+      )}
+      {!!productDescription && renderDescription()}
+      {showAllContent && (
         <>
+          <PharmaMedicineInfo name={name} pharmaOverview={pharmaOverview} />
           {!!key_benefits && renderKeyBenefits()}
           {!!directionsOfUse && renderFmcgUses()}
           {!!storage && renderStorage()}

@@ -4,6 +4,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { Badge } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { CartIcon, WhiteSearchIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { isEmptyObject } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -16,7 +17,7 @@ export interface Props {
 }
 
 export const TestListingHeader: React.FC<Props> = ({ navigation, movedFrom, headerText }) => {
-  const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
+  const { cartItems: diagnosticCartItems, modifiedOrder } = useDiagnosticsCart();
   const { cartItems } = useShoppingCart();
 
   const onBackPress = () => {
@@ -51,7 +52,13 @@ export const TestListingHeader: React.FC<Props> = ({ navigation, movedFrom, head
   const renderHeaderRightView = () => {
     const cartItemsCount = cartItems?.length + diagnosticCartItems?.length;
     const onPressCartIcon = () => {
-      navigation.navigate(AppRoutes.MedAndTestCart);
+      if (!!modifiedOrder && !isEmptyObject(modifiedOrder)) {
+        navigation.navigate(AppRoutes.TestsCart, {
+          orderDetails: modifiedOrder,
+        });
+      } else {
+        navigation.navigate(AppRoutes.MedAndTestCart);
+      }
     };
     const onPressSearchIcon = () => {
       navigation.navigate(AppRoutes.SearchTestScene);

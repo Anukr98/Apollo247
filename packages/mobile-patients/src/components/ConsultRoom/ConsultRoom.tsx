@@ -173,10 +173,6 @@ import {
   addVoipPushTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/addVoipPushToken';
 import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
-import {
-  preFetchSDK,
-  createHyperServiceObject,
-} from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 
 import { CircleTypeCard1 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard1';
 import { CircleTypeCard2 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard2';
@@ -829,14 +825,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   useEffect(() => {
-    preFetchSDK(currentPatient?.id);
     getPatientApiCall();
     setVaccineLoacalStorageData();
-    try {
-      createHyperServiceObject();
-    } catch (error) {
-      CommonBugFender('ErrorWhilecreatingHyperServiceObject', error);
-    }
   }, []);
 
   //for prohealth option
@@ -1552,6 +1542,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             if (circlePlan) {
               const circleSubscription = setCircleSubscriptionData(circlePlan[0]);
               if (!!circlePlan[0]?._id) {
+                AsyncStorage.setItem('circleSubscriptionId', circlePlan[0]?._id);
+                setCircleSubscriptionId && setCircleSubscriptionId(circlePlan[0]?._id);
                 setIsCircleSubscription && setIsCircleSubscription(true);
               }
               setCircleSubscription && setCircleSubscription(circleSubscription);
@@ -1768,6 +1760,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               'Circle Plan type': circleMembershipType,
             };
 
+            AsyncStorage.setItem('circleSubscriptionId', circleData?._id);
             setCircleSubscriptionId && setCircleSubscriptionId(circleData?._id);
             setIsCircleSubscription && setIsCircleSubscription(true);
             setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
@@ -1844,6 +1837,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const setNonCircleValues = () => {
     AsyncStorage.setItem('isCircleMember', 'no');
+    AsyncStorage.removeItem('circleSubscriptionId');
     setIsCircleMember && setIsCircleMember('no');
     setCircleSubscriptionId && setCircleSubscriptionId('');
     setIsCircleSubscription && setIsCircleSubscription(false);
@@ -2235,9 +2229,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           : null;
     }
 
-    const patientDetails = allPatients
+    const patientDetails_primary = allPatients
       ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
       : null;
+
+    const patientDetails = currentPatient;
 
     const fullName = `${g(patientDetails, 'firstName') || ''}%20${g(patientDetails, 'lastName') ||
       ''}`;

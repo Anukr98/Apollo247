@@ -19,8 +19,6 @@ import {
   MissedCallIcon,
   UploadHealthRecords,
   FreeArrowIcon,
-  ActiveCalenderIcon,
-  InactiveCalenderIcon,
   CallCollapseIcon,
   CallCameraIcon,
   AudioActiveIcon,
@@ -31,6 +29,8 @@ import {
   UserThumbnailIcon,
   CopyIcon,
   ExternalMeetingVideoCall,
+  InactiveCalenderIcon,
+  ActiveCalenderIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -63,6 +63,10 @@ import {
   updateHealthRecordNudgeStatus,
   updateHealthRecordNudgeStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/updateHealthRecordNudgeStatus';
+import {
+  addChatDocument,
+  addChatDocumentVariables,
+} from '@aph/mobile-patients/src/graphql/types/addChatDocument';
 import {
   getAppointmentData,
   getAppointmentDataVariables,
@@ -162,6 +166,7 @@ import {
   formatToCartItem,
   getPrescriptionItemQuantity,
   postCleverTapEvent,
+  getNetStatus,
 } from '../../helpers/helperFunctions';
 import { mimeType } from '../../helpers/mimeType';
 import { FeedbackPopup } from '../FeedbackPopup';
@@ -238,7 +243,9 @@ const { height, width } = Dimensions.get('window');
 
 const timer: number = 900;
 let timerId: any;
+let reconnectTimerId: any;
 let appointmentDiffMinTimerId: any;
+var networkCheckInterval: any = [];
 let notificationTimerId: any;
 let notificationIntervalId: any;
 let notify_async_key = 'notify_async';
@@ -253,6 +260,8 @@ let jdAssigned: boolean = false;
 const bottomBtnContainerWidth = 267;
 const maxRetryAttempt: number = 15;
 let currentRetryAttempt: number = 1;
+let savedTime: any;
+let currentTime: any;
 
 type rescheduleType = {
   rescheduleCount: number;
@@ -729,6 +738,24 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 8, theme.colors.WHITE),
     marginVertical: 9,
   },
+  publisherStyles: {
+    position: 'absolute',
+    top: 44,
+    right: 20,
+    width: 1,
+    height: 1,
+    zIndex: 1000,
+  },
+  callingView: {
+    position: 'absolute',
+    left: 0,
+    width: width,
+    height: 24,
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
 });
 
 const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/;
@@ -747,27 +774,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const caseSheet = followUpChatDaysCaseSheet(appointmentData.caseSheet);
   const followUpChatDaysCurrentCaseSheet = followUpChatDaysCaseSheet(currentCaseSheet);
   const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
+
   const currentCaseSheetChatDays = g(
     followUpChatDaysCurrentCaseSheet,
     '0' as any,
     'followUpAfterInDays'
   );
   const followupDays = caseSheetChatDays || currentCaseSheetChatDays;
-  const followUpAfterInDays =
-    caseSheetChatDays || caseSheetChatDays === '0'
-      ? caseSheetChatDays === '0'
-        ? 0
-        : Number(caseSheetChatDays) - 1
-      : 6;
+  const followUpAfterInDays = caseSheetChatDays ? Number(caseSheetChatDays) : 7;
   const fromSearchAppointmentScreen =
     props.navigation.getParam('fromSearchAppointmentScreen') || false;
   const disableChat =
     props.navigation.getParam('disableChat') ||
     moment(new Date(appointmentData.appointmentDateTime))
       .add(followUpAfterInDays, 'days')
-      .startOf('day')
-      .isBefore(moment(new Date()).startOf('day'));
-
+      .isSameOrBefore(moment(new Date()));
   const isInFuture = moment(props.navigation.state.params!.data.appointmentDateTime).isAfter(
     moment(new Date())
   );
@@ -882,6 +903,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [doctorScheduleId, setDoctorScheduleId] = useState<string>('');
   const callStatus = useRef<string>('');
   const callToastStatus = useRef<string>('');
+  const isCallReconnecting = useRef<boolean>(false);
+  const maxCallRetryAttempt: number = AppConfig.Configuration.MaxCallRetryAttempt;
+  const currentCallRetryAttempt = useRef<number>(1);
   const isErrorToast = useRef<boolean>(false);
   const jrDoctorJoined = useRef<boolean>(false); // using ref to get the current updated values on event listeners
   const [displayChatQuestions, setDisplayChatQuestions] = useState<boolean>(false);
@@ -1657,6 +1681,65 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const client = useApolloClient();
 
+  const checkNetworkStatus = () => {
+    currentTime = new Date().getTime() / 1000; // in seconds
+    if (!savedTime || currentTime - savedTime >= 4) {
+      /**
+       *  In order to work retry logic correctly, we are checking time diff because in few of the cases this
+       *  is getting called twice because of event listeners.
+       * */
+      if (isCallReconnecting.current) {
+        if (currentCallRetryAttempt.current < maxCallRetryAttempt) {
+          currentCallRetryAttempt.current++;
+          // retrying
+          getNetStatus()
+            .then((status) => {
+              if (status) {
+                clearNetworkCheckInterval();
+                joinCallHandler();
+              }
+            })
+            .catch((e) => {
+              CommonBugFender('ChatRoom_checkNetworkStatus', e);
+            });
+        } else {
+          //retry time out
+          hideCallUI();
+          if (isAudio.current) {
+            handleEndAudioCall(false);
+          } else {
+            handleEndCall(false);
+          }
+          clearNetworkCheckInterval();
+        }
+      } else {
+        clearNetworkCheckInterval();
+      }
+    }
+    savedTime = currentTime;
+  };
+
+  const clearNetworkCheckInterval = () => {
+    networkCheckInterval?.map((intervalId: any) => {
+      BackgroundTimer.clearInterval(intervalId);
+      networkCheckInterval = [];
+    });
+  };
+
+  const hideCallUI = () => {
+    const zeroDimension = {
+      height: 0,
+      width: 0,
+    };
+    setTalkStyles(zeroDimension);
+    setSubscriberStyles(zeroDimension);
+    setPublisherStyles(zeroDimension);
+    setPipView(true);
+    setChatReceived(false);
+    setHideStatusBar(false);
+    resetCurrentRetryAttempt();
+  };
+
   const getSecretaryData = () => {
     getSecretaryDetailsByDoctor(client, doctorId)
       .then((apiResponse: any) => {
@@ -2342,7 +2425,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       patientJoinedCall.current = false;
       // subscriberConnected.current = false;
       endVoipCall();
-      eventsAfterConnectionDestroyed();
     },
     error: (error: string) => {
       openTokErrorWebEngageEvents(
@@ -2469,6 +2551,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         WebEngageEventName.PATIENT_SESSION_CONNECTION_CREATED,
         JSON.stringify(event)
       );
+      resetCurrentRetryAttempt();
       setSnackbarState(false);
     },
     connectionDestroyed: (event: string) => {
@@ -2494,11 +2577,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         WebEngageEventName.PATIENT_SESSION_DISCONNECTED,
         JSON.stringify(event)
       );
+      endVoipCall();
       eventsAfterConnectionDestroyed();
     },
     sessionReconnected: (event: string) => {
       openTokWebEngageEvents(WebEngageEventName.PATIENT_SESSION_RECONNECTED, JSON.stringify(event));
       setSnackbarState(false);
+      resetCurrentRetryAttempt();
       callToastStatus.current = 'Reconnected';
       callStatus.current = 'Connected';
       subscriberConnected.current = true;
@@ -2512,6 +2597,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         WebEngageEventName.PATIENT_SESSION_RECONNECTING,
         JSON.stringify(event)
       );
+      isCallReconnecting.current = true;
       callStatus.current = 'Reconnecting...';
       callToastStatus.current = 'Reconnecting Call...';
       setSessionReconnectMsg();
@@ -2534,7 +2620,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         WebEngageEventName.PATIENT_SESSION_STREAM_DESTROYED,
         JSON.stringify(event)
       );
-      eventsAfterConnectionDestroyed();
     },
     streamPropertyChanged: (event: OptntokChangeProp) => {
       callEndWebengageEvent('Network');
@@ -2563,6 +2648,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setCallMinimize(false);
       AsyncStorage.setItem('callDisconnected', 'true');
     },
+  };
+
+  const resetCurrentRetryAttempt = () => {
+    isCallReconnecting.current = false;
+    currentCallRetryAttempt.current = 1;
   };
 
   const callEndWebengageEvent = (
@@ -2602,6 +2692,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setChatReceived(false);
       setCallerAudio(true);
       setCallerVideo(true);
+      if (isCallReconnecting.current) {
+        networkCheckInterval.push(
+          BackgroundTimer.setInterval(() => {
+            checkNetworkStatus();
+          }, 5000)
+        );
+      }
     }, 2000);
   };
 
@@ -2666,6 +2763,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       thirtySecondTimer && clearTimeout(thirtySecondTimer);
       timerId && BackgroundTimer.clearInterval(timerId);
       intervalId && BackgroundTimer.clearInterval(intervalId);
+      clearNetworkCheckInterval();
       abondmentStarted = false;
       stopJoinTimer();
       updateNumberOfParticipants(USER_STATUS.LEAVING);
@@ -3244,6 +3342,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         message.message.message === 'Audio call ended' ||
         message.message.message === 'Video call ended'
       ) {
+        resetCurrentRetryAttempt();
         setTimeout(() => {
           setCallMinimize(false);
           AsyncStorage.setItem('callDisconnected', 'true');
@@ -3304,6 +3403,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setDoctorJoinedChat && setDoctorJoinedChat(false);
         setDoctorJoined(false);
       } else if (message.message.message === endCallMsg) {
+        resetCurrentRetryAttempt();
         callStatus.current = disconnecting;
         callToastStatus.current = '';
         subscriberConnected.current = false;
@@ -3919,15 +4019,37 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           ]);
         }
         if (testPrescription?.length == unAvailableItemsArray?.length) {
-          Alert.alert(
-            'Uh oh.. :(',
-            `Unfortunately, we do not have any diagnostic(s) available right now.`
-          );
-        } else if (unAvailableItems) {
-          Alert.alert(
-            'Uh oh.. :(',
-            `Out of ${testPrescription?.length} diagnostic(s), you are trying to order, following diagnostic(s) are not available.\n\n${unAvailableItems}\n`
-          );
+          showAphAlert?.({
+            title: string.common.uhOh,
+            description: string.common.noDiagnosticsAvailable,
+            onPressOk: () => {
+              _navigateToTestCart();
+            },
+            onPressOutside: () => {
+              _navigateToTestCart();
+            },
+          });
+        } else {
+          //in case of if any unavailable items or all are present
+          const lengthOfAvailableItems = tests?.length;
+          const testAdded = tests?.map((item) => nameFormater(item?.name), 'title').join('\n');
+          showAphAlert?.({
+            title:
+              !!lengthOfAvailableItems && lengthOfAvailableItems > 0
+                ? `${lengthOfAvailableItems} ${
+                    lengthOfAvailableItems > 1 ? 'items' : 'item'
+                  } added to your cart`
+                : string.common.uhOh,
+            description: unAvailableItems
+              ? `Below items are added to your cart: \n${testAdded} \nSearch for the remaining diagnositc tests and add to the cart.`
+              : `Below items are added to your cart: \n${testAdded}`,
+            onPressOk: () => {
+              _navigateToTestCart();
+            },
+            onPressOutside: () => {
+              _navigateToTestCart();
+            },
+          });
         }
         setLoading!(false);
         props.navigation.push(AppRoutes.TestsCart, { comingFrom: AppRoutes.ConsultDetails });
@@ -3937,6 +4059,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         handleGraphQlError(e);
       });
   };
+
+  function _navigateToTestCart() {
+    hideAphAlert?.();
+    props.navigation.push(AppRoutes.TestsCart, { comingFrom: AppRoutes.ConsultDetails });
+  }
 
   const orderMedicine = (rowData: any, index: number) => {
     return (
@@ -5323,12 +5450,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
           <View style={styles.externalMeetingLinkCTAWrapper}>
             <TouchableOpacity
-              style={styles.externalMeetingLinkMeetingCTAContainer}
+              style={[styles.externalMeetingLinkMeetingCTAContainer, { flex: 0.9 }]}
               onPress={() => onMeetingLinkClicked(rowData)}
             >
               <Text style={styles.exeternalMeetingLinkMeetingCTAText}>{rowData.url}</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => onLinkCopyClicked(rowData)}>
+            <TouchableOpacity style={{ flex: 0.1 }} onPress={() => onLinkCopyClicked(rowData)}>
               <CopyIcon />
             </TouchableOpacity>
           </View>
@@ -5792,33 +5919,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               isCamera2Capable: true, // Android only - default is false
             }}
           >
-            <OTPublisher
-              style={
-                !showVideo
-                  ? {}
-                  : !downgradeToAudio
-                  ? publisherStyles
-                  : {
-                      position: 'absolute',
-                      top: 44,
-                      right: 20,
-                      width: 1,
-                      height: 1,
-                      zIndex: 1000,
-                    }
-              }
-              properties={{
-                cameraPosition: cameraPosition,
-                publishVideo: !downgradeToAudio ? showVideo : false,
-                publishAudio: isPublishAudio,
-                audioVolume: 100,
-                name: g(currentPatient, 'firstName') || 'patient',
-                resolution: '640x480', // setting this resolution to avoid over heating of device
-                audioBitrate: 30000,
-                frameRate: 15,
-              }}
-              eventHandlers={publisherEventHandlers}
-            />
+            {renderOTPublisher()}
             <OTSubscriber
               style={
                 showDoctorProfile
@@ -5839,53 +5940,67 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
             />
           </OTSession>
-
-          {!PipView && (
-            <>
-              <View
-                style={{
-                  position: 'absolute',
-                  top: isIphoneX() ? 24 : 0,
-                  left: 0,
-                  width: width,
-                  height: 24,
-                  backgroundColor: 'transparent',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 1000,
-                }}
-              >
-                <Text style={{ color: 'transparent', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
-                  Time Left {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
-                  {seconds.toString().length < 2 ? '0' + seconds : seconds}
-                </Text>
-              </View>
-              {!subscriberConnected.current && (
-                <Text
-                  numberOfLines={1}
-                  style={[styles.connectingDoctorName, { marginTop: isIphoneX() ? 64 : 44 }]}
-                >
-                  {doctorName}
-                </Text>
-              )}
-            </>
-          )}
-          {!isPublishAudio && showVideo && renderShowNoAudioView()}
-          {subscriberConnected.current && renderSubscriberConnectedInfo()}
-
-          {showDoctorProfile &&
-            !subscriberConnected.current &&
-            !patientJoinedCall.current &&
-            renderTextConnecting()}
-          {!subscriberConnected.current || isPaused !== '' || callToastStatus.current
-            ? renderToastMessages()
-            : null}
-          {!showVideo && renderDisableVideoSubscriber()}
-          {showDoctorProfile && renderNoSubscriberConnectedThumbnail()}
-          {!PipView && renderChatNotificationIcon()}
-          {!PipView && renderBottomButtons()}
+          {callingScreenUI()}
         </View>
       </View>
+    );
+  };
+
+  const callingScreenUI = () => {
+    return (
+      <>
+        {!PipView && (
+          <>
+            <View style={[styles.callingView, { top: isIphoneX() ? 24 : 0 }]}>
+              <Text style={{ color: 'transparent', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
+                Time Left {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
+                {seconds.toString().length < 2 ? '0' + seconds : seconds}
+              </Text>
+            </View>
+            {!subscriberConnected.current && (
+              <Text
+                numberOfLines={1}
+                style={[styles.connectingDoctorName, { marginTop: isIphoneX() ? 64 : 44 }]}
+              >
+                {doctorName}
+              </Text>
+            )}
+          </>
+        )}
+        {!isPublishAudio && showVideo && renderShowNoAudioView()}
+        {subscriberConnected.current && renderSubscriberConnectedInfo()}
+
+        {showDoctorProfile &&
+          !subscriberConnected.current &&
+          !patientJoinedCall.current &&
+          renderTextConnecting()}
+        {!subscriberConnected.current || isPaused !== '' || callToastStatus.current
+          ? renderToastMessages()
+          : null}
+        {!showVideo && renderDisableVideoSubscriber()}
+        {showDoctorProfile && renderNoSubscriberConnectedThumbnail()}
+        {!PipView && renderChatNotificationIcon()}
+        {!PipView && renderBottomButtons()}
+      </>
+    );
+  };
+
+  const renderOTPublisher = () => {
+    return (
+      <OTPublisher
+        style={!showVideo ? {} : !downgradeToAudio ? publisherStyles : styles.publisherStyles}
+        properties={{
+          cameraPosition: cameraPosition,
+          publishVideo: !downgradeToAudio ? showVideo : false,
+          publishAudio: isPublishAudio,
+          audioVolume: 100,
+          name: g(currentPatient, 'firstName') || 'patient',
+          resolution: '640x480', // setting this resolution to avoid over heating of device
+          audioBitrate: 30000,
+          frameRate: 15,
+        }}
+        eventHandlers={publisherEventHandlers}
+      />
     );
   };
 
@@ -6141,6 +6256,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             callStatus.current = disconnecting;
             callToastStatus.current = 'You Disconnected the call';
             isErrorToast.current = true;
+            setTimeout(() => {
+              hideCallUI();
+            }, 2000);
             if (isAudio.current) {
               handleEndAudioCall();
             } else {
@@ -6173,14 +6291,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   }, [callTimer]);
 
-  const handleEndCall = () => {
+  const handleEndCall = (playSound: boolean = true) => {
     APICallAgain(false);
+    resetCurrentRetryAttempt();
     setTimeout(() => {
       makeUpdateAppointmentCall.current = false;
       setCallMinimize(false);
       AsyncStorage.setItem('callDisconnected', 'true');
       stopSound();
-      playDisconnectSound();
+      playSound && playDisconnectSound();
       setIsCall(false);
       setIsPublishAudio(true);
       setShowVideo(true);
@@ -6221,14 +6340,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }, 2000);
   };
 
-  const handleEndAudioCall = () => {
+  const handleEndAudioCall = (playSound: boolean = true) => {
     APICallAgain(false);
+    resetCurrentRetryAttempt();
     setTimeout(() => {
       makeUpdateAppointmentCall.current = false;
       setCallMinimize(false);
       AsyncStorage.setItem('callDisconnected', 'true');
       stopSound();
-      playDisconnectSound();
+      playSound && playDisconnectSound();
       setIsAudioCall(false);
       stopTimer();
       setHideStatusBar(false);
@@ -6330,9 +6450,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
   };
 
-  const uploadDocument = (resource: any, base66?: any, type?: any) => {
+  const callUploadMediaDocumentApi = (inputData: MediaPrescriptionUploadRequest) =>
+    client.mutate({
+      mutation: UPLOAD_MEDIA_DOCUMENT_PRISM,
+      fetchPolicy: 'no-cache',
+      variables: {
+        MediaPrescriptionUploadRequest: inputData,
+        uhid: g(currentPatient, 'uhid'),
+        appointmentId: appointmentData.id,
+      },
+    });
+
+  const uploadDocument = async (resource: any, base66?: any, type?: any) => {
     CommonLogEvent(AppRoutes.ChatRoom, 'Upload document');
-    resource?.map((item: any, index: number) => {
+    setLoading(true);
+    for (let i = 0; i < resource?.length; i++) {
+      const item = resource[i];
       if (
         item.fileType == 'jpg' ||
         item.fileType == 'jpeg' ||
@@ -6353,69 +6486,57 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           prescriptionSource: mediaPrescriptionSource.SELF,
           prescriptionFiles: [prescriptionFile],
         };
-        setLoading(true);
-        client
-          .mutate({
-            mutation: UPLOAD_MEDIA_DOCUMENT_PRISM,
-            fetchPolicy: 'no-cache',
-            variables: {
-              MediaPrescriptionUploadRequest: inputData,
-              uhid: g(currentPatient, 'uhid'),
-              appointmentId: appointmentData.id,
-            },
-          })
-          .then((data) => {
-            setLoading(false);
-            const recordId = g(data.data!, 'uploadMediaDocument', 'recordId');
-            if (recordId) {
-              getPrismUrls(client, patientId, [recordId])
-                .then((data: any) => {
-                  const text = {
-                    id: patientId,
-                    message: imageconsult,
-                    fileType: item.fileType == 'pdf' ? 'pdf' : 'image',
-                    fileName: item.title + '.' + item.fileType,
-                    prismId: recordId,
-                    url: (data.urls && data.urls[0]) || '',
-                    messageDate: new Date(),
-                  };
-                  pubnub.publish(
-                    {
-                      channel: channel,
-                      message: text,
-                      storeInHistory: true,
-                      sendByPost: true,
-                    },
-                    (status, response) => {
-                      if (status.statusCode == 200) {
-                        HereNowPubnub('ImageUploaded');
-                      }
+        try {
+          const response = await callUploadMediaDocumentApi(inputData);
+          const recordId = g(response, 'data', 'uploadMediaDocument', 'recordId');
+          if (recordId) {
+            getPrismUrls(client, patientId, [recordId])
+              .then((data: any) => {
+                const text = {
+                  id: patientId,
+                  message: imageconsult,
+                  fileType: item.fileType == 'pdf' ? 'pdf' : 'image',
+                  fileName: item.title + '.' + item.fileType,
+                  prismId: recordId,
+                  url: (data.urls && data.urls[0]) || '',
+                  messageDate: new Date(),
+                };
+                pubnub.publish(
+                  {
+                    channel: channel,
+                    message: text,
+                    storeInHistory: true,
+                    sendByPost: true,
+                  },
+                  (status, response) => {
+                    if (status.statusCode == 200) {
+                      HereNowPubnub('ImageUploaded');
                     }
-                  );
-                  KeepAwake.activate();
-                })
-                .catch((e) => {
-                  CommonBugFender('ChatRoom_getPrismUrls_uploadDocument', e);
-                })
-                .finally(() => {
-                  setLoading(false);
-                });
-            } else {
-              Alert.alert('Upload document failed');
-            }
-          })
-          .catch((e) => {
-            // adding retry
-            currentRetryAttempt <= maxRetryAttempt && uploadDocument([resource[index]]);
-            currentRetryAttempt++;
-            CommonBugFender('ChatRoom_uploadDocument', e);
-            setLoading(false);
-            KeepAwake.activate();
-          });
+                  }
+                );
+                KeepAwake.activate();
+              })
+              .catch((e) => {
+                CommonBugFender('ChatRoom_getPrismUrls_uploadDocument', e);
+              });
+          } else {
+            Alert.alert('Upload document failed');
+            CommonLogEvent('ChatRoom_callUploadMediaDocumentApi_Failed', response);
+          }
+        } catch (e) {
+          // adding retry
+          currentRetryAttempt <= maxRetryAttempt && uploadDocument([resource[i]]);
+          currentRetryAttempt++;
+          CommonBugFender('ChatRoom_uploadDocument', e);
+          setLoading(false);
+          KeepAwake.activate();
+        }
       } else {
         setwrongFormat(true);
+        setLoading(false);
       }
-    });
+    }
+    setLoading(false);
   };
 
   const uploadPrescriptionPopup = () => {
@@ -6473,6 +6594,56 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       />
     );
   };
+
+  const callAddChatDocumentApi = async (
+    _prismFileId: string,
+    _fileUrl: string,
+    _fileName: string
+  ) => {
+    try {
+      const response = await client.mutate<addChatDocument, addChatDocumentVariables>({
+        mutation: ADD_CHAT_DOCUMENTS,
+        fetchPolicy: 'no-cache',
+        variables: {
+          prismFileId: _prismFileId,
+          documentPath: _fileUrl,
+          appointmentId: appointmentData?.id,
+          fileName: _fileName || '',
+        },
+      });
+      const prismFieldId = g(response, 'data', 'addChatDocument', 'prismFileId');
+      const documentPath = g(response, 'data', 'addChatDocument', 'documentPath');
+      const text = {
+        id: patientId,
+        message: imageconsult,
+        fileType: _fileName
+          ? _fileName?.toLowerCase()?.endsWith('.pdf')
+            ? 'pdf'
+            : 'image'
+          : (documentPath ? documentPath : _fileUrl).match(/\.(pdf)$/)
+          ? 'pdf'
+          : 'image',
+        fileName: _fileName,
+        prismId: (prismFieldId ? prismFieldId : _prismFileId) || '',
+        url: documentPath ? documentPath : _fileUrl,
+        messageDate: new Date(),
+      };
+      pubnub.publish(
+        {
+          channel: channel,
+          message: text,
+          storeInHistory: true,
+          sendByPost: true,
+        },
+        (status, response) => {}
+      );
+      KeepAwake.activate();
+    } catch (e) {
+      setLoading(false);
+      CommonBugFender('ChatRoom_callAddChatDocumentApi_ADD_CHAT_DOCUMENTSt', e);
+    }
+  };
+
   const renderPrescriptionModal = () => {
     return (
       <SelectEPrescriptionModal
@@ -6484,61 +6655,26 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           if (selectedEPres.length == 0) {
             return;
           } else {
-            selectedEPres.forEach((item) => {
-              const url = item.uploadedUrl ? item.uploadedUrl : '';
-              const prism = item.prismPrescriptionFileId ? item.prismPrescriptionFileId : '';
-              const fileName = item.fileName ? item.fileName : '';
-              // url &&
-              //   url.map((item, index) => {
-              if (url) {
-                setLoading(true);
-                client
-                  .mutate({
-                    mutation: ADD_CHAT_DOCUMENTS,
-                    fetchPolicy: 'no-cache',
-                    variables: {
-                      prismFileId: prism,
-                      documentPath: url,
-                      appointmentId: appointmentData.id,
-                    },
-                  })
-                  .then((data) => {
-                    const prismFieldId = g(data.data!, 'addChatDocument', 'prismFileId');
-                    const documentPath = g(data.data!, 'addChatDocument', 'documentPath');
-
-                    const text = {
-                      id: patientId,
-                      message: imageconsult,
-                      fileType: fileName
-                        ? fileName.toLowerCase().endsWith('.pdf')
-                          ? 'pdf'
-                          : 'image'
-                        : (documentPath ? documentPath : url).match(/\.(pdf)$/)
-                        ? 'pdf'
-                        : 'image',
-                      fileName: fileName,
-                      prismId: (prismFieldId ? prismFieldId : prism) || '',
-                      url: documentPath ? documentPath : url,
-                      messageDate: new Date(),
-                    };
-                    pubnub.publish(
-                      {
-                        channel: channel,
-                        message: text,
-                        storeInHistory: true,
-                        sendByPost: true,
-                      },
-                      (status, response) => {}
-                    );
-                    KeepAwake.activate();
-                    setLoading(false);
-                  })
-                  .catch((e) => {
-                    CommonBugFender('ChatRoom_getPrismUrls_uploadDocument', e);
-                  })
-                  .finally(() => {
-                    setLoading(false);
-                  });
+            setLoading(true);
+            selectedEPres.forEach(async (item) => {
+              CommonLogEvent('ChatRoom_ADD_CHAT_DOCUMENTSt', item);
+              const _uploadedUrl = item.uploadedUrl ? item.uploadedUrl : '';
+              const uploadedUrlArray = item?.uploadedUrlArray || [];
+              const prism = item?.prismPrescriptionFileId ? item?.prismPrescriptionFileId : '';
+              if (uploadedUrlArray?.length) {
+                try {
+                  const uploadedUrlArrayResponse = await Promise.all(
+                    uploadedUrlArray?.map(async (_item) => {
+                      await callAddChatDocumentApi(prism, _item?.file_Url, _item?.fileName);
+                    })
+                  );
+                } catch (e) {
+                  setLoading(false);
+                  CommonBugFender('ChatRoom_renderPrescriptionModal_ADD_CHAT_DOCUMENTSt', e);
+                }
+              } else if (_uploadedUrl) {
+                const fileName = item?.fileName || '';
+                await callAddChatDocumentApi(prism, _uploadedUrl, fileName);
               }
               // });
               item.message &&
@@ -6841,6 +6977,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       >
         <Text style={styles.tapText}>Tap to return to call</Text>
       </TouchableOpacity>
+    );
+  };
+
+  const renderReconnectingView = () => {
+    return (
+      <View style={[talkStyles, { zIndex: 1001 }]}>
+        <View style={{ flex: 1, flexDirection: 'row' }}>{callingScreenUI()}</View>
+      </View>
     );
   };
 
@@ -7274,6 +7418,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         />
       )}
       {(isCall || isAudioCall) && VideoCall()}
+      {isCallReconnecting.current && renderReconnectingView()}
       {/* {isAudioCall && AudioCall()} */}
       {transferAccept && (
         <BottomPopUp

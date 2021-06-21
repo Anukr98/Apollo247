@@ -77,6 +77,18 @@ export enum BloodGroups {
   OPositive = "OPositive",
 }
 
+export enum BookingSource {
+  Apollo247_Android = "Apollo247_Android",
+  Apollo247_Ios = "Apollo247_Ios",
+  Apollo247_Web = "Apollo247_Web",
+}
+
+export enum BookingStatus {
+  COMPLETED = "COMPLETED",
+  FAILED = "FAILED",
+  INPROGRESS = "INPROGRESS",
+}
+
 export enum CODCity {
   CHENNAI = "CHENNAI",
 }
@@ -175,6 +187,13 @@ export enum DiagnosticsBookingSource {
   WEB = "WEB",
 }
 
+export enum DiagnosticsRescheduleSource {
+  AD = "AD",
+  MOBILE = "MOBILE",
+  OPS_DASHBOARD = "OPS_DASHBOARD",
+  WEB = "WEB",
+}
+
 export enum DiscountType {
   FLATPRICE = "FLATPRICE",
   PERCENT = "PERCENT",
@@ -200,6 +219,13 @@ export enum FEEDBACKTYPE {
   CONSULT = "CONSULT",
   DIAGNOSTICS = "DIAGNOSTICS",
   PHARMACY = "PHARMACY",
+}
+
+export enum GENDER {
+  ALL = "ALL",
+  FEMALE = "FEMALE",
+  MALE = "MALE",
+  OTHER = "OTHER",
 }
 
 export enum Gender {
@@ -306,6 +332,7 @@ export enum MEDICINE_ORDER_STATUS {
   RETURN_PENDING = "RETURN_PENDING",
   RETURN_PICKUP = "RETURN_PICKUP",
   RETURN_REQUESTED = "RETURN_REQUESTED",
+  RETURN_REQUEST_CREATED = "RETURN_REQUEST_CREATED",
   RETURN_RTO = "RETURN_RTO",
   RETURN_TO_ORIGIN = "RETURN_TO_ORIGIN",
   RVP_ASSIGNED = "RVP_ASSIGNED",
@@ -658,6 +685,7 @@ export enum TEST_COLLECTION_TYPE {
 }
 
 export enum TRANSFER_INITIATED_TYPE {
+  ADMIN = "ADMIN",
   DOCTOR = "DOCTOR",
   PATIENT = "PATIENT",
 }
@@ -862,6 +890,18 @@ export interface AddPrescriptionRecordInput {
   prescriptionFiles?: (prescriptionPrismFileProperties | null)[] | null;
 }
 
+export interface AddressObj {
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  addressType?: string | null;
+  zipcode?: string | null;
+  landmark?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  city?: string | null;
+  state?: string | null;
+}
+
 export interface AlertMedicineOrderPickupInput {
   orderId: number;
   patientId: string;
@@ -939,6 +979,7 @@ export interface BookRescheduleAppointmentInput {
   initiatedId: string;
   patientId: string;
   rescheduledId?: string | null;
+  rescheduleReason?: string | null;
 }
 
 export interface BookTransferAppointmentInput {
@@ -1021,6 +1062,13 @@ export interface DeleteHealthRecordFilesInput {
   recordId?: string | null;
 }
 
+export interface DeleteMultipleHealthRecordFilesInput {
+  fileIndexArray?: (number | null)[] | null;
+  patientId: string;
+  recordType: MedicalRecordType;
+  recordId?: string | null;
+}
+
 export interface DeletePatientPrismMedicalRecordInput {
   id?: string | null;
   patientId: string;
@@ -1036,39 +1084,8 @@ export interface DiagnosticLineItem {
   price?: number | null;
   quantity?: number | null;
   groupPlan?: string | null;
-  discAmount?: number | null;
   preTestingRequirement?: string | null;
   reportGenerationTime?: string | null;
-}
-
-export interface DiagnosticOrderInput {
-  patientId: string;
-  patientAddressId: string;
-  city: string;
-  cityId: string;
-  state: string;
-  stateId: string;
-  slotTimings: string;
-  employeeSlotId?: any | null;
-  diagnosticEmployeeCode: string;
-  diagnosticBranchCode: string;
-  totalPrice: number;
-  prescriptionUrl: string;
-  diagnosticDate: any;
-  centerName: string;
-  centerCode: string;
-  centerCity: string;
-  centerState: string;
-  centerLocality: string;
-  bookingSource?: BOOKINGSOURCE | null;
-  deviceType?: DEVICETYPE | null;
-  paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
-  items?: (DiagnosticLineItem | null)[] | null;
-  slotId?: string | null;
-  areaId?: number | null;
-  totalPriceExcludingDiscounts?: number | null;
-  userSubscriptionId?: string | null;
-  subscriptionInclusionId?: string | null;
 }
 
 export interface DiagnosticTestsOrdered {
@@ -1265,7 +1282,6 @@ export interface MedicineCartOMSInput {
   prescriptionType?: PrescriptionType | null;
   tatCity?: string | null;
   tatHours?: string | null;
-  appointmentId?: string | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -1587,6 +1603,7 @@ export interface RescheduleDiagnosticsInput {
   patientId: string;
   reason?: string | null;
   slotId: string;
+  source?: DiagnosticsRescheduleSource | null;
 }
 
 export interface ReturnPharmaOrderInput {
@@ -1625,7 +1642,6 @@ export interface SaveBookHomeCollectionOrderInput {
   areaId: number;
   collectionCharges: number;
   uniqueID?: string | null;
-  couponCode?: string | null;
   slotDateTimeInUTC: any;
   totalPriceExcludingDiscounts?: number | null;
   userSubscriptionId?: string | null;
@@ -1658,7 +1674,6 @@ export interface SaveMedicineOrderV2Input {
   healthCreditUsed?: number | null;
   shipments?: (MedicineOrderShipmentInput | null)[] | null;
   prescriptionType?: PrescriptionType | null;
-  appointmentId?: string | null;
 }
 
 export interface SavePatientNotificationSettingsInput {
@@ -1800,6 +1815,17 @@ export interface prescriptionPrismFileProperties {
   fileName?: string | null;
   mimeType?: string | null;
   content?: string | null;
+}
+
+export interface saveModifyDiagnosticOrderInput {
+  orderId?: string | null;
+  amountToPay?: number | null;
+  collectionCharges?: number | null;
+  bookingSource?: DiagnosticsBookingSource | null;
+  deviceType?: DEVICETYPE | null;
+  items?: (DiagnosticLineItem | null)[] | null;
+  userSubscriptionId?: string | null;
+  subscriptionInclusionId?: string | null;
 }
 
 export interface voipPushTokenInput {
