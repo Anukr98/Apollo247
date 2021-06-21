@@ -129,7 +129,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
           deliveryTime={orders?.[0]?.tat}
           deliveryAddress={formatSelectedAddress(selectedAddress!)}
           onPressChangeAddress={onPressChangeAddress!}
-          onPressTatCard={onPressTatCard}
+          onPressTatCard={screen === 'MedicineCart' && isValidCartValue ? onPressTatCard : () => {}}
         />
       );
     } else {

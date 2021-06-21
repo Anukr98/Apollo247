@@ -544,6 +544,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     if (pharmacyPincode) {
       updateServiceability(pharmacyPincode);
       setPinCode && setPinCode(pharmacyPincode);
+      getUserSubscriptionsByStatus();
     }
   }, []);
 

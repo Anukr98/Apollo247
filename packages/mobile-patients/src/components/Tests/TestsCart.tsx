@@ -193,6 +193,7 @@ import {
   makeAdressAsDefault,
   makeAdressAsDefaultVariables,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 const { width: screenWidth } = Dimensions.get('window');
 type Address = savePatientAddress_savePatientAddress_patientAddress;
 export interface areaObject {
@@ -300,8 +301,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const { getPatientApiCall } = useAuth();
 
-  const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
+  const { setLoading, showAphAlert, hideAphAlert, loading } = useUIElements();
 
+  const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [displaySchedule, setDisplaySchedule] = useState<boolean>(false);
   const [displayPremiumOverlay, setDisplayPremiumOverlay] = useState<boolean>(false);
   const [isPremiumSlot, setIsPremiumSlot] = useState<boolean>(false);
@@ -2190,6 +2192,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       items: createItemPrice()?.itemPricingObject,
       userSubscriptionId: circleSubscriptionId,
       subscriptionInclusionId: null,
+      amountToPay: grandTotal, //total amount payed
     };
     saveModifyOrder?.(modifyBookingInput)
       .then((data) => {
@@ -2830,7 +2833,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const fetchHC_ChargesForTest = async (slotVal: string, modifiedItems?: any[]) => {
-    setLoading?.(true);
+    !loading && setShowSpinner?.(true);
     const getModifiedId = !!modifiedItems && modifiedItems?.map((item) => Number(item?.itemId));
     const allItemId =
       !!getModifiedId && getModifiedId?.length ? cartItemsWithId.concat(getModifiedId) : itemWithId;
@@ -2903,9 +2906,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         setHcCharges?.(getCharges);
         setModifyHcCharges?.(updatedHcCharges); //used for calculating subtotal & topay
       }
+      setShowSpinner(false);
       setLoading?.(false);
       setHcApiCalled(true);
     } catch (error) {
+      setShowSpinner(false);
       setHcApiCalled(true);
       setLoading?.(false);
     }
@@ -3403,6 +3408,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <View style={{ height: cartItems?.length > 0 ? 140 : 90 }} />
         </ScrollView>
         {renderTestProceedBar()}
+        {showSpinner && <Spinner />}
       </SafeAreaView>
     </View>
   );

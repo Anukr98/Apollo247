@@ -86,6 +86,7 @@ export enum WebEngageEventName {
   BOOK_APPOINTMENT = 'Book Appointment',
   TYPE_OF_CONSULT_SELECTED = 'Type of consultation seleted',
   CONSULT_SORT = 'Consult Sort',
+  CONSULT_MODE_TOGGLE = 'Consult Mode Toggle',
   CONSULT_NOW_CLICKED = 'Consult Now clicked',
   CONSULT_SCHEDULE_FOR_LATER_CLICKED = 'Consult Schedule for Later clicked',
   CONSULT_SLOT_SELECTED = 'Consult Slot Selected',
@@ -115,7 +116,9 @@ export enum WebEngageEventName {
   TRUECALLER_APOLLO247_LOGIN_ERRORS = 'Apollo247 truecaller login errors',
   LOGIN_WITH_TRUECALLER_CLICKED = 'Login with truecaller clicked',
   MY_CONSULTED_DOCTORS_CLICKED = 'My doctor clicked',
-
+  VIEW_PROFILE_SLOT_SCREEN = 'View Profile Slot Screen',
+  VIEW_AVAILABLE_SLOTS = 'View Available Slots',
+  VIEW_SLOTS_CLICKED = 'View Slots Clicked',
   //Doctor Share Events
   SHARE_CLICK_DOC_LIST_SCREEN = 'Share clicked doc list screen',
   SHARE_PROFILE_CLICKED_DOC_LIST = 'Share profile clicked doc list',
@@ -136,6 +139,10 @@ export enum WebEngageEventName {
   PHARMACY_TAT_API_CALLED = 'Pharmacy TAT API Called',
   PHARMACY_CART_SELECT_DELIVERY_ADDRESS_CLICKED = 'Pharmacy Cart - Select Delivery Address Clicked',
   PHARMACY_CART_UPLOAD_PRESCRIPTION_CLICKED = 'Pharmacy Cart - Upload Prescription Clicked',
+
+  PHARMACY_POST_CART_PAGE_VIEWED = 'Pharmacy Post Cart Screen Viewed',
+  PHARMACY_ORDER_SUBSTITUTE_OPTION_CLICKED = 'Pharmacy Order Success Substitute Option Clicked',
+
   // HomePageElements Events
   BUY_MEDICINES = 'Buy Medicines',
   ORDER_TESTS = 'Order Tests',
@@ -828,6 +835,7 @@ export interface WebEngageEvents {
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
     User_Type: string;
+    'Mode of consult': 'Hospital Visit' | 'Video Consult';
   };
   [WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED]: PatientInfoWithSource;
   [WebEngageEventName.PAST_DOCTOR_SEARCH]: {
@@ -1365,40 +1373,40 @@ export interface WebEngageEvents {
     'Order id': string | number;
     'Phlebo Name': string;
   };
-  [WebEngageEventName.DIAGNOSTIC_ORDER_STATUS]:{  
-  'Display id':string;
-  'Order id': string;
-  'Order status': string;
-  'Patient Name': string;
-  'Payment Mode': 'Cash' | 'Prepaid';
-  'SlotTimeInUTC' : string| Date;
-  'Total price' : string |number;
-  'UHID' : string;
-}
-[WebEngageEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED]:{
-  'Order id': string | number;
-  'UHID': string;
-  'Link opened' : 'Yes' | 'No';
-  'Source': 'Home' | 'My Order' | 'Track Order' | 'Order Summary'
-}
-[WebEngageEventName.DIGNOSTIC_PAYMENT_ABORTED]:{
-  'Order id': string;
-  'UHID': string;
-},
-[WebEngageEventName.DIAGNOSITC_MODIFY_CLICKED]:{
-  'UHID': string;
-  'Order id': string;
-  'Order status': string;
-}
-[WebEngageEventName.DIAGNOSTIC_MODIFY_ORDER]:{
-  'No of items Added': number,
-  'Item ids in array': string,
-  'Old order value': number,
-  'updated order value': number,
-  'HC charge updated' : 'Yes' | 'No'
-  'payment mode': 'Prepaid' | 'Cash',
-  'time of modification': string | Date
-}
+  [WebEngageEventName.DIAGNOSTIC_ORDER_STATUS]: {
+    'Display id': string;
+    'Order id': string;
+    'Order status': string;
+    'Patient Name': string;
+    'Payment Mode': 'Cash' | 'Prepaid';
+    SlotTimeInUTC: string | Date;
+    'Total price': string | number;
+    UHID: string;
+  };
+  [WebEngageEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED]: {
+    'Order id': string | number;
+    UHID: string;
+    'Link opened': 'Yes' | 'No';
+    Source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary';
+  };
+  [WebEngageEventName.DIGNOSTIC_PAYMENT_ABORTED]: {
+    'Order id': string;
+    UHID: string;
+  };
+  [WebEngageEventName.DIAGNOSITC_MODIFY_CLICKED]: {
+    UHID: string;
+    'Order id': string;
+    'Order status': string;
+  };
+  [WebEngageEventName.DIAGNOSTIC_MODIFY_ORDER]: {
+    'No of items Added': number;
+    'Item ids in array': string;
+    'Old order value': number;
+    'updated order value': number;
+    'HC charge updated': 'Yes' | 'No';
+    'payment mode': 'Prepaid' | 'Cash';
+    'time of modification': string | Date;
+  };
 
   // ********** ConsultEvents ********** \\
   [WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM]: ConsultRoomDoctorPatientInfo;
@@ -1493,6 +1501,7 @@ export interface WebEngageEvents {
     'Customer ID': string;
     Rank?: number;
     User_Type: string;
+    'Mode of consult'?: 'Hospital Visit' | 'Video Consult';
   };
   [WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK]: {
     Fee: number;
@@ -1531,6 +1540,7 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Customer ID': string;
     User_Type: string;
+    'Mode of consult'?: 'Hospital Visit' | 'Video Consult';
   };
   [WebEngageEventName.CONSULT_TYPE_SELECTION]: {
     'Consult Type': 'Online' | 'In Person';
@@ -1824,6 +1834,22 @@ export interface WebEngageEvents {
 
   [WebEngageEventName.PHARMACY_CART_UPLOAD_PRESCRIPTION_CLICKED]: {
     'Customer ID': string;
+  };
+
+  [WebEngageEventName.PHARMACY_POST_CART_PAGE_VIEWED]: {
+    Status: 'Success' | 'Payment Failed' | 'Payment Aborted' | 'Payment Status Not Known';
+    'Payment type': 'COD' | 'Cashless' | 'No Payment';
+    'Transaction ID': number | string;
+    'Order ID 1': number | string;
+    'Order ID 2': number | string;
+    'Substitution Option Shown': YesOrNo;
+  };
+
+  [WebEngageEventName.PHARMACY_ORDER_SUBSTITUTE_OPTION_CLICKED]: {
+    'Transaction ID': number | string;
+    'Order ID 1': number | string;
+    'Order ID 2': number | string;
+    'Substitute Action Taken': 'Agree' | 'Disagree';
   };
 
   // ********** Health Records ********** \\
@@ -2264,6 +2290,14 @@ export interface WebEngageEvents {
     User_Type?: PharmaUserStatus;
     Pincode?: string;
     serviceable: YesOrNo;
+    TATDay?: number | null;
+    TatHour?: number | null;
+    TatDateTime?: Date | string;
+    ProductType?: string;
+    MaxOrderQuantity?: number;
+    MRP?: number;
+    SpecialPrice?: number | null;
+    CircleCashback?: number;
   };
   [WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
     'Patient Name': string;
@@ -2629,5 +2663,73 @@ export interface WebEngageEvents {
       _247_Flag: boolean | undefined;
       'Consult Mode': string;
     };
+  };
+
+  [WebEngageEventName.VIEW_PROFILE_SLOT_SCREEN]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    User_Type: string;
+    'Doctor Name': string;
+    'Doctor Id': string;
+    'Doctor Speciality': string;
+  };
+
+  [WebEngageEventName.VIEW_AVAILABLE_SLOTS]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    User_Type: string;
+    'Doctor Name': string;
+    'Doctor Id': string;
+    'Doctor Speciality': string;
+    'Landing screen date': string;
+  };
+
+  [WebEngageEventName.VIEW_SLOTS_CLICKED]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    User_Type: string;
+    'Doctor Name': string;
+    'Doctor Id': string;
+    'Doctor Speciality': string;
+    'Bucket viewed': string;
+  };
+
+  [WebEngageEventName.CONSULT_SORT]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    User_Type: string;
+    'Mode of consult': 'Hospital Visit' | 'Video Consult';
+  };
+  [WebEngageEventName.CONSULT_MODE_TOGGLE]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    User_Type: string;
+    'Consult flow': 'Hospital Visit' | 'Video Consult' | 'Unknown'; // unknown might come from deeplink
+    Toggle: 'Hospital Visit' | 'Video Consult';
   };
 }

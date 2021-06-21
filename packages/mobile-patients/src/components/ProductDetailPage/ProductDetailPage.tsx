@@ -106,7 +106,7 @@ type PharmacyTatApiCalled = WebEngageEvents[WebEngageEventName.PHARMACY_TAT_API_
 
 export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const movedFrom = props.navigation.getParam('movedFrom');
-  const sku = props.navigation.getParam('sku');
+  const [sku, setSku] = useState(props.navigation.getParam('sku'));
   const urlKey = props.navigation.getParam('urlKey');
   const sectionName = props.navigation.getParam('sectionName');
   const productPageViewedEventProps = props.navigation.getParam('productPageViewedEventProps');
@@ -198,12 +198,18 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 
   useEffect(() => {
     getMedicineDetails();
-    fetchDeliveryTime(pincode, false);
+    if (sku) fetchDeliveryTime(pincode, false);
     BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
     };
   }, []);
+
+  useEffect(() => {
+    if (sku && movedFrom === ProductPageViewedSource.DEEP_LINK) {
+      fetchDeliveryTime(pincode, false);
+    }
+  }, [sku]);
 
   const onPressHardwareBack = () => props.navigation.goBack();
 
@@ -267,6 +273,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         .then(({ data }) => {
           const productDetails = g(data, 'productdp', '0' as any);
           if (productDetails) {
+            setSku(productDetails?.sku);
             setMedicineData(productDetails);
           } else if (data && data.message) {
             setMedicineError(data.message);
@@ -412,7 +419,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 
   const postProductPageViewedEvent = (pincode?: string, isProductInStock?: boolean) => {
     if (movedFrom) {
-      const { sku, name, is_in_stock, sell_online } = medicineDetails;
+      const {
+        sku,
+        name,
+        type_id,
+        sell_online,
+        MaxOrderQty,
+        price,
+        special_price,
+      } = medicineDetails;
       const stock_availability =
         sell_online == 0 ? 'Not for Sale' : !!isProductInStock ? 'Yes' : 'No';
       const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED] = {
@@ -425,6 +440,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         ...pharmacyUserTypeAttribute,
         Pincode: pincode,
         serviceable: notServiceable ? 'No' : 'Yes',
+        TATDay: deliveryTime ? moment(deliveryTime).diff(moment(), 'days') : null,
+        TatHour: deliveryTime ? moment(deliveryTime).diff(moment(), 'hours') : null,
+        TatDateTime: deliveryTime,
+        ProductType: type_id,
+        MaxOrderQuantity: MaxOrderQty,
+        MRP: price,
+        SpecialPrice: special_price || null,
+        CircleCashback: cashback,
       };
       postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, eventAttributes);

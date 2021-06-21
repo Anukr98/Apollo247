@@ -45,7 +45,7 @@ export const handleOpenURL = (event: any) => {
 
     try {
       if (data?.length >= 2) {
-        linkId = data?.[1]?.split('&');
+        linkId = data?.[1]?.split('?');
         const params = data[1]?.split('&');
         const utmParams = params?.map((item: any) => item.split('='));
         utmParams?.forEach(
@@ -58,6 +58,8 @@ export const handleOpenURL = (event: any) => {
       }
     } catch (error) {}
     route = route ? route?.toLowerCase() : '';
+    const paramData = getParamData(linkId)?.[0];
+    linkId = paramData ? paramData : linkId;
     switch (route) {
       case 'consult':
       case 'consults':

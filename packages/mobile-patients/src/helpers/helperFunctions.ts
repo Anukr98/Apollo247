@@ -2,7 +2,6 @@ import {
   AppCommonDataContextProps,
   LocationData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import DeviceInfo from 'react-native-device-info';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   getPlaceInfoByLatLng,
@@ -13,6 +12,7 @@ import {
   MedicineOrderBilledItem,
   availabilityApi247,
   validateConsultCoupon,
+  getDiagnosticDoctorPrescriptionResults,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -26,6 +26,7 @@ import {
   MedicalRecordType,
   MEDICINE_TIMINGS,
   MEDICINE_CONSUMPTION_DURATION,
+  TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from 'react-native-geolocation-service';
@@ -40,7 +41,6 @@ import {
   NativeModules,
   PermissionsAndroid,
   ToastAndroid,
-  AlertIOS,
 } from 'react-native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import Permissions from 'react-native-permissions';
@@ -62,12 +62,7 @@ import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import ApolloClient from 'apollo-client';
 import { saveSearch, saveSearchVariables } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import {
-  searchDiagnosticsByCityID,
-  searchDiagnosticsByCityIDVariables,
-} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
-import {
   SAVE_SEARCH,
-  SEARCH_DIAGNOSTICS_BY_CITY_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
@@ -766,6 +761,77 @@ export const divideSlots = (availableSlots: string[], date: Date) => {
   return array;
 };
 
+export const generateTimeSlots = (availableSlots: string[], date: Date) => {
+  const todayDate = moment(new Date()).format('YYYY-MM-DD');
+
+  const array: TimeArray = [
+    { label: '12 AM - 6 AM', time: [] },
+    { label: '6 AM - 12 PM', time: [] },
+    { label: '12 PM - 6 PM', time: [] },
+    { label: '6 PM - 12 AM', time: [] },
+  ];
+
+  const morningStartTime = moment('00:00', 'HH:mm');
+  const morningEndTime = moment('05:59', 'HH:mm');
+  const afternoonStartTime = moment('06:00', 'HH:mm');
+  const afternoonEndTime = moment('11:59', 'HH:mm');
+  const eveningStartTime = moment('12:00', 'HH:mm');
+  const eveningEndTime = moment('17:59', 'HH:mm');
+  const nightStartTime = moment('18:00', 'HH:mm');
+  const nightEndTime = moment('23:59', 'HH:mm');
+
+  availableSlots.forEach((slot) => {
+    const IOSFormat = slot; //`${date.toISOString().split('T')[0]}T${slot}:00.000Z`;
+
+    const formatedSlot = moment(IOSFormat)
+      .local()
+      .format('HH:mm'); //.format('HH:mm');
+    const slotTime = moment(formatedSlot, 'HH:mm');
+    if (
+      todayDate === moment(date).format('YYYY-MM-DD') &&
+      todayDate !== moment(IOSFormat).format('YYYY-MM-DD')
+    ) {
+    } else {
+      if (new Date() < new Date(IOSFormat)) {
+        if (
+          slotTime.isBetween(morningStartTime, morningEndTime) ||
+          slotTime.isSame(morningStartTime)
+        ) {
+          array[0] = {
+            label: '12 AM - 6 AM',
+            time: [...array[0]?.time, slot],
+          };
+        } else if (
+          slotTime.isBetween(afternoonStartTime, afternoonEndTime) ||
+          slotTime.isSame(afternoonStartTime)
+        ) {
+          array[1] = {
+            ...array[1],
+            time: [...array[1]?.time, slot],
+          };
+        } else if (
+          slotTime.isBetween(eveningStartTime, eveningEndTime) ||
+          slotTime.isSame(eveningStartTime)
+        ) {
+          array[2] = {
+            ...array[2],
+            time: [...array[2]?.time, slot],
+          };
+        } else if (
+          slotTime.isBetween(nightStartTime, nightEndTime) ||
+          slotTime.isSame(nightStartTime)
+        ) {
+          array[3] = {
+            ...array[3],
+            time: [...array[3]?.time, slot],
+          };
+        }
+      }
+    }
+  });
+  return array;
+};
+
 export const handleGraphQlError = (
   error: any,
   message: string = 'Oops! seems like we are having an issue. Please try again.'
@@ -897,7 +963,11 @@ export const getDiffInMinutes = (doctorAvailableSlots: string) => {
   }
 };
 
-export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult' = 'Available') => {
+export const nextAvailability = (
+  nextSlot: string,
+  type: 'Available' | 'Consult' = 'Available',
+  isPhysical: boolean = false
+) => {
   const isValidTime = moment(nextSlot).isValid();
   if (isValidTime) {
     const d = new Date();
@@ -918,15 +988,19 @@ export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult'
         })
     );
     if (differenceMinute < 60 && differenceMinute > 0) {
-      return `${type} in ${differenceMinute} min${differenceMinute !== 1 ? 's' : ''}`;
+      return isPhysical
+        ? 'Consult Today'
+        : `${type} in ${differenceMinute} min${differenceMinute !== 1 ? 's' : ''}`;
     } else if (differenceMinute <= 0) {
       return 'BOOK APPOINTMENT';
     } else if (differenceMinute >= 60 && !isTomorrow) {
-      return `${type} at ${moment(nextSlot).format('hh:mm A')}`;
+      return isPhysical ? 'Consult Today' : `${type} at ${moment(nextSlot).format('hh:mm A')}`;
     } else if (isTomorrow && differenceMinute < 2880 - minPassedToday) {
-      return `${type} Tomorrow${
-        type === 'Available' ? ` at ${moment(nextSlot).format('hh:mm A')}` : ''
-      }`;
+      return isPhysical
+        ? 'Consult Tomorrow'
+        : `${type} Tomorrow${
+            type === 'Available' ? ` at ${moment(nextSlot).format('hh:mm A')}` : ''
+          }`;
     } else if ((diffDays >= 2 && diffDays <= 30) || type == 'Consult') {
       return `${type} in ${diffDays} days`;
     } else {
@@ -1297,58 +1371,45 @@ export const addTestsToCart = async (
   pincode?: string,
   setLoading?: UIElementsContextProps['setLoading']
 ) => {
-  const searchQuery = (name: string, cityId: string) =>
-    apolloClient.query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
-      query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
-      context: {
-        headers: {
-          source: Platform.OS,
-          source_version: DeviceInfo.getVersion(),
-        },
-      },
-      variables: {
-        searchText: name,
-        cityID: AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID, //will always check for hyderabad, so that items gets added to cart
-      },
-      fetchPolicy: 'no-cache',
-    });
   const detailQuery = async (itemId: string) =>
     await getPackageInclusions(apolloClient, [Number(itemId)]);
-
   try {
     setLoading?.(true);
-    const items = testPrescription?.filter((val) => val?.itemname).map((item) => item?.itemname);
+    const items = testPrescription?.filter((val) => val?.itemname)?.map((item) => item?.itemname);
+    const formattedItemNames = items?.map((item) => item)?.join('|');
+    const searchQueries: any = await getDiagnosticDoctorPrescriptionResults(formattedItemNames, AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID);
 
-    const searchQueries = Promise.all(items?.map((item) => searchQuery(item!, '9')));
-    const searchQueriesData = (await searchQueries)
-      ?.map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
-      // .filter((item, index) => g(item, 'itemName')! == items[index])
-      ?.filter((item) => !!item);
-    const detailQueries = Promise.all(
-      searchQueriesData?.map((item) => detailQuery(`${item.itemId}`))
-    );
-    const detailQueriesData = (await detailQueries)?.map(
-      (item: any) => g(item, 'data', 'getInclusionsOfMultipleItems', 'inclusions', 'length') || 1 // updating testsIncluded
-    );
-    setLoading?.(false);
-    const finalArray: DiagnosticsCartItem[] = Array.from({
-      length: searchQueriesData?.length,
-    }).map((_, index) => {
-      const s = searchQueriesData?.[index];
-      const testIncludedCount = detailQueriesData?.[index];
-      return {
-        id: `${s?.itemId}`,
-        name: s?.itemName,
-        price: s?.rate,
-        specialPrice: undefined,
-        mou: testIncludedCount,
-        thumbnail: '',
-        collectionMethod: s?.collectionType,
-        inclusions: s?.inclusions == null ? [Number(s?.itemId)] : s?.inclusions,
-      } as DiagnosticsCartItem;
-    });
-
-    return finalArray;
+    if (searchQueries?.data?.success) {
+      const searchResults = searchQueries?.data?.data;
+      const searchQueriesData = searchResults?.filter((item: any) => !!item);
+      const detailQueries = Promise.all(
+        searchQueriesData?.map((item: any) => detailQuery(`${item.itemId}`))
+      );
+      const detailQueriesData = (await detailQueries)?.map(
+        (item: any) => g(item, 'data', 'getInclusionsOfMultipleItems', 'inclusions', 'length') || 1 // updating testsIncluded
+      );
+      setLoading?.(false);
+      const finalArray: DiagnosticsCartItem[] = Array.from({
+        length: searchQueriesData?.length,
+      }).map((_, index) => {
+        const s = searchQueriesData?.[index];
+        const testIncludedCount = detailQueriesData?.[index];
+        return {
+          id: `${s?.diagnostic_item_id}`,
+          name: s?.diagnostic_item_name,
+          price: 0,
+          specialPrice: undefined,
+          mou: testIncludedCount,
+          thumbnail: '',
+          collectionMethod: TEST_COLLECTION_TYPE.HC,
+          inclusions: s?.inclusions == null ? [Number(s?.diagnostic_item_id)] : s?.inclusions,
+        } as DiagnosticsCartItem;
+      });
+      return finalArray;
+    } else {
+      setLoading?.(false);
+      return [];
+    }
   } catch (error) {
     CommonBugFender('helperFunctions_addTestsToCart', error);
     setLoading?.(false);

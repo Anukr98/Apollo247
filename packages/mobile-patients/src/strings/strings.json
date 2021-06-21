@@ -421,7 +421,15 @@
           "Persian"
         ]
       }
-    ]
+    ],
+    "availability": "Availability",
+    "nearby": "Nearby",
+    "lowToHighPrice": "Price - low to high",
+    "highToLowPrice": "Price - high to low",
+    "yearOfExperience": "Years of Experience",
+    "priceLtoH": "Price\n(Low to high)",
+    "priceHtoL": "Price\n(High to low)",
+    "yrsOfExp": "Years of exp."
   },
   "medicine": {
     "recommendedForYou": "RECOMMENDED FOR YOU"
@@ -476,6 +484,7 @@
       "editOrder": "Need to Modify Order Details",
       "userUnavailable": "I am not available",
       "bookedByMistake": "Booked by Mistake",
+      "lesserPrice": "Got lesser price elsewhere",
       "urgentReport": "Need Report Urgently",
       "anotherChannel": "Booked from other channel",
       "otherReasons": "Others (Please specify)"
@@ -521,6 +530,7 @@
     "fastReport": "Fast & Accurate Reports",
     "fastReportSubText": "Get reports in 12 to 24 hours. View or download on app anytime",
     "orderSuccessPhaleboText": "*The phlebotomist will call you prior to starting his journey to confirm your availability",
+    "invoiceTimelineText": "Invoice will be available to download after the sample is submitted in the lab",
     "unableToFetchStatus": "Something went wrong. We are unable to fetch status",
     "noSlotAvailable": "Sorry! There are no slots available on {{date}}. Please choose another date.",
     "updateAddressLatLngMessage": "Unable to locate address. Please update.",
@@ -1116,7 +1126,9 @@
   },
   "consultModeTab": {
     "CONSULT_ONLINE": "Consult Online",
-    "MEET_IN_PERSON": "Meet In Person"
+    "MEET_IN_PERSON": "Meet In Person",
+    "VIDEO_CONSULT": "Video Consult",
+    "HOSPITAL_VISIT": "Hospital Visit"
   },
   "vaccineBooking": {
     "covid_vaccine_booking": "COVID VACCINE BOOKING",

@@ -232,7 +232,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     const getVisitId = selectedOrder?.visitNo;
     getPatientPrismMedicalRecordsApi(
       client,
-      selectedOrder?.patientId,
+      !!selectedOrder?.patientId ? selectedOrder?.patientId : currentPatient?.id,
       [MedicalRecordType.TEST_REPORT],
       'Diagnostics'
     )
@@ -325,8 +325,17 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const renderRefund = () => {
+    const isOrderModified = orderDetails?.diagnosticOrderLineItems?.find(
+      (item) => !!item?.editOrderID && item?.editOrderID
+    );
     if (!!orderLevelStatus && !_.isEmpty(orderLevelStatus) && refundStatusArr?.length > 0) {
-      return <RefundCard refundArray={refundStatusArr} />;
+      return (
+        <RefundCard
+          refundArray={refundStatusArr}
+          isModified={!!isOrderModified ? true : false}
+          totalPrice={orderDetails?.totalPrice}
+        />
+      );
     }
   };
 
@@ -573,6 +582,17 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       props.navigation.navigate(AppRoutes.HealthRecordsHome);
     }
   }
+  const onPressInvoice = () => {
+    const appointmentDetails = !!order?.slotDateTimeInUTC
+      ? order?.slotDateTimeInUTC
+      : order?.diagnosticDate;
+    const appointmentDate = moment(appointmentDetails)?.format('DD MMM YYYY');
+    const patientName = getPatientNameById(allCurrentPatients, order?.patientId!)?.replace(
+      / /g,
+      '_'
+    );
+    downloadLabTest(order?.invoiceURL!, appointmentDate, patientName);
+  };
 
   const onPressViewReport = () => {
     const appointmentDetails = !!order?.slotDateTimeInUTC
@@ -651,6 +671,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         <TestOrderSummaryView
           orderDetails={orderDetails}
           onPressViewReport={_onPressViewReportAction}
+          onPressDownloadInvoice={onPressInvoice}
           refundDetails={refundStatusArr}
         />
       )

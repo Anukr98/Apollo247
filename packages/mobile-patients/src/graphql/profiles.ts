@@ -270,6 +270,10 @@ export const GET_AVAILABLE_SLOTS = gql`
   query getDoctorAvailableSlots($DoctorAvailabilityInput: DoctorAvailabilityInput!) {
     getDoctorAvailableSlots(DoctorAvailabilityInput: $DoctorAvailabilityInput) {
       availableSlots
+      slotCounts {
+        date
+        slotCount
+      }
     }
   }
 `;
@@ -1395,6 +1399,10 @@ export const GET_DOCTOR_PHYSICAL_AVAILABLE_SLOTS = gql`
       DoctorPhysicalAvailabilityInput: $DoctorPhysicalAvailabilityInput
     ) {
       availableSlots
+      slotCounts {
+        date
+        slotCount
+      }
     }
   }
 `;
@@ -1690,10 +1698,29 @@ export const SAVE_MEDICINE_ORDER_OMS_V2 = gql`
       errorCode
       errorMessage
       transactionId
+      isSubstitution
+      substitutionTime
+      substitutionMessage
       orders {
         id
         orderAutoId
       }
+    }
+  }
+`;
+
+export const UPDATE_MEDICINE_ORDER_SUBSTITUTION = gql`
+  mutation updateMedicineOrderSubstitution(
+    $transactionId: Int
+    $orderId: Int
+    $substitution: String
+  ) {
+    updateMedicineOrderSubstitution(
+      transactionId: $transactionId
+      orderId: $orderId
+      substitution: $substitution
+    ) {
+      message
     }
   }
 `;
@@ -1823,6 +1850,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         slotDateTimeInUTC
         paymentType
         visitNo
+        invoiceURL
         labReportURL
         diagnosticOrderLineItems {
           id

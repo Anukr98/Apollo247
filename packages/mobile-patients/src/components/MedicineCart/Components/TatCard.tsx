@@ -61,9 +61,9 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
 
   const renderViewDelivery = () => {
     return (
-      <View style={styles.viewDeliveryView}>
+      <TouchableOpacity onPress={onPressTatCard} style={styles.viewDeliveryView}>
         <Text style={styles.viewDelivery}>View delivery time</Text>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -81,11 +81,7 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
   };
 
   return (
-    <TouchableOpacity
-      activeOpacity={1}
-      onPress={onPressTatCard}
-      style={{ backgroundColor: '#02475B', paddingHorizontal: 13 }}
-    >
+    <View style={{ backgroundColor: '#02475B', paddingHorizontal: 13 }}>
       <View
         style={{
           ...styles.subCont1,
@@ -116,7 +112,7 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
           Deliver to : <Text style={styles.dateTime}>{deliveryAddress}</Text>
         </Text>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 };
 
