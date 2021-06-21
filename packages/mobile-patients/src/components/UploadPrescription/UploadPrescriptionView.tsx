@@ -226,13 +226,6 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
   let _camera = useRef(null);
   let actionSheetRef: ActionSheet;
 
-  useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', handleBack);
-    return () => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    };
-  }, []);
-
   const handleBack = () => {
     props.navigation.goBack();
     return true;
@@ -245,11 +238,13 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       setIsFocused(false);
     });
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
       didFocus && didFocus.remove();
       didBlur && didBlur.remove();
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
-  });
+  }, []);
 
   const clickPhoto = async () => {
     try {
@@ -658,7 +653,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
         />
         {!!photoBase64 && renderInstructions()}
         <ScrollView bounces={false} contentContainerStyle={{ paddingBottom: 20 }}>
-          {renderCameraView()}
+          {!isSelectPrescriptionVisible && isFocused && renderCameraView()}
           {renderActionButtons()}
           {renderMessage()}
           {isSelectPrescriptionVisible && renderPrescriptionModal()}
