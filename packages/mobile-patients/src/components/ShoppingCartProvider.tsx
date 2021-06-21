@@ -246,6 +246,8 @@ export interface ShoppingCartContextProps {
   setNonCodSKus: ((items: string[]) => void) | null;
   cartPriceNotUpdateRange: number;
   setCartPriceNotUpdateRange: ((value: number) => void) | null;
+  subscriptionCoupon: PharmaCoupon | null;
+  setSubscriptionCoupon: ((coupon: PharmaCoupon | null) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -360,6 +362,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setNonCodSKus: null,
   cartPriceNotUpdateRange: 0,
   setCartPriceNotUpdateRange: null,
+  subscriptionCoupon: null,
+  setSubscriptionCoupon: null,
 });
 
 const AsyncStorageKeys = {
@@ -497,6 +501,11 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [isProuctFreeCouponApplied, setisProuctFreeCouponApplied] = useState<boolean>(false);
   const [orders, setOrders] = useState<ShoppingCartContextProps['orders']>([]);
   const [shipments, setShipments] = useState<ShoppingCartContextProps['shipments']>([]);
+
+  const [subscriptionCoupon, setSubscriptionCoupon] = useState<
+    ShoppingCartContextProps['subscriptionCoupon']
+  >(null);
+
   const setEPrescriptions: ShoppingCartContextProps['setEPrescriptions'] = (items) => {
     _setEPrescriptions(items);
   };
@@ -787,6 +796,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setdeliveryTime('');
     setPrescriptionType(null);
     setConsultProfile(null);
+    setSubscriptionCoupon(null);
   };
 
   useEffect(() => {
@@ -1242,6 +1252,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setNonCodSKus,
         cartPriceNotUpdateRange,
         setCartPriceNotUpdateRange,
+        subscriptionCoupon,
+        setSubscriptionCoupon,
       }}
     >
       {props.children}

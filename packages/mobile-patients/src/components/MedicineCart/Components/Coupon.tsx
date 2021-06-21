@@ -12,11 +12,20 @@ import {
 export interface CouponProps {
   onPressApplyCoupon: () => void;
   onPressRemove: () => void;
+  movedFrom?: string;
 }
 
 export const Coupon: React.FC<CouponProps> = (props) => {
-  const { coupon, couponDiscount, isProuctFreeCouponApplied } = useShoppingCart();
-  const { onPressApplyCoupon, onPressRemove } = props;
+  const {
+    coupon,
+    couponDiscount,
+    isProuctFreeCouponApplied,
+    subscriptionCoupon,
+  } = useShoppingCart();
+  const { onPressApplyCoupon, onPressRemove, movedFrom } = props;
+  const isFromSubscription = movedFrom == 'subscription';
+  console.log('isFromSubscription >>>> ', isFromSubscription);
+  console.log('subscriptionCoupon >>>> ', subscriptionCoupon);
 
   const renderApplyCoupon = () => {
     return (
@@ -33,20 +42,27 @@ export const Coupon: React.FC<CouponProps> = (props) => {
   };
 
   const renderCouponMsg = () => {
+    const currentCoupon = isFromSubscription ? subscriptionCoupon : coupon;
+    const discountAmount = isFromSubscription
+      ? subscriptionCoupon?.discount
+      : Number(couponDiscount).toFixed(2);
     return !isProuctFreeCouponApplied ? (
       <Text style={styles.applicable}>
-        {couponDiscount > 0
-          ? coupon?.message
-            ? `(${coupon?.message})`
-            : `(Savings of ₹ ${Number(couponDiscount).toFixed(2)})`
+        {couponDiscount > 0 || isFromSubscription
+          ? currentCoupon?.message
+            ? `(${currentCoupon?.message})`
+            : `(Savings of ₹ ${discountAmount})`
           : '(Coupon not applicable on your cart item(s) or item(s) with already higher discounts)'}
       </Text>
-    ) : coupon?.message ? (
-      <Text style={styles.applicable}>{`(${coupon?.message})`}</Text>
+    ) : currentCoupon?.message || isFromSubscription ? (
+      <Text style={styles.applicable}>
+        {isFromSubscription ? `(${subscriptionCoupon?.message})` : `(${currentCoupon?.message})`}
+      </Text>
     ) : null;
   };
 
   const renderCouponApplied = () => {
+    const currentCoupon = isFromSubscription ? subscriptionCoupon : coupon;
     return (
       <TouchableOpacity style={styles.couponApplied} onPress={onPressApplyCoupon}>
         <View style={styles.rowStyle}>
@@ -54,15 +70,15 @@ export const Coupon: React.FC<CouponProps> = (props) => {
           <View style={styles.couponMessageContainer}>
             <Text style={styles.couponAppliedText}>
               {couponDiscount > 0
-                ? `Coupon Applied : ${coupon?.coupon}`
-                : `Coupon : ${coupon?.coupon}`}
+                ? `Coupon Applied : ${currentCoupon?.coupon}`
+                : `Coupon : ${currentCoupon?.coupon}`}
             </Text>
             {renderCouponMsg()}
-            {!!coupon?.successMessage && (
+            {!!currentCoupon?.successMessage && (
               <View style={styles.couponSuccessMessageContainer}>
                 <Text
                   style={theme.viewStyles.text('M', 13, '#01475B', 1, 27)}
-                >{`(${coupon?.successMessage})`}</Text>
+                >{`(${currentCoupon?.successMessage})`}</Text>
               </View>
             )}
           </View>
@@ -75,7 +91,9 @@ export const Coupon: React.FC<CouponProps> = (props) => {
   };
 
   return (
-    <View style={styles.couponCard}>{!coupon ? renderApplyCoupon() : renderCouponApplied()}</View>
+    <View style={styles.couponCard}>
+      {!coupon && !subscriptionCoupon ? renderApplyCoupon() : renderCouponApplied()}
+    </View>
   );
 };
 

@@ -19,6 +19,8 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { Coupon } from '@aph/mobile-patients/src/components/MedicineCart/Components/Coupon';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 interface CirclePaymentProps extends NavigationScreenProps {
   action?: string;
   selectedPlan?: any;
@@ -32,7 +34,7 @@ export const CircleSubscription: React.FC<CirclePaymentProps> = (props) => {
   const from = props?.navigation?.state?.params?.from;
   const selectedPlan = props.navigation.getParam('selectedPlan');
   const circleEventSource = props.navigation.getParam('circleEventSource');
-  const { circlePlanSelected } = useShoppingCart();
+  const { circlePlanSelected, setSubscriptionCoupon } = useShoppingCart();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
 
   useEffect(() => {
@@ -106,12 +108,27 @@ export const CircleSubscription: React.FC<CirclePaymentProps> = (props) => {
 
   const renderCircleBill = () => <CircleTotalBill selectedPlan={selectedPlan} />;
 
+  const onApplyCouponClick = () => {
+    props.navigation.navigate(AppRoutes.ViewCoupons, { movedFrom: 'subscription' });
+  };
+
+  const renderCouponSection = () => (
+    <Coupon
+      onPressApplyCoupon={() => onApplyCouponClick()}
+      onPressRemove={() => {
+        setSubscriptionCoupon?.(null);
+      }}
+      movedFrom={'subscription'}
+    />
+  );
+
   return (
     <View style={theme.viewStyles.container}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
         <ScrollView>
           {renderCircleBill()}
+          {renderCouponSection()}
           {renderPaymentOptions()}
         </ScrollView>
       </SafeAreaView>

@@ -11,7 +11,7 @@ interface CircleTotalBillProps {
 }
 export const CircleTotalBill: React.FC<CircleTotalBillProps> = (props) => {
   const { selectedPlan } = props;
-  const { circlePlanSelected, defaultCirclePlan } = useShoppingCart();
+  const { circlePlanSelected, defaultCirclePlan, subscriptionCoupon } = useShoppingCart();
   const planSellingPrice = selectedPlan
     ? selectedPlan?.currentSellingPrice
     : defaultCirclePlan
@@ -22,6 +22,9 @@ export const CircleTotalBill: React.FC<CircleTotalBillProps> = (props) => {
     : defaultCirclePlan
     ? defaultCirclePlan?.durationInMonth
     : circlePlanSelected?.durationInMonth;
+  const totalPlanSellingPrice = subscriptionCoupon?.discount
+    ? planSellingPrice - Number(subscriptionCoupon?.discount)
+    : planSellingPrice;
   return (
     <View style={styles.container}>
       <View style={styles.spaceRow}>
@@ -45,11 +48,32 @@ export const CircleTotalBill: React.FC<CircleTotalBillProps> = (props) => {
         </View>
       </View>
       <View style={styles.seperatorTwo} />
+      <View style={{ paddingVertical: 6 }}>
+        <View style={styles.spaceRow}>
+          <Text style={styles.regularText}>{`MRP Total`}</Text>
+          <Text style={styles.regularText}>
+            {string.common.Rs}
+            {convertNumberToDecimal(planSellingPrice)}
+          </Text>
+        </View>
+        {!!subscriptionCoupon && (
+          <View style={[styles.spaceRow, { paddingTop: 6 }]}>
+            <Text
+              style={[styles.regularText, { color: '#0087BA' }]}
+            >{`Discount(${subscriptionCoupon?.coupon})`}</Text>
+            <Text style={[styles.regularText, { color: '#0087BA' }]}>
+              {`- ${string.common.Rs}`}
+              {subscriptionCoupon?.discount}
+            </Text>
+          </View>
+        )}
+      </View>
+      <View style={styles.seperatorTwo} />
       <View style={styles.spaceRow}>
         <Text style={styles.mediumText}>{string.circleDoctors.total}</Text>
         <Text style={styles.mediumText}>
           {string.common.Rs}
-          {convertNumberToDecimal(planSellingPrice)}
+          {totalPlanSellingPrice}
         </Text>
       </View>
     </View>
