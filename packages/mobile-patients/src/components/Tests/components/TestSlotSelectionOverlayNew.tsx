@@ -57,6 +57,7 @@ export interface TestSlotSelectionOverlayNewProps extends AphOverlayProps {
   source?: string;
   isVisible: boolean;
   addressDetails?: any;
+  isPremium?: boolean
 }
 const { width } = Dimensions.get('window');
 export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewProps> = (props) => {
@@ -293,7 +294,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
                   ]}
                 >
                   <>
-                  <PremiumIcon style={styles.premiumIconAbsolute}/>
+                  {props.isPremium ? <PremiumIcon style={styles.premiumIconAbsolute}/> : null}
                   <Text
                     style={[
                       styles.dateTextStyle,
@@ -456,7 +457,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           </Text>
           <ScrollView style={styles.containerContentStyle}>
             {renderCalendarView()}
-            {renderPremiumTag()}
+            {props.isPremium ? renderPremiumTag() : null}
             {renderSlotSelectionView()}
           </ScrollView>
           {dropDownOptions.length ? renderBottomButton : null}

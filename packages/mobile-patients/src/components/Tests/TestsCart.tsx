@@ -304,6 +304,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const [displaySchedule, setDisplaySchedule] = useState<boolean>(false);
   const [displayPremiumOverlay, setDisplayPremiumOverlay] = useState<boolean>(false);
+  const [isPremiumSlot, setIsPremiumSlot] = useState<boolean>(false);
   const [date, setDate] = useState<Date>(new Date());
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>();
   const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
@@ -3350,23 +3351,27 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           isTodaySlotUnavailable={todaySlotNotAvailable}
           onClose={() => setDisplaySchedule(false)}
           slots={slots}
+          isPremium={isPremiumSlot}
           slotInfo={selectedTimeSlot}
           addressDetails={isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr}
           onSchedule={(date: Date, slotInfo: TestSlot) => {
-            // setDate(date);
-            // setselectedTimeSlot(slotInfo);
-            // setDiagnosticSlot!({
-            //   slotStartTime: slotInfo?.slotInfo?.startTime!,
-            //   slotEndTime: slotInfo?.slotInfo?.endTime!,
-            //   date: date.getTime(),
-            //   employeeSlotId: slotInfo?.slotInfo?.slot!,
-            //   diagnosticBranchCode: slotInfo?.diagnosticBranchCode,
-            //   diagnosticEmployeeCode: slotInfo?.employeeCode,
-            //   city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
-            // });
-            // setWebEnageEventForAppointmentTimeSlot('Manual', slotInfo, areaSelected);
             setDisplaySchedule(false);
-            setDisplayPremiumOverlay(true);
+            if (isPremiumSlot) {
+              setDisplayPremiumOverlay(true);
+            } else {
+              setDate(date);
+              setselectedTimeSlot(slotInfo);
+              setDiagnosticSlot!({
+                slotStartTime: slotInfo?.slotInfo?.startTime!,
+                slotEndTime: slotInfo?.slotInfo?.endTime!,
+                date: date.getTime(),
+                employeeSlotId: slotInfo?.slotInfo?.slot!,
+                diagnosticBranchCode: slotInfo?.diagnosticBranchCode,
+                diagnosticEmployeeCode: slotInfo?.employeeCode,
+                city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
+              });
+              setWebEnageEventForAppointmentTimeSlot('Manual', slotInfo, areaSelected);
+            }
           }}
         />
       )}
