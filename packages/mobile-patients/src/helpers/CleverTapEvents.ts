@@ -35,10 +35,6 @@ export enum ProductPageViewedSource {
 }
 
 export enum CleverTapEventName {
-  //doh
-  DOH_Viewed = 'DOH Viewed',
-  DOH_Clicked = 'DOH Clicked',
-
   MOBILE_ENTRY = 'Mobile Entry',
   MOBILE_NUMBER_ENTERED = 'Mobile Number Entered',
   OTP_ENTERED = 'OTP Entered',
@@ -75,46 +71,34 @@ export enum CleverTapEventName {
   UPLOAD_PRESCRIPTION_IMAGE_UPLOADED = 'Upload Prescription Image Uploaded',
   UPLOAD_PRESCRIPTION_OPTION_SELECTED = 'Upload Prescription Option Selected',
   UPLOAD_PRESCRIPTION_SUBMIT_CLICKED = 'Upload Prescription Submit Clicked',
-  UPLOAD_PRESCRIPTION_ADDRESS_SELECTED = 'Upload prescription - Address selected',
   UPLOAD_PRESCRIPTION_NEW_ADDRESS = 'Upload prescription - New address added',
   PHARMACY_SUBMIT_PRESCRIPTION = 'Upload Prescription Proceed Clicked',
   PHARMACY_CHECKOUT_COMPLETED = 'Pharmacy Checkout completed',
   PHARMACY_DETAIL_IMAGE_CLICK = 'Product Detail page Image clicked',
   DOCTOR_SEARCH = 'Doctor Search',
-  SPECIALITY_CLICKED = 'Speciality Clicked',
   DOCTOR_CLICKED = 'Doctor card on doctor listing screen clicked',
   BOOK_APPOINTMENT = 'Book Appointment',
-  TYPE_OF_CONSULT_SELECTED = 'Type of consultation seleted',
-  CONSULT_SORT = 'Consult Sort',
   CONSULT_NOW_CLICKED = 'Consult Now clicked',
   CONSULT_SCHEDULE_FOR_LATER_CLICKED = 'Consult Schedule for Later clicked',
   CONSULT_SLOT_SELECTED = 'Consult Slot Selected',
   CONSULT_COUPON_APPLIED = 'Coupon Applied',
-  PAY_BUTTON_CLICKED = 'Pay Button Clicked',
-  CONSULTATION_BOOKED = 'Consultation booked',
   PHARMACY_FEEDBACK_GIVEN = 'Pharmacy Feedback Given',
-  PAST_DOCTOR_SEARCH = 'Past Doctor Search',
-  CONSULT_TYPE_SELECTION = 'Consult Type Selection',
   HOMEPAGE_WIDGET_FOLLOWUP_CLICK = 'Home Page Consult Widget Follow Up Click',
-  DOCTOR_CARD_CONSULT_CLICK = 'Doctor card Consult in x minutes clicked',
   DOCTOR_CONNECT_CARD_CLICK = 'Doctor Connect Card Click',
   CONSULTED_WITH_DOCTOR_BEFORE = 'Chat Window Consulted with doctor before alert',
   DOCTOR_SPECIALITY_SEARCH_NO_RESULT = 'Doctor Speciality Fuzzy Search No Result',
   CONFIRM_LOCATION = 'Confirm Location',
   DOCTOR_LISTING_FILTER_APPLIED = 'Doctor Listing Filter Apply',
   DOCTOR_PROFILE_THROUGH_DEEPLINK = 'Doctor profile through deeplink',
-  SEARCH_SUGGESTIONS = 'Search suggestions',
   SEARCH_SUGGESTIONS_VIEW_ALL = 'User clicked on View All',
   RETURN_REQUEST_START = 'Return Request Start',
   RETURN_REQUEST_SUBMITTED = 'Return Request Submitted',
   HOME_VIEWED = 'Home page viewed',
   MOVED_AWAY_FROM_HOME = 'User moved away from Homepage',
-  SEARCH_SUGGESTIONS_CLICKED = 'Search suggestion clicked',
   USER_LOGGED_IN_WITH_TRUECALLER = 'User logged in with truecaller',
   TRUECALLER_EVENT_ERRORS = 'Truecaller event errors',
   TRUECALLER_APOLLO247_LOGIN_ERRORS = 'Apollo247 truecaller login errors',
   LOGIN_WITH_TRUECALLER_CLICKED = 'Login with truecaller clicked',
-  MY_CONSULTED_DOCTORS_CLICKED = 'My doctor clicked',
 
   //Consult Events
   CONSULT_DOCTOR_PROFILE_VIEWED = 'Consult Doctor Profile viewed',
@@ -125,19 +109,50 @@ export enum CleverTapEventName {
   CONSULT_RESCHEDULED_BY_THE_PATIENT = 'Consult Reschedule by the patient',
   CONSULT_RESCHEDULE_CLICKED = 'Consult Reschedule clicked',
   CONSULT_CANCEL_CLICKED_BY_PATIENT = 'Consult cancel clicked by patient',
-  CONTINUE_CONSULTATION_CLICKED = 'Consult continue clicked by patient',
+  CONSULT_CONTINUE_CONSULTATION_CLICKED = 'Consult continue consultation clicked',
   CONSULT_CANCELLED_BY_PATIENT = 'Consult cancelled by patient',
+  CONSULT_PAST_SEARCHES_CLICKED = 'Consult Past searches clicked',
+  CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED = 'Consult Homescreen Book doctor appointment clicked',
+  CONSULT_SPECIALITY_CLICKED = 'Consult Speciality Clicked',
+  CONSULT_PAY_BUTTON_CLICKED = 'Consult Pay Button Clicked',
+  CONSULT_SORT = 'Consult sort',
+  CONSULT_BOOK_TESTS_IN_CHATROOM = 'Consult Book tests in Chatroom',
+  CONSULT_ACTIVE_APPOINTMENTS = 'Consult Active appointments',
+  CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED = 'Consult Book appointment clicked',
+  CONSULT_NO_SLOTS_FOUND = 'Consult no slots found',
+  CONSULT_BOOK_CTA_CLICKED = 'Consult book CTA clicked',
+  CONSULT_VIEW_DETAILS_ON_PAST_APPOINTMENT = 'Consult View Details on past appointment',
+  CONSULT_SEARCH_SUGGESTIONS = 'Consult search suggestions',
+  CONSULT_SEARCH_SUGGESTIONS_CLICKED = 'Consult search suggestion clicked',
+  CONSULT_MODE_SELECTED = 'Consult mode selected',
+  CONSULT_MY_DOCTOR_CLICKED = 'Consult my doctor clicked',
+  CONSULT_DOCTOR_TAB_CLICKED = 'Consult Doctor tab clicked',
+  CONSULT_TYPE_SELECTION = 'Consult Consult Type Selection',
+  CONSULTATION_BOOKED = 'Consultation booked',
+  CONSULT_ORDER_MEDICINES_IN_CHATROOM_CLICKED = 'Consult order medicines in chatroom clicked',
+  CONSULT_UPLOAD_PRESCRIPTION_ADDRESS_SELECTED = 'Consult Upload prescription - Address selected',
+
+  //DOH events
+  CONSULT_DOH_Viewed = 'Consult DOH viewed',
+  CONSULT_DOH_Clicked = 'Consult DOH Clicked',
 
   // Symptom Tracker Events
-  SYMPTOM_TRACKER_SELECT_ANOTHER_MEMBER_CLICKED = 'Symptom_Select other member clicke',
+  SYMPTOM_TRACKER_SELECT_OTHER_MEMBER_CLICKED = 'Symptom_Select other member clicked',
+  SYMPTOM_TRACKER_MOST_TROUBLING_SYMPTOM_CLICKED = 'Symptoms_Most troubling symptom clicked',
+  SYMPTOM_TRACKER_SUGGESTED_SYMPTOMS_CLICKED = 'Symptoms_suggested symptoms clicked',
+  SYMPTOM_TRACKER_INFO_CLICKED = 'Symptoms_information sign clicked',
+  SYMPTOM_TRACKER_CLICKED_ON_SPECIALITY_SCREEN = 'Consult Track symptoms on speciality screen',
+  SYMPTOM_TRACKER_PAGE_CLICKED = 'Track symptoms clicked',
+  SYMPTOM_TRACKER_ADD_SELECTED_SYMPTOMS_CLICKED = 'Symptoms_Add selected symptoms clicked',
+  SYMPTOM_TRACKER_RESTART_CLICKED = 'Symptoms_restart symptom checker clicked',
+  SYMPTOM_TRACKER_NO_OTHER_SYMPTOM_CLICKED = 'Symptoms_No other symptom clicked',
+  SYMPTOM_TRACKER_CONSULT_DOCTOR_CLICKED = 'user clicked on consult doc symptom check',
+  TRACK_SYMPTOMS = 'Track Symptoms',
 
   //Doctor Share Events
-  SHARE_CLICK_DOC_LIST_SCREEN = 'Share clicked doc list screen',
-  SHARE_PROFILE_CLICKED_DOC_LIST = 'Share profile clicked doc list',
-  GO_BACK_CLICKED_DOC_LIST = 'go back clicked doc list',
-  SHARE_CLICKED_DOC_PROFILE_SCREEN = 'share clicked doc profile screen',
-  SHARE_PROFILE_CLICKED_DOC_PROFILE = 'Share profile clicked doc profile',
-  GO_BACK_CLICKED_DOC_PROFILE = 'go back clicked doc profile',
+  CONSULT_SHARE_PROFILE_CLICKED = 'Consult share profile clicked',
+  CONSULT_GO_BACK_CLICKED = 'Consult_go back clicked',
+  CONSULT_SHARE_ICON_CLICKED = 'Consult share icon clicked',
   DOCTOR_PROFILE_SCREEN_BY_SHARE_LINK = 'Doctor profile screen by share link',
 
   MY_ORDERS_CLICKED = 'My Orders Clicked',
@@ -156,19 +171,16 @@ export enum CleverTapEventName {
   ORDER_TESTS = 'Order Tests',
   MANAGE_DIABETES = 'Manage Diabetes',
   PROHEALTH = 'Prohealth',
-  TRACK_SYMPTOMS = 'Track Symptoms',
   VIEW_HELATH_RECORDS = 'PHR Click Health records',
   LEARN_MORE_ABOUT_CORONAVIRUS = 'Learn more about coronavirus',
   CHECK_YOUR_RISK_LEVEL = 'Check your risk level',
   APOLLO_PRO_HEALTH = 'Apollo pro health',
   NOTIFICATION_ICON = 'Notification Icon clicked',
-  ACTIVE_APPOINTMENTS = 'Active Appointments',
   ACTIVE_PROHEALTH_APPOINTMENTS = 'PROHEALTH_ACTIVE_APPOINTMENTS',
   NEED_HELP = 'Need Help?',
   TICKET_RAISED = 'Ticket raised',
   HELP_TICKET_SUBMITTED = 'Help_Ticket_Submitted',
   MY_ACCOUNT = 'My Account',
-  BOOK_DOCTOR_APPOINTMENT = 'Book Doctor Appointment clicked on homescreen',
   TABBAR_APPOINTMENTS_CLICKED = 'Appointments Clicked on tab bar',
   APOLLO_KAVACH_PROGRAM = 'Apollo Kavach Program',
   COVID_VACCINE_TRACKER = 'Covid Vaccine Tracker',
@@ -305,10 +317,7 @@ export enum CleverTapEventName {
   CHAT_WITH_DOCTOR = 'Chat with Doctor',
   FILL_MEDICAL_DETAILS = 'Fill Medical Details',
 
-  NO_SLOTS_FOUND = 'No Slots Found',
   DOCTOR_RESCHEDULE_CLAIM_REFUND = 'Doctor reschedule and Claim Refund button click',
-  DOCTOR_CONNECT_TAB_CLICKED = 'Doctor Connect Tab Clicked',
-  APOLLO_DOCTOR_TAB_CLICKED = 'Apollo Doctor Tab Clicked',
   UPLOAD_RECORDS_CLICK_CHATROOM = 'Upload Records in chatroom clicked',
   TAKE_PHOTO_CLICK_CHATROOM = 'Take a photo in consult room clicked',
   GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM = 'choose from gallery in consult room clicked',
@@ -316,10 +325,6 @@ export enum CleverTapEventName {
   PATIENT_JOINED_CONSULT = 'Patient Joined the consult with doctor',
   PATIENT_ENDED_CONSULT = 'Patient ended the consult',
   CALL_ENDED = 'Call Ended',
-  PAST_APPOINTMENT_BOOK_FOLLOW_UP_CLICKED = 'Book follow up clicked from Past appointment',
-  BOOK_AGAIN_CANCELLED_APPOINTMENT = 'Book again clicked from cancelled appointment',
-  VIEW_DETAILS_PAST_APPOINTMENT = 'View details clicked on past appointment',
-  BOOK_APPOINTMENT_CHAT_ROOM = 'Book appointment clicked inside consult room',
   PATIENT_ANSWERED_CALL = 'Patient Answered the call',
   PATIENT_DECLINED_CALL = 'Patient Declined the call',
   PATIENT_MISSED_CALL = 'Patient Missed the call',
@@ -386,22 +391,11 @@ export enum CleverTapEventName {
   PATIENT_SESSION_STREAM_PROPERTY_CHANGED = 'Patient Session Stream Property Changed',
   //chatRoom Events
   PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT = 'Patient sent chat message post consult',
-  ORDER_MEDICINES_IN_CONSULT_ROOM = 'Order meds in Consult room',
-  BOOK_TESTS_IN_CONSULT_ROOM = 'Book tests in consult room',
   PATIENT_EXTERNAL_MEETING_LINK_CLICKED = 'Patient Clicked on Video Link',
   // Symptom Tracker Events
-  SYMPTOM_TRACKER_PAGE_CLICKED = 'Track symptoms clicked',
   SYMPTOM_TRACKER_FOR_MYSELF = 'Myself clicked SC',
-  SYMPTOM_TRACKER_INFO_CLICKED = 'information sign clicked SC',
-  SYMPTOM_TRACKER_MOST_TROUBLING_SYMPTOM_CLICKED = 'symptom troubling most clicked SC',
-  SYMPTOM_TRACKER_SUGGESTED_SYMPTOMS_CLICKED = 'suggested symptoms clicked SC',
-  SYMPTOM_TRACKER_ADD_SELECTED_SYMPTOMS_CLICKED = 'Add selected symptoms clicked SC',
   SYMPTOM_TRACKER_ADD_OTHER_SYMPTOM_CLICKED = 'Add other symptom clicked SC',
-  SYMPTOM_TRACKER_NO_OTHER_SYMPTOM_CLICKED = 'No other symptom clicked SC',
-  SYMPTOM_TRACKER_CONSULT_DOCTOR_CLICKED = 'user clicked on consult doc symptom check',
-  SYMPTOM_TRACKER_RESTART_CLICKED = 'restart symptom checker clicked',
   SYMPTOM_TRACKER_SEARCH_SYMPTOMS = 'User searched symptom SC',
-  SYMPTOM_TRACKER_CLICKED_ON_SPECIALITY_SCREEN = 'Track symptoms in speciality screen clicked',
 
   //Circle Plan event names
   VC_NON_CIRCLE = 'VC Non Circle Clicks on Know More at Doctor Listing',
@@ -493,6 +487,10 @@ export interface UserInfo {
   'Patient UHID': string;
   'Mobile Number': string;
   'Customer ID': string;
+}
+
+export interface UserInfoWithSource extends UserInfo {
+  Source: 'Apollo Doctors' | 'Partner Doctors';
 }
 export interface DOHInfo {
   doctorId: string;
@@ -716,6 +714,7 @@ export interface FollowUpAppointment {
   'Consult ID': string;
   isConsultStarted: boolean;
   Prescription: string;
+  Source: 'Cancelled appointment' | 'Past appointment' | undefined;
 }
 
 export interface consultCallEndData {
@@ -771,12 +770,12 @@ export interface CleverTapEvents {
     'Mobile Number': string;
   };
   [CleverTapEventName.NUMBER_OF_PROFILES_FETCHED]: { count: number };
-  [CleverTapEventName.ORDER_MEDICINES_IN_CONSULT_ROOM]: UserInfo;
-  [CleverTapEventName.BOOK_TESTS_IN_CONSULT_ROOM]: UserInfo;
+  [CleverTapEventName.CONSULT_ORDER_MEDICINES_IN_CHATROOM_CLICKED]: UserInfo;
+  [CleverTapEventName.CONSULT_BOOK_TESTS_IN_CHATROOM]: UserInfo;
 
   // DOH Events \\
-  [CleverTapEventName.DOH_Viewed]: DOHInfo;
-  [CleverTapEventName.DOH_Clicked]: DOHInfo;
+  [CleverTapEventName.CONSULT_DOH_Viewed]: DOHInfo;
+  [CleverTapEventName.CONSULT_DOH_Clicked]: DOHInfo;
 
   // ********** Home Screen Events ********** \\
 
@@ -815,7 +814,7 @@ export interface CleverTapEvents {
     'Customer ID': string;
   };
   [CleverTapEventName.NOTIFICATION_ICON]: { clicked: true };
-  [CleverTapEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
+  [CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS]: { clicked: true };
   [CleverTapEventName.ACTIVE_PROHEALTH_APPOINTMENTS]: { clicked: true };
   [CleverTapEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
   [CleverTapEventName.TICKET_RAISED]: { Category: string; Query: string };
@@ -826,7 +825,7 @@ export interface CleverTapEvents {
     Order_Status?: string;
   };
   [CleverTapEventName.MY_ACCOUNT]: PatientInfo;
-  [CleverTapEventName.BOOK_DOCTOR_APPOINTMENT]: {
+  [CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED]: {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
@@ -839,7 +838,7 @@ export interface CleverTapEvents {
     User_Type: string;
   };
   [CleverTapEventName.TABBAR_APPOINTMENTS_CLICKED]: PatientInfoWithSource;
-  [CleverTapEventName.PAST_DOCTOR_SEARCH]: {
+  [CleverTapEventName.CONSULT_PAST_SEARCHES_CLICKED]: {
     'Patient UHID': string;
     'Mobile Number': string;
     'Customer ID': string;
@@ -1100,7 +1099,7 @@ export interface CleverTapEvents {
     OptionSelected: 'Search and add' | 'All Medicine' | 'Call me for details';
     User_Type?: PharmaUserStatus;
   };
-  [CleverTapEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED]: {
+  [CleverTapEventName.CONSULT_UPLOAD_PRESCRIPTION_ADDRESS_SELECTED]: {
     Serviceable: 'Yes' | 'No';
   };
   [CleverTapEventName.UPLOAD_PRESCRIPTION_NEW_ADDRESS]: {
@@ -1400,8 +1399,7 @@ export interface CleverTapEvents {
   [CleverTapEventName.TAKE_PHOTO_CLICK_CHATROOM]: ConsultRoomDoctorPatientInfo;
   [CleverTapEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM]: ConsultRoomDoctorPatientInfo;
   [CleverTapEventName.UPLOAD_PHR_CLICK_CHATROOM]: ConsultRoomDoctorPatientInfo;
-  [CleverTapEventName.APOLLO_DOCTOR_TAB_CLICKED]: UserInfo;
-  [CleverTapEventName.DOCTOR_CONNECT_TAB_CLICKED]: UserInfo;
+  [CleverTapEventName.CONSULT_DOCTOR_TAB_CLICKED]: UserInfoWithSource;
   [CleverTapEventName.CONSULT_PAYMENT_MODE_SELECTED]: {
     'Payment Mode': string;
     User_Type: string;
@@ -1423,7 +1421,7 @@ export interface CleverTapEvents {
     User_Type: string;
   };
   [CleverTapEventName.DOCTOR_LISTING_FILTER_APPLIED]: DoctorFilterClick;
-  [CleverTapEventName.SPECIALITY_CLICKED]: SpecialityClickedEvent;
+  [CleverTapEventName.CONSULT_SPECIALITY_CLICKED]: SpecialityClickedEvent;
   [CleverTapEventName.BOOK_APPOINTMENT]: {
     'Doctor Name': string;
     'Doctor City': string;
@@ -1446,7 +1444,7 @@ export interface CleverTapEvents {
     'Doctor Mobile Number': string;
     User_Type: string;
   };
-  [CleverTapEventName.TYPE_OF_CONSULT_SELECTED]: {
+  [CleverTapEventName.CONSULT_MODE_SELECTED]: {
     'Consultation Type': string;
     'Patient Name': string;
     'Patient UHID': string;
@@ -1470,7 +1468,7 @@ export interface CleverTapEvents {
     Is_TopDoc?: YesOrNo;
     User_Type: string;
   };
-  [CleverTapEventName.DOCTOR_CARD_CONSULT_CLICK]: {
+  [CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED]: {
     'Patient Name': string;
     'Doctor ID': string;
     'Speciality ID': string;
@@ -1480,7 +1478,7 @@ export interface CleverTapEvents {
     'Hospital Name': string;
     'Hospital City': string | null;
     'Availability Minutes': number;
-    Source: 'List' | 'Profile';
+    Source: 'List' | 'Profile' | 'Inside consult room';
     'Patient UHID': string;
     Relation: string;
     'Patient Age': number;
@@ -1636,7 +1634,7 @@ export interface CleverTapEvents {
     'Discount Amount'?: number;
     'Coupon Applied': boolean;
   };
-  [CleverTapEventName.PAY_BUTTON_CLICKED]: {
+  [CleverTapEventName.CONSULT_PAY_BUTTON_CLICKED]: {
     Amount: number;
     'Doctor Name': string;
     'Doctor City': string;
@@ -1856,7 +1854,7 @@ export interface CleverTapEvents {
 
   // ********** ConsultRoom Events ********** \\
 
-  [CleverTapEventName.CONSULTATION_CANCELLED_BY_CUSTOMER]: {
+  [CleverTapEventName.CONSULT_CANCEL_CLICKED_BY_PATIENT]: {
     'Speciality Name': string;
     'Speciality ID': string;
     'Doctor Category': DoctorType;
@@ -1970,7 +1968,7 @@ export interface CleverTapEvents {
     'Patient Gender': string;
     'Customer ID': string;
   };
-  [CleverTapEventName.RESCHEDULE_CLICKED]: {
+  [CleverTapEventName.CONSULT_RESCHEDULE_CLICKED]: {
     'Doctor Name': string;
     'Speciality Name': string;
     'Speciality ID': string;
@@ -1990,7 +1988,7 @@ export interface CleverTapEvents {
     'Secretary Mobile Number': string;
     'Doctor Mobile Number': string;
   };
-  [CleverTapEventName.CONTINUE_CONSULTATION_CLICKED]: {
+  [CleverTapEventName.CONSULT_CONTINUE_CONSULTATION_CLICKED]: {
     'Doctor Name': string;
     'Speciality Name': string;
     'Speciality ID': string;
@@ -2011,7 +2009,7 @@ export interface CleverTapEvents {
     'Secretary Mobile Number': string;
     'Doctor Mobile Number': string;
   };
-  [CleverTapEventName.CANCEL_CONSULTATION_CLICKED]: {
+  [CleverTapEventName.CONSULT_CANCELLED_BY_PATIENT]: {
     'Doctor Name': string;
     'Speciality Name': string;
     'Speciality ID': string;
@@ -2135,10 +2133,8 @@ export interface CleverTapEvents {
   [CleverTapEventName.PATIENT_DECLINED_CALL]: consultCallEndData;
   [CleverTapEventName.PATIENT_MISSED_CALL]: consultCallEndData;
   [CleverTapEventName.CALL_DROPPED_UNKNOWN_REASON]: consultCallEndData;
-  [CleverTapEventName.PAST_APPOINTMENT_BOOK_FOLLOW_UP_CLICKED]: FollowUpAppointment;
-  [CleverTapEventName.BOOK_AGAIN_CANCELLED_APPOINTMENT]: FollowUpAppointment;
-  [CleverTapEventName.VIEW_DETAILS_PAST_APPOINTMENT]: FollowUpAppointment;
-  [CleverTapEventName.BOOK_APPOINTMENT_CHAT_ROOM]: FollowUpAppointment;
+  [CleverTapEventName.CONSULT_BOOK_CTA_CLICKED]: FollowUpAppointment;
+  [CleverTapEventName.CONSULT_VIEW_DETAILS_ON_PAST_APPOINTMENT]: FollowUpAppointment;
   [CleverTapEventName.DOWNLOAD_PRESCRIPTION]: {
     'Doctor Name': string;
     'Speciality Name': string;
@@ -2212,7 +2208,7 @@ export interface CleverTapEvents {
     'Patient Gender': string;
     'Customer ID': string;
   };
-  [CleverTapEventName.NO_SLOTS_FOUND]: {
+  [CleverTapEventName.CONSULT_NO_SLOTS_FOUND]: {
     'Doctor Name': string;
     'Speciality Name': string;
     'Speciality ID': string;
@@ -2289,12 +2285,13 @@ export interface CleverTapEvents {
     'Doctor Category': DoctorType;
     Rank: number | string;
     Is_TopDoc?: YesOrNo;
-    Source: 'Deeplink' | 'Doctor Card clicked';
+    Source: 'Deeplink' | 'Doctor Card clicked' | 'Search';
     'Doctor card clicked': YesOrNo;
     DOTH: 'T' | 'F';
     'Doctor Tab': 'Apollo Tab' | 'Doctor Partner Tab' | 'NA';
+    'Search screen': 'Speciality screen' | 'Doctor list screen' | 'NA';
   };
-  [CleverTapEventName.SEARCH_SUGGESTIONS]: {
+  [CleverTapEventName.CONSULT_SEARCH_SUGGESTIONS]: {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
@@ -2310,6 +2307,7 @@ export interface CleverTapEvents {
     Specialities: string;
     Procedures: string;
     User_Type: string;
+    Source: 'Speciality screen' | 'Doctor list screen';
   };
 
   [CleverTapEventName.SEARCH_SUGGESTIONS_VIEW_ALL]: {
@@ -2324,7 +2322,7 @@ export interface CleverTapEvents {
     'Search suggestions in the particular bucket': string;
   };
 
-  [CleverTapEventName.SEARCH_SUGGESTIONS_CLICKED]: {
+  [CleverTapEventName.CONSULT_SEARCH_SUGGESTIONS_CLICKED]: {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
@@ -2342,7 +2340,7 @@ export interface CleverTapEvents {
     User_Type: string;
   };
 
-  [CleverTapEventName.SHARE_CLICK_DOC_LIST_SCREEN]: {
+  [CleverTapEventName.CONSULT_SHARE_ICON_CLICKED]: {
     'Patient Name': string;
     'Patient UHID': string;
     'Patient Age': number;
@@ -2354,6 +2352,7 @@ export interface CleverTapEvents {
     'Doctor ID': string;
     'Doctor card rank'?: number;
     'UTM parameter'?: string;
+    Source: 'Doctor profile' | 'Doctor listing';
   };
   [CleverTapEventName.CATEGORY_PAGE_VIEWED]: {
     source: 'home' | 'deeplink' | 'registration';
@@ -2624,7 +2623,7 @@ export interface CleverTapEvents {
     Error: any;
   };
   [CleverTapEventName.LOGIN_WITH_TRUECALLER_CLICKED]: {};
-  [CleverTapEventName.MY_CONSULTED_DOCTORS_CLICKED]: {
+  [CleverTapEventName.CONSULT_MY_DOCTOR_CLICKED]: {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;

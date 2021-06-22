@@ -33,6 +33,7 @@ import {
   apiCallEnums,
   navigateToHome,
   getUserType,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
@@ -112,6 +113,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/createOrder';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { saveConsultationLocation } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 interface PaymentCheckoutPhysicalProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
@@ -689,6 +694,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         eventAttributes['Display ID'] = displayID;
         eventAttributes['User_Type'] = getUserType(allCurrentPatients);
         postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
+        postCleverTapEvent(CleverTapEventName.CONSULTATION_BOOKED, eventAttributes);
         postAppsFlyerEvent(
           AppsFlyerEventName.CONSULTATION_BOOKED,
           getConsultationBookedAppsFlyerEventAttributes(id, displayID)
@@ -774,7 +780,9 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         return item.facility.facilityType === 'HOSPITAL';
     });
 
-    const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULTATION_BOOKED] = {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.CONSULTATION_BOOKED]
+      | CleverTapEvents[CleverTapEventName.CONSULTATION_BOOKED] = {
       name: g(doctor, 'fullName')!,
       specialisation: g(doctor, 'specialty', 'name')!,
       category: g(doctor, 'doctorType')!, // send doctorType
@@ -853,7 +861,9 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     const doctorClinics = (g(doctor, 'doctorHospital') || []).filter((item: any) => {
       if (item?.facility?.facilityType) return item?.facility?.facilityType === 'HOSPITAL';
     });
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PAY_BUTTON_CLICKED] = {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.PAY_BUTTON_CLICKED]
+      | CleverTapEvents[CleverTapEventName.CONSULT_PAY_BUTTON_CLICKED] = {
       'Consult Date Time': localTimeSlot,
       Amount: finalAppointmentInput?.actualAmount,
       'Doctor Name': g(doctor, 'fullName')!,
@@ -886,6 +896,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       User_Type: getUserType(allCurrentPatients),
     };
     postWebEngageEvent(WebEngageEventName.PAY_BUTTON_CLICKED, eventAttributes);
+    postCleverTapEvent(CleverTapEventName.CONSULT_PAY_BUTTON_CLICKED, eventAttributes);
     postFirebaseEvent(FirebaseEventName.PAY_BUTTON_CLICKED, eventAttributes);
   };
 

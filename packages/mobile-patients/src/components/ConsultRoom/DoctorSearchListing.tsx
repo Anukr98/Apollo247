@@ -73,6 +73,7 @@ import {
   postDoctorShareWEGEvents,
   getUserType,
   postCleverTapEvent,
+  postDoctorShareCleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -409,6 +410,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         if (platinum_doctor) {
           setPlatinumDoctor(platinum_doctor);
           postPlatinumDoctorWEGEvents(platinum_doctor, WebEngageEventName.DOH_Viewed, state);
+          postPlatinumDoctorCleverTapEvents(
+            platinum_doctor,
+            CleverTapEventName.CONSULT_DOH_Viewed,
+            state
+          );
         } else {
           setPlatinumDoctor(null);
         }
@@ -1114,6 +1120,24 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     postWebEngageEvent(eventName, eventAttributes);
   };
 
+  const postPlatinumDoctorCleverTapEvents = (
+    doctorData: any,
+    eventName: CleverTapEventName,
+    states?: any
+  ) => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_DOH_Viewed] = {
+      doctorId: doctorData?.id,
+      doctorName: doctorData?.displayName,
+      doctorType: doctorData?.doctorType,
+      specialtyId: props.navigation.getParam('specialityId') || '',
+      specialtyName: props.navigation.getParam('specialityName') || '',
+      zone: states || locationDetails?.state || '',
+      userName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      userPhoneNumber: currentPatient?.mobileNumber,
+    };
+    postCleverTapEvent(eventName, eventAttributes);
+  };
+
   const postDoctorClickWEGEvent = (
     doctorDetails: any,
     source: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED]['Source'],
@@ -1155,6 +1179,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       DOTH: !!isTopDoc ? 'T' : 'F',
       'Doctor Tab': doctorsType === 'PARTNERS' ? 'Doctor Partner Tab' : 'Apollo Tab',
       'Doctor Category': doctorDetails?.doctorType,
+      'Search screen': doctorSearch?.length > 2 ? 'Doctor list screen' : 'NA',
     };
 
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {
@@ -1177,7 +1202,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       postAppsFlyerEvent(AppsFlyerEventName.CONSULT_NOW_CLICKED, appsflyereventAttributes);
       postFirebaseEvent(FirebaseEventName.CONSULT_NOW_CLICKED, eventAttributesFirebase);
     } else if (type == 'book-appointment') {
+      eventAttributes['Source'] = 'List';
       postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
+      postCleverTapEvent(
+        CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED,
+        eventAttributes
+      );
       const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.BOOK_APPOINTMENT] = {
         'customer id': currentPatient ? currentPatient.id : '',
       };
@@ -1200,11 +1230,15 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const postTabBarClickWEGEvent = (tab: 'APOLLO' | 'PARTNERS') => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.APOLLO_DOCTOR_TAB_CLICKED] = {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.APOLLO_DOCTOR_TAB_CLICKED]
+      | CleverTapEvents[CleverTapEventName.CONSULT_DOCTOR_TAB_CLICKED] = {
       'Patient UHID': g(currentPatient, 'uhid'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
+      Source: tab == 'APOLLO' ? 'Apollo Doctors' : 'Partner Doctors',
     };
+    postCleverTapEvent(CleverTapEventName.CONSULT_DOCTOR_TAB_CLICKED, eventAttributes);
     if (tab == 'APOLLO') {
       postWebEngageEvent(WebEngageEventName.APOLLO_DOCTOR_TAB_CLICKED, eventAttributes);
     } else {
@@ -1217,6 +1251,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       postDoctorShareWEGEvents(
         doctorData,
         WebEngageEventName.SHARE_CLICK_DOC_LIST_SCREEN,
+        currentPatient,
+        specialityId,
+        rank
+      );
+      postDoctorShareCleverTapEvents(
+        doctorData,
+        CleverTapEventName.CONSULT_SHARE_ICON_CLICKED,
         currentPatient,
         specialityId,
         rank
@@ -1653,6 +1694,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           onPress={(id: string, onlineConsult: boolean) => {
             postDoctorClickWEGEvent(platinumDoctor, 'List', true);
             postPlatinumDoctorWEGEvents(platinumDoctor, WebEngageEventName.DOH_Clicked);
+            postPlatinumDoctorCleverTapEvents(
+              platinumDoctor,
+              CleverTapEventName.CONSULT_DOH_Clicked
+            );
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: platinumDoctor?.id,
               callSaveSearch: callSaveSearch,
@@ -1683,6 +1728,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           specialityId,
           doctorShareRank
         );
+        postDoctorShareCleverTapEvents(
+          doctorData,
+          CleverTapEventName.CONSULT_SHARE_PROFILE_CLICKED,
+          currentPatient,
+          specialityId,
+          doctorShareRank
+        );
       } else if (result.action === Share.dismissedAction) {
       }
     } catch (error) {}
@@ -1693,6 +1745,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     postDoctorShareWEGEvents(
       doctorData,
       WebEngageEventName.GO_BACK_CLICKED_DOC_LIST,
+      currentPatient,
+      specialityId,
+      doctorShareRank
+    );
+    postDoctorShareCleverTapEvents(
+      doctorData,
+      CleverTapEventName.CONSULT_GO_BACK_CLICKED,
       currentPatient,
       specialityId,
       doctorShareRank
@@ -1775,6 +1834,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
         'Sort By': 'distance',
       });
+      postCleverTapEvent(CleverTapEventName.CONSULT_SORT, {
+        'Sort By': 'distance',
+      });
       setSortValue('distance');
       if (locationDetails) {
         const coordinates = {
@@ -1804,6 +1866,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       setNearyByFlag(false);
       setshowSpinner(true);
       postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
+        'Sort By': 'availability',
+      });
+      postCleverTapEvent(CleverTapEventName.CONSULT_SORT, {
         'Sort By': 'availability',
       });
       setSortValue('availability');

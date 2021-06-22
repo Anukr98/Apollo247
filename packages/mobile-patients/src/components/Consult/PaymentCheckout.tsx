@@ -35,6 +35,7 @@ import {
   navigateToHome,
   getUserType,
   getPackageIds,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
@@ -124,6 +125,10 @@ import {
   createOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOrder';
 import { saveConsultationLocation } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 interface PaymentCheckoutProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
@@ -932,6 +937,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         eventAttributes['Display ID'] = displayID;
         eventAttributes['User_Type'] = getUserType(allCurrentPatients);
         postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
+        postCleverTapEvent(CleverTapEventName.CONSULTATION_BOOKED, eventAttributes);
         postAppsFlyerEvent(
           AppsFlyerEventName.CONSULTATION_BOOKED,
           getConsultationBookedAppsFlyerEventAttributes(id, displayID)
@@ -1051,7 +1057,9 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         return item.facility.facilityType === 'HOSPITAL';
     });
 
-    const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULTATION_BOOKED] = {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.CONSULTATION_BOOKED]
+      | CleverTapEvents[CleverTapEventName.CONSULTATION_BOOKED] = {
       name: g(doctor, 'fullName')!,
       specialisation: g(doctor, 'specialty', 'name')!,
       category: g(doctor, 'doctorType')!, // send doctorType

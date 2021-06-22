@@ -85,7 +85,10 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { NotificationListener } from '@aph/mobile-patients/src/components/NotificationListener';
 import _ from 'lodash';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -1031,7 +1034,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     const fireWebengageEvent = (item: Appointment, eventType: string) => {
       const eventAttributesFollowUp:
         | WebEngageEvents[WebEngageEventName.BOOK_AGAIN_CANCELLED_APPOINTMENT]
-        | WebEngageEvents[WebEngageEventName.PAST_APPOINTMENT_BOOK_FOLLOW_UP_CLICKED] = {
+        | WebEngageEvents[WebEngageEventName.PAST_APPOINTMENT_BOOK_FOLLOW_UP_CLICKED]
+        | CleverTapEvents[CleverTapEventName.CONSULT_BOOK_CTA_CLICKED] = {
         'Customer ID': g(currentPatient, 'id'),
         'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
         'Patient UHID': g(currentPatient, 'uhid'),
@@ -1050,6 +1054,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           g(item, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
         isConsultStarted: !!g(item, 'isConsultStarted'),
         Prescription: followUpMedicineNameText || '',
+        Source:
+          eventType === 'cancel'
+            ? 'Cancelled appointment'
+            : eventType === 'followup'
+            ? 'Past appointment'
+            : undefined,
       };
 
       postWebEngageEvent(
@@ -1058,6 +1068,14 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           : eventType === 'followup'
           ? WebEngageEventName.PAST_APPOINTMENT_BOOK_FOLLOW_UP_CLICKED
           : WebEngageEventName.VIEW_DETAILS_PAST_APPOINTMENT,
+        eventAttributesFollowUp
+      );
+      postCleverTapEvent(
+        eventType === 'cancel'
+          ? CleverTapEventName.CONSULT_BOOK_CTA_CLICKED
+          : eventType === 'followup'
+          ? CleverTapEventName.CONSULT_BOOK_CTA_CLICKED
+          : CleverTapEventName.CONSULT_VIEW_DETAILS_ON_PAST_APPOINTMENT,
         eventAttributesFollowUp
       );
     };

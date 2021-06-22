@@ -6,9 +6,14 @@ import {
   g,
   postWebEngageEvent,
   getUserType,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import moment from 'moment';
 import { getPatientPastConsultedDoctors_getPatientPastConsultedDoctors } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultedDoctors';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 export const userLocationConsultWEBEngage = (
   currentPatient: any,
@@ -75,7 +80,9 @@ export const myConsultedDoctorsClickedWEBEngage = (
   doctor: getPatientPastConsultedDoctors_getPatientPastConsultedDoctors,
   allCurrentPatients: any
 ) => {
-  const eventAttributes: WebEngageEvents[WebEngageEventName.MY_CONSULTED_DOCTORS_CLICKED] = {
+  const eventAttributes:
+    | WebEngageEvents[WebEngageEventName.MY_CONSULTED_DOCTORS_CLICKED]
+    | CleverTapEvents[CleverTapEventName.CONSULT_MY_DOCTOR_CLICKED] = {
     'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
     'Patient UHID': g(currentPatient, 'uhid'),
     Relation: g(currentPatient, 'relation'),
@@ -98,4 +105,5 @@ export const myConsultedDoctorsClickedWEBEngage = (
     },
   };
   postWebEngageEvent(WebEngageEventName.MY_CONSULTED_DOCTORS_CLICKED, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.CONSULT_MY_DOCTOR_CLICKED, eventAttributes);
 };

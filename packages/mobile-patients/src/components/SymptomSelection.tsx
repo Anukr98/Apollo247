@@ -31,8 +31,13 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  postCleverTapEvent,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 interface SymptomSelectionProps extends NavigationScreenProps {
   chatId: string;
@@ -174,6 +179,10 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
             WebEngageEventName.SYMPTOM_TRACKER_SUGGESTED_SYMPTOMS_CLICKED,
             eventAttributes
           );
+          postCleverTapEvent(
+            CleverTapEventName.SYMPTOM_TRACKER_SUGGESTED_SYMPTOMS_CLICKED,
+            eventAttributes
+          );
           symptomSelectionHandler(item);
         }}
       >
@@ -231,6 +240,10 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
           };
           postWebEngageEvent(
             WebEngageEventName.SYMPTOM_TRACKER_ADD_SELECTED_SYMPTOMS_CLICKED,
+            eventAttributes
+          );
+          postCleverTapEvent(
+            CleverTapEventName.SYMPTOM_TRACKER_ADD_SELECTED_SYMPTOMS_CLICKED,
             eventAttributes
           );
           navigation.goBack();

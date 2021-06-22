@@ -129,6 +129,7 @@ import {
   getUserType,
   persistHealthCredits,
   getHealthCredits,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -193,6 +194,7 @@ import { ConsultedDoctorsCard } from '@aph/mobile-patients/src/components/Consul
 import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
 import { AuthContextProps } from '@aph/mobile-patients/src/components/AuthProvider';
 import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const { Vitals } = NativeModules;
 
@@ -1292,6 +1294,68 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     postWebEngageEvent(eventName, eventAttributes);
   };
 
+  const postHomeCleverTapEvent = (
+    eventName: CleverTapEventName,
+    source?: PatientInfoWithSource['Source'],
+    attributes?: any
+  ) => {
+    let eventAttributes: PatientInfo = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
+    };
+    if (
+      source &&
+      (eventName == CleverTapEventName.BUY_MEDICINES ||
+        eventName == CleverTapEventName.ORDER_TESTS ||
+        eventName == CleverTapEventName.VIEW_HELATH_RECORDS ||
+        eventName == CleverTapEventName.NEED_HELP)
+    ) {
+      (eventAttributes as PatientInfoWithSource)['Source'] = source;
+    }
+    if (
+      locationDetails &&
+      locationDetails.pincode &&
+      eventName == CleverTapEventName.BUY_MEDICINES
+    ) {
+      (eventAttributes as PatientInfoWithSource)['Pincode'] = locationDetails.pincode;
+      (eventAttributes as PatientInfoWithSource)['Serviceability'] = serviceable;
+    }
+    if (eventName == CleverTapEventName.BUY_MEDICINES) {
+      eventAttributes = {
+        ...eventAttributes,
+        ...pharmacyCircleAttributes,
+        ...pharmacyUserTypeAttribute,
+      };
+    }
+    if (eventName == CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED) {
+      eventAttributes = { ...eventAttributes, ...pharmacyCircleAttributes };
+    }
+    if (eventName == CleverTapEventName.HDFC_HEALTHY_LIFE) {
+      const subscription_name = hdfcUserSubscriptions?.name;
+      const newAttributes = {
+        HDFCMembershipState: !!g(hdfcUserSubscriptions, 'isActive') ? 'Active' : 'Inactive',
+        HDFCMembershipLevel: subscription_name?.substring(0, subscription_name?.indexOf('+')),
+        Circle_Member: !!circleSubscriptionId ? 'Yes' : 'No',
+      };
+      eventAttributes = { ...eventAttributes, ...newAttributes };
+    }
+    if (eventName == CleverTapEventName.HOME_VIEWED) {
+      eventAttributes = { ...eventAttributes, ...attributes };
+    }
+    if (eventName == CleverTapEventName.COVID_VACCINATION_SECTION_CLICKED) {
+      eventAttributes = { ...eventAttributes, ...attributes };
+    }
+    postCleverTapEvent(eventName, eventAttributes);
+  };
+
   const fireFirstTimeLanded = () => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.NON_CIRCLE_HOMEPAGE_VIEWED] = {
       'Patient UHID': currentPatient?.uhid,
@@ -1357,6 +1421,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
+        postHomeCleverTapEvent(
+          CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED
+        );
         props.navigation.navigate(AppRoutes.DoctorSearch);
       },
     },
@@ -1415,8 +1482,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           Relation: g(currentPatient, 'relation'),
         };
         postWebEngageEvent(WebEngageEventName.SYMPTOM_TRACKER_PAGE_CLICKED, eventAttributes);
+        postCleverTapEvent(CleverTapEventName.SYMPTOM_TRACKER_PAGE_CLICKED, eventAttributes);
         postHomeFireBaseEvent(FirebaseEventName.TRACK_SYMPTOMS, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.TRACK_SYMPTOMS);
+        postHomeCleverTapEvent(CleverTapEventName.TRACK_SYMPTOMS);
         props.navigation.navigate(AppRoutes.SymptomTracker);
       },
     },
@@ -2605,6 +2674,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               }
             } else {
               postHomeWEGEvent(WebEngageEventName.ACTIVE_APPOINTMENTS);
+              postHomeCleverTapEvent(CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS);
               props.navigation.navigate('APPOINTMENTS');
             }
           }}

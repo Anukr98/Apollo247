@@ -167,6 +167,7 @@ import {
   getPrescriptionItemQuantity,
   postCleverTapEvent,
   getNetStatus,
+  postAppointmentCleverTapEvents,
 } from '../../helpers/helperFunctions';
 import { mimeType } from '../../helpers/mimeType';
 import { FeedbackPopup } from '../FeedbackPopup';
@@ -3955,10 +3956,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       ...UserInfo,
       'Order Type': isCartOrder ? 'Cart' : 'Non-Cart',
     });
+    postCleverTapEvent(CleverTapEventName.CONSULT_ORDER_MEDICINES_IN_CHATROOM_CLICKED, {
+      ...UserInfo,
+      'Order Type': isCartOrder ? 'Cart' : 'Non-Cart',
+    });
   };
 
   const onAddTestsToCart = async () => {
     postWebEngageEvent(WebEngageEventName.BOOK_TESTS_IN_CONSULT_ROOM, UserInfo);
+    postCleverTapEvent(CleverTapEventName.CONSULT_BOOK_TESTS_IN_CHATROOM, UserInfo);
     let location: LocationData | null = null;
     setLoading && setLoading(true);
 
@@ -5842,7 +5848,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const followUpMedicineNameText = getMedicines(medicinePrescription!);
     const eventAttributesFollowUp:
       | WebEngageEvents[WebEngageEventName.BOOK_AGAIN_CANCELLED_APPOINTMENT]
-      | WebEngageEvents[WebEngageEventName.PAST_APPOINTMENT_BOOK_FOLLOW_UP_CLICKED] = {
+      | WebEngageEvents[WebEngageEventName.PAST_APPOINTMENT_BOOK_FOLLOW_UP_CLICKED]
+      | CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
       'Customer ID': g(currentPatient, 'id'),
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
@@ -5860,9 +5867,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       'Consult Mode': g(item, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
       isConsultStarted: !!g(item, 'isConsultStarted'),
       Prescription: followUpMedicineNameText || '',
+      Source: 'Inside consult room',
     };
 
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT_CHAT_ROOM, eventAttributesFollowUp);
+    postCleverTapEvent(
+      CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED,
+      eventAttributesFollowUp
+    );
   };
   const renderChatView = () => {
     return (
@@ -7128,6 +7140,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             data={appointmentData}
             cancelSuccessCallback={() => {
               postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER);
+              postAppointmentCleverTapEvents(
+                CleverTapEventName.CONSULT_CANCELLED_BY_PATIENT,
+                appointmentData,
+                currentPatient,
+                secretaryData
+              );
             }}
             navigation={props.navigation}
           />
@@ -7374,6 +7392,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
           onPressRescheduleAppointment={() => {
             postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
+            postAppointmentCleverTapEvents(
+              CleverTapEventName.CONSULT_RESCHEDULE_CLICKED,
+              appointmentData,
+              currentPatient,
+              secretaryData
+            );
             setShowReschedulePopup(true);
             setShowRescheduleCancel(false);
           }}
@@ -7392,12 +7416,24 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           onPressBack={() => setShowCancelPopup(false)}
           onPressReschedule={() => {
             postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
+            postAppointmentCleverTapEvents(
+              CleverTapEventName.CONSULT_RESCHEDULE_CLICKED,
+              appointmentData,
+              currentPatient,
+              secretaryData
+            );
             CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'RESCHEDULE_INSTEAD_Clicked');
             setShowCancelPopup(false);
             setShowReschedulePopup(true);
           }}
           onPressCancel={() => {
             postAppointmentWEGEvents(WebEngageEventName.CANCEL_CONSULTATION_CLICKED);
+            postAppointmentCleverTapEvents(
+              CleverTapEventName.CONSULT_CANCEL_CLICKED_BY_PATIENT,
+              appointmentData,
+              currentPatient,
+              secretaryData
+            );
             CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CANCEL CONSULT_CLICKED');
             setShowCancelPopup(false);
             setCancelVisible(true); //to show the reasons for cancelling the consultation
@@ -7411,11 +7447,23 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           closeModal={() => setShowReschedulePopup(false)}
           cancelSuccessCallback={() => {
             postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER);
+            postAppointmentCleverTapEvents(
+              CleverTapEventName.CONSULT_CANCELLED_BY_PATIENT,
+              appointmentData,
+              currentPatient,
+              secretaryData
+            );
             setShowCancelPopup(false);
           }}
-          rescheduleSuccessCallback={() =>
-            postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER)
-          }
+          rescheduleSuccessCallback={() => {
+            postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER);
+            postAppointmentCleverTapEvents(
+              CleverTapEventName.CONSULT_RESCHEDULED_BY_THE_PATIENT,
+              appointmentData,
+              currentPatient,
+              secretaryData
+            );
+          }}
         />
       )}
       {(isCall || isAudioCall) && VideoCall()}

@@ -31,6 +31,7 @@ import {
   postWebEngageEvent,
   nextAvailability,
   getUserType,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -60,6 +61,10 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 const styles = StyleSheet.create({
   doctorView: {
     flex: 1,
@@ -716,7 +721,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   ]}
                   onPress={() => {
                     try {
-                      const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK] = {
+                      const eventAttributes:
+                        | WebEngageEvents[WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK]
+                        | CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
                         'Patient Name': currentPatient.firstName,
                         'Doctor ID': rowData.id,
                         'Speciality ID': rowData?.specialty?.id,
@@ -740,6 +747,10 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                       }
                       postWebEngageEvent(
                         WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK,
+                        eventAttributes
+                      );
+                      postCleverTapEvent(
+                        CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED,
                         eventAttributes
                       );
                     } catch (error) {}

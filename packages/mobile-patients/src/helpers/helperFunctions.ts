@@ -1,6 +1,4 @@
-import {
-  LocationData,
-} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { LocationData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   getPlaceInfoByLatLng,
@@ -26,6 +24,7 @@ import {
   MEDICINE_TIMINGS,
   MEDICINE_CONSUMPTION_DURATION,
   TEST_COLLECTION_TYPE,
+  APPOINTMENT_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from 'react-native-geolocation-service';
@@ -1455,12 +1454,14 @@ const webengage = new WebEngage();
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
+    console.log('postWebEngageEvent', eventName, JSON.stringify(attributes));
     webengage.track(eventName, attributes);
   } catch (error) {}
 };
 
 export const postCleverTapEvent = (eventName: CleverTapEventName, attributes: Object) => {
   try {
+    console.log('postCleverTapEvent', eventName, JSON.stringify(attributes));
     CleverTap.recordEvent(eventName, attributes);
   } catch (error) {}
 };
@@ -1522,6 +1523,45 @@ export const postwebEngageAddToCartEvent = (
     ...pharmacyCircleAttributes,
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
+};
+
+export const postAppointmentCleverTapEvents = (
+  type:
+    | CleverTapEventName.CONSULT_RESCHEDULE_CLICKED
+    | CleverTapEventName.CONSULT_CANCEL_CLICKED_BY_PATIENT
+    | CleverTapEventName.CONSULT_CONTINUE_CONSULTATION_CLICKED
+    | CleverTapEventName.CONSULT_CANCELLED_BY_PATIENT
+    | CleverTapEventName.CONSULT_RESCHEDULED_BY_THE_PATIENT,
+  data: any,
+  currentPatient: any,
+  secretaryData: any
+) => {
+  const eventAttributes:
+    | CleverTapEvents[CleverTapEventName.CONSULT_RESCHEDULE_CLICKED]
+    | CleverTapEvents[CleverTapEventName.CONSULT_CANCEL_CLICKED_BY_PATIENT]
+    | CleverTapEvents[CleverTapEventName.CONSULT_CONTINUE_CONSULTATION_CLICKED]
+    | CleverTapEvents[CleverTapEventName.CONSULT_CANCELLED_BY_PATIENT]
+    | CleverTapEvents[CleverTapEventName.CONSULT_RESCHEDULED_BY_THE_PATIENT] = {
+    'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
+    'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
+    'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
+    'Doctor Category': g(data, 'doctorInfo', 'doctorType')!,
+    'Consult Date Time': moment(g(data, 'appointmentDateTime')).toDate(),
+    'Consult Mode': g(data, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
+    'Hospital Name': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')!,
+    'Hospital City': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'city')!,
+    'Consult ID': g(data, 'id')!,
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    Relation: g(currentPatient, 'relation'),
+    'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Customer ID': g(currentPatient, 'id'),
+    'Secretary Name': g(secretaryData, 'name'),
+    'Secretary Mobile Number': g(secretaryData, 'mobileNumber'),
+    'Doctor Mobile Number': g(data, 'doctorInfo', 'mobileNumber')!,
+  };
+  postCleverTapEvent(type, eventAttributes);
 };
 
 export const postCleverTapPHR = (
@@ -1693,6 +1733,29 @@ export const postDoctorShareWEGEvents = (
     'Speciality ID': specialityId,
   };
   postWebEngageEvent(eventName, eventAttributes);
+};
+
+export const postDoctorShareCleverTapEvents = (
+  doctorData: any,
+  eventName: CleverTapEventName,
+  currentPatient: any,
+  specialityId: string,
+  rank: number = 1
+) => {
+  const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_SHARE_ICON_CLICKED] = {
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Mobile Number': g(currentPatient, 'mobileNumber'),
+    'Doctor ID': g(doctorData, 'id')!,
+    'Doctor Name': g(doctorData, 'displayName')!,
+    'Speciality Name': g(doctorData, 'specialtydisplayName')!,
+    'Doctor card rank': rank,
+    'Speciality ID': specialityId,
+    Source: 'Doctor listing',
+  };
+  postCleverTapEvent(eventName, eventAttributes);
 };
 
 export const permissionHandler = (

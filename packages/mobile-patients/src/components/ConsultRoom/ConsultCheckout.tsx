@@ -30,7 +30,10 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import moment from 'moment';
 import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -152,7 +155,9 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
         return item.facility.facilityType === 'HOSPITAL';
     });
 
-    const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULTATION_BOOKED] = {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.CONSULTATION_BOOKED]
+      | CleverTapEvents[CleverTapEventName.CONSULTATION_BOOKED] = {
       name: g(doctor, 'fullName'),
       specialisation: g(doctor, 'specialty', 'name'),
       category: g(doctor, 'doctorType'), // send doctorType

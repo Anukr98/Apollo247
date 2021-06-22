@@ -30,6 +30,7 @@ import {
   checkPermissions,
   apiCallEnums,
   getUserType,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   autoCompletePlaceSearch,
@@ -110,6 +111,7 @@ import {
 import { PAYMENT_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { saveConsultationLocation } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
@@ -338,6 +340,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       firePurchaseEvent(amountBreakup);
       eventAttributes['Dr of hour appointment'] = !!isDoctorsOfTheHourStatus ? 'Yes' : 'No';
       postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
+      postCleverTapEvent(CleverTapEventName.CONSULTATION_BOOKED, eventAttributes);
       if (!currentPatient?.isConsulted) getPatientApiCall();
     } catch (error) {
       console.log(error);

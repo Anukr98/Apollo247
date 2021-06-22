@@ -660,6 +660,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       DOTH: doctorDetails?.doctorsOfTheHourStatus ? 'T' : 'F',
       'Doctor Tab': 'NA',
       'Doctor Category': doctorDetails?.doctorType,
+      'Search screen': 'NA',
     };
     postWebEngageEvent(WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK, eventAttributes);
     postCleverTapEvent(CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED, cleverTapEventAttributes);
@@ -794,8 +795,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     );
   };
 
-  const postDoctorShareWEGEvents = (eventName: WebEngageEventName) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.SHARE_CLICK_DOC_LIST_SCREEN] = {
+  const postDoctorShareCleverTapEvents = (eventName: WebEngageEventName | CleverTapEventName) => {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.SHARE_CLICK_DOC_LIST_SCREEN]
+      | CleverTapEvents[CleverTapEventName.CONSULT_SHARE_ICON_CLICKED] = {
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       'Patient Age': Math.round(
@@ -807,13 +810,16 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Doctor Name': g(doctorDetails, 'fullName')!,
       'Speciality Name': g(doctorDetails, 'specialty', 'name')!,
       'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
+      Source: 'Doctor profile',
     };
     postWebEngageEvent(eventName, eventAttributes);
+    postCleverTapEvent(eventName, eventAttributes);
   };
 
   const onClickDoctorShare = () => {
     setShowDoctorSharePopup(true);
-    postDoctorShareWEGEvents(WebEngageEventName.SHARE_CLICKED_DOC_PROFILE_SCREEN);
+    postDoctorShareCleverTapEvents(WebEngageEventName.SHARE_CLICKED_DOC_PROFILE_SCREEN);
+    postDoctorShareCleverTapEvents(CleverTapEventName.CONSULT_SHARE_ICON_CLICKED);
   };
 
   const renderDoctorDetails = () => {
@@ -942,7 +948,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     onPress={() => {
                       setOnlineSelected(true);
                       set_follow_up_chat_message_visibility(true);
-                      const eventAttributes: WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED] = {
+                      const eventAttributes:
+                        | WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED]
+                        | CleverTapEvents[CleverTapEventName.CONSULT_MODE_SELECTED] = {
                         'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
                         'Patient Name': `${g(currentPatient, 'firstName')} ${g(
                           currentPatient,
@@ -963,6 +971,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                         WebEngageEventName.TYPE_OF_CONSULT_SELECTED,
                         eventAttributes
                       );
+                      postCleverTapEvent(CleverTapEventName.CONSULT_MODE_SELECTED, eventAttributes);
                     }}
                   >
                     <View>
@@ -1065,7 +1074,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const onPressMeetInPersonCard = () => {
     set_follow_up_chat_message_visibility(false);
-    const eventAttributes: WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED] = {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED]
+      | CleverTapEvents[CleverTapEventName.CONSULT_MODE_SELECTED] = {
       'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
@@ -1080,6 +1091,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Consultation Type': 'physical',
     };
     postWebEngageEvent(WebEngageEventName.TYPE_OF_CONSULT_SELECTED, eventAttributes);
+    postCleverTapEvent(CleverTapEventName.CONSULT_MODE_SELECTED, eventAttributes);
     !isPayrollDoctor && setOnlineSelected(false);
   };
 
@@ -1286,14 +1298,16 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         message: shareDoctorMessage,
       });
       if (result.action === Share.sharedAction) {
-        postDoctorShareWEGEvents(WebEngageEventName.SHARE_PROFILE_CLICKED_DOC_PROFILE);
+        postDoctorShareCleverTapEvents(WebEngageEventName.SHARE_PROFILE_CLICKED_DOC_PROFILE);
+        postDoctorShareCleverTapEvents(CleverTapEventName.CONSULT_SHARE_PROFILE_CLICKED);
       }
     } catch (error) {}
   };
 
   const onPressGoBackShareDoctor = () => {
     setShowDoctorSharePopup(false);
-    postDoctorShareWEGEvents(WebEngageEventName.GO_BACK_CLICKED_DOC_PROFILE);
+    postDoctorShareCleverTapEvents(WebEngageEventName.GO_BACK_CLICKED_DOC_PROFILE);
+    postDoctorShareCleverTapEvents(CleverTapEventName.CONSULT_GO_BACK_CLICKED);
   };
 
   const renderDoctorShareComponent = () => {
@@ -1465,7 +1479,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         return item.facility.facilityType === 'HOSPITAL';
     });
 
-    const eventAttributes: WebEngageEvents[WebEngageEventName.BOOK_APPOINTMENT] = {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.BOOK_APPOINTMENT]
+      | CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
       'Doctor Name': g(doctorDetails, 'fullName')!,
       'Doctor City': g(doctorDetails, 'city')!,
       'Type of Doctor': g(doctorDetails, 'doctorType')!,
@@ -1497,6 +1513,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       User_Type: getUserType(allCurrentPatients),
     };
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
+    postCleverTapEvent(
+      CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED,
+      eventAttributes
+    );
     const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.BOOK_APPOINTMENT] = {
       'customer id': currentPatient ? currentPatient.id : '',
     };
@@ -1509,7 +1529,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const postWebengaegConsultType = (consultType: 'Online' | 'In Person') => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_TYPE_SELECTION] = {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.CONSULT_TYPE_SELECTION]
+      | CleverTapEvents[CleverTapEventName.CONSULT_TYPE_SELECTION] = {
       'Consult Type': consultType,
       'Doctor ID': doctorId,
       'Doctor Name': doctorDetails?.fullName || '',
@@ -1519,6 +1541,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Customer ID': g(currentPatient, 'id'),
     };
     postWebEngageEvent(WebEngageEventName.CONSULT_TYPE_SELECTION, eventAttributes);
+    postCleverTapEvent(CleverTapEventName.CONSULT_TYPE_SELECTION, eventAttributes);
   };
 
   const renderConsultNow = () => {
