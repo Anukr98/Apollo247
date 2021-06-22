@@ -855,8 +855,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const checkIsPinCodeServiceable = async (pincode: string, mode?: string, comingFrom?: string) => {
     let obj = {} as DiagnosticData;
     if (!!pincode) {
-      console.log({ pincode });
-      console.log({ comingFrom });
       setPageLoading?.(true);
       setSectionLoading(true); //for loading the widgets.
       client
