@@ -274,6 +274,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const getClientToken = async () => {
+    setisTxnProcessing(true);
     if (!!authToken) {
       return authToken;
     } else {
