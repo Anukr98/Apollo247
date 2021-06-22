@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   },
 
   vaccinesHospitalLoader: {
-    height: 110,
+    height: 280,
     borderRadius: 10,
     width: '100%',
     marginVertical: 8,
@@ -600,7 +600,7 @@ export const renderVaccinesHospitalSlotsLoaderShimmer = () => {
 
 export const renderVaccinesTimeSlotsLoaderShimmer = () => {
   return (
-    <View style={{ marginVertical: 10 }}>
+    <View style={{ marginVertical: 10, marginHorizontal: 20 }}>
       <ShimmerPlaceHolder
         shimmerColors={shimmerColors}
         LinearGradient={LinearGradient}

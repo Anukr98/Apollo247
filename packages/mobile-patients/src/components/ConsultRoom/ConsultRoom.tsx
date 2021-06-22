@@ -3187,7 +3187,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   ? 'Book Vaccination Slot'
                   : corporateSubscriptions?.length >= 0 && !!vaccinationCmsIdentifier
                   ? 'Book Vaccination Slot'
-                  : 'Register on Cowin'
+                  : 'Book Vaccination Slot'
                 : item?.title
             }
             onPress={() => {
@@ -3318,7 +3318,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               });
             }
           } else {
-            Linking.openURL(string.vaccineBooking.cowin_url).catch((err) => {});
+            props.navigation.navigate(AppRoutes.BookedVaccineScreen, {
+              cmsIdentifier: vaccinationCmsIdentifier || '',
+              subscriptionId: vaccinationSubscriptionId || '',
+              subscriptionInclusionId: vaccinationSubscriptionInclusionId || '',
+              isVaccineSubscription: !!vaccinationCmsIdentifier,
+              isCorporateSubscription: !!corporateSubscriptions?.length,
+            });
           }
         } else {
           props.navigation.navigate(AppRoutes.BookedVaccineScreen, {

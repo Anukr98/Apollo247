@@ -1916,6 +1916,14 @@ export const VaccineBookingFailed: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/vacc_booking_failed.webp')} />
 );
 
+export const SyringSmall: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/syring_small.webp')} />
+);
+
+export const SyringLarge: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/syring_large.webp')} />
+);
+
 export const WidgetLiverIcon: React.FC<IconProps> = (props) => (
   <IconBase
     {...props}
