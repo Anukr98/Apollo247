@@ -181,7 +181,7 @@ const appStaticVariables = {
   SUBSCRIPTION_PG_SUCCESS: '/subscriptionpg-success?',
   clientId: Platform.OS == 'android' ? 'apollo247_android' : 'apollo247_ios',
   merchantId: 'apollo247',
-  pharmaMerchantId: 'apollopharm',
+  pharmaMerchantId: 'apollo247' /* for pharma merchantId = apollopharm */,
   jusPayService: 'in.juspay.ec',
   jusPaybaseUrl: 'https://api.juspay.in/cardbins',
   HdfcHealthLifeText: string.common.HdfcHealthLifeText,
