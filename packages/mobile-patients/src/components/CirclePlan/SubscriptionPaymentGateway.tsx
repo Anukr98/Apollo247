@@ -42,7 +42,12 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
   let WebViewRef: any;
   const { currentPatient } = useAllCurrentPatients();
   const { isRenew, circleSubscription } = useAppCommonData();
-  const { circlePlanSelected, defaultCirclePlan } = useShoppingCart();
+  const {
+    circlePlanSelected,
+    defaultCirclePlan,
+    subscriptionBillTotal,
+    subscriptionHCUsed,
+  } = useShoppingCart();
   const from = props.navigation.getParam('from');
   const paymentTypeID = props.navigation.getParam('paymentTypeID');
   const selectedPlan = props.navigation.getParam('selectedPlan');
@@ -125,6 +130,8 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
   const renderwebView = () => {
     const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
     let circlePurchaseUrl = `${baseUrl}/subscriptionpayment?patientId=${currentPatient?.id}&price=${planSellingPrice}&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES&planId=${planId}&subPlanId=${subPlanId}&storeCode=${storeCode}`;
+    // if (subscriptionHCUsed) circlePurchaseUrl += `&hc=${subscriptionHCUsed}`;
+    // console.log('circlePurchaseUrl >>> ', circlePurchaseUrl);
     return (
       <WebView
         ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}

@@ -134,6 +134,7 @@ import { ProHealthWebView } from '@aph/mobile-patients/src/components/ProHealthW
 import MyOrdersScreen from '@aph/mobile-patients/src/components/MyOrders/MyOrdersScreen';
 import { TestRatingScreen } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/TestRatingScreen';
 import { SlotSelection } from '@aph/mobile-patients/src/components/Consult/SlotSelection';
+import { CirclePaymentOptions } from '@aph/mobile-patients/src/components/CirclePlan/CirclePaymentOptions';
 
 import { VaccineBookingScreen } from '@aph/mobile-patients/src/components/Vaccination/VaccineBookingScreen';
 import { VaccineBookingConfirmationScreen } from '@aph/mobile-patients//src/components/Vaccination/VaccineBookingConfirmationScreen';
@@ -290,6 +291,7 @@ export enum AppRoutes {
   CowinCertificateOTPScreen = 'CowinCertificateOTPScreen',
   CowinCertificateGetOTP = 'CowinCertificateGetOTP',
   CowinProfileSelection = 'CowinProfileSelection',
+  CirclePaymentOptions = 'CirclePaymentOptions',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -736,6 +738,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.CowinProfileSelection]: {
     screen: CowinProfileSelection,
+  },
+  [AppRoutes.CirclePaymentOptions]: {
+    screen: CirclePaymentOptions,
   },
 };
 

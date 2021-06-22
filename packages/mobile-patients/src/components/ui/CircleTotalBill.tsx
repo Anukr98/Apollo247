@@ -8,10 +8,17 @@ import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUti
 
 interface CircleTotalBillProps {
   selectedPlan?: any;
+  from?: string;
 }
 export const CircleTotalBill: React.FC<CircleTotalBillProps> = (props) => {
-  const { selectedPlan } = props;
-  const { circlePlanSelected, defaultCirclePlan, subscriptionCoupon } = useShoppingCart();
+  const { selectedPlan, from } = props;
+  const isFromPayment = from;
+  const {
+    circlePlanSelected,
+    defaultCirclePlan,
+    subscriptionCoupon,
+    subscriptionHCUsed,
+  } = useShoppingCart();
   const planSellingPrice = selectedPlan
     ? selectedPlan?.currentSellingPrice
     : defaultCirclePlan
@@ -25,38 +32,48 @@ export const CircleTotalBill: React.FC<CircleTotalBillProps> = (props) => {
   const totalPlanSellingPrice = subscriptionCoupon?.discount
     ? planSellingPrice - Number(subscriptionCoupon?.discount)
     : planSellingPrice;
-  return (
-    <View style={styles.container}>
-      <View style={styles.spaceRow}>
-        <Text style={styles.regularText}>{string.circleDoctors.billTotal}</Text>
+
+  const renderBillTotal = () => (
+    <View style={styles.spaceRow}>
+      <Text style={styles.regularText}>{string.circleDoctors.billTotal}</Text>
+      {!isFromPayment && (
         <Text style={styles.regularText}>
           {string.common.Rs}
           {convertNumberToDecimal(planSellingPrice)}
         </Text>
+      )}
+    </View>
+  );
+
+  const renderCirclePlanAdded = () => (
+    <View style={styles.row}>
+      <CircleLogo style={styles.circleLogo} />
+      <View style={{ marginLeft: 10 }}>
+        <Text style={{ ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE) }}>
+          {string.circleDoctors.membershipPlan}
+        </Text>
+        <Text style={{ ...theme.viewStyles.text('M', 16, theme.colors.SHERPA_BLUE) }}>
+          {planDurationInMonth} month
+          {`${planDurationInMonth === 1 ? '' : 's'}`} plan
+        </Text>
       </View>
-      <View style={styles.seperator} />
-      <View style={styles.row}>
-        <CircleLogo style={styles.circleLogo} />
-        <View style={{ marginLeft: 10 }}>
-          <Text style={{ ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE) }}>
-            {string.circleDoctors.membershipPlan}
-          </Text>
-          <Text style={{ ...theme.viewStyles.text('M', 16, theme.colors.SHERPA_BLUE) }}>
-            {planDurationInMonth} month
-            {`${planDurationInMonth === 1 ? '' : 's'}`} plan
-          </Text>
-        </View>
-      </View>
-      <View style={styles.seperatorTwo} />
+    </View>
+  );
+
+  const renderBillDetails = () => {
+    const circleTitle = `(${planDurationInMonth} month${planDurationInMonth === 1 ? '' : 's'})`;
+    return (
       <View style={{ paddingVertical: 6 }}>
         <View style={styles.spaceRow}>
-          <Text style={styles.regularText}>{`MRP Total`}</Text>
+          <Text style={styles.regularText}>
+            {isFromPayment ? `Circle Membership ${circleTitle}` : `MRP Total`}
+          </Text>
           <Text style={styles.regularText}>
             {string.common.Rs}
             {convertNumberToDecimal(planSellingPrice)}
           </Text>
         </View>
-        {!!subscriptionCoupon && (
+        {!!subscriptionCoupon && !isFromPayment && (
           <View style={[styles.spaceRow, { paddingTop: 6 }]}>
             <Text
               style={[styles.regularText, { color: '#0087BA' }]}
@@ -67,15 +84,57 @@ export const CircleTotalBill: React.FC<CircleTotalBillProps> = (props) => {
             </Text>
           </View>
         )}
+        {!!subscriptionCoupon && isFromPayment && (
+          <View style={[styles.spaceRow, { paddingTop: 6 }]}>
+            <View>
+              <Text style={styles.regularText}>{`Coupon Applied`}</Text>
+              <Text style={styles.regularText}>{`(${subscriptionCoupon?.coupon})`}</Text>
+            </View>
+            <Text style={styles.regularText}>
+              {`- ${string.common.Rs}`}
+              {subscriptionCoupon?.discount}
+            </Text>
+          </View>
+        )}
+        {isFromPayment && !!subscriptionHCUsed && (
+          <View style={[styles.spaceRow, { paddingTop: 6 }]}>
+            <Text style={[styles.regularText]}>{`OneApollo HC`}</Text>
+            <Text style={[styles.regularText]}>
+              {`- ${string.common.Rs}`}
+              {subscriptionHCUsed}
+            </Text>
+          </View>
+        )}
       </View>
-      <View style={styles.seperatorTwo} />
+    );
+  };
+
+  const renderTotalBill = () => {
+    const discount = Number(subscriptionCoupon?.discount) || 0;
+    return (
       <View style={styles.spaceRow}>
         <Text style={styles.mediumText}>{string.circleDoctors.total}</Text>
         <Text style={styles.mediumText}>
           {string.common.Rs}
-          {totalPlanSellingPrice}
+          {planSellingPrice - discount - subscriptionHCUsed}
         </Text>
       </View>
+    );
+  };
+
+  return (
+    <View style={styles.container}>
+      {renderBillTotal()}
+      <View style={styles.seperator} />
+      {!isFromPayment && (
+        <>
+          {renderCirclePlanAdded()}
+          <View style={styles.seperatorTwo} />
+        </>
+      )}
+      {renderBillDetails()}
+      <View style={styles.seperatorTwo} />
+      {renderTotalBill()}
     </View>
   );
 };

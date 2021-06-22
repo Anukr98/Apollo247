@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Alert, BackHandler, SafeAreaView } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { NavigationScreenProps } from 'react-navigation';
-import { PaymentOptions } from '@aph/mobile-patients/src/components/ui/PaymentOptions';
 import { CircleTotalBill } from '@aph/mobile-patients/src/components/ui/CircleTotalBill';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import {
@@ -21,6 +20,8 @@ import {
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { Coupon } from '@aph/mobile-patients/src/components/MedicineCart/Components/Coupon';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { CircleButtomButtonComponent } from '@aph/mobile-patients/src/components/CirclePlan/Components/CircleButtonButton';
+
 interface CirclePaymentProps extends NavigationScreenProps {
   action?: string;
   selectedPlan?: any;
@@ -74,6 +75,7 @@ export const CircleSubscription: React.FC<CirclePaymentProps> = (props) => {
       {
         text: 'Yes',
         onPress: () => {
+          setSubscriptionCoupon?.(null);
           if (action === 'PAY') {
             navigateToHome(props.navigation);
           } else {
@@ -84,16 +86,6 @@ export const CircleSubscription: React.FC<CirclePaymentProps> = (props) => {
     ]);
     return true;
   };
-
-  const renderPaymentOptions = () => (
-    <PaymentOptions
-      navigation={props.navigation}
-      from={from}
-      selectedPlan={selectedPlan}
-      comingFrom={'circlePlanPurchase'}
-      screenName={screenName}
-    />
-  );
 
   const renderHeader = () => {
     return (
@@ -122,6 +114,22 @@ export const CircleSubscription: React.FC<CirclePaymentProps> = (props) => {
     />
   );
 
+  const renderBottomButton = () => {
+    return (
+      <CircleButtomButtonComponent
+        onButtonPress={() => {
+          props.navigation.navigate(AppRoutes.CirclePaymentOptions, {
+            from,
+            selectedPlan,
+            comingFrom: 'circlePlanPurchase',
+            screenName,
+          });
+        }}
+        buttonText={`PROCEED TO PAY`}
+      />
+    );
+  };
+
   return (
     <View style={theme.viewStyles.container}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -129,8 +137,8 @@ export const CircleSubscription: React.FC<CirclePaymentProps> = (props) => {
         <ScrollView>
           {renderCircleBill()}
           {renderCouponSection()}
-          {renderPaymentOptions()}
         </ScrollView>
+        {renderBottomButton()}
       </SafeAreaView>
     </View>
   );

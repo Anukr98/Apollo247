@@ -265,8 +265,9 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
       email: g(currentPatient, 'emailAddress'),
     };
     if (isFromSubscription && circlePlanSelected?.subPlanId) {
-      data['subscriptionType'] = circlePlanSelected?.subPlanId;
+      data['subscriptionType'] = `APOLLO:${circlePlanSelected?.subPlanId}`;
     }
+    console.log('validateConsultCoupon data >> ', data);
     validateConsultCoupon(data)
       .then((resp: any) => {
         if (resp?.data?.errorCode == 0) {

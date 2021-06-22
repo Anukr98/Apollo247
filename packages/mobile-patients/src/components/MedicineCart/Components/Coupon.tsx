@@ -24,8 +24,8 @@ export const Coupon: React.FC<CouponProps> = (props) => {
   } = useShoppingCart();
   const { onPressApplyCoupon, onPressRemove, movedFrom } = props;
   const isFromSubscription = movedFrom == 'subscription';
-  console.log('isFromSubscription >>>> ', isFromSubscription);
-  console.log('subscriptionCoupon >>>> ', subscriptionCoupon);
+  // console.log('isFromSubscription >>>> ', isFromSubscription);
+  // console.log('subscriptionCoupon >>>> ', subscriptionCoupon);
 
   const renderApplyCoupon = () => {
     return (
@@ -91,7 +91,7 @@ export const Coupon: React.FC<CouponProps> = (props) => {
   };
 
   return (
-    <View style={styles.couponCard}>
+    <View style={[styles.couponCard, isFromSubscription ? { marginHorizontal: 20 } : {}]}>
       {!coupon && !subscriptionCoupon ? renderApplyCoupon() : renderCouponApplied()}
     </View>
   );

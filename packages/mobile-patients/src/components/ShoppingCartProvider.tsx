@@ -248,6 +248,10 @@ export interface ShoppingCartContextProps {
   setCartPriceNotUpdateRange: ((value: number) => void) | null;
   subscriptionCoupon: PharmaCoupon | null;
   setSubscriptionCoupon: ((coupon: PharmaCoupon | null) => void) | null;
+  subscriptionHCUsed: number;
+  setSubscriptionHCUsed: ((value: number) => void) | null;
+  subscriptionBillTotal: number;
+  setSubscriptionBillTotal: ((value: number) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -364,6 +368,10 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setCartPriceNotUpdateRange: null,
   subscriptionCoupon: null,
   setSubscriptionCoupon: null,
+  subscriptionHCUsed: 0,
+  setSubscriptionHCUsed: null,
+  subscriptionBillTotal: 0,
+  setSubscriptionBillTotal: null,
 });
 
 const AsyncStorageKeys = {
@@ -505,6 +513,12 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [subscriptionCoupon, setSubscriptionCoupon] = useState<
     ShoppingCartContextProps['subscriptionCoupon']
   >(null);
+  const [subscriptionHCUsed, setSubscriptionHCUsed] = useState<
+    ShoppingCartContextProps['subscriptionHCUsed']
+  >(0);
+  const [subscriptionBillTotal, setSubscriptionBillTotal] = useState<
+    ShoppingCartContextProps['subscriptionBillTotal']
+  >(0);
 
   const setEPrescriptions: ShoppingCartContextProps['setEPrescriptions'] = (items) => {
     _setEPrescriptions(items);
@@ -1254,6 +1268,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setCartPriceNotUpdateRange,
         subscriptionCoupon,
         setSubscriptionCoupon,
+        subscriptionHCUsed,
+        setSubscriptionHCUsed,
+        subscriptionBillTotal,
+        setSubscriptionBillTotal,
       }}
     >
       {props.children}
