@@ -5166,3 +5166,18 @@ export const DIAGNOSITC_EXOTEL_CALLING = gql`
     }
   }
 `;
+
+export const COWIN_REGISTRATION = gql`
+  mutation cowinRegistration($cowinRegistration: CowinRegistrationInput!) {
+    cowinRegistration(cowinRegistration: $cowinRegistration) {
+      code
+      response {
+        txnId
+        beneficiary_reference_id
+        errorCode
+        error
+      }
+      message
+    }
+  }
+`;

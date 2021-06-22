@@ -354,7 +354,7 @@ export const VaccineSiteDateSelector: React.FC<VaccineSiteDateSelectorProps> = (
 
       {props.siteList == undefined || props.siteList.length == 0 ? (
         <Text style={{ ...theme.viewStyles.text('R', 11, '#890000') }}>
-          No site avialable for this criteria{' '}
+          No site available for this criteria{' '}
         </Text>
       ) : null}
     </View>

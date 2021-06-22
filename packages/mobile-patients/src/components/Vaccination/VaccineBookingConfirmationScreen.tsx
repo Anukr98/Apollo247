@@ -388,12 +388,8 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
       })
       .then((response) => {
         if (response.data?.CancelAppointment.success) {
-          fetchVaccineBookingDetails();
-
-          postBookingCancellationEvent();
-
           //successfully cancelled
-          if (!isCorporateUser) {
+          if (bookingInfo?.payment_type == PAYMENT_TYPE.IN_APP_PURCHASE) {
             let message =
               'Your booking has been cancelled. Your refund against Booking #' +
               displayId +
@@ -403,6 +399,9 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
               description: message,
             });
           }
+
+          fetchVaccineBookingDetails();
+          postBookingCancellationEvent();
         } else {
           showAphAlert!({
             title: string.vaccineBooking.error_title,
@@ -790,7 +789,8 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
           title={'REGISTER ON COWIN'}
           style={[styles.actionFooterCTA, { marginTop: 15 }]}
           onPress={() => {
-            Linking.openURL(string.vaccineBooking.cowin_url).catch((err) => {});
+            //Linking.openURL(string.vaccineBooking.cowin_url).catch((err) => {});
+            props.navigation.navigate(AppRoutes.CowinRegistration);
           }}
           disabled={bookingInfo?.status == BOOKING_STATUS.CANCELLED ? true : false}
         />

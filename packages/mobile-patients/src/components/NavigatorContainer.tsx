@@ -141,6 +141,7 @@ import { BookedVaccineScreen } from '@aph/mobile-patients//src/components/Vaccin
 import { ActivateCorporateMembership } from '@aph/mobile-patients//src/components/Vaccination/ActivateCorporateMembership';
 import { VaccineTermsAndConditions } from '@aph/mobile-patients//src/components/Vaccination/VaccineTermsAndConditions';
 import { TestReportViewScreen } from '@aph/mobile-patients/src/components/HealthRecords/TestReportScreenView';
+import { CowinRegistrationScreen } from './Vaccination/CowinRegistrationScreen';
 
 export enum AppRoutes {
   Login = 'Login',
@@ -269,6 +270,7 @@ export enum AppRoutes {
   VaccineTermsAndConditions = 'VaccineTermsAndConditions',
   TestRatingScreen = 'TestRatingScreen',
   TestReportViewScreen = 'TestReportViewScreen',
+  CowinRegistration = 'CowinRegistration',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -685,6 +687,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.TestReportViewScreen]: {
     screen: TestReportViewScreen,
+  },
+  [AppRoutes.CowinRegistration]: {
+    screen: CowinRegistrationScreen,
   },
 };
 

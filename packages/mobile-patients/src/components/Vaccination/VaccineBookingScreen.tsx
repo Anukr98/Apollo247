@@ -1314,7 +1314,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
         return getVaccineSiteDateSelector();
       }
     } else {
-      if (selectedCity != undefined && selectedCity != '' && vaccineSiteList > 0) {
+      if (selectedCity != undefined && selectedCity != '') {
         return getVaccineSiteDateSelector();
       }
     }
