@@ -1,53 +1,101 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import {
+  Alert,
   Dimensions,
   Image,
   Keyboard,
+  Linking,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import {
+  doRequestAndAccessLocationModified,
+  g,
+  getFormattedLocation,
   getNetStatus,
   isValidSearch,
   nameFormater,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { AddressCard } from '@aph/mobile-patients/src/components/Medicines/Components/AddressCard';
 import { FlatList } from 'react-native-gesture-handler';
-import { getPatientAddressList_getPatientAddressList_addressList } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import _ from 'lodash';
-import { autoCompletePlaceSearch } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  autoCompletePlaceSearch,
+  getPlaceInfoByPlaceId,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { LocationIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { LocationIcon, PolygonIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { SafeAreaView } from 'react-navigation';
+import { useEffect } from 'react';
+import AsyncStorage from '@react-native-community/async-storage';
 const icon_gps = require('@aph/mobile-patients/src/components/ui/icons/ic_gps_fixed.webp');
 const screenHeight = Dimensions.get('window').height;
-const screenWidth = Dimensions.get('window').width;
 
-type addressType = getPatientAddressList_getPatientAddressList_addressList;
-export interface DiagnosticLocationProps {
+type addressType = savePatientAddress_savePatientAddress_patientAddress;
+interface DiagnosticLocationProps {
   addressList: any;
-  goBack: () => void;
-  onPressEditAddress: (address: addressType) => void;
   onPressSelectAddress: (address: addressType) => void;
+  goBack: (response: any | null) => void;
+  onPressSearchLocation: (selectedLocation: any) => void;
 }
 
 export const DiagnosticLocation: React.FC<DiagnosticLocationProps> = (props) => {
-  const { addressList, onPressSelectAddress } = props;
-  const { cartItems, modifiedOrderItemIds, modifiedOrder } = useDiagnosticsCart();
+  const { addressList, onPressSelectAddress, goBack, onPressSearchLocation } = props;
+
   const [isSearchFocused, setSearchFocused] = useState(false);
   const [searchText, setSearchText] = useState<string>('');
   const [locationSuggestion, setLocationSuggestion] = useState([]);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [searchState, setSearchState] = useState<'load' | 'success' | 'fail' | undefined>();
   const [searchQuery, setSearchQuery] = useState({});
+
+  //0 -> show current location option
+  //1 -> permission denied (clicked on deny option) ~ denied
+  //2 -> unable to get permission (denied entirely / don't ask again -> show setting options) ~ restricted
+  //3 -> unable to fetch location (error in fetching the current location response) ~ when location option is disabled in case of android & again cancelled it.
+  const [showPermissionView, setShowPermissionView] = useState<0 | 1 | 2 | 3>(0);
+  const [permissionText, setPermissionText] = useState<string>('');
+  const [permissionCTA, setPermissionCTA] = useState<string>('');
+
+  useEffect(() => {
+    getPermissionMapping();
+  }, [showPermissionView]);
+
+  function getPermissionMapping() {
+    switch (showPermissionView) {
+      case 0:
+        setPermissionText('');
+        setPermissionCTA('');
+        break;
+      case 1:
+        setPermissionText(string.diagnosticsLocation.permissionDenied);
+        setPermissionCTA(string.diagnosticsLocation.permissionDeniedCTA);
+        break;
+      case 2:
+        setPermissionText(string.diagnosticsLocation.unableToGetPermission);
+        setPermissionCTA(string.diagnosticsLocation.unableToGetPermissionCTA);
+        break;
+      case 3:
+        setPermissionText(string.diagnosticsLocation.unableToFetchLocation);
+        setPermissionCTA('');
+        break;
+      default:
+        setPermissionText('');
+        setPermissionCTA('');
+        break;
+    }
+  }
 
   function sortAddresses(addresses: addressType[]) {
     //1. filter out the addresses with lat-lng as null
@@ -78,7 +126,9 @@ export const DiagnosticLocation: React.FC<DiagnosticLocationProps> = (props) => 
     }
   }
 
-  //google api to give autosearch results
+  /**
+   * google api to return autosearch results
+   */
   const onSearchAddress = (searchText: string) => {
     getNetStatus()
       .then((status) => {
@@ -106,7 +156,7 @@ export const DiagnosticLocation: React.FC<DiagnosticLocationProps> = (props) => 
                     }
                   );
                   setshowSpinner(false);
-                  setLocationSuggestion(address);
+                  setLocationSuggestion(address as any);
                 }
               } catch (e) {
                 setLocationSuggestion([]);
@@ -130,6 +180,114 @@ export const DiagnosticLocation: React.FC<DiagnosticLocationProps> = (props) => 
       });
   };
 
+  /**
+   * on press current location
+   */
+  const onPressCurrentLocation = () => {
+    //set focus to false if already true;
+    isSearchFocused && setSearchFocused(false);
+
+    //if no permission then request
+    setshowSpinner(true);
+    doRequestAndAccessLocationModified(false, true, false)
+      .then((response) => {
+        console.log({ response });
+        //if response, then -> populate on homepage
+        if (response) {
+          //go back to home page , if already given
+          goBack(response);
+        } else {
+          //no location...
+          // if neever.... on ios... response is undefined.
+          setShowPermissionView(2);
+          console.log('inside the else of current location');
+        }
+      })
+      .catch((e) => {
+        console.log({ e });
+        if (Platform.OS == 'android') {
+          e === 'denied'
+            ? setShowPermissionView(1)
+            : e === 'restricted'
+            ? setShowPermissionView(2)
+            : setShowPermissionView(3);
+        } else {
+          e === 'denied' ? setShowPermissionView(2) : setShowPermissionView(3);
+        }
+
+        //if goes in error then show the prompt that we are unable to fetch your location. -> thrid view
+        CommonBugFender('DiagnosticLocation_doRequestAndAccessLocation', e);
+      })
+      .finally(() => {
+        setshowSpinner(false);
+      });
+  };
+
+  function _performPermissionCTAAction() {
+    console.log({ showPermissionView });
+    console.log('permission touch function');
+    switch (showPermissionView) {
+      case 1:
+        //1 -> permission denied
+        onPressCurrentLocation();
+        break;
+      case 2:
+        //2 -> unable to get permission (denied entirely -> show setting options) //denied in case of ios
+        Alert.alert('Location', 'Enable location access from settings', [
+          {
+            text: 'Cancel',
+            onPress: () => {
+              AsyncStorage.setItem('settingsCalled', 'false');
+            },
+          },
+          {
+            text: 'Ok',
+            onPress: () => {
+              AsyncStorage.setItem('settingsCalled', 'true');
+              Linking.openSettings();
+              //reset to current location.
+              setShowPermissionView(0);
+            },
+          },
+        ]);
+        break;
+      default:
+        break;
+    }
+  }
+
+  /**
+   * get items from lat-lng
+   */
+  const fetchDetailsFromGooglePlacesId = (address: any) => {
+    const placeId = address?.placeId;
+    setshowSpinner(true);
+    getPlaceInfoByPlaceId(placeId)
+      .then(({ data }) => {
+        try {
+          const addrComponents = g(data, 'result', 'address_components') || [];
+          const coordinates = g(data, 'result', 'geometry', 'location')! || {};
+          const loc = getFormattedLocation(addrComponents, coordinates, '', true);
+          setSearchFocused(false);
+          onPressSearchLocation(loc);
+        } catch (e) {
+          CommonBugFender('getPlaceInfoByPlaceId_then_DiagnosticLocation', e);
+          //what error needs to be shown?
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('getPlaceInfoByPlaceId_DiagnosticLocation', error);
+        //what error needs to be shown?
+      })
+      .finally(() => {
+        setshowSpinner(false);
+      });
+  };
+
+  function _onPressSuggestion(selectedItem: any) {
+    fetchDetailsFromGooglePlacesId(selectedItem);
+  }
+
   const renderLocationHeader = () => {
     return (
       <Header
@@ -139,7 +297,7 @@ export const DiagnosticLocation: React.FC<DiagnosticLocationProps> = (props) => 
         leftIcon={'backArrow'}
         title={'SAMPLE COLLECTION LOCATION'}
         titleStyle={{ alignItems: 'center' }}
-        onPressLeftIcon={() => props.goBack()}
+        onPressLeftIcon={() => goBack(null)}
       />
     );
   };
@@ -156,9 +314,12 @@ export const DiagnosticLocation: React.FC<DiagnosticLocationProps> = (props) => 
             setSearchFocused(true);
           }}
           onBlur={() => {
-            setSearchFocused(false);
-            //   setMedicineList([]); //set google api suggestions to false
-            setSearchText('');
+            if (locationSuggestion?.length > 2) {
+              //if not put the check then touch was not responding.
+            } else {
+              setSearchFocused(false);
+              setSearchText('');
+            }
           }}
           onChangeText={(value) => {
             if (isValidSearch(value)) {
@@ -202,11 +363,7 @@ export const DiagnosticLocation: React.FC<DiagnosticLocationProps> = (props) => 
   const renderCurrentLocation = () => {
     return (
       <View style={styles.currentLocationContainer}>
-        <TouchableOpacity
-          style={styles.currentLocationTouch}
-          onPress={() => console.log('po')}
-          // disabled={isCurrentLocationDisable}
-        >
+        <TouchableOpacity style={styles.currentLocationTouch} onPress={onPressCurrentLocation}>
           <View style={styles.centerRowStyle}>
             <Image source={icon_gps} style={[styles.currentLocationIcon]} />
             <View style={{ marginHorizontal: '4%' }}>
@@ -222,33 +379,36 @@ export const DiagnosticLocation: React.FC<DiagnosticLocationProps> = (props) => 
 
   const renderPermissionView = () => {
     return (
-      <View style={styles.permissionOuterView}>
-        <View style={styles.premissionLeftView}>
-          <View style={styles.flexRowCenter}>
-            <LocationIcon style={{ tintColor: 'white' }} />
-            <Text style={styles.permissionText}>Location Permission is Denied</Text>
+      <>
+        {!!permissionText && permissionText !== '' ? (
+          <View style={styles.permissionOuterView}>
+            {showPermissionView === 3 && <PolygonIcon style={styles.toolTipStyle} />}
+            <View style={styles.premissionLeftView}>
+              <View style={styles.flexRowCenter}>
+                <LocationIcon style={{ tintColor: colors.WHITE }} />
+                <Text style={styles.permissionText}>{permissionText}</Text>
+              </View>
+              {!!permissionCTA && permissionCTA !== '' ? (
+                <TouchableOpacity
+                  style={styles.permissionOptionTouch}
+                  onPress={_performPermissionCTAAction}
+                >
+                  <Text style={styles.permissionOptionText}>
+                    {nameFormater(permissionCTA, 'upper')}
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
           </View>
-          <TouchableOpacity
-            style={styles.permissionOptionTouch}
-            onPress={() => console.log('perform permsio')}
-          >
-            <Text style={styles.permissionOptionText}>GRANT</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+        ) : null}
+      </>
     );
-  };
-
-  const renderSeparatorView = () => {
-    return <View style={styles.separatorView} />;
   };
 
   const renderSavedAddressesView = () => {
     return (
-      <View style={{ marginHorizontal: 16 }}>
-        <Text
-          style={{ ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 0.5, 16), marginLeft: 4 }}
-        >
+      <View style={styles.addressViewContainer}>
+        <Text style={styles.addressText}>
           {nameFormater(string.diagnosticsLocation.savedAddressText, 'upper')}
         </Text>
         {renderSavedAddresses()}
@@ -258,7 +418,7 @@ export const DiagnosticLocation: React.FC<DiagnosticLocationProps> = (props) => 
 
   const renderSavedAddresses = () => {
     return (
-      <View style={{ flexGrow: 1, marginVertical: 16 }}>
+      <View style={styles.savedAddressView}>
         <FlatList
           numColumns={2}
           bounces={false}
@@ -272,8 +432,9 @@ export const DiagnosticLocation: React.FC<DiagnosticLocationProps> = (props) => 
   };
 
   const renderAddressCard = (item: addressType, index: number) => {
+    const addressLength = addressList?.length;
     return (
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1, marginBottom: index === addressLength - 1 ? 16 : 0 }}>
         <AddressCard
           source={'Diagnostics'}
           item={item}
@@ -299,7 +460,7 @@ export const DiagnosticLocation: React.FC<DiagnosticLocationProps> = (props) => 
 
   const renderLocationView = (item: any, index: number | string, locationSuggestion: any) => {
     return (
-      <TouchableOpacity activeOpacity={1} onPress={() => console.log('pressed location')}>
+      <TouchableOpacity activeOpacity={1} onPress={() => _onPressSuggestion(item)}>
         <View style={styles.locationRowOuterContainer}>
           {/**height: screenHeight/12.5 */}
           <View style={styles.locationRowInnerContainer}>
@@ -324,22 +485,29 @@ export const DiagnosticLocation: React.FC<DiagnosticLocationProps> = (props) => 
     );
   };
 
+  const renderSeparatorView = () => {
+    return <View style={styles.separatorView} />;
+  };
+
   return (
-    <View>
+    <View style={{ flex: 1 }}>
       {renderLocationHeader()}
       {renderSearchBar()}
-      {renderCurrentLocation()}
-      {renderPermissionView()}
+      {showPermissionView === 3 && renderCurrentLocation()}
+      {showPermissionView === 0 ? renderCurrentLocation() : renderPermissionView()}
       {renderSeparatorView()}
-      {isSearchFocused ? null : renderSavedAddressesView()}
-      {!!searchText &&
-        searchText?.length > 2 &&
-        locationSuggestion?.length > 0 &&
-        renderSearchSuggestions()}
-      {searchState == 'success' &&
-        searchText.length > 2 &&
-        locationSuggestion.length == 0 &&
-        renderNoSuggestionView()}
+      <SafeAreaView style={[theme.viewStyles.container, { backgroundColor: colors.WHITE }]}>
+        {isSearchFocused ? null : renderSavedAddressesView()}
+        {!!searchText &&
+          searchText?.length > 2 &&
+          locationSuggestion?.length > 0 &&
+          renderSearchSuggestions()}
+        {searchState == 'success' &&
+          searchText.length > 2 &&
+          locationSuggestion.length == 0 &&
+          renderNoSuggestionView()}
+      </SafeAreaView>
+      {showSpinner && <Spinner />}
     </View>
   );
 };
@@ -376,7 +544,6 @@ const styles = StyleSheet.create({
   },
   searchInputContainer: { marginBottom: 8, marginTop: 5 },
   searchIconStyle: { height: 27, width: 27, resizeMode: 'contain' },
-  separatorView: { marginTop: 4, height: 12, backgroundColor: '#F7F8F5', marginBottom: 16 },
   locationRowOuterContainer: { paddingLeft: '4%', paddingTop: '5%' },
   locationRowInnerContainer: {
     flexDirection: 'row',
@@ -424,7 +591,7 @@ const styles = StyleSheet.create({
   },
   flexRowCenter: { flexDirection: 'row', alignItems: 'center' },
   permissionOptionTouch: {
-    backgroundColor: 'white',
+    backgroundColor: colors.WHITE,
     width: '20%',
     justifyContent: 'center',
     alignItems: 'center',
@@ -437,5 +604,23 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(12),
     color: theme.colors.SHERPA_BLUE,
     lineHeight: 17,
+  },
+  addressViewContainer: { marginHorizontal: 16 },
+  addressText: { ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 0.5, 16), marginLeft: 4 },
+  bottomViewStyle: { backgroundColor: colors.WHITE, marginTop: 12 },
+  savedAddressView: { flexGrow: 1, marginVertical: 16 },
+  separatorView: {
+    marginTop: 4,
+    height: 12,
+    backgroundColor: colors.DEFAULT_BACKGROUND_COLOR,
+    marginBottom: 16,
+  },
+  toolTipStyle: {
+    height: 20,
+    width: 20,
+    marginTop: -10,
+    resizeMode: 'contain',
+    marginBottom: -10,
+    marginLeft: 16,
   },
 });

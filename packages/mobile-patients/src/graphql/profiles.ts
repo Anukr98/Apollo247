@@ -1427,6 +1427,7 @@ export const SAVE_PATIENT_ADDRESS = gql`
         longitude
         stateCode
         name
+        defaultAddress
       }
     }
   }
@@ -5328,3 +5329,17 @@ export const DIAGNOSITC_EXOTEL_CALLING = gql`
     }
   }
 `;
+
+export const GET_DIAGNOSTIC_SERVICEABILITY = gql `
+  query getDiagnosticServiceability ($latitude: Float!, $longitude : Float!){
+    getDiagnosticServiceability(latitude : $latitude, longitude: $longitude){
+      status
+      serviceability{
+        cityID
+        stateID
+        state
+        city
+      }
+    }
+  }
+`

@@ -67,8 +67,8 @@ import { Breadcrumb } from '@aph/mobile-patients/src/components/MedicineListing/
 import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { FAQComponent } from '@aph/mobile-patients/src/components/SubscriptionMembership/Components/FAQComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { PackageCard } from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
-import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
+import PackageCard from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
+import ItemCard from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import {
   findDiagnosticsWidgetsPricing,
   findDiagnosticsWidgetsPricingVariables,

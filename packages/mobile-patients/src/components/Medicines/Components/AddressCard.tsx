@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     flex: 1,
     ...theme.viewStyles.cardViewStyle,
     marginHorizontal: 6,
-    width: 0.4 * windowWidth,
+    width: 0.42 * windowWidth,
     paddingLeft: 10,
     marginTop: 2,
     marginBottom: 20,
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     height: 18,
     width: 18,
     resizeMode: 'contain',
-    tintColor: '#DADADA',
+    tintColor: colors.SHERPA_BLUE,
   },
   addressTypeHeader: {
     flexDirection: 'row',

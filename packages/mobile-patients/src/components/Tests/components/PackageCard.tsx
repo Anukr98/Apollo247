@@ -56,7 +56,7 @@ export interface PackageCardProps {
   sourceScreen: string;
 }
 
-export const PackageCard: React.FC<PackageCardProps> = (props) => {
+const PackageCard: React.FC<PackageCardProps> = (props) => {
   const { cartItems, addCartItem, removeCartItem, modifiedOrderItemIds } = useDiagnosticsCart();
   const { data, isCircleSubscribed, source, navigation, sourceScreen } = props;
   const actualItemsToShow =
@@ -494,6 +494,8 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     </>
   );
 };
+
+export default React.memo(PackageCard);
 
 const styles = StyleSheet.create({
   packageCardTouch: {

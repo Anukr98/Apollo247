@@ -1124,7 +1124,8 @@ const getlocationData = (
 
 export const doRequestAndAccessLocationModified = (
   latLngOnly?: boolean,
-  modifyAddress?: boolean
+  modifyAddress?: boolean,
+  showPrompt?: boolean
 ): Promise<LocationData> => {
   return new Promise((resolve, reject) => {
     Permissions.request('location')
@@ -1147,22 +1148,29 @@ export const doRequestAndAccessLocationModified = (
           }
         } else {
           if (response === 'denied' || response === 'restricted') {
-            Alert.alert('Location', 'Enable location access from settings', [
-              {
-                text: 'Cancel',
-                onPress: () => {
-                  AsyncStorage.setItem('settingsCalled', 'false');
+            if(!showPrompt){
+              // don't show the prompt.
+            }
+            else{
+              Alert.alert('Location', 'Enable location access from settings', [
+                {
+                  text: 'Cancel',
+                  onPress: () => {
+                    AsyncStorage.setItem('settingsCalled', 'false');
+                  },
                 },
-              },
-              {
-                text: 'Ok',
-                onPress: () => {
-                  AsyncStorage.setItem('settingsCalled', 'true');
-                  Linking.openSettings();
+                {
+                  text: 'Ok',
+                  onPress: () => {
+                    AsyncStorage.setItem('settingsCalled', 'true');
+                    Linking.openSettings();
+                  },
                 },
-              },
-            ]);
-            reject('Unable to get location, permission denied.');
+              ]);
+            }
+            
+           var msg = !showPrompt ? response : 'Unable to get location, permission denied' 
+            reject(msg);
           } else {
             reject('Unable to get location.');
           }
@@ -1197,21 +1205,21 @@ export const doRequestAndAccessLocation = (isModifyAddress?: boolean): Promise<L
           }
         } else {
           if (response === 'denied' || response === 'restricted') {
-            Alert.alert('Location', 'Enable location access from settings', [
-              {
-                text: 'Cancel',
-                onPress: () => {
-                  AsyncStorage.setItem('settingsCalled', 'false');
+              Alert.alert('Location', 'Enable location access from settings', [
+                {
+                  text: 'Cancel',
+                  onPress: () => {
+                    AsyncStorage.setItem('settingsCalled', 'false');
+                  },
                 },
-              },
-              {
-                text: 'Ok',
-                onPress: () => {
-                  AsyncStorage.setItem('settingsCalled', 'true');
-                  Linking.openSettings();
+                {
+                  text: 'Ok',
+                  onPress: () => {
+                    AsyncStorage.setItem('settingsCalled', 'true');
+                    Linking.openSettings();
+                  },
                 },
-              },
-            ]);
+              ]);
             resolve(undefined);
           } else {
             reject('Unable to get location.');
@@ -2963,4 +2971,18 @@ export const getDiagnosticCityLevelPaymentOptions = (cityId: string) => {
       : AppConfig.Configuration.Enable_Diagnostics_COD,
   };
   return paymentValues;
+};
+
+export const setAsyncDiagnosticLocation = (address: any) => {
+  if (address) {
+    const addressSelected = {
+      pincode: address?.zipcode || address?.pincode,
+      id: address?.id,
+      city: address?.city,
+      state: address?.state,
+      latitude: Number(address?.latitude),
+      longitude: Number(address?.longitude)
+    };
+    AsyncStorage.setItem('DiagnosticLocation', JSON.stringify(addressSelected));
+  }
 };

@@ -1,44 +1,23 @@
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import {
-  TestBreadcrumbLink,
-  useDiagnosticsCart,
-} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { Card } from '@aph/mobile-patients/src/components/ui/Card';
-import { GET_WIDGETS_PRICING_BY_ITEMID_CITYID } from '@aph/mobile-patients/src/graphql/profiles';
 
-import { g, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
-import React, { useEffect, useState } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
+import React, { useState } from 'react';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import {
-  Dimensions,
   SafeAreaView,
   StyleSheet,
   Text,
   View,
   FlatList,
   TouchableOpacity,
-  Image as ImageNative,
   Image,
 } from 'react-native';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
-import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
-import { PackageCard } from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
+import { NavigationScreenProps } from 'react-navigation';
 import { TestListingHeader } from '@aph/mobile-patients/src/components/Tests/components/TestListingHeader';
-import { Breadcrumb } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
-import {
-  findDiagnosticsWidgetsPricing,
-  findDiagnosticsWidgetsPricingVariables,
-} from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
-import { getDiagnosticListingWidget } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 export interface TestWidgetListingProps
   extends NavigationScreenProps<{
     movedFrom?: string;
@@ -48,24 +27,11 @@ export interface TestWidgetListingProps
   }> {}
 
 export const TestWidgetListing: React.FC<TestWidgetListingProps> = (props) => {
-  const {
-    cartItems,
-    setTestListingBreadCrumbs,
-    testListingBreadCrumbs,
-    isDiagnosticCircleSubscription,
-  } = useDiagnosticsCart();
-  const { cartItems: shopCartItems } = useShoppingCart();
+  const { diagnosticServiceabilityData } = useAppCommonData();
 
-  const { diagnosticServiceabilityData, isDiagnosticLocationServiceable } = useAppCommonData();
-
-  const movedFrom = props.navigation.getParam('movedFrom');
   const dataFromHomePage = props.navigation.getParam('data');
-  const widgetName = props.navigation.getParam('widgetName');
-  const cityId = props.navigation.getParam('cityId');
-  const title =  dataFromHomePage?.diagnosticWidgetTitle;
-  const client = useApolloClient();
+  const title = dataFromHomePage?.diagnosticWidgetTitle;
 
-  const [widgetsData, setWidgetsData] = useState([] as any);
   const [loading, setLoading] = useState<boolean>(false);
 
   const [serviceableObject, setServiceableObject] = useState({} as any);
@@ -78,23 +44,28 @@ export const TestWidgetListing: React.FC<TestWidgetListingProps> = (props) => {
 
   const renderItems = (item: any, index: number) => {
     return (
-      <TouchableOpacity style={styles.gridPart} onPress={()=>{
-        {
-          props.navigation.navigate(AppRoutes.TestListing, {
-            widgetName: item?.itemTitle,
-            movedFrom: AppRoutes.Tests,
-            data: dataFromHomePage,
-            cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
-          });
-        }
-      }}>
-                <View style={styles.circleView}>
-                  <Image resizeMode={'contain'} style={styles.image} source={{ uri: item.itemIcon }} />
-                </View>
-                <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>{nameFormater(item?.itemTitle,'default')}</Text>
-              </TouchableOpacity>
-    )
-  }
+      <TouchableOpacity
+        style={styles.gridPart}
+        onPress={() => {
+          {
+            props.navigation.navigate(AppRoutes.TestListing, {
+              widgetName: item?.itemTitle,
+              movedFrom: AppRoutes.Tests,
+              data: dataFromHomePage,
+              cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+            });
+          }
+        }}
+      >
+        <View style={styles.circleView}>
+          <Image resizeMode={'contain'} style={styles.image} source={{ uri: item.itemIcon }} />
+        </View>
+        <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>
+          {nameFormater(item?.itemTitle, 'default')}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
   const renderList = () => {
     return (
       <>
@@ -103,7 +74,7 @@ export const TestWidgetListing: React.FC<TestWidgetListingProps> = (props) => {
             data={dataFromHomePage?.diagnosticWidgetData}
             numColumns={3}
             keyExtractor={(_, index) => `${index}`}
-            renderItem={({item, index}) => renderItems(item,index)}
+            renderItem={({ item, index }) => renderItems(item, index)}
           />
         </View>
       </>
@@ -141,16 +112,16 @@ const styles = StyleSheet.create({
     elevation: 0,
   },
   sectionView: {
-    margin:10,
-    flexDirection:'row',
+    margin: 10,
+    flexDirection: 'row',
   },
-  container:{
-    marginTop:20
+  container: {
+    marginTop: 20,
   },
   gridConatiner: {
     width: '100%',
-    backgroundColor:'white',
-    marginVertical: 20
+    backgroundColor: 'white',
+    marginVertical: 20,
   },
   circleView: {
     width: 80,
@@ -158,23 +129,23 @@ const styles = StyleSheet.create({
     borderRadius: 80 / 2,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor:'#f9f9f9'
+    backgroundColor: '#f9f9f9',
   },
   image: {
     width: 50,
     height: 50,
-    backgroundColor:'#f9f9f9'
+    backgroundColor: '#f9f9f9',
   },
   gridPart: {
     alignItems: 'center',
     justifyContent: 'center',
     width: '33%',
-    borderColor:'#E8E8E8',
+    borderColor: '#E8E8E8',
     borderWidth: 0.5,
-    padding:15
+    padding: 15,
   },
   textStyle: {
     ...theme.viewStyles.text('SB', 14, colors.SHERPA_BLUE, 1, 20, 0),
-    padding: 5
+    padding: 5,
   },
 });

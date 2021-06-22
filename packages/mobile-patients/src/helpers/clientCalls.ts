@@ -38,6 +38,7 @@ import {
   SAVE_PHLEBO_FEEDBACK,
   PROCESS_DIAG_COD_ORDER,
   CREATE_ORDER,
+  GET_DIAGNOSTIC_SERVICEABILITY,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -155,6 +156,7 @@ import {
 import { savePhleboFeedbackVariables, savePhleboFeedback_savePhleboFeedback } from '@aph/mobile-patients/src/graphql/types/savePhleboFeedback';
 import {  processDiagnosticHCOrder, processDiagnosticHCOrderVariables } from '@aph/mobile-patients/src/graphql/types/processDiagnosticHCOrder';
 import { createOrder, createOrderVariables } from '@aph/mobile-patients/src/graphql/types/createOrder';
+import { getDiagnosticServiceability, getDiagnosticServiceabilityVariables } from '../graphql/types/getDiagnosticServiceability';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -1161,6 +1163,17 @@ export const createJusPayOrder = (client: ApolloClient<object>,paymentId: string
   return client.mutate<createOrder, createOrderVariables>({
     mutation: CREATE_ORDER,
     variables: { order_input: orderInput },
+    fetchPolicy: 'no-cache',
+  });
+};
+
+export const diagnosticServiceability = (client: ApolloClient<object>,latitude: number, longitude: number) => {
+  return client.query<getDiagnosticServiceability, getDiagnosticServiceabilityVariables>({
+    query: GET_DIAGNOSTIC_SERVICEABILITY,
+    variables: {latitude: Number(latitude), longitude: Number(longitude)},
+    context: {
+      sourceHeaders,
+    },
     fetchPolicy: 'no-cache',
   });
 };

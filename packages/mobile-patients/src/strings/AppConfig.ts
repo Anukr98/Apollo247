@@ -252,6 +252,17 @@ const appStaticVariables = {
   ],
   DIAGNOSTIC_DEFAULT_ICON: 'https://newassets.apollo247.com/organs/ic_blood.png',
   HomeScreenConsultationCTAs: homeScreenConsultationCTAs,
+  DIAGNOSTIC_DEFAULT_LOCATION : {
+    displayName: "Hyderabad",
+      latitude: 17.3202127,
+      longitude: 78.4020322,
+      area: "",
+      city: "Hyderabad",
+      state: "Telangana",
+      stateCode: "TG",
+      country: "India",
+      pincode: "500030"
+  } 
 };
 
 const DEV_top_specialties = [

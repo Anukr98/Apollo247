@@ -41,7 +41,6 @@ export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_clo
   slotDateTimeInUTC: any | null;
   labReportURL: string | null;
   paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
-  paymentOrderId: string | null;
   patientObj: getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders_patientObj | null;
   diagnosticOrderLineItems: (getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders_diagnosticOrderLineItems | null)[] | null;
   attributesObj: getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders_attributesObj | null;

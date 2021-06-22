@@ -60,7 +60,7 @@ export interface ItemCardProps {
   onPressRemoveItemFromCart?: (item: any) => void;
 }
 
-export const ItemCard: React.FC<ItemCardProps> = (props) => {
+const ItemCard: React.FC<ItemCardProps> = (props) => {
   const { cartItems, addCartItem, removeCartItem, modifiedOrderItemIds } = useDiagnosticsCart();
   const {
     data,
@@ -521,6 +521,8 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     </>
   );
 };
+
+export default React.memo(ItemCard);
 
 const styles = StyleSheet.create({
   itemCardView: {

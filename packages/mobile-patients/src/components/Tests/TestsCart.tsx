@@ -178,7 +178,7 @@ import {
   editProfile,
   editProfileVariables,
 } from '@aph/mobile-patients/src/graphql/types/editProfile';
-import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
+import ItemCard from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import AsyncStorage from '@react-native-community/async-storage';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
