@@ -136,6 +136,12 @@ export enum DEVICE_TYPE {
   WEB = "WEB",
 }
 
+export enum DIAGNOSTICS_GROUPPLAN {
+  ALL = "ALL",
+  CIRCLE = "CIRCLE",
+  SPECIALDISCOUNTS = "SPECIALDISCOUNTS",
+}
+
 export enum DIAGNOSTICS_TYPE {
   PACKAGE = "PACKAGE",
   TEST = "TEST",
@@ -645,6 +651,10 @@ export enum SEARCH_TYPE {
   TEST = "TEST",
 }
 
+export enum SLOT_BOOKING_STATUS {
+  AVAILABLE = "AVAILABLE",
+}
+
 export enum STATUS {
   CALL_ABANDON = "CALL_ABANDON",
   CANCELLED = "CANCELLED",
@@ -1094,6 +1104,11 @@ export interface DiagnosticTestsOrdered {
   groupPlan?: string | null;
 }
 
+export interface DiagnosticsServiceability {
+  cityID?: number | null;
+  stateID?: number | null;
+}
+
 export interface DoctorAvailabilityInput {
   availableDate: any;
   doctorId: string;
@@ -1306,7 +1321,6 @@ export interface MedicineOrderCancelOMSInput {
   cancelReasonCode?: string | null;
   cancelReasonText?: string | null;
 }
-
 export interface MedicineOrderShipmentInput {
   shopId?: string | null;
   tatType?: string | null;
@@ -1658,6 +1672,20 @@ export interface SaveBookHomeCollectionOrderInput {
   caseSheets?: (string | null)[] | null;
 }
 
+export interface SaveBookHomeCollectionOrderInputv2 {
+  patientAddressID: string;
+  patientObjWithLineItems?: (patientObjWithLineItems | null)[] | null;
+  selectedDate: any;
+  slotInfo: slotInfo;
+  serviceability: DiagnosticsServiceability;
+  collectionCharges: phleboCharges;
+  bookingSource: DiagnosticsBookingSource;
+  deviceType: DEVICETYPE;
+  userSubscriptionId?: string | null;
+  subscriptionInclusionId?: string | null;
+  caseSheets?: (string | null)[] | null;
+}
+
 export interface SaveDeviceTokenInput {
   deviceType: DEVICE_TYPE;
   deviceToken: string;
@@ -1816,9 +1844,39 @@ export interface VerifyVPA {
   merchant_id?: string | null;
 }
 
+export interface diagnosticLineItem {
+  mrp: number;
+  price: number;
+  groupPlan?: DIAGNOSTICS_GROUPPLAN | null;
+  itemId: number;
+}
+
 export interface fileProperties {
   fileType?: string | null;
   base64FileInput?: string | null;
+}
+
+export interface patientAddressObj {
+  patientAddressID: string;
+  latitude: number;
+  longitude: number;
+  city: string;
+  state: string;
+  landmark?: string | null;
+  addressLine1: string;
+  addressLine2: string;
+  zipcode: string;
+}
+
+export interface patientObjWithLineItems {
+  patientID: string;
+  lineItems?: (diagnosticLineItem | null)[] | null;
+  totalPrice: number;
+}
+
+export interface phleboCharges {
+  charges: number;
+  distanceCharges?: number | null;
 }
 
 export interface prescriptionPrismFileProperties {
@@ -1836,6 +1894,17 @@ export interface saveModifyDiagnosticOrderInput {
   items?: (DiagnosticLineItem | null)[] | null;
   userSubscriptionId?: string | null;
   subscriptionInclusionId?: string | null;
+}
+
+export interface slotDetail {
+  slotDisplayTime?: string | null;
+  internalSlots?: (string | null)[] | null;
+}
+
+export interface slotInfo {
+  slotDetails?: slotDetail | null;
+  status?: SLOT_BOOKING_STATUS | null;
+  phleboID?: number | null;
 }
 
 export interface voipPushTokenInput {

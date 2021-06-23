@@ -5361,4 +5361,35 @@ export const GET_DIAGNOSTIC_SERVICEABILITY = gql `
       }
     }
   }
+`;
+
+export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS_V2 = gql `
+query getCustomizedSlotsv2($patientAddressObj: patientAddressObj! , $patientsObjWithLineItems : [patientObjWithLineItems] , $billAmount: Float!, $selectedDate : Date!, $serviceability : DiagnosticsServiceability){
+  getCustomizedSlotsv2(patientAddressObj : $patientAddressObj, patientsObjWithLineItems :$patientsObjWithLineItems, billAmount: $billAmount, selectedDate : $selectedDate, serviceability : $serviceability){
+    available_slots {
+      slotDetail {
+        slotDisplayTime
+        internalSlots
+      }
+      isPaidSlot
+    },
+    distanceCharges
+  }
+}
 `
+export const SAVE_DIAGNOSTIC_ORDER_V2 = gql`
+  mutation saveDiagnosticBookHCOrderv2($diagnosticOrderInput: SaveBookHomeCollectionOrderInputv2) {
+    saveDiagnosticBookHCOrderv2(diagnosticOrderInput: $diagnosticOrderInput) {
+      patientsObjWithOrderIDs{
+        status
+        orderID
+        patientID
+        errorMessageToDisplay
+        displayID
+        attributes{
+          itemids
+        }
+      }
+    }
+  }
+`;
