@@ -71,11 +71,19 @@ export const handleOpenURL = (event: any) => {
 
       case 'otc':
       case 'medicine':
-        const redirectToMedicineDetail = data.length === 2;
-        return {
-          routeName: redirectToMedicineDetail ? 'MedicineDetail' : 'Medicine',
-          id: redirectToMedicineDetail ? linkId : undefined,
-        };
+        if (b === 0) {
+          // apollopharmacy.in url
+          const redirectToMedicineDetail = data.length === 2;
+          return {
+            routeName: redirectToMedicineDetail ? 'MedicineDetail' : 'Medicine',
+            id: redirectToMedicineDetail ? linkId : undefined,
+          };
+        } else {
+          // apollopatients:// url
+          return {
+            routeName: 'Medicine',
+          };
+        }
         break;
 
       case 'uploadprescription':
