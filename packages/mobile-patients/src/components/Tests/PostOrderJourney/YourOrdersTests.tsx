@@ -790,17 +790,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         <View style={{ flex: 1 }}>
           <TouchableOpacity style={{ flex: 1 }} onPress={() => onPressCloseOverlay()}>
             <View style={styles.overlayTouch}>
-              <TouchableOpacity>
-                <SafeAreaView style={styles.overlaySafeArea}>
-                  <View style={styles.overlayContainer}>
-                    <View>
-                      {showRescheduleOptions && renderRescheduleCancelOptions()}
-                      {showRescheduleReasons && renderRescheduleReasons()}
-                      {showCancelReasons && renderCancelReasons()}
-                    </View>
+              <SafeAreaView style={styles.overlaySafeArea}>
+                <View style={styles.overlayContainer}>
+                  <View>
+                    {showRescheduleOptions && renderRescheduleCancelOptions()}
+                    {showRescheduleReasons && renderRescheduleReasons()}
+                    {showCancelReasons && renderCancelReasons()}
                   </View>
-                </SafeAreaView>
-              </TouchableOpacity>
+                </View>
+              </SafeAreaView>
             </View>
           </TouchableOpacity>
         </View>
