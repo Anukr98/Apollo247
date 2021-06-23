@@ -1333,6 +1333,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED]: {
     position: number;
     itemId: number;
+    "Banner title": string; 
   };
   [WebEngageEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE]: {
     'Selection type': 'New' | 'Existing';
