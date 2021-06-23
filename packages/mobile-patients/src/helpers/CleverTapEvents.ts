@@ -75,12 +75,8 @@ export enum CleverTapEventName {
   PHARMACY_SUBMIT_PRESCRIPTION = 'Upload Prescription Proceed Clicked',
   PHARMACY_CHECKOUT_COMPLETED = 'Pharmacy Checkout completed',
   PHARMACY_DETAIL_IMAGE_CLICK = 'Product Detail page Image clicked',
-  DOCTOR_SEARCH = 'Doctor Search',
   DOCTOR_CLICKED = 'Doctor card on doctor listing screen clicked',
   BOOK_APPOINTMENT = 'Book Appointment',
-  CONSULT_NOW_CLICKED = 'Consult Now clicked',
-  CONSULT_SCHEDULE_FOR_LATER_CLICKED = 'Consult Schedule for Later clicked',
-  CONSULT_SLOT_SELECTED = 'Consult Slot Selected',
   CONSULT_COUPON_APPLIED = 'Coupon Applied',
   PHARMACY_FEEDBACK_GIVEN = 'Pharmacy Feedback Given',
   HOMEPAGE_WIDGET_FOLLOWUP_CLICK = 'Home Page Consult Widget Follow Up Click',
@@ -131,6 +127,8 @@ export enum CleverTapEventName {
   CONSULTATION_BOOKED = 'Consultation booked',
   CONSULT_ORDER_MEDICINES_IN_CHATROOM_CLICKED = 'Consult order medicines in chatroom clicked',
   CONSULT_UPLOAD_PRESCRIPTION_ADDRESS_SELECTED = 'Consult Upload prescription - Address selected',
+  CONSULT_SEARCH = 'Consult Search',
+  CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION = 'Consult Proceed Clicked on Slot Selection',
 
   //DOH events
   CONSULT_DOH_Viewed = 'Consult DOH viewed',
@@ -1409,8 +1407,8 @@ export interface CleverTapEvents {
     'Payment Success Order Id'?: string;
     status: boolean;
   };
-  [CleverTapEventName.DOCTOR_SEARCH]: {
-    'Search Text': string;
+  [CleverTapEventName.CONSULT_SEARCH]: {
+    'Text typed by the user': string;
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
@@ -1419,6 +1417,8 @@ export interface CleverTapEvents {
     'Mobile Number': string;
     'Customer ID': string;
     User_Type: string;
+    Source: 'Speciality screen' | 'Doctor listing screen';
+    'search result success': YesOrNo;
   };
   [CleverTapEventName.DOCTOR_LISTING_FILTER_APPLIED]: DoctorFilterClick;
   [CleverTapEventName.CONSULT_SPECIALITY_CLICKED]: SpecialityClickedEvent;
@@ -1502,28 +1502,6 @@ export interface CleverTapEvents {
     Relation: string;
     'Patient Age': number;
     'Patient Gender': string;
-  };
-  [CleverTapEventName.CONSULT_NOW_CLICKED]: {
-    'Language Known': string; // Comma separated values
-    Source: 'List' | 'Profile'; // List/Profile
-    'Doctor Speciality': string;
-    'Available in Minutes'?: number;
-    'Consult Mode': 'Online' | 'Physical';
-    specialisation: string;
-    'Doctor Experience': number;
-    'Consult Date Time': Date;
-    'Doctor ID': string;
-    'Doctor Name': string;
-    'Speciality ID': string;
-    'Hospital Name': string;
-    'Hospital City': string;
-    'Patient Name': string;
-    'Patient UHID': string;
-    Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
-    'Customer ID': string;
-    User_Type: string;
   };
   [CleverTapEventName.CONSULT_TYPE_SELECTION]: {
     'Consult Type': 'Online' | 'In Person';
@@ -1617,7 +1595,7 @@ export interface CleverTapEvents {
     'Patient Gender': string;
     'Customer ID': string;
   };
-  [CleverTapEventName.CONSULT_SLOT_SELECTED]: {
+  [CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION]: {
     doctorName: string;
     specialisation: string;
     experience: number;
@@ -1627,6 +1605,7 @@ export interface CleverTapEvents {
     'Speciality ID': string;
     'Patient UHID': string;
     'Consult Date Time': Date;
+    Source: 'Consult now' | 'Schedule for later';
   };
   [CleverTapEventName.CONSULT_COUPON_APPLIED]: {
     CouponCode: string;
@@ -2308,6 +2287,7 @@ export interface CleverTapEvents {
     Procedures: string;
     User_Type: string;
     Source: 'Speciality screen' | 'Doctor list screen';
+    'search result success': YesOrNo;
   };
 
   [CleverTapEventName.SEARCH_SUGGESTIONS_VIEW_ALL]: {

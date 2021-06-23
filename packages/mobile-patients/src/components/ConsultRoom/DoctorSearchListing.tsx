@@ -74,6 +74,7 @@ import {
   getUserType,
   postCleverTapEvent,
   postDoctorShareCleverTapEvents,
+  postConsultSearchCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -818,6 +819,15 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       })
       .then(({ data }) => {
         setfetching(false);
+        if (searchText?.length > 2) {
+          postConsultSearchCleverTapEvent(
+            searchText,
+            currentPatient,
+            allCurrentPatients,
+            data?.getDoctorList?.doctors?.length == 0,
+            'Doctor listing screen'
+          );
+        }
         pageNo ? setpageNo(pageNo + 1) : setpageNo(1);
         setData(data, docTabSelected, pageNo);
         !pageNo &&

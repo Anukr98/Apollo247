@@ -27,7 +27,11 @@ import {
   PLAN,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  postCleverTapEvent,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
   WebEngageEvents,
@@ -57,6 +61,10 @@ import {
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import moment from 'moment';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -207,6 +215,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   }, []);
 
   const onPressCheckout = async () => {
+    postProceedClickedCleverTapEvents();
     CommonLogEvent(AppRoutes.DoctorDetails, 'ConsultOverlay onSubmitBookAppointment clicked');
     const timeSlot =
       consultOnlineTab === selectedTab &&
@@ -384,6 +393,25 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       postWebEngageEvent(WebEngageEventName.CONSULT_SLOT_SELECTED, eventAttributes);
       setSlotsSelected([...slotsSelected, slot]);
     }
+  };
+
+  const postProceedClickedCleverTapEvents = () => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION] = {
+      doctorName: g(props.doctor, 'fullName')!,
+      specialisation: g(props.doctor, 'specialty', 'name')!,
+      experience: Number(g(props.doctor, 'experience')!),
+      'language known': g(props.doctor, 'languages')! || 'NA',
+      'Consult Mode': consultOnlineTab === selectedTab ? 'Online' : 'Physical',
+      'Doctor ID': g(props.doctor, 'id')!,
+      'Speciality ID': g(props.doctor, 'specialty', 'id')!,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Consult Date Time': moment(selectedTimeSlot).toDate(),
+      Source: isConsultOnline ? 'Consult now' : 'Schedule for later',
+    };
+    postCleverTapEvent(
+      CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION,
+      eventAttributes
+    );
   };
 
   return (

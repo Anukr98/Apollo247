@@ -43,6 +43,7 @@ import {
   postWebEngageEvent,
   getUserType,
   postCleverTapEvent,
+  postConsultSearchCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -481,6 +482,13 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             const symptoms = result?.filter(
               (item: ProceduresAndSymptomsResult) => item?.tag?.toUpperCase() === 'SYMPTOM'
             );
+            const searchResults =
+              searchData?.doctors?.length === 0 &&
+              searchData?.specialties?.length === 0 &&
+              procedures?.length === 0 &&
+              symptoms?.length === 0
+                ? true
+                : false;
             setProcedures(procedures);
             setSymptoms(symptoms);
             postSearchedResultWebEngageEvent(
@@ -489,7 +497,15 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               searchData?.doctors,
               searchData?.specialties,
               procedures,
-              symptoms
+              symptoms,
+              searchResults
+            );
+            postConsultSearchCleverTapEvent(
+              searchTextString,
+              currentPatient,
+              allCurrentPatients,
+              searchResults,
+              'Speciality screen'
             );
           } catch (e) {
             CommonBugFender('DoctorSearch_fetchSearchData_try', e);
@@ -510,7 +526,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     doctors?: any,
     specialities?: any,
     searchedProcedures?: any,
-    searchedSymptoms?: any
+    searchedSymptoms?: any,
+    noResults?: boolean
   ) => {
     const doctorsSearchedList = (doctors || doctorsList || [])?.map((item: any) => {
       return item?.displayName;
@@ -573,6 +590,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       postCleverTapEvent(CleverTapEventName.CONSULT_SEARCH_SUGGESTIONS_CLICKED, eventAttributes);
     } else {
       // searched suggestions event
+      eventAttributes['search result success'] = noResults ? 'No' : 'Yes';
       postWebEngageEvent(WebEngageEventName.SEARCH_SUGGESTIONS, eventAttributes);
       postCleverTapEvent(CleverTapEventName.CONSULT_SEARCH_SUGGESTIONS, eventAttributes);
     }

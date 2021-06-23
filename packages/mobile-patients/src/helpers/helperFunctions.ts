@@ -1454,14 +1454,14 @@ const webengage = new WebEngage();
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
-    console.log('postWebEngageEvent', eventName, JSON.stringify(attributes));
+    // console.log('postWebEngageEvent', eventName, JSON.stringify(attributes));
     webengage.track(eventName, attributes);
   } catch (error) {}
 };
 
 export const postCleverTapEvent = (eventName: CleverTapEventName, attributes: Object) => {
   try {
-    console.log('postCleverTapEvent', eventName, JSON.stringify(attributes));
+    // console.log('postCleverTapEvent', eventName, JSON.stringify(attributes));
     CleverTap.recordEvent(eventName, attributes);
   } catch (error) {}
 };
@@ -1562,6 +1562,29 @@ export const postAppointmentCleverTapEvents = (
     'Doctor Mobile Number': g(data, 'doctorInfo', 'mobileNumber')!,
   };
   postCleverTapEvent(type, eventAttributes);
+};
+
+export const postConsultSearchCleverTapEvent = (
+  searchInput: string,
+  currentPatient: any,
+  allCurrentPatients: any,
+  noResults: boolean,
+  source: 'Speciality screen' | 'Doctor listing screen'
+) => {
+  const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_SEARCH] = {
+    'Text typed by the user': searchInput,
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    Relation: g(currentPatient, 'relation'),
+    'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Mobile Number': g(currentPatient, 'mobileNumber'),
+    'Customer ID': g(currentPatient, 'id'),
+    User_Type: getUserType(allCurrentPatients),
+    Source: source,
+    'search result success': noResults ? 'No' : 'Yes',
+  };
+  postCleverTapEvent(CleverTapEventName.CONSULT_SEARCH, eventAttributes);
 };
 
 export const postCleverTapPHR = (
