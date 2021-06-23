@@ -713,10 +713,13 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
               bookingInfo?.resource_session_details?.vaccine_type
             )
           : null}
-        {renderBookingDetailsMatrixItem(
-          string.vaccineBooking.amount,
-          '₹' + bookingInfo?.resource_session_details?.selling_price
-        )}
+
+        {bookingInfo?.resource_session_details?.selling_price
+          ? renderBookingDetailsMatrixItem(
+              string.vaccineBooking.amount,
+              '₹' + bookingInfo?.resource_session_details?.selling_price
+            )
+          : null}
 
         {renderBookingDetailsMatrixItem(
           string.vaccineBooking.mode,
