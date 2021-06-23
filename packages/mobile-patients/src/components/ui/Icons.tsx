@@ -781,6 +781,9 @@ export const Emoticon4: React.FC<IconProps> = (props) => (
 export const Emoticon5: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/emoticons_13.webp')} />
 );
+export const PremiumIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/premium_icon_2x.webp')} />
+);
 export const DownloadOrange: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/download_o_3x.webp')} />
 );

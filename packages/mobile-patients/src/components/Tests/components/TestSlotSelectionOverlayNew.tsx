@@ -9,6 +9,7 @@ import {
   NightSelected,
   EmptySlot,
   CrossPopup,
+  PremiumIcon
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { GET_CUSTOMIZED_DIAGNOSTIC_SLOTS } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -40,6 +41,7 @@ import {
 import { Overlay } from 'react-native-elements';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { createAddressObject } from '@aph/mobile-patients/src/utils/commonUtils';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 
 export interface TestSlotSelectionOverlayNewProps extends AphOverlayProps {
   maxDate: Date;
@@ -55,6 +57,7 @@ export interface TestSlotSelectionOverlayNewProps extends AphOverlayProps {
   source?: string;
   isVisible: boolean;
   addressDetails?: any;
+  isPremium?: boolean
 }
 const { width } = Dimensions.get('window');
 export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewProps> = (props) => {
@@ -220,6 +223,16 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
       }
     });
   }
+  const renderPremiumTag = () => {
+    return (
+      <View style={styles.premiumTag}>
+        <PremiumIcon style={styles.premiumIcon}/>
+        <Text style={styles.premiumText}>
+          Premium Slot - Additional charge of ₹125 will be levied{' '}
+        </Text>
+      </View>
+    );
+  };
   const renderSlotSelectionView = () => {
     return (
       <View>
@@ -280,6 +293,8 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
                     },
                   ]}
                 >
+                  <>
+                  {props.isPremium ? <PremiumIcon style={styles.premiumIconAbsolute}/> : null}
                   <Text
                     style={[
                       styles.dateTextStyle,
@@ -288,8 +303,9 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
                       },
                     ]}
                   >
-                    {item?.value}
+                    {moment(item?.value,'hh:mm A').format('hh:mm a')}
                   </Text>
+                  </>
                 </TouchableOpacity>
               )}
             />
@@ -441,6 +457,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           </Text>
           <ScrollView style={styles.containerContentStyle}>
             {renderCalendarView()}
+            {props.isPremium ? renderPremiumTag() : null}
             {renderSlotSelectionView()}
           </ScrollView>
           {dropDownOptions.length ? renderBottomButton : null}
@@ -482,7 +499,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     position: 'absolute',
   },
-  warningbox: {
+  premiumTag: {
     backgroundColor: '#FCFDDA',
     flexDirection: 'row',
     borderRadius: 10,
@@ -491,6 +508,21 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     paddingHorizontal: 15,
     paddingVertical: 10,
+  },
+  premiumText: {
+    ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1),
+    marginHorizontal: 5,
+  },
+  premiumIconAbsolute: {
+    width: 16,
+    height: 16,
+    position: 'absolute',
+    top: 0,
+    right: 0,
+  },
+  premiumIcon: {
+    width: 16,
+    height: 16,
   },
   dateContainer: {
     marginHorizontal: width > 400 ? 5 : 1, //5
