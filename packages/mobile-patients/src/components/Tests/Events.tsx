@@ -217,10 +217,11 @@ export function DiagnosticDetailsViewed(
   postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
 }
 
-export function DiagnosticBannerClick(slideIndex: number, itemId: number) {
+export function DiagnosticBannerClick(slideIndex: number, itemId: number, title: string) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED] = {
     position: slideIndex,
     itemId: itemId,
+    'Banner title': title,
   };
 
   postWebEngageEvent(WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED, eventAttributes);
