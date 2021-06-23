@@ -139,6 +139,10 @@ export enum WebEngageEventName {
   PHARMACY_TAT_API_CALLED = 'Pharmacy TAT API Called',
   PHARMACY_CART_SELECT_DELIVERY_ADDRESS_CLICKED = 'Pharmacy Cart - Select Delivery Address Clicked',
   PHARMACY_CART_UPLOAD_PRESCRIPTION_CLICKED = 'Pharmacy Cart - Upload Prescription Clicked',
+
+  PHARMACY_POST_CART_PAGE_VIEWED = 'Pharmacy Post Cart Screen Viewed',
+  PHARMACY_ORDER_SUBSTITUTE_OPTION_CLICKED = 'Pharmacy Order Success Substitute Option Clicked',
+
   // HomePageElements Events
   BUY_MEDICINES = 'Buy Medicines',
   ORDER_TESTS = 'Order Tests',
@@ -1830,6 +1834,22 @@ export interface WebEngageEvents {
 
   [WebEngageEventName.PHARMACY_CART_UPLOAD_PRESCRIPTION_CLICKED]: {
     'Customer ID': string;
+  };
+
+  [WebEngageEventName.PHARMACY_POST_CART_PAGE_VIEWED]: {
+    Status: 'Success' | 'Payment Failed' | 'Payment Aborted' | 'Payment Status Not Known';
+    'Payment type': 'COD' | 'Cashless' | 'No Payment';
+    'Transaction ID': number | string;
+    'Order ID 1': number | string;
+    'Order ID 2': number | string;
+    'Substitution Option Shown': YesOrNo;
+  };
+
+  [WebEngageEventName.PHARMACY_ORDER_SUBSTITUTE_OPTION_CLICKED]: {
+    'Transaction ID': number | string;
+    'Order ID 1': number | string;
+    'Order ID 2': number | string;
+    'Substitute Action Taken': 'Agree' | 'Disagree';
   };
 
   // ********** Health Records ********** \\

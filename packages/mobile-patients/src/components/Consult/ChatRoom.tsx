@@ -6372,7 +6372,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setsessionId(sessionInfo.data.updateAppointmentSession.sessionId);
         settoken(sessionInfo.data.updateAppointmentSession.appointmentToken);
 
-        PublishAudioVideo();
+        isUserJoining && PublishAudioVideo();
       })
       .catch((e) => {
         CommonBugFender('ChatRoom_APICallAgain', e);

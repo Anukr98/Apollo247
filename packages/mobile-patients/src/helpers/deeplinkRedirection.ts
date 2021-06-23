@@ -58,6 +58,8 @@ export const handleOpenURL = (event: any) => {
       }
     } catch (error) {}
     route = route ? route?.toLowerCase() : '';
+    const paramData = getParamData(linkId)?.[0];
+    linkId = paramData ? paramData : linkId;
     switch (route) {
       case 'consult':
       case 'consults':
