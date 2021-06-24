@@ -428,7 +428,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         }
       );
       const params = id?.split('+');
-      getAppointmentDataAndNavigate(params?.[0]!, false);
+      if (getCurrentRoute() !== AppRoutes.ChatRoom) {
+        getAppointmentDataAndNavigate(params?.[0]!, false);
+      }
     } else if (routeName == 'prohealth') {
       fetchProhealthHospitalDetails(id!);
     } else {
