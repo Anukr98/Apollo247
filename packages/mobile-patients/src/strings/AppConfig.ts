@@ -20,11 +20,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-<<<<<<< HEAD
 const APP_ENV: AppEnv = AppEnv.QA3 as AppEnv; // For respective API environments in the app.
-=======
-const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
->>>>>>> c2fd4e5bb2a9ffe21f9e9999138552b8662f7320
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
