@@ -6,6 +6,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import moment from 'moment';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { format } from 'date-fns';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export interface TatCardProps {
   deliveryTime: string;
@@ -24,6 +25,7 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
     isNonCartOrder,
   } = props;
   const { cartItems, orders } = useShoppingCart();
+  const { nonCartTatText } = useAppCommonData();
   const unServiceable = isNonCartOrder ? false : cartItems?.find((item) => item?.unserviceable);
   const isSplitCart: boolean = orders?.length > 1 ? true : false;
 
@@ -59,17 +61,27 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
 
   const renderViewDelivery = () => {
     return (
-      <View style={styles.viewDeliveryView}>
+      <TouchableOpacity onPress={onPressTatCard} style={styles.viewDeliveryView}>
         <Text style={styles.viewDelivery}>View delivery time</Text>
-      </View>
+      </TouchableOpacity>
     );
   };
+
+  const getNonCartDeliveryTatText = () => {
+    if (nonCartTatText) {
+      return <Text style={styles.deliveryText}>{nonCartTatText}</Text>;
+    } else {
+      return (
+        <Text style={styles.deliveryText}>
+          {`Expected Delivery by `}
+          {deliveryTime ? getDeliveryDate() : getGenericDate()}
+        </Text>
+      );
+    }
+  };
+
   return (
-    <TouchableOpacity
-      activeOpacity={1}
-      onPress={onPressTatCard}
-      style={{ backgroundColor: '#02475B', paddingHorizontal: 13 }}
-    >
+    <View style={{ backgroundColor: '#02475B', paddingHorizontal: 13 }}>
       <View
         style={{
           ...styles.subCont1,
@@ -78,10 +90,7 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
       >
         {!unServiceable &&
           (!!isNonCartOrder ? (
-            <Text style={styles.delivery}>
-              {`Expected Delivery by `}
-              {deliveryTime ? getDeliveryDate() : getGenericDate()}
-            </Text>
+            getNonCartDeliveryTatText()
           ) : !isSplitCart ? (
             <Text style={styles.delivery}>
               {`Deliver by :`}
@@ -103,7 +112,7 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
           Deliver to : <Text style={styles.dateTime}>{deliveryAddress}</Text>
         </Text>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 };
 
@@ -141,5 +150,11 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: '#D4D4D4',
     borderRadius: 5,
+  },
+  deliveryText: {
+    width: '79%',
+    color: '#F7F8F5',
+    ...theme.fonts.IBMPlexSansRegular(14),
+    lineHeight: 18,
   },
 });

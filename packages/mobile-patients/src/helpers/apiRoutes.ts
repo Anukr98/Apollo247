@@ -9,6 +9,10 @@ export const apiBaseUrl =
     ? 'https://qaapi.apollo247.com/'
     : AppConfig.APP_ENV == AppEnv.QA3
     ? 'https://qathreeapi.apollo247.com/'
+    : AppConfig.APP_ENV == AppEnv.QA4
+    ? 'https://qa4api.apollo247.com'
+    : AppConfig.APP_ENV == AppEnv.QA5
+    ? 'https://qa5api.apollo247.com/'
     : AppConfig.APP_ENV == AppEnv.PERFORM
     ? 'https://perfapi.apollo247.com/'
     : AppConfig.APP_ENV == AppEnv.VAPT

@@ -1,5 +1,5 @@
 import { Platform } from 'react-native';
-import { ConsultMode, PLAN } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { AddressObj, ConsultMode, PLAN } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { DIAGNOSTIC_GROUP_PLAN, GooglePlacesType } from '@aph/mobile-patients/src/helpers/apiCalls';
 import moment from 'moment';
 import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -319,3 +319,35 @@ export const findAddrComponents = (
 export const isPhysicalConsultation = (consultMode: string) => {
   return consultMode === 'Visit Clinic' || consultMode === 'Meet In Person';
 };
+
+export const getReviewTag = (star: number) => {
+  switch (star) {
+    case 1:
+      return 'TERRIBLE';
+    case 2:
+      return 'BAD';
+    case 3:
+      return 'AVERAGE';
+    case 4:
+      return 'GOOD';
+    case 5:
+      return 'EXCELLENT';
+    default:
+      return '';
+      break;
+  }
+};
+
+export const createAddressObject = (addressObject: any) => {
+  return {
+    addressLine1: addressObject?.addressLine1,
+    addressLine2: addressObject?.addressLine2,
+    addressType: addressObject?.addressType,
+    zipcode: addressObject?.zipcode! || "0",
+    landmark: addressObject?.landmark,
+    latitude: Number(addressObject?.latitude! || 0),
+    longitude: Number(addressObject?.longitude! || 0),
+    city: addressObject?.city,
+    state: addressObject?.state,
+  } as AddressObj;
+}

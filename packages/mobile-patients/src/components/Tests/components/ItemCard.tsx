@@ -1,5 +1,5 @@
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
+import { WidgetLiverIcon, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
@@ -31,7 +31,10 @@ import {
   DiagnosticAddToCartEvent,
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+const screenWidth = Dimensions.get('window').width;
+const CARD_WIDTH = screenWidth * 0.45;
+const CARD_HEIGHT = 230; //210
 export interface ItemCardProps {
   onPress?: (item: any) => void;
   isCircleSubscribed: boolean;
@@ -43,14 +46,22 @@ export interface ItemCardProps {
   isVertical: boolean;
   columns?: number;
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
-  source: string;
+  source:
+    | 'Home page'
+    | 'Full search'
+    | 'Details page'
+    | 'Partial search'
+    | 'Listing page'
+    | 'Category page'
+    | 'Prescription'
+    | 'Cart page';
   sourceScreen: string;
   onPressAddToCartFromCart?: (item: any) => void;
   onPressRemoveItemFromCart?: (item: any) => void;
 }
 
 export const ItemCard: React.FC<ItemCardProps> = (props) => {
-  const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
+  const { cartItems, addCartItem, removeCartItem, modifiedOrderItemIds } = useDiagnosticsCart();
   const {
     data,
     isCircleSubscribed,
@@ -62,100 +73,109 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
   } = props;
 
   const actualItemsToShow =
-    source === 'Cart Page'
+    source === 'Cart page'
       ? data?.length > 0 && data?.filter((item: any) => item?.diagnosticPricing)
       : data?.diagnosticWidgetData?.length > 0 &&
         data?.diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
 
-  const renderItemCard = (item: any) => {
-    const getItem = item?.item;
-    const getDiagnosticPricingForItem = getItem?.diagnosticPricing;
+  const renderItemCard = useCallback(
+    (item: any) => {
+      const getItem = item?.item;
+      const getDiagnosticPricingForItem = getItem?.diagnosticPricing;
 
-    if (getDiagnosticPricingForItem == undefined || getDiagnosticPricingForItem == null) {
-      return null;
-    }
-    const packageMrpForItem = getItem?.packageCalculatedMrp!;
-    const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
+      if (getDiagnosticPricingForItem == undefined || getDiagnosticPricingForItem == null) {
+        return null;
+      }
+      const packageMrpForItem = getItem?.packageCalculatedMrp!;
+      const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
 
-    if (!pricesForItem?.itemActive) {
-      return null;
-    }
+      if (!pricesForItem?.itemActive) {
+        return null;
+      }
 
-    const imageUrl =
-      getItem?.itemImageUrl || 'https://apolloaphstorage.blob.core.windows.net/organs/ic_liver.png';
-    const name = getItem?.itemTitle;
-    const inclusions = getItem?.inclusionData;
+      const imageUrl = !!getItem?.itemImageUrl
+        ? getItem?.itemImageUrl
+        : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_ICON;
+      const name = getItem?.itemTitle;
+      const inclusions = getItem?.inclusionData;
 
-    const promoteCircle = pricesForItem?.promoteCircle;
-    const promoteDiscount = pricesForItem?.promoteDiscount;
-    const circleDiscount = pricesForItem?.circleDiscount;
-    const specialDiscount = pricesForItem?.specialDiscount;
-    const discount = pricesForItem?.discount;
+      const promoteCircle = pricesForItem?.promoteCircle;
+      const promoteDiscount = pricesForItem?.promoteDiscount;
+      const circleDiscount = pricesForItem?.circleDiscount;
+      const specialDiscount = pricesForItem?.specialDiscount;
+      const discount = pricesForItem?.discount;
 
-    const getMandatoryParamter =
-      !!inclusions &&
-      inclusions?.length > 0 &&
-      inclusions?.map((inclusion: any) =>
-        inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
+      const getMandatoryParamter =
+        !!inclusions &&
+        inclusions?.length > 0 &&
+        inclusions?.map((inclusion: any) =>
+          inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
+        );
+
+      const getMandatoryParameterCount =
+        !!getMandatoryParamter &&
+        getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
+
+      const isAddedToCart = !!cartItems?.find(
+        (items) => Number(items?.id) == Number(getItem?.itemId)
       );
 
-    const getMandatoryParameterCount =
-      !!getMandatoryParamter &&
-      getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
-
-    const isAddedToCart = !!cartItems?.find(
-      (items) => Number(items?.id) == Number(getItem?.itemId)
-    );
-
-    return (
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={() => onPress(getItem, packageMrpForItem, pricesForItem)}
-        key={item?.item?.itemId}
-      >
-        <View
-          style={[
-            styles.itemCardView,
-            props?.isVertical ? {} : { marginLeft: item?.index == 0 ? 20 : 6 },
-          ]}
+      return (
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => onPress(getItem, packageMrpForItem, pricesForItem)}
+          key={item?.item?.itemId}
         >
-          <View style={{ flexDirection: 'row' }}>
-            <View style={{ width: '69%' }}>
-              <Image
-                placeholderStyle={styles.imagePlaceholderStyle}
-                source={{ uri: imageUrl }}
-                style={styles.imageStyle}
-              />
+          <View
+            style={[
+              styles.itemCardView,
+              props?.isVertical ? {} : { marginLeft: item?.index == 0 ? 20 : 6 },
+            ]}
+          >
+            <View style={{ flexDirection: 'row' }}>
+              <View style={{ width: '69%' }}>
+                {imageUrl == '' ? (
+                  <WidgetLiverIcon style={styles.imageStyle} resizeMode={'contain'} />
+                ) : (
+                  <Image
+                    resizeMode={'contain'}
+                    placeholderStyle={styles.imagePlaceholderStyle}
+                    source={{ uri: imageUrl }}
+                    style={styles.imageStyle}
+                  />
+                )}
+              </View>
+              {renderPercentageDiscount(
+                promoteCircle && isCircleSubscribed
+                  ? circleDiscount
+                  : promoteDiscount
+                  ? specialDiscount
+                  : discount
+              )}
             </View>
-            {renderPercentageDiscount(
-              promoteCircle && isCircleSubscribed
-                ? circleDiscount
-                : promoteDiscount
-                ? specialDiscount
-                : discount
-            )}
-          </View>
-          <View style={{ minHeight: isSmallDevice ? 40 : 35 }}>
-            <Text style={styles.itemNameText} numberOfLines={2}>
-              {name}
-            </Text>
-          </View>
-          <View style={{ minHeight: isSmallDevice ? 25 : 30 }}>
-            {getMandatoryParameterCount > 0 ? (
-              <Text style={styles.parameterText}>
-                {getMandatoryParameterCount}{' '}
-                {getMandatoryParameterCount == 1 ? 'Parameter' : 'Parameters'} included
+            <View style={{ minHeight: isSmallDevice ? 40 : 35 }}>
+              <Text style={styles.itemNameText} numberOfLines={2}>
+                {name}
               </Text>
-            ) : null}
-          </View>
-          <Spearator style={styles.horizontalSeparator} />
+            </View>
+            <View style={{ minHeight: isSmallDevice ? 25 : 30 }}>
+              {getMandatoryParameterCount > 0 ? (
+                <Text style={styles.parameterText}>
+                  {getMandatoryParameterCount} {getMandatoryParameterCount == 1 ? 'test' : 'tests'}{' '}
+                  included
+                </Text>
+              ) : null}
+            </View>
+            <Spearator style={styles.horizontalSeparator} />
 
-          {renderPricesView(pricesForItem, packageMrpForItem)}
-          {renderAddToCart(isAddedToCart, getItem, pricesForItem, packageMrpForItem)}
-        </View>
-      </TouchableOpacity>
-    );
-  };
+            {renderPricesView(pricesForItem, packageMrpForItem)}
+            {renderAddToCart(isAddedToCart, getItem, pricesForItem, packageMrpForItem)}
+          </View>
+        </TouchableOpacity>
+      );
+    },
+    [cartItems]
+  );
 
   const renderPercentageDiscount = (discount: string | number) => {
     return (
@@ -303,15 +323,20 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     const planToConsider = pricesForItem?.planToConsider;
     const discountToDisplay = pricesForItem?.discountToDisplay;
     const mrpToDisplay = pricesForItem?.mrpToDisplay;
+    const widgetType = data?.diagnosticWidgetType;
 
     DiagnosticAddToCartEvent(
       item?.itemTitle,
       `${item?.itemId}`,
       mrpToDisplay,
       discountToDisplay,
-      data?.diagnosticWidgetTitle
+      source,
+      widgetType === string.diagnosticCategoryTitle.categoryGrid ||
+        widgetType == string.diagnosticCategoryTitle.category
+        ? 'Category page'
+        : data?.diagnosticWidgetTitle
     );
-    addCartItem!({
+    addCartItem?.({
       id: `${item?.itemId}`,
       mou: 1,
       name: item?.itemTitle!,
@@ -336,7 +361,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
   }
 
   function postHomePageWidgetClicked(name: string, id: string, section: string) {
-    DiagnosticHomePageWidgetClicked(name, id, section);
+    DiagnosticHomePageWidgetClicked(section, name, id);
   }
 
   function onPress(item: any, packageCalculatedMrp: number, pricesForItem: any) {
@@ -348,6 +373,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
     const mrpToDisplay = pricesForItem?.mrpToDisplay;
     const widgetTitle = data?.diagnosticWidgetTitle;
+    const widgetType = data?.diagnosticWidgetType;
 
     postHomePageWidgetClicked(item?.itemTitle!, `${item?.itemId}`, widgetTitle);
 
@@ -355,7 +381,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
       navigation.replace(AppRoutes.TestDetails, {
         itemId: item?.itemId,
         comingFrom: sourceScreen,
-        testDetails: ({
+        testDetails: {
           Rate: price,
           specialPrice: specialPrice! || price,
           circleRate: circlePrice,
@@ -367,10 +393,14 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
           collectionType: TEST_COLLECTION_TYPE.HC,
           packageMrp: packageCalculatedMrp,
           mrpToDisplay: mrpToDisplay,
-          source: source,
+          source:
+            widgetType == string.diagnosticCategoryTitle.categoryGrid ||
+            widgetType == string.diagnosticCategoryTitle.category
+              ? 'Category page'
+              : source,
           type: data?.diagnosticWidgetType,
           inclusions: [Number(item?.itemId)],
-        } as unknown) as TestPackageForDetails,
+        } as TestPackageForDetails,
       });
     } else {
       navigation.navigate(AppRoutes.TestDetails, {
@@ -388,7 +418,11 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
           collectionType: TEST_COLLECTION_TYPE.HC,
           packageMrp: packageCalculatedMrp,
           mrpToDisplay: mrpToDisplay,
-          source: source,
+          source:
+            widgetType == string.diagnosticCategoryTitle.categoryGrid ||
+            widgetType == string.diagnosticCategoryTitle.category
+              ? 'Category page'
+              : source,
           type: data?.diagnosticWidgetType,
           inclusions: [Number(item?.itemId)],
         } as TestPackageForDetails,
@@ -402,6 +436,10 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     pricesForItem: any,
     packageCalculatedMrp: number
   ) => {
+    const isAlreadyPartOfOrder =
+      !!modifiedOrderItemIds &&
+      modifiedOrderItemIds?.length &&
+      modifiedOrderItemIds?.find((id: number) => Number(id) == Number(item?.id));
     return (
       <Text
         style={[
@@ -411,12 +449,14 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
           },
         ]}
         onPress={() =>
-          isAddedToCart
+          isAlreadyPartOfOrder
+            ? {}
+            : isAddedToCart
             ? onPressRemoveFromCart(item)
             : onPressAddToCart(item, pricesForItem, packageCalculatedMrp)
         }
       >
-        {isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
+        {isAlreadyPartOfOrder ? 'ALREADY ADDED' : isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
       </Text>
     );
   };
@@ -436,6 +476,15 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
       return null;
     }
   };
+
+  const getItemLayout = useCallback(
+    (data, index) => ({
+      length: props.isVertical ? CARD_WIDTH : CARD_HEIGHT,
+      offset: props.isVertical ? CARD_WIDTH * index : CARD_HEIGHT * index,
+      index,
+    }),
+    []
+  );
 
   const keyExtractor = useCallback((item: any, index: number) => `${index}`, []);
 
@@ -461,7 +510,9 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
             horizontal={!props.isVertical}
             data={actualItemsToShow}
             renderItem={renderItemCard}
-            maxToRenderPerBatch={3}
+            maxToRenderPerBatch={8}
+            initialNumToRender={3}
+            getItemLayout={getItemLayout}
           />
         ) : (
           renderError()
@@ -475,8 +526,8 @@ const styles = StyleSheet.create({
   itemCardView: {
     ...theme.viewStyles.card(12, 0),
     elevation: 10,
-    height: 230, //210
-    width: Dimensions.get('window').width * 0.45,
+    height: CARD_HEIGHT,
+    width: CARD_WIDTH,
     marginHorizontal: 4,
     marginRight: 10,
     alignItems: 'flex-start',
@@ -539,7 +590,9 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     position: 'absolute',
     left: 16,
-    bottom: 10,
+    bottom: 6,
+    width: '70%',
+    height: 30,
   },
   errorCardContainer: {
     height: 'auto',

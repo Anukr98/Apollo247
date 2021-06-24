@@ -42,6 +42,7 @@ import {
   setWebEngageScreenNames,
   nextAvailability,
   getDoctorShareMessage,
+  getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -348,7 +349,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [doctorId, setDoctorId] = useState<string>(
     props.navigation.state.params ? props.navigation.state.params.doctorId : ''
   );
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [scrollY] = useState(new Animated.Value(0));
   const [availableInMin, setavailableInMin] = useState<number>();
@@ -369,6 +370,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const circleDoctorDetails = calculateCircleDoctorPricing(doctorDetails);
   const [showDoctorSharePopup, setShowDoctorSharePopup] = useState<boolean>(false);
+  const consultModeSelected = props.navigation.getParam('consultModeSelected');
   const {
     isCircleDoctor,
     physicalConsultMRPPrice,
@@ -383,7 +385,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     defaultCirclePlan,
     showCircleSubscribed,
   } = useShoppingCart();
-
+  const chatDays = doctorDetails?.chatDays;
   const isPayrollDoctor = doctorDetails?.doctorType === DoctorType.PAYROLL;
   const isPhysical =
     doctorDetails &&
@@ -484,23 +486,21 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   });
 
   useEffect(() => {
-    if (isFocused) {
-      setWebEngageScreenNames('Doctor Profile');
-      getNetStatus()
-        .then((status) => {
-          if (status) {
-            fetchDoctorDetails();
-            fetchAppointmentHistory();
-          } else {
-            setshowSpinner(false);
-            setshowOfflinePopup(true);
-          }
-        })
-        .catch((e) => {
-          CommonBugFender('DoctorDetails_getNetStatus', e);
-        });
-    }
-  }, [isFocused]);
+    setWebEngageScreenNames('Doctor Profile');
+    getNetStatus()
+      .then((status) => {
+        if (status) {
+          fetchDoctorDetails();
+          fetchAppointmentHistory();
+        } else {
+          setshowSpinner(false);
+          setshowOfflinePopup(true);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('DoctorDetails_getNetStatus', e);
+      });
+  }, []);
 
   useEffect(() => {
     const display = props.navigation.state.params
@@ -631,27 +631,27 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Speciality Name': g(doctorDetails, 'specialty', 'name')!,
       'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
       'Media Source': mediaSource,
+      User_Type: getUserType(allCurrentPatients),
     };
     postWebEngageEvent(WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK, eventAttributes);
   };
 
   const setAvailableModes = (availabilityMode: any) => {
     const modeOfConsult = availabilityMode.availableModes;
-
     try {
       if (modeOfConsult.includes(ConsultMode.BOTH)) {
         setConsultType(ConsultMode.BOTH);
-        setOnlineSelected(true);
+        if (consultModeSelected === ConsultMode.PHYSICAL)
+          set_follow_up_chat_message_visibility(false);
       } else if (modeOfConsult.includes(ConsultMode.ONLINE)) {
         setConsultType(ConsultMode.ONLINE);
-        setOnlineSelected(true);
       } else if (modeOfConsult.includes(ConsultMode.PHYSICAL)) {
         setConsultType(ConsultMode.PHYSICAL);
-        setOnlineSelected(false);
         set_follow_up_chat_message_visibility(false);
       } else {
         setConsultType(ConsultMode.BOTH);
       }
+      consultModeSelected && setOnlineSelected(consultModeSelected === ConsultMode.ONLINE);
     } catch (error) {}
   };
 
@@ -663,16 +663,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     const IOSFormat = `${todayDate}T${time}.000Z`;
     return Moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('hh:mm A');
   };
-  const formatDateTime = (time: string) => {
-    return Moment(new Date(time), 'HH:mm:ss.SSSz').format('hh:mm A');
-  };
 
   const renderConsultType = () => {
     return (
       <ConsultTypeCard
         isOnlineSelected={onlineSelected}
         DoctorId={doctorId}
-        chatDays={g(doctorDetails, 'chatDays') ? g(doctorDetails, 'chatDays')!.toString() : '7'}
+        chatDays={chatDays}
         DoctorName={doctorDetails ? doctorDetails.fullName : ''}
         nextAppointemntOnlineTime={availableTime}
         nextAppointemntInPresonTime={physicalAvailableTime}
@@ -808,8 +805,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         doctorDetails.firstName +
         ' ' +
         string.consultType.follow_up_chat_message.replace(
-          '{0}',
-          g(doctorDetails, 'chatDays') ? g(doctorDetails, 'chatDays')!.toString() : '7'
+          '{0} days',
+          `${chatDays} day${chatDays && Number(chatDays) > 1 ? 's' : ''}`
         );
 
       return (
@@ -874,12 +871,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 )}
               </View>
               <View style={styles.separatorStyle} />
-              {follow_up_chat_message_visibility && (
+              {follow_up_chat_message_visibility && chatDays && Number(chatDays) > 0 ? (
                 <View style={styles.followUpChatMessageViewStyle}>
                   <CTGrayChat style={styles.followUpChatImageStyle} />
                   <Text style={styles.followUpChatMessageStyle}>{followUpChatMessage}</Text>
                 </View>
-              )}
+              ) : null}
               <View
                 style={[
                   styles.onlineConsultView,
@@ -1337,7 +1334,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     arrayHistory = arrayHistory.filter((item) => {
       return item.status == 'COMPLETED';
     });
-
     if (arrayHistory.length > 0) {
       return (
         <View style={styles.cardView}>
@@ -1469,6 +1465,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Secretary Name': g(secretaryData, 'name'),
       'Secretary Mobile Number': g(secretaryData, 'mobileNumber'),
       'Doctor Mobile Number': g(doctorDetails, 'mobileNumber')!,
+      User_Type: getUserType(allCurrentPatients),
     };
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
     const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.BOOK_APPOINTMENT] = {
@@ -1517,7 +1514,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const getTitle = () => {
     const consultNowText = ctaBannerText?.CONSULT_NOW || '';
     const time = onlineSelected ? availableTime : physicalAvailableTime;
-    return consultNowText || (time && moment(time).isValid())
+    const activeCTA = doctorDetails?.doctorCardActiveCTA?.DEFAULT;
+    return activeCTA
+      ? activeCTA
+      : consultNowText || (time && moment(time).isValid())
       ? nextAvailability(time, 'Consult')
       : string.common.book_apointment;
   };

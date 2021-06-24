@@ -4,8 +4,6 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { getMaxQtyForMedicineItem } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { DropdownBlueDown } from '@aph/mobile-patients/src/components/ui/Icons';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 
 export interface ProductQuantityProps {
   maxOrderQuantity: number;
@@ -22,7 +20,7 @@ export interface ProductQuantityProps {
   isSellOnline: boolean;
   isBanned: boolean;
   productForm: string;
-  deliveryError?: string;
+  onNotifyMeClick: () => void;
 }
 
 export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
@@ -41,10 +39,8 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
     isSellOnline,
     isBanned,
     productForm,
-    deliveryError,
+    onNotifyMeClick,
   } = props;
-  const { cartItems } = useShoppingCart();
-  const { showAphAlert } = useUIElements();
 
   const renderQuantity = () => {
     let maxQuantity: number = getMaxQtyForMedicineItem(maxOrderQuantity);
@@ -87,7 +83,7 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
       <View>
         <TouchableOpacity
           onPress={() => {
-            isInStock ? onAddToCart() : onNotifyMeClick(name);
+            isInStock ? onAddToCart() : onNotifyMeClick();
           }}
           activeOpacity={0.7}
           style={isInStock ? styles.addToCartCta : styles.notifyCta}
@@ -98,30 +94,18 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
     );
   };
 
-  const onNotifyMeClick = (name: string) => {
-    showAphAlert!({
-      title: 'Okay! :)',
-      description: `You will be notified when ${name} is back in stock.`,
-    });
-  };
-
   const onAddToCart = () => {
     setShowAddedToCart(true);
     setTimeout(() => {
       setShowAddedToCart(false);
     }, 2000);
-    const existingCartItem = cartItems?.filter((item) => item?.id === sku);
-    if (existingCartItem?.length) {
-      existingCartItem?.[0]?.quantity = productQuantity;
-    } else {
-      onAddCartItem();
-    }
+    onAddCartItem();
   };
 
   return (
     <View>
       <View style={styles.flexRow}>
-        {renderQuantity()}
+        {isSellOnline && renderQuantity()}
         {!!packSize && !!productForm && !!packForm && renderPackSize()}
       </View>
       {isSellOnline && !isBanned && renderCartCTA()}

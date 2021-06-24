@@ -13,19 +13,12 @@
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		4929325025C1959C000A9EBF /* join_sound.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 4929324E25C1959C000A9EBF /* join_sound.mp3 */; };
 		492AFA5125C2A4A500330A9C /* left_sound.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 492AFA4F25C2A4A500330A9C /* left_sound.mp3 */; };
+		5817184F86C030480B7F39F5 /* Pods_NotificationService.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8F626D26DAB13321C584E6D4 /* Pods_NotificationService.framework */; };
 		6717258923016EF10088EE92 /* OTInstall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6717258823016EF10088EE92 /* OTInstall.swift */; };
-		93DD224FC8ADE4940A1E3263 /* Pods_NotificationViewController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CFA32A75C8CCAEF9FAE5996B /* Pods_NotificationViewController.framework */; };
 		970ECE9323CB50040022FE84 /* VitalsBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 970ECE9123CB50030022FE84 /* VitalsBridge.m */; };
 		970ECE9423CB50040022FE84 /* Vitals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 970ECE9223CB50040022FE84 /* Vitals.swift */; };
 		977C7CF82369AEFB008DA5C8 /* OTScreenCapturer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 977C7CF72369AEFB008DA5C8 /* OTScreenCapturer.swift */; };
 		9784DFB723A2282600CB4A28 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9784DFB623A2282600CB4A28 /* GoogleService-Info.plist */; };
-		978D136223D1EE0B002841C4 /* MaterialIcons-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 978D135B23D1EE0A002841C4 /* MaterialIcons-Regular.ttf */; };
-		978D136323D1EE0B002841C4 /* OpenSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 978D135C23D1EE0A002841C4 /* OpenSans-ExtraBold.ttf */; };
-		978D136423D1EE0B002841C4 /* OpenSans-Semibold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 978D135D23D1EE0A002841C4 /* OpenSans-Semibold.ttf */; };
-		978D136523D1EE0B002841C4 /* OpenSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 978D135E23D1EE0B002841C4 /* OpenSans-Regular.ttf */; };
-		978D136623D1EE0B002841C4 /* Comfortaa_Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 978D135F23D1EE0B002841C4 /* Comfortaa_Regular.ttf */; };
-		978D136723D1EE0B002841C4 /* OpenSans-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 978D136023D1EE0B002841C4 /* OpenSans-Light.ttf */; };
-		978D136823D1EE0B002841C4 /* OpenSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 978D136123D1EE0B002841C4 /* OpenSans-Bold.ttf */; };
 		9797AC1C2420DF3400AD397F /* NotificationService.m in Sources */ = {isa = PBXBuildFile; fileRef = 9797AC1B2420DF3400AD397F /* NotificationService.m */; };
 		9797AC202420DF3400AD397F /* NotificationService.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 9797AC182420DF3400AD397F /* NotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9797AC292420DFD500AD397F /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 978157C32420C86800749029 /* UserNotifications.framework */; };
@@ -55,7 +48,6 @@
 		97FFBDEF23E4887B00E55E34 /* rrule.js in Resources */ = {isa = PBXBuildFile; fileRef = 97FFBDE223E4887A00E55E34 /* rrule.js */; };
 		97FFBDF023E4887B00E55E34 /* nlp.js in Resources */ = {isa = PBXBuildFile; fileRef = 97FFBDE323E4887A00E55E34 /* nlp.js */; };
 		97FFBDF123E4887B00E55E34 /* JavaScriptBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97FFBDE423E4887A00E55E34 /* JavaScriptBridge.swift */; };
-		B91FB7BEDF1C6380DEA1F97C /* Pods_NotificationService.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 70F7689C8F6CE10AA3085632 /* Pods_NotificationService.framework */; };
 		BB8190F124F8C26C00AD66C6 /* AIRDummyView.m in Sources */ = {isa = PBXBuildFile; fileRef = BB8190BB24F8C26C00AD66C6 /* AIRDummyView.m */; };
 		BB8190F224F8C26C00AD66C6 /* AIRGoogleMapUrlTile.m in Sources */ = {isa = PBXBuildFile; fileRef = BB8190BF24F8C26C00AD66C6 /* AIRGoogleMapUrlTile.m */; };
 		BB8190F324F8C26C00AD66C6 /* AIRGoogleMapPolygonManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BB8190C224F8C26C00AD66C6 /* AIRGoogleMapPolygonManager.m */; };
@@ -111,21 +103,29 @@
 		BBA1D02324F4D25800C77819 /* GMUStaticCluster.m in Sources */ = {isa = PBXBuildFile; fileRef = BBA1D00524F4D25800C77819 /* GMUStaticCluster.m */; };
 		BBA1D02424F4D25800C77819 /* GMSMarker+GMUClusteritem.m in Sources */ = {isa = PBXBuildFile; fileRef = BBA1D00824F4D25800C77819 /* GMSMarker+GMUClusteritem.m */; };
 		C38E9E715A0517993FE5D4F8 /* Pods_ApolloPatient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72F617656E6541D1F4092240 /* Pods_ApolloPatient.framework */; };
+		C75A5BA1604DA0482030C58D /* Pods_NotificationService.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F7544C58FA9CF1379DC66FB /* Pods_NotificationService.framework */; };
+		E892BC222670D8CC0018AA07 /* RNShare.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E892BC212670D8CC0018AA07 /* RNShare.framework */; };
 		ED297163215061F000B7C4FE /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED297162215061F000B7C4FE /* JavaScriptCore.framework */; };
-		F1B3D78B22B8D37200521684 /* IBMPlexSans-SemiBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F1B3D75522B8D37100521684 /* IBMPlexSans-SemiBoldItalic.ttf */; };
 		F1B3D78C22B8D37200521684 /* IBMPlexSans-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F1B3D75622B8D37100521684 /* IBMPlexSans-Medium.ttf */; };
 		F1B3D78D22B8D37200521684 /* IBMPlexSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F1B3D75722B8D37100521684 /* IBMPlexSans-SemiBold.ttf */; };
-		F1B3D78E22B8D37200521684 /* IBMPlexSans-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F1B3D75822B8D37100521684 /* IBMPlexSans-MediumItalic.ttf */; };
-		F1B3D79022B8D37200521684 /* IBMPlexSans-LightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F1B3D75A22B8D37100521684 /* IBMPlexSans-LightItalic.ttf */; };
-		F1B3D79122B8D37200521684 /* IBMPlexSans-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F1B3D75B22B8D37100521684 /* IBMPlexSans-ExtraLight.ttf */; };
-		F1B3D79222B8D37200521684 /* IBMPlexSans-Thin.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F1B3D75C22B8D37100521684 /* IBMPlexSans-Thin.ttf */; };
-		F1B3D79322B8D37200521684 /* IBMPlexSans-ThinItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F1B3D75D22B8D37100521684 /* IBMPlexSans-ThinItalic.ttf */; };
-		F1B3D79422B8D37200521684 /* IBMPlexSans-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F1B3D75E22B8D37100521684 /* IBMPlexSans-BoldItalic.ttf */; };
 		F1B3D79522B8D37200521684 /* IBMPlexSans-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F1B3D75F22B8D37100521684 /* IBMPlexSans-Light.ttf */; };
-		F1B3D79622B8D37200521684 /* IBMPlexSans-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F1B3D76022B8D37100521684 /* IBMPlexSans-Italic.ttf */; };
 		F1B3D79722B8D37200521684 /* IBMPlexSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F1B3D76122B8D37100521684 /* IBMPlexSans-Regular.ttf */; };
-		F1B3D79822B8D37200521684 /* IBMPlexSans-ExtraLightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F1B3D76222B8D37100521684 /* IBMPlexSans-ExtraLightItalic.ttf */; };
 		F1B3D79922B8D37200521684 /* IBMPlexSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F1B3D76322B8D37100521684 /* IBMPlexSans-Bold.ttf */; };
+		F109515A71C04208812E40C7 /* AntDesign.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 75EC0786C471462BA5A0AD4C /* AntDesign.ttf */; };
+		51DB4749A9874BD886B2F10B /* Entypo.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 76905D85B0954464B102532C /* Entypo.ttf */; };
+		92F3F92657424548B56588C7 /* EvilIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AF1E43137D1A4523AA6CB468 /* EvilIcons.ttf */; };
+		7CF13BFBC3EB448BA0017BA0 /* Feather.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 03C94BA7A799462EA3C858E5 /* Feather.ttf */; };
+		E0A12ADE12A2489881685B48 /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9E5A65EA1CB141B88D9111AB /* FontAwesome.ttf */; };
+		7A1955DD5F9B407C97969865 /* FontAwesome5_Brands.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4538266E99694C6294195EDA /* FontAwesome5_Brands.ttf */; };
+		7BE6FC5527994F0299F8F1F2 /* FontAwesome5_Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 213866DDE49D47329E3BDDCF /* FontAwesome5_Regular.ttf */; };
+		7639B49CA7D542FAB3993C3B /* FontAwesome5_Solid.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A4155625BCFA4D48BC6BA2DE /* FontAwesome5_Solid.ttf */; };
+		3989311398CD4273BCF8C3F2 /* Foundation.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 06ADC41E51344D4DAF753097 /* Foundation.ttf */; };
+		6F01AA3CDEAB4200B6F4D225 /* Ionicons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7F99F92839C64EA2B797A948 /* Ionicons.ttf */; };
+		ECCC0EE0406F45368B4BB8A1 /* MaterialCommunityIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4F7E9D392B1147B780C2B86C /* MaterialCommunityIcons.ttf */; };
+		AAD0918B90D345E89B6D312A /* MaterialIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 893FD21ECFD745EA8980B95B /* MaterialIcons.ttf */; };
+		D7233BEF61ED4CC7ABE5D4E7 /* Octicons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B31EDFE85D4246DD95052DFB /* Octicons.ttf */; };
+		B6877E075F394A0DB541F9EE /* SimpleLineIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0BFD46138B344288B3E86CEF /* SimpleLineIcons.ttf */; };
+		87388654E0C94B80AB6AC365 /* Zocial.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9E8BC51E3983433F9EB972EF /* Zocial.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -187,6 +187,7 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = ApolloPatient/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ApolloPatient/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = ApolloPatient/main.m; sourceTree = "<group>"; };
+		189959EF1D65778F9DE422FD /* Pods_NotificationViewController.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NotificationViewController.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1E298778D52A8CF8271AE6DD /* Pods-ApolloPatient-NotificationViewController.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloPatient-NotificationViewController.debug.xcconfig"; path = "Target Support Files/Pods-ApolloPatient-NotificationViewController/Pods-ApolloPatient-NotificationViewController.debug.xcconfig"; sourceTree = "<group>"; };
 		24E5689BA4364D2CB5684A43 /* Fontisto.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Fontisto.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Fontisto.ttf"; sourceTree = "<group>"; };
 		2D16E6891FA4F8E400B85C8A /* libReact.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libReact.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -196,12 +197,12 @@
 		6717258723016EF00088EE92 /* ApolloPatient-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ApolloPatient-Bridging-Header.h"; sourceTree = "<group>"; };
 		6717258823016EF10088EE92 /* OTInstall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTInstall.swift; sourceTree = "<group>"; };
 		6790F2152317D9880037D908 /* RSKImageCropper.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RSKImageCropper.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		70F7689C8F6CE10AA3085632 /* Pods_NotificationService.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NotificationService.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		72F617656E6541D1F4092240 /* Pods_ApolloPatient.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ApolloPatient.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8097225873FF04AEF5DA2ED7 /* Pods-NotificationViewController.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NotificationViewController.release.xcconfig"; path = "Target Support Files/Pods-NotificationViewController/Pods-NotificationViewController.release.xcconfig"; sourceTree = "<group>"; };
 		80EAA264D827BADB6794E6F4 /* Pods-ApolloPatient.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloPatient.debug.xcconfig"; path = "Target Support Files/Pods-ApolloPatient/Pods-ApolloPatient.debug.xcconfig"; sourceTree = "<group>"; };
 		836CC23D25E3A67B27683734 /* Pods-ApolloPatient-NotificationService.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloPatient-NotificationService.release.xcconfig"; path = "Target Support Files/Pods-ApolloPatient-NotificationService/Pods-ApolloPatient-NotificationService.release.xcconfig"; sourceTree = "<group>"; };
 		8D81C5135BEDE9E60C222C45 /* Pods-NotificationService.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NotificationService.debug.xcconfig"; path = "Target Support Files/Pods-NotificationService/Pods-NotificationService.debug.xcconfig"; sourceTree = "<group>"; };
+		8F626D26DAB13321C584E6D4 /* Pods_NotificationService.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NotificationService.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		970ECE9023CB50030022FE84 /* VitalsBridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VitalsBridge.h; sourceTree = "<group>"; };
 		970ECE9123CB50030022FE84 /* VitalsBridge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VitalsBridge.m; sourceTree = "<group>"; };
 		970ECE9223CB50040022FE84 /* Vitals.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Vitals.swift; sourceTree = "<group>"; };
@@ -214,13 +215,6 @@
 		97873BB7237A9A110093DF91 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		97873BB9237A9A1C0093DF91 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 		97873BBB237A9A3B0093DF91 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
-		978D135B23D1EE0A002841C4 /* MaterialIcons-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "MaterialIcons-Regular.ttf"; sourceTree = "<group>"; };
-		978D135C23D1EE0A002841C4 /* OpenSans-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "OpenSans-ExtraBold.ttf"; sourceTree = "<group>"; };
-		978D135D23D1EE0A002841C4 /* OpenSans-Semibold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "OpenSans-Semibold.ttf"; sourceTree = "<group>"; };
-		978D135E23D1EE0B002841C4 /* OpenSans-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "OpenSans-Regular.ttf"; sourceTree = "<group>"; };
-		978D135F23D1EE0B002841C4 /* Comfortaa_Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Comfortaa_Regular.ttf; sourceTree = "<group>"; };
-		978D136023D1EE0B002841C4 /* OpenSans-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "OpenSans-Light.ttf"; sourceTree = "<group>"; };
-		978D136123D1EE0B002841C4 /* OpenSans-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "OpenSans-Bold.ttf"; sourceTree = "<group>"; };
 		9797AC182420DF3400AD397F /* NotificationService.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NotificationService.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		9797AC1A2420DF3400AD397F /* NotificationService.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NotificationService.h; sourceTree = "<group>"; };
 		9797AC1B2420DF3400AD397F /* NotificationService.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NotificationService.m; sourceTree = "<group>"; };
@@ -381,22 +375,13 @@
 		BBA1D00724F4D25800C77819 /* GMUClusterItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GMUClusterItem.h; sourceTree = "<group>"; };
 		BBA1D00824F4D25800C77819 /* GMSMarker+GMUClusteritem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GMSMarker+GMUClusteritem.m"; sourceTree = "<group>"; };
 		BC164DC10808B8284C771748 /* Pods-ApolloPatient.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloPatient.release.xcconfig"; path = "Target Support Files/Pods-ApolloPatient/Pods-ApolloPatient.release.xcconfig"; sourceTree = "<group>"; };
-		CFA32A75C8CCAEF9FAE5996B /* Pods_NotificationViewController.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NotificationViewController.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		E892BC212670D8CC0018AA07 /* RNShare.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RNShare.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED2971642150620600B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.0.sdk/System/Library/Frameworks/JavaScriptCore.framework; sourceTree = DEVELOPER_DIR; };
-		F1B3D75522B8D37100521684 /* IBMPlexSans-SemiBoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "IBMPlexSans-SemiBoldItalic.ttf"; sourceTree = "<group>"; };
 		F1B3D75622B8D37100521684 /* IBMPlexSans-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "IBMPlexSans-Medium.ttf"; sourceTree = "<group>"; };
 		F1B3D75722B8D37100521684 /* IBMPlexSans-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "IBMPlexSans-SemiBold.ttf"; sourceTree = "<group>"; };
-		F1B3D75822B8D37100521684 /* IBMPlexSans-MediumItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "IBMPlexSans-MediumItalic.ttf"; sourceTree = "<group>"; };
-		F1B3D75A22B8D37100521684 /* IBMPlexSans-LightItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "IBMPlexSans-LightItalic.ttf"; sourceTree = "<group>"; };
-		F1B3D75B22B8D37100521684 /* IBMPlexSans-ExtraLight.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "IBMPlexSans-ExtraLight.ttf"; sourceTree = "<group>"; };
-		F1B3D75C22B8D37100521684 /* IBMPlexSans-Thin.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "IBMPlexSans-Thin.ttf"; sourceTree = "<group>"; };
-		F1B3D75D22B8D37100521684 /* IBMPlexSans-ThinItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "IBMPlexSans-ThinItalic.ttf"; sourceTree = "<group>"; };
-		F1B3D75E22B8D37100521684 /* IBMPlexSans-BoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "IBMPlexSans-BoldItalic.ttf"; sourceTree = "<group>"; };
 		F1B3D75F22B8D37100521684 /* IBMPlexSans-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "IBMPlexSans-Light.ttf"; sourceTree = "<group>"; };
-		F1B3D76022B8D37100521684 /* IBMPlexSans-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "IBMPlexSans-Italic.ttf"; sourceTree = "<group>"; };
 		F1B3D76122B8D37100521684 /* IBMPlexSans-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "IBMPlexSans-Regular.ttf"; sourceTree = "<group>"; };
-		F1B3D76222B8D37100521684 /* IBMPlexSans-ExtraLightItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "IBMPlexSans-ExtraLightItalic.ttf"; sourceTree = "<group>"; };
 		F1B3D76322B8D37100521684 /* IBMPlexSans-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "IBMPlexSans-Bold.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -405,6 +390,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E892BC222670D8CC0018AA07 /* RNShare.framework in Frameworks */,
 				ED297163215061F000B7C4FE /* JavaScriptCore.framework in Frameworks */,
 				97EA49A623D5B006001B575B /* HealthKit.framework in Frameworks */,
 				97FA066823E55F4A006A4294 /* ApolloVitalsFramework.framework in Frameworks */,
@@ -416,7 +402,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B91FB7BEDF1C6380DEA1F97C /* Pods_NotificationService.framework in Frameworks */,
+				5817184F86C030480B7F39F5 /* Pods_NotificationService.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -426,7 +412,7 @@
 			files = (
 				9797AC2A2420DFD500AD397F /* UserNotificationsUI.framework in Frameworks */,
 				9797AC292420DFD500AD397F /* UserNotifications.framework in Frameworks */,
-				93DD224FC8ADE4940A1E3263 /* Pods_NotificationViewController.framework in Frameworks */,
+				E8555ABD2095578C48F256F1 /* Pods_NotificationViewController.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -462,6 +448,7 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E892BC212670D8CC0018AA07 /* RNShare.framework */,
 				97EA49A523D5B006001B575B /* HealthKit.framework */,
 				97873BBB237A9A3B0093DF91 /* libc++.tbd */,
 				97873BB9237A9A1C0093DF91 /* MobileCoreServices.framework */,
@@ -473,8 +460,8 @@
 				72F617656E6541D1F4092240 /* Pods_ApolloPatient.framework */,
 				978157C32420C86800749029 /* UserNotifications.framework */,
 				978157C52420C86800749029 /* UserNotificationsUI.framework */,
-				70F7689C8F6CE10AA3085632 /* Pods_NotificationService.framework */,
-				CFA32A75C8CCAEF9FAE5996B /* Pods_NotificationViewController.framework */,
+				8F626D26DAB13321C584E6D4 /* Pods_NotificationService.framework */,
+				189959EF1D65778F9DE422FD /* Pods_NotificationViewController.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -525,6 +512,21 @@
 			isa = PBXGroup;
 			children = (
 				24E5689BA4364D2CB5684A43 /* Fontisto.ttf */,
+				75EC0786C471462BA5A0AD4C /* AntDesign.ttf */,
+				76905D85B0954464B102532C /* Entypo.ttf */,
+				AF1E43137D1A4523AA6CB468 /* EvilIcons.ttf */,
+				03C94BA7A799462EA3C858E5 /* Feather.ttf */,
+				9E5A65EA1CB141B88D9111AB /* FontAwesome.ttf */,
+				4538266E99694C6294195EDA /* FontAwesome5_Brands.ttf */,
+				213866DDE49D47329E3BDDCF /* FontAwesome5_Regular.ttf */,
+				A4155625BCFA4D48BC6BA2DE /* FontAwesome5_Solid.ttf */,
+				06ADC41E51344D4DAF753097 /* Foundation.ttf */,
+				7F99F92839C64EA2B797A948 /* Ionicons.ttf */,
+				4F7E9D392B1147B780C2B86C /* MaterialCommunityIcons.ttf */,
+				893FD21ECFD745EA8980B95B /* MaterialIcons.ttf */,
+				B31EDFE85D4246DD95052DFB /* Octicons.ttf */,
+				0BFD46138B344288B3E86CEF /* SimpleLineIcons.ttf */,
+				9E8BC51E3983433F9EB972EF /* Zocial.ttf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -819,26 +821,10 @@
 		F1B3D75422B8D37100521684 /* Fonts */ = {
 			isa = PBXGroup;
 			children = (
-				978D135F23D1EE0B002841C4 /* Comfortaa_Regular.ttf */,
-				978D135B23D1EE0A002841C4 /* MaterialIcons-Regular.ttf */,
-				978D136123D1EE0B002841C4 /* OpenSans-Bold.ttf */,
-				978D135C23D1EE0A002841C4 /* OpenSans-ExtraBold.ttf */,
-				978D136023D1EE0B002841C4 /* OpenSans-Light.ttf */,
-				978D135E23D1EE0B002841C4 /* OpenSans-Regular.ttf */,
-				978D135D23D1EE0A002841C4 /* OpenSans-Semibold.ttf */,
-				F1B3D75522B8D37100521684 /* IBMPlexSans-SemiBoldItalic.ttf */,
 				F1B3D75622B8D37100521684 /* IBMPlexSans-Medium.ttf */,
 				F1B3D75722B8D37100521684 /* IBMPlexSans-SemiBold.ttf */,
-				F1B3D75822B8D37100521684 /* IBMPlexSans-MediumItalic.ttf */,
-				F1B3D75A22B8D37100521684 /* IBMPlexSans-LightItalic.ttf */,
-				F1B3D75B22B8D37100521684 /* IBMPlexSans-ExtraLight.ttf */,
-				F1B3D75C22B8D37100521684 /* IBMPlexSans-Thin.ttf */,
-				F1B3D75D22B8D37100521684 /* IBMPlexSans-ThinItalic.ttf */,
-				F1B3D75E22B8D37100521684 /* IBMPlexSans-BoldItalic.ttf */,
 				F1B3D75F22B8D37100521684 /* IBMPlexSans-Light.ttf */,
-				F1B3D76022B8D37100521684 /* IBMPlexSans-Italic.ttf */,
 				F1B3D76122B8D37100521684 /* IBMPlexSans-Regular.ttf */,
-				F1B3D76222B8D37100521684 /* IBMPlexSans-ExtraLightItalic.ttf */,
 				F1B3D76322B8D37100521684 /* IBMPlexSans-Bold.ttf */,
 			);
 			name = Fonts;
@@ -988,39 +974,38 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F1B3D79422B8D37200521684 /* IBMPlexSans-BoldItalic.ttf in Resources */,
 				4929325025C1959C000A9EBF /* join_sound.mp3 in Resources */,
-				978D136223D1EE0B002841C4 /* MaterialIcons-Regular.ttf in Resources */,
-				F1B3D79222B8D37200521684 /* IBMPlexSans-Thin.ttf in Resources */,
 				97FFBDED23E4887B00E55E34 /* Info-watchOS.plist in Resources */,
-				F1B3D79822B8D37200521684 /* IBMPlexSans-ExtraLightItalic.ttf in Resources */,
-				F1B3D79022B8D37200521684 /* IBMPlexSans-LightItalic.ttf in Resources */,
-				F1B3D79322B8D37200521684 /* IBMPlexSans-ThinItalic.ttf in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
 				F1B3D79722B8D37200521684 /* IBMPlexSans-Regular.ttf in Resources */,
-				978D136523D1EE0B002841C4 /* OpenSans-Regular.ttf in Resources */,
 				9784DFB723A2282600CB4A28 /* GoogleService-Info.plist in Resources */,
 				F1B3D79922B8D37200521684 /* IBMPlexSans-Bold.ttf in Resources */,
-				F1B3D78E22B8D37200521684 /* IBMPlexSans-MediumItalic.ttf in Resources */,
 				F1B3D78D22B8D37200521684 /* IBMPlexSans-SemiBold.ttf in Resources */,
-				F1B3D79122B8D37200521684 /* IBMPlexSans-ExtraLight.ttf in Resources */,
 				F1B3D78C22B8D37200521684 /* IBMPlexSans-Medium.ttf in Resources */,
 				F1B3D79522B8D37200521684 /* IBMPlexSans-Light.ttf in Resources */,
-				F1B3D78B22B8D37200521684 /* IBMPlexSans-SemiBoldItalic.ttf in Resources */,
 				97B123D924E53C1600B9D379 /* callkitAppIcon.png in Resources */,
-				978D136323D1EE0B002841C4 /* OpenSans-ExtraBold.ttf in Resources */,
-				F1B3D79622B8D37200521684 /* IBMPlexSans-Italic.ttf in Resources */,
-				978D136623D1EE0B002841C4 /* Comfortaa_Regular.ttf in Resources */,
 				492AFA5125C2A4A500330A9C /* left_sound.mp3 in Resources */,
 				97A7C9D4249B430A00EDDFC0 /* incallmanager_ringtone.mp3 in Resources */,
-				978D136823D1EE0B002841C4 /* OpenSans-Bold.ttf in Resources */,
 				97FFBDEC23E4887B00E55E34 /* Info-iOS.plist in Resources */,
-				978D136423D1EE0B002841C4 /* OpenSans-Semibold.ttf in Resources */,
 				97FFBDF023E4887B00E55E34 /* nlp.js in Resources */,
 				97D79A1C24924D410029DE31 /* main.jsbundle in Resources */,
 				97FFBDEF23E4887B00E55E34 /* rrule.js in Resources */,
-				978D136723D1EE0B002841C4 /* OpenSans-Light.ttf in Resources */,
+				F109515A71C04208812E40C7 /* AntDesign.ttf in Resources */,
+				51DB4749A9874BD886B2F10B /* Entypo.ttf in Resources */,
+				92F3F92657424548B56588C7 /* EvilIcons.ttf in Resources */,
+				7CF13BFBC3EB448BA0017BA0 /* Feather.ttf in Resources */,
+				E0A12ADE12A2489881685B48 /* FontAwesome.ttf in Resources */,
+				7A1955DD5F9B407C97969865 /* FontAwesome5_Brands.ttf in Resources */,
+				7BE6FC5527994F0299F8F1F2 /* FontAwesome5_Regular.ttf in Resources */,
+				7639B49CA7D542FAB3993C3B /* FontAwesome5_Solid.ttf in Resources */,
+				3989311398CD4273BCF8C3F2 /* Foundation.ttf in Resources */,
+				6F01AA3CDEAB4200B6F4D225 /* Ionicons.ttf in Resources */,
+				ECCC0EE0406F45368B4BB8A1 /* MaterialCommunityIcons.ttf in Resources */,
+				AAD0918B90D345E89B6D312A /* MaterialIcons.ttf in Resources */,
+				D7233BEF61ED4CC7ABE5D4E7 /* Octicons.ttf in Resources */,
+				B6877E075F394A0DB541F9EE /* SimpleLineIcons.ttf in Resources */,
+				87388654E0C94B80AB6AC365 /* Zocial.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1096,20 +1081,15 @@
 				"${BUILT_PRODUCTS_DIR}/AFNetworking/AFNetworking.framework",
 				"${BUILT_PRODUCTS_DIR}/BVLinearGradient/BVLinearGradient.framework",
 				"${BUILT_PRODUCTS_DIR}/Base64/Base64.framework",
-				"${BUILT_PRODUCTS_DIR}/BugsnagReactNative/BugsnagReactNative.framework",
 				"${BUILT_PRODUCTS_DIR}/Charts/Charts.framework",
 				"${BUILT_PRODUCTS_DIR}/CodePush/CodePush.framework",
 				"${BUILT_PRODUCTS_DIR}/DoubleConversion/DoubleConversion.framework",
 				"${BUILT_PRODUCTS_DIR}/FBReactNativeSpec/FBReactNativeSpec.framework",
-				"${BUILT_PRODUCTS_DIR}/FBSDKCoreKit/FBSDKCoreKit.framework",
-				"${BUILT_PRODUCTS_DIR}/FBSDKLoginKit/FBSDKLoginKit.framework",
-				"${BUILT_PRODUCTS_DIR}/FBSDKShareKit/FBSDKShareKit.framework",
 				"${BUILT_PRODUCTS_DIR}/FMDB/FMDB.framework",
 				"${BUILT_PRODUCTS_DIR}/Folly/folly.framework",
 				"${BUILT_PRODUCTS_DIR}/GTMSessionFetcher/GTMSessionFetcher.framework",
 				"${BUILT_PRODUCTS_DIR}/GoogleUtilities/GoogleUtilities.framework",
 				"${PODS_ROOT}/HyperSDK/HyperSDK.framework",
-				"${PODS_ROOT}/HyperSDK/HyperSDK.framework.dSYM",
 				"${PODS_ROOT}/HyperSDK/SimplFingerPrint.framework",
 				"${BUILT_PRODUCTS_DIR}/IQKeyboardManager/IQKeyboardManager.framework",
 				"${BUILT_PRODUCTS_DIR}/JWT/JWT.framework",
@@ -1125,6 +1105,8 @@
 				"${BUILT_PRODUCTS_DIR}/RNDeviceInfo/RNDeviceInfo.framework",
 				"${BUILT_PRODUCTS_DIR}/RNGestureHandler/RNGestureHandler.framework",
 				"${BUILT_PRODUCTS_DIR}/RNImageCropPicker/RNImageCropPicker.framework",
+				"${BUILT_PRODUCTS_DIR}/RNSVG/RNSVG.framework",
+				"${BUILT_PRODUCTS_DIR}/RNShare/RNShare.framework",
 				"${BUILT_PRODUCTS_DIR}/RNSound/RNSound.framework",
 				"${BUILT_PRODUCTS_DIR}/RNVectorIcons/RNVectorIcons.framework",
 				"${BUILT_PRODUCTS_DIR}/RNVoipPushNotification/RNVoipPushNotification.framework",
@@ -1145,28 +1127,25 @@
 				"${BUILT_PRODUCTS_DIR}/React-jsiexecutor/jsireact.framework",
 				"${BUILT_PRODUCTS_DIR}/React-jsinspector/jsinspector.framework",
 				"${BUILT_PRODUCTS_DIR}/ReactCommon/ReactCommon.framework",
-				"${BUILT_PRODUCTS_DIR}/ReactNativeExceptionHandler/ReactNativeExceptionHandler.framework",
-				"${BUILT_PRODUCTS_DIR}/ReactNativeIncallManager/ReactNativeIncallManager.framework",
 				"${BUILT_PRODUCTS_DIR}/ReactNativePermissions/ReactNativePermissions.framework",
+				"${BUILT_PRODUCTS_DIR}/ReactNativeWebPFormat/ReactNativeWebPFormat.framework",
 				"${BUILT_PRODUCTS_DIR}/ReverseExtension/ReverseExtension.framework",
 				"${BUILT_PRODUCTS_DIR}/SDWebImage/SDWebImage.framework",
+				"${BUILT_PRODUCTS_DIR}/SDWebImageWebPCoder/SDWebImageWebPCoder.framework",
 				"${BUILT_PRODUCTS_DIR}/SSZipArchive/SSZipArchive.framework",
 				"${BUILT_PRODUCTS_DIR}/Stylish/Stylish.framework",
 				"${BUILT_PRODUCTS_DIR}/TGFoursquareLocationDetail/TGFoursquareLocationDetail.framework",
 				"${PODS_ROOT}/TwilioChatClient/TwilioChatClient.framework",
-				"${PODS_ROOT}/TwilioChatClient/TwilioChatClient.framework.dSYM",
 				"${PODS_ROOT}/WebEngage/xc11/WebEngage.framework",
-				"${PODS_ROOT}/WebEngage/xc11/WebEngage.framework.dSYM",
 				"${BUILT_PRODUCTS_DIR}/Yoga/yoga.framework",
 				"${BUILT_PRODUCTS_DIR}/glog/glog.framework",
-				"${BUILT_PRODUCTS_DIR}/hyper-sdk-react/hyper_sdk_react.framework",
+				"${BUILT_PRODUCTS_DIR}/libwebp/libwebp.framework",
 				"${BUILT_PRODUCTS_DIR}/nanopb/nanopb.framework",
 				"${BUILT_PRODUCTS_DIR}/react-native-background-timer/react_native_background_timer.framework",
 				"${BUILT_PRODUCTS_DIR}/react-native-camera/react_native_camera.framework",
 				"${BUILT_PRODUCTS_DIR}/react-native-document-picker/react_native_document_picker.framework",
-				"${BUILT_PRODUCTS_DIR}/react-native-fbsdk/react_native_fbsdk.framework",
 				"${BUILT_PRODUCTS_DIR}/react-native-geolocation-service/react_native_geolocation_service.framework",
-				"${BUILT_PRODUCTS_DIR}/react-native-image-picker/react_native_image_picker.framework",
+				"${BUILT_PRODUCTS_DIR}/react-native-html-to-pdf/react_native_html_to_pdf.framework",
 				"${BUILT_PRODUCTS_DIR}/react-native-image-resizer/react_native_image_resizer.framework",
 				"${BUILT_PRODUCTS_DIR}/react-native-keep-awake/react_native_keep_awake.framework",
 				"${BUILT_PRODUCTS_DIR}/react-native-maps/react_native_maps.framework",
@@ -1186,20 +1165,15 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AFNetworking.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/BVLinearGradient.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Base64.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/BugsnagReactNative.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Charts.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CodePush.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/DoubleConversion.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FBReactNativeSpec.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FBSDKCoreKit.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FBSDKLoginKit.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FBSDKShareKit.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FMDB.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/folly.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GTMSessionFetcher.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleUtilities.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/HyperSDK.framework",
-				"${DWARF_DSYM_FOLDER_PATH}/HyperSDK.framework.dSYM",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SimplFingerPrint.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/IQKeyboardManager.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/JWT.framework",
@@ -1215,6 +1189,8 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RNDeviceInfo.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RNGestureHandler.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RNImageCropPicker.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RNSVG.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RNShare.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RNSound.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RNVectorIcons.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RNVoipPushNotification.framework",
@@ -1235,28 +1211,25 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/jsireact.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/jsinspector.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactCommon.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeExceptionHandler.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeIncallManager.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativePermissions.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeWebPFormat.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReverseExtension.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDWebImage.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDWebImageWebPCoder.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SSZipArchive.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Stylish.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/TGFoursquareLocationDetail.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/TwilioChatClient.framework",
-				"${DWARF_DSYM_FOLDER_PATH}/TwilioChatClient.framework.dSYM",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/WebEngage.framework",
-				"${DWARF_DSYM_FOLDER_PATH}/WebEngage.framework.dSYM",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/yoga.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/glog.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hyper_sdk_react.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/libwebp.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/nanopb.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/react_native_background_timer.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/react_native_camera.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/react_native_document_picker.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/react_native_fbsdk.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/react_native_geolocation_service.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/react_native_image_picker.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/react_native_html_to_pdf.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/react_native_image_resizer.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/react_native_keep_awake.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/react_native_maps.framework",
@@ -1479,7 +1452,7 @@
 				CODE_SIGN_ENTITLEMENTS = ApolloPatient/ApolloPatient.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
@@ -1507,7 +1480,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MARKETING_VERSION = 5.4.8;
+				MARKETING_VERSION = 5.5.12;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lc++",
@@ -1532,7 +1505,7 @@
 				CODE_SIGN_ENTITLEMENTS = ApolloPatient/ApolloPatient.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1559,7 +1532,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MARKETING_VERSION = 5.4.8;
+				MARKETING_VERSION = 5.5.12;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lc++",
@@ -1688,7 +1661,7 @@
 				CODE_SIGN_ENTITLEMENTS = NotificationService/NotificationService.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
@@ -1696,7 +1669,7 @@
 				INFOPLIST_FILE = NotificationService/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 5.4.8;
+				MARKETING_VERSION = 5.5.12;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247.NotificationService;
@@ -1721,7 +1694,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
@@ -1729,7 +1702,7 @@
 				INFOPLIST_FILE = NotificationService/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 5.4.8;
+				MARKETING_VERSION = 5.5.12;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1752,7 +1725,7 @@
 				CODE_SIGN_ENTITLEMENTS = NotificationViewController/NotificationViewController.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
@@ -1760,7 +1733,7 @@
 				INFOPLIST_FILE = NotificationViewController/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 5.4.8;
+				MARKETING_VERSION = 5.5.12;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247.NotificationViewController;
@@ -1785,7 +1758,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Apollo Hospitals Enterprise Limited (4A6H5Y5CK5)";
 				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				ENABLE_BITCODE = NO;
@@ -1793,7 +1766,7 @@
 				INFOPLIST_FILE = NotificationViewController/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 5.4.8;
+				MARKETING_VERSION = 5.5.12;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247.NotificationViewController;
 				PRODUCT_NAME = "$(TARGET_NAME)";

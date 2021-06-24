@@ -35,7 +35,7 @@ interface ConsultedDoctorProps extends NavigationScreenProps {}
 
 export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
   const client = useApolloClient();
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
 
   const [loading, setLoading] = useState<boolean>(true);
   const [doctors, setDoctors] = useState<
@@ -119,14 +119,9 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
   const onClickDoctorCard = (
     item: getPatientPastConsultedDoctors_getPatientPastConsultedDoctors
   ) => {
-    myConsultedDoctorsClickedWEBEngage(currentPatient, item);
+    myConsultedDoctorsClickedWEBEngage(currentPatient, item, allCurrentPatients);
     props.navigation.navigate(AppRoutes.DoctorDetails, {
       doctorId: item?.id,
-      consultModeSelected:
-        item?.consultDetails?.consultMode === ConsultMode.ONLINE
-          ? ConsultMode.ONLINE
-          : ConsultMode.PHYSICAL,
-      showBookAppointment: true,
     });
   };
 

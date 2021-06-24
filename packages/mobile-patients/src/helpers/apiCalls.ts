@@ -566,6 +566,26 @@ export const getMedicineDetailsApi = (
   );
 };
 
+export const getMedicineDetailsApiV2 = (
+  urlKey: string,
+  axdcCode?: string,
+  pincode?: string
+): Promise<AxiosResponse<MedicineProductDetailsResponse>> => {
+  return Axios.post(
+    `${config.MED_DETAIL[0]}/popcsrchpdpv2_api.php`,
+    {
+      params: urlKey,
+      axdcCode: axdcCode || '',
+      pincode: pincode || '',
+    },
+    {
+      headers: {
+        Authorization: config.MED_DETAIL[1],
+      },
+    }
+  );
+};
+
 let cancelSearchMedicineApi247: Canceler | undefined;
 export const searchMedicineApi = async (
   searchText: string,
@@ -1040,13 +1060,16 @@ export const getSymptomsTrackerResult = (
   return Axios.get(url);
 };
 
-export const getMedicineSku = (skuKey: string): Promise<AxiosResponse<any>> => {
+export const getMedicineCategoryIds = (
+  skuKey: string,
+  level: string
+): Promise<AxiosResponse<any>> => {
   return Axios({
     url: config.GET_SKU[0],
     method: 'POST',
     data: {
       params: skuKey,
-      level: 'product',
+      level,
     },
     headers: {
       Authorization: config.GET_SKU[1],
@@ -1072,9 +1095,19 @@ export const searchPHRApiWithAuthToken = (
   return Axios.get(searchPHRUrlWithAuthToke);
 };
 
-export const getLandingPageBanners = (pageName: string): Promise<AxiosResponse<any>> => {
+export const getCorporateMembershipData = (planId: string): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
-  const getBanners = `${baseurl}/banner/${pageName}`;
+  const corporateCmsUrl = `${baseurl}/corporate-package-benefit/${planId}`;
+  return Axios.get(corporateCmsUrl, {
+    headers: {
+      Authorization: config.DRUPAL_CONFIG[1],
+    },
+  });
+};
+
+export const getLandingPageBanners = (pageName: string, cityId: number): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getBanners = `${baseurl}/banner/${pageName}?city=${cityId}`;
   return Axios.get(getBanners, {
     headers: {
       Authorization: config.DRUPAL_CONFIG[1],
@@ -1095,9 +1128,12 @@ export const getDiagnosticsSearchResults = (
     },
   });
 };
-export const getDiagnosticsPopularResults = (pageName: string): Promise<AxiosResponse<any>> => {
+export const getDiagnosticsPopularResults = (
+  pageName: string,
+  cityId: number
+): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
-  const getSearchResults = `${baseurl}/${pageName}/popular-test-search`;
+  const getSearchResults = `${baseurl}/${pageName}/popular-test-search?city=${cityId}`;
   return Axios.get(getSearchResults, {
     headers: {
       Authorization: config.DRUPAL_CONFIG[1],
@@ -1175,4 +1211,23 @@ export const getDiagnosticCartItemReportGenDetails = (
       Authorization: config.DRUPAL_CONFIG[1],
     },
   });
+};
+
+export const getDiagnosticDoctorPrescriptionResults = (
+  itemNames: string,
+  cityId?: number
+): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getSearchResults = `${baseurl}/diagnostic/diagnosticdoctoritemsearch`;
+  return Axios.post(
+    getSearchResults,
+    {
+      keyword: itemNames,
+    },
+    {
+      headers: {
+        Authorization: config.DRUPAL_CONFIG[1],
+      },
+    }
+  );
 };

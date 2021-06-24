@@ -1,5 +1,5 @@
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { CircleLogo, OfferIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
@@ -30,6 +30,8 @@ import {
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
+const screenWidth = Dimensions.get('window').width;
+const CARD_WIDTH = screenWidth * 0.8; //0.86
 
 export interface PackageCardProps {
   onPress?: () => void;
@@ -42,115 +44,126 @@ export interface PackageCardProps {
   isVertical: boolean;
   columns?: number;
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
-  source: string;
+  source:
+    | 'Home page'
+    | 'Full search'
+    | 'Details page'
+    | 'Partial search'
+    | 'Listing page'
+    | 'Category page'
+    | 'Prescription'
+    | 'Cart page';
   sourceScreen: string;
 }
 
 export const PackageCard: React.FC<PackageCardProps> = (props) => {
-  const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
+  const { cartItems, addCartItem, removeCartItem, modifiedOrderItemIds } = useDiagnosticsCart();
   const { data, isCircleSubscribed, source, navigation, sourceScreen } = props;
   const actualItemsToShow =
     data?.diagnosticWidgetData?.length > 0 &&
     data?.diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
 
-  const renderItemCard = (item: any) => {
-    const getItem = item?.item;
-    const getDiagnosticPricingForItem = getItem?.diagnosticPricing;
+  const renderItemCard = useCallback(
+    (item: any) => {
+      const getItem = item?.item;
+      const getDiagnosticPricingForItem = getItem?.diagnosticPricing;
 
-    if (getDiagnosticPricingForItem == undefined || getDiagnosticPricingForItem == null) {
-      return null;
-    }
-    const packageMrpForItem = getItem?.packageCalculatedMrp!;
-    const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
+      if (getDiagnosticPricingForItem == undefined || getDiagnosticPricingForItem == null) {
+        return null;
+      }
+      const packageMrpForItem = getItem?.packageCalculatedMrp!;
+      const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
 
-    if (!pricesForItem?.itemActive) {
-      return null;
-    }
+      if (!pricesForItem?.itemActive) {
+        return null;
+      }
 
-    const imageUrl = getItem?.itemImageUrl;
-    const name = getItem?.itemTitle;
-    const inclusions = getItem?.inclusionData;
+      const imageUrl = getItem?.itemImageUrl;
+      const name = getItem?.itemTitle;
+      const inclusions = getItem?.inclusionData;
 
-    const getMandatoryParamter =
-      !!inclusions &&
-      inclusions?.length > 0 &&
-      inclusions?.map((inclusion: any) =>
-        inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
-      );
+      const getMandatoryParamter =
+        !!inclusions &&
+        inclusions?.length > 0 &&
+        inclusions?.map((inclusion: any) =>
+          inclusion?.incObservationData?.filter((item: any) => item?.mandatoryValue === '1')
+        );
 
-    const getMandatoryParameterCount = getMandatoryParamter?.reduce(
-      (prevVal: any, curr: any) => prevVal + curr?.length,
-      0
-    );
+      const getMandatoryParameterCount =
+        !!getMandatoryParamter &&
+        getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
 
-    const getParamterData = getMandatoryParamter?.length > 0 && getMandatoryParamter?.flat(1);
-    const dataToShow = getMandatoryParameterCount > 0 ? getParamterData : inclusions;
+      const getParamterData =
+        !!getMandatoryParamter && getMandatoryParamter?.length > 0 && getMandatoryParamter?.flat(1);
+      const dataToShow = getMandatoryParameterCount > 0 ? getParamterData : inclusions;
 
-    const promoteCircle = pricesForItem?.promoteCircle;
-    const promoteDiscount = pricesForItem?.promoteDiscount;
-    const circleDiscount = pricesForItem?.circleDiscount;
-    const specialDiscount = pricesForItem?.specialDiscount;
-    const discount = pricesForItem?.discount;
+      const promoteCircle = pricesForItem?.promoteCircle;
+      const promoteDiscount = pricesForItem?.promoteDiscount;
+      const circleDiscount = pricesForItem?.circleDiscount;
+      const specialDiscount = pricesForItem?.specialDiscount;
+      const discount = pricesForItem?.discount;
 
-    return (
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={() => onPress(getItem, packageMrpForItem, pricesForItem)}
-        key={getItem.itemId}
-        style={[
-          styles.packageCardTouch,
-          { width: Dimensions.get('window').width * (props.isVertical ? 0.9 : 0.8) },
-          props?.isVertical ? {} : { marginLeft: item?.index == 0 ? 20 : 6 },
-        ]}
-      >
-        <View>
-          <View style={{ minHeight: 100 }}>
-            <View style={styles.topPackageView}>
-              <View style={{ width: '75%' }}>
-                <Text style={styles.itemNameText} numberOfLines={2}>
-                  {name}
-                </Text>
-              </View>
-              {renderPercentageDiscount(
-                promoteCircle && isCircleSubscribed
-                  ? circleDiscount
-                  : promoteDiscount
-                  ? specialDiscount
-                  : discount
-              )}
-            </View>
-            {!!inclusions && inclusions?.length > 0 ? (
-              <View style={{ minHeight: isSmallDevice ? 90 : 95 }}>
-                <Text style={styles.inclusionsText}>
-                  {getMandatoryParameterCount > 0
-                    ? `TOTAL PARAMETERS : ${getMandatoryParameterCount}`
-                    : `TOTAL INCLUSIONS : ${inclusions?.length}`}{' '}
-                </Text>
-
-                {dataToShow?.map((item: any, index: number) =>
-                  index < 3 ? (
-                    <Text style={styles.inclusionName}>
-                      {nameFormater(
-                        getMandatoryParameterCount > 0 ? item?.observationName : item?.incTitle,
-                        'title'
-                      )}{' '}
-                      {index == 2 && dataToShow?.length - 3 > 0 && (
-                        <Text style={styles.moreText}>
-                          {'   '}+{dataToShow?.length - 3} more
-                        </Text>
-                      )}
-                    </Text>
-                  ) : null
+      return (
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => onPress(getItem, packageMrpForItem, pricesForItem)}
+          key={getItem?.itemId.toString()}
+          style={[
+            styles.packageCardTouch,
+            { width: Dimensions.get('window').width * (props.isVertical ? 0.9 : 0.8) },
+            props?.isVertical ? {} : { marginLeft: item?.index == 0 ? 20 : 6 },
+          ]}
+        >
+          <View key={getItem?.itemId.toString()}>
+            <View style={{ minHeight: !!inclusions && inclusions?.length > 0 ? 100 : 0 }}>
+              <View style={styles.topPackageView}>
+                <View style={{ width: '75%' }}>
+                  <Text style={styles.itemNameText} numberOfLines={2}>
+                    {name}
+                  </Text>
+                </View>
+                {renderPercentageDiscount(
+                  promoteCircle && isCircleSubscribed
+                    ? circleDiscount
+                    : promoteDiscount
+                    ? specialDiscount
+                    : discount
                 )}
               </View>
-            ) : null}
+              {!!inclusions && inclusions?.length > 0 ? (
+                <View style={{ minHeight: isSmallDevice ? 90 : 95 }}>
+                  <Text style={styles.inclusionsText}>
+                    {getMandatoryParameterCount > 0
+                      ? `TOTAL PARAMETERS : ${getMandatoryParameterCount}`
+                      : `TOTAL INCLUSIONS : ${inclusions?.length}`}{' '}
+                  </Text>
+
+                  {dataToShow?.map((item: any, index: number) =>
+                    index < 3 ? (
+                      <Text style={styles.inclusionName}>
+                        {nameFormater(
+                          getMandatoryParameterCount > 0 ? item?.observationName : item?.incTitle,
+                          'title'
+                        )}{' '}
+                        {index == 2 && dataToShow?.length - 3 > 0 && (
+                          <Text style={styles.moreText}>
+                            {'   '}+{dataToShow?.length - 3} more
+                          </Text>
+                        )}
+                      </Text>
+                    ) : null
+                  )}
+                </View>
+              ) : null}
+            </View>
+            <Spearator style={styles.horizontalSeparator} />
+            {renderPricesView(pricesForItem, packageMrpForItem, getItem)}
           </View>
-          <Spearator style={styles.horizontalSeparator} />
-          {renderPricesView(pricesForItem, packageMrpForItem, getItem)}
-        </View>
-      </TouchableOpacity>
-    );
-  };
+        </TouchableOpacity>
+      );
+    },
+    [cartItems]
+  );
 
   const renderPercentageDiscount = (discount: string | number) => {
     return (
@@ -303,13 +316,18 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     const planToConsider = pricesForItem?.planToConsider;
     const discountToDisplay = pricesForItem?.discountToDisplay;
     const mrpToDisplay = pricesForItem?.mrpToDisplay;
+    const widgetType = data?.diagnosticWidgetType;
 
     DiagnosticAddToCartEvent(
       item?.itemTitle,
       `${item?.itemId}`,
       mrpToDisplay,
       discountToDisplay,
-      data?.diagnosticWidgetTitle
+      source,
+      widgetType === string.diagnosticCategoryTitle.categoryGrid ||
+        widgetType == string.diagnosticCategoryTitle.category
+        ? 'Category page'
+        : data?.diagnosticWidgetTitle
     );
 
     addCartItem!({
@@ -335,7 +353,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
   }
 
   function postHomePageWidgetClicked(name: string, id: string, section: string) {
-    DiagnosticHomePageWidgetClicked(name, id, section);
+    DiagnosticHomePageWidgetClicked(section, id, name);
   }
 
   function onPress(item: any, packageCalculatedMrp: number, pricesForItem: any) {
@@ -400,6 +418,10 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     pricesForItem: any,
     packageCalculatedMrp: number
   ) => {
+    const isAlreadyPartOfOrder =
+      !!modifiedOrderItemIds &&
+      modifiedOrderItemIds?.length &&
+      modifiedOrderItemIds?.find((id: number) => Number(id) == Number(item?.id));
     return (
       <Text
         style={[
@@ -409,12 +431,14 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
           },
         ]}
         onPress={() =>
-          isAddedToCart
+          isAlreadyPartOfOrder
+            ? {}
+            : isAddedToCart
             ? onPressRemoveFromCart(item)
             : onPressAddToCart(item, pricesForItem, packageCalculatedMrp)
         }
       >
-        {isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
+        {isAlreadyPartOfOrder ? 'ALREADY ADDED' : isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
       </Text>
     );
   };
@@ -435,6 +459,15 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     }
   };
 
+  const getItemLayout = useCallback(
+    (data, index) => ({
+      length: CARD_WIDTH,
+      offset: CARD_WIDTH * index,
+      index,
+    }),
+    []
+  );
+
   const keyExtractor = useCallback((item: any, index: number) => `${index}`, []);
 
   return (
@@ -450,7 +483,9 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
             horizontal={!props.isVertical}
             data={actualItemsToShow}
             renderItem={renderItemCard}
-            maxToRenderPerBatch={3}
+            initialNumToRender={2}
+            maxToRenderPerBatch={5}
+            getItemLayout={getItemLayout}
           />
         ) : (
           renderError()
@@ -462,7 +497,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
 
 const styles = StyleSheet.create({
   packageCardTouch: {
-    width: Dimensions.get('window').width * 0.8, //0.86
+    width: CARD_WIDTH,
     ...theme.viewStyles.card(16, 4, 10, '#fff', 10),
     paddingVertical: 12,
     marginRight: 10,

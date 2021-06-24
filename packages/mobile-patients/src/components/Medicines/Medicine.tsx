@@ -119,7 +119,7 @@ import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import Axios from 'axios';
 import _ from 'lodash';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Dimensions,
@@ -135,6 +135,7 @@ import {
   View,
   ViewStyle,
   BackHandler,
+  ActivityIndicator,
 } from 'react-native';
 import ContentLoader from 'react-native-easy-content-loader';
 import { Divider, Image, ListItem } from 'react-native-elements';
@@ -219,6 +220,11 @@ const styles = StyleSheet.create({
     padding: 10,
     alignItems: 'center',
   },
+  searchResults: {
+    paddingTop: 10.5,
+    maxHeight: 266,
+    backgroundColor: '#f7f8f5',
+  },
 });
 
 const filterBanners = (banners: OfferBannerSection[]) => {
@@ -290,6 +296,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     pharmacyCircleAttributes,
     setEPrescriptions,
     setPhysicalPrescriptions,
+    asyncPincode,
+    setAsyncPincode,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
@@ -318,7 +326,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const defaultAddress = addresses.find((item) => item.defaultAddress);
   const hasLocation = locationDetails || pharmacyLocation || defaultAddress;
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
-  const [asyncPincode, setAsyncPincode] = useState({});
+  const [isFocused, setIsFocused] = useState<boolean>(false);
   type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
   const postwebEngageCategoryClickedEvent = (
     categoryId: string,
@@ -345,10 +353,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', handleBack);
-    return () => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    };
+    if (comingFrom === 'deeplink') {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+      return () => {
+        BackHandler.removeEventListener('hardwareBackPress', handleBack);
+      };
+    }
   }, []);
 
   const handleBack = () => {
@@ -534,15 +544,33 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     if (pharmacyPincode) {
       updateServiceability(pharmacyPincode);
       setPinCode && setPinCode(pharmacyPincode);
+      getUserSubscriptionsByStatus();
     }
+  }, []);
 
-    const getAsyncLocationPincode = async () => {
-      const asyncLocationPincode: any = await AsyncStorage.getItem('PharmacyLocationPincode');
-      if (asyncLocationPincode) {
-        setAsyncPincode(JSON.parse(asyncLocationPincode));
-      }
+  useEffect(() => {
+    if (isFocused) {
+      const getAsyncLocationPincode = async () => {
+        const asyncLocationPincode: any = await AsyncStorage.getItem('PharmacyLocationPincode');
+        if (asyncLocationPincode) {
+          setAsyncPincode?.(JSON.parse(asyncLocationPincode));
+        }
+      };
+      getAsyncLocationPincode();
+    }
+  }, [isFocused]);
+
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      setIsFocused(true);
+    });
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+      setIsFocused(false);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      didBlur && didBlur.remove();
     };
-    getAsyncLocationPincode();
   }, []);
 
   useEffect(() => {
@@ -589,14 +617,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, []);
 
   const getUserBanners = async () => {
-    const res: any = await getUserBannersList(
-      client,
-      currentPatient,
-      string.banner_context.PHARMACY_HOME
-    );
-    if (res) {
-      setBannerData && setBannerData(res);
-    } else {
+    try {
+      const res: any = await getUserBannersList(
+        client,
+        currentPatient,
+        string.banner_context.PHARMACY_HOME
+      );
+      if (res) {
+        setBannerData && setBannerData(res);
+      }
+    } catch (error) {
       setBannerData && setBannerData([]);
     }
   };
@@ -718,7 +748,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           addresses={addressList}
           onPressSelectAddress={(address) => {
             setAsyncPharmaLocation(address);
-            setAsyncPincode(saveAddress);
+            const saveAddress = {
+              pincode: address?.zipcode,
+              id: address?.id,
+              city: address?.city,
+              state: address?.state,
+            };
+            setAsyncPincode?.(saveAddress);
             setDefaultAddress(address);
           }}
           onPressEditAddress={(address) => {
@@ -788,13 +824,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     }
     try {
       setLoading(true);
+      setPageLoading(true);
       const resonse = (await getMedicinePageProducts(axdcCode, pinCode)).data;
       setData(resonse);
       setMedicinePageAPiResponse!(resonse);
       setLoading(false);
+      setPageLoading(false);
     } catch (e) {
       setError(e);
       setLoading(false);
+      setPageLoading(false);
       showAphAlert!({
         title: string.common.uhOh,
         description: "We're sorry! Unable to fetch products right now, please try later.",
@@ -841,6 +880,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   : 'PL',
               mou: item?.mou,
               sell_online: 1,
+              url_key: item?.urlKey,
             } as MedicineProduct)
         );
       if (formattedRecommendedProducts?.length >= 5) {
@@ -883,6 +923,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     doRequestAndAccessLocationModified()
       .then((response) => {
         setPageLoading!(false);
+        response && setAsyncPincode?.(response);
         response && setPharmacyLocation!(response);
         response && !locationDetails && setLocationDetails!(response);
         setDeliveryAddressId!('');
@@ -918,7 +959,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               state: response?.state,
             };
             setAsyncPharmaLocation(saveAddress);
-            setAsyncPincode(saveAddress);
+            setAsyncPincode?.(saveAddress);
             setPharmacyLocation!(response);
             setDeliveryAddressId!('');
             updateServiceability(pincode, 'pincode');
@@ -1402,6 +1443,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       setPageLoading!(false);
       if (data) {
         if (data?.APOLLO?.[0]._id) {
+          AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
           setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
           setIsCircleSubscription && setIsCircleSubscription(true);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
@@ -1587,20 +1629,19 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const [searchText, setSearchText] = useState<string>('');
   const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
-  const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
   const [isSearchFocused, setSearchFocused] = useState(false);
   const [itemsLoading, setItemsLoading] = useState<{ [key: string]: boolean }>({});
-  const [searchQuery, setSearchQuery] = useState({});
+  const [medicineSearchLoading, setMedicineSearchLoading] = useState<boolean>(false);
 
   const onSearchMedicine = (_searchText: string) => {
-    setsearchSate('load');
+    setMedicineSearchLoading(true);
     getMedicineSearchSuggestionsApi(_searchText, axdcCode, pinCode)
       .then(({ data }) => {
         const products = data.products || [];
         const inStockProducts = products.filter((product) => !!isProductInStock(product));
         const outOfStockProducts = products.filter((product) => !isProductInStock(product));
         setMedicineList([...inStockProducts, ...outOfStockProducts]);
-        setsearchSate('success');
+        setMedicineSearchLoading(false);
         const eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH] = {
           keyword: _searchText,
           Source: 'Pharmacy Home',
@@ -1611,15 +1652,33 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       })
       .catch((e) => {
         CommonBugFender('Medicine_onSearchMedicine', e);
+        setMedicineSearchLoading(false);
         if (!Axios.isCancel(e)) {
-          setsearchSate('fail');
+          setMedicineSearchLoading(false);
         }
       });
   };
 
+  useEffect(() => {
+    debounce.current(searchText);
+  }, [searchText]);
+
+  const onSearch = (searchText: string) => {
+    if (searchText.length >= 3) {
+      onSearchMedicine(searchText);
+    } else {
+      setMedicineList([]);
+      setMedicineSearchLoading(false);
+    }
+  };
+
+  const debounce = useRef(_.debounce(onSearch, 300));
+
   const renderSearchInput = () => {
     const shouldEnableSearchSend = searchText.length > 2;
-    const rigthIconView = (
+    const rigthIconView = medicineSearchLoading ? (
+      <ActivityIndicator size={24} />
+    ) : (
       <TouchableOpacity
         activeOpacity={1}
         style={{
@@ -1642,7 +1701,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
 
     const itemsNotFound =
-      searchSate == 'success' && searchText.length > 2 && medicineList?.length == 0;
+      !medicineSearchLoading && searchText.length > 2 && medicineList?.length == 0;
 
     return (
       <>
@@ -1668,27 +1727,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setSearchFocused(false);
             setMedicineList([]);
             setSearchText('');
-            setsearchSate('success');
           }}
           onChangeText={(value) => {
-            if (isValidSearch(value)) {
-              setSearchText(value);
-              if (!(value && value.length > 2)) {
-                setMedicineList([]);
-                return;
-              }
-              const search = _.debounce(onSearchMedicine, 500);
-              if (value.length >= 3) {
-                setsearchSate('load');
-              } // this block is to fix no results errorMessage appearing while loading response
-              setSearchQuery((prevSearch: any) => {
-                if (prevSearch.cancel) {
-                  prevSearch.cancel();
-                }
-                return search;
-              });
-              search(value);
+            if (isValidSearch(value) && value.length >= 3) {
+              setMedicineSearchLoading(true);
             }
+            setSearchText(value);
           }}
           _rigthIconView={rigthIconView}
           placeholder="Search meds, brands &amp; more"
@@ -1714,6 +1758,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       thumbnail,
       MaxOrderQty,
       category_id,
+      url_key,
     } = item;
     setItemsLoading({ ...itemsLoading, [sku]: true });
     addPharmaItemToCart(
@@ -1735,8 +1780,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         maxOrderQty: MaxOrderQty,
         productType: type_id,
         circleCashbackAmt: 0,
+        url_key,
       },
-      pharmacyPincode!,
+      asyncPincode?.pincode || pharmacyPincode!,
       addCartItem,
       null,
       props.navigation,
@@ -1776,6 +1822,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         onPress={() => {
           CommonLogEvent(AppRoutes.Medicine, 'Search suggestion Item');
           props.navigation.navigate(AppRoutes.ProductDetailPage, {
+            urlKey: item?.url_key,
             sku: item.sku,
             movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
           });
@@ -1803,63 +1850,44 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           marginHorizontal: 20,
           paddingBottom: index == medicineList?.length - 1 ? 20 : 0,
         }}
-        maxOrderQty={getMaxQtyForMedicineItem(item.MaxOrderQty)}
-        removeCartItem={() => onRemoveCartItem(item.sku)}
       />
     );
   };
 
   const renderSearchResults = () => {
     const showResults = !!searchText && searchText.length > 2 && medicineList?.length > 0;
-    const isLoading = searchSate == 'load';
+    if (!showResults) return null;
     return (
-      <>
-        {isLoading ? (
-          <View style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}>
-            {renderSectionLoader(330)}
-          </View>
-        ) : (
-          !!showResults && (
-            <View>
-              <FlatList
-                keyboardShouldPersistTaps="always"
-                // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
-                bounces={false}
-                keyExtractor={(_, index) => `${index}`}
-                showsVerticalScrollIndicator={true}
-                persistentScrollbar={true}
-                style={{
-                  paddingTop: 10.5,
-                  maxHeight: 266,
-                  backgroundColor: '#f7f8f5',
-                }}
-                data={medicineList}
-                extraData={itemsLoading}
-                renderItem={renderSearchSuggestionItemView}
-              />
-              <View style={styles.searchContainer}>
-                <TouchableOpacity
-                  onPress={() => {
-                    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SEARCH_RESULTS] = {
-                      keyword: searchText,
-                      Source: 'Pharmacy Home',
-                    };
-                    postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
-                    props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
-                    setSearchText('');
-                    setMedicineList([]);
-                  }}
-                  style={styles.viewAllContainer}
-                >
-                  <Text style={theme.viewStyles.text('B', 15, '#FCB716', 1, 20)}>
-                    VIEW ALL RESULTS
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )
-        )}
-      </>
+      <View>
+        <FlatList
+          keyboardShouldPersistTaps="always"
+          contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
+          bounces={false}
+          keyExtractor={(_, index) => `${index}`}
+          showsVerticalScrollIndicator={true}
+          style={styles.searchResults}
+          data={medicineList}
+          extraData={itemsLoading}
+          renderItem={renderSearchSuggestionItemView}
+        />
+        <View style={styles.searchContainer}>
+          <TouchableOpacity
+            onPress={() => {
+              const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SEARCH_RESULTS] = {
+                keyword: searchText,
+                Source: 'Pharmacy Home',
+              };
+              postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
+              props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
+              setSearchText('');
+              setMedicineList([]);
+            }}
+            style={styles.viewAllContainer}
+          >
+            <Text style={theme.viewStyles.text('B', 15, '#FCB716', 1, 20)}>VIEW ALL RESULTS</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     );
   };
 
@@ -1938,10 +1966,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderOverlay = () => {
     const isNoResultsFound =
-      searchSate != 'load' && searchText.length > 2 && medicineList?.length == 0;
+      !medicineSearchLoading && searchText.length > 2 && medicineList?.length == 0;
 
     return (
-      (!!medicineList?.length || searchSate == 'load' || isNoResultsFound) && (
+      (!!medicineList?.length || medicineSearchLoading || isNoResultsFound) && (
         <View style={theme.viewStyles.overlayStyle}>
           <TouchableOpacity
             activeOpacity={1}

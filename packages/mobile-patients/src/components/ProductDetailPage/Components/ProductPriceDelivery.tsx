@@ -46,7 +46,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     isBanned,
   } = props;
   const { currentPatient } = useAllCurrentPatients();
-  const { addresses, deliveryAddressId, circleSubscriptionId } = useShoppingCart();
+  const { addresses, deliveryAddressId, circleSubscriptionId, asyncPincode } = useShoppingCart();
   const { pharmacyLocation, locationDetails } = useAppCommonData();
   const momentDiff = moment(deliveryTime).diff(moment());
   const hoursMoment = moment.duration(momentDiff);
@@ -121,7 +121,9 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
 
   const renderDeliverTo = () => {
     let deliveryAddress = addresses.find((item) => item.id == deliveryAddressId);
-    const location = !deliveryAddress
+    const location = asyncPincode?.pincode
+      ? `${asyncPincode?.city || asyncPincode?.state || ''} ${asyncPincode?.pincode}`
+      : !deliveryAddress
       ? pharmacyLocation
         ? `${pharmacyLocation?.city || pharmacyLocation?.state || ''} ${pharmacyLocation?.pincode}`
         : `${locationDetails?.city || pharmacyLocation?.state || ''} ${locationDetails?.pincode}`
@@ -157,10 +159,12 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
 
   const renderDeliveryDateTime = () => {
     return !!deliveryError ? (
-      <Text style={theme.viewStyles.text('R', 10, '#01475b')}>{deliveryError}</Text>
+      <Text style={[theme.viewStyles.text('R', 14, '#01475b'), isInStock ? {} : { marginTop: 7 }]}>
+        {deliveryError}
+      </Text>
     ) : !isInStock ? (
       <Text
-        style={theme.viewStyles.text('R', 10, '#01475b')}
+        style={[theme.viewStyles.text('R', 14, '#01475b'), isInStock ? {} : { marginTop: 7 }]}
       >{`Sorry, this item is out of stock in your area.`}</Text>
     ) : !!deliveryTime ? (
       <Text style={theme.viewStyles.text('M', 14, '#01475b', 1, 20, 0)}>
@@ -200,7 +204,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
       </View>
       {!!circleSubscriptionId && !!cashback && renderCareCashback()}
       {!!manufacturer && !isPharma && renderManufacturer()}
-      {renderDeliverTo()}
+      {isSellOnline && renderDeliverTo()}
       {!isBanned &&
         (showExpress ? renderExpress() : showDeliverySpinner ? null : renderDeliveryDateTime())}
     </View>

@@ -59,6 +59,7 @@ import {
   getPhrHighlightText,
   phrSearchWebEngageEvents,
   postWebEngageIfNewSession,
+  removeObjectProperty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   EPrescription,
@@ -245,6 +246,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   const [prismAuthToken, setPrismAuthToken] = useState<string>(
     props.navigation?.getParam('authToken') || ''
   );
+  const [searchQuery, setSearchQuery] = useState({});
 
   const doctorType = (item: any) => {
     return item?.caseSheet?.find((obj: any) => {
@@ -509,6 +511,12 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       }
       setSearchLoading(true);
       const search = _.debounce(onSearchHealthRecords, 500);
+      setSearchQuery((prevSearch: any) => {
+        if (prevSearch.cancel) {
+          prevSearch.cancel();
+        }
+        return search;
+      });
       search(value);
     }
   };
@@ -816,10 +824,11 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   };
 
   const onHealthCardItemPress = (selectedItem: any) => {
+    const eventInputData = removeObjectProperty(selectedItem, 'prescriptionFiles');
     postWebEngageIfNewSession(
       'Doctor Consults',
       currentPatient,
-      selectedItem,
+      eventInputData,
       phrSession,
       setPhrSession
     );
@@ -852,11 +861,12 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       .then((status) => {
         if (status) {
           getLatestPrescriptionRecords();
+          const eventInputData = removeObjectProperty(selectedItem, 'prescriptionFiles');
           postWebEngagePHR(
             currentPatient,
             WebEngageEventName.PHR_DELETE_DOCTOR_CONSULTATION,
             'Doctor Consultation',
-            selectedItem
+            eventInputData
           );
         } else {
           setShowSpinner(false);
@@ -954,7 +964,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 12, paddingHorizontal: 20 }}
         sections={localConsultRxData || []}
         renderItem={({ item, index }) => renderConsultRxItems(item, index)}
-        ListEmptyComponent={<PhrNoDataComponent />}
+        ListEmptyComponent={renderEmptyList()}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
       />
     );
@@ -966,6 +976,14 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         <Spinner style={styles.loaderStyle} />
       </View>
     );
+  };
+
+  const renderEmptyList = () => {
+    if (consultRxMainData?.length != 0) {
+      return null;
+    } else {
+      return <PhrNoDataComponent />;
+    }
   };
 
   const searchListHeaderView = () => {

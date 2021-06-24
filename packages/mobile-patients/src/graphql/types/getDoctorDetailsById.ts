@@ -136,6 +136,13 @@ export interface getDoctorDetailsById_getDoctorDetailsById_doctorNextAvailSlots 
   physicalSlot: string | null;
 }
 
+export interface getDoctorDetailsById_getDoctorDetailsById_doctorCardActiveCTA {
+  __typename: "DoctorCardActiveCTA";
+  ONLINE: string | null;
+  PHYSICAL: string | null;
+  DEFAULT: string | null;
+}
+
 export interface getDoctorDetailsById_getDoctorDetailsById {
   __typename: "DoctorDetails";
   id: string;
@@ -171,6 +178,7 @@ export interface getDoctorDetailsById_getDoctorDetailsById {
   starTeam: (getDoctorDetailsById_getDoctorDetailsById_starTeam | null)[] | null;
   consultHours: (getDoctorDetailsById_getDoctorDetailsById_consultHours | null)[] | null;
   doctorNextAvailSlots: getDoctorDetailsById_getDoctorDetailsById_doctorNextAvailSlots | null;
+  doctorCardActiveCTA: getDoctorDetailsById_getDoctorDetailsById_doctorCardActiveCTA | null;
 }
 
 export interface getDoctorDetailsById {

@@ -7,6 +7,7 @@ import {
   StyleProp,
   ViewStyle,
   TouchableOpacity,
+  Linking,
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { isSmallDevice, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -15,24 +16,34 @@ import moment from 'moment';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components/StatusCard';
-import { getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
-import { InfoIconRed } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  InfoIconRed,
+  WhiteProfile,
+  OrangeCall,
+  LocationOutline,
+  StarEmpty,
+  ClockIcon,
+  StarFillGreen,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { DIAGNOSTIC_ORDER_FAILED_STATUS } from '@aph/mobile-patients/src/strings/AppConfig';
+import { isIphone5s, setBugFenderLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  DIAGNOSTIC_ORDER_FAILED_STATUS,
+  DIAGNOSTIC_ORDER_FOR_PREPDATA,
+  DIAGNOSTIC_SHOW_OTP_STATUS,
+} from '@aph/mobile-patients/src/strings/AppConfig';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
+import {
+  DiagnosticPhleboCallingClicked,
+  DiagnosticTrackPhleboClicked,
+} from '@aph/mobile-patients/src/components/Tests/Events';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 const screenWidth = Dimensions.get('window').width;
-const SHOW_OTP_ARRAY = [
-  DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
-  DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
-  DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
-];
-
 interface OrderTestCardProps {
   orderId: string | number;
-  key: string | number;
+  key: string;
   createdOn: string | Date;
   orderLevelStatus: DIAGNOSTIC_ORDER_STATUS;
   patientName: string;
@@ -57,12 +68,25 @@ interface OrderTestCardProps {
   onPressAddTest?: () => void;
   onPressViewReport: () => void;
   phelboObject?: any;
+  orderAttributesObj?: any;
+  onPressRatingStar: (star: number) => void;
+  onPressCallOption: (name: string, number: string) => void;
 }
 
 export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   const [moreTests, setMoreTests] = useState<boolean>(false);
+  const { ordersData } = props;
+  //added if item is removed from phelbo app.
+  const filterOrderLineItem =
+    !!ordersData &&
+    ordersData?.filter(
+      (
+        item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems
+      ) => !item?.isRemoved
+    );
 
   const bookedOn = moment(props?.createdOn)?.format('Do MMM') || null;
+  const { currentPatient } = useAllCurrentPatients();
   const renderTopView = () => {
     return (
       <View style={styles.horizontalRow}>
@@ -79,13 +103,19 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     return (
       <View style={styles.midViewContainer}>
         {!!props.patientName && (
-          <View>
-            <Text style={styles.testForText}>Tests for {props.patientName}</Text>
+          <View style={styles.patientNameView}>
+            <Text style={styles.testForText}>
+              Tests for {props.gender != '' && props.gender} {props.patientName}
+            </Text>
           </View>
         )}
         {props.showAddTest ? (
-          <TouchableOpacity activeOpacity={1} onPress={props.onPressAddTest}>
-            <Text style={styles.yellowText}>ADD TEST</Text>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={props.onPressAddTest}
+            style={styles.addTestTouch}
+          >
+            <Text style={styles.yellowText}>ADD MORE TEST</Text>
           </TouchableOpacity>
         ) : null}
       </View>
@@ -104,7 +134,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
   const renderTestNames = () => {
     return (
       <>
-        {props.ordersData?.map(
+        {filterOrderLineItem?.map(
           (
             item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems,
             index: number
@@ -112,34 +142,44 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
             <View style={styles.rowStyle}>
               {index < 2 && !moreTests ? (
                 <>
-                  <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
-                  <Text style={styles.testName}>
-                    {!!item?.itemName
-                      ? nameFormater(item?.itemName!, 'title')
-                      : !!item?.diagnostics?.itemName
-                      ? nameFormater(item?.diagnostics?.itemName!, 'title')
-                      : ''}{' '}
-                    {index == 1 &&
-                      props.ordersData?.length - 2 > 0 &&
-                      renderShowMore(props.ordersData, item?.itemName!)}
-                  </Text>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      minWidth: 0,
+                      maxWidth: !!item?.editOrderID ? '68%' : '80%',
+                    }}
+                  >
+                    <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
+                    <Text style={styles.testName}>
+                      {!!item?.itemName
+                        ? nameFormater(item?.itemName!, 'title')
+                        : !!item?.diagnostics?.itemName
+                        ? nameFormater(item?.diagnostics?.itemName!, 'title')
+                        : ''}{' '}
+                    </Text>
+                  </View>
+                  {!!item?.editOrderID ? renderNewTag() : null}
+                  {index == 1 &&
+                    filterOrderLineItem?.length - 2 > 0 &&
+                    renderShowMore(filterOrderLineItem, item?.itemName!)}
                 </>
               ) : null}
             </View>
           )
         )}
         {moreTests &&
-          props.ordersData?.map(
+          filterOrderLineItem?.map(
             (
               item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems,
               index: number
             ) => (
               <>
-                <View style={{ flexDirection: 'row' }}>
+                <View style={{ flexDirection: 'row', width: '86%' }}>
                   <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
                   <Text style={styles.testName}>
                     {!!item?.itemName ? nameFormater(item?.itemName!, 'title') : ''}{' '}
                   </Text>
+                  {!!item?.editOrderID ? renderNewTag() : null}
                 </View>
               </>
             )
@@ -150,6 +190,14 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
           </Text>
         )}
       </>
+    );
+  };
+
+  const renderNewTag = () => {
+    return (
+      <View style={styles.newItemView}>
+        <Text style={styles.newText}>NEW</Text>
+      </View>
     );
   };
 
@@ -191,9 +239,10 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
 
   const renderPreparationData = () => {
     //remove duplicate test prep data.
-    const getPrepData = props.ordersData?.map(
-      (item: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems) =>
-        item?.itemObj?.testPreparationData || item?.diagnostics?.testPreparationData!
+    const getPrepData = filterOrderLineItem?.map(
+      (
+        item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems
+      ) => item?.itemObj?.testPreparationData || item?.diagnostics?.testPreparationData!
     );
     const filterData = [...new Set(getPrepData)];
     return (
@@ -269,20 +318,181 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     );
   };
 
-  const showOTPContainer = () => {
+  const showDetailOTPContainer = () => {
     const phlObj = props?.phelboObject;
-    let otpToShow = !!phlObj && phlObj?.PhelboOTP;
-
+    const otpToShow = !!phlObj && phlObj?.PhelboOTP;
+    const phoneNumber = !!phlObj && phlObj?.PhelbotomistMobile;
+    const name = !!phlObj && phlObj?.PhelbotomistName;
+    const phleboTrackLink = !!phlObj && phlObj?.PhelbotomistTrackLink;
+    const orderId = props.orderId.toString();
+    const checkEta = !!phlObj?.CheckInTime;
+    let phleboEta = '';
+    if (checkEta) {
+      phleboEta = moment(phlObj?.CheckInTime).format('hh:mm A');
+    }
+    const slotime = !!props.slotTime ? moment(props?.slotTime) || null : null;
+    const showDetailedInfo = !!slotime
+      ? slotime.diff(moment(), 'minutes') < 60 && slotime.diff(moment(), 'minutes') > 0
+      : false;
+    const isCallingEnabled = !!phlObj ? phlObj?.allowCalling : false;
     return (
       <>
-        {!!otpToShow && SHOW_OTP_ARRAY.includes(props.orderLevelStatus) ? (
-          <View style={styles.otpContainer}>
-            <Text style={styles.otpTextStyle}>{'OTP : '}</Text>
-            <Text style={styles.otpTextStyle}>{otpToShow}</Text>
-          </View>
+        {!!otpToShow && DIAGNOSTIC_SHOW_OTP_STATUS.includes(props.orderLevelStatus) ? (
+          <>
+            {showDetailedInfo ||
+            props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN ? (
+              <View style={styles.otpCallContainer}>
+                <View style={styles.detailContainer}>
+                  {phoneNumber ? (
+                    <View style={{ opacity: isCallingEnabled ? 1 : 0.5 }}>
+                      <TouchableOpacity
+                        style={styles.callContainer}
+                        onPress={() => {
+                          isCallingEnabled ? props.onPressCallOption(name, phoneNumber) : {};
+                        }}
+                      >
+                        <WhiteProfile />
+                        <OrangeCall size="sm" style={styles.profileCircle} />
+                      </TouchableOpacity>
+                    </View>
+                  ) : null}
+                  {name ? (
+                    <View style={styles.nameContainer}>
+                      <Text style={styles.nameTextHeadingStyles}>Phlebotomist Details</Text>
+                      <Text style={styles.nameTextStyles}>{name}</Text>
+                    </View>
+                  ) : null}
+                </View>
+                {otpToShow ? (
+                  <View style={styles.otpBoxConatiner}>
+                    <Text style={styles.otpBoxTextStyle}>{'OTP'}</Text>
+                    <Text style={styles.otpBoxTextStyle}>{otpToShow}</Text>
+                  </View>
+                ) : null}
+              </View>
+            ) : (
+              showOnlyOTPContainer()
+            )}
+
+            {checkEta && props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN ? (
+              <View style={styles.otpContainer}>
+                <View style={styles.etaContainer}>
+                  <LocationOutline style={styles.locationIcon} />
+                  <Text style={styles.otpTextStyle}>Phlebo will arrive by {phleboEta}</Text>
+                </View>
+                {phleboTrackLink ? (
+                  <TouchableOpacity
+                    onPress={() => {
+                      try {
+                        Linking.canOpenURL(phleboTrackLink).then((supported) => {
+                          if (supported) {
+                            DiagnosticTrackPhleboClicked(
+                              orderId,
+                              'My Order',
+                              currentPatient,
+                              'Yes'
+                            );
+                            Linking.openURL(phleboTrackLink);
+                          } else {
+                            DiagnosticTrackPhleboClicked(orderId, 'My Order', currentPatient, 'No');
+                            setBugFenderLog('FAILED_OPEN_URL', phleboTrackLink);
+                          }
+                        });
+                      } catch (e) {
+                        DiagnosticTrackPhleboClicked(orderId, 'My Order', currentPatient, 'No');
+                        setBugFenderLog('FAILED_OPEN_URL', phleboTrackLink);
+                      }
+                    }}
+                  >
+                    <Text style={styles.trackStyle}>{nameFormater('track Phlebo', 'upper')}</Text>
+                  </TouchableOpacity>
+                ) : null}
+              </View>
+            ) : null}
+          </>
         ) : null}
       </>
     );
+  };
+
+  const showOnlyOTPContainer = () => {
+    const phlObj = props?.phelboObject;
+    const otpToShow = !!phlObj && phlObj?.PhelboOTP;
+    return (
+      <View style={styles.ratingContainer}>
+        <Text style={styles.otpBoxTextStyle}>OTP : {otpToShow}</Text>
+      </View>
+    );
+  };
+
+  const showRatingView = () => {
+    const starCount = [1, 2, 3, 4, 5];
+    const phlObj = props?.phelboObject;
+    const phleboRating = !!phlObj && phlObj?.PhleboRating;
+    let checkRating = starCount.includes(phleboRating);
+    const ratedStarCount = starCount.slice(0, phleboRating);
+    const unRatedStarCount = starCount.slice(phleboRating, starCount.length);
+    return props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED ? (
+      <View style={styles.ratingContainer}>
+        <Text style={styles.ratingTextStyle}>
+          {!!checkRating
+            ? 'You have successfully rated the Phlebo Experience'
+            : 'How was your Experience with Phlebo'}
+        </Text>
+        <View style={styles.startContainer}>
+          {!!checkRating ? (
+            <>
+              {ratedStarCount.map((item, index) => (
+                <View>
+                  <StarFillGreen style={{ margin: 5 }} />
+                </View>
+              ))}
+              {unRatedStarCount.map((item, index) => (
+                <View>
+                  <StarEmpty style={{ margin: 5 }} />
+                </View>
+              ))}
+            </>
+          ) : (
+            starCount.map((item) => (
+              <TouchableOpacity
+                onPress={() => {
+                  props.onPressRatingStar(item);
+                }}
+              >
+                <StarEmpty style={{ margin: 5 }} />
+              </TouchableOpacity>
+            ))
+          )}
+        </View>
+      </View>
+    ) : null;
+  };
+
+  const showReportTat = () => {
+    const report = !!props?.orderAttributesObj?.reportGenerationTime
+      ? props?.orderAttributesObj?.reportGenerationTime
+      : '';
+    const prepData = !!props?.orderAttributesObj?.preTestingRequirement
+      ? props?.orderAttributesObj?.preTestingRequirement
+      : '';
+    return props.orderLevelStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED &&
+      (report || prepData) ? (
+      <View style={styles.ratingContainer}>
+        {report ? (
+          <View style={styles.reporttatContainer}>
+            <ClockIcon />
+            <Text style={styles.reportTextStyle}>{`Report Generation time - ${report}`}</Text>
+          </View>
+        ) : null}
+        {prepData ? (
+          <View style={styles.reporttatContainer}>
+            <InfoIconRed />
+            <Text style={styles.reportTextStyle}>{prepData}</Text>
+          </View>
+        ) : null}
+      </View>
+    ) : null;
   };
 
   const renderAdditionalInfoView = () => {
@@ -318,20 +528,27 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       activeOpacity={1}
       onPress={props.onPressCard}
       style={[styles.containerStyle, props.style]}
-      key={props?.key?.toString()}
+      key={props?.orderId}
     >
-      <View key={props?.key?.toString()} style={{ padding: 16, paddingBottom: 12 }}>
+      <View key={props?.orderId} style={{ padding: 16, paddingBottom: 12 }}>
         {renderTopView()}
         {renderMidView()}
-        {!!props.ordersData && props.ordersData?.length > 0 ? renderTestListView() : null}
-        {!!props.ordersData && props.ordersData?.length > 0 ? renderPreparationData() : null}
+        {!!ordersData && !!filterOrderLineItem && filterOrderLineItem?.length
+          ? renderTestListView()
+          : null}
+        {!!ordersData && !!filterOrderLineItem && filterOrderLineItem?.length && DIAGNOSTIC_ORDER_FOR_PREPDATA.includes(props.orderLevelStatus) 
+          ? renderPreparationData()
+          : null}
         {!!props.orderLevelStatus && DIAGNOSTIC_ORDER_FAILED_STATUS.includes(props.orderLevelStatus)
           ? null
           : renderBottomView()}
         {renderCTAsView()}
       </View>
       {props.showAdditonalView || props.isCancelled ? renderAdditionalInfoView() : null}
-      {showOTPContainer()}
+
+      {showDetailOTPContainer()}
+      {showRatingView()}
+      {showReportTat()}
     </TouchableOpacity>
   );
 };
@@ -349,8 +566,8 @@ const styles = StyleSheet.create({
   bulletStyle: {
     color: '#007C9D',
     fontSize: 5,
-    textAlign: 'center',
-    alignSelf: 'center',
+    alignSelf: 'flex-start',
+    marginTop: 4,
   },
   testName: {
     ...theme.viewStyles.text('M', isSmallDevice ? 11.5 : 12, '#007C9D', 1, 17),
@@ -393,9 +610,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: 20,
     marginBottom: '2%',
+    minHeight: 40,
   },
   testForText: {
-    ...theme.viewStyles.text('M', 13, colors.SHERPA_BLUE, 1, 18),
+    ...theme.viewStyles.text('SB', 13, colors.SHERPA_BLUE, 1, 18),
     letterSpacing: 0.3,
   },
   yellowText: { ...theme.viewStyles.yellowTextStyle, fontSize: screenWidth > 380 ? 13 : 12 },
@@ -428,18 +646,125 @@ const styles = StyleSheet.create({
     height: 40,
   },
   otpTextStyle: {
-    top: 10,
-    left: 20,
+    alignSelf: 'center',
+    paddingHorizontal: 10,
     color: theme.colors.LIGHT_BLUE,
-    ...theme.fonts.IBMPlexSansMedium(14),
+    ...theme.fonts.IBMPlexSansRegular(10),
   },
   otpContainer: {
     backgroundColor: '#FCFDDA',
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between',
     flexDirection: 'row',
     height: 40,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    borderRadius: 10,
+    padding: 10,
+  },
+  locationIcon: {
+    width: 15,
+    height: 15,
+    alignSelf: 'center',
+  },
+  otpCallContainer: {
+    backgroundColor: 'white',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderTopWidth: 0.5,
+    borderColor: '#000000',
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    borderRadius: 10,
+    padding: 10,
+  },
+  detailContainer: {
+    flexDirection: 'row',
+    width: '80%',
     borderBottomLeftRadius: 4,
     borderBottomRightRadius: 4,
+  },
+  profileCircle: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+  },
+  callContainer: {
+    margin: 0,
+    height: 55,
+    width: 55,
+  },
+  nameContainer: {
+    justifyContent: 'flex-start',
+    alignContent: 'center',
+    padding: 10,
+    width: '80%',
+  },
+  nameTextHeadingStyles: {
+    ...theme.viewStyles.text('SB', 13, colors.SHERPA_BLUE, 1, 18),
+  },
+  nameTextStyles: {
+    ...theme.viewStyles.text('R', 13, colors.SHERPA_BLUE, 1, 18),
+  },
+  otpBoxConatiner: {
+    width: 45,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 5,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#000000',
+  },
+  otpBoxTextStyle: {
+    ...theme.viewStyles.text('SB', 13, colors.SHERPA_BLUE, 1, 18),
+  },
+  etaContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  trackStyle: {
+    ...theme.viewStyles.text('SB', 13, colors.APP_YELLOW, 1, 18),
+  },
+  ratingContainer: {
+    backgroundColor: '#FCFDDA',
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
     borderRadius: 10,
+    padding: 10,
+  },
+  reporttatContainer: {
+    marginVertical: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  startContainer: {
+    flexDirection: 'row',
+    margin: 5,
+  },
+  reportTextStyle: {
+    marginHorizontal: 10,
+    ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 1, 16),
+  },
+  ratingTextStyle: {
+    ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 1, 16),
+  },
+  addTestTouch: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  patientNameView: { width: '65%', justifyContent: 'center' },
+  newItemView: {
+    backgroundColor: '#4CAF50',
+    height: 18,
+    width: 40,
+    borderRadius: 2,
+    borderColor: '#4CAF50',
+    justifyContent: 'center',
+  },
+  newText: {
+    ...theme.viewStyles.text('SB', 10, 'white'),
+    textAlign: 'center',
   },
 });

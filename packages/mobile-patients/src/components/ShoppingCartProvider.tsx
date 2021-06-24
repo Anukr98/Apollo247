@@ -37,6 +37,7 @@ export interface ShoppingCartItem {
   isFreeCouponProduct?: boolean;
   applicable?: boolean;
   circleCashbackAmt?: number;
+  url_key?: string;
 }
 
 export interface CouponProducts {
@@ -143,6 +144,7 @@ export interface ShoppingCartContextProps {
   deliveryCharges: number;
   packagingCharges: number;
   grandTotal: number;
+  isValidCartValue: boolean;
   uploadPrescriptionRequired: boolean;
   prescriptionType: PrescriptionType | null;
   setPrescriptionType: (type: PrescriptionType | null) => void;
@@ -217,6 +219,8 @@ export interface ShoppingCartContextProps {
   showCircleSubscribed: boolean;
   hdfcSubscriptionId: string;
   setHdfcSubscriptionId: ((id: string) => void) | null;
+  corporateSubscription: boolean;
+  setCorporateSubscription: (id: boolean) => void;
   circlePlanValidity: circleValidity | null;
   setCirclePlanValidity: ((validity: circleValidity) => void) | null;
   circlePaymentReference: any;
@@ -227,6 +231,18 @@ export interface ShoppingCartContextProps {
   orders: any;
   setOrders: ((orders: any[]) => void) | null;
   shipments: (MedicineOrderShipmentInput | null)[];
+  asyncPincode: any;
+  setAsyncPincode: ((pincode: any) => void) | null;
+  minimumCartValue: number;
+  setMinimumCartValue: ((value: number) => void) | null;
+  minCartValueForCOD: number;
+  setMinCartValueForCOD: ((value: number) => void) | null;
+  maxCartValueForCOD: number;
+  setMaxCartValueForCOD: ((value: number) => void) | null;
+  nonCodSKus: string[];
+  setNonCodSKus: ((items: string[]) => void) | null;
+  asyncPincode: any;
+  setAsyncPincode: ((pincode: any) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -246,6 +262,7 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   deliveryCharges: 0,
   packagingCharges: 0,
   grandTotal: 0,
+  isValidCartValue: true,
   uploadPrescriptionRequired: false,
   prescriptionType: null,
   setPrescriptionType: () => {},
@@ -316,6 +333,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   showCircleSubscribed: false,
   hdfcSubscriptionId: '',
   setHdfcSubscriptionId: null,
+  corporateSubscription: false,
+  setCorporateSubscription: null,
   circlePlanValidity: null,
   setCirclePlanValidity: null,
   circlePaymentReference: null,
@@ -326,6 +345,18 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   orders: [],
   setOrders: null,
   shipments: [],
+  asyncPincode: null,
+  setAsyncPincode: null,
+  minimumCartValue: 0,
+  setMinimumCartValue: null,
+  minCartValueForCOD: 0,
+  setMinCartValueForCOD: null,
+  maxCartValueForCOD: 0,
+  setMaxCartValueForCOD: null,
+  nonCodSKus: [],
+  setNonCodSKus: null,
+  asyncPincode: null,
+  setAsyncPincode: null,
 });
 
 const AsyncStorageKeys = {
@@ -430,6 +461,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [hdfcSubscriptionId, setHdfcSubscriptionId] = useState<
     ShoppingCartContextProps['hdfcSubscriptionId']
   >('');
+  const [corporateSubscription, setCorporateSubscription] = useState<
+    ShoppingCartContextProps['corporateSubscription']
+  >(false);
   const [circlePaymentReference, setCirclePaymentReference] = useState<
     ShoppingCartContextProps['circlePaymentReference']
   >();
@@ -441,6 +475,18 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [consultProfile, setConsultProfile] = useState<ShoppingCartContextProps['consultProfile']>(
     null
   );
+
+  const [minimumCartValue, setMinimumCartValue] = useState<
+    ShoppingCartContextProps['minimumCartValue']
+  >(0);
+  const [minCartValueForCOD, setMinCartValueForCOD] = useState<
+    ShoppingCartContextProps['minCartValueForCOD']
+  >(0);
+  const [maxCartValueForCOD, setMaxCartValueForCOD] = useState<
+    ShoppingCartContextProps['maxCartValueForCOD']
+  >(0);
+  const [nonCodSKus, setNonCodSKus] = useState<ShoppingCartContextProps['nonCodSKus']>([]);
+  const [asyncPincode, setAsyncPincode] = useState<ShoppingCartContextProps['asyncPincode']>();
 
   const [isProuctFreeCouponApplied, setisProuctFreeCouponApplied] = useState<boolean>(false);
   const [orders, setOrders] = useState<ShoppingCartContextProps['orders']>([]);
@@ -654,6 +700,15 @@ export const ShoppingCartProvider: React.FC = (props) => {
           (!!circleMembershipCharges ? circleMembershipCharges : 0)
         ).toFixed(2)
       );
+
+  const isValidCartValue =
+    !!minimumCartValue &&
+    deliveryAddressId &&
+    addresses?.length &&
+    grandTotal &&
+    grandTotal !== deliveryCharges
+      ? grandTotal >= minimumCartValue
+      : true;
 
   const uploadPrescriptionRequired =
     cartItems.findIndex((item) => item.prescriptionRequired) != -1 ||
@@ -1038,6 +1093,12 @@ export const ShoppingCartProvider: React.FC = (props) => {
     }
   }, [deliveryAddressId]);
 
+  useEffect(() => {
+    if (physicalPrescriptions?.length || ePrescriptions?.length) {
+      setPrescriptionType(PrescriptionType.UPLOADED);
+    }
+  }, [physicalPrescriptions, ePrescriptions]);
+
   const selectDefaultPlan = (plan: any) => {
     const defaultPlan = plan?.filter((item: any) => item.defaultPack === true);
     if (defaultPlan?.length > 0) {
@@ -1075,6 +1136,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         cartTotalOfRxProducts,
         cartDiscountTotal, //discounted or price total
         grandTotal,
+        isValidCartValue,
         couponDiscount,
         productDiscount,
         deliveryCharges,
@@ -1150,6 +1212,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         showCircleSubscribed,
         hdfcSubscriptionId,
         setHdfcSubscriptionId,
+        corporateSubscription,
+        setCorporateSubscription,
         circlePlanValidity,
         setCirclePlanValidity,
         circlePaymentReference,
@@ -1160,6 +1224,18 @@ export const ShoppingCartProvider: React.FC = (props) => {
         orders,
         setOrders,
         shipments,
+        asyncPincode,
+        setAsyncPincode,
+        minimumCartValue,
+        setMinimumCartValue,
+        minCartValueForCOD,
+        setMinCartValueForCOD,
+        maxCartValueForCOD,
+        setMaxCartValueForCOD,
+        nonCodSKus,
+        setNonCodSKus,
+        asyncPincode,
+        setAsyncPincode,
       }}
     >
       {props.children}

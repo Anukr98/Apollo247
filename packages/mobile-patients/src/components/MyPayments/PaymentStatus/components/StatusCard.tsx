@@ -40,17 +40,27 @@ const StatusCard: FC<StatusCardProps> = (props) => {
     let price = 0;
     let orderID = '';
     if (paymentFor === 'consult') {
-      const { appointmentPayments, displayId, appointmentRefunds } = item;
+      const {
+        appointmentPayments,
+        PaymentOrders,
+        actualAmount,
+        displayId,
+        discountedAmount,
+        appointmentRefunds,
+      } = item;
+      const { refund } = PaymentOrders;
+      const refundInfo = refund?.length ? refund : appointmentRefunds;
       orderID = 'Order ID: ' + String(displayId);
-      if (!appointmentPayments.length) {
+      const paymentInfo = PaymentOrders?.paymentStatus ? PaymentOrders : appointmentPayments[0];
+      if (!paymentInfo) {
         status = 'PENDING';
-      } else if (appointmentRefunds.length) {
-        const { paymentRefId, amountPaid } = appointmentPayments[0];
+      } else if (refundInfo.length) {
+        const { paymentRefId, amountPaid } = paymentInfo;
         refId = paymentRefId;
         price = amountPaid;
         status = REFUND;
       } else {
-        const { paymentStatus, paymentRefId, amountPaid } = appointmentPayments[0];
+        const { paymentStatus, paymentRefId, amountPaid } = paymentInfo;
         status = paymentStatus;
         refId = paymentRefId;
         price = amountPaid;

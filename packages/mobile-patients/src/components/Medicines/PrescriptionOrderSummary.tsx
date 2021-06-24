@@ -45,6 +45,7 @@ import {
   formatAddress,
   postWebEngageEvent,
   g,
+  setAsyncPharmaLocation,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { ProceedBar } from '@aph/mobile-patients/src/components/Medicines/Components/ProceedBar';
 import { PaymentMethod } from '@aph/mobile-patients/src/components/Medicines/Components/PaymentMethod';
@@ -205,13 +206,14 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
         .map((item) => item.prismPrescriptionFileId)
         .filter((i) => i);
       const days = durationDays ? parseInt(durationDays) : null;
+      const appointmentIds = ePrescription?.length ? ePrescription?.map((item) => item?.id) : [];
 
       const prescriptionMedicineInput: savePrescriptionMedicineOrderOMSVariables = {
         prescriptionMedicineOMSInput: {
           patientId: currentPatient?.id || '',
           medicineDeliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
           ...(storeId ? { shopId: storeId } : {}),
-          appointmentId: '',
+          appointmentId: appointmentIds?.length ? appointmentIds.join(',') : '',
           patinetAddressId: deliveryAddressId || '',
           prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),
           prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
@@ -438,6 +440,7 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
           onPressSelectAddress={(address) => {
             checkServicability(address);
             hideAphAlert && hideAphAlert();
+            setAsyncPharmaLocation(address);
             nonCartAvailabilityTat(address?.zipcode);
           }}
         />

@@ -7,8 +7,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Keyboard,
+  BackHandler,
 } from 'react-native';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 
 import {
   ProductPageViewedSource,
@@ -23,10 +24,8 @@ import {
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-
-import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { CartIcon, WhiteTickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { WhiteTickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Breadcrumb } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -46,6 +45,7 @@ import {
   doRequestAndAccessLocationModified,
   navigateToHome,
   navigateToScreenWithEmptyStack,
+  setAsyncPharmaLocation,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   MedicineProductDetails,
@@ -57,6 +57,7 @@ import {
   availabilityApi247,
   getDeliveryTAT247,
   TatApiInput247,
+  getMedicineDetailsApiV2,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
@@ -84,6 +85,7 @@ import { AccessLocation } from '@aph/mobile-patients/src/components/Medicines/Co
 import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
+import { MedicineListingHeader } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingHeader';
 
 export type ProductPageViewedEventProps = Pick<
   WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED],
@@ -92,21 +94,24 @@ export type ProductPageViewedEventProps = Pick<
 
 export interface ProductDetailPageProps
   extends NavigationScreenProps<{
-    sku: string;
+    sku: string | null;
     movedFrom: ProductPageViewedSource;
     productPageViewedEventProps?: ProductPageViewedEventProps;
     deliveryError: string;
     sectionName?: string;
+    urlKey?: string;
   }> {}
 
 type PharmacyTatApiCalled = WebEngageEvents[WebEngageEventName.PHARMACY_TAT_API_CALLED];
 
 export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const movedFrom = props.navigation.getParam('movedFrom');
-  const sku = props.navigation.getParam('sku');
+  const [sku, setSku] = useState(props.navigation.getParam('sku'));
+  const urlKey = props.navigation.getParam('urlKey');
   const sectionName = props.navigation.getParam('sectionName');
   const productPageViewedEventProps = props.navigation.getParam('productPageViewedEventProps');
   const _deliveryError = props.navigation.getParam('deliveryError');
+  const [composition, setComposition] = useState<string>('');
 
   const {
     cartItems,
@@ -114,10 +119,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     pharmacyCircleAttributes,
     setDeliveryAddressId,
     addCartItem,
+    updateCartItem,
     pdpBreadCrumbs,
     setPdpBreadCrumbs,
     addresses,
     productDiscount,
+    asyncPincode,
+    setAsyncPincode,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
@@ -154,7 +162,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(false);
   const [availabilityCalled, setAvailabilityCalled] = useState<string>('no');
 
-  const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
+  const pharmacyPincode =
+    g(asyncPincode, 'pincode') || g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
   const [pincode, setpincode] = useState<string>(pharmacyPincode || '');
   const [notServiceable, setNotServiceable] = useState<boolean>(false);
   const [deliveryTime, setdeliveryTime] = useState<string>('');
@@ -173,31 +182,57 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   };
 
   useEffect(() => {
-    getMedicineDetails();
-    if (!_deliveryError) {
-      fetchDeliveryTime(pincode, false);
+    if (medicineDetails?.id) {
+      const pharmaOverview = medicineDetails?.PharmaOverview?.[0];
+      if (pharmaOverview?.generic && pharmaOverview?.Unit && pharmaOverview?.Strength) {
+        let compositions = '';
+        const generics = pharmaOverview?.generic?.split('+');
+        const strengths = pharmaOverview?.Strength?.split('+');
+        const units = pharmaOverview?.Unit?.split('+');
+        generics.forEach((value: string, index: number) => {
+          compositions = compositions + `${value}-${strengths[index].trim()}${units[index].trim()}`;
+        });
+        setComposition(compositions);
+      }
     }
+  }, [medicineDetails]);
+
+  useEffect(() => {
+    getMedicineDetails();
+    if (sku) fetchDeliveryTime(pincode, false);
+    BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
+    };
   }, []);
 
   useEffect(() => {
-    if (cartItems?.length) {
-      const filteredCartItems = cartItems?.filter((item) => item?.id == medicineDetails?.sku);
-      setSkuInCart(filteredCartItems);
+    if (sku && movedFrom === ProductPageViewedSource.DEEP_LINK) {
+      fetchDeliveryTime(pincode, false);
     }
-  }, [medicineDetails]);
+  }, [sku]);
+
+  const onPressHardwareBack = () => props.navigation.goBack();
+
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      setLoading(true);
+      getMedicineDetails();
+    });
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+      setLoading(true);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      didBlur && didBlur.remove();
+    };
+  }, [props.navigation]);
 
   useEffect(() => {
     if (medicineDetails?.sku && availabilityCalled === 'yes') {
       postProductPageViewedEvent(pincode, isInStock);
     }
   }, [medicineDetails, availabilityCalled]);
-
-  useEffect(() => {
-    if (cartItems?.length) {
-      const filteredCartItems = cartItems?.filter((item) => item?.id == medicineDetails?.sku);
-      setSkuInCart(filteredCartItems);
-    }
-  }, [cartItems]);
 
   useEffect(() => {
     if (axdcCode && medicineDetails?.sku) {
@@ -220,32 +255,56 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 
   const getMedicineDetails = (zipcode?: string, pinAcdxCode?: string) => {
     setLoading(true);
-    getMedicineDetailsApi(sku, pinAcdxCode || axdcCode, zipcode || pincode)
-      .then(({ data }) => {
-        const productDetails = g(data, 'productdp', '0' as any);
-        if (productDetails) {
-          setMedicineDetails(productDetails || {});
-          setIsPharma(productDetails?.type_id.toLowerCase() === 'pharma');
-          trackTagalysViewEvent(productDetails);
-          savePastSearch(client, {
-            typeId: productDetails?.sku,
-            typeName: productDetails?.name,
-            type: SEARCH_TYPE.MEDICINE,
-            patient: currentPatient?.id,
-            image: productDetails?.thumbnail,
-          });
-        } else if (data && data.message) {
-          setMedicineError(data.message);
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        CommonBugFender('MedicineDetailsScene_getMedicineDetailsApi', err);
-        aphConsole.log('MedicineDetailsScene err\n', err);
-        setApiError(!!err);
-        setLoading(false);
-      });
+    if (urlKey) {
+      getMedicineDetailsApiV2(urlKey, pinAcdxCode || axdcCode, zipcode || pincode)
+        .then(({ data }) => {
+          const productDetails = g(data, 'productdp', '0' as any);
+          if (productDetails) {
+            setSku(productDetails?.sku);
+            setMedicineData(productDetails);
+          } else if (data && data.message) {
+            setMedicineError(data.message);
+          }
+          setLoading(false);
+        })
+        .catch((err) => {
+          CommonBugFender('MedicineDetailsScene_getMedicineDetailsV2Api', err);
+          aphConsole.log('MedicineDetailsScene err\n', err);
+          setApiError(!!err);
+          setLoading(false);
+        });
+    } else {
+      getMedicineDetailsApi(sku, pinAcdxCode || axdcCode, zipcode || pincode)
+        .then(({ data }) => {
+          const productDetails = g(data, 'productdp', '0' as any);
+          if (productDetails) {
+            setMedicineData(productDetails);
+          } else if (data && data.message) {
+            setMedicineError(data.message);
+          }
+          setLoading(false);
+        })
+        .catch((err) => {
+          CommonBugFender('MedicineDetailsScene_getMedicineDetailsApi', err);
+          aphConsole.log('MedicineDetailsScene err\n', err);
+          setApiError(!!err);
+          setLoading(false);
+        });
+    }
     fetchSubstitutes();
+  };
+
+  const setMedicineData = (productDetails: MedicineProductDetails) => {
+    setMedicineDetails(productDetails || {});
+    setIsPharma(productDetails?.type_id.toLowerCase() === 'pharma');
+    trackTagalysViewEvent(productDetails);
+    savePastSearch(client, {
+      typeId: productDetails?.sku,
+      typeName: productDetails?.name,
+      type: SEARCH_TYPE.MEDICINE,
+      patient: currentPatient?.id,
+      image: productDetails?.thumbnail,
+    });
   };
 
   const homeBreadCrumb: BreadcrumbLink = {
@@ -347,7 +406,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 
   const postProductPageViewedEvent = (pincode?: string, isProductInStock?: boolean) => {
     if (movedFrom) {
-      const { sku, name, is_in_stock, sell_online } = medicineDetails;
+      const {
+        sku,
+        name,
+        type_id,
+        sell_online,
+        MaxOrderQty,
+        price,
+        special_price,
+      } = medicineDetails;
       const stock_availability =
         sell_online == 0 ? 'Not for Sale' : !!isProductInStock ? 'Yes' : 'No';
       const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED] = {
@@ -359,31 +426,20 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         ...pharmacyCircleAttributes,
         ...pharmacyUserTypeAttribute,
         Pincode: pincode,
+        serviceable: notServiceable ? 'No' : 'Yes',
+        TATDay: deliveryTime ? moment(deliveryTime).diff(moment(), 'days') : null,
+        TatHour: deliveryTime ? moment(deliveryTime).diff(moment(), 'hours') : null,
+        TatDateTime: deliveryTime,
+        ProductType: type_id,
+        MaxOrderQuantity: MaxOrderQty,
+        MRP: price,
+        SpecialPrice: special_price || null,
+        CircleCashback: cashback,
       };
       postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
       postFirebaseEvent(FirebaseEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
     }
-  };
-
-  const moveBack = () => {
-    try {
-      if (movedFrom === ProductPageViewedSource.REGISTRATION) {
-        props.navigation.dispatch(
-          StackActions.reset({
-            index: 0,
-            key: null,
-            actions: [
-              NavigationActions.navigate({
-                routeName: AppRoutes.ConsultRoom,
-              }),
-            ],
-          })
-        );
-      } else {
-        props.navigation.goBack();
-      }
-    } catch (error) {}
   };
 
   const fetchDeliveryTime = async (currentPincode: string, checkButtonClicked?: boolean) => {
@@ -544,7 +600,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 
   const renderEmptyData = () => {
     return (
-      <View style={{ flex: 1, justifyContent: 'center' }}>
+      <View style={{ flex: 1, justifyContent: 'center', marginTop: 50 }}>
         <Card
           cardContainer={{ marginTop: 0 }}
           heading={'Uh oh! :('}
@@ -565,7 +621,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             const addrComponents = data.results[0].address_components || [];
             const latLang = data.results[0].geometry.location || {};
             const response = getFormattedLocation(addrComponents, latLang, pinCode);
+            setAsyncPincode?.(response);
             setPharmacyLocation!(response);
+            setAsyncPharmaLocation(response);
             setDeliveryAddressId!('');
             !locationDetails && setLocationDetails!(response);
             setpincode(pinCode);
@@ -608,25 +666,31 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       type_id,
       thumbnail,
       MaxOrderQty,
+      url_key,
     } = medicineDetails;
-    addCartItem!({
-      id: sku,
-      mou,
-      name,
-      price: price,
-      specialPrice: special_price
-        ? typeof special_price == 'string'
-          ? Number(special_price)
-          : special_price
-        : undefined,
-      prescriptionRequired: is_prescription_required == '1',
-      isMedicine: (type_id || '').toLowerCase() == 'pharma',
-      quantity: productQuantity,
-      thumbnail: thumbnail,
-      isInStock: true,
-      maxOrderQty: MaxOrderQty,
-      productType: type_id,
-    });
+    if (cartItems.find(({ id }) => id === sku)) {
+      updateCartItem?.({ id: sku, quantity: productQuantity });
+    } else {
+      addCartItem!({
+        id: sku,
+        mou,
+        name,
+        price: price,
+        specialPrice: special_price
+          ? typeof special_price == 'string'
+            ? Number(special_price)
+            : special_price
+          : undefined,
+        prescriptionRequired: is_prescription_required == '1',
+        isMedicine: (type_id || '').toLowerCase() == 'pharma',
+        quantity: productQuantity,
+        thumbnail: thumbnail,
+        isInStock: true,
+        maxOrderQty: MaxOrderQty,
+        productType: type_id,
+        url_key,
+      });
+    }
     postwebEngageAddToCartEvent(
       medicineDetails,
       'Pharmacy PDP',
@@ -676,6 +740,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         <AccessLocation
           addresses={addresses}
           onPressSelectAddress={(address) => {
+            setAsyncPharmaLocation(address);
             updatePlaceInfoByPincode(address?.zipcode);
             hideAphAlert!();
           }}
@@ -750,197 +815,203 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       showAccessAccessLocationPopup(false);
   };
 
+  const onNotifyMeClick = () => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.NOTIFY_ME] = {
+      'product name': medicineDetails?.name,
+      'product id': medicineDetails?.sku,
+      'category ID': medicineDetails?.category_id,
+      price: medicineDetails?.price,
+      pincode: pincode,
+      serviceable: notServiceable ? 'No' : 'Yes',
+    };
+    postWebEngageEvent(WebEngageEventName.NOTIFY_ME, eventAttributes);
+    showAphAlert!({
+      title: 'Okay! :)',
+      description: `You will be notified when ${medicineDetails?.name} is back in stock.`,
+    });
+  };
+
+  const onCompositionClick = () =>
+    props.navigation.push(AppRoutes.MedicineListing, {
+      searchText: medicineDetails?.PharmaOverview?.[0]?.Composition || composition,
+      movedFrom: 'PDP Composition Hyperlink',
+    });
+
+  const showProceedButton = medicineDetails?.sku
+    ? !!cartItems.find(({ id }) => id === medicineDetails?.sku)
+    : false;
+
   let buttonRef = React.useRef<View>(null);
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.mainContainer}>
-        <Header
-          leftIcon="backArrow"
-          onPressLeftIcon={() => moveBack()}
-          titleStyle={{ marginHorizontal: 10 }}
-          container={{ borderBottomWidth: 0, ...theme.viewStyles.shadowStyle }}
-          rightComponent={
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() =>
-                props.navigation.navigate(
-                  diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.MedicineCart
-                )
-              }
-              style={{ right: 20 }}
-            >
-              <CartIcon style={{}} />
-              {cartItemsCount > 0 && (
-                <View style={styles.badgelabelView}>
-                  <Text style={styles.badgelabelText}>{cartItemsCount}</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-          }
-        />
-        {loading ? (
-          <ActivityIndicator
-            style={{ flex: 1, alignItems: 'center' }}
-            animating={loading}
-            size="large"
-            color="green"
-          />
-        ) : !isEmptyObject(medicineDetails) && !!medicineDetails.id ? (
-          <KeyboardAwareScrollView
-            ref={scrollViewRef}
-            bounces={false}
-            keyboardShouldPersistTaps="always"
-            style={{
-              paddingHorizontal: 15,
-            }}
-            onScroll={(event) => {
-              // show bottom bar if ADD TO CART button scrolls off the screen
-              buttonRef.current &&
-                buttonRef.current.measure(
-                  (x: any, y: any, width: any, height: any, pagex: any, pagey: any) => {
-                    setShowBottomBar(pagey < 0);
-                  }
-                );
-            }}
-          >
-            <Breadcrumb
-              links={pdpBreadCrumbs}
-              containerStyle={{ borderBottomWidth: 1, borderBottomColor: '#E5E5E5' }}
+        <MedicineListingHeader navigation={props.navigation} movedFrom={'productdetail'} />
+        <View>
+          {loading ? (
+            <ActivityIndicator
+              style={{ flex: 1, alignItems: 'center', marginTop: 50 }}
+              animating={loading}
+              size="large"
+              color="green"
             />
-            <ProductNameImage
-              name={medicineDetails?.name}
-              images={medicineDetails?.image}
-              isPrescriptionRequired={medicineDetails?.is_prescription_required == 1}
-              navigation={props.navigation}
-              sku={medicineDetails?.sku}
-            />
-            <ProductPriceDelivery
-              price={medicineDetails?.price}
-              specialPrice={medicineDetails?.special_price}
-              isExpress={medicineDetails?.is_express === 'Yes'}
-              isInStock={isInStock}
-              isSellOnline={medicineDetails?.sell_online === 1}
-              manufacturer={medicineDetails?.manufacturer}
-              showPincodePopup={showAccessAccessLocationPopup}
-              deliveryTime={deliveryTime}
-              deliveryError={deliveryError}
-              isPharma={isPharma}
-              cashback={cashback}
-              finalPrice={finalPrice}
-              showDeliverySpinner={showDeliverySpinner}
-              isBanned={medicineDetails?.banned === 'Yes'}
-            />
-            <View
-              ref={buttonRef}
-              onLayout={(event) => {
-                const layout = event.nativeEvent.layout;
-                setShowBottomBar(layout.y < 0);
+          ) : !isEmptyObject(medicineDetails) && !!medicineDetails.id ? (
+            <KeyboardAwareScrollView
+              ref={scrollViewRef}
+              bounces={false}
+              keyboardShouldPersistTaps="always"
+              style={{
+                paddingHorizontal: 15,
+              }}
+              onScroll={(event) => {
+                // show bottom bar if ADD TO CART button scrolls off the screen
+                buttonRef.current &&
+                  buttonRef.current.measure(
+                    (x: any, y: any, width: any, height: any, pagex: any, pagey: any) => {
+                      setShowBottomBar(pagey < 0);
+                    }
+                  );
               }}
             >
-              <ProductQuantity
-                maxOrderQuantity={medicineDetails?.MaxOrderQty}
+              <Breadcrumb
+                links={pdpBreadCrumbs}
+                containerStyle={{ borderBottomWidth: 1, borderBottomColor: '#E5E5E5' }}
+              />
+              <ProductNameImage
+                name={medicineDetails?.name}
+                images={medicineDetails?.image}
+                isPrescriptionRequired={medicineDetails?.is_prescription_required == 1}
+                navigation={props.navigation}
+                sku={medicineDetails?.sku}
+              />
+              <ProductPriceDelivery
+                price={medicineDetails?.price}
+                specialPrice={medicineDetails?.special_price}
+                isExpress={medicineDetails?.is_express === 'Yes'}
                 isInStock={isInStock}
-                packForm={medicineDetails?.pack_form || 'Quantity'}
-                packSize={medicineDetails?.pack_size}
-                productForm={medicineDetails?.product_form || ''}
-                unit={medicineDetails.unit_of_measurement || ''}
+                isSellOnline={medicineDetails?.sell_online === 1}
+                manufacturer={medicineDetails?.manufacturer}
+                showPincodePopup={showAccessAccessLocationPopup}
+                deliveryTime={deliveryTime}
+                deliveryError={deliveryError}
+                isPharma={isPharma}
+                cashback={cashback}
+                finalPrice={finalPrice}
+                showDeliverySpinner={showDeliverySpinner}
+                isBanned={medicineDetails?.banned === 'Yes'}
+              />
+              <View
+                ref={buttonRef}
+                onLayout={(event) => {
+                  const layout = event.nativeEvent.layout;
+                  setShowBottomBar(layout.y < 0);
+                }}
+              >
+                <ProductQuantity
+                  maxOrderQuantity={medicineDetails?.MaxOrderQty}
+                  isInStock={isInStock}
+                  packForm={medicineDetails?.pack_form || 'Quantity'}
+                  packSize={medicineDetails?.pack_size}
+                  productForm={medicineDetails?.product_form || ''}
+                  unit={medicineDetails.unit_of_measurement || ''}
+                  sku={medicineDetails?.sku}
+                  onAddCartItem={onAddCartItem}
+                  name={medicineDetails?.name}
+                  productQuantity={productQuantity}
+                  setProductQuantity={setProductQuantity}
+                  setShowAddedToCart={setShowAddedToCart}
+                  isSellOnline={medicineDetails?.sell_online === 1}
+                  isBanned={medicineDetails?.banned === 'Yes'}
+                  onNotifyMeClick={onNotifyMeClick}
+                />
+              </View>
+              {isPharma && (
+                <PharmaManufacturer
+                  manufacturer={medicineDetails?.manufacturer}
+                  composition={medicineDetails?.PharmaOverview?.[0]?.Composition || composition}
+                  consumeType={medicineDetails?.consume_type}
+                  onCompositionClick={onCompositionClick}
+                />
+              )}
+              {!!substitutes.length && !isInStock && (
+                <SimilarProducts
+                  heading={string.productDetailPage.PRODUCT_SUBSTITUTES}
+                  similarProducts={substitutes}
+                  navigation={props.navigation}
+                  composition={medicineDetails?.PharmaOverview?.[0]?.Composition || composition}
+                  setShowSubstituteInfo={setShowSubstituteInfo}
+                />
+              )}
+              <ProductInfo
+                name={medicineDetails?.name}
+                description={medicineDetails?.product_information}
+                isReturnable={medicineDetails?.is_returnable === 'Yes'}
+                vegetarian={medicineDetails?.vegetarian}
+                storage={medicineDetails?.storage}
+                key_ingredient={medicineDetails?.key_ingredient}
+                key_benefits={medicineDetails?.key_benefits}
+                safety_information={medicineDetails?.safety_information}
+                size={medicineDetails?.size}
+                flavour_fragrance={medicineDetails?.flavour_fragrance}
+                colour={medicineDetails?.colour}
+                variant={medicineDetails?.variant}
+                expiryDate={medicineDetails?.expiry_date}
+                isPharma={isPharma}
+                pharmaOverview={
+                  isPharma ? medicineDetails?.PharmaOverview?.[0]?.NewPharmaOverview : null
+                }
+                directionsOfUse={medicineDetails?.direction_for_use_dosage}
+              />
+              {!!substitutes.length && isInStock && (
+                <SimilarProducts
+                  heading={string.productDetailPage.PRODUCT_SUBSTITUTES}
+                  similarProducts={substitutes}
+                  navigation={props.navigation}
+                  composition={medicineDetails?.PharmaOverview?.[0]?.Composition || composition}
+                  setShowSubstituteInfo={setShowSubstituteInfo}
+                />
+              )}
+              {!!medicineDetails?.similar_products?.length && (
+                <SimilarProducts
+                  heading={string.productDetailPage.SIMILAR_PRODUCTS}
+                  similarProducts={medicineDetails?.similar_products}
+                  navigation={props.navigation}
+                />
+              )}
+              {!!medicineDetails?.crosssell_products?.length && (
+                <SimilarProducts
+                  heading={string.productDetailPage.ALSO_BOUGHT}
+                  similarProducts={medicineDetails?.crosssell_products}
+                  navigation={props.navigation}
+                />
+              )}
+              {!!medicineDetails?.marketer_address && (
+                <ProductManufacturer address={medicineDetails?.marketer_address} />
+              )}
+              <View style={{ height: 130 }} />
+            </KeyboardAwareScrollView>
+          ) : (
+            renderEmptyData()
+          )}
+          {!loading &&
+            !isEmptyObject(medicineDetails) &&
+            !!medicineDetails.id &&
+            showBottomBar &&
+            medicineDetails?.sell_online === 1 && (
+              <BottomStickyComponent
+                isInStock={isInStock}
                 sku={medicineDetails?.sku}
                 onAddCartItem={onAddCartItem}
-                name={medicineDetails?.name}
+                price={medicineDetails?.price}
+                specialPrice={medicineDetails?.special_price}
                 productQuantity={productQuantity}
-                setProductQuantity={setProductQuantity}
                 setShowAddedToCart={setShowAddedToCart}
-                isSellOnline={medicineDetails?.sell_online === 1}
                 isBanned={medicineDetails?.banned === 'Yes'}
-                deliveryError={deliveryError}
-              />
-            </View>
-            {isPharma && (
-              <PharmaManufacturer
-                manufacturer={medicineDetails?.manufacturer}
-                composition={medicineDetails?.PharmaOverview?.[0]?.Composition}
-                consumeType={medicineDetails?.consume_type}
+                cashback={cashback}
+                onNotifyMeClick={onNotifyMeClick}
               />
             )}
-            <ProductInfo
-              name={medicineDetails?.name}
-              description={medicineDetails?.product_information}
-              isReturnable={medicineDetails?.is_returnable === 'Yes'}
-              vegetarian={medicineDetails?.vegetarian}
-              storage={medicineDetails?.storage}
-              key_ingredient={medicineDetails?.key_ingredient}
-              key_benefits={medicineDetails?.key_benefits}
-              safety_information={medicineDetails?.safety_information}
-              size={medicineDetails?.size}
-              flavour_fragrance={medicineDetails?.flavour_fragrance}
-              colour={medicineDetails?.colour}
-              variant={medicineDetails?.variant}
-              expiryDate={medicineDetails?.expiry_date}
-              isPharma={isPharma}
-              pharmaOverview={
-                isPharma ? medicineDetails?.PharmaOverview?.[0]?.NewPharmaOverview : null
-              }
-              directionsOfUse={medicineDetails?.direction_for_use_dosage}
-            />
-            {!!substitutes.length && (
-              <SimilarProducts
-                heading={string.productDetailPage.PRODUCT_SUBSTITUTES}
-                similarProducts={substitutes}
-                navigation={props.navigation}
-                composition={medicineDetails?.PharmaOverview?.[0]?.Composition}
-                setShowSubstituteInfo={setShowSubstituteInfo}
-              />
-            )}
-            {!!medicineDetails?.similar_products?.length && (
-              <SimilarProducts
-                heading={string.productDetailPage.SIMILAR_PRODUCTS}
-                similarProducts={medicineDetails?.similar_products}
-                navigation={props.navigation}
-              />
-            )}
-            {!!medicineDetails?.crosssell_products?.length && (
-              <SimilarProducts
-                heading={string.productDetailPage.ALSO_BOUGHT}
-                similarProducts={medicineDetails?.crosssell_products}
-                navigation={props.navigation}
-              />
-            )}
-            {!!medicineDetails?.marketer_address && (
-              <ProductManufacturer address={medicineDetails?.marketer_address} />
-            )}
-            <View style={{ height: 130 }} />
-          </KeyboardAwareScrollView>
-        ) : (
-          renderEmptyData()
-        )}
-        {!loading &&
-          !isEmptyObject(medicineDetails) &&
-          !!medicineDetails.id &&
-          showBottomBar &&
-          medicineDetails?.sell_online === 1 && (
-            <BottomStickyComponent
-              isInStock={isInStock}
-              sku={medicineDetails?.sku}
-              onAddCartItem={onAddCartItem}
-              price={medicineDetails?.price}
-              specialPrice={medicineDetails?.special_price}
-              packForm={medicineDetails?.pack_form || 'Quantity'}
-              unit={medicineDetails.unit_of_measurement || ''}
-              packSize={medicineDetails?.pack_size}
-              packFormVariant={medicineDetails?.dose_form_variant}
-              productQuantity={productQuantity}
-              setShowAddedToCart={setShowAddedToCart}
-              isBanned={medicineDetails?.banned === 'Yes'}
-              cashback={cashback}
-              deliveryError={deliveryError}
-              name={medicineDetails?.name}
-            />
-          )}
-        {!loading &&
-          !isEmptyObject(medicineDetails) &&
-          !!medicineDetails.id &&
-          !!skuInCart.length &&
-          renderBottomButton()}
+        </View>
+        {!loading && showProceedButton && renderBottomButton()}
       </SafeAreaView>
       {showAddedToCart && (
         <Overlay
@@ -995,21 +1066,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 };
 
 const styles = StyleSheet.create({
-  badgelabelView: {
-    position: 'absolute',
-    top: -10,
-    right: -8,
-    backgroundColor: '#ff748e',
-    height: 14,
-    width: 14,
-    borderRadius: 7,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  badgelabelText: {
-    ...theme.fonts.IBMPlexSansBold(9),
-    color: theme.colors.WHITE,
-  },
   mainContainer: {
     flex: 1,
     backgroundColor: '#FFFFFF',

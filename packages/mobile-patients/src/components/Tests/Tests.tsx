@@ -3,7 +3,10 @@ import {
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import stripHtml from 'string-strip-html';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import {
+  DiagnosticsCartItem,
+  useDiagnosticsCart,
+} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
   Badge,
@@ -15,8 +18,6 @@ import {
   CartIcon,
   LocationOff,
   SearchSendIcon,
-  TestsIcon,
-  SearchIcon,
   HomeIcon,
   NotificationIcon,
   WorkflowIcon,
@@ -24,6 +25,7 @@ import {
   ShieldIcon,
   Remove,
   DropdownGreen,
+  WidgetLiverIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -40,7 +42,6 @@ import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from 
 import {
   getPlaceInfoByPincode,
   getLandingPageBanners,
-  getDiagnosticsSearchResults,
   getDiagnosticHomePageWidgets,
   DIAGNOSTIC_GROUP_PLAN,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -48,13 +49,15 @@ import {
   aphConsole,
   doRequestAndAccessLocationModified,
   g,
-  isValidSearch,
   getFormattedLocation,
   nameFormater,
   isSmallDevice,
-  formatAddressToLocation,
   navigateToHome,
   isAddressLatLngInValid,
+  addTestsToCart,
+  handleGraphQlError,
+  downloadDiagnosticReport,
+  setAsyncPharmaLocation,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -75,10 +78,14 @@ import {
   Image as ImageNative,
   ImageBackground,
   BackHandler,
+  Alert,
+  Linking,
+  FlatList,
 } from 'react-native';
-import { Image, Input } from 'react-native-elements';
-import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { Image } from 'react-native-elements';
+import { NavigationScreenProps } from 'react-navigation';
 import {
+  DIAGNOSTIC_ORDER_STATUS,
   SEARCH_TYPE,
   TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -100,7 +107,13 @@ import {
   GetSubscriptionsOfUserByStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
-import { getUserBannersList } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  getDiagnosticClosedOrders,
+  getDiagnosticOpenOrders,
+  getDiagnosticPatientPrescription,
+  getDiagnosticPhelboDetails,
+  getUserBannersList,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import Carousel from 'react-native-snap-carousel';
 import { DiagnosticsSearchSuggestionItem } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticsSearchSuggestionItem';
@@ -116,9 +129,12 @@ import {
   DiagnosticAddresssSelected,
   DiagnosticAddToCartEvent,
   DiagnosticBannerClick,
-  DiagnosticHomePageSearchItem,
+  DiagnosticHomePageWidgetClicked,
   DiagnosticLandingPageViewedEvent,
   DiagnosticPinCodeClicked,
+  DiagnosticTrackOrderViewed,
+  DiagnosticTrackPhleboClicked,
+  DiagnosticViewReportClicked,
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import { PackageCard } from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
@@ -127,17 +143,32 @@ import {
   getPatientAddressListVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
-import { stepsToBookArray } from '@aph/mobile-patients/src/strings/AppConfig';
+import {
+  AppConfig,
+  DIAGNOSITC_PHELBO_TRACKING_STATUS,
+  DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY,
+  DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
+  stepsToBookArray,
+} from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   findDiagnosticsWidgetsPricing,
   findDiagnosticsWidgetsPricingVariables,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
-import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
 import { LowNetworkCard } from '@aph/mobile-patients/src/components/Tests/components/LowNetworkCard';
+import { WidgetCard } from '@aph/mobile-patients/src/components/Tests/components/WidgetCard';
+
 import {
   renderBannerShimmer,
+  renderDiagnosticWidgetHeadingShimmer,
+  renderDiagnosticWidgetShimmer,
   renderTestDiagonosticsShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
+import moment from 'moment';
+
+import AsyncStorage from '@react-native-community/async-storage';
+import { OrderCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/OrderCardCarousel';
+import { PrescriptionCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/PrescriptionCardCarousel';
+import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
 
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
@@ -154,6 +185,9 @@ const whyBookUsArray = [
 ];
 
 const { width: winWidth, height: winHeight } = Dimensions.get('window');
+const LOCAL_DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY = DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.concat(
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED
+);
 
 export interface DiagnosticData {
   cityId: string;
@@ -164,7 +198,6 @@ export interface DiagnosticData {
 
 export interface TestsProps
   extends NavigationScreenProps<{
-    focusSearch?: boolean;
     comingFrom?: string;
     movedFrom?: string;
   }> {}
@@ -184,6 +217,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setAreaSelected,
     setDiagnosticSlot,
     setAddresses: setTestAddress,
+    addMultipleCartItems: addMultipleTestCartItems,
+    setCartPagePopulated,
+    asyncDiagnosticPincode,
+    setAsyncDiagnosticPincode,
   } = useDiagnosticsCart();
   const {
     cartItems: shopCartItems,
@@ -195,6 +232,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setCirclePlanValidity,
     addresses,
     setAddresses,
+    asyncPincode,
   } = useShoppingCart();
 
   const {
@@ -215,7 +253,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
   type Address = savePatientAddress_savePatientAddress_patientAddress;
 
-  const focusSearch = props.navigation.getParam('focusSearch');
   const movedFrom = props.navigation.getParam('movedFrom');
   const { currentPatient } = useAllCurrentPatients();
 
@@ -237,9 +274,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [widgetsData, setWidgetsData] = useState([] as any);
   const [reloadWidget, setReloadWidget] = useState<boolean>(false);
 
-  const [searchQuery, setSearchQuery] = useState({});
-  const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
-  const [searchResult, setSearchResults] = useState<boolean>(false);
+  const [latestPrescription, setLatestPrescription] = useState([] as any);
+
+  const [patientOpenOrders, setPatientOpenOrders] = useState([] as any);
+  const [patientClosedOrders, setPatientClosedOrders] = useState([] as any);
+
   const [isCurrentScreen, setCurrentScreen] = useState<string>('');
 
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
@@ -247,11 +286,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
   const defaultAddress = addresses?.find((item) => item?.defaultAddress);
   const [pageLoading, setPageLoading] = useState<boolean>(false);
+  const [isFocused, setIsFocused] = useState<boolean>(false);
+  const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
+  const [clickedItem, setClickedItem] = useState<any>([]);
 
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
 
   const [serviceableObject, setServiceableObject] = useState({} as any);
-  Object.keys(serviceableObject)?.length === 0 && serviceableObject?.constructor === Object;
 
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
@@ -260,15 +301,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
         sourceHeaders,
       },
       variables: {
-        cityID: Number(cityId) || 9,
+        cityID: Number(cityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
         itemIDs: listOfId,
       },
       fetchPolicy: 'no-cache',
     });
-
-  const setWebEngageEventOnSearchItem = (keyword: string, results: any[]) => {
-    DiagnosticHomePageSearchItem(currentPatient, keyword, results);
-  };
 
   const setWebEnageEventForPinCodeClicked = (
     mode: string,
@@ -283,17 +320,19 @@ export const Tests: React.FC<TestsProps> = (props) => {
     id: string,
     price: number,
     discountedPrice: number,
-    source: 'Home page' | 'Full search' | 'Details page' | 'Partial search',
+    source: 'Home page' | 'Full search' | 'Details page' | 'Partial search' | 'Prescription',
     section?: 'Featured tests' | 'Browse packages'
   ) => {
     DiagnosticAddToCartEvent(name, id, price, discountedPrice, source, section);
   };
 
   useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', handleBack);
-    return () => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    };
+    if (movedFrom === 'deeplink') {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+      return () => {
+        BackHandler.removeEventListener('hardwareBackPress', handleBack);
+      };
+    }
   }, []);
 
   const handleBack = () => {
@@ -313,21 +352,21 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }, [newAddressAddedHomePage]);
 
   /** added so that if phramacy code change, then this also changes. */
-  /**need to put a check if pincode is entered then that needs to be saved, and only change in pharama location comes here. */
   useEffect(() => {
-    setDiagnosticLocation!(!!pharmacyLocation ? pharmacyLocation! : locationDetails!);
-    checkIsPinCodeServiceable(
-      !!pharmacyLocation ? pharmacyLocation?.pincode! : locationDetails?.pincode!,
-      'manual',
-      'initialPincode'
-    );
-  }, [pharmacyLocation]); //removed location details
+    let getLocationDetails = !!asyncPincode
+      ? asyncPincode
+      : !!locationDetails
+      ? locationDetails
+      : pharmacyLocation!;
+    setDiagnosticLocation?.(getLocationDetails);
+    setAsyncDiagnosticPincode?.(getLocationDetails);
+    checkIsPinCodeServiceable(getLocationDetails?.pincode, 'manual', 'pharmaPincode');
+  }, [asyncPincode]); //removed location details
 
   /**
    * fetch widgets
    */
   useEffect(() => {
-    getDiagnosticBanner();
     setBannerData && setBannerData([]);
     DiagnosticLandingPageViewedEvent(
       currentPatient,
@@ -338,10 +377,41 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   useEffect(() => {
     if (currentPatient) {
-      getUserBanners();
       fetchAddress();
+      fetchPatientOpenOrders();
+      fetchPatientClosedOrders();
+      fetchPatientPrescriptions();
+      getUserBanners();
     }
   }, [currentPatient]);
+
+  useEffect(() => {
+    if (isFocused) {
+      const getAsyncLocationPincode = async () => {
+        const asyncLocationPincode: any = await AsyncStorage.getItem('PharmacyLocationPincode');
+        if (asyncLocationPincode) {
+          let getAsyncPincode = JSON.parse(asyncLocationPincode);
+          setAsyncDiagnosticPincode?.(JSON.parse(asyncLocationPincode));
+          //call only when they are different.
+          if (asyncDiagnosticPincode?.pincode === getAsyncPincode?.pincode) {
+            return;
+          } else {
+            checkIsPinCodeServiceable(
+              getAsyncPincode?.pincode!
+                ? getAsyncPincode?.pincode
+                : !!pharmacyLocation
+                ? pharmacyLocation?.pincode!
+                : locationDetails?.pincode!,
+              'manual',
+              'initalPincode'
+            );
+          }
+          setDiagnosticLocation?.(!!pharmacyLocation ? pharmacyLocation! : locationDetails!);
+        }
+      };
+      getAsyncLocationPincode();
+    }
+  }, [isFocused]);
 
   /**
    * if there is any change in the location yellow pop-up ,if location is present.
@@ -351,16 +421,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setBannerData && setBannerData([]); // default banners to be empty
       getUserBanners();
+      setIsFocused(true);
       setCurrentScreen(AppRoutes.Tests); //to avoid showing non-serviceable prompt on medicine page
     });
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       setCurrentScreen('');
+      setIsFocused(false);
     });
     return () => {
       didFocus && didFocus.remove();
       didBlur && didBlur.remove();
     };
-  });
+  }, []);
 
   useEffect(() => {
     if (!loading && banners?.length > 0) {
@@ -368,7 +440,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         ImageNative.getSize(
           item?.bannerImage,
           (width, height) => {
-            setImgHeight(height * (winWidth / width) + 20);
+            setImgHeight(Math.max(height * (winWidth / width) + 20, 180));
             setBannerLoading(false);
           },
           () => {
@@ -379,9 +451,76 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   }, [loading, banners]);
 
-  const getDiagnosticBanner = async () => {
+  const fetchPatientOpenOrders = async () => {
     try {
-      const res: any = await getLandingPageBanners('diagnostic');
+      let openOrdersResponse: any = await getDiagnosticOpenOrders(
+        client,
+        currentPatient?.mobileNumber,
+        0,
+        3
+      );
+      if (openOrdersResponse?.data?.data) {
+        const getOpenOrders =
+          openOrdersResponse?.data?.data?.getDiagnosticOpenOrdersList?.openOrders;
+        setPatientOpenOrders(getOpenOrders);
+      } else {
+        setPatientOpenOrders([]);
+      }
+    } catch (error) {
+      setPatientOpenOrders([]);
+      CommonBugFender('fetchPatientOpenOrders_Tests', error);
+    }
+  };
+
+  const fetchPatientClosedOrders = async () => {
+    try {
+      let closedOrdersResponse: any = await getDiagnosticClosedOrders(
+        client,
+        currentPatient?.mobileNumber,
+        0,
+        3
+      );
+      if (closedOrdersResponse?.data?.data) {
+        const getClosedOrders =
+          closedOrdersResponse?.data?.data?.getDiagnosticClosedOrdersList?.closedOrders;
+        setPatientClosedOrders(getClosedOrders);
+      } else {
+        setPatientClosedOrders([]);
+      }
+    } catch (error) {
+      setPatientClosedOrders([]);
+      CommonBugFender('fetchPatientOpenOrders_Tests', error);
+    }
+  };
+
+  const fetchPatientPrescriptions = async () => {
+    try {
+      const res: any = await getDiagnosticPatientPrescription(
+        client,
+        currentPatient?.mobileNumber,
+        3,
+        AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
+      );
+      if (res?.data?.data) {
+        const response = res?.data?.data?.getPatientLatestPrescriptions;
+        if (!!response && response?.length > 0) {
+          setLatestPrescription(response);
+        } else {
+          setLatestPrescription([]);
+        }
+      } else {
+        setLatestPrescription([]);
+      }
+    } catch (error) {
+      setLatestPrescription([]);
+      CommonBugFender('fetchPatientPrescriptions_Tests', error);
+    }
+  };
+
+  const getDiagnosticBanner = async (cityId: number) => {
+    try {
+      const res: any = await getLandingPageBanners('diagnostic', Number(cityId));
+      //if true then only show it.
       if (res?.data?.success) {
         const bannerData = g(res, 'data', 'data');
         setBanners(bannerData);
@@ -409,8 +548,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
         //call here the prices.
         fetchWidgetsPrices(sortWidgets, cityId);
       } else {
+        setSectionLoading(false);
         setWidgetsData([]);
-        setLoading!(false);
+        setLoading?.(false);
         setPageLoading?.(false);
         setReloadWidget(true);
       }
@@ -420,18 +560,21 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setLoading?.(false);
       setReloadWidget(true);
       setPageLoading?.(false);
+      setSectionLoading(false);
     }
   };
 
   const getUserBanners = async () => {
-    const res: any = await getUserBannersList(
-      client,
-      currentPatient,
-      string.banner_context.DIAGNOSTIC_HOME
-    );
-    if (res) {
-      setBannerData && setBannerData(res);
-    } else {
+    try {
+      const res: any = await getUserBannersList(
+        client,
+        currentPatient,
+        string.banner_context.DIAGNOSTIC_HOME
+      );
+      if (res) {
+        setBannerData && setBannerData(res);
+      }
+    } catch (error) {
       setBannerData && setBannerData([]);
     }
   };
@@ -450,14 +593,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
         !!itemIds &&
           itemIds?.map((item: any) =>
             fetchPricesForCityId(
-              Number(cityId!) || 9,
+              Number(cityId!) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
               item?.length > 12 ? item?.slice(0, 12) : item
             )
           )
       );
 
-      const response = (await res)?.map((item: any) =>
-        g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics')
+      const response = (await res)?.map(
+        (item: any) => g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics') || []
       );
       let newWidgetsData = [...filterWidgets];
 
@@ -554,16 +697,22 @@ export const Tests: React.FC<TestsProps> = (props) => {
       if (addresses?.length) {
         const deliveryAddress = addresses?.find((item) => item?.defaultAddress);
         if (deliveryAddress) {
-          setDeliveryAddressId!(deliveryAddress?.id);
+          setDeliveryAddressId?.(deliveryAddress?.id);
+
           //if location is not undefined in either of the three, then don't change address
-          if (!locationDetails && !pharmacyLocation && !diagnosticLocation) {
+          if (
+            !asyncDiagnosticPincode?.pincode! &&
+            !diagnosticLocation &&
+            !locationDetails &&
+            !pharmacyLocation
+          ) {
             checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'initialFetchAddress');
-            setDiagnosticLocation!(formatAddressToLocation(deliveryAddress));
+            setDiagnosticLocation?.(formatAddressToLocation(deliveryAddress));
             return;
           }
         }
       }
-      setPageLoading!(true);
+      setPageLoading?.(true);
       const response = await client.query<getPatientAddressList, getPatientAddressListVariables>({
         query: GET_PATIENT_ADDRESS_LIST,
         variables: { patientId: currentPatient?.id },
@@ -575,24 +724,28 @@ export const Tests: React.FC<TestsProps> = (props) => {
       const deliveryAddress = addressList?.find((item) => item?.defaultAddress);
       if (deliveryAddress) {
         setDeliveryAddressId?.(deliveryAddress?.id);
-        if (!locationDetails && !pharmacyLocation && !diagnosticLocation) {
+        if (
+          !asyncDiagnosticPincode?.pincode! &&
+          !diagnosticLocation &&
+          !locationDetails &&
+          !pharmacyLocation
+        ) {
           checkIsPinCodeServiceable(deliveryAddress?.zipcode!, undefined, 'fetchAddressResponse');
           setDiagnosticLocation?.(formatAddressToLocation(deliveryAddress));
         }
       } else {
         checkLocation(addressList);
       }
-      setPageLoading!(false);
+      setPageLoading?.(false);
     } catch (error) {
       checkLocation(addresses);
-      setPageLoading!(false);
+      setPageLoading?.(false);
       CommonBugFender('fetching_Addresses_on_Test_Page', error);
     }
   }
 
   const updatePlaceInfoByPincode = (pincode: string, serviceableResponse: DiagnosticData) => {
     let isPinCodeServiceable = serviceableResponse?.city != '';
-
     getPlaceInfoByPincode(pincode)
       .then(({ data }) => {
         try {
@@ -601,7 +754,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
             const latLang = data?.results?.[0]?.geometry?.location || {};
             const response = getFormattedLocation(addrComponents, latLang, pincode);
             let setCity, setState;
-
             if (isDiagnosticLocationServiceable && diagnosticServiceabilityData == null) {
               setCity = diagnosticLocation?.city! || '';
               setState = diagnosticLocation?.state! || '';
@@ -612,11 +764,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
               setCity = response?.city || '';
               setState = response?.state || '';
             }
-
             (response.city = setCity), (response.state = setState);
-            setDiagnosticLocation!(response);
+            setDiagnosticLocation?.(response);
             !locationDetails && setLocationDetails!(response);
-            setLoadingContext!(false);
+            const saveAddress = {
+              pincode: pincode,
+              id: '',
+              city: setCity,
+              state: setState,
+            };
+            setAsyncPharmaLocation(saveAddress);
+            setAsyncDiagnosticPincode?.(saveAddress);
+            setLoadingContext?.(false);
           } else {
             let response = {
               displayName: '',
@@ -641,28 +800,39 @@ export const Tests: React.FC<TestsProps> = (props) => {
               country: 'India',
               pincode: String(pincode),
             };
+
             setDiagnosticLocation!(response);
             !locationDetails && setLocationDetails!(response);
-            setLoadingContext!(false);
+            //for storing in the async storage.
+            const saveAddress = {
+              pincode: pincode,
+              id: '',
+              city: response?.city,
+              state: response?.state,
+            };
+            setAsyncPharmaLocation(saveAddress);
+            setAsyncDiagnosticPincode?.(saveAddress);
+            setLoadingContext?.(false);
           }
         } catch (e) {
-          setLoadingContext!(false);
+          CommonBugFender('updatePlaceInfoByPincode_Tests', e);
+          setLoadingContext?.(false);
           handleUpdatePlaceInfoByPincodeError(e);
         }
       })
       .catch(handleUpdatePlaceInfoByPincodeError)
-      .finally(() => setLoadingContext!(false));
+      .finally(() => setLoadingContext?.(false));
   };
 
   /**check current location */
   const autoDetectLocation = (addresses: addressListType) => {
-    setPageLoading!(true);
+    setPageLoading?.(true);
     doRequestAndAccessLocationModified()
       .then((response) => {
         setPageLoading!(false);
         response && setDiagnosticLocation!(response);
         response && !locationDetails && setLocationDetails!(response);
-        setDeliveryAddressId!('');
+        setDeliveryAddressId?.('');
         checkIsPinCodeServiceable(response.pincode, 'Auto-select', 'autoDetect');
       })
       .catch((e) => {
@@ -672,7 +842,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         e &&
           typeof e == 'string' &&
           !e.includes('denied') &&
-          showAphAlert!({
+          showAphAlert?.({
             title: string.common.uhOh,
             description: e,
           });
@@ -685,7 +855,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const checkIsPinCodeServiceable = async (pincode: string, mode?: string, comingFrom?: string) => {
     let obj = {} as DiagnosticData;
     if (!!pincode) {
-      setPageLoading!(true);
+      setPageLoading?.(true);
+      setSectionLoading(true); //for loading the widgets.
       client
         .query<getPincodeServiceability, getPincodeServiceabilityVariables>({
           query: GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
@@ -707,8 +878,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
               city: serviceableData?.cityName || '',
             };
             setServiceableObject(obj);
-            setDiagnosticServiceabilityData!(obj);
-            setDiagnosticLocationServiceable!(true);
+            setDiagnosticServiceabilityData?.(obj);
+            setDiagnosticLocationServiceable?.(true);
             setServiceabilityMsg('');
             mode && setWebEnageEventForPinCodeClicked(mode, pincode, true);
             comingFrom == 'defaultAddress' &&
@@ -717,14 +888,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
               DiagnosticAddresssSelected('New', 'Yes', pincode, 'Home page');
           } else {
             obj = {
-              cityId: '9',
+              cityId: String(AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID),
               stateId: '0',
               state: '',
               city: '',
             };
             setServiceableObject(obj);
-            setPageLoading!(false);
-            setDiagnosticLocationServiceable!(false);
+            setPageLoading?.(false);
+            setDiagnosticLocationServiceable?.(false);
 
             isCurrentScreen == AppRoutes.Tests
               ? renderLocationNotServingPopUpForPincode(pincode)
@@ -738,15 +909,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
             comingFrom == 'newAddress' &&
               DiagnosticAddresssSelected('New', 'No', pincode, 'Home page');
           }
+          getDiagnosticBanner(Number(serviceableData?.cityID));
           getHomePageWidgets(obj?.cityId);
           setshowLocationpopup(false);
           updatePlaceInfoByPincode(pincode, obj);
         })
         .catch((e) => {
-          setPageLoading!(false);
+          setPageLoading?.(false);
           CommonBugFender('getDiagnosticsPincodeServiceabilityError_Tests', e);
-          setLoadingContext!(false);
+          setLoadingContext?.(false);
           setReloadWidget(true);
+          setSectionLoading(false);
         });
     }
   };
@@ -756,7 +929,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       <ListCard
         onPress={() => {
           postMyOrdersClicked('Diagnostics', currentPatient);
-          props.navigation.navigate(AppRoutes.YourOrdersTest, {
+          props.navigation.push(AppRoutes.YourOrdersTest, {
             isTest: true,
           });
         }}
@@ -764,8 +937,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
           marginBottom: 24,
           marginTop: 20,
         }}
-        title={'My Orders'}
-        leftIcon={<TestsIcon />}
+        titleStyle={{
+          color: theme.colors.SHERPA_BLUE,
+          ...theme.fonts.IBMPlexSansSemiBold(16),
+          paddingHorizontal: 0,
+        }}
+        title={'MY ORDERS'}
+        leftIcon={null}
       />
     );
   };
@@ -784,10 +962,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
     savePastSearch(`${itemId}`, itemName).catch((e) => {
       aphConsole.log({ e });
     });
-    // postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, rate, rate, 'Partial search');
     //passed zero till the time prices aren't updated.
     postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, 0, 0, 'Partial search');
-    addCartItem!({
+    addCartItem?.({
       id: `${itemId}`,
       name: stripHtml(itemName),
       price: pricesObject?.rate || 0,
@@ -813,40 +990,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [isSearchFocused, setSearchFocused] = useState(false);
   const client = useApolloClient();
 
-  const onSearchTest = async (_searchText: string) => {
-    if (isValidSearch(_searchText)) {
-      if (!(_searchText && _searchText.length > 2)) {
-        setDiagnosticResults([]);
-        return;
-      }
-      setShowMatchingMedicines(true);
-      setsearchSate('load');
-      try {
-        const res: any = await getDiagnosticsSearchResults(
-          'diagnostic',
-          _searchText,
-          Number(serviceableObject?.cityId! || 9)
-        );
-        if (res?.data?.success) {
-          const products = g(res, 'data', 'data') || [];
-          setDiagnosticResults(
-            products as searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
-          );
-          setSearchResults(products?.length == 0);
-          setsearchSate('success');
-          setWebEngageEventOnSearchItem(_searchText, products);
-        } else {
-          setDiagnosticResults([]);
-          setSearchResults(true);
-          setsearchSate('success');
-        }
-      } catch (error) {
-        CommonBugFender('Tests_onSearchTests', error);
-        setsearchSate('fail');
-      }
-    }
-  };
-
   const getUserSubscriptionsByStatus = async () => {
     setPageLoading!(true);
     try {
@@ -863,6 +1006,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setPageLoading!(false);
       if (data) {
         if (data?.APOLLO?.[0]._id) {
+          AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
           setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
           setIsCircleSubscription && setIsCircleSubscription(true);
           setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
@@ -952,6 +1096,22 @@ export const Tests: React.FC<TestsProps> = (props) => {
       },
       searchInput: { minHeight: undefined, paddingVertical: 8 },
       searchInputContainer: { marginBottom: 15, marginTop: 5 },
+      searchNewInput: {
+        borderColor: '#e7e7e7',
+        borderRadius: 5,
+        borderWidth: 1,
+        width: '95%',
+        alignSelf: 'center',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignContent: 'center',
+        padding: 10,
+        marginVertical: 15,
+        backgroundColor: '#f7f8f5',
+      },
+      searchTextStyle: {
+        ...theme.viewStyles.text('SB', 18, 'rgba(1,48,91, 0.3)'),
+      },
     });
 
     const shouldEnableSearchSend = searchText.length > 2;
@@ -975,74 +1135,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
       </TouchableOpacity>
     );
 
-    const leftIconView = (
-      <SearchIcon
-        style={{
-          marginLeft: -16,
-          height: 21,
-          width: 21,
-          tintColor: colors.APP_GREEN,
-          marginRight: 5,
-        }}
-      />
-    );
-
-    const itemsNotFound = searchSate == 'success' && searchText?.length > 2 && searchResult;
     return (
       <TouchableOpacity
         onPress={() => {
-          setSearchFocused(true);
           props.navigation.navigate(AppRoutes.SearchTestScene, {
             searchText: searchText,
           });
-          setSearchText('');
-          setDiagnosticResults([]);
         }}
+        style={styles.searchNewInput}
       >
-        <SearchInput
-          _isSearchFocused={isSearchFocused}
-          editable={false}
-          autoFocus={false}
-          onSubmitEditing={() => {
-            if (searchText?.length > 2) {
-              props.navigation.navigate(AppRoutes.SearchTestScene, {
-                searchText: searchText,
-              });
-            }
-          }}
-          value={searchText}
-          onBlur={() => {
-            setSearchFocused(false);
-            setDiagnosticResults([]);
-            setSearchText('');
-            setsearchSate('success');
-          }}
-          onChangeText={(value) => {
-            if (isValidSearch(value)) {
-              setSearchText(value);
-              if (!(value && value.length > 2)) {
-                setDiagnosticResults([]);
-                return;
-              }
-              const search = _.debounce(onSearchTest, 300);
-              if (value?.length >= 3) {
-                setsearchSate('load');
-              }
-              setSearchQuery((prevSearch: any) => {
-                if (prevSearch.cancel) {
-                  prevSearch.cancel();
-                }
-                return search;
-              });
-              search(value);
-            }
-          }}
-          _rigthIconView={rigthIconView}
-          placeholder="Search tests &amp; packages"
-          _itemsNotFound={itemsNotFound}
-          inputStyle={styles.searchInput}
-          containerStyle={styles.searchInputContainer}
-        />
+        <Text style={styles.searchTextStyle}>Search tests &amp; packages</Text>
+        {rigthIconView}
       </TouchableOpacity>
     );
   };
@@ -1074,7 +1177,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         //show the error
         renderAlert(string.diagnostics.updateAddressLatLngMessage, 'updateLocation', address);
       } else {
-        setPageLoading(true);
+        setPageLoading?.(true);
         hideAphAlert?.();
         const response = await client.query<makeAdressAsDefault, makeAdressAsDefaultVariables>({
           query: SET_DEFAULT_ADDRESS,
@@ -1089,12 +1192,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }));
         setAddresses?.(updatedAddresses);
         setTestAddress?.(updatedAddresses);
-        patientAddress?.defaultAddress && setDeliveryAddressId!(patientAddress?.id);
+        patientAddress?.defaultAddress && setDeliveryAddressId?.(patientAddress?.id);
         setDiagnosticAreas?.([]);
         setAreaSelected?.({});
         setDiagnosticSlot?.(null);
         const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
-        setDiagnosticLocation!(formatAddressToLocation(deliveryAddress! || null));
+        setDiagnosticLocation?.(formatAddressToLocation(deliveryAddress! || null));
         checkIsPinCodeServiceable(address?.zipcode!, undefined, 'defaultAddress');
         setPageLoading(false);
       }
@@ -1102,7 +1205,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setPageLoading(false);
       checkLocation(addresses);
       CommonBugFender('set_default_Address_on_Medicine_Page', error);
-      showAphAlert!({
+      showAphAlert?.({
         title: string.common.uhOh,
         description:
           "We're sorry! Unable to set delivery address. Please try again after some time",
@@ -1118,14 +1221,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
       showAccessLocationPopup(addresses, false);
   };
   const showAccessLocationPopup = (addressList: addressListType, pincodeInput?: boolean) => {
-    return showAphAlert!({
+    return showAphAlert?.({
       // unDismissable: isunDismissable(),
       removeTopIcon: true,
       onPressOutside: () => {
         hideAphAlert!();
         //if this needs to be done, if location permission is denied or anywhere.
-        if (!defaultAddress && !locationDetails && !diagnosticLocation && !pharmacyLocation) {
-          setDeliveryAddressId!('');
+        if (
+          !defaultAddress &&
+          !locationDetails &&
+          !diagnosticLocation &&
+          !pharmacyLocation &&
+          !asyncDiagnosticPincode?.pincode!
+        ) {
+          setDeliveryAddressId?.('');
           checkIsPinCodeServiceable('500034', undefined, 'noLocation');
         }
       },
@@ -1134,6 +1243,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
           source={AppRoutes.Tests}
           addresses={addressList}
           onPressSelectAddress={(address) => {
+            const saveAddress = {
+              pincode: address?.zipcode,
+              id: address?.id,
+              city: address?.city,
+              state: address?.state,
+            };
+            setCartPagePopulated?.(false);
+            setAsyncDiagnosticPincode?.(saveAddress);
             setDefaultAddress(address);
           }}
           onPressEditAddress={(address) => {
@@ -1143,21 +1260,21 @@ export const Tests: React.FC<TestsProps> = (props) => {
               source: 'Tests' as AddressSource,
               ComingFrom: AppRoutes.Tests,
             });
-            hideAphAlert!();
+            hideAphAlert?.();
           }}
           onPressAddAddress={() => {
             props.navigation.navigate(AppRoutes.AddAddressNew, {
               source: 'Tests' as AddressSource,
               addOnly: true,
             });
-            hideAphAlert!();
+            hideAphAlert?.();
           }}
           onPressCurrentLocaiton={() => {
-            hideAphAlert!();
+            hideAphAlert?.();
             autoDetectLocation(addressList);
           }}
           onPressPincode={() => {
-            hideAphAlert!();
+            hideAphAlert?.();
             showAccessLocationPopup(addressList, true);
           }}
         />
@@ -1181,8 +1298,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderDeliverToLocationCTA = () => {
     let deliveryAddress = addresses?.find((item) => item?.id == deliveryAddressId);
-    const location = !deliveryAddress
-      ? diagnosticLocation
+    const location = asyncDiagnosticPincode?.pincode
+      ? `${formatText(asyncDiagnosticPincode?.city || asyncDiagnosticPincode?.state || '', 18)} ${
+          asyncDiagnosticPincode?.pincode
+        }`
+      : !deliveryAddress
+      ? diagnosticLocation?.pincode
         ? `${formatText(
             g(diagnosticLocation, 'city') || g(diagnosticLocation, 'state') || '',
             18
@@ -1210,11 +1331,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             <View style={{ flexDirection: 'row' }}>
               <View>
                 <Text style={styles.locationText}>{nameFormater(location, 'title')}</Text>
-                {!serviceabilityMsg ? (
-                  <Spearator style={styles.locationTextUnderline} />
-                ) : (
-                  <View style={{ height: 2 }} />
-                )}
+                <Spearator style={styles.locationTextUnderline} />
               </View>
               <View style={styles.dropdownGreenContainer}>
                 <DropdownGreen />
@@ -1229,9 +1346,19 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-  const renderDot = (active: boolean) => (
+  const renderDot = (active: boolean, source?: string) => (
     <View
-      style={[styles.sliderDotStyle, { backgroundColor: active ? colors.APP_GREEN : '#d8d8d8' }]}
+      style={[
+        styles.sliderDotStyle,
+        {
+          backgroundColor: active
+            ? source == 'orderStatus'
+              ? colors.APP_YELLOW
+              : colors.APP_GREEN
+            : '#d8d8d8',
+          width: source == 'orderStatus' && active ? 14 : 8,
+        },
+      ]}
     />
   );
 
@@ -1260,7 +1387,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
             autoplayInterval={3000}
           />
           <View style={styles.landingBannerInnerView}>
-            {banners?.map((_, index) => (index == slideIndex ? renderDot(true) : renderDot(false)))}
+            {banners?.length > 1 &&
+              banners?.map((_, index) =>
+                index == slideIndex ? renderDot(true) : renderDot(false)
+              )}
           </View>
         </View>
       );
@@ -1272,25 +1402,40 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const renderSliderItem = ({ item, index }: { item: any; index: number }) => {
     const handleOnPress = () => {
       if (item?.redirectUrl && item?.redirectUrl != '') {
-        const data = item?.redirectUrl?.split('=')?.[1];
-        const extractData = data?.replace('apollopatients://', '');
-        const getNavigationDetails = extractData?.split('?');
-        const route = getNavigationDetails?.[0];
-        let itemId = '';
-        try {
-          if (getNavigationDetails?.length >= 2) {
-            itemId = getNavigationDetails?.[1]?.split('&');
-            if (itemId.length > 0) {
-              itemId = itemId[0];
-            }
+        //for rtpcr - drive through - open webview
+        if (item?.redirectUrlText === 'WebView') {
+          try {
+            const openUrl = item?.redirectUrl || AppConfig.Configuration.RTPCR_Google_Form;
+            props.navigation.navigate(AppRoutes.CovidScan, {
+              covidUrl: openUrl,
+            });
+          } catch (e) {
+            aphConsole.log(e);
+            CommonBugFender('renderSliderItem_handleOnPress_Tests', e);
           }
-        } catch (error) {}
-        if (route == 'TestDetails') {
-          DiagnosticBannerClick(slideIndex + 1, Number(itemId));
-          props.navigation.navigate(AppRoutes.TestDetails, {
-            itemId: itemId,
-            comingFrom: AppRoutes.Tests,
-          });
+        }
+        //redirect to details page
+        else {
+          const data = item?.redirectUrl?.split('=')?.[1];
+          const extractData = data?.replace('apollopatients://', '');
+          const getNavigationDetails = extractData?.split('?');
+          const route = getNavigationDetails?.[0];
+          let itemId = '';
+          try {
+            if (getNavigationDetails?.length >= 2) {
+              itemId = getNavigationDetails?.[1]?.split('&');
+              if (itemId.length > 0) {
+                itemId = itemId[0];
+              }
+            }
+          } catch (error) {}
+          if (route == 'TestDetails') {
+            DiagnosticBannerClick(slideIndex + 1, Number(itemId));
+            props.navigation.navigate(AppRoutes.TestDetails, {
+              itemId: itemId,
+              comingFrom: AppRoutes.Tests,
+            });
+          }
         }
       }
     };
@@ -1411,7 +1556,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       <>
         {!!isWidget1 ? renderWidgets(isWidget1) : null}
         {renderStepsToBook()}
-
         {renderCarouselBanners()}
         {!!isWidget2 ? renderWidgets(isWidget2) : null}
         {renderWhyBookUs()}
@@ -1423,10 +1567,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderWidgets = (data: any) => {
-    if (data?.diagnosticWidgetType == 'Package') {
-      return renderPackageWidget(data);
-    } else {
-      return renderTestWidgets(data);
+    let widgetType = data?.diagnosticWidgetType;
+    switch (widgetType) {
+      case 'Package':
+        return renderPackageWidget(data);
+        break;
+      case string.diagnosticCategoryTitle.categoryGrid:
+        return scrollWidgetSection(data);
+        break;
+      case string.diagnosticCategoryTitle.category:
+        return gridWidgetSection(data);
+        break;
+      default:
+        return renderTestWidgets(data);
+        break;
     }
   };
 
@@ -1435,43 +1589,48 @@ export const Tests: React.FC<TestsProps> = (props) => {
       !!data &&
       data?.diagnosticWidgetData?.length > 0 &&
       data?.diagnosticWidgetData?.find((item: any) => item?.diagnosticPricing);
-    const showViewAll = isPricesAvailable && data?.diagnosticWidgetData?.length > 2;
+    const showViewAll = !!isPricesAvailable && data?.diagnosticWidgetData?.length > 2;
     const lengthOfTitle = data?.diagnosticWidgetTitle?.length;
     return (
-      <View>
-        {isPricesAvailable ? (
+      <View style={!!isPricesAvailable ? styles.widgetSpacing : {}}>
+        {!!isPricesAvailable ? (
           <>
-            <SectionHeader
-              leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
-              leftTextStyle={[
-                styles.widgetHeading,
-                {
-                  ...theme.viewStyles.text(
-                    'B',
-                    !!lengthOfTitle && lengthOfTitle > 20 ? 14 : 16,
-                    theme.colors.SHERPA_BLUE,
-                    1,
-                    20
-                  ),
-                },
-              ]}
-              rightText={showViewAll ? 'VIEW ALL' : ''}
-              rightTextStyle={showViewAll ? styles.widgetViewAllText : {}}
-              onPressRightText={
-                showViewAll
-                  ? () => {
-                      props.navigation.navigate(AppRoutes.TestListing, {
-                        movedFrom: AppRoutes.Tests,
-                        data: data,
-                        cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
-                      });
-                    }
-                  : undefined
-              }
-              style={showViewAll ? { paddingBottom: 1 } : {}}
-            />
             {sectionLoading ? (
-              renderSectionLoader(188)
+              renderDiagnosticWidgetHeadingShimmer() //load heading
+            ) : (
+              <SectionHeader
+                leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
+                leftTextStyle={[
+                  styles.widgetHeading,
+                  {
+                    ...theme.viewStyles.text(
+                      'B',
+                      !!lengthOfTitle && lengthOfTitle > 20 ? 13 : 16,
+                      theme.colors.SHERPA_BLUE,
+                      1,
+                      20
+                    ),
+                  },
+                ]}
+                rightText={showViewAll ? 'VIEW ALL' : ''}
+                rightTextStyle={showViewAll ? styles.widgetViewAllText : {}}
+                onPressRightText={
+                  showViewAll
+                    ? () => {
+                        props.navigation.navigate(AppRoutes.TestListing, {
+                          movedFrom: AppRoutes.Tests,
+                          data: data,
+                          cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+                          widgetType: data?.diagnosticWidgetType,
+                        });
+                      }
+                    : undefined
+                }
+                style={showViewAll ? { paddingBottom: 1 } : {}}
+              />
+            )}
+            {sectionLoading ? (
+              renderDiagnosticWidgetShimmer(false) //to load package card
             ) : (
               <PackageCard
                 data={data}
@@ -1479,11 +1638,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 isServiceable={isDiagnosticLocationServiceable}
                 isVertical={false}
                 navigation={props.navigation}
-                source={'Home Page'}
+                source={'Home page'}
                 sourceScreen={AppRoutes.Tests}
               />
             )}
           </>
+        ) : sectionLoading ? (
+          renderDiagnosticWidgetShimmer(true) //to show overall widget
         ) : null}
       </View>
     );
@@ -1494,44 +1655,49 @@ export const Tests: React.FC<TestsProps> = (props) => {
       !!data &&
       data?.diagnosticWidgetData?.length > 0 &&
       data?.diagnosticWidgetData?.find((item: any) => item?.diagnosticPricing);
-    const showViewAll = isPricesAvailable && data?.diagnosticWidgetData?.length > 2;
+    const showViewAll = !!isPricesAvailable && data?.diagnosticWidgetData?.length > 2;
     const lengthOfTitle = data?.diagnosticWidgetTitle?.length;
 
     return (
-      <View>
+      <View style={!!isPricesAvailable ? styles.widgetSpacing : {}}>
         {!!isPricesAvailable ? (
           <>
-            <SectionHeader
-              leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
-              leftTextStyle={[
-                styles.widgetHeading,
-                {
-                  ...theme.viewStyles.text(
-                    'B',
-                    !!lengthOfTitle && lengthOfTitle > 20 ? 14 : 16,
-                    theme.colors.SHERPA_BLUE,
-                    1,
-                    20
-                  ),
-                },
-              ]}
-              rightText={showViewAll ? 'VIEW ALL' : ''}
-              rightTextStyle={showViewAll ? styles.widgetViewAllText : {}}
-              onPressRightText={
-                showViewAll
-                  ? () => {
-                      props.navigation.navigate(AppRoutes.TestListing, {
-                        movedFrom: AppRoutes.Tests,
-                        data: data,
-                        cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
-                      });
-                    }
-                  : undefined
-              }
-              style={showViewAll ? { paddingBottom: 1 } : {}}
-            />
             {sectionLoading ? (
-              renderSectionLoader(188)
+              renderDiagnosticWidgetHeadingShimmer() //load heading
+            ) : (
+              <SectionHeader
+                leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
+                leftTextStyle={[
+                  styles.widgetHeading,
+                  {
+                    ...theme.viewStyles.text(
+                      'B',
+                      !!lengthOfTitle && lengthOfTitle > 20 ? 13 : 16,
+                      theme.colors.SHERPA_BLUE,
+                      1,
+                      20
+                    ),
+                  },
+                ]}
+                rightText={showViewAll ? 'VIEW ALL' : ''}
+                rightTextStyle={showViewAll ? styles.widgetViewAllText : {}}
+                onPressRightText={
+                  showViewAll
+                    ? () => {
+                        props.navigation.navigate(AppRoutes.TestListing, {
+                          movedFrom: AppRoutes.Tests,
+                          data: data,
+                          cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+                          widgetType: data?.diagnosticWidgetType,
+                        });
+                      }
+                    : undefined
+                }
+                style={showViewAll ? { paddingBottom: 1 } : {}}
+              />
+            )}
+            {sectionLoading ? (
+              renderDiagnosticWidgetShimmer(false) //load package card
             ) : (
               <ItemCard
                 data={data}
@@ -1539,11 +1705,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 isServiceable={isDiagnosticLocationServiceable}
                 isVertical={false}
                 navigation={props.navigation}
-                source={'Home Page'}
+                source={'Home page'}
                 sourceScreen={AppRoutes.Tests}
               />
             )}
           </>
+        ) : sectionLoading ? (
+          renderDiagnosticWidgetShimmer(true) //load overall widget
         ) : null}
       </View>
     );
@@ -1551,7 +1719,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderWhyBookUs = () => {
     return (
-      <View style={{ marginBottom: 15, marginTop: '2%' }}>
+      <View style={{ marginBottom: -20 }}>
         <View style={{ marginLeft: 32 }}>
           <Text style={styles.whyBookUsHeading}>{nameFormater('why book with us', 'upper')} ?</Text>
         </View>
@@ -1566,7 +1734,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           autoplayDelay={3000}
           autoplayInterval={3000}
         />
-        <View style={[styles.landingBannerInnerView, { bottom: 0 }]}>
+        <View style={[styles.landingBannerInnerView, { bottom: 30 }]}>
           {whyBookUsArray?.map((_, index) =>
             index == bookUsSlideIndex ? renderDot(true) : renderDot(false)
           )}
@@ -1583,7 +1751,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         onPress={handleOnPress}
         key={index.toString()}
         style={{
-          height: 200,
+          height: 230,
         }}
       >
         <ImageNative
@@ -1617,7 +1785,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderBookingStepsModal = () => {
     const divisionFactor = winHeight > 750 ? 2.2 : winHeight > 650 ? 1.7 : 1.5;
-    return showAphAlert!({
+    return showAphAlert?.({
       unDismissable: false,
       removeTopIcon: true,
       children: (
@@ -1714,8 +1882,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setWidgetsData([]);
     setLoading?.(true);
     //if banners are not loaded, then refetch them.
-    banners?.length == 0 ? getDiagnosticBanner() : null;
+    banners?.length == 0 ? getDiagnosticBanner(serviceableObject?.cityId) : null;
     getHomePageWidgets(serviceableObject?.cityId);
+    //call patients orders + prescriptions as well.
+    fetchPatientOpenOrders();
+    fetchPatientClosedOrders();
+    fetchPatientPrescriptions();
   }
 
   const renderLowNetwork = () => {
@@ -1728,6 +1900,250 @@ export const Tests: React.FC<TestsProps> = (props) => {
       />
     );
   };
+
+  const renderPrescriptionCard = () => {
+    return (
+      <View>
+        {latestPrescription?.length > 0 ? (
+          <PrescriptionCardCarousel
+            data={latestPrescription}
+            onPressBookNow={onPressBookNow}
+            onPressViewPrescription={onPressViewPrescription}
+          />
+        ) : null}
+      </View>
+    );
+  };
+
+  function onPressBookNow(item: any) {
+    const testPrescription = item?.caseSheet?.diagnosticPrescription;
+    addTestsToCart(testPrescription, client, '500030', setLoadingContext)
+      .then((tests: DiagnosticsCartItem[]) => {
+        // Adding ePrescriptions to DiagnosticsCart
+        const unAvailableItemsArray = testPrescription?.filter(
+          (item: any) =>
+            !tests?.find((val) => val?.name?.toLowerCase() == item?.itemname?.toLowerCase())
+        );
+        const unAvailableItems = unAvailableItemsArray
+          ?.map((item: any) => item?.itemname)
+          ?.join(', ');
+
+        if (tests?.length) {
+          addMultipleTestCartItems?.(tests);
+          //removed code for e-prescriptions
+        }
+        if (testPrescription?.length == unAvailableItemsArray?.length) {
+          showAphAlert?.({
+            title: string.common.uhOh,
+            description: string.common.noDiagnosticsAvailable,
+            onPressOk: () => {
+              _navigateToTestCart();
+            },
+            onPressOutside: () => {
+              _navigateToTestCart();
+            },
+          });
+        } else {
+          //in case of if any unavailable items or all are present
+          const lengthOfAvailableItems = tests?.length;
+          const testAdded = tests?.map((item) => nameFormater(item?.name), 'title').join('\n');
+          showAphAlert?.({
+            title:
+              !!lengthOfAvailableItems && lengthOfAvailableItems > 0
+                ? `${lengthOfAvailableItems} ${
+                    lengthOfAvailableItems > 1 ? 'items' : 'item'
+                  } added to your cart`
+                : string.common.uhOh,
+            description: unAvailableItems
+              ? `Below items are added to your cart: \n${testAdded} \nSearch for the remaining diagnositc tests and add to the cart.`
+              : `Below items are added to your cart: \n${testAdded}`,
+            onPressOk: () => {
+              _navigateToTestCart();
+            },
+            onPressOutside: () => {
+              _navigateToTestCart();
+            },
+          });
+        }
+        const getItemNames = tests?.map((item) => item?.name)?.join(', ');
+        const getItemIds = tests?.map((item) => Number(item?.id))?.join(', ');
+        setLoadingContext?.(false);
+        DiagnosticAddToCartEvent(getItemNames, getItemIds, 0, 0, 'Prescription');
+      })
+      .catch((e) => {
+        setLoadingContext?.(false);
+        handleGraphQlError(e);
+      });
+  }
+
+  function _navigateToTestCart() {
+    hideAphAlert?.();
+    props.navigation.navigate(AppRoutes.TestsCart);
+  }
+
+  const getFileName = (item: any) => {
+    return (
+      'Prescription_' +
+      moment(item?.prescriptionDateTime).format('DD MM YYYY') +
+      '_' +
+      item?.doctorName +
+      '_Apollo 247' +
+      new Date().getTime() +
+      '.pdf'
+    );
+  };
+
+  async function onPressViewPrescription(item: any) {
+    const pdfName = item?.caseSheet?.blobName;
+    const prescriptionDate = moment(item?.prescriptionDateTime).format('DD MM YYYY');
+    const fileName: string = getFileName(item);
+    //need to remove the event once added
+    DiagnosticViewReportClicked(
+      'Home',
+      !!pdfName?.labReportURL ? 'Yes' : 'No',
+      'Download Report PDF'
+    );
+    if (pdfName == null || pdfName == '') {
+      Alert.alert('No Image');
+      CommonLogEvent('Tests', 'No image');
+    } else {
+      try {
+        await downloadDiagnosticReport(
+          setLoadingContext,
+          AppConfig.Configuration.DOCUMENT_BASE_URL.concat(pdfName),
+          prescriptionDate,
+          item?.patientName,
+          true,
+          fileName
+        );
+      } catch (error) {
+        setLoadingContext?.(false);
+        CommonBugFender('Tests_onPressViewPrescription_downloadLabTest', error);
+      } finally {
+        setLoadingContext?.(false);
+      }
+    }
+  }
+
+  const renderOrderStatusCard = () => {
+    var allOrders = [];
+    if (patientOpenOrders?.length == 3) {
+      allOrders.push(patientOpenOrders);
+    } else if (patientOpenOrders?.length && patientOpenOrders?.length < 3) {
+      let closedOrders = patientClosedOrders.slice(0, 3 - patientOpenOrders?.length);
+      allOrders.push(patientOpenOrders);
+      allOrders.push(closedOrders);
+    } else {
+      allOrders.push(patientClosedOrders);
+    }
+    allOrders = allOrders?.flat(1);
+    return (
+      <View>
+        {allOrders?.length > 0 ? (
+          <OrderCardCarousel data={allOrders} onPressBookNow={onPressOrderStatusOption} />
+        ) : null}
+      </View>
+    );
+  };
+
+  async function onPressOrderStatusOption(item: any) {
+    if (DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(item?.orderStatus)) {
+      //track order
+      navigateToTrackingScreen(item);
+    } else if (DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(item?.orderStatus)) {
+      DiagnosticViewReportClicked(
+        'Home',
+        !!item?.labReportURL ? 'Yes' : 'No',
+        'Download Report PDF',
+        item?.id
+      );
+      //view report download
+      //need to remove the event once added
+      DiagnosticViewReportClicked(
+        'Home',
+        !!item?.labReportURL ? 'Yes' : 'No',
+        'Download Report PDF',
+        item?.id
+      );
+      if (!!item?.labReportURL && item?.labReportURL != '') {
+        setDisplayViewReport(true);
+        setClickedItem(item);
+      } else {
+        showAphAlert?.({
+          title: string.common.uhOh,
+          description: string.diagnostics.responseUnavailableForReport,
+        });
+      }
+    } else {
+      if (DIAGNOSITC_PHELBO_TRACKING_STATUS.includes(item?.orderStatus)) {
+        //track phlebo
+        item?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED
+          ? navigateToTrackingScreen(item)
+          : getPhelboDetails(item?.id, item);
+      } else {
+        navigateToTrackingScreen(item);
+      }
+    }
+  }
+
+  async function onPressViewReport() {
+    const appointmentDate = moment(clickedItem?.slotDateTimeInUTC)?.format('DD MMM YYYY');
+    const patientName = `${clickedItem?.patientObj?.firstName} ${clickedItem?.patientObj?.lastName}`;
+    try {
+      await downloadDiagnosticReport(
+        setLoadingContext,
+        clickedItem?.labReportURL,
+        appointmentDate,
+        !!patientName ? patientName : '_',
+        true,
+        undefined
+      );
+    } catch (error) {
+      setLoadingContext?.(false);
+      CommonBugFender('Tests_onPressOrderStatusOption_downloadLabTest', error);
+    } finally {
+      setLoadingContext?.(false);
+    }
+  }
+
+  function navigateToTrackingScreen(item: any) {
+    DiagnosticTrackOrderViewed(currentPatient, item?.orderStatus, item?.id, 'Home');
+    props.navigation.push(AppRoutes.YourOrdersTest, {
+      isTest: true,
+    });
+  }
+
+  async function getPhelboDetails(orderId: string, order: any) {
+    setLoadingContext?.(true);
+    try {
+      let response: any = await getDiagnosticPhelboDetails(client, [orderId]);
+      if (response?.data?.data) {
+        const getUrl =
+          response?.data?.data?.getOrderPhleboDetailsBulk?.orderPhleboDetailsBulk?.[0]
+            ?.orderPhleboDetails?.phleboTrackLink;
+
+        if (!!getUrl && getUrl != '') {
+          Linking.canOpenURL(getUrl).then((supported: any) => {
+            if (supported) {
+              DiagnosticTrackPhleboClicked(orderId, 'Home', currentPatient, 'Yes');
+              Linking.openURL(getUrl);
+            } else {
+              DiagnosticTrackPhleboClicked(orderId, 'Home', currentPatient, 'No');
+              CommonBugFender('Tests_getPhelboDetails_Unable_to_open_url', getUrl);
+            }
+          });
+        } else {
+          DiagnosticTrackPhleboClicked(orderId, 'Home', currentPatient, 'No');
+          navigateToTrackingScreen(order);
+        }
+      }
+      setLoadingContext?.(false);
+    } catch (error) {
+      DiagnosticTrackPhleboClicked(orderId, 'Home', currentPatient, 'No');
+      setLoadingContext?.(false);
+      CommonBugFender('Tests_onPressOrderStatusOption', error);
+    }
+  }
 
   const renderSections = () => {
     return (
@@ -1743,7 +2159,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         {widgetsData?.length == 0 && reloadWidget && renderLowNetwork()}
         {renderBanner()}
         {renderYourOrders()}
-
+        {latestPrescription?.length > 0 ? renderPrescriptionCard() : null}
+        {renderOrderStatusCard()}
         {renderBottomViews()}
       </TouchableOpacity>
     );
@@ -1846,9 +2263,158 @@ export const Tests: React.FC<TestsProps> = (props) => {
       </View>
     );
   };
+  const scrollWidgetSection = (data: any) => {
+    return (
+      <View style={styles.container}>
+        <SectionHeader
+          leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')}
+          leftTextStyle={[
+            styles.widgetHeading,
+            {
+              ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE, 1, 20),
+            },
+          ]}
+          rightText={'VIEW ALL'}
+          rightTextStyle={styles.widgetViewAllText} //showViewAll ? styles.widgetViewAllText : {}
+          onPressRightText={() => {
+            props.navigation.navigate(AppRoutes.TestWidgetListing, {
+              movedFrom: AppRoutes.Tests,
+              data: data,
+              cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+            });
+          }}
+        />
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sectionView}>
+          {data?.diagnosticWidgetData?.map((item: any) => (
+            <WidgetCard
+              data={item}
+              onPressWidget={() => {
+                DiagnosticHomePageWidgetClicked(
+                  data?.diagnosticWidgetTitle,
+                  undefined,
+                  undefined,
+                  item?.itemTitle
+                );
+                {
+                  props.navigation.navigate(AppRoutes.TestListing, {
+                    widgetName: item?.itemTitle,
+                    movedFrom: AppRoutes.Tests,
+                    data: data,
+                    cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+                    widgetType: data?.diagnosticWidgetType,
+                  });
+                }
+              }}
+            />
+          ))}
+        </ScrollView>
+      </View>
+    );
+  };
+
+  const renderGridComponent = (data: any, item: any, index: number) => {
+    const imageIcon = !!item?.itemIcon
+      ? item?.itemIcon
+      : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_ICON;
+    return (
+      <TouchableOpacity
+        style={styles.gridPart}
+        onPress={() => {
+          DiagnosticHomePageWidgetClicked(
+            data?.diagnosticWidgetTitle,
+            undefined,
+            undefined,
+            item?.itemTitle
+          );
+          {
+            props.navigation.navigate(AppRoutes.TestListing, {
+              widgetName: item?.itemTitle,
+              movedFrom: AppRoutes.Tests,
+              data: data,
+              cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+              widgetType: data?.diagnosticWidgetType,
+            });
+          }
+        }}
+      >
+        <View style={styles.circleView}>
+          {imageIcon != '' ? (
+            <ImageNative resizeMode="contain" style={styles.image} source={{ uri: imageIcon }} />
+          ) : (
+            <WidgetLiverIcon style={styles.image} resizeMode={'contain'} />
+          )}
+        </View>
+        <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>
+          {nameFormater(item?.itemTitle, 'default')}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+  const gridWidgetSection = (data: any) => {
+    const numColumns = 3;
+    let newGridData: any[] = [];
+    if (
+      data?.diagnosticWidgetData?.length >= numColumns &&
+      data?.diagnosticWidgetData?.length % numColumns != 0
+    ) {
+      let sortedItemsIndex =
+        data?.diagnosticWidgetData?.length - (data?.diagnosticWidgetData?.length % numColumns);
+      if (sortedItemsIndex > numColumns * 2) {
+        newGridData = data?.diagnosticWidgetData.slice(0, numColumns * 2);
+      } else {
+        newGridData = data?.diagnosticWidgetData.slice(0, sortedItemsIndex);
+      }
+    } else {
+      newGridData = data?.diagnosticWidgetData;
+    }
+    return (
+      <View style={{ marginTop: 10 }}>
+        <SectionHeader
+          leftText={nameFormater(data?.diagnosticWidgetTitle, 'upper')} //nameFormater(data?.diagnosticWidgetTitle, 'upper')
+          leftTextStyle={[
+            styles.widgetHeading,
+            {
+              ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE, 1, 20),
+            },
+          ]}
+          rightText={'VIEW ALL'}
+          rightTextStyle={styles.widgetViewAllText} //showViewAll ? styles.widgetViewAllText : {}
+          onPressRightText={() => {
+            props.navigation.navigate(AppRoutes.TestWidgetListing, {
+              movedFrom: AppRoutes.Tests,
+              data: data,
+              cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+            });
+          }}
+        />
+        <View style={styles.gridConatiner}>
+          <FlatList
+            data={newGridData}
+            numColumns={numColumns}
+            keyExtractor={(_, index) => `${index}`}
+            renderItem={({ item, index }) => renderGridComponent(data, item, index)}
+          />
+        </View>
+      </View>
+    );
+  };
 
   return (
     <View style={{ flex: 1 }}>
+      {displayViewReport && (
+        <TestViewReportOverlay
+          order={clickedItem}
+          heading=""
+          isVisible={displayViewReport}
+          onClose={() => {
+            setDisplayViewReport(false);
+            setClickedItem([]);
+          }}
+          onPressViewReport={() => {
+            onPressViewReport();
+          }}
+        />
+      )}
       <SafeAreaView style={{ ...viewStyles.container }}>
         {pageLoading ? (
           <View style={{ backgroundColor: 'white' }}>
@@ -1870,6 +2436,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 style={{ flex: 1, marginBottom: !!cartItems && cartItems?.length > 0 ? 30 : 0 }}
                 keyboardShouldPersistTaps="always"
                 showsVerticalScrollIndicator={false}
+                nestedScrollEnabled={true}
               >
                 {renderSections()}
                 {renderOverlay()}
@@ -1899,6 +2466,18 @@ const styles = StyleSheet.create({
   labelText: {
     ...theme.fonts.IBMPlexSansBold(9),
     color: theme.colors.WHITE,
+  },
+  sectionView: {
+    margin: 10,
+    flexDirection: 'row',
+  },
+  container: {
+    marginTop: 20,
+  },
+  gridConatiner: {
+    width: '100%',
+    backgroundColor: 'white',
+    marginVertical: 20,
   },
   imagePlaceholderStyle: {
     backgroundColor: '#f7f8f5',
@@ -2065,7 +2644,6 @@ const styles = StyleSheet.create({
   stepsToBookModalIconStyle: {
     height: 30,
     width: 30,
-    resizeMode: 'contain',
   },
   stepsToBookModalMainTextHeading: {
     marginTop: '2%',
@@ -2096,5 +2674,33 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     paddingVertical: 0,
     backgroundColor: 'white',
+  },
+  circleView: {
+    width: 80,
+    height: 80,
+    borderRadius: 80 / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f9f9f9',
+  },
+  image: {
+    width: 50,
+    height: 50,
+    backgroundColor: '#f9f9f9',
+  },
+  gridPart: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '33%',
+    borderColor: '#E8E8E8',
+    borderWidth: 0.5,
+    padding: 15,
+  },
+  textStyle: {
+    ...theme.viewStyles.text('SB', 14, colors.SHERPA_BLUE, 1, 20, 0),
+    padding: 5,
+  },
+  widgetSpacing: {
+    marginVertical: 20,
   },
 });

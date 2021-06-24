@@ -5,6 +5,7 @@ import {
   CircleLogo,
   OrderPlacedCheckedIcon,
   OrderProcessingIcon,
+  InfoIconRed,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -16,6 +17,7 @@ import {
   postWebEngageEvent,
   apiCallEnums,
   navigateToHome,
+  nameFormater,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -24,20 +26,31 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { firePurchaseEvent } from '@aph/mobile-patients/src/components/Tests/Events';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface OrderStatusProps extends NavigationScreenProps {}
 
 export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
+  const modifiedOrderDetails = props.navigation.getParam('isModify');
   const orderDetails = props.navigation.getParam('orderDetails');
   const eventAttributes = props.navigation.getParam('eventAttributes');
   const isCOD = props.navigation.getParam('isCOD');
   const { currentPatient } = useAllCurrentPatients();
-  const pickupDate = moment(orderDetails?.diagnosticDate!).format('DD MMM');
-  const pickupYear = moment(orderDetails?.diagnosticDate!).format('YYYY');
+  const pickupDate = !!modifiedOrderDetails
+    ? moment(modifiedOrderDetails?.slotDateTimeInUTC)?.format('DD MMM')
+    : moment(orderDetails?.diagnosticDate!).format('DD MMM');
+  const pickupYear = !!modifiedOrderDetails
+    ? moment(modifiedOrderDetails?.slotDateTimeInUTC)?.format('YYYY')
+    : moment(orderDetails?.diagnosticDate!).format('YYYY');
   const paymentStatus = props.navigation.getParam('paymentStatus');
-  const pickupTime = orderDetails && formatTestSlotWithBuffer(orderDetails?.slotTime!);
+  const pickupTime = !!modifiedOrderDetails
+    ? formatTestSlotWithBuffer(moment(modifiedOrderDetails?.slotDateTimeInUTC)?.format('hh:mm'))
+    : orderDetails && formatTestSlotWithBuffer(orderDetails?.slotTime!);
   const orderCartSaving = orderDetails?.cartSaving!;
   const orderCircleSaving = orderDetails?.circleSaving!;
+  const displayId = !!modifiedOrderDetails
+    ? modifiedOrderDetails?.displayId
+    : orderDetails?.displayId;
   const showCartSaving = orderCartSaving > 0 && orderDetails?.cartHasAll;
   const { apisToCall } = useAppCommonData();
   const {
@@ -54,8 +67,19 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     !isDiagnosticCircleSubscription && orderCircleSaving > 0 && orderCircleSaving > orderCartSaving;
   const moveToHome = () => {
     // use apiCallsEnum values here in order to make that api call in home screen
-    apisToCall.current = [apiCallEnums.circleSavings];
+    apisToCall.current = [
+      apiCallEnums.circleSavings,
+      apiCallEnums.getAllBanners,
+      apiCallEnums.plansCashback,
+      apiCallEnums.getUserSubscriptions,
+    ];
     navigateToHome(props.navigation);
+  };
+  const moveToMyOrders = () => {
+    props.navigation.popToTop({ immediate: true }); //if not added, stack was getting cleared.
+    props.navigation.push(AppRoutes.YourOrdersTest, {
+      source: AppRoutes.OrderStatus,
+    });
   };
 
   useEffect(() => {
@@ -78,25 +102,33 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
 
   const handleBack = () => {
-    moveToHome();
+    moveToMyOrders();
     return true;
   };
 
   const navigateToOrderDetails = (showOrderSummaryTab: boolean, orderId: string) => {
     setLoading?.(false);
     apisToCall.current = [apiCallEnums.circleSavings];
-    props.navigation.navigate(AppRoutes.TestOrderDetailsSummary, {
+    props.navigation.popToTop({ immediate: true });
+    props.navigation.push(AppRoutes.TestOrderDetails, {
+      orderId: !!modifiedOrderDetails ? modifiedOrderDetails?.id : orderId,
+      setOrders: null,
+      selectedOrder: null,
+      refundStatusArr: [],
       goToHomeOnBack: true,
-      showOrderSummaryTab,
-      orderId: orderId,
       comingFrom: AppRoutes.TestsCart,
+      showOrderSummaryTab: true,
+      disableTrackOrder: true,
+      amount: orderDetails?.amount,
     });
   };
 
   const renderHeader = () => {
     return (
-      <View style={styles.header}>
-        <Text style={styles.name}>{`Hi, ${currentPatient?.firstName.slice(0, 10) || ''} :)`}</Text>
+      <View style={[styles.header]}>
+        <Text style={[styles.name]}>
+          {`Hi, ${currentPatient?.firstName.slice(0, 10) || ''} :)`}
+        </Text>
         <TouchableOpacity onPress={() => navigateToOrderDetails(true, orderDetails?.orderId!)}>
           <Text style={styles.orderSummary}>VIEW ORDER SUMMARY</Text>
         </TouchableOpacity>
@@ -125,7 +157,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       <View style={styles.bookingInfo}>
         <Text style={styles.bookingIdText}>
           Your Booking ID is
-          <Text style={styles.bookingNumberText}> #{orderDetails?.displayId!}</Text>
+          <Text style={styles.bookingNumberText}> #{displayId!}</Text>
         </Text>
         <Spearator style={styles.horizontalSeparator} />
         <View style={styles.pickUpInfo}>
@@ -221,8 +253,8 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     return (
       <View>
         <Spearator style={styles.separator} />
-        <TouchableOpacity style={{ alignItems: 'center' }} onPress={() => moveToHome()}>
-          <Text style={styles.homeScreen}>GO TO HOMESCREEN</Text>
+        <TouchableOpacity style={{ alignItems: 'center' }} onPress={() => moveToMyOrders()}>
+          <Text style={styles.homeScreen}>{nameFormater('Go to my orders', 'upper')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -232,6 +264,25 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     return (
       <View style={{ marginVertical: 10 }}>
         <Text style={styles.phleboText}>{string.diagnostics.orderSuccessPhaleboText}</Text>
+      </View>
+    );
+  };
+  const enable_cancelellation_policy =
+    AppConfig.Configuration.Enable_Diagnostics_Cancellation_Policy;
+  const cancelellation_policy_text = AppConfig.Configuration.Diagnostics_Cancel_Policy_Text_Msg;
+  const renderCancelationPolicy = () => {
+    return (
+      <View style={styles.cancel_container}>
+        <InfoIconRed />
+        <Text style={styles.cancel_text}>{cancelellation_policy_text}</Text>
+      </View>
+    );
+  };
+  const renderInvoiceTimeline = () => {
+    return (
+      <View style={styles.cancel_container}>
+        <InfoIconRed />
+        <Text style={styles.cancel_text}>{string.diagnostics.invoiceTimelineText}</Text>
       </View>
     );
   };
@@ -246,6 +297,8 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
             {renderBookingInfo()}
             {renderCartSavings()}
             {renderNoticeText()}
+            {enable_cancelellation_policy ? renderCancelationPolicy() : null}
+            {renderInvoiceTimeline()}
             {backToHome()}
           </>
         </ScrollView>
@@ -259,7 +312,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'transparent',
     marginHorizontal: 20,
-    marginTop: 30,
+    marginTop: 40,
   },
   header: {
     flexDirection: 'row',
@@ -268,7 +321,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   name: {
-    ...theme.fonts.IBMPlexSansSemiBold(24),
+    ...theme.fonts.IBMPlexSansSemiBold(22),
     lineHeight: 31,
     color: '#02475B',
   },
@@ -276,6 +329,22 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansBold(14),
     lineHeight: 19,
     color: '#FC9916',
+  },
+  cancel_container: {
+    width: '98%',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    borderRadius: 10,
+    backgroundColor: '#FCFDDA',
+    padding: 10,
+    alignSelf: 'center',
+    marginVertical: 10,
+    elevation: 2,
+  },
+  cancel_text: {
+    ...theme.viewStyles.text('M', 12, '#01475b', 0.6, 18),
+    width: '90%',
+    marginHorizontal: 10,
   },
   orderPlaced: {
     flexDirection: 'row',

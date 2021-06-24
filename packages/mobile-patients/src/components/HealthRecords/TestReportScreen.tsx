@@ -56,6 +56,7 @@ import {
   isValidSearch,
   phrSearchWebEngageEvents,
   postWebEngageIfNewSession,
+  removeObjectProperty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -141,6 +142,13 @@ const styles = StyleSheet.create({
   searchListHeaderTextStyle: { ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 21) },
   phrNodataMainViewStyle: { marginTop: 59, backgroundColor: 'transparent' },
   searchBarMainView: { flexDirection: 'row', alignItems: 'center' },
+  doctorTestReportPHRTextStyle: {
+    ...theme.viewStyles.text('R', 12, theme.colors.SKY_BLUE, 1, 14),
+    marginLeft: 20,
+    marginBottom: 10,
+    marginRight: 32,
+    marginTop: 2,
+  },
 });
 
 export enum FILTER_TYPE {
@@ -193,10 +201,13 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
   const _searchInputRef = useRef(null);
+  const [apiError, setApiError] = useState(false);
+
   const [healthRecordSearchResults, setHealthRecordSearchResults] = useState<any>([]);
   const [prismAuthToken, setPrismAuthToken] = useState<string>(
     props.navigation?.getParam('authToken') || ''
   );
+  const [searchQuery, setSearchQuery] = useState({});
   const { phrSession, setPhrSession } = useAppCommonData();
 
   const gotoPHRHomeScreen = () => {
@@ -218,6 +229,8 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   useEffect(() => {
     if (testReportsData?.length > 0) {
       setTestReportMainData(testReportsData);
+    } else {
+      setApiError(true);
     }
   }, [testReportsData]);
 
@@ -328,8 +341,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   };
 
   useEffect(() => {
-    const filteredData = sortByTypeRecords(filterApplied);
-    if (filteredData) {
+    if (testReportMainData) {
       let finalData: { key: string; data: any[] }[] = [];
       if (filterApplied) {
         const filterAppliedString =
@@ -342,7 +354,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
             : filterApplied === FILTER_TYPE.PARAMETER_NAME
             ? 'parameterName'
             : 'labTestSource';
-        filteredData?.forEach((dataObject: any) => {
+        testReportMainData?.forEach((dataObject: any) => {
           const dataObjectArray: any[] = [];
           if (dataObject?.data?.labTestName && filterApplied === FILTER_TYPE.PARAMETER_NAME) {
             dataObject?.data?.labTestResults?.forEach((parameterObject: any) => {
@@ -389,9 +401,17 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
             }
           }
         });
+        finalData = finalData?.sort((data1: any, data2: any) => {
+          const filteredData1 = _.lowerCase(data1?.key);
+          const filteredData2 = _.lowerCase(data2?.key);
+          if (filterApplied === FILTER_TYPE.DATE) {
+            return filteredData1 > filteredData2 ? -1 : filteredData1 < filteredData2 ? 1 : 0;
+          }
+          return filteredData2 > filteredData1 ? -1 : filteredData2 < filteredData1 ? 1 : 0;
+        });
       } else {
         // render when no filter is applied
-        finalData = initialSortByDays('lab-results', filteredData, finalData);
+        finalData = initialSortByDays('lab-results', testReportMainData, finalData);
       }
       setLocalTestReportsData(finalData);
     }
@@ -402,7 +422,9 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       return filterAppliedString === 'labTestName'
         ? obj.healthCheckName
         : filterAppliedString === 'labTestSource'
-        ? obj.source
+        ? obj.source === '247self'
+          ? 'self'
+          : obj.source
         : filterAppliedString === 'packageName' || filterAppliedString === 'parameterName'
         ? null
         : obj[filterAppliedString];
@@ -414,35 +436,6 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         ? 'self'
         : obj[filterAppliedString];
     }
-  };
-
-  const sortByTypeRecords = (type: FILTER_TYPE | string) => {
-    return testReportMainData?.sort(({ data: data1 }, { data: data2 }) => {
-      const filteredData1 =
-        type === FILTER_TYPE.DATE
-          ? moment(data1?.date)
-              .toDate()
-              .getTime()
-          : type === FILTER_TYPE.TEST_NAME
-          ? _.lowerCase(data1?.labTestName || data1?.healthCheckName)
-          : type === FILTER_TYPE.SOURCE
-          ? _.lowerCase(data1?.labTestSource || data1?.source)
-          : _.lowerCase(data1?.packageName);
-      const filteredData2 =
-        type === FILTER_TYPE.DATE
-          ? moment(data2?.date)
-              .toDate()
-              .getTime()
-          : type === FILTER_TYPE.TEST_NAME
-          ? _.lowerCase(data2?.labTestName || data2?.healthCheckName)
-          : type === FILTER_TYPE.SOURCE
-          ? _.lowerCase(data2?.labTestSource || data2?.source)
-          : _.lowerCase(data2?.packageName);
-      if (type === FILTER_TYPE.DATE) {
-        return filteredData1 > filteredData2 ? -1 : filteredData1 < filteredData2 ? 1 : 0;
-      }
-      return filteredData2 > filteredData1 ? -1 : filteredData2 < filteredData1 ? 1 : 0;
-    });
   };
 
   const renderProfileImage = () => {
@@ -476,6 +469,12 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       }
       setSearchLoading(true);
       const search = _.debounce(onSearchHealthRecords, 500);
+      setSearchQuery((prevSearch: any) => {
+        if (prevSearch.cancel) {
+          prevSearch.cancel();
+        }
+        return search;
+      });
       search(value);
     }
   };
@@ -587,14 +586,15 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   };
 
   const onHealthCardItemPress = (selectedItem: any) => {
+    const eventInputData = removeObjectProperty(selectedItem, 'testResultFiles');
     postWebEngageIfNewSession(
       'Test Report',
       currentPatient,
-      selectedItem,
+      eventInputData,
       phrSession,
       setPhrSession
     );
-    props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+    props.navigation.navigate(AppRoutes.TestReportViewScreen, {
       data: filterApplied === FILTER_TYPE.PARAMETER_NAME ? selectedItem?.data : selectedItem,
       labResults: true,
     });
@@ -645,11 +645,12 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
           const status = g(data, 'addPatientLabTestRecord', 'status');
           if (status) {
             getLatestLabAndHealthCheckRecords();
+            const eventInputData = removeObjectProperty(selectedItem, 'testResultFiles');
             postWebEngagePHR(
               currentPatient,
               WebEngageEventName.PHR_DELETE_TEST_REPORT,
               'Test Report',
-              selectedItem
+              eventInputData
             );
           } else {
             setShowSpinner(false);
@@ -764,7 +765,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 12, paddingHorizontal: 20 }}
         sections={localTestReportsData || []}
         renderItem={({ item, index }) => renderTestReportsItems(item, index)}
-        ListEmptyComponent={<PhrNoDataComponent />}
+        ListEmptyComponent={renderEmptyView()}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
       />
     );
@@ -776,6 +777,14 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         <Spinner style={styles.loaderStyle} />
       </View>
     );
+  };
+
+  const renderEmptyView = () => {
+    if (!!testReportMainData) {
+      return null;
+    } else {
+      return <PhrNoDataComponent />;
+    }
   };
 
   const searchListHeaderView = () => {
@@ -792,7 +801,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
 
   const onClickSearchHealthCard = (item: any) => {
     const { healthrecordId } = item?.value;
-    props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+    props.navigation.navigate(AppRoutes.TestReportViewScreen, {
       healthrecordId: healthrecordId,
       healthRecordType: MedicalRecordType.TEST_REPORT,
       labResults: true,
@@ -890,6 +899,12 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
             ? renderSearchBar()
             : renderSearchAndFilterView()
           : null}
+        <Text style={styles.doctorTestReportPHRTextStyle}>
+          {string.common.doctorConsultPHRText}
+        </Text>
+        {apiError ? (
+          <PhrNoDataComponent noDataText={string.common.phr_api_error_text} phrErrorIcon />
+        ) : null}
         {searchText?.length > 2 ? renderHealthRecordSearchResults() : renderTestReportsMainView()}
       </SafeAreaView>
     </View>

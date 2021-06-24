@@ -39,6 +39,7 @@ import {
 import WebEngage from 'react-native-webengage';
 import AsyncStorage from '@react-native-community/async-storage';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import loggingLink from '@aph/mobile-patients/src/helpers/loggingLink';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then(
@@ -68,6 +69,7 @@ export interface AuthContextProps {
   mobileAPICalled: boolean;
   setMobileAPICalled: ((par: boolean) => void) | null;
   getFirebaseToken: (() => Promise<unknown>) | null;
+  authToken: string;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -93,6 +95,7 @@ export const AuthContext = React.createContext<AuthContextProps>({
   setMobileAPICalled: null,
 
   getFirebaseToken: null,
+  authToken: '',
 });
 
 let apolloClient: ApolloClient<NormalizedCacheObject>;
@@ -166,6 +169,7 @@ export const AuthProvider: React.FC = (props) => {
         return;
       }
     });
+
     const authLink = setContext(async (_, { headers }) => ({
       headers: {
         ...headers,
@@ -176,7 +180,10 @@ export const AuthProvider: React.FC = (props) => {
       uri: apiRoutes.graphql(),
     });
 
-    const link = errorLink.concat(authLink).concat(httpLink);
+    const link = errorLink
+      //.concat(loggingLink)  //Uncomment this inroder to enable logging
+      .concat(authLink)
+      .concat(httpLink);
     const cache = apolloClient ? apolloClient.cache : new InMemoryCache();
     return new ApolloClient({
       link,
@@ -395,6 +402,8 @@ export const AuthProvider: React.FC = (props) => {
             setMobileAPICalled,
 
             getFirebaseToken,
+
+            authToken,
           }}
         >
           {props.children}

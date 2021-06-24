@@ -19,19 +19,20 @@ import {
   MedicineProduct,
   MedicineProductsResponse,
   searchMedicineApi,
+  getMedicineCategoryIds,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, SafeAreaView, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, SafeAreaView, StyleSheet, Text, BackHandler } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { isProductInStock } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AddedToCartToast } from '@aph/mobile-patients/src/components/ui/AddedToCartToast';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 export type SortByOption = {
   id: string;
@@ -51,18 +52,20 @@ export interface Props
     filterBy?: SelectedFilters; // support for deep link
     movedFrom?: 'registration' | 'deeplink' | 'home';
     breadCrumb?: Pick<Category, 'title' | 'category_id'>[];
+    categoryName?: string;
   }> {}
 
 export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   // navigation props
   const searchText = navigation.getParam('searchText') || '';
-  const categoryId = navigation.getParam('category_id') || '';
+  const [categoryId, setCategoryId] = useState<string>(navigation.getParam('category_id') || '');
   const movedFrom = navigation.getParam('movedFrom');
   const productsNavProp = navigation.getParam('products') || [];
   const sortByNavProp = navigation.getParam('sortBy') || null;
   const filterByNavProp = navigation.getParam('filterBy') || {};
   const titleNavProp = navigation.getParam('title') || '';
   const breadCrumb = navigation.getParam('breadCrumb') || [];
+  const categoryName = navigation.getParam('categoryName') || '';
 
   const { pinCode } = useShoppingCart();
 
@@ -99,6 +102,8 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       );
     } else if (searchText.length >= 3) {
       searchProducts(searchText, 1, sortBy?.id || null, filterBy, filterOptions);
+    } else if (categoryName) {
+      getCategoryIdByName(categoryName);
     }
   }, [sortBy, filterBy]);
 
@@ -110,7 +115,35 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         CategoryName: pageTitle.toUpperCase(),
       });
     }
+    BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
+    };
   }, []);
+
+  const onPressHardwareBack = () => navigation.goBack();
+
+  const getCategoryIdByName = async (category: string) => {
+    try {
+      const response = await getMedicineCategoryIds(category, 'category');
+      const { data } = response;
+      if (data?.category_id) {
+        setCategoryId(data?.category_id);
+        setPageTitle(category);
+        searchProductsByCategory(
+          data?.category_id,
+          1,
+          sortBy?.id || null,
+          filterBy,
+          filterOptions,
+          products
+        );
+      }
+    } catch (error) {
+      CommonBugFender('getCategoryIdByName', error);
+      renderAlert();
+    }
+  };
 
   const searchProducts = async (
     searchText: string,
@@ -143,6 +176,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         MedicineListingEvents.searchEnterClick({
           keyword: searchText,
           numberofresults: data.product_count || 0,
+          source: movedFrom || '',
         });
       }
       MedicineListingEvents.tagalysSearch(currentPatient?.id, {

@@ -12,12 +12,13 @@ import {
   BackHandler,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationRoute, NavigationScreenProp, NavigationScreenProps } from 'react-navigation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 
 export interface ProHealthWebViewProps
   extends NavigationScreenProps<{
     requestMicroPhonePermission: boolean;
+    goBackCallback?: (navigation: NavigationScreenProp<NavigationRoute<object>, object>) => void;
   }> {}
 
 export const ProHealthWebView: React.FC<ProHealthWebViewProps> = (props) => {
@@ -56,7 +57,7 @@ export const ProHealthWebView: React.FC<ProHealthWebViewProps> = (props) => {
   };
 
   const handleResponse = (data: NavState, WebViewRef: any) => {
-    const homeURL = 'http://www.apollo247.com/';
+    const homeURL = 'https://www.apollo247.com/';
     const url = data.url;
     setCanGoBack(data?.canGoBack || false);
     if (url && url.indexOf('redirectTo=doctor') > -1 && url.indexOf('#details') < 0) {
@@ -70,7 +71,7 @@ export const ProHealthWebView: React.FC<ProHealthWebViewProps> = (props) => {
     return (
       <WebView
         ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
-        onLoadEnd={() => setLoading!(false)}
+        onLoadEnd={() => setLoading?.(false)}
         source={{ uri: props.navigation.getParam('covidUrl') }}
         onNavigationStateChange={(data) => handleResponse(data, WebViewRef)}
         renderError={() => renderError(WebViewRef)}
@@ -87,7 +88,7 @@ export const ProHealthWebView: React.FC<ProHealthWebViewProps> = (props) => {
 
   const handleBack = async () => {
     props.navigation.goBack();
-    navigation.state.params?.goBackCallback();
+    navigation.state.params?.goBackCallback?.(props.navigation);
   };
 
   const renderError = (WebViewRef: any) => {

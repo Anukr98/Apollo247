@@ -20,7 +20,12 @@ import {
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import stripHtml from 'string-strip-html';
-import { g, nameFormater, isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  nameFormater,
+  isSmallDevice,
+  isEmptyObject,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
@@ -70,16 +75,21 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
 import HTML from 'react-native-render-html';
 import _ from 'lodash';
-import {
-  navigateToHome,
-  navigateToScreenWithEmptyStack,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const screenWidth = Dimensions.get('window').width;
 export interface TestPackageForDetails extends TestPackage {
   collectionType: TEST_COLLECTION_TYPE;
   preparation: string;
-  source: 'Home Page' | 'Full Search' | 'Cart Page' | 'Partial Search' | 'Deeplink';
+  source:
+    | 'Home Page'
+    | 'Full Search'
+    | 'Cart page'
+    | 'Partial Search'
+    | 'Deeplink'
+    | 'Category page';
   type: string;
   specialPrice?: string | number;
   circleRate?: string | number;
@@ -140,7 +150,13 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     isDiagnosticCircleSubscription,
     testDetailsBreadCrumbs,
     setTestDetailsBreadCrumbs,
-    deliveryAddressId: diagnosticDeliveryAddressId,
+    modifiedOrderItemIds,
+    modifiedOrder,
+    setModifyHcCharges,
+    setModifiedOrderItemIds,
+    setHcCharges,
+    setAreaSelected,
+    setModifiedOrder,
   } = useDiagnosticsCart();
   const { pharmacyCircleAttributes } = useShoppingCart();
 
@@ -148,12 +164,17 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   const testDetails = props.navigation.getParam('testDetails', {} as TestPackageForDetails);
   const testName = props.navigation.getParam('itemName');
-  const { setLoading: setLoadingContext } = useUIElements();
+  const { setLoading: setLoadingContext, showAphAlert, hideAphAlert } = useUIElements();
 
   const movedFrom = props.navigation.getParam('comingFrom');
   const isDeep = props.navigation.getParam('movedFrom');
   const itemId =
     movedFrom == AppRoutes.TestsCart ? testDetails?.ItemID : props.navigation.getParam('itemId');
+
+  const isAlreadyPartOfOrder =
+    !!modifiedOrderItemIds &&
+    modifiedOrderItemIds?.length &&
+    modifiedOrderItemIds?.find((id: number) => Number(id) == Number(itemId));
 
   const [cmsTestDetails, setCmsTestDetails] = useState((([] as unknown) as CMSTestDetails) || []);
   const [testInfo, setTestInfo] = useState(movedFrom == 'TestsCart' ? testDetails : ({} as any));
@@ -161,6 +182,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [readMore, setReadMore] = useState(true);
   const [errorState, setErrorState] = useState(false);
   const [widgetsData, setWidgetsData] = useState([] as any);
+
+  const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
 
   const itemName =
     testDetails?.ItemName ||
@@ -182,7 +205,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         sourceHeaders,
       },
       variables: {
-        cityID: Number(cityId) || 9,
+        cityID: Number(cityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
         itemIDs: listOfId,
       },
       fetchPolicy: 'no-cache',
@@ -235,7 +258,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           sourceHeaders,
         },
         variables: {
-          cityID: parseInt(diagnosticServiceabilityData?.cityId!) || 9,
+          cityID:
+            Number(diagnosticServiceabilityData?.cityId!) ||
+            AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
           itemIDs: listOfIds,
         },
         fetchPolicy: 'no-cache',
@@ -310,40 +335,81 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       item?.diagnosticWidgetData?.map((data: any, index: number) => Number(data?.itemId))
     );
     //restriction less than 12.
-    const res = Promise.all(
-      itemIds?.map((item: any) =>
-        fetchPricesForCityId(Number(cityId!) || 9, item?.length > 12 ? item?.slice(0, 12) : item)
-      )
-    );
+    try {
+      const res = Promise.all(
+        itemIds?.map((item: any) =>
+          fetchPricesForCityId(Number(cityId!) || 9, item?.length > 12 ? item?.slice(0, 12) : item)
+        )
+      );
 
-    const response = (await res)?.map((item: any) =>
-      g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics')
-    );
-    let newWidgetsData = [...widgetsData];
+      const response = (await res)?.map((item: any) =>
+        g(item, 'data', 'findDiagnosticsWidgetsPricing', 'diagnostics')
+      );
+      let newWidgetsData = [...widgetsData];
 
-    for (let i = 0; i < widgetsData?.length; i++) {
-      for (let j = 0; j < widgetsData?.[i]?.diagnosticWidgetData?.length; j++) {
-        const findIndex = widgetsData?.[i]?.diagnosticWidgetData?.findIndex(
-          (item: any) => item?.itemId == Number(response?.[i]?.[j]?.itemId)
-        );
-        if (findIndex !== -1) {
-          (newWidgetsData[i].diagnosticWidgetData[findIndex].packageCalculatedMrp =
-            response?.[i]?.[j]?.packageCalculatedMrp),
-            (newWidgetsData[i].diagnosticWidgetData[findIndex].diagnosticPricing =
-              response?.[i]?.[j]?.diagnosticPricing);
+      for (let i = 0; i < widgetsData?.length; i++) {
+        for (let j = 0; j < widgetsData?.[i]?.diagnosticWidgetData?.length; j++) {
+          const findIndex = widgetsData?.[i]?.diagnosticWidgetData?.findIndex(
+            (item: any) => item?.itemId == Number(response?.[i]?.[j]?.itemId)
+          );
+          if (findIndex !== -1) {
+            (newWidgetsData[i].diagnosticWidgetData[findIndex].packageCalculatedMrp =
+              response?.[i]?.[j]?.packageCalculatedMrp),
+              (newWidgetsData[i].diagnosticWidgetData[findIndex].diagnosticPricing =
+                response?.[i]?.[j]?.diagnosticPricing);
+          }
         }
       }
+      setWidgetsData(newWidgetsData);
+      setLoadingContext?.(false);
+    } catch (error) {
+      CommonBugFender('errorInFetchPricing api__TestDetails', error);
+      setLoadingContext?.(false);
     }
-    setWidgetsData(newWidgetsData);
-    setLoadingContext?.(false);
   };
 
   const homeBreadCrumb: TestBreadcrumbLink = {
     title: 'Home',
     onPress: () => {
-      navigateToHome(props.navigation);
+      isModify ? showDiscardPopUp() : props.navigation.navigate('TESTS');
     },
   };
+
+  function showDiscardPopUp() {
+    showAphAlert?.({
+      title: string.common.hiWithSmiley,
+      description: string.diagnostics.modifyDiscardText,
+      unDismissable: true,
+      CTAs: [
+        {
+          text: 'DISCARD',
+          onPress: () => {
+            hideAphAlert?.();
+            clearModifyDetails();
+          },
+          type: 'orange-button',
+        },
+        {
+          text: 'CANCEL',
+          onPress: () => {
+            hideAphAlert?.();
+          },
+          type: 'orange-button',
+        },
+      ],
+    });
+    return true;
+  }
+
+  function clearModifyDetails() {
+    setModifiedOrder?.(null);
+    setModifyHcCharges?.(0);
+    setModifiedOrderItemIds?.([]);
+    setHcCharges?.(0);
+    setAreaSelected?.({});
+    //go back to homepage
+    props.navigation.navigate('TESTS');
+  }
 
   useEffect(() => {
     let breadcrumb: TestBreadcrumbLink[] = [homeBreadCrumb];
@@ -377,16 +443,22 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   }, [movedFrom, itemName]);
 
   useEffect(() => {
-    DiagnosticDetailsViewed(
-      isDeep == 'deeplink' ? 'Deeplink' : testInfo?.source,
-      testInfo?.ItemName || itemId,
-      testInfo?.type,
-      testInfo?.ItemID || itemId,
-      currentPatient,
-      testInfo?.Rate,
-      pharmacyCircleAttributes
-    );
-  }, []);
+    if (testInfo?.Rate) {
+      DiagnosticDetailsViewed(
+        isDeep == 'deeplink'
+          ? 'Deeplink'
+          : movedFrom == AppRoutes.SearchTestScene
+          ? 'Popular search'
+          : testInfo?.source! || testDetails?.source,
+        itemName,
+        testInfo?.type! || testDetails?.type,
+        testInfo?.ItemID || itemId,
+        currentPatient,
+        testInfo?.Rate || testDetails?.Rate,
+        pharmacyCircleAttributes
+      );
+    }
+  }, [testInfo]);
 
   function createSampleType(data: any) {
     const array = data?.map(
@@ -701,13 +773,22 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       cmsTestDetails?.diagnosticInclusionName?.length > 0;
     const inclusions = isInclusionPrsent && cmsTestDetails?.diagnosticInclusionName;
 
-    const getMandatoryParamter = cmsTestDetails?.diagnosticInclusionName?.map((inclusion: any) =>
-      inclusion?.TestObservation?.filter((item: any) => item?.mandatoryValue === '1')
+    const filterParamters = cmsTestDetails?.diagnosticInclusionName?.filter(
+      (item: any) => !!item?.TestObservation && item?.TestObservation != ''
     );
-    const getMandatoryParameterCount = getMandatoryParamter?.reduce(
-      (prevVal: any, curr: any) => prevVal + curr?.length,
-      0
-    );
+
+    const getMandatoryParamter =
+      !!filterParamters &&
+      filterParamters?.length > 0 &&
+      filterParamters?.map((inclusion: any) =>
+        !!inclusion?.TestObservation
+          ? inclusion?.TestObservation?.filter((item: any) => item?.mandatoryValue === '1')
+          : []
+      );
+
+    const getMandatoryParameterCount =
+      !!getMandatoryParamter &&
+      getMandatoryParamter?.reduce((prevVal: any, curr: any) => prevVal + curr?.length, 0);
 
     return (
       <>
@@ -794,6 +875,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const renderParamterData = (item: any, inclusions: any, index: number, showOption: boolean) => {
     const getMandatoryParameters =
       item?.TestObservation?.length > 0 &&
+      item?.TestObservation != '' &&
       item?.TestObservation?.filter((obs: any) => obs?.mandatoryValue === '1');
     return (
       <>
@@ -833,7 +915,12 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     return (
       <TestListingHeader
         navigation={props.navigation}
-        headerText={nameFormater('TEST PACKAGE DETAIL', 'upper')}
+        headerText={nameFormater(
+          !!modifiedOrder && !isEmptyObject(modifiedOrder)
+            ? 'MODIFIED ORDER'
+            : 'TEST PACKAGE DETAIL',
+          'upper'
+        )}
         movedFrom={'testDetails'}
       />
     );
@@ -893,7 +980,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               isServiceable={isDiagnosticLocationServiceable}
               isVertical={false}
               navigation={props.navigation}
-              source={'Details Page'}
+              source={'Details page'}
               sourceScreen={AppRoutes.TestDetails}
             />
           </>
@@ -923,7 +1010,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               isServiceable={isDiagnosticLocationServiceable}
               isVertical={false}
               navigation={props.navigation}
-              source={'Details Page'}
+              source={'Details page'}
               sourceScreen={AppRoutes.TestDetails}
             />
           </>
@@ -935,7 +1022,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   function onPressAddToCart() {
     const specialPrice = testInfo?.specialPrice!;
     const price = testInfo?.Rate!;
-    const circlePrice = testInfo?.circlePrice!;
+    const circlePrice = testInfo?.circlePrice! || testInfo?.circleRate!;
     const circleSpecialPrice = testInfo?.circleSpecialPrice!;
     const discountPrice = testInfo?.discountPrice!;
     const discountSpecialPrice = testInfo?.discountSpecialPrice!;
@@ -950,7 +1037,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       discountToDisplay,
       'Details page'
     );
-    addCartItem!({
+    addCartItem?.({
       id: `${itemId!}`,
       mou: cmsTestDetails?.diagnosticInclusionName?.length + 1 || testInfo?.mou,
       name: cmsTestDetails?.diagnosticItemName || testInfo?.itemName,
@@ -1008,9 +1095,21 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           </ScrollView>
           <StickyBottomComponent>
             <Button
-              title={isAddedToCart ? 'PROCEED TO CART ' : 'ADD TO CART'}
+              title={
+                isAlreadyPartOfOrder
+                  ? 'ALREADY ADDED'
+                  : isAddedToCart
+                  ? 'PROCEED TO CART '
+                  : 'ADD TO CART'
+              }
               onPress={() =>
-                isAddedToCart ? props.navigation.navigate(AppRoutes.TestsCart) : onPressAddToCart()
+                isAlreadyPartOfOrder
+                  ? props.navigation.navigate(AppRoutes.TestsCart, {
+                      orderDetails: modifiedOrder,
+                    })
+                  : isAddedToCart
+                  ? props.navigation.navigate(AppRoutes.TestsCart)
+                  : onPressAddToCart()
               }
             />
           </StickyBottomComponent>

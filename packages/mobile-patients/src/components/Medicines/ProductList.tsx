@@ -15,7 +15,7 @@ import {
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   FlatList,
   FlatListProps,
@@ -53,6 +53,11 @@ export const ProductList: React.FC<Props> = ({
   contentContainerStyle,
   ...restOfProps
 }) => {
+  const isPdp: boolean = addToCartSource === 'Similar Widget' || addToCartSource === 'Pharmacy PDP';
+  const step: number = 3;
+  const initData = data?.length > 4 ? data?.slice(0, step) : data;
+  const [dataToShow, setDataToShow] = useState(initData);
+  const [lastIndex, setLastIndex] = useState<number>(data?.length > 4 ? step : 0);
   const { currentPatient } = useAllCurrentPatients();
   const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
   const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
@@ -63,16 +68,18 @@ export const ProductList: React.FC<Props> = ({
     removeCartItem,
     pharmacyCircleAttributes,
     cartItems,
+    asyncPincode,
   } = useShoppingCart();
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
 
-  const onPress = (sku: string) => {
+  const onPress = (sku: string, urlKey: string) => {
     if (movedFrom === ProductPageViewedSource.SIMILAR_PRODUCTS) {
       navigation.replace(AppRoutes.ProductDetailPage, {
         sku,
         movedFrom,
         sectionName,
         productPageViewedEventProps,
+        urlKey,
       });
     } else {
       navigation.push(AppRoutes.ProductDetailPage, {
@@ -80,6 +87,7 @@ export const ProductList: React.FC<Props> = ({
         movedFrom,
         sectionName,
         productPageViewedEventProps,
+        urlKey,
       });
     }
   };
@@ -95,7 +103,7 @@ export const ProductList: React.FC<Props> = ({
     const { onAddedSuccessfully } = restOfProps;
     addPharmaItemToCart(
       formatToCartItem(item),
-      pharmacyPincode!,
+      asyncPincode?.pincode || pharmacyPincode!,
       addCartItem,
       setGlobalLoading,
       navigation,
@@ -121,42 +129,45 @@ export const ProductList: React.FC<Props> = ({
     });
   };
 
-  const renderItem = useCallback((info: ListRenderItemInfo<MedicineProduct>) => {
-    const { item, index } = info;
-    const id = item.sku;
-    const qty = getCartItemQty(id);
-    const onPressAddQty = () => {
-      if (qty < item.MaxOrderQty) {
-        updateCartItem!({ id, quantity: qty + 1 });
-      }
-    };
-    const onPressSubtractQty = () => {
-      qty == 1 ? removeCartItem!(id) : updateCartItem!({ id, quantity: qty - 1 });
-    };
+  const renderItem = useCallback(
+    (info: ListRenderItemInfo<MedicineProduct>) => {
+      const { item, index } = info;
+      const id = item.sku;
+      const qty = getCartItemQty(id);
+      const onPressAddQty = () => {
+        if (qty < item.MaxOrderQty) {
+          updateCartItem!({ id, quantity: qty + 1 });
+        }
+      };
+      const onPressSubtractQty = () => {
+        qty == 1 ? removeCartItem!(id) : updateCartItem!({ id, quantity: qty - 1 });
+      };
 
-    const props: ProductCardProps = {
-      ...item,
-      quantity: qty,
-      onPress: () => onPress(item.sku),
-      onPressAddToCart: () => onPressAddToCart(item),
-      onPressAddQty: onPressAddQty,
-      onPressSubtractQty: onPressSubtractQty,
-      onPressNotify: () => onPressNotify(item.name),
-      onPressCashback: () => onPressCareCashback(),
-      containerStyle:
-        index === 0
-          ? styles.itemStartContainer
-          : index + 1 === data?.length
-          ? styles.itemEndContainer
-          : styles.itemContainer,
-    };
+      const props: ProductCardProps = {
+        ...item,
+        quantity: qty,
+        onPress: () => onPress(item.sku, item.url_key),
+        onPressAddToCart: () => onPressAddToCart(item),
+        onPressAddQty: onPressAddQty,
+        onPressSubtractQty: onPressSubtractQty,
+        onPressNotify: () => onPressNotify(item.name),
+        onPressCashback: () => onPressCareCashback(),
+        containerStyle:
+          index === 0
+            ? styles.itemStartContainer
+            : index + 1 === data?.length
+            ? styles.itemEndContainer
+            : styles.itemContainer,
+      };
 
-    return renderComponent ? (
-      renderComponent({ ...info, item: props })
-    ) : Component ? (
-      <Component {...props} />
-    ) : null;
-  }, []);
+      return renderComponent ? (
+        renderComponent({ ...info, item: props })
+      ) : Component ? (
+        <Component {...props} />
+      ) : null;
+    },
+    [cartItems]
+  );
 
   const keyExtractor = useCallback(({ sku }) => `${sku}`, []);
 
@@ -164,7 +175,7 @@ export const ProductList: React.FC<Props> = ({
 
   return (
     <FlatList
-      data={data}
+      data={isPdp ? dataToShow : data}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
       bounces={false}
@@ -173,8 +184,16 @@ export const ProductList: React.FC<Props> = ({
       removeClippedSubviews={true}
       ItemSeparatorComponent={renderItemSeparator}
       contentContainerStyle={[styles.flatListContainer, contentContainerStyle]}
-      maxToRenderPerBatch={4}
-      updateCellsBatchingPeriod={800}
+      onEndReached={() => {
+        if (dataToShow?.length && isPdp) {
+          if (lastIndex <= data?.length) {
+            const newData = data?.slice(lastIndex, step);
+            setDataToShow(data?.slice(0, lastIndex + step));
+            setLastIndex(lastIndex + step);
+          }
+        }
+      }}
+      onEndReachedThreshold={0.2}
       {...restOfProps}
     />
   );

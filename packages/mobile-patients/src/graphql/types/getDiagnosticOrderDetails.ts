@@ -9,12 +9,20 @@ import { DIAGNOSTIC_ORDER_STATUS, DIAGNOSTIC_ORDER_PAYMENT_TYPE, DIAGNOSTICS_TYP
 // GraphQL query operation: getDiagnosticOrderDetails
 // ====================================================
 
+export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientObj {
+  __typename: "PatientObj";
+  firstName: string | null;
+  lastName: string | null;
+  gender: string | null;
+}
+
 export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_itemObj {
   __typename: "ItemObj";
   itemType: string | null;
   testPreparationData: string | null;
   packageCalculatedMrp: number | null;
   inclusions: (number | null)[] | null;
+  reportGenerationTime: string | null;
 }
 
 export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_pricingObj {
@@ -62,6 +70,8 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_
   price: number | null;
   quantity: number | null;
   groupPlan: string | null;
+  editOrderID: string | null;
+  isRemoved: boolean | null;
   itemObj: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_itemObj | null;
   pricingObj: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_pricingObj | null)[] | null;
   diagnostics: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_diagnostics | null;
@@ -78,20 +88,15 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_
 export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList {
   __typename: "DiagnosticOrders";
   id: string;
+  patientId: string;
   patientAddressId: string;
+  patientObj: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientObj | null;
   city: string | null;
   slotTimings: string;
-  employeeSlotId: string;
-  diagnosticEmployeeCode: string;
-  diagnosticBranchCode: string;
+  slotId: string | null;
   totalPrice: number;
   prescriptionUrl: string;
   diagnosticDate: any;
-  centerName: string;
-  centerCode: string;
-  centerCity: string;
-  centerState: string;
-  centerLocality: string;
   orderStatus: DIAGNOSTIC_ORDER_STATUS;
   orderType: string;
   displayId: number;
@@ -100,6 +105,8 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList 
   slotDateTimeInUTC: any | null;
   paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
   visitNo: string | null;
+  invoiceURL: string | null;
+  labReportURL: string | null;
   diagnosticOrderLineItems: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems | null)[] | null;
   diagnosticOrdersStatus: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrdersStatus | null)[] | null;
 }

@@ -22,7 +22,6 @@ import CovidButton from '@aph/mobile-patients/src/components/ConsultRoom/Compone
 import firebaseAuth from '@react-native-firebase/auth';
 
 import {
-  ApolloHealthProIcon,
   CartIcon,
   ConsultationRoom,
   CovidOrange,
@@ -84,8 +83,6 @@ import {
   GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
   GET_ONEAPOLLO_USER,
   GET_PLAN_DETAILS_BY_PLAN_ID,
-  GET_PROHEALTH_CITY_LIST,
-  GET_PROHEALTH_HOSPITAL_LIST,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
@@ -93,7 +90,6 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/GetAllUserSubscriptionsWithPlanBenefitsV2';
 import { GetCashbackDetailsOfPlanById } from '@aph/mobile-patients/src/graphql/types/GetCashbackDetailsOfPlanById';
 import { getUserProfileType } from '@aph/mobile-patients/src/graphql/types/getUserProfileType';
-import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
 import {
   GetSubscriptionsOfUserByStatus,
@@ -110,7 +106,6 @@ import {
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 import {
   getAllProHealthAppointments,
-  getPatientPersonalizedAppointmentList,
   getUserBannersList,
   saveTokenDevice,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
@@ -132,6 +127,8 @@ import {
   setCircleMembershipType,
   apiCallEnums,
   getUserType,
+  persistHealthCredits,
+  getHealthCredits,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -175,13 +172,7 @@ import {
   addVoipPushToken,
   addVoipPushTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/addVoipPushToken';
-import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '@aph/mobile-patients/src/graphql/types/getPatientPersonalizedAppointments';
-import { ConsultPersonalizedCard } from '@aph/mobile-patients/src/components/ui/ConsultPersonalizedCard';
 import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
-import {
-  preFetchSDK,
-  createHyperServiceObject,
-} from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 
 import { CircleTypeCard1 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard1';
 import { CircleTypeCard2 } from '@aph/mobile-patients/src/components/ui/CircleTypeCard2';
@@ -196,14 +187,10 @@ import {
   renderCovidVaccinationShimmer,
   renderCircleShimmer,
   renderBannerShimmer,
+  CovidButtonShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { ConsultedDoctorsCard } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultedDoctorsCard';
 import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
-import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import {
-  getProHealthHospitalByCityId,
-  getProHealthHospitalByCityIdVariables,
-} from '@aph/mobile-patients/src/graphql/types/getProHealthHospitalByCityId';
 import { AuthContextProps } from '@aph/mobile-patients/src/components/AuthProvider';
 import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
 
@@ -493,7 +480,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   congratulationsDescriptionPhysical: {
-    marginHorizontal: 10,
+    marginHorizontal: 24,
     marginTop: 8,
     color: theme.colors.SKY_BLUE,
     ...theme.fonts.IBMPlexSansMedium(17),
@@ -651,33 +638,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: 'white',
   },
-  proHealthOverlay: {
-    backgroundColor: 'rgba(0,0,0,0.8)',
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    justifyContent: 'flex-start',
-    flex: 1,
-    left: 0,
-    right: 0,
-    zIndex: 3000,
-  },
-  proHealthContainer: { marginHorizontal: 30, flexDirection: 'row', marginTop: 80 },
-  proHealthInnerContainer: {
-    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    borderBottomRightRadius: 10,
-    borderBottomLeftRadius: 10,
-    padding: 16,
-    width: width - 90,
-    maxHeight: height - 300,
-  },
-  proHealthPopUpHeading: { ...theme.viewStyles.text('SB', 16, theme.colors.SHERPA_BLUE, 1, 24) },
-  crossIconTouch: { alignSelf: 'flex-start', marginLeft: 20 },
-  listContainer: { padding: 10, paddingLeft: 0 },
-  listName: { ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 20) },
-  hospitalHeadingView: { marginBottom: 10, flexDirection: 'row' },
   proHealthBannerTouch: {
     backgroundColor: theme.colors.CLEAR,
     borderRadius: 12,
@@ -746,8 +706,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     notificationCount,
     setNotificationCount,
     setAllNotifications,
-    appointmentsPersonalized,
-    setAppointmentsPersonalized,
     setHdfcUserSubscriptions,
     hdfcUserSubscriptions,
     bannerDataHome,
@@ -772,6 +730,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     covidVaccineCtaV2,
     apisToCall,
     homeScreenParamsOnPop,
+    setActiveUserSubscriptions,
+    corporateSubscriptions,
+    setCorporateSubscriptions,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -784,6 +745,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showList, setShowList] = useState<boolean>(false);
   const [isFindDoctorCustomProfile, setFindDoctorCustomProfile] = useState<boolean>(false);
   const [upgradePlans, setUpgradePlans] = useState<SubscriptionData[]>([]);
+  const [showCorporateVaccinationCta, setShowCorporateVaccinationCta] = useState<boolean>(false);
+  const [vaccinationCmsIdentifier, setVaccinationCmsIdentifier] = useState<string>('');
+  const [vaccinationSubscriptionId, setVaccinationSubscriptionId] = useState<string>('');
+  const [vaccinationSubscriptionInclusionId, setVaccinationSubscriptionInclusionId] = useState<
+    string
+  >('');
+  const [vaccinationSubscriptionName, setVaccinationSubscriptionName] = useState<string>('');
+  const [vaccinationSubscriptionPlanId, setVaccinationSubscriptionPlanId] = useState<string>('');
+  const [agreedToVaccineTnc, setAgreedToVaccineTnc] = useState<string>('');
+  const [userSubscriptionLoading, setUserSubscriptionLoading] = useState<boolean>(false);
 
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
@@ -797,6 +768,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setCircleCashback,
     circleSubscriptionId,
     setHdfcSubscriptionId,
+    setCorporateSubscription,
+    corporateSubscription,
     setCirclePlanValidity,
     circlePlanValidity,
     setCirclePaymentReference,
@@ -805,7 +778,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [menuViewOptions, setMenuViewOptions] = useState<number[]>([]);
   const [currentAppointments, setCurrentAppointments] = useState<string>('0');
@@ -815,8 +788,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [isWEGFired, setWEGFired] = useState(false);
   const [serviceable, setserviceable] = useState<String>('');
-  const [personalizedData, setPersonalizedData] = useState<any>([]);
-  const [isPersonalizedCard, setisPersonalizedCard] = useState(false);
   const [renewNow, setRenewNow] = useState<String>('');
   const [isCircleMember, setIsCircleMember] = useState<String>('');
   const [circleSavings, setCircleSavings] = useState<number>(-1);
@@ -825,7 +796,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [voipDeviceToken, setVoipDeviceToken] = useState<string>('');
   const [profileChange, setProfileChange] = useState<boolean>(false);
   const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
-  const [hdfcLoading, setHdfcLoading] = useState<boolean>(false);
+  const [bannerLoading, setBannerLoading] = useState<boolean>(false);
   let circleActivated = props.navigation.getParam('circleActivated');
   const circleActivatedRef = useRef<boolean>(circleActivated);
 
@@ -844,26 +815,24 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const saveDeviceNotificationToken = async (id: string) => {
     try {
-      const savedToken = await AsyncStorage.getItem('deviceToken');
+      const oneTimeApiCall = await AsyncStorage.getItem('saveTokenDeviceApiCall');
       const token = await messaging().getToken();
-      if (savedToken !== token) {
+      if (!oneTimeApiCall) {
         saveTokenDevice(client, token, id);
+        await AsyncStorage.setItem('saveTokenDeviceApiCall', 'called');
       }
     } catch (error) {}
   };
 
   useEffect(() => {
-    preFetchSDK(currentPatient?.id);
-    try {
-      createHyperServiceObject();
-    } catch (error) {
-      CommonBugFender('ErrorWhilecreatingHyperServiceObject', error);
-    }
+    getPatientApiCall();
+    setVaccineLoacalStorageData();
   }, []);
 
   //for prohealth option
   useEffect(() => {
-    if (currentPatient?.id) {
+    //for new users, patient uhid was coming as blank
+    if (currentPatient?.id && currentPatient?.uhid) {
       checkIsProhealthActive(currentPatient); //to show prohealth option
       getActiveProHealthAppointments(currentPatient); //to show the prohealth appointments
     }
@@ -964,9 +933,35 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   }
 
+  const setVaccineLoacalStorageData = () => {
+    AsyncStorage.getItem('hasAgreedVaccineTnC').then((data) => {
+      setAgreedToVaccineTnc(data);
+    });
+
+    AsyncStorage.getItem('VaccinationCmsIdentifier').then((data) => {
+      setVaccinationCmsIdentifier(data);
+    });
+
+    AsyncStorage.getItem('VaccinationSubscriptionId').then((data) => {
+      setVaccinationSubscriptionId(data);
+    });
+
+    AsyncStorage.getItem('VaccinationSubscriptionInclusionId').then((data) => {
+      setVaccinationSubscriptionInclusionId(data);
+    });
+  };
+
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      setVaccineLoacalStorageData();
       checkApisToCall();
+      getUserBanners();
+
+      AsyncStorage.getItem('verifyCorporateEmailOtpAndSubscribe').then((data) => {
+        if (JSON.parse(data || 'false') === true) {
+          getUserSubscriptionsWithBenefits();
+        }
+      });
     });
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       apisToCall.current = [];
@@ -1001,12 +996,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         }
       });
     }
+
     if (params?.isFreeConsult) {
       checkPermissions(['camera', 'microphone']).then((response: any) => {
         const { camera, microphone } = response;
         if (camera === 'authorized' && microphone === 'authorized') {
           showFreeConsultOverlay(params);
-        } else {
+        } else if (!params?.isPhysicalConsultBooked) {
           overlyCallPermissions(
             currentPatient!.firstName!,
             params?.doctorName,
@@ -1019,6 +1015,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               }
             }
           );
+        } else {
+          if (params?.doctorName) showFreeConsultOverlay(params);
         }
       });
     }
@@ -1059,7 +1057,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const { camera, microphone } = response;
         if (camera === 'authorized' && microphone === 'authorized') {
           showFreeConsultOverlay(params);
-        } else {
+        } else if (!params?.isPhysicalConsultBooked) {
           overlyCallPermissions(
             currentPatient!.firstName!,
             params?.doctorName,
@@ -1072,6 +1070,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               }
             }
           );
+        } else {
+          if (params?.doctorName) showFreeConsultOverlay(params);
         }
       });
     }
@@ -1079,7 +1079,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     apisToCall?.current?.forEach((item: any) => {
       const {
         circleSavings,
-        patientAppointments,
         patientAppointmentsCount,
         getAllBanners,
         getUserSubscriptions,
@@ -1092,9 +1091,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       switch (item) {
         case circleSavings:
           fetchCircleSavings();
-          break;
-        case patientAppointments:
-          getPersonalizesAppointments();
           break;
         case patientAppointmentsCount:
           getAppointmentsCount();
@@ -1136,9 +1132,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         },
       });
       const appointmentCount = res?.data?.getPatientFutureAppointmentCount;
+
       if (appointmentCount) {
-        const inProgressAppointments = appointmentCount?.activeConsultsCount || 0;
-        if (inProgressAppointments > 0) {
+        const upcomingConsultsCount = appointmentCount?.upcomingConsultsCount || 0;
+        const upcomingPhysicalConsultsCount = appointmentCount?.upcomingPhysicalConsultsCount || 0;
+
+        if (upcomingConsultsCount - upcomingPhysicalConsultsCount > 0) {
           overlyCallPermissions(
             currentPatient!.firstName!,
             'the doctor',
@@ -1246,7 +1245,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
-      User_Type: getUserType(currentPatient),
+      User_Type: getUserType(allCurrentPatients),
     };
     if (
       source &&
@@ -1483,7 +1482,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const getUserSubscriptionsWithBenefits = () => {
-    setHdfcLoading(true);
+    setUserSubscriptionLoading(true);
     const mobile_number = g(currentPatient, 'mobileNumber');
     mobile_number &&
       client
@@ -1496,7 +1495,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then((data) => {
-          setHdfcLoading(false);
           const groupPlans = g(
             data,
             'data',
@@ -1506,6 +1504,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           if (groupPlans) {
             const hdfcPlan = groupPlans?.HDFC;
             const circlePlan = groupPlans?.APOLLO;
+
+            let corporatePlan: SubscriptionData[] = [];
+            Object.keys(groupPlans).forEach((plan_name) => {
+              if (plan_name !== 'APOLLO' && plan_name !== 'HDFC') {
+                groupPlans[plan_name]?.forEach((subscription) => {
+                  const plan = setSubscriptionData(subscription, false, true);
+                  corporatePlan.push(plan);
+                });
+              }
+            });
+            if (corporatePlan.length) {
+              AsyncStorage.setItem('isCorporateSubscribed', 'yes');
+            } else {
+              AsyncStorage.setItem('isCorporateSubscribed', 'no');
+            }
+            setCorporateSubscriptions && setCorporateSubscriptions(corporatePlan);
 
             if (hdfcPlan) {
               const hdfcSubscription = setSubscriptionData(hdfcPlan[0]);
@@ -1528,14 +1542,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             if (circlePlan) {
               const circleSubscription = setCircleSubscriptionData(circlePlan[0]);
               if (!!circlePlan[0]?._id) {
+                AsyncStorage.setItem('circleSubscriptionId', circlePlan[0]?._id);
+                setCircleSubscriptionId && setCircleSubscriptionId(circlePlan[0]?._id);
                 setIsCircleSubscription && setIsCircleSubscription(true);
               }
               setCircleSubscription && setCircleSubscription(circleSubscription);
             }
           }
+          setUserSubscriptionLoading(false);
         })
         .catch((e) => {
-          setHdfcLoading(false);
+          setUserSubscriptionLoading(false);
           CommonBugFender('ConsultRoom_getUserSubscriptionsWithBenefits', e);
         });
   };
@@ -1618,7 +1635,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return circleSubscptionData;
   };
 
-  const setSubscriptionData = (plan: any, isUpgradePlan?: boolean) => {
+  const setSubscriptionData = (plan: any, isUpgradePlan?: boolean, isCorporatePlan?: boolean) => {
     try {
       const group = plan.group;
       const groupData: GroupPlan = {
@@ -1631,6 +1648,19 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       if (benefits && benefits.length) {
         benefits.forEach((item: any) => {
           const ctaAction = g(item, 'cta_action');
+          if (g(ctaAction, 'meta', 'action') === string.common.CorporateVaccineBenefit) {
+            setShowCorporateVaccinationCta(true);
+
+            setVaccinationCmsIdentifier(item?.cms_identifier);
+            AsyncStorage.setItem('VaccinationCmsIdentifier', item?.cms_identifier);
+            AsyncStorage.setItem('VaccinationSubscriptionInclusionId', item?._id);
+            AsyncStorage.setItem('VaccinationSubscriptionId', plan?.subscription_id);
+
+            setVaccinationSubscriptionId(plan?.subscription_id);
+            setVaccinationSubscriptionInclusionId(item?._id);
+            setVaccinationSubscriptionName(plan?.name);
+            setVaccinationSubscriptionPlanId(plan?.plan_id);
+          }
           const benefitCtaAction: BenefitCtaAction = {
             type: g(ctaAction, 'type'),
             action: g(ctaAction, 'meta', 'action'),
@@ -1649,6 +1679,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             availableCount: item!.available_count,
             refreshFrequency: item!.refresh_frequency,
             icon: item!.icon,
+            cmsIdentifier: item?.cms_identifier,
           };
           planBenefits.push(benefit);
         });
@@ -1669,6 +1700,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         benefits: planBenefits,
         coupons: plan!.coupons ? plan!.coupons : [],
         upgradeTransactionValue: plan?.plan_summary?.[0]?.upgrade_transaction_value,
+        isCorporate: !!isCorporatePlan,
+        corporateIcon: !!isCorporatePlan ? plan?.group_logo_url?.mobile_version : '',
       };
       const upgradeToPlan = g(plan, 'can_upgrade_to');
       if (g(upgradeToPlan, '_id')) {
@@ -1697,11 +1730,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
       if (data) {
-        /**
-         * for circle and hdfc
-         * data?.HDFC ------> HDFC data
-         * data?.APOLLO ----> Circle data
-         */
+        let activeSubscriptions = {};
+        Object.keys(data).forEach((subscription) => {
+          data[subscription].forEach((item) => {
+            let subscriptionData = [];
+            if (item?.status?.toLowerCase() === 'active') {
+              subscriptionData.push(item);
+              activeSubscriptions[subscription] = subscriptionData;
+            }
+          });
+        });
+        setActiveUserSubscriptions && setActiveUserSubscriptions(activeSubscriptions);
         const circleData = data?.APOLLO?.[0];
         if (circleData?._id) {
           const paymentRef = circleData?.payment_reference;
@@ -1709,7 +1748,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             typeof paymentRef == 'string' ? JSON.parse(paymentRef) : paymentRef;
           AsyncStorage.setItem('isCircleMember', 'yes');
           setIsCircleMember && setIsCircleMember('yes');
-
+          AsyncStorage.removeItem('circlePlanSelected');
           let WEGAttributes = {};
           if (circleData?.status === 'active') {
             const circleMembershipType = setCircleMembershipType(
@@ -1721,6 +1760,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               'Circle Plan type': circleMembershipType,
             };
 
+            AsyncStorage.setItem('circleSubscriptionId', circleData?._id);
             setCircleSubscriptionId && setCircleSubscriptionId(circleData?._id);
             setIsCircleSubscription && setIsCircleSubscription(true);
             setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
@@ -1734,6 +1774,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
           if (circleData?.status === 'disabled') {
             setIsCircleExpired && setIsCircleExpired(true);
+            setNonCircleValues();
           }
 
           const planValidity = {
@@ -1749,11 +1790,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             setCirclePaymentReference &&
             setCirclePaymentReference(paymentStoredVal);
         } else {
-          AsyncStorage.setItem('isCircleMember', 'no');
-          setIsCircleMember && setIsCircleMember('no');
-          setCircleSubscriptionId && setCircleSubscriptionId('');
-          setIsCircleSubscription && setIsCircleSubscription(false);
-          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+          setNonCircleValues();
           setCirclePlanValidity && setCirclePlanValidity(null);
           setCirclePaymentReference && setCirclePaymentReference(null);
           setCirclePlanId && setCirclePlanId('');
@@ -1764,6 +1801,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             'Circle Plan type': '',
           };
           onAppLoad && logHomePageViewed(WEGAttributes);
+        }
+
+        for (let key of Object.keys(data)) {
+          if (key !== 'APOLLO' && key !== 'HDFC') setCorporateSubscription(true);
         }
 
         if (data?.HDFC?.[0]._id) {
@@ -1792,6 +1833,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       onAppLoad && logHomePageViewed(WEGAttributes);
     }
     setCircleDataLoading(false);
+  };
+
+  const setNonCircleValues = () => {
+    AsyncStorage.setItem('isCircleMember', 'no');
+    AsyncStorage.removeItem('circleSubscriptionId');
+    setIsCircleMember && setIsCircleMember('no');
+    setCircleSubscriptionId && setCircleSubscriptionId('');
+    setIsCircleSubscription && setIsCircleSubscription(false);
+    setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+    fireFirstTimeLanded();
   };
 
   const fetchCarePlans = async () => {
@@ -1834,6 +1885,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
   const fetchHealthCredits = async () => {
+    var cachedHealthCredit: any = await getHealthCredits();
+    if (cachedHealthCredit != null) {
+      setHealthCredits && setHealthCredits(cachedHealthCredit.healthCredit);
+      return; // no need to call api
+    }
+
     try {
       const res = await client.query({
         query: GET_ONEAPOLLO_USER,
@@ -1842,26 +1899,31 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         },
         fetchPolicy: 'no-cache',
       });
-      const credits = res?.data?.getOneApolloUser?.availableHC;
 
+      const credits = res?.data?.getOneApolloUser?.availableHC;
       setHealthCredits && setHealthCredits(credits);
+      persistHealthCredits(credits);
     } catch (error) {
       CommonBugFender('MyMembership_fetchCircleSavings', error);
     }
   };
 
   const getUserBanners = async () => {
-    setHdfcLoading(true);
-    const res: any = await getUserBannersList(client, currentPatient, string.banner_context.HOME, [
-      BannerDisplayType.banner,
-      BannerDisplayType.card,
-    ]);
-
-    setHdfcLoading(false);
-    if (res) {
-      setBannerDataHome && setBannerDataHome(res);
-      setBannerData && setBannerData(res);
-    } else {
+    setBannerLoading(true);
+    try {
+      const res: any = await getUserBannersList(
+        client,
+        currentPatient,
+        string.banner_context.HOME,
+        [BannerDisplayType.banner, BannerDisplayType.card]
+      );
+      setBannerLoading(false);
+      if (res) {
+        setBannerDataHome && setBannerDataHome(res);
+        setBannerData && setBannerData(res);
+      }
+    } catch (error) {
+      setBannerLoading(false);
       setBannerDataHome && setBannerDataHome([]);
       setBannerData && setBannerData([]);
     }
@@ -1886,7 +1948,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setCircleCashback && setCircleCashback(cashback);
       })
       .catch((e) => {
-        setHdfcLoading(false);
         CommonBugFender('ConsultRoom_GetCashbackDetailsOfPlanById', e);
       });
   };
@@ -2054,7 +2115,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     } else {
       AsyncStorage.setItem('selectedProfileId', JSON.stringify(currentPatient.id));
       if (selectedProfile !== currentPatient.id) {
-        getPersonalizesAppointments();
         getAppointmentsCount();
         setSelectedProfile(currentPatient.id);
       }
@@ -2169,9 +2229,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           : null;
     }
 
-    const patientDetails = allPatients
+    const patientDetails_primary = allPatients
       ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
       : null;
+
+    const patientDetails = currentPatient;
 
     const fullName = `${g(patientDetails, 'firstName') || ''}%20${g(patientDetails, 'lastName') ||
       ''}`;
@@ -2179,7 +2241,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const patientUHID = patientDetails ? (patientDetails.uhid ? patientDetails.uhid : '') : '';
 
     if (patientUHID) {
-      setshowSpinner(true);
+      setLoading?.(true);
 
       GenerateTokenforCM(
         patientDetails ? patientDetails.uhid : '',
@@ -2190,7 +2252,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       )
         .then((token: any) => {
           async function fetchTokenData() {
-            setshowSpinner(false);
+            setLoading?.(false);
 
             const tokenValue = token.data.vitaToken; //await AsyncStorage.getItem('token');
             const buildSpecify = buildName();
@@ -2202,7 +2264,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             }
             if (Platform.OS === 'ios') {
               if (tokenValue) {
-                Vitals.vitalsToExport(tokenValue, buildSpecify);
+                Vitals.vitalsToExport(tokenValue, buildSpecify, '247');
                 setTimeout(() => {
                   Vitals.goToReactNative(tokenValue);
                 }, 500);
@@ -2230,10 +2292,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         })
         .catch((e) => {
           CommonBugFender('ConsultRoom_getTokenforCM', e);
-          setshowSpinner(false);
+          setLoading?.(false);
         });
     } else {
-      setshowSpinner(false);
+      setLoading?.(false);
       showAphAlert &&
         showAphAlert({
           title: string.common.hiWithSmiley,
@@ -2247,7 +2309,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
     const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
     try {
-      setshowSpinner(true);
+      setLoading?.(true);
       let vitaTokenResponse = await GenrateVitalsToken_CM('ask_apollo', currentPatient?.uhid);
       if (vitaTokenResponse?.data && vitaTokenResponse?.data?.message.includes('Successfully')) {
         let vitaToken = vitaTokenResponse?.data?.vitaToken;
@@ -2263,11 +2325,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         } else {
           keyHash = AppConfig.Configuration.Prod_PROHEALTH_MGMT_HashKey;
         }
-        setshowSpinner(false);
+        setLoading?.(false);
         //call the sdk.
         if (Platform.OS === 'ios') {
           if (vitaToken) {
-            Vitals.vitalsToExport(vitaToken, buildSpecify);
+            Vitals.vitalsToExport(vitaToken, buildSpecify, 'prohealth');
             setTimeout(() => {
               Vitals.goToReactNative(vitaToken);
             }, 500);
@@ -2290,7 +2352,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             );
         }
       } else {
-        setshowSpinner(false);
+        setLoading?.(false);
         setProHealthActive(false);
         showAphAlert &&
           showAphAlert({
@@ -2301,8 +2363,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     } catch (error) {
       CommonBugFender('getTokenForProhealthCM_error_ConsultRoom', error);
       setProHealthActive(false);
-      setshowSpinner(false);
-      console.log({ error });
+      setLoading?.(false);
     }
   };
 
@@ -2352,7 +2413,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         CommonBugFender('ProHealth_checkIsProhealthActive_error_ConsultRoom', error);
         setProHealthActive(false);
         setshowSpinner(false);
-        console.log({ error });
       }
     } else {
       setshowSpinner(false);
@@ -2400,48 +2460,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         CommonBugFender('inside the getProHealthAppointemnt', e);
         setProHealthActiveAppointmentCount('0');
         setProHealthActiveAppointment([]);
-      });
-  };
-
-  const getPersonalizesAppointments = async () => {
-    const storedUhid: any = await AsyncStorage.getItem('selectUserUHId');
-    const selectedUHID = storedUhid ? storedUhid : g(currentPatient, 'uhid');
-    const uhidSelected = await AsyncStorage.getItem('UHIDused');
-
-    if (uhidSelected !== null) {
-      if (uhidSelected === selectedUHID) {
-        if (Object.keys(appointmentsPersonalized)?.length != 0) {
-          setPersonalizedData(appointmentsPersonalized as any);
-          setisPersonalizedCard(true);
-        }
-      } else {
-        setPersonalizedData([]);
-        setisPersonalizedCard(false);
-      }
-    }
-
-    getPatientPersonalizedAppointmentList(client, selectedUHID)
-      .then((data: any) => {
-        const appointmentsdata =
-          g(data, 'data', 'data', 'getPatientPersonalizedAppointments', 'appointmentDetails') || [];
-        AsyncStorage.setItem('UHIDused', selectedUHID);
-
-        if (appointmentsdata.doctorId !== null) {
-          setPersonalizedData(appointmentsdata as any);
-          setisPersonalizedCard(true);
-          setAppointmentsPersonalized &&
-            setAppointmentsPersonalized(
-              appointmentsdata as getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails[]
-            );
-        } else {
-          setPersonalizedData([]);
-          setisPersonalizedCard(false);
-          setAppointmentsPersonalized && setAppointmentsPersonalized([]);
-        }
-      })
-      .catch((e) => {
-        setPersonalizedData([]);
-        setisPersonalizedCard(false);
       });
   };
 
@@ -2619,8 +2637,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderMenuOptions = () => {
-    let arrayList =
-      isProHealthActive && Platform.OS == 'android' ? listValuesForProHealth : listValues;
+    let arrayList = isProHealthActive ? listValuesForProHealth : listValues;
     return (
       <View
         style={{
@@ -3018,13 +3035,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
         {cardlist?.length > 0 ? (
           <View style={[styles.circleRowsContainer, { paddingRight: 10 }]}>
-            {circleDataLoading && (
-              <Spinner
-                style={{ backgroundColor: 'transparent' }}
-                spinnerProps={{ size: 'small' }}
-              />
-            )}
-
             <View style={styles.circleButtonLeft}>
               <ImageBackground
                 style={styles.circleButtonImage}
@@ -3144,32 +3154,47 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderRemoteConfigItems = (item: any, index: number) => {
+    const isCorporateLoading =
+      userSubscriptionLoading && item?.action === string.vaccineBooking.CORPORATE_VACCINATION;
+
     return (
       <View
         key={index}
         style={{ marginBottom: index === covidVaccineCtaV2?.data?.length - 1 ? 15 : 0 }}
       >
-        <CovidButton
-          iconStyle={styles.covidIconStyle}
-          iconUrl={item?.colorReverse ? item?.reverseIconPath : item?.iconPath}
-          buttonStyle={[
-            styles.covidBtn,
-            {
-              backgroundColor: item?.colorReverse ? theme.colors.APP_YELLOW : theme.colors.WHITE,
-            },
-          ]}
-          iconBase={VaccineTracker}
-          btnTitleStyle={[
-            styles.covidBtnTitle,
-            {
-              color: item?.colorReverse ? theme.colors.WHITE : theme.colors.APP_YELLOW,
-            },
-          ]}
-          title={item?.title}
-          onPress={() => {
-            item?.docOnCall ? onPressCallDoctor(item) : handleCovidCTA(item);
-          }}
-        />
+        {isCorporateLoading ? (
+          CovidButtonShimmer()
+        ) : (
+          <CovidButton
+            iconStyle={styles.covidIconStyle}
+            iconUrl={item?.colorReverse ? item?.reverseIconPath : item?.iconPath}
+            buttonStyle={[
+              styles.covidBtn,
+              {
+                backgroundColor: item?.colorReverse ? theme.colors.APP_YELLOW : theme.colors.WHITE,
+              },
+            ]}
+            iconBase={VaccineTracker}
+            btnTitleStyle={[
+              styles.covidBtnTitle,
+              {
+                color: item?.colorReverse ? theme.colors.WHITE : theme.colors.APP_YELLOW,
+              },
+            ]}
+            title={
+              item?.title == 'Book Vaccination Slot'
+                ? corporateSubscriptions == undefined || corporateSubscriptions.length == 0
+                  ? 'Book Vaccination Slot'
+                  : corporateSubscriptions?.length >= 0 && !!vaccinationCmsIdentifier
+                  ? 'Book Vaccination Slot'
+                  : 'Book Vaccination Slot'
+                : item?.title
+            }
+            onPress={() => {
+              item?.docOnCall ? onPressCallDoctor(item) : handleCovidCTA(item);
+            }}
+          />
+        )}
       </View>
     );
   };
@@ -3239,10 +3264,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <CovidRiskLevel style={{ width: 24, height: 24 }} />,
           'Check your risk level'
         )}
-        {renderCovidBlueButtons(
+        {/* {renderCovidBlueButtons(
           onPressHealthyLife,
           <HealthyLife style={{ width: 24, height: 24 }} />,
           `${AppConfig.Configuration.HdfcHealthLifeText}`
+        )} */}
+        {renderCovidBlueButtons(
+          onPressCorporateMembership,
+          <HealthyLife style={{ width: 24, height: 24 }} />,
+          `${AppConfig.Configuration.CorporateMembershipText}`
         )}
         {renderCovidBlueButtons(
           onPressKavach,
@@ -3268,8 +3298,44 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       'CTA Clicked': item?.title,
     };
     postHomeWEGEvent(WebEngageEventName.COVID_VACCINATION_SECTION_CLICKED, undefined, attibutes);
+
     try {
-      if (item?.url?.includes('apollopatients://')) {
+      if (item?.action === string.vaccineBooking.CORPORATE_VACCINATION) {
+        AsyncStorage.setItem('verifyCorporateEmailOtpAndSubscribe', 'false');
+        if (corporateSubscriptions?.length) {
+          if (!!vaccinationCmsIdentifier) {
+            if (agreedToVaccineTnc === 'yes') {
+              props.navigation.navigate(AppRoutes.BookedVaccineScreen, {
+                cmsIdentifier: vaccinationCmsIdentifier || '',
+                subscriptionId: vaccinationSubscriptionId || '',
+                subscriptionInclusionId: vaccinationSubscriptionInclusionId || '',
+                isVaccineSubscription: !!vaccinationCmsIdentifier,
+                isCorporateSubscription: !!corporateSubscriptions?.length,
+              });
+            } else {
+              props.navigation.navigate(AppRoutes.VaccineTermsAndConditions, {
+                isCorporateSubscription: !!corporateSubscriptions?.length,
+              });
+            }
+          } else {
+            props.navigation.navigate(AppRoutes.BookedVaccineScreen, {
+              cmsIdentifier: vaccinationCmsIdentifier || '',
+              subscriptionId: vaccinationSubscriptionId || '',
+              subscriptionInclusionId: vaccinationSubscriptionInclusionId || '',
+              isVaccineSubscription: !!vaccinationCmsIdentifier,
+              isCorporateSubscription: !!corporateSubscriptions?.length,
+            });
+          }
+        } else {
+          props.navigation.navigate(AppRoutes.BookedVaccineScreen, {
+            cmsIdentifier: vaccinationCmsIdentifier || '',
+            subscriptionId: vaccinationSubscriptionId || '',
+            subscriptionInclusionId: vaccinationSubscriptionId || '',
+            isVaccineSubscription: !!vaccinationCmsIdentifier,
+            isCorporateSubscription: !!corporateSubscriptions?.length,
+          });
+        }
+      } else if (item?.url?.includes('apollopatients://')) {
         // handling speciality deeplink only on this phase
         const data = handleOpenURL(item?.url);
         const { routeName, id, isCall, mediaSource } = data;
@@ -3282,9 +3348,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           isCircleMember === 'yes',
           mediaSource
         );
-        return;
+      } else {
+        regenerateJWTToken('vaccine', item?.url);
       }
-      regenerateJWTToken('vaccine', item?.url);
     } catch (e) {}
   };
 
@@ -3329,6 +3395,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     } catch (e) {
       setBugFenderLog('CONSULT_ROOM_FAILED_OPEN_URL', urlToOpen);
     }
+  };
+
+  const onPressCorporateMembership = async () => {
+    props.navigation.navigate(AppRoutes.MyMembership);
   };
 
   const onPressKavach = () => {
@@ -3411,42 +3481,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const renderAppointmentWidget = () => {
-    return (
-      <View>
-        <ConsultPersonalizedCard
-          rowData={personalizedData}
-          onClickButton={() => {
-            const { doctorDetails } = personalizedData;
-            const eventAttributes: WebEngageEvents[WebEngageEventName.HOMEPAGE_WIDGET_FOLLOWUP_CLICK] = {
-              'Doctor ID': personalizedData.doctorId,
-              'Speciality ID': doctorDetails.specialty.id,
-              'Hospital City': personalizedData.hospitalLocation,
-              'Consult Mode': personalizedData.appointmentType,
-              'Doctor Speciality': doctorDetails.specialty.name,
-              'Customer ID': currentPatient.id,
-              'Patient Name': currentPatient.firstName,
-              'Patient Age': Math.round(
-                moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-              ),
-              'Patient Gender': currentPatient.gender,
-              'Patient UHID': currentPatient.uhid,
-            };
-            postWebEngageEvent(WebEngageEventName.HOMEPAGE_WIDGET_FOLLOWUP_CLICK, eventAttributes);
-            props.navigation.navigate(AppRoutes.DoctorDetails, {
-              doctorId: personalizedData ? personalizedData.doctorDetails.id : '',
-              showBookAppointment: true,
-              consultedWithDoctorBefore: true,
-            });
-          }}
-        />
-      </View>
-    );
-  };
-
-  const renderAllConsultedDoctors = () => {
-    return <ConsultedDoctorsCard navigation={props.navigation} />;
-  };
   const renderProhealthBanner = () => {
     return (
       <TouchableOpacity
@@ -3458,199 +3492,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           style={styles.proHealthBannerImage}
           source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_banner.png')}
           resizeMode={'stretch'}
+          borderRadius={10}
         ></ImageBackground>
       </TouchableOpacity>
     );
   };
-  const [showCities, setShowCitites] = useState<boolean>(false);
-  const [showHospitals, setShowHospitals] = useState<boolean>(false);
-  const [prohealthCityList, setProHealthCityList] = useState([] as any);
-  const [prohealthHospitalList, setProHealthHospitalList] = useState([] as any);
-  const [selectedProHealthCity, setSelectedProHealthCity] = useState<string>('');
-  const [selectedProHealthHospital, setSelectedProHealthHospital] = useState<string>('');
 
-  const getProHealthCities = () =>
-    client.query({
-      query: GET_PROHEALTH_CITY_LIST,
-    });
   async function _navigateProHealth() {
-    //call cities api.
-    try {
-      setLoading?.(true);
-      let response = await getProHealthCities();
-      if (
-        response?.data?.getProHealthCities &&
-        response?.data?.getProHealthCities?.cityList?.length > 0
-      ) {
-        let cityList = response?.data?.getProHealthCities?.cityList;
-        setProHealthCityList(cityList);
-        setShowCitites(true);
-        showHospitals && setShowHospitals(false);
-      }
-      setLoading?.(false);
-    } catch (error) {
-      console.log({ error });
-      setLoading?.(false);
-      CommonBugFender('_navigateProHealth_ConsultPage', error);
-    }
-  }
-  const renderCitiesOverlay = () => {
-    return (
-      <View style={styles.proHealthOverlay}>
-        <View style={styles.proHealthContainer}>
-          <View style={styles.proHealthInnerContainer}>
-            {prohealthCityList?.length > 0 ? (
-              <View style={{ marginBottom: 10 }}>
-                <Text style={styles.proHealthPopUpHeading}>SELECT YOUR CITY</Text>
-              </View>
-            ) : null}
-            <FlatList
-              data={prohealthCityList}
-              renderItem={renderCity}
-              keyExtractor={(_, index) => `${index}`}
-              style={{ flexGrow: 0 }}
-              contentContainerStyle={{}}
-              keyboardShouldPersistTaps="handled"
-              onScrollBeginDrag={() => Keyboard.dismiss()}
-              ListEmptyComponent={renderNoResults('No Cities found. Please try again later')}
-            />
-          </View>
-          <TouchableOpacity style={styles.crossIconTouch} onPress={() => _onCloseCitiesPopUp()}>
-            <CrossPopup />
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
-  const renderNoResults = (text: string) => {
-    return (
-      <View style={{ marginTop: 10 }}>
-        <Text style={styles.listName}>{text}</Text>
-      </View>
-    );
-  };
-
-  function _onCloseCitiesPopUp() {
-    setShowCitites(false);
-    setSelectedProHealthHospital('');
-    setSelectedProHealthCity('');
-  }
-  const renderCity = (item: any) => {
-    return (
-      <TouchableOpacity onPress={() => _onPressCity(item)}>
-        <View style={styles.listContainer} key={item?.item?.id}>
-          <Text style={styles.listName}>{item?.item?.cityName}</Text>
-          {item?.index === prohealthCityList?.length - 1 ? null : (
-            <Spearator style={{ marginTop: 10 }} />
-          )}
-        </View>
-      </TouchableOpacity>
-    );
-  };
-  function _onPressCity(item: any) {
-    let selectedCityId = item?.item?.id;
-    setShowCitites(false);
-    setSelectedProHealthCity(selectedCityId);
-    fetchProHealthHospitalList(item);
-  }
-  const getProHealthHospitals = (id: string) =>
-    client.query<getProHealthHospitalByCityId, getProHealthHospitalByCityIdVariables>({
-      query: GET_PROHEALTH_HOSPITAL_LIST,
-      variables: { cityId: id },
-    });
-  async function fetchProHealthHospitalList(item: any) {
-    try {
-      setLoading?.(true);
-      let response = await getProHealthHospitals(item?.item?.id);
-      if (
-        response?.data?.getProHealthHospitalByCityId &&
-        response?.data?.getProHealthHospitalByCityId?.hospitals?.length! > 0
-      ) {
-        let hospitalList = response?.data?.getProHealthHospitalByCityId?.hospitals || [];
-        setProHealthHospitalList(hospitalList);
-        setShowHospitals(true);
-      }
-      setLoading?.(false);
-    } catch (error) {
-      setLoading?.(false);
-      CommonBugFender('_fetchProHealthHospitalList_ConsultPage', error);
-    }
-  }
-  function _onPressHospitalBack() {
-    setShowHospitals(false);
-    setProHealthHospitalList([]);
-    setSelectedProHealthHospital('');
-    setSelectedProHealthCity('');
-    setShowCitites(true);
-  }
-  const renderHospitalOverlay = () => {
-    return (
-      <View style={styles.proHealthOverlay}>
-        <View style={styles.proHealthContainer}>
-          <View style={styles.proHealthInnerContainer}>
-            {renderHospitals?.length > 0 ? (
-              <View style={styles.hospitalHeadingView}>
-                <TouchableOpacity
-                  onPress={() => _onPressHospitalBack()}
-                  style={{ alignSelf: 'center' }}
-                >
-                  <BackArrow />
-                </TouchableOpacity>
-                <Text style={[styles.proHealthPopUpHeading, { marginHorizontal: 20 }]}>
-                  SELECT YOUR HOSPITAL
-                </Text>
-              </View>
-            ) : null}
-            <FlatList
-              data={prohealthHospitalList}
-              renderItem={renderHospitals}
-              keyExtractor={(_, index) => `${index}`}
-              style={{ flexGrow: 0 }}
-              contentContainerStyle={{}}
-              keyboardShouldPersistTaps="handled"
-              onScrollBeginDrag={() => Keyboard.dismiss()}
-              ListEmptyComponent={renderNoResults('No Hospitals found. Please try again later.')}
-            />
-          </View>
-          <TouchableOpacity
-            style={{ alignSelf: 'flex-start', marginLeft: 20 }}
-            onPress={() => _onCloseHospitalPopUp()}
-          >
-            <CrossPopup />
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
-  function _onCloseHospitalPopUp() {
-    setShowCitites(false);
-    setShowHospitals(false);
-    setSelectedProHealthHospital('');
-    setSelectedProHealthCity('');
-  }
-
-  const renderHospitals = (item: any) => {
-    return (
-      <TouchableOpacity onPress={() => _onPressHospital(item)}>
-        <View style={styles.listContainer} key={item?.item?.id}>
-          <Text style={styles.listName}>{item?.item?.unitName}</Text>
-          {item?.index === prohealthHospitalList?.length - 1 ? null : (
-            <Spearator style={{ marginTop: 10 }} />
-          )}
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  function _onPressHospital(item: any) {
-    let selectedHospitalId = item?.item?.id;
-    setShowHospitals(false);
-    setSelectedProHealthHospital(selectedHospitalId);
     //call the jwt token again.
-    regenerateJWTToken('bookings', selectedHospitalId);
+    regenerateJWTToken('bookings');
   }
 
-  const regenerateJWTToken = async (source: string, id: string) => {
+  const regenerateJWTToken = async (source: string, id?: string) => {
     let deviceType =
       Platform.OS == 'android' ? BookingSource?.Apollo247_Android : BookingSource?.Apollo247_Ios;
     setLoading?.(true);
@@ -3670,8 +3523,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             source == 'vaccine'
               ? initiateVaccinationWebView(id, jwt)
               : source === 'bookings'
-              ? initiateProHealthWebView(id, jwt, deviceType)
-              : initiateOrdersProHealthWebView(id, jwt, deviceType);
+              ? initiateProHealthWebView(jwt, deviceType)
+              : initiateOrdersProHealthWebView(id!, jwt, deviceType);
           }
         });
       } catch (e) {
@@ -3690,14 +3543,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     });
   }
 
-  function initiateProHealthWebView(hospitalId: string, jwtToken: string, deviceType: string) {
+  function initiateProHealthWebView(jwtToken: string, deviceType: string) {
     try {
       const openUrl = AppConfig.Configuration.PROHEALTH_BOOKING_URL;
       let finalUrl = openUrl.concat(
-        '/',
-        selectedProHealthCity,
-        '/',
-        hospitalId,
         '?utm_token=',
         jwtToken,
         '&utm_mobile_number=',
@@ -3705,12 +3554,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         '&deviceType=',
         deviceType
       );
-      !!hospitalId && hospitalId != ''
-        ? props.navigation.navigate(AppRoutes.ProHealthWebView, {
-            covidUrl: finalUrl,
-            goBackCallback: webViewGoBack,
-          })
-        : null;
+      !!jwtToken &&
+        jwtToken != '' &&
+        props.navigation.navigate(AppRoutes.ProHealthWebView, {
+          covidUrl: finalUrl,
+          goBackCallback: webViewGoBack,
+        });
       setLoading?.(false);
     } catch (e) {
       setLoading?.(false);
@@ -3752,10 +3601,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   }
 
+  const renderAllConsultedDoctors = () => {
+    return <ConsultedDoctorsCard navigation={props.navigation} />;
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
-      {showCities && renderCitiesOverlay()}
-      {showHospitals && renderHospitalOverlay()}
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
         <ScrollView style={{ flex: 1 }} bounces={false}>
           <View style={{ width: '100%' }}>
@@ -3763,21 +3614,19 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               {renderTopIcons()}
               <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
               <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text>
-              {isPersonalizedCard && renderAppointmentWidget()}
               {renderMenuOptions()}
 
               {circleDataLoading && renderCircleShimmer()}
-              {circleDataLoading && renderCovidVaccinationShimmer()}
-              {hdfcLoading && renderBannerShimmer()}
-
               <View style={{ backgroundColor: '#f0f1ec' }}>
-                {isCircleMember === 'yes' && renderCircle()}
+                {isCircleMember === 'yes' && !circleDataLoading && renderCircle()}
               </View>
               {showCirclePlans && renderCircleSubscriptionPlans()}
               {showCircleActivationcr && renderCircleActivation()}
+              {!covidVaccineCtaV2?.data && renderCovidVaccinationShimmer()}
               <View style={{ backgroundColor: '#f0f1ec' }}>
                 {covidVaccineCtaV2?.data?.length > 0 && renderCovidContainer()}
               </View>
+              {bannerLoading && renderBannerShimmer()}
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
               {/**added prohealth banner */}
               {proActiveAppointments?.length == 0 && (

@@ -3,21 +3,31 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { CancelAppointmentInput, STATUS } from "./globalTypes";
+import { APPOINTMENT_STATUS } from "./globalTypes";
 
 // ====================================================
-// GraphQL mutation operation: cancelAppointment
+// GraphQL mutation operation: CancelAppointment
 // ====================================================
 
-export interface cancelAppointment_cancelAppointment {
-  __typename: "CancelAppointmentResult";
-  status: STATUS | null;
+export interface CancelAppointment_CancelAppointment_response {
+  __typename: "AppointmentType";
+  id: string | null;
+  status: APPOINTMENT_STATUS;
 }
 
-export interface cancelAppointment {
-  cancelAppointment: cancelAppointment_cancelAppointment;
+export interface CancelAppointment_CancelAppointment {
+  __typename: "MutateAppointmentResponse";
+  code: number;
+  success: boolean;
+  message: string | null;
+  response: CancelAppointment_CancelAppointment_response | null;
 }
 
-export interface cancelAppointmentVariables {
-  cancelAppointmentInput: CancelAppointmentInput;
+export interface CancelAppointment {
+  CancelAppointment: CancelAppointment_CancelAppointment;
+}
+
+export interface CancelAppointmentVariables {
+  appointment_id?: string | null;
+  display_id?: number | null;
 }

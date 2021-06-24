@@ -142,7 +142,7 @@ export enum WebEngageEventName {
   MANAGE_DIABETES = 'Manage Diabetes',
   PROHEALTH = 'Prohealth',
   TRACK_SYMPTOMS = 'Track Symptoms',
-  VIEW_HELATH_RECORDS = 'PHR Click Health records - app',
+  VIEW_HELATH_RECORDS = 'PHR Click Health records',
   LEARN_MORE_ABOUT_CORONAVIRUS = 'Learn more about coronavirus',
   CHECK_YOUR_RISK_LEVEL = 'Check your risk level',
   APOLLO_PRO_HEALTH = 'Apollo pro health',
@@ -184,18 +184,26 @@ export enum WebEngageEventName {
 
   DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE = 'Diagnostic address selected',
   DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE = 'Diagnostic cart item removed',
-  DIAGNOSITC_ITEM_ADD_ON_CARTPAGE = 'Diagnostic cart item added',
+  DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE = 'Diagnostic add item clicked',
 
   DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE = 'Address Non Serviceable on Diagnostic Cart Page',
-  DIAGNOSTIC_AREA_SELECTED = 'Area Selected on Cart',
-  DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Appointment time slot selected',
+  DIAGNOSTIC_AREA_SELECTED = 'Diagnostic Area Selected on Cart',
+  DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Diagnostic slot time selected',
   DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic proceed to pay clicked',
-  DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic Payment Initiated',
+  PAYMENT_INITIATED = 'Payment Initiated',
   DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
   DIAGNOSTIC_TRACK_ORDER_VIEWED = 'Diagnostic track Order viewed',
-  DIAGNOSITC_ORDER_RESCHEDULE = 'Diagnostic order rescheduled',
+  DIAGNOSTIC_ORDER_RESCHEDULE = 'Diagnostic order reschedule - frontend',
   DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
   DIAGNOSITC_HOME_PAGE_BANNER_CLICKED = 'Diagnostic home page banner',
+  DIAGNOSTIC_PAYMENT_PAGE_VIEWED = 'Diagnostic payment page viewed',
+  DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED = 'Diagnostic Phlebo feedback submitted',
+  DIAGNOSTIC_PHLEBO_CALLING_CLICKED = 'Diagnostic Phlebo calling clicked',
+  DIAGNOSTIC_ORDER_STATUS = 'Diagnostic Order Status',
+  DIAGNOSTIC_TRACK_PHLEBO_CLICKED = 'Diagnostic Track Phlebo clicked',
+  DIGNOSTIC_PAYMENT_ABORTED = 'Diagnostic payment aborted',
+  DIAGNOSITC_MODIFY_CLICKED = 'Diagnostic modify clicked',
+  DIAGNOSTIC_MODIFY_ORDER = 'Diagnostic modify order',
 
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
@@ -204,66 +212,66 @@ export enum WebEngageEventName {
   UPLOAD_PRESCRIPTION = 'Upload Prescription',
   UPLOAD_PHOTO = 'Upload Photo',
   ITEMS_CLICKED = 'Items Clicked',
-  PHR_ORDER_MEDS_TESTS = 'PHR Order Tests and Meds Prescription - app',
+  PHR_ORDER_MEDS_TESTS = 'PHR Order Tests and Meds Prescription',
   PHR_CONSULT_CARD_CLICK = 'PHR Consult Card click',
   RE_ORDER_MEDICINE = 'ReOrder Medicine',
-  PHR_CLICK_DOCTOR_CONSULTATIONS = 'PHR Click Doctor Consultations - app',
-  PHR_CLICK_TEST_REPORTS = 'PHR Click Test Reports - app',
-  PHR_CLICK_HOSPITALIZATIONS = 'PHR Click Hospitalizations - app',
-  PHR_CLICK_HEALTH_CONDITIONS = 'PHR Click Health Conditions - app',
-  PHR_CLICK_BILLS = 'PHR Click Bills - app',
-  PHR_CLICK_INSURANCES = 'PHR Click Insurances - app',
-  PHR_ADD_DOCTOR_CONSULTATIONS = 'PHR Add Doctor Consultation - app',
-  PHR_ADD_TEST_REPORT = 'PHR Add Test Report - app',
-  PHR_ADD_HOSPITALIZATIONS = 'PHR Add Hospitalization - app',
-  PHR_ADD_ALLERGY = 'PHR Add Allergy - app',
-  PHR_ADD_FAMILY_HISTORY = 'PHR Add Family History - app',
-  PHR_ADD_MEDICATION = 'PHR Add Medication - app',
-  PHR_ADD_HEALTH_RESTRICTIONS = 'PHR Add Health Restriction - app',
-  PHR_ADD_MEDICAL_CONDITION = 'PHR Add Medical Condition - app',
-  PHR_ADD_BILLS = 'PHR Add Bills - app',
-  PHR_ADD_INSURANCE = 'PHR Add Insurance - app',
-  PHR_ADD_HEIGHT = 'PHR Add Height - app',
-  PHR_ADD_WEIGHT = 'PHR Add Weight - app',
-  PHR_ADD_BLOOD_GROUP = 'PHR Add BloodGroup - app',
-  PHR_DOWNLOAD_DOCTOR_CONSULTATION = 'PHR Download Doctor Consultation - app',
-  PHR_DOWNLOAD_TEST_REPORT = 'PHR Download Test Report - app',
-  PHR_DOWNLOAD_HEALTH_CHECKS = 'PHR Download Health Check - app',
-  PHR_DOWNLOAD_HOSPITALIZATIONS = 'PHR Download Hospitalization - app',
-  PHR_DOWNLOAD_ALLERGY = 'PHR Download Allergy - app',
-  PHR_DOWNLOAD_FAMILY_HISTORY = 'PHR Download Family History - app',
-  PHR_DOWNLOAD_MEDICAL_CONDITION = 'PHR Download Medical Condition - app',
-  PHR_DOWNLOAD_BILLS = 'PHR Download Bill - app',
-  PHR_DOWNLOAD_INSURANCE = 'PHR Download Insurance - app',
-  PHR_UPDATE_DOCTOR_CONSULTATION = 'PHR Update Doctor Consultation - app',
-  PHR_UPDATE_TEST_REPORT = 'PHR Update Test Report - app',
-  PHR_UPDATE_HOSPITALIZATIONS = 'PHR Update Hospitalization - app',
-  PHR_UPDATE_ALLERGY = 'PHR Update Allergy - app',
-  PHR_UPDATE_FAMILY_HISTORY = 'PHR Update Family History - app',
-  PHR_UPDATE_MEDICATION = 'PHR Update Medication - app',
-  PHR_UPDATE_HEALTH_RESTRICTIONS = 'PHR Update Health Restriction - app',
-  PHR_UPDATE_MEDICAL_CONDITION = 'PHR Update Medical Condition - app',
-  PHR_UPDATE_BILLS = 'PHR Update Bill - app',
-  PHR_UPDATE_INSURANCE = 'PHR Update Insurance - app',
-  PHR_UPDATE_HEIGHT = 'PHR Update Height - app',
-  PHR_UPDATE_WEIGHT = 'PHR Update Weight - app',
-  PHR_UPDATE_BLOOD_GROUP = 'PHR Update BloodGroup - app',
-  PHR_DELETE_DOCTOR_CONSULTATION = 'PHR Delete Doctor Consultation - app',
-  PHR_DELETE_TEST_REPORT = 'PHR Delete Test Report - app',
-  PHR_DELETE_HOSPITALIZATIONS = 'PHR Delete Hospitalization - app',
-  PHR_DELETE_ALLERGY = 'PHR Delete Allergy - app',
-  PHR_DELETE_FAMILY_HISTORY = 'PHR Delete Family History - app',
-  PHR_DELETE_MEDICATION = 'PHR Delete Medication - app',
-  PHR_DELETE_HEALTH_RESTRICTIONS = 'PHR Delete Health Restriction - app',
-  PHR_DELETE_MEDICAL_CONDITION = 'PHR Delete Medical Condition - app',
-  PHR_DELETE_BILLS = 'PHR Delete Bill - app',
-  PHR_DELETE_INSURANCE = 'PHR Delete Insurance - app',
-  PHR_LOAD_HEALTH_RECORDS = 'PHR Load Health Records - app',
-  PHR_USER_LINKING = 'PHR User Linking - app',
-  PHR_USER_DELINKING = 'PHR User DeLinking -app',
-  PHR_NO_OF_USERS_SEARCHED_GLOBAL = 'PHR No Of Users searched Global - app',
-  PHR_NO_USERS_SEARCHED_LOCAL = 'PHR No Of Users searched Local {0} - app',
-  PHR_NO_OF_USERS_CLICKED_ON_RECORDS = 'PHR users seen on records in {0}-app',
+  PHR_CLICK_DOCTOR_CONSULTATIONS = 'PHR Click Doctor Consultations',
+  PHR_CLICK_TEST_REPORTS = 'PHR Click Test Reports',
+  PHR_CLICK_HOSPITALIZATIONS = 'PHR Click Hospitalizations',
+  PHR_CLICK_HEALTH_CONDITIONS = 'PHR Click Health Conditions',
+  PHR_CLICK_BILLS = 'PHR Click Bills',
+  PHR_CLICK_INSURANCES = 'PHR Click Insurances',
+  PHR_ADD_DOCTOR_CONSULTATIONS = 'PHR Add Doctor Consultation',
+  PHR_ADD_TEST_REPORT = 'PHR Add Test Report',
+  PHR_ADD_HOSPITALIZATIONS = 'PHR Add Hospitalization',
+  PHR_ADD_ALLERGY = 'PHR Add Allergy',
+  PHR_ADD_FAMILY_HISTORY = 'PHR Add Family History',
+  PHR_ADD_MEDICATION = 'PHR Add Medication',
+  PHR_ADD_HEALTH_RESTRICTIONS = 'PHR Add Health Restriction',
+  PHR_ADD_MEDICAL_CONDITION = 'PHR Add Medical Condition',
+  PHR_ADD_BILLS = 'PHR Add Bills',
+  PHR_ADD_INSURANCE = 'PHR Add Insurance',
+  PHR_ADD_HEIGHT = 'PHR Add Height',
+  PHR_ADD_WEIGHT = 'PHR Add Weight',
+  PHR_ADD_BLOOD_GROUP = 'PHR Add BloodGroup',
+  PHR_DOWNLOAD_DOCTOR_CONSULTATION = 'PHR Download Doctor Consultation',
+  PHR_DOWNLOAD_TEST_REPORT = 'PHR Download Test Report',
+  PHR_DOWNLOAD_HEALTH_CHECKS = 'PHR Download Health Check',
+  PHR_DOWNLOAD_HOSPITALIZATIONS = 'PHR Download Hospitalization',
+  PHR_DOWNLOAD_ALLERGY = 'PHR Download Allergy',
+  PHR_DOWNLOAD_FAMILY_HISTORY = 'PHR Download Family History',
+  PHR_DOWNLOAD_MEDICAL_CONDITION = 'PHR Download Medical Condition',
+  PHR_DOWNLOAD_BILLS = 'PHR Download Bill',
+  PHR_DOWNLOAD_INSURANCE = 'PHR Download Insurance',
+  PHR_UPDATE_DOCTOR_CONSULTATION = 'PHR Update Doctor Consultation',
+  PHR_UPDATE_TEST_REPORT = 'PHR Update Test Report',
+  PHR_UPDATE_HOSPITALIZATIONS = 'PHR Update Hospitalization',
+  PHR_UPDATE_ALLERGY = 'PHR Update Allergy',
+  PHR_UPDATE_FAMILY_HISTORY = 'PHR Update Family History',
+  PHR_UPDATE_MEDICATION = 'PHR Update Medication',
+  PHR_UPDATE_HEALTH_RESTRICTIONS = 'PHR Update Health Restriction',
+  PHR_UPDATE_MEDICAL_CONDITION = 'PHR Update Medical Condition',
+  PHR_UPDATE_BILLS = 'PHR Update Bill',
+  PHR_UPDATE_INSURANCE = 'PHR Update Insurance',
+  PHR_UPDATE_HEIGHT = 'PHR Update Height',
+  PHR_UPDATE_WEIGHT = 'PHR Update Weight',
+  PHR_UPDATE_BLOOD_GROUP = 'PHR Update BloodGroup',
+  PHR_DELETE_DOCTOR_CONSULTATION = 'PHR Delete Doctor Consultation',
+  PHR_DELETE_TEST_REPORT = 'PHR Delete Test Report',
+  PHR_DELETE_HOSPITALIZATIONS = 'PHR Delete Hospitalization',
+  PHR_DELETE_ALLERGY = 'PHR Delete Allergy',
+  PHR_DELETE_FAMILY_HISTORY = 'PHR Delete Family History',
+  PHR_DELETE_MEDICATION = 'PHR Delete Medication',
+  PHR_DELETE_HEALTH_RESTRICTIONS = 'PHR Delete Health Restriction',
+  PHR_DELETE_MEDICAL_CONDITION = 'PHR Delete Medical Condition',
+  PHR_DELETE_BILLS = 'PHR Delete Bill',
+  PHR_DELETE_INSURANCE = 'PHR Delete Insurance',
+  PHR_LOAD_HEALTH_RECORDS = 'PHR Load Health Records',
+  PHR_USER_LINKING = 'PHR User Linking',
+  PHR_USER_DELINKING = 'PHR User DeLinking',
+  PHR_NO_OF_USERS_SEARCHED_GLOBAL = 'PHR No Of Users searched Global',
+  PHR_NO_USERS_SEARCHED_LOCAL = 'PHR No Of Users searched Local {0}',
+  PHR_NO_OF_USERS_CLICKED_ON_RECORDS = 'PHR users seen on records in {0}',
 
   // ConsultRoom Events
   CONSULTATION_CANCELLED_BY_CUSTOMER = 'Consultation Cancelled by Customer',
@@ -278,8 +286,8 @@ export enum WebEngageEventName {
   DOWNLOAD_PRESCRIPTION = 'Download Prescription',
   VIEW_PRESCRIPTION_IN_CONSULT_DETAILS = 'View Prescription in Consult Details',
   CART_PRESCRIPTION_OPTION_SELECTED_PROCEED_CLICKED = 'Cart Prescription Option Selected & Proceed Click',
-  ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS = 'PHR Order Meds Prescription Detail - app',
-  ORDER_TESTS_FROM_PRESCRIPTION_DETAILS = 'PHR Order Tests Prescription Detail - app',
+  ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS = 'PHR Order Meds Prescription Detail',
+  ORDER_TESTS_FROM_PRESCRIPTION_DETAILS = 'PHR Order Tests Prescription Detail',
   CONSULT_CARD_CLICKED = 'Consult Card Clicked',
   CONTINUE_CONSULT_CLICKED = 'Continue Consult Clicked',
   CHAT_WITH_DOCTOR = 'Chat with Doctor',
@@ -456,6 +464,10 @@ export enum WebEngageEventName {
   //Permissioon Events
   USER_ALLOWED_PERMISSION = 'User clicked on Allow for permissions',
   USER_DENIED_PERMISSION = 'User clicked on Not now for permissions',
+
+  //Vaccination Booking
+  VACCINATION_BOOKING_CONFIRMATION = 'Vaccine_Booking confirmation',
+  VACCINATION_CANCELLATION = 'Vaccine_Cancellation',
 }
 
 export interface PatientInfo {
@@ -657,6 +669,7 @@ export interface ItemSearchedOnLanding extends DiagnosticUserInfo {
   'Keyword Entered': string;
   '# Results appeared': number;
   'Item in Results'?: object[];
+  Popular?: 'Yes' | 'No';
 }
 
 export interface ItemClickedOnLanding extends DiagnosticUserInfo {
@@ -794,7 +807,7 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.NOTIFICATION_ICON]: { clicked: true };
   [WebEngageEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
-  [WebEngageEventName.ACTIVE_PROHEALTH_APPOINTMENTS] : {clicked: true};
+  [WebEngageEventName.ACTIVE_PROHEALTH_APPOINTMENTS]: { clicked: true };
   [WebEngageEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
   [WebEngageEventName.TICKET_RAISED]: { Category: string; Query: string };
   [WebEngageEventName.HELP_TICKET_SUBMITTED]: {
@@ -890,6 +903,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.SEARCH_ENTER_CLICK]: {
     keyword: string;
     numberofresults: number;
+    source: string;
   };
   [WebEngageEventName.PHARMACY_SEARCH_RESULTS]: {
     keyword: string;
@@ -909,11 +923,10 @@ export interface WebEngageEvents {
   [WebEngageEventName.NOTIFY_ME]: {
     'product name': string;
     'product id': string; // (SKUID)
-    Brand: string;
-    'Brand ID': string;
-    'category name': string;
     'category ID': string;
+    price: number;
     pincode: string;
+    serviceable: YesOrNo;
   };
 
   [WebEngageEventName.CATEGORY_CLICKED]: {
@@ -1183,22 +1196,33 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED]: {
     'Order amount': string | number;
-    'Order id:': string;
+    'Order id': string;
     'Order status'?: string;
-    'Sample Collection Date': string; //Date
   };
   [WebEngageEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR]: DiagnosticPinCode;
   [WebEngageEventName.DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED]: {
-    'Item Name': string;
-    'Item ID': string;
+    'Item Name'?: string;
+    'Item ID'?: string;
     Source: 'Home Page';
     'Section Name': string;
+    'Category Name'?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION]: {
-    Source: 'Full Search' | 'Home Page' | 'Cart Page' | 'Partial Search' | 'Deeplink';
+    Source:
+      | 'Full Search'
+      | 'Home Page'
+      | 'Cart page'
+      | 'Partial Search'
+      | 'Deeplink'
+      | 'Popular search'
+      | 'Category page';
     'Item Name': string;
-    'Item Type': string;
+    'Item Type'?: string;
     'Item Code': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    'Item ID': string | number;
+    'Item Price'?: number | string;
   };
 
   [WebEngageEventName.DIAGNOSTIC_CART_VIEWED]: {
@@ -1210,20 +1234,22 @@ export interface WebEngageEvents {
     'Total Discount': number;
     'Net after discount': number; //item total
     'Cart Items': object[];
+    Pincode: string | number;
+    UHID: string;
   };
   [WebEngageEventName.DIAGNOSTIC_AREA_SELECTED]: {
     'Address Pincode': number;
     'Area Selected': string;
-    Servicability: 'Yes' | 'No';
   };
   [WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED]: {
     'Address Pincode': number;
     'Area Selected': string;
     'Time Selected': string;
-    'No of Days ahead of Order Date selected': number;
+    'Slot selected': 'Manual' | 'Automatic';
+    'Slot available': 'Yes' | 'No';
+    UHID: string;
   };
   [WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED]: {
-    //already exists
     'Patient Name selected': string;
     'Total items in cart': number;
     'Sub Total': number;
@@ -1231,12 +1257,11 @@ export interface WebEngageEvents {
     'Net after discount': number;
     'Prescription Uploaded?': boolean;
     'Prescription Mandatory?': boolean;
-    'Mode of Sample Collection': 'Home' | 'Pickup' | 'Home Visit' | 'Clinic Visit';
-    'Delivery Date Time'?: string | Date; // Optional (only if Home)
+    'Mode of Sample Collection': 'Home Visit' | 'Clinic Visit';
     'Pin Code': string | number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
     'Area Name': string;
-    'No of Days ahead of Order Date selected': number;
+    'Area id': string | number;
     'Home collection charges'?: number;
     Discount?: number;
     'Collection Time Slot': string;
@@ -1246,13 +1271,17 @@ export interface WebEngageEvents {
     'Patient Name': string;
     'Latest Order Status': string;
     'Order id': string;
+    Source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary';
   };
   [WebEngageEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED]: {
-    'Patient UHID': string;
-    'Patient Name': string;
-    'Order ID': string;
-    'Order Date': Date;
-    'Reports Generated On': Date;
+    'Order id'?: string;
+    Source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary';
+    'Report generated': 'Yes' | 'No';
+    'Action taken':
+      | 'View Report'
+      | 'Download Report PDF'
+      | 'Share on Whatsapp'
+      | 'Copy Link to PDF';
   };
   [WebEngageEventName.DIAGNOSTIC_FEEDBACK_GIVEN]: {
     'Patient UHID': string;
@@ -1260,29 +1289,36 @@ export interface WebEngageEvents {
     Rating: string | number;
     'Thing to Improve selected': string;
   };
-
   [WebEngageEventName.DIAGNOSTIC_ADD_TO_CART]: {
     'Item Name': string;
     'Item ID': string; // (SKUID)
-    Source: 'Home page' | 'Full search' | 'Details page' | 'Partial search' | 'Listing page';
+    Source:
+      | 'Home page'
+      | 'Full search'
+      | 'Details page'
+      | 'Partial search'
+      | 'Listing page'
+      | 'Popular search'
+      | 'Category page'
+      | 'Prescription'
+      | 'Cart page';
     Section?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order id': string | number;
     Pincode: string | number;
     'Patient UHID': string;
-    'Total items in cart'?: number; // Optional
     'Order amount': number; // Optional
     'Payment mode'?: 'Cash' | 'Prepaid'; // Optional
     'Circle discount'?: number;
     'Appointment Date'?: string;
     'Appointment time'?: string;
     'Item ids'?: any;
+    'Total items in order': number;
+    'Payment type'?: string; //for prepaid
   };
-  [WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
-    Paymentmode?: 'Prepaid' | 'Cash';
+  [WebEngageEventName.PAYMENT_INITIATED]: {
     Amount: number;
-    ServiceArea: 'Pharmacy' | 'Diagnostic';
     LOB: string;
     type?: string;
   };
@@ -1302,11 +1338,66 @@ export interface WebEngageEvents {
     Pincode: string | number;
     Mode: 'Customer' | 'Automated';
   };
-  [WebEngageEventName.DIAGNOSITC_ORDER_RESCHEDULE]: {
-    Reschedule: string;
+  [WebEngageEventName.DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE]: {
+    'Item ID'?: string | number;
+    'Item name'?: string;
+    Pincode: string | number;
+  };
+  [WebEngageEventName.DIAGNOSTIC_ORDER_RESCHEDULE]: {
+    'Reschedule reason': string;
     'Slot Time': string;
     'Slot Date': string;
     'Order id': string;
+  };
+  [WebEngageEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED]: {
+    UHID: string;
+    'Order amount': string | number;
+  };
+  [WebEngageEventName.DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED]: {
+    Rating: string | number;
+    Feedback: string | number;
+    'Phlebo Name': string;
+    'Order id': string | number;
+    'Phlebo id': string | number;
+  };
+  [WebEngageEventName.DIAGNOSTIC_PHLEBO_CALLING_CLICKED]: {
+    UHID: string;
+    'Order id': string | number;
+    'Phlebo Name': string;
+  };
+  [WebEngageEventName.DIAGNOSTIC_ORDER_STATUS]: {
+    'Display id': string;
+    'Order id': string;
+    'Order status': string;
+    'Patient Name': string;
+    'Payment Mode': 'Cash' | 'Prepaid';
+    SlotTimeInUTC: string | Date;
+    'Total price': string | number;
+    UHID: string;
+  };
+  [WebEngageEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED]: {
+    'Order id': string | number;
+    UHID: string;
+    'Link opened': 'Yes' | 'No';
+    Source: 'Home' | 'My Order' | 'Track Order' | 'Order Summary';
+  };
+  [WebEngageEventName.DIGNOSTIC_PAYMENT_ABORTED]: {
+    'Order id': string;
+    UHID: string;
+  };
+  [WebEngageEventName.DIAGNOSITC_MODIFY_CLICKED]: {
+    UHID: string;
+    'Order id': string;
+    'Order status': string;
+  };
+  [WebEngageEventName.DIAGNOSTIC_MODIFY_ORDER]: {
+    'No of items Added': number;
+    'Item ids in array': string;
+    'Old order value': number;
+    'updated order value': number;
+    'HC charge updated': 'Yes' | 'No';
+    'payment mode': 'Prepaid' | 'Cash';
+    'time of modification': string | Date;
   };
 
   // ********** ConsultEvents ********** \\
@@ -1358,6 +1449,7 @@ export interface WebEngageEvents {
     'Secretary Name': string;
     'Secretary Mobile Number': string;
     'Doctor Mobile Number': string;
+    User_Type: string;
   };
   [WebEngageEventName.TYPE_OF_CONSULT_SELECTED]: {
     'Consultation Type': string;
@@ -1381,6 +1473,7 @@ export interface WebEngageEvents {
     'Doctor Speciality': string;
     Rank: number;
     Is_TopDoc?: YesOrNo;
+    User_Type: string;
   };
   [WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK]: {
     'Patient Name': string;
@@ -1399,6 +1492,7 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Customer ID': string;
     Rank?: number;
+    User_Type: string;
   };
   [WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK]: {
     Fee: number;
@@ -1436,6 +1530,7 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    User_Type: string;
   };
   [WebEngageEventName.CONSULT_TYPE_SELECTION]: {
     'Consult Type': 'Online' | 'In Person';
@@ -2103,6 +2198,7 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    'Order Type': 'Cart' | 'Non-Cart';
   };
   [WebEngageEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS]: {
     'Doctor Name': string;
@@ -2167,6 +2263,15 @@ export interface WebEngageEvents {
     'Circle Membership Value': number | null;
     User_Type?: PharmaUserStatus;
     Pincode?: string;
+    serviceable: YesOrNo;
+    TATDay?: number | null;
+    TatHour?: number | null;
+    TatDateTime?: Date | string;
+    ProductType?: string;
+    MaxOrderQuantity?: number;
+    MRP?: number;
+    SpecialPrice?: number | null;
+    CircleCashback?: number;
   };
   [WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
     'Patient Name': string;
@@ -2179,6 +2284,7 @@ export interface WebEngageEvents {
     'Speciality ID': string;
     'Doctor ID': string;
     'Media Source': string;
+    User_Type: string;
   };
   [WebEngageEventName.SEARCH_SUGGESTIONS]: {
     'Patient Name': string;
@@ -2195,6 +2301,7 @@ export interface WebEngageEvents {
     Symptoms: string;
     Specialities: string;
     Procedures: string;
+    User_Type: string;
   };
 
   [WebEngageEventName.SEARCH_SUGGESTIONS_VIEW_ALL]: {
@@ -2224,6 +2331,7 @@ export interface WebEngageEvents {
     'Text typed by the user': string;
     'Search Suggestion Clicked': string;
     'Bucket Clicked': string;
+    User_Type: string;
   };
 
   [WebEngageEventName.SHARE_CLICK_DOC_LIST_SCREEN]: {

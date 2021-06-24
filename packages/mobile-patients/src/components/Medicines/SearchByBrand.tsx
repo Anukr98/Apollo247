@@ -148,6 +148,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     cartItems,
     pinCode,
     pharmacyCircleAttributes,
+    asyncPincode,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { getPatientApiCall } = useAuth();
@@ -234,6 +235,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       thumbnail,
       type_id,
       MaxOrderQty,
+      url_key,
     } = item;
     suggestionItem && setItemsLoading({ ...itemsLoading, [sku]: true });
     addPharmaItemToCart(
@@ -254,8 +256,9 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         isInStock: true,
         maxOrderQty: MaxOrderQty,
         productType: type_id,
+        url_key,
       },
-      pharmacyPincode!,
+      asyncPincode?.pincode || pharmacyPincode!,
       addCartItem,
       suggestionItem ? null : globalLoading,
       props.navigation,
@@ -353,6 +356,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       <MedicineSearchSuggestionItem
         onPress={() => {
           props.navigation.navigate(AppRoutes.ProductDetailPage, {
+            urlKey: item?.url_key,
             sku: item.sku,
             movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
           });
@@ -490,6 +494,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
             // handleGraphQlError(e);
           });
           props.navigation.navigate(AppRoutes.ProductDetailPage, {
+            urlKey: medicine?.url_key,
             sku: medicine.sku,
             movedFrom: ProductPageViewedSource.CATEGORY_OR_LISTING,
           });
@@ -563,6 +568,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           });
           props.navigation.navigate(AppRoutes.ProductDetailPage, {
             sku: medicine.sku,
+            urlKey: medicine?.url_key,
             movedFrom: ProductPageViewedSource.CATEGORY_OR_LISTING,
             productPageViewedEventProps: {
               'Category ID': category_id,

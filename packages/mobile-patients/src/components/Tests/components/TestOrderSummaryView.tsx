@@ -1,14 +1,10 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect } from 'react';
-import { Dimensions, StyleSheet, Text, View, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Dimensions, StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
 import moment from 'moment';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import {
-  WebEngageEventName,
-  WebEngageEvents,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { g, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -17,15 +13,20 @@ import {
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
   DIAGNOSTIC_ORDER_STATUS,
   REFUND_STATUSES,
+  Gender,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components/StatusCard';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
   DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY,
+  DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
   DIAGNOSTIC_STATUS_BEFORE_SUBMITTED,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { DiagnosticOrderSummaryViewed } from '@aph/mobile-patients/src/components/Tests/Events';
+import { Down, Up, DownloadOrange } from '@aph/mobile-patients/src/components/ui/Icons';
+import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
 export interface LineItemPricing {
   packageMrp: number;
@@ -38,40 +39,50 @@ const isSmallDevice = width < 370;
 export interface TestOrderSummaryViewProps {
   orderDetails: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList;
   onPressViewReport?: () => void;
+  onPressDownloadInvoice?: any;
   refundDetails?: any;
 }
 
 export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props) => {
   const { orderDetails, refundDetails } = props;
-  const isPrepaid = orderDetails?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
+  const filterOrderLineItem =
+    !!orderDetails &&
+    orderDetails?.diagnosticOrderLineItems?.filter((item: any) => !item?.isRemoved);
 
+  const isPrepaid = orderDetails?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
+  const salutation = !!orderDetails?.patientObj?.gender
+    ? orderDetails?.patientObj?.gender === Gender.MALE
+      ? 'Mr. '
+      : 'Ms. '
+    : '';
   const { currentPatient } = useAllCurrentPatients();
+  const [showPreviousCard, setShowPreviousCard] = useState<boolean>(true);
+  const [showCurrCard, setShowCurrCard] = useState<boolean>(true);
 
   useEffect(() => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED] = {
-      'Order id:': orderDetails?.id,
-      'Order amount': grossCharges!,
-      'Sample Collection Date': orderDetails?.diagnosticDate,
-      'Order status': orderDetails?.orderStatus,
-    };
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED, eventAttributes);
+    DiagnosticOrderSummaryViewed(grossCharges, orderDetails?.id, orderDetails?.orderStatus);
   }, []);
 
-  const getCircleObject = orderDetails?.diagnosticOrderLineItems?.filter(
-    (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
-  );
+  const getCircleObject =
+    (!!filterOrderLineItem &&
+      filterOrderLineItem?.filter((items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE)) ||
+    [];
 
-  const getAllObject = orderDetails?.diagnosticOrderLineItems?.filter(
-    (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
-  );
+  const getAllObject =
+    (!!filterOrderLineItem &&
+      filterOrderLineItem?.filter((items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL)) ||
+    [];
 
-  const getAllObjectForNull = orderDetails?.diagnosticOrderLineItems?.filter(
-    (items) => items?.groupPlan == null
-  );
+  const getAllObjectForNull =
+    (!!filterOrderLineItem && filterOrderLineItem?.filter((items) => items?.groupPlan == null)) ||
+    [];
 
-  const getDiscountObject = orderDetails?.diagnosticOrderLineItems?.filter(
-    (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
-  );
+  const getDiscountObject =
+    (!!filterOrderLineItem &&
+      filterOrderLineItem?.filter(
+        (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+      )) ||
+    [];
 
   let newCircleArray: LineItemPricing[] = [];
   let newAllArray: LineItemPricing[] = [];
@@ -126,8 +137,6 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
         ? item?.packageMrp! - item?.pricingObj?.[0].price!
         : item?.pricingObj?.[0].mrp! - item?.pricingObj?.[0].price!
     ) || [];
-
-  //gross charges considering packageMrp (how to check for previous orders)
 
   let newArr: any[] = [];
   newCircleArray?.map((item) =>
@@ -184,7 +193,16 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       ? totalCartSaving + totalDiscountSaving
       : 0;
 
-  const orderLineItems = orderDetails!.diagnosticOrderLineItems || [];
+  const getModifiedLineItems = filterOrderLineItem?.filter((item) => item?.editOrderID != null);
+  const getPreviousLineItems = filterOrderLineItem?.filter((item) => item?.editOrderID == null);
+
+  const previousTotal = getPreviousLineItems
+    ?.map((item: any) => Number(item?.price))
+    ?.reduce((preVal: number, curVal: number) => preVal + curVal, 0);
+
+  const modifyTotal = getModifiedLineItems
+    ?.map((item: any) => Number(item?.price))
+    ?.reduce((preVal: number, curVal: number) => preVal + curVal, 0);
 
   const renderOrderId = () => {
     const bookedOn = moment(orderDetails?.createdDate)?.format('Do MMM') || null;
@@ -216,9 +234,8 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       getUTCDateTime != null
         ? moment(getUTCDateTime).format('hh:mm a')
         : getSlotStartTime(orderDetails?.slotTimings);
-
     return (
-      <View style={styles.testSlotContainer}>
+      <View style={[styles.testSlotContainer]}>
         {(!!bookedForTime || !!bookedForDate) && (
           <View>
             <Text style={styles.headingText}>Appointment Time</Text>
@@ -234,7 +251,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           {!!orderDetails?.totalPrice ? (
             <Text style={[styles.slotText, { textAlign: 'right' }]}>
               {string.common.Rs}
-              {convertNumberToDecimal(orderDetails?.totalPrice)}
+              {Number(orderDetails?.totalPrice).toFixed(2)}
             </Text>
           ) : null}
         </View>
@@ -255,15 +272,20 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       <View style={styles.orderSummaryView}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Text style={styles.itemHeading}> ITEM NAME</Text>
-          <Text style={styles.itemHeading}> MRP VALUE</Text>
+          <Text style={styles.itemHeading}> PRICE</Text>
         </View>
-        {orderLineItems?.map((item) => {
+        {filterOrderLineItem?.map((item) => {
           return (
             <View style={styles.commonTax}>
               <View style={{ width: '65%' }}>
-                <Text style={styles.commonText}>
-                  {!!item?.itemName ? item?.itemName : item?.diagnostics?.itemName}
-                </Text>
+                <View style={{ flexDirection: 'row' }}>
+                  <Text style={styles.commonText}>
+                    {!!item?.itemName ? item?.itemName : item?.diagnostics?.itemName}
+                  </Text>
+                  {!!item?.editOrderID ? (
+                    <View style={{ marginLeft: 10 }}>{renderNewTag()}</View>
+                  ) : null}
+                </View>
                 {!!item?.itemObj?.inclusions && (
                   <Text style={styles.inclusionsText}>
                     Inclusions : {item?.itemObj?.inclusions?.length}
@@ -273,7 +295,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
               <View style={{ flex: 1, alignItems: 'flex-end' }}>
                 <Text style={styles.commonText}>
                   {string.common.Rs}
-                  {convertNumberToDecimal(g(item, 'price') || null)}
+                  {Number(item?.price)?.toFixed(2) || null}
                 </Text>
               </View>
             </View>
@@ -299,9 +321,127 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     );
   };
 
-  const renderPrices = (title: string, price: string | number, customStyle?: boolean) => {
+  const renderOrderBreakdownCard = (data: any, title: string) => {
+    const remainingItems = data?.length - 1;
+    const firstItem = data?.[0]?.itemName;
+    const openPreviousView = title === string.diagnostics.previousCharges && showPreviousCard;
+    const openCurrentView = title === string.diagnostics.currentCharges && showCurrCard;
     return (
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
+      <View>
+        {renderHeading(title)}
+        <View
+          style={[
+            styles.orderSummaryView,
+            { paddingBottom: openPreviousView || openCurrentView ? 16 : 0 },
+          ]}
+        >
+          <TouchableOpacity
+            style={[styles.previousItemInnerContainer]}
+            onPress={() =>
+              title === string.diagnostics.previousCharges
+                ? setShowPreviousCard(!showPreviousCard)
+                : setShowCurrCard(!showCurrCard)
+            }
+          >
+            <Text style={styles.previousItemHeading}>
+              {nameFormater(firstItem?.slice(0, isSmallDevice ? 27 : 30), 'title')}{' '}
+              {remainingItems > 0 && `+ ${remainingItems} more`}
+            </Text>
+            {(title === string.diagnostics.previousCharges && !showPreviousCard) ||
+            (title === string.diagnostics.currentCharges && !showCurrCard) ? (
+              <Text style={styles.closedViewTotal}>
+                {string.common.Rs}
+                {title === string.diagnostics.previousCharges
+                  ? Number(previousTotal! + orderDetails?.collectionCharges!).toFixed(2)
+                  : Number(modifyTotal! + 0.0).toFixed(2)}
+              </Text>
+            ) : null}
+            <View>
+              {title === string.diagnostics.previousCharges ? (
+                showPreviousCard ? (
+                  <Up style={styles.arrowIconStyle} />
+                ) : (
+                  <Down style={styles.arrowIconStyle} />
+                )
+              ) : showCurrCard ? (
+                <Up style={styles.arrowIconStyle} />
+              ) : (
+                <Down style={styles.arrowIconStyle} />
+              )}
+            </View>
+          </TouchableOpacity>
+
+          {openPreviousView || openCurrentView ? (
+            <>
+              <View style={[styles.rowSpaceBetweenStyle, { marginBottom: 0 }]}>
+                <Text style={styles.itemHeading}> ITEM NAME</Text>
+                <Text style={styles.itemHeading}> PRICE</Text>
+              </View>
+              {data?.map(
+                (
+                  item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems
+                ) => {
+                  return (
+                    <View style={styles.commonTax}>
+                      <View style={{ width: '65%' }}>
+                        <Text style={styles.commonText}>
+                          {nameFormater(
+                            !!item?.itemName ? item?.itemName! : item?.diagnostics?.itemName!,
+                            'title'
+                          )}
+                        </Text>
+                        {!!item?.itemObj?.inclusions && (
+                          <Text style={styles.inclusionsText}>
+                            Inclusions : {item?.itemObj?.inclusions?.length}
+                          </Text>
+                        )}
+                      </View>
+                      <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                        <Text style={[styles.commonText, { lineHeight: 20 }]}>
+                          {string.common.Rs}
+                          {Number(item?.price)?.toFixed(2) || null}
+                        </Text>
+                      </View>
+                    </View>
+                  );
+                }
+              )}
+              <Spearator style={{ marginTop: 12, marginBottom: 12 }} />
+              {renderPrices(
+                'Subtotal',
+                title === string.diagnostics.previousCharges ? previousTotal! : modifyTotal!,
+                false
+              )}
+              {renderPrices(
+                'Collection and hygiene charges',
+                title === string.diagnostics.previousCharges
+                  ? orderDetails?.collectionCharges!
+                  : 0.0,
+                false
+              )}
+              {renderPrices(
+                'Total',
+                title === string.diagnostics.previousCharges
+                  ? Number(previousTotal! + orderDetails?.collectionCharges!)
+                  : Number(modifyTotal! + 0.0),
+                false,
+                true
+              )}
+            </>
+          ) : null}
+        </View>
+      </View>
+    );
+  };
+
+  const renderPrices = (
+    title: string,
+    price: string | number,
+    isDiscount: boolean,
+    customStyle?: boolean
+  ) => {
+    return (
+      <View style={styles.pricesContainer}>
         <View style={{ width: '65%' }}>
           <Text
             style={[
@@ -335,8 +475,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
               },
             ]}
           >
+            {isDiscount && price > 0 ? '- ' : null}
             {string.common.Rs}
-            {convertNumberToDecimal(price)}
+            {Number(price).toFixed(2)}
           </Text>
         </View>
       </View>
@@ -348,13 +489,13 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       <View>
         {renderHeading('Total Charges')}
         <View style={styles.orderSummaryView}>
-          {renderPrices('Subtotal', grossCharges)}
-          {renderPrices('Circle Discount', totalCircleSaving)}
-          {renderPrices('Cart Savings', totalCartSaving)}
-          {renderPrices('Coupon Discount', totalDiscountSaving)}
-          {renderPrices('Home collection Charges', HomeCollectionCharges)}
+          {renderPrices('Total MRP', grossCharges, false)}
+          {renderPrices('Circle Discount', totalCircleSaving, true)}
+          {renderPrices('Cart Savings', totalCartSaving, true)}
+          {renderPrices('Coupon Discount', totalDiscountSaving, true)}
+          {renderPrices('Collection and hygiene charges', HomeCollectionCharges, false)}
           <Spearator style={{ marginTop: 6, marginBottom: 6 }} />
-          {renderPrices('Total', orderDetails?.totalPrice, true)}
+          {renderPrices('Total', orderDetails?.totalPrice, false, true)}
         </View>
       </View>
     );
@@ -372,24 +513,67 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       refundDetails?.[0]?.status === REFUND_STATUSES.SUCCESS &&
       'Amount Refunded';
 
+    const isOrderModified = orderDetails?.diagnosticOrderLineItems?.find(
+      (item) => !!item?.editOrderID && item?.editOrderID
+    );
+    const refundAmountToShow = !!isOrderModified
+      ? orderDetails?.totalPrice
+      : refundDetails?.[0]?.amount;
+
     return (
       <View>
         {renderHeading('Payment Mode')}
         <View style={styles.orderSummaryView}>
-          {renderPrices(txtToShow, orderDetails?.totalPrice)}
-          {!!refundText && renderPrices(refundText, refundDetails?.[0]?.amount)}
+          {renderPrices(txtToShow, orderDetails?.totalPrice, false)}
+          {!!refundText && renderPrices(refundText, refundAmountToShow, false)}
         </View>
       </View>
+    );
+  };
+
+  const renderNewTag = () => {
+    return (
+      <View style={styles.newItemView}>
+        <Text style={styles.newText}>NEW</Text>
+      </View>
+    );
+  };
+  const renderInvoiceDownload = () => {
+    return (
+      <TouchableOpacity
+        style={styles.downloadInvoice}
+        onPress={() => props.onPressDownloadInvoice()}
+      >
+        <Text style={styles.yellowText}>DOWNLOAD INVOICE</Text>
+        <DownloadOrange style={styles.downloadOrange} />
+      </TouchableOpacity>
     );
   };
 
   return (
     <ScrollView style={{ flex: 1 }}>
       <View style={{ margin: 16 }}>
+        {(DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(orderDetails?.orderStatus) ||
+          DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(orderDetails?.orderStatus)) &&
+        orderDetails?.invoiceURL
+          ? renderInvoiceDownload()
+          : null}
         {renderOrderId()}
         {renderSlotView()}
-        {renderHeading(`Tests for ${currentPatient?.firstName}`)}
+        {renderHeading(
+          `Tests for ${salutation != '' && salutation}${orderDetails?.patientObj?.firstName! ||
+            currentPatient?.firstName}`
+        )}
         {renderItemsCard()}
+        {!!getModifiedLineItems &&
+        getModifiedLineItems?.length > 0 &&
+        !!getPreviousLineItems &&
+        getPreviousLineItems?.length > 0
+          ? renderOrderBreakdownCard(getPreviousLineItems, string.diagnostics.previousCharges)
+          : null}
+        {!!getModifiedLineItems && getModifiedLineItems?.length > 0
+          ? renderOrderBreakdownCard(getModifiedLineItems, string.diagnostics.currentCharges)
+          : null}
         {renderPricesCard()}
         {orderDetails?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED && !isPrepaid
           ? null
@@ -411,12 +595,14 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     marginTop: height * 0.04, //0.22
   },
+  downloadOrange: { width: 14, height: 14, marginHorizontal: 10 },
   hideText: {
     ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13.5 : 16),
     color: '#02475b',
     textAlign: 'right',
     marginLeft: isSmallDevice ? 16 : 20,
   },
+  downloadInvoice: { flexDirection: 'row', alignItems: 'center', marginVertical: 10 },
   orderName: {
     opacity: 0.6,
     paddingRight: 10,
@@ -541,5 +727,51 @@ const styles = StyleSheet.create({
   viewReport: { width: '40%', marginBottom: 5, alignSelf: 'flex-start', marginTop: 10 },
   orderId: { ...theme.viewStyles.text('M', 13, colors.SHERPA_BLUE, 1, 18) },
   bookedOn: { ...theme.viewStyles.text('R', 10, colors.SHERPA_BLUE, 0.5, 14) },
-  testSlotContainer: { justifyContent: 'space-between', flexDirection: 'row', marginTop: '6%' },
+  testSlotContainer: {
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    marginTop: 15,
+  },
+  newItemView: {
+    backgroundColor: '#4CAF50',
+    height: 18,
+    width: 40,
+    borderRadius: 2,
+    borderColor: '#4CAF50',
+    justifyContent: 'center',
+  },
+  newText: {
+    ...theme.viewStyles.text('SB', 10, 'white'),
+    textAlign: 'center',
+  },
+  yellowText: {
+    ...theme.viewStyles.text('SB', 14, colors.APP_YELLOW),
+    textAlign: 'center',
+  },
+  previousItemInnerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+    // height: 30,
+    alignItems: 'center',
+  },
+  previousItemHeading: {
+    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13 : 14),
+    color: colors.SHERPA_BLUE,
+    lineHeight: 22,
+    width: '74%',
+    marginRight: 5,
+  },
+  arrowIconStyle: { height: 30, width: 30, resizeMode: 'contain' },
+  rowSpaceBetweenStyle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 5,
+  },
+  pricesContainer: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+  closedViewTotal: {
+    ...theme.fonts.IBMPlexSansBold(isSmallDevice ? 13 : 14),
+    color: colors.SHERPA_BLUE,
+    lineHeight: 22,
+  },
 });

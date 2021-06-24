@@ -32,7 +32,7 @@ export interface Props
 type Consult = GetPatientAllAppointmentsForHelp_getPatientAllAppointments_appointments;
 
 export const NeedHelpConsultOrder: React.FC<Props> = ({ navigation }) => {
-  const pageTitle = navigation.getParam('pageTitle') || string.pharmacy.toUpperCase();
+  const pageTitle = navigation.getParam('pageTitle') || string.consult.toUpperCase();
   const queryIdLevel1 = navigation.getParam('queryIdLevel1') || NaN;
   const email = navigation.getParam('email') || '';
   const queries = navigation.getParam('queries');

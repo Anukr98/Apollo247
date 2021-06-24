@@ -21,6 +21,7 @@ import {
   timeTo12HrFormat,
   g,
   postWebEngageEvent,
+  getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -133,7 +134,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
   const [availableInMin, setavailableInMin] = useState<number>(0);
   const [NextAvailableSlot, setNextAvailableSlot] = useState<string>('');
   const [checkingAvailability, setCheckingAvailability] = useState<boolean>(false);
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
 
   useEffect(() => {
     if (date !== props.date) {
@@ -146,6 +147,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
     if (NextAvailableSlot && timeArray) {
       for (const i in timeArray) {
         if (timeArray[i].time.length > 0) {
+          props.setshowSpinner?.(false);
           if (timeArray[i].time.includes(NextAvailableSlot)) {
             setselectedtiming(timeArray[i].label);
             props.setselectedTimeSlot(NextAvailableSlot);
@@ -158,10 +160,14 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
   }, [NextAvailableSlot, timeArray]);
 
   const setTimeArrayData = async (availableSlots: string[], date: Date) => {
+    if (availableSlots?.length === 0) props.setshowSpinner?.(false);
     setselectedtiming(timeArray[0].label);
-
     const array = await divideSlots(availableSlots, date);
-    if (array !== timeArray) settimeArray(array);
+    if (array !== timeArray) {
+      settimeArray(array);
+    } else {
+      props.setshowSpinner?.(false);
+    }
   };
 
   const fetchSlots = (selectedDate: Date = date) => {
@@ -188,11 +194,11 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
                   data.getDoctorAvailableSlots &&
                   data.getDoctorAvailableSlots.availableSlots
                 ) {
-                  props.setshowSpinner(false);
                   setTimeArrayData(data.getDoctorAvailableSlots.availableSlots, selectedDate);
                 }
               } catch (e) {
                 CommonBugFender('ConsultOnline_fetchSlots_try', e);
+                props.setshowSpinner?.(false);
               }
             })
             .catch((e) => {
@@ -206,6 +212,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
       })
       .catch((e) => {
         CommonBugFender('ConsultOnline_getNetStatus', e);
+        props.setshowSpinner?.(false);
       });
   };
 
@@ -223,7 +230,6 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
       getNextAvailableSlots(client, props.doctor ? [props.doctor.id] : [], todayDate)
         .then(({ data }: any) => {
           try {
-            props.setshowSpinner && props.setshowSpinner(false);
             if (data[0] && data[0]!.availableSlot && availableInMin === 0) {
               const nextSlot = data[0]!.availableSlot;
               let timeDiff: Number = 0;
@@ -245,6 +251,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
             }
           } catch (e) {
             CommonBugFender('ConsultOnline_checkAvailabilitySlot_try', e);
+            props.setshowSpinner?.(false);
           } finally {
             setCheckingAvailability(false);
           }
@@ -280,6 +287,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
       ),
       'Patient Gender': g(currentPatient, 'gender'),
       'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
     };
 
     if (type == 'now') {

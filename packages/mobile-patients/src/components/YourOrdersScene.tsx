@@ -42,6 +42,7 @@ import {
   View,
   TouchableOpacity,
   Text,
+  BackHandler,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -56,7 +57,6 @@ const styles = StyleSheet.create({
     elevation: 0,
   },
   helpTextStyle: { ...theme.viewStyles.text('B', 13, '#FC9916', 1, 24) },
-  customHelpContainer: { alignItems: 'flex-end', marginRight: 16, marginTop: 10 },
 });
 
 type AppSection = { buyAgainSection: true };
@@ -75,7 +75,13 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
 
   useEffect(() => {
     fetchOrders();
+    BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', onPressHardwareBack);
+    };
   }, []);
+
+  const onPressHardwareBack = () => props.navigation.goBack();
 
   const fetchOrders = async () => {
     try {
@@ -290,9 +296,6 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
             onPressLeftIcon={() => props.navigation.goBack()}
             rightComponent={renderHeaderRightComponent()}
           />
-        )}
-        {props?.showHeader == false && (
-          <View style={styles.customHelpContainer}>{renderHeaderRightComponent()}</View>
         )}
         {renderError()}
         {renderOrders()}

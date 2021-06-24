@@ -21,7 +21,6 @@ import {
   SearchIcon,
   FamilyDoctorIcon,
   RetryButtonIcon,
-  CircleLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
@@ -72,6 +71,7 @@ import {
   setWebEngageScreenNames,
   getDoctorShareMessage,
   postDoctorShareWEGEvents,
+  getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -109,7 +109,6 @@ import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEven
 import { getValuesArray } from '@aph/mobile-patients/src/utils/commonUtils';
 import _ from 'lodash';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { Switch } from '@aph/mobile-patients/src/components/ui/Switch';
 import { CirclePlanAddedToCart } from '@aph/mobile-patients/src/components/ui/CirclePlanAddedToCart';
 import {
   getPatientAddressList,
@@ -286,7 +285,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [filterMode, setfilterMode] = useState<ConsultMode>(ConsultMode.BOTH);
   const [searchQuery, setSearchQuery] = useState({});
 
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const [showLocations, setshowLocations] = useState<boolean>(false);
   const [sortValue, setSortValue] = useState<string>('');
@@ -1134,6 +1133,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       'Doctor Speciality': doctorDetails?.specialtydisplayName,
       Rank: doctorDetails?.rowId,
       Is_TopDoc: !!isTopDoc ? 'Yes' : 'No',
+      User_Type: getUserType(allCurrentPatients),
     };
 
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {
@@ -1219,6 +1219,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         numberOfLines={numberOfLines}
         availableModes={rowData.consultMode}
         callSaveSearch={callSaveSearch}
+<<<<<<< HEAD
         onPressRequest={(arg: boolean) => {
           setRequestDoctorSelected(rowData?.displayName);
           setRequestDoctorSelectedDetails(rowData);
@@ -1237,6 +1238,15 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               callSaveSearch: callSaveSearch,
             });
           }
+=======
+        onPress={(id: string, onlineConsult: boolean) => {
+          postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List');
+          props.navigation.navigate(AppRoutes.DoctorDetails, {
+            doctorId: rowData.id,
+            callSaveSearch: callSaveSearch,
+            consultModeSelected: onlineConsult ? ConsultMode.ONLINE : ConsultMode.PHYSICAL,
+          });
+>>>>>>> c2fd4e5bb2a9ffe21f9e9999138552b8662f7320
         }}
         onPressShare={(doctorData) => onClickDoctorShare(doctorData, index + 1)}
         onPressConsultNowOrBookAppointment={(type) => {
@@ -1636,13 +1646,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           buttonStyle={buttonStyle}
           buttonTextStyle={buttonTextStyle}
           onPressShare={(doctorData) => onClickDoctorShare(doctorData, index + 1)}
-          onPress={() => {
+          onPress={(id: string, onlineConsult: boolean) => {
             postDoctorClickWEGEvent(platinumDoctor, 'List', true);
             postPlatinumDoctorWEGEvents(platinumDoctor, WebEngageEventName.DOH_Clicked);
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: platinumDoctor?.id,
               callSaveSearch: callSaveSearch,
               platinumDoctor: true,
+              consultModeSelected: onlineConsult ? ConsultMode.ONLINE : ConsultMode.PHYSICAL,
             });
           }}
           onPressConsultNowOrBookAppointment={(type) => {
@@ -2064,24 +2075,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       'Customer ID': g(currentPatient, 'id'),
     };
     postWebEngageEvent(WebEngageEventName.VC_CIRCLE_FILTER, eventAttributes);
-  };
-
-  const renderViewCareSwitch = () => {
-    return (
-      <View style={styles.rowContainer}>
-        <Text style={styles.careHeadingText}>View</Text>
-        <CircleLogo style={styles.careLogo} />
-        <Text style={[styles.careHeadingText, { marginLeft: 0 }]}>Doctors</Text>
-        <Switch
-          onChange={(value) => {
-            setCareDoctorsSwitch(value);
-            setFilterActionTaken(true);
-            filterCircleWebEngage();
-          }}
-          value={careDoctorsSwitch}
-        />
-      </View>
-    );
   };
 
   return (

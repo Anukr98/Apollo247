@@ -108,6 +108,7 @@ export interface FeedbackPopupProps {
   info: FeedbackInfoCardProps;
   isVisible: boolean;
   containerStyle?: ViewStyle;
+  patientId?: string;
   onComplete?: (ratingStatus: RatingStatus, ratingOption: string) => void;
 }
 
@@ -209,7 +210,7 @@ export const FeedbackPopup: React.FC<FeedbackPopupProps> = (props) => {
     const variables: addPatientFeedbackVariables = {
       patientFeedbackInput: {
         feedbackType: props.type,
-        patientId: g(currentPatient, 'id')!,
+        patientId: !!props.patientId ? props.patientId! : g(currentPatient, 'id')!,
         rating: ratingStatus,
         transactionId: props.transactionId,
         reason: ratingOption,

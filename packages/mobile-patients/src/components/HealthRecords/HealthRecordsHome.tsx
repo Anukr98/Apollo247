@@ -460,6 +460,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [heightArrayValue, setHeightArrayValue] = useState<HEIGHT_ARRAY | string>(HEIGHT_ARRAY.CM);
   const [bloodGroup, setBloodGroup] = useState<BloodGroupArray>();
   const [overlaySpinner, setOverlaySpinner] = useState(false);
+  const [searchQuery, setSearchQuery] = useState({});
   const isHeightAvailable =
     currentPatient?.patientMedicalHistory?.height &&
     currentPatient?.patientMedicalHistory?.height !== 'No Idea' &&
@@ -873,7 +874,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
     const renderProfileNameView = () => {
       if (pageLoading) {
-        return renderHealthRecordShimmer(35);
+        return renderHealthRecordShimmer();
       } else {
         return (
           <View style={styles.profileNameViewStyle}>
@@ -1142,17 +1143,14 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const renderHealthCategoriesView = () => {
     return (
       <View style={{ marginTop: 54, marginHorizontal: 20, marginBottom: 25 }}>
-        {pageLoading ? (
-          renderHealthRecordShimmer(20)
-        ) : (
-          <Text style={{ ...theme.viewStyles.text('B', 18, theme.colors.LIGHT_BLUE, 1, 21) }}>
-            {'Health Categories'}
-          </Text>
-        )}
-
+        <Text style={{ ...theme.viewStyles.text('B', 18, theme.colors.LIGHT_BLUE, 1, 21) }}>
+          {'Health Categories'}
+        </Text>
         <View style={styles.listItemCardStyle}>
-          {renderListItemView('Doctor Consultations', 1)}
-          {renderListItemView('Test Reports', 2)}
+          {pageLoading
+            ? renderHealthRecordShimmer()
+            : renderListItemView('Doctor Consultations', 1)}
+          {pageLoading ? renderHealthRecordShimmer() : renderListItemView('Test Reports', 2)}
           {renderListItemView('Hospitalization', 3)}
           {renderListItemView('Health Conditions', 4)}
         </View>
@@ -1575,6 +1573,12 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       }
       setSearchLoading(true);
       const search = _.debounce(onSearchHealthRecords, 500);
+      setSearchQuery((prevSearch: any) => {
+        if (prevSearch.cancel) {
+          prevSearch.cancel();
+        }
+        return search;
+      });
       search(value);
     }
   };
@@ -1745,7 +1749,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           onPressBack: onBackArrowPressed,
         });
       case MedicalRecordType.TEST_REPORT:
-        return props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+        return props.navigation.navigate(AppRoutes.TestReportViewScreen, {
           healthrecordId: healthrecordId,
           healthRecordType: MedicalRecordType.TEST_REPORT,
           labResults: true,

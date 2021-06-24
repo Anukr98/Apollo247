@@ -31,6 +31,7 @@ import {
   navigateToScreenWithEmptyStack,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface TestListingProps
   extends NavigationScreenProps<{
@@ -54,6 +55,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const widgetName = props.navigation.getParam('widgetName');
   const cityId = props.navigation.getParam('cityId');
   const title = dataFromHomePage?.diagnosticWidgetTitle;
+  const widgetType = dataFromHomePage?.diagnosticWidgetType;
   const client = useApolloClient();
 
   const [widgetsData, setWidgetsData] = useState([] as any);
@@ -74,6 +76,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         }
         deepLinkWidgetName = pageName?.join(' ');
         fetchWidgets(widgetName!);
+      } else if (!!widgetName) {
+        fetchWidgets(widgetName);
       } else if (!!title) {
         fetchWidgets(title);
       } else {
@@ -86,8 +90,14 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   }, [movedFrom]);
 
   const fetchWidgets = async (title: string) => {
-    const createTitle = title?.replace(/ /g, '-')?.toLowerCase();
-    const widgetName = movedFrom == AppRoutes.Tests ? `home-${createTitle}` : `${createTitle}`;
+    const createTitle = title
+      ?.trim()
+      ?.replace(/ /g, '-')
+      ?.toLowerCase();
+    let widgetName = movedFrom == AppRoutes.Tests ? `home-${createTitle}` : `${createTitle}`;
+    if (widgetType == 'Category' || widgetType == 'Category_Scroll') {
+      widgetName = createTitle.toLowerCase();
+    }
     try {
       const result: any = await getDiagnosticListingWidget('diagnostic-list', widgetName);
       if (result?.data?.success && result?.data?.data?.diagnosticWidgetData?.length > 0) {
@@ -111,7 +121,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         sourceHeaders,
       },
       variables: {
-        cityID: Number(cityId) || 9,
+        cityID: Number(cityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
         itemIDs: listOfId,
       },
       fetchPolicy: 'no-cache',
@@ -122,7 +132,12 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     const itemIds = widgetsData?.diagnosticWidgetData?.map((item: any) => Number(item?.itemId));
 
     const res = Promise.all(
-      itemIds?.map((item: any) => fetchPricesForCityId(Number(cityId) || 9, item))
+      itemIds?.map((item: any) =>
+        fetchPricesForCityId(
+          Number(cityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
+          item
+        )
+      )
     );
 
     try {
@@ -199,13 +214,24 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             : nameFormater(title, 'title'),
         onPress: () => {},
       });
+      if (widgetType == 'Category' || widgetType == 'Category_Scroll') {
+        breadcrumb.push({
+          title: !!widgetName ? nameFormater(widgetName, 'default') : '',
+          onPress: () => {},
+        });
+      }
       setTestListingBreadCrumbs && setTestListingBreadCrumbs(breadcrumb);
     }
   }, [movedFrom]);
 
   const renderHeader = () => {
+    const heading =
+      widgetType == 'Category' || widgetType == 'Category_Scroll' ? widgetName : title;
     return (
-      <TestListingHeader navigation={props.navigation} headerText={nameFormater(title, 'upper')} />
+      <TestListingHeader
+        navigation={props.navigation}
+        headerText={nameFormater(heading, 'upper')}
+      />
     );
   };
 
@@ -257,7 +283,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                 isVertical={true}
                 columns={1}
                 navigation={props.navigation}
-                source={'Listing'}
+                source={'Listing page'}
                 sourceScreen={AppRoutes.TestListing}
               />
             ) : (
@@ -268,7 +294,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                 isVertical={true}
                 columns={2}
                 navigation={props.navigation}
-                source={'Listing'}
+                source={'Listing page'}
                 sourceScreen={AppRoutes.TestListing}
               />
             )}

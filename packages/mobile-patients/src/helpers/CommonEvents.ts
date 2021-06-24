@@ -8,7 +8,6 @@ import {
   getUserType,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import moment from 'moment';
-import { ConsultMode } from '../graphql/types/globalTypes';
 import { getPatientPastConsultedDoctors_getPatientPastConsultedDoctors } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultedDoctors';
 
 export const userLocationConsultWEBEngage = (
@@ -43,7 +42,8 @@ export const userLocationConsultWEBEngage = (
 export const truecallerWEBEngage = (
   currentPatient: any,
   action: 'login' | 'sdk error' | 'login error',
-  errorAttributes?: any
+  errorAttributes?: any,
+  allCurrentPatients?: any
 ) => {
   if (currentPatient) {
     const eventAttributes: WebEngageEvents[WebEngageEventName.USER_LOGGED_IN_WITH_TRUECALLER] = {
@@ -56,7 +56,7 @@ export const truecallerWEBEngage = (
       'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
-      User_Type: getUserType(currentPatient),
+      User_Type: allCurrentPatients ? getUserType(allCurrentPatients) : '',
     };
     if (action === 'login') {
       postWebEngageEvent(WebEngageEventName.USER_LOGGED_IN_WITH_TRUECALLER, eventAttributes);
@@ -72,7 +72,8 @@ export const truecallerWEBEngage = (
 
 export const myConsultedDoctorsClickedWEBEngage = (
   currentPatient: any,
-  doctor: getPatientPastConsultedDoctors_getPatientPastConsultedDoctors
+  doctor: getPatientPastConsultedDoctors_getPatientPastConsultedDoctors,
+  allCurrentPatients: any
 ) => {
   const eventAttributes: WebEngageEvents[WebEngageEventName.MY_CONSULTED_DOCTORS_CLICKED] = {
     'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
@@ -82,7 +83,7 @@ export const myConsultedDoctorsClickedWEBEngage = (
     'Patient Gender': g(currentPatient, 'gender'),
     'Mobile Number': g(currentPatient, 'mobileNumber'),
     'Customer ID': g(currentPatient, 'id'),
-    User_Type: getUserType(currentPatient),
+    User_Type: getUserType(allCurrentPatients),
     'Doctor Name': doctor?.fullName || '',
     'Doctor Id': doctor?.id,
     'Doctor Speciality': doctor?.specialty?.name,

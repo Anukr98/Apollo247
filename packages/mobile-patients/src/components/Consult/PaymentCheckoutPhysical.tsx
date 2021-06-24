@@ -40,6 +40,12 @@ import {
   DoctorType,
   PLAN,
   PAYMENT_METHODS,
+  one_apollo_store_code,
+  PaymentStatus,
+  OrderCreate,
+  OrderVerticals,
+  PAYMENT_MODE,
+  OrderInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   calculateCircleDoctorPricing,
@@ -57,7 +63,6 @@ import {
   setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 const { width } = Dimensions.get('window');
 import { useApolloClient } from 'react-apollo-hooks';
@@ -69,11 +74,17 @@ import {
   saveSearchSpeciality,
   whatsAppUpdateAPICall,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { bookAppointment } from '@aph/mobile-patients/src/graphql/types/bookAppointment';
+import {
+  bookAppointment,
+  bookAppointmentVariables,
+} from '@aph/mobile-patients/src/graphql/types/bookAppointment';
 import {
   BOOK_APPOINTMENT,
   MAKE_APPOINTMENT_PAYMENT,
   GET_APPOINTMENT_DATA,
+  BOOK_APPOINTMENT_WITH_SUBSCRIPTION,
+  CREATE_ORDER,
+  CREATE_INTERNAL_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
@@ -90,7 +101,18 @@ import {
   getAppointmentData,
   getAppointmentDataVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import {
+  createOrderInternal,
+  createOrderInternalVariables,
+} from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
+import {
+  createOrder,
+  createOrderVariables,
+} from '@aph/mobile-patients/src/graphql/types/createOrder';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { saveConsultationLocation } from '@aph/mobile-patients/src/helpers/clientCalls';
+
 interface PaymentCheckoutPhysicalProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
   tabs: { title: string }[];
@@ -137,7 +159,10 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   const scrollviewRef = useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [gender, setGender] = useState<string>(currentPatient?.gender);
-  const { apisToCall, homeScreenParamsOnPop } = useAppCommonData();
+  const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
+  const storeCode =
+    Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
+  const { apisToCall, homeScreenParamsOnPop, locationDetails } = useAppCommonData();
   const [patientListYPos, setPatientListYPos] = useState<number>(0);
   const [patientProfiles, setPatientProfiles] = useState<any>([]);
 
@@ -169,7 +194,14 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           couponDiscountFees +
           Number(circlePlanSelected?.currentSellingPrice)
       : amount;
-
+  const notSubscriberUserForCareDoctor =
+    isCircleDoctorOnSelectedConsultMode && !circleSubscriptionId && !circlePlanSelected;
+  const consultAmounttoPay =
+    circlePlanSelected && isCircleDoctorOnSelectedConsultMode
+      ? isOnlineConsult
+        ? onlineConsultSlashedPrice - couponDiscountFees
+        : physicalConsultSlashedPrice - couponDiscountFees
+      : amount;
   let finalAppointmentInput = appointmentInput;
   finalAppointmentInput['couponCode'] = coupon ? coupon : null;
   finalAppointmentInput['discountedAmount'] = doctorDiscountedFees;
@@ -191,6 +223,80 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   const circleDiscount =
     (circleSubscriptionId || circlePlanSelected) && discountedPrice ? discountedPrice : 0;
 
+  const bookAppointment = () => {
+    const appointmentInput: bookAppointmentVariables = {
+      bookAppointment: finalAppointmentInput,
+    };
+    return client.mutate<bookAppointment, bookAppointmentVariables>({
+      mutation: BOOK_APPOINTMENT,
+      variables: appointmentInput,
+      fetchPolicy: 'no-cache',
+    });
+  };
+
+  const bookAppointmentwithSubscription = () => {
+    const appointmentSubscriptionInput = {
+      bookAppointment: finalAppointmentInput,
+      userSubscription: {
+        mobile_number: currentPatient?.mobileNumber,
+        plan_id: planId,
+        sub_plan_id: circlePlanSelected?.subPlanId,
+        storeCode,
+        FirstName: currentPatient?.firstName,
+        LastName: currentPatient?.lastName,
+        payment_reference: {
+          amount_paid: Number(circlePlanSelected?.currentSellingPrice),
+          payment_status: PaymentStatus.PENDING,
+          purchase_via_HC: false,
+          HC_used: 0,
+        },
+        transaction_date_time: new Date().toISOString(),
+      },
+    };
+    return client.mutate({
+      mutation: BOOK_APPOINTMENT_WITH_SUBSCRIPTION,
+      variables: appointmentSubscriptionInput,
+      fetchPolicy: 'no-cache',
+    });
+  };
+
+  const createOrderInternal = (orderId: string, subscriptionId?: string) => {
+    const orders: OrderVerticals = {
+      consult: [{ order_id: orderId, amount: consultAmounttoPay, patient_id: currentPatient?.id }],
+    };
+    if (subscriptionId) {
+      orders['subscription'] = [
+        {
+          order_id: subscriptionId,
+          amount: Number(circlePlanSelected?.currentSellingPrice),
+          patient_id: currentPatient?.id,
+        },
+      ];
+    }
+    const orderInput: OrderCreate = {
+      orders: orders,
+      total_amount: amountToPay,
+      customer_id: currentPatient?.primaryPatientId || currentPatient?.id,
+    };
+    return client.mutate<createOrderInternal, createOrderInternalVariables>({
+      mutation: CREATE_INTERNAL_ORDER,
+      variables: { order: orderInput },
+    });
+  };
+
+  const createJusPayOrder = (paymentId: string) => {
+    const orderInput: OrderInput = {
+      payment_order_id: paymentId,
+      payment_mode: PAYMENT_MODE.COD,
+      is_mobile_sdk: true,
+      return_url: AppConfig.Configuration.returnUrl,
+    };
+    return client.mutate<createOrder, createOrderVariables>({
+      mutation: CREATE_ORDER,
+      variables: { order_input: orderInput },
+      fetchPolicy: 'no-cache',
+    });
+  };
   useEffect(() => {
     setPatientProfiles(moveSelectedToTop());
   }, []);
@@ -500,66 +606,61 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       AppRoutes.PaymentCheckoutPhysical,
       'ConsultOverlay onSubmitBookAppointment clicked'
     );
-
     setLoading!(true);
-    client
-      .mutate<bookAppointment>({
-        mutation: BOOK_APPOINTMENT,
-        variables: {
-          bookAppointment: finalAppointmentInput,
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((data) => {
-        const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
-        if (consultedWithDoctorBefore) {
-          storeAppointmentId(g(apptmt, 'id')!);
+    try {
+      const response =
+        !circleSubscriptionId && circlePlanSelected && isCircleDoctorOnSelectedConsultMode
+          ? await bookAppointmentwithSubscription()
+          : await bookAppointment();
+      const apptmt = g(response, 'data', 'bookAppointment', 'appointment');
+      const subscriptionId = g(response, 'data', 'CreateUserSubscription', 'response', '_id');
+      consultedWithDoctorBefore && storeAppointmentId(g(apptmt, 'id')!);
+      try {
+        if (callSaveSearch !== 'true') {
+          saveSearchDoctor(client, doctor?.id || '', patientId);
+          saveSearchSpeciality(client, doctor?.specialty?.id, patientId);
         }
-        // If amount is zero don't redirect to PG
-
-        try {
-          if (callSaveSearch !== 'true') {
-            saveSearchDoctor(client, doctor?.id || '', patientId);
-
-            saveSearchSpeciality(client, doctor?.specialty?.id, patientId);
-          }
-        } catch (error) {}
+      } catch (error) {}
+      const data = await createOrderInternal(apptmt?.id!, subscriptionId);
+      if (data?.data?.createOrderInternal?.success) {
+        const res = await createJusPayOrder(data?.data?.createOrderInternal?.payment_order_id!);
         makePayment(
-          g(apptmt, 'paymentOrderId')!,
+          apptmt?.id!,
           Number(amountToPay),
           g(apptmt, 'appointmentDateTime'),
           g(apptmt, 'displayId')!
         );
-      })
-      .catch((error) => {
-        CommonBugFender('ConsultOverlay_onSubmitBookAppointment', error);
-        setLoading!(false);
-        let message = '';
-        try {
-          message = error?.message?.split(':')?.[1]?.trim();
-        } catch (error) {
-          CommonBugFender('ConsultOverlay_onSubmitBookAppointment_try', error);
-        }
-        if (message == 'APPOINTMENT_EXIST_ERROR') {
-          renderErrorPopup(
-            `Oops ! The selected slot is unavailable. Please choose a different one`
-          );
-        } else if (message === 'BOOKING_LIMIT_EXCEEDED') {
-          renderErrorPopup(
-            `Sorry! You have cancelled 3 appointments with this doctor in past 7 days, please try later or choose another doctor.`
-          );
-        } else if (
-          message === 'OUT_OF_CONSULT_HOURS' ||
-          message === 'DOCTOR_SLOT_BLOCKED' ||
-          message === 'APPOINTMENT_BOOK_DATE_ERROR'
-        ) {
-          renderErrorPopup(
-            `Slot you are trying to book is no longer available. Please try a different slot.`
-          );
-        } else {
-          renderErrorPopup(`Something went wrong.${message ? ` Error Code: ${message}.` : ''}`);
-        }
-      });
+      }
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
+  const handleError = (error: any) => {
+    CommonBugFender('ConsultOverlay_onSubmitBookAppointment', error);
+    setLoading!(false);
+    let message = '';
+    message = error?.message?.split(':')?.[1]?.trim();
+    switch (message) {
+      case 'APPOINTMENT_EXIST_ERROR':
+        renderErrorPopup(`Oops ! The selected slot is unavailable. Please choose a different one`);
+        break;
+      case 'BOOKING_LIMIT_EXCEEDED':
+        renderErrorPopup(
+          `Sorry! You have cancelled 3 appointments with this doctor in past 7 days, please try later or choose another doctor.`
+        );
+        break;
+      case 'OUT_OF_CONSULT_HOURS':
+      case 'DOCTOR_SLOT_BLOCKED':
+      case 'APPOINTMENT_BOOK_DATE_ERROR':
+        renderErrorPopup(
+          `Slot you are trying to book is no longer available. Please try a different slot.`
+        );
+        break;
+      default:
+        renderErrorPopup(`Something went wrong.${message ? ` Error Code: ${message}.` : ''}`);
+        break;
+    }
   };
 
   const makePayment = (
@@ -574,39 +675,27 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         variables: {
           paymentInput: {
             amountPaid: amountPaid,
-            paymentRefId: '',
             paymentStatus: 'SUCCESS',
             paymentDateTime: paymentDateTime,
             responseCode: coupon,
             responseMessage: 'Physical Mobile Api Call',
-            bankTxnId: '',
             orderId: id,
-            paymentMode: PAYMENT_METHODS.COD,
           },
         },
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
-        let eventAttributes = getConsultationBookedEventAttributes(
-          paymentDateTime,
-          g(data, 'makeAppointmentPayment', 'appointment', 'id')!
-        );
+        let eventAttributes = getConsultationBookedEventAttributes(paymentDateTime, id);
         eventAttributes['Display ID'] = displayID;
-        eventAttributes['User_Type'] = getUserType(currentPatient);
+        eventAttributes['User_Type'] = getUserType(allCurrentPatients);
         postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
         postAppsFlyerEvent(
           AppsFlyerEventName.CONSULTATION_BOOKED,
-          getConsultationBookedAppsFlyerEventAttributes(
-            g(data, 'makeAppointmentPayment', 'appointment', 'id')!,
-            displayID
-          )
+          getConsultationBookedAppsFlyerEventAttributes(id, displayID)
         );
         setLoading!(false);
         if (!currentPatient?.isConsulted) getPatientApiCall();
-        handleOrderSuccess(
-          `${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`,
-          g(data, 'makeAppointmentPayment', 'appointment', 'appointment', 'id')!
-        );
+        handleOrderSuccess(`${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`, id);
       })
       .catch((e) => {
         setLoading!(false);
@@ -644,6 +733,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
                   skipAutoQuestions: doctor?.skipAutoQuestions,
                 };
                 homeScreenParamsOnPop.current = params;
+                locationDetails && saveConsultationLocation(client, appointmentId, locationDetails);
                 navigateToHome(props.navigation, params);
               }
             } catch (error) {}
@@ -671,6 +761,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       displayId: displayId,
       'coupon applied': coupon ? true : false,
       'Circle discount': circleDiscount,
+      User_Type: getUserType(allCurrentPatients),
     };
     return eventAttributes;
   };
@@ -714,7 +805,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       af_currency: 'INR',
       'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
       'Circle discount': circleDiscount,
-      User_Type: getUserType(currentPatient),
+      User_Type: getUserType(allCurrentPatients),
     };
     return eventAttributes;
   };
@@ -792,7 +883,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         doctorClinics?.length > 0 && doctor?.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics?.[0].facility?.city}`
           : '',
-      User_Type: getUserType(currentPatient),
+      User_Type: getUserType(allCurrentPatients),
     };
     postWebEngageEvent(WebEngageEventName.PAY_BUTTON_CLICKED, eventAttributes);
     postFirebaseEvent(FirebaseEventName.PAY_BUTTON_CLICKED, eventAttributes);
@@ -802,15 +893,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     <View style={theme.viewStyles.container}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-        {notificationAlert && (
-          <NotificationPermissionAlert
-            onPressOutside={() => setNotificationAlert(false)}
-            onButtonPress={() => {
-              setNotificationAlert(false);
-              Linking.openSettings();
-            }}
-          />
-        )}
         {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
         <ScrollView ref={scrollviewRef}>
           <View style={styles.doctorCard}>

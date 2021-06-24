@@ -6,6 +6,9 @@ import com.BV.LinearGradient.LinearGradientPackage;
 import com.apollopatient.appsignature.RNAppSignatureHelperPackage;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.christopherdro.htmltopdf.RNHTMLtoPDFPackage;
+import com.horcrux.svg.SvgPackage;
+import com.appsflyer.reactnative.RNAppsFlyerPackage;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.soloader.SoLoader;
@@ -65,6 +68,7 @@ public class MainApplication extends Application implements ReactApplication {
     public void onCreate() {
         super.onCreate();
 
+        SoLoader.init(this, /* native exopackage */ false);
         initAppComponents();
     }
 
@@ -78,11 +82,12 @@ public class MainApplication extends Application implements ReactApplication {
                         WebEngage.get().setRegistrationID(token);
                     }
                 });
-                
-                SoLoader.init(this, /* native exopackage */ false);
 
+
+                //Staging -- in~~c2ab3529
+                //Production -- in~~c2ab3533
                 WebEngageConfig webEngageConfig = new WebEngageConfig.Builder()
-                        .setWebEngageKey("in~~c2ab3529")
+                        .setWebEngageKey("in~~c2ab3533")
                         .setDebugMode(false) // only in development mode
                         .build();
 

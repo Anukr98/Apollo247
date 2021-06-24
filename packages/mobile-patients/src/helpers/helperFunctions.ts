@@ -1,5 +1,6 @@
-import { LocationData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import DeviceInfo from 'react-native-device-info';
+import {
+  LocationData,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   getPlaceInfoByLatLng,
@@ -10,6 +11,7 @@ import {
   MedicineOrderBilledItem,
   availabilityApi247,
   validateConsultCoupon,
+  getDiagnosticDoctorPrescriptionResults,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -21,16 +23,27 @@ import {
   DIAGNOSTIC_ORDER_STATUS,
   REFUND_STATUSES,
   MedicalRecordType,
+  MEDICINE_TIMINGS,
+  MEDICINE_CONSUMPTION_DURATION,
+  TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from 'react-native-geolocation-service';
 import NetInfo from '@react-native-community/netinfo';
 import moment from 'moment';
 import AsyncStorage from '@react-native-community/async-storage';
-import { Alert, Dimensions, Platform, Linking, NativeModules } from 'react-native';
+import {
+  Alert,
+  Dimensions,
+  Platform,
+  Linking,
+  NativeModules,
+  PermissionsAndroid,
+  ToastAndroid,
+} from 'react-native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import Permissions from 'react-native-permissions';
-import { DiagnosticsCartItem } from '../components/DiagnosticsCartProvider';
+import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription } from '../graphql/types/getCaseSheet';
 import { apiRoutes } from './apiRoutes';
 import {
@@ -47,14 +60,7 @@ import {
 import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import ApolloClient from 'apollo-client';
 import { saveSearch, saveSearchVariables } from '@aph/mobile-patients/src/graphql/types/saveSearch';
-import {
-  searchDiagnosticsByCityID,
-  searchDiagnosticsByCityIDVariables,
-} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
-import {
-  SAVE_SEARCH,
-  SEARCH_DIAGNOSTICS_BY_CITY_ID,
-} from '@aph/mobile-patients/src/graphql/profiles';
+import { SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -91,6 +97,10 @@ import { differenceInYears, parse } from 'date-fns';
 import stripHtml from 'string-strip-html';
 import isLessThan from 'semver/functions/lt';
 import coerce from 'semver/functions/coerce';
+import RNFetchBlob from 'rn-fetch-blob';
+import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
+import { HEALTH_CREDITS } from '../utils/AsyncStorageKey';
+import { getPatientByMobileNumber_getPatientByMobileNumber_patients } from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
 
 const width = Dimensions.get('window').width;
 
@@ -307,18 +317,12 @@ export const isPastAppointment = (
 ) => {
   const case_sheet = followUpChatDaysCaseSheet(caseSheet);
   const caseSheetChatDays = g(case_sheet, '0' as any, 'followUpAfterInDays');
-  const followUpAfterInDays =
-    caseSheetChatDays || caseSheetChatDays === '0'
-      ? caseSheetChatDays === '0'
-        ? 0
-        : Number(caseSheetChatDays) - 1
-      : 6;
+  const followUpAfterInDays = caseSheetChatDays ? Number(caseSheetChatDays) : 7;
   return (
     item?.status === STATUS.CANCELLED ||
-    !moment(new Date(item?.appointmentDateTime))
+    moment(new Date(item?.appointmentDateTime))
       .add(followUpAfterInDays, 'days')
-      .startOf('day')
-      .isSameOrAfter(moment(new Date()).startOf('day'))
+      .isSameOrBefore(moment(new Date()))
   );
 };
 
@@ -948,7 +952,7 @@ export const mhdMY = (
 };
 
 export const isEmptyObject = (object: Object) => {
-  return Object.keys(object).length === 0;
+  return Object.keys(object)?.length === 0 && object?.constructor === Object;
 };
 
 export const findAddrComponents = (
@@ -1026,7 +1030,7 @@ const getlocationData = (
     (error) => {
       reject('Unable to get location.');
     },
-    { enableHighAccuracy: true, timeout: 10000 }
+    { accuracy: { android: 'balanced', ios: 'best' }, enableHighAccuracy: true, timeout: 10000 }
   );
 };
 
@@ -1141,6 +1145,9 @@ export const statusBarHeight = () =>
 
 export const isValidSearch = (value: string) => /^([^ ]+[ ]{0,1}[^ ]*)*$/.test(value);
 
+export const isValidImageUrl = (value: string) =>
+  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/.test(value);
+
 export const isValidText = (value: string) =>
   /^([a-zA-Z0-9]+[ ]{0,1}[a-zA-Z0-9\-.\\/?,&]*)*$/.test(value);
 
@@ -1165,15 +1172,13 @@ export const extractUrlFromString = (text: string): string | undefined => {
   return (text.match(urlRegex) || [])[0];
 };
 
-export const getUserType = (currentPatient: any) => {
-  const user: string =
-    currentPatient?.isConsulted === undefined
-      ? 'undefined'
-      : currentPatient?.isConsulted
-      ? 'Repeat'
-      : 'New';
-
-  return user;
+export const getUserType = (allCurrentPatients: any) => {
+  const isConsulted = allCurrentPatients?.filter(
+    (patient: getPatientByMobileNumber_getPatientByMobileNumber_patients) =>
+      patient?.isConsulted === true
+  );
+  const userType: string = isConsulted?.length > 0 ? 'Repeat' : 'New';
+  return userType;
 };
 
 export const reOrderMedicines = async (
@@ -1275,60 +1280,54 @@ export const reOrderMedicines = async (
 export const addTestsToCart = async (
   testPrescription: getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[], // testsIncluded will not come from API
   apolloClient: ApolloClient<object>,
-  pincode: string
+  pincode?: string,
+  setLoading?: UIElementsContextProps['setLoading']
 ) => {
-  const searchQuery = (name: string, cityId: string) =>
-    apolloClient.query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
-      query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
-      context: {
-        headers: {
-          source: Platform.OS,
-          source_version: DeviceInfo.getVersion(),
-        },
-      },
-      variables: {
-        searchText: name,
-        cityID: 9, //will always check for hyderabad, so that items gets added to cart
-      },
-      fetchPolicy: 'no-cache',
-    });
   const detailQuery = async (itemId: string) =>
     await getPackageInclusions(apolloClient, [Number(itemId)]);
-
   try {
-    const items = testPrescription.filter((val) => val.itemname).map((item) => item.itemname);
-
-    const searchQueries = Promise.all(items.map((item) => searchQuery(item!, '9')));
-    const searchQueriesData = (await searchQueries)
-      .map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
-      // .filter((item, index) => g(item, 'itemName')! == items[index])
-      .filter((item) => !!item);
-    const detailQueries = Promise.all(
-      searchQueriesData.map((item) => detailQuery(`${item.itemId}`))
+    setLoading?.(true);
+    const items = testPrescription?.filter((val) => val?.itemname)?.map((item) => item?.itemname);
+    const formattedItemNames = items?.map((item) => item)?.join('|');
+    const searchQueries: any = await getDiagnosticDoctorPrescriptionResults(
+      formattedItemNames,
+      AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
     );
-    const detailQueriesData = (await detailQueries).map(
-      (item) => g(item, 'data', 'getInclusionsOfMultipleItems', 'inclusions', 'length') || 1 // updating testsIncluded
-    );
-    const finalArray: DiagnosticsCartItem[] = Array.from({
-      length: searchQueriesData.length,
-    }).map((_, index) => {
-      const s = searchQueriesData[index];
-      const testIncludedCount = detailQueriesData[index];
-      return {
-        id: `${s?.itemId}`,
-        name: s?.itemName,
-        price: s?.rate,
-        specialPrice: undefined,
-        mou: testIncludedCount,
-        thumbnail: '',
-        collectionMethod: s?.collectionType,
-        inclusions: s?.inclusions == null ? [Number(s?.itemId)] : s?.inclusions,
-      } as DiagnosticsCartItem;
-    });
 
-    return finalArray;
+    if (searchQueries?.data?.success) {
+      const searchResults = searchQueries?.data?.data;
+      const searchQueriesData = searchResults?.filter((item: any) => !!item);
+      const detailQueries = Promise.all(
+        searchQueriesData?.map((item: any) => detailQuery(`${item.itemId}`))
+      );
+      const detailQueriesData = (await detailQueries)?.map(
+        (item: any) => g(item, 'data', 'getInclusionsOfMultipleItems', 'inclusions', 'length') || 1 // updating testsIncluded
+      );
+      setLoading?.(false);
+      const finalArray: DiagnosticsCartItem[] = Array.from({
+        length: searchQueriesData?.length,
+      }).map((_, index) => {
+        const s = searchQueriesData?.[index];
+        const testIncludedCount = detailQueriesData?.[index];
+        return {
+          id: `${s?.diagnostic_item_id}`,
+          name: s?.diagnostic_item_name,
+          price: 0,
+          specialPrice: undefined,
+          mou: testIncludedCount,
+          thumbnail: '',
+          collectionMethod: TEST_COLLECTION_TYPE.HC,
+          inclusions: s?.inclusions == null ? [Number(s?.diagnostic_item_id)] : s?.inclusions,
+        } as DiagnosticsCartItem;
+      });
+      return finalArray;
+    } else {
+      setLoading?.(false);
+      return [];
+    }
   } catch (error) {
     CommonBugFender('helperFunctions_addTestsToCart', error);
+    setLoading?.(false);
     throw 'error';
   }
 };
@@ -1604,6 +1603,10 @@ export const postWebEngageIfNewSession = (
   }
 };
 
+export const removeObjectProperty = (object: any, property: string) => {
+  return _.omit(object, property);
+};
+
 export const postWEGNeedHelpEvent = (
   currentPatient: GetCurrentPatients_getCurrentPatients_patients,
   source: WebEngageEvents[WebEngageEventName.NEED_HELP]['Source']
@@ -1766,12 +1769,6 @@ export const UnInstallAppsFlyer = (newFirebaseToken: string) => {
   appsFlyer.updateServerUninstallToken(newFirebaseToken, (success) => {});
 };
 
-export const APPStateInActive = () => {
-  if (Platform.OS === 'ios') {
-    appsFlyer.trackAppLaunch();
-  }
-};
-
 export const APPStateActive = () => {
   if (onInstallConversionDataCanceller) {
     onInstallConversionDataCanceller();
@@ -1786,7 +1783,7 @@ export const APPStateActive = () => {
 export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Object) => {
   try {
     const logContent = `[AppsFlyer Event] ${eventName}`;
-    appsFlyer.trackEvent(
+    appsFlyer.logEvent(
       eventName,
       attributes,
       (res) => {},
@@ -1965,6 +1962,68 @@ export const getMaxQtyForMedicineItem = (qty?: number | string) => {
   return qty ? Number(qty) : AppConfig.Configuration.CART_ITEM_MAX_QUANTITY;
 };
 
+const getDaysCount = (type: MEDICINE_CONSUMPTION_DURATION | null) => {
+  return type == MEDICINE_CONSUMPTION_DURATION.MONTHS
+    ? 30
+    : type == MEDICINE_CONSUMPTION_DURATION.WEEKS
+    ? 7
+    : 1;
+};
+
+export const getPrescriptionItemQuantity = (
+  medicineUnit: MEDICINE_UNIT | null,
+  medicineTimings: (MEDICINE_TIMINGS | null)[] | null,
+  medicineDosage: string | null,
+  medicineCustomDosage: string | null /** E.g: (1-0-1/2-0.5), (1-0-2\3-3) etc.*/,
+  medicineConsumptionDurationInDays: string | null,
+  medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null,
+  mou: number // how many tablets per strip
+) => {
+  if (medicineUnit == MEDICINE_UNIT.TABLET || medicineUnit == MEDICINE_UNIT.CAPSULE) {
+    const medicineDosageMapping = medicineCustomDosage
+      ? medicineCustomDosage.split('-').map((item) => {
+          if (item.indexOf('/') > -1) {
+            const dosage = item.split('/').map((item) => Number(item));
+            return (dosage[0] || 1) / (dosage[1] || 1);
+          } else if (item.indexOf('\\') > -1) {
+            const dosage = item.split('\\').map((item) => Number(item));
+            return (dosage[0] || 1) / (dosage[1] || 1);
+          } else {
+            return Number(item);
+          }
+        })
+      : medicineDosage
+      ? Array.from({ length: 4 }).map(() => Number(medicineDosage))
+      : [1, 1, 1, 1];
+
+    const medicineTimingsPerDayCount =
+      (medicineTimings || []).reduce(
+        (currTotal, currItem) =>
+          currTotal +
+          (currItem == MEDICINE_TIMINGS.MORNING
+            ? medicineDosageMapping[0]
+            : currItem == MEDICINE_TIMINGS.NOON
+            ? medicineDosageMapping[1]
+            : currItem == MEDICINE_TIMINGS.EVENING
+            ? medicineDosageMapping[2]
+            : currItem == MEDICINE_TIMINGS.NIGHT
+            ? medicineDosageMapping[3]
+            : 1),
+        0
+      ) || 1;
+
+    const totalTabletsNeeded =
+      medicineTimingsPerDayCount *
+      Number(medicineConsumptionDurationInDays || '1') *
+      getDaysCount(medicineConsumptionDurationUnit);
+
+    return Math.ceil(totalTabletsNeeded / mou);
+  } else {
+    // 1 for other than tablet or capsule
+    return 1;
+  }
+};
+
 export const formatToCartItem = ({
   sku,
   name,
@@ -1978,6 +2037,7 @@ export const formatToCartItem = ({
   thumbnail,
   image,
   sell_online,
+  url_key,
 }: MedicineProduct): ShoppingCartItem => {
   return {
     id: sku,
@@ -1993,6 +2053,7 @@ export const formatToCartItem = ({
     productType: type_id,
     isInStock: is_in_stock == 1,
     unavailableOnline: sell_online == 0,
+    url_key,
   };
 };
 
@@ -2029,6 +2090,7 @@ export const addPharmaItemToCart = (
   const navigate = () => {
     navigation.push(AppRoutes.ProductDetailPage, {
       sku: cartItem.id,
+      urlKey: cartItem?.url_key,
       deliveryError: outOfStockMsg,
     });
   };
@@ -2093,6 +2155,7 @@ export const addPharmaItemToCart = (
       const availability = g(res, 'data', 'response', '0' as any, 'exist');
       if (availability) {
         addToCart();
+        onAddedSuccessfully?.();
       } else {
         navigate();
       }
@@ -2110,7 +2173,6 @@ export const addPharmaItemToCart = (
           'Cart Items': JSON.stringify(itemsInCart) || '',
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
-        onAddedSuccessfully?.();
       } catch (error) {}
     })
     .catch(() => {
@@ -2193,56 +2255,30 @@ export const overlyCallPermissions = (
         const microphoneYes = microphone === 'authorized';
         // Response is one of: 'authorized', 'denied', 'restricted', or 'undetermined'
         if (cameraNo && microphoneNo) {
-          RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
-            if (status) {
-              showPermissionPopUp(
-                string.callRelatedPermissions.allPermissions.replace('{0}', doctorName),
-                () => callPermissions(() => RNAppSignatureHelper.requestOverlayPermission())
-              );
-            } else {
-              showPermissionPopUp(
-                string.callRelatedPermissions.camAndMPPermission.replace('{0}', doctorName),
-                () => callPermissions()
-              );
-            }
-          });
+          // ----------- dont delete this commented  overlay permission block incase we decide to use again
+          // RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
+          //   if (status) {
+          //     showPermissionPopUp(
+          //       string.callRelatedPermissions.allPermissions.replace('{0}', doctorName),
+          //       () => callPermissions(() => RNAppSignatureHelper.requestOverlayPermission())
+          //     );
+          //   }
+          // });
+
+          showPermissionPopUp(
+            string.callRelatedPermissions.camAndMPPermission.replace('{0}', doctorName),
+            () => callPermissions()
+          );
         } else if (cameraYes && microphoneNo) {
-          RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
-            if (status) {
-              showPermissionPopUp(
-                string.callRelatedPermissions.mpAndOverlayPermission.replace('{0}', doctorName),
-                () => callPermissions(() => RNAppSignatureHelper.requestOverlayPermission())
-              );
-            } else {
-              showPermissionPopUp(
-                string.callRelatedPermissions.onlyMPPermission.replace('{0}', doctorName),
-                () => callPermissions()
-              );
-            }
-          });
+          showPermissionPopUp(
+            string.callRelatedPermissions.onlyMPPermission.replace('{0}', doctorName),
+            () => callPermissions()
+          );
         } else if (cameraNo && microphoneYes) {
-          RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
-            if (status) {
-              showPermissionPopUp(
-                string.callRelatedPermissions.camAndOverlayPermission.replace('{0}', doctorName),
-                () => callPermissions(() => RNAppSignatureHelper.requestOverlayPermission())
-              );
-            } else {
-              showPermissionPopUp(
-                string.callRelatedPermissions.onlyCameraPermission.replace('{0}', doctorName),
-                () => callPermissions()
-              );
-            }
-          });
-        } else if (cameraYes && microphoneYes) {
-          RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
-            if (status) {
-              showPermissionPopUp(
-                string.callRelatedPermissions.onlyOverlayPermission.replace('{0}', doctorName),
-                () => RNAppSignatureHelper.requestOverlayPermission()
-              );
-            }
-          });
+          showPermissionPopUp(
+            string.callRelatedPermissions.onlyCameraPermission.replace('{0}', doctorName),
+            () => callPermissions()
+          );
         }
       })
       .catch((e) => {});
@@ -2369,7 +2405,6 @@ export const filterHtmlContent = (content: string = '') => {
     .replace(/&gt;/g, '>')
     .replace(/&nbsp;/g, '</>')
     .replace(/\.t/g, '.')
-    .replace(/.rn/gi, '. ')
     .replace(/<\/>/gi, '');
 };
 export const isProductInStock = (product: MedicineProduct) => {
@@ -2599,26 +2634,14 @@ export const validateCoupon = async (
   message: string | undefined,
   pharmacyPincode: any,
   mobileNumber: string,
-  hdfcSubscriptionId: string,
-  circleSubscriptionId: string,
   setCoupon: ((coupon: PharmaCoupon | null) => void) | null,
   cartTotal: number,
   productDiscount: number,
   cartItems: ShoppingCartItem[],
-  hdfcStatus: string,
-  hdfcPlanId: string,
-  circleStatus: string,
-  circlePlanId: string,
-  setCouponProducts: ((items: CouponProducts[]) => void) | null
+  setCouponProducts: ((items: CouponProducts[]) => void) | null,
+  packageId: string[]
 ) => {
   CommonLogEvent(AppRoutes.ApplyCouponScene, 'Apply coupon');
-  let packageId: string[] = [];
-  if (hdfcSubscriptionId && hdfcStatus === 'active') {
-    packageId.push(`HDFC:${hdfcPlanId}`);
-  }
-  if (circleSubscriptionId && circleStatus === 'active') {
-    packageId.push(`APOLLO:${circlePlanId}`);
-  }
   const data = {
     mobile: mobileNumber,
     billAmount: (cartTotal - productDiscount).toFixed(2),
@@ -2663,11 +2686,190 @@ export const validateCoupon = async (
 export const setAsyncPharmaLocation = (address: any) => {
   if (address) {
     const saveAddress = {
-      pincode: address?.zipcode,
+      pincode: address?.zipcode || address?.pincode,
       id: address?.id,
       city: address?.city,
       state: address?.state,
     };
     AsyncStorage.setItem('PharmacyLocationPincode', JSON.stringify(saveAddress));
   }
+};
+
+export const getPatientNameById = (allCurrentPatients: any, patientId: string) => {
+  const patientSelected = allCurrentPatients?.find(
+    (patient: { id: string }) => patient?.id === patientId
+  );
+
+  return patientSelected ? `${patientSelected?.firstName} ${patientSelected?.lastName}` : '';
+};
+
+export const requestReadSmsPermission = async () => {
+  try {
+    const resuts = await PermissionsAndroid.requestMultiple([
+      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+      PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+    ]);
+    if (resuts) {
+      return resuts;
+    }
+  } catch (error) {
+    CommonBugFender('HelperFunction_requestReadSmsPermission_try', error);
+  }
+};
+
+export const storagePermissionsToDownload = (doRequest?: () => void) => {
+  permissionHandler(
+    'storage',
+    'Enable storage from settings for downloading the test report',
+    () => {
+      doRequest && doRequest();
+    }
+  );
+};
+
+export async function downloadDiagnosticReport(
+  setLoading: UIElementsContextProps['setLoading'],
+  pdfUrl: string,
+  appointmentDate: string,
+  patientName: string,
+  showToast: boolean,
+  downloadFileName?: string
+) {
+  setLoading?.(true);
+  let result = Platform.OS === 'android' && (await requestReadSmsPermission());
+  try {
+    if (
+      (result &&
+        Platform.OS == 'android' &&
+        result?.[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] ===
+          PermissionsAndroid.RESULTS.GRANTED &&
+        result?.[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] ===
+          PermissionsAndroid.RESULTS.GRANTED) ||
+      Platform.OS == 'ios'
+    ) {
+      const dirs = RNFetchBlob.fs.dirs;
+      const reportName = !!downloadFileName
+        ? downloadFileName
+        : `Apollo247_${appointmentDate}_${patientName}.pdf`;
+      const downloadPath =
+        Platform.OS === 'ios'
+          ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + reportName
+          : dirs.DownloadDir + '/' + reportName;
+
+      let msg = 'File is downloading..';
+      if (showToast && Platform.OS === 'android') {
+        ToastAndroid.show(msg, ToastAndroid.SHORT);
+      }
+      RNFetchBlob.config({
+        fileCache: true,
+        path: downloadPath,
+        addAndroidDownloads: {
+          title: reportName,
+          useDownloadManager: true,
+          notification: true,
+          path: downloadPath,
+          mime: mimeType(downloadPath),
+          description: 'File downloaded by download manager.',
+        },
+      })
+        .fetch('GET', pdfUrl, {})
+        .then((res) => {
+          setLoading?.(false);
+          Platform.OS === 'ios'
+            ? RNFetchBlob.ios.previewDocument(res.path())
+            : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+        })
+        .catch((err) => {
+          setLoading?.(false);
+          CommonBugFender('TestOrderDetails_ViewReport', err);
+          handleGraphQlError(err);
+          throw new Error('Something went wrong');
+        });
+    } else {
+      if (
+        result &&
+        Platform.OS == 'android' &&
+        result?.[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] !==
+          PermissionsAndroid.RESULTS.DENIED &&
+        result?.[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] !==
+          PermissionsAndroid.RESULTS.DENIED
+      ) {
+        storagePermissionsToDownload(() => {
+          downloadDiagnosticReport(setLoading, pdfUrl, appointmentDate, patientName, true);
+        });
+      }
+    }
+  } catch (error) {
+    setLoading?.(false);
+    CommonBugFender('YourOrderTests_downloadLabTest', error);
+    throw new Error('Something went wrong');
+  }
+}
+
+export const persistHealthCredits = (healthCredit: number) => {
+  var healthCreditObj = {
+    healthCredit: healthCredit,
+    age: new Date().getTime(),
+  };
+  AsyncStorage.setItem(HEALTH_CREDITS, JSON.stringify(healthCreditObj));
+};
+
+export const getHealthCredits = async () => {
+  try {
+    var healthCreditObj: any = await AsyncStorage.getItem(HEALTH_CREDITS);
+
+    if (healthCreditObj != null && healthCreditObj != '') {
+      var healthCredit = JSON.parse?.(healthCreditObj);
+
+      if (healthCredit !== null) {
+        var age = healthCredit.age;
+        var ageDate = moment(age);
+        var nowDate = moment(new Date());
+        var duration = moment.duration(nowDate.diff(ageDate)).asMinutes();
+
+        if (duration < 0 || duration > AppConfig.Configuration.Health_Credit_Expiration_Time) {
+          return null; //Expired
+        } else {
+          return healthCredit;
+        }
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  } catch (error) {
+    return null;
+  }
+};
+
+export const getPackageIds = (activeUserSubscriptions: any) => {
+  let packageIds: string[] = [];
+  activeUserSubscriptions &&
+    Object.keys(activeUserSubscriptions)?.forEach((subscription: string) => {
+      activeUserSubscriptions?.[subscription]?.forEach((item) => {
+        if (item?.status?.toLowerCase() === 'active')
+          packageIds.push(`${subscription?.toUpperCase()}:${item?.plan_id}`);
+      });
+    });
+  return packageIds;
+};
+
+export const isSatisfyingEmailRegex = (value: string) =>
+  /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+    value
+  );
+
+export const getDiagnosticCityLevelPaymentOptions = (cityId: string) => {
+  let remoteData = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_PAYMENT_OPTION;
+  const getConfigPaymentValue = remoteData?.find((item) => Number(item?.cityId) === Number(cityId));
+  const paymentValues = {
+    prepaid: !!getConfigPaymentValue
+      ? getConfigPaymentValue?.prepaid
+      : AppConfig.Configuration.Enable_Diagnostics_Prepaid,
+    cod: !!getConfigPaymentValue
+      ? getConfigPaymentValue.cod
+      : AppConfig.Configuration.Enable_Diagnostics_COD,
+  };
+  return paymentValues;
 };

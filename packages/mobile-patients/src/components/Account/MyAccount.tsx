@@ -68,7 +68,10 @@ import {
   StackActions,
 } from 'react-navigation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { SKIP_LOCATION_PROMPT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
+import {
+  SKIP_LOCATION_PROMPT,
+  HEALTH_CREDITS,
+} from '@aph/mobile-patients/src/utils/AsyncStorageKey';
 import { LOGIN_PROFILE } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
 
 const { width } = Dimensions.get('window');
@@ -151,17 +154,19 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   const { signOut, getPatientApiCall } = useAuth();
   const {
     setSavePatientDetails,
-    setAppointmentsPersonalized,
     setHdfcUserSubscriptions,
     setBannerData,
     setCircleSubscription,
     setPhrSession,
+    setCorporateSubscriptions,
   } = useAppCommonData();
   const { setIsDiagnosticCircleSubscription, clearDiagnoticCartInfo } = useDiagnosticsCart();
   const {
     setIsCircleSubscription,
     setCircleMembershipCharges,
     setCircleSubscriptionId,
+    setCorporateSubscription,
+    corporateSubscription,
     circleSubscriptionId,
     hdfcSubscriptionId,
     clearCartInfo,
@@ -288,21 +293,28 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       AsyncStorage.removeItem('deeplink');
       AsyncStorage.removeItem('deeplinkReferalCode');
       AsyncStorage.removeItem('isCircleMember');
+      AsyncStorage.removeItem('saveTokenDeviceApiCall');
       AsyncStorage.removeItem(LOGIN_PROFILE);
       AsyncStorage.removeItem('PharmacyLocationPincode');
       AsyncStorage.setItem(SKIP_LOCATION_PROMPT, 'false');
+      AsyncStorage.setItem(HEALTH_CREDITS, '');
       setSavePatientDetails && setSavePatientDetails('');
       setHdfcUserSubscriptions && setHdfcUserSubscriptions(null);
       setBannerData && setBannerData([]);
-      setAppointmentsPersonalized && setAppointmentsPersonalized([]);
       setIsCircleSubscription && setIsCircleSubscription(false);
       setCircleMembershipCharges && setCircleMembershipCharges(0);
       setCircleSubscription && setCircleSubscription(null);
+      setCorporateSubscriptions && setCorporateSubscriptions([]);
       signOut();
       setTagalysConfig(null);
       setCircleSubscriptionId && setCircleSubscriptionId('');
       setPhrSession?.('');
       AsyncStorage.removeItem('circlePlanSelected');
+      AsyncStorage.removeItem('isCorporateSubscribed');
+      AsyncStorage.removeItem('VaccinationCmsIdentifier');
+      AsyncStorage.removeItem('VaccinationSubscriptionId');
+      AsyncStorage.removeItem('hasAgreedVaccineTnC');
+      AsyncStorage.removeItem('circleSubscriptionId');
       clearCartInfo && clearCartInfo();
       clearDiagnoticCartInfo && clearDiagnoticCartInfo();
       setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
@@ -527,16 +539,14 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             fireProfileAccessedEvent('OneApollo Membership');
           }}
         />
-        {!!(hdfcSubscriptionId || circleSubscriptionId || isCircleExpired) && (
-          <ListCard
-            title={'My Memberships'}
-            leftIcon={<MyMembershipIcon style={{ height: 20, width: 26 }} />}
-            onPress={() => {
-              props.navigation.navigate(AppRoutes.MyMembership);
-              fireProfileAccessedEvent('My Memberships');
-            }}
-          />
-        )}
+        <ListCard
+          title={'My Memberships'}
+          leftIcon={<MyMembershipIcon style={{ height: 20, width: 26 }} />}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.MyMembership);
+            fireProfileAccessedEvent('My Memberships');
+          }}
+        />
         <ListCard
           title={'Need Help'}
           leftIcon={<NeedHelpIcon />}
