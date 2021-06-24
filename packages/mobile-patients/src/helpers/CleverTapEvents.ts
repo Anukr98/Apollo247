@@ -129,6 +129,7 @@ export enum CleverTapEventName {
   CONSULT_UPLOAD_PRESCRIPTION_ADDRESS_SELECTED = 'Consult Upload prescription - Address selected',
   CONSULT_SEARCH = 'Consult Search',
   CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION = 'Consult Proceed Clicked on Slot Selection',
+  CONSULT_PAYMENT_INITIATED = 'Consult Payment Initiated',
 
   //DOH events
   CONSULT_DOH_Viewed = 'Consult DOH viewed',
@@ -1329,6 +1330,11 @@ export interface CleverTapEvents {
     Amount: number;
     LOB: string;
     type?: string;
+  };
+  [CleverTapEventName.CONSULT_PAYMENT_INITIATED]: {
+    Amount: number;
+    LOB: string;
+    Paymentmode?: string;
   };
   [CleverTapEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED]: {
     position: number;

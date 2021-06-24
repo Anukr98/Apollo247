@@ -419,9 +419,16 @@ export function PaymentInitiated(grandTotal: number, LOB: string, type: string) 
     LOB: LOB,
     type: type,
   };
+  const consultEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PAYMENT_INITIATED] = {
+    Amount: grandTotal,
+    LOB: LOB,
+    Paymentmode: type,
+  };
   postWebEngageEvent(WebEngageEventName.PAYMENT_INITIATED, eventAttributes);
-  LOB === 'diagnostics' &&
+  LOB == 'diagnostics' &&
     postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PAYMENT_INITIATED, eventAttributes);
+  LOB == 'consult' &&
+    postCleverTapEvent(CleverTapEventName.CONSULT_PAYMENT_INITIATED, consultEventAttributes);
 }
 
 export function DiagnosticAddresssSelected(
