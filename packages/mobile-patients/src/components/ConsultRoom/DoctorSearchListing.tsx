@@ -1219,7 +1219,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         numberOfLines={numberOfLines}
         availableModes={rowData.consultMode}
         callSaveSearch={callSaveSearch}
-<<<<<<< HEAD
         onPressRequest={(arg: boolean) => {
           setRequestDoctorSelected(rowData?.displayName);
           setRequestDoctorSelectedDetails(rowData);
@@ -1238,15 +1237,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               callSaveSearch: callSaveSearch,
             });
           }
-=======
-        onPress={(id: string, onlineConsult: boolean) => {
-          postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List');
-          props.navigation.navigate(AppRoutes.DoctorDetails, {
-            doctorId: rowData.id,
-            callSaveSearch: callSaveSearch,
-            consultModeSelected: onlineConsult ? ConsultMode.ONLINE : ConsultMode.PHYSICAL,
-          });
->>>>>>> c2fd4e5bb2a9ffe21f9e9999138552b8662f7320
         }}
         onPressShare={(doctorData) => onClickDoctorShare(doctorData, index + 1)}
         onPressConsultNowOrBookAppointment={(type) => {

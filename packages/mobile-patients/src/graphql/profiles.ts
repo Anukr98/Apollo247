@@ -5105,7 +5105,6 @@ export const GET_VACCINATION_APPOINMENT_DETAILS = gql`
   }
 `;
 
-<<<<<<< HEAD
 export const MAKE_APPOINTMENT_BOOKING_REQUEST =gql`
 mutation appointmentBookingRequest(
   $bookAppointment: AppointmentBookingRequestInput!
@@ -5125,69 +5124,6 @@ mutation appointmentBookingRequest(
 }
 `;
 
-
-export const GET_PHLOBE_DETAILS = gql`
-  query getOrderPhleboDetailsBulk($diagnosticOrdersIds: [String]!) {
-    getOrderPhleboDetailsBulk(diagnosticOrdersIds: $diagnosticOrdersIds) {
-      orderPhleboDetailsBulk {
-        orderPhleboDetails {
-          diagnosticOrdersId
-          diagnosticPhlebotomists {
-=======
-export const CANCEL_VACCINATION_APPOINTMENT = gql`
-  mutation CancelAppointment($appointment_id: String, $display_id: Float) {
-    CancelAppointment(appointment_id: $appointment_id, display_id: $display_id) {
-      code
-      success
-      message
-      response {
-        id
-        status
-      }
-    }
-  }
-`;
-
-export const GET_ALL_VACCINATION_APPOINTMENTS = gql`
-  query GetAllAppointments {
-    GetAllAppointments {
-      code
-      success
-      message
-      response {
-        id
-        dose_number
-        resource_id
-        patient_info {
-          firstName
-          lastName
-          age
-          gender
-          uhid
-          relation
-        }
-        status
-        payment_type
-        resource_session_details {
-          session_name
-          start_date_time
-          vaccine_type
-          resource_detail {
->>>>>>> c2fd4e5bb2a9ffe21f9e9999138552b8662f7320
-            name
-            street_line1
-            street_line2
-            street_line3
-            city
-            state
-          }
-        }
-        display_id
-        payment_type
-      }
-    }
-  }
-`;
 
 export const DIAGNOSITC_EXOTEL_CALLING = gql`
   mutation diagnosticExotelCalling($orderId: ID!) {

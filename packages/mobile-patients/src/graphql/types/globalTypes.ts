@@ -1081,7 +1081,6 @@ export interface DiagnosticLineItem {
   groupPlan?: string | null;
   preTestingRequirement?: string | null;
   reportGenerationTime?: string | null;
-<<<<<<< HEAD
 }
 
 export interface DiagnosticOrderInput {
@@ -1112,8 +1111,6 @@ export interface DiagnosticOrderInput {
   totalPriceExcludingDiscounts?: number | null;
   userSubscriptionId?: string | null;
   subscriptionInclusionId?: string | null;
-=======
->>>>>>> c2fd4e5bb2a9ffe21f9e9999138552b8662f7320
 }
 
 export interface DiagnosticTestsOrdered {

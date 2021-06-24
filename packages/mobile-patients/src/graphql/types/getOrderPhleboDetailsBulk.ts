@@ -18,11 +18,8 @@ export interface getOrderPhleboDetailsBulk_getOrderPhleboDetailsBulk_orderPhlebo
   diagnosticOrdersId: string;
   diagnosticPhlebotomists: getOrderPhleboDetailsBulk_getOrderPhleboDetailsBulk_orderPhleboDetailsBulk_orderPhleboDetails_diagnosticPhlebotomists;
   phleboOTP: string | null;
-<<<<<<< HEAD
-=======
   phleboTrackLink: string | null;
   phleboRating: number | null;
->>>>>>> c2fd4e5bb2a9ffe21f9e9999138552b8662f7320
 }
 
 export interface getOrderPhleboDetailsBulk_getOrderPhleboDetailsBulk_orderPhleboDetailsBulk_phleboEta {
