@@ -196,39 +196,38 @@ export enum CleverTapEventName {
   USER_CHANGED_LOCATION = 'Change location',
 
   // Diagnostics Events
-  DIAGNOSTIC_LANDING_PAGE_VIEWED = 'D_Home page',
-  DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'D_Pin code entered',
-  DIAGNOSTIC_LANDING_ITEM_SEARCHED = 'D_Search query',
-  DIAGNOSTIC_ITEM_SEARCHED = 'D_Search query',
-  DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED = 'D_Widgets clicked',
-  DIAGNOSTIC_TEST_DESCRIPTION = 'D_Test page viewed',
-  DIAGNOSTIC_ADD_TO_CART = 'D_Add to cart',
-  DIAGNOSTIC_CART_VIEWED = 'D_cart page viewed',
+  DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
+  DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'Diagnostic pincode entered',
+  DIAGNOSTIC_SEARCH_CLICKED = 'Diagnostic search clicked',
+  DIAGNOSTIC_HOME_PAGE_WIDGET_CLICKED = 'Diagnostic home page widgets clicked',
+  DIAGNOSTIC_TEST_DESCRIPTION = 'Diagnostic test page viewed',
+  DIAGNOSTIC_ADD_TO_CART = 'Diagnostic add to cart',
+  DIAGNOSTIC_CART_VIEWED = 'Diagnostic cart page viewed',
   DIAGNOSTIC_MY_ORDERS = 'Diagnostics - My Orders Viewed',
-  DIAGNOSTIC_ORDER_SUMMARY_VIEWED = 'D_order summary',
-  DIAGNOSTIC_VIEW_REPORT_CLICKED = 'D_View Reports',
+  DIAGNOSTIC_ORDER_SUMMARY_VIEWED = 'Diagnostic order summary viewed',
+  DIAGNOSTIC_VIEW_REPORT_CLICKED = 'Diagnostic view reports',
 
-  DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE = 'D_Select Address',
-  DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE = 'D_Remove Test from Cart',
-  DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE = 'D_add item clicked',
+  DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE = 'Diagnostic address selected',
+  DIAGNOSTIC_ITEM_REMOVE_ON_CARTPAGE = 'Diagonstic cart item removed',
+  DIAGNOSTIC_ITEM_ADD_ON_CARTPAGE = 'Diagnostic add item clicked',
 
   DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE = 'Address Non Serviceable on Diagnostic Cart Page',
-  DIAGNOSTIC_AREA_SELECTED = 'D_Select Area',
-  DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'D_Select Slot',
-  DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'D_Click on Make payment',
-  PAYMENT_INITIATED = 'D_Payment Initiated',
-  DIAGNOSTIC_CHECKOUT_COMPLETED = 'D_Order successful',
-  DIAGNOSTIC_TRACK_ORDER_VIEWED = 'D_track Order viewed',
-  DIAGNOSTIC_ORDER_RESCHEDULE = 'D_Order rescheduled_FE',
-  DIAGNOSTIC_FEEDBACK_GIVEN = 'D_Order feedback',
-  DIAGNOSITC_HOME_PAGE_BANNER_CLICKED = 'D_Banner clicked',
-  DIAGNOSTIC_PAYMENT_PAGE_VIEWED = 'D_Payment page',
-  DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED = 'D_Phlebo feedback',
-  DIAGNOSTIC_PHLEBO_CALLING_CLICKED = 'D_Call phlebo',
-  DIAGNOSTIC_ORDER_STATUS = 'D_Order status',
-  DIAGNOSTIC_TRACK_PHLEBO_CLICKED = 'D_Track phlebo',
-  DIGNOSTIC_PAYMENT_ABORTED = 'D_Payment aborted',
-  DIAGNOSITC_MODIFY_CLICKED = 'Diagnostic modify clicked',
+  DIAGNOSTIC_AREA_SELECTED = 'Diagnostic area selected',
+  DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Diagnostic slot time selected',
+  DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic make payment clicked',
+  PAYMENT_INITIATED = 'Payment Initiated',
+  DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic payment initiated',
+  DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnositc checkout completed',
+  DIAGNOSTIC_TRACK_ORDER_VIEWED = 'Diagnostic track order viewed',
+  DIAGNOSTIC_ORDER_RESCHEDULE = 'Diagnostic order rescheduled',
+  DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
+  DIAGNOSITC_HOME_PAGE_BANNER_CLICKED = 'Diagnostic home page banner clicked',
+  DIAGNOSTIC_PAYMENT_PAGE_VIEWED = 'Diagnostic payment page viewed',
+  DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED = 'Diagnostic phlebo feedback submitted',
+  DIAGNOSTIC_PHLEBO_CALLING_CLICKED = 'Diagnostic phlebo calling clicked',
+  DIAGNOSTIC_TRACK_PHLEBO_CLICKED = 'Diagnostic track phlebo clicked',
+  DIGNOSTIC_PAYMENT_ABORTED = 'Diagnostic payment aborted',
+  DIAGNOSITC_MODIFY_CLICKED = 'Diagnositic modify order clicked',
   DIAGNOSTIC_MODIFY_ORDER = 'Diagnostic modify order',
 
   // Health Records
@@ -1184,8 +1183,7 @@ export interface CleverTapEvents {
   // ********** Diagnostic Events *******
 
   [CleverTapEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED]: DiagnosticLandingPage;
-  [CleverTapEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED]: ItemSearchedOnLanding;
-  [CleverTapEventName.DIAGNOSTIC_ITEM_SEARCHED]: ItemSearchedOnLanding;
+  [CleverTapEventName.DIAGNOSTIC_SEARCH_CLICKED]: ItemSearchedOnLanding;
   [CleverTapEventName.DIAGNOSTIC_MY_ORDERS]: {
     //comment
     'Patient UHID': string;
@@ -1327,6 +1325,11 @@ export interface CleverTapEvents {
     LOB: string;
     type?: string;
   };
+  [CleverTapEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
+    Amount: number;
+    LOB: string;
+    type?: string;
+  };
   [CleverTapEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED]: {
     position: number;
     itemId: number;
@@ -1370,16 +1373,6 @@ export interface CleverTapEvents {
     'Order id': string | number;
     'Phlebo Name': string;
   };
-  [CleverTapEventName.DIAGNOSTIC_ORDER_STATUS]: {
-    'Display id': string;
-    'Order id': string;
-    'Order status': string;
-    'Patient Name': string;
-    'Payment Mode': 'Cash' | 'Prepaid';
-    SlotTimeInUTC: string | Date;
-    'Total price': string | number;
-    UHID: string;
-  };
   [CleverTapEventName.DIAGNOSTIC_TRACK_PHLEBO_CLICKED]: {
     'Order id': string | number;
     UHID: string;
@@ -1389,6 +1382,11 @@ export interface CleverTapEvents {
   [CleverTapEventName.DIGNOSTIC_PAYMENT_ABORTED]: {
     'Order id': string;
     UHID: string;
+  };
+  [CleverTapEventName.DIAGNOSITC_MODIFY_CLICKED]: {
+    UHID: string;
+    'Order id': string;
+    'Order status': string;
   };
 
   // ********** ConsultEvents ********** \\
@@ -1578,23 +1576,6 @@ export interface CleverTapEvents {
     'Doctor Mobile Number': string;
   };
   // confirm the type of data for the below
-  [CleverTapEventName.CONSULT_SCHEDULE_FOR_LATER_CLICKED]: {
-    'Consult Mode': 'Online' | 'Physical';
-    specialisation: string;
-    'Doctor Experience': number;
-    'Consult Date Time': Date;
-    'Doctor ID': string;
-    'Doctor Name': string;
-    'Speciality ID': string;
-    'Hospital Name': string;
-    'Hospital City': string;
-    'Patient Name': string;
-    'Patient UHID': string;
-    Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
-    'Customer ID': string;
-  };
   [CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION]: {
     doctorName: string;
     specialisation: string;
