@@ -626,3 +626,8 @@ const handleEncodedURI = (encodedString: string) => {
     return encodedString.split('%20');
   }
 };
+
+const getParamData = (paramString: string) => {
+  const paramArray = paramString.split('&');
+  return paramArray;
+};

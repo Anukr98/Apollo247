@@ -1432,7 +1432,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             }
           } catch (error) {}
           if (route == 'TestDetails') {
-            DiagnosticBannerClick(slideIndex + 1, Number(itemId));
+            DiagnosticBannerClick(slideIndex + 1, Number(itemId), item?.bannerTitle);
             props.navigation.navigate(AppRoutes.TestDetails, {
               itemId: itemId,
               comingFrom: AppRoutes.Tests,
