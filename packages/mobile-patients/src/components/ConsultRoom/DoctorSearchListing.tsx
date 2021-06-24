@@ -120,7 +120,10 @@ import {
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { DoctorShareComponent } from '@aph/mobile-patients/src/components/ConsultRoom/Components/DoctorShareComponent';
 import { SKIP_LOCATION_PROMPT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
-import { userLocationConsultWEBEngage } from '@aph/mobile-patients/src/helpers/CommonEvents';
+import {
+  consultUserLocationCleverTapEvents,
+  userLocationConsultWEBEngage,
+} from '@aph/mobile-patients/src/helpers/CommonEvents';
 import {
   CleverTapEventName,
   CleverTapEvents,
@@ -682,10 +685,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const fireLocationPermissionEvent = (permissionType: string) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.LOCATION_PERMISSION] = {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.LOCATION_PERMISSION]
+      | CleverTapEvents[CleverTapEventName.CONSULT_LOCATION_PERMISSION] = {
       'Location permission': permissionType,
     };
     postWebEngageEvent(WebEngageEventName.LOCATION_PERMISSION, eventAttributes);
+    postCleverTapEvent(CleverTapEventName.CONSULT_LOCATION_PERMISSION, eventAttributes);
   };
 
   const fetchSpecialityFilterData = (
@@ -1598,6 +1604,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const locationWebEngageEvent = (location: any, type: 'Auto Detect' | 'Manual entry') => {
     if (fireLocationEvent.current) {
       userLocationConsultWEBEngage(currentPatient, location, 'Doctor list', type);
+      consultUserLocationCleverTapEvents(currentPatient, location, 'Doctor listing screen', type);
     }
     fireLocationEvent.current = false;
   };

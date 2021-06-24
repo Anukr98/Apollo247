@@ -103,7 +103,10 @@ import {
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { userLocationConsultWEBEngage } from '@aph/mobile-patients/src/helpers/CommonEvents';
+import {
+  consultUserLocationCleverTapEvents,
+  userLocationConsultWEBEngage,
+} from '@aph/mobile-patients/src/helpers/CommonEvents';
 import {
   getAppointmentInfo,
   getAppointmentInfoVariables,
@@ -247,6 +250,14 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         currentPatient,
         location,
         'Pay confirm',
+        type,
+        doctorDetails,
+        userChangedLocation.current
+      );
+      consultUserLocationCleverTapEvents(
+        currentPatient,
+        location,
+        'Payment confirmation screen',
         type,
         doctorDetails,
         userChangedLocation.current
