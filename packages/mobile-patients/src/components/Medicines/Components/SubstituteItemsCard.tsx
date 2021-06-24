@@ -7,6 +7,7 @@ import { updateMedicineOrderSubstitutionVariables } from '@aph/mobile-patients/s
 
 export interface SubstituteItemsCardProps {
   transactionId: number | null;
+  orderId: number | null;
   substituteMessage: string;
   substituteTime: number;
   updateOrderSubstitution: (params: updateMedicineOrderSubstitutionVariables) => void;
@@ -22,6 +23,7 @@ enum SUBSTITUTION_RESPONSE {
 export const SubstituteItemsCard: React.FC<SubstituteItemsCardProps> = (props) => {
   const {
     transactionId,
+    orderId,
     substituteMessage,
     substituteTime,
     updateOrderSubstitution,
@@ -51,7 +53,7 @@ export const SubstituteItemsCard: React.FC<SubstituteItemsCardProps> = (props) =
             onPress={() => {
               const params: updateMedicineOrderSubstitutionVariables = {
                 transactionId,
-                orderId: isSplitCart ? null : transactionId,
+                orderId: transactionId || isSplitCart ? null : orderId,
                 substitution: SUBSTITUTION_RESPONSE.OK,
               };
               updateOrderSubstitution(params);
@@ -68,7 +70,7 @@ export const SubstituteItemsCard: React.FC<SubstituteItemsCardProps> = (props) =
             onPress={() => {
               const params: updateMedicineOrderSubstitutionVariables = {
                 transactionId,
-                orderId: isSplitCart ? null : transactionId,
+                orderId: transactionId || isSplitCart ? null : orderId,
                 substitution: SUBSTITUTION_RESPONSE.NOT_OK,
               };
               updateOrderSubstitution(params);
