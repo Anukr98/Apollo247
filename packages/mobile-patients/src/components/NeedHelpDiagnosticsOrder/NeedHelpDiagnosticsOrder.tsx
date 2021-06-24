@@ -695,10 +695,13 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
       {renderHeader()}
       {renderBreadCrumb()}
       {renderHeading()}
-      {onPressIssue == 'order' ? <></> : onPressIssue == 'nonorder' ? <></> : renderFirstOrder()}
-      {/* {renderFirstOrder()} */}
-      {/* {renderSubHeading()} */}
-      {/* {renderReasons()} */}
+      {orders?.length > 0 ? renderFirstOrder() : <>
+            {orders?.length > 0 ? <Spearator /> : null}
+            <Text style={styles.subHeading}>
+              If your order transaction failed report issue in this section:
+            </Text>
+            {renderNotOrderRelated()}
+          </>}
       {renderEmailPopup()}
     </SafeAreaView>
   );
