@@ -285,18 +285,22 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   };
 
   const createJusPayOrder = (paymentId: string) => {
-    const orderInput: OrderInput = {
+    const orderInput = {
       payment_order_id: paymentId,
-      payment_mode: PAYMENT_MODE.COD,
+      health_credits_used: 0,
+      cash_to_collect: amountToPay,
+      prepaid_amount: 0,
+      store_code: storeCode,
       is_mobile_sdk: true,
-      return_url: AppConfig.Configuration.returnUrl,
+      return_url: AppConfig.Configuration.baseUrl,
     };
-    return client.mutate<createOrder, createOrderVariables>({
+    return client.mutate({
       mutation: CREATE_ORDER,
       variables: { order_input: orderInput },
       fetchPolicy: 'no-cache',
     });
   };
+
   useEffect(() => {
     setPatientProfiles(moveSelectedToTop());
   }, []);
@@ -624,12 +628,26 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       const data = await createOrderInternal(apptmt?.id!, subscriptionId);
       if (data?.data?.createOrderInternal?.success) {
         const res = await createJusPayOrder(data?.data?.createOrderInternal?.payment_order_id!);
-        makePayment(
-          apptmt?.id!,
-          Number(amountToPay),
-          g(apptmt, 'appointmentDateTime'),
-          g(apptmt, 'displayId')!
-        );
+        if (res?.data?.createOrderV2?.payment_status == 'TXN_SUCCESS') {
+          let eventAttributes = getConsultationBookedEventAttributes(
+            apptmt?.appointmentDateTime,
+            apptmt?.id!
+          );
+          eventAttributes['Display ID'] = apptmt?.displayId!;
+          eventAttributes['User_Type'] = getUserType(allCurrentPatients);
+          postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
+          postAppsFlyerEvent(
+            AppsFlyerEventName.CONSULTATION_BOOKED,
+            getConsultationBookedAppsFlyerEventAttributes(apptmt?.id!, apptmt?.displayId)
+          );
+          setLoading!(false);
+          if (!currentPatient?.isConsulted) getPatientApiCall();
+          handleOrderSuccess(`${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`, apptmt?.id!);
+        } else {
+          renderErrorPopup(string.common.tryAgainLater);
+        }
+      } else {
+        renderErrorPopup(string.common.tryAgainLater);
       }
     } catch (error) {
       handleError(error);

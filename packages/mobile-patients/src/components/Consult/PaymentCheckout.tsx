@@ -112,7 +112,11 @@ import {
   createOrderInternal,
   createOrderInternalVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
-import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import {
+  initiateSDK,
+  terminateSDK,
+  createHyperServiceObject,
+} from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import {
   one_apollo_store_code,
@@ -262,7 +266,11 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     try {
       const isInitiated: boolean = await isSDKInitialised();
       const merchantId = AppConfig.Configuration.merchantId;
-      !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id, merchantId);
+      isInitiated
+        ? (terminateSDK(),
+          setTimeout(() => createHyperServiceObject(), 1000),
+          setTimeout(() => initiateSDK(currentPatient?.id, currentPatient?.id, merchantId), 2000))
+        : initiateSDK(currentPatient?.id, currentPatient?.id, merchantId);
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
@@ -330,13 +338,16 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   };
 
   const createJusPayOrder = (paymentId: string) => {
-    const orderInput: OrderInput = {
+    const orderInput = {
       payment_order_id: paymentId,
-      payment_mode: PAYMENT_MODE.PREPAID,
+      health_credits_used: 0,
+      cash_to_collect: 0,
+      prepaid_amount: 0,
+      store_code: storeCode,
       is_mobile_sdk: true,
-      return_url: AppConfig.Configuration.returnUrl,
+      return_url: AppConfig.Configuration.baseUrl,
     };
-    return client.mutate<createOrder, createOrderVariables>({
+    return client.mutate({
       mutation: CREATE_ORDER,
       variables: { order_input: orderInput },
       fetchPolicy: 'no-cache',
@@ -823,12 +834,24 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       const data = await createOrderInternal(apptmt?.id!, subscriptionId);
       if (amountToPay == 0) {
         const res = await createJusPayOrder(data?.data?.createOrderInternal?.payment_order_id!);
-        makePayment(
-          apptmt?.id!,
-          Number(amountToPay),
-          apptmt?.appointmentDateTime,
-          `${apptmt?.displayId!}`
-        );
+        if (res?.data?.createOrderV2?.payment_status == 'TXN_SUCCESS') {
+          let eventAttributes = getConsultationBookedEventAttributes(
+            apptmt?.appointmentDateTime,
+            apptmt?.id!
+          );
+          eventAttributes['Display ID'] = `${apptmt?.displayId!}`;
+          eventAttributes['User_Type'] = getUserType(allCurrentPatients);
+          postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
+          postAppsFlyerEvent(
+            AppsFlyerEventName.CONSULTATION_BOOKED,
+            getConsultationBookedAppsFlyerEventAttributes(apptmt?.id!, `${apptmt?.displayId!}`)
+          );
+          setLoading!(false);
+          if (!currentPatient?.isConsulted) getPatientApiCall();
+          handleOrderSuccess(`${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`, apptmt?.id!);
+        } else {
+          renderErrorPopup(string.common.tryAgainLater);
+        }
       } else {
         if (data?.data?.createOrderInternal?.success) {
           setauthToken?.('');

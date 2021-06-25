@@ -97,7 +97,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     cartTotalCashback,
     pharmacyCircleAttributes,
   } = useShoppingCart();
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [status, setStatus] = useState<string>(props.navigation.getParam('status'));
   const [paymentRefId, setpaymentRefId] = useState<string>('');
   const [orderDateTime, setorderDateTime] = useState('');

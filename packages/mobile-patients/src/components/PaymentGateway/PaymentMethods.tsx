@@ -67,6 +67,7 @@ import { useGetPaymentMethods } from '@aph/mobile-patients/src/components/Paymen
 import {
   isSmallDevice,
   paymentModeVersionCheck,
+  goToConsultRoom,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PaymentStatus,
@@ -119,7 +120,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     fecthPaymentOptions();
     isPhonePeReady();
     isGooglePayReady();
-    FetchSavedCards();
+    // FetchSavedCards();
     return () => eventListener.remove();
   }, []);
 
@@ -145,10 +146,10 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       : (setAmount(props.navigation.getParam('amount')), setburnHc(0));
   };
 
-  const FetchSavedCards = async () => {
-    const token = await getClientToken(true);
-    token && fetchSavedCards(currentPatient?.id, token);
-  };
+  // const FetchSavedCards = async () => {
+  //   const token = await getClientToken(true);
+  //   token && fetchSavedCards(currentPatient?.id, token);
+  // };
 
   const handleEventListener = (resp: any) => {
     var data = JSON.parse(resp);
@@ -316,11 +317,11 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     });
   };
 
-  const getClientToken = async (backgroundCall?: boolean) => {
+  const getClientToken = async () => {
+    setisTxnProcessing(true);
     if (!!authToken) {
       return authToken;
     } else {
-      !backgroundCall && setisTxnProcessing(true);
       try {
         businessLine == 'diagnostics' && initiateOrderPayment();
         const response = await createJusPayOrder(false);
@@ -458,6 +459,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     props.navigation.navigate(AppRoutes.OtherBanks, {
       paymentId: paymentId,
       amount: amount,
+      burnHc: burnHc,
       banks: otherBanks,
       orderId: orderDetails?.orderId,
       businessLine: businessLine,
@@ -515,6 +517,10 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           orderDetails: orderDetails,
           checkoutEventAttributes: checkoutEventAttributes,
         });
+        break;
+      case 'subscription':
+        const params = orderDetails?.circleParams;
+        goToConsultRoom(props.navigation, params);
         break;
     }
   };

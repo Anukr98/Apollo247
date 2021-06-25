@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -18,10 +18,15 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { CREATE_USER_SUBSCRIPTION } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  CREATE_USER_SUBSCRIPTION,
+  CREATE_INTERNAL_ORDER,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   one_apollo_store_code,
   PaymentStatus,
+  OrderCreate,
+  OrderVerticals,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -44,7 +49,17 @@ import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunct
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
 import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
-
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  createOrderInternal,
+  createOrderInternalVariables,
+} from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
+import {
+  initiateSDK,
+  createHyperServiceObject,
+  terminateSDK,
+} from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 interface props extends NavigationScreenProps {
   visible: boolean;
   closeModal: ((planActivated?: boolean) => void) | null;
@@ -84,12 +99,103 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
     'Circle Member': circleSubscriptionId ? 'Yes' : 'No',
   };
 
+  useEffect(() => {
+    initiateHyperSDK();
+  }, []);
+
+  const initiateHyperSDK = async () => {
+    try {
+      const isInitiated: boolean = await isSDKInitialised();
+      const merchantId = AppConfig.Configuration.merchantId;
+      isInitiated
+        ? (terminateSDK(),
+          setTimeout(() => createHyperServiceObject(), 1000),
+          setTimeout(() => initiateSDK(currentPatient?.id, currentPatient?.id, merchantId), 2000))
+        : initiateSDK(currentPatient?.id, currentPatient?.id, merchantId);
+    } catch (error) {
+      CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
+    }
+  };
+
   const fireCircleOtherPaymentEvent = () => {
     source == 'Diagnostic' &&
       postWebEngageEvent(
         WebEngageEventName.DIAGNOSTIC_OTHER_PAYMENT_OPTION_CLICKED_POPUP,
         CircleEventAttributes
       );
+  };
+
+  const createOrderInternal = (subscriptionId: string) => {
+    const orders: OrderVerticals = {
+      subscription: [
+        {
+          order_id: subscriptionId,
+          amount: Number(defaultCirclePlan?.currentSellingPrice),
+          patient_id: currentPatient?.id,
+        },
+      ],
+    };
+    const orderInput: OrderCreate = {
+      orders: orders,
+      total_amount: Number(defaultCirclePlan?.currentSellingPrice),
+      customer_id: currentPatient?.primaryPatientId || currentPatient?.id,
+    };
+    return client.mutate<createOrderInternal, createOrderInternalVariables>({
+      mutation: CREATE_INTERNAL_ORDER,
+      variables: { order: orderInput },
+    });
+  };
+
+  const initiateCirclePurchase = async () => {
+    try {
+      setLoading(true);
+      const purchaseInput = {
+        userSubscription: {
+          mobile_number: currentPatient?.mobileNumber,
+          plan_id: planId,
+          sub_plan_id: defaultCirclePlan?.subPlanId,
+          storeCode,
+          FirstName: currentPatient?.firstName,
+          LastName: currentPatient?.lastName,
+          payment_reference: {
+            amount_paid: Number(defaultCirclePlan?.currentSellingPrice),
+            payment_status: PaymentStatus.PENDING,
+            purchase_via_HC: false,
+            HC_used: 0,
+          },
+          transaction_date_time: new Date().toISOString(),
+        },
+      };
+      const response = await client.mutate<CreateUserSubscription, CreateUserSubscriptionVariables>(
+        {
+          mutation: CREATE_USER_SUBSCRIPTION,
+          variables: purchaseInput,
+          fetchPolicy: 'no-cache',
+        }
+      );
+      const subscriptionId = g(response, 'data', 'CreateUserSubscription', 'response', '_id');
+      const data = await createOrderInternal(subscriptionId);
+      const orderInfo = {
+        orderId: subscriptionId,
+        circleParams: {
+          circleActivated: true,
+          circlePlanValidity: g(response, 'data', 'CreateUserSubscription', 'response', 'end_date'),
+        },
+      };
+      setLoading(false);
+      if (data?.data?.createOrderInternal?.success) {
+        props.navigation.navigate(AppRoutes.PaymentMethods, {
+          paymentId: data?.data?.createOrderInternal?.payment_order_id!,
+          amount: Number(defaultCirclePlan?.currentSellingPrice),
+          orderDetails: orderInfo,
+          businessLine: 'subscription',
+        });
+      }
+      fireCircleOtherPaymentEvent();
+      closeModal && closeModal();
+    } catch (error) {
+      CommonBugFender('Circle_Purchase_Initiation_Failed', error);
+    }
   };
 
   const renderCloseIcon = () => {
@@ -138,9 +244,8 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
             />
             <TouchableOpacity
               onPress={() => {
-                fireCircleOtherPaymentEvent();
-                closeModal && closeModal();
-                props.navigation.navigate(AppRoutes.CircleSubscription, { from: from });
+                // props.navigation.navigate(AppRoutes.CircleSubscription, { from: from });
+                initiateCirclePurchase();
               }}
             >
               <Text style={styles.btnText}>{string.circleDoctors.useAnotherPaymentMethod}</Text>

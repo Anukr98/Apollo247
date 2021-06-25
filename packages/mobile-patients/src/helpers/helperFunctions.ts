@@ -2463,7 +2463,7 @@ export const navigateToHome = (
   }
 };
 
-const goToConsultRoom = (
+export const goToConsultRoom = (
   navigation: NavigationScreenProp<NavigationRoute<object>, object>,
   params?: any
 ) => {

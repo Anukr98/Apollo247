@@ -38,6 +38,10 @@ export const initiateSDK = (customerId: string, requestId: string, merchantId: s
   HyperSdkReact.initiate(JSON.stringify(initiatePayload));
 };
 
+export const terminateSDK = () => {
+  HyperSdkReact.terminate();
+};
+
 export const isSDKInitialised = () => {
   return HyperSdkReact.isInitialised();
 };

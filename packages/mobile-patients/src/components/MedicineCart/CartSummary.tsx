@@ -73,8 +73,12 @@ import {
   one_apollo_store_code,
   PaymentStatus,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
-import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import {
+  isSDKInitialised,
+  terminateSDK,
+  createHyperServiceObject,
+  initiateSDK,
+} from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { useGetOrderInfo } from '@aph/mobile-patients/src/components/MedicineCart/Hooks/useGetOrderInfo';
 import {
   saveMedicineOrderV2,
@@ -168,7 +172,11 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     try {
       const isInitiated: boolean = await isSDKInitialised();
       const merchantId = AppConfig.Configuration.pharmaMerchantId;
-      !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id, merchantId);
+      isInitiated
+        ? (terminateSDK(),
+          setTimeout(() => createHyperServiceObject(), 1000),
+          setTimeout(() => initiateSDK(currentPatient?.id, currentPatient?.id, merchantId), 2000))
+        : initiateSDK(currentPatient?.id, currentPatient?.id, merchantId);
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
