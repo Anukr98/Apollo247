@@ -605,7 +605,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const getButtonTitle = (slot: string, isPhysical: boolean = false) => {
     const title =
       slot && moment(slot).isValid()
-        ? nextAvailability(slot, 'Consult', isPhysical)
+        ? nextAvailability(slot, 'Available', isPhysical)
         : string.common.book_apointment;
     if (title == 'BOOK APPOINTMENT') {
       fetchNextAvailableSlot();
@@ -785,7 +785,13 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     return (
       <View style={styles.bottomBtnView}>
         <TouchableOpacity
-          style={[styles.bottomLeftBtn, { width: '100%' }]}
+          style={[
+            styles.bottomLeftBtn,
+            {
+              width: '100%',
+              backgroundColor: online ? theme.colors.GOLDEN : theme.colors.SKY_LIGHT_BLUE,
+            },
+          ]}
           onPress={() =>
             onPressConsultConfigCTA(online ? ConsultMode.ONLINE : ConsultMode.PHYSICAL)
           }

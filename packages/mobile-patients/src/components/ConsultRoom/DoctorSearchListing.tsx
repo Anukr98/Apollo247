@@ -837,6 +837,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       pageSize: pageSize,
       searchText: searchText,
       isCare: careDoctorsSwitch,
+      consultMode: onlineCheckBox.current ? ConsultMode.ONLINE : ConsultMode.PHYSICAL,
     };
     setBugFenderLog('DOCTOR_FILTER_INPUT', JSON.stringify(FilterInput));
     !pageNo && setshowSpinner(true);
@@ -1301,12 +1302,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const renderDoctorSearches = (filter?: ConsultMode, searchText?: string) => {
-    const doctors =
-      filteredDoctorsList.length && filter
-        ? filteredDoctorsList.filter((obj: any) => {
-            return obj?.consultMode == ConsultMode.BOTH || obj?.consultMode == filter;
-          })
-        : filteredDoctorsList;
+    const doctors = filteredDoctorsList;
     if (doctors.length === 0 && !showSpinner && !platinumDoctor) {
       const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_SPECIALITY_SEARCH_NO_RESULT] = {
         'Text Searched': doctorSearch,
@@ -1435,7 +1431,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const scrollToTop = () => {
-    const filter = onlineCheckBox
+    const filter = onlineCheckBox.current
       ? physicalCheckBox
         ? undefined
         : ConsultMode.ONLINE
@@ -1718,7 +1714,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const renderDoctorShareComponent = () => {
-    const selectedMode = onlineCheckBox
+    const selectedMode = onlineCheckBox.current
       ? physicalCheckBox
         ? undefined
         : ConsultMode.ONLINE
@@ -1761,7 +1757,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       </View>
     );
   };
-  const [onlineCheckBox, setOnlineCheckbox] = useState<boolean>(
+  const onlineCheckBox = useRef<boolean>(
     isOnlineConsultMode == undefined || isOnlineConsultMode ? true : false
   );
   const [physicalCheckBox, setPhysicalCheckbox] = useState<boolean>(
@@ -1781,7 +1777,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     if (typeOfConsult === 'online') {
       setPhysicalCheckbox(false);
     } else if (typeOfConsult === 'inperson') {
-      setOnlineCheckbox(false);
+      onlineCheckBox.current = false;
     }
   };
 
@@ -1858,13 +1854,31 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const onPressHospitalVisit = () => {
     callToggleChangeWEGEvent(false);
     setPhysicalCheckbox(!physicalCheckBox);
-    setOnlineCheckbox(false);
+    onlineCheckBox.current = false;
+    fetchSpecialityFilterData(
+      filterMode,
+      FilterData,
+      latlng,
+      sortValue,
+      undefined,
+      doctors_partners,
+      doctorSearch
+    );
   };
 
   const onPressVideoConsult = () => {
     callToggleChangeWEGEvent();
-    setOnlineCheckbox(!onlineCheckBox);
+    onlineCheckBox.current = !onlineCheckBox.current;
     setPhysicalCheckbox(false);
+    fetchSpecialityFilterData(
+      filterMode,
+      FilterData,
+      latlng,
+      sortValue,
+      undefined,
+      doctors_partners,
+      doctorSearch
+    );
   };
 
   const callToggleChangeWEGEvent = (onlineToggle: boolean = true) => {
@@ -1938,7 +1952,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 Hospital Visit
               </Text>
             </TouchableOpacity>
-            {onlineCheckBox ? (
+            {onlineCheckBox.current ? (
               <TouchableOpacity onPress={() => onPressHospitalVisit()}>
                 <Toggle style={styles.toggleIcon} />
               </TouchableOpacity>
@@ -1952,7 +1966,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               activeOpacity={1}
               onPress={() => onPressVideoConsult()}
             >
-              <Text style={[styles.consultModeText, { opacity: onlineCheckBox ? 1 : 0.6 }]}>
+              <Text style={[styles.consultModeText, { opacity: onlineCheckBox.current ? 1 : 0.6 }]}>
                 Video Consult
               </Text>
             </TouchableOpacity>
@@ -2076,7 +2090,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           ) : (
             <View style={{ flex: 1 }}>
               {renderDoctorSearches(
-                onlineCheckBox
+                onlineCheckBox.current
                   ? physicalCheckBox
                     ? undefined
                     : ConsultMode.ONLINE

@@ -61,9 +61,7 @@ import {
 import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import ApolloClient from 'apollo-client';
 import { saveSearch, saveSearchVariables } from '@aph/mobile-patients/src/graphql/types/saveSearch';
-import {
-  SAVE_SEARCH,
-} from '@aph/mobile-patients/src/graphql/profiles';
+import { SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -989,20 +987,22 @@ export const nextAvailability = (
     );
     if (differenceMinute < 60 && differenceMinute > 0) {
       return isPhysical
-        ? 'Consult Today'
+        ? `${type} Today`
         : `${type} in ${differenceMinute} min${differenceMinute !== 1 ? 's' : ''}`;
     } else if (differenceMinute <= 0) {
       return 'BOOK APPOINTMENT';
     } else if (differenceMinute >= 60 && !isTomorrow) {
-      return isPhysical ? 'Consult Today' : `${type} at ${moment(nextSlot).format('hh:mm A')}`;
+      return isPhysical ? `${type} Today` : `${type} at ${moment(nextSlot).format('hh:mm A')}`;
     } else if (isTomorrow && differenceMinute < 2880 - minPassedToday) {
       return isPhysical
-        ? 'Consult Tomorrow'
+        ? `${type} Tomorrow`
         : `${type} Tomorrow${
             type === 'Available' ? ` at ${moment(nextSlot).format('hh:mm A')}` : ''
           }`;
     } else if ((diffDays >= 2 && diffDays <= 30) || type == 'Consult') {
-      return `${type} in ${diffDays} days`;
+      return isPhysical
+        ? `${type} from ${moment(nextSlot).format('D  MMM')}`
+        : `${type} in ${diffDays} days`;
     } else {
       return `${type} after a month`;
     }
@@ -1377,7 +1377,10 @@ export const addTestsToCart = async (
     setLoading?.(true);
     const items = testPrescription?.filter((val) => val?.itemname)?.map((item) => item?.itemname);
     const formattedItemNames = items?.map((item) => item)?.join('|');
-    const searchQueries: any = await getDiagnosticDoctorPrescriptionResults(formattedItemNames, AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID);
+    const searchQueries: any = await getDiagnosticDoctorPrescriptionResults(
+      formattedItemNames,
+      AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
+    );
 
     if (searchQueries?.data?.success) {
       const searchResults = searchQueries?.data?.data;
