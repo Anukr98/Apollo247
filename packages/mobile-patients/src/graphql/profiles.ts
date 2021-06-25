@@ -3418,6 +3418,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
           notes
           blobName
           consultType
+          prescriptionGeneratedDate
           diagnosis {
             name
           }
