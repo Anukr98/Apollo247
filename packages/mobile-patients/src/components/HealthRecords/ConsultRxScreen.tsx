@@ -102,6 +102,8 @@ import moment from 'moment';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
+import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/Events';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const { width, height } = Dimensions.get('window');
 
@@ -630,6 +632,10 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.PHR_ORDER_MEDS_TESTS, eventAttributes);
   };
 
+  function postDiagnosticAddToCart(itemId: string, itemName: string) {
+    DiagnosticAddToCartEvent(itemName, itemId, 0, 0, DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PHR);
+  }
+
   const onOrderTestMedPress = async (selectedItem: any, caseSheetDetails: any) => {
     postOrderMedsAndTestsEvent(selectedItem?.id, caseSheetDetails);
     let item =
@@ -753,6 +759,8 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
             }
           })
           .then((tests) => {
+            const getItemNames = tests?.map((item) => item?.name)?.join(', ');
+            const getItemIds = tests?.map((item) => Number(item?.id))?.join(', ');
             if (testPrescription.length) {
               addMultipleTestCartItems!(tests! || []);
               // Adding ePrescriptions to DiagnosticsCart
@@ -766,6 +774,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
                   },
                 ]);
             }
+            postDiagnosticAddToCart(getItemNames!, getItemIds!);
           })
           .catch((e) => {
             CommonBugFender('DoctorConsultation_getMedicineDetailsApi', e);

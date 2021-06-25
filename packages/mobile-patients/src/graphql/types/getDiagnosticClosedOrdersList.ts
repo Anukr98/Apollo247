@@ -17,8 +17,8 @@ export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_clo
 
 export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders_diagnosticOrderLineItems_itemObj {
   __typename: "ItemObj";
-  inclusions: (number | null)[] | null;
   testPreparationData: string | null;
+  preTestingRequirement: string | null;
 }
 
 export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders_diagnosticOrderLineItems {
@@ -29,7 +29,6 @@ export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_clo
 export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders_attributesObj {
   __typename: "AttributesObj";
   reportGenerationTime: string | null;
-  preTestingRequirement: string | null;
 }
 
 export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders {
@@ -41,7 +40,6 @@ export interface getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_clo
   slotDateTimeInUTC: any | null;
   labReportURL: string | null;
   paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
-  paymentOrderId: string | null;
   patientObj: getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders_patientObj | null;
   diagnosticOrderLineItems: (getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders_diagnosticOrderLineItems | null)[] | null;
   attributesObj: getDiagnosticClosedOrdersList_getDiagnosticClosedOrdersList_closedOrders_attributesObj | null;

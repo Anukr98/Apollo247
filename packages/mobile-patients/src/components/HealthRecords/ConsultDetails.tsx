@@ -94,6 +94,8 @@ import _ from 'lodash';
 import { AxiosResponse } from 'axios';
 import { getMedicineDetailsApi, MedicineProductDetailsResponse } from '../../helpers/apiCalls';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/Events';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -502,6 +504,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     pharmacyLocation,
   } = useAppCommonData();
 
+  function postDiagnosticAddToCart(itemId: string, itemName: string) {
+    DiagnosticAddToCartEvent(itemName, itemId, 0, 0, DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PHR);
+  }
+
   const onAddTestsToCart = async () => {
     let location: LocationData | null = null;
     setLoading && setLoading(true);
@@ -550,6 +556,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           (item) => !tests.find((val) => val?.name!.toLowerCase() == item?.itemname!.toLowerCase())
         );
         const unAvailableItems = unAvailableItemsArray.map((item) => item.itemname).join(', ');
+        const getItemNames = tests?.map((item) => item?.name)?.join(', ');
+        const getItemIds = tests?.map((item) => Number(item?.id))?.join(', ');
 
         if (tests.length) {
           addMultipleTestCartItems!(tests);
@@ -594,6 +602,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           });
         }
         setLoading?.(false);
+        postDiagnosticAddToCart(getItemIds, getItemNames);
       })
       .catch((e) => {
         setLoading?.(false);

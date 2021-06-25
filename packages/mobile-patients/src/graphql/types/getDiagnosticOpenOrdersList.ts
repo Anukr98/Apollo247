@@ -17,8 +17,8 @@ export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrd
 
 export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_diagnosticOrderLineItems_itemObj {
   __typename: "ItemObj";
-  inclusions: (number | null)[] | null;
   testPreparationData: string | null;
+  preTestingRequirement: string | null;
 }
 
 export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_diagnosticOrderLineItems {
@@ -29,7 +29,6 @@ export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrd
 export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_attributesObj {
   __typename: "AttributesObj";
   reportGenerationTime: string | null;
-  preTestingRequirement: string | null;
 }
 
 export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders {
@@ -41,7 +40,6 @@ export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrd
   slotDateTimeInUTC: any | null;
   labReportURL: string | null;
   paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
-  paymentOrderId: string | null;
   patientObj: getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_patientObj | null;
   diagnosticOrderLineItems: (getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_diagnosticOrderLineItems | null)[] | null;
   attributesObj: getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_attributesObj | null;

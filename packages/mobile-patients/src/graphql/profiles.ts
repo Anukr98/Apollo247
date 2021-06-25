@@ -4951,13 +4951,12 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql`
         }
         diagnosticOrderLineItems {
           itemObj {
-            inclusions
             testPreparationData
+            preTestingRequirement
           }
         }
         attributesObj {
           reportGenerationTime
-          preTestingRequirement
         }
       }
     }
@@ -5003,13 +5002,12 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
         }
         diagnosticOrderLineItems {
           itemObj {
-            inclusions
             testPreparationData
+            preTestingRequirement
           }
         }
         attributesObj {
           reportGenerationTime
-          preTestingRequirement
         }
       }
     }

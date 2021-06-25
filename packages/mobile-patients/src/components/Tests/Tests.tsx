@@ -114,7 +114,10 @@ import {
   getDiagnosticPhelboDetails,
   getUserBannersList,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+  sourceHeaders,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 import Carousel from 'react-native-snap-carousel';
 import { DiagnosticsSearchSuggestionItem } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticsSearchSuggestionItem';
 import { AccessLocation } from '@aph/mobile-patients/src/components/Medicines/Components/AccessLocation';
@@ -320,7 +323,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     id: string,
     price: number,
     discountedPrice: number,
-    source: 'Home page' | 'Full search' | 'Details page' | 'Partial search' | 'Prescription',
+    source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
     section?: 'Featured tests' | 'Browse packages'
   ) => {
     DiagnosticAddToCartEvent(name, id, price, discountedPrice, source, section);
@@ -965,7 +968,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
       aphConsole.log({ e });
     });
     //passed zero till the time prices aren't updated.
-    postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, 0, 0, 'Partial search');
+    postDiagnosticAddToCartEvent(
+      stripHtml(itemName),
+      `${itemId}`,
+      0,
+      0,
+      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PARTIAL_SEARCH
+    );
     addCartItem?.({
       id: `${itemId}`,
       name: stripHtml(itemName),
@@ -1970,7 +1979,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
         const getItemNames = tests?.map((item) => item?.name)?.join(', ');
         const getItemIds = tests?.map((item) => Number(item?.id))?.join(', ');
         setLoadingContext?.(false);
-        DiagnosticAddToCartEvent(getItemNames, getItemIds, 0, 0, 'Prescription');
+        DiagnosticAddToCartEvent(
+          getItemNames,
+          getItemIds,
+          0,
+          0,
+          DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PRESCRIPTION
+        );
       })
       .catch((e) => {
         setLoadingContext?.(false);
