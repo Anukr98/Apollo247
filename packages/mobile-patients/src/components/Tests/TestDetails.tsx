@@ -237,7 +237,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       const result = g(res, 'data', 'data');
       setCmsTestDetails(result);
       setLoadingContext?.(false);
-      console.log(`result`, result);
 
       !!result?.diagnosticWidgetsData &&
         result?.diagnosticWidgetsData?.length > 0 &&
