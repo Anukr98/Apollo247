@@ -196,6 +196,8 @@ import { FollowUpChatGuideLines } from '@aph/mobile-patients/src/components/Cons
 import { ChatDisablePrompt } from '@aph/mobile-patients/src/components/Consult/Components/ChatDisablePrompt';
 import { getMedicineDetailsApi, MedicineProductDetailsResponse } from '../../helpers/apiCalls';
 import { AxiosResponse } from 'axios';
+import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/Events';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
 
 interface OpentokStreamObject {
   connection: {
@@ -3939,8 +3941,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     });
   };
 
+  function postDiagnosticAddToCart(itemId: string, itemName: string) {
+    DiagnosticAddToCartEvent(
+      itemName,
+      itemId,
+      0, //add price
+      0, //add price
+      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.CONSULT_ROOM
+    );
+  }
+
   const onAddTestsToCart = async () => {
     postWebEngageEvent(WebEngageEventName.BOOK_TESTS_IN_CONSULT_ROOM, UserInfo);
+
     let location: LocationData | null = null;
     setLoading && setLoading(true);
 
@@ -3990,6 +4003,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           (item) => !tests?.find((val) => val?.name!.toLowerCase() == item?.itemname!.toLowerCase())
         );
         const unAvailableItems = unAvailableItemsArray?.map((item) => item?.itemname)?.join(', ');
+        const getItemNames = tests?.map((item) => item?.name)?.join(', ');
+        const getItemIds = tests?.map((item) => Number(item?.id))?.join(', ');
 
         if (tests?.length) {
           addMultipleTestCartItems?.(tests);
@@ -4033,6 +4048,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             },
           });
         }
+        postDiagnosticAddToCart(getItemIds, getItemNames);
         setLoading?.(false);
       })
       .catch((e) => {

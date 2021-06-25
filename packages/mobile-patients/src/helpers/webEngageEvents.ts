@@ -7,6 +7,7 @@ import {
   PharmaUserStatus,
   UploadPrescSource,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
 
 type YesOrNo = 'Yes' | 'No';
 type HdfcPlan = 'SILVER' | 'GOLD' | 'PLATINUM';
@@ -1300,16 +1301,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.DIAGNOSTIC_ADD_TO_CART]: {
     'Item Name': string;
     'Item ID': string; // (SKUID)
-    Source:
-      | 'Home page'
-      | 'Full search'
-      | 'Details page'
-      | 'Partial search'
-      | 'Listing page'
-      | 'Popular search'
-      | 'Category page'
-      | 'Prescription'
-      | 'Cart page';
+    Source:DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
     Section?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {

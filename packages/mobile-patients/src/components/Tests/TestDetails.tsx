@@ -56,6 +56,7 @@ import {
   getPricesForItem,
   sourceHeaders,
   convertNumberToDecimal,
+  DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
 import {
@@ -1035,7 +1036,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       itemId!,
       mrpToDisplay,
       discountToDisplay,
-      'Details page'
+      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS
     );
     addCartItem?.({
       id: `${itemId!}`,
