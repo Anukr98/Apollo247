@@ -414,10 +414,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       const listOfIds =
         typeof _cartItemId == 'string' ? removeSpaces?.map((item) => parseInt(item!)) : _cartItemId;
       const res: any = await getDiagnosticCartItemReportGenDetails(
-        listOfIds?.toString() || _cartItemId?.toString()
+        listOfIds?.toString() || _cartItemId?.toString(),
+        Number(addressCityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
       );
       if (res?.data?.success) {
         const result = g(res, 'data', 'data');
+        console.log(`result in cart`, result)
         const widgetsData = g(res, 'data', 'widget_data', '0', 'diagnosticWidgetData');
         setReportGenDetails(result || []);
         const _itemIds = widgetsData?.map((item: any) => Number(item?.itemId));

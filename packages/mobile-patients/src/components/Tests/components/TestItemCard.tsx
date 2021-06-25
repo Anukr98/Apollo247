@@ -337,12 +337,13 @@ const styles = StyleSheet.create({
   timeIconStyle: {
     width: 16,
     height: 16,
+    alignSelf: 'flex-start'
   },
   reportGenTextStyle: {
     ...text('M', 10, SHERPA_BLUE, 0.6, 16),
     marginLeft: 8,
   },
-  reportGenViewStyle: { flexDirection: 'row', marginBottom: 8, alignItems: 'center' },
+  reportGenViewStyle: { flexDirection: 'row', marginBottom: 8, alignItems: 'center',width:'98%' },
   removeTouch: {
     height: 30,
     width: 30,
