@@ -120,6 +120,9 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const orderInfo = props.navigation.getParam('orderInfo');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
   const orders = props.navigation.getParam('orders');
+  const orderIds = orders.map(
+    (item: any, index: number) => item?.orderAutoId + (index != orders?.length - 1 && ', ')
+  );
   const price = props.navigation.getParam('price');
   const transId = props.navigation.getParam('transId');
   const isStorePickup = props.navigation.getParam('isStorePickup');
@@ -617,10 +620,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
           >
             <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 30, 0.7)}>Order ID : </Text>
             <Text style={theme.viewStyles.text('M', 15, theme.colors.SHADE_GREY, 1, 30)}>
-              {orders.map(
-                (item: any, index: number) =>
-                  item?.orderAutoId + (index != orders?.length - 1 && ', ')
-              )}
+              {orderIds}
             </Text>
           </View>
           {!!paymentRefId && (
@@ -702,6 +702,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const substituteItemsCard = () => {
     return (
       <SubstituteItemsCard
+        orderId={orderIds?.[0]}
         transactionId={transId}
         substituteMessage={substituteMessage}
         substituteTime={substituteTime}
