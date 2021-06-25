@@ -41,10 +41,11 @@ export interface TestOrderSummaryViewProps {
   onPressViewReport?: () => void;
   onPressDownloadInvoice?: any;
   refundDetails?: any;
+  refundTransactionId?: string;
 }
 
 export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props) => {
-  const { orderDetails, refundDetails } = props;
+  const { orderDetails, refundDetails, refundTransactionId } = props;
   const filterOrderLineItem =
     !!orderDetails &&
     orderDetails?.diagnosticOrderLineItems?.filter((item: any) => !item?.isRemoved);
@@ -208,9 +209,12 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     const bookedOn = moment(orderDetails?.createdDate)?.format('Do MMM') || null;
     return (
       <View style={{ justifyContent: 'space-between', flexDirection: 'row' }}>
-        <View style={{ flex: 0.8 }}>
+        <View style={{ flex: 0.9 }}>
           <Text style={styles.orderId}>Order ID #{orderDetails?.displayId}</Text>
           <Text style={styles.bookedOn}>Booked on {bookedOn}</Text>
+          {refundDetails?.[0]?.status === REFUND_STATUSES.SUCCESS && !!refundTransactionId ? (
+            <Text style={styles.bookedOn}>Refund id: {refundTransactionId}</Text>
+          ) : null}
         </View>
         <View>
           <StatusCard titleText={orderDetails?.orderStatus} />
@@ -553,7 +557,11 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
   return (
     <ScrollView style={{ flex: 1 }}>
       <View style={{ margin: 16 }}>
-        {(DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(orderDetails?.orderStatus) || DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(orderDetails?.orderStatus)) && orderDetails?.invoiceURL ? renderInvoiceDownload() : null}
+        {(DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(orderDetails?.orderStatus) ||
+          DIAGNOSTIC_REPORT_GENERATED_STATUS_ARRAY.includes(orderDetails?.orderStatus)) &&
+        orderDetails?.invoiceURL
+          ? renderInvoiceDownload()
+          : null}
         {renderOrderId()}
         {renderSlotView()}
         {renderHeading(
@@ -591,7 +599,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     marginTop: height * 0.04, //0.22
   },
-  downloadOrange:{ width: 14, height: 14, marginHorizontal: 10 },
+  downloadOrange: { width: 14, height: 14, marginHorizontal: 10 },
   hideText: {
     ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 13.5 : 16),
     color: '#02475b',

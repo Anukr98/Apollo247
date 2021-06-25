@@ -403,10 +403,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       let response: any = await getDiagnosticRefundOrders(client, orderSelected?.paymentOrderId);
       if (response?.data?.data) {
         const refundData = g(response, 'data', 'data', 'getOrderInternal', 'refunds');
+        const getTransId = g(response, 'data', 'data', 'getOrderInternal', 'txn_id');
         if (refundData?.length! > 0) {
           setRefundStatusArr(refundData);
         }
-        performNavigation(orderSelected, tab, refundData);
+        performNavigation(orderSelected, tab, refundData, getTransId);
       } else {
         performNavigation(orderSelected, tab, []);
       }
@@ -1081,13 +1082,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   }
 
-  function performNavigation(order: any, tab: boolean, refundArray?: any) {
+  function performNavigation(order: any, tab: boolean, refundArray?: any, refundTransId?: string) {
     setLoading?.(false);
     props.navigation.navigate(AppRoutes.TestOrderDetails, {
       orderId: order?.id,
       setOrders: (orders: orderList[]) => setOrders(orders),
       selectedOrder: order,
       refundStatusArr: refundArray,
+      refundTransactionId: refundTransId,
       comingFrom: AppRoutes.YourOrdersTest,
       showOrderSummaryTab: tab,
     });
