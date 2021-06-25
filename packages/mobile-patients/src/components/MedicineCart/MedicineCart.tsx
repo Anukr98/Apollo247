@@ -600,7 +600,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     const updatePrices = AppConfig.Configuration.CART_UPDATE_PRICE_CONFIG.updatePrices;
     const updatePricePercent = AppConfig.Configuration.CART_UPDATE_PRICE_CONFIG.percentage;
     const updatePricesNotAllowed = updatePrices === 'No';
-    let didPricesUpdate: boolean = false;
     if (updatePricesNotAllowed) {
       return;
     }
@@ -623,7 +622,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
               : true
             : false;
         if (storeItem?.mrp != 0 && allowPriceUpdate) {
-          didPricesUpdate = true;
           showAphAlert!({
             title: `Hi ${currentPatient?.firstName || ''},`,
             description: `Important message for items in your Cart:\n\nSome items' prices have been updated based on the updated MRP from Manufacturer. Please check before you place the order.`,
@@ -639,7 +637,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       cartItemsAfterPriceUpdate.push(cartItem);
     });
     setCartItems!(cartItemsAfterPriceUpdate);
-    if (didPricesUpdate) await validatePharmaCoupon();
+    await validatePharmaCoupon();
   }
   function hasUnserviceableproduct() {
     return !!cartItems.find(
