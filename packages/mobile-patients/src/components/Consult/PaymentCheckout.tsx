@@ -128,7 +128,7 @@ import {
   createOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOrder';
 import { saveConsultationLocation } from '@aph/mobile-patients/src/helpers/clientCalls';
-
+import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
 interface PaymentCheckoutProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
   tabs: { title: string }[];
@@ -251,6 +251,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const circleDiscount =
     (circleSubscriptionId || circlePlanSelected) && discountedPrice ? discountedPrice : 0;
+  const { cusId, isfetchingId } = useGetJuspayId();
 
   useEffect(() => {
     verifyCoupon();
@@ -259,18 +260,21 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   useEffect(() => {
     setPatientProfiles(moveSelectedToTop());
     fetchUserSpecificCoupon();
-    initiateHyperSDK();
   }, []);
 
-  const initiateHyperSDK = async () => {
+  useEffect(() => {
+    !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
+  }, [isfetchingId]);
+
+  const initiateHyperSDK = async (cusId: any) => {
     try {
       const isInitiated: boolean = await isSDKInitialised();
       const merchantId = AppConfig.Configuration.merchantId;
       isInitiated
         ? (terminateSDK(),
           setTimeout(() => createHyperServiceObject(), 1000),
-          setTimeout(() => initiateSDK(currentPatient?.id, currentPatient?.id, merchantId), 2000))
-        : initiateSDK(currentPatient?.id, currentPatient?.id, merchantId);
+          setTimeout(() => initiateSDK(cusId, cusId, merchantId), 2000))
+        : initiateSDK(cusId, cusId, merchantId);
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
@@ -860,6 +864,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
             amount: amountToPay,
             orderDetails: getOrderDetails(apptmt),
             businessLine: 'consult',
+            customerId: cusId,
           });
         }
       }

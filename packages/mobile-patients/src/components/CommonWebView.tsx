@@ -44,6 +44,7 @@ import {
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
 export interface CommonWebViewProps extends NavigationScreenProps {}
 
 export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
@@ -77,10 +78,10 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
     source == ('Pharma' || 'Product Detail' || 'Pharma Cart') &&
       postWebEngageEvent(WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED, CircleEventAttributes);
   };
+  const { cusId, isfetchingId } = useGetJuspayId();
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleAndroidBack);
-    initiateHyperSDK();
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleAndroidBack);
     };
@@ -95,15 +96,19 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
     }
   };
 
-  const initiateHyperSDK = async () => {
+  useEffect(() => {
+    !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
+  }, [isfetchingId]);
+
+  const initiateHyperSDK = async (cusId: any) => {
     try {
       const isInitiated: boolean = await isSDKInitialised();
       const merchantId = AppConfig.Configuration.merchantId;
       isInitiated
         ? (terminateSDK(),
           setTimeout(() => createHyperServiceObject(), 1000),
-          setTimeout(() => initiateSDK(currentPatient?.id, currentPatient?.id, merchantId), 2000))
-        : initiateSDK(currentPatient?.id, currentPatient?.id, merchantId);
+          setTimeout(() => initiateSDK(cusId, cusId, merchantId), 2000))
+        : initiateSDK(cusId, cusId, merchantId);
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
@@ -177,6 +182,7 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
           amount: Number(selectedPlan?.currentSellingPrice),
           orderDetails: orderInfo,
           businessLine: 'subscription',
+          customerId: cusId,
         });
       }
     } catch (error) {

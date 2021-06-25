@@ -5245,3 +5245,32 @@ export const GET_ALL_VACCINATION_APPOINTMENTS = gql`
     }
   }
 `;
+
+export const FETCH_JUSPAY_CUSTOMERID = gql`
+  mutation generateUniqueCustomerId {
+    generateUniqueCustomerId {
+      customer_id
+    }
+  }
+`;
+
+export const FETCH_SAVED_CARDS = gql`
+  query getSavedCardList($customer_id: String!) {
+    getSavedCardList(customer_id: $customer_id) {
+      customer_id
+      merchantId
+      cards {
+        card_number
+        card_isin
+        card_exp_year
+        card_exp_month
+        card_type
+        card_issuer
+        card_brand
+        name_on_card
+        expired
+        card_token
+      }
+    }
+  }
+`;

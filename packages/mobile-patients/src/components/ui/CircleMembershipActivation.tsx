@@ -60,6 +60,7 @@ import {
   terminateSDK,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
 interface props extends NavigationScreenProps {
   visible: boolean;
   closeModal: ((planActivated?: boolean) => void) | null;
@@ -98,20 +99,21 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
     'Customer ID': currentPatient?.id,
     'Circle Member': circleSubscriptionId ? 'Yes' : 'No',
   };
+  const { cusId, isfetchingId } = useGetJuspayId();
 
   useEffect(() => {
-    initiateHyperSDK();
-  }, []);
+    !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
+  }, [isfetchingId]);
 
-  const initiateHyperSDK = async () => {
+  const initiateHyperSDK = async (cusId: any) => {
     try {
       const isInitiated: boolean = await isSDKInitialised();
       const merchantId = AppConfig.Configuration.merchantId;
       isInitiated
         ? (terminateSDK(),
           setTimeout(() => createHyperServiceObject(), 1000),
-          setTimeout(() => initiateSDK(currentPatient?.id, currentPatient?.id, merchantId), 2000))
-        : initiateSDK(currentPatient?.id, currentPatient?.id, merchantId);
+          setTimeout(() => initiateSDK(cusId, cusId, merchantId), 2000))
+        : initiateSDK(cusId, cusId, merchantId);
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
@@ -189,6 +191,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
           amount: Number(defaultCirclePlan?.currentSellingPrice),
           orderDetails: orderInfo,
           businessLine: 'subscription',
+          customerId: cusId,
         });
       }
       fireCircleOtherPaymentEvent();

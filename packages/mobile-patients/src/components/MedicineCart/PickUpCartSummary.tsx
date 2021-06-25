@@ -49,6 +49,7 @@ import {
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
 
 export interface PickUpCartSummaryProps extends NavigationScreenProps {}
 
@@ -75,6 +76,7 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
   const shoppingCart = useShoppingCart();
   const { pharmacyUserTypeAttribute, setauthToken } = useAppCommonData();
   const { pickUpOrderInfo, SubscriptionInfo } = useGetOrderInfo();
+  const { cusId, isfetchingId } = useGetJuspayId();
 
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
   const estimatedAmount = !!circleMembershipCharges
@@ -86,18 +88,18 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
   }, [isPhysicalUploadComplete]);
 
   useEffect(() => {
-    initiateHyperSDK();
-  }, []);
+    !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
+  }, [isfetchingId]);
 
-  const initiateHyperSDK = async () => {
+  const initiateHyperSDK = async (cusId: any) => {
     try {
       const isInitiated: boolean = await isSDKInitialised();
       const merchantId = AppConfig.Configuration.pharmaMerchantId;
       isInitiated
         ? (terminateSDK(),
           setTimeout(() => createHyperServiceObject(), 1000),
-          setTimeout(() => initiateSDK(currentPatient?.id, currentPatient?.id, merchantId), 2000))
-        : initiateSDK(currentPatient?.id, currentPatient?.id, merchantId);
+          setTimeout(() => initiateSDK(cusId, cusId, merchantId), 2000))
+        : initiateSDK(cusId, cusId, merchantId);
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
@@ -242,6 +244,7 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
           amount: grandTotal,
           orderDetails: getOrderDetails(orders),
           businessLine: 'pharma',
+          customerId: cusId,
         });
       }
       setloading(false);

@@ -176,6 +176,7 @@ import {
   findDiagnosticSettingsVariables,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
 import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/components/InfoMessage';
+import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
 const { width: screenWidth } = Dimensions.get('window');
 
 export interface areaObject {
@@ -293,10 +294,29 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [phleboMin, setPhleboMin] = useState(0);
   const itemsWithHC = cartItems?.filter((item) => item!.collectionMethod == 'HC');
   const itemWithId = itemsWithHC?.map((item) => Number(item.id!));
+  const { cusId, isfetchingId } = useGetJuspayId();
 
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   var pricesForItemArray;
   var slotBookedArray = ['slot', 'already', 'booked', 'select a slot'];
+
+  useEffect(() => {
+    !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
+  }, [isfetchingId]);
+
+  const initiateHyperSDK = async (cusId: any) => {
+    try {
+      const isInitiated: boolean = await isSDKInitialised();
+      const merchantId = AppConfig.Configuration.merchantId;
+      isInitiated
+        ? (terminateSDK(),
+          setTimeout(() => createHyperServiceObject(), 1000),
+          setTimeout(() => initiateSDK(cusId, cusId, merchantId), 2000))
+        : initiateSDK(cusId, cusId, merchantId);
+    } catch (error) {
+      CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
+    }
+  };
 
   const saveHomeCollectionBookingOrder = (orderInfo: SaveBookHomeCollectionOrderInput) =>
     client.mutate<saveDiagnosticBookHCOrder, saveDiagnosticBookHCOrderVariables>({
@@ -315,10 +335,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       },
       variables: { order: orders },
     });
-
-  useEffect(() => {
-    initiateHyperSDK();
-  }, [currentPatient]);
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
@@ -415,20 +431,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setPhleboMin(phleboMin);
     } catch (error) {
       CommonBugFender('TestsCart_fetchFindDiagnosticSettings', error);
-    }
-  };
-
-  const initiateHyperSDK = async () => {
-    try {
-      const isInitiated: boolean = await isSDKInitialised();
-      const merchantId = AppConfig.Configuration.merchantId;
-      isInitiated
-        ? (terminateSDK(),
-          setTimeout(() => createHyperServiceObject(), 1000),
-          setTimeout(() => initiateSDK(currentPatient?.id, currentPatient?.id, merchantId), 2000))
-        : initiateSDK(currentPatient?.id, currentPatient?.id, merchantId);
-    } catch (error) {
-      CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
   };
 
@@ -1955,6 +1957,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 orderDetails: orderInfo,
                 eventAttributes,
                 businessLine: 'diagnostics',
+                customerId: cusId,
               });
             }
           }

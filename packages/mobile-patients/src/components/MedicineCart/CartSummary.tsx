@@ -88,6 +88,7 @@ import {
   createOrderInternal,
   createOrderInternalVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
+import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
 
 export interface CartSummaryProps extends NavigationScreenProps {}
 
@@ -140,10 +141,10 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   const pharmacyPincode =
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
   const { OrderInfo, SubscriptionInfo } = useGetOrderInfo();
+  const { cusId, isfetchingId } = useGetJuspayId();
 
   useEffect(() => {
     hasUnserviceableproduct();
-    initiateHyperSDK();
     AppState.addEventListener('change', handleAppStateChange);
     return () => {
       AppState.removeEventListener('change', handleAppStateChange);
@@ -168,15 +169,19 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     availabilityTat(deliveryAddressId);
   }, [cartItems, deliveryAddressId]);
 
-  const initiateHyperSDK = async () => {
+  useEffect(() => {
+    !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
+  }, [isfetchingId]);
+
+  const initiateHyperSDK = async (cusId: any) => {
     try {
       const isInitiated: boolean = await isSDKInitialised();
       const merchantId = AppConfig.Configuration.pharmaMerchantId;
       isInitiated
         ? (terminateSDK(),
           setTimeout(() => createHyperServiceObject(), 1000),
-          setTimeout(() => initiateSDK(currentPatient?.id, currentPatient?.id, merchantId), 2000))
-        : initiateSDK(currentPatient?.id, currentPatient?.id, merchantId);
+          setTimeout(() => initiateSDK(cusId, cusId, merchantId), 2000))
+        : initiateSDK(cusId, cusId, merchantId);
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
@@ -479,8 +484,19 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       orders?.length > 1,
       splitOrderDetails
     );
-    initiateOrder();
+    isInitiated();
   }
+
+  const isInitiated = async () => {
+    let isInitiated: boolean = false;
+    while (!isInitiated) {
+      isInitiated = await isSDKInitialised();
+      if (isInitiated) {
+        initiateOrder();
+        break;
+      }
+    }
+  };
 
   const initiateOrder = async () => {
     try {
@@ -499,6 +515,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           amount: grandTotal,
           orderDetails: getOrderDetails(orders),
           businessLine: 'pharma',
+          customerId: cusId,
           checkoutEventAttributes: getCheckoutCompletedEventAttributes(
             shoppingCart,
             paymentId,

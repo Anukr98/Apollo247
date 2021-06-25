@@ -74,6 +74,7 @@ import {
   PaymentInitiated,
   PharmaOrderPlaced,
 } from '@aph/mobile-patients/src/components/PaymentGateway/Events';
+import { useFetchSavedCards } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useFetchSavedCards';
 const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {
@@ -83,6 +84,7 @@ export interface PaymentMethodsProps extends NavigationScreenProps {
 
 export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const paymentId = props.navigation.getParam('paymentId');
+  const customerId = props.navigation.getParam('customerId');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
   const [amount, setAmount] = useState<number>(props.navigation.getParam('amount'));
   const orderDetails = props.navigation.getParam('orderDetails');
@@ -106,11 +108,12 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { paymentMethods, cardTypes, fetching } = useGetPaymentMethods();
   const [HCSelected, setHCSelected] = useState<boolean>(false);
   const [burnHc, setburnHc] = useState<number>(0);
-  const [savedCards, setSavedCards] = useState<any>([]);
+  // const [savedCards, setSavedCards] = useState<any>([]);
   const storeCode =
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
   const shoppingCart = useShoppingCart();
-
+  const { savedCards } = useFetchSavedCards(customerId);
+  console.log('savedCards >>>', savedCards);
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
     const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
@@ -182,7 +185,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const handleResponsePayload = (payload: any) => {
-    console.log('payload >>>', JSON.stringify(payload));
+    // console.log('payload >>>', JSON.stringify(payload));
     const status = payload?.payload?.status;
     const action = payload?.payload?.action;
     switch (action) {
@@ -208,9 +211,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         payload?.requestId == 'phonePe' && status && setphonePeReady(true);
         payload?.requestId == 'googlePay' && status && setGooglePayReady(true);
         break;
-      case 'cardList':
-        setSavedCards(payload?.payload?.cards || []);
-        break;
+      // case 'cardList':
+      //   setSavedCards(payload?.payload?.cards || []);
+      //   break;
       default:
         payload?.error && handleError(payload?.errorMessage);
     }
