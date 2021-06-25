@@ -241,6 +241,8 @@ export interface ShoppingCartContextProps {
   setMaxCartValueForCOD: ((value: number) => void) | null;
   nonCodSKus: string[];
   setNonCodSKus: ((items: string[]) => void) | null;
+  cartPriceNotUpdateRange: number;
+  setCartPriceNotUpdateRange: ((value: number) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -352,6 +354,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setMaxCartValueForCOD: null,
   nonCodSKus: [],
   setNonCodSKus: null,
+  cartPriceNotUpdateRange: 0,
+  setCartPriceNotUpdateRange: null,
 });
 
 const AsyncStorageKeys = {
@@ -479,6 +483,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   >(0);
   const [maxCartValueForCOD, setMaxCartValueForCOD] = useState<
     ShoppingCartContextProps['maxCartValueForCOD']
+  >(0);
+  const [cartPriceNotUpdateRange, setCartPriceNotUpdateRange] = useState<
+    ShoppingCartContextProps['cartPriceNotUpdateRange']
   >(0);
   const [nonCodSKus, setNonCodSKus] = useState<ShoppingCartContextProps['nonCodSKus']>([]);
   const [asyncPincode, setAsyncPincode] = useState<ShoppingCartContextProps['asyncPincode']>();
@@ -1223,6 +1230,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setMaxCartValueForCOD,
         nonCodSKus,
         setNonCodSKus,
+        cartPriceNotUpdateRange,
+        setCartPriceNotUpdateRange,
       }}
     >
       {props.children}
