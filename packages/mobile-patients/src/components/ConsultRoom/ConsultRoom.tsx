@@ -194,7 +194,10 @@ import { ConsultedDoctorsCard } from '@aph/mobile-patients/src/components/Consul
 import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
 import { AuthContextProps } from '@aph/mobile-patients/src/components/AuthProvider';
 import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
-import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const { Vitals } = NativeModules;
 
@@ -1472,7 +1475,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       title: 'Book Doctor by Symptoms',
       image: <Symptomtracker style={styles.menuOptionIconStyle} />,
       onPress: () => {
-        const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_PAGE_CLICKED] = {
+        const eventAttributes:
+          | WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_PAGE_CLICKED]
+          | CleverTapEvents[CleverTapEventName.SYMPTOM_TRACKER_PAGE_CLICKED] = {
           'Patient UHID': g(currentPatient, 'uhid'),
           'Patient ID': g(currentPatient, 'id'),
           'Patient Name': g(currentPatient, 'firstName'),

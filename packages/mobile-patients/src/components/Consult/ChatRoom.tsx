@@ -1148,7 +1148,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       | WebEngageEvents[WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM]
       | WebEngageEvents[WebEngageEventName.UPLOAD_PHR_CLICK_CHATROOM]
       | CleverTapEvents[CleverTapEventName.CONSULT_REPORT_UPLOAD_IN_CHATROOM] = {
-      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       'Patient Age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
@@ -6823,7 +6823,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       | getAppointmentData_getAppointmentData_appointmentsHistory
       | getPatinetAppointments_getPatinetAppointments_patinetAppointments = appointmentData
   ) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_FEEDBACK_GIVEN] = {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.CONSULT_FEEDBACK_GIVEN]
+      | CleverTapEvents[CleverTapEventName.CONSULT_FEEDBACK_GIVEN] = {
       'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
       'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
       'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,

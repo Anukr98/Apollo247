@@ -276,7 +276,9 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           postWebEngageEvent(WebEngageEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
           postFirebaseEvent(FirebaseEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
           postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
-          const paymentModeEventAttribute: WebEngageEvents[WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED] = {
+          const paymentModeEventAttribute:
+            | WebEngageEvents[WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED]
+            | CleverTapEvents[CleverTapEventName.CONSULT_PAYMENT_MODE_SELECTED] = {
             'Payment Mode': item.paymentMode,
             User_Type: getUserType(allCurrentPatients),
           };

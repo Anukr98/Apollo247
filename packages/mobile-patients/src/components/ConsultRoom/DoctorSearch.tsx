@@ -1282,7 +1282,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const postSymptomTrackEvent = () => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_CLICKED_ON_SPECIALITY_SCREEN] = {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_CLICKED_ON_SPECIALITY_SCREEN]
+      | CleverTapEvents[CleverTapEventName.SYMPTOM_TRACKER_CLICKED_ON_SPECIALITY_SCREEN] = {
       'Patient UHID': g(currentPatient, 'uhid'),
       'Patient ID': g(currentPatient, 'id'),
       'Patient Name': g(currentPatient, 'firstName'),

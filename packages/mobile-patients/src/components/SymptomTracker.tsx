@@ -158,7 +158,9 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
                 style={styles.infoIconView}
                 onPress={() => {
                   setShowInfo(true);
-                  const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_INFO_CLICKED] = patientInfoAttributes;
+                  const eventAttributes:
+                    | WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_INFO_CLICKED]
+                    | CleverTapEvents[CleverTapEventName.SYMPTOM_TRACKER_INFO_CLICKED] = patientInfoAttributes;
                   postWebEngageEvent(
                     WebEngageEventName.SYMPTOM_TRACKER_INFO_CLICKED,
                     eventAttributes
@@ -544,7 +546,9 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
                     eventAttributes
                   );
                 } else {
-                  const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_MOST_TROUBLING_SYMPTOM_CLICKED] = patientInfoAttributes;
+                  const eventAttributes:
+                    | WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_MOST_TROUBLING_SYMPTOM_CLICKED]
+                    | CleverTapEvents[CleverTapEventName.SYMPTOM_TRACKER_MOST_TROUBLING_SYMPTOM_CLICKED] = patientInfoAttributes;
 
                   postWebEngageEvent(
                     WebEngageEventName.SYMPTOM_TRACKER_MOST_TROUBLING_SYMPTOM_CLICKED,
@@ -709,7 +713,9 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
       <View style={styles.bottomView}>
         <TouchableOpacity
           onPress={() => {
-            const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_RESTART_CLICKED] = {
+            const eventAttributes:
+              | WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_RESTART_CLICKED]
+              | CleverTapEvents[CleverTapEventName.SYMPTOM_TRACKER_RESTART_CLICKED] = {
               ...patientInfoAttributes,
               symptoms: symptoms,
               specialities: specialities,

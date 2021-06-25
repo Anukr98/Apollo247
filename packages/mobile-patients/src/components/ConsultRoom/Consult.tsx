@@ -685,7 +685,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     const eventAttributes:
       | WebEngageEvents[WebEngageEventName.CONSULT_CARD_CLICKED]
       | WebEngageEvents[WebEngageEventName.CONTINUE_CONSULT_CLICKED]
-      | WebEngageEvents[WebEngageEventName.FILL_MEDICAL_DETAILS] = {
+      | WebEngageEvents[WebEngageEventName.FILL_MEDICAL_DETAILS]
+      | CleverTapEvents[CleverTapEventName.CONSULT_CARD_CLICKED] = {
       'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
       'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
       'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,

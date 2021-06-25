@@ -540,7 +540,7 @@ export interface DiagnosticServiceble {
 }
 
 export interface ConsultRoomDoctorPatientInfo {
-  'Patient name': string;
+  'Patient Name': string;
   'Patient UHID': string;
   'Doctor Name': string;
   'Speciality name': string;
@@ -718,7 +718,7 @@ export interface FollowUpAppointment {
 
 export interface consultCallEndData {
   'Patient User ID': string;
-  'Patient name': string;
+  'Patient Name': string;
   'Patient mobile number': string;
   'Appointment Date time': Date | null;
   'Appointment display ID': number | null;
@@ -1502,7 +1502,7 @@ export interface CleverTapEvents {
   [CleverTapEventName.CONSULTED_WITH_DOCTOR_BEFORE]: ConsultedBefore;
   [CleverTapEventName.DOCTOR_SPECIALITY_SEARCH_NO_RESULT]: {
     'Text Searched': string;
-    'Patient name': string;
+    'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
     'Patient Age': number;
@@ -1553,7 +1553,7 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.PATIENT_EXTERNAL_MEETING_LINK_CLICKED]: {
     'Doctor name': string;
-    'Patient name': string;
+    'Patient Name': string;
     'Patient ID': string;
     'Doctor ID': string;
     'Appointment ID': string;
@@ -1607,8 +1607,6 @@ export interface CleverTapEvents {
     'Doctor City': string;
     'Type of Doctor': DoctorType;
     'Doctor Specialty': string;
-    // 'Appointment Date': string;
-    // 'Appointment Time': string;
     'Actual Price': number;
     'Discount used ?': boolean;
     'Discount coupon'?: string;
@@ -1633,7 +1631,6 @@ export interface CleverTapEvents {
     name: string;
     specialisation: string;
     category: string;
-    // time: Date | string;
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
@@ -1670,7 +1667,6 @@ export interface CleverTapEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
-    // Type: 'Consult' | 'Medicine' | 'Diagnostics';
     Rating: string;
     'Rating Reason': string;
   };
