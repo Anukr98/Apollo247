@@ -911,6 +911,18 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       }
       return moment(new Date(date)).format('DD MMM');
     };
+    let prescriptionGeneratedDate = '';
+    const getPrescriptionGeneratedDate = () => {
+      item?.data?.caseSheet?.map((dateItem: any) => {
+        if (dateItem?.prescriptionGeneratedDate) {
+          if (!prescriptionGeneratedDate) {
+            prescriptionGeneratedDate = dateItem?.prescriptionGeneratedDate;
+            return;
+          }
+        }
+      });
+      return prescriptionGeneratedDate || item?.data?.appointmentDateTime;
+    };
     const prescriptionName = item?.data?.prescriptionName || 'Prescription';
     const doctorName = item?.data?.prescriptionName
       ? item?.data?.prescribedBy && item?.data?.prescribedBy !== item?.data?.prescriptionName
@@ -924,7 +936,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     const dateText =
       item?.data?.prescriptionName || item?.data?.date
         ? getPresctionDate(item?.data?.date)
-        : getPresctionDate(item?.data?.appointmentDateTime);
+        : getPresctionDate(getPrescriptionGeneratedDate());
     const soureName =
       item?.data?.prescriptionName || item?.data?.date
         ? getSourceName(item?.data?.source) || '-'
