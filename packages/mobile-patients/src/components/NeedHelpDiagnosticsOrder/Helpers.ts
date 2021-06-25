@@ -35,11 +35,11 @@ export const Helpers = {
     const nonOrderQueries = queryData?.nonOrderQueries as string[] | undefined;
 
     if (queriesByOrderStatus && orderStatus) {
-      queries = queriesByOrderStatus.map((qId) => queryData?.queries?.find((q) => q?.id === qId));
+      queries = queriesByOrderStatus?.map((qId) => queryData?.queries?.find((q) => q?.id === qId));
     } else if (nonOrderQueries && !isOrderRelatedIssue) {
-      queries = nonOrderQueries.map((qId) => queryData?.queries?.find((q) => q?.id === qId));
+      queries = nonOrderQueries?.map((qId) => queryData?.queries?.find((q) => q?.id === qId));
     } else if (nonOrderQueries && isOrderRelatedIssue) {
-      queries = queryData?.queries?.filter((q) => !nonOrderQueries.includes(q?.id!));
+      queries = queryData?.queries?.filter((q) => !nonOrderQueries?.includes(q?.id!));
     }
 
     return (queries || queryData?.queries || []) as NeedHelpHelpers.HelpSectionQuery[];
