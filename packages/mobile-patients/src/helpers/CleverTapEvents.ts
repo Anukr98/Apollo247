@@ -72,6 +72,7 @@ export enum CleverTapEventName {
   CONSULT_USER_LOCATION = 'Consult User location',
   CONSULT_LOCATION_PERMISSION = 'Consult Location permission',
   USER_CHANGED_LOCATION = 'Change location',
+  CONSULT_FILTER_APPLIED = 'Consult Filter applied',
 
   //DOH events
   CONSULT_DOH_Viewed = 'Consult DOH viewed',
@@ -249,7 +250,6 @@ export enum CleverTapEventName {
   CONSULTED_WITH_DOCTOR_BEFORE = 'Chat Window Consulted with doctor before alert',
   DOCTOR_SPECIALITY_SEARCH_NO_RESULT = 'Doctor Speciality Fuzzy Search No Result',
   CONFIRM_LOCATION = 'Confirm Location',
-  DOCTOR_LISTING_FILTER_APPLIED = 'Doctor Listing Filter Apply',
   DOCTOR_PROFILE_THROUGH_DEEPLINK = 'Doctor profile through deeplink',
   SEARCH_SUGGESTIONS_VIEW_ALL = 'User clicked on View All',
   RETURN_REQUEST_START = 'Return Request Start',
@@ -1425,7 +1425,7 @@ export interface CleverTapEvents {
     Source: 'Speciality screen' | 'Doctor listing screen';
     'search result success': YesOrNo;
   };
-  [CleverTapEventName.DOCTOR_LISTING_FILTER_APPLIED]: DoctorFilterClick;
+  [CleverTapEventName.CONSULT_FILTER_APPLIED]: DoctorFilterClick;
   [CleverTapEventName.CONSULT_SPECIALITY_CLICKED]: SpecialityClickedEvent;
   [CleverTapEventName.BOOK_APPOINTMENT]: {
     'Doctor Name': string;

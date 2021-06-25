@@ -1901,16 +1901,24 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
-  const fireFilterWebengageEvent = (filterApplied: string, filterValue: string) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_LISTING_FILTER_APPLIED] = {
+  const fireFilterWebengageEvent = (
+    filterApplied: string,
+    filterValue: string,
+    filterAppliedData?: any
+  ) => {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.DOCTOR_LISTING_FILTER_APPLIED]
+      | CleverTapEvents[CleverTapEventName.CONSULT_FILTER_APPLIED] = {
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       pincode: g(locationDetails, 'pincode') || '',
-      'Filter Applied': filterApplied,
-      'Filter Value': filterValue,
+      'Filter Applied': filterApplied || undefined,
+      'Filter Value': filterValue || undefined,
+      ...filterAppliedData,
     };
     postWebEngageEvent(WebEngageEventName.DOCTOR_LISTING_FILTER_APPLIED, eventAttributes);
+    postCleverTapEvent(CleverTapEventName.CONSULT_FILTER_APPLIED, eventAttributes);
   };
 
   const renderBottomOptions = () => {
@@ -2196,12 +2204,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             setDisplayFilter(false);
           }}
           setData={(selecteddata) => {
+            let selectedOptionsObj: any = {};
             selecteddata.forEach((value) => {
               const { label, selectedOptions } = value;
               if (selectedOptions.length) {
-                fireFilterWebengageEvent(label, selectedOptions.join());
+                selectedOptionsObj[`${label}`] = selectedOptions?.join();
               }
             });
+            fireFilterWebengageEvent('', '', selectedOptionsObj);
             setshowSpinner(true);
             setFilterData(selecteddata);
             getNetStatus()
