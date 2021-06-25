@@ -171,6 +171,7 @@ const appStaticVariables = {
     pharmacy: '5df80ade-4eba-4ad3-9caf-e1169fcaeb32',
     consult: 'd70e6ee8-ecf1-4c75-ae00-2f968641f260',
     returnOrder: 'e2fc95ff-3ef5-4a9d-8fed-31609e426cbc',
+    diagnostic: '6ce8d555-9be5-48b5-b4de-06480f9c9cab',
     deliveryStatus: '3df5b586-ce39-478a-a5ec-1e525f5dc42a',
     vaccination: 'd73f3dc4-bc92-11eb-8529-0242ac130003',
   },
