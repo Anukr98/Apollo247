@@ -251,7 +251,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     if (axdcCode && medicineDetails?.sku) {
       getMedicineDetails(pincode, axdcCode);
     }
-  }, [axdcCode, pincode]);
+  }, [pincode]);
 
   useEffect(() => {
     try {

@@ -60,7 +60,11 @@ import {
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import _ from 'lodash';
-import { getPricesForItem, sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+  getPricesForItem,
+  sourceHeaders,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 import { DiagnosticsSearchSuggestionItem } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticsSearchSuggestionItem';
 import { DiagnosticsNewSearch } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticsNewSearch';
 import {
@@ -270,7 +274,13 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     price: number,
     discountedPrice: number
   ) => {
-    DiagnosticAddToCartEvent(name, id, price, discountedPrice, 'Popular search');
+    DiagnosticAddToCartEvent(
+      name,
+      id,
+      price,
+      discountedPrice,
+      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.POPULAR_SEARCH
+    );
   };
 
   const setWebEngageEventOnSearchItem = (

@@ -11,7 +11,6 @@ import {
   LiverIcon,
   KidneyIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { FaqComponent } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/FaqComponent';
 import { SafetyAdvice } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/SafetyAdvice';
 
 export interface PrecautionWarningsProps {
@@ -28,7 +27,6 @@ export const PrecautionWarnings: React.FC<PrecautionWarningsProps> = (props) => 
   const drivingContent = pharmaOverview?.DrivingContent;
   const liverContent = pharmaOverview?.LiverContent;
   const kidneyContent = pharmaOverview?.KidneyContent;
-  const faqContent = pharmaOverview?.CompositionContentFAQs;
   const showSafetyAdvice =
     !!alcoholContent ||
     !!pregnancyContent ||
@@ -156,7 +154,6 @@ export const PrecautionWarnings: React.FC<PrecautionWarningsProps> = (props) => 
           <View style={styles.lineBreak} />
         </>
       )}
-      {!!faqContent && faqContent.length && <FaqComponent faqs={faqContent} name={name} />}
     </View>
   );
 };

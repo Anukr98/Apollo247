@@ -18,6 +18,7 @@ import {
 import { circleValidity } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
 
 function createPatientAttributes(currentPatient: any) {
   const patientAttributes = {
@@ -105,16 +106,7 @@ export function DiagnosticAddToCartEvent(
   id: string,
   price: number,
   discountedPrice: number,
-  source:
-    | 'Home page'
-    | 'Full search'
-    | 'Details page'
-    | 'Partial search'
-    | 'Listing page'
-    | 'Popular search'
-    | 'Category page'
-    | 'Prescription'
-    | 'Cart page',
+  source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   section?: string
 ) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADD_TO_CART] = {

@@ -739,6 +739,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setMinCartValueForCOD,
     setMaxCartValueForCOD,
     setNonCodSKus,
+    setCartPriceNotUpdateRange,
   } = useShoppingCart();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -1062,6 +1063,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         setMinCartValueForCOD?.(minMaxCartValues?.minCartValueCOD);
       minMaxCartValues?.maxCartValueCOD &&
         setMaxCartValueForCOD?.(minMaxCartValues?.maxCartValueCOD);
+      minMaxCartValues?.priceNotUpdateRange &&
+        setCartPriceNotUpdateRange?.(minMaxCartValues?.priceNotUpdateRange);
 
       const nonCodSkuList = getRemoteConfigValue(
         'Sku_Non_COD',

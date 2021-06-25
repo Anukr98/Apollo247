@@ -38,7 +38,7 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import {
   getPatientAddressList,
   getPatientAddressListVariables,
-} from '../../graphql/types/getPatientAddressList';
+} from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import {
   GET_PATIENT_ADDRESS_LIST,
   UPLOAD_DOCUMENT,
@@ -125,8 +125,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     deliveryAddressId,
     setDeliveryAddressId,
     addMultipleCartItems,
-    uploadPrescriptionRequired,
-    prescriptionType,
     physicalPrescriptions,
     setPhysicalPrescriptions,
     pinCode,
@@ -145,13 +143,13 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     setDefaultCirclePlan,
     circleSubscriptionId,
     setCircleSubscriptionId,
-    hdfcSubscriptionId,
     pharmacyCircleAttributes,
     newAddressAdded,
     setNewAddressAdded,
     orders,
     setOrders,
     productDiscount,
+    cartPriceNotUpdateRange,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -616,7 +614,12 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         const allowPriceUpdate =
           cartItem?.price !== storePrice
             ? updatePrices === 'ByPercentage'
-              ? isPricesWithInSpecifiedRange(cartItem?.price, storePrice, updatePricePercent)
+              ? isPricesWithInSpecifiedRange(
+                  cartItem?.price,
+                  storePrice,
+                  updatePricePercent,
+                  cartPriceNotUpdateRange
+                )
               : true
             : false;
         if (storeItem?.mrp != 0 && allowPriceUpdate) {
@@ -702,8 +705,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       try {
         const response = await searchPickupStoresApi(pincode);
         const { data } = response;
-        const { Stores } = data;
-        if (Stores?.length) {
+        const { stores_count } = data;
+        if (stores_count) {
           setshowStorePickupCard(true);
         } else {
           setshowStorePickupCard(false);
@@ -1292,10 +1295,19 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   return <View style={{ flex: 1 }}>{cartItems?.length ? renderScreen() : renderEmptyCart()}</View>;
 };
 
-const isPricesWithInSpecifiedRange = (num1: number, num2: number, percentage: number) => {
-  const diffP = ((num1 - num2) / num1) * 100;
+const isPricesWithInSpecifiedRange = (
+  num1: number,
+  num2: number,
+  percentage: number,
+  cartPriceNotUpdateRange: number
+) => {
+  const diff = num1 - num2;
+  const diffP = (diff / num1) * 100;
   const result = diffP <= percentage && diffP >= -percentage;
-  return result;
+  const finalResult = !!cartPriceNotUpdateRange
+    ? result && diff > cartPriceNotUpdateRange && diff < -cartPriceNotUpdateRange
+    : result;
+  return finalResult;
 };
 
 const styles = StyleSheet.create({

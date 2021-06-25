@@ -184,9 +184,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const [scrollToend, setScrollToend] = useState<boolean>(false);
   const [showCareDetails, setShowCareDetails] = useState(true);
   const [areNonCODSkus, setAreNonCODSkus] = useState(false);
-  const [isSubstitution, setisSubstitution] = useState<boolean>(false);
-  const [substitutionMessage, setSubstitutionMessage] = useState<string>('');
-  const [substitutionTime, setSubstitutionTime] = useState<number>(0);
+  const [isSubstitutionValue, setisSubstitutionValue] = useState<boolean>(false);
+  const [substitutionMessageValue, setSubstitutionMessageValue] = useState<string>('');
+  const [substitutionTimeValue, setSubstitutionTimeValue] = useState<number>(0);
   const client = useApolloClient();
 
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
@@ -460,9 +460,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             transId: orderAutoId,
             orders: orders,
             isStorePickup: isStorePickup,
-            isSubstitution,
-            substitutionMessage,
-            substitutionTime,
+            showSubstituteMessage: isSubstitutionValue,
+            substitutionMessage: substitutionMessageValue,
+            substitutionTime: substitutionTimeValue,
           });
         }
       })
@@ -536,9 +536,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             price: getFormattedAmount(grandTotal),
             transId: transactionId,
             orders: orders,
-            isSubstitution,
-            substitutionMessage,
-            substitutionTime,
+            showSubstituteMessage: isSubstitutionValue,
+            substitutionMessage: substitutionMessageValue,
+            substitutionTime: substitutionTimeValue,
           });
         }
       })
@@ -848,9 +848,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
                   paymentMode,
                   bankCode,
                   orderInfo,
-                  isSubstitution,
-                  substitutionMessage,
-                  substitutionTime
+                  isSubstitutionValue,
+                  substitutionMessageValue,
+                  substitutionTimeValue
                 )
                   .catch((e) => {
                     CommonBugFender('CheckoutScene_redirectToPaymentGateway', e);
@@ -895,9 +895,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               substitutionTime,
               substitutionMessage,
             } = data?.saveMedicineOrderV2 || {};
-            setisSubstitution(isSubstitution);
-            setSubstitutionMessage(substitutionMessage);
-            setSubstitutionTime(substitutionTime);
+            setisSubstitutionValue(isSubstitution);
+            setSubstitutionMessageValue(substitutionMessage);
+            setSubstitutionTimeValue(substitutionTime);
             if (errorCode || errorMessage) {
               showAphAlert!({
                 title: `Uh oh.. :(`,

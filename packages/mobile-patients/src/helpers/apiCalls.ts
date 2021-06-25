@@ -96,6 +96,10 @@ export interface NewPharmaOverview {
   WarningsAndPrecautions: string;
   CompositionContentFAQs: PharmaFAQ[];
   SideEffects: string;
+  DiseaseConditionGlossary?: string;
+  DietAndLifestyle?: string;
+  SpecialAdvise?: string;
+  HabitForming?: string;
 }
 
 export interface PharmaFAQ {
@@ -1105,7 +1109,10 @@ export const getCorporateMembershipData = (planId: string): Promise<AxiosRespons
   });
 };
 
-export const getLandingPageBanners = (pageName: string, cityId: number): Promise<AxiosResponse<any>> => {
+export const getLandingPageBanners = (
+  pageName: string,
+  cityId: number
+): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
   const getBanners = `${baseurl}/banner/${pageName}?city=${cityId}`;
   return Axios.get(getBanners, {

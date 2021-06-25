@@ -6,6 +6,7 @@ import { filterHtmlContent } from '@aph/mobile-patients/src/helpers/helperFuncti
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { PrecautionWarnings } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/PrecautionWarnings';
 import HTML from 'react-native-render-html';
+import { FaqComponent } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/FaqComponent';
 
 export interface PharmaMedicineInfoProps {
   name: string;
@@ -22,6 +23,11 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
   const storagePlace = pharmaOverview?.StoragePlace;
   const storage = pharmaOverview?.Storage;
   const coldChain = pharmaOverview?.ColdChain;
+  const faqContent = pharmaOverview?.CompositionContentFAQs;
+  const habitForming = pharmaOverview?.HabitForming;
+  const dietAndLifeStyle = pharmaOverview?.DietAndLifestyle;
+  const specialAdvise = pharmaOverview?.SpecialAdvise;
+  const diseaseConditionGlossary = pharmaOverview?.DiseaseConditionGlossary;
 
   const renderHtmlContent = (title: string, content: string) => (
     <View>
@@ -30,7 +36,14 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
         html={content}
         baseFontStyle={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}
         imagesMaxWidth={Dimensions.get('window').width}
-        ignoredStyles={['line-height', 'margin-bottom']}
+        ignoredStyles={[
+          'line-height',
+          'margin-bottom',
+          'color',
+          'text-align',
+          'font-size',
+          'font-family',
+        ]}
       />
     </View>
   );
@@ -76,6 +89,44 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
     <PrecautionWarnings name={name} pharmaOverview={pharmaOverview} />
   );
 
+  const renderAdvice = () => {
+    const showContent = !!habitForming || !!dietAndLifeStyle || !!specialAdvise;
+    if (showContent) {
+      return (
+        <View style={styles.adviceView}>
+          {!!habitForming && renderHabitForming()}
+          {!!dietAndLifeStyle && renderDietAndLifeStyle()}
+          {!!specialAdvise && renderSpecialAdvice()}
+        </View>
+      );
+    } else return null;
+  };
+
+  const renderHabitForming = () => (
+    <View>
+      <Text style={styles.subHeading}>Habit Forming</Text>
+      <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>{habitForming}</Text>
+    </View>
+  );
+
+  const renderDietAndLifeStyle = () => {
+    const dnl = filterHtmlContent(dietAndLifeStyle);
+    let dietLifestyle = dnl.replace(/\$name/gi, name);
+    return !!dietLifestyle.length && renderHtmlContent(`Diet & Lifestyle Advise`, dietLifestyle);
+  };
+
+  const renderSpecialAdvice = () => {
+    const advice = filterHtmlContent(specialAdvise);
+    let splAdvice = advice.replace(/\$name/gi, name);
+    return !!splAdvice.length && renderHtmlContent(`Special Advise`, splAdvice);
+  };
+
+  const renderDiseaseAndConditionsGlossary = () => {
+    const diseaseConditionGlossaryFiltered = filterHtmlContent(diseaseConditionGlossary);
+    let glossary = diseaseConditionGlossaryFiltered.replace(/\$name/gi, name);
+    return !!glossary.length && renderHtmlContent(`Disease /Condition Glossary `, glossary);
+  };
+
   return (
     <View style={styles.cardStyle}>
       {!!usesOfProduct && renderUsesOfProduct()}
@@ -83,6 +134,10 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
       {(!!storagePlace || !!storage || !!coldChain) && renderStorage()}
       {!!renderSideEffects && renderSideEffects(pharmaSideEffects)}
       {!!pharmaOverview && renderPrecautionsAndWarnings()}
+      {renderAdvice()}
+      <Text style={styles.heading}>Patients Concern</Text>
+      {!!diseaseConditionGlossary && renderDiseaseAndConditionsGlossary()}
+      {!!faqContent && faqContent.length && <FaqComponent faqs={faqContent} name={name} />}
     </View>
   );
 };
@@ -98,5 +153,10 @@ const styles = StyleSheet.create({
   heading: {
     ...theme.viewStyles.text('SB', 17, '#02475B', 1, 25, 0.35),
     marginBottom: 2,
+  },
+  adviceView: {
+    marginBottom: 10,
+    borderBottomWidth: 0.5,
+    borderBottomColor: theme.colors.LIGHT_GRAY,
   },
 });
