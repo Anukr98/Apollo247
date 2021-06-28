@@ -11,27 +11,11 @@ import HTML from 'react-native-render-html';
 export interface PharmaMedicineInfoProps {
   name: string;
   pharmaOverview?: NewPharmaOverview | null;
-  vegetarian: 'Yes' | 'No';
-  key_ingredient?: string | null;
-  size?: string | null;
-  flavour_fragrance?: string | null;
-  colour?: string | null;
-  variant?: string | null;
 }
 
 export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => {
-  const {
-    name,
-    pharmaOverview,
-    vegetarian,
-    key_ingredient,
-    size,
-    flavour_fragrance,
-    colour,
-    variant,
-  } = props;
+  const { name, pharmaOverview } = props;
 
-  const [showAllContent, setShowAllContent] = useState<boolean>(false);
   const pharmaUses = pharmaOverview?.HowToTake;
   const usesOfProduct = pharmaOverview?.Uses;
   const pharmaBenefits = pharmaOverview?.MedicinalBenefits;
@@ -39,7 +23,6 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
   const storagePlace = pharmaOverview?.StoragePlace;
   const storage = pharmaOverview?.Storage;
   const coldChain = pharmaOverview?.ColdChain;
-  const aboutProduct = pharmaOverview?.AboutProduct;
 
   const renderHtmlContent = (title: string, content: string) => (
     <View>
@@ -52,12 +35,6 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
       />
     </View>
   );
-
-  const renderAbout = () => {
-    const medicine_about = filterHtmlContent(aboutProduct);
-    let medicineAbout = medicine_about.replace(/\$name/gi, name);
-    return !!medicineAbout.length && renderHtmlContent(`About ${name}`, medicineAbout);
-  };
 
   const renderUses = () => {
     const medicine_use = filterHtmlContent(pharmaUses);
@@ -84,14 +61,6 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
     return !!sideEffects ? renderHtmlContent(`Side Effects of ${name}`, sideEffects) : null;
   };
 
-  const renderVegetarianIcon = () => {
-    return vegetarian === 'Yes' ? (
-      <VegetarianIcon style={styles.vegIcon} />
-    ) : vegetarian === 'No' ? (
-      <NonVegetarianIcon style={styles.vegIcon} />
-    ) : null;
-  };
-
   const renderStorage = () => {
     const pharmaStorage = `${storagePlace} ${storage} ${coldChain}`;
     const storageInfo = pharmaStorage.replace(/\$name/gi, name);
@@ -104,79 +73,24 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
     );
   };
 
-  const renderKeyIngredient = () => (
-    <View>
-      <Text style={styles.subHeading}>Key Ingredient</Text>
-      <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>{key_ingredient}</Text>
-    </View>
-  );
-
-  const renderSize = () => (
-    <View>
-      <Text style={styles.subHeading}>Size</Text>
-      <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>{size}</Text>
-    </View>
-  );
-
-  const renderFlavour = () => (
-    <View>
-      <Text style={styles.subHeading}>Flavour</Text>
-      <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>{flavour_fragrance}</Text>
-    </View>
-  );
-
-  const renderColor = () => (
-    <View>
-      <Text style={styles.subHeading}>Color</Text>
-      <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>{colour}</Text>
-    </View>
-  );
-
-  const renderVariant = () => (
-    <View>
-      <Text style={styles.subHeading}>Variant</Text>
-      <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>{variant}</Text>
-    </View>
-  );
-
   const renderPrecautionsAndWarnings = () => (
     <PrecautionWarnings name={name} pharmaOverview={pharmaOverview} />
   );
 
-  const renderShowMore = () => {
-    return (
-      <TouchableOpacity onPress={() => setShowAllContent(!showAllContent)}>
-        <Text style={styles.showMoreText}>{showAllContent ? `SHOW LESS` : `SHOW MORE`}</Text>
-      </TouchableOpacity>
-    );
-  };
-
   return (
     <View style={styles.cardStyle}>
-      {!!aboutProduct && renderAbout()}
-      {showAllContent && (
-        <>
-          {!!usesOfProduct && renderUsesOfProduct()}
-          {(!!pharmaUses || !!pharmaBenefits) && renderUses()}
-          {renderVegetarianIcon()}
-          {(!!storagePlace || !!storage || !!coldChain) && renderStorage()}
-          {!!key_ingredient && renderKeyIngredient()}
-          {!!size && renderSize()}
-          {!!flavour_fragrance && renderFlavour()}
-          {!!colour && renderColor()}
-          {!!variant && renderVariant()}
-          {!!renderSideEffects && renderSideEffects(pharmaSideEffects)}
-          {!!pharmaOverview && renderPrecautionsAndWarnings()}
-        </>
-      )}
-      {renderShowMore()}
+      {!!usesOfProduct && renderUsesOfProduct()}
+      {(!!pharmaUses || !!pharmaBenefits) && renderUses()}
+      {(!!storagePlace || !!storage || !!coldChain) && renderStorage()}
+      {!!renderSideEffects && renderSideEffects(pharmaSideEffects)}
+      {!!pharmaOverview && renderPrecautionsAndWarnings()}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   cardStyle: {
-    marginVertical: 10,
+    marginBottom: 10,
   },
   subHeading: {
     ...theme.viewStyles.text('M', 16, '#02475B', 1, 25, 0.35),
@@ -191,5 +105,9 @@ const styles = StyleSheet.create({
   showMoreText: {
     ...theme.viewStyles.text('SB', 13, '#FC9916', 1, 25, 0.35),
     textAlign: 'right',
+  },
+  heading: {
+    ...theme.viewStyles.text('SB', 17, '#02475B', 1, 25, 0.35),
+    marginBottom: 2,
   },
 });

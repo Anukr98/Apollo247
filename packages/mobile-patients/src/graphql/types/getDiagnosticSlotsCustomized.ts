@@ -3,6 +3,8 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+import { AddressObj } from "./globalTypes";
+
 // ====================================================
 // GraphQL query operation: getDiagnosticSlotsCustomized
 // ====================================================
@@ -26,4 +28,5 @@ export interface getDiagnosticSlotsCustomizedVariables {
   selectedDate: any;
   areaID: number;
   itemIds: number[];
+  patientAddressObj?: AddressObj | null;
 }

@@ -274,7 +274,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const appointmentType = props.navigation.getParam('appointmentType');
   const appointmentId = props.navigation.getParam('CaseSheet');
 
-  const { loading, setLoading, showAphAlert } = useUIElements();
+  const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
 
   const client = useApolloClient();
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
@@ -561,15 +561,37 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           ]);
         }
         if (testPrescription.length == unAvailableItemsArray.length) {
-          Alert.alert(
-            'Uh oh.. :(',
-            `Unfortunately, we do not have any diagnostic(s) available right now.`
-          );
-        } else if (unAvailableItems) {
-          Alert.alert(
-            'Uh oh.. :(',
-            `Out of ${testPrescription.length} diagnostic(s), you are trying to order, following diagnostic(s) are not available.\n\n${unAvailableItems}\n`
-          );
+          showAphAlert?.({
+            title: string.common.uhOh,
+            description: string.common.noDiagnosticsAvailable,
+            onPressOk: () => {
+              _navigateToTestCart();
+            },
+            onPressOutside: () => {
+              _navigateToTestCart();
+            },
+          });
+        } else {
+          //in case of if any unavailable items or all are present
+          const lengthOfAvailableItems = tests?.length;
+          const testAdded = tests?.map((item) => nameFormater(item?.name), 'title').join('\n');
+          showAphAlert?.({
+            title:
+              !!lengthOfAvailableItems && lengthOfAvailableItems > 0
+                ? `${lengthOfAvailableItems} ${
+                    lengthOfAvailableItems > 1 ? 'items' : 'item'
+                  } added to your cart`
+                : string.common.uhOh,
+            description: unAvailableItems
+              ? `Below items are added to your cart: \n${testAdded} \nSearch for the remaining diagnositc tests and add to the cart.`
+              : `Below items are added to your cart: \n${testAdded}`,
+            onPressOk: () => {
+              _navigateToTestCart();
+            },
+            onPressOutside: () => {
+              _navigateToTestCart();
+            },
+          });
         }
         setLoading!(false);
         props.navigation.push(AppRoutes.TestsCart, { comingFrom: AppRoutes.ConsultDetails });
@@ -579,6 +601,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         handleGraphQlError(e);
       });
   };
+
+  function _navigateToTestCart() {
+    hideAphAlert?.();
+    props.navigation.push(AppRoutes.TestsCart, { comingFrom: AppRoutes.ConsultDetails });
+  }
 
   const getDaysCount = (type: MEDICINE_CONSUMPTION_DURATION | null) => {
     return type == MEDICINE_CONSUMPTION_DURATION.MONTHS

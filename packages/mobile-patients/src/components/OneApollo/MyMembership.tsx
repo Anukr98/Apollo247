@@ -103,22 +103,6 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
               style={{
                 display: 'flex',
                 flexDirection: 'row',
-              }}
-            >
-              <MembershipBenefitsOne style={styles.benefitsImage} />
-              <View
-                style={{
-                  alignSelf: 'center',
-                }}
-              >
-                <Text style={styles.benefitsHeading}>Apollo Clinics</Text>
-                <Text style={styles.benefitsDescription}>Free home sample collections</Text>
-              </View>
-            </View>
-            <View
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
                 marginTop: 15,
               }}
             >

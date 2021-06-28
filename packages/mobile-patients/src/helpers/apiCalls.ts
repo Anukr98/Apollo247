@@ -1105,10 +1105,7 @@ export const getCorporateMembershipData = (planId: string): Promise<AxiosRespons
   });
 };
 
-export const getLandingPageBanners = (
-  pageName: string,
-  cityId: number
-): Promise<AxiosResponse<any>> => {
+export const getLandingPageBanners = (pageName: string, cityId: number): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
   const getBanners = `${baseurl}/banner/${pageName}?city=${cityId}`;
   return Axios.get(getBanners, {
@@ -1214,4 +1211,23 @@ export const getDiagnosticCartItemReportGenDetails = (
       Authorization: config.DRUPAL_CONFIG[1],
     },
   });
+};
+
+export const getDiagnosticDoctorPrescriptionResults = (
+  itemNames: string,
+  cityId?: number
+): Promise<AxiosResponse<any>> => {
+  const baseurl = config.DRUPAL_CONFIG[0];
+  const getSearchResults = `${baseurl}/diagnostic/diagnosticdoctoritemsearch`;
+  return Axios.post(
+    getSearchResults,
+    {
+      keyword: itemNames,
+    },
+    {
+      headers: {
+        Authorization: config.DRUPAL_CONFIG[1],
+      },
+    }
+  );
 };

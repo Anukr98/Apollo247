@@ -85,7 +85,10 @@ export const TestViewReportOverlay: React.FC<TestViewReportOverlayProps> = (prop
                     props.onPressViewReport();
                   } else if (item?.title == string.Report.share) {
                     try {
-                      const whatsAppScheme = `whatsapp://send?text=${props.order?.labReportURL}`;
+                      const whatsAppScheme = `whatsapp://send?text=${props.order?.labReportURL?.replace(
+                        '&',
+                        '%26'
+                      )}`;
                       const canOpenURL = await Linking.canOpenURL(whatsAppScheme);
                       canOpenURL && Linking.openURL(whatsAppScheme);
                     } catch (error) {}

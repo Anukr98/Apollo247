@@ -127,7 +127,8 @@
     "couldNotLoadText": "Uh oh.. could't load!",
     "lowNetworkText": "We were unable to load the page properly because of low network. Please try again",
     "CorporateVaccineBenefit": "DEPENDENT_VACCINATION_REG",
-    "noDiagnosticsAvailable": "Unfortunately, we do not have any diagnostic(s) available right now."
+    "noDiagnosticsAvailable": "Unfortunately, we do not have any diagnostic(s) available right now.",
+    "unableToSetDeliveryAddress": "We're sorry! Unable to set delivery address. Please try again after some time"
   },
   "components": {
     "medicineDetails": {
@@ -475,6 +476,7 @@
       "editOrder": "Need to Modify Order Details",
       "userUnavailable": "I am not available",
       "bookedByMistake": "Booked by Mistake",
+      "lesserPrice": "Got lesser price elsewhere",
       "urgentReport": "Need Report Urgently",
       "anotherChannel": "Booked from other channel",
       "otherReasons": "Others (Please specify)"
@@ -520,6 +522,7 @@
     "fastReport": "Fast & Accurate Reports",
     "fastReportSubText": "Get reports in 12 to 24 hours. View or download on app anytime",
     "orderSuccessPhaleboText": "*The phlebotomist will call you prior to starting his journey to confirm your availability",
+    "invoiceTimelineText": "Invoice will be available to download after the sample is submitted in the lab",
     "unableToFetchStatus": "Something went wrong. We are unable to fetch status",
     "noSlotAvailable": "Sorry! There are no slots available on {{date}}. Please choose another date.",
     "updateAddressLatLngMessage": "Unable to locate address. Please update.",
@@ -555,6 +558,11 @@
     "collectionText": "Track Order",
     "trackPhleboText": "Track Phlebo",
     "codDisableText": "We are currently not allowing Cash On Delivery for home sample collections.",
+    "phleboCallingError": "Error while connecting to Phlebo. Please try again later.",
+    "modifyItemAlreadyExist": "Your cart has been updated, since it had duplicate items",
+    "previousCharges": "Previous Charges",
+    "currentCharges": "Current Charges",
+    "modifyDiscardText": "You were trying to modify the order. Would you like to discard and go back to home page?",
     "sampleCollected": "Sample Collected",
     "sampleCollectedContent": "Our phlebotomist has successfully collected the samples."
   },
@@ -635,6 +643,7 @@
   "health_records_home": {
     "description": "Find all your health record(s) & prescription(s) in one place.",
     "view_consult": "VIEW CONSULT",
+    "clickPhotos": "CLICK MORE PHOTOS",
     "order_medicine": "ORDER MEDICINES",
     "order_medicine_msg": "Try our Express Delivery in 2-4 hours",
     "order_test": "ORDER TESTS",
@@ -1110,7 +1119,9 @@
   },
   "consultModeTab": {
     "CONSULT_ONLINE": "Consult Online",
-    "MEET_IN_PERSON": "Meet In Person"
+    "MEET_IN_PERSON": "Meet In Person",
+    "VIDEO_CONSULT": "Video Consult",
+    "HOSPITAL_VISIT": "Hospital Visit"
   },
   "vaccineBooking": {
     "covid_vaccine_booking": "COVID VACCINE BOOKING",
@@ -1182,14 +1193,15 @@
     "error_title": "Oops !",
     "cancel_title": "Booking cancelled",
     "error_cancel_message": "Couldn't cancel the booking,please retry",
-    "cancel_success_message": "Successfully cancelled vaccination booking",
-    "no_vaccination_sites_available": "Currently, Vaccination sites  are not available for this city. Kindly select another city.",
+    "cancel_success_message": "Your booking has been cancelled ",
+    "no_vaccination_sites_available": "Currently, Vaccination sites  are not available for this city or vaccine type. Kindly select another city or vaccine type.",
     "no_slots_available": "There are no available slots for this vaccination location. Kindly select another location.",
     "no_date_slots_available": "Please choose a date to see the available slots.",
     "cowin_enroll_text": "We do not have vaccine benefits enabled for your company. You can click on the button below to book a vaccination slot on CoWin. If you believe that you should be able to book, please raise a concern through your HR/Benefits team",
     "cowin_cta_text": "ENROL ON COWIN",
-    "retail_customer_cowin_text": "As per government guidelines, beneficiaries need to register and schedule for vaccination on CoWin. Please click below to access CoWin.",
-    "retail_customer_corporate_text": "If your company has a corporate tie-up with Apollo, please use the following button to follow the corporate registration process.",
+    "retail_vaccination_booking": "VACCINATION BOOKING",
+    "retail_customer_cowin_text": "For booking vaccination as a regular Apollo247 user, click below:",
+    "retail_customer_corporate_text": "If your corporate has tied up with Apollo please click below to enrol for Corporate Vaccination",
     "enroll_corporate_cta_text": "ENROL FOR CORPORATE MEMBERSHIP",
     "tnc_header_text": "Terms & Conditions",
     "tnc_heading": "terms & conditions",
@@ -1224,9 +1236,11 @@
     "wrong_otp": "Seems you have entered wrong OTP.Please try with right one.",
     "unable_to_validate": "We are unable to validate OTP right now. Please try again after some time. If this issue persists, send an email to corporate-helpdesk@apollo247.com and attach the screenshot of this error.",
     "CORPORATE_VACCINATION": "CORPORATE_VACCINATION",
-    "booking_detail_pdf": "DOWNLOAD PDF",
-    "unable_to_generate_pdf": "Unable to generate booking pdf.",
-    "success_generate_pdf": "Successfully generated vaccination booking PDF ",
-    "dose_2_alert": "Please make sure that the difference between 1st and 2nd dose is as per Govt. guidelines. If difference in 2nd dose is less than Govt. guideline, you will not be given 2nd dose."
+    "booking_detail_pdf":"DOWNLOAD PDF",
+    "unable_to_generate_pdf":"Unable to generate booking pdf.",
+    "success_generate_pdf":"Successfully generated vaccination booking PDF ",
+    "dose_2_alert":"Please make sure that the difference between 1st and 2nd dose is as per Govt. guidelines. If difference in 2nd dose is less than Govt. guideline, you will not be given 2nd dose.",
+    "verify_title":"VERIFY",
+    "submit_title":"SUBMIT "
   }
 }

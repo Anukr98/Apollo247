@@ -1542,8 +1542,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             if (circlePlan) {
               const circleSubscription = setCircleSubscriptionData(circlePlan[0]);
               if (!!circlePlan[0]?._id) {
-                AsyncStorage.setItem('circleSubscriptionId', circlePlan[0]?._id);
-                setCircleSubscriptionId && setCircleSubscriptionId(circlePlan[0]?._id);
+                AsyncStorage.setItem('circleSubscriptionId', circlePlan[0]?.subscription_id);
+                setCircleSubscriptionId && setCircleSubscriptionId(circlePlan[0]?.subscription_id);
                 setIsCircleSubscription && setIsCircleSubscription(true);
               }
               setCircleSubscription && setCircleSubscription(circleSubscription);
@@ -2229,9 +2229,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           : null;
     }
 
-    const patientDetails = allPatients
+    const patientDetails_primary = allPatients
       ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
       : null;
+
+    const patientDetails = currentPatient;
 
     const fullName = `${g(patientDetails, 'firstName') || ''}%20${g(patientDetails, 'lastName') ||
       ''}`;
@@ -3185,7 +3187,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   ? 'Book Vaccination Slot'
                   : corporateSubscriptions?.length >= 0 && !!vaccinationCmsIdentifier
                   ? 'Book Vaccination Slot'
-                  : 'Register on Cowin'
+                  : 'Book Vaccination Slot'
                 : item?.title
             }
             onPress={() => {
@@ -3316,7 +3318,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               });
             }
           } else {
-            Linking.openURL(string.vaccineBooking.cowin_url).catch((err) => {});
+            props.navigation.navigate(AppRoutes.BookedVaccineScreen, {
+              cmsIdentifier: vaccinationCmsIdentifier || '',
+              subscriptionId: vaccinationSubscriptionId || '',
+              subscriptionInclusionId: vaccinationSubscriptionInclusionId || '',
+              isVaccineSubscription: !!vaccinationCmsIdentifier,
+              isCorporateSubscription: !!corporateSubscriptions?.length,
+            });
           }
         } else {
           props.navigation.navigate(AppRoutes.BookedVaccineScreen, {

@@ -68,7 +68,10 @@ const styles = StyleSheet.create({
   },
   rowStyles: { flexDirection: 'row', justifyContent: 'space-between' },
   heading1: { ...theme.viewStyles.text('M', 12.5, colors.SHERPA_BLUE, 1, 20) },
-  doctorTextView: { minHeight: 50, justifyContent: 'center' },
+  doctorTextView: {
+    minHeight: 50,
+    justifyContent: 'center',
+  },
   heading2: {
     ...theme.viewStyles.text('SB', 15, colors.SHERPA_BLUE, 1, 20),
     marginTop: 8,

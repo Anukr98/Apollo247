@@ -12,6 +12,7 @@ export enum AppEnv {
   QA = 'QA',
   QA2 = 'QA2',
   QA3 = 'QA3',
+  QA4 = 'QA4',
   QA5 = 'QA5',
   PROD = 'PROD',
   PERFORM = 'PERFORM',
@@ -30,6 +31,8 @@ const paymentGatewayBaseUrl: string =
     ? 'https://qapmt.apollo247.com'
     : APP_ENV == AppEnv.QA3
     ? 'https://qathreepmt.apollo247.com'
+    : APP_ENV == AppEnv.QA4
+    ? 'https://qa4pmt.apollo247.com'
     : APP_ENV == AppEnv.QA5
     ? 'https://qa5pmt.apollo247.com'
     : APP_ENV == AppEnv.PERFORM
@@ -222,8 +225,11 @@ const appStaticVariables = {
   Reopen_Help_Max_Time: 24, // hrs
   Helpdesk_Chat_Confim_Msg:
     'Thank you for reaching out. As we are experiencing a heavy load, our team will get back to you in 24 to 48 hours.',
+  Used_Up_Alotted_Slot_Msg:
+    'Sorry! You have used up all your allotted booking slots under corporate vaccination. You can still continue to book payable slots under pay by self option.',
   Vaccination_Cities_List: ['Delhi', 'Mumbai'],
   Vaccine_Type: ['Covaxin', 'Covishield'],
+  Cancel_Threshold_Pre_Vaccination: 12, //hrs
   Enable_Diagnostics_COD: false,
   Enable_Diagnostics_Cancellation_Policy: false,
   Diagnostics_Cancel_Policy_Text_Msg:
@@ -245,6 +251,7 @@ const appStaticVariables = {
       cod: true,
     },
   ],
+  DIAGNOSTIC_DEFAULT_ICON: 'https://newassets.apollo247.com/organs/ic_blood.png',
 };
 
 const DEV_top_specialties = [
@@ -719,7 +726,7 @@ const ConfigurationQA3 = {
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://qapatients.apollo247.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
-  CONSULT_COUPON_BASE_URL: 'https://validcoupon.apollo247.com',
+  CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
   COVID_VACCINE_TRACKER_URL: 'https://www.apollo247.com/covid-vaccine-tracker',
@@ -770,7 +777,7 @@ const ConfigurationQA5 = {
     'https://qa5patients.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://qa5patients.apollo247.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
-  CONSULT_COUPON_BASE_URL: 'https://validcoupon.apollo247.com',
+  CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
   KAVACH_URL:
     'https://qa5patients.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
@@ -1152,6 +1159,17 @@ export const DIAGNOSTIC_ORDER_FAILED_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
 ];
+export const DIAGNOSTIC_ORDER_FOR_PREPDATA = [
+  DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED,
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED_REQUEST,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
+];
 
 export const DIAGNOSTIC_JUSPAY_REFUND_STATUS = [
   REFUND_STATUSES.FAILURE,
@@ -1282,6 +1300,12 @@ export const DIAGNOSITC_PHELBO_TRACKING_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
 ];
 
+export const DIAGNOSTIC_SHOW_OTP_STATUS = [
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
+];
+
 export const TestsNewFeedbackData = {
   options: [
     'Wrong Report recieved',
@@ -1345,18 +1369,18 @@ export const TestCancelReasons = {
   reasons: [
     string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
     string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
-    string.diagnostics.reasonForCancel_TestOrder.bookedByMistake,
-    string.diagnostics.reasonForCancel_TestOrder.urgentReport,
     string.diagnostics.reasonForCancel_TestOrder.anotherChannel,
+    string.diagnostics.reasonForCancel_TestOrder.urgentReport,
+    string.diagnostics.reasonForCancel_TestOrder.lesserPrice,
     string.diagnostics.reasonForCancel_TestOrder.otherReasons,
   ],
 };
 export const TestCancelReasonsPre = {
   reasons: [
     string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
-    string.diagnostics.reasonForCancel_TestOrder.bookedByMistake,
-    string.diagnostics.reasonForCancel_TestOrder.urgentReport,
     string.diagnostics.reasonForCancel_TestOrder.anotherChannel,
+    string.diagnostics.reasonForCancel_TestOrder.urgentReport,
+    string.diagnostics.reasonForCancel_TestOrder.lesserPrice,
     string.diagnostics.reasonForCancel_TestOrder.otherReasons,
   ],
 };
