@@ -295,6 +295,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const itemsWithHC = cartItems?.filter((item) => item!.collectionMethod == 'HC');
   const itemWithId = itemsWithHC?.map((item) => Number(item.id!));
   const { cusId, isfetchingId } = useGetJuspayId();
+  const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
 
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   var pricesForItemArray;
@@ -310,9 +311,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       const merchantId = AppConfig.Configuration.merchantId;
       isInitiated
         ? (terminateSDK(),
-          setTimeout(() => createHyperServiceObject(), 1000),
-          setTimeout(() => initiateSDK(cusId, cusId, merchantId), 2000))
-        : initiateSDK(cusId, cusId, merchantId);
+          setTimeout(() => createHyperServiceObject(), 500),
+          setTimeout(
+            () => (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true)),
+            1000
+          ))
+        : (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true));
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
@@ -2748,7 +2752,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         </ScrollView>
         {renderTestProceedBar()}
       </SafeAreaView>
-      {showSpinner && <Spinner />}
+      {(showSpinner || !hyperSdkInitialized) && <Spinner />}
     </View>
   );
 };

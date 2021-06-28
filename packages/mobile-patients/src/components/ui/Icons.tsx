@@ -1941,3 +1941,19 @@ export const CardCVV: React.FC<IconProps> = (props) => (
     source={require('./icons/CardCVV.webp')}
   />
 );
+
+export const DeleteBlack: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 20, height: 20 }}
+    {...props}
+    source={require('./icons/deleteIcon.webp')}
+  />
+);
+
+export const Expired: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 14.67, height: 13.33 }}
+    {...props}
+    source={require('./icons/expired.webp')}
+  />
+);

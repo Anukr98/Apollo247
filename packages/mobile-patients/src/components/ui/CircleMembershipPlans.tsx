@@ -145,6 +145,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     'Circle Member': circleSubscriptionId ? 'Yes' : 'No',
   };
   const { cusId, isfetchingId } = useGetJuspayId();
+  const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
 
   useEffect(() => {
     if (!props.membershipPlans || props.membershipPlans?.length === 0) {
@@ -168,9 +169,12 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       const merchantId = AppConfig.Configuration.merchantId;
       isInitiated
         ? (terminateSDK(),
-          setTimeout(() => createHyperServiceObject(), 1000),
-          setTimeout(() => initiateSDK(cusId, cusId, merchantId), 2000))
-        : initiateSDK(cusId, cusId, merchantId);
+          setTimeout(() => createHyperServiceObject(), 500),
+          setTimeout(
+            () => (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true)),
+            1000
+          ))
+        : (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true));
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
@@ -897,7 +901,12 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   };
   return (
     <View style={isModal ? {} : [styles.careBannerView, props.style]}>
-      {circlePlanSelected && !isModal && !autoCirlcePlanAdded && !spinning && !defaultCirclePlan
+      {circlePlanSelected &&
+      !isModal &&
+      !autoCirlcePlanAdded &&
+      !spinning &&
+      !defaultCirclePlan &&
+      hyperSdkInitialized
         ? renderCarePlanAdded()
         : renderSubscribeCareContainer()}
     </View>

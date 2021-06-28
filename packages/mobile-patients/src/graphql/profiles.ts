@@ -5274,3 +5274,12 @@ export const FETCH_SAVED_CARDS = gql`
     }
   }
 `;
+
+export const DELETE_SAVED_CARD = gql`
+  mutation deleteCardFromLocker($cardToken: String!) {
+    deleteCardFromLocker(cardToken: $cardToken) {
+      card_token
+      deleted
+    }
+  }
+`;

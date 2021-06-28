@@ -79,6 +79,7 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
       postWebEngageEvent(WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED, CircleEventAttributes);
   };
   const { cusId, isfetchingId } = useGetJuspayId();
+  const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleAndroidBack);
@@ -106,9 +107,12 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
       const merchantId = AppConfig.Configuration.merchantId;
       isInitiated
         ? (terminateSDK(),
-          setTimeout(() => createHyperServiceObject(), 1000),
-          setTimeout(() => initiateSDK(cusId, cusId, merchantId), 2000))
-        : initiateSDK(cusId, cusId, merchantId);
+          setTimeout(() => createHyperServiceObject(), 500),
+          setTimeout(
+            () => (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true)),
+            1000
+          ))
+        : (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true));
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
@@ -258,7 +262,7 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
         <Header leftIcon={isGoBack ? 'close' : 'logo'} onPressLeftIcon={() => handleBack()} />
         <View style={{ flex: 1, overflow: 'hidden' }}>{renderWebView()}</View>
       </SafeAreaView>
-      {loading && <Spinner />}
+      {(loading || !hyperSdkInitialized) && <Spinner />}
     </View>
   );
 };

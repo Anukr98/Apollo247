@@ -38,7 +38,7 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
   const [CVV, setCVV] = useState<string>('');
   const [cardbin, setCardbin] = useState<any>({});
   const [cardDetails, setCardDetails] = useState<any>({});
-  const [saveCard, setSaveCard] = useState<boolean>(false);
+  const [saveCard, setSaveCard] = useState<boolean>(true);
   const cardInfo = {
     cardType: cardbin?.brand,
     cardNumber: cardNumber.replace(/\-/g, ''),

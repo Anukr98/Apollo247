@@ -113,7 +113,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
   const shoppingCart = useShoppingCart();
   const { savedCards } = useFetchSavedCards(customerId);
-  console.log('savedCards >>>', savedCards);
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
     const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {

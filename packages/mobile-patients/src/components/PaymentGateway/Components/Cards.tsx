@@ -32,7 +32,7 @@ export const Cards: React.FC<CardsProps> = (props) => {
         cardTypes={cardTypes}
         selectedCardToken={selectedCardToken}
         onPressSavedCard={(cardInfo) => (
-          setNewCardSelected(false), setSelectedCardToken(cardInfo?.cardToken)
+          setNewCardSelected(false), setSelectedCardToken(cardInfo?.card_token)
         )}
         cardInfo={item}
       />

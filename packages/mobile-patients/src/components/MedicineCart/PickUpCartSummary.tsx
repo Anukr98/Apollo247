@@ -77,6 +77,7 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
   const { pharmacyUserTypeAttribute, setauthToken } = useAppCommonData();
   const { pickUpOrderInfo, SubscriptionInfo } = useGetOrderInfo();
   const { cusId, isfetchingId } = useGetJuspayId();
+  const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
 
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
   const estimatedAmount = !!circleMembershipCharges
@@ -97,9 +98,12 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
       const merchantId = AppConfig.Configuration.pharmaMerchantId;
       isInitiated
         ? (terminateSDK(),
-          setTimeout(() => createHyperServiceObject(), 1000),
-          setTimeout(() => initiateSDK(cusId, cusId, merchantId), 2000))
-        : initiateSDK(cusId, cusId, merchantId);
+          setTimeout(() => createHyperServiceObject(), 500),
+          setTimeout(
+            () => (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true)),
+            1000
+          ))
+        : (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true));
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
@@ -345,7 +349,7 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
         </ScrollView>
         {renderuploadPrescriptionPopup()}
         {renderButton()}
-        {loading && <Spinner />}
+        {(loading || !hyperSdkInitialized) && <Spinner />}
       </SafeAreaView>
     </View>
   );

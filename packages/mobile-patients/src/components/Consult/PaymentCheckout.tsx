@@ -129,6 +129,8 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/createOrder';
 import { saveConsultationLocation } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+
 interface PaymentCheckoutProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
   tabs: { title: string }[];
@@ -252,6 +254,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const circleDiscount =
     (circleSubscriptionId || circlePlanSelected) && discountedPrice ? discountedPrice : 0;
   const { cusId, isfetchingId } = useGetJuspayId();
+  const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
 
   useEffect(() => {
     verifyCoupon();
@@ -272,9 +275,12 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       const merchantId = AppConfig.Configuration.merchantId;
       isInitiated
         ? (terminateSDK(),
-          setTimeout(() => createHyperServiceObject(), 1000),
-          setTimeout(() => initiateSDK(cusId, cusId, merchantId), 2000))
-        : initiateSDK(cusId, cusId, merchantId);
+          setTimeout(() => createHyperServiceObject(), 500),
+          setTimeout(
+            () => (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true)),
+            1000
+          ))
+        : (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true));
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
@@ -1250,6 +1256,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         </ScrollView>
         {renderBottomButton()}
       </SafeAreaView>
+      {!hyperSdkInitialized && <Spinner />}
     </View>
   );
 };

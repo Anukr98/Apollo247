@@ -142,7 +142,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
   const { OrderInfo, SubscriptionInfo } = useGetOrderInfo();
   const { cusId, isfetchingId } = useGetJuspayId();
-
+  const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
   useEffect(() => {
     hasUnserviceableproduct();
     AppState.addEventListener('change', handleAppStateChange);
@@ -179,9 +179,12 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       const merchantId = AppConfig.Configuration.pharmaMerchantId;
       isInitiated
         ? (terminateSDK(),
-          setTimeout(() => createHyperServiceObject(), 1000),
-          setTimeout(() => initiateSDK(cusId, cusId, merchantId), 2000))
-        : initiateSDK(cusId, cusId, merchantId);
+          setTimeout(() => createHyperServiceObject(), 500),
+          setTimeout(
+            () => (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true)),
+            1000
+          ))
+        : (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true));
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
@@ -226,7 +229,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     const orderInput: OrderCreate = {
       orders: orders,
       total_amount: grandTotal,
-      customer_id: currentPatient?.primaryPatientId || currentPatient?.id,
     };
     return client.mutate<createOrderInternal, createOrderInternalVariables>({
       mutation: CREATE_INTERNAL_ORDER,
@@ -484,19 +486,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
       orders?.length > 1,
       splitOrderDetails
     );
-    isInitiated();
+    initiateOrder();
   }
-
-  const isInitiated = async () => {
-    let isInitiated: boolean = false;
-    while (!isInitiated) {
-      isInitiated = await isSDKInitialised();
-      if (isInitiated) {
-        initiateOrder();
-        break;
-      }
-    }
-  };
 
   const initiateOrder = async () => {
     try {
@@ -639,7 +630,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
             renderPrescriptions()}
         </ScrollView>
         {renderButton()}
-        {loading && <Spinner />}
+        {(loading || !hyperSdkInitialized) && <Spinner />}
       </SafeAreaView>
     </View>
   );

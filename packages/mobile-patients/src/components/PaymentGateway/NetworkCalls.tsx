@@ -275,13 +275,12 @@ export const InitiateSavedCardTxn = (
     payload: {
       action: 'cardTxn',
       orderId: paymentOrderId,
-      paymentMethod: cardInfo?.cardBrand,
+      paymentMethod: cardInfo?.card_brand,
       endUrls: [AppConfig.Configuration.baseUrl],
-      cardToken: cardInfo?.cardToken,
+      cardToken: cardInfo?.card_token,
       cardSecurityCode: cvv,
       clientAuthToken: clientAuthToken,
     },
   };
-  console.log('payload >>', payload);
   HyperSdkReact.process(JSON.stringify(payload));
 };

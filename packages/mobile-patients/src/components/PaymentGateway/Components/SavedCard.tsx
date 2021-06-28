@@ -3,7 +3,11 @@ import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { CircleCheckIcon, CircleUncheckIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  CircleCheckIcon,
+  CircleUncheckIcon,
+  Expired,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInput } from 'react-native-gesture-handler';
 import { CvvPopUp } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CvvPopUp';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -23,9 +27,10 @@ export const SavedCard: React.FC<SavedCardProps> = (props) => {
     cardInfo,
     onPressSavedCard,
   } = props;
-  const cardSelected = cardInfo?.cardToken == selectedCardToken ? true : false;
+  const cardSelected = cardInfo?.card_token == selectedCardToken ? true : false;
   const [cvv, setcvv] = useState<string>('');
   const { showAphAlert, hideAphAlert } = useUIElements();
+  const isExpired = cardInfo?.expired;
 
   const showCVVPopUP = () => {
     showAphAlert?.({
@@ -37,18 +42,17 @@ export const SavedCard: React.FC<SavedCardProps> = (props) => {
 
   const renderCardIcon = () => {
     const image_url =
-      cardInfo?.cardBrand &&
-      cardTypes?.find((item: any) => item?.payment_method_code == cardInfo?.cardBrand)?.image_url;
+      cardInfo?.card_brand &&
+      cardTypes?.find((item: any) => item?.payment_method_code == cardInfo?.card_brand)?.image_url;
     return <Image source={{ uri: image_url }} resizeMode={'contain'} style={styles.cardIcon} />;
   };
-  console.log(cardTypes);
 
   const renderCardNo = () => {
     return (
       <Text style={styles.cardNo}>
-        {cardInfo?.cardNumber?.slice(-7)}
+        {cardInfo?.card_number?.slice(-7)}
         {' • '}
-        {cardInfo?.cardIssuer + cardInfo?.cardType}
+        {cardInfo?.card_issuer + cardInfo?.card_type}
         {' Card'}
       </Text>
     );
@@ -56,13 +60,20 @@ export const SavedCard: React.FC<SavedCardProps> = (props) => {
 
   const renderCardInfo = () => {
     return (
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          opacity: isExpired ? 0.4 : 1,
+        }}
+      >
         <View>
           <View style={{ flexDirection: 'row' }}>
             {renderCardIcon()}
             {renderCardNo()}
           </View>
-          <Text style={styles.name}>{cardInfo?.nameOnCard || 'User'}</Text>
+          <Text style={styles.name}>{cardInfo?.name_on_card || 'User'}</Text>
         </View>
         {cardSelected ? <CircleCheckIcon /> : <CircleUncheckIcon />}
       </View>
@@ -105,14 +116,30 @@ export const SavedCard: React.FC<SavedCardProps> = (props) => {
     );
   };
 
+  const renderExpiredTag = () => {
+    return (
+      <View>
+        <View style={styles.expiredCont}>
+          <Expired />
+          <Text style={styles.expiredMsg}>This Card is Expired </Text>
+        </View>
+      </View>
+    );
+  };
+
   const renderSavedCard = () => {
     return (
       <View style={{ ...styles.container, backgroundColor: !cardSelected ? '#fff' : '#F6FFFF' }}>
         <TouchableOpacity
-          style={{ ...styles.subContainer, paddingBottom: !cardSelected ? 19 : 16 }}
+          style={{
+            ...styles.subContainer,
+            paddingBottom: !cardSelected ? 19 : 16,
+          }}
           onPress={() => onPressSavedCard(cardInfo)}
+          disabled={isExpired ? true : false}
         >
-          {renderCardInfo()}
+          <View>{renderCardInfo()}</View>
+          {isExpired && renderExpiredTag()}
           {cardSelected && (
             <>
               <View
@@ -190,5 +217,27 @@ const styles = StyleSheet.create({
     marginLeft: 41,
     marginTop: 11,
   },
-  cvvInputCont: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 },
+  cvvInputCont: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 12,
+  },
+  expiredMsg: {
+    color: '#E11C1C',
+    ...theme.fonts.IBMPlexSansMedium(12),
+    lineHeight: 16,
+    letterSpacing: 1,
+    paddingVertical: 8,
+    marginLeft: 3,
+  },
+  expiredCont: {
+    marginTop: 8,
+    marginLeft: 41,
+    backgroundColor: '#FFEAEA',
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    alignSelf: 'flex-start',
+  },
 });
