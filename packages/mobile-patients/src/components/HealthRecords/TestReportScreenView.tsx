@@ -521,9 +521,12 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         }
       })
       .catch((e: any) => {
-        setLoading?.(false);
+        setLoading && setLoading(false);
         currentPatient && handleGraphQlError(e, 'Report is yet not available');
         CommonBugFender('HealthRecordDetails_callConvertToZipApi', e);
+      })
+      .finally(() => {
+        setLoading && setLoading(false);
       });
   };
 
