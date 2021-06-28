@@ -562,9 +562,9 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
         <View style={styles.infoBlockDetailsContainer}>
           <Text style={styles.infoBlockTitle}>Site</Text>
           <Text style={styles.infoBlockSubTitleSmall}>
-            {bookingItem?.resource_session_details?.resource_detail?.name}
-            {bookingItem?.resource_session_details?.resource_detail?.street_line1}
-            {bookingItem?.resource_session_details?.resource_detail?.street_line2}
+            {bookingItem?.resource_session_details?.resource_detail?.name} {' '}
+            {bookingItem?.resource_session_details?.resource_detail?.street_line1} {' '}
+            {bookingItem?.resource_session_details?.resource_detail?.street_line2} {' '}
             {bookingItem?.resource_session_details?.resource_detail?.street_line3},{' '}
             {bookingItem?.resource_session_details?.resource_detail?.city},{' '}
             {bookingItem?.resource_session_details?.resource_detail?.state}
