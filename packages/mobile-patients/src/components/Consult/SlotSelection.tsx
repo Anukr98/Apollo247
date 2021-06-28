@@ -527,13 +527,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   };
 
   const renderDoctorName = () => {
-    return (
-      <Text style={styles.doctorName}>
-        {doctorDetails?.fullName?.includes('Dr.')
-          ? doctorDetails?.fullName
-          : `Dr. ${doctorDetails?.fullName}`}
-      </Text>
-    );
+    return <Text style={styles.doctorName}>{doctorDetails?.fullName}</Text>;
   };
 
   const renderSpecialities = () => {
