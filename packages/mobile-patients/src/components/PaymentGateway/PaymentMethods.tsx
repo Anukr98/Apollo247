@@ -99,7 +99,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [phonePeReady, setphonePeReady] = useState<boolean>(false);
   const [googlePayReady, setGooglePayReady] = useState<boolean>(false);
   const [availableUPIApps, setAvailableUPIapps] = useState([]);
-  const paymentActions = ['nbTxn', 'walletTxn', 'upiTxn', 'cardTxn'];
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { authToken, setauthToken } = useAppCommonData();
@@ -108,7 +107,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { paymentMethods, cardTypes, fetching } = useGetPaymentMethods();
   const [HCSelected, setHCSelected] = useState<boolean>(false);
   const [burnHc, setburnHc] = useState<number>(0);
-  // const [savedCards, setSavedCards] = useState<any>([]);
   const storeCode =
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
   const shoppingCart = useShoppingCart();
@@ -122,7 +120,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     fecthPaymentOptions();
     isPhonePeReady();
     isGooglePayReady();
-    // FetchSavedCards();
     return () => eventListener.remove();
   }, []);
 
@@ -148,11 +145,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       : (setAmount(props.navigation.getParam('amount')), setburnHc(0));
   };
 
-  // const FetchSavedCards = async () => {
-  //   const token = await getClientToken(true);
-  //   token && fetchSavedCards(currentPatient?.id, token);
-  // };
-
   const handleEventListener = (resp: any) => {
     var data = JSON.parse(resp);
     var event: string = data.event || '';
@@ -160,31 +152,12 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       case 'process_result':
         var payload = data.payload || {};
         handleResponsePayload(payload);
-        // const status = payload?.payload?.status;
-        // const action = payload?.payload?.action;
-        // if (action == 'getPaymentMethods' && !payload?.error) {
-        //   const banks = payload?.payload?.paymentMethods?.filter(
-        //     (item: any) => item?.paymentMethodType == 'NB'
-        //   );
-        //   setBanks(banks);
-        // } else if (paymentActions.indexOf(action) != -1 && status) {
-        //   handleTxnStatus(status, payload);
-        //   setisTxnProcessing(false);
-        // } else if (payload?.payload?.action == 'isDeviceReady') {
-        //   payload?.requestId == 'phonePe' && status && setphonePeReady(true);
-        //   payload?.requestId == 'googlePay' && status && setGooglePayReady(true);
-        // } else if (action == 'upiTxn' && !payload?.error && !status) {
-        //   setAvailableUPIapps(payload?.payload?.availableApps || []);
-        // } else if (payload?.error) {
-        //   handleError(payload?.errorMessage);
-        // }
         break;
       default:
     }
   };
 
   const handleResponsePayload = (payload: any) => {
-    // console.log('payload >>>', JSON.stringify(payload));
     const status = payload?.payload?.status;
     const action = payload?.payload?.action;
     switch (action) {
