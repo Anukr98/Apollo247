@@ -27,9 +27,11 @@ import {
   InitiateUPIIntentTxn,
   InitiateVPATxn,
   InitiateCardTxn,
+  InitiateSavedCardTxn,
   isGooglePayReady,
   isPhonePeReady,
   InitiateUPISDKTxn,
+  fetchSavedCards,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -72,6 +74,7 @@ import {
   PaymentInitiated,
   PharmaOrderPlaced,
 } from '@aph/mobile-patients/src/components/PaymentGateway/Events';
+import { useFetchSavedCards } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useFetchSavedCards';
 const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {
@@ -81,6 +84,7 @@ export interface PaymentMethodsProps extends NavigationScreenProps {
 
 export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const paymentId = props.navigation.getParam('paymentId');
+  const customerId = props.navigation.getParam('customerId');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
   const [amount, setAmount] = useState<number>(props.navigation.getParam('amount'));
   const orderDetails = props.navigation.getParam('orderDetails');
@@ -95,7 +99,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [phonePeReady, setphonePeReady] = useState<boolean>(false);
   const [googlePayReady, setGooglePayReady] = useState<boolean>(false);
   const [availableUPIApps, setAvailableUPIapps] = useState([]);
-  const paymentActions = ['nbTxn', 'walletTxn', 'upiTxn', 'cardTxn'];
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { authToken, setauthToken } = useAppCommonData();
@@ -107,7 +110,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const storeCode =
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
   const shoppingCart = useShoppingCart();
-
+  const { savedCards } = useFetchSavedCards(customerId);
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
     const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
@@ -148,27 +151,43 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     switch (event) {
       case 'process_result':
         var payload = data.payload || {};
-        const status = payload?.payload?.status;
-        const action = payload?.payload?.action;
-        console.log('payload >>>', JSON.stringify(payload));
-        if (action == 'getPaymentMethods' && !payload?.error) {
-          const banks = payload?.payload?.paymentMethods?.filter(
-            (item: any) => item?.paymentMethodType == 'NB'
-          );
-          setBanks(banks);
-        } else if (paymentActions.indexOf(action) != -1 && status) {
-          handleTxnStatus(status, payload);
-          setisTxnProcessing(false);
-        } else if (payload?.payload?.action == 'isDeviceReady') {
-          payload?.requestId == 'phonePe' && status && setphonePeReady(true);
-          payload?.requestId == 'googlePay' && status && setGooglePayReady(true);
-        } else if (action == 'upiTxn' && !payload?.error && !status) {
-          setAvailableUPIapps(payload?.payload?.availableApps || []);
-        } else if (payload?.error) {
-          handleError(payload?.errorMessage);
-        }
+        handleResponsePayload(payload);
         break;
       default:
+    }
+  };
+
+  const handleResponsePayload = (payload: any) => {
+    const status = payload?.payload?.status;
+    const action = payload?.payload?.action;
+    switch (action) {
+      case 'getPaymentMethods':
+        if (!payload?.error) {
+          const paymentMethods = payload?.payload?.paymentMethods || [];
+          const banks = paymentMethods?.filter((item: any) => item?.paymentMethodType == 'NB');
+          setBanks(banks);
+        }
+        break;
+      case 'nbTxn':
+      case 'walletTxn':
+      case 'cardTxn':
+        handleTxnStatus(status, payload);
+        setisTxnProcessing(false);
+        break;
+      case 'upiTxn':
+        status
+          ? (handleTxnStatus(status, payload), setisTxnProcessing(false))
+          : !payload?.error && setAvailableUPIapps(payload?.payload?.availableApps || []);
+        break;
+      case 'isDeviceReady':
+        payload?.requestId == 'phonePe' && status && setphonePeReady(true);
+        payload?.requestId == 'googlePay' && status && setGooglePayReady(true);
+        break;
+      // case 'cardList':
+      //   setSavedCards(payload?.payload?.cards || []);
+      //   break;
+      default:
+        payload?.error && handleError(payload?.errorMessage);
     }
   };
 
@@ -362,10 +381,20 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     }
   }
 
-  async function onPressCardPay(cardInfo: any) {
+  async function onPressNewCardPayNow(cardInfo: any, saveCard: boolean) {
     triggerWebengege('Card');
     const token = await getClientToken();
-    token ? InitiateCardTxn(currentPatient?.id, token, paymentId, cardInfo) : renderErrorPopup();
+    token
+      ? InitiateCardTxn(currentPatient?.id, token, paymentId, cardInfo, saveCard)
+      : renderErrorPopup();
+  }
+
+  async function onPressSavedCardPayNow(cardInfo: any, cvv: string) {
+    triggerWebengege('Card');
+    const token = await getClientToken();
+    token
+      ? InitiateSavedCardTxn(currentPatient?.id, token, paymentId, cardInfo, cvv)
+      : renderErrorPopup();
   }
 
   async function onPressPayByCash() {
@@ -551,7 +580,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const renderCards = () => {
     return (
       <Cards
-        onPressPayNow={onPressCardPay}
+        savedCards={savedCards}
+        onPressNewCardPayNow={onPressNewCardPayNow}
+        onPressSavedCardPayNow={onPressSavedCardPayNow}
         cardTypes={cardTypes}
         isCardValid={isCardValid}
         setisCardValid={setisCardValid}

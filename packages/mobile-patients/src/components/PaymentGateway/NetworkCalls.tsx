@@ -81,7 +81,8 @@ export const InitiateCardTxn = (
   requestId: string,
   clientAuthToken: string,
   paymentOrderId: string,
-  cardInfo: any
+  cardInfo: any,
+  saveCard: boolean
 ) => {
   const cardPayload = {
     requestId: requestId,
@@ -95,7 +96,7 @@ export const InitiateCardTxn = (
       cardExpMonth: cardInfo?.ExpMonth,
       cardExpYear: cardInfo?.ExpYear,
       cardSecurityCode: cardInfo?.CVV,
-      saveToLocker: false,
+      saveToLocker: saveCard ? true : false,
       clientAuthToken: clientAuthToken,
     },
   };
@@ -230,6 +231,54 @@ export const InitiateUPIIntentTxn = (
       showLoader: false,
       payWithApp: packageName,
       displayNote: 'Payment to Apollo247',
+      clientAuthToken: clientAuthToken,
+    },
+  };
+  HyperSdkReact.process(JSON.stringify(payload));
+};
+
+export const fetchSavedCards = (requestId: string, clientAuthToken: string) => {
+  const payload = {
+    requestId: requestId,
+    service: AppConfig.Configuration.jusPayService,
+    payload: {
+      action: 'cardList',
+      clientAuthToken: clientAuthToken,
+    },
+  };
+  HyperSdkReact.process(JSON.stringify(payload));
+};
+
+export const deleteCard = (requestId: string, clientAuthToken: string, cardToken: string) => {
+  const payload = {
+    requestId: requestId,
+    service: AppConfig.Configuration.jusPayService,
+    payload: {
+      action: 'deleteCard',
+      cardToken: cardToken,
+      clientAuthToken: clientAuthToken,
+    },
+  };
+  HyperSdkReact.process(JSON.stringify(payload));
+};
+
+export const InitiateSavedCardTxn = (
+  requestId: string,
+  clientAuthToken: string,
+  paymentOrderId: string,
+  cardInfo: any,
+  cvv: string
+) => {
+  const payload = {
+    requestId: requestId,
+    service: AppConfig.Configuration.jusPayService,
+    payload: {
+      action: 'cardTxn',
+      orderId: paymentOrderId,
+      paymentMethod: cardInfo?.card_brand,
+      endUrls: [AppConfig.Configuration.baseUrl],
+      cardToken: cardInfo?.card_token,
+      cardSecurityCode: cvv,
       clientAuthToken: clientAuthToken,
     },
   };

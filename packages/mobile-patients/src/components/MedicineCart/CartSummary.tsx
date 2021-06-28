@@ -88,6 +88,7 @@ import {
   createOrderInternal,
   createOrderInternalVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
+import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
 
 export interface CartSummaryProps extends NavigationScreenProps {}
 
@@ -140,10 +141,10 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   const pharmacyPincode =
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
   const { OrderInfo, SubscriptionInfo } = useGetOrderInfo();
-
+  const { cusId, isfetchingId } = useGetJuspayId();
+  const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
   useEffect(() => {
     hasUnserviceableproduct();
-    initiateHyperSDK();
     AppState.addEventListener('change', handleAppStateChange);
     return () => {
       AppState.removeEventListener('change', handleAppStateChange);
@@ -168,15 +169,22 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     availabilityTat(deliveryAddressId);
   }, [cartItems, deliveryAddressId]);
 
-  const initiateHyperSDK = async () => {
+  useEffect(() => {
+    !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
+  }, [isfetchingId]);
+
+  const initiateHyperSDK = async (cusId: any) => {
     try {
       const isInitiated: boolean = await isSDKInitialised();
       const merchantId = AppConfig.Configuration.pharmaMerchantId;
       isInitiated
         ? (terminateSDK(),
-          setTimeout(() => createHyperServiceObject(), 1000),
-          setTimeout(() => initiateSDK(currentPatient?.id, currentPatient?.id, merchantId), 2000))
-        : initiateSDK(currentPatient?.id, currentPatient?.id, merchantId);
+          setTimeout(() => createHyperServiceObject(), 500),
+          setTimeout(
+            () => (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true)),
+            1000
+          ))
+        : (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true));
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
@@ -221,7 +229,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     const orderInput: OrderCreate = {
       orders: orders,
       total_amount: grandTotal,
-      customer_id: currentPatient?.primaryPatientId || currentPatient?.id,
     };
     return client.mutate<createOrderInternal, createOrderInternalVariables>({
       mutation: CREATE_INTERNAL_ORDER,
@@ -499,6 +506,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           amount: grandTotal,
           orderDetails: getOrderDetails(orders),
           businessLine: 'pharma',
+          customerId: cusId,
           checkoutEventAttributes: getCheckoutCompletedEventAttributes(
             shoppingCart,
             paymentId,
@@ -622,7 +630,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
             renderPrescriptions()}
         </ScrollView>
         {renderButton()}
-        {loading && <Spinner />}
+        {(loading || !hyperSdkInitialized) && <Spinner />}
       </SafeAreaView>
     </View>
   );

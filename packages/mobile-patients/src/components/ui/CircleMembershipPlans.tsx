@@ -64,6 +64,7 @@ import {
   terminateSDK,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
 
 const { width } = Dimensions.get('window');
 interface CircleMembershipPlansProps extends NavigationScreenProps {
@@ -143,6 +144,9 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     'Customer ID': currentPatient?.id,
     'Circle Member': circleSubscriptionId ? 'Yes' : 'No',
   };
+  const { cusId, isfetchingId } = useGetJuspayId();
+  const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
+
   useEffect(() => {
     if (!props.membershipPlans || props.membershipPlans?.length === 0) {
       fetchCarePlans();
@@ -153,18 +157,24 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     if (buyNow && props.membershipPlans?.length > 0) {
       setDefaultCirclePlan && setDefaultCirclePlan(null);
     }
-    initiateHyperSDK();
   }, []);
 
-  const initiateHyperSDK = async () => {
+  useEffect(() => {
+    !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
+  }, [isfetchingId]);
+
+  const initiateHyperSDK = async (cusId: any) => {
     try {
       const isInitiated: boolean = await isSDKInitialised();
       const merchantId = AppConfig.Configuration.merchantId;
       isInitiated
         ? (terminateSDK(),
-          setTimeout(() => createHyperServiceObject(), 1000),
-          setTimeout(() => initiateSDK(currentPatient?.id, currentPatient?.id, merchantId), 2000))
-        : initiateSDK(currentPatient?.id, currentPatient?.id, merchantId);
+          setTimeout(() => createHyperServiceObject(), 500),
+          setTimeout(
+            () => (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true)),
+            1000
+          ))
+        : (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true));
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
@@ -382,6 +392,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           amount: amountToPay,
           orderDetails: orderInfo,
           businessLine: 'subscription',
+          customerId: cusId,
         });
       }
     } catch (error) {
@@ -890,7 +901,12 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   };
   return (
     <View style={isModal ? {} : [styles.careBannerView, props.style]}>
-      {circlePlanSelected && !isModal && !autoCirlcePlanAdded && !spinning && !defaultCirclePlan
+      {circlePlanSelected &&
+      !isModal &&
+      !autoCirlcePlanAdded &&
+      !spinning &&
+      !defaultCirclePlan &&
+      hyperSdkInitialized
         ? renderCarePlanAdded()
         : renderSubscribeCareContainer()}
     </View>
