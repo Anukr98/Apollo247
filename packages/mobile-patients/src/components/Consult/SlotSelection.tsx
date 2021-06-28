@@ -85,6 +85,7 @@ import {
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 interface SlotSelectionProps extends NavigationScreenProps {
   doctorId: string;
@@ -526,7 +527,13 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   };
 
   const renderDoctorName = () => {
-    return <Text style={styles.doctorName}>{doctorDetails?.fullName}</Text>;
+    return (
+      <Text style={styles.doctorName}>
+        {doctorDetails?.fullName?.includes('Dr.')
+          ? doctorDetails?.fullName
+          : `Dr. ${doctorDetails?.fullName}`}
+      </Text>
+    );
   };
 
   const renderSpecialities = () => {
@@ -844,7 +851,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     };
     return (
       <View style={styles.noSlotsContainer}>
-        <Text style={styles.noSlotsAvailableText}>No slots available today!</Text>
+        <Text style={styles.noSlotsAvailableText}>No slots available!</Text>
         <Text style={styles.nextAvailabilityTitle}>Next availability - {availabilityTitle}</Text>
         <Button
           title="VIEW AVAILABLE SLOTS"
@@ -894,7 +901,9 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           {loadTotalSlots ? (
             renderTotalSlotsShimmer()
           ) : (
-            <Text style={styles.slotsAvailability}>{item?.time?.length} slots available</Text>
+            <Text style={styles.slotsAvailability}>
+              {item?.time?.length > 0 ? item?.time?.length : 'No'} Slots Available
+            </Text>
           )}
           {item?.time?.length > 0 && firstSelectedSlot !== item?.label && !loadTotalSlots ? (
             <TouchableOpacity
@@ -951,11 +960,19 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
 
   const renderGeneralNotes = () => {
     return (
-      <Text style={styles.noteTxt}>
-        By proceeding, I agree that I have read and understood the{' '}
-        <Text style={{ color: theme.colors.SKY_BLUE }}>Terms & Conditions</Text> of usage of 24x7
-        and consent to the same.{' '}
-      </Text>
+      <TouchableOpacity
+        onPress={() => {
+          props.navigation.navigate(AppRoutes.CommonWebView, {
+            url: AppConfig.Configuration.APOLLO_TERMS_CONDITIONS,
+          });
+        }}
+      >
+        <Text style={styles.noteTxt}>
+          By proceeding, I agree that I have read and understood the{' '}
+          <Text style={{ color: theme.colors.SKY_BLUE }}>Terms & Conditions</Text> of usage of 24x7
+          and consent to the same.{' '}
+        </Text>
+      </TouchableOpacity>
     );
   };
 
