@@ -788,7 +788,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               activeAppointments[0]?.doctorInfo?.displayName || '',
               showAphAlert,
               hideAphAlert,
-              true
+              true,
+              () => {},
+              'Appointment Screen'
             );
           });
         }

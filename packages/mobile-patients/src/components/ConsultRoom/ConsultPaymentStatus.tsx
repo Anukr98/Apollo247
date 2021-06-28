@@ -322,7 +322,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           true,
           () => {
             !locationDetails && askLocationPermission();
-          }
+          },
+          'Payment Confirmation Screen'
         );
       }
     });

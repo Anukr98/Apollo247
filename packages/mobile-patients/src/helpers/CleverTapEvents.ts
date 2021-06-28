@@ -78,6 +78,9 @@ export enum CleverTapEventName {
   CONSULT_DOH_Viewed = 'Consult DOH viewed',
   CONSULT_DOH_Clicked = 'Consult DOH Clicked',
 
+  //Consult Permissioon Events
+  CONSULT_PERMISSIONS = 'Consult permissions',
+
   // Symptom Tracker Events
   SYMPTOM_TRACKER_SELECT_OTHER_MEMBER_CLICKED = 'Symptom_Select other member clicked',
   SYMPTOM_TRACKER_MOST_TROUBLING_SYMPTOM_CLICKED = 'Symptoms_Most troubling symptom clicked',
@@ -461,10 +464,6 @@ export enum CleverTapEventName {
   NON_CIRCLE_PAYMENT_MODE_SELECTED = 'App - Circle Subscription Landing Payment Mode Selected',
   NON_CIRCLE_PAYMENT_DONE = 'App - Circle Subscription Landing Payment done',
   HC_1CLICK_ACTIVATION = 'App - HC - 1ClickActivation',
-
-  //Permissioon Events
-  USER_ALLOWED_PERMISSION = 'User clicked on Allow for permissions',
-  USER_DENIED_PERMISSION = 'User clicked on Not now for permissions',
 
   //Vaccination Booking
   VACCINATION_BOOKING_CONFIRMATION = 'Vaccine_Booking confirmation',
@@ -893,11 +892,10 @@ export interface CleverTapEvents {
   [CleverTapEventName.HC_1CLICK_ACTIVATION]: CircleUserInfo;
 
   // ********** PermissionEvents ********** \\
-  [CleverTapEventName.USER_ALLOWED_PERMISSION]: {
-    screen: 'Payment Confirmation' | 'Home Screen' | 'Appointment Screen';
-  };
-  [CleverTapEventName.USER_DENIED_PERMISSION]: {
-    screen: 'Payment Confirmation' | 'Home Screen' | 'Appointment Screen';
+  [CleverTapEventName.CONSULT_PERMISSIONS]: {
+    'Screen Name': 'Payment Confirmation Screen' | 'Home Screen' | 'Appointment Screen';
+    Camera?: boolean;
+    Microphone?: boolean;
   };
   // ********** PharmacyEvents ********** \\
 

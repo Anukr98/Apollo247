@@ -1018,7 +1018,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               if (params?.doctorName) {
                 showFreeConsultOverlay(params);
               }
-            }
+            },
+            'Home Screen'
           );
         } else {
           if (params?.doctorName) showFreeConsultOverlay(params);
@@ -1073,7 +1074,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               if (params?.doctorName) {
                 showFreeConsultOverlay(params);
               }
-            }
+            },
+            'Home Screen'
           );
         } else {
           if (params?.doctorName) showFreeConsultOverlay(params);
@@ -1148,7 +1150,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             'the doctor',
             showAphAlert,
             hideAphAlert,
-            true
+            true,
+            () => {},
+            'Home Screen'
           );
         }
       }
@@ -2217,6 +2221,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   useEffect(() => {
+    overlyCallPermissions(
+      currentPatient!.firstName!,
+      'the doctor',
+      showAphAlert,
+      hideAphAlert,
+      true,
+      () => {},
+      'Home Screen'
+    );
     async function fetchData() {
       const userLoggedIn = await AsyncStorage.getItem('gotIt');
       if (userLoggedIn == 'true') {

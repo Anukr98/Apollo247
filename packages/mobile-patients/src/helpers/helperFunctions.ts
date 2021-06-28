@@ -123,6 +123,11 @@ interface AphConsole {
   table(...data: any[]): void;
 }
 
+type ConsultPermissionScreenName =
+  | 'Home Screen'
+  | 'Payment Confirmation Screen'
+  | 'Appointment Screen';
+
 export interface TestSlot {
   employeeCode: string;
   employeeName: string;
@@ -1454,14 +1459,14 @@ const webengage = new WebEngage();
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
-    // console.log('postWebEngageEvent', eventName, JSON.stringify(attributes));
+    console.log('postWebEngageEvent', eventName, JSON.stringify(attributes));
     webengage.track(eventName, attributes);
   } catch (error) {}
 };
 
 export const postCleverTapEvent = (eventName: CleverTapEventName, attributes: Object) => {
   try {
-    // console.log('postCleverTapEvent', eventName, JSON.stringify(attributes));
+    console.log('postCleverTapEvent', eventName, JSON.stringify(attributes));
     CleverTap.recordEvent(eventName, attributes);
   } catch (error) {}
 };
@@ -1784,13 +1789,18 @@ export const postDoctorShareCleverTapEvents = (
 export const permissionHandler = (
   permission: string,
   deniedMessage: string,
-  doRequest: () => void
+  doRequest: () => void,
+  screenName?: ConsultPermissionScreenName
 ) => {
   Permissions.request(permission)
     .then((message) => {
       if (message === 'authorized') {
         doRequest();
+        permission === 'camera' && consultPermissionCameraCleverTapEvents(screenName, true);
+        permission === 'microphone' && consultPermissionCleverTapEvents(screenName, true);
       } else if (message === 'denied' || message === 'restricted') {
+        permission === 'camera' && consultPermissionCameraCleverTapEvents(screenName, false);
+        permission === 'microphone' && consultPermissionCleverTapEvents(screenName, false);
         Alert.alert(permission.toUpperCase(), deniedMessage, [
           {
             text: 'Cancel',
@@ -1809,16 +1819,47 @@ export const permissionHandler = (
     .catch((e) => {});
 };
 
-export const callPermissions = (doRequest?: () => void) => {
-  permissionHandler('camera', 'Enable camera from settings for calls during consultation.', () => {
-    permissionHandler(
-      'microphone',
-      'Enable microphone from settings for calls during consultation.',
-      () => {
-        doRequest && doRequest();
-      }
-    );
-  });
+const consultPermissionCleverTapEvents = (
+  screenName?: ConsultPermissionScreenName,
+  microphoneAuth?: boolean
+) => {
+  const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PERMISSIONS] = {
+    'Screen Name': screenName!,
+    Microphone: microphoneAuth,
+  };
+  postCleverTapEvent(CleverTapEventName.CONSULT_PERMISSIONS, eventAttributes);
+};
+
+const consultPermissionCameraCleverTapEvents = (
+  screenName?: ConsultPermissionScreenName,
+  cameraAuth?: boolean
+) => {
+  const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PERMISSIONS] = {
+    'Screen Name': screenName!,
+    Camera: cameraAuth,
+  };
+  postCleverTapEvent(CleverTapEventName.CONSULT_PERMISSIONS, eventAttributes);
+};
+
+export const callPermissions = (
+  doRequest?: () => void,
+  screenName?: ConsultPermissionScreenName
+) => {
+  permissionHandler(
+    'camera',
+    'Enable camera from settings for calls during consultation.',
+    () => {
+      permissionHandler(
+        'microphone',
+        'Enable microphone from settings for calls during consultation.',
+        () => {
+          doRequest && doRequest();
+        },
+        screenName
+      );
+    },
+    screenName
+  );
 };
 
 export const storagePermissions = (doRequest?: () => void) => {
@@ -2350,7 +2391,8 @@ export const overlyCallPermissions = (
   showAphAlert: any,
   hideAphAlert: any,
   isDissmiss: boolean,
-  callback?: () => void | null
+  callback?: () => void | null,
+  screenName?: ConsultPermissionScreenName
 ) => {
   if (Platform.OS === 'android') {
     const showPermissionPopUp = (description: string, onPressCallback: () => void) => {
@@ -2403,17 +2445,17 @@ export const overlyCallPermissions = (
 
           showPermissionPopUp(
             string.callRelatedPermissions.camAndMPPermission.replace('{0}', doctorName),
-            () => callPermissions()
+            () => callPermissions(() => {}, screenName)
           );
         } else if (cameraYes && microphoneNo) {
           showPermissionPopUp(
             string.callRelatedPermissions.onlyMPPermission.replace('{0}', doctorName),
-            () => callPermissions()
+            () => callPermissions(() => {}, screenName)
           );
         } else if (cameraNo && microphoneYes) {
           showPermissionPopUp(
             string.callRelatedPermissions.onlyCameraPermission.replace('{0}', doctorName),
-            () => callPermissions()
+            () => callPermissions(() => {}, screenName)
           );
         }
       })
@@ -2458,7 +2500,7 @@ export const overlyCallPermissions = (
                   hideAphAlert!();
                   onPressAllow();
                   callback?.();
-                  callPermissions();
+                  callPermissions(() => {}, screenName);
                 },
               },
             ],
