@@ -6473,9 +6473,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       },
     });
 
-  const uploadDocument = async (resource: any, base66?: any, type?: any) => {
+  const uploadDocument = async (
+    resource: any,
+    base66?: any,
+    type?: any,
+    selectedOptionType?: 'Camera' | 'Gallery'
+  ) => {
     CommonLogEvent(AppRoutes.ChatRoom, 'Upload document');
     setLoading(true);
+    consultWebEngageEvents(
+      CleverTapEventName.CONSULT_REPORT_UPLOAD_IN_CHATROOM,
+      selectedOptionType
+    );
     for (let i = 0; i < resource?.length; i++) {
       const item = resource[i];
       if (
@@ -6579,28 +6588,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             if (type !== undefined) {
               if (type === 'Camera') {
                 consultWebEngageEvents(WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM);
-                consultWebEngageEvents(
-                  CleverTapEventName.CONSULT_REPORT_UPLOAD_IN_CHATROOM,
-                  'Camera'
-                );
               }
               if (type === 'Gallery') {
                 consultWebEngageEvents(WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM);
-                consultWebEngageEvents(
-                  CleverTapEventName.CONSULT_REPORT_UPLOAD_IN_CHATROOM,
-                  'Gallery'
-                );
               }
             }
-            uploadDocument(response, response[0].base64, response[0].fileType);
+            uploadDocument(response, response[0].base64, response[0].fileType, type);
             //updatePhysicalPrescriptions(response);
           } else {
             setSelectPrescriptionVisible(true);
             consultWebEngageEvents(WebEngageEventName.UPLOAD_PHR_CLICK_CHATROOM);
-            consultWebEngageEvents(
-              CleverTapEventName.CONSULT_REPORT_UPLOAD_IN_CHATROOM,
-              'PHR Section'
-            );
           }
         }}
       />
@@ -6668,6 +6665,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             return;
           } else {
             setLoading(true);
+            consultWebEngageEvents(
+              CleverTapEventName.CONSULT_REPORT_UPLOAD_IN_CHATROOM,
+              'PHR Section'
+            );
             selectedEPres.forEach(async (item) => {
               CommonLogEvent('ChatRoom_ADD_CHAT_DOCUMENTSt', item);
               const _uploadedUrl = item.uploadedUrl ? item.uploadedUrl : '';
