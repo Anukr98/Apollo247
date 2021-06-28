@@ -337,7 +337,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
       collectionMethod: TEST_COLLECTION_TYPE.HC,
       groupPlan: planToConsider?.groupPlan,
       packageMrp: packageCalculatedMrp,
-      inclusions: [Number(item?.itemId)], // since it's a test
+      inclusions: item?.inclusionData == null ? [Number(item?.itemId)] : item?.inclusionData, // since it's a test
     });
   }
 
