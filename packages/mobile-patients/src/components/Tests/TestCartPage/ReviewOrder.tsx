@@ -1085,8 +1085,13 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         ? `The "${duplicateTests}" has been removed from your cart as it is already included in your order. Kindly proceed to pay the revised amount`
         : `The "${duplicateTests}" has been removed from your cart as it is already included in another test "${higherPricesName}" in your cart. Kindly proceed to pay the revised amount`,
       onPressOk: () => {
+        //disable the cta
         setLoading?.(false);
         hideAphAlert?.();
+        props.navigation.navigate(AppRoutes.CartPage, {
+          duplicateNameArray: duplicateNameArray,
+          showInclusion: showInclusions,
+        });
       },
     });
   };

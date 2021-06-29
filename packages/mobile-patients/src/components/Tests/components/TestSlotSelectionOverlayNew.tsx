@@ -90,6 +90,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   const [newSelectedSlot, setNewSelectedSlot] = useState(
     `${formatTestSlot(slotInfo?.slotInfo?.startTime!)}` || ''
   );
+  const [showSpinner, setShowSpinner] = useState<boolean>(false);
 
   type UniqueSlotType = typeof uniqueSlots[0];
 
@@ -125,15 +126,26 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
       : moment(date)?.format('YYYY-MM-DD');
     setSelectedDate(moment(dateToCheck).format('DD'));
     setLoading?.(true);
+    setShowSpinner(true);
     try {
-      const slotsResponse = await diagnosticGetCustomizedSlotsV2(
-        client,
-        slotInput?.addressObject,
-        slotInput?.lineItems,
-        slotInput?.total,
-        dateToCheck, //will be current date
-        slotInput?.serviceabilityObj
-      );
+      const slotsResponse = props.isReschdedule
+        ? await diagnosticGetCustomizedSlotsV2(
+            client,
+            slotInput?.addressObject,
+            slotInput?.lineItems,
+            slotInput?.total,
+            dateToCheck, //will be current date
+            slotInput?.serviceabilityObj,
+            slotInput?.orderId
+          )
+        : await diagnosticGetCustomizedSlotsV2(
+            client,
+            slotInput?.addressObject,
+            slotInput?.lineItems,
+            slotInput?.total,
+            dateToCheck, //will be current date
+            slotInput?.serviceabilityObj
+          );
       if (slotsResponse?.data?.getCustomizedSlotsv2) {
         const getSlotResponse = slotsResponse?.data?.getCustomizedSlotsv2;
         const getDistanceCharges = getSlotResponse?.distanceCharges;
@@ -173,6 +185,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           // slotsArray?.length && setSlotInfo(slotsArray?.[0]);
           // setNewSelectedSlot(`${formatTestSlot(slotsArray?.[0]?.slotInfo?.startTime!)}` || ''); //for setting the next date slot by default
           setLoading?.(false);
+          setShowSpinner(false);
         }
       }
     } catch (e) {
@@ -182,6 +195,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
         handleGraphQlError(e);
       }
       setLoading?.(false);
+      setShowSpinner(false);
     }
   };
 
@@ -498,7 +512,8 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
             {isPrepaidSlot ? renderPremiumTag() : null}
             {renderSlotSelectionView()}
           </ScrollView>
-          {showInOverlay && dropDownOptions.length ? renderBottomButton : null}
+          {/* {showInOverlay && dropDownOptions.length ? renderBottomButton : null} */}
+          {showSpinner && props.isReschdedule && <Spinner />}
         </View>
       </>
     );

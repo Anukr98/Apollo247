@@ -61,6 +61,13 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   reportGenerationTime: string | null;
 }
 
+export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems_pricingObj {
+  __typename: "PricingObj";
+  mrp: number | null;
+  price: number | null;
+  groupPlan: string | null;
+}
+
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems_diagnostics_diagnosticPricing {
   __typename: "diagnosticPricing";
   status: string | null;
@@ -96,6 +103,7 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   editOrderID: string | null;
   isRemoved: boolean | null;
   itemObj: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems_itemObj | null;
+  pricingObj: (getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems_pricingObj | null)[] | null;
   diagnostics: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems_diagnostics | null;
   testPreparationData: string | null;
   packageCalculatedMrp: number | null;

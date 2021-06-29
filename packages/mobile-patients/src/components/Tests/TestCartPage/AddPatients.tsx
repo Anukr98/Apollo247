@@ -45,6 +45,7 @@ import { GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID } from '@aph/mobile-patients/src/
 import { getPricesForItem, sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 
 const screenHeight = Dimensions.get('window').height;
 
@@ -64,6 +65,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     showSelectedPatient,
     setDeliveryAddressId,
     setDeliveryAddressCityId,
+    addresses,
   } = useDiagnosticsCart();
 
   const {
@@ -431,7 +433,14 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   };
 
   function _navigateToCartPage() {
-    props.navigation.navigate(AppRoutes.CartPage);
+    if (addresses?.length == 0) {
+      props.navigation.navigate(AppRoutes.AddAddressNew, {
+        addOnly: true,
+        source: 'Diagnostics Cart' as AddressSource,
+      });
+    } else {
+      props.navigation.navigate(AppRoutes.CartPage);
+    }
   }
 
   const renderStickyBottom = () => {

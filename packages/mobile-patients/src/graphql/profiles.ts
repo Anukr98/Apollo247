@@ -2250,6 +2250,11 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
             inclusions
             reportGenerationTime
           }
+          pricingObj {
+            mrp
+            price
+            groupPlan
+          }
           diagnostics {
             id
             itemId

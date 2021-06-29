@@ -754,9 +754,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
   const renderCartItems = () => {
     return (
-      <View style={{ marginTop: 16 }}>
+      <View style={{ marginTop: 16, marginBottom: 150 }}>
         {!!patientName ? renderPatientName() : null}
-
         <FlatList
           showsVerticalScrollIndicator={false}
           bounces={false}
@@ -922,9 +921,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       <View style={{ margin: 16 }}>
         {renderAddressSection()}
         {renderAddTestOption()}
-        <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
-          {renderCartItems()}
-        </ScrollView>
+        {renderCartItems()}
       </View>
     );
   };
@@ -1159,7 +1156,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={[{ ...theme.viewStyles.container }]}>
         {renderHeader()}
-        {renderMainView()}
+        <ScrollView bounces={false} style={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+          {renderMainView()}
+        </ScrollView>
       </SafeAreaView>
       {renderStickyBottom()}
     </View>

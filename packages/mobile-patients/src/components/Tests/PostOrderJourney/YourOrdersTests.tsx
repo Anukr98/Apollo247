@@ -182,6 +182,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [filteredOrderList, setFilteredOrderList] = useState<(orderListByMobile | null)[] | null>(
     []
   );
+  const [slotInput, setSlotInput] = useState({});
   const [profileArray, setProfileArray] = useState<
     GetCurrentPatients_getCurrentPatients_patients[] | null
   >(allCurrentPatients);
@@ -386,7 +387,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             });
             setOrders(ordersList);
             setFilteredOrderList(ordersList);
-            setTimeout(() => setLoading?.(false), 1000);
+            setTimeout(() => setLoading?.(false), 1500);
           } else {
             setOrders(ordersList);
             setFilteredOrderList(ordersList);
@@ -609,6 +610,20 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       });
   };
 
+  function populateMrp(item: any) {
+    const selectedGroupPlan = item?.groupPlan;
+    //add type
+    const findPriceobj = item?.pricingObj?.find(
+      (items: any) => items?.groupPlan === selectedGroupPlan
+    );
+    console.log({ findPriceobj });
+    const mrp = !!item?.itemObj?.packageCalculatedMrp
+      ? item?.itemObj?.packageCalculatedMrp
+      : !!findPriceobj && findPriceobj?.mrp;
+    console.log({ mrp });
+    return mrp;
+  }
+
   var pricesForItemArray;
   //add a type
   function createPatientObjLineItems(selectedOrder: any) {
@@ -619,7 +634,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         ({
           itemId: Number(item?.itemId),
           price: item?.price,
-          mrp: item?.itemObj?.packageCalculatedMrp, //check this
+          mrp: populateMrp(item), //check this
           groupPlan: item?.groupPlan,
         } as DiagnosticLineItem)
     );
@@ -669,8 +684,16 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       const orderId = selectedOrder?.id;
       const getServiceabilityObject = {
         cityID: Number(selectedOrder?.cityId),
-        stateID: null,
+        stateID: 0,
       };
+
+      setSlotInput({
+        addressObject: getAddressObject,
+        lineItems: getPatientObjWithLineItems,
+        total: billAmount,
+        serviceabilityObj: getServiceabilityObject,
+        orderId: orderId,
+      });
 
       const slotsResponse = await diagnosticGetCustomizedSlotsV2(
         client,
@@ -884,6 +907,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           }}
           slots={slots}
           slotInfo={selectedTimeSlot}
+          slotInput={slotInput}
           isReschdedule={true}
           itemId={orderItemId}
           slotBooked={selectedOrder?.slotDateTimeInUTC}
@@ -1329,10 +1353,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               : 'Ms.'
             : ''
         }
-        showAddTest={
-          order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED ||
-          DIAGNOSTIC_CONFIRMED_STATUS.includes(order?.orderStatus)
-        }
+        // showAddTest={
+        //   order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED ||
+        //   DIAGNOSTIC_CONFIRMED_STATUS.includes(order?.orderStatus)
+        // }
+        showAddTest={false}
         ordersData={order?.diagnosticOrderLineItems!}
         showPretesting={showPreTesting!}
         dateTime={!!order?.slotDateTimeInUTC ? order?.slotDateTimeInUTC : order?.diagnosticDate}
