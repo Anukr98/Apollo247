@@ -171,7 +171,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const isOnlineConsult = selectedTab === 'Consult Online';
   const isPhysicalConsult = isPhysicalConsultation(selectedTab);
   const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
-  const [doctorDiscountedFees, setDoctorDiscountedFees] = useState<number>(0);
   const [couponDiscountFees, setCouponDiscountFees] = useState<number>(0);
   const { showAphAlert, setLoading } = useUIElements();
   const [notificationAlert, setNotificationAlert] = useState(false);
@@ -227,7 +226,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     isCircleDoctorOnSelectedConsultMode && !circleSubscriptionId && !circlePlanSelected;
   let finalAppointmentInput = appointmentInput;
   finalAppointmentInput['couponCode'] = coupon ? coupon : null;
-  finalAppointmentInput['discountedAmount'] = doctorDiscountedFees;
   finalAppointmentInput['actualAmount'] =
     circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
@@ -240,7 +238,14 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   };
   finalAppointmentInput['planPurchaseDetails'] =
     circlePlanSelected && isCircleDoctorOnSelectedConsultMode ? planPurchaseDetails : null;
-
+  const actualAmount =
+    circlePlanSelected && isCircleDoctorOnSelectedConsultMode
+      ? isOnlineConsult
+        ? onlineConsultSlashedPrice
+        : physicalConsultSlashedPrice
+      : Number(price);
+  const [doctorDiscountedFees, setDoctorDiscountedFees] = useState<number>(actualAmount);
+  finalAppointmentInput['discountedAmount'] = doctorDiscountedFees;
   const totalSavings =
     isCircleDoctorOnSelectedConsultMode && (circleSubscriptionId || circlePlanSelected)
       ? isOnlineConsult
@@ -368,7 +373,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       await validateCoupon(coupon, true);
     } catch (error) {
       setCoupon('');
-      setDoctorDiscountedFees(0);
+      setDoctorDiscountedFees(actualAmount);
       setLoading!(false);
       return;
     }
@@ -617,7 +622,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const removeCoupon = () => {
     setCoupon('');
     setCouponDiscountFees(0);
-    setDoctorDiscountedFees(0);
+    setDoctorDiscountedFees(actualAmount);
     setSuccessMessage('');
   };
 
@@ -792,7 +797,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         !fromPayment && setLoading!(false);
       } catch (error) {
         setCoupon('');
-        setDoctorDiscountedFees(0);
+        setDoctorDiscountedFees(actualAmount);
         setLoading!(false);
         Alert.alert(
           'Uh oh.. :(',

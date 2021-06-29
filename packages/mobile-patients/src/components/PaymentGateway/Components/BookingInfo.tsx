@@ -9,7 +9,7 @@ import {
 import moment from 'moment';
 
 export interface BookingInfoProps {
-  LOB: 'diagnostics' | 'consult' | 'Pharma';
+  LOB: 'diagnostics' | 'consult' | 'Pharma' | 'vaccine';
   orderDetails: any;
   modifyOrderDetails?: any;
 }
@@ -49,12 +49,12 @@ export const BookingInfo: React.FC<BookingInfoProps> = (props) => {
     return !!subTxt ? <Text style={styles.subTxt}>{subTxt}</Text> : null;
   };
 
-  return (
+  return LOB == 'consult' || LOB == 'diagnostics' ? (
     <View style={styles.card}>
       {renderHeading()}
       {renderSubText()}
     </View>
-  );
+  ) : null;
 };
 
 const styles = StyleSheet.create({

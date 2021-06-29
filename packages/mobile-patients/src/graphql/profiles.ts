@@ -4987,10 +4987,9 @@ export const VERIFY_CORPORATE_EMAIL_OTP_AND_SUBSCRIBE = gql`
 
 ///---BELOW is pointed to vaccine endpoint-------->>
 
-//vaccinetype added
 export const GET_VACCINATION_SITES = gql`
-  query getResourcesList($city: String!, $vaccine_type: VACCINE_TYPE) {
-    getResourcesList(city: $city, vaccine_type: $vaccine_type) {
+  query getResourcesList($city: String!, $vaccine_type: VACCINE_TYPE, $is_retail: Boolean) {
+    getResourcesList(city: $city, vaccine_type: $vaccine_type, is_retail: $is_retail) {
       code
       success
       message
@@ -5003,13 +5002,15 @@ export const GET_VACCINATION_SITES = gql`
         street_line1
         street_line2
         street_line3
+        session_dates {
+          date
+          available
+        }
       }
     }
   }
 `;
 
-//vaccinetype to add
-//resource_id
 export const GET_VACCINATION_AVAILABLE_DATES = gql`
   query getResourcesSessionAvailableDate($resource_id: String!, $vaccine_type: VACCINE_TYPE) {
     getResourcesSessionAvailableDate(resource_id: $resource_id, vaccine_type: $vaccine_type) {
@@ -5021,19 +5022,18 @@ export const GET_VACCINATION_AVAILABLE_DATES = gql`
   }
 `;
 
-//vaccinetype to add
-// resource_id to change
-// session_date to change
 export const GET_VACCINATION_SLOTS = gql`
   query getResourcesSessionAvailableByDate(
     $resource_id: String!
     $session_date: Date
     $vaccine_type: VACCINE_TYPE
+    $is_retail: Boolean
   ) {
     getResourcesSessionAvailableByDate(
       resource_id: $resource_id
       session_date: $session_date
       vaccine_type: $vaccine_type
+      is_retail: $is_retail
     ) {
       code
       success
@@ -5043,12 +5043,15 @@ export const GET_VACCINATION_SLOTS = gql`
         end_date_time
         session_name
         id
+        selling_price
+        vaccine_type
+        available_for_booking
+        payment_type
       }
     }
   }
 `;
 
-// patient info to type
 export const SUBMIT_VACCINATION_BOOKING_REQUEST = gql`
   mutation CreateAppointment($appointmentInput: CreateAppointmentInput!) {
     CreateAppointment(appointmentInput: $appointmentInput) {
@@ -5088,6 +5091,7 @@ export const GET_VACCINATION_APPOINMENT_DETAILS = gql`
           start_date_time
           vaccine_type
           station_name
+          selling_price
           resource_detail {
             name
             street_line1
@@ -5095,6 +5099,7 @@ export const GET_VACCINATION_APPOINMENT_DETAILS = gql`
             street_line3
             city
             state
+            is_corporate_site
           }
         }
       }
@@ -5162,6 +5167,21 @@ export const DIAGNOSITC_EXOTEL_CALLING = gql`
       errorMessage
       sid
       success
+    }
+  }
+`;
+
+export const COWIN_REGISTRATION = gql`
+  mutation cowinRegistration($cowinRegistration: CowinRegistrationInput!) {
+    cowinRegistration(cowinRegistration: $cowinRegistration) {
+      code
+      response {
+        txnId
+        beneficiary_reference_id
+        errorCode
+        error
+      }
+      message
     }
   }
 `;

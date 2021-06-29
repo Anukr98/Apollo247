@@ -72,7 +72,8 @@ import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/Diagnost
 const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {
-  businessLine: 'consult' | 'diagnostics' | 'pharma' | 'subscription';
+  source?: string;
+  businessLine: 'consult' | 'diagnostics' | 'pharma' | 'subscription' | 'vaccine';
 }
 
 export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
@@ -438,6 +439,14 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       case 'consult':
         props.navigation.navigate(AppRoutes.ConsultPaymentStatus, {
           orderDetails: orderDetails,
+          paymentStatus: paymentStatus,
+          paymentId: paymentId,
+        });
+        break;
+      case 'vaccine':
+        props.navigation.navigate(AppRoutes.VaccineBookingConfirmationScreen, {
+          appointmentId: orderDetails?.orderId,
+          displayId: orderDetails?.displayId,
           paymentStatus: paymentStatus,
           paymentId: paymentId,
         });

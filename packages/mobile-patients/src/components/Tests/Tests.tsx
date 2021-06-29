@@ -358,11 +358,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
       : !!locationDetails
       ? locationDetails
       : pharmacyLocation!;
-    if (getLocationDetails?.pincode !== asyncDiagnosticPincode?.pincode) {
-      setDiagnosticLocation?.(getLocationDetails);
-      setAsyncDiagnosticPincode?.(getLocationDetails);
-      checkIsPinCodeServiceable(getLocationDetails?.pincode, 'manual', 'pharmaPincode');
-    }
+    setDiagnosticLocation?.(getLocationDetails);
+    setAsyncDiagnosticPincode?.(getLocationDetails);
+    checkIsPinCodeServiceable(getLocationDetails?.pincode, 'manual', 'pharmaPincode');
   }, [asyncPincode]); //removed location details
 
   /**
@@ -1721,7 +1719,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderWhyBookUs = () => {
     return (
-      <View style={{ marginBottom: -20, }}>
+      <View style={{ marginBottom: -20 }}>
         <View style={{ marginLeft: 32 }}>
           <Text style={styles.whyBookUsHeading}>{nameFormater('why book with us', 'upper')} ?</Text>
         </View>
@@ -1736,7 +1734,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           autoplayDelay={3000}
           autoplayInterval={3000}
         />
-        <View style={[styles.landingBannerInnerView, { bottom: 30}]}>
+        <View style={[styles.landingBannerInnerView, { bottom: 30 }]}>
           {whyBookUsArray?.map((_, index) =>
             index == bookUsSlideIndex ? renderDot(true) : renderDot(false)
           )}
