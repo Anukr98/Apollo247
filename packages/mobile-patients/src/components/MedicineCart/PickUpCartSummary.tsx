@@ -148,7 +148,6 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
     const orderInput: OrderCreate = {
       orders: orders,
       total_amount: grandTotal,
-      customer_id: currentPatient?.primaryPatientId || currentPatient?.id,
     };
     return client.mutate<createOrderInternal, createOrderInternalVariables>({
       mutation: CREATE_INTERNAL_ORDER,

@@ -144,7 +144,6 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
     const orderInput: OrderCreate = {
       orders: orders,
       total_amount: Number(defaultCirclePlan?.currentSellingPrice),
-      customer_id: currentPatient?.primaryPatientId || currentPatient?.id,
     };
     return client.mutate<createOrderInternal, createOrderInternalVariables>({
       mutation: CREATE_INTERNAL_ORDER,
