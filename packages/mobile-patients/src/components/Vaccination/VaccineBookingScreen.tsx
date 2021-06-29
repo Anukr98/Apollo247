@@ -662,7 +662,6 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
     const orderInput: OrderCreate = {
       orders: orders,
       total_amount: amountToPay,
-      customer_id: currentPatient?.primaryPatientId || currentPatient?.id,
     };
     return client.mutate<createOrderInternal, createOrderInternalVariables>({
       mutation: CREATE_INTERNAL_ORDER,

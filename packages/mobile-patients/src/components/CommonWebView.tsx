@@ -135,7 +135,6 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
     const orderInput: OrderCreate = {
       orders: orders,
       total_amount: Number(selectedPlan?.currentSellingPrice),
-      customer_id: currentPatient?.primaryPatientId || currentPatient?.id,
     };
     return client.mutate<createOrderInternal, createOrderInternalVariables>({
       mutation: CREATE_INTERNAL_ORDER,
