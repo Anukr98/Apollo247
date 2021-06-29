@@ -1973,10 +1973,19 @@ export const MapLocationIcon: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/work.webp')}
   />
 );
+
 export const PolygonIcon: React.FC<IconProps> = (props) => (
   <IconBase
     size="sm"
     {...props}
     source={require('@aph/mobile-patients/src/components/ui/icons/Polygon.webp')}
+  />
+);
+
+export const SavingsIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/saving_icon.webp')}
   />
 );

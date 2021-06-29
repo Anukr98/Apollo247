@@ -40,13 +40,25 @@ export interface DiagnosticClinic extends Clinic {
 }
 
 export interface DiagnosticSlot {
-  employeeSlotId: number | string;
-  diagnosticBranchCode: string;
-  diagnosticEmployeeCode: string;
   slotStartTime: string;
   slotEndTime: string;
   city: string;
   date: number; // timestamp
+  selectedDate?: any;
+  isPaidSlot: boolean;
+  internalSlot: string;
+  distanceCharges?: number;
+}
+
+export interface DiagnnoticSlots {
+  slotDisplayTime: string;
+  internalSlots: string;
+  date: number;
+  isPaidSlot: boolean;
+}
+export interface AddressServiceability {
+  cityID: number;
+  stateID: number;
 }
 
 export interface DiagnosticArea {
@@ -178,6 +190,15 @@ export interface DiagnosticsCartContextProps {
   setModifiedOrderItemIds: ((items: any | []) => void) | null;
   modifiedOrder: any;
   setModifiedOrder: ((items: orderList | any | {}) => void) | null;
+
+  serviceabilityObject: AddressServiceability | {}; //remove
+  setServiceabilityObject: ((item: AddressServiceability) => void) | null;
+
+  selectedPatient: any;
+  showSelectedPatient: ((value: any) => void) | null;
+
+  distanceCharges: number;
+  setDistanceCharges: ((id: number) => void) | null;
 }
 
 export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>({
@@ -204,6 +225,9 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
 
   modifyHcCharges: 0,
   setModifyHcCharges: null,
+
+  distanceCharges: 0,
+  setDistanceCharges: null,
 
   grandTotal: 0,
 
@@ -279,6 +303,10 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   setModifiedOrderItemIds: null,
   modifiedOrder: {},
   setModifiedOrder: null,
+  serviceabilityObject: {},
+  setServiceabilityObject: null,
+  selectedPatient: null,
+  showSelectedPatient: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -318,6 +346,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
 
   const [modifyHcCharges, setModifyHcCharges] = useState<
     DiagnosticsCartContextProps['modifyHcCharges']
+  >(0);
+
+  const [distanceCharges, setDistanceCharges] = useState<
+    DiagnosticsCartContextProps['distanceCharges']
   >(0);
 
   const [deliveryType, setDeliveryType] = useState<DiagnosticsCartContextProps['deliveryType']>(
@@ -372,6 +404,14 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const [modifiedOrder, setModifiedOrder] = useState<DiagnosticsCartContextProps['modifiedOrder']>(
     {}
   );
+
+  const [serviceabilityObject, setServiceabilityObject] = useState<
+    DiagnosticsCartContextProps['serviceabilityObject']
+  >({});
+
+  const [selectedPatient, showSelectedPatient] = useState<
+    DiagnosticsCartContextProps['selectedPatient']
+  >(null);
 
   const setDiagnosticClinic: DiagnosticsCartContextProps['setDiagnosticClinic'] = (item) => {
     _setDiagnosticClinic(item);
@@ -560,7 +600,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
       deliveryCharges +
       couponDiscount -
       cartSaving -
-      (isDiagnosticCircleSubscription ? circleSaving : 0)
+      (isDiagnosticCircleSubscription ? circleSaving : 0) +
+      (!!distanceCharges ? distanceCharges : 0)
     ).toFixed(2)
   );
 
@@ -621,12 +662,15 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setModifiedOrderItemIds([]);
     setHcCharges?.(0);
     setModifyHcCharges?.(0);
+    setDistanceCharges?.(0);
     setNewAddressAddedHomePage('');
     setNewAddressAddedHomePage('');
     setShowSelectPatient(false);
     setShowSelectedArea(false);
     setCartPagePopulated(false);
     setModifiedOrder({});
+    setServiceabilityObject({});
+    showSelectedPatient(null);
   };
 
   useEffect(() => {
@@ -706,6 +750,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         setHcCharges,
         modifyHcCharges,
         setModifyHcCharges,
+        distanceCharges,
+        setDistanceCharges,
         uploadPrescriptionRequired: false,
         ePrescriptions,
         addEPrescription,
@@ -762,6 +808,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         setModifiedOrderItemIds,
         modifiedOrder,
         setModifiedOrder,
+        serviceabilityObject,
+        setServiceabilityObject,
+        selectedPatient,
+        showSelectedPatient,
       }}
     >
       {props.children}

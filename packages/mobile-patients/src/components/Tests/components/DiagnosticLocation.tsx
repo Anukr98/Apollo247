@@ -11,6 +11,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  FlatList,
 } from 'react-native';
 import {
   doRequestAndAccessLocationModified,
@@ -25,7 +26,6 @@ import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput'
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { AddressCard } from '@aph/mobile-patients/src/components/Medicines/Components/AddressCard';
-import { FlatList } from 'react-native-gesture-handler';
 import _ from 'lodash';
 import {
   autoCompletePlaceSearch,
@@ -356,10 +356,6 @@ export const DiagnosticLocation: React.FC<DiagnosticLocationProps> = (props) => 
     );
   };
 
-  //1. highlight search bar on focus -> done (remove the highlight when clicked outside the dabbad)
-  //2. change search icon
-  //3. increase height + decrease font size
-
   const renderCurrentLocation = () => {
     return (
       <View style={styles.currentLocationContainer}>
@@ -432,9 +428,8 @@ export const DiagnosticLocation: React.FC<DiagnosticLocationProps> = (props) => 
   };
 
   const renderAddressCard = (item: addressType, index: number) => {
-    const addressLength = addressList?.length;
     return (
-      <View style={{ flex: 1, marginBottom: index === addressLength - 1 ? 16 : 0 }}>
+      <View style={{ flex: 1 }}>
         <AddressCard
           source={'Diagnostics'}
           item={item}

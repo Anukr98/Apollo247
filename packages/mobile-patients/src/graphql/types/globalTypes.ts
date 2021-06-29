@@ -1014,6 +1014,14 @@ export interface CancellationDiagnosticsInput {
   reason: string;
 }
 
+export interface ChargeDetailsInput {
+  patientAddressObj: patientAddressObj;
+  patientsObjWithLineItems: (patientObjWithLineItems | null)[];
+  billAmount: number;
+  serviceability: DiagnosticsServiceability;
+  slotInfo: slotInfo;
+}
+
 export interface ChooseDoctorInput {
   slotDateTime: any;
   specialityId: string;
@@ -1661,7 +1669,7 @@ export interface SaveBookHomeCollectionOrderInput {
   deviceType?: DEVICETYPE | null;
   items?: (DiagnosticLineItem | null)[] | null;
   slotId: string;
-  areaId: number;
+  areaId?: number | null;
   collectionCharges: number;
   uniqueID?: string | null;
   slotDateTimeInUTC: any;
@@ -1905,6 +1913,7 @@ export interface slotInfo {
   slotDetails?: slotDetail | null;
   status?: SLOT_BOOKING_STATUS | null;
   phleboID?: number | null;
+  paidSlot: boolean;
 }
 
 export interface voipPushTokenInput {

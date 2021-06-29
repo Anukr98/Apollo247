@@ -203,7 +203,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         breadcrumb.push({
           title: 'Cart',
           onPress: () => {
-            navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TestsCart);
+            navigateToScreenWithEmptyStack(props.navigation, AppRoutes.AddPatients);
           },
         });
       }

@@ -39,6 +39,11 @@ import {
   PROCESS_DIAG_COD_ORDER,
   CREATE_ORDER,
   GET_DIAGNOSTIC_SERVICEABILITY,
+  SAVE_DIAGNOSTIC_ORDER_V2,
+  GET_CUSTOMIZED_DIAGNOSTIC_SLOTS_V2,
+  CREATE_INTERNAL_ORDER,
+  MODIFY_DIAGNOSTIC_ORDERS,
+  GET_DIAGNOSTIC_PHLEBO_CHARGES,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -92,6 +97,13 @@ import {
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
   PAYMENT_MODE,
   OrderInput,
+  SaveBookHomeCollectionOrderInputv2,
+  patientObjWithLineItems,
+  patientAddressObj,
+  DiagnosticsServiceability,
+  OrderCreate,
+  saveModifyDiagnosticOrderInput,
+  ChargeDetailsInput
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { insertMessageVariables } from '@aph/mobile-patients/src/graphql/types/insertMessage';
 import {
@@ -157,6 +169,11 @@ import { savePhleboFeedbackVariables, savePhleboFeedback_savePhleboFeedback } fr
 import {  processDiagnosticHCOrder, processDiagnosticHCOrderVariables } from '@aph/mobile-patients/src/graphql/types/processDiagnosticHCOrder';
 import { createOrder, createOrderVariables } from '@aph/mobile-patients/src/graphql/types/createOrder';
 import { getDiagnosticServiceability, getDiagnosticServiceabilityVariables } from '../graphql/types/getDiagnosticServiceability';
+import { saveDiagnosticBookHCOrderv2, saveDiagnosticBookHCOrderv2Variables } from '../graphql/types/saveDiagnosticBookHCOrderv2';
+import { getCustomizedSlotsv2, getCustomizedSlotsv2Variables } from '../graphql/types/getCustomizedSlotsv2';
+import { createOrderInternal, createOrderInternalVariables } from '../graphql/types/createOrderInternal';
+import { saveModifyDiagnosticOrder, saveModifyDiagnosticOrderVariables } from '../graphql/types/saveModifyDiagnosticOrder';
+import { getPhleboCharges, getPhleboChargesVariables } from '../graphql/types/getPhleboCharges';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -1175,5 +1192,66 @@ export const diagnosticServiceability = (client: ApolloClient<object>,latitude: 
       sourceHeaders,
     },
     fetchPolicy: 'no-cache',
+  });
+};
+
+export const diagnosticGetPhleboCharges = (client :ApolloClient<object>,chargeDetailsInput: ChargeDetailsInput ) => {
+  return client.query<getPhleboCharges, getPhleboChargesVariables>({
+    query: GET_DIAGNOSTIC_PHLEBO_CHARGES,
+    variables: {
+      chargeDetailsInput : chargeDetailsInput
+    },
+    context: {
+      sourceHeaders,
+    },
+    fetchPolicy: 'no-cache',
+  });
+};
+
+export const diagnosticGetCustomizedSlotsV2 = (client: ApolloClient<object>,  patientAddressObject: patientAddressObj, patientsObjWithLineItemsObject: (patientObjWithLineItems | null) [] ,billAmount: number,selectedDate: any,serviceabilityObject?: DiagnosticsServiceability, diagnosticOrdersId?: string) => {
+  return client.query<getCustomizedSlotsv2, getCustomizedSlotsv2Variables>({
+    query: GET_CUSTOMIZED_DIAGNOSTIC_SLOTS_V2,
+    variables: {
+      patientAddressObj: patientAddressObject,
+      patientsObjWithLineItems: patientsObjWithLineItemsObject,
+      billAmount: billAmount,
+      selectedDate: selectedDate,
+      serviceability: serviceabilityObject,
+      diagnosticOrdersId: diagnosticOrdersId
+    },
+    context: {
+      sourceHeaders,
+    },
+    fetchPolicy: 'no-cache',
+  });
+};
+
+export const diagnosticSaveBookHcCollectionV2 = (client: ApolloClient<object>,orderInfo : SaveBookHomeCollectionOrderInputv2) => {
+  return client.mutate<saveDiagnosticBookHCOrderv2, saveDiagnosticBookHCOrderv2Variables>({
+    mutation: SAVE_DIAGNOSTIC_ORDER_V2,
+    variables: {diagnosticOrderInput : orderInfo},
+    context: {
+      sourceHeaders,
+    }
+  });
+};
+
+export const createInternalOrder = (client: ApolloClient<object>,orders : OrderCreate) => {
+  return client.mutate<createOrderInternal, createOrderInternalVariables>({
+    mutation: CREATE_INTERNAL_ORDER,
+    context: {
+      sourceHeaders,
+    },
+    variables: { order: orders },
+  });
+};
+
+export const diagnosticSaveModifyOrder = (client: ApolloClient<object>,orderInfo: saveModifyDiagnosticOrderInput) => {
+  return client.mutate<saveModifyDiagnosticOrder, saveModifyDiagnosticOrderVariables>({
+    mutation: MODIFY_DIAGNOSTIC_ORDERS,
+    context: {
+      sourceHeaders,
+    },
+    variables: { saveModifyDiagnosticOrder: orderInfo }
   });
 };

@@ -3560,9 +3560,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       >
         <ImageBackground
           style={styles.proHealthBannerImage}
-          source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_banner.png')}
+          source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_2.webp')}
           resizeMode={'stretch'}
-          borderRadius={10}
+          borderRadius={5}
         ></ImageBackground>
       </TouchableOpacity>
     );

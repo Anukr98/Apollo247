@@ -430,7 +430,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         breadcrumb.push({
           title: 'Cart',
           onPress: () => {
-            navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TestsCart);
+            navigateToScreenWithEmptyStack(props.navigation, AppRoutes.AddPatients);
           },
         });
       }
@@ -1104,11 +1104,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               }
               onPress={() =>
                 isAlreadyPartOfOrder
-                  ? props.navigation.navigate(AppRoutes.TestsCart, {
+                  ? props.navigation.navigate(AppRoutes.AddPatients, {
                       orderDetails: modifiedOrder,
                     })
                   : isAddedToCart
-                  ? props.navigation.navigate(AppRoutes.TestsCart)
+                  ? props.navigation.navigate(AppRoutes.AddPatients)
                   : onPressAddToCart()
               }
             />

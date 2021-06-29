@@ -33,6 +33,7 @@ import {
   GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
   GET_PATIENT_ADDRESS_LIST,
   GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
+  SET_DEFAULT_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import {
@@ -49,6 +50,7 @@ import {
   addTestsToCart,
   handleGraphQlError,
   downloadDiagnosticReport,
+  isAddressLatLngInValid,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -146,6 +148,11 @@ import { OrderCardCarousel } from '@aph/mobile-patients/src/components/Tests/com
 import { PrescriptionCardCarousel } from '@aph/mobile-patients/src/components/Tests/components/PrescriptionCardCarousel';
 import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
 import { DiagnosticLocation } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticLocation';
+import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
+import {
+  makeAdressAsDefault,
+  makeAdressAsDefaultVariables,
+} from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
@@ -179,14 +186,19 @@ export interface TestsProps
   }> {}
 
 export const Tests: React.FC<TestsProps> = (props) => {
+  const { setAddresses: setMedAddresses } = useShoppingCart();
   const {
     cartItems,
     addCartItem,
     isDiagnosticCircleSubscription,
     setIsDiagnosticCircleSubscription,
     setDeliveryAddressId,
+    deliveryAddressId,
     setAddresses: setTestAddress,
     addMultipleCartItems: addMultipleTestCartItems,
+    setDiagnosticSlot,
+    newAddressAddedHomePage,
+    setNewAddressAddedHomePage,
   } = useDiagnosticsCart();
   const {
     cartItems: shopCartItems,
@@ -217,13 +229,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   type Address = savePatientAddress_savePatientAddress_patientAddress;
 
+  const client = useApolloClient();
   const movedFrom = props.navigation.getParam('movedFrom');
   const { currentPatient } = useAllCurrentPatients();
 
   const hdfc_values = string.Hdfc_values;
   const cartItemsCount = cartItems?.length + shopCartItems?.length;
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<boolean>(false);
 
   const [bannerLoading, setBannerLoading] = useState(true);
   const [imgHeight, setImgHeight] = useState(200);
@@ -233,7 +245,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [sectionLoading, setSectionLoading] = useState<boolean>(false);
   const [bookUsSlideIndex, setBookUsSlideIndex] = useState(0);
   const [showbookingStepsModal, setShowBookingStepsModal] = useState(false);
-  const [scrollOffset, setScrollOffset] = useState<number>(0);
 
   const [widgetsData, setWidgetsData] = useState([] as any);
   const [reloadWidget, setReloadWidget] = useState<boolean>(false);
@@ -246,19 +257,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [isCurrentScreen, setCurrentScreen] = useState<string>('');
 
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
-  const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
   const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
   const defaultAddress = addresses?.find((item) => item?.defaultAddress);
   const [pageLoading, setPageLoading] = useState<boolean>(false);
-  const [isFocused, setIsFocused] = useState<boolean>(false);
   const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
   const [clickedItem, setClickedItem] = useState<any>([]);
   const [showLocationPopup, setLocationPopup] = useState<boolean>(false);
 
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
-
   const [serviceableObject, setServiceableObject] = useState({} as any);
-
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
       query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
@@ -308,6 +315,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return AppConfig.Configuration.DIAGNOSTIC_DEFAULT_LOCATION as LocationData;
   }
 
+  //if new address is added on cart page
+  useEffect(() => {
+    if (newAddressAddedHomePage != '') {
+      const selectedAddress = addresses?.find((item) => item?.id === deliveryAddressId);
+      saveDiagnosticLocation(formatAddressToLocation(selectedAddress));
+      setNewAddressAddedHomePage?.('');
+    }
+  }, [newAddressAddedHomePage]);
+
   //last operation done by the user.
   useEffect(() => {
     if (!!!diagnosticLocation) {
@@ -354,12 +370,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setBannerData && setBannerData([]); // default banners to be empty
       getUserBanners();
-      setIsFocused(true);
       setCurrentScreen(AppRoutes.Tests); //to avoid showing non-serviceable prompt on medicine page
     });
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       setCurrentScreen('');
-      setIsFocused(false);
     });
     return () => {
       didFocus && didFocus.remove();
@@ -666,9 +680,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
               state: getServiceableResponse?.state || '',
               city: getServiceableResponse?.city || '',
             };
-
             setServiceableObject(obj);
-            setDiagnosticServiceabilityData?.(obj);
+            setDiagnosticServiceabilityData?.(obj); //sets the city,state, and there id's
             setDiagnosticLocationServiceable?.(true);
             setServiceabilityMsg('');
           } else {
@@ -680,6 +693,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               city: 'Hyderabad',
             };
             setServiceableObject(obj);
+            setDiagnosticServiceabilityData?.(obj);
             setPageLoading?.(false);
             setDiagnosticLocationServiceable?.(false);
             //not serving pop-up needs to be seen.
@@ -691,12 +705,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
           }
           getDiagnosticBanner(Number(getServiceableResponse?.cityID));
           getHomePageWidgets(obj?.cityId);
-          setshowLocationpopup(false);
         } //end of if
       } catch (error) {
         //end of try
         setPageLoading?.(false);
-        CommonBugFender('fetchAddressServiceability', error);
+        CommonBugFender('fetchAddressServiceability_Tests', error);
         setLoadingContext?.(false);
         setReloadWidget(true);
         setSectionLoading(false);
@@ -763,9 +776,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [diagnosticResults, setDiagnosticResults] = useState<
     searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
   >([]);
-  const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
-  const [isSearchFocused, setSearchFocused] = useState(false);
-  const client = useApolloClient();
 
   const getUserSubscriptionsByStatus = async () => {
     setPageLoading!(true);
@@ -820,59 +830,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderSearchBar = () => {
-    const isFocusedStyle = scrollOffset > 10 || isSearchFocused;
-
     const styles = StyleSheet.create({
-      inputStyle: {
-        minHeight: 29,
-        ...theme.fonts.IBMPlexSansMedium(18),
+      containerStyle: {
+        marginBottom: 20,
+        marginTop: 12,
+        alignSelf: 'center',
       },
-      inputContainerStyle: isFocusedStyle
-        ? {
-            borderRadius: 5,
-            backgroundColor: colors.WHITE,
-            marginHorizontal: 10,
-            borderWidth: 1,
-            borderColor: colors.APP_GREEN,
-          }
-        : {
-            borderRadius: 5,
-            backgroundColor: colors.WHITE, //'#f7f8f5'
-            marginHorizontal: 10,
-            paddingHorizontal: 16,
-            borderWidth: 1,
-            borderColor: colors.APP_GREEN,
-          },
-      leftIconContainerStyle: scrollOffset > 10 ? { paddingLeft: isSearchFocused ? 0 : 16 } : {},
-      rightIconContainerStyle: isFocusedStyle
-        ? {
-            height: 24,
-          }
-        : {},
-      style: isFocusedStyle
-        ? {
-            paddingBottom: 18.5,
-          }
-        : { borderRadius: 5 },
-      containerStyle: isFocusedStyle
-        ? {
-            marginBottom: 20,
-            marginTop: 8,
-          }
-        : {
-            marginBottom: 20,
-            marginTop: 12,
-            alignSelf: 'center',
-          },
-      searchViewShadow: {
-        shadowColor: colors.SHADOW_GRAY,
-        shadowOffset: { width: 0, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 8,
-        elevation: 4,
-      },
-      searchInput: { minHeight: undefined, paddingVertical: 8 },
-      searchInputContainer: { marginBottom: 15, marginTop: 5 },
       searchNewInput: {
         borderColor: '#e7e7e7',
         borderRadius: 5,
@@ -904,8 +867,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
           props.navigation.navigate(AppRoutes.SearchTestScene, {
             searchText: searchText,
           });
-          setSearchText('');
-          setDiagnosticResults([]);
         }}
       >
         <SearchSendIcon />
@@ -962,7 +923,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
   function handleSelectedAddress(selectedAddress: Address) {
     setLocationPopup(false);
     if (!!selectedAddress) {
-      saveDiagnosticLocation(formatAddressToLocation(selectedAddress));
+      //set the selected address to be the default address.
+      setDefaultAddress(selectedAddress);
     }
   }
 
@@ -971,10 +933,75 @@ export const Tests: React.FC<TestsProps> = (props) => {
     saveDiagnosticLocation(formatAddressToLocation(selectedLocation));
   }
 
+  async function setDefaultAddress(address: Address) {
+    try {
+      const isSelectedAddressWithNoLatLng = isAddressLatLngInValid(address);
+      if (isSelectedAddressWithNoLatLng) {
+        renderAlert(string.diagnostics.updateAddressLatLngMessage, 'updateLocation', address);
+      } else {
+        setLoading?.(true);
+        hideAphAlert?.();
+        const response = await client.query<makeAdressAsDefault, makeAdressAsDefaultVariables>({
+          query: SET_DEFAULT_ADDRESS,
+          variables: { patientAddressId: address?.id },
+          fetchPolicy: 'no-cache',
+        });
+        const { data } = response;
+        const patientAddress = data?.makeAdressAsDefault?.patientAddress;
+        const updatedAddresses = addresses.map((item) => ({
+          ...item,
+          defaultAddress: patientAddress?.id == item.id ? patientAddress?.defaultAddress : false,
+        }));
+        setAddresses?.(updatedAddresses);
+        setMedAddresses?.(updatedAddresses);
+        patientAddress?.defaultAddress && setDeliveryAddressId?.(patientAddress?.id);
+        setDiagnosticSlot?.(null);
+        const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
+        console.log({ deliveryAddress });
+        saveDiagnosticLocation(formatAddressToLocation(deliveryAddress));
+        setLoading?.(false);
+      }
+    } catch (error) {
+      setLoading?.(false);
+      CommonBugFender('Tests_setDefaultAddress', error);
+      showAphAlert?.({
+        title: string.common.uhOh,
+        description: string.common.unableToSetDeliveryAddress,
+      });
+    }
+  }
+
+  const renderAlert = (message: string, source?: string, address?: any) => {
+    if (!!source && !!address) {
+      showAphAlert?.({
+        unDismissable: true,
+        title: string.common.uhOh,
+        description: message,
+        onPressOk: () => {
+          hideAphAlert?.();
+          props.navigation.push(AppRoutes.AddAddressNew, {
+            KeyName: 'Update',
+            addressDetails: address,
+            ComingFrom: AppRoutes.TestsCart,
+            updateLatLng: true,
+            source: 'Diagnostics Cart' as AddressSource,
+          });
+        },
+      });
+    } else {
+      setLoading?.(false);
+      showAphAlert?.({
+        title: string.common.uhOh,
+        description: message,
+      });
+    }
+  };
+
   const formatText = (text: string, count: number) =>
     text.length > count ? `${text.slice(0, count)}...` : text;
 
   const renderDeliverToLocationCTA = () => {
+    //need to show start of address if default, otherwise ??
     const location = `${formatText(
       diagnosticLocation?.city || diagnosticLocation?.state || '',
       18
@@ -985,7 +1012,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
           <TouchableOpacity
             style={{ marginTop: -7.5 }}
             onPress={() => {
-              // showAccessLocationPopup(addresses, false);
               setLocationPopup(true);
             }}
           >
@@ -1451,8 +1477,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setWidgetsData([]);
     setLoading?.(true);
     //if banners are not loaded, then refetch them.
-    banners?.length == 0 ? getDiagnosticBanner(serviceableObject?.cityId) : null;
-    getHomePageWidgets(serviceableObject?.cityId);
+    banners?.length == 0
+      ? getDiagnosticBanner(
+          Number(serviceableObject?.cityId || diagnosticServiceabilityData?.cityId)
+        )
+      : null;
+    getHomePageWidgets(serviceableObject?.cityId || diagnosticServiceabilityData?.cityId!);
     //call patients orders + prescriptions as well.
     fetchPatientOpenOrders();
     fetchPatientClosedOrders();
@@ -1547,7 +1577,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   function _navigateToTestCart() {
     hideAphAlert?.();
-    props.navigation.navigate(AppRoutes.TestsCart);
+    // props.navigation.navigate(AppRoutes.TestsCart);
+    props.navigation.navigate(AppRoutes.AddPatients);
   }
 
   const getFileName = (item: any) => {
@@ -1743,7 +1774,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         </Text>
         <TouchableOpacity
           activeOpacity={1}
-          onPress={() => props.navigation.navigate(AppRoutes.TestsCart)}
+          // onPress={() => props.navigation.navigate(AppRoutes.TestsCart)}
+          onPress={() => props.navigation.navigate(AppRoutes.AddPatients)}
         >
           <Text style={styles.goToCartText}>GO TO CART</Text>
         </TouchableOpacity>
@@ -1757,28 +1789,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       title: string.medicine_cart.tatUnServiceableAlertTitle,
       description: string.diagnostics.nonServiceableMsg.replace('{{city_name}}', city),
     });
-  };
-
-  const renderOverlay = () => {
-    const isNoResultsFound =
-      searchSate != 'load' && searchText.length > 2 && diagnosticResults?.length == 0;
-
-    return (
-      (!!diagnosticResults?.length || searchSate == 'load' || isNoResultsFound) && (
-        <View style={theme.viewStyles.overlayStyle}>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={theme.viewStyles.overlayStyle}
-            onPress={() => {
-              if (diagnosticResults?.length == 0 && !searchText) return;
-              setSearchText('');
-              setDiagnosticResults([]);
-              setSearchFocused(false);
-            }}
-          />
-        </View>
-      )
-    );
   };
 
   const renderDiagnosticHeader = () => {
@@ -1798,7 +1808,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         <TouchableOpacity
           style={{ alignItems: 'flex-end' }}
           activeOpacity={1}
-          onPress={() => props.navigation.navigate(AppRoutes.TestsCart)}
+          onPress={() => props.navigation.navigate(AppRoutes.AddPatients)}
         >
           <CartIcon />
           {cartItemsCount > 0 && <Badge label={cartItemsCount} />}
@@ -2005,7 +2015,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 nestedScrollEnabled={true}
               >
                 {renderSections()}
-                {renderOverlay()}
               </ScrollView>
               {!!cartItems && cartItems?.length > 0 ? renderCartDetails() : null}
             </View>
@@ -2051,23 +2060,6 @@ const styles = StyleSheet.create({
     opacity: 0.5,
     borderRadius: 5,
   },
-
-  menuItemContainer: {
-    marginHorizontal: 0,
-    padding: 0,
-    margin: 0,
-  },
-  menuMenuContainerStyle: {
-    marginLeft: winWidth * 0.25,
-    marginTop: 50,
-  },
-  menuScrollViewContainerStyle: { paddingVertical: 0 },
-  menuItemTextStyle: {
-    ...theme.viewStyles.text('M', 14, '#01475b'),
-    padding: 0,
-    margin: 0,
-  },
-  menuBottomPadding: { paddingBottom: 0 },
   deliverToText: { ...theme.viewStyles.text('R', 11, '#01475b', 1, 16) },
   locationText: { ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) },
   locationTextUnderline: {
@@ -2076,32 +2068,6 @@ const styles = StyleSheet.create({
     opacity: 1,
   },
   dropdownGreenContainer: { justifyContent: 'flex-end', marginBottom: -2 },
-
-  serviceabiltyMessageBackground: {
-    backgroundColor: 'white',
-  },
-  serviceabiltyMessageView: {
-    marginLeft: 20,
-    marginRight: 20,
-    marginBottom: 10,
-    padding: 5,
-    borderColor: '#890000',
-    borderWidth: 1,
-    borderRadius: 5,
-  },
-  serviceabiltyMessageInnerView: {
-    flexDirection: 'row',
-    marginHorizontal: 10,
-    justifyContent: 'space-between',
-  },
-  pendingIconStyle: {
-    height: 15,
-    width: 15,
-    resizeMode: 'contain',
-    marginTop: '1%',
-    tintColor: '#890000',
-  },
-
   sliderPlaceHolderStyle: {
     ...theme.viewStyles.imagePlaceholderStyle,
     width: '100%',

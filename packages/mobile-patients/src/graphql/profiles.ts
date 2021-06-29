@@ -5364,8 +5364,8 @@ export const GET_DIAGNOSTIC_SERVICEABILITY = gql `
 `;
 
 export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS_V2 = gql `
-query getCustomizedSlotsv2($patientAddressObj: patientAddressObj! , $patientsObjWithLineItems : [patientObjWithLineItems] , $billAmount: Float!, $selectedDate : Date!, $serviceability : DiagnosticsServiceability){
-  getCustomizedSlotsv2(patientAddressObj : $patientAddressObj, patientsObjWithLineItems :$patientsObjWithLineItems, billAmount: $billAmount, selectedDate : $selectedDate, serviceability : $serviceability){
+query getCustomizedSlotsv2($patientAddressObj: patientAddressObj! , $patientsObjWithLineItems : [patientObjWithLineItems] , $billAmount: Float!, $selectedDate : Date!, $serviceability : DiagnosticsServiceability, $diagnosticOrdersId : String){
+  getCustomizedSlotsv2(patientAddressObj : $patientAddressObj, patientsObjWithLineItems :$patientsObjWithLineItems, billAmount: $billAmount, selectedDate : $selectedDate, serviceability : $serviceability, diagnosticOrdersId: $diagnosticOrdersId){
     available_slots {
       slotDetail {
         slotDisplayTime
@@ -5390,6 +5390,15 @@ export const SAVE_DIAGNOSTIC_ORDER_V2 = gql`
           itemids
         }
       }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_PHLEBO_CHARGES = gql `
+  query getPhleboCharges($chargeDetailsInput: ChargeDetailsInput) {
+    getPhleboCharges(chargeDetailsInput: $chargeDetailsInput) {
+      charges
+      distanceCharges
     }
   }
 `;

@@ -1496,24 +1496,28 @@ export const getTestSlotDetailsByTime = (slots: TestSlot[], startTime: string, e
   )!;
 };
 
-export const getUniqueTestSlots = (slots: TestSlot[]) => {
+//add a type here
+export const getUniqueTestSlots = (slots: any[]) => {
   return slots
     .filter(
       (item, idx, array) =>
         array.findIndex(
           (_item) =>
-            _item.slotInfo.startTime == item.slotInfo.startTime &&
-            _item.slotInfo.endTime == item.slotInfo.endTime
+            _item?.slotInfo?.startTime == item?.slotInfo?.startTime &&
+            _item?.slotInfo?.endTime == item?.slotInfo?.endTime
         ) == idx
     )
     .map((val) => ({
-      startTime: val.slotInfo.startTime!,
-      endTime: val.slotInfo.endTime!,
+      startTime: val?.slotInfo.startTime!,
+      endTime: val?.slotInfo.endTime!,
+      isPaidSlot: val?.slotInfo?.isPaidSlot,
+      internalSlots: val?.slotInfo?.internalSlots,
+      distanceCharges: val?.slotInfo?.distanceCharges
     }))
     .sort((a, b) => {
-      if (moment(a.startTime.trim(), 'HH:mm').isAfter(moment(b.startTime.trim(), 'HH:mm')))
+      if (moment(a?.startTime?.trim(), 'HH:mm').isAfter(moment(b?.startTime.trim(), 'HH:mm')))
         return 1;
-      else if (moment(b.startTime.trim(), 'HH:mm').isAfter(moment(a.startTime.trim(), 'HH:mm')))
+      else if (moment(b?.startTime?.trim(), 'HH:mm').isAfter(moment(a?.startTime.trim(), 'HH:mm')))
         return -1;
       return 0;
     });

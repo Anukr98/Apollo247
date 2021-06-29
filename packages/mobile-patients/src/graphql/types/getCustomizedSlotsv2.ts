@@ -37,4 +37,5 @@ export interface getCustomizedSlotsv2Variables {
   billAmount: number;
   selectedDate: any;
   serviceability?: DiagnosticsServiceability | null;
+  diagnosticOrdersId?: string | null;
 }

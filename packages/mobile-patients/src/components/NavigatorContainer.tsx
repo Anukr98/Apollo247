@@ -136,10 +136,15 @@ import { TestRatingScreen } from '@aph/mobile-patients/src/components/Tests/Post
 import { SlotSelection } from '@aph/mobile-patients/src/components/Consult/SlotSelection';
 
 import { VaccineBookingScreen } from '@aph/mobile-patients/src/components/Vaccination/VaccineBookingScreen';
-import { VaccineBookingConfirmationScreen } from '@aph/mobile-patients//src/components/Vaccination/VaccineBookingConfirmationScreen';
-import { BookedVaccineScreen } from '@aph/mobile-patients//src/components/Vaccination/BookedVaccineScreen';
-import { ActivateCorporateMembership } from '@aph/mobile-patients//src/components/Vaccination/ActivateCorporateMembership';
-import { VaccineTermsAndConditions } from '@aph/mobile-patients//src/components/Vaccination/VaccineTermsAndConditions';
+import { VaccineBookingConfirmationScreen } from '@aph/mobile-patients/src/components/Vaccination/VaccineBookingConfirmationScreen';
+import { BookedVaccineScreen } from '@aph/mobile-patients/src/components/Vaccination/BookedVaccineScreen';
+import { ActivateCorporateMembership } from '@aph/mobile-patients/src/components/Vaccination/ActivateCorporateMembership';
+import { VaccineTermsAndConditions } from '@aph/mobile-patients/src/components/Vaccination/VaccineTermsAndConditions';
+
+import { AddPatients } from '@aph/mobile-patients/src/components/Tests/TestCartPage/AddPatients';
+import { AddressSlotSelection } from '@aph/mobile-patients/src/components/Tests/TestCartPage/AddressSlotSelection';
+import { CartPage } from '@aph/mobile-patients/src/components/Tests/TestCartPage/CartPage';
+import { ReviewOrder } from '@aph/mobile-patients/src/components/Tests/TestCartPage/ReviewOrder';
 
 export enum AppRoutes {
   Login = 'Login',
@@ -267,6 +272,10 @@ export enum AppRoutes {
   BookedVaccineScreen = 'BookedVaccineScreen',
   ActivateCorporateMembership = 'ActivateCorporateMembership',
   VaccineTermsAndConditions = 'VaccineTermsAndConditions',
+  AddPatients = 'AddPatients',
+  AddressSlotSelection = 'AddressSlotSelection',
+  CartPage = 'CartPage',
+  ReviewOrder = 'ReviewOrder',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -680,6 +689,18 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.SlotSelection]: {
     screen: SlotSelection,
+  },
+  [AppRoutes.AddPatients]: {
+    screen: AddPatients,
+  },
+  [AppRoutes.AddressSlotSelection]: {
+    screen: AddressSlotSelection,
+  },
+  [AppRoutes.CartPage]: {
+    screen: CartPage,
+  },
+  [AppRoutes.ReviewOrder]: {
+    screen: ReviewOrder,
   },
 };
 

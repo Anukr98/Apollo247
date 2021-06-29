@@ -4043,7 +4043,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   function _navigateToTestCart() {
     hideAphAlert?.();
-    props.navigation.push(AppRoutes.TestsCart, { comingFrom: AppRoutes.ConsultDetails });
+    props.navigation.push(AppRoutes.AddPatients, { comingFrom: AppRoutes.ConsultDetails });
   }
 
   const orderMedicine = (rowData: any, index: number) => {
