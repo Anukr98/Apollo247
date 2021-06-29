@@ -214,7 +214,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const reasonForOnHold = order?.medicineOrdersStatus!.find(
     (item) =>
       item?.orderStatus == MEDICINE_ORDER_STATUS.VERIFICATION_DONE ||
-      item?.orderStatus == MEDICINE_ORDER_STATUS.READY_FOR_VERIFICATION
+      item?.orderStatus == MEDICINE_ORDER_STATUS.READY_FOR_VERIFICATION ||
+      item?.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
   )
     ? false
     : orderOnHold! &&
