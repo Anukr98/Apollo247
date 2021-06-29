@@ -8,6 +8,7 @@ import {
   g,
   postAppsFlyerEvent,
   postFirebaseEvent,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Store } from '@aph/mobile-patients/src/helpers/apiCalls';
 import moment from 'moment';
@@ -15,6 +16,10 @@ import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/help
 import { AppsFlyerEventName } from './AppsFlyerEvents';
 import { PharmacyCircleEvent } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { PharmacyUserTypeEvent } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 type MyOrdersClicked = WebEngageEvents[WebEngageEventName.MY_ORDERS_CLICKED];
 
 export const postMyOrdersClicked = (
@@ -51,13 +56,16 @@ export const postPharmacyMyOrderTrackingClicked = (
   postWebEngageEvent(WebEngageEventName.PHARMACY_MY_ORDER_TRACKING_CLICKED, eventAttributes);
 };
 
-type PharmacyAddNewAddressClick = WebEngageEvents[WebEngageEventName.PHARMACY_ADD_NEW_ADDRESS_CLICK];
+type PharmacyAddNewAddressClick =
+  | WebEngageEvents[WebEngageEventName.PHARMACY_ADD_NEW_ADDRESS_CLICK]
+  | CleverTapEvents[CleverTapEventName.PHARMACY_PROCEED_TO_ADD_NEW_ADDRESS_CLICK];
 
 export const postPharmacyAddNewAddressClick = (source: PharmacyAddNewAddressClick['Source']) => {
   const eventAttributes: PharmacyAddNewAddressClick = {
     Source: source,
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_NEW_ADDRESS_CLICK, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.PHARMACY_PROCEED_TO_ADD_NEW_ADDRESS_CLICK, eventAttributes);
 };
 
 type PharmacyAddNewAddressCompleted = WebEngageEvents[WebEngageEventName.PHARMACY_ADD_NEW_ADDRESS_COMPLETED];

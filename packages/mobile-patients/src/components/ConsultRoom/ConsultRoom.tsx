@@ -2221,15 +2221,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   useEffect(() => {
-    overlyCallPermissions(
-      currentPatient!.firstName!,
-      'the doctor',
-      showAphAlert,
-      hideAphAlert,
-      true,
-      () => {},
-      'Home Screen'
-    );
     async function fetchData() {
       const userLoggedIn = await AsyncStorage.getItem('gotIt');
       if (userLoggedIn == 'true') {

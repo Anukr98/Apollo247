@@ -33,6 +33,7 @@ import {
   addPharmaItemToCart,
   g,
   getMaxQtyForMedicineItem,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -72,6 +73,11 @@ import Axios from 'axios';
 import { StickyBottomComponent } from '../ui/StickyBottomComponent';
 import { Button } from '../ui/Button';
 import _ from 'lodash';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { MedicineSearchEvents } from '@aph/mobile-patients/src/components/MedicineSearch/MedicineSearchEvents';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -258,6 +264,12 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           User_Type: pharmacyUserType,
         };
         postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
+        MedicineSearchEvents.pharmacySearch({
+          keyword: _searchText,
+          Source: 'Pharmacy Home',
+          results: products.length,
+          'User Type': pharmacyUserType,
+        });
       })
       .catch((e) => {
         CommonBugFender('SearchByBrand_onSearchMedicine', e);
@@ -294,12 +306,21 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             resultsdisplayed: products.length,
             User_Type: pharmacyUserType,
           };
+          MedicineSearchEvents.pharmacySearch({
+            keyword: _searchText,
+            Source: 'Pharmacy List',
+            results: products.length,
+            'User Type': pharmacyUserType,
+          });
           postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
-          const searchEventAttribute: WebEngageEvents[WebEngageEventName.SEARCH_ENTER_CLICK] = {
+          const searchEventAttribute:
+            | WebEngageEvents[WebEngageEventName.SEARCH_ENTER_CLICK]
+            | CleverTapEvents[CleverTapEventName.PHARMACY_SEARCH_ENTER_CLICK] = {
             keyword: searchText,
             numberofresults: data.product_count,
           };
           postWebEngageEvent(WebEngageEventName.SEARCH_ENTER_CLICK, searchEventAttribute);
+          postCleverTapEvent(CleverTapEventName.PHARMACY_SEARCH_ENTER_CLICK, searchEventAttribute);
 
           try {
             trackTagalysEvent(

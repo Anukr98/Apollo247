@@ -80,6 +80,7 @@ import {
   getOrderStatusText,
   handleGraphQlError,
   isEmptyObject,
+  postCleverTapEvent,
   postWebEngageEvent,
   reOrderMedicines,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -110,6 +111,10 @@ import {
 import { Overlay } from 'react-native-elements';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 const screenWidth = Dimensions.get('window').width;
 
 export interface OrderDetailsSceneProps
@@ -1933,6 +1938,22 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       orderStatus: orderDetails.currentStatus!,
     };
     postWebEngageEvent(WebEngageEventName.ORDER_SUMMARY_CLICKED, eventAttributes);
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_ORDER_SUMMARY_CLICKED] = {
+      'Order ID': orderDetails.id,
+      'Order date': getFormattedOrderPlacedDateTime(orderDetails) || undefined,
+      'Order type': !!g(order, 'billNumber')
+        ? 'Offline'
+        : orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION
+        ? 'Non Cart'
+        : 'Cart',
+      'Customer ID': currentPatient && currentPatient.id,
+      'Delivery date': orderDetails.orderTat
+        ? moment(orderDetails.orderTat).format('ddd, D MMMM, hh:mm A')
+        : undefined,
+      'Mobile number': currentPatient && currentPatient.mobileNumber,
+      'Order status': orderDetails.currentStatus!,
+    };
+    postCleverTapEvent(CleverTapEventName.PHARMACY_ORDER_SUMMARY_CLICKED, cleverTapEventAttributes);
     return (
       <View>
         <OrderSummary

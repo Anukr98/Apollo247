@@ -1528,6 +1528,22 @@ export const postwebEngageAddToCartEvent = (
     ...pharmacyCircleAttributes,
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
+  const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART] = {
+    'product name': name,
+    'product id': sku,
+    'category name': categoryName || undefined,
+    'Section Name': sectionName || undefined,
+    'category ID': category_id || undefined,
+    Price: price,
+    'Discounted Price': Number(special_price) || undefined,
+    Quantity: 1,
+    Source: source,
+    af_revenue: Number(special_price) || price,
+    af_currency: 'INR',
+    'Circle Membership Added': pharmacyCircleAttributes?.['Circle Membership Added'] || undefined,
+    'Circle Membership Value': pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
+  };
+  postCleverTapEvent(CleverTapEventName.PHARMACY_ADD_TO_CART, cleverTapEventAttributes);
 };
 
 export const postAppointmentCleverTapEvents = (

@@ -103,6 +103,7 @@ import {
   productsThumbnailUrl,
   setWebEngageScreenNames,
   setAsyncPharmaLocation,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -150,6 +151,11 @@ import {
   renderMedicinesShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import AsyncStorage from '@react-native-community/async-storage';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { MedicineSearchEvents } from '@aph/mobile-patients/src/components/MedicineSearch/MedicineSearchEvents';
 
 const styles = StyleSheet.create({
   buyAgain: {
@@ -341,6 +347,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       Source: source,
     };
     postWebEngageEvent(WebEngageEventName.CATEGORY_CLICKED, eventAttributes);
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CATEGORY_VIEWED] = {
+      'category name': categoryName || undefined,
+      'category ID': categoryId || undefined,
+      'Section Name': sectionName || undefined,
+      Source: source,
+    };
+    postCleverTapEvent(CleverTapEventName.PHARMACY_CATEGORY_VIEWED, cleverTapEventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.CATEGORY_CLICKED, eventAttributes);
 
     const firebaseEventAttributes: FirebaseEvents[FirebaseEventName.CATEGORY_CLICKED] = {
@@ -1137,10 +1150,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderSliderItem = ({ item, index }: { item: OfferBannerSection; index: number }) => {
     const handleOnPress = () => {
-      const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_BANNER_CLICK] = {
+      const eventAttributes:
+        | WebEngageEvents[WebEngageEventName.PHARMACY_BANNER_CLICK]
+        | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_BANNER] = {
         BannerPosition: slideIndex + 1,
       };
       postWebEngageEvent(WebEngageEventName.PHARMACY_BANNER_CLICK, eventAttributes);
+      postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_BANNER, eventAttributes);
       if (item.category_id) {
         props.navigation.navigate(AppRoutes.MedicineListing, {
           category_id: item.category_id,
@@ -1222,6 +1238,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 Source: 'Home',
                 User_Type: pharmacyUserType,
               };
+              const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED] = {
+                Source: 'Home',
+                'User Type': pharmacyUserType,
+              };
+              postCleverTapEvent(
+                CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED,
+                cleverTapEventAttributes
+              );
               postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED, eventAttributes);
               setEPrescriptions && setEPrescriptions([]);
               setPhysicalPrescriptions && setPhysicalPrescriptions([]);
@@ -1649,6 +1673,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           User_Type: pharmacyUserType,
         };
         postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
+        MedicineSearchEvents.pharmacySearch({
+          keyword: _searchText,
+          Source: 'Pharmacy Home',
+          results: products.length,
+          'User Type': pharmacyUserType,
+        });
       })
       .catch((e) => {
         CommonBugFender('Medicine_onSearchMedicine', e);

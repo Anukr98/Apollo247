@@ -100,6 +100,23 @@ export enum CleverTapEventName {
   CONSULT_SHARE_ICON_CLICKED = 'Consult share icon clicked',
   DOCTOR_PROFILE_SCREEN_BY_SHARE_LINK = 'Doctor profile screen by share link',
 
+  //Pharmacy events
+  PHARMACY_CATEGORY_VIEWED = 'Pharmacy Category Viewed',
+  PHARMACY_ADD_TO_CART = 'Pharmacy Add to Cart',
+  PHARMACY_CART_VIEWED = 'Pharmacy Cart Viewed',
+  PHARMACY_AVAILABILITY_API_CALLED = 'Pharmacy Availability API Called',
+  PHARMACY_PROCEED_TO_PAY_CLICKED = 'Pharmacy Proceed To Pay Clicked',
+  PHARMACY_CHECKOUT_COMPLETED = 'Pharmacy Checkout completed',
+  PHARMACY_ORDER_SUMMARY_CLICKED = 'Pharmacy Order summary clicked',
+  PHARMACY_HOME_PAGE_BANNER = 'Pharmacy Home Page Banner',
+  PHARMACY_SEARCH_ENTER_CLICK = 'Pharmacy Search enter clicked',
+  PHARMACY_PRODUCT_PAGE_VIEWED = 'Pharmacy Product Page Viewed',
+  PHARMACY_SEARCH = 'Pharmacy Search',
+  PHARMACY_NOTIFY_ME = 'Pharmacy Notify Me',
+  PHARMACY_UPLOAD_PRESCRIPTION_CLICKED = 'Pharmacy Upload Prescription Clicked',
+  PHARMACY_TAT_API_CALLED = 'Pharmacy TAT API Called',
+  PHARMACY_PROCEED_TO_ADD_NEW_ADDRESS_CLICK = 'Pharmacy Proceed to Add Address Clicked',
+
   // Diagnostics Events
   DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
   DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR = 'Diagnostic pincode entered',
@@ -212,27 +229,19 @@ export enum CleverTapEventName {
   OTP_ON_CALL_CLICK = 'OTP on call clicked',
   REGISTRATION_DONE = 'Registration Done',
   NUMBER_OF_PROFILES_FETCHED = 'Number of Profiles fetched',
-  SEARCH = 'Pharmacy Search',
-  SEARCH_ENTER_CLICK = 'Pharmacy Search Enter Clicked',
   PHARMACY_SEARCH_RESULTS = 'Pharmacy Search Results',
   PRODUCT_DETAIL_TAB_CLICKED = 'Product Detail Tab Clicked',
   PRODUCT_DETAIL_PINCODE_CHECK = 'Product Detail Pincode Check',
-  NOTIFY_ME = 'Notify Me',
-  CATEGORY_CLICKED = 'Pharmacy Category Clicked',
   CATEGORY_FILTER_CLICKED = 'Pharmacy Category Filter Clicked',
   CATEGORY_FILTER_APPLIED = 'Pharmacy Category Filter Applied',
   CATEGORY_LIST_GRID_VIEW = 'Listing view',
   SHOW_PRESCRIPTION_AT_STORE_SELECTED = 'Show prescription at store selected',
   PHARMACY_STORE_PICKUP_VIEWED = 'Pharmacy store pickup viewed',
   PHARMACY_STORE_SELECTED_SUCCESS = 'Pharmacy store selected success',
-  PHARMACY_ADD_TO_CART = 'Pharmacy Add to cart',
   PHARMACY_ADD_TO_CART_NONSERVICEABLE = 'Pharmacy Add to cart Nonserviceable',
-  PHARMACY_CART_VIEWED = 'Pharmacy Cart Viewed',
   SKU_PRICE_MISMATCH = 'SKU Price Mismatch',
   TAT_API_FAILURE = 'Tat API Failure',
-  PHARMACY_PROCEED_TO_PAY_CLICKED = 'Pharmacy Proceed To Pay Clicked',
   PHARMACY_PAYMENT_INITIATED = 'Pharmacy Payment Initiated',
-  UPLOAD_PRESCRIPTION_CLICKED = 'Pharmacy Upload Prescription Clicked',
   CART_UPLOAD_PRESCRIPTION_CLICKED = 'Cart - upload prescription',
   ITEMS_REMOVED_FROM_CART = 'Items removed from cart',
   CART_APPLY_COUPON_CLCIKED = 'Pharmacy cart - Apply coupon clicked',
@@ -242,7 +251,6 @@ export enum CleverTapEventName {
   UPLOAD_PRESCRIPTION_SUBMIT_CLICKED = 'Upload Prescription Submit Clicked',
   UPLOAD_PRESCRIPTION_NEW_ADDRESS = 'Upload prescription - New address added',
   PHARMACY_SUBMIT_PRESCRIPTION = 'Upload Prescription Proceed Clicked',
-  PHARMACY_CHECKOUT_COMPLETED = 'Pharmacy Checkout completed',
   PHARMACY_DETAIL_IMAGE_CLICK = 'Product Detail page Image clicked',
   DOCTOR_CLICKED = 'Doctor card on doctor listing screen clicked',
   BOOK_APPOINTMENT = 'Book Appointment',
@@ -265,14 +273,10 @@ export enum CleverTapEventName {
   LOGIN_WITH_TRUECALLER_CLICKED = 'Login with truecaller clicked',
 
   MY_ORDERS_CLICKED = 'My Orders Clicked',
-  ORDER_SUMMARY_CLICKED = 'Order Summary Clicked',
   PHARMACY_MY_ORDER_TRACKING_CLICKED = 'Pharmacy My Order Tracking Clicked',
-  PHARMACY_ADD_NEW_ADDRESS_CLICK = 'Pharmacy Add New Address Click',
   PHARMACY_ADD_NEW_ADDRESS_COMPLETED = 'Pharmacy Add New Address Completed',
   PHARMACY_CART_ADDRESS_SELECTED_SUCCESS = 'Pharmacy Cart Address Selected Success',
   PHARMACY_CART_ADDRESS_SELECTED_FAILURE = 'Pharmacy Cart Address Selected Failure',
-  PHARMACY_AVAILABILITY_API_CALLED = 'Pharmacy Availability API Called',
-  PHARMACY_TAT_API_CALLED = 'Pharmacy TAT API Called',
   PHARMACY_CART_SELECT_DELIVERY_ADDRESS_CLICKED = 'Pharmacy Cart - Select Delivery Address Clicked',
   PHARMACY_CART_UPLOAD_PRESCRIPTION_CLICKED = 'Pharmacy Cart - Upload Prescription Clicked',
   // HomePageElements Events
@@ -336,7 +340,6 @@ export enum CleverTapEventName {
   PHARMACY_ENTER_DELIVERY_PINCODE_CLICKED = 'Pharmacy Enter Delivery Pincode Clicked',
   PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED = 'Pharmacy Enter Delivery Pincode Submitted ',
   PHARMACY_PINCODE_NONSERVICABLE = 'Pharmacy location nonservicable',
-  PHARMACY_BANNER_CLICK = 'Pharmacy Homepage Banner click',
   CALL_THE_NEAREST_PHARMACY = 'Call the Nearest Pharmacy',
   // Payments Events
   PAYMENT_INSTRUMENT = 'Payment Instrument',
@@ -344,7 +347,6 @@ export enum CleverTapEventName {
   PAYMENT_FAILED_AND_CONVERTED_TO_COD = 'Payment Failed & Converted to COD',
   // Deeplink Events
   HOME_PAGE_VIEWED = 'Pharmacy Home page viewed',
-  PRODUCT_PAGE_VIEWED = 'Product page viewed',
   CATEGORY_PAGE_VIEWED = 'Category page viewed',
   BUY_AGAIN_PAGE_VIEWED = 'Buy again page viewed',
 
@@ -899,13 +901,13 @@ export interface CleverTapEvents {
   };
   // ********** PharmacyEvents ********** \\
 
-  [CleverTapEventName.SEARCH]: {
+  [CleverTapEventName.PHARMACY_SEARCH]: {
     keyword: string;
     Source: 'Pharmacy Home' | 'Pharmacy List' | 'Pharmacy PDP';
-    resultsdisplayed: number;
-    User_Type?: PharmaUserStatus;
+    results: number;
+    'User Type'?: PharmaUserStatus;
   };
-  [CleverTapEventName.SEARCH_ENTER_CLICK]: {
+  [CleverTapEventName.PHARMACY_SEARCH_ENTER_CLICK]: {
     keyword: string;
     numberofresults: number;
     source: string;
@@ -925,7 +927,7 @@ export interface CleverTapEvents {
   [CleverTapEventName.PRODUCT_DETAIL_TAB_CLICKED]: {
     tabName: string;
   };
-  [CleverTapEventName.NOTIFY_ME]: {
+  [CleverTapEventName.PHARMACY_NOTIFY_ME]: {
     'product name': string;
     'product id': string; // (SKUID)
     'category ID': string;
@@ -934,11 +936,11 @@ export interface CleverTapEvents {
     serviceable: YesOrNo;
   };
 
-  [CleverTapEventName.CATEGORY_CLICKED]: {
-    'category name': string;
-    'category ID': string;
+  [CleverTapEventName.PHARMACY_CATEGORY_VIEWED]: {
+    'category name'?: string;
+    'category ID'?: string;
     Source: 'Home' | 'Category Tree';
-    'Section Name': string;
+    'Section Name'?: string;
   };
   [CleverTapEventName.CATEGORY_FILTER_CLICKED]: {
     'category name': string;
@@ -1009,17 +1011,17 @@ export interface CleverTapEvents {
     'Customer ID': string;
     'Total items in cart': number;
     'Sub Total': number;
-    'Delivery charge': number;
+    'Shipping Charges': number;
     'Coupon code used'?: string;
     'Total Discount': number;
-    'Net after discount': number;
-    'Prescription Needed?': boolean;
+    'Order Value': number;
+    'Prescription Required'?: YesOrNo;
     'Cart ID'?: string;
     'Cart Items': object[];
     'Service Area': 'Pharmacy' | 'Diagnostic';
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
-    'Circle Membership Value': number | null;
-    User_Type?: PharmaUserStatus;
+    'Circle Membership Value'?: number | null;
+    'User Type'?: PharmaUserStatus;
   };
   [CleverTapEventName.SKU_PRICE_MISMATCH]: {
     'Mobile Number': string;
@@ -1039,9 +1041,9 @@ export interface CleverTapEvents {
   [CleverTapEventName.PHARMACY_PROCEED_TO_PAY_CLICKED]: {
     'Total items in cart': number;
     'Sub Total': number;
-    'Delivery charge': number;
-    'Net after discount': number;
-    'Prescription Needed?': boolean;
+    'Shipping Charges': number;
+    'Amount to Pay': number;
+    'Prescription Required': YesOrNo;
     'Cart ID'?: string; // we don't have cartId before placing order
     'Mode of Delivery': 'Home' | 'Pickup' | 'Home Visit' | 'Clinic Visit';
     'Delivery Date Time'?: string; // Optional (only if Home)
@@ -1052,9 +1054,9 @@ export interface CleverTapEvents {
     'Popup Shown'?: boolean;
     'No. of out of stock items'?: number;
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
-    'Circle Membership Value': number | null;
+    'Circle Membership Value'?: number | null;
     'Cart Items'?: string;
-    User_Type?: PharmaUserStatus;
+    'User Type'?: PharmaUserStatus;
     'Split Cart'?: YesOrNo;
     'Prescription Option selected'?: PrescriptionOptions;
     Shipment_1_Value?: number; // amount after discount
@@ -1063,15 +1065,15 @@ export interface CleverTapEvents {
     Shipment_2_Items?: number;
   };
   [CleverTapEventName.PHARMACY_PAYMENT_INITIATED]: {
-    'Payment mode': 'Online' | 'COD';
-    Amount: number;
-    'Service Area': 'Pharmacy' | 'Diagnostic';
-    'Cart Items': string;
-    Coupon: string;
+    payMode: 'Online' | 'COD';
+    amount: number;
+    serviceArea: 'Pharmacy' | 'Diagnostic';
+    'Cart Items'?: string;
+    Coupon?: string;
   };
-  [CleverTapEventName.UPLOAD_PRESCRIPTION_CLICKED]: {
+  [CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED]: {
     Source: 'Home' | 'Cart';
-    User_Type?: PharmaUserStatus;
+    'User Type'?: PharmaUserStatus;
   };
   [CleverTapEventName.CART_UPLOAD_PRESCRIPTION_CLICKED]: {
     'Customer ID': string;
@@ -1125,15 +1127,15 @@ export interface CleverTapEvents {
   [CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
     'Order Type': 'Cart' | 'Non Cart';
-    'Prescription Required': boolean;
+    'Prescription Required': YesOrNo;
     'Prescription Added': boolean;
     'Shipping information': string; // (Home/Store address)
     'Total items in cart'?: number; // Optional
     'Grand Total'?: number; // Optional
     'Total Discount %'?: number; // Optional
     'Discount Amount'?: number; // Optional
-    'Delivery charge'?: number; // Optional
-    'Net after discount'?: number; // Optional
+    'Shipping Charges'?: number; // Optional
+    'Amount to Pay'?: number; // Optional
     'Payment status'?: number; // Optional
     'Payment Type'?: 'COD' | 'Prepaid'; // Optional
     'Cart ID'?: string | number; // Optional
@@ -1145,11 +1147,11 @@ export interface CleverTapEvents {
     'Store Address'?: string;
     af_revenue: number;
     af_currency: string;
-    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
-    'Circle Membership Value': number | null;
+    'Circle Membership Added'?: 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value'?: number | null;
     'Circle Cashback amount': number;
     'Cart Items': string;
-    User_Type?: PharmaUserStatus;
+    'User Type'?: PharmaUserStatus;
     'Split Cart'?: YesOrNo;
     'Prescription Option selected'?: PrescriptionOptions;
   };
@@ -1172,7 +1174,7 @@ export interface CleverTapEvents {
     Pincode: string;
     Servicable: boolean;
   };
-  [CleverTapEventName.PHARMACY_BANNER_CLICK]: {
+  [CleverTapEventName.PHARMACY_HOME_PAGE_BANNER]: {
     BannerPosition: number;
   };
   [CleverTapEventName.CALL_THE_NEAREST_PHARMACY]: {
@@ -1679,14 +1681,14 @@ export interface CleverTapEvents {
     'Customer ID': string;
     'Mobile Number': string;
   };
-  [CleverTapEventName.ORDER_SUMMARY_CLICKED]: {
-    orderId: string;
-    orderDate: string;
-    orderType: 'Non Cart' | 'Cart' | 'Offline';
-    customerId: string;
-    deliveryDate: string;
-    mobileNumber: string;
-    orderStatus: MEDICINE_ORDER_STATUS;
+  [CleverTapEventName.PHARMACY_ORDER_SUMMARY_CLICKED]: {
+    'Order ID': string;
+    'Order date'?: string;
+    'Order type': 'Non Cart' | 'Cart' | 'Offline';
+    'Customer ID': string;
+    'Delivery date'?: string;
+    'Mobile number': string;
+    'Order status': MEDICINE_ORDER_STATUS;
   };
   [CleverTapEventName.PHARMACY_MY_ORDER_TRACKING_CLICKED]: {
     'Customer ID': string;
@@ -1697,7 +1699,7 @@ export interface CleverTapEvents {
     'Order Date': Date;
     'Delivery Date'?: Date; // TAT Promised
   };
-  [CleverTapEventName.PHARMACY_ADD_NEW_ADDRESS_CLICK]: {
+  [CleverTapEventName.PHARMACY_PROCEED_TO_ADD_NEW_ADDRESS_CLICK]: {
     Source: 'My Account' | 'Upload Prescription' | 'Cart' | 'Diagnostics Cart';
   };
   [CleverTapEventName.PHARMACY_ADD_NEW_ADDRESS_COMPLETED]: {
@@ -2197,10 +2199,10 @@ export interface CleverTapEvents {
   [CleverTapEventName.HOME_PAGE_VIEWED]: {
     source: 'deeplink' | 'app home';
   };
-  [CleverTapEventName.PRODUCT_PAGE_VIEWED]: {
-    source: ProductPageViewedSource;
-    ProductId: string;
-    ProductName: string;
+  [CleverTapEventName.PHARMACY_PRODUCT_PAGE_VIEWED]: {
+    Source: ProductPageViewedSource;
+    'product id': string;
+    'product name': string;
     Stockavailability: YesOrNo | 'Not for Sale';
     /**
      * Category ID & Category Name is applicable if customers clicks on products from any category (all categories of shop by category or health areas)
@@ -2210,9 +2212,9 @@ export interface CleverTapEvents {
     /**
      * Section Name is applicable if customer clicked on the product from the homepage product widgets like Hot sellers, Recommended products
      */
-    SectionName?: string;
-    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
-    'Circle Membership Value': number | null;
+    'Section Name'?: string;
+    'Circle Membership Added'?: 'Yes' | 'No' | 'Existing';
+    'Circle Membership Value'?: number | null;
     User_Type?: PharmaUserStatus;
     Pincode?: string;
     serviceable: YesOrNo;

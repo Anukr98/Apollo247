@@ -12,6 +12,7 @@ import {
   postAppsFlyerEvent,
   postWebEngageEvent,
   postFirebaseEvent,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import moment from 'moment';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src//helpers/AppsFlyerEvents';
@@ -20,6 +21,10 @@ import {
   FirebaseEvents,
 } from '@aph/mobile-patients/src//helpers/firebaseEvents';
 import { PharmacyUserTypeEvent } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 export function postwebEngageProceedToPayEvent(
   shoppingCart: ShoppingCartContextProps,
@@ -67,11 +72,36 @@ export function postwebEngageProceedToPayEvent(
     ...pharmacyCircleEvent,
     ...splitCartDetails,
   };
+  console.log('deliveryTime', deliveryTime);
+  const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_PROCEED_TO_PAY_CLICKED] = {
+    'Total items in cart': cartItems.length,
+    'Sub Total': cartTotal,
+    'Shipping Charges': deliveryCharges,
+    'Amount to Pay': grandTotal,
+    'Prescription Required': uploadPrescriptionRequired ? 'Yes' : 'No',
+    'Mode of Delivery': !isStorePickup ? 'Home' : 'Pickup',
+    'Delivery Date Time': !isStorePickup && moment(deliveryTime).isValid ? deliveryTime||undefined : undefined, // Optional (only if Home)
+    'Pin Code': pinCode,
+    'Service Area': 'Pharmacy',
+    'No. of out of stock items': numberOfOutOfStockItems,
+    'Split Cart': !!isSplitCart ? 'Yes' : 'No',
+    'Prescription Option selected': !!isPrescriptionUploaded
+      ? 'Prescription Upload'
+      : 'Not Applicable',
+    'Cart Items': itemsInCart || undefined,
+    'User Type': pharmacyUserTypeAttribute?.User_Type || undefined,
+    'Circle Membership Added':pharmacyCircleEvent?.['Circle Membership Added']||undefined,
+    'Circle Membership Value':pharmacyCircleEvent?.['Circle Membership Value']||undefined,
+    ...splitCartDetails,
+  };
   if (selectedStore) {
     eventAttributes['Store Id'] = selectedStore.storeid;
     eventAttributes['Store Name'] = selectedStore.storename;
+    cleverTapEventAttributes['Store Id'] = selectedStore.storeid||undefined;
+    cleverTapEventAttributes['Store Name'] = selectedStore.storename||undefined;
   }
   postWebEngageEvent(WebEngageEventName.PHARMACY_PROCEED_TO_PAY_CLICKED, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.PHARMACY_PROCEED_TO_PAY_CLICKED,cleverTapEventAttributes)
 }
 
 export function PharmacyCartViewedEvent(
@@ -104,10 +134,37 @@ export function PharmacyCartViewedEvent(
     ...pharmacyUserTypeAttribute,
     ...pharmacyCircleEvent,
   };
+  const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CART_VIEWED] = {
+    'Total items in cart': shoppingCart?.cartItems?.length,
+    'Sub Total': shoppingCart?.cartTotal,
+    'Shipping Charges': shoppingCart?.deliveryCharges,
+    'Total Discount': Number(
+      (shoppingCart?.couponDiscount + shoppingCart?.productDiscount)?.toFixed(2)
+    ),
+    'Order Value': shoppingCart?.grandTotal,
+    'Prescription Required': shoppingCart?.uploadPrescriptionRequired?'Yes':'No',
+    'Cart Items': shoppingCart?.cartItems?.map(
+      (item) =>
+        ({
+          id: item?.id,
+          name: item?.name,
+          quantity: item?.quantity,
+          price: item?.price,
+          specialPrice: item?.specialPrice,
+        } as ShoppingCartItem)
+    ) || undefined,
+    'Service Area': 'Pharmacy',
+    'Customer ID': id,
+    'User Type':pharmacyUserTypeAttribute?.User_Type||undefined,
+    'Circle Membership Added':pharmacyCircleEvent?.['Circle Membership Added']||undefined,
+    'Circle Membership Value':pharmacyCircleEvent?.['Circle Membership Value']||undefined
+  };
   if (shoppingCart.coupon) {
     eventAttributes['Coupon code used'] = shoppingCart.coupon.coupon;
+    cleverTapEventAttributes['Coupon code used'] = shoppingCart?.coupon?.coupon||undefined;
   }
   postWebEngageEvent(WebEngageEventName.PHARMACY_CART_VIEWED, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.PHARMACY_CART_VIEWED,cleverTapEventAttributes);
   postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CART_VIEWED, eventAttributes);
 
   const firebaseAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_CART_VIEWED] = {

@@ -53,6 +53,7 @@ import {
   postFirebaseEvent,
   persistHealthCredits,
   getPackageIds,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -98,6 +99,10 @@ import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
 import DeviceInfo from 'react-native-device-info';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 export interface CheckoutSceneNewProps extends NavigationScreenProps {}
 
@@ -334,6 +339,58 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     }
   };
 
+  const getPrepaidCheckoutCompletedCleverTapEventAttributes = (
+    orderAutoId: string,
+    isCOD?: boolean
+  ) => {
+    try {
+      const addr = deliveryAddressId && addresses.find((item) => item.id == deliveryAddressId);
+      const store = storeId && stores.find((item) => item.storeid == storeId);
+      const shippingInformation = addr ? formatAddress(addr) : store ? store.address : '';
+      const eventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED] = {
+        'Order ID': orderAutoId,
+        'Order Type': 'Cart',
+        'Prescription Required': uploadPrescriptionRequired ? 'Yes' : 'No',
+        'Prescription Added': !!(physicalPrescriptions.length || ePrescriptions.length),
+        'Shipping information': shippingInformation, // (Home/Store address)
+        'Total items in cart': cartItems.length,
+        'Grand Total': cartTotal + deliveryCharges,
+        'Total Discount %': coupon
+          ? getFormattedAmount(((couponDiscount + productDiscount) / cartTotal) * 100)
+          : 0,
+        'Discount Amount': getFormattedAmount(couponDiscount + productDiscount),
+        'Shipping Charges': deliveryCharges,
+        'Amount to Pay': getFormattedAmount(grandTotal),
+        'Payment status': 1,
+        'Payment Type': isCOD ? 'COD' : 'Prepaid',
+        'Service Area': 'Pharmacy',
+        'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
+        af_revenue: getFormattedAmount(grandTotal),
+        af_currency: 'INR',
+        'Circle Cashback amount':
+          circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
+        'Split Cart': orders?.length > 1 ? 'Yes' : 'No',
+        'Prescription Option selected': uploadPrescriptionRequired
+          ? 'Prescription Upload'
+          : 'Not Applicable',
+        'Circle Membership Added':
+          pharmacyCircleAttributes?.['Circle Membership Added'] || undefined,
+        'Circle Membership Value':
+          pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
+        'User Type': pharmacyUserTypeAttribute?.User_Type || undefined,
+      };
+      if (store) {
+        eventAttributes['Store Id'] = store.storeid;
+        eventAttributes['Store Name'] = store.storename;
+        eventAttributes['Store Number'] = store.phone;
+        eventAttributes['Store Address'] = store.address;
+      }
+      return eventAttributes;
+    } catch (error) {
+      return {};
+    }
+  };
+
   const getPrepaidCheckoutCompletedAppsFlyerEventAttributes = (
     orderId: string,
     orderAutoId: string
@@ -368,6 +425,15 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       'Cart Items': JSON.stringify(cartItems),
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
+    const cleverTapEventAttributes = {
+      ...getPrepaidCheckoutCompletedCleverTapEventAttributes(`${orderAutoId}`, isCOD),
+      'Split Cart': orders?.length > 1 ? 'Yes' : 'No',
+      'Prescription Option selected': uploadPrescriptionRequired
+        ? 'Prescription Upload'
+        : 'Not Applicable',
+      'Cart Items': JSON.stringify(cartItems) || undefined,
+    };
+    postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, cleverTapEventAttributes);
 
     const appsflyerEventAttributes = {
       ...getPrepaidCheckoutCompletedAppsFlyerEventAttributes(`${orderId}`, orderAutoId),
@@ -795,6 +861,14 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       Coupon: coupon ? coupon.coupon : '',
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_PAYMENT_INITIATED, eventAttributes);
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_PAYMENT_INITIATED] = {
+      payMode: isCashOnDelivery ? 'COD' : 'Online',
+      amount: grandTotal,
+      serviceArea: 'Pharmacy',
+      'Cart Items': JSON.stringify(cartItems) || undefined,
+      Coupon: coupon ? coupon?.coupon : undefined,
+    };
+    postCleverTapEvent(CleverTapEventName.PHARMACY_PAYMENT_INITIATED, cleverTapEventAttributes);
 
     isStorePickup
       ? saveOrder(orderInfo)
