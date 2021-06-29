@@ -475,26 +475,30 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   const downloadPDFTestReport = (fileShare?: boolean) => {
     if (currentPatient?.id) {
       setLoading && setLoading(true);
-      client
-        .query<getLabResultpdf, getLabResultpdfVariables>({
-          query: GET_LAB_RESULT_PDF,
-          variables: {
-            patientId: currentPatient?.id,
-            recordId: data?.id,
-          },
-        })
-        .then(({ data }: any) => {
-          if (data?.getLabResultpdf?.url) {
-            imagesArray?.length === 0
-              ? downloadDocument(data?.getLabResultpdf?.url, fileShare)
-              : callConvertToZipApi(data?.getLabResultpdf?.url, fileShare);
-          }
-        })
-        .catch((e: any) => {
-          setLoading?.(false);
-          currentPatient && handleGraphQlError(e, 'Report is yet not available');
-          CommonBugFender('HealthRecordDetails_downloadPDFTestReport', e);
-        });
+      if (!!data?.fileUrl) {
+        downloadDocument();
+      } else {
+        client
+          .query<getLabResultpdf, getLabResultpdfVariables>({
+            query: GET_LAB_RESULT_PDF,
+            variables: {
+              patientId: currentPatient?.id,
+              recordId: data?.id,
+            },
+          })
+          .then(({ data }: any) => {
+            if (data?.getLabResultpdf?.url) {
+              imagesArray?.length === 0
+                ? downloadDocument(data?.getLabResultpdf?.url, fileShare)
+                : callConvertToZipApi(data?.getLabResultpdf?.url, fileShare);
+            }
+          })
+          .catch((e: any) => {
+            setLoading?.(false);
+            currentPatient && handleGraphQlError(e, 'Report is yet not available');
+            CommonBugFender('HealthRecordDetails_downloadPDFTestReport', e);
+          });
+      }
     }
   };
 
@@ -517,9 +521,12 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         }
       })
       .catch((e: any) => {
-        setLoading?.(false);
+        setLoading && setLoading(false);
         currentPatient && handleGraphQlError(e, 'Report is yet not available');
         CommonBugFender('HealthRecordDetails_callConvertToZipApi', e);
+      })
+      .finally(() => {
+        setLoading && setLoading(false);
       });
   };
 
@@ -619,8 +626,10 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                 item?.range?.includes('<') ||
                 item?.range?.includes('>') ||
                 item?.range?.includes(':');
+              var regExp = /[a-zA-Z]/g;
+              var resBool = regExp.test(item?.range);
               var letterCheck = item?.range?.includes('-');
-              if (letterCheck && !symbolSearch) {
+              if (letterCheck && !symbolSearch && !resBool) {
                 minNum = item?.range.split('-')[0].trim();
                 maxNum = item?.range.split('-')[1].trim();
                 let parseResult = Number(item?.result);
@@ -629,7 +638,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                   : (resultColorChanger = false);
               }
 
-              if (symbolSearch) {
+              if (symbolSearch || resBool || item?.result?.includes(',')) {
                 rangeColorChanger = true;
               } else {
                 rangeColorChanger = false;
@@ -913,7 +922,9 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         </View>
         <View style={styles.dateViewRender}>{renderDateView()}</View>
         <View style={styles.doctorNameRender}>
-          <Text style={styles.recordNameTextStyle}>{data?.labTestName}</Text>
+          <Text style={styles.recordNameTextStyle}>
+            {data?.labTestName || data?.healthCheckName}
+          </Text>
           <View style={{ flexDirection: 'row' }}>
             {!!data?.labTestRefferedBy ? (
               <Text style={styles.doctorTextStyle}>
