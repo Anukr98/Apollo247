@@ -9,6 +9,12 @@ import { VACCINE_TYPE } from "./globalTypes";
 // GraphQL query operation: getResourcesList
 // ====================================================
 
+export interface getResourcesList_getResourcesList_response_session_dates {
+  __typename: "SessionDates";
+  date: string | null;
+  available: boolean | null;
+}
+
 export interface getResourcesList_getResourcesList_response {
   __typename: "ResourceType";
   id: string | null;
@@ -19,6 +25,7 @@ export interface getResourcesList_getResourcesList_response {
   street_line1: string | null;
   street_line2: string | null;
   street_line3: string | null;
+  session_dates: getResourcesList_getResourcesList_response_session_dates[] | null;
 }
 
 export interface getResourcesList_getResourcesList {
@@ -36,4 +43,5 @@ export interface getResourcesList {
 export interface getResourcesListVariables {
   city: string;
   vaccine_type?: VACCINE_TYPE | null;
+  is_retail?: boolean | null;
 }

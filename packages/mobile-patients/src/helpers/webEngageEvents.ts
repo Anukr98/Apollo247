@@ -142,7 +142,7 @@ export enum WebEngageEventName {
   MANAGE_DIABETES = 'Manage Diabetes',
   PROHEALTH = 'Prohealth',
   TRACK_SYMPTOMS = 'Track Symptoms',
-  VIEW_HELATH_RECORDS = 'PHR Click Health records - app',
+  VIEW_HELATH_RECORDS = 'PHR Click Health records',
   LEARN_MORE_ABOUT_CORONAVIRUS = 'Learn more about coronavirus',
   CHECK_YOUR_RISK_LEVEL = 'Check your risk level',
   APOLLO_PRO_HEALTH = 'Apollo pro health',
@@ -202,6 +202,8 @@ export enum WebEngageEventName {
   DIAGNOSTIC_ORDER_STATUS = 'Diagnostic Order Status',
   DIAGNOSTIC_TRACK_PHLEBO_CLICKED = 'Diagnostic Track Phlebo clicked',
   DIGNOSTIC_PAYMENT_ABORTED = 'Diagnostic payment aborted',
+  DIAGNOSITC_MODIFY_CLICKED = 'Diagnostic modify clicked',
+  DIAGNOSTIC_MODIFY_ORDER = 'Diagnostic modify order',
 
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
@@ -210,66 +212,66 @@ export enum WebEngageEventName {
   UPLOAD_PRESCRIPTION = 'Upload Prescription',
   UPLOAD_PHOTO = 'Upload Photo',
   ITEMS_CLICKED = 'Items Clicked',
-  PHR_ORDER_MEDS_TESTS = 'PHR Order Tests and Meds Prescription - app',
+  PHR_ORDER_MEDS_TESTS = 'PHR Order Tests and Meds Prescription',
   PHR_CONSULT_CARD_CLICK = 'PHR Consult Card click',
   RE_ORDER_MEDICINE = 'ReOrder Medicine',
-  PHR_CLICK_DOCTOR_CONSULTATIONS = 'PHR Click Doctor Consultations - app',
-  PHR_CLICK_TEST_REPORTS = 'PHR Click Test Reports - app',
-  PHR_CLICK_HOSPITALIZATIONS = 'PHR Click Hospitalizations - app',
-  PHR_CLICK_HEALTH_CONDITIONS = 'PHR Click Health Conditions - app',
-  PHR_CLICK_BILLS = 'PHR Click Bills - app',
-  PHR_CLICK_INSURANCES = 'PHR Click Insurances - app',
-  PHR_ADD_DOCTOR_CONSULTATIONS = 'PHR Add Doctor Consultation - app',
-  PHR_ADD_TEST_REPORT = 'PHR Add Test Report - app',
-  PHR_ADD_HOSPITALIZATIONS = 'PHR Add Hospitalization - app',
-  PHR_ADD_ALLERGY = 'PHR Add Allergy - app',
-  PHR_ADD_FAMILY_HISTORY = 'PHR Add Family History - app',
-  PHR_ADD_MEDICATION = 'PHR Add Medication - app',
-  PHR_ADD_HEALTH_RESTRICTIONS = 'PHR Add Health Restriction - app',
-  PHR_ADD_MEDICAL_CONDITION = 'PHR Add Medical Condition - app',
-  PHR_ADD_BILLS = 'PHR Add Bills - app',
-  PHR_ADD_INSURANCE = 'PHR Add Insurance - app',
-  PHR_ADD_HEIGHT = 'PHR Add Height - app',
-  PHR_ADD_WEIGHT = 'PHR Add Weight - app',
-  PHR_ADD_BLOOD_GROUP = 'PHR Add BloodGroup - app',
-  PHR_DOWNLOAD_DOCTOR_CONSULTATION = 'PHR Download Doctor Consultation - app',
-  PHR_DOWNLOAD_TEST_REPORT = 'PHR Download Test Report - app',
-  PHR_DOWNLOAD_HEALTH_CHECKS = 'PHR Download Health Check - app',
-  PHR_DOWNLOAD_HOSPITALIZATIONS = 'PHR Download Hospitalization - app',
-  PHR_DOWNLOAD_ALLERGY = 'PHR Download Allergy - app',
-  PHR_DOWNLOAD_FAMILY_HISTORY = 'PHR Download Family History - app',
-  PHR_DOWNLOAD_MEDICAL_CONDITION = 'PHR Download Medical Condition - app',
-  PHR_DOWNLOAD_BILLS = 'PHR Download Bill - app',
-  PHR_DOWNLOAD_INSURANCE = 'PHR Download Insurance - app',
-  PHR_UPDATE_DOCTOR_CONSULTATION = 'PHR Update Doctor Consultation - app',
-  PHR_UPDATE_TEST_REPORT = 'PHR Update Test Report - app',
-  PHR_UPDATE_HOSPITALIZATIONS = 'PHR Update Hospitalization - app',
-  PHR_UPDATE_ALLERGY = 'PHR Update Allergy - app',
-  PHR_UPDATE_FAMILY_HISTORY = 'PHR Update Family History - app',
-  PHR_UPDATE_MEDICATION = 'PHR Update Medication - app',
-  PHR_UPDATE_HEALTH_RESTRICTIONS = 'PHR Update Health Restriction - app',
-  PHR_UPDATE_MEDICAL_CONDITION = 'PHR Update Medical Condition - app',
-  PHR_UPDATE_BILLS = 'PHR Update Bill - app',
-  PHR_UPDATE_INSURANCE = 'PHR Update Insurance - app',
-  PHR_UPDATE_HEIGHT = 'PHR Update Height - app',
-  PHR_UPDATE_WEIGHT = 'PHR Update Weight - app',
-  PHR_UPDATE_BLOOD_GROUP = 'PHR Update BloodGroup - app',
-  PHR_DELETE_DOCTOR_CONSULTATION = 'PHR Delete Doctor Consultation - app',
-  PHR_DELETE_TEST_REPORT = 'PHR Delete Test Report - app',
-  PHR_DELETE_HOSPITALIZATIONS = 'PHR Delete Hospitalization - app',
-  PHR_DELETE_ALLERGY = 'PHR Delete Allergy - app',
-  PHR_DELETE_FAMILY_HISTORY = 'PHR Delete Family History - app',
-  PHR_DELETE_MEDICATION = 'PHR Delete Medication - app',
-  PHR_DELETE_HEALTH_RESTRICTIONS = 'PHR Delete Health Restriction - app',
-  PHR_DELETE_MEDICAL_CONDITION = 'PHR Delete Medical Condition - app',
-  PHR_DELETE_BILLS = 'PHR Delete Bill - app',
-  PHR_DELETE_INSURANCE = 'PHR Delete Insurance - app',
-  PHR_LOAD_HEALTH_RECORDS = 'PHR Load Health Records - app',
-  PHR_USER_LINKING = 'PHR User Linking - app',
-  PHR_USER_DELINKING = 'PHR User DeLinking -app',
-  PHR_NO_OF_USERS_SEARCHED_GLOBAL = 'PHR No Of Users searched Global - app',
-  PHR_NO_USERS_SEARCHED_LOCAL = 'PHR No Of Users searched Local {0} - app',
-  PHR_NO_OF_USERS_CLICKED_ON_RECORDS = 'PHR users seen on records in {0}-app',
+  PHR_CLICK_DOCTOR_CONSULTATIONS = 'PHR Click Doctor Consultations',
+  PHR_CLICK_TEST_REPORTS = 'PHR Click Test Reports',
+  PHR_CLICK_HOSPITALIZATIONS = 'PHR Click Hospitalizations',
+  PHR_CLICK_HEALTH_CONDITIONS = 'PHR Click Health Conditions',
+  PHR_CLICK_BILLS = 'PHR Click Bills',
+  PHR_CLICK_INSURANCES = 'PHR Click Insurances',
+  PHR_ADD_DOCTOR_CONSULTATIONS = 'PHR Add Doctor Consultation',
+  PHR_ADD_TEST_REPORT = 'PHR Add Test Report',
+  PHR_ADD_HOSPITALIZATIONS = 'PHR Add Hospitalization',
+  PHR_ADD_ALLERGY = 'PHR Add Allergy',
+  PHR_ADD_FAMILY_HISTORY = 'PHR Add Family History',
+  PHR_ADD_MEDICATION = 'PHR Add Medication',
+  PHR_ADD_HEALTH_RESTRICTIONS = 'PHR Add Health Restriction',
+  PHR_ADD_MEDICAL_CONDITION = 'PHR Add Medical Condition',
+  PHR_ADD_BILLS = 'PHR Add Bills',
+  PHR_ADD_INSURANCE = 'PHR Add Insurance',
+  PHR_ADD_HEIGHT = 'PHR Add Height',
+  PHR_ADD_WEIGHT = 'PHR Add Weight',
+  PHR_ADD_BLOOD_GROUP = 'PHR Add BloodGroup',
+  PHR_DOWNLOAD_DOCTOR_CONSULTATION = 'PHR Download Doctor Consultation',
+  PHR_DOWNLOAD_TEST_REPORT = 'PHR Download Test Report',
+  PHR_DOWNLOAD_HEALTH_CHECKS = 'PHR Download Health Check',
+  PHR_DOWNLOAD_HOSPITALIZATIONS = 'PHR Download Hospitalization',
+  PHR_DOWNLOAD_ALLERGY = 'PHR Download Allergy',
+  PHR_DOWNLOAD_FAMILY_HISTORY = 'PHR Download Family History',
+  PHR_DOWNLOAD_MEDICAL_CONDITION = 'PHR Download Medical Condition',
+  PHR_DOWNLOAD_BILLS = 'PHR Download Bill',
+  PHR_DOWNLOAD_INSURANCE = 'PHR Download Insurance',
+  PHR_UPDATE_DOCTOR_CONSULTATION = 'PHR Update Doctor Consultation',
+  PHR_UPDATE_TEST_REPORT = 'PHR Update Test Report',
+  PHR_UPDATE_HOSPITALIZATIONS = 'PHR Update Hospitalization',
+  PHR_UPDATE_ALLERGY = 'PHR Update Allergy',
+  PHR_UPDATE_FAMILY_HISTORY = 'PHR Update Family History',
+  PHR_UPDATE_MEDICATION = 'PHR Update Medication',
+  PHR_UPDATE_HEALTH_RESTRICTIONS = 'PHR Update Health Restriction',
+  PHR_UPDATE_MEDICAL_CONDITION = 'PHR Update Medical Condition',
+  PHR_UPDATE_BILLS = 'PHR Update Bill',
+  PHR_UPDATE_INSURANCE = 'PHR Update Insurance',
+  PHR_UPDATE_HEIGHT = 'PHR Update Height',
+  PHR_UPDATE_WEIGHT = 'PHR Update Weight',
+  PHR_UPDATE_BLOOD_GROUP = 'PHR Update BloodGroup',
+  PHR_DELETE_DOCTOR_CONSULTATION = 'PHR Delete Doctor Consultation',
+  PHR_DELETE_TEST_REPORT = 'PHR Delete Test Report',
+  PHR_DELETE_HOSPITALIZATIONS = 'PHR Delete Hospitalization',
+  PHR_DELETE_ALLERGY = 'PHR Delete Allergy',
+  PHR_DELETE_FAMILY_HISTORY = 'PHR Delete Family History',
+  PHR_DELETE_MEDICATION = 'PHR Delete Medication',
+  PHR_DELETE_HEALTH_RESTRICTIONS = 'PHR Delete Health Restriction',
+  PHR_DELETE_MEDICAL_CONDITION = 'PHR Delete Medical Condition',
+  PHR_DELETE_BILLS = 'PHR Delete Bill',
+  PHR_DELETE_INSURANCE = 'PHR Delete Insurance',
+  PHR_LOAD_HEALTH_RECORDS = 'PHR Load Health Records',
+  PHR_USER_LINKING = 'PHR User Linking',
+  PHR_USER_DELINKING = 'PHR User DeLinking',
+  PHR_NO_OF_USERS_SEARCHED_GLOBAL = 'PHR No Of Users searched Global',
+  PHR_NO_USERS_SEARCHED_LOCAL = 'PHR No Of Users searched Local {0}',
+  PHR_NO_OF_USERS_CLICKED_ON_RECORDS = 'PHR users seen on records in {0}',
 
   // ConsultRoom Events
   CONSULTATION_CANCELLED_BY_CUSTOMER = 'Consultation Cancelled by Customer',
@@ -284,8 +286,8 @@ export enum WebEngageEventName {
   DOWNLOAD_PRESCRIPTION = 'Download Prescription',
   VIEW_PRESCRIPTION_IN_CONSULT_DETAILS = 'View Prescription in Consult Details',
   CART_PRESCRIPTION_OPTION_SELECTED_PROCEED_CLICKED = 'Cart Prescription Option Selected & Proceed Click',
-  ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS = 'PHR Order Meds Prescription Detail - app',
-  ORDER_TESTS_FROM_PRESCRIPTION_DETAILS = 'PHR Order Tests Prescription Detail - app',
+  ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS = 'PHR Order Meds Prescription Detail',
+  ORDER_TESTS_FROM_PRESCRIPTION_DETAILS = 'PHR Order Tests Prescription Detail',
   CONSULT_CARD_CLICKED = 'Consult Card Clicked',
   CONTINUE_CONSULT_CLICKED = 'Continue Consult Clicked',
   CHAT_WITH_DOCTOR = 'Chat with Doctor',
@@ -1209,7 +1211,7 @@ export interface WebEngageEvents {
     Source:
       | 'Full Search'
       | 'Home Page'
-      | 'Cart Page'
+      | 'Cart page'
       | 'Partial Search'
       | 'Deeplink'
       | 'Popular search'
@@ -1298,7 +1300,8 @@ export interface WebEngageEvents {
       | 'Listing page'
       | 'Popular search'
       | 'Category page'
-      | 'Prescription';
+      | 'Prescription'
+      | 'Cart page';
     Section?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
@@ -1387,6 +1390,20 @@ export interface WebEngageEvents {
   [WebEngageEventName.DIGNOSTIC_PAYMENT_ABORTED]: {
     'Order id': string;
     UHID: string;
+  };
+  [WebEngageEventName.DIAGNOSITC_MODIFY_CLICKED]: {
+    UHID: string;
+    'Order id': string;
+    'Order status': string;
+  };
+  [WebEngageEventName.DIAGNOSTIC_MODIFY_ORDER]: {
+    'No of items Added': number;
+    'Item ids in array': string;
+    'Old order value': number;
+    'updated order value': number;
+    'HC charge updated': 'Yes' | 'No';
+    'payment mode': 'Prepaid' | 'Cash';
+    'time of modification': string | Date;
   };
 
   // ********** ConsultEvents ********** \\
@@ -2253,6 +2270,14 @@ export interface WebEngageEvents {
     User_Type?: PharmaUserStatus;
     Pincode?: string;
     serviceable: YesOrNo;
+    TATDay?: number | null;
+    TatHour?: number | null;
+    TatDateTime?: Date | string;
+    ProductType?: string;
+    MaxOrderQuantity?: number;
+    MRP?: number;
+    SpecialPrice?: number | null;
+    CircleCashback?: number;
   };
   [WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
     'Patient Name': string;

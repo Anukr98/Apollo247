@@ -1,6 +1,5 @@
-import { AphOverlay, AphOverlayProps } from '@aph/mobile-patients/src/components/ui/AphOverlay';
+import { AphOverlayProps } from '@aph/mobile-patients/src/components/ui/AphOverlay';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { CalendarView, CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
 import {
   Morning,
   Afternoon,
@@ -8,12 +7,9 @@ import {
   MorningSelected,
   AfternoonSelected,
   NightSelected,
-  DropdownGreen,
-  InfoIconRed,
   EmptySlot,
   CrossPopup,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { GET_CUSTOMIZED_DIAGNOSTIC_SLOTS } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   formatTestSlot,
@@ -42,9 +38,10 @@ import {
   getDiagnosticSlotsCustomizedVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsCustomized';
 import { Overlay } from 'react-native-elements';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { createAddressObject } from '@aph/mobile-patients/src/utils/commonUtils';
 
 export interface TestSlotSelectionOverlayNewProps extends AphOverlayProps {
-  zipCode: number;
   maxDate: Date;
   date: Date;
   slotInfo?: TestSlot;
@@ -56,25 +53,25 @@ export interface TestSlotSelectionOverlayNewProps extends AphOverlayProps {
   onSchedule: (date: Date, slotInfo: TestSlot) => void;
   itemId?: any[];
   source?: string;
+  isVisible: boolean;
+  addressDetails?: any;
 }
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
+
 export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewProps> = (props) => {
-  const { isTodaySlotUnavailable, maxDate } = props;
+  const { isTodaySlotUnavailable, maxDate, addressDetails } = props;
   const { cartItems } = useDiagnosticsCart();
   const [selectedDayTab, setSelectedDayTab] = useState(0);
   const [slotInfo, setSlotInfo] = useState<TestSlot | undefined>(props.slotInfo);
   const [slots, setSlots] = useState<TestSlot[]>(props.slots);
   const [date, setDate] = useState<Date>(props.date);
-  const [changedDate, setChangedDate] = useState<Date>(props.date);
-  const [calendarType, setCalendarType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.MONTH);
   const [isDateAutoSelected, setIsDateAutoSelected] = useState(true);
   const client = useApolloClient();
   const [spinner, showSpinner] = useState(false);
-  const { zipCode, onSchedule, isVisible, ...attributes } = props;
-  const aphOverlayProps: AphOverlayProps = { ...attributes, loading: spinner, isVisible };
+  const { onSchedule, isVisible, ...attributes } = props;
   const uniqueSlots = getUniqueTestSlots(slots);
   const dt = moment(props.slotBooked!).format('YYYY-MM-DD') || null;
-  const tm = moment(props.slotBooked!).format('hh:mm') || null;
+  const tm = moment(props.slotBooked!)?.format('hh:mm A') || null; //format changed from hh:mm
   const isSameDate = moment().isSame(moment(date), 'date');
   const itemId = props.itemId;
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id));
@@ -102,8 +99,10 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     });
   }
   let monthHeading = `${moment().format('MMMM')} ${moment().format('YYYY')}`;
+
   const fetchSlots = (updatedDate?: Date) => {
     let dateToCheck = !!updatedDate ? updatedDate : date;
+    const getAddressObject = createAddressObject(addressDetails);
     if (!isVisible) return;
     setSelectedDate(moment(dateToCheck).format('DD'));
     showSpinner(true);
@@ -115,15 +114,16 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           selectedDate: moment(dateToCheck).format('YYYY-MM-DD'),
           areaID: Number(props.areaId!),
           itemIds: props.isReschdedule ? itemId! : cartItemsWithId,
+          patientAddressObj: getAddressObject,
         },
       })
       .then(({ data }) => {
         const diagnosticSlots = g(data, 'getDiagnosticSlotsCustomized', 'slots') || [];
+        const timeToCompare = !!tm && moment(tm, 'hh:mm A')?.format('HH:mm');
         const updatedDiagnosticSlots =
-          moment(dateToCheck).format('YYYY-MM-DD') == dt && props.isReschdedule
-            ? diagnosticSlots.filter((item) => item?.Timeslot != tm)
+          moment(dateToCheck)?.format('YYYY-MM-DD') == dt && props.isReschdedule
+            ? diagnosticSlots?.filter((item) => item?.Timeslot != timeToCompare)
             : diagnosticSlots;
-
         const slotsArray: TestSlot[] = [];
         updatedDiagnosticSlots?.forEach((item) => {
           //all the hardcoded values are not returned by api.
@@ -152,7 +152,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
         } else {
           setSlots(slotsArray);
           slotsArray?.length && setSlotInfo(slotsArray?.[0]);
-          setNewSelectedSlot(`${formatTestSlot(slotsArray?.[0]?.slotInfo?.startTime!)}`);
+          setNewSelectedSlot(`${formatTestSlot(slotsArray?.[0]?.slotInfo?.startTime!)}` || '');
           showSpinner(false);
         }
       })
@@ -182,12 +182,6 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
       inactiveImage: <Afternoon />,
       title: 'Afternoon',
     },
-    {
-      tab: 2,
-      activeImage: <NightSelected />,
-      inactiveImage: <Night />,
-      title: 'Evening',
-    },
   ];
 
   let dropDownOptions = uniqueSlots?.map((val) => ({
@@ -197,26 +191,19 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   }));
 
   const time24 = (item: any) => {
-    return moment(item?.value, 'hh:mm A').format('HH');
+    return moment(item?.value, 'hh:mm A')?.format('HH');
   };
 
   if (selectedDayTab == 1) {
     //for afternoon 12-17
-    dropDownOptions = dropDownOptions.filter((item) => {
+    dropDownOptions = dropDownOptions?.filter((item) => {
       if (time24(item) >= '12' && time24(item) < '17') {
-        return item;
-      }
-    });
-  } else if (selectedDayTab == 2) {
-    //for evening 17 - 6
-    dropDownOptions = dropDownOptions.filter((item) => {
-      if (time24(item) >= '17' && time24(item) < '06') {
         return item;
       }
     });
   } else if (selectedDayTab == 0) {
     //for morning 6- 12
-    dropDownOptions = dropDownOptions.filter((item) => {
+    dropDownOptions = dropDownOptions?.filter((item) => {
       if (time24(item) >= '06' && time24(item) < '12') {
         return item;
       }
@@ -337,8 +324,9 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
             {monthHeading}
           </Text>
           <View style={styles.dateArrayContainer}>
-            {newDateArray.map((item, index) => (
+            {newDateArray?.map((item, index) => (
               <TouchableOpacity
+                key={index.toString()}
                 onPress={() => {
                   let newdate = moment(item?.timestamp)
                     .utc()
@@ -393,22 +381,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     );
   };
   const isDoneBtnDisabled = !date || !slotInfo;
-  const infoPanel = () => {
-    return (
-      <View style={styles.warningbox}>
-        <InfoIconRed />
-        <Text
-          style={{
-            ...theme.fonts.IBMPlexSansRegular(10),
-            color: theme.colors.LIGHT_BLUE,
-            padding: 10,
-          }}
-        >
-          Phelbo will arrive within 30 minutes of the slot time
-        </Text>
-      </View>
-    );
-  };
+
   const renderBottomButton = (
     <Button
       style={{ margin: 16, marginTop: 5, width: 'auto' }}
@@ -457,11 +430,11 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           </Text>
           <ScrollView style={styles.containerContentStyle}>
             {renderCalendarView()}
-            {infoPanel()}
             {renderSlotSelectionView()}
           </ScrollView>
           {dropDownOptions.length ? renderBottomButton : null}
         </View>
+        {spinner && <Spinner />}
       </>
     </Overlay>
   );

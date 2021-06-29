@@ -1,6 +1,9 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { permissionHandler } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  permissionHandler,
+  storagePermissions,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -22,7 +25,9 @@ import {
   postFirebaseEvent,
   postWebEngageEvent,
   getAge,
+  takeToHomePage,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import RNFetchBlob from 'rn-fetch-blob';
 import {
   ActivityIndicator,
   Text,
@@ -35,6 +40,7 @@ import {
   TouchableOpacity,
   Linking,
   Clipboard,
+  BackHandler,
 } from 'react-native';
 import { Apollo247Icon, ShareYellowDocIcon, ShareIcon, Apollo247, Copy } from '../ui/Icons';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -44,8 +50,7 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import {
   buildVaccineApolloClient,
   vaccinationADMINBaseUrl,
-  vaccinationApiBaseUrl,
-  vaccinationApiRoutes,
+  vaccineBookingPDFBaseUrl,
 } from '../Vaccination/VaccinationApolloClient';
 import {
   DOSE_NUMBER,
@@ -75,6 +80,10 @@ import {
   GetBenefitAvailabilityInfoByCMSIdentifierVariables,
 } from '../../graphql/types/GetBenefitAvailabilityInfoByCMSIdentifier';
 
+import RNHTMLtoPDF from 'react-native-html-to-pdf';
+import { Spinner } from '../ui/Spinner';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+
 const styles = StyleSheet.create({
   detailTitle: {
     ...theme.viewStyles.text('R', 14, theme.colors.SHERPA_BLUE),
@@ -95,6 +104,11 @@ const styles = StyleSheet.create({
   successTextStyle: {
     textAlign: 'center',
     ...theme.viewStyles.text('B', 28, '#00B38E'),
+    marginTop: 14,
+  },
+  cancelledTextStyle: {
+    textAlign: 'center',
+    ...theme.viewStyles.text('B', 28, '#890000'),
     marginTop: 14,
   },
   bookingConfirmationStyle: {
@@ -249,6 +263,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 10,
   },
+  generatePDFContainer: {
+    marginVertical: 10,
+    marginHorizontal: 16,
+    alignContent: 'flex-end',
+  },
+  generatePDFCta: {
+    ...theme.viewStyles.text('B', 14, '#FC9916', 1, 25, 0.35),
+    alignSelf: 'flex-end',
+  },
   headerBannerContainer: {
     height: 260,
     paddingVertical: 16,
@@ -285,8 +308,6 @@ const BOOKING_STATUS = {
 };
 export interface VaccineBookingConfirmationScreenProps extends NavigationScreenProps<{}> {
   appointmentId: string;
-  cmsIdentifier: string;
-  subscriptionId: string;
   displayId: number;
 }
 
@@ -294,20 +315,35 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
   props
 ) => {
   const appointmentId = props.navigation.getParam('appointmentId');
-  const cmsIdentifier = props.navigation.getParam('cmsIdentifier');
-  const subscriptionId = props.navigation.getParam('subscriptionId');
   const [displayId, setDisplayId] = useState<number>(props.navigation.getParam('displayId'));
   const [loading, setLoading] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [resendSMSPhoneNumber, setResendSMSPhoneNumber] = useState('');
   const [bookingInfo, setBookingInfo] = useState<any>();
   const [qrCodeLink, setQRCodeLink] = useState<any>();
-  const [remainingVaccineSlots, setRemainingVaccineSlots] = useState<number>(0);
+
+  const [isCorporateUser, setCorporateUser] = useState<boolean>(false);
+  const cancellationThreshholdPreVaccination =
+    AppConfig.Configuration.Cancel_Threshold_Pre_Vaccination || 12;
+  const [bookingStartTime, setBookingStartTime] = useState<any>();
 
   const { showAphAlert, hideAphAlert } = useUIElements();
 
   const { authToken } = useAuth();
   const apolloVaccineClient = buildVaccineApolloClient(authToken);
   const client = useApolloClient();
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
+
+  const handleBack = () => {
+    takeToHomePage(props);
+    return true;
+  };
 
   const fetchVaccineBookingDetails = () => {
     setLoading(true);
@@ -323,38 +359,19 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
       .then((response) => {
         setBookingInfo(response?.data?.GetAppointmentDetails?.response);
         setDisplayId(response?.data?.GetAppointmentDetails?.response?.display_id || 0);
+        setBookingStartTime(
+          response?.data?.GetAppointmentDetails?.response?.resource_session_details?.start_date_time
+        );
+
+        setCorporateUser(
+          response?.data?.GetAppointmentDetails?.response?.resource_session_details?.resource_detail
+            ?.is_corporate_site || false
+        );
       })
       .catch((error) => {})
       .finally(() => {
         setLoading(false);
       });
-  };
-
-  const fetchVaccinationLimit = () => {
-    if (
-      cmsIdentifier == undefined ||
-      cmsIdentifier == '' ||
-      subscriptionId == undefined ||
-      subscriptionId == ''
-    ) {
-      return;
-    }
-
-    client
-      .query<GetBenefitAvailabilityInfoByCMSIdentifier>({
-        query: GET_VACCINE_BOOKING_LIMIT,
-        variables: {
-          user_subscription_id: subscriptionId || '',
-          cms_identifier: cmsIdentifier || '',
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((response) => {
-        setRemainingVaccineSlots(
-          response?.data?.GetBenefitAvailabilityInfoByCMSIdentifier?.response?.remaining
-        );
-      })
-      .catch((error) => {});
   };
 
   const cancelVaccination = () => {
@@ -371,16 +388,21 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
       })
       .then((response) => {
         if (response.data?.CancelAppointment.success) {
-          fetchVaccineBookingDetails();
-
-          postBookingCancellationEvent();
           //successfully cancelled
-          showAphAlert!({
-            title: string.vaccineBooking.cancel_title,
-            description: string.vaccineBooking.cancel_success_message,
-          });
+          if (bookingInfo?.payment_type == PAYMENT_TYPE.IN_APP_PURCHASE) {
+            let message =
+              'Your booking has been cancelled. Your refund against Booking #' +
+              displayId +
+              ' has  been initiated from our end. It takes 4-5 working days for processing.';
+            showAphAlert!({
+              title: 'Hi ,',
+              description: message,
+            });
+          }
+
+          fetchVaccineBookingDetails();
+          postBookingCancellationEvent();
         } else {
-          //Alert.alert(" ");
           showAphAlert!({
             title: string.vaccineBooking.error_title,
             description: string.vaccineBooking.error_cancel_message,
@@ -444,20 +466,54 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
   };
 
   const showCancelationAlert = () => {
-    Alert.alert('Alert', 'Are you sure you want to cancel the vaccination booking appointment?', [
-      { text: 'No' },
-      {
-        text: 'Yes',
-        onPress: () => {
-          cancelVaccination();
-        },
-      },
-    ]);
+    var startTime = moment(bookingStartTime);
+    var nowTime = moment(new Date());
+    var duration = moment.duration(startTime.diff(nowTime)).asHours();
+
+    if (duration < cancellationThreshholdPreVaccination) {
+      //cannot cancel
+      let message = '';
+      if (isCorporateUser) {
+        message =
+          'Cancellation is not allowed on this booking as you have surpassed the cancellation period. \nCancellation is only allowed till ' +
+          cancellationThreshholdPreVaccination +
+          ' hours before the scheduled vaccination slot time.';
+      } else {
+        message =
+          'Cancellation & refund is not allowed on this booking as you have surpassed the cancellation period. \nCancellation is only allowed till ' +
+          cancellationThreshholdPreVaccination +
+          ' hours before the scheduled vaccination slot time.';
+      }
+
+      showAlertMessage('Oops! ', message);
+    } else {
+      //can cancel
+      showAphAlert!({
+        title: 'Hi, ',
+        description: 'Are you sure you want to cancel your booking?',
+        CTAs: [
+          {
+            text: 'Yes',
+            onPress: () => {
+              hideAphAlert!();
+              cancelVaccination();
+            },
+            type: 'white-button',
+          },
+          {
+            text: 'No',
+            onPress: () => {
+              hideAphAlert!();
+            },
+            type: 'orange-button',
+          },
+        ],
+      });
+    }
   };
 
   useEffect(() => {
     fetchVaccineBookingDetails();
-    fetchVaccinationLimit();
 
     setQRCodeLink(vaccinationADMINBaseUrl + 'booking-confirmation/' + displayId);
   }, []);
@@ -469,7 +525,7 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
         title=" "
         rightComponent={renderCancelHeaderCTA(bookingInfo)}
         container={{ borderBottomWidth: 0 }}
-        onPressLeftIcon={() => props.navigation.goBack()}
+        onPressLeftIcon={() => handleBack()}
       />
     );
   };
@@ -534,7 +590,7 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
     );
   };
 
-  const renderBookingDetailsMatrixItem = (title, value) => {
+  const renderBookingDetailsMatrixItem = (title: string, value: string) => {
     return (
       <View style={{ flexDirection: 'row', marginVertical: 3 }}>
         <Text style={styles.detailTitle}>{title}</Text>
@@ -604,6 +660,10 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
           <Text style={styles.successTextStyle}>SUCCESS! </Text>
         ) : null}
 
+        {bookingInfo?.status == BOOKING_STATUS.CANCELLED ? (
+          <Text style={styles.cancelledTextStyle}>CANCELLED! </Text>
+        ) : null}
+
         <Text style={styles.bookingConfirmationStyle}>
           Your booking has been {bookingInfo?.status.toLowerCase()}.
         </Text>
@@ -629,6 +689,12 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
             ' , ' +
             (bookingInfo?.resource_session_details?.resource_detail?.state || '')
         )}
+
+        {renderBookingDetailsMatrixItem(
+          string.vaccineBooking.station,
+          bookingInfo?.resource_session_details?.station_name || '-'
+        )}
+
         {bookingInfo?.resource_session_details?.start_date_time
           ? renderBookingDetailsMatrixItem(
               string.vaccineBooking.date_of_vaccination,
@@ -647,7 +713,21 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
               bookingInfo?.resource_session_details?.vaccine_type
             )
           : null}
-        {renderBookingDetailsMatrixItem(string.vaccineBooking.mode, bookingInfo?.payment_type)}
+
+        {bookingInfo?.resource_session_details?.selling_price
+          ? renderBookingDetailsMatrixItem(
+              string.vaccineBooking.amount,
+              '₹' + bookingInfo?.resource_session_details?.selling_price
+            )
+          : null}
+
+        {renderBookingDetailsMatrixItem(
+          string.vaccineBooking.mode,
+          bookingInfo?.payment_type == PAYMENT_TYPE.IN_APP_PURCHASE
+            ? 'Payment'
+            : bookingInfo?.payment_type
+        )}
+
         {renderStatusStrip()}
 
         <View style={[styles.separatorStyle, { width: '100%' }]} />
@@ -712,13 +792,15 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
           title={'REGISTER ON COWIN'}
           style={[styles.actionFooterCTA, { marginTop: 15 }]}
           onPress={() => {
-            Linking.openURL(string.vaccineBooking.cowin_url).catch((err) => {});
+            //Linking.openURL(string.vaccineBooking.cowin_url).catch((err) => {});
+            props.navigation.navigate(AppRoutes.CowinRegistration);
           }}
-          disabled={false}
+          disabled={bookingInfo?.status == BOOKING_STATUS.CANCELLED ? true : false}
         />
       </View>
     );
   };
+
   const renderInstructionForTheDayBlock = () => {
     return (
       <View style={styles.impInstructionContainer}>
@@ -765,6 +847,96 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
     );
   };
 
+  const generatePDF = async (htmlText: any) => {
+    let options = {
+      html: htmlText,
+      fileName: 'apollo_vaccine_booking_' + displayId,
+      directory: 'Download',
+    };
+
+    let file = await RNHTMLtoPDF.convert(options);
+    return file;
+  };
+
+  const fetchHTMLText = () => {
+    setPdfLoading(true);
+
+    fetch(vaccineBookingPDFBaseUrl + bookingInfo?.id)
+      .then((resp) => {
+        return resp.text();
+      })
+      .then((text) => {
+        setPdfLoading(true);
+        generatePDF(text)
+          .then((file) => {
+            showAphAlert!({
+              title: 'Great !',
+              description: string.vaccineBooking.success_generate_pdf,
+              showCloseIcon: true,
+              onCloseIconPress: () => {
+                hideAphAlert!();
+              },
+              CTAs: [
+                {
+                  text: 'OPEN',
+                  onPress: () => {
+                    try {
+                      hideAphAlert!();
+                      Platform.OS === 'ios'
+                        ? RNFetchBlob.ios.previewDocument(file.filePath)
+                        : RNFetchBlob.android.actionViewIntent(file.filePath, 'application/pdf');
+                    } catch (error) {
+                      showAphAlert!({
+                        title: 'Oops !',
+                        description: "Can't open file .",
+                      });
+                    }
+                  },
+                },
+              ],
+            });
+          })
+          .catch((error) => {
+            showAphAlert!({
+              title: 'Oops !',
+              description: string.vaccineBooking.unable_to_generate_pdf,
+            });
+          })
+          .finally(() => {
+            setPdfLoading(false);
+          });
+      })
+      .catch((error) => {
+        setPdfLoading(false);
+        showAphAlert!({
+          title: 'Oops !',
+          description: string.vaccineBooking.unable_to_generate_pdf,
+        });
+      })
+      .finally(() => {});
+  };
+
+  const renderGeneratePDFCTA = () => {
+    return (
+      <TouchableOpacity
+        style={styles.generatePDFContainer}
+        onPress={() => {
+          setTimeout(() => {
+            if (Platform.OS === 'android') {
+              storagePermissions(() => {
+                fetchHTMLText();
+              });
+            } else {
+              fetchHTMLText();
+            }
+          }, 100);
+        }}
+      >
+        <Text style={styles.generatePDFCta}> {string.vaccineBooking.booking_detail_pdf}</Text>
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={[theme.viewStyles.container, { backgroundColor: '#fff' }]}>
@@ -777,10 +949,10 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
           <>
             <ScrollView>
               {renderHeaderBanner()}
-
               {renderConfirmationDetails()}
+              {renderGeneratePDFCTA()}
 
-              {/* Intententionally kept for future case */}
+              {/* Intententionally kept for future case  */}
               {/* {bookingInfo?.status != BOOKING_STATUS.CANCELLED ? renderResendSMS() : null} */}
 
               {renderImportantInfo()}
@@ -788,6 +960,7 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
             </ScrollView>
           </>
         )}
+        {pdfLoading ? <Spinner /> : null}
       </SafeAreaView>
     </View>
   );

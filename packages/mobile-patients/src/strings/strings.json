@@ -127,7 +127,8 @@
     "couldNotLoadText": "Uh oh.. could't load!",
     "lowNetworkText": "We were unable to load the page properly because of low network. Please try again",
     "CorporateVaccineBenefit": "DEPENDENT_VACCINATION_REG",
-    "noDiagnosticsAvailable": "Unfortunately, we do not have any diagnostic(s) available right now."
+    "noDiagnosticsAvailable": "Unfortunately, we do not have any diagnostic(s) available right now.",
+    "unableToSetDeliveryAddress": "We're sorry! Unable to set delivery address. Please try again after some time"
   },
   "components": {
     "medicineDetails": {
@@ -249,7 +250,8 @@
     "need_help": "Need Help?",
     "book_appointment": "BOOK AN APPOINTMENT",
     "book_appointment_question": "Want to book an appointment?",
-    "arrayTest": [{
+    "arrayTest": [
+      {
         "id": 1,
         "title": "Are you looking for a particular doctor?",
         "descripiton": "FIND SPECIALIST",
@@ -268,7 +270,8 @@
         "image": "require('@aph/mobile-patients/src/images/home/test.png')"
       }
     ],
-    "startDoctor": [{
+    "startDoctor": [
+      {
         "name": "Dr. Narayana Rao’s",
         "status": "AVAILABLE",
         "Program": "Star Cardiology Program",
@@ -297,7 +300,8 @@
     }
   },
   "consult_room": {
-    "specialities": [{
+    "specialities": [
+      {
         "image": "",
         "name": "General Physician",
         "id": 1
@@ -331,7 +335,8 @@
     "description": "You have no consultations today :) Hope you are doing well?",
     "things_to_do": {
       "label": "Things To Do",
-      "data": [{
+      "data": [
+        {
           "title": "Your Health Profile is just 30% complete. Update it now!",
           "description": "UPDATE HEALTH PROFILE"
         },
@@ -343,7 +348,8 @@
     },
     "articles": {
       "label": "Read a few articles on how to stay healthy",
-      "data": [{
+      "data": [
+        {
           "image": "",
           "title": "5 Simple Daily Yoga Exercises For Good Health!",
           "link": ""
@@ -377,7 +383,8 @@
     "avaliablity": "Availability",
     "online": "Online\nConsults",
     "inperson": "In-Person\nConsults",
-    "filter_data": [{
+    "filter_data": [
+      {
         "label": "City",
         "options": ["Hyderabad", "Chennai"]
       },
@@ -457,17 +464,21 @@
     "specialDiscountText": "TESTS247 coupon pre-applied",
     "unableToOpenReport": "We are facing some issue in opening the report. Please try again later.",
     "responseUnavailableForReport": "Report is not yet available to download. Please try after some time.",
-    "disclaimerText": [{
-      "text": "Rescheduling can be done upto 3 times only"
-    }],
+    "disclaimerText": [
+      {
+        "text": "Rescheduling can be done upto 3 times only"
+      }
+    ],
     "reschduleCountExceed": "You have rescheduled thrice. You're out of reschedule attempts.",
     "rescheduleCountText": "You can reschedule to a maximum of 3 times. If you click ok, you will have {{setRescheduleCount}} reschedule attempt(s) left.",
     "reasonForCancel_TestOrder": {
       "latePhelbo": "Phlebo did not arrive on time",
       "editOrder": "Need to Modify Order Details",
-      "userUnavailable": "I am not available right now",
+      "userUnavailable": "I am not available",
       "bookedByMistake": "Booked by Mistake",
+      "lesserPrice": "Got lesser price elsewhere",
       "urgentReport": "Need Report Urgently",
+      "anotherChannel": "Booked from other channel",
       "otherReasons": "Others (Please specify)"
     },
     "reasonForReschedule_TestOrder": {
@@ -511,6 +522,7 @@
     "fastReport": "Fast & Accurate Reports",
     "fastReportSubText": "Get reports in 12 to 24 hours. View or download on app anytime",
     "orderSuccessPhaleboText": "*The phlebotomist will call you prior to starting his journey to confirm your availability",
+    "invoiceTimelineText": "Invoice will be available to download after the sample is submitted in the lab",
     "unableToFetchStatus": "Something went wrong. We are unable to fetch status",
     "noSlotAvailable": "Sorry! There are no slots available on {{date}}. Please choose another date.",
     "updateAddressLatLngMessage": "Unable to locate address. Please update.",
@@ -533,16 +545,26 @@
     "orderCancelledReasonText": "Order was cancelled : ",
     "wantToReschedule": "• Do you want to Reschedule Appointment ?",
     "sampleSubmitted": "Sample Submitted",
-    "reportGenrated": "Reports are ready",
-    "bookingFor": "Booking",
-    "sampleSubmittedContent": "Sample has been submitted to the lab.\nYou will be notified once your reports are ready.",
-    "viewReportContent": "Your reports have been generated.",
-    "collectionAppointmentContent": "Sample Collection appointment on",
+    "reportGenrated": "Reports Ready",
+    "partialReportsReady": "Partial Reports Ready",
+    "bookingFor": "Lab Test Booking",
+    "sampleSubmittedContent": "Sample has been submitted to the lab. You will get your Reports by {{reportTat}}.",
+    "viewReportContent": "All your reports have been generated. You can view, download or share your reports.",
+    "partialReportContent": "Partial reports have been generated. All reports will be generated by {{reportTat}}.",
+    "collectionAppointmentContent": "Sample Collection appointment on {{collectionTime}}.",
+    "noPrepRequiredText": "No special preparation is required.",
     "viewReportText": "View Report",
     "sampleCollectedText": "Check Status",
     "collectionText": "Track Order",
     "trackPhleboText": "Track Phlebo",
-    "codDisableText": "We are currently not allowing Cash On Delivery for home sample collections."
+    "codDisableText": "We are currently not allowing Cash On Delivery for home sample collections.",
+    "phleboCallingError": "Error while connecting to Phlebo. Please try again later.",
+    "modifyItemAlreadyExist": "Your cart has been updated, since it had duplicate items",
+    "previousCharges": "Previous Charges",
+    "currentCharges": "Current Charges",
+    "modifyDiscardText": "You were trying to modify the order. Would you like to discard and go back to home page?",
+    "sampleCollected": "Sample Collected",
+    "sampleCollectedContent": "Our phlebotomist has successfully collected the samples."
   },
   "diagnosticCategoryTitle": {
     "category": "Category",
@@ -560,7 +582,8 @@
     "test_prec_not_req": "This test doesn't requires doctor’s prescription",
     "go_to_help": "GO TO HELP"
   },
-  "defaultReasonList": [{
+  "defaultReasonList": [
+    {
       "title": "Arrived very Late"
     },
     {
@@ -576,9 +599,11 @@
       "title": "I have other Feedback"
     }
   ],
-  "positiveReasonList": [{
-    "title": "I have Positive Feedback"
-  }],
+  "positiveReasonList": [
+    {
+      "title": "I have Positive Feedback"
+    }
+  ],
   "OrderSummery": {
     "total": "Total",
     "order": "ORDER",
@@ -618,12 +643,14 @@
   "health_records_home": {
     "description": "Find all your health record(s) & prescription(s) in one place.",
     "view_consult": "VIEW CONSULT",
+    "clickPhotos": "CLICK MORE PHOTOS",
     "order_medicine": "ORDER MEDICINES",
     "order_medicine_msg": "Try our Express Delivery in 2-4 hours",
     "order_test": "ORDER TESTS",
     "book_follow_up": "BOOK FOLLOW-UP",
     "add_note_to_notify_users": "Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!",
-    "tabs": [{
+    "tabs": [
+      {
         "title": "Consults & Rx",
         "count": "0"
       },
@@ -674,7 +701,8 @@
   "alerts": {
     "Open_camera_in_video_call": "Image capturing is disabled during a video call. Please switch to the Audio call if you want to send an Image."
   },
-  "muiltdosages": [{
+  "muiltdosages": [
+    {
       "single": "tablet",
       "multiple": "tablet(s)"
     },
@@ -795,9 +823,11 @@
     "ADVANCE_DIABETES_QUESTIONAIRE": {
       "HEADING": "THANK YOU  !!",
       "SUBHEADING": "In order to assist you in the best possible way, please answer these questions",
-      "QUESTIONAIRE": [{
+      "QUESTIONAIRE": [
+        {
           "QUESTION": "Q1. Which type of diabetes are you living with?",
-          "OPTIONS": [{
+          "OPTIONS": [
+            {
               "key": "Pre-Diabetes",
               "value": "Pre-Diabetes"
             },
@@ -817,7 +847,8 @@
         },
         {
           "QUESTION": "Q2. For how many years have you lived with diabetes?",
-          "OPTIONS": [{
+          "OPTIONS": [
+            {
               "key": "lessThan2Years",
               "value": "Less than 2 years"
             },
@@ -941,7 +972,8 @@
       "Benefits and offers available through the program may change or be withdrawn without prior intimation. Apollo 24/7 will not be responsible for any liability arising from such situations or use of such offers.",
       "Any disputes arising out of the program shall be subject to arbitration by a sole arbitrator appointed by Apollo 24/7 for this purpose. The proceedings of the arbitration shall be conducted as per the provisions of Arbitration and Conciliation Act, 1996. The place of arbitration shall be at Chennai and language of arbitration shall be English. The existence of a dispute, if at all, shall not constitute a claim against Apollo 24/7."
     ],
-    "FAQ": [{
+    "FAQ": [
+      {
         "faqQuestion": "What is the Apollo 24|7 CIRCLE Membership program?",
         "faqAnswer": "Apollo 24|7 CIRCLE membership is a one-of-its-kind program designed to give the best care and value to its members. Once you sign up by choosing the plan that suits your needs, you will receive benefits like an emergency doctor-on-call, cashback on medicines, discounts on doctor consultations, and diagnostics. Did we also tell you that all your deliveries will be done free of cost and on a priority basis?"
       },
@@ -1041,7 +1073,8 @@
     "testPincodeText": "Enter pincode here",
     "addNewAddressText": "Add New Address"
   },
-  "aboutApolloList": [{
+  "aboutApolloList": [
+    {
       "title": "About Us",
       "url": "https://www.apollo247.com/aboutUs?isMobile=true"
     },
@@ -1086,7 +1119,9 @@
   },
   "consultModeTab": {
     "CONSULT_ONLINE": "Consult Online",
-    "MEET_IN_PERSON": "Meet In Person"
+    "MEET_IN_PERSON": "Meet In Person",
+    "VIDEO_CONSULT": "Video Consult",
+    "HOSPITAL_VISIT": "Hospital Visit"
   },
   "vaccineBooking": {
     "covid_vaccine_booking": "COVID VACCINE BOOKING",
@@ -1120,6 +1155,7 @@
     "amount": "Amount",
     "date_of_vaccination": "Date of vaccination",
     "mode": "Mode",
+    "station": "Station",
     "order_details": "ORDER DETAILS",
     "hospitals_n_clinic_near_you": "HOSPITALS & CLINICS NEAR YOU",
     "all_hospitals_n_clinc": "ALL HOSPITALS & CLINICS",
@@ -1157,14 +1193,15 @@
     "error_title": "Oops !",
     "cancel_title": "Booking cancelled",
     "error_cancel_message": "Couldn't cancel the booking,please retry",
-    "cancel_success_message": "Successfully cancelled vaccination booking",
-    "no_vaccination_sites_available": "Currently, Vaccination sites  are not available for this city. Kindly select another city.",
+    "cancel_success_message": "Your booking has been cancelled ",
+    "no_vaccination_sites_available": "Currently, Vaccination sites  are not available for this city or vaccine type. Kindly select another city or vaccine type.",
     "no_slots_available": "There are no available slots for this vaccination location. Kindly select another location.",
     "no_date_slots_available": "Please choose a date to see the available slots.",
     "cowin_enroll_text": "We do not have vaccine benefits enabled for your company. You can click on the button below to book a vaccination slot on CoWin. If you believe that you should be able to book, please raise a concern through your HR/Benefits team",
     "cowin_cta_text": "ENROL ON COWIN",
-    "retail_customer_cowin_text": "As per government guidelines, beneficiaries need to register and schedule for vaccination on CoWin. Please click below to access CoWin.",
-    "retail_customer_corporate_text": "If your company has a corporate tie-up with Apollo, please use the following button to follow the corporate registration process.",
+    "retail_vaccination_booking": "VACCINATION BOOKING",
+    "retail_customer_cowin_text": "For booking vaccination as a regular Apollo247 user, click below:",
+    "retail_customer_corporate_text": "If your corporate has tied up with Apollo please click below to enrol for Corporate Vaccination",
     "enroll_corporate_cta_text": "ENROL FOR CORPORATE MEMBERSHIP",
     "tnc_header_text": "Terms & Conditions",
     "tnc_heading": "terms & conditions",
@@ -1198,6 +1235,12 @@
     "benefit_activated": "Your company benefit package has been activated. Please click below to access the same.",
     "wrong_otp": "Seems you have entered wrong OTP.Please try with right one.",
     "unable_to_validate": "We are unable to validate OTP right now. Please try again after some time. If this issue persists, send an email to corporate-helpdesk@apollo247.com and attach the screenshot of this error.",
-    "CORPORATE_VACCINATION": "CORPORATE_VACCINATION"
+    "CORPORATE_VACCINATION": "CORPORATE_VACCINATION",
+    "booking_detail_pdf":"DOWNLOAD PDF",
+    "unable_to_generate_pdf":"Unable to generate booking pdf.",
+    "success_generate_pdf":"Successfully generated vaccination booking PDF ",
+    "dose_2_alert":"Please make sure that the difference between 1st and 2nd dose is as per Govt. guidelines. If difference in 2nd dose is less than Govt. guideline, you will not be given 2nd dose.",
+    "verify_title":"VERIFY",
+    "submit_title":"SUBMIT "
   }
 }

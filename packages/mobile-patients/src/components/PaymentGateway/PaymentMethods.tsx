@@ -37,17 +37,19 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   CREATE_ORDER,
+  GET_PAYMENT_METHODS,
   VERIFY_VPA,
   INITIATE_DIAGNOSTIC_ORDER_PAYMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { AppRoutes } from '../NavigatorContainer';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { TxnFailed } from '@aph/mobile-patients/src/components/PaymentGateway/Components/TxnFailed';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   VerifyVPA,
   one_apollo_store_code,
+  PAYMENT_MODE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { verifyVPA, verifyVPAVariables } from '@aph/mobile-patients/src/graphql/types/verifyVPA';
 import {
@@ -65,6 +67,12 @@ import { HealthCredits } from '@aph/mobile-patients/src/components/PaymentGatewa
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useGetPaymentMethods } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useGetPaymentMethods';
 import {
+  createJusPayOrder,
+  processDiagnosticsCODOrder,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  isEmptyObject,
+  getDiagnosticCityLevelPaymentOptions,
   isSmallDevice,
   paymentModeVersionCheck,
   goToConsultRoom,
@@ -75,22 +83,27 @@ import {
   PharmaOrderPlaced,
 } from '@aph/mobile-patients/src/components/PaymentGateway/Events';
 import { useFetchSavedCards } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useFetchSavedCards';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/components/InfoMessage';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+
 const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {
   source?: string;
-  businessLine: 'consult' | 'diagnostics' | 'pharma' | 'subscription';
+  businessLine: 'consult' | 'diagnostics' | 'pharma' | 'subscription' | 'vaccine';
 }
 
 export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
+  const { modifiedOrder, deliveryAddressCityId } = useDiagnosticsCart();
   const paymentId = props.navigation.getParam('paymentId');
   const customerId = props.navigation.getParam('customerId');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
   const [amount, setAmount] = useState<number>(props.navigation.getParam('amount'));
   const orderDetails = props.navigation.getParam('orderDetails');
   const eventAttributes = props.navigation.getParam('eventAttributes');
-  const source = props.navigation.getParam('source');
   const businessLine = props.navigation.getParam('businessLine');
+  const isDiagnostic = businessLine === 'diagnostics';
   const { currentPatient } = useAllCurrentPatients();
   const [banks, setBanks] = useState<any>([]);
   const [isTxnProcessing, setisTxnProcessing] = useState<boolean>(false);
@@ -111,16 +124,30 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
   const shoppingCart = useShoppingCart();
   const { savedCards } = useFetchSavedCards(customerId);
+  const isDiagnosticModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
+  const [showPrepaid, setShowPrepaid] = useState<boolean>(isDiagnostic ? false : true);
+
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
     const eventListener = eventEmitter.addListener('HyperEvent', (resp) => {
       handleEventListener(resp);
     });
-    businessLine === 'diagnostics' && DiagnosticPaymentPageViewed(currentPatient, amount);
     fecthPaymentOptions();
     isPhonePeReady();
     isGooglePayReady();
     return () => eventListener.remove();
+  }, []);
+
+  useEffect(() => {
+    if (isDiagnostic) {
+      DiagnosticPaymentPageViewed(currentPatient, amount);
+      //modify -> always show prepaid
+      setShowPrepaid(
+        isDiagnosticModify
+          ? true
+          : getDiagnosticCityLevelPaymentOptions(deliveryAddressCityId)?.prepaid
+      );
+    }
   }, []);
 
   useEffect(() => {
@@ -319,8 +346,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   function triggerUserPaymentAbortedEvent(errorCode: string) {
     //JP_002 -> User aborted payment
     errorCode === 'JP_002' &&
-      businessLine === 'diagnostics' &&
-      DiagnosticUserPaymentAborted(currentPatient, paymentId);
+      isDiagnostic &&
+      DiagnosticUserPaymentAborted(currentPatient, orderDetails?.orderId);
   }
 
   async function onPressBank(bankCode: string) {
@@ -473,6 +500,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           isCOD: isCOD,
           eventAttributes,
           paymentStatus: paymentStatus,
+          isModify: isDiagnosticModify ? modifiedOrder : null,
         });
         break;
       case 'consult':
@@ -497,6 +525,14 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         const params = orderDetails?.circleParams;
         goToConsultRoom(props.navigation, params);
         break;
+      case 'vaccine':
+        props.navigation.navigate(AppRoutes.VaccineBookingConfirmationScreen, {
+          appointmentId: orderDetails?.orderId,
+          displayId: orderDetails?.displayId,
+          paymentStatus: paymentStatus,
+          paymentId: paymentId,
+        });
+        break;
     }
   };
 
@@ -518,30 +554,45 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const renderBookingInfo = () => {
-    return <BookingInfo LOB={businessLine} orderDetails={orderDetails} />;
+    return (
+      <BookingInfo
+        LOB={businessLine}
+        orderDetails={orderDetails}
+        modifyOrderDetails={modifiedOrder}
+      />
+    );
   };
 
   const showPaymentOptions = () => {
     if (amount == 0) return null;
+    //showPrepaid is true for all vertical except diagnostics
     return !!paymentMethods?.length
       ? paymentMethods.map((item: any) => {
           const minVersion = item?.minimum_supported_version;
           switch (item?.name) {
             case 'COD':
-              return paymentModeVersionCheck(minVersion) && renderPayByCash();
+              return isDiagnosticModify
+                ? null
+                : paymentModeVersionCheck(minVersion) && renderPayByCash();
             case 'CARD':
-              return paymentModeVersionCheck(minVersion) && renderCards();
+              return paymentModeVersionCheck(minVersion) && showPrepaid && renderCards();
             case 'WALLET':
               return (
-                paymentModeVersionCheck(minVersion) && renderWallets(item?.payment_methods || [])
+                paymentModeVersionCheck(minVersion) &&
+                showPrepaid &&
+                renderWallets(item?.payment_methods || [])
               );
             case 'UPI':
               return (
-                paymentModeVersionCheck(minVersion) && renderUPIPayments(filterUPIApps() || [])
+                paymentModeVersionCheck(minVersion) &&
+                showPrepaid &&
+                renderUPIPayments(filterUPIApps() || [])
               );
             case 'NB':
               return (
-                paymentModeVersionCheck(minVersion) && renderNetBanking(item?.payment_methods || [])
+                paymentModeVersionCheck(minVersion) &&
+                showPrepaid &&
+                renderNetBanking(item?.payment_methods || [])
               );
           }
         })

@@ -4,7 +4,6 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { getMaxQtyForMedicineItem } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { DropdownBlueDown } from '@aph/mobile-patients/src/components/ui/Icons';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 export interface ProductQuantityProps {
   maxOrderQuantity: number;
@@ -42,7 +41,6 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
     productForm,
     onNotifyMeClick,
   } = props;
-  const { cartItems } = useShoppingCart();
 
   const renderQuantity = () => {
     let maxQuantity: number = getMaxQtyForMedicineItem(maxOrderQuantity);
@@ -101,18 +99,13 @@ export const ProductQuantity: React.FC<ProductQuantityProps> = (props) => {
     setTimeout(() => {
       setShowAddedToCart(false);
     }, 2000);
-    const existingCartItem = cartItems?.filter((item) => item?.id === sku);
-    if (existingCartItem?.length) {
-      existingCartItem?.[0]?.quantity = productQuantity;
-    } else {
-      onAddCartItem();
-    }
+    onAddCartItem();
   };
 
   return (
     <View>
       <View style={styles.flexRow}>
-        {renderQuantity()}
+        {isSellOnline && renderQuantity()}
         {!!packSize && !!productForm && !!packForm && renderPackSize()}
       </View>
       {isSellOnline && !isBanned && renderCartCTA()}

@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { DOSE_NUMBER, Gender, VACCINE_TYPE, PAYMENT_TYPE } from "./globalTypes";
+import { DOSE_NUMBER, Gender, Relation, APPOINTMENT_STATUS, PAYMENT_TYPE, VACCINE_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetAllAppointments
@@ -16,6 +16,7 @@ export interface GetAllAppointments_GetAllAppointments_response_patient_info {
   age: number | null;
   gender: Gender | null;
   uhid: string | null;
+  relation: Relation | null;
 }
 
 export interface GetAllAppointments_GetAllAppointments_response_resource_session_details_resource_detail {
@@ -42,9 +43,10 @@ export interface GetAllAppointments_GetAllAppointments_response {
   dose_number: DOSE_NUMBER;
   resource_id: string;
   patient_info: GetAllAppointments_GetAllAppointments_response_patient_info | null;
+  status: APPOINTMENT_STATUS;
+  payment_type: PAYMENT_TYPE;
   resource_session_details: GetAllAppointments_GetAllAppointments_response_resource_session_details | null;
   display_id: number;
-  payment_type: PAYMENT_TYPE;
 }
 
 export interface GetAllAppointments_GetAllAppointments {

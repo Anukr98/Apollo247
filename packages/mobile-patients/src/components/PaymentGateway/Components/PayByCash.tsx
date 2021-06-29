@@ -3,11 +3,15 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CollapseView } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CollapseView';
 import { Cash } from '@aph/mobile-patients/src/components/ui/Icons';
-import { isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  isSmallDevice,
+  getDiagnosticCityLevelPaymentOptions,
+  isEmptyObject,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/components/InfoMessage';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 export interface PayByCashProps {
   onPressPlaceOrder: () => void;
   HCselected: boolean;
@@ -16,8 +20,11 @@ export interface PayByCashProps {
 
 export const PayByCash: React.FC<PayByCashProps> = (props) => {
   const { onPressPlaceOrder, HCselected, businessLine } = props;
+  const { modifiedOrder, deliveryAddressCityId } = useDiagnosticsCart();
+  const isDiagnosticModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const disableDiagCOD =
-    businessLine == 'diagnostics' && !AppConfig.Configuration.Enable_Diagnostics_COD;
+    businessLine == 'diagnostics' &&
+    (isDiagnosticModify ? true : !getDiagnosticCityLevelPaymentOptions(deliveryAddressCityId)?.cod);
 
   const renderPaybyCash = () => {
     return (
@@ -82,7 +89,7 @@ export const PayByCash: React.FC<PayByCashProps> = (props) => {
     );
   };
 
-  return businessLine != 'consult' ? (
+  return businessLine == 'diagnostics' || businessLine == 'pharma' ? (
     <CollapseView
       isDown={true}
       Heading={'PAY ON DELIVERY'}

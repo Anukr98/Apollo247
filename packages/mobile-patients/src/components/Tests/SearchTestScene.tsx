@@ -26,10 +26,8 @@ import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from 
 import {
   aphConsole,
   g,
+  isEmptyObject,
   isValidSearch,
-  postWebEngageEvent,
-  postFirebaseEvent,
-  postAppsFlyerEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -48,6 +46,7 @@ import {
   View,
   ViewStyle,
   ListRenderItemInfo,
+  BackHandler,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
@@ -58,120 +57,17 @@ import {
   DIAGNOSTIC_GROUP_PLAN,
   getDiagnosticsPopularResults,
   getDiagnosticsSearchResults,
-  PackageInclusion,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import _ from 'lodash';
-import moment from 'moment';
-import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
-import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { getPricesForItem, sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
-import { getPackageInclusions } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { DiagnosticsSearchSuggestionItem } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticsSearchSuggestionItem';
 import { DiagnosticsNewSearch } from '@aph/mobile-patients/src/components/Tests/components/DiagnosticsNewSearch';
-const styles = StyleSheet.create({
-  safeAreaViewStyle: {
-    flex: 1,
-    backgroundColor: 'white', //theme.colors.DEFAULT_BACKGROUND_COLOR,
-  },
-  headerStyle: {},
-  headerSearchInputShadow: {
-    zIndex: 1,
-    backgroundColor: theme.colors.WHITE,
-    shadowColor: theme.colors.SHADOW_GRAY,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 5,
-  },
-  labelView: {
-    position: 'absolute',
-    top: -10,
-    right: -8,
-    backgroundColor: '#ff748e',
-    height: 14,
-    width: 14,
-    borderRadius: 7,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  labelText: {
-    ...theme.fonts.IBMPlexSansBold(9),
-    color: theme.colors.WHITE,
-  },
-  searchValueStyle: {
-    ...theme.fonts.IBMPlexSansMedium(18),
-    color: theme.colors.SHERPA_BLUE,
-    backgroundColor: '#F7F8F5',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
-    borderRadius: 5,
-    width: '100%',
-    height: 48,
-    paddingLeft: 10,
-  },
-  deliveryPinCodeContaner: {
-    ...theme.viewStyles.cardContainer,
-    paddingHorizontal: 20,
-    paddingVertical: Platform.OS == 'ios' ? 12 : 7,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#f7f8f5',
-  },
-  pinCodeStyle: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.SHERPA_BLUE,
-    flex: 0.9,
-  },
-  pinCodeTextInput: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.SHERPA_BLUE,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-    borderBottomWidth: 2,
-    paddingBottom: 3,
-    paddingLeft: Platform.OS === 'ios' ? 0 : -3,
-    paddingTop: 0,
-    width: Platform.OS === 'ios' ? 51 : 54,
-  },
-  sorryTextStyle: {
-    ...theme.fonts.IBMPlexSansMedium(12),
-    color: '#890000',
-    paddingVertical: 8,
-  },
-  pastSearchContainerStyle: {
-    flexWrap: 'wrap',
-    flexDirection: 'row',
-    marginHorizontal: 20,
-  },
-  pastSearchItemStyle: {
-    ...theme.viewStyles.cardViewStyle,
-    backgroundColor: 'white',
-    marginTop: 16,
-    marginRight: 16,
-  },
-  pastSearchTextStyle: {
-    color: '#00b38e',
-    padding: 12,
-    ...theme.fonts.IBMPlexSansSemiBold(14),
-  },
-  headingSections: { ...theme.viewStyles.text('B', 14, '#01475B', 1, 22) },
-  viewDefaultContainer: {
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    backgroundColor: '#f7f8f5',
-    borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
-  },
-  defaultContainer: {
-    width: '100%',
-    justifyContent: 'space-between',
-    marginVertical: 10,
-    paddingVertical: 0,
-    backgroundColor: 'white',
-  },
-});
+import {
+  DiagnosticAddToCartEvent,
+  DiagnosticItemSearched,
+} from '@aph/mobile-patients/src/components/Tests/Events';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface SearchTestSceneProps
   extends NavigationScreenProps<{
@@ -193,16 +89,35 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const [popularArray, setPopularArray] = useState([]);
   const [searchQuery, setSearchQuery] = useState({});
 
-  const { locationForDiagnostics, locationDetails } = useAppCommonData();
+  const { locationForDiagnostics, diagnosticServiceabilityData } = useAppCommonData();
 
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const { addCartItem, removeCartItem, cartItems } = useDiagnosticsCart();
+  const {
+    addCartItem,
+    removeCartItem,
+    cartItems,
+    setModifyHcCharges,
+    setModifiedOrderItemIds,
+    setHcCharges,
+    setAreaSelected,
+    asyncDiagnosticPincode,
+    setModifiedOrder,
+    modifiedOrder,
+  } = useDiagnosticsCart();
   const { cartItems: shopCartItems } = useShoppingCart();
-  const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
+  const { showAphAlert, setLoading: setGlobalLoading, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
+  const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
 
-  const cityId = locationForDiagnostics?.cityId != '' ? locationForDiagnostics?.cityId : '9';
+  //add the cityId in case of modifyFlow
+  const cityId = isModify
+    ? modifiedOrder?.cityId
+    : locationForDiagnostics?.cityId != ''
+    ? locationForDiagnostics?.cityId
+    : !!diagnosticServiceabilityData && diagnosticServiceabilityData?.city != ''
+    ? diagnosticServiceabilityData?.cityId
+    : AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID;
 
   useEffect(() => {
     if (!currentPatient) {
@@ -213,12 +128,26 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   useEffect(() => {
     searchTextFromProp && onSearchTest(searchTextFromProp);
   }, []);
+
   useEffect(() => {
     setIsLoading(true);
     if (!popularArray?.length) {
       fetchPopularDetails();
     }
     setWebEngageEventOnSearchItem('', []);
+  }, []);
+
+  useEffect(() => {
+    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+    const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+    return () => {
+      _didFocusSubscription && _didFocusSubscription.remove();
+      _willBlurSubscription && _willBlurSubscription.remove();
+    };
   }, []);
 
   useEffect(() => {
@@ -243,13 +172,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       });
   }, [currentPatient]);
 
-  const errorAlert = () => {
-    showAphAlert?.({
-      title: string.common.uhOh,
-      description: 'Unable to fetch popular tests and packages.',
-    });
-  };
-
+  //for past item search
   const fetchPackageDetails = async (name: string, func: (product: any) => void) => {
     try {
       const res: any = await getDiagnosticsSearchResults('diagnostic', name, Number(cityId));
@@ -266,61 +189,40 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       setGlobalLoading!(false);
     }
   };
+
   const fetchPopularDetails = async () => {
     try {
-      const res: any = await getDiagnosticsPopularResults('diagnostic');
+      const res: any = await getDiagnosticsPopularResults('diagnostic', Number(cityId));
       if (res?.data?.success) {
         const product = g(res, 'data', 'data') || [];
         setPopularArray(product);
         setIsLoading(false);
-      } else {
-        errorAlert();
       }
       setIsLoading?.(false);
       setGlobalLoading?.(false);
     } catch (error) {
       CommonBugFender('SearchTestScene_getDiagnosticsPopularResults', error);
       aphConsole.log({ error });
-      errorAlert();
       setGlobalLoading?.(false);
       setIsLoading?.(false);
     }
   };
-  const fetchPackageInclusion = async (id: string, func: (tests: PackageInclusion[]) => void) => {
-    try {
-      const arrayOfId = [Number(id)];
-      setGlobalLoading!(true);
-      const res: any = await getPackageInclusions(client, arrayOfId);
-      if (res) {
-        const data = g(res, 'data', 'getInclusionsOfMultipleItems', 'inclusions');
-        setGlobalLoading!(false);
-        const product = data;
-        if (product && product.length) {
-          func && func(product);
-        } else {
-          errorAlert();
-        }
-      }
-    } catch (e) {
-      CommonBugFender('Tests_fetchPackageInclusion', e);
-      setGlobalLoading!(false);
-      errorAlert();
-    }
-  };
 
   const showGenericALert = (e: { response: AxiosResponse }) => {
-    const error = e && e.response && e.response.data.message;
-
-    showAphAlert!({
+    showAphAlert?.({
       title: string.common.uhOh,
       description: `Something went wrong.`,
     });
   };
 
   const renderLocationNotServingPopup = () => {
-    showAphAlert!({
+    const cityName =
+      !!asyncDiagnosticPincode && asyncDiagnosticPincode?.city != ''
+        ? asyncDiagnosticPincode?.city
+        : 'this area';
+    showAphAlert?.({
       title: `Hi ${currentPatient && currentPatient.firstName},`,
-      description: string.diagnostics.nonServiceableMsg.replace('{{city_name}}', 'in this area'),
+      description: string.diagnostics.nonServiceableMsg.replace('{{city_name}}', cityName),
     });
   };
 
@@ -362,49 +264,20 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       },
     });
 
-  const patientAttributes = {
-    'Patient UHID': g(currentPatient, 'uhid'),
-    'Patient Gender': g(currentPatient, 'gender'),
-    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-    'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
-  };
-
   const postDiagnosticAddToCartEvent = (
     name: string,
     id: string,
     price: number,
     discountedPrice: number
   ) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADD_TO_CART] = {
-      'Item Name': name,
-      'Item ID': id,
-      Source: 'Popular search',
-    };
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
-
-    const firebaseAttributes: FirebaseEvents[FirebaseEventName.DIAGNOSTIC_ADD_TO_CART] = {
-      productname: name,
-      productid: id,
-      Source: 'Diagnostic',
-      Price: price,
-      DiscountedPrice: discountedPrice,
-      Quantity: 1,
-    };
-    postFirebaseEvent(FirebaseEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
-    postAppsFlyerEvent(AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
+    DiagnosticAddToCartEvent(name, id, price, discountedPrice, 'Popular search');
   };
 
   const setWebEngageEventOnSearchItem = (
     keyword: string,
     results: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
   ) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ITEM_SEARCHED] = {
-      ...patientAttributes,
-      'Keyword Entered': keyword,
-      '# Results appeared': results.length,
-      Popular: keyword == '' ? 'Yes' : 'No',
-    };
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ITEM_SEARCHED, eventAttributes);
+    DiagnosticItemSearched(currentPatient, keyword, results);
   };
 
   const onAddCartItem = (
@@ -457,14 +330,18 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       <Header
         container={{ borderBottomWidth: 0 }}
         leftIcon={'backArrow'}
-        title={'SEARCH TESTS'}
+        title={isModify ? 'MODIFY ORDERS' : 'SEARCH TESTS'}
         rightComponent={
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => {
                 CommonLogEvent(AppRoutes.SearchTestScene, 'Navigate to your cart');
-                props.navigation.navigate(AppRoutes.MedAndTestCart);
+                isModify
+                  ? props.navigation.navigate(AppRoutes.TestsCart, {
+                      orderDetails: modifiedOrder,
+                    })
+                  : props.navigation.navigate(AppRoutes.MedAndTestCart);
               }}
             >
               <CartIcon />
@@ -472,10 +349,50 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             </TouchableOpacity>
           </View>
         }
-        onPressLeftIcon={() => props.navigation.goBack()}
+        onPressLeftIcon={() => handleBack()}
       />
     );
   };
+
+  function handleBack() {
+    if (isModify) {
+      showAphAlert?.({
+        title: string.common.hiWithSmiley,
+        description: string.diagnostics.modifyDiscardText,
+        unDismissable: true,
+        CTAs: [
+          {
+            text: 'DISCARD',
+            onPress: () => {
+              hideAphAlert?.();
+              clearModifyDetails();
+            },
+            type: 'orange-button',
+          },
+          {
+            text: 'CANCEL',
+            onPress: () => {
+              hideAphAlert?.();
+            },
+            type: 'orange-button',
+          },
+        ],
+      });
+    } else {
+      props.navigation.goBack();
+    }
+    return true;
+  }
+
+  function clearModifyDetails() {
+    setModifiedOrder?.(null);
+    setModifyHcCharges?.(0);
+    setModifiedOrderItemIds?.([]);
+    setHcCharges?.(0);
+    setAreaSelected?.({});
+    //go back to homepage
+    props.navigation.navigate('TESTS', { focusSearch: true });
+  }
 
   const isNoTestsFound = !isLoading && searchText?.length > 2 && searchResult;
 
@@ -642,7 +559,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       );
       popularTests = popularArray?.filter((item: any) => item?.diagnostic_inclusions?.length == 1);
       if (popularTests?.length == 0) {
-        popularTests = popularArray
+        popularTests = popularArray;
       }
     }
 
@@ -760,3 +677,106 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  safeAreaViewStyle: {
+    flex: 1,
+    backgroundColor: 'white', //theme.colors.DEFAULT_BACKGROUND_COLOR,
+  },
+  headerStyle: {},
+  headerSearchInputShadow: {
+    zIndex: 1,
+    backgroundColor: theme.colors.WHITE,
+    shadowColor: theme.colors.SHADOW_GRAY,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  labelView: {
+    position: 'absolute',
+    top: -10,
+    right: -8,
+    backgroundColor: '#ff748e',
+    height: 14,
+    width: 14,
+    borderRadius: 7,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  labelText: {
+    ...theme.fonts.IBMPlexSansBold(9),
+    color: theme.colors.WHITE,
+  },
+  searchValueStyle: {
+    ...theme.fonts.IBMPlexSansMedium(18),
+    color: theme.colors.SHERPA_BLUE,
+    backgroundColor: '#F7F8F5',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
+    borderRadius: 5,
+    width: '100%',
+    height: 48,
+    paddingLeft: 10,
+  },
+  deliveryPinCodeContaner: {
+    ...theme.viewStyles.cardContainer,
+    paddingHorizontal: 20,
+    paddingVertical: Platform.OS == 'ios' ? 12 : 7,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#f7f8f5',
+  },
+  pinCodeStyle: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: theme.colors.SHERPA_BLUE,
+    flex: 0.9,
+  },
+  pinCodeTextInput: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: theme.colors.SHERPA_BLUE,
+    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
+    borderBottomWidth: 2,
+    paddingBottom: 3,
+    paddingLeft: Platform.OS === 'ios' ? 0 : -3,
+    paddingTop: 0,
+    width: Platform.OS === 'ios' ? 51 : 54,
+  },
+  sorryTextStyle: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    color: '#890000',
+    paddingVertical: 8,
+  },
+  pastSearchContainerStyle: {
+    flexWrap: 'wrap',
+    flexDirection: 'row',
+    marginHorizontal: 20,
+  },
+  pastSearchItemStyle: {
+    ...theme.viewStyles.cardViewStyle,
+    backgroundColor: 'white',
+    marginTop: 16,
+    marginRight: 16,
+  },
+  pastSearchTextStyle: {
+    color: '#00b38e',
+    padding: 12,
+    ...theme.fonts.IBMPlexSansSemiBold(14),
+  },
+  headingSections: { ...theme.viewStyles.text('B', 14, '#01475B', 1, 22) },
+  viewDefaultContainer: {
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    backgroundColor: '#f7f8f5',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
+  },
+  defaultContainer: {
+    width: '100%',
+    justifyContent: 'space-between',
+    marginVertical: 10,
+    paddingVertical: 0,
+    backgroundColor: 'white',
+  },
+});

@@ -1,26 +1,41 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { formatSelectedAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  formatSelectedAddress,
+  isEmptyObject,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import moment from 'moment';
 
 export interface BookingInfoProps {
-  LOB: 'diagnostics' | 'consult' | 'Pharma';
+  LOB: 'diagnostics' | 'consult' | 'Pharma' | 'vaccine';
   orderDetails: any;
+  modifyOrderDetails?: any;
 }
 
 export const BookingInfo: React.FC<BookingInfoProps> = (props) => {
-  const { LOB, orderDetails } = props;
+  const { LOB, orderDetails, modifyOrderDetails } = props;
+  const isDiagnosticModifyFlow = !!modifyOrderDetails && !isEmptyObject(modifyOrderDetails);
   const { addresses, deliveryAddressId, diagnosticSlot } = useDiagnosticsCart();
-  const selectedAddress = addresses.find((address) => address?.id == deliveryAddressId);
+  const selectedAddress = isDiagnosticModifyFlow
+    ? !!modifyOrderDetails?.patientAddressObj
+      ? modifyOrderDetails?.patientAddressObj
+      : addresses.find((address) => address?.id == modifyOrderDetails?.patientAddressId)
+    : addresses.find((address) => address?.id == deliveryAddressId);
 
   const renderHeading = () => {
+    const slotTime = isDiagnosticModifyFlow
+      ? moment(modifyOrderDetails?.slotDateTimeInUTC).format('hh:mm')
+      : diagnosticSlot?.slotStartTime;
+
+    const slotDate = moment(
+      isDiagnosticModifyFlow ? modifyOrderDetails?.slotDateTimeInUTC : diagnosticSlot?.date
+    ).format('D MMM, YYYY');
+
     const msg =
       LOB == 'diagnostics'
-        ? `Slot booked for sample collection ${diagnosticSlot?.slotStartTime}, ${moment(
-            diagnosticSlot?.date
-          ).format('D MMM, YYYY')}`
+        ? `Slot booked for sample collection ${slotTime}, ${slotDate}`
         : LOB == 'consult'
         ? `${orderDetails?.doctorName}'s appointment on ${moment(
             orderDetails?.appointmentDateTime
