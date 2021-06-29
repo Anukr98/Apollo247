@@ -694,6 +694,7 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ManagePayments]: {
     screen: ManagePayments,
+  },
   [AppRoutes.TestReportViewScreen]: {
     screen: TestReportViewScreen,
   },

@@ -112,6 +112,8 @@ import { from } from 'form-data';
 import {
   initiateSDK,
   isSDKInitialised,
+  terminateSDK,
+  createHyperServiceObject,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import {
   createOrderInternal,
@@ -121,6 +123,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { VaccineSiteDateSelector } from './VaccineSiteDateSelector';
 import { VaccineSlotChooser } from '../ui/VaccineSlotChooser';
+import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
 
 export interface VaccineBookingScreenProps
   extends NavigationScreenProps<{
@@ -508,6 +511,8 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
   const cityList = AppConfig.Configuration.Vaccination_Cities_List || [];
   const vaccineTypeList = AppConfig.Configuration.Vaccine_Type || [];
   const { setauthToken } = useAppCommonData();
+  const { cusId, isfetchingId } = useGetJuspayId();
+
   useEffect(() => {
     //check for corporate
     if (isCorporateSubscription) {
@@ -538,13 +543,18 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
   }, [selectedHospitalSiteResourceID, preferredDate]);
 
   useEffect(() => {
-    initiateHyperSDK();
-  }, []);
+    !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
+  }, [isfetchingId]);
 
-  const initiateHyperSDK = async () => {
+  const initiateHyperSDK = async (cusId: any) => {
     try {
       const isInitiated: boolean = await isSDKInitialised();
-      !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id);
+      const merchantId = AppConfig.Configuration.merchantId;
+      isInitiated
+        ? (terminateSDK(),
+          setTimeout(() => createHyperServiceObject(), 500),
+          setTimeout(() => initiateSDK(cusId, cusId, merchantId), 1000))
+        : initiateSDK(cusId, cusId, merchantId);
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
