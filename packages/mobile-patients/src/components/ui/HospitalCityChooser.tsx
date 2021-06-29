@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
   },
   hospitalItemContainer: {
     marginHorizontal: 20,
-    marginVertical: 10,
+    marginTop: 10,
   },
   cityName: {
     ...theme.viewStyles.text('R', 13, '#02475B'),
@@ -140,19 +140,17 @@ export const HospitalCityChooser: React.FC<HospitalCityChooserProps> = (props) =
   const renderCityListItem = () => {
     return cityList.map(function(item, i) {
       return (
-        <>
-          <TouchableOpacity
-            key={i}
-            style={styles.hospitalItemContainer}
-            onPress={() => {
-              props.onCityChoosed(item);
-              hideMenu();
-            }}
-          >
-            <Text style={styles.cityName}>{item}</Text>
-          </TouchableOpacity>
-          <Spearator />
-        </>
+        <TouchableOpacity
+          key={i}
+          style={styles.hospitalItemContainer}
+          onPress={() => {
+            props.onCityChoosed(item);
+            hideMenu();
+          }}
+        >
+          <Text style={styles.cityName}>{item}</Text>
+          <Spearator style={{ marginTop: 10 }} />
+        </TouchableOpacity>
       );
     });
   };
