@@ -49,15 +49,7 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
   }
 
   function onPressButton() {
-    if (modifyOrderDetails) {
-      onPressProceedtoPay?.();
-    } else {
-      return !deliveryAddressId
-        ? addresses?.length
-          ? onPressSelectDeliveryAddress?.()
-          : onPressAddDeliveryAddress?.()
-        : onPressProceedtoPay?.();
-    }
+    onPressProceedtoPay?.();
   }
 
   const renderTimeSlot = () => {
@@ -120,15 +112,15 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <View style={styles.container}>
-        {selectedTimeSlot || !!modifyOrderDetails ? renderTimeSlot() : null}
-        <View style={styles.subContainer}>
-          {renderTotal()}
-          {renderButton()}
-        </View>
+    // <SafeAreaView style={{ flex: 1 }}>
+    <View style={styles.container}>
+      {selectedTimeSlot || !!modifyOrderDetails ? renderTimeSlot() : null}
+      <View style={styles.subContainer}>
+        {renderTotal()}
+        {renderButton()}
       </View>
-    </SafeAreaView>
+    </View>
+    // </SafeAreaView>
   );
 };
 
