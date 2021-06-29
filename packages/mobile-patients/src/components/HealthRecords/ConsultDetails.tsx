@@ -612,7 +612,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
 
   function _navigateToTestCart() {
     hideAphAlert?.();
-    props.navigation.push(AppRoutes.TestsCart, { comingFrom: AppRoutes.ConsultDetails });
+    props.navigation.push(AppRoutes.AddPatients, { comingFrom: AppRoutes.ConsultDetails });
   }
 
   const getDaysCount = (type: MEDICINE_CONSUMPTION_DURATION | null) => {

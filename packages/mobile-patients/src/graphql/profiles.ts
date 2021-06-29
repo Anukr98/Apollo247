@@ -1427,6 +1427,7 @@ export const SAVE_PATIENT_ADDRESS = gql`
         longitude
         stateCode
         name
+        defaultAddress
       }
     }
   }
@@ -2248,6 +2249,11 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
             packageCalculatedMrp
             inclusions
             reportGenerationTime
+          }
+          pricingObj {
+            mrp
+            price
+            groupPlan
           }
           diagnostics {
             id
@@ -5402,6 +5408,70 @@ export const COWIN_REGISTRATION = gql`
         error
       }
       message
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_SERVICEABILITY = gql `
+  query getDiagnosticServiceability ($latitude: Float!, $longitude : Float!){
+    getDiagnosticServiceability(latitude : $latitude, longitude: $longitude){
+      status
+      serviceability{
+        cityID
+        stateID
+        state
+        city
+      }
+    }
+  }
+`;
+
+export const GET_CUSTOMIZED_DIAGNOSTIC_SLOTS_V2 = gql `
+query getCustomizedSlotsv2($patientAddressObj: patientAddressObj! , $patientsObjWithLineItems : [patientObjWithLineItems] , $billAmount: Float!, $selectedDate : Date!, $serviceability : DiagnosticsServiceability, $diagnosticOrdersId : String){
+  getCustomizedSlotsv2(patientAddressObj : $patientAddressObj, patientsObjWithLineItems :$patientsObjWithLineItems, billAmount: $billAmount, selectedDate : $selectedDate, serviceability : $serviceability, diagnosticOrdersId: $diagnosticOrdersId){
+    available_slots {
+      slotDetail {
+        slotDisplayTime
+        internalSlots
+      }
+      isPaidSlot
+    },
+    distanceCharges
+  }
+}
+`
+export const SAVE_DIAGNOSTIC_ORDER_V2 = gql`
+  mutation saveDiagnosticBookHCOrderv2($diagnosticOrderInput: SaveBookHomeCollectionOrderInputv2) {
+    saveDiagnosticBookHCOrderv2(diagnosticOrderInput: $diagnosticOrderInput) {
+      patientsObjWithOrderIDs{
+        status
+        orderID
+        patientID
+        errorMessageToDisplay
+        displayID
+        attributes{
+          itemids
+        }
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_PHLEBO_CHARGES = gql `
+  query getPhleboCharges($chargeDetailsInput: ChargeDetailsInput) {
+    getPhleboCharges(chargeDetailsInput: $chargeDetailsInput) {
+      charges
+      distanceCharges
+    }
+  }
+`;
+
+export const DIAGNOSTIC_RESCHEDULE_V2 =  gql`
+  mutation rescheduleDiagnosticsOrderv2($parentOrderID: ID!, $slotInfo: slotInfo!, $selectedDate: Date!, $comment: String, $reason: String!, $source: DiagnosticsRescheduleSource) {
+    rescheduleDiagnosticsOrderv2(parentOrderID : $parentOrderID, slotInfo: $slotInfo, selectedDate: $selectedDate, comment: $comment, reason : $reason, source: $source) {
+    status
+    message
+    rescheduleCount
     }
   }
 `;

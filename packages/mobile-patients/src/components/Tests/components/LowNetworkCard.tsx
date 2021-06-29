@@ -13,7 +13,7 @@ interface LowNetworkCardProps {
   onPress: () => void;
 }
 
-export const LowNetworkCard: React.FC<LowNetworkCardProps> = (props) => {
+const LowNetworkCard: React.FC<LowNetworkCardProps> = (props) => {
   return (
     <View style={styles.container}>
       <View style={styles.innerContainer}>
@@ -29,6 +29,8 @@ export const LowNetworkCard: React.FC<LowNetworkCardProps> = (props) => {
     </View>
   );
 };
+
+export default React.memo(LowNetworkCard);
 
 const styles = StyleSheet.create({
   container: { ...theme.viewStyles.cardViewStyle, padding: 10, margin: 16, paddingBottom: 4 },

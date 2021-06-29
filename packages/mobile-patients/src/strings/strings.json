@@ -130,6 +130,15 @@
     "noDiagnosticsAvailable": "Unfortunately, we do not have any diagnostic(s) available right now.",
     "unableToSetDeliveryAddress": "We're sorry! Unable to set delivery address. Please try again after some time"
   },
+  "diagnosticsLocation":{
+    "savedAddressText": "Saved Addresses",
+    "noResults": "No Search Results Found",
+    "permissionDenied": "Location Permission is denied",
+    "unableToGetPermission":"Unable to get Permission",
+    "unableToFetchLocation":"We are unable to fetch your location",
+    "permissionDeniedCTA":"grant",
+    "unableToGetPermissionCTA": "turn on"
+  },
   "components": {
     "medicineDetails": {
       "helpers": {
@@ -572,11 +581,19 @@
     "currentCharges": "Current Charges",
     "modifyDiscardText": "You were trying to modify the order. Would you like to discard and go back to home page?",
     "sampleCollected": "Sample Collected",
-    "sampleCollectedContent": "Our phlebotomist has successfully collected the samples."
+    "sampleCollectedContent": "Our phlebotomist has successfully collected the samples.",
+    "nonServiceableMsg1": "Diagnostics services are not available.",
+    "whyBookUs": "why book with us"
   },
   "diagnosticCategoryTitle": {
     "category": "Category",
     "categoryGrid": "Category_Scroll"
+  },
+  "diagnosticsCartPage":{
+    "patientHeading": "Select Patient Name",
+    "addPatient": "Add member",
+    "subHeadingSingleUHID": "Please select the patient for whom you want to book the selected tests.",
+    "subHeadingMultipleUHID": "Please select all the patients for whom you want to book the selected tests."
   },
   "orders": {
     "urOrders": "MY ORDERS",

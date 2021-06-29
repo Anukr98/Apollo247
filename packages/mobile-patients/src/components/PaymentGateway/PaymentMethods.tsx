@@ -365,7 +365,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     triggerWebengege('Cash');
     setisTxnProcessing(true);
     try {
-      const response = await await createJusPayOrder(
+      const response = await createJusPayOrder(
         client,
         paymentId,
         PAYMENT_MODE.COD,
@@ -374,6 +374,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       const { data } = response;
       if (data?.createOrder?.success) {
         const response = await processDiagnosticsCODOrder(client, orderId, amount);
+        console.log({ response });
         const { data } = response;
         data?.processDiagnosticHCOrder?.status
           ? navigatetoOrderStatus(true, 'success')
@@ -382,6 +383,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         showTxnFailurePopUP();
       }
     } catch (e) {
+      console.log({ e });
       showTxnFailurePopUP();
     }
   }

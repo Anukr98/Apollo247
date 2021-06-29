@@ -1118,7 +1118,8 @@ const getlocationData = (
 
 export const doRequestAndAccessLocationModified = (
   latLngOnly?: boolean,
-  modifyAddress?: boolean
+  modifyAddress?: boolean,
+  showPrompt?: boolean
 ): Promise<LocationData> => {
   return new Promise((resolve, reject) => {
     Permissions.request('location')
@@ -1141,22 +1142,29 @@ export const doRequestAndAccessLocationModified = (
           }
         } else {
           if (response === 'denied' || response === 'restricted') {
-            Alert.alert('Location', 'Enable location access from settings', [
-              {
-                text: 'Cancel',
-                onPress: () => {
-                  AsyncStorage.setItem('settingsCalled', 'false');
+            if(!showPrompt){
+              // don't show the prompt.
+            }
+            else{
+              Alert.alert('Location', 'Enable location access from settings', [
+                {
+                  text: 'Cancel',
+                  onPress: () => {
+                    AsyncStorage.setItem('settingsCalled', 'false');
+                  },
                 },
-              },
-              {
-                text: 'Ok',
-                onPress: () => {
-                  AsyncStorage.setItem('settingsCalled', 'true');
-                  Linking.openSettings();
+                {
+                  text: 'Ok',
+                  onPress: () => {
+                    AsyncStorage.setItem('settingsCalled', 'true');
+                    Linking.openSettings();
+                  },
                 },
-              },
-            ]);
-            reject('Unable to get location, permission denied.');
+              ]);
+            }
+            
+           var msg = !showPrompt ? response : 'Unable to get location, permission denied' 
+            reject(msg);
           } else {
             reject('Unable to get location.');
           }
@@ -1191,21 +1199,21 @@ export const doRequestAndAccessLocation = (isModifyAddress?: boolean): Promise<L
           }
         } else {
           if (response === 'denied' || response === 'restricted') {
-            Alert.alert('Location', 'Enable location access from settings', [
-              {
-                text: 'Cancel',
-                onPress: () => {
-                  AsyncStorage.setItem('settingsCalled', 'false');
+              Alert.alert('Location', 'Enable location access from settings', [
+                {
+                  text: 'Cancel',
+                  onPress: () => {
+                    AsyncStorage.setItem('settingsCalled', 'false');
+                  },
                 },
-              },
-              {
-                text: 'Ok',
-                onPress: () => {
-                  AsyncStorage.setItem('settingsCalled', 'true');
-                  Linking.openSettings();
+                {
+                  text: 'Ok',
+                  onPress: () => {
+                    AsyncStorage.setItem('settingsCalled', 'true');
+                    Linking.openSettings();
+                  },
                 },
-              },
-            ]);
+              ]);
             resolve(undefined);
           } else {
             reject('Unable to get location.');
@@ -1485,24 +1493,28 @@ export const getTestSlotDetailsByTime = (slots: TestSlot[], startTime: string, e
   )!;
 };
 
-export const getUniqueTestSlots = (slots: TestSlot[]) => {
+//add a type here
+export const getUniqueTestSlots = (slots: any[]) => {
   return slots
     .filter(
       (item, idx, array) =>
         array.findIndex(
           (_item) =>
-            _item.slotInfo.startTime == item.slotInfo.startTime &&
-            _item.slotInfo.endTime == item.slotInfo.endTime
+            _item?.slotInfo?.startTime == item?.slotInfo?.startTime &&
+            _item?.slotInfo?.endTime == item?.slotInfo?.endTime
         ) == idx
     )
     .map((val) => ({
-      startTime: val.slotInfo.startTime!,
-      endTime: val.slotInfo.endTime!,
+      startTime: val?.slotInfo.startTime!,
+      endTime: val?.slotInfo.endTime!,
+      isPaidSlot: val?.slotInfo?.isPaidSlot,
+      internalSlots: val?.slotInfo?.internalSlots,
+      distanceCharges: val?.slotInfo?.distanceCharges
     }))
     .sort((a, b) => {
-      if (moment(a.startTime.trim(), 'HH:mm').isAfter(moment(b.startTime.trim(), 'HH:mm')))
+      if (moment(a?.startTime?.trim(), 'HH:mm').isAfter(moment(b?.startTime.trim(), 'HH:mm')))
         return 1;
-      else if (moment(b.startTime.trim(), 'HH:mm').isAfter(moment(a.startTime.trim(), 'HH:mm')))
+      else if (moment(b?.startTime?.trim(), 'HH:mm').isAfter(moment(a?.startTime.trim(), 'HH:mm')))
         return -1;
       return 0;
     });
@@ -2960,4 +2972,18 @@ export const getDiagnosticCityLevelPaymentOptions = (cityId: string) => {
       : AppConfig.Configuration.Enable_Diagnostics_COD,
   };
   return paymentValues;
+};
+
+export const setAsyncDiagnosticLocation = (address: any) => {
+  if (address) {
+    const addressSelected = {
+      pincode: address?.zipcode || address?.pincode,
+      id: address?.id,
+      city: address?.city,
+      state: address?.state,
+      latitude: Number(address?.latitude),
+      longitude: Number(address?.longitude)
+    };
+    AsyncStorage.setItem('DiagnosticLocation', JSON.stringify(addressSelected));
+  }
 };

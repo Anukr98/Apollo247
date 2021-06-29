@@ -348,7 +348,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               onPress={() => {
                 CommonLogEvent(AppRoutes.SearchTestScene, 'Navigate to your cart');
                 isModify
-                  ? props.navigation.navigate(AppRoutes.TestsCart, {
+                  ? props.navigation.navigate(AppRoutes.AddPatients, {
                       orderDetails: modifiedOrder,
                     })
                   : props.navigation.navigate(AppRoutes.MedAndTestCart);

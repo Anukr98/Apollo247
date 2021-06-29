@@ -57,7 +57,7 @@ export interface PackageCardProps {
   sourceScreen: string;
 }
 
-export const PackageCard: React.FC<PackageCardProps> = (props) => {
+const PackageCard: React.FC<PackageCardProps> = (props) => {
   const { cartItems, addCartItem, removeCartItem, modifiedOrderItemIds } = useDiagnosticsCart();
   const { data, isCircleSubscribed, source, navigation, sourceScreen } = props;
   const actualItemsToShow =
@@ -331,7 +331,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
         : data?.diagnosticWidgetTitle
     );
 
-    addCartItem!({
+    addCartItem?.({
       id: `${item?.itemId}`,
       mou: 1,
       name: item?.itemTitle!,
@@ -345,7 +345,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
       collectionMethod: TEST_COLLECTION_TYPE.HC,
       groupPlan: planToConsider?.groupPlan,
       packageMrp: packageCalculatedMrp,
-      inclusions: item?.inclusionData == null ? [Number(item?.itemId)] : item?.inclusionData, // since it's a test
+      inclusions: item?.inclusionData == null ? [Number(item?.itemId)] : item?.inclusionData,
     });
   }
 
@@ -495,6 +495,8 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     </>
   );
 };
+
+export default React.memo(PackageCard);
 
 const styles = StyleSheet.create({
   packageCardTouch: {

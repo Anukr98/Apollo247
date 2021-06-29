@@ -1,44 +1,23 @@
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import {
-  TestBreadcrumbLink,
-  useDiagnosticsCart,
-} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { Card } from '@aph/mobile-patients/src/components/ui/Card';
-import { GET_WIDGETS_PRICING_BY_ITEMID_CITYID } from '@aph/mobile-patients/src/graphql/profiles';
 
-import { g, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
-import React, { useEffect, useState } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
+import React, { useState } from 'react';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import {
-  Dimensions,
   SafeAreaView,
   StyleSheet,
   Text,
   View,
   FlatList,
   TouchableOpacity,
-  Image as ImageNative,
   Image,
 } from 'react-native';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
-import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
-import { PackageCard } from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
+import { NavigationScreenProps } from 'react-navigation';
 import { TestListingHeader } from '@aph/mobile-patients/src/components/Tests/components/TestListingHeader';
-import { Breadcrumb } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
-import {
-  findDiagnosticsWidgetsPricing,
-  findDiagnosticsWidgetsPricingVariables,
-} from '@aph/mobile-patients/src/graphql/types/findDiagnosticsWidgetsPricing';
-import { getDiagnosticListingWidget } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 export interface TestWidgetListingProps
   extends NavigationScreenProps<{
     movedFrom?: string;
@@ -48,24 +27,11 @@ export interface TestWidgetListingProps
   }> {}
 
 export const TestWidgetListing: React.FC<TestWidgetListingProps> = (props) => {
-  const {
-    cartItems,
-    setTestListingBreadCrumbs,
-    testListingBreadCrumbs,
-    isDiagnosticCircleSubscription,
-  } = useDiagnosticsCart();
-  const { cartItems: shopCartItems } = useShoppingCart();
+  const { diagnosticServiceabilityData } = useAppCommonData();
 
-  const { diagnosticServiceabilityData, isDiagnosticLocationServiceable } = useAppCommonData();
-
-  const movedFrom = props.navigation.getParam('movedFrom');
   const dataFromHomePage = props.navigation.getParam('data');
-  const widgetName = props.navigation.getParam('widgetName');
-  const cityId = props.navigation.getParam('cityId');
   const title = dataFromHomePage?.diagnosticWidgetTitle;
-  const client = useApolloClient();
 
-  const [widgetsData, setWidgetsData] = useState([] as any);
   const [loading, setLoading] = useState<boolean>(false);
 
   const [serviceableObject, setServiceableObject] = useState({} as any);

@@ -781,6 +781,9 @@ export const Emoticon4: React.FC<IconProps> = (props) => (
 export const Emoticon5: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/emoticons_13.webp')} />
 );
+export const PremiumIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/premium_icon_2x.webp')} />
+);
 export const DownloadOrange: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/download_o_3x.webp')} />
 );
@@ -1959,4 +1962,44 @@ export const SyringSmall: React.FC<IconProps> = (props) => (
 
 export const SyringLarge: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/syring_large.webp')} />
+);
+
+export const HomeLocationIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/home.webp')}
+  />
+);
+
+export const WorkLocationIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/location_pin.webp')}
+  />
+);
+
+export const MapLocationIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/work.webp')}
+  />
+);
+
+export const PolygonIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/Polygon.webp')}
+  />
+);
+
+export const SavingsIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/saving_icon.webp')}
+  />
 );

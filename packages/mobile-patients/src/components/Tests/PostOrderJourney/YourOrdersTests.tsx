@@ -3,7 +3,11 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { createAddressObject, sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  createAddressObject,
+  createPatientAddressObject,
+  sourceHeaders,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
@@ -11,6 +15,7 @@ import {
   GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
   GET_PHLOBE_DETAILS,
   DIAGNOSITC_EXOTEL_CALLING,
+  DIAGNOSTIC_RESCHEDULE_V2,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticOrdersListByMobile,
@@ -46,6 +51,9 @@ import {
   RescheduleDiagnosticsInput,
   Gender,
   DiagnosticsRescheduleSource,
+  DiagnosticLineItem,
+  patientObjWithLineItems,
+  slotInfo,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -94,6 +102,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsCustomized';
 import { OrderTestCard } from '@aph/mobile-patients/src/components/Tests/components/OrderTestCard';
 import {
+  diagnosticGetCustomizedSlotsV2,
   getDiagnosticRefundOrders,
   getPatientPrismMedicalRecordsApi,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
@@ -175,6 +184,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [filteredOrderList, setFilteredOrderList] = useState<(orderListByMobile | null)[] | null>(
     []
   );
+  const [slotInput, setSlotInput] = useState({});
   const [profileArray, setProfileArray] = useState<
     GetCurrentPatients_getCurrentPatients_patients[] | null
   >(allCurrentPatients);
@@ -205,6 +215,27 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     client.mutate<rescheduleDiagnosticsOrder, rescheduleDiagnosticsOrderVariables>({
       mutation: RESCHEDULE_DIAGNOSTIC_ORDER,
       variables: { rescheduleDiagnosticsInput: rescheduleDiagnosticsInput },
+      fetchPolicy: 'no-cache',
+    });
+
+  const rescheduleOrderV2 = (
+    parentOrderID: string,
+    slotInfo: slotInfo,
+    selectedDate: Date,
+    comment: string,
+    reason: string,
+    source: DiagnosticsRescheduleSource
+  ) =>
+    client.mutate<rescheduleDiagnosticsOrder, rescheduleDiagnosticsOrderVariables>({
+      mutation: DIAGNOSTIC_RESCHEDULE_V2,
+      variables: {
+        parentOrderID: parentOrderID,
+        slotInfo: slotInfo,
+        selectedDate: selectedDate,
+        comment: comment,
+        reason: reason,
+        source: source,
+      },
       fetchPolicy: 'no-cache',
     });
 
@@ -379,7 +410,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             });
             setOrders(ordersList);
             setFilteredOrderList(ordersList);
-            setTimeout(() => setLoading?.(false), 1000);
+            setTimeout(() => setLoading?.(false), 1500);
           } else {
             setOrders(ordersList);
             setFilteredOrderList(ordersList);
@@ -518,6 +549,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const checkSlotSelection = () => {
+    console.log({ selectedOrder });
     const dt = moment(selectedOrder?.slotDateTimeInUTC)?.format('YYYY-MM-DD') || null;
     const tm = moment(selectedOrder?.slotDateTimeInUTC)?.format('hh:mm A') || null; //format changed from hh:mm
     const timeToCompare = !!tm && moment(tm, 'hh:mm A')?.format('HH:mm');
@@ -605,6 +637,166 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       });
   };
 
+  function populateMrp(item: any) {
+    const selectedGroupPlan = item?.groupPlan;
+    //add type
+    const findPriceobj = item?.pricingObj?.find(
+      (items: any) => items?.groupPlan === selectedGroupPlan
+    );
+    console.log({ findPriceobj });
+    const mrp = !!item?.itemObj?.packageCalculatedMrp
+      ? item?.itemObj?.packageCalculatedMrp
+      : !!findPriceobj && findPriceobj?.mrp;
+    console.log({ mrp });
+    return mrp;
+  }
+
+  var pricesForItemArray;
+  //add a type
+  function createPatientObjLineItems(selectedOrder: any) {
+    console.log({ selectedOrder });
+
+    pricesForItemArray = selectedOrder?.diagnosticOrderLineItems?.map(
+      (item: any, index: number) =>
+        ({
+          itemId: Number(item?.itemId),
+          price: item?.price,
+          mrp: populateMrp(item), //check this
+          groupPlan: item?.groupPlan,
+        } as DiagnosticLineItem)
+    );
+
+    const totalPrice = pricesForItemArray
+      ?.map((item: any) => Number(item?.price))
+      ?.reduce((prev: number, curr: number) => prev + curr, 0);
+    var array = [];
+    array.push({
+      patientID: selectedOrder?.patientId,
+      lineItems: pricesForItemArray,
+      totalPrice: totalPrice,
+    });
+    console.log({ array });
+    return array;
+  }
+
+  const getSlots = async () => {
+    try {
+      console.log({ selectedOrder });
+      const dt = moment(selectedOrder?.slotDateTimeInUTC)?.format('YYYY-MM-DD') || null;
+      const tm = moment(selectedOrder?.slotDateTimeInUTC)?.format('hh:mm A') || null; //format changed from hh:mm
+      const timeToCompare = !!tm && moment(tm, 'hh:mm A')?.format('HH:mm');
+
+      var getAddressObject = {
+        addressLine1: selectedOrder?.patientAddressObj?.addressLine1!,
+        addressLine2: selectedOrder?.patientAddressObj?.addressLine2!,
+        zipcode: selectedOrder?.patientAddressObj?.zipcode! || '0',
+        landmark: selectedOrder?.patientAddressObj?.landmark,
+        latitude: Number(selectedOrder?.patientAddressObj?.latitude! || 0),
+        longitude: Number(selectedOrder?.patientAddressObj?.longitude! || 0),
+        city: selectedOrder?.patientAddressObj?.city!,
+        state: selectedOrder?.patientAddressObj?.state!,
+        patientAddressID: selectedOrder?.patientAddressId!,
+      };
+
+      console.log({ getAddressObject });
+      const getPatientObjWithLineItems = createPatientObjLineItems(selectedOrder);
+
+      console.log({ getPatientObjWithLineItems });
+      const billAmount = getPatientObjWithLineItems
+        ?.map((item) => Number(item?.totalPrice))
+        ?.reduce((prev: number, curr: number) => prev + curr, 0);
+
+      console.log({ billAmount });
+      const selectedDate = moment(date)?.format('YYYY-MM-DD');
+      const orderId = selectedOrder?.id;
+      const getServiceabilityObject = {
+        cityID: Number(selectedOrder?.cityId),
+        stateID: 0,
+      };
+
+      setSlotInput({
+        addressObject: getAddressObject,
+        lineItems: getPatientObjWithLineItems,
+        total: billAmount,
+        serviceabilityObj: getServiceabilityObject,
+        orderId: orderId,
+      });
+
+      const slotsResponse = await diagnosticGetCustomizedSlotsV2(
+        client,
+        getAddressObject,
+        getPatientObjWithLineItems,
+        billAmount,
+        selectedDate, //will be current date
+        getServiceabilityObject,
+        orderId
+      );
+      console.log({ slotsResponse });
+      if (slotsResponse?.data?.getCustomizedSlotsv2) {
+        const getSlotResponse = slotsResponse?.data?.getCustomizedSlotsv2;
+        const getDistanceCharges = getSlotResponse?.distanceCharges;
+        //get the slots array
+        const diagnosticSlots = getSlotResponse?.available_slots || [];
+        const updatedDiagnosticSlots =
+          moment(date).format('YYYY-MM-DD') == dt
+            ? diagnosticSlots?.filter((item) => item?.slotDetail?.slotDisplayTime != timeToCompare)
+            : diagnosticSlots;
+
+        let slotsArray: any = [];
+        updatedDiagnosticSlots?.forEach((item) => {
+          slotsArray.push({
+            slotInfo: {
+              endTime: item?.slotDetail?.slotDisplayTime,
+              isPaidSlot: item?.isPaidSlot,
+              status: 'empty',
+              internalSlots: item?.slotDetail?.internalSlots,
+              startTime: item?.slotDetail?.slotDisplayTime,
+              distanceCharges: !!item?.isPaidSlot && item?.isPaidSlot ? getDistanceCharges : 0, //would be overall
+            } as any,
+          });
+        });
+
+        const isSameDate = moment().isSame(moment(date), 'date');
+        if (isSameDate && slotsArray?.length == 0) {
+          setTodaySlotNotAvailable(true);
+          setDisplaySchedule(true);
+        } else {
+          setDisplaySchedule(true);
+          todaySlotNotAvailable && setTodaySlotNotAvailable(false);
+        }
+        setSlots(slotsArray);
+        const slotDetails = slotsArray?.[0];
+        slotsArray?.length && setselectedTimeSlot(slotDetails);
+      }
+    } catch (e) {
+      console.log({ e });
+      CommonBugFender('YourOrdersTests_getSlots', e);
+      setDiagnosticSlot && setDiagnosticSlot(null);
+      setselectedTimeSlot(undefined);
+      const noHubSlots = g(e, 'graphQLErrors', '0', 'message') === 'NO_HUB_SLOTS';
+      setLoading?.(false);
+      if (noHubSlots) {
+        showAphAlert!({
+          title: string.common.uhOh,
+          description: `Sorry! There are no slots available on ${moment(date).format(
+            'DD MMM, YYYY'
+          )}. Please choose another date.`,
+          onPressOk: () => {
+            setDisplaySchedule(true);
+            hideAphAlert && hideAphAlert();
+          },
+        });
+      } else {
+        setLoading?.(false);
+        //not trigger
+        showAphAlert?.({
+          title: string.common.uhOh,
+          description: string.diagnostics.areaNotAvailableMessage,
+        });
+      }
+    }
+  };
+
   const renderFilterArea = () => {
     return (
       <View style={styles.filterContainer}>
@@ -630,7 +822,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const onReschduleDoneSelected = () => {
+    console.log({ selectedTimeSlot });
     setLoading?.(true);
+    console.log({ rescheduleDate });
+    console.log({ diagnosticSlot });
+    console.log({ rescheduleSlotObject });
     const formattedDate = moment(rescheduleDate || diagnosticSlot?.date).format('YYYY-MM-DD');
     const formatTime = rescheduleSlotObject?.slotStartTime || diagnosticSlot?.slotStartTime;
     const employeeSlot =
@@ -639,6 +835,19 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       '0';
     const dateTimeInUTC = moment(formattedDate + ' ' + formatTime).toISOString();
     const dateTimeToShow = formattedDate + ', ' + moment(dateTimeInUTC).format('hh:mm A');
+    const comment = '';
+    const slotInfo = {
+      slotDetails: {
+        slotDisplayTime: rescheduleSlotObject?.slotStartTime,
+        internalSlots: rescheduleSlotObject?.internalSlots,
+      },
+      paidSlot: rescheduleSlotObject?.isPaidSlot,
+    };
+    console.log({ slotInfo });
+    console.log({ selectedOrderId });
+    console.log({ selectRescheduleReason });
+    console.log({ formattedDate });
+
     const rescheduleDiagnosticsInput: RescheduleDiagnosticsInput = {
       comment: '',
       date: formattedDate,
@@ -655,9 +864,18 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       formattedDate,
       String(selectedOrderId)
     );
-    rescheduleOrder(rescheduleDiagnosticsInput)
+    rescheduleOrderV2(
+      String(selectedOrderId),
+      slotInfo,
+      formattedDate,
+      comment,
+      selectRescheduleReason,
+      DiagnosticsRescheduleSource.MOBILE
+    )
       .then((data) => {
+        console.log('poop');
         aphConsole.log({ data });
+
         const rescheduleResponse = g(data, 'data', 'rescheduleDiagnosticsOrder');
         if (rescheduleResponse?.status == 'true' && rescheduleResponse?.rescheduleCount <= 3) {
           setTimeout(() => refetchOrders(), 1000);
@@ -726,10 +944,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     return (
       <View style={{ flex: 1 }}>
         <TestSlotSelectionOverlayNew
+          isFocus={true}
           source={'Tests'}
+          showInOverlay={true}
           heading="Schedule Appointment"
           date={date}
-          areaId={String(selectedOrder?.areaId)}
           isTodaySlotUnavailable={todaySlotNotAvailable}
           maxDate={moment()
             .add(maxDaysToShow, 'day')
@@ -741,32 +960,37 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           }}
           slots={slots}
           slotInfo={selectedTimeSlot}
+          slotInput={slotInput}
           isReschdedule={true}
           itemId={orderItemId}
           slotBooked={selectedOrder?.slotDateTimeInUTC}
           addressDetails={selectedOrder?.patientAddressObj}
           onSchedule={(date1: Date, slotInfo: TestSlot) => {
-            rescheduleDate = slotInfo?.date;
+            rescheduleDate = date1; //whatever date has been selected
             rescheduleSlotObject = {
+              internalSlots: slotInfo?.slotInfo?.internalSlots!,
+              distanceCharges:
+                !!slotInfo?.slotInfo?.isPaidSlot && slotInfo?.slotInfo?.isPaidSlot
+                  ? slotInfo?.slotInfo?.distanceCharges!
+                  : 0,
               slotStartTime: slotInfo?.slotInfo?.startTime!,
               slotEndTime: slotInfo?.slotInfo?.endTime!,
-              date: slotInfo?.date?.getTime(),
-              employeeSlotId: slotInfo?.slotInfo?.slot!,
-              diagnosticBranchCode: slotInfo?.diagnosticBranchCode,
-              diagnosticEmployeeCode: slotInfo?.employeeCode,
+              date: date1?.getTime(),
+              isPaidSlot: slotInfo?.slotInfo?.isPaidSlot,
               city: '', // not using city from this in order place API
             };
 
             setDate(date1);
             setselectedTimeSlot(slotInfo);
-
-            setDiagnosticSlot!({
+            setDiagnosticSlot?.({
+              internalSlots: slotInfo?.slotInfo?.internalSlots!,
+              distanceCharges:
+                !!slotInfo?.slotInfo?.isPaidSlot && slotInfo?.slotInfo?.isPaidSlot
+                  ? slotInfo?.slotInfo?.distanceCharges!
+                  : 0,
               slotStartTime: slotInfo?.slotInfo?.startTime!,
               slotEndTime: slotInfo?.slotInfo?.endTime!,
               date: slotInfo?.date?.getTime(),
-              employeeSlotId: slotInfo?.slotInfo?.slot!,
-              diagnosticBranchCode: slotInfo?.diagnosticBranchCode,
-              diagnosticEmployeeCode: slotInfo?.employeeCode,
               city: '', // not using city from this in order place API
             });
             setDisplaySchedule(false);
@@ -1020,7 +1244,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setShowRescheduleReasons(false);
     setSelectCancelReason('');
     setShowCancelReasons(false);
-    checkSlotSelection();
+    // checkSlotSelection();
+    getSlots();
   }
 
   function _onPressCancelNow() {
@@ -1179,10 +1404,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               : 'Ms.'
             : ''
         }
-        showAddTest={
-          order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED ||
-          order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED
-        }
+        // showAddTest={
+        //   order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED ||
+        //   DIAGNOSTIC_CONFIRMED_STATUS.includes(order?.orderStatus)
+        // }
+        showAddTest={false}
         ordersData={order?.diagnosticOrderLineItems!}
         showPretesting={showPreTesting!}
         dateTime={!!order?.slotDateTimeInUTC ? order?.slotDateTimeInUTC : order?.diagnosticDate}
