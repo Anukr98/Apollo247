@@ -507,6 +507,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       ? props.navigation.state.params.showBookAppointment || false
       : false;
     setdisplayoverlay(display);
+    setConsultMode(props.navigation.getParam('consultModeSelected'));
     setShowVideo(props.navigation.getParam('onVideoPressed'));
   }, [props.navigation.state.params]);
 
@@ -635,16 +636,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK, eventAttributes);
   };
 
-  useEffect(() => {
-    if (isPayrollDoctor || !consultModeSelected) {
-      setOnlineSelected(true);
-      setConsultMode(ConsultMode.ONLINE);
-    } else {
-      setOnlineSelected(consultModeSelected === ConsultMode.ONLINE);
-      setConsultMode(consultModeSelected);
-    }
-  }, [isPayrollDoctor]);
-
   const setAvailableModes = (availabilityMode: any) => {
     const modeOfConsult = availabilityMode.availableModes;
     try {
@@ -660,6 +651,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       } else {
         setConsultType(ConsultMode.BOTH);
       }
+      consultModeSelected && setOnlineSelected(consultModeSelected === ConsultMode.ONLINE);
     } catch (error) {}
   };
 

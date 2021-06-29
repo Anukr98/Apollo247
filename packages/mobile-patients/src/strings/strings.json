@@ -421,15 +421,7 @@
           "Persian"
         ]
       }
-    ],
-    "availability": "Availability",
-    "nearby": "Nearby",
-    "lowToHighPrice": "Price - low to high",
-    "highToLowPrice": "Price - high to low",
-    "yearOfExperience": "Years of Experience",
-    "priceLtoH": "Price\n(Low to high)",
-    "priceHtoL": "Price\n(High to low)",
-    "yrsOfExp": "Years of exp."
+    ]
   },
   "medicine": {
     "recommendedForYou": "RECOMMENDED FOR YOU"

@@ -115,11 +115,6 @@ const covidVaccineSection = {
   ],
 };
 
-const homeScreenConsultationCTAs = [
-  { physicalCTA: 'Hospital Visit', backgroundColor: '#C6EAFE' },
-  { onlineCTA: 'Video Consult', backgroundColor: '#FECF62' },
-];
-
 const QA_covid_items = [2596, 2598, 2462, 2388, 2419, 2411, 2410, 2539, 2446, 2614, 2462, 2613];
 const Prod_covid_items = [2539, 2446, 2410, 2411, 2419, 2613];
 const covidMaxSlotDays = 7;
@@ -251,7 +246,6 @@ const appStaticVariables = {
     },
   ],
   DIAGNOSTIC_DEFAULT_ICON: 'https://newassets.apollo247.com/organs/ic_blood.png',
-  HomeScreenConsultationCTAs: homeScreenConsultationCTAs,
 };
 
 const DEV_top_specialties = [
@@ -791,7 +785,6 @@ const ConfigurationQA5 = {
   PROHEALTH_BOOKING_URL: 'https://qa5patients.apollo247.com/apollo-prohealth',
   APOLLO_PRO_HEALTH_URL:
     'https://qa5patients.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
-  CIRCLE_CONSULT_URL: 'https://qa5patients.apollo247.com/consult-landing?header=false',
 };
 
 // VAPT
