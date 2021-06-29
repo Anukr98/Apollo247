@@ -25,6 +25,7 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { diagnosticGetCustomizedSlotsV2 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { createPatientAddressObject } from '@aph/mobile-patients/src/utils/commonUtils';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { TestPremiumSlotOverlay } from '../components/TestPremiumSlotOverlay';
 
 export interface AddressSlotSelectionProps extends NavigationScreenProps {}
 
@@ -346,6 +347,7 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
       />
     ) : null;
   };
+  const [isVisible, setIsVisible] = useState<boolean>(false);
 
   const renderMainView = () => {
     return (
@@ -353,16 +355,32 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
         {renderScheduleHeading()}
         <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
           {renderSlotSelection()}
+          {isVisible && renderPremiumOverlay()}
         </ScrollView>
       </View>
     );
   };
 
+  const renderPremiumOverlay = () => {
+    return (
+      <TestPremiumSlotOverlay
+        source={AppRoutes.AddressSlotSelection}
+        isVisible={isVisible}
+        onGoBack={() => props.navigation.goBack()}
+        onClose={() => setIsVisible(false)}
+      />
+    );
+  };
+
   function _navigateToReview() {
+    // if (selectedTimeSlot?.slotInfo?.isPaidSlot) {
+    //   setIsVisible(true);
+    // } else {
     props.navigation.navigate(AppRoutes.ReviewOrder, {
       slotsInput: slotsInput,
       selectedTimeSlot: selectedTimeSlot,
     });
+    // }
   }
 
   const disableCTA = !(

@@ -130,11 +130,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
 
+  const [orderDetails, setOrderDetails] = useState([] as any);
   const scrollToSlots = (yValue?: number) => {
     const setY = yValue == undefined ? scrollYValue : yValue;
     scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: setY, animated: true });
-  const [orderDetails, setOrderDetails] = useState([] as any);
-
+  };
 
   //for showing the order level status.
   const fetchOrderLevelStatus = () =>
@@ -143,7 +143,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       variables: { diagnosticOrderID: orderId },
       fetchPolicy: 'no-cache',
     });
-
   const fetchOrderDetails = () =>
     client.query<getDiagnosticOrderDetails, getDiagnosticOrderDetailsVariables>({
       query: GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
@@ -174,7 +173,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       CommonBugFender('getHCOrderFormattedTrackingHistory_TestOrderDetails', error);
     }
   }
-
   async function callOrderDetailsApi() {
     try {
       setLoading?.(true);
@@ -519,6 +517,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             sampleSubmittedInclusions?.length == 1 ? 'test' : 'tests'
           } in order are sample submitted `
         : '';
+
     return (
       <>
         {!hasDiffStatusLevelInclusion ? null : (
@@ -539,6 +538,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                 />
               </TouchableOpacity>
             </View>
+
             {showInclusionStatus &&
               orderLevelStatus?.statusInclusions?.map((item: any, index: number) => {
                 let selectedItem = selectedOrder?.diagnosticOrderLineItems;
@@ -912,6 +912,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   inclusionContainer: {
+    marginBottom: 15,
     marginTop: 10,
   },
   rowStyle: { flexDirection: 'row' },

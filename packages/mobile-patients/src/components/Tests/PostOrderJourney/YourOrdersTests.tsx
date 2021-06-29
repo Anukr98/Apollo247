@@ -556,8 +556,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
     const getAddressObject = createAddressObject(selectedOrder?.patientAddressObj);
 
-    const getAddressObject = createAddressObject(selectedOrder?.patientAddressObj);
-
     const orderItemId = selectedOrder?.diagnosticOrderLineItems?.map((item) =>
       Number(item?.itemId)
     );
