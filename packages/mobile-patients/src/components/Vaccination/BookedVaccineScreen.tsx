@@ -408,9 +408,7 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
               alignItems: 'center',
             }}
           >
-            <Text style={styles.somethingWentWrong}>
-              Oops! Something went wrong. Try checking internet connection.
-            </Text>
+            <Text style={styles.somethingWentWrong}>Unable to see your booking? Try refresh!</Text>
             <TouchableOpacity
               onPress={() => {
                 fetchAllAppointments();
