@@ -143,6 +143,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     setDefaultCirclePlan,
     circleSubscriptionId,
     setCircleSubscriptionId,
+    hdfcSubscriptionId,
     pharmacyCircleAttributes,
     newAddressAdded,
     setNewAddressAdded,
@@ -150,6 +151,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     setOrders,
     productDiscount,
     cartPriceNotUpdateRange,
+    uploadPrescriptionRequired,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -474,7 +476,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           setloading!(false);
           setTatResponse(response[0]?.tat);
           addressSelectedEvent(selectedAddress, response[0]?.tat, response);
-          addressChange && NavigateToCartSummary();
           updatePricesAfterTat(inventoryData, updatedCartItems);
         } catch (error) {
           setloading!(false);
@@ -1203,7 +1204,11 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           props.navigation.navigate('MEDICINES');
         }}
         onPressTatCard={() => {
-          physicalPrescriptions?.length > 0 ? uploadPhysicalPrescriptons() : onPressReviewOrder();
+          uploadPrescriptionRequired
+            ? redirectToUploadPrescription()
+            : physicalPrescriptions?.length > 0
+            ? uploadPhysicalPrescriptons()
+            : onPressReviewOrder();
         }}
       />
     );

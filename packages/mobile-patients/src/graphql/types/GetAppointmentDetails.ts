@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { DOSE_NUMBER, Gender, VACCINE_TYPE } from "./globalTypes";
+import { DOSE_NUMBER, Gender, APPOINTMENT_STATUS, PAYMENT_TYPE, VACCINE_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetAppointmentDetails
@@ -16,6 +16,8 @@ export interface GetAppointmentDetails_GetAppointmentDetails_response_patient_in
   age: number | null;
   gender: Gender | null;
   uhid: string | null;
+  id: string | null;
+  mobileNumber: string | null;
 }
 
 export interface GetAppointmentDetails_GetAppointmentDetails_response_resource_session_details_resource_detail {
@@ -26,6 +28,7 @@ export interface GetAppointmentDetails_GetAppointmentDetails_response_resource_s
   street_line3: string | null;
   city: string | null;
   state: string | null;
+  is_corporate_site: boolean | null;
 }
 
 export interface GetAppointmentDetails_GetAppointmentDetails_response_resource_session_details {
@@ -33,14 +36,18 @@ export interface GetAppointmentDetails_GetAppointmentDetails_response_resource_s
   session_name: string | null;
   start_date_time: any;
   vaccine_type: VACCINE_TYPE;
+  station_name: string | null;
   resource_detail: GetAppointmentDetails_GetAppointmentDetails_response_resource_session_details_resource_detail | null;
 }
 
 export interface GetAppointmentDetails_GetAppointmentDetails_response {
   __typename: "AppointmentType";
+  id: string | null;
   display_id: number;
   dose_number: DOSE_NUMBER;
   patient_info: GetAppointmentDetails_GetAppointmentDetails_response_patient_info | null;
+  status: APPOINTMENT_STATUS;
+  payment_type: PAYMENT_TYPE;
   resource_session_details: GetAppointmentDetails_GetAppointmentDetails_response_resource_session_details | null;
 }
 

@@ -45,7 +45,15 @@ export interface PackageCardProps {
   isVertical: boolean;
   columns?: number;
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
-  source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
+  source:
+    | 'Home page'
+    | 'Full search'
+    | 'Details page'
+    | 'Partial search'
+    | 'Listing page'
+    | 'Category page'
+    | 'Prescription'
+    | 'Cart page';
   sourceScreen: string;
 }
 

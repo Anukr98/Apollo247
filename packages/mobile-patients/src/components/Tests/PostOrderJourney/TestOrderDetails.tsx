@@ -47,7 +47,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useApolloClient, useQuery } from 'react-apollo-hooks';
+import { useApolloClient } from 'react-apollo-hooks';
 import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity, BackHandler } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -81,6 +81,7 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 const DROP_DOWN_ARRAY_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
@@ -132,7 +133,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const scrollToSlots = (yValue?: number) => {
     const setY = yValue == undefined ? scrollYValue : yValue;
     scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: setY, animated: true });
-  };
+  const [orderDetails, setOrderDetails] = useState([] as any);
+
 
   //for showing the order level status.
   const fetchOrderLevelStatus = () =>
@@ -142,8 +144,16 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       fetchPolicy: 'no-cache',
     });
 
+  const fetchOrderDetails = () =>
+    client.query<getDiagnosticOrderDetails, getDiagnosticOrderDetailsVariables>({
+      query: GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
+      variables: { diagnosticOrderId: orderId },
+      fetchPolicy: 'no-cache',
+    });
+
   useEffect(() => {
     callOrderLevelStatusApi();
+    callOrderDetailsApi();
   }, []);
 
   async function callOrderLevelStatusApi() {
@@ -162,6 +172,27 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       setOrderLevelStatus([]);
       setError(true);
       CommonBugFender('getHCOrderFormattedTrackingHistory_TestOrderDetails', error);
+    }
+  }
+
+  async function callOrderDetailsApi() {
+    try {
+      setLoading?.(true);
+      let response = await fetchOrderDetails();
+      if (!!response && response?.data && !response?.errors) {
+        let getOrderDetails = response?.data?.getDiagnosticOrderDetails?.ordersList;
+        setOrderDetails(getOrderDetails);
+        setError(false);
+      } else {
+        setOrderDetails([]);
+        setError(true);
+      }
+      setLoading?.(false);
+    } catch (error) {
+      setLoading?.(false);
+      setOrderDetails([]);
+      setError(true);
+      CommonBugFender('getDiagnosticOrderDetails_TestOrderDetails', error);
     }
   }
 
@@ -186,17 +217,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       DiagnosticTrackOrderViewed(currentPatient, latestStatus, orderId, 'Track Order');
     }
   }, [selectedTab]);
-
-  const { data, loading } = useQuery<getDiagnosticOrderDetails, getDiagnosticOrderDetailsVariables>(
-    GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
-    {
-      variables: { diagnosticOrderId: orderId },
-    }
-  );
-  const order = g(data, 'getDiagnosticOrderDetails', 'ordersList');
-
-  const orderDetails = ((!loading && order) ||
-    {}) as getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList;
 
   var orderStatusList: any[] = [];
   var refundArr: any[] = [];
@@ -307,8 +327,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         const response = await client.query<GetPatientFeedback, GetPatientFeedbackVariables>({
           query: GET_PATIENT_FEEDBACK,
           variables: {
-            patientId: g(currentPatient, 'id') || '',
-            transactionId: `${selectedTest?.id}`,
+            patientId: !!selectedOrder?.patientId
+              ? selectedOrder?.patientId
+              : currentPatient?.id || '',
+            transactionId: `${selectedOrder?.id}`,
           },
           fetchPolicy: 'no-cache',
         });
@@ -319,8 +341,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       }
       setLoading?.(false);
     } catch (error) {
-      setLoading!(false);
-      CommonBugFender(`${AppRoutes.OrderDetailsScene}_updateRateDeliveryBtnVisibility`, error);
+      setLoading?.(false);
+      CommonBugFender(`${AppRoutes.TestOrderDetails}_updateRateDeliveryBtnVisibility`, error);
     }
   };
 
@@ -480,37 +502,44 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       (item: any) => item?.orderStatus === DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB
     );
 
+    const sampleSubmittedInclusions = orderLevelStatus?.statusInclusions?.filter((item: any) =>
+      DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(item?.orderStatus)
+    );
+
     const reportText =
       !!pendingReportInclusions && pendingReportInclusions?.length > 0 && isReportText
         ? `Report pending for ${pendingReportInclusions?.length} of ${totalInclusions}`
         : !!sampleRejectedInclusions && sampleRejectedInclusions?.length > 0
         ? `${sampleRejectedInclusions?.length} test in order rejected `
+        : !!sampleSubmittedInclusions &&
+          sampleSubmittedInclusions?.length == orderLevelStatus?.statusInclusions?.length
+        ? 'All samples are submitted'
+        : !!sampleSubmittedInclusions && sampleSubmittedInclusions?.length > 0
+        ? `${sampleSubmittedInclusions?.length} ${
+            sampleSubmittedInclusions?.length == 1 ? 'test' : 'tests'
+          } in order are sample submitted `
         : '';
-
     return (
       <>
         {!hasDiffStatusLevelInclusion ? null : (
           <View>
-            {!showInclusionStatus ? <View style={styles.lineSeparator} /> : null}
-
-            {reportText ? (
-              <View style={styles.inclusionContainer}>
-                <TouchableOpacity
-                  onPress={() => setShowInclusionStatus(!showInclusionStatus)}
-                  activeOpacity={1}
-                  style={styles.viewRowStyle}
-                >
-                  <Text style={styles.itemNameText}>{!!reportText ? reportText : ''}</Text>
-                  <ArrowRight
-                    style={{
-                      transform: [{ rotate: showInclusionStatus ? '270deg' : '90deg' }],
-                      tintColor: 'black',
-                    }}
-                  />
-                </TouchableOpacity>
-              </View>
-            ) : null}
-            {showInclusionStatus ||
+            <View style={styles.lineSeparator} />
+            <View style={styles.inclusionContainer}>
+              <TouchableOpacity
+                onPress={() => setShowInclusionStatus(!showInclusionStatus)}
+                activeOpacity={1}
+                style={styles.viewRowStyle}
+              >
+                <Text style={styles.itemNameText}>{!!reportText ? reportText : ''}</Text>
+                <ArrowRight
+                  style={{
+                    transform: [{ rotate: showInclusionStatus ? '270deg' : '90deg' }],
+                    tintColor: 'black',
+                  }}
+                />
+              </TouchableOpacity>
+            </View>
+            {showInclusionStatus &&
               orderLevelStatus?.statusInclusions?.map((item: any, index: number) => {
                 let selectedItem = selectedOrder?.diagnosticOrderLineItems;
                 return (
@@ -534,17 +563,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                           </View>
                           <StatusCard titleText={item?.orderStatus} />
                         </View>
-                        {selectedItem?.[index]?.itemObj?.reportGenerationTime &&
-                        DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY.includes(item?.orderStatus) ? (
-                          <View style={styles.ratingContainer}>
-                            <View style={styles.reporttatContainer}>
-                              <ClockIcon />
-                              <Text
-                                style={styles.reportTextStyle}
-                              >{`Get your report by ${selectedItem?.[index]?.itemObj?.reportGenerationTime}`}</Text>
-                            </View>
-                          </View>
-                        ) : null}
                       </View>
                     ) : null}
                   </>
@@ -594,9 +612,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   function _onPressViewReportAction() {
-    if (!!order?.labReportURL && order?.labReportURL != '') {
+    if (!!selectedOrder?.labReportURL && selectedOrder?.labReportURL != '') {
       setDisplayViewReport(true);
-    } else if (!!order?.visitNo && order?.visitNo != '') {
+    } else if (!!selectedOrder?.visitNo && selectedOrder?.visitNo != '') {
       //directly open the phr section
       fetchTestReportResult();
     } else {
@@ -604,34 +622,34 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     }
   }
   const onPressInvoice = () => {
-    const appointmentDetails = !!order?.slotDateTimeInUTC
-      ? order?.slotDateTimeInUTC
-      : order?.diagnosticDate;
+    const appointmentDetails = !!orderDetails?.slotDateTimeInUTC
+      ? orderDetails?.slotDateTimeInUTC
+      : orderDetails?.diagnosticDate;
     const appointmentDate = moment(appointmentDetails)?.format('DD MMM YYYY');
-    const patientName = getPatientNameById(allCurrentPatients, order?.patientId!)?.replace(
+    const patientName = getPatientNameById(allCurrentPatients, orderDetails?.patientId!)?.replace(
       / /g,
       '_'
     );
-    downloadLabTest(order?.invoiceURL!, appointmentDate, patientName);
+    downloadLabTest(orderDetails?.invoiceURL!, appointmentDate, patientName);
   };
 
   const onPressViewReport = () => {
-    const appointmentDetails = !!order?.slotDateTimeInUTC
-      ? order?.slotDateTimeInUTC
-      : order?.diagnosticDate;
+    const appointmentDetails = !!orderDetails?.slotDateTimeInUTC
+      ? orderDetails?.slotDateTimeInUTC
+      : orderDetails?.diagnosticDate;
     const appointmentDate = moment(appointmentDetails)?.format('DD MMM YYYY');
-    const patientName = getPatientNameById(allCurrentPatients, order?.patientId!)?.replace(
+    const patientName = getPatientNameById(allCurrentPatients, orderDetails?.patientId!)?.replace(
       / /g,
       '_'
     );
     //need to remove the event once added
     DiagnosticViewReportClicked(
       'Track Order',
-      !!order?.labReportURL ? 'Yes' : 'No',
+      !!orderDetails?.labReportURL ? 'Yes' : 'No',
       'Download Report PDF',
-      order?.id
+      orderDetails?.id
     );
-    downloadLabTest(order?.labReportURL!, appointmentDate, patientName);
+    downloadLabTest(orderDetails?.labReportURL!, appointmentDate, patientName);
   };
 
   async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string) {
@@ -670,6 +688,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             imageComponent: '',
           }}
           transactionId={orderId}
+          patientId={!!selectedOrder?.patientId ? selectedOrder?.patientId : currentPatient?.id}
           type={FEEDBACKTYPE.DIAGNOSTICS}
           isVisible={showFeedbackPopup}
           onComplete={(ratingStatus, ratingOption) => {
@@ -746,7 +765,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     <View style={{ flex: 1 }}>
       {displayViewReport && (
         <TestViewReportOverlay
-          order={order}
+          order={orderDetails}
           heading=""
           isVisible={displayViewReport}
           onClose={() => setDisplayViewReport(false)}
@@ -781,11 +800,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
           {renderError()}
         </ScrollView>
-        {selectedTab == string.orders.trackOrder ? renderBottomSection(order) : null}
+        {selectedTab == string.orders.trackOrder ? renderBottomSection(orderDetails) : null}
       </SafeAreaView>
 
       {renderFeedbackPopup()}
-      {(loading || loading1) && <Spinner style={{ zIndex: 200 }} />}
+      {loading1 && <Spinner style={{ zIndex: 200 }} />}
     </View>
   );
 };
@@ -799,6 +818,15 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 5,
     zIndex: 1,
+  },
+  yellowText: {
+    ...theme.viewStyles.text('SB', 14, colors.APP_YELLOW),
+    textAlign: 'center',
+  },
+  moreContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   tabsContainer: {
     ...theme.viewStyles.cardViewStyle,
@@ -884,7 +912,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   inclusionContainer: {
-    marginBottom: 15,
     marginTop: 10,
   },
   rowStyle: { flexDirection: 'row' },

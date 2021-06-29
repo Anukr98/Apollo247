@@ -71,11 +71,19 @@ export const handleOpenURL = (event: any) => {
 
       case 'otc':
       case 'medicine':
-        const redirectToMedicineDetail = data.length === 2;
-        return {
-          routeName: redirectToMedicineDetail ? 'MedicineDetail' : 'Medicine',
-          id: redirectToMedicineDetail ? linkId : undefined,
-        };
+        if (b === 0) {
+          // apollopharmacy.in url
+          const redirectToMedicineDetail = data.length === 2;
+          return {
+            routeName: redirectToMedicineDetail ? 'MedicineDetail' : 'Medicine',
+            id: redirectToMedicineDetail ? linkId : undefined,
+          };
+        } else {
+          // apollopatients:// url
+          return {
+            routeName: 'Medicine',
+          };
+        }
         break;
 
       case 'uploadprescription':
@@ -412,7 +420,7 @@ export const pushTheView = (
       break;
     case 'Speciality':
       setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', id);
-      const filtersData = id ? handleEncodedURI(id) : '';
+      let filtersData = id ? getParamData(id) : '';
       navigateToView(navigation, AppRoutes.DoctorSearchListing, {
         specialityId: filtersData[0] ? filtersData[0] : '',
         typeOfConsult: filtersData.length > 1 ? filtersData[1] : '',

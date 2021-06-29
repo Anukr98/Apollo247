@@ -1,19 +1,9 @@
 import React from 'react';
-import {
-  ActivityIndicator,
-  View,
-  StyleProp,
-  ViewStyle,
-  Text,
-  StyleSheet,
-  Dimensions,
-  Image,
-} from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Image } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { createShimmerPlaceholder } from 'react-native-shimmer-placeholder';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CovidOrange } from '@aph/mobile-patients/src/components/ui/Icons';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { cardWidth } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultedDoctorsCard';
 
 const { width, height } = Dimensions.get('window');
@@ -260,7 +250,7 @@ const styles = StyleSheet.create({
   },
 
   vaccinesHospitalLoader: {
-    height: 110,
+    height: 280,
     borderRadius: 10,
     width: '100%',
     marginVertical: 8,
@@ -664,7 +654,7 @@ export const renderVaccinesHospitalSlotsLoaderShimmer = () => {
 
 export const renderVaccinesTimeSlotsLoaderShimmer = () => {
   return (
-    <View style={{ marginVertical: 10 }}>
+    <View style={{ marginVertical: 10, marginHorizontal: 20 }}>
       <ShimmerPlaceHolder
         shimmerColors={shimmerColors}
         LinearGradient={LinearGradient}

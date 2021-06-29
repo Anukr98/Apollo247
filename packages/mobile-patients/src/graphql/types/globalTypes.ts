@@ -1070,6 +1070,13 @@ export interface DeleteHealthRecordFilesInput {
   recordId?: string | null;
 }
 
+export interface DeleteMultipleHealthRecordFilesInput {
+  fileIndexArray?: (number | null)[] | null;
+  patientId: string;
+  recordType: MedicalRecordType;
+  recordId?: string | null;
+}
+
 export interface DeletePatientPrismMedicalRecordInput {
   id?: string | null;
   patientId: string;
@@ -1284,7 +1291,6 @@ export interface MedicineCartOMSInput {
   prescriptionType?: PrescriptionType | null;
   tatCity?: string | null;
   tatHours?: string | null;
-  appointmentId?: string | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -1684,7 +1690,6 @@ export interface SaveMedicineOrderV2Input {
   healthCreditUsed?: number | null;
   shipments?: (MedicineOrderShipmentInput | null)[] | null;
   prescriptionType?: PrescriptionType | null;
-  appointmentId?: string | null;
 }
 
 export interface SavePatientNotificationSettingsInput {
@@ -1846,16 +1851,26 @@ export interface voipPushTokenInput {
 }
 
 /** * current status of appointment */
-export enum APPOINTMENT_STATUS { BOOKED = "BOOKED", CANCELLED = "CANCELLED", COMPLETED = "COMPLETED", FAILED = "FAILED", VERIFIED = "VERIFIED",}
+export enum APPOINTMENT_STATUS { AUTO_REFUNDED = "AUTO_REFUNDED", BOOKED = "BOOKED", CANCELLED = "CANCELLED", COMPLETED = "COMPLETED", FAILED = "FAILED", VERIFIED = "VERIFIED", REJECTED = "REJECTED",}
 /** * dose number first second */
 export enum DOSE_NUMBER { FIRST = "FIRST", SECOND = "SECOND",}
 /** * payment type for appointment */
-export enum PAYMENT_TYPE { CASHLESS = "CASHLESS", COD = "COD", PREPAID = "PREPAID",}
+export enum PAYMENT_TYPE { CASHLESS = "CASHLESS", COD = "COD", IN_APP_PURCHASE = "IN_APP_PURCHASE", PREPAID = "PREPAID",}
 /** * booking source */
 export enum VACCINE_BOOKING_SOURCE { AP_IN = "AP_IN", MOBILE = "MOBILE", WEB = "WEB",}
 /** * types of vaccine */
 export enum VACCINE_TYPE { COVAXIN = "COVAXIN", COVISHIELD = "COVISHIELD", SPUTNIK="SPUTNIK",MORDERNA="MORDERNA"}
-export interface CreateAppointmentInput { appointment_id?: string | null; patient_id: string; resource_session_id: string; dose_number: DOSE_NUMBER; booking_source?: VACCINE_BOOKING_SOURCE | null; corporate_name?: string | null;}
+
+export interface CreateAppointmentInput { appointment_id?: string | null; patient_id: string; resource_session_id: string; dose_number: DOSE_NUMBER; booking_source?: VACCINE_BOOKING_SOURCE | null; corporate_name?: string | null; user_subscription_id?: string | null; subscription_inclusion_id?: string | null;}
+
+/** * COWIN_GENDER */
+export enum COWIN_GENDER { FEMALE = "FEMALE", MALE = "MALE", OTHERS = "OTHERS",}
+/** * COWIN_GOVT_PHOTO_ID */
+export enum COWIN_GOVT_PHOTO_ID { AADHAAR_CARD = "AADHAAR_CARD", DRIVING_LICENSE = "DRIVING_LICENSE", NPR_SMART_CARD = "NPR_SMART_CARD", PAN_CARD = "PAN_CARD", PASSPORT = "PASSPORT", PENSION_PASSBOOK = "PENSION_PASSBOOK", UNIQUE_DISABILITY_ID = "UNIQUE_DISABILITY_ID", VOTER_ID = "VOTER_ID",}
+/** * OperationType */
+export enum OperationType { GENERATE_OTP = "GENERATE_OTP", VERIFY_OTP = "VERIFY_OTP",}
+export interface CowinRegistrationInput { operationType: OperationType; name: string; gender_id: COWIN_GENDER; birth_year: string; photo_id_type: COWIN_GOVT_PHOTO_ID; photo_id_number: string; otp?: string | null; txnId?: string | null;}
+
 //==============================================================
 // END Enums and Input Objects
 //==============================================================

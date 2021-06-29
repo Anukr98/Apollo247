@@ -1,6 +1,6 @@
 import {
-  AppCommonDataContextProps,
   LocationData,
+  AppCommonDataContextProps
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
@@ -318,18 +318,12 @@ export const isPastAppointment = (
 ) => {
   const case_sheet = followUpChatDaysCaseSheet(caseSheet);
   const caseSheetChatDays = g(case_sheet, '0' as any, 'followUpAfterInDays');
-  const followUpAfterInDays =
-    caseSheetChatDays || caseSheetChatDays === '0'
-      ? caseSheetChatDays === '0'
-        ? -1
-        : Number(caseSheetChatDays) - 1
-      : 6;
+  const followUpAfterInDays = caseSheetChatDays ? Number(caseSheetChatDays) : 7;
   return (
     item?.status === STATUS.CANCELLED ||
-    !moment(new Date(item?.appointmentDateTime))
+    moment(new Date(item?.appointmentDateTime))
       .add(followUpAfterInDays, 'days')
-      .startOf('day')
-      .isSameOrAfter(moment(new Date()).startOf('day'))
+      .isSameOrBefore(moment(new Date()))
   );
 };
 

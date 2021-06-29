@@ -201,6 +201,8 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
   const _searchInputRef = useRef(null);
+  const [apiError, setApiError] = useState(false);
+
   const [healthRecordSearchResults, setHealthRecordSearchResults] = useState<any>([]);
   const [prismAuthToken, setPrismAuthToken] = useState<string>(
     props.navigation?.getParam('authToken') || ''
@@ -227,6 +229,8 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   useEffect(() => {
     if (testReportsData?.length > 0) {
       setTestReportMainData(testReportsData);
+    } else {
+      setApiError(true);
     }
   }, [testReportsData]);
 
@@ -590,7 +594,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       phrSession,
       setPhrSession
     );
-    props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+    props.navigation.navigate(AppRoutes.TestReportViewScreen, {
       data: filterApplied === FILTER_TYPE.PARAMETER_NAME ? selectedItem?.data : selectedItem,
       labResults: true,
     });
@@ -761,7 +765,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 12, paddingHorizontal: 20 }}
         sections={localTestReportsData || []}
         renderItem={({ item, index }) => renderTestReportsItems(item, index)}
-        ListEmptyComponent={<PhrNoDataComponent />}
+        ListEmptyComponent={renderEmptyView()}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
       />
     );
@@ -773,6 +777,14 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         <Spinner style={styles.loaderStyle} />
       </View>
     );
+  };
+
+  const renderEmptyView = () => {
+    if (!!testReportMainData) {
+      return null;
+    } else {
+      return <PhrNoDataComponent />;
+    }
   };
 
   const searchListHeaderView = () => {
@@ -789,7 +801,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
 
   const onClickSearchHealthCard = (item: any) => {
     const { healthrecordId } = item?.value;
-    props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+    props.navigation.navigate(AppRoutes.TestReportViewScreen, {
       healthrecordId: healthrecordId,
       healthRecordType: MedicalRecordType.TEST_REPORT,
       labResults: true,
@@ -890,6 +902,9 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         <Text style={styles.doctorTestReportPHRTextStyle}>
           {string.common.doctorConsultPHRText}
         </Text>
+        {apiError ? (
+          <PhrNoDataComponent noDataText={string.common.phr_api_error_text} phrErrorIcon />
+        ) : null}
         {searchText?.length > 2 ? renderHealthRecordSearchResults() : renderTestReportsMainView()}
       </SafeAreaView>
     </View>
