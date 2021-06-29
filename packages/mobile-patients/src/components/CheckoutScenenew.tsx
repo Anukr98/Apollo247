@@ -804,7 +804,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         healthCreditUsed: hcOrder ? getFormattedAmount(grandTotal) : 0,
         shipments: shipments,
         appointmentId: appointmentIds?.length ? appointmentIds.join(',') : '',
-        tatType: tatType,
       },
     };
 
