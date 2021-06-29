@@ -5407,3 +5407,13 @@ export const GET_DIAGNOSTIC_PHLEBO_CHARGES = gql `
     }
   }
 `;
+
+export const DIAGNOSTIC_RESCHEDULE_V2 =  gql`
+  mutation rescheduleDiagnosticsOrderv2($parentOrderID: ID!, $slotInfo: slotInfo!, $selectedDate: Date!, $comment: String, $reason: String!, $source: DiagnosticsRescheduleSource) {
+    rescheduleDiagnosticsOrderv2(parentOrderID : $parentOrderID, slotInfo: $slotInfo, selectedDate: $selectedDate, comment: $comment, reason : $reason, source: $source) {
+    status
+    message
+    rescheduleCount
+    }
+  }
+`;

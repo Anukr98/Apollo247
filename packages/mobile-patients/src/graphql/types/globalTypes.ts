@@ -607,7 +607,6 @@ export enum REQUEST_ROLES {
   DOCTOR = "DOCTOR",
   JUNIOR = "JUNIOR",
   PATIENT = "PATIENT",
-  SECRETARY = "SECRETARY",
   SYSTEM = "SYSTEM",
 }
 
@@ -676,6 +675,8 @@ export enum STATUS {
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PAYMENT_PENDING_PG = "PAYMENT_PENDING_PG",
   PENDING = "PENDING",
+  REQUESTED = "REQUESTED",
+  REQUEST_DECLINED = "REQUEST_DECLINED",
   UNAVAILABLE_MEDMANTRA = "UNAVAILABLE_MEDMANTRA",
 }
 
@@ -705,7 +706,6 @@ export enum TRANSFER_INITIATED_TYPE {
   ADMIN = "ADMIN",
   DOCTOR = "DOCTOR",
   PATIENT = "PATIENT",
-  SECRETARY = "SECRETARY",
 }
 
 export enum TRANSFER_STATUS {
@@ -1865,6 +1865,8 @@ export interface diagnosticLineItem {
   price: number;
   groupPlan?: DIAGNOSTICS_GROUPPLAN | null;
   itemId: number;
+  preTestingRequirement?: string | null;
+  reportGenerationTime?: string | null;
 }
 
 export interface fileProperties {
@@ -1919,7 +1921,7 @@ export interface slotDetail {
 
 export interface slotInfo {
   slotDetails?: slotDetail | null;
-  status?: SLOT_BOOKING_STATUS | null;
+  status?: number | null;
   phleboID?: number | null;
   paidSlot: boolean;
 }

@@ -15,6 +15,7 @@ import {
   GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
   GET_PHLOBE_DETAILS,
   DIAGNOSITC_EXOTEL_CALLING,
+  DIAGNOSTIC_RESCHEDULE_V2,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticOrdersListByMobile,
@@ -52,6 +53,7 @@ import {
   DiagnosticsRescheduleSource,
   DiagnosticLineItem,
   patientObjWithLineItems,
+  slotInfo,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -213,6 +215,27 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     client.mutate<rescheduleDiagnosticsOrder, rescheduleDiagnosticsOrderVariables>({
       mutation: RESCHEDULE_DIAGNOSTIC_ORDER,
       variables: { rescheduleDiagnosticsInput: rescheduleDiagnosticsInput },
+      fetchPolicy: 'no-cache',
+    });
+
+  const rescheduleOrderV2 = (
+    parentOrderID: string,
+    slotInfo: slotInfo,
+    selectedDate: Date,
+    comment: string,
+    reason: string,
+    source: DiagnosticsRescheduleSource
+  ) =>
+    client.mutate<rescheduleDiagnosticsOrder, rescheduleDiagnosticsOrderVariables>({
+      mutation: DIAGNOSTIC_RESCHEDULE_V2,
+      variables: {
+        parentOrderID: parentOrderID,
+        slotInfo: slotInfo,
+        selectedDate: selectedDate,
+        comment: comment,
+        reason: reason,
+        source: source,
+      },
       fetchPolicy: 'no-cache',
     });
 
@@ -795,7 +818,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const onReschduleDoneSelected = () => {
+    console.log({ selectedTimeSlot });
     setLoading?.(true);
+    console.log({ rescheduleDate });
+    console.log({ diagnosticSlot });
+    console.log({ rescheduleSlotObject });
     const formattedDate = moment(rescheduleDate || diagnosticSlot?.date).format('YYYY-MM-DD');
     const formatTime = rescheduleSlotObject?.slotStartTime || diagnosticSlot?.slotStartTime;
     const employeeSlot =
@@ -804,6 +831,19 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       '0';
     const dateTimeInUTC = moment(formattedDate + ' ' + formatTime).toISOString();
     const dateTimeToShow = formattedDate + ', ' + moment(dateTimeInUTC).format('hh:mm A');
+    const comment = '';
+    const slotInfo = {
+      slotDetails: {
+        slotDisplayTime: rescheduleSlotObject?.slotStartTime,
+        internalSlots: rescheduleSlotObject?.internalSlots,
+      },
+      paidSlot: rescheduleSlotObject?.isPaidSlot,
+    };
+    console.log({ slotInfo });
+    console.log({ selectedOrderId });
+    console.log({ selectRescheduleReason });
+    console.log({ formattedDate });
+
     const rescheduleDiagnosticsInput: RescheduleDiagnosticsInput = {
       comment: '',
       date: formattedDate,
@@ -820,9 +860,18 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       formattedDate,
       String(selectedOrderId)
     );
-    rescheduleOrder(rescheduleDiagnosticsInput)
+    rescheduleOrderV2(
+      String(selectedOrderId),
+      slotInfo,
+      formattedDate,
+      comment,
+      selectRescheduleReason,
+      DiagnosticsRescheduleSource.MOBILE
+    )
       .then((data) => {
+        console.log('poop');
         aphConsole.log({ data });
+
         const rescheduleResponse = g(data, 'data', 'rescheduleDiagnosticsOrder');
         if (rescheduleResponse?.status == 'true' && rescheduleResponse?.rescheduleCount <= 3) {
           setTimeout(() => refetchOrders(), 1000);
@@ -913,7 +962,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           slotBooked={selectedOrder?.slotDateTimeInUTC}
           addressDetails={selectedOrder?.patientAddressObj}
           onSchedule={(date1: Date, slotInfo: TestSlot) => {
-            rescheduleDate = slotInfo?.date;
+            rescheduleDate = date1; //whatever date has been selected
             rescheduleSlotObject = {
               internalSlots: slotInfo?.slotInfo?.internalSlots!,
               distanceCharges:
@@ -922,7 +971,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   : 0,
               slotStartTime: slotInfo?.slotInfo?.startTime!,
               slotEndTime: slotInfo?.slotInfo?.endTime!,
-              date: slotInfo?.date?.getTime(),
+              date: date1?.getTime(),
+              isPaidSlot: slotInfo?.slotInfo?.isPaidSlot,
               city: '', // not using city from this in order place API
             };
 

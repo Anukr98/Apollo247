@@ -977,9 +977,14 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   }
 
   function apiHandleErrorFunction(input: any, data: any, source: string) {
-    let message = data?.errorMessageToDisplay || string.diagnostics.bookingOrderFailedMessage;
+    console.log({ data });
+    //take overall object
+    let errorMsgToRead =
+      source == 'saveOrder' ? data?.[0]?.errorMessageToDisplay : data?.errorMessageToDisplay;
+    let message = errorMsgToRead || string.diagnostics.bookingOrderFailedMessage;
     //itemIds will only come in case of duplicate
-    let itemIds = data?.attributes?.itemids;
+    let itemIds =
+      source == 'saveOrder' ? data?.[0]?.attributes?.itemids : data?.attributes?.itemids;
     if (itemIds?.length! > 0) {
       showAphAlert?.({
         unDismissable: true,
@@ -1013,6 +1018,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   }
 
   const checkDuplicateItems_Level2 = (pricesForItem: any, getItemIds: any, cartItemPrices: any) => {
+    console.log('ayayay');
     //no inclusion level duplicates are found...
     if (getItemIds?.length > 0) {
       const getCartItemsId = cartItemPrices?.map((item: any) => item?.itemId);
