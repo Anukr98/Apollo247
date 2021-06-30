@@ -472,7 +472,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       .then((data: any) => {
         console.log({ data });
         const cancelResponse = g(data, 'data', 'cancelDiagnosticOrdersv2', 'status');
-        if (!!cancelResponse && cancelResponse == 'suceess') {
+        if (!!cancelResponse && (cancelResponse == 'suceess' || cancelResponse === true)) {
           setLoading?.(true);
           setTimeout(() => refetchOrders(), 1000);
           showAphAlert?.({
