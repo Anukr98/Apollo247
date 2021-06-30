@@ -108,6 +108,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     deliveryAddressCityId,
     setDeliveryAddressCityId,
     showSelectedPatient,
+    duplicateItemsArray,
+    setDuplicateItemsArray,
   } = useDiagnosticsCart();
 
   const { setAddresses: setMedAddresses } = useShoppingCart();
@@ -128,7 +130,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const [addressCityId, setAddressCityId] = useState<string>(deliveryAddressCityId);
   const [reportGenDetails, setReportGenDetails] = useState<any>([]);
   const [alsoAddListData, setAlsoAddListData] = useState<any>([]);
-  const [duplicateNameArray, setDuplicateNameArray] = useState([] as any);
+  const [duplicateNameArray, setDuplicateNameArray] = useState(duplicateItemsArray as any);
   const [showInclusions, setShowInclusions] = useState<boolean>(false);
   const [isServiceable, setIsServiceable] = useState<boolean>(false);
 
@@ -173,6 +175,11 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     props.navigation.goBack();
     return true;
   }
+
+  useEffect(() => {
+    setDuplicateNameArray(duplicateItemsArray);
+    setShowInclusions(true);
+  }, [duplicateItemsArray]);
 
   useEffect(() => {
     if ((isModifyFlow || deliveryAddressId != '') && isFocused) {
@@ -1070,6 +1077,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         //if not found at inclusion level, then show whatever is coming from api.
         if (higherPricesItems?.length == 0) {
           setLoading?.(false);
+          //for further processing
+          _navigateToAddressSelection();
         } else {
           //there can be case, that they are found in the inclusion level.
           const formattedHigherPriceItemName = higherPricesItems?.map(
@@ -1097,6 +1106,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           setShowInclusions(true);
           let arrayToSet = [...duplicateNameArray, array].flat(1);
           setDuplicateNameArray(arrayToSet);
+          setDuplicateItemsArray?.(arrayToSet);
 
           renderDuplicateMessage(duplicateTests, higherPricesName);
         }

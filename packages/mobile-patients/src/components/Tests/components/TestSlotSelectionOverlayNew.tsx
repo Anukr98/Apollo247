@@ -3,16 +3,13 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
   Morning,
   Afternoon,
-  Night,
   MorningSelected,
   AfternoonSelected,
-  NightSelected,
   EmptySlot,
   CrossPopup,
   PremiumIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
-  formatTestSlot,
   g,
   getTestSlotDetailsByTime,
   getUniqueTestSlots,
@@ -54,7 +51,6 @@ export interface TestSlotSelectionOverlayNewProps extends AphOverlayProps {
   itemId?: any[];
   source?: string;
   isVisible?: boolean;
-  addressDetails?: any;
   isPremium?: boolean;
   heading?: string;
   slotInput?: any; //define type
@@ -65,15 +61,8 @@ const { width, height } = Dimensions.get('window');
 const localFormatTestSlot = (slotTime: string) => moment(slotTime, 'hh:mm A')?.format('HH:mm');
 
 export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewProps> = (props) => {
-  const {
-    isTodaySlotUnavailable,
-    maxDate,
-    addressDetails,
-    showInOverlay,
-    slotInput,
-    isPremium,
-  } = props;
-  const { setLoading, loading } = useUIElements();
+  const { isTodaySlotUnavailable, maxDate, showInOverlay, slotInput, isPremium } = props;
+  const { setLoading } = useUIElements();
   const { cartItems } = useDiagnosticsCart();
   const [selectedDayTab, setSelectedDayTab] = useState(0);
   const [slotInfo, setSlotInfo] = useState<TestSlot | undefined>(props.slotInfo);
@@ -87,7 +76,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   const dt = moment(props.slotBooked!).format('YYYY-MM-DD') || null;
   const tm = moment(props.slotBooked!)?.format('hh:mm A') || null; //format changed from hh:mm
   const isSameDate = moment().isSame(moment(date), 'date');
-  const cartItemsWithId = cartItems?.map((item) => Number(item?.id)); //for reshedule
+
   const [selectedDate, setSelectedDate] = useState<string>(moment(date).format('DD') || '');
   const [isPrepaidSlot, setPrepaidSlot] = useState<boolean>(!!isPremium ? isPremium : false);
   const [newSelectedSlot, setNewSelectedSlot] = useState(
@@ -155,11 +144,11 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
         //get the slots array
         const diagnosticSlots = getSlotResponse?.available_slots || [];
 
-        const timeToCompare = !!tm && moment(tm, 'hh:mm A')?.format('HH:mm');
         const updatedDiagnosticSlots =
           moment(dateToCheck)?.format('YYYY-MM-DD') == dt && props.isReschdedule
-            ? diagnosticSlots?.filter((item) => item?.slotDetail?.slotDisplayTime != timeToCompare)
+            ? diagnosticSlots?.filter((item) => item?.slotDetail?.slotDisplayTime != tm)
             : diagnosticSlots;
+
         let slotsArray: any = [];
         updatedDiagnosticSlots?.forEach((item) => {
           slotsArray.push({
@@ -167,7 +156,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
               endTime: item?.slotDetail?.slotDisplayTime,
               isPaidSlot: item?.isPaidSlot,
               status: 'empty',
-              internalSlots: item?.slotDetail?.internalSlots,
+              internalSlots: item?.slotDetail?.internalSlots!,
               startTime: item?.slotDetail?.slotDisplayTime,
               distanceCharges: !!item?.isPaidSlot && item?.isPaidSlot ? getDistanceCharges : 0, //would be overall
             } as any,

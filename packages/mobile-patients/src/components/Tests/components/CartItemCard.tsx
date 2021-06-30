@@ -41,6 +41,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     );
   const filterInclusions =
     duplicateArray?.length > 0 && inclusionItem?.filter((item: string) => item != '');
+
   const inclusionItemToShow =
     filterInclusions?.length > 0 && filterInclusions && filterInclusions?.join(', ');
 
@@ -82,14 +83,9 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
         </View>
         {!!reportGenItem && renderReportTat_preTestingReqrmnt()}
         {comingFrom == AppRoutes.CartPage && showCartInclusions && !!inclusionItemToShow ? (
-          <View
-            style={[
-              styles.reportGenViewStyle,
-              { backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG },
-            ]}
-          >
+          <View style={styles.inclusionView}>
             <TestInfoIcon style={styles.timeIconStyle} />
-            <Text style={styles.reportGenTextStyle}>Includes {inclusionItemToShow}</Text>
+            <Text style={styles.inclusionText}>Includes {inclusionItemToShow}</Text>
           </View>
         ) : null}
       </TouchableOpacity>
@@ -113,7 +109,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
               styles.reportGenViewStyle,
               {
                 maxWidth: 180,
-                marginLeft: !!reportGenItem?.itemReportTat ? 10 : 0,
+                marginLeft: !!reportGenItem?.itemReportTat ? 10 : -10,
               },
             ]}
           >
@@ -206,5 +202,16 @@ const styles = StyleSheet.create({
     paddingRight: 16,
     paddingBottom: 10,
     paddingTop: 6,
+  },
+  inclusionView: {
+    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  inclusionText: {
+    ...theme.viewStyles.text('M', 10, theme.colors.SHERPA_BLUE, 0.6, 16),
+    padding: 8,
+    width: '87%',
   },
 });

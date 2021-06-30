@@ -42,11 +42,10 @@ export interface DiagnosticClinic extends Clinic {
 export interface DiagnosticSlot {
   slotStartTime: string;
   slotEndTime: string;
-  city: string;
   date: number; // timestamp
   selectedDate?: any;
   isPaidSlot: boolean;
-  internalSlot: string;
+  internalSlots: (string | null)[] | null;
   distanceCharges?: number;
 }
 
@@ -199,6 +198,9 @@ export interface DiagnosticsCartContextProps {
 
   distanceCharges: number;
   setDistanceCharges: ((id: number) => void) | null;
+
+  duplicateItemsArray: [];
+  setDuplicateItemsArray: ((items: any | []) => void) | null;
 }
 
 export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>({
@@ -307,6 +309,8 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   setServiceabilityObject: null,
   selectedPatient: null,
   showSelectedPatient: null,
+  duplicateItemsArray: [],
+  setDuplicateItemsArray: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -412,6 +416,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const [selectedPatient, showSelectedPatient] = useState<
     DiagnosticsCartContextProps['selectedPatient']
   >(null);
+
+  const [duplicateItemsArray, setDuplicateItemsArray] = useState<
+    DiagnosticsCartContextProps['duplicateItemsArray']
+  >([]);
 
   const setDiagnosticClinic: DiagnosticsCartContextProps['setDiagnosticClinic'] = (item) => {
     _setDiagnosticClinic(item);
@@ -671,6 +679,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setModifiedOrder({});
     setServiceabilityObject({});
     showSelectedPatient(null);
+    setDuplicateItemsArray([]);
   };
 
   useEffect(() => {
@@ -812,6 +821,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         setServiceabilityObject,
         selectedPatient,
         showSelectedPatient,
+        duplicateItemsArray,
+        setDuplicateItemsArray,
       }}
     >
       {props.children}

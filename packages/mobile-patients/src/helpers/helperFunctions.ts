@@ -120,19 +120,17 @@ interface AphConsole {
 }
 
 export interface TestSlot {
-  employeeCode: string;
-  employeeName: string;
-  diagnosticBranchCode: string;
-  date: Date;
-  slotInfo: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo;
+  date: Date | number;
+  slotInfo: SlotInfo;
 }
 
-export interface TestSlotWithArea {
-  employeeCode: string;
-  employeeName: string;
-  diagnosticBranchCode: string;
-  date: Date;
-  slotInfo: getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots;
+export interface SlotInfo {
+  endTime: string;
+  isPaidSlot: boolean | null;
+  status: string;
+  internalSlots:  string | null;
+  startTime: string;
+  distanceCharges:  number | null
 }
 
 export enum EDIT_DELETE_TYPE {
@@ -1520,24 +1518,6 @@ export const getUniqueTestSlots = (slots: any[]) => {
     });
 };
 
-export const getUniqueTestSlotsWithArea = (slots: TestSlotWithArea[]) => {
-  return slots
-    .filter(
-      (item, idx, array) =>
-        array.findIndex((_item) => _item.slotInfo.Timeslot == item.slotInfo.Timeslot) == idx
-    )
-    .map((val) => ({
-      startTime: val.slotInfo.Timeslot!,
-      endTime: val.slotInfo.Timeslot!,
-    }))
-    .sort((a, b) => {
-      if (moment(a.startTime.trim(), 'HH:mm').isAfter(moment(b.startTime.trim(), 'HH:mm')))
-        return 1;
-      else if (moment(b.startTime.trim(), 'HH:mm').isAfter(moment(a.startTime.trim(), 'HH:mm')))
-        return -1;
-      return 0;
-    });
-};
 
 const webengage = new WebEngage();
 
@@ -2987,3 +2967,17 @@ export const setAsyncDiagnosticLocation = (address: any) => {
     AsyncStorage.setItem('DiagnosticLocation', JSON.stringify(addressSelected));
   }
 };
+
+export  const checkPatientAge = (_selectedPatient: any, fromNewProfile: boolean = false) => {
+    let age = !!_selectedPatient?.dateOfBirth ? getAge(_selectedPatient?.dateOfBirth) : null;
+    if (age && age <= 10) {
+      Alert.alert(string.common.uhOh, string.diagnostics.minorAgeText, [
+        {
+          text: 'OK',
+          onPress: () => {},
+        },
+      ]);
+      return true;
+    }
+    return false;
+  };

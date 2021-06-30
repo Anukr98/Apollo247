@@ -1,4 +1,8 @@
-import { getAge, nameFormater } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import {
+  getAge,
+  nameFormater,
+  checkPatientAge,
+} from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -52,6 +56,15 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
       : '';
     const showGreenBg = showSelectedPatient?.id === item?.id;
 
+    function _selectPatient(patient: any) {
+      const isInvalidUser = checkPatientAge(patient);
+      if (isInvalidUser) {
+        _setSelectedPatient?.(null);
+      } else {
+        _setSelectedPatient?.(item);
+      }
+    }
+
     const itemViewStyle = [
       styles.patientItemViewStyle,
       index === 0 && { marginTop: 12 },
@@ -62,7 +75,7 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
         <TouchableOpacity
           activeOpacity={1}
           style={itemViewStyle}
-          onPress={() => _setSelectedPatient(item)}
+          onPress={() => _selectPatient(item)}
         >
           <Text style={[styles.patientNameTextStyle, showGreenBg && { color: WHITE }]}>
             {patientSalutation} {patientName}
@@ -93,7 +106,6 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
   const renderCartItemList = (test: DiagnosticsCartItem, index: number) => {
     const itemName = test?.name;
     const priceToShow = diagnosticsDisplayPrice(test, isCircleSubscribed)?.priceToShow;
-
     return (
       <TouchableOpacity
         onPress={() => _selectCartItem()}

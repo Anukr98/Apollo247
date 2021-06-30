@@ -25,7 +25,6 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { diagnosticGetCustomizedSlotsV2 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { createPatientAddressObject } from '@aph/mobile-patients/src/utils/commonUtils';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { TestPremiumSlotOverlay } from '../components/TestPremiumSlotOverlay';
 
 export interface AddressSlotSelectionProps extends NavigationScreenProps {
   reportGenDetails: any;
@@ -39,7 +38,6 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
     addresses,
     deliveryAddressId,
     setDeliveryAddressId,
-    diagnosticSlot,
     setDiagnosticSlot,
     setCartPagePopulated,
     selectedPatient,
@@ -219,9 +217,11 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
         const diagnosticSlots = getSlotResponse?.available_slots || [];
 
         const diagnosticSlotsToShow = diagnosticSlots;
+
         let slotsArray: any = [];
         diagnosticSlotsToShow?.forEach((item) => {
           slotsArray.push({
+            date: date,
             slotInfo: {
               endTime: item?.slotDetail?.slotDisplayTime,
               isPaidSlot: item?.isPaidSlot,
@@ -249,7 +249,7 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
 
           setDiagnosticSlot?.({
             isPaidSlot: slotDetails?.isPaidSlot,
-            internalSlot: slotDetails?.internalSlot,
+            internalSlot: slotDetails?.internalSlot!,
             slotStartTime: slotDetails?.slotInfo?.startTime!,
             slotEndTime: slotDetails?.slotInfo?.endTime!,
             date: new Date(dateToCheck)?.getTime(), //date,
@@ -334,10 +334,9 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
         slots={slots}
         isPremium={selectedTimeSlot?.slotInfo?.isPaidSlot}
         slotInfo={selectedTimeSlot}
-        addressDetails={isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr}
         slotInput={slotsInput}
         //add a type here
-        onSchedule={(date: Date, slotInfo: any, currentDate: Date) => {
+        onSchedule={(date: Date, slotInfo: TestSlot, currentDate: Date | undefined) => {
           console.log({ slotInfo });
           setDate(date);
           setselectedTimeSlot(slotInfo);
@@ -352,14 +351,12 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
             slotEndTime: slotInfo?.slotInfo?.endTime!,
             date: date?.getTime(),
             selectedDate: date,
-            city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
           });
           setWebEnageEventForAppointmentTimeSlot('Manual', slotInfo);
         }}
       />
     ) : null;
   };
-  const [isVisible, setIsVisible] = useState<boolean>(false);
 
   const renderMainView = () => {
     return (

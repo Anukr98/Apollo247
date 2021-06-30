@@ -13,9 +13,9 @@ import {
 import {
   formatAddressToLocation,
   g,
-  getAge,
   isEmptyObject,
   nameFormater,
+  checkPatientAge,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   DiagnosticsCartItem,
@@ -397,21 +397,6 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     );
   };
 
-  const checkPatientAge = (_selectedPatient: any, fromNewProfile: boolean = false) => {
-    let age = !!_selectedPatient?.dateOfBirth ? getAge(_selectedPatient?.dateOfBirth) : null;
-    if (age && age <= 10) {
-      showSelectedPatient?.(null);
-      Alert.alert(string.common.uhOh, string.diagnostics.minorAgeText, [
-        {
-          text: 'OK',
-          onPress: () => {},
-        },
-      ]);
-      return true;
-    }
-    return false;
-  };
-
   const changeCurrentProfile = (_selectedPatient: any, _showPatientDetailsOverlay: boolean) => {
     if (currentPatient?.id === _selectedPatient?.id) {
       return;
@@ -474,6 +459,15 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     );
   };
 
+  function _selectedPatientAction(item: any) {
+    const isInValidUser = checkPatientAge(item);
+    if (isInValidUser) {
+      showSelectedPatient?.(null);
+    } else {
+      showSelectedPatient?.(item);
+    }
+  }
+
   const renderPatientsList = () => {
     return (
       <View style={styles.patientListView}>
@@ -481,7 +475,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
           itemsInCart={cartItems}
           isCircleSubscribed={isDiagnosticCircleSubscription}
           patientSelected={selectedPatient}
-          onPressSelectedPatient={(item) => showSelectedPatient?.(item)}
+          onPressSelectedPatient={(item) => _selectedPatientAction(item)}
         />
       </View>
     );

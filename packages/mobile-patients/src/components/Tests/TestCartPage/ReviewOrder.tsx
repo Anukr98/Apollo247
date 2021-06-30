@@ -178,6 +178,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     distanceCharges,
     setDistanceCharges,
     selectedPatient,
+    duplicateItemsArray,
+    setDuplicateItemsArray,
   } = useDiagnosticsCart();
 
   const {
@@ -198,6 +200,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
   const { setLoading, showAphAlert, hideAphAlert, loading } = useUIElements();
   const client = useApolloClient();
+
   var modifyPricesForItemArray, pricesForItemArray;
   const slotsInput = props.navigation.getParam('slotsInput');
   const selectedTimeSlot = props.navigation.getParam('selectedTimeSlot');
@@ -209,7 +212,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const [phleboMin, setPhleboMin] = useState(0);
   const [showAllPreviousItems, setShowAllPreviousItems] = useState<boolean>(true);
   const [isHcApiCalled, setHcApiCalled] = useState<boolean>(false);
-  const [duplicateNameArray, setDuplicateNameArray] = useState([] as any);
+  const [duplicateNameArray, setDuplicateNameArray] = useState(duplicateItemsArray as any);
   const [showInclusions, setShowInclusions] = useState<boolean>(false);
   const [orderDetails, setOrderDetails] = useState<orderDetails>();
   const [isVisible, setIsVisible] = useState<boolean>(showPaidPopUp);
@@ -1095,6 +1098,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       onChangeCartItems(updatedCartItems, duplicateTests, itemIdToRemove);
       setShowInclusions(true);
       setDuplicateNameArray(arrayToSet);
+      setDuplicateItemsArray?.(arrayToSet);
 
       renderDuplicateMessage(duplicateTests, higherPricesName);
     } else {
@@ -1114,6 +1118,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         //disable the cta
         setLoading?.(false);
         hideAphAlert?.();
+        setDuplicateNameArray?.(duplicateNameArray);
         props.navigation.navigate(AppRoutes.CartPage, {
           duplicateNameArray: duplicateNameArray,
           showInclusion: showInclusions,

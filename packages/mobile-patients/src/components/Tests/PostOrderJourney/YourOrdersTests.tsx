@@ -3,20 +3,11 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import {
-  createAddressObject,
-  createPatientAddressObject,
-  sourceHeaders,
-} from '@aph/mobile-patients/src/utils/commonUtils';
+import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
-  GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
-  RESCHEDULE_DIAGNOSTIC_ORDER,
   GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
   GET_PHLOBE_DETAILS,
-  DIAGNOSITC_EXOTEL_CALLING,
-  DIAGNOSTIC_RESCHEDULE_V2,
-  DIAGNOSTIC_CANCEL_V2,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticOrdersListByMobile,
@@ -26,12 +17,11 @@ import {
   getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
-import { CANCEL_DIAGNOSTIC_ORDER } from '@aph/mobile-patients/src/graphql/profiles';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -45,16 +35,12 @@ import {
 import { Down, DownO, InfoIconRed } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NavigationScreenProps } from 'react-navigation';
 import {
-  CancellationDiagnosticsInput,
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
   DIAGNOSTIC_ORDER_STATUS,
   MedicalRecordType,
-  RescheduleDiagnosticsInput,
   Gender,
   DiagnosticsRescheduleSource,
   DiagnosticLineItem,
-  patientObjWithLineItems,
-  slotInfo,
   CancellationDiagnosticsInputv2,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -76,42 +62,31 @@ import {
   DIAGNOSTIC_ORDER_FAILED_STATUS,
   TestCancelReasons,
   TestReschedulingReasons,
-  DIAGNOSTIC_CONFIRMED_STATUS,
   TestCancelReasonsPre,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import _ from 'lodash';
-import {
-  cancelDiagnosticsOrder,
-  cancelDiagnosticsOrderVariables,
-} from '@aph/mobile-patients/src/graphql/types/cancelDiagnosticsOrder';
 import { TestSlotSelectionOverlayNew } from '@aph/mobile-patients/src/components/Tests/components/TestSlotSelectionOverlayNew';
-import {
-  rescheduleDiagnosticsOrder,
-  rescheduleDiagnosticsOrderVariables,
-} from '@aph/mobile-patients/src/graphql/types/rescheduleDiagnosticsOrder';
 import {
   DiagnosticPhleboCallingClicked,
   DiagnosticAddTestClicked,
   DiagnosticRescheduleOrder,
   DiagnosticViewReportClicked,
 } from '@aph/mobile-patients/src/components/Tests/Events';
-import {
-  getDiagnosticSlotsCustomized,
-  getDiagnosticSlotsCustomizedVariables,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsCustomized';
 import { OrderTestCard } from '@aph/mobile-patients/src/components/Tests/components/OrderTestCard';
 import {
+  diagnosticCancelOrder,
+  diagnosticExotelCall,
   diagnosticGetCustomizedSlotsV2,
+  diagnosticRescheduleOrder,
   getDiagnosticRefundOrders,
   getPatientPrismMedicalRecordsApi,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { Overlay } from 'react-native-elements';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList as orderListByMobile } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import {
@@ -119,18 +94,6 @@ import {
   getOrderPhleboDetailsBulkVariables,
 } from '@aph/mobile-patients/src/graphql/types/getOrderPhleboDetailsBulk';
 import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
-import {
-  diagnosticExotelCalling,
-  diagnosticExotelCallingVariables,
-} from '@aph/mobile-patients/src/graphql/types/diagnosticExotelCalling';
-import {
-  rescheduleDiagnosticsOrderv2,
-  rescheduleDiagnosticsOrderv2Variables,
-} from '@aph/mobile-patients/src/graphql/types/rescheduleDiagnosticsOrderv2';
-import {
-  cancelDiagnosticOrdersv2,
-  cancelDiagnosticOrdersv2Variables,
-} from '@aph/mobile-patients/src/graphql/types/cancelDiagnosticOrdersv2';
 
 type orderList = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList;
 export interface YourOrdersTestProps extends NavigationScreenProps {
@@ -187,7 +150,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const client = useApolloClient();
   const [orders, setOrders] = useState<any>(props.navigation.getParam('orders'));
   const [isPaitentList, setIsPaitentList] = useState<boolean>(false);
-  const [activeOrder, setActiveOrder] = useState<orderList>('');
+  const [activeOrder, setActiveOrder] = useState<orderList>();
   const [selectedPaitent, setSelectedPaitent] = useState<string>('All');
   const [selectedPaitentId, setSelectedPaitentId] = useState<string>('');
   const [orderListData, setOrderListData] = useState<(orderListByMobile | null)[] | null>([]);
@@ -207,57 +170,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       slotStartTime: any;
       slotEndTime?: string;
       date?: number;
-      employeeSlotId?: string;
-      diagnosticBranchCode?: string;
-      diagnosticEmployeeCode?: string;
-      city?: string;
+      internalSlots: (string | null)[] | null;
+      isPaidSlot: boolean;
+      distanceCharges: number;
     };
-
-  const cancelOrder = (cancellationDiagnosticsInput: CancellationDiagnosticsInput) =>
-    client.mutate<cancelDiagnosticsOrder, cancelDiagnosticsOrderVariables>({
-      mutation: CANCEL_DIAGNOSTIC_ORDER,
-      context: { sourceHeaders },
-      variables: { cancellationDiagnosticsInput: cancellationDiagnosticsInput },
-      fetchPolicy: 'no-cache',
-    });
-
-  const cancelOrderV2 = (cancellationDiagnosticsInput: CancellationDiagnosticsInputv2) =>
-    client.mutate<cancelDiagnosticOrdersv2, cancelDiagnosticOrdersv2Variables>({
-      mutation: DIAGNOSTIC_CANCEL_V2,
-      context: { sourceHeaders },
-      variables: { cancellationDiagnosticsInput: cancellationDiagnosticsInput },
-      fetchPolicy: 'no-cache',
-    });
-
-  const rescheduleOrderV2 = (
-    parentOrderID: string,
-    slotInfo: slotInfo,
-    selectedDate: Date,
-    comment: string,
-    reason: string,
-    source: DiagnosticsRescheduleSource
-  ) =>
-    client.mutate<rescheduleDiagnosticsOrderv2, rescheduleDiagnosticsOrderv2Variables>({
-      mutation: DIAGNOSTIC_RESCHEDULE_V2,
-      variables: {
-        parentOrderID: parentOrderID,
-        slotInfo: slotInfo,
-        selectedDate: selectedDate,
-        comment: comment,
-        reason: reason,
-        source: source,
-      },
-      fetchPolicy: 'no-cache',
-    });
-
-  const callDiagnosticExotelCalling = (orderId: string) =>
-    client.mutate<diagnosticExotelCalling, diagnosticExotelCallingVariables>({
-      mutation: DIAGNOSITC_EXOTEL_CALLING,
-      context: {
-        sourceHeaders,
-      },
-      variables: { orderId: orderId },
-    });
 
   const handleBack = () => {
     if (source === AppRoutes.OrderStatus) {
@@ -330,7 +246,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           if (currentOffset == 1) {
             setResultList(ordersList);
           } else {
-            setResultList(resultList?.concat(ordersList));
+            setResultList(resultList?.concat(ordersList)!);
           }
           const finalList = currentOffset == 1 ? ordersList : resultList?.concat(ordersList);
           const filteredOrderList =
@@ -467,8 +383,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       patientId: String(selectedOrder?.patientId),
       reason: reason,
     };
-    console.log({ orderCancellationInput });
-    cancelOrderV2(orderCancellationInput)
+    diagnosticCancelOrder(client, orderCancellationInput)
       .then((data: any) => {
         console.log({ data });
         const cancelResponse = g(data, 'data', 'cancelDiagnosticOrdersv2', 'status');
@@ -559,93 +474,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       return filterPreTestingData?.length == 0 ? false : true;
     }
     return false;
-  };
-
-  const checkSlotSelection = () => {
-    console.log({ selectedOrder });
-    const dt = moment(selectedOrder?.slotDateTimeInUTC)?.format('YYYY-MM-DD') || null;
-    const tm = moment(selectedOrder?.slotDateTimeInUTC)?.format('hh:mm A') || null; //format changed from hh:mm
-    const timeToCompare = !!tm && moment(tm, 'hh:mm A')?.format('HH:mm');
-
-    const getAddressObject = createAddressObject(selectedOrder?.patientAddressObj);
-
-    const orderItemId = selectedOrder?.diagnosticOrderLineItems?.map((item) =>
-      Number(item?.itemId)
-    );
-
-    client
-      .query<getDiagnosticSlotsCustomized, getDiagnosticSlotsCustomizedVariables>({
-        query: GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
-        fetchPolicy: 'no-cache',
-        variables: {
-          selectedDate: moment(date).format('YYYY-MM-DD'), //whether current date or the one which we gt fron diagnostiv api
-          areaID: Number(selectedOrder?.areaId!),
-          itemIds: orderItemId!,
-          patientAddressObj: getAddressObject,
-        },
-      })
-      .then(({ data }) => {
-        const diagnosticSlots = g(data, 'getDiagnosticSlotsCustomized', 'slots') || [];
-
-        const updatedDiagnosticSlots =
-          moment(date).format('YYYY-MM-DD') == dt
-            ? diagnosticSlots?.filter((item) => item?.Timeslot != timeToCompare)
-            : diagnosticSlots;
-        const slotsArray: TestSlot[] = [];
-        updatedDiagnosticSlots?.forEach((item) => {
-          slotsArray.push({
-            employeeCode: 'apollo_employee_code',
-            employeeName: 'apollo_employee_name',
-            slotInfo: {
-              endTime: item?.Timeslot!,
-              status: 'empty',
-              startTime: item?.Timeslot!,
-              slot: item?.TimeslotID,
-            },
-            date: date,
-            diagnosticBranchCode: 'apollo_route',
-          } as TestSlot);
-        });
-
-        const isSameDate = moment().isSame(moment(date), 'date');
-        if (isSameDate && slotsArray?.length == 0) {
-          setTodaySlotNotAvailable(true);
-          setDisplaySchedule(true);
-        } else {
-          setDisplaySchedule(true);
-          todaySlotNotAvailable && setTodaySlotNotAvailable(false);
-        }
-
-        setSlots(slotsArray);
-        const slotDetails = slotsArray?.[0];
-        slotsArray?.length && setselectedTimeSlot(slotDetails);
-      })
-      .catch((e) => {
-        CommonBugFender('TestsCart_checkServicability', e);
-        setDiagnosticSlot && setDiagnosticSlot(null);
-        setselectedTimeSlot(undefined);
-        const noHubSlots = g(e, 'graphQLErrors', '0', 'message') === 'NO_HUB_SLOTS';
-        setLoading?.(false);
-        if (noHubSlots) {
-          showAphAlert!({
-            title: string.common.uhOh,
-            description: `Sorry! There are no slots available on ${moment(date).format(
-              'DD MMM, YYYY'
-            )}. Please choose another date.`,
-            onPressOk: () => {
-              setDisplaySchedule(true);
-              hideAphAlert && hideAphAlert();
-            },
-          });
-        } else {
-          setLoading?.(false);
-          //not trigger
-          showAphAlert?.({
-            title: string.common.uhOh,
-            description: string.diagnostics.areaNotAvailableMessage,
-          });
-        }
-      });
   };
 
   function populateMrp(item: any) {
@@ -748,7 +576,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         const diagnosticSlots = getSlotResponse?.available_slots || [];
         const updatedDiagnosticSlots =
           moment(date).format('YYYY-MM-DD') == dt
-            ? diagnosticSlots?.filter((item) => item?.slotDetail?.slotDisplayTime != timeToCompare)
+            ? diagnosticSlots?.filter((item) => item?.slotDetail?.slotDisplayTime != tm)
             : diagnosticSlots;
 
         let slotsArray: any = [];
@@ -837,6 +665,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
     const dateTimeInUTC = moment(formattedDate + ' ' + formatTime).toISOString();
     const dateTimeToShow = formattedDate + ', ' + moment(dateTimeInUTC).format('hh:mm A');
+
     const comment = '';
     const orderId = !!selectedOrder?.parentOrderId
       ? selectedOrder?.parentOrderId
@@ -855,7 +684,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       formattedDate,
       String(selectedOrder?.displayId)
     );
-    rescheduleOrderV2(
+    diagnosticRescheduleOrder(
+      client,
       String(orderId),
       slotInfo,
       formattedDate,
@@ -956,22 +786,18 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           isReschdedule={true}
           itemId={orderItemId}
           slotBooked={selectedOrder?.slotDateTimeInUTC}
-          addressDetails={selectedOrder?.patientAddressObj}
           onSchedule={(date1: Date, slotInfo: TestSlot, currentDate: Date | undefined) => {
-            console.log({ date1 });
-            console.log({ currentDate });
             rescheduleDate = date1; //whatever date has been selected
             rescheduleSlotObject = {
               internalSlots: slotInfo?.slotInfo?.internalSlots!,
               distanceCharges:
-                !!slotInfo?.slotInfo?.isPaidSlot && slotInfo?.slotInfo?.isPaidSlot
+                !!slotInfo?.slotInfo?.isPaidSlot && slotInfo?.slotInfo?.isPaidSlot!
                   ? slotInfo?.slotInfo?.distanceCharges!
                   : 0,
               slotStartTime: slotInfo?.slotInfo?.startTime!,
               slotEndTime: slotInfo?.slotInfo?.endTime!,
               date: date1?.getTime(),
-              isPaidSlot: slotInfo?.slotInfo?.isPaidSlot,
-              city: '', // not using city from this in order place API
+              isPaidSlot: !!slotInfo?.slotInfo?.isPaidSlot ? slotInfo?.slotInfo?.isPaidSlot : false,
             };
 
             setDate(currentDate!);
@@ -985,8 +811,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               slotStartTime: slotInfo?.slotInfo?.startTime!,
               slotEndTime: slotInfo?.slotInfo?.endTime!,
               date: slotInfo?.date?.getTime(),
-              city: '', // not using city from this in order place API
+              selectedDate: date1,
+              isPaidSlot: slotInfo?.slotInfo?.isPaidSlot!,
             });
+
             setDisplaySchedule(false);
             //call rechedule api
             setTimeout(() => onReschduleDoneSelected(), 100);
@@ -1463,7 +1291,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   async function _callDiagnosticExotelApi(phoneNumber: string, orderId: string) {
     try {
       setLoading?.(true);
-      const exotelResponse = await callDiagnosticExotelCalling(orderId);
+      const exotelResponse = await diagnosticExotelCall(client, orderId);
       if (exotelResponse?.data?.diagnosticExotelCalling) {
         const callingResponse = exotelResponse?.data?.diagnosticExotelCalling;
         if (callingResponse?.success) {
@@ -1700,7 +1528,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               !!activeOrder?.labReportURL ? 'Yes' : 'No',
               'Download Report PDF'
             );
-            _onPressViewReport(activeOrder);
+            _onPressViewReport(activeOrder!);
           }}
         />
       )}

@@ -44,6 +44,9 @@ import {
   CREATE_INTERNAL_ORDER,
   MODIFY_DIAGNOSTIC_ORDERS,
   GET_DIAGNOSTIC_PHLEBO_CHARGES,
+  DIAGNOSTIC_CANCEL_V2,
+  DIAGNOSTIC_RESCHEDULE_V2,
+  DIAGNOSITC_EXOTEL_CALLING,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -103,7 +106,10 @@ import {
   DiagnosticsServiceability,
   OrderCreate,
   saveModifyDiagnosticOrderInput,
-  ChargeDetailsInput
+  ChargeDetailsInput,
+  CancellationDiagnosticsInputv2,
+  DiagnosticsRescheduleSource, 
+  slotInfo
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { insertMessageVariables } from '@aph/mobile-patients/src/graphql/types/insertMessage';
 import {
@@ -168,12 +174,15 @@ import {
 import { savePhleboFeedbackVariables, savePhleboFeedback_savePhleboFeedback } from '@aph/mobile-patients/src/graphql/types/savePhleboFeedback';
 import {  processDiagnosticHCOrder, processDiagnosticHCOrderVariables } from '@aph/mobile-patients/src/graphql/types/processDiagnosticHCOrder';
 import { createOrder, createOrderVariables } from '@aph/mobile-patients/src/graphql/types/createOrder';
-import { getDiagnosticServiceability, getDiagnosticServiceabilityVariables } from '../graphql/types/getDiagnosticServiceability';
-import { saveDiagnosticBookHCOrderv2, saveDiagnosticBookHCOrderv2Variables } from '../graphql/types/saveDiagnosticBookHCOrderv2';
-import { getCustomizedSlotsv2, getCustomizedSlotsv2Variables } from '../graphql/types/getCustomizedSlotsv2';
-import { createOrderInternal, createOrderInternalVariables } from '../graphql/types/createOrderInternal';
-import { saveModifyDiagnosticOrder, saveModifyDiagnosticOrderVariables } from '../graphql/types/saveModifyDiagnosticOrder';
-import { getPhleboCharges, getPhleboChargesVariables } from '../graphql/types/getPhleboCharges';
+import { getDiagnosticServiceability, getDiagnosticServiceabilityVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticServiceability';
+import { saveDiagnosticBookHCOrderv2, saveDiagnosticBookHCOrderv2Variables } from '@aph/mobile-patients/src/graphql/types/saveDiagnosticBookHCOrderv2';
+import { getCustomizedSlotsv2, getCustomizedSlotsv2Variables } from '@aph/mobile-patients/src/graphql/types/getCustomizedSlotsv2';
+import { createOrderInternal, createOrderInternalVariables } from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
+import { saveModifyDiagnosticOrder, saveModifyDiagnosticOrderVariables } from '@aph/mobile-patients/src/graphql/types/saveModifyDiagnosticOrder';
+import { getPhleboCharges, getPhleboChargesVariables } from '@aph/mobile-patients/src/graphql/types/getPhleboCharges';
+import { cancelDiagnosticOrdersv2, cancelDiagnosticOrdersv2Variables } from '@aph/mobile-patients/src/graphql/types/cancelDiagnosticOrdersv2';
+import { rescheduleDiagnosticsOrderv2, rescheduleDiagnosticsOrderv2Variables } from '@aph/mobile-patients/src/graphql/types/rescheduleDiagnosticsOrderv2';
+import { diagnosticExotelCalling, diagnosticExotelCallingVariables } from '@aph/mobile-patients/src/graphql/types/diagnosticExotelCalling';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -1255,3 +1264,39 @@ export const diagnosticSaveModifyOrder = (client: ApolloClient<object>,orderInfo
     variables: { saveModifyDiagnosticOrder: orderInfo }
   });
 };
+
+export const diagnosticCancelOrder = (client: ApolloClient<object>, orderInput:CancellationDiagnosticsInputv2) =>{
+  return  client.mutate<cancelDiagnosticOrdersv2, cancelDiagnosticOrdersv2Variables>({
+    mutation: DIAGNOSTIC_CANCEL_V2,
+    context: { sourceHeaders },
+    variables: { cancellationDiagnosticsInput: orderInput },
+    fetchPolicy: 'no-cache',
+  });
+}
+
+export const diagnosticRescheduleOrder = (client: ApolloClient<object>,  parentOrderID: string,slotInfo: slotInfo,selectedDate: any ,comment: string,reason: string,source: DiagnosticsRescheduleSource) =>{
+  return client.mutate<rescheduleDiagnosticsOrderv2, rescheduleDiagnosticsOrderv2Variables>({
+    mutation: DIAGNOSTIC_RESCHEDULE_V2,
+    variables: {
+      parentOrderID: parentOrderID,
+      slotInfo: slotInfo,
+      selectedDate: selectedDate,
+      comment: comment,
+      reason: reason,
+      source: source,
+    },
+    context: { sourceHeaders },
+    fetchPolicy: 'no-cache',
+  });
+}
+
+export const diagnosticExotelCall = (client : ApolloClient<object>, orderId: string) =>{
+ return client.mutate<diagnosticExotelCalling, diagnosticExotelCallingVariables>({
+    mutation: DIAGNOSITC_EXOTEL_CALLING,
+    context: {
+      sourceHeaders,
+    },
+    variables: { orderId: orderId },
+  });
+}
+
