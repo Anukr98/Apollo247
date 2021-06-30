@@ -618,6 +618,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         order_AutoId: orderAutoId,
         LOB: 'Pharmacy',
       };
+      postCleverTapEvent(
+        CleverTapEventName.PHARMACY_PAYMENT_INSTRUMENT_SELECTED,
+        paymentEventAttributes
+      );
       postWebEngageEvent(WebEngageEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
       postFirebaseEvent(FirebaseEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);

@@ -196,7 +196,7 @@ export function PharmacyCartViewedEvent(
 }
 
 export function PricemismatchEvent(cartItem: ShoppingCartItem, id: string, storeItemPrice: number) {
-  const eventAttributes: WebEngageEvents[WebEngageEventName.SKU_PRICE_MISMATCH] = {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.SKU_PRICE_MISMATCH]|CleverTapEvents[CleverTapEventName.PHARMACY_CART_SKU_PRICE_MISMATCH] = {
     'Mobile Number': id,
     'Sku Id': cartItem.id,
     'Magento MRP': cartItem.price,
@@ -204,6 +204,7 @@ export function PricemismatchEvent(cartItem: ShoppingCartItem, id: string, store
     'Store API MRP': storeItemPrice,
     'Price Change In Cart': 'Yes',
   };
+  postCleverTapEvent(CleverTapEventName.PHARMACY_CART_SKU_PRICE_MISMATCH,eventAttributes);
   postWebEngageEvent(WebEngageEventName.SKU_PRICE_MISMATCH, eventAttributes);
 }
 
@@ -223,12 +224,13 @@ export function postTatResponseFailureEvent(
 }
 
 export function postwebEngageProductRemovedEvent(cartItem: ShoppingCartItem, id: string) {
-  const eventAttributes: WebEngageEvents[WebEngageEventName.ITEMS_REMOVED_FROM_CART] = {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.ITEMS_REMOVED_FROM_CART]|CleverTapEvents[CleverTapEventName.PHARMACY_ITEMS_REMOVED_FROM_CART] = {
     'Customer ID': id,
     'No. of items': cartItem.quantity,
     'Product ID': cartItem.id,
     'Product Name': cartItem.name,
   };
+  postCleverTapEvent(CleverTapEventName.PHARMACY_ITEMS_REMOVED_FROM_CART,eventAttributes);
   postWebEngageEvent(WebEngageEventName.ITEMS_REMOVED_FROM_CART, eventAttributes);
   postAppsFlyerEvent(AppsFlyerEventName.ITEMS_REMOVED_FROM_CART, eventAttributes);
 
@@ -246,6 +248,11 @@ export function applyCouponClickedEvent(id: string, itemsInCart?: string) {
     'Customer ID': id,
     'Cart Items': itemsInCart || '',
   };
+  const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_COUPON_ACTION] = {
+    'Customer ID': id,
+    'Cart Items': itemsInCart || undefined,
+  };
+  postCleverTapEvent(CleverTapEventName.PHARMACY_COUPON_ACTION,cleverTapEventAttributes);
   postWebEngageEvent(WebEngageEventName.CART_APPLY_COUPON_CLCIKED, eventAttributes);
 }
 

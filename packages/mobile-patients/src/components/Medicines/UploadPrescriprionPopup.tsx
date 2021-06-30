@@ -19,6 +19,7 @@ import {
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
+  postCleverTapEvent,
   postWebEngageEvent,
   storagePermissions,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -60,6 +61,10 @@ import {
   useAppCommonData,
   UploadPrescSource,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -224,13 +229,24 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
   const actionSheetRef = useRef<ActionSheet>();
 
   const postUPrescriptionWEGEvent = (
-    source: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
+    source:
+      | WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
+      | CleverTapEvents[CleverTapEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED] = {
       Source: source,
       User_Type: pharmacyUserType,
       'Upload Source': props.type,
     };
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED] = {
+      Source: source,
+      'User Type': pharmacyUserType || undefined,
+      'Upload Source': props.type,
+    };
+    postCleverTapEvent(
+      CleverTapEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED,
+      cleverTapEventAttributes
+    );
     postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED, eventAttributes);
   };
 

@@ -22,6 +22,7 @@ import {
   findAddrComponents,
   formatAddress,
   setAsyncPharmaLocation,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
@@ -93,6 +94,10 @@ import {
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import moment from 'moment';
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
     paddingTop: 7,
@@ -497,6 +502,18 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       Pincode: pinCode,
       User_Type: pharmacyUserType,
     };
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_NONCART_ORDER_SUBMIT_CLICKED] = {
+      'Order ID': `${orderAutoId}`,
+      'Delivery type': deliveryAddressId ? 'home' : 'store pickup',
+      'Store ID': storeId || undefined, // incase of store delivery
+      'Delivery address': deliveryAddressId ? deliveryAddressLine : storeAddressLine,
+      Pincode: pinCode,
+      'User Type': pharmacyUserType || undefined,
+    };
+    postCleverTapEvent(
+      CleverTapEventName.PHARMACY_NONCART_ORDER_SUBMIT_CLICKED,
+      cleverTapEventAttributes
+    );
     postWebEngageEvent(WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION, eventAttributes);
   };
 
@@ -795,6 +812,14 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                     OptionSelected: optionSelected,
                     User_Type: pharmacyUserType,
                   };
+                  const cleverTapEventAttribute: CleverTapEvents[CleverTapEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED] = {
+                    OptionSelected: optionSelected,
+                    'User Type': pharmacyUserType || undefined,
+                  };
+                  postCleverTapEvent(
+                    CleverTapEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED,
+                    cleverTapEventAttribute
+                  );
                   postWebEngageEvent(
                     WebEngageEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED,
                     eventAttribute

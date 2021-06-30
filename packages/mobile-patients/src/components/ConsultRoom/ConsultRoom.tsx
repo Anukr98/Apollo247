@@ -197,6 +197,7 @@ import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/G
 import {
   CleverTapEventName,
   CleverTapEvents,
+  PatientInfo as PatientInfoObj,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const { Vitals } = NativeModules;
@@ -1306,7 +1307,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     source?: PatientInfoWithSource['Source'],
     attributes?: any
   ) => {
-    let eventAttributes: PatientInfo = {
+    let eventAttributes: PatientInfoObj = {
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
@@ -1442,9 +1443,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Home Screen');
         props.navigation.navigate('MEDICINES', { focusSearch: true });
-        const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
+        const eventAttributes:
+          | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
+          | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
           source: 'app home',
         };
+        postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED, eventAttributes);
         postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
       },
     },
@@ -2564,9 +2568,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Menu');
                   CommonLogEvent(AppRoutes.ConsultRoom, 'MEDICINES clicked');
-                  const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
+                  const eventAttributes:
+                    | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
+                    | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
                     source: 'app home',
                   };
+                  postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED, eventAttributes);
                   postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
                   props.navigation.navigate('MEDICINES');
                 } else if (i == 3) {

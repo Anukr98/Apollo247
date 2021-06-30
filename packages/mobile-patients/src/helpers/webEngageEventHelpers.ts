@@ -86,6 +86,18 @@ export const postPharmacyAddNewAddressCompleted = (
     'TAT Displayed': tat,
     'Delivery TAT': deliveryTat,
   };
+  const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_NEW_ADDRESS_COMPLETED] = {
+    Source: source,
+    Success: success,
+    'Delivery address': deliveryAddress,
+    Pincode: pincode,
+    'TAT Displayed': tat,
+    'Delivery TAT': deliveryTat,
+  };
+  postCleverTapEvent(
+    CleverTapEventName.PHARMACY_ADD_NEW_ADDRESS_COMPLETED,
+    cleverTapEventAttributes
+  );
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_NEW_ADDRESS_COMPLETED, eventAttributes);
 };
 
@@ -117,6 +129,24 @@ export const postPhamracyCartAddressSelectedSuccess = (
     ...pharmacyUserTypeAttribute,
     ...splitOrderDetails,
   };
+  const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS] = {
+    'TAT Displayed': tatDisplayed,
+    'Delivery Successful': success,
+    'Delivery Address': deliveryAddress,
+    Pincode: pincode,
+    'Delivery TAT': deliveryTat,
+    TAT_Hrs: tatHrs,
+    'Split Cart': !!isSplitCart ? 'Yes' : 'No',
+    'Cart Items': itemsInCart || undefined,
+    'Circle Membership Added': pharmacyCircleEvent?.['Circle Membership Added'],
+    'Circle Membership Value': pharmacyCircleEvent?.['Circle Membership Value'] || undefined,
+    'User Type': pharmacyUserTypeAttribute?.User_Type || undefined,
+    ...splitOrderDetails,
+  };
+  postCleverTapEvent(
+    CleverTapEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS,
+    cleverTapEventAttributes
+  );
   postWebEngageEvent(WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS, eventAttributes);
 
   const firebaseAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS] = {

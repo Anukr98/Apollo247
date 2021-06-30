@@ -34,6 +34,7 @@ import { ActionSheetCustom as ActionSheet } from 'react-native-actionsheet';
 import {
   storagePermissions,
   postWebEngageEvent,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEvents,
@@ -56,6 +57,10 @@ import {
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 import Permissions from 'react-native-permissions';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const { width, height } = Dimensions.get('window');
 
@@ -483,12 +488,22 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
   ];
 
   const postUPrescriptionWEGEvent = (
-    source: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
+    source:
+      | WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
+      | CleverTapEvents[CleverTapEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED] = {
       Source: source,
       'Upload Source': 'Upload Flow',
     };
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED] = {
+      Source: source,
+      'Upload Source': 'Upload Flow',
+    };
+    postCleverTapEvent(
+      CleverTapEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED,
+      cleverTapEventAttributes
+    );
     postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED, eventAttributes);
   };
 
