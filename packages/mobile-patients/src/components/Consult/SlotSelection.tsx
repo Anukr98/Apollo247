@@ -702,7 +702,6 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
             <Text style={styles.physicalConsultNoteTxt}>Note: Pay at Reception is available.</Text>
           )}
         </View>
-        {renderProceedButton()}
       </View>
     );
   };
@@ -711,6 +710,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     return (
       <View style={styles.bottomBtnContainer}>
         <Button
+          disabled={loadTotalSlots}
           title="PROCEED"
           style={styles.viewAvailableSlotsBtn}
           onPress={() => handleProceed()}
@@ -953,6 +953,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           : renderDoctorDetailsShimmer({ height: isCircleDoctor ? 120 : 105 })}
         {renderConsultTypeTabs()}
         {renderTotalSlots()}
+        {totalSlots === 0 && !loadTotalSlots ? <View /> : renderProceedButton()}
       </View>
     </SafeAreaView>
   );
@@ -1052,6 +1053,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     paddingBottom: 16,
     marginHorizontal: 16,
+    justifyContent: 'center',
   },
   viewBtnTxt: {
     ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW),
