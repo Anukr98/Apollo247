@@ -126,6 +126,7 @@ export interface CMSTestDetails {
   diagnosticUrlAlias: string;
   diagnosticGender: string;
   diagnosticAge: string;
+  diagnosticReportCustomerText: string;
   diagnosticReportGenerationTime: string;
   diagnosticPretestingRequirement: string;
   diagnosticOverview: any;
@@ -731,7 +732,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const renderCardMidView = () => {
     return (
       <>
-        {!!cmsTestDetails?.diagnosticReportGenerationTime ? (
+        {!!cmsTestDetails?.diagnosticReportGenerationTime || !!cmsTestDetails?.diagnosticReportCustomerText ? (
           <>
             {renderSeparator()}
             <View style={styles.midCardView}>
@@ -740,7 +741,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               <View style={styles.midCardTextView}>
                 <Text style={styles.reportTimeText}>Report generation Time</Text>
                 <Text style={styles.reportTime}>
-                  {cmsTestDetails?.diagnosticReportGenerationTime}
+                  {cmsTestDetails?.diagnosticReportCustomerText ? cmsTestDetails?.diagnosticReportCustomerText : cmsTestDetails?.diagnosticReportGenerationTime}
                 </Text>
               </View>
             </View>
