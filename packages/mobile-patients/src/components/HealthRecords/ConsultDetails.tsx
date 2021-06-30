@@ -867,6 +867,13 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   };
 
   const renderGenerealAdvice = () => {
+    let listOfAdvices =
+      caseSheetDetails?.otherInstructions?.map((item, i) => {
+        if (item?.instruction !== '') {
+          return `${item?.instruction}`;
+        }
+      }) || [];
+    const listStrings = listOfAdvices.join('\n');
     return (
       <>
         {renderHeadingView(
@@ -875,16 +882,13 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         )}
         {caseSheetDetails?.otherInstructions !== null ? (
           <View style={{ marginTop: 28 }}>
+            {renderListItem(listStrings || '', '')}
             {renderListItem(
-              caseSheetDetails?.otherInstructions
-                ?.map((item, i) => {
-                  if (item?.instruction !== '') {
-                    return `${item?.instruction}`;
-                  }
-                })
-                .join('\n') || '',
-              ''
+              'Referral',
+              'Consult \n' + caseSheetDetails?.referralSpecialtyName?.toUpperCase() || '',
+              4
             )}
+            {renderListItem(caseSheetDetails?.referralDescription || '', '')}
           </View>
         ) : (
           renderNoData('No advice')
