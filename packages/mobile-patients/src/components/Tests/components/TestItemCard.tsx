@@ -212,7 +212,7 @@ export const TestItemCard: React.FC<TestItemCardProps> = (props) => {
   const renderReportTimeAndInfoView = () => {
     return reportGenItem?.itemPrepration || reportGenItem?.itemReportTat || reportGenItem?.itemCustomerText ? (
       <View style={styles.timeAndInfoMainViewStyle}>
-        {reportGenItem?.itemCustomerText ? (
+        {reportGenItem?.itemCustomerText || reportGenItem?.itemReportTat ? (
           <View style={styles.reportGenViewStyle}>
             <TestTimeIcon style={styles.timeIconStyle} />
             <Text
