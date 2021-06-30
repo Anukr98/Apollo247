@@ -519,7 +519,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const checkSlotSelection = () => {
     const dt = moment(selectedOrder?.slotDateTimeInUTC)?.format('YYYY-MM-DD') || null;
-    const tm = moment(selectedOrder?.slotDateTimeInUTC)?.format('hh:mm') || null;
+    const tm = moment(selectedOrder?.slotDateTimeInUTC)?.format('hh:mm A') || null; //format changed from hh:mm
+    const timeToCompare = !!tm && moment(tm, 'hh:mm A')?.format('HH:mm');
+
+    const getAddressObject = createAddressObject(selectedOrder?.patientAddressObj);
 
     const getAddressObject = createAddressObject(selectedOrder?.patientAddressObj);
 
@@ -543,7 +546,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
         const updatedDiagnosticSlots =
           moment(date).format('YYYY-MM-DD') == dt
-            ? diagnosticSlots.filter((item) => item?.Timeslot != tm)
+            ? diagnosticSlots?.filter((item) => item?.Timeslot != timeToCompare)
             : diagnosticSlots;
         const slotsArray: TestSlot[] = [];
         updatedDiagnosticSlots?.forEach((item) => {
@@ -1084,7 +1087,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   function performNavigation(order: any, tab: boolean, refundArray?: any, refundTransId?: string) {
     setLoading?.(false);
-    props.navigation.navigate(AppRoutes.TestOrderDetails, {
+    props.navigation.push(AppRoutes.TestOrderDetails, {
       orderId: order?.id,
       setOrders: (orders: orderList[]) => setOrders(orders),
       selectedOrder: order,
@@ -1178,7 +1181,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         }
         showAddTest={
           order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED ||
-          DIAGNOSTIC_CONFIRMED_STATUS.includes(order?.orderStatus)
+          order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED
         }
         ordersData={order?.diagnosticOrderLineItems!}
         showPretesting={showPreTesting!}

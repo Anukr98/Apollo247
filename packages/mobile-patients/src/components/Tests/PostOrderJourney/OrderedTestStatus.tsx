@@ -9,7 +9,7 @@ import moment from 'moment';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import _ from 'lodash';
-import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity, Linking, Modal, Clipboard } from 'react-native';
+import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity, Linking } from 'react-native';
 import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
 import {
   DIAGNOSTIC_ORDER_STATUS,
@@ -276,8 +276,8 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
     const visitId = orderSelected?.visitNo;
     DiagnosticViewReportClicked();
     if (visitId) {
-      setActiveOrder(order)
-      setDisplayViewReport(true)
+      setActiveOrder(order);
+      setDisplayViewReport(true);
     } else {
       props.navigation.navigate(AppRoutes.HealthRecordsHome);
     }
@@ -372,17 +372,16 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       {displayViewReport && (
-            <TestViewReportOverlay
-              order={activeOrder}
-              heading=""
-              isVisible={displayViewReport}
-              onClose={() => setDisplayViewReport(false)}
-              onPressViewReport={()=>{
-                fetchTestReportResult(activeOrder);
-              }}
-            />
-        )
-      }
+        <TestViewReportOverlay
+          order={activeOrder}
+          heading=""
+          isVisible={displayViewReport}
+          onClose={() => setDisplayViewReport(false)}
+          onPressViewReport={() => {
+            fetchTestReportResult(activeOrder);
+          }}
+        />
+      )}
       <SafeAreaView style={theme.viewStyles.container}>
         <Header
           leftIcon="backArrow"

@@ -881,6 +881,10 @@ export const SearchDarkPhrIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/ic_search_dark_phr.webp')} />
 );
 
+export const ShareBlueIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/share_icon.webp')} />
+);
+
 export const ShareYellowDocIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/ic_share_yellow.webp')} />
 );
@@ -1763,6 +1767,9 @@ export const ClockIcon: React.FC<IconProps> = (props) => (
 export const InfoIconRed: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_info.webp')} />
 );
+export const InfoIconBlue: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_info_blue_2x.webp')} />
+);
 export const WhyBookUs: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/whyBookUsDetail_Icon.webp')} />
 );
@@ -1915,6 +1922,14 @@ export const CovidVaccine: React.FC<IconProps> = (props) => (
 
 export const VaccineBookingFailed: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/vacc_booking_failed.webp')} />
+);
+
+export const SyringSmall: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/syring_small.webp')} />
+);
+
+export const SyringLarge: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/syring_large.webp')} />
 );
 
 export const WidgetLiverIcon: React.FC<IconProps> = (props) => (

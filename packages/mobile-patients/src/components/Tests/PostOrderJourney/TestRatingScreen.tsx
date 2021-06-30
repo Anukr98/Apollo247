@@ -35,7 +35,6 @@ import _ from 'lodash';
 import { savePhleboFeedback } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { DiagnosticPhleboFeedbackSubmitted } from '@aph/mobile-patients/src/components/Tests/Events';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 export interface DiagnosticsOrderList
   extends getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList {

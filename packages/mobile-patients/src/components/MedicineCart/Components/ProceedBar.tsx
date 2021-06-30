@@ -30,6 +30,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
     cartItems,
     orders,
     minimumCartValue,
+    isValidCartValue,
   } = useShoppingCart();
   const {
     onPressAddDeliveryAddress,
@@ -47,10 +48,6 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
   const unServiceable = !!cartItems.find(
     ({ unavailableOnline, unserviceable }) => unavailableOnline || unserviceable
   );
-  const isValidCartValue =
-    !!minimumCartValue && screen === 'MedicineCart' && deliveryAddressId && addresses?.length
-      ? grandTotal >= minimumCartValue
-      : true;
 
   function getTitle() {
     return !deliveryAddressId
