@@ -335,12 +335,12 @@ export const VaccineSiteDateSelector: React.FC<VaccineSiteDateSelectorProps> = (
       {/* render filter strip  */}
       {renderFilterStrip()}
 
-      <ScrollView>
+      <ScrollView nestedScrollEnabled={true}>
         <View style={{ backgroundColor: '#fff', flex: 1, flexDirection: 'row' }}>
           <View
             style={{
               backgroundColor: '#fff',
-              flex: 2,
+              flex: 2.5,
             }}
           >
             <TouchableOpacity
@@ -364,7 +364,7 @@ export const VaccineSiteDateSelector: React.FC<VaccineSiteDateSelectorProps> = (
               showsHorizontalScrollIndicator={false}
             />
           </View>
-          <View style={{ flex: 3 }}>
+          <View style={{ flex: 2.5 }}>
             <FlatList
               ref={(ref) => (flatListRef.current = ref)}
               horizontal
