@@ -140,6 +140,8 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList {
   __typename: "DiagnosticOrders";
   id: string;
+  parentOrderId: string | null;
+  primaryOrderID: string | null;
   isRescheduled: boolean | null;
   rescheduleCount: number | null;
   areaId: number | null;

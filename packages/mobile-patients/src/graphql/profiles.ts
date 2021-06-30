@@ -2177,6 +2177,8 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
     ) {
       ordersList {
         id
+        parentOrderId
+        primaryOrderID
         isRescheduled
         rescheduleCount
         areaId
@@ -5472,6 +5474,15 @@ export const DIAGNOSTIC_RESCHEDULE_V2 =  gql`
     status
     message
     rescheduleCount
+    }
+  }
+`;
+
+export const DIAGNOSTIC_CANCEL_V2 = gql `
+  mutation cancelDiagnosticOrdersv2($cancellationDiagnosticsInput: CancellationDiagnosticsInputv2) {
+    cancelDiagnosticOrdersv2(cancellationDiagnosticsInput: $cancellationDiagnosticsInput) {
+      status
+      message
     }
   }
 `;

@@ -607,6 +607,7 @@ export enum REQUEST_ROLES {
   DOCTOR = "DOCTOR",
   JUNIOR = "JUNIOR",
   PATIENT = "PATIENT",
+  SECRETARY = "SECRETARY",
   SYSTEM = "SYSTEM",
 }
 
@@ -657,10 +658,6 @@ export enum SEARCH_TYPE {
   TEST = "TEST",
 }
 
-export enum SLOT_BOOKING_STATUS {
-  AVAILABLE = "AVAILABLE",
-}
-
 export enum STATUS {
   CALL_ABANDON = "CALL_ABANDON",
   CANCELLED = "CANCELLED",
@@ -675,8 +672,6 @@ export enum STATUS {
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PAYMENT_PENDING_PG = "PAYMENT_PENDING_PG",
   PENDING = "PENDING",
-  REQUESTED = "REQUESTED",
-  REQUEST_DECLINED = "REQUEST_DECLINED",
   UNAVAILABLE_MEDMANTRA = "UNAVAILABLE_MEDMANTRA",
 }
 
@@ -706,6 +701,7 @@ export enum TRANSFER_INITIATED_TYPE {
   ADMIN = "ADMIN",
   DOCTOR = "DOCTOR",
   PATIENT = "PATIENT",
+  SECRETARY = "SECRETARY",
 }
 
 export enum TRANSFER_STATUS {
@@ -1022,6 +1018,13 @@ export interface CancellationDiagnosticsInput {
   reason: string;
 }
 
+export interface CancellationDiagnosticsInputv2 {
+  comment?: string | null;
+  orderIds: (string | null)[];
+  patientId: string;
+  reason: string;
+}
+
 export interface ChargeDetailsInput {
   patientAddressObj: patientAddressObj;
   patientsObjWithLineItems: (patientObjWithLineItems | null)[];
@@ -1148,6 +1151,7 @@ export interface DoctorPhysicalAvailabilityInput {
   availableDate: any;
   doctorId: string;
   facilityId: string;
+  getOnlyMedmantraSlot?: boolean | null;
 }
 
 export interface DownloadDocumentsInput {
@@ -1231,7 +1235,7 @@ export interface HelpEmailInput {
   patientId?: string | null;
   email?: string | null;
   orderId?: number | null;
-  orderType?: ORDER_TYPE | null;
+  orderType?: ORDER_REQUEST_TYPE | null;
 }
 
 export interface HospitalizationFileProperties {
@@ -1320,6 +1324,7 @@ export interface MedicineCartOMSInput {
   prescriptionType?: PrescriptionType | null;
   tatCity?: string | null;
   tatHours?: string | null;
+  appointmentId?: string | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -1343,6 +1348,7 @@ export interface MedicineOrderCancelOMSInput {
   cancelReasonCode?: string | null;
   cancelReasonText?: string | null;
 }
+
 export interface MedicineOrderShipmentInput {
   shopId?: string | null;
   tatType?: string | null;
@@ -1732,6 +1738,7 @@ export interface SaveMedicineOrderV2Input {
   healthCreditUsed?: number | null;
   shipments?: (MedicineOrderShipmentInput | null)[] | null;
   prescriptionType?: PrescriptionType | null;
+  appointmentId?: string | null;
 }
 
 export interface SavePatientNotificationSettingsInput {
