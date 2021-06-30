@@ -1,79 +1,39 @@
 import { AphOverlayProps } from '@aph/mobile-patients/src/components/ui/AphOverlay';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import {
-  Morning,
-  Afternoon,
-  Night,
-  MorningSelected,
-  AfternoonSelected,
-  NightSelected,
-  EmptySlot,
-  CrossPopup,
-  PremiumIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
-import { GET_CUSTOMIZED_DIAGNOSTIC_SLOTS } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  formatTestSlot,
-  g,
-  getTestSlotDetailsByTime,
-  getUniqueTestSlots,
-  handleGraphQlError,
-  TestSlot,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { PremiumIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import moment from 'moment';
-import React, { useEffect, useState } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
-import {
-  Dimensions,
-  StyleSheet,
-  Text,
-  View,
-  ScrollView,
-  TouchableOpacity,
-  FlatList,
-} from 'react-native';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import {
-  getDiagnosticSlotsCustomized,
-  getDiagnosticSlotsCustomizedVariables,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsCustomized';
+import React from 'react';
+import { Dimensions, StyleSheet, Text, View, TouchableOpacity, SafeAreaView } from 'react-native';
 import { Overlay } from 'react-native-elements';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { createAddressObject } from '@aph/mobile-patients/src/utils/commonUtils';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import moment from 'moment';
 
 export interface TestPremiumSlotOverlayProps extends AphOverlayProps {
   source?: string;
   isVisible: boolean;
   onGoBack: any;
+  slotDetails: any;
 }
 const { width } = Dimensions.get('window');
 export const TestPremiumSlotOverlay: React.FC<TestPremiumSlotOverlayProps> = (props) => {
-  //   const [date, setDate] = useState<Date>(props.date);
-  const { isVisible, onGoBack, ...attributes } = props;
+  const { isVisible, onGoBack, slotDetails, ...attributes } = props;
+
   const renderButtons = () => {
     return (
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          margin: 15,
-          alignItems: 'center',
-        }}
-      >
-        <TouchableOpacity onPress={()=>{
-          onGoBack()
-        }}>
+      <View style={styles.buttonView}>
+        <TouchableOpacity
+          onPress={() => {
+            onGoBack();
+          }}
+        >
           <Text style={[styles.yellowText, { fontSize: width > 380 ? 14 : 13 }]}> GO BACK</Text>
         </TouchableOpacity>
         <Button
-          style={{ width: '30%', alignSelf: 'center' }}
+          style={styles.confirmStyle}
           onPress={() => {
-            // onSchedule(date!, slotInfo!);
-            props.onClose()
+            props.onClose();
           }}
-          // disabled={isDoneBtnDisabled}
           title={'CONFIRM'}
         />
       </View>
@@ -89,49 +49,38 @@ export const TestPremiumSlotOverlay: React.FC<TestPremiumSlotOverlayProps> = (pr
       transparent
       overlayStyle={styles.phrOverlayStyle}
     >
-      <>
-        <TouchableOpacity
-          style={styles.closeContainer}
-          onPress={() => {
-            props.onClose();
-          }}
-        >
-          <CrossPopup />
-        </TouchableOpacity>
-        <View style={styles.containerStyle}>
-          <Text
-            style={[
-              {
-                ...theme.fonts.IBMPlexSansMedium(17),
-                color: theme.colors.LIGHT_BLUE,
-                padding: 15,
-              },
-              props.headingTextStyle,
-            ]}
-          >
-            {props.heading}
-          </Text>
-          <View style={styles.slotContainer}>
-            <Text style={styles.appointmentText}>Appointment on</Text>
-            <Text
-              style={[styles.appointmentText, { color: colors.APP_GREEN, marginHorizontal: 5 }]}
-            >
-              15 Feb 2021 , 6:00am
-            </Text>
+      <TouchableOpacity style={{ flex: 1 }} onPress={() => {}}>
+        <SafeAreaView style={[styles.overlaySafeArea, styles.overlayTouch]}>
+          <View style={styles.overlayContainer}>
+            <Text style={styles.headingStyle}>{props.heading}</Text>
+            {!!slotDetails?.selectedDate && !!slotDetails?.slotStartTime ? (
+              <View style={styles.slotContainer}>
+                <Text style={styles.appointmentText}>Appointment on</Text>
+                <Text style={styles.greenTextStyle}>
+                  {moment(slotDetails?.selectedDate)?.format('DD MMM YYYY')} ,{' '}
+                  {moment(slotDetails?.slotStartTime, 'HH:mm')?.format('hh:mm a')}
+                </Text>
+              </View>
+            ) : null}
+            {slotDetails?.distanceCharges > 0 ? (
+              <View style={styles.premiumTag}>
+                <PremiumIcon style={styles.premiumIcon} />
+                <View style={styles.premiumContainer}>
+                  <Text style={styles.premiumText}>
+                    {string.diagnosticsCartPage.paidSlotHeading}
+                  </Text>
+                  <Text style={styles.additionalCharge}>
+                    {string.diagnosticsCartPage.additionalChargeText} {string.common.Rs}
+                    {slotDetails?.distanceCharges}
+                  </Text>
+                  <Text style={styles.premiumText}>{string.diagnosticsCartPage.levidText}</Text>
+                </View>
+              </View>
+            ) : null}
+            {renderButtons()}
           </View>
-          <View style={styles.premiumTag}>
-            <PremiumIcon style={styles.premiumIcon} />
-            <View style={styles.premiumContainer}>
-              <Text style={styles.premiumText}>This is a Premium Slot -</Text>
-              <Text style={[styles.premiumText, { fontWeight: 'bold', marginHorizontal: 0 }]}>
-                Additional charge of ₹125
-              </Text>
-              <Text style={styles.premiumText}>will be levied on your total amount. </Text>
-            </View>
-          </View>
-          {renderButtons()}
-        </View>
-      </>
+        </SafeAreaView>
+      </TouchableOpacity>
     </Overlay>
   );
 };
@@ -142,19 +91,6 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.WHITE,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-    marginTop: 550,
-  },
-  containerContentStyle: {
-    flex: 1,
-    backgroundColor: theme.colors.WHITE,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-  },
-  closeContainer: {
-    alignSelf: 'flex-end',
-    marginTop: 500,
-    marginHorizontal: 20,
-    position: 'absolute',
   },
   slotContainer: { flexDirection: 'row', justifyContent: 'flex-start', marginLeft: 15 },
   phrOverlayStyle: {
@@ -186,12 +122,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   premiumText: {
-    ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1),
+    ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1),
     marginHorizontal: 5,
   },
   appointmentText: {
-    ...theme.viewStyles.text('SB', 14, colors.SHERPA_BLUE, 1),
-    // marginHorizontal: 5,
+    ...theme.viewStyles.text('M', 14, colors.SHERPA_BLUE, 1),
   },
   premiumIconAbsolute: {
     width: 16,
@@ -300,5 +235,41 @@ const styles = StyleSheet.create({
   dateArrayContainer: {
     flexDirection: 'row',
     width: '100%',
+  },
+  overlaySafeArea: { flex: 1 },
+  overlayContainer: {
+    backgroundColor: 'white',
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 8,
+    borderColor: 'transparent',
+  },
+  overlayTouch: {
+    width: '100%',
+    backgroundColor: colors.CLEAR,
+    bottom: 0,
+    position: 'absolute',
+  },
+  buttonView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    margin: 15,
+    alignItems: 'center',
+  },
+  confirmStyle: { width: '30%', alignSelf: 'center' },
+  headingStyle: {
+    ...theme.fonts.IBMPlexSansSemiBold(17),
+    color: theme.colors.LIGHT_BLUE,
+    padding: 15,
+    lineHeight: 24,
+  },
+  greenTextStyle: {
+    ...theme.viewStyles.text('SB', 14, colors.APP_GREEN, 1),
+    marginHorizontal: 5,
+  },
+  additionalCharge: {
+    fontWeight: 'bold',
+    marginHorizontal: 0,
+    ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1),
   },
 });

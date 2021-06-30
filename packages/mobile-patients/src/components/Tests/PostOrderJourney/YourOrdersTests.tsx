@@ -820,20 +820,19 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const onReschduleDoneSelected = () => {
-    console.log({ selectedTimeSlot });
     setLoading?.(true);
     console.log({ rescheduleDate });
     console.log({ diagnosticSlot });
     console.log({ rescheduleSlotObject });
     const formattedDate = moment(rescheduleDate || diagnosticSlot?.date).format('YYYY-MM-DD');
     const formatTime = rescheduleSlotObject?.slotStartTime || diagnosticSlot?.slotStartTime;
-    const employeeSlot =
-      rescheduleSlotObject?.employeeSlotId?.toString() ||
-      diagnosticSlot?.employeeSlotId?.toString() ||
-      '0';
+
     const dateTimeInUTC = moment(formattedDate + ' ' + formatTime).toISOString();
     const dateTimeToShow = formattedDate + ', ' + moment(dateTimeInUTC).format('hh:mm A');
     const comment = '';
+    const orderId = !!selectedOrder?.parentOrderId
+      ? selectedOrder?.parentOrderId
+      : selectedOrder?.id;
     const slotInfo = {
       slotDetails: {
         slotDisplayTime: rescheduleSlotObject?.slotStartTime,
@@ -846,24 +845,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     console.log({ selectRescheduleReason });
     console.log({ formattedDate });
 
-    const rescheduleDiagnosticsInput: RescheduleDiagnosticsInput = {
-      comment: '',
-      date: formattedDate,
-      dateTimeInUTC: dateTimeInUTC,
-      orderId: String(selectedOrderId),
-      patientId: g(currentPatient, 'id'),
-      reason: selectRescheduleReason,
-      slotId: employeeSlot,
-      source: DiagnosticsRescheduleSource.MOBILE,
-    };
     DiagnosticRescheduleOrder(
       selectRescheduleReason,
       formatTime,
       formattedDate,
-      String(selectedOrderId)
+      String(selectedOrder?.displayId)
     );
     rescheduleOrderV2(
-      String(selectedOrderId),
+      String(orderId),
       slotInfo,
       formattedDate,
       comment,

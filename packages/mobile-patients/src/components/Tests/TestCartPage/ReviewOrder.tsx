@@ -96,6 +96,7 @@ import {
   createOrderInternalVariables,
   createOrderInternal,
 } from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
+import { TestPremiumSlotOverlay } from '../components/TestPremiumSlotOverlay';
 
 const screenWidth = Dimensions.get('window').width;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
@@ -200,6 +201,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   var modifyPricesForItemArray, pricesForItemArray;
   const slotsInput = props.navigation.getParam('slotsInput');
   const selectedTimeSlot = props.navigation.getParam('selectedTimeSlot');
+  const showPaidPopUp = props.navigation.getParam('showPaidPopUp');
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   var slotBookedArray = ['slot', 'already', 'booked', 'select a slot'];
 
@@ -210,6 +212,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const [duplicateNameArray, setDuplicateNameArray] = useState([] as any);
   const [showInclusions, setShowInclusions] = useState<boolean>(false);
   const [orderDetails, setOrderDetails] = useState<orderDetails>();
+  const [isVisible, setIsVisible] = useState<boolean>(showPaidPopUp);
 
   const [date, setDate] = useState<Date>(new Date());
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
@@ -683,7 +686,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       <View
         style={[
           styles.dashedBannerViewStyle,
-          { justifyContent: imagePosition == 'left' ? 'flex-start' : 'center' },
+          {
+            justifyContent: imagePosition == 'left' ? 'flex-start' : 'center',
+            borderStyle: imageType == 'saving' ? 'solid' : 'dashed',
+            borderWidth: imageType == 'saving' ? 1 : 2,
+          },
           imageType === 'saving' && { backgroundColor: '#F3FFFF' },
         ]}
       >
@@ -736,6 +743,19 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         {isModifyFlow ? renderPreviouslyAddedItems() : null}
         {renderTotalCharges()}
       </View>
+    );
+  };
+
+  const renderPremiumOverlay = () => {
+    return (
+      <TestPremiumSlotOverlay
+        heading="Confirm Your Appointment"
+        source={AppRoutes.AddressSlotSelection}
+        isVisible={isVisible}
+        onGoBack={() => props.navigation.goBack()}
+        onClose={() => setIsVisible(false)}
+        slotDetails={diagnosticSlot}
+      />
     );
   };
 
@@ -1356,6 +1376,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         </ScrollView>
         {renderTestProceedBar()}
       </SafeAreaView>
+      {isVisible && renderPremiumOverlay()}
     </View>
   );
 };
@@ -1464,9 +1485,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     flexDirection: 'row',
     borderColor: theme.colors.APP_GREEN,
-    borderWidth: 1,
     borderRadius: 10,
-    borderStyle: 'solid',
   },
   blueTextStyle: {
     ...theme.fonts.IBMPlexSansMedium(screenWidth < 380 ? 14 : 16),

@@ -229,18 +229,19 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
             .add(1, 'day')
             .toDate();
           setDate(changedDate);
+          setselectedTimeSlot(undefined);
         } else {
           setSlots(slotsArray);
           todaySlotNotAvailable && setTodaySlotNotAvailable(false);
           const slotDetails = slotsArray?.[0];
-          slotsArray?.length && setselectedTimeSlot(slotDetails);
+          // slotsArray?.length && setselectedTimeSlot(slotDetails); //to explicitly select the slot
 
           setDiagnosticSlot?.({
             isPaidSlot: slotDetails?.isPaidSlot,
             internalSlot: slotDetails?.internalSlot,
             slotStartTime: slotDetails?.slotInfo?.startTime!,
             slotEndTime: slotDetails?.slotInfo?.endTime!,
-            date: dateToCheck?.getTime(), //date,
+            date: new Date(dateToCheck)?.getTime(), //date,
             selectedDate: moment(dateToCheck),
             distanceCharges:
               !!slotDetails?.isPaidSlot && slotDetails?.isPaidSlot ? getDistanceCharges! : 0,
@@ -274,8 +275,8 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
         });
       } else {
         CommonBugFender('AddressSlotselection_getSlots_NotHubSlotError', error);
-        setDeliveryAddressId?.('');
-        setCartPagePopulated?.(false);
+        // setDeliveryAddressId?.('');
+        // setCartPagePopulated?.(false);
         setselectedTimeSlot(undefined);
         showAphAlert?.({
           title: string.common.uhOh,
@@ -352,35 +353,20 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
   const renderMainView = () => {
     return (
       <View style={{ margin: 16 }}>
-        {renderScheduleHeading()}
         <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
+          {renderScheduleHeading()}
           {renderSlotSelection()}
-          {isVisible && renderPremiumOverlay()}
         </ScrollView>
       </View>
     );
   };
 
-  const renderPremiumOverlay = () => {
-    return (
-      <TestPremiumSlotOverlay
-        source={AppRoutes.AddressSlotSelection}
-        isVisible={isVisible}
-        onGoBack={() => props.navigation.goBack()}
-        onClose={() => setIsVisible(false)}
-      />
-    );
-  };
-
   function _navigateToReview() {
-    // if (selectedTimeSlot?.slotInfo?.isPaidSlot) {
-    //   setIsVisible(true);
-    // } else {
     props.navigation.navigate(AppRoutes.ReviewOrder, {
       slotsInput: slotsInput,
       selectedTimeSlot: selectedTimeSlot,
+      showPaidPopUp: selectedTimeSlot?.slotInfo?.isPaidSlot,
     });
-    // }
   }
 
   const disableCTA = !(

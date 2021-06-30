@@ -593,7 +593,11 @@
     "patientHeading": "Select Patient Name",
     "addPatient": "Add member",
     "subHeadingSingleUHID": "Please select the patient for whom you want to book the selected tests.",
-    "subHeadingMultipleUHID": "Please select all the patients for whom you want to book the selected tests."
+    "subHeadingMultipleUHID": "Please select all the patients for whom you want to book the selected tests.",
+    "paidSlotHeading": "This is a Premium Slot -",
+    "additionalChargeText": " Additional charge of",
+    "levidText": "will be levied on your total amount."
+
   },
   "orders": {
     "urOrders": "MY ORDERS",

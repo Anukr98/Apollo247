@@ -11,6 +11,7 @@ import {
   Alert,
 } from 'react-native';
 import {
+  formatAddressToLocation,
   g,
   getAge,
   isEmptyObject,
@@ -31,6 +32,7 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import AsyncStorage from '@react-native-community/async-storage';
 import {
   DiagnosticData,
+  LocationData,
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -41,13 +43,24 @@ import {
   findDiagnosticsByItemIDsAndCityIDVariables,
   findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsByItemIDsAndCityID';
-import { GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+  GET_PATIENT_ADDRESS_LIST,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { getPricesForItem, sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
+import {
+  getPatientAddressList,
+  getPatientAddressListVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 
 const screenHeight = Dimensions.get('window').height;
+
+type Address = savePatientAddress_savePatientAddress_patientAddress;
 
 export interface AddPatientsProps extends NavigationScreenProps {}
 
@@ -66,12 +79,16 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     setDeliveryAddressId,
     setDeliveryAddressCityId,
     addresses,
+    setAddresses: setTestAddress,
   } = useDiagnosticsCart();
 
+  const { setAddresses } = useShoppingCart();
   const {
     diagnosticLocation,
     diagnosticServiceabilityData,
     setDiagnosticServiceabilityData,
+    setDiagnosticLocation,
+    setLocationDetails,
   } = useAppCommonData();
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const client = useApolloClient();
@@ -98,14 +115,52 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   }
 
   useEffect(() => {
+    addresses?.length == 0 && fetchAddress();
+  }, []);
+
+  useEffect(() => {
     if (
-      !!diagnosticServiceabilityData &&
-      !isEmptyObject(diagnosticServiceabilityData) &&
-      cartItems?.length > 0
+      (!!diagnosticServiceabilityData &&
+        !isEmptyObject(diagnosticServiceabilityData) &&
+        cartItems?.length > 0) ||
+      (!!diagnosticLocation && !isEmptyObject(diagnosticLocation) && cartItems?.length > 0)
     ) {
       getAddressServiceability();
     }
   }, []);
+
+  function saveDiagnosticLocation(locationDetails: LocationData) {
+    setDiagnosticLocation?.(locationDetails);
+    setLocationDetails?.(locationDetails);
+  }
+
+  async function fetchAddress() {
+    try {
+      setLoading?.(true);
+      const response = await client.query<getPatientAddressList, getPatientAddressListVariables>({
+        query: GET_PATIENT_ADDRESS_LIST,
+        variables: { patientId: currentPatient?.id },
+        fetchPolicy: 'no-cache',
+      });
+      const addressList = (response?.data?.getPatientAddressList?.addressList as Address[]) || [];
+      setAddresses?.(addressList);
+      setTestAddress?.(addressList);
+
+      //set the default address
+      const deliveryAddress = addressList?.find((item) => item?.defaultAddress);
+      if (deliveryAddress) {
+        setDeliveryAddressId?.(deliveryAddress?.id);
+        if (!diagnosticLocation) {
+          saveDiagnosticLocation?.(formatAddressToLocation(deliveryAddress));
+        }
+      }
+      setLoading?.(false);
+    } catch (error) {
+      // -> load default hyderabad.
+      setLoading?.(false);
+      CommonBugFender('AddPatients_fetchAddress', error);
+    }
+  }
 
   const getDiagnosticsAvailability = (
     cityIdForAddress: number,

@@ -656,7 +656,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         variables: { patientId: currentPatient?.id },
         fetchPolicy: 'no-cache',
       });
-      const addressList = (response.data.getPatientAddressList.addressList as Address[]) || [];
+      const addressList = (response?.data?.getPatientAddressList?.addressList as Address[]) || [];
       setAddresses?.(addressList);
       setTestAddress?.(addressList);
       const deliveryAddress = addressList?.find((item) => item?.defaultAddress);
