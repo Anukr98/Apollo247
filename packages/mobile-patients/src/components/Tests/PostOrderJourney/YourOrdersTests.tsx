@@ -16,6 +16,7 @@ import {
   GET_PHLOBE_DETAILS,
   DIAGNOSITC_EXOTEL_CALLING,
   DIAGNOSTIC_RESCHEDULE_V2,
+  DIAGNOSTIC_CANCEL_V2,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticOrdersListByMobile,
@@ -54,6 +55,7 @@ import {
   DiagnosticLineItem,
   patientObjWithLineItems,
   slotInfo,
+  CancellationDiagnosticsInputv2,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -121,6 +123,14 @@ import {
   diagnosticExotelCalling,
   diagnosticExotelCallingVariables,
 } from '@aph/mobile-patients/src/graphql/types/diagnosticExotelCalling';
+import {
+  rescheduleDiagnosticsOrderv2,
+  rescheduleDiagnosticsOrderv2Variables,
+} from '@aph/mobile-patients/src/graphql/types/rescheduleDiagnosticsOrderv2';
+import {
+  cancelDiagnosticOrdersv2,
+  cancelDiagnosticOrdersv2Variables,
+} from '@aph/mobile-patients/src/graphql/types/cancelDiagnosticOrdersv2';
 
 type orderList = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList;
 export interface YourOrdersTestProps extends NavigationScreenProps {
@@ -211,10 +221,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       fetchPolicy: 'no-cache',
     });
 
-  const rescheduleOrder = (rescheduleDiagnosticsInput: RescheduleDiagnosticsInput) =>
-    client.mutate<rescheduleDiagnosticsOrder, rescheduleDiagnosticsOrderVariables>({
-      mutation: RESCHEDULE_DIAGNOSTIC_ORDER,
-      variables: { rescheduleDiagnosticsInput: rescheduleDiagnosticsInput },
+  const cancelOrderV2 = (cancellationDiagnosticsInput: CancellationDiagnosticsInputv2) =>
+    client.mutate<cancelDiagnosticOrdersv2, cancelDiagnosticOrdersv2Variables>({
+      mutation: DIAGNOSTIC_CANCEL_V2,
+      context: { sourceHeaders },
+      variables: { cancellationDiagnosticsInput: cancellationDiagnosticsInput },
       fetchPolicy: 'no-cache',
     });
 
@@ -226,7 +237,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     reason: string,
     source: DiagnosticsRescheduleSource
   ) =>
-    client.mutate<rescheduleDiagnosticsOrder, rescheduleDiagnosticsOrderVariables>({
+    client.mutate<rescheduleDiagnosticsOrderv2, rescheduleDiagnosticsOrderv2Variables>({
       mutation: DIAGNOSTIC_RESCHEDULE_V2,
       variables: {
         parentOrderID: parentOrderID,
@@ -450,17 +461,19 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const onSubmitCancelOrder = (reason: string, comment: string) => {
     setLoading?.(true);
-    const orderCancellationInput: CancellationDiagnosticsInput = {
+    const orderCancellationInput: CancellationDiagnosticsInputv2 = {
       comment: comment?.length != 0 ? comment : '',
-      orderId: String(selectedOrderId),
-      patientId: g(currentPatient, 'id'),
+      orderIds: [String(selectedOrderId)],
+      patientId: String(selectedOrder?.patientId),
       reason: reason,
     };
-    cancelOrder(orderCancellationInput)
+    console.log({ orderCancellationInput });
+    cancelOrderV2(orderCancellationInput)
       .then((data: any) => {
-        const cancelResponse = g(data, 'data', 'cancelDiagnosticsOrder', 'status');
-        if (cancelResponse == 'true') {
-          setLoading!(true);
+        console.log({ data });
+        const cancelResponse = g(data, 'data', 'cancelDiagnosticOrdersv2', 'status');
+        if (!!cancelResponse && cancelResponse == 'suceess') {
+          setLoading?.(true);
           setTimeout(() => refetchOrders(), 1000);
           showAphAlert?.({
             unDismissable: true,
@@ -679,7 +692,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const getSlots = async () => {
     try {
-      console.log({ selectedOrder });
       const dt = moment(selectedOrder?.slotDateTimeInUTC)?.format('YYYY-MM-DD') || null;
       const tm = moment(selectedOrder?.slotDateTimeInUTC)?.format('hh:mm A') || null; //format changed from hh:mm
       const timeToCompare = !!tm && moment(tm, 'hh:mm A')?.format('HH:mm');
@@ -696,16 +708,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         patientAddressID: selectedOrder?.patientAddressId!,
       };
 
-      console.log({ getAddressObject });
       const getPatientObjWithLineItems = createPatientObjLineItems(selectedOrder);
 
-      console.log({ getPatientObjWithLineItems });
       const billAmount = getPatientObjWithLineItems
         ?.map((item) => Number(item?.totalPrice))
         ?.reduce((prev: number, curr: number) => prev + curr, 0);
 
-      console.log({ billAmount });
       const selectedDate = moment(date)?.format('YYYY-MM-DD');
+
+      console.log({ selectedDate });
       const orderId = selectedOrder?.id;
       const getServiceabilityObject = {
         cityID: Number(selectedOrder?.cityId),
@@ -821,9 +832,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const onReschduleDoneSelected = () => {
     setLoading?.(true);
-    console.log({ rescheduleDate });
-    console.log({ diagnosticSlot });
-    console.log({ rescheduleSlotObject });
     const formattedDate = moment(rescheduleDate || diagnosticSlot?.date).format('YYYY-MM-DD');
     const formatTime = rescheduleSlotObject?.slotStartTime || diagnosticSlot?.slotStartTime;
 
@@ -840,10 +848,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       },
       paidSlot: rescheduleSlotObject?.isPaidSlot,
     };
-    console.log({ slotInfo });
-    console.log({ selectedOrderId });
-    console.log({ selectRescheduleReason });
-    console.log({ formattedDate });
 
     DiagnosticRescheduleOrder(
       selectRescheduleReason,
@@ -860,12 +864,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       DiagnosticsRescheduleSource.MOBILE
     )
       .then((data) => {
-        console.log('poop');
-        aphConsole.log({ data });
-
-        const rescheduleResponse = g(data, 'data', 'rescheduleDiagnosticsOrder');
-        if (rescheduleResponse?.status == 'true' && rescheduleResponse?.rescheduleCount <= 3) {
-          setTimeout(() => refetchOrders(), 1000);
+        const rescheduleResponse = data?.data?.rescheduleDiagnosticsOrderv2!;
+        if (
+          !!rescheduleResponse &&
+          rescheduleResponse?.status === true &&
+          rescheduleResponse?.rescheduleCount <= 3
+        ) {
+          setTimeout(() => refetchOrders(), 1500);
           setRescheduleCount(rescheduleResponse?.rescheduleCount);
           setRescheduledTime(dateTimeInUTC);
           showAphAlert?.({
@@ -877,8 +882,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             ),
           });
         } else {
-          setLoading!(false);
-          showAphAlert!({
+          setLoading?.(false);
+          showAphAlert?.({
             unDismissable: true,
             title: string.common.uhOh,
             description:
@@ -897,12 +902,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         setCancelReasonComment('');
         setSelectRescheduleReason('');
         CommonBugFender('TestOrderDetails_callApiAndRefetchOrderDetails', error);
-        setLoading!(false);
+        setLoading?.(false);
         if (
           error?.message?.indexOf('RESCHEDULE_COUNT_EXCEEDED') > 0 ||
           error?.message?.indexOf('SLOT_ALREADY_BOOKED') > 0
         ) {
-          showAphAlert!({
+          showAphAlert?.({
             unDismissable: true,
             title: string.common.uhOh,
             description:
@@ -952,7 +957,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           itemId={orderItemId}
           slotBooked={selectedOrder?.slotDateTimeInUTC}
           addressDetails={selectedOrder?.patientAddressObj}
-          onSchedule={(date1: Date, slotInfo: TestSlot) => {
+          onSchedule={(date1: Date, slotInfo: TestSlot, currentDate: Date | undefined) => {
+            console.log({ date1 });
+            console.log({ currentDate });
             rescheduleDate = date1; //whatever date has been selected
             rescheduleSlotObject = {
               internalSlots: slotInfo?.slotInfo?.internalSlots!,
@@ -967,7 +974,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               city: '', // not using city from this in order place API
             };
 
-            setDate(date1);
+            setDate(currentDate!);
             setselectedTimeSlot(slotInfo);
             setDiagnosticSlot?.({
               internalSlots: slotInfo?.slotInfo?.internalSlots!,

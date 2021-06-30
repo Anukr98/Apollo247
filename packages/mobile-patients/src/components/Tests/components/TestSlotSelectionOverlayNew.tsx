@@ -50,7 +50,7 @@ export interface TestSlotSelectionOverlayNewProps extends AphOverlayProps {
   isReschdedule?: boolean;
   slotBooked?: string;
   isTodaySlotUnavailable?: boolean;
-  onSchedule: (date: Date, slotInfo: TestSlot) => void;
+  onSchedule: (date1: Date, slotInfo: TestSlot, date?: Date) => void;
   itemId?: any[];
   source?: string;
   isVisible?: boolean;
@@ -125,6 +125,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
       ? moment(updatedDate)?.format('YYYY-MM-DD')
       : moment(date)?.format('YYYY-MM-DD');
     setSelectedDate(moment(dateToCheck).format('DD'));
+
     setLoading?.(true);
     setShowSpinner(true);
     try {
@@ -308,7 +309,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
                     setSlotInfo(selectedSlot);
                     setPrepaidSlot(item?.slotInfo?.isPaidSlot);
                     setNewSelectedSlot(item?.value);
-                    onSchedule(changedDate!, item);
+                    onSchedule(changedDate!, item, props.date);
                     // onSchedule(date!, slotInfo!); //if first needs to be selected
                   }}
                   style={[

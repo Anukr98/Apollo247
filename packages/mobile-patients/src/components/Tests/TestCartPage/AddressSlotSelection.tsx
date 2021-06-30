@@ -326,7 +326,7 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
         addressDetails={isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr}
         slotInput={slotsInput}
         //add a type here
-        onSchedule={(date: Date, slotInfo: any) => {
+        onSchedule={(date: Date, slotInfo: any, currentDate: Date) => {
           console.log({ slotInfo });
           setDate(date);
           setselectedTimeSlot(slotInfo);
