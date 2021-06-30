@@ -1035,12 +1035,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         <View style={styles.reasonsContainer}>
           {RESCHEDULE_REASONS?.map((item: string, index: number) => {
             return (
-              <>
+              <View style={{ flex: 1 }}>
                 <TouchableOpacity
                   onPress={() => setSelectRescheduleReason(item)}
                   style={styles.reasonsTouch}
                 >
-                  <View style={[styles.rowStyle]}>
+                  <View style={[styles.rowStyle, styles.marginStyle]}>
                     <Text style={styles.reasonsText}>{item}</Text>
                     {selectRescheduleReason === item ? (
                       <TickIcon style={styles.checkIconStyle} />
@@ -1050,7 +1050,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   </View>
                 </TouchableOpacity>
                 {index === RESCHEDULE_REASONS?.length - 1 ? null : <Spearator />}
-              </>
+              </View>
             );
           })}
         </View>
@@ -1082,7 +1082,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         <View style={styles.reasonsContainer}>
           {cancelReasonArray?.map((item: string, index: number) => {
             return (
-              <>
+              <View style={{ flex: 1 }}>
                 <TouchableOpacity
                   onPress={() => _onPressCancelReason(item)}
                   style={[
@@ -1095,6 +1095,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                           ? 100
                           : 40,
                     },
+                    styles.marginStyle,
                   ]}
                 >
                   <View style={styles.rowStyle}>
@@ -1119,7 +1120,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                     </View>
                   ) : null}
 
-                  {index === CANCELLATION_REASONS?.length - 1 ? null : (
+                  {index === CANCELLATION_REASONS?.length - 2 ? null : (
                     <Spearator style={{ marginTop: 6 }} />
                   )}
                   {selectCancelReason ===
@@ -1131,10 +1132,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                         setCancelReasonComment(text);
                       }}
                       placeholder={string.common.return_order_comment_text}
+                      inputStyle={{ fontSize: 14 }}
                     />
                   ) : null}
                 </TouchableOpacity>
-              </>
+              </View>
             );
           })}
         </View>
@@ -1850,9 +1852,6 @@ const styles = StyleSheet.create({
   },
   reasonsTouch: {
     flex: 1,
-    marginLeft: 16,
-    marginRight: 16,
-    marginBottom: 8,
     justifyContent: 'center',
     height: 40,
   },
@@ -1945,5 +1944,10 @@ const styles = StyleSheet.create({
   paitentSubText: {
     ...theme.viewStyles.text('R', 12, '#00B38E'),
     width: '20%',
+  },
+  marginStyle: {
+    marginLeft: 16,
+    marginRight: 16,
+    marginBottom: 8,
   },
 });
