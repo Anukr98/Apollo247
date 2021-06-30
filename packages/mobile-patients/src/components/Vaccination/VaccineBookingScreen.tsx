@@ -377,11 +377,18 @@ const styles = StyleSheet.create({
     marginTop: 7,
     marginBottom: 7,
   },
+
   cityTitle: { ...theme.viewStyles.text('M', 17, theme.colors.SKY_BLUE) },
   cityChooser: {
     alignItems: 'center',
     marginTop: 50,
     marginBottom: 16,
+  },
+  cityDropDownChooser: {
+    alignItems: 'center',
+    marginTop: 50,
+    marginBottom: 16,
+    maxHeight: 300,
   },
   cityDropDownContainer: {
     flexDirection: 'row',
@@ -472,6 +479,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
   const [availableSlotsLoading, setAvailableSlotsLoading] = useState<boolean>(false);
   const [availableSlots, setAvailableSlots] = useState<any>([]);
   const [selectedSlot, setSelectedSlot] = useState<any>();
+  const [isCityConstraintsQualified, setCityConstraintsQualified] = useState<boolean>(true);
 
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [showSelectPatient, setShowSelectPatient] = useState<boolean>(false);
@@ -497,6 +505,8 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
     { title: string.vaccineBooking.confirm_details },
   ];
 
+  const cityConstraintSet: any[] = AppConfig.Configuration.Vacc_City_Rule || [];
+
   const scrollViewRef = useRef();
 
   const pixelRatio = PixelRatio.get();
@@ -506,8 +516,10 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
   const client = useApolloClient();
 
   const cityList = AppConfig.Configuration.Vaccination_Cities_List || [];
+
   const vaccineTypeList = AppConfig.Configuration.Vaccine_Type || [];
   const { setauthToken } = useAppCommonData();
+
   useEffect(() => {
     //check for corporate
     if (isCorporateSubscription) {
@@ -523,14 +535,23 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
   }, []);
 
   useEffect(() => {
-    fetchVaccinationHospitalSites();
+    let result = validateCityConstraints();
+    setCityConstraintsQualified(result);
+    if (result == true) {
+      fetchVaccinationHospitalSites();
+    }
   }, [selectedCity, selectedVaccineType]);
 
   useEffect(() => {
     setSelectedHospitalSite('');
     setSelectedHospitalSiteResourceID('');
     setAvailableSlots([]);
-    fetchVaccinationHospitalSites();
+
+    let result = validateCityConstraints();
+    setCityConstraintsQualified(result);
+    if (result == true) {
+      fetchVaccinationHospitalSites();
+    }
   }, [isRetail]);
 
   useEffect(() => {
@@ -593,6 +614,45 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
     } else {
       return '';
     }
+  };
+
+  const validateCityConstraints = () => {
+    for (let index = 0; index < cityConstraintSet.length; index++) {
+      const cityConstraint = cityConstraintSet[index];
+
+      if (cityConstraint.city == selectedCity) {
+        for (
+          let indexConstraint = 0;
+          indexConstraint < cityConstraint.constraint.length;
+          indexConstraint++
+        ) {
+          const constraint = cityConstraint.constraint[indexConstraint];
+
+          // check only if constraint is enabled
+          if (constraint.restrict == true) {
+            //dose constraint
+            if (constraint.dose == selectedDose) {
+              //age constraint
+
+              if (getAge(selectedPatient?.dateOfBirth) < constraint.minAge) {
+                showCityConstraintAlertMessage(constraint.message);
+                return false;
+              }
+
+              if (
+                constraint.forbiddenVaccineType != undefined &&
+                constraint.forbiddenVaccineType.includes(selectedVaccineType)
+              ) {
+                showCityConstraintAlertMessage(constraint.message);
+                return false;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return true;
   };
 
   const fetchDatesForHospitalSites = () => {
@@ -735,8 +795,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
       const response = await initiateVaccineBookingRequest();
 
       if (response.data?.CreateAppointment.success) {
-        selectedSlot.payment_type == PAYMENT_TYPE.IN_APP_PURCHASE ||
-        selectedSlot.payment_type == PAYMENT_TYPE.PRE
+        selectedSlot.payment_type == PAYMENT_TYPE.IN_APP_PURCHASE
           ? processRetailBooking(response)
           : onSuccessfulCorporateBooking(response);
       } else {
@@ -837,6 +896,9 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
         return true;
       }
       if (selectedSlot == undefined || selectedSlot == '') {
+        return true;
+      }
+      if (isCityConstraintsQualified == false) {
         return true;
       }
     }
@@ -964,12 +1026,6 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
           </View>
 
           <Spearator style={styles.separator} />
-
-          {selectedCity != '' && vaccineSiteList.length == 0 && hospitalSitesLoading == false ? (
-            <Text style={styles.errorMessageSiteDate}>
-              {string.vaccineBooking.no_vaccination_sites_available}{' '}
-            </Text>
-          ) : null}
         </VaccineTypeChooser>
       </View>
     );
@@ -980,7 +1036,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
       <View style={styles.cityContainer}>
         <Text style={styles.cityTitle}>{string.vaccineBooking.select_city_mandatory}</Text>
         <HospitalCityChooser
-          menuContainerStyle={styles.cityChooser}
+          menuContainerStyle={styles.cityDropDownChooser}
           onCityChoosed={(item) => {
             setSelectedCity(item);
 
@@ -1326,6 +1382,8 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
         siteList={vaccineSiteList || []}
         showFilterStrip={isCorporateSubscription}
         isRetail={isRetail}
+        city={selectedCity}
+        vaccineType={selectedVaccineType}
         onRetailChanged={(_isRetail) => {
           if (remainingVaccineSlots == 0 && _isRetail == false) {
             setRetail(true); // If user selects ’Corp Sponsored’ in this case it will show a warning that your dependent count is exhausted.
@@ -1360,6 +1418,17 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
         }}
       />
     );
+  };
+
+  const showCityConstraintAlertMessage = (message: string) => {
+    showAphAlert &&
+      showAphAlert({
+        title: 'Oops!',
+        description: message,
+        onPressOk: () => {
+          hideAphAlert!();
+        },
+      });
   };
 
   return (

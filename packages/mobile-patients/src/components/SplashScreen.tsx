@@ -926,6 +926,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'Used_Up_Alotted_Slot_Msg_QA',
       PROD: 'Used_Up_Alotted_Slot_Msg_Prod',
     },
+    Vacc_City_Rule: {
+      QA: 'Vacc_City_Rule_QA',
+      PROD: 'Vacc_City_Rule_Prod',
+    },
     Enable_Diagnostics_COD: {
       QA: 'QA_Enable_Diagnostics_COD',
       PROD: 'Enable_Diagnostics_COD',
@@ -1140,6 +1144,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       setAppConfig('Vaccine_Type', 'Vaccine_Type', (key) => {
         return JSON.parse(config.getString(key)) || AppConfig.Configuration.Vaccine_Type;
+      });
+
+      setAppConfig('Vacc_City_Rule', 'Vacc_City_Rule', (key) => {
+        return JSON.parse(config.getString(key));
       });
 
       setAppConfig(
