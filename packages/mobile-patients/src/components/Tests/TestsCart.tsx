@@ -1848,7 +1848,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             </View>
           )}
           {
-            <View style={styles.rowSpaceBetweenStyle}>
+            isHcApiCalled ?  <View style={styles.rowSpaceBetweenStyle}>
               <Text style={[styles.blueTextStyle, { width: '60%' }]}>Home Collection Charges</Text>
               <View style={{ flexDirection: 'row' }}>
                 <Text
@@ -1876,7 +1876,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 ) : null} */}
               </View>
             </View>
-          }
+           : null}
           {normalSaving > 0 && (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
