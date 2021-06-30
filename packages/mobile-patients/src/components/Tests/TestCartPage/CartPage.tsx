@@ -927,7 +927,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   };
 
   function _navigateToAddressSelection() {
-    props.navigation.navigate(AppRoutes.AddressSlotSelection);
+    props.navigation.navigate(AppRoutes.AddressSlotSelection, {
+      reportGenDetails: reportGenDetails,
+    });
   }
 
   //change this for modified orders

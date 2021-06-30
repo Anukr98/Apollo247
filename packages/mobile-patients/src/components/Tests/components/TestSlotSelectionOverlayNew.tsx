@@ -61,6 +61,9 @@ export interface TestSlotSelectionOverlayNewProps extends AphOverlayProps {
   isFocus?: boolean;
 }
 const { width, height } = Dimensions.get('window');
+
+const localFormatTestSlot = (slotTime: string) => moment(slotTime, 'hh:mm A')?.format('HH:mm');
+
 export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewProps> = (props) => {
   const {
     isTodaySlotUnavailable,
@@ -88,7 +91,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   const [selectedDate, setSelectedDate] = useState<string>(moment(date).format('DD') || '');
   const [isPrepaidSlot, setPrepaidSlot] = useState<boolean>(!!isPremium ? isPremium : false);
   const [newSelectedSlot, setNewSelectedSlot] = useState(
-    `${formatTestSlot(slotInfo?.slotInfo?.startTime!)}` || ''
+    `${localFormatTestSlot(slotInfo?.slotInfo?.startTime!)}` || ''
   );
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
 
@@ -125,7 +128,6 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
       ? moment(updatedDate)?.format('YYYY-MM-DD')
       : moment(date)?.format('YYYY-MM-DD');
     setSelectedDate(moment(dateToCheck).format('DD'));
-
     setLoading?.(true);
     setShowSpinner(true);
     try {
@@ -184,7 +186,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           setChangedDate(moment(dateToCheck)?.toDate());
           //this needs to be added, if need to select the first slot by default
           // slotsArray?.length && setSlotInfo(slotsArray?.[0]);
-          // setNewSelectedSlot(`${formatTestSlot(slotsArray?.[0]?.slotInfo?.startTime!)}` || ''); //for setting the next date slot by default
+          // setNewSelectedSlot(`${localFormatTestSlot(slotsArray?.[0]?.slotInfo?.startTime!)}` || ''); //for setting the next date slot by default
           setLoading?.(false);
           setShowSpinner(false);
         }
@@ -215,14 +217,15 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     },
   ];
 
+  //use formatTestSlot when time is coming in 24hr.
   let dropDownOptions = uniqueSlots?.map((val) => ({
-    key: `${formatTestSlot(val.startTime)}`,
-    value: `${formatTestSlot(val.startTime)}`,
+    key: `${val?.startTime}`,
+    value: `${val.startTime}`,
     slotInfo: val,
   }));
 
   const time24 = (item: any) => {
-    return moment(item?.value, 'hh:mm A')?.format('HH');
+    return moment(item?.value, 'hh:mm A')?.format('HH:mm');
   };
 
   if (selectedDayTab == 1) {

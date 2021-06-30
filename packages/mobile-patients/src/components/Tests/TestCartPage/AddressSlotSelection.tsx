@@ -27,7 +27,9 @@ import { createPatientAddressObject } from '@aph/mobile-patients/src/utils/commo
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { TestPremiumSlotOverlay } from '../components/TestPremiumSlotOverlay';
 
-export interface AddressSlotSelectionProps extends NavigationScreenProps {}
+export interface AddressSlotSelectionProps extends NavigationScreenProps {
+  reportGenDetails: any;
+}
 
 export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props) => {
   const {
@@ -48,6 +50,7 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
 
   const { setLoading, showAphAlert, hideAphAlert, loading } = useUIElements();
   const client = useApolloClient();
+  const reportGenDetails = props.navigation.getParam('reportGenDetails');
   const [selectedTimeSlot, setselectedTimeSlot] = useState({}) as any;
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [todaySlotNotAvailable, setTodaySlotNotAvailable] = useState<boolean>(false);
@@ -144,6 +147,14 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
             : item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
             ? item?.groupPlan
             : DIAGNOSTIC_GROUP_PLAN.ALL,
+          preTestingRequirement:
+            !!reportGenDetails && reportGenDetails?.[index]?.itemPrepration
+              ? reportGenDetails?.[index]?.itemPrepration
+              : null,
+          reportGenerationTime:
+            !!reportGenDetails && reportGenDetails?.[index]?.itemReportTat
+              ? reportGenDetails?.[index]?.itemReportTat
+              : null,
         } as DiagnosticLineItem)
     );
 
