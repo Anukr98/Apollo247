@@ -569,31 +569,21 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     return !!paymentMethods?.length
       ? paymentMethods.map((item: any) => {
           const minVersion = item?.minimum_supported_version;
+          const versionCheck = paymentModeVersionCheck(minVersion);
+          const methods = item?.payment_methods || [];
           switch (item?.name) {
             case 'COD':
-              return isDiagnosticModify
-                ? null
-                : paymentModeVersionCheck(minVersion) && renderPayByCash();
+              return versionCheck && renderPayByCash();
             case 'CARD':
-              return paymentModeVersionCheck(minVersion) && showPrepaid && renderCards();
+              return versionCheck && showPrepaid && renderCards();
             case 'WALLET':
-              return (
-                paymentModeVersionCheck(minVersion) &&
-                showPrepaid &&
-                renderWallets(item?.payment_methods || [])
-              );
+              return versionCheck && showPrepaid && renderWallets(methods);
             case 'UPI':
-              return (
-                paymentModeVersionCheck(minVersion) &&
-                showPrepaid &&
-                renderUPIPayments(filterUPIApps() || [])
-              );
+              return versionCheck && showPrepaid && renderUPIPayments(filterUPIApps() || []);
             case 'NB':
-              return (
-                paymentModeVersionCheck(minVersion) &&
-                showPrepaid &&
-                renderNetBanking(item?.payment_methods || [])
-              );
+              return versionCheck && showPrepaid && renderNetBanking(methods);
+            case 'HEALTH_CREDITS':
+              return versionCheck && showPrepaid && renderHealthCredits();
           }
         })
       : renderPayByCash();
@@ -682,7 +672,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         {!fetching ? (
           <ScrollView contentContainerStyle={styles.container}>
             {renderBookingInfo()}
-            {renderHealthCredits()}
             {showPaymentOptions()}
             {renderSecureTag()}
           </ScrollView>
