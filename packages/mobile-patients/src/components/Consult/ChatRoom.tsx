@@ -764,6 +764,7 @@ const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG
 export interface ChatRoomProps extends NavigationScreenProps {}
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
+  const [startCallConnectionUpdateBT, setStartCallConnectionUpdateBT] = useState<any>();
   const fromIncomingCall = props.navigation.state.params!.isCall;
   const { isIphoneX } = DeviceHelper();
   const [contentHeight, setContentHeight] = useState(40);
@@ -1543,6 +1544,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }, 10000);
       } else {
         setTextChange(false);
+        BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
       }
     }
   };
@@ -2425,6 +2427,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       );
       stopTimer();
       startTimer(0);
+      startCallConnectionUpdateFx();
     },
     streamDestroyed: (event: string) => {
       openTokWebEngageEvents(
@@ -2434,6 +2437,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       patientJoinedCall.current = false;
       // subscriberConnected.current = false;
       endVoipCall();
+      BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
     },
     error: (error: string) => {
       openTokErrorWebEngageEvents(
@@ -2484,6 +2488,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       patientJoinedCall.current = false;
       subscriberConnected.current = false;
       endVoipCall();
+      BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
     },
     otrnError: (error: string) => {
       openTokErrorWebEngageEvents(
@@ -3412,6 +3417,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setDoctorJoinedChat && setDoctorJoinedChat(false);
         setDoctorJoined(false);
       } else if (message.message.message === endCallMsg) {
+        BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
         resetCurrentRetryAttempt();
         callStatus.current = disconnecting;
         callToastStatus.current = '';
@@ -5786,11 +5792,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
-  const startCallConnectionUpdate = () => {
-    BackgroundTimer.setInterval(() => {
+  const startCallConnectionUpdateFx = () => {
+    const startCallConnectionUpdate = BackgroundTimer.setInterval(() => {
       console.log('csk');
       updateStatusOfCall({ appointmentId: appointmentData.id, patientId: patientId });
     }, 15000);
+    setStartCallConnectionUpdateBT(startCallConnectionUpdate);
   };
 
   const onPressJoinBtn = () => {
@@ -5815,7 +5822,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       makeUpdateAppointmentCall.current = true;
       APICallAgain(true);
     });
-    startCallConnectionUpdate();
+    //startCallConnectionUpdate();
   };
 
   const chatDisabled = () => {
@@ -6153,6 +6160,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (isIos()) {
       RNCallKeep.endAllCalls();
     }
+    BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
   };
 
   const changeVideoStyles = () => {
@@ -6309,7 +6317,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, [callTimer]);
 
   const handleEndCall = (playSound: boolean = true) => {
-    BackgroundTimer.clearInterval(startCallConnectionUpdate);
+    BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
     APICallAgain(false);
     resetCurrentRetryAttempt();
     setTimeout(() => {
@@ -6359,7 +6367,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const handleEndAudioCall = (playSound: boolean = true) => {
-    BackgroundTimer.clearInterval(startCallConnectionUpdate);
+    BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
     APICallAgain(false);
     resetCurrentRetryAttempt();
     setTimeout(() => {
