@@ -1196,6 +1196,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       'Doctor Tab': doctorsType === 'PARTNERS' ? 'Doctor Partner Tab' : 'Apollo Tab',
       'Doctor Category': doctorDetails?.doctorType,
       'Search screen': doctorSearch?.length > 2 ? 'Doctor list screen' : 'NA',
+      'Appointment CTA': 'NA',
     };
 
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {

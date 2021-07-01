@@ -1377,6 +1377,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Doctor Tab': 'NA',
       'Doctor Category': doctorDetails?.doctorType,
       'Search screen': searchText?.length > 2 ? 'Speciality screen' : 'NA',
+      'Appointment CTA':'NA'
     };
 
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {

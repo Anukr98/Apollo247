@@ -50,7 +50,7 @@ export enum CleverTapEventName {
   CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED = 'Consult Homescreen Book doctor appointment clicked',
   CONSULT_SPECIALITY_CLICKED = 'Consult Speciality Clicked',
   CONSULT_PAY_BUTTON_CLICKED = 'Consult Pay Button Clicked',
-  CONSULT_SORT = 'Consult sort',
+  CONSULT_SORT = 'Consult Sort',
   CONSULT_BOOK_TESTS_IN_CHATROOM = 'Consult Book tests in Chatroom',
   CONSULT_ACTIVE_APPOINTMENTS = 'Consult Active appointments',
   CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED = 'Consult Book appointment clicked',
@@ -2249,11 +2249,12 @@ export interface CleverTapEvents {
     'Doctor Category': DoctorType;
     Rank: number | string;
     Is_TopDoc?: YesOrNo;
-    Source: 'Deeplink' | 'Doctor Card clicked' | 'Search';
+    Source: 'Deeplink' | 'Doctor Card clicked' | 'Search' | 'My Doctors' | 'Appointment CTA';
     'Doctor card clicked': YesOrNo;
     DOTH: 'T' | 'F';
     'Doctor Tab': 'Apollo Tab' | 'Doctor Partner Tab' | 'NA';
     'Search screen': 'Speciality screen' | 'Doctor list screen' | 'NA';
+    'Appointment CTA': 'Cancelled' | 'Past' | 'Active' | 'Inside consult room' | 'NA';
   };
   [CleverTapEventName.CONSULT_SEARCH_SUGGESTIONS]: {
     'Patient Name': string;

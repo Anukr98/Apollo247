@@ -334,6 +334,11 @@ const Appointments: Appointments[] = [
   },
 ];
 
+type AppointmentCleverTapAttribute = {
+  source: CleverTapEvents[CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED]['Source'];
+  appointmentCTA: CleverTapEvents[CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED]['Appointment CTA'];
+};
+
 export interface DoctorDetailsProps extends NavigationScreenProps {}
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
@@ -372,6 +377,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [secretaryData, setSecretaryData] = useState<any>([]);
   const fromDeeplink = props.navigation.getParam('fromDeeplink');
   const mediaSource = props.navigation.getParam('mediaSource');
+  const cleverTapAppointmentAttributes: AppointmentCleverTapAttribute = props.navigation.getParam(
+    'cleverTapAppointmentAttributes'
+  );
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const circleDoctorDetails = calculateCircleDoctorPricing(doctorDetails);
   const [showDoctorSharePopup, setShowDoctorSharePopup] = useState<boolean>(false);
@@ -598,7 +606,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       .then(({ data }) => {
         try {
           if (data && data.getDoctorDetailsById && doctorDetails !== data.getDoctorDetailsById) {
-            fromDeeplink && fireDeepLinkTriggeredEvent(data.getDoctorDetailsById);
+            (cleverTapAppointmentAttributes || fromDeeplink) &&
+              fireDeepLinkTriggeredEvent(data.getDoctorDetailsById);
             setDoctorDetails(data.getDoctorDetailsById);
             setDoctorId(data.getDoctorDetailsById.id);
             setCtaBannerText(data?.getDoctorDetailsById?.availabilityTitle);
@@ -653,7 +662,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Media Source': mediaSource,
       User_Type: getUserType(allCurrentPatients),
       Fee: Number(doctorDetails?.onlineConsultationFees),
-      Source: 'Deeplink',
+      Source: cleverTapAppointmentAttributes?.source || 'Deeplink',
       'Doctor card clicked': 'No',
       Rank: 'NA',
       Is_TopDoc: doctorDetails?.doctorsOfTheHourStatus ? 'Yes' : 'No',
@@ -661,8 +670,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Doctor Tab': 'NA',
       'Doctor Category': doctorDetails?.doctorType,
       'Search screen': 'NA',
+      'Appointment CTA': cleverTapAppointmentAttributes?.appointmentCTA || 'NA',
     };
-    postWebEngageEvent(WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK, eventAttributes);
+    fromDeeplink &&
+      postWebEngageEvent(WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK, eventAttributes);
     postCleverTapEvent(CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED, cleverTapEventAttributes);
   };
 

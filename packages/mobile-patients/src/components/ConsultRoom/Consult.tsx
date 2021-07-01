@@ -977,6 +977,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             })
           : props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: g(item, 'doctorId') || '',
+              cleverTapAppointmentAttributes: {
+                source: 'Appointment CTA',
+                appointmentCTA: 'Past',
+              },
             });
       };
       const cancelConsulations = getAppointmentStatusText() === 'Cancelled';
@@ -1015,6 +1019,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               setAppoinmentItem(item);
               props.navigation.navigate(AppRoutes.DoctorDetails, {
                 doctorId: item?.doctorId || item?.doctorInfo?.id,
+                cleverTapAppointmentAttributes: {
+                  source: 'Appointment CTA',
+                  appointmentCTA: cancelConsulations ? 'Cancelled' : 'Past',
+                },
               });
               fireWebengageEvent(item, cancelConsulations ? 'cancel' : 'followup');
             }}
@@ -1136,6 +1144,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               setAppoinmentItem(item);
               props.navigation.navigate(AppRoutes.DoctorDetails, {
                 doctorId: item?.doctorId || item?.doctorInfo?.id,
+                cleverTapAppointmentAttributes: {
+                  source: 'Appointment CTA',
+                  appointmentCTA: 'Active',
+                },
               });
             }}
           >
@@ -1156,6 +1168,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
               props.navigation.navigate(AppRoutes.DoctorDetails, {
                 doctorId: g(item, 'doctorId') || '',
+                cleverTapAppointmentAttributes: {
+                  source: 'Appointment CTA',
+                  appointmentCTA: 'Active',
+                },
               });
             }}
           >

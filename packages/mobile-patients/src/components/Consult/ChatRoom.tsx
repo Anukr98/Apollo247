@@ -5821,6 +5821,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             fireWebengageEvent(appointmentData);
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: doctorId,
+              cleverTapAppointmentAttributes: {
+                source: 'Appointment CTA',
+                appointmentCTA: 'Inside consult room',
+              },
             });
           }}
         >
