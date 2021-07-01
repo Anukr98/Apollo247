@@ -1968,6 +1968,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const profileType = data?.data?.getUserProfileType?.profile;
         if (!!profileType) {
           setPharmacyUserType && setPharmacyUserType(profileType);
+          AsyncStorage.setItem('PharmacyUserType', profileType);
         }
       })
       .catch((e) => {
