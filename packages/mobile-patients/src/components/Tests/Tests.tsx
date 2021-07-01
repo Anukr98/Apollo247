@@ -1623,7 +1623,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     ),
                   },
                 ]}
-                rightText={showViewAll ? 'VIEW ALL' : ''}
                 rightTextStyle={showViewAll ? styles.widgetViewAllText : {}}
                 onPressRightText={
                   showViewAll
@@ -1690,7 +1689,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     ),
                   },
                 ]}
-                rightText={showViewAll ? 'VIEW ALL' : ''}
                 rightTextStyle={showViewAll ? styles.widgetViewAllText : {}}
                 onPressRightText={
                   showViewAll
@@ -2291,7 +2289,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
               ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE, 1, 20),
             },
           ]}
-          rightText={'VIEW ALL'}
           rightTextStyle={styles.widgetViewAllText} //showViewAll ? styles.widgetViewAllText : {}
           onPressRightText={() => {
             props.navigation.navigate(AppRoutes.TestWidgetListing, {
@@ -2394,7 +2391,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
               ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE, 1, 20),
             },
           ]}
-          rightText={'VIEW ALL'}
           rightTextStyle={styles.widgetViewAllText} //showViewAll ? styles.widgetViewAllText : {}
           onPressRightText={() => {
             props.navigation.navigate(AppRoutes.TestWidgetListing, {
