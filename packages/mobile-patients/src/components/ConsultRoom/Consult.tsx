@@ -38,6 +38,7 @@ import {
   isPastAppointment,
   navigateToHome,
   postCleverTapEvent,
+  getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -467,7 +468,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
 
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
 
   const client = useApolloClient();
 
@@ -685,8 +686,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     const eventAttributes:
       | WebEngageEvents[WebEngageEventName.CONSULT_CARD_CLICKED]
       | WebEngageEvents[WebEngageEventName.CONTINUE_CONSULT_CLICKED]
-      | WebEngageEvents[WebEngageEventName.FILL_MEDICAL_DETAILS]
-      | CleverTapEvents[CleverTapEventName.CONSULT_CARD_CLICKED] = {
+      | WebEngageEvents[WebEngageEventName.FILL_MEDICAL_DETAILS] = {
       'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
       'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
       'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
@@ -713,13 +713,32 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         : WebEngageEventName.FILL_MEDICAL_DETAILS,
       eventAttributes
     );
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_CARD_CLICKED] = {
+      doctorName: g(data, 'doctorInfo', 'fullName')!,
+      specialityId: g(data, 'doctorInfo', 'specialty', 'id')! || undefined,
+      specialityName: g(data, 'doctorInfo', 'specialty', 'name')! || undefined,
+      'Doctor Category': g(data, 'doctorInfo', 'doctorType')!,
+      'Consult Date Time': moment(g(data, 'appointmentDateTime')).toDate(),
+      'Consult Mode': g(data, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
+      hospitalName:
+        g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')! || undefined,
+      hospitalCity:
+        g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'city')! || undefined,
+      doctorId: g(data, 'doctorId')! || undefined,
+      patientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      patientUhid: g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      patientAge: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+      patientGender: g(currentPatient, 'gender'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
     postCleverTapEvent(
       type == 'Card Click'
         ? CleverTapEventName.CONSULT_CARD_CLICKED
         : type == 'Continue Consult'
         ? CleverTapEventName.CONTINUE_CONSULT_CLICKED
-        : CleverTapEventName.FILL_MEDICAL_DETAILS,
-      eventAttributes
+        : CleverTapEventName.CONSULT_MEDICAL_DETAILS_FILLED,
+      cleverTapEventAttributes
     );
   };
 
@@ -1048,29 +1067,27 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         | WebEngageEvents[WebEngageEventName.PAST_APPOINTMENT_BOOK_FOLLOW_UP_CLICKED]
         | CleverTapEvents[CleverTapEventName.CONSULT_BOOK_CTA_CLICKED] = {
         'Customer ID': g(currentPatient, 'id'),
-        'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-        'Patient UHID': g(currentPatient, 'uhid'),
-        'Patient Age': Math.round(
-          moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-        ),
-        'Doctor ID': g(item, 'doctorId') || '',
-        'Doctor Name': g(item, 'doctorInfo', 'fullName') || '',
-        'Doctor Category': g(item, 'doctorInfo', 'doctorType'),
-        'Doctor City': g(item, 'doctorInfo', 'city') || '',
-        'Speciality ID': g(item, 'doctorInfo', 'specialty', 'id') || '',
-        'Speciality Name': g(item, 'doctorInfo', 'specialty', 'name') || '',
-        'Consult ID': g(item, 'id') || '',
-        'Consult Date Time': moment(g(item, 'appointmentDateTime')).toDate(),
-        'Consult Mode':
-          g(item, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
+        patientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+        patientUhid: g(currentPatient, 'uhid'),
+        patientAge: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+        doctorId: g(item, 'doctorId') || undefined,
+        doctorName: g(item, 'doctorInfo', 'fullName') || undefined,
+        doctorCategory: g(item, 'doctorInfo', 'doctorType') || undefined,
+        doctorCity: g(item, 'doctorInfo', 'city') || undefined,
+        specialityId: g(item, 'doctorInfo', 'specialty', 'id') || undefined,
+        specialityName: g(item, 'doctorInfo', 'specialty', 'name') || undefined,
+        consultId: g(item, 'id') || undefined,
+        consultDateTime: moment(g(item, 'appointmentDateTime')).toDate(),
+        consultMode: g(item, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
         isConsultStarted: !!g(item, 'isConsultStarted'),
-        Prescription: followUpMedicineNameText || '',
+        Prescription: followUpMedicineNameText || undefined,
         Source:
           eventType === 'cancel'
             ? 'Cancelled appointment'
             : eventType === 'followup'
             ? 'Past appointment'
             : undefined,
+        isConsulted: getUserType(allCurrentPatients),
       };
 
       postWebEngageEvent(

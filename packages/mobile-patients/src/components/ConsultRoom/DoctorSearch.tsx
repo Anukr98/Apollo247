@@ -747,7 +747,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               'Past Searches': data.getPatientPastSearches,
             };
             postWebEngageEvent(WebEngageEventName.PAST_DOCTOR_SEARCH, eventAttributes);
-            postCleverTapEvent(CleverTapEventName.CONSULT_PAST_SEARCHES_CLICKED, eventAttributes);
+            data?.getPatientPastSearches?.length > 0 &&
+              postCleverTapEvent(CleverTapEventName.CONSULT_PAST_SEARCHES_CLICKED, eventAttributes);
             setPastSearches(data.getPatientPastSearches);
           }
           !!searchText && fetchSearchData();
@@ -1377,7 +1378,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Doctor Tab': 'NA',
       'Doctor Category': doctorDetails?.doctorType,
       'Search screen': searchText?.length > 2 ? 'Speciality screen' : 'NA',
-      'Appointment CTA':'NA'
+      'Appointment CTA': 'NA',
     };
 
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {

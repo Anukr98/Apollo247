@@ -46,7 +46,7 @@ export enum CleverTapEventName {
   CONSULT_CANCEL_CLICKED_BY_PATIENT = 'Consult cancel clicked by patient',
   CONSULT_CONTINUE_CONSULTATION_CLICKED = 'Consult continue consultation clicked',
   CONSULT_CANCELLED_BY_PATIENT = 'Consult cancelled by patient',
-  CONSULT_PAST_SEARCHES_CLICKED = 'Consult Past searches clicked',
+  CONSULT_PAST_SEARCHES_CLICKED = 'Consult Past searches',
   CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED = 'Consult Homescreen Book doctor appointment clicked',
   CONSULT_SPECIALITY_CLICKED = 'Consult Speciality Clicked',
   CONSULT_PAY_BUTTON_CLICKED = 'Consult Pay Button Clicked',
@@ -55,7 +55,7 @@ export enum CleverTapEventName {
   CONSULT_ACTIVE_APPOINTMENTS = 'Consult Active appointments',
   CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED = 'Consult Book appointment clicked',
   CONSULT_NO_SLOTS_FOUND = 'Consult no slots found',
-  CONSULT_BOOK_CTA_CLICKED = 'Consult book CTA clicked',
+  CONSULT_BOOK_CTA_CLICKED = 'Consult Book CTA clicked',
   CONSULT_VIEW_DETAILS_ON_PAST_APPOINTMENT = 'Consult View Details on past appointment',
   CONSULT_SEARCH_SUGGESTIONS = 'Consult search suggestions',
   CONSULT_SEARCH_SUGGESTIONS_CLICKED = 'Consult search suggestion clicked',
@@ -68,11 +68,12 @@ export enum CleverTapEventName {
   CONSULT_UPLOAD_PRESCRIPTION_ADDRESS_SELECTED = 'Consult Upload prescription - Address selected',
   CONSULT_SEARCH = 'Consult Search',
   CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION = 'Consult Proceed Clicked on Slot Selection',
-  CONSULT_PAYMENT_INITIATED = 'Consult Payment Initiated',
+  CONSULT_PAYMENT_INITIATED = 'Consult payment initiated',
   CONSULT_USER_LOCATION = 'Consult User location',
   CONSULT_LOCATION_PERMISSION = 'Consult Location permission',
   USER_CHANGED_LOCATION = 'Change location',
   CONSULT_FILTER_APPLIED = 'Consult Filter applied',
+  CONSULT_MEDICAL_DETAILS_FILLED = 'Consult Medical details filled',
 
   //DOH events
   CONSULT_DOH_Viewed = 'Consult DOH viewed',
@@ -324,7 +325,6 @@ export enum CleverTapEventName {
   ORDER_TESTS_FROM_PRESCRIPTION_DETAILS = 'PHR Order Tests Prescription Detail',
   CONTINUE_CONSULT_CLICKED = 'Continue Consult Clicked',
   CHAT_WITH_DOCTOR = 'Chat with Doctor',
-  FILL_MEDICAL_DETAILS = 'Fill Medical Details',
 
   DOCTOR_RESCHEDULE_CLAIM_REFUND = 'Doctor reschedule and Claim Refund button click',
   UPLOAD_RECORDS_CLICK_CHATROOM = 'Upload Records in chatroom clicked',
@@ -691,30 +691,36 @@ export interface DiagnosticPinCode extends DiagnosticUserInfo {
 }
 
 export interface DoctorFilterClick {
-  'Patient Name': string;
+  'Patient name': string;
   'Patient UHID': string;
   'Mobile Number': string;
+  'Patient gender': string;
+  'Patient age': number;
   pincode: number | string;
+  User_Type: string;
+  docCategoryTab: string;
+  selectedCity: string;
   'Filter Applied': string;
   'Filter Value': string;
 }
 
 export interface FollowUpAppointment {
   'Customer ID': string;
-  'Patient Name': string;
-  'Patient UHID': string;
-  'Patient Age': number;
-  'Doctor ID': string;
-  'Doctor Name': string;
-  'Speciality Name': string;
-  'Speciality ID': string;
-  'Doctor Category': DoctorType;
-  'Consult Date Time': Date;
-  'Consult Mode': 'Online' | 'Physical';
-  'Doctor City': string;
-  'Consult ID': string;
+  patientName: string;
+  patientUhid: string;
+  patientAge: number;
+  doctorId?: string;
+  doctorName?: string;
+  specialityName?: string;
+  specialityId?: string;
+  doctorCategory?: DoctorType;
+  consultDateTime?: Date;
+  consultMode: 'Online' | 'Physical';
+  doctorCity?: string;
+  consultId?: string;
+  isConsulted?: string;
   isConsultStarted: boolean;
-  Prescription: string;
+  Prescription?: string;
   Source: 'Cancelled appointment' | 'Past appointment' | undefined;
 }
 
@@ -1585,16 +1591,22 @@ export interface CleverTapEvents {
   };
   // confirm the type of data for the below
   [CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION]: {
-    doctorName: string;
-    specialisation: string;
+    docName: string;
+    specialtyName: string;
     experience: number;
-    'language known': string; // Comma separated values
+    languagesKnown: string; // Comma separated values
     'Consult Mode': 'Online' | 'Physical';
-    'Doctor ID': string;
-    'Speciality ID': string;
+    docId: string;
+    SpecialtyId: string;
     'Patient UHID': string;
+    'Patient name': string;
+    'Patient gender': string;
+    'Patient age': number;
     'Consult Date Time': Date;
+    onlineConsultFee?: number;
+    physicalConsultFee?: number;
     Source: 'Consult now' | 'Schedule for later';
+    User_Type: string;
   };
   [CleverTapEventName.CONSULT_COUPON_APPLIED]: {
     CouponCode: string;
@@ -1604,26 +1616,26 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.CONSULT_PAY_BUTTON_CLICKED]: {
     Amount: number;
-    'Doctor Name': string;
-    'Doctor City': string;
+    doctorName: string;
+    doctorCity: string;
     'Type of Doctor': DoctorType;
-    'Doctor Specialty': string;
-    'Actual Price': number;
+    specialty: string;
+    actualPrice: number;
     'Discount used ?': boolean;
-    'Discount coupon'?: string;
-    'Discount Amount': number;
-    'Net Amount': number;
+    discountCoupon?: string;
+    discountAmount: number;
+    netAmount: number;
     'Customer ID': string;
-    'Patient Name': string;
-    'Patient Age': number;
-    'Patient Gender': string;
+    'Patient name': string;
+    'Patient age': number;
+    'Patient gender': string;
     'Patient UHID': string;
     consultType: 'clinic' | 'online';
     'Doctor ID': string;
     'Speciality ID': string;
     'Hospital Name': string;
     'Hospital City': string;
-    'Consult Date Time': Date;
+    consultDateTime: Date;
     User_Type: string;
   };
   [CleverTapEventName.CONSULTATION_BOOKED]: {
@@ -1819,6 +1831,7 @@ export interface CleverTapEvents {
   // ********** ConsultRoom Events ********** \\
 
   [CleverTapEventName.CONSULT_CANCEL_CLICKED_BY_PATIENT]: {
+    doctorName: string;
     'Speciality Name': string;
     'Speciality ID': string;
     'Doctor Category': DoctorType;
@@ -1826,21 +1839,21 @@ export interface CleverTapEvents {
     'Consult Mode': 'Online' | 'Physical';
     'Hospital Name': string;
     'Hospital City': string;
-    'Consult ID': string;
-    'Patient Name': string;
+    docId: string;
+    patientName: string;
     'Patient UHID': string;
     Relation: string;
     'Patient Age': number;
     'Patient Gender': string;
-    'Mobile Number': string;
     'Customer ID': string;
-    'Secretary Name': string;
-    'Secretary Mobile Number': string;
-    'Doctor Mobile Number': string;
+    secretaryName: string;
+    secretaryNumber: string;
+    patientNumber: string;
+    doctorNumber: string;
   };
 
   [CleverTapEventName.CONSULT_RESCHEDULED_BY_THE_PATIENT]: {
-    'Doctor Name': string;
+    doctorName: string;
     'Speciality Name': string;
     'Speciality ID': string;
     'Doctor Category': DoctorType;
@@ -1848,18 +1861,19 @@ export interface CleverTapEvents {
     'Consult Mode': 'Online' | 'Physical';
     'Hospital Name': string;
     'Hospital City': string;
-    'Consult ID': string;
-    'Patient Name': string;
+    docId: string;
+    patientName: string;
     'Patient UHID': string;
     Relation: string;
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
-    'Secretary Name': string;
-    'Secretary Mobile Number': string;
-    'Doctor Mobile Number': string;
+    secretaryName: string;
+    secretaryNumber: string;
+    patientNumber: string;
+    doctorNumber: string;
   };
-  [CleverTapEventName.FILL_MEDICAL_DETAILS]: {
+  [CleverTapEventName.CONSULT_MEDICAL_DETAILS_FILLED]: {
     'Doctor Name': string;
     'Doctor Speciality': string;
     'Consult Date Time': Date;
@@ -1916,20 +1930,20 @@ export interface CleverTapEvents {
     'Customer ID': string;
   };
   [CleverTapEventName.CONSULT_CARD_CLICKED]: {
-    'Doctor Name': string;
-    'Speciality Name': string;
-    'Speciality ID': string;
+    doctorName: string;
+    specialityName?: string;
+    specialityId?: string;
     'Doctor Category': DoctorType;
     'Consult Date Time': Date;
     'Consult Mode': 'Online' | 'Physical';
-    'Hospital Name': string;
-    'Hospital City': string;
-    'Consult ID': string;
-    'Patient Name': string;
-    'Patient UHID': string;
+    hospitalName?: string;
+    hospitalCity?: string;
+    doctorId?: string;
+    patientName: string;
+    patientUhid: string;
     Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
+    patientAge: number;
+    patientGender: string;
     'Customer ID': string;
   };
   [CleverTapEventName.CONSULT_RESCHEDULE_CLICKED]: {

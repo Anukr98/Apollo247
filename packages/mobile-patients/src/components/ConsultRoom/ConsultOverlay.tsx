@@ -29,6 +29,7 @@ import {
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   g,
+  getUserType,
   postCleverTapEvent,
   postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -155,7 +156,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   ] = useState<getDoctorDetailsById_getDoctorDetailsById_doctorHospital | null>(
     props.clinics && props.clinics.length > 0 ? props.clinics[0] : null
   );
-  const { currentPatient } = useAllCurrentPatients();
+  console.log('props', props);
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
   const isOnlineConsult = selectedTab === consultOnlineTab;
   const isPhysicalConsult = isPhysicalConsultation(selectedTab);
@@ -397,16 +399,24 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
 
   const postProceedClickedCleverTapEvents = () => {
     const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION] = {
-      doctorName: g(props.doctor, 'fullName')!,
-      specialisation: g(props.doctor, 'specialty', 'name')!,
+      docName: g(props.doctor, 'fullName')!,
+      specialtyName: g(props.doctor, 'specialty', 'name')!,
       experience: Number(g(props.doctor, 'experience')!),
-      'language known': g(props.doctor, 'languages')! || 'NA',
+      languagesKnown: g(props.doctor, 'languages')! || 'NA',
       'Consult Mode': consultOnlineTab === selectedTab ? 'Online' : 'Physical',
-      'Doctor ID': g(props.doctor, 'id')!,
-      'Speciality ID': g(props.doctor, 'specialty', 'id')!,
+      docId: g(props.doctor, 'id')!,
+      SpecialtyId: g(props.doctor, 'specialty', 'id')!,
       'Patient UHID': g(currentPatient, 'uhid'),
       'Consult Date Time': moment(selectedTimeSlot).toDate(),
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      onlineConsultFee: onlineConsultMRPPrice || undefined,
+      physicalConsultFee: physicalConsultMRPPrice || undefined,
       Source: isConsultOnline ? 'Consult now' : 'Schedule for later',
+      User_Type: getUserType(allCurrentPatients),
     };
     postCleverTapEvent(
       CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION,

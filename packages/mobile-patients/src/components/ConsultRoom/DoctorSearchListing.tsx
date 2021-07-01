@@ -1853,7 +1853,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         'Sort By': 'distance',
       });
       postCleverTapEvent(CleverTapEventName.CONSULT_SORT, {
-        'Sort By': 'distance',
+        'sort names': 'distance',
       });
       setSortValue('distance');
       if (locationDetails) {
@@ -1887,7 +1887,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         'Sort By': 'availability',
       });
       postCleverTapEvent(CleverTapEventName.CONSULT_SORT, {
-        'Sort By': 'availability',
+        'sort names': 'availability',
       });
       setSortValue('availability');
       fetchSpecialityFilterData(
@@ -1907,9 +1907,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     filterValue: string,
     filterAppliedData?: any
   ) => {
-    const eventAttributes:
-      | WebEngageEvents[WebEngageEventName.DOCTOR_LISTING_FILTER_APPLIED]
-      | CleverTapEvents[CleverTapEventName.CONSULT_FILTER_APPLIED] = {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_LISTING_FILTER_APPLIED] = {
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
@@ -1918,8 +1916,24 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       'Filter Value': filterValue || undefined,
       ...filterAppliedData,
     };
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_FILTER_APPLIED] = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      pincode: g(locationDetails, 'pincode') || undefined,
+      User_Type: getUserType(allCurrentPatients),
+      docCategoryTab: doctorsType || undefined,
+      selectedCity: g(locationDetails, 'city') || undefined,
+      'Filter Applied': filterApplied || undefined,
+      'Filter Value': filterValue || undefined,
+      ...filterAppliedData,
+    };
     postWebEngageEvent(WebEngageEventName.DOCTOR_LISTING_FILTER_APPLIED, eventAttributes);
-    postCleverTapEvent(CleverTapEventName.CONSULT_FILTER_APPLIED, eventAttributes);
+    postCleverTapEvent(CleverTapEventName.CONSULT_FILTER_APPLIED, cleverTapEventAttributes);
   };
 
   const renderBottomOptions = () => {

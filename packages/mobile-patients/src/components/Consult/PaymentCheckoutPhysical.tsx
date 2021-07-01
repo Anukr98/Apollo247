@@ -864,23 +864,23 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     const eventAttributes:
       | WebEngageEvents[WebEngageEventName.PAY_BUTTON_CLICKED]
       | CleverTapEvents[CleverTapEventName.CONSULT_PAY_BUTTON_CLICKED] = {
-      'Consult Date Time': localTimeSlot,
+      consultDateTime: localTimeSlot,
       Amount: finalAppointmentInput?.actualAmount,
-      'Doctor Name': g(doctor, 'fullName')!,
-      'Doctor City': g(doctor, 'city')!,
+      doctorName: g(doctor, 'fullName')!,
+      doctorCity: g(doctor, 'city')!,
       'Type of Doctor': g(doctor, 'doctorType')!,
-      'Doctor Specialty': g(doctor, 'specialty', 'name')!,
-      'Actual Price': finalAppointmentInput?.actualAmount,
+      specialty: g(doctor, 'specialty', 'name')!,
+      actualPrice: finalAppointmentInput?.actualAmount,
       'Discount used ?': !!coupon,
-      'Discount coupon': coupon,
-      'Discount Amount': couponDiscountFees,
-      'Net Amount': amountToPay,
+      discountCoupon: coupon,
+      discountAmount: couponDiscountFees,
+      netAmount: amountToPay,
       'Customer ID': g(currentPatient, 'id'),
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient Age': Math.round(
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
-      'Patient Gender': g(currentPatient, 'gender'),
+      'Patient gender': g(currentPatient, 'gender'),
       'Patient UHID': g(currentPatient, 'uhid'),
       consultType: tabs[0].title === selectedTab ? 'online' : 'clinic',
       'Doctor ID': g(doctor, 'id')!,
