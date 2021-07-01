@@ -468,6 +468,12 @@ export enum ONE_APOLLO_STORE_CODE {
   WEBCUS = "WEBCUS",
 }
 
+export enum ORDER_REQUEST_TYPE {
+  CONSULT = "CONSULT",
+  DIAGNOSTICS = "DIAGNOSTICS",
+  PHARMACY = "PHARMACY",
+}
+
 export enum ORDER_TYPE {
   CONSULT = "CONSULT",
   PHARMACY = "PHARMACY",
@@ -595,6 +601,7 @@ export enum REQUEST_ROLES {
   DOCTOR = "DOCTOR",
   JUNIOR = "JUNIOR",
   PATIENT = "PATIENT",
+  SECRETARY = "SECRETARY",
   SYSTEM = "SYSTEM",
 }
 
@@ -688,6 +695,7 @@ export enum TRANSFER_INITIATED_TYPE {
   ADMIN = "ADMIN",
   DOCTOR = "DOCTOR",
   PATIENT = "PATIENT",
+  SECRETARY = "SECRETARY",
 }
 
 export enum TRANSFER_STATUS {
@@ -919,23 +927,13 @@ export interface AppointmentHistoryInput {
   doctorId: string;
 }
 
-export interface AppointmentPaymentInput {
-  mid?: string | null;
+export interface AppointmentPaymentInputV2 {
   amountPaid: number;
-  paymentRefId?: string | null;
   paymentStatus: string;
   paymentDateTime: any;
-  responseCode: string;
-  responseMessage: string;
-  bankTxnId?: string | null;
-  orderId?: string | null;
-  bankName?: string | null;
-  refundAmount?: number | null;
-  paymentMode?: PAYMENT_METHODS | null;
-  partnerInfo?: string | null;
-  planId?: string | null;
-  subPlanId?: string | null;
-  storeCode?: ONE_APOLLO_STORE_CODE | null;
+  responseCode?: string | null;
+  responseMessage?: string | null;
+  orderId: string;
 }
 
 export interface Attachments {
@@ -1004,6 +1002,11 @@ export interface CancellationDiagnosticsInput {
   reason: string;
 }
 
+export interface CheckCallConnectionInput {
+  appointmentId: string;
+  patientId: string;
+}
+
 export interface ChooseDoctorInput {
   slotDateTime: any;
   specialityId: string;
@@ -1021,6 +1024,12 @@ export interface ConsultQueueInput {
   drugAllergies?: string | null;
   age?: number | null;
   gender?: Gender | null;
+}
+
+export interface CorporateEmailOtpInput {
+  id: string;
+  otp: string;
+  loginType: LOGIN_TYPE;
 }
 
 export interface CouponInput {
@@ -1111,6 +1120,7 @@ export interface DoctorPhysicalAvailabilityInput {
   availableDate: any;
   doctorId: string;
   facilityId: string;
+  getOnlyMedmantraSlot?: boolean | null;
 }
 
 export interface DownloadDocumentsInput {
@@ -1179,6 +1189,7 @@ export interface FilterDoctorInput {
   searchText?: string | null;
   radius?: number | null;
   isCare?: boolean | null;
+  isSearchableOnHiddenDoctor?: boolean | null;
 }
 
 export interface Geolocation {
@@ -1193,7 +1204,7 @@ export interface HelpEmailInput {
   patientId?: string | null;
   email?: string | null;
   orderId?: number | null;
-  orderType?: ORDER_TYPE | null;
+  orderType?: ORDER_REQUEST_TYPE | null;
 }
 
 export interface HospitalizationFileProperties {
@@ -1282,6 +1293,7 @@ export interface MedicineCartOMSInput {
   prescriptionType?: PrescriptionType | null;
   tatCity?: string | null;
   tatHours?: string | null;
+  appointmentId?: string | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -1639,7 +1651,7 @@ export interface SaveBookHomeCollectionOrderInput {
   deviceType?: DEVICETYPE | null;
   items?: (DiagnosticLineItem | null)[] | null;
   slotId: string;
-  areaId: number;
+  areaId?: number | null;
   collectionCharges: number;
   uniqueID?: string | null;
   slotDateTimeInUTC: any;
@@ -1674,6 +1686,7 @@ export interface SaveMedicineOrderV2Input {
   healthCreditUsed?: number | null;
   shipments?: (MedicineOrderShipmentInput | null)[] | null;
   prescriptionType?: PrescriptionType | null;
+  appointmentId?: string | null;
 }
 
 export interface SavePatientNotificationSettingsInput {
@@ -1709,6 +1722,7 @@ export interface SourceMetaData {
   source_identifier?: string | null;
   sub_plan_id?: string | null;
   purchase_type?: PlanPurchaseType | null;
+  activity?: any | null;
 }
 
 export interface TrueCallerProfile {
@@ -1832,27 +1846,6 @@ export interface voipPushTokenInput {
   patientId?: string | null;
   voipToken?: string | null;
 }
-
-/** * current status of appointment */
-export enum APPOINTMENT_STATUS { AUTO_REFUNDED = "AUTO_REFUNDED", BOOKED = "BOOKED", CANCELLED = "CANCELLED", COMPLETED = "COMPLETED", FAILED = "FAILED", VERIFIED = "VERIFIED", REJECTED = "REJECTED",}
-/** * dose number first second */
-export enum DOSE_NUMBER { FIRST = "FIRST", SECOND = "SECOND",}
-/** * payment type for appointment */
-export enum PAYMENT_TYPE { CASHLESS = "CASHLESS", COD = "COD", IN_APP_PURCHASE = "IN_APP_PURCHASE", PREPAID = "PREPAID",}
-/** * booking source */
-export enum VACCINE_BOOKING_SOURCE { AP_IN = "AP_IN", MOBILE = "MOBILE", WEB = "WEB",}
-/** * types of vaccine */
-export enum VACCINE_TYPE { COVAXIN = "COVAXIN", COVISHIELD = "COVISHIELD", SPUTNIK="SPUTNIK",MORDERNA="MORDERNA"}
-
-export interface CreateAppointmentInput { appointment_id?: string | null; patient_id: string; resource_session_id: string; dose_number: DOSE_NUMBER; booking_source?: VACCINE_BOOKING_SOURCE | null; corporate_name?: string | null; user_subscription_id?: string | null; subscription_inclusion_id?: string | null;}
-
-/** * COWIN_GENDER */
-export enum COWIN_GENDER { FEMALE = "FEMALE", MALE = "MALE", OTHERS = "OTHERS",}
-/** * COWIN_GOVT_PHOTO_ID */
-export enum COWIN_GOVT_PHOTO_ID { AADHAAR_CARD = "AADHAAR_CARD", DRIVING_LICENSE = "DRIVING_LICENSE", NPR_SMART_CARD = "NPR_SMART_CARD", PAN_CARD = "PAN_CARD", PASSPORT = "PASSPORT", PENSION_PASSBOOK = "PENSION_PASSBOOK", UNIQUE_DISABILITY_ID = "UNIQUE_DISABILITY_ID", VOTER_ID = "VOTER_ID",}
-/** * OperationType */
-export enum OperationType { GENERATE_OTP = "GENERATE_OTP", VERIFY_OTP = "VERIFY_OTP",}
-export interface CowinRegistrationInput { operationType: OperationType; name: string; gender_id: COWIN_GENDER; birth_year: string; photo_id_type: COWIN_GOVT_PHOTO_ID; photo_id_number: string; otp?: string | null; txnId?: string | null;}
 
 //==============================================================
 // END Enums and Input Objects

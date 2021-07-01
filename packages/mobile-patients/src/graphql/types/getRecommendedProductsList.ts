@@ -18,6 +18,7 @@ export interface getRecommendedProductsList_getRecommendedProductsList_recommend
   categoryName: string | null;
   status: string | null;
   mou: string | null;
+  urlKey: string | null;
 }
 
 export interface getRecommendedProductsList_getRecommendedProductsList {
