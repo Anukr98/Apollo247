@@ -867,6 +867,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     if (!!pinCodeFromAddress) {
       setLoading?.(true);
       setPinCode?.(pinCodeFromAddress);
+      setHcApiCalled(false);
       client
         .query<getPincodeServiceability, getPincodeServiceabilityVariables>({
           query: GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
