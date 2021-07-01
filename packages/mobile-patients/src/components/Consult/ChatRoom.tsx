@@ -5787,6 +5787,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       makeUpdateAppointmentCall.current = true;
       APICallAgain(true);
     });
+    BackgroundTimer.setInterval(() => {
+      console.log('csk');
+    }, 3000);
   };
 
   const chatDisabled = () => {
@@ -6280,6 +6283,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, [callTimer]);
 
   const handleEndCall = (playSound: boolean = true) => {
+    BackgroundTimer.finish();
     APICallAgain(false);
     resetCurrentRetryAttempt();
     setTimeout(() => {
@@ -6329,6 +6333,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const handleEndAudioCall = (playSound: boolean = true) => {
+    BackgroundTimer.finish();
     APICallAgain(false);
     resetCurrentRetryAttempt();
     setTimeout(() => {
