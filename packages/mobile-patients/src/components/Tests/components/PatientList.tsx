@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     height: 17,
     width: 17,
     resizeMode: 'contain',
-    marginRight: 6,
+    marginRight: 8,
   },
   itemNameText: {
     ...text('M', 14.5, '#313131', 1, 19.1),

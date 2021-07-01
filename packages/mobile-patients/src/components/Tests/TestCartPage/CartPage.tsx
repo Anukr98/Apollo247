@@ -1252,7 +1252,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     margin: 16,
     marginBottom: -20,
-    zIndex: 10,
+    zIndex: 100,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
