@@ -1868,7 +1868,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 ) : null} */}
               </View>
             </View>
-           : null}
+            }
           {normalSaving > 0 && (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
