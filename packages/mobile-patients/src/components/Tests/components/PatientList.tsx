@@ -92,11 +92,13 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
           <Text style={[styles.genderAgeTextStyle, showGreenBg && { color: WHITE }]}>
             {genderAgeText}
           </Text>
-          {!showGreenBg ? (
-            <AddPatientCircleIcon style={[styles.arrowStyle]} />
-          ) : (
-            <MinusPatientCircleIcon style={[styles.arrowStyle, { tintColor: WHITE }]} />
-          )}
+          <View style={styles.arrowIconView}>
+            {!showGreenBg ? (
+              <AddPatientCircleIcon style={[styles.arrowStyle]} />
+            ) : (
+              <MinusPatientCircleIcon style={[styles.arrowStyle, { tintColor: WHITE }]} />
+            )}
+          </View>
         </TouchableOpacity>
         {renderCartItems(item)}
       </View>
@@ -219,9 +221,8 @@ const styles = StyleSheet.create({
   arrowStyle: {
     tintColor: SHERPA_BLUE,
     height: 17,
-    width: 17,
+    width: 20,
     resizeMode: 'contain',
-    marginRight: 8,
   },
   itemNameText: {
     ...text('M', 14.5, '#313131', 1, 19.1),
@@ -240,5 +241,11 @@ const styles = StyleSheet.create({
     height: 20,
     width: 20,
     resizeMode: 'contain',
+  },
+  arrowIconView: {
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

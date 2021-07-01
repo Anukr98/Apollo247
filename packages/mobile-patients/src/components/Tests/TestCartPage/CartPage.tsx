@@ -1242,6 +1242,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.WHITE,
     marginBottom: 10,
     marginTop: 10,
+    elevation: 0,
   },
   patientNameText: {
     ...theme.viewStyles.text('SB', 12, theme.colors.WHITE, 1, 16),

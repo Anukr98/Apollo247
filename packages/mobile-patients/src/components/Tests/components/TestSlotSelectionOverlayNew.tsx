@@ -468,6 +468,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
               borderTopLeftRadius: showInOverlay ? 10 : 0,
               borderTopRightRadius: showInOverlay ? 10 : 0,
               marginTop: showInOverlay ? 140 : 16,
+              marginBottom: !showInOverlay ? height / 2.8 : 0,
             },
             showInOverlay && { flex: 1 },
             !showInOverlay && { height: height / 1.5 },
@@ -487,7 +488,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
               {props.heading}
             </Text>
           ) : null}
-          <ScrollView style={styles.containerContentStyle}>
+          <ScrollView style={styles.containerContentStyle} bounces={false}>
             {renderCalendarView()}
             {isPrepaidSlot ? renderPremiumTag() : null}
             {renderSlotSelectionView()}
@@ -616,7 +617,7 @@ const styles = StyleSheet.create({
   dateContentStyle: {
     width: width > 400 ? 68 : 64,
     height: 42,
-    margin: width > 400 ? 12 : 10,
+    margin: width > 400 ? 12 : 8,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',

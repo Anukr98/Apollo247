@@ -364,7 +364,7 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
 
   const renderMainView = () => {
     return (
-      <View style={{ margin: 16, marginTop: 4 }}>
+      <View style={{ margin: 16, marginTop: 4, marginBottom: 50 }}>
         <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
           {renderScheduleHeading()}
           {renderSlotSelection()}
