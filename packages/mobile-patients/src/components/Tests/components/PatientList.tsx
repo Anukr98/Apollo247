@@ -6,12 +6,13 @@ import {
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import {
+  AddPatientCircleIcon,
   Check,
+  MinusPatientCircleIcon,
   UnCheck,
-  WhiteChevronRightIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -22,18 +23,26 @@ import { diagnosticsDisplayPrice } from '@aph/mobile-patients/src/utils/commonUt
 const { SHERPA_BLUE, WHITE, APP_GREEN } = theme.colors;
 
 interface PatientListProps {
-  itemsInCart: DiagnosticsCartItem[];
+  itemsInCart: DiagnosticsCartItem[] | any;
   isCircleSubscribed: boolean;
   patientSelected: any;
   onPressSelectedPatient: (item: any) => void;
 }
 
 export const PatientList: React.FC<PatientListProps> = (props) => {
-  const { isCircleSubscribed, onPressSelectedPatient, patientSelected } = props;
+  const { isCircleSubscribed, onPressSelectedPatient, patientSelected, itemsInCart } = props;
   const { allCurrentPatients } = useAllCurrentPatients();
+
   const patientListToShow = allCurrentPatients?.filter(
     (item: any) => !!item?.id && item?.id != '+ADD MEMBER'
   );
+
+  const array = itemsInCart?.map((item: any, index: number) => {
+    item.isSelected = true;
+    return { ...item };
+  });
+
+  const [itemsSelected, setItemsSelected] = useState(array);
 
   const [showSelectedPatient, setShowSelectedPatient] = useState<any>(patientSelected);
 
@@ -44,7 +53,7 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
 
   const renderPatientListItem = (item: any, index: number) => {
     const patientName = `${item?.firstName || ''} ${item?.lastName || ''}`;
-    const genderAgeText = `${item?.gender || ''}, ${
+    const genderAgeText = `${nameFormater(item?.gender, 'title') || ''}, ${
       item?.dateOfBirth ? getAge(item?.dateOfBirth) || '' : ''
     }`;
     const patientSalutation = !!item?.gender
@@ -83,36 +92,37 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
           <Text style={[styles.genderAgeTextStyle, showGreenBg && { color: WHITE }]}>
             {genderAgeText}
           </Text>
-          <WhiteChevronRightIcon
-            style={[
-              styles.arrowStyle,
-              showGreenBg && { tintColor: WHITE, transform: [{ rotate: '270deg' }] },
-            ]}
-          />
+          {!showGreenBg ? (
+            <AddPatientCircleIcon style={[styles.arrowStyle]} />
+          ) : (
+            <MinusPatientCircleIcon style={[styles.arrowStyle, { tintColor: WHITE }]} />
+          )}
         </TouchableOpacity>
         {renderCartItems(item)}
       </View>
     );
   };
 
-  //add a logic to unselect & select multiple items. push in array wrt to patient id
-  const [itemSelected, setItemSelected] = useState<boolean>(true);
-
-  function _selectCartItem() {
-    // console.log('select item');
-    // setItemSelected(!itemSelected);
+  function _selectCartItem(ind: number) {
+    let arr = itemsSelected?.map((newItem: any, index: number) => {
+      if (ind == index) {
+        newItem.isSelected = !newItem?.isSelected;
+      }
+      return { ...newItem };
+    });
+    setItemsSelected(arr);
   }
 
-  const renderCartItemList = (test: DiagnosticsCartItem, index: number) => {
+  const renderCartItemList = (test: any, index: number) => {
     const itemName = test?.name;
     const priceToShow = diagnosticsDisplayPrice(test, isCircleSubscribed)?.priceToShow;
     return (
       <TouchableOpacity
-        onPress={() => _selectCartItem()}
+        onPress={() => _selectCartItem(index)}
         style={[
           styles.patientSelectTouch,
           {
-            backgroundColor: itemSelected ? '#F5FFFD' : colors.WHITE,
+            backgroundColor: !!test?.isSelected && test?.isSelected ? '#F5FFFD' : colors.WHITE,
           },
         ]}
       >
@@ -126,7 +136,11 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
             {string.common.Rs}
             {priceToShow}
           </Text>
-          {itemSelected ? <Check /> : <UnCheck />}
+          {!!test?.isSelected && test?.isSelected ? (
+            <Check style={styles.checkBoxIcon} />
+          ) : (
+            <UnCheck style={styles.checkBoxIcon} />
+          )}
         </View>
       </TouchableOpacity>
     );
@@ -150,7 +164,7 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
               bounces={false}
               style={styles.cartItemsFlatList}
               keyExtractor={keyExtractor}
-              data={props.itemsInCart || []}
+              data={itemsSelected || []}
               renderItem={({ item, index }) => renderCartItemList(item, index)}
               ItemSeparatorComponent={renderSeparator}
             />
@@ -207,7 +221,7 @@ const styles = StyleSheet.create({
     height: 17,
     width: 17,
     resizeMode: 'contain',
-    marginRight: 10,
+    marginRight: 6,
   },
   itemNameText: {
     ...text('M', 14.5, '#313131', 1, 19.1),
@@ -222,4 +236,9 @@ const styles = StyleSheet.create({
     borderStyle: 'solid',
   },
   patientSelectTouch: { flexDirection: 'row', justifyContent: 'space-between', padding: 16 },
+  checkBoxIcon: {
+    height: 20,
+    width: 20,
+    resizeMode: 'contain',
+  },
 });

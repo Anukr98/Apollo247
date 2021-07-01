@@ -130,7 +130,7 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
             style={[
               styles.progressLine,
               {
-                height: imageRules(currentPage)?.bold_patient ? 3 : 1,
+                height: imageRules(currentPage)?.onPressActionOnPatient ? 3 : 1,
               },
             ]}
           />
@@ -171,7 +171,7 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
             style={[
               styles.progressLine,
               {
-                height: imageRules(currentPage)?.bold_cart ? 3 : 1,
+                height: imageRules(currentPage)?.onPressActionOnCart ? 3 : 1,
                 width: screenWidth / 3.3,
               },
             ]}
@@ -212,7 +212,7 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
             style={[
               styles.progressLine,
               {
-                height: imageRules(currentPage)?.bold_slot ? 3 : 1,
+                height: imageRules(currentPage)?.onPressActionOnSchedule ? 3 : 1,
                 left: 9,
               },
             ]}

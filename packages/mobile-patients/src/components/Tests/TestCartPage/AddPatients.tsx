@@ -457,7 +457,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
 
   const renderSubHeading = () => {
     return (
-      <View style={{ marginTop: 12 }}>
+      <View style={{ marginTop: 6 }}>
         <Text style={styles.subHeadingText}>
           {string.diagnosticsCartPage.subHeadingMultipleUHID}
         </Text>

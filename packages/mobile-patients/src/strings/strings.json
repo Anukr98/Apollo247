@@ -590,7 +590,7 @@
     "categoryGrid": "Category_Scroll"
   },
   "diagnosticsCartPage":{
-    "patientHeading": "Select Patient Name",
+    "patientHeading": "Select Patient Names",
     "addPatient": "Add member",
     "subHeadingSingleUHID": "Please select the patient for whom you want to book the selected tests.",
     "subHeadingMultipleUHID": "Please select all the patients for whom you want to book the selected tests.",
