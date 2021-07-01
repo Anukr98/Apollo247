@@ -881,14 +881,28 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           <PhrGeneralAdviceIcon style={{ width: 20, height: 24.84, marginRight: 12 }} />
         )}
         {caseSheetDetails?.otherInstructions !== null ? (
+          <View style={{ marginTop: 28 }}>{renderListItem(listStrings || '', '')}</View>
+        ) : (
+          renderNoData('No advice')
+        )}
+      </>
+    );
+  };
+
+  const renderReferral = () => {
+    return (
+      <>
+        {renderHeadingView(
+          'Referral',
+          <PhrGeneralAdviceIcon style={{ width: 20, height: 24.84, marginRight: 12 }} />
+        )}
+        {caseSheetDetails?.otherInstructions !== null ? (
           <View style={{ marginTop: 28 }}>
-            {renderListItem(listStrings || '', '')}
+            {renderListItem('Consult \n' + caseSheetDetails?.referralSpecialtyName, '')}
             {renderListItem(
-              'Referral',
-              'Consult \n' + caseSheetDetails?.referralSpecialtyName?.toUpperCase() || '',
-              4
+              'Reason for Referral ' + caseSheetDetails?.referralDescription || '',
+              ''
             )}
-            {renderListItem(caseSheetDetails?.referralDescription || '', '')}
           </View>
         ) : (
           renderNoData('No advice')
