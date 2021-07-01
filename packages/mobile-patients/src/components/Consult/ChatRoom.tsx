@@ -50,6 +50,7 @@ import {
   UPDATE_HEALTH_RECORD_NUDGE_STATUS,
   GET_APPOINTMENT_DATA,
   GET_DOCTOR_DETAILS_BY_ID,
+  CALL_CONNECTION_UPDATES,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   bookRescheduleAppointment,
@@ -63,6 +64,10 @@ import {
   updateHealthRecordNudgeStatus,
   updateHealthRecordNudgeStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/updateHealthRecordNudgeStatus';
+import {
+  checkCallConnection,
+  checkCallConnectionVariables,
+} from '@aph/mobile-patients/src/graphql/types/checkCallConnection';
 import {
   addChatDocument,
   addChatDocumentVariables,
