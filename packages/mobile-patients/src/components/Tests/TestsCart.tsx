@@ -789,6 +789,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       });
     }
   };
+  useEffect(() => {
+    if (isEmptyObject(areaSelected)) {
+      setHcApiCalled(false);
+    } else {
+      setHcApiCalled(true);
+    }
+  }, [areaSelected]);
   const fetchAddresses = async () => {
     try {
       if (addresses?.length) {
@@ -867,7 +874,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     if (!!pinCodeFromAddress) {
       setLoading?.(true);
       setPinCode?.(pinCodeFromAddress);
-      setHcApiCalled(false);
       client
         .query<getPincodeServiceability, getPincodeServiceabilityVariables>({
           query: GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
@@ -1839,10 +1845,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             </View>
           )}
           {
-            <View style={styles.rowSpaceBetweenStyle}>
-              <Text style={[styles.blueTextStyle, { width: '60%' }]}>
-                Collection and hygiene charges
-              </Text>
+            isHcApiCalled ?  <View style={styles.rowSpaceBetweenStyle}>
+              <Text style={[styles.blueTextStyle, { width: '60%' }]}>Collection and hygiene charges</Text>
               <View style={{ flexDirection: 'row' }}>
                 <Text
                   style={[
@@ -1869,7 +1873,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 ) : null} */}
               </View>
             </View>
-            }
+            : null}
           {normalSaving > 0 && (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
