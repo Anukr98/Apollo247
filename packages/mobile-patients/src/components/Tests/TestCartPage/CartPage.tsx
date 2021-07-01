@@ -83,7 +83,11 @@ import {
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
-import { TestPackageForDetails } from '../TestDetails';
+import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
+import {
+  SCREEN_NAMES,
+  TimelineWizard,
+} from '@aph/mobile-patients/src/components/Tests/components/TimelineWizard';
 
 type Address = savePatientAddress_savePatientAddress_patientAddress;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
@@ -1164,10 +1168,22 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     );
   };
 
+  const renderWizard = () => {
+    return (
+      <TimelineWizard
+        currentPage={SCREEN_NAMES.CART}
+        upcomingPages={[SCREEN_NAMES.SCHEDULE, SCREEN_NAMES.REVIEW]}
+        donePages={[SCREEN_NAMES.PATIENT]}
+        navigation={props.navigation}
+      />
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={[{ ...theme.viewStyles.container }]}>
         {renderHeader()}
+        {renderWizard()}
         <ScrollView bounces={false} style={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
           {renderMainView()}
         </ScrollView>

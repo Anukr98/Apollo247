@@ -25,6 +25,10 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { diagnosticGetCustomizedSlotsV2 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { createPatientAddressObject } from '@aph/mobile-patients/src/utils/commonUtils';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  SCREEN_NAMES,
+  TimelineWizard,
+} from '@aph/mobile-patients/src/components/Tests/components/TimelineWizard';
 
 export interface AddressSlotSelectionProps extends NavigationScreenProps {
   reportGenDetails: any;
@@ -391,10 +395,22 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
     );
   };
 
+  const renderWizard = () => {
+    return (
+      <TimelineWizard
+        currentPage={SCREEN_NAMES.SCHEDULE}
+        upcomingPages={[SCREEN_NAMES.REVIEW]}
+        donePages={[SCREEN_NAMES.PATIENT, SCREEN_NAMES.CART]}
+        navigation={props.navigation}
+      />
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={[{ ...theme.viewStyles.container }]}>
         {renderHeader()}
+        {renderWizard()}
         {renderMainView()}
       </SafeAreaView>
       {renderStickyBottom()}

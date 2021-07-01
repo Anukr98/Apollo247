@@ -57,6 +57,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
+import {
+  SCREEN_NAMES,
+  TimelineWizard,
+} from '@aph/mobile-patients/src/components/Tests/components/TimelineWizard';
 
 const screenHeight = Dimensions.get('window').height;
 
@@ -454,7 +458,9 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   const renderSubHeading = () => {
     return (
       <View style={{ marginTop: 12 }}>
-        <Text style={styles.subHeadingText}>{string.diagnosticsCartPage.subHeadingSingleUHID}</Text>
+        <Text style={styles.subHeadingText}>
+          {string.diagnosticsCartPage.subHeadingMultipleUHID}
+        </Text>
       </View>
     );
   };
@@ -514,10 +520,22 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     );
   };
 
+  const renderWizard = () => {
+    return (
+      <TimelineWizard
+        currentPage={SCREEN_NAMES.PATIENT}
+        upcomingPages={[SCREEN_NAMES.CART, SCREEN_NAMES.SCHEDULE, SCREEN_NAMES.REVIEW]}
+        donePages={[]}
+        navigation={props.navigation}
+      />
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={[{ ...theme.viewStyles.container }]}>
         {renderHeader()}
+        {renderWizard()}
         {renderMainView()}
       </SafeAreaView>
       {renderStickyBottom()}

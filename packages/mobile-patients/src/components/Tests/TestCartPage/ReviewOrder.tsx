@@ -96,7 +96,11 @@ import {
   createOrderInternalVariables,
   createOrderInternal,
 } from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
-import { TestPremiumSlotOverlay } from '../components/TestPremiumSlotOverlay';
+import { TestPremiumSlotOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestPremiumSlotOverlay';
+import {
+  SCREEN_NAMES,
+  TimelineWizard,
+} from '@aph/mobile-patients/src/components/Tests/components/TimelineWizard';
 
 const screenWidth = Dimensions.get('window').width;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
@@ -1372,10 +1376,22 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     ) : null;
   };
 
+  const renderWizard = () => {
+    return (
+      <TimelineWizard
+        currentPage={SCREEN_NAMES.REVIEW}
+        upcomingPages={[]}
+        donePages={[SCREEN_NAMES.PATIENT, SCREEN_NAMES.CART, SCREEN_NAMES.SCHEDULE]}
+        navigation={props.navigation}
+      />
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={[{ ...theme.viewStyles.container }]}>
         {renderHeader()}
+        {renderWizard()}
         <ScrollView bounces={false} style={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
           {renderMainView()}
         </ScrollView>

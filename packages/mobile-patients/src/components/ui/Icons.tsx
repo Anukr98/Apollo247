@@ -2003,3 +2003,99 @@ export const SavingsIcon: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/saving_icon.webp')}
   />
 );
+
+export const TimelinePatientProgress: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/addPatient_unselected.webp')}
+  />
+);
+
+export const TimelinePatientDone: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/addPatient_done.webp')}
+  />
+);
+
+export const TimelineCartUnselected: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/cart_unselected.webp')}
+  />
+);
+
+export const TimelineCartProgress: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/cart_progress.webp')}
+  />
+);
+
+export const TimelineCartDone: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/cart_done.webp')}
+  />
+);
+
+export const TimelineScheduleUnselected: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/schedule_unselected.webp')}
+  />
+);
+
+export const TimelineScheduleProgress: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/schedule_progress.webp')}
+  />
+);
+
+export const TimelineScheduleDone: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/schedule_done.webp')}
+  />
+);
+
+export const TimelineReviewUnselected: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/review_unselected.webp')}
+  />
+);
+
+export const TimelineReviewProgress: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/review_progress.webp')}
+  />
+);
+
+export const AddPatientCircleIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/icon.webp')}
+  />
+);
+
+export const MinusPatientCircleIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/circle-minus.webp')}
+  />
+);
