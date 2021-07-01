@@ -5796,7 +5796,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const startCallConnectionUpdate = BackgroundTimer.setInterval(() => {
       console.log('csk');
       updateStatusOfCall({ appointmentId: appointmentData.id, patientId: patientId });
-    }, 15000);
+    }, 30000);
     setStartCallConnectionUpdateBT(startCallConnectionUpdate);
   };
 
