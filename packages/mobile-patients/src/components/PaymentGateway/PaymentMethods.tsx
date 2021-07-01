@@ -7,7 +7,6 @@ import {
   NativeEventEmitter,
   ScrollView,
   Platform,
-  View,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -31,13 +30,11 @@ import {
   isGooglePayReady,
   isPhonePeReady,
   InitiateUPISDKTxn,
-  fetchSavedCards,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   CREATE_ORDER,
-  GET_PAYMENT_METHODS,
   VERIFY_VPA,
   INITIATE_DIAGNOSTIC_ORDER_PAYMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -49,7 +46,6 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   VerifyVPA,
   one_apollo_store_code,
-  PAYMENT_MODE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { verifyVPA, verifyVPAVariables } from '@aph/mobile-patients/src/graphql/types/verifyVPA';
 import {
@@ -67,10 +63,6 @@ import { HealthCredits } from '@aph/mobile-patients/src/components/PaymentGatewa
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useGetPaymentMethods } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useGetPaymentMethods';
 import {
-  createJusPayOrder,
-  processDiagnosticsCODOrder,
-} from '@aph/mobile-patients/src/helpers/clientCalls';
-import {
   isEmptyObject,
   getDiagnosticCityLevelPaymentOptions,
   isSmallDevice,
@@ -83,8 +75,6 @@ import {
   PharmaOrderPlaced,
 } from '@aph/mobile-patients/src/components/PaymentGateway/Events';
 import { useFetchSavedCards } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useFetchSavedCards';
-import string from '@aph/mobile-patients/src/strings/strings.json';
-import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/components/InfoMessage';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const { HyperSdkReact } = NativeModules;
@@ -168,6 +158,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     HCSelected
       ? healthCredits >= redeemableAmount
         ? (setburnHc(redeemableAmount), setAmount(amount - redeemableAmount))
+        : redeemableAmount - healthCredits < 1
+        ? (setburnHc(healthCredits - 1), setAmount(getFormattedAmount(amount - healthCredits + 1)))
         : (setburnHc(healthCredits), setAmount(getFormattedAmount(amount - healthCredits)))
       : (setAmount(props.navigation.getParam('amount')), setburnHc(0));
   };
