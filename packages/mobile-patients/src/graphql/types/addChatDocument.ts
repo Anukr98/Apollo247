@@ -22,4 +22,5 @@ export interface addChatDocumentVariables {
   appointmentId: string;
   documentPath?: string | null;
   prismFileId?: string | null;
+  fileName?: string | null;
 }

@@ -1,19 +1,9 @@
 import React from 'react';
-import {
-  ActivityIndicator,
-  View,
-  StyleProp,
-  ViewStyle,
-  Text,
-  StyleSheet,
-  Dimensions,
-  Image,
-} from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Image } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { createShimmerPlaceholder } from 'react-native-shimmer-placeholder';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CovidOrange } from '@aph/mobile-patients/src/components/ui/Icons';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { cardWidth } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultedDoctorsCard';
 
 const { width, height } = Dimensions.get('window');
@@ -260,7 +250,7 @@ const styles = StyleSheet.create({
   },
 
   vaccinesHospitalLoader: {
-    height: 110,
+    height: 280,
     borderRadius: 10,
     width: '100%',
     marginVertical: 8,
@@ -320,17 +310,6 @@ const styles = StyleSheet.create({
   rowStyle: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  consultCtaStyle: {
-    ...theme.viewStyles.cardViewStyle,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 15,
-    flexDirection: 'row',
-    minHeight: 59,
-    width: width / 2 - 22,
-    marginRight: 12,
-    marginBottom: 12,
-    alignItems: 'center',
   },
 });
 
@@ -664,7 +643,7 @@ export const renderVaccinesHospitalSlotsLoaderShimmer = () => {
 
 export const renderVaccinesTimeSlotsLoaderShimmer = () => {
   return (
-    <View style={{ marginVertical: 10 }}>
+    <View style={{ marginVertical: 10, marginHorizontal: 20 }}>
       <ShimmerPlaceHolder
         shimmerColors={shimmerColors}
         LinearGradient={LinearGradient}
@@ -836,15 +815,5 @@ export const renderDiagnosticWidgetHeadingShimmer = () => {
         shimmerStyle={styles.diagnosticCard2}
       />
     </View>
-  );
-};
-
-export const consultWidgetShimmer = () => {
-  return (
-    <ShimmerPlaceHolder
-      shimmerColors={shimmerColors}
-      LinearGradient={LinearGradient}
-      shimmerStyle={styles.consultCtaStyle}
-    />
   );
 };

@@ -284,8 +284,8 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
         <InfoIconRed />
         <Text style={styles.cancel_text}>{string.diagnostics.invoiceTimelineText}</Text>
       </View>
-    )
-  }
+    );
+  };
 
   return (
     <View style={{ flex: 1 }}>

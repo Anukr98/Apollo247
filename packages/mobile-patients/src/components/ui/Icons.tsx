@@ -881,6 +881,10 @@ export const SearchDarkPhrIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/ic_search_dark_phr.webp')} />
 );
 
+export const ShareBlueIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/share_icon.webp')} />
+);
+
 export const ShareYellowDocIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/ic_share_yellow.webp')} />
 );
@@ -1480,6 +1484,14 @@ export const TickIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_tick.webp')} />
 );
 
+export const OffToggle: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/off_toggle.webp')} />
+);
+
+export const OnToggle: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/on_toggle.webp')} />
+);
+
 export const BlueTick: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_check_blue.webp')} />
 );
@@ -1755,6 +1767,9 @@ export const ClockIcon: React.FC<IconProps> = (props) => (
 export const InfoIconRed: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_info.webp')} />
 );
+export const InfoIconBlue: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_info_blue_2x.webp')} />
+);
 export const WhyBookUs: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/whyBookUsDetail_Icon.webp')} />
 );
@@ -1909,40 +1924,17 @@ export const VaccineBookingFailed: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/vacc_booking_failed.webp')} />
 );
 
+export const SyringSmall: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/syring_small.webp')} />
+);
+
+export const SyringLarge: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/syring_large.webp')} />
+);
+
 export const WidgetLiverIcon: React.FC<IconProps> = (props) => (
   <IconBase
     {...props}
     source={require('@aph/mobile-patients/src/components/ui/icons/ic_liver_icon.webp')}
   />
-);
-
-export const GreenClock: React.FC<IconProps> = (props) => (
-  <IconBase
-    {...props}
-    source={require('@aph/mobile-patients/src/components/ui/icons/green_clock.webp')}
-  />
-);
-
-export const LocationGrey: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/location_grey.webp')} />
-);
-
-export const Sort: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/sort.webp')} />
-);
-
-export const Toggle: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/rightToggle.webp')} />
-);
-
-export const LeftToggle: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/leftToggle.webp')} />
-);
-
-export const VideoConsult: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/videoConsult.webp')} />
-);
-
-export const YellowRightArrow: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/yellowRightArrow.webp')} />
 );

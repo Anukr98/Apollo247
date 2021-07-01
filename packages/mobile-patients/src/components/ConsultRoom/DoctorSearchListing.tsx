@@ -21,10 +21,6 @@ import {
   SearchIcon,
   FamilyDoctorIcon,
   RetryButtonIcon,
-  Sort,
-  DropdownGreen,
-  Toggle,
-  LeftToggle,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
@@ -122,7 +118,6 @@ import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobil
 import { DoctorShareComponent } from '@aph/mobile-patients/src/components/ConsultRoom/Components/DoctorShareComponent';
 import { SKIP_LOCATION_PROMPT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
 import { userLocationConsultWEBEngage } from '@aph/mobile-patients/src/helpers/CommonEvents';
-import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 
 const searchFilters = require('@aph/mobile-patients/src/strings/filters');
 const { width: screenWidth } = Dimensions.get('window');
@@ -149,16 +144,16 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE),
   },
   sortByTextStyle: {
-    ...theme.viewStyles.text('R', 10, theme.colors.SHERPA_BLUE),
+    ...theme.viewStyles.text('M', 8, theme.colors.SHERPA_BLUE),
+    marginLeft: 13,
+    marginTop: 13,
   },
-  bottomMainContainer: {
-    ...theme.viewStyles.cardViewStyle,
-    borderRadius: 0,
-  },
+
+  bottomMainContainer: { backgroundColor: theme.colors.WHITE },
   bottomOptionsContainer: {
     flexDirection: 'row',
-    marginVertical: 10,
-    marginHorizontal: 8,
+    marginBottom: 10,
+    marginHorizontal: 13,
     justifyContent: 'space-between',
   },
   bottomItemContainer: {
@@ -229,31 +224,6 @@ const styles = StyleSheet.create({
     paddingTop: 4,
     paddingLeft: 20,
   },
-  sortIcon: {
-    width: 17,
-    height: 17,
-    marginRight: 8,
-  },
-  selectedFilterText: {
-    ...theme.viewStyles.text('SB', 13, theme.colors.LIGHT_BLUE),
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  centerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  consultModeText: {
-    ...theme.viewStyles.text('B', 10, theme.colors.SHERPA_BLUE),
-  },
-  toggleIcon: {
-    width: 32,
-    height: 32,
-    marginHorizontal: 6,
-  },
 });
 
 let latlng: locationType | null = null;
@@ -263,7 +233,6 @@ export type filterDataType = {
   label: string;
   options: string[];
   selectedOptions: string[];
-  isOnlineConsultMode: boolean;
 };
 
 export type locationType = { lat: number | string; lng: number | string };
@@ -315,7 +284,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const [showLocations, setshowLocations] = useState<boolean>(false);
-  const [sortValue, setSortValue] = useState<string>('availability'); //default sort
+  const [sortValue, setSortValue] = useState<string>('');
   const [searchIconClicked, setSearchIconClicked] = useState<boolean>(false);
   const [careDoctorsSwitch, setCareDoctorsSwitch] = useState<boolean>(false);
   const [filterActionTaken, setFilterActionTaken] = useState<boolean>(false);
@@ -323,19 +292,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [showDoctorSharePopup, setShowDoctorSharePopup] = useState<boolean>(false);
   const [doctorShareRank, setDoctorShareRank] = useState<number>(1);
   const specialityId = props.navigation.getParam('specialityId') || '';
-  const [selectedSortInput, setSelectedSortInput] = useState<string | number>(
-    string.doctor_search_listing.availability
-  );
-  const isTwoLinesSort =
-    selectedSortInput === string.doctor_search_listing.priceLtoH ||
-    selectedSortInput === string.doctor_search_listing.priceHtoL;
-  const sort_filter = [
-    { key: '1', value: string.doctor_search_listing.availability },
-    { key: '2', value: string.doctor_search_listing.nearby },
-    { key: '3', value: string.doctor_search_listing.lowToHighPrice },
-    { key: '4', value: string.doctor_search_listing.highToLowPrice },
-    { key: '5', value: string.doctor_search_listing.yearOfExperience },
-  ];
+
   let DoctorsflatListRef: any;
   const filterOptions = (filters: any) => {
     let preFilters = filters;
@@ -384,8 +341,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [pageSize, setpageSize] = useState<number>(AppConfig.Configuration.Doctors_Page_Size);
   const [fetching, setfetching] = useState<boolean>(false);
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
-  const doctors_partners = doctorsType === 'PARTNERS' ? true : false;
-  const isOnlineConsultMode = props.navigation.getParam('isOnlineConsultMode');
 
   useEffect(() => {
     async function fetchFilter() {
@@ -482,6 +437,16 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       CommonBugFender('DoctorSearchListing_fetchAddress', error);
     }
   }
+
+  const vaueChange = (sort: any) => {
+    if (sort === 'distance') {
+      setNearyByFlag(true);
+      setAvailabilityFlag(false);
+    } else {
+      setAvailabilityFlag(true);
+      setNearyByFlag(false);
+    }
+  };
 
   const client = useApolloClient();
   const params = props.navigation.getParam('specialities') || null;
@@ -591,20 +556,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     fireLocationPermissionEvent('Not provided');
     AsyncStorage.setItem(SKIP_LOCATION_PROMPT, 'true');
     hideAphAlert!();
-    setSelectedSortInput(string.doctor_search_listing.availability);
-    fetchSpecialityFilterData(
-      filterMode,
-      FilterData,
-      latlng,
-      'availability',
-      undefined,
-      false,
-      doctorSearch
-    );
+    fetchDoctorListByAvailability();
   };
 
   const fetchDoctorListByAvailability = () => {
+    setNearyByFlag(false);
+    setAvailabilityFlag(true);
     setshowSpinner(false);
+
     !doctorsList?.length &&
       fetchSpecialityFilterData(
         filterMode,
@@ -624,7 +583,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         title: 'Hi! :)',
         onPressOutside: () => {
           setSortValue('availability');
-          setSelectedSortInput(string.doctor_search_listing.availability);
           fetchSpecialityFilterData(
             filterMode,
             FilterData,
@@ -679,7 +637,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                           lat: response.latitude || '',
                           lng: response.longitude || '',
                         },
-                        'distance',
+                        'availability',
                         undefined,
                         false,
                         doctorSearch
@@ -697,7 +655,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                       false,
                       doctorSearch
                     );
-                    setSelectedSortInput(string.doctor_search_listing.availability);
                   })
                   .finally(() => {
                     setLoadingContext!(false);
@@ -854,6 +811,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         setData(data, docTabSelected, pageNo);
         !pageNo &&
           (setshowSpinner(false),
+          sort && vaueChange(sort),
           setApolloDocsNumber(
             data.getDoctorList?.apolloDoctorCount ? data.getDoctorList?.apolloDoctorCount : 0
           ),
@@ -971,7 +929,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                   },
                   sortValue,
                   findAddrComponents('postal_code', addrComponents),
-                  doctors_partners,
+                  doctorsType === 'PARTNERS' ? true : false,
                   doctorSearch
                 );
                 latlng = {
@@ -1114,7 +1072,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                     latlng,
                     'availability',
                     undefined,
-                    doctors_partners,
+                    doctorsType === 'PARTNERS' ? true : false,
                     ''
                   );
                 }
@@ -1155,10 +1113,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     doctorDetails: any,
     source: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED]['Source'],
     isTopDoc: boolean,
-    type?: 'consult-now' | 'book-appointment' | '',
-    consultMode?: ConsultMode
+    type?: 'consult-now' | 'book-appointment'
   ) => {
-    let eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED] = {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED] = {
       'Doctor Name': doctorDetails.displayName!,
       Source: source,
       'Doctor ID': doctorDetails.id,
@@ -1182,8 +1139,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     };
 
     if (type == 'consult-now') {
-      eventAttributes['Mode of consult'] =
-        consultMode === ConsultMode.ONLINE ? 'Video Consult' : 'Hospital Visit';
       postWebEngageEvent(WebEngageEventName.CONSULT_NOW_CLICKED, eventAttributes);
       const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.CONSULT_NOW_CLICKED] = {
         'customer id': currentPatient ? currentPatient.id : '',
@@ -1257,13 +1212,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         availableModes={rowData.consultMode}
         callSaveSearch={callSaveSearch}
         onPress={(id: string, onlineConsult: boolean) => {
-          postDoctorClickWEGEvent(
-            { ...rowData, rowId: index + 1 },
-            'List',
-            false,
-            '',
-            onlineConsult
-          );
+          postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List');
           props.navigation.navigate(AppRoutes.DoctorDetails, {
             doctorId: rowData.id,
             callSaveSearch: callSaveSearch,
@@ -1271,8 +1220,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           });
         }}
         onPressShare={(doctorData) => onClickDoctorShare(doctorData, index + 1)}
-        onPressConsultNowOrBookAppointment={(type, consultMode: ConsultMode) => {
-          postDoctorClickWEGEvent(rowData, 'List', false, type, consultMode);
+        onPressConsultNowOrBookAppointment={(type) => {
+          postDoctorClickWEGEvent(rowData, 'List', type);
         }}
         onPlanSelected={() => setShowCarePlanNotification(true)}
         selectedConsultMode={filter}
@@ -1357,7 +1306,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                       latlng,
                       sortValue,
                       undefined,
-                      doctors_partners,
+                      doctorsType === 'PARTNERS' ? true : false,
                       doctorSearch
                     );
                   } else {
@@ -1387,14 +1336,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               DoctorsflatListRef = ref;
             }}
             contentContainerStyle={{
-              marginTop: 24,
+              marginTop: 20,
               marginBottom: 8,
               paddingTop: Platform.OS == 'android' ? 10 : 1,
             }}
             bounces={false}
             data={doctors}
             renderItem={({ item, index }) =>
-              renderSearchDoctorResultsRow(item, index, {}, 1, filter)
+              renderSearchDoctorResultsRow(item, index, {}, undefined, filter)
             }
             keyExtractor={(item) => item!.id}
             onEndReachedThreshold={0.2}
@@ -1427,7 +1376,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         latlng,
         sortValue,
         undefined,
-        doctors_partners,
+        doctorsType === 'PARTNERS' ? true : false,
         doctorSearch,
         pageNo
       );
@@ -1618,7 +1567,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         latlng,
         'availability',
         undefined,
-        doctors_partners,
+        doctorsType === 'PARTNERS' ? true : false,
         doctorSearch
       );
     }
@@ -1669,7 +1618,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           buttonTextStyle={buttonTextStyle}
           onPressShare={(doctorData) => onClickDoctorShare(doctorData, index + 1)}
           onPress={(id: string, onlineConsult: boolean) => {
-            postDoctorClickWEGEvent(platinumDoctor, 'List', true, '', onlineConsult);
+            postDoctorClickWEGEvent(platinumDoctor, 'List', true);
             postPlatinumDoctorWEGEvents(platinumDoctor, WebEngageEventName.DOH_Clicked);
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: platinumDoctor?.id,
@@ -1678,8 +1627,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               consultModeSelected: onlineConsult ? ConsultMode.ONLINE : ConsultMode.PHYSICAL,
             });
           }}
-          onPressConsultNowOrBookAppointment={(type, consultMode: ConsultMode) => {
-            postDoctorClickWEGEvent(platinumDoctor, 'List', true, type, consultMode);
+          onPressConsultNowOrBookAppointment={(type) => {
+            postDoctorClickWEGEvent(platinumDoctor, 'List', true, type);
           }}
           onPlanSelected={() => setShowCarePlanNotification(true)}
         />
@@ -1761,12 +1710,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       </View>
     );
   };
-  const [onlineCheckBox, setOnlineCheckbox] = useState<boolean>(
-    isOnlineConsultMode == undefined || isOnlineConsultMode ? true : false
-  );
-  const [physicalCheckBox, setPhysicalCheckbox] = useState<boolean>(
-    isOnlineConsultMode == undefined || isOnlineConsultMode ? false : true
-  );
+  const [onlineCheckBox, setOnlineCheckbox] = useState<boolean>(true);
+  const [physicalCheckBox, setPhysicalCheckbox] = useState<boolean>(true);
+  const [nearyByFlag, setNearyByFlag] = useState<boolean>(false);
+  const [availabilityFlag, setAvailabilityFlag] = useState<boolean>(true);
 
   const setDeepLinkDoctorTypeFilter = () => {
     if (doctorTypeFilter === 'apollo') {
@@ -1774,6 +1721,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       filterDoctors(doctorsList, 'APOLLO');
     } else if (doctorTypeFilter === 'partners') {
       setDoctorsType('PARTNERS');
+      setNearyByFlag(true);
+      setAvailabilityFlag(false);
       filterDoctors(doctorsList, 'PARTNERS');
     }
   };
@@ -1782,6 +1731,58 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       setPhysicalCheckbox(false);
     } else if (typeOfConsult === 'inperson') {
       setOnlineCheckbox(false);
+    }
+  };
+
+  const onPressNearByRadioButton = (doctorTabsSelected: boolean = false) => {
+    if (!nearyByFlag) {
+      setNearyByFlag(!nearyByFlag);
+      setAvailabilityFlag(false);
+      setshowSpinner(true);
+      postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
+        'Sort By': 'distance',
+      });
+      setSortValue('distance');
+      if (locationDetails) {
+        const coordinates = {
+          lat: locationDetails.latitude || '',
+          lng: locationDetails.longitude || '',
+        };
+        latlng = coordinates;
+        fetchSpecialityFilterData(
+          filterMode,
+          FilterData,
+          latlng,
+          'distance',
+          undefined,
+          doctorTabsSelected,
+          doctorSearch
+        );
+      } else {
+        setDoctorsList([]);
+        checkLocation(doctorTabsSelected);
+      }
+    }
+  };
+
+  const onPressAvailabiltyRadioButton = (docTabSelected: boolean = false) => {
+    if (!availabilityFlag) {
+      setAvailabilityFlag(!availabilityFlag);
+      setNearyByFlag(false);
+      setshowSpinner(true);
+      postWebEngageEvent(WebEngageEventName.CONSULT_SORT, {
+        'Sort By': 'availability',
+      });
+      setSortValue('availability');
+      fetchSpecialityFilterData(
+        filterMode,
+        FilterData,
+        latlng,
+        'availability',
+        undefined,
+        docTabSelected,
+        doctorSearch
+      );
     }
   };
 
@@ -1797,174 +1798,158 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     postWebEngageEvent(WebEngageEventName.DOCTOR_LISTING_FILTER_APPLIED, eventAttributes);
   };
 
-  const onApplyingSortFilters = (sort: string) => {
-    setshowSpinner(true);
-    const attributes = {
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient UHID': g(currentPatient, 'uhid'),
-      Relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(
-        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-      ),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Customer ID': g(currentPatient, 'id'),
-      User_Type: getUserType(allCurrentPatients),
-      'Sort By': sort,
-    };
-    postWebEngageEvent(WebEngageEventName.CONSULT_SORT, attributes);
-    setSortValue(sort);
-    if (sort === 'distance' && !locationDetails) {
-      setDoctorsList([]);
-      checkLocation(doctors_partners);
-    } else {
-      fetchSpecialityFilterData(
-        filterMode,
-        FilterData,
-        latlng,
-        sort,
-        undefined,
-        doctors_partners,
-        doctorSearch
-      );
-    }
-  };
-
-  const onPressSortValues = (value: string | number) => {
-    switch (value) {
-      case string.doctor_search_listing.lowToHighPrice:
-        setSelectedSortInput(string.doctor_search_listing.priceLtoH);
-        onApplyingSortFilters('price_ascending');
-        break;
-      case string.doctor_search_listing.highToLowPrice:
-        setSelectedSortInput(string.doctor_search_listing.priceHtoL);
-        onApplyingSortFilters('price_descending');
-        break;
-      case string.doctor_search_listing.yearOfExperience:
-        setSelectedSortInput(string.doctor_search_listing.yrsOfExp);
-        onApplyingSortFilters('experience');
-        break;
-      default:
-        setSelectedSortInput(value);
-        if (value === string.doctor_search_listing.availability) {
-          onApplyingSortFilters('availability');
-        } else {
-          onApplyingSortFilters('distance');
-        }
-        break;
-    }
-  };
-
-  const onPressHospitalVisit = () => {
-    callToggleChangeWEGEvent(false);
-    setPhysicalCheckbox(!physicalCheckBox);
-    setOnlineCheckbox(false);
-  };
-
-  const onPressVideoConsult = () => {
-    callToggleChangeWEGEvent();
-    setOnlineCheckbox(!onlineCheckBox);
-    setPhysicalCheckbox(false);
-  };
-
-  const callToggleChangeWEGEvent = (onlineToggle: boolean = true) => {
-    const attributes = {
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient UHID': g(currentPatient, 'uhid'),
-      Relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(
-        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-      ),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Customer ID': g(currentPatient, 'id'),
-      User_Type: getUserType(allCurrentPatients),
-      'Consult flow':
-        isOnlineConsultMode == undefined
-          ? 'Unknown'
-          : isOnlineConsultMode
-          ? 'Video Consult'
-          : 'Hospital Visit',
-      Toggle: onlineToggle ? 'Video Consult' : 'Hospital Visit',
-    };
-    postWebEngageEvent(WebEngageEventName.CONSULT_MODE_TOGGLE, attributes);
-  };
-
   const renderBottomOptions = () => {
+    const doctors_partners = doctorsType === 'PARTNERS' ? true : false;
     return (
       <View style={styles.bottomMainContainer}>
+        <Text style={styles.sortByTextStyle}>{string.doctor_search_listing.sortby}</Text>
         <View style={styles.bottomOptionsContainer}>
           <View style={styles.bottomItemContainer}>
-            <Sort style={styles.sortIcon} />
-            <View>
-              <Text style={styles.sortByTextStyle}>{string.doctor_search_listing.sortby} :</Text>
-              <MaterialMenu
-                options={sort_filter}
-                // selectedText={relation && relation.key.toString()}
-                itemTextStyle={{
-                  ...theme.viewStyles.text('M', 16, '#01475b'),
-                  paddingHorizontal: 0,
-                }}
-                selectedTextStyle={{
-                  ...theme.viewStyles.text('M', 16, 'red'),
-                  alignSelf: 'flex-start',
-                }}
-                onPress={(input) => {
-                  onPressSortValues(input?.value);
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => {
+                fireFilterWebengageEvent(
+                  string.doctor_search_listing.near,
+                  nearyByFlag ? 'True' : 'False'
+                );
+                onPressNearByRadioButton(doctors_partners);
+              }}
+            >
+              <View
+                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
+              >
+                {nearyByFlag ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
+                <Text
+                  style={{
+                    ...theme.viewStyles.text(
+                      'B',
+                      10,
+                      theme.colors.SHERPA_BLUE,
+                      nearyByFlag ? 1 : 0.6
+                    ),
+                    marginLeft: 1,
+                  }}
+                >
+                  {string.doctor_search_listing.near}
+                </Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={1}
+              style={{ marginLeft: 8 }}
+              onPress={() => {
+                fireFilterWebengageEvent(
+                  string.doctor_search_listing.avaliablity,
+                  availabilityFlag ? 'True' : 'False'
+                );
+                onPressAvailabiltyRadioButton(doctors_partners);
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
-                <View style={styles.row}>
-                  <Text style={styles.selectedFilterText}>{selectedSortInput}</Text>
-                  <DropdownGreen />
+                {availabilityFlag ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
+                <Text
+                  style={{
+                    ...theme.viewStyles.text(
+                      'B',
+                      10,
+                      theme.colors.SHERPA_BLUE,
+                      availabilityFlag ? 1 : 0.6
+                    ),
+                    marginLeft: 1,
+                  }}
+                >
+                  {string.doctor_search_listing.avaliablity}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.seperator} />
+          <View style={styles.bottomItemContainer}>
+            <View style={styles.bottomItemContainer}>
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={() => {
+                  fireFilterWebengageEvent(
+                    string.doctor_search_listing.online,
+                    onlineCheckBox ? 'True' : 'False'
+                  );
+                  setOnlineCheckbox(!onlineCheckBox);
+                  if (!physicalCheckBox) {
+                    setPhysicalCheckbox(!physicalCheckBox);
+                  }
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {onlineCheckBox ? <CheckedIcon /> : <CheckUnselectedIcon />}
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text(
+                        'B',
+                        10,
+                        theme.colors.SHERPA_BLUE,
+                        onlineCheckBox ? 1 : 0.6
+                      ),
+                      marginLeft: 4,
+                    }}
+                  >
+                    {string.doctor_search_listing.online}
+                  </Text>
                 </View>
-              </MaterialMenu>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.bottomCenterContainer}>
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={() => {
+                  fireFilterWebengageEvent(
+                    string.doctor_search_listing.inperson,
+                    physicalCheckBox ? 'True' : 'False'
+                  );
+                  setPhysicalCheckbox(!physicalCheckBox);
+                  if (!onlineCheckBox) {
+                    setOnlineCheckbox(!onlineCheckBox);
+                  }
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {physicalCheckBox ? <CheckedIcon /> : <CheckUnselectedIcon />}
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text(
+                        'B',
+                        10,
+                        theme.colors.SHERPA_BLUE,
+                        physicalCheckBox ? 1 : 0.6
+                      ),
+                      marginLeft: 4,
+                    }}
+                  >
+                    {string.doctor_search_listing.inperson}
+                  </Text>
+                </View>
+              </TouchableOpacity>
             </View>
           </View>
-          <View
-            style={[
-              styles.seperator,
-              {
-                height: isTwoLinesSort ? 50 : 34,
-              },
-            ]}
-          />
-          <View style={styles.bottomItemContainer}>
-            <TouchableOpacity
-              activeOpacity={1}
-              style={styles.centerRow}
-              onPress={() => onPressHospitalVisit()}
-            >
-              <Text style={[styles.consultModeText, { opacity: physicalCheckBox ? 1 : 0.6 }]}>
-                Hospital Visit
-              </Text>
-            </TouchableOpacity>
-            {onlineCheckBox ? (
-              <TouchableOpacity onPress={() => onPressHospitalVisit()}>
-                <Toggle style={styles.toggleIcon} />
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity onPress={() => onPressVideoConsult()}>
-                <LeftToggle style={styles.toggleIcon} />
-              </TouchableOpacity>
-            )}
-            <TouchableOpacity
-              style={styles.centerRow}
-              activeOpacity={1}
-              onPress={() => onPressVideoConsult()}
-            >
-              <Text style={[styles.consultModeText, { opacity: onlineCheckBox ? 1 : 0.6 }]}>
-                Video Consult
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <View
-            style={[
-              styles.seperator,
-              {
-                height: isTwoLinesSort ? 50 : 34,
-              },
-            ]}
-          />
+          <View style={styles.seperator} />
           <View style={styles.bottomItemContainer}>
             <TouchableOpacity
               activeOpacity={1}
@@ -2113,7 +2098,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                     latlng,
                     sortValue,
                     undefined,
-                    doctors_partners,
+                    doctorsType === 'PARTNERS' ? true : false,
                     doctorSearch
                   );
                   CommonLogEvent(

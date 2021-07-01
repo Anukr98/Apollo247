@@ -311,6 +311,9 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     const mrpToDisplay = pricesForItem?.mrpToDisplay;
     const widgetType = data?.diagnosticWidgetType;
 
+    const inclusions =
+      !!item?.inclusionData && item.inclusionData.map((item: any) => Number(item?.incItemId));
+
     DiagnosticAddToCartEvent(
       item?.itemTitle,
       `${item?.itemId}`,
@@ -337,7 +340,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
       collectionMethod: TEST_COLLECTION_TYPE.HC,
       groupPlan: planToConsider?.groupPlan,
       packageMrp: packageCalculatedMrp,
-      inclusions: [Number(item?.itemId)], // since it's a test
+      inclusions: item?.inclusionData == null ? [Number(item?.itemId)] : inclusions,
     });
   }
 

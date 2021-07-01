@@ -52,8 +52,6 @@ import {
   CrossPopup,
   ProHealthIcon,
   BackArrow,
-  VideoConsult,
-  YellowRightArrow,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   BannerDisplayType,
@@ -189,7 +187,6 @@ import {
   renderCovidVaccinationShimmer,
   renderCircleShimmer,
   renderBannerShimmer,
-  consultWidgetShimmer,
   CovidButtonShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { ConsultedDoctorsCard } from '@aph/mobile-patients/src/components/ConsultRoom/Components/ConsultedDoctorsCard';
@@ -406,16 +403,15 @@ const styles = StyleSheet.create({
     height: 60,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.ICE_BERG,
+    backgroundColor: 'yellow',
   },
   topImageView: {
     paddingLeft: 16,
     flexDirection: 'row',
     flex: 1,
-    backgroundColor: 'red',
   },
   topTextStyle: {
-    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE),
+    ...theme.viewStyles.text('SB', 15, theme.colors.WHITE, 1, 18),
     textAlign: 'center',
     alignSelf: 'center',
     marginHorizontal: 10,
@@ -427,19 +423,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     minHeight: 59,
     width: width / 2 - 22,
-    marginRight: 8,
+    marginRight: 12,
     marginBottom: 12,
-    alignItems: 'center',
   },
   bottomImageView: {
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: 10,
-    flex: 0.45,
-  },
-  bottomImageView2: {
-    marginHorizontal: 10,
-    flex: 0.18,
+    flex: 0.5,
   },
   bottomTextView: {
     alignItems: 'flex-start',
@@ -662,13 +653,6 @@ const styles = StyleSheet.create({
     height: 180,
     width: '100%',
   },
-  arrowIcon: {
-    width: 16,
-    height: 16,
-  },
-  listTitle: {
-    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE),
-  },
 });
 
 type menuOptions = {
@@ -773,7 +757,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [userSubscriptionLoading, setUserSubscriptionLoading] = useState<boolean>(false);
 
   const { cartItems, setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
-  const homeScreenConsultationCTAs = AppConfig.Configuration.HomeScreenConsultationCTAs;
+
   const {
     cartItems: shopCartItems,
     setHdfcPlanName,
@@ -1293,7 +1277,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       };
     }
     if (eventName == WebEngageEventName.BOOK_DOCTOR_APPOINTMENT) {
-      eventAttributes = { ...eventAttributes, ...pharmacyCircleAttributes, ...attributes };
+      eventAttributes = { ...eventAttributes, ...pharmacyCircleAttributes };
     }
     if (eventName == WebEngageEventName.HDFC_HEALTHY_LIFE) {
       const subscription_name = hdfcUserSubscriptions?.name;
@@ -1373,33 +1357,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const listOptions: menuOptions[] = [
     {
       id: 1,
-      title: homeScreenConsultationCTAs?.[0]?.physicalCTA,
+      title: 'Book Apollo Doctor Appointment',
       image: <DoctorIcon style={[styles.menuOptionIconStyle]} />,
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
-        const attributes = {
-          'Mode of consult': 'Hospital Visit',
-        };
-        postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT, 'Home Screen', attributes);
-        props.navigation.navigate(AppRoutes.DoctorSearch, { isOnlineConsultMode: false });
+        postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
+        props.navigation.navigate(AppRoutes.DoctorSearch);
       },
     },
     {
       id: 2,
-      title: homeScreenConsultationCTAs?.[1]?.onlineCTA,
-      image: <VideoConsult style={[styles.menuOptionIconStyle]} />,
-      onPress: () => {
-        postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
-        const attributes = {
-          'Mode of consult': 'Video Consult',
-        };
-        postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT, 'Home Screen', attributes);
-        props.navigation.navigate(AppRoutes.DoctorSearch, { isOnlineConsultMode: true });
-      },
-    },
-    {
-      id: 3,
-      title: 'Order Medicines & Essentials',
+      title: 'Buy Medicines & Essentials',
       image: <MedicineCartIcon style={[styles.menuOptionIconStyle]} />,
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Home Screen');
@@ -1412,7 +1380,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       },
     },
     {
-      id: 4,
+      id: 3,
       title: 'Book Lab Tests',
       image: <TestsCartIcon style={styles.menuOptionIconStyle} />,
       onPress: () => {
@@ -1422,7 +1390,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       },
     },
     {
-      id: 5,
+      id: 4,
       title: 'View Health Records',
       image: (
         <View>
@@ -1438,9 +1406,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     },
 
     {
-      id: 6,
+      id: 5,
       title: 'Book Doctor by Symptoms',
-      image: <Symptomtracker style={[styles.menuOptionIconStyle, { width: 36, height: 36 }]} />,
+      image: <Symptomtracker style={styles.menuOptionIconStyle} />,
       onPress: () => {
         const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_PAGE_CLICKED] = {
           'Patient UHID': g(currentPatient, 'uhid'),
@@ -1579,8 +1547,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             if (circlePlan) {
               const circleSubscription = setCircleSubscriptionData(circlePlan[0]);
               if (!!circlePlan[0]?._id) {
-                AsyncStorage.setItem('circleSubscriptionId', circlePlan[0]?._id);
-                setCircleSubscriptionId && setCircleSubscriptionId(circlePlan[0]?._id);
+                AsyncStorage.setItem('circleSubscriptionId', circlePlan[0]?.subscription_id);
+                setCircleSubscriptionId && setCircleSubscriptionId(circlePlan[0]?.subscription_id);
                 setIsCircleSubscription && setIsCircleSubscription(true);
               }
               setCircleSubscription && setCircleSubscription(circleSubscription);
@@ -2691,62 +2659,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         {arrayList.map((item) => {
           if (menuViewOptions.findIndex((i) => i === item.id) >= 0) {
             if (item?.id < 3) {
-              if (!homeScreenConsultationCTAs) {
-                return consultWidgetShimmer();
-              }
               return (
                 <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
-                  <View
+                  <LinearGradientComponent
                     style={[
-                      styles.bottomCardView,
-                      {
-                        backgroundColor:
-                          item?.id === 1
-                            ? homeScreenConsultationCTAs?.[0]?.backgroundColor
-                            : homeScreenConsultationCTAs?.[1]?.backgroundColor,
-                      },
+                      styles.linearGradientView,
+                      { shadowOffset: { width: 0, height: 5 }, elevation: 15 },
                     ]}
                   >
-                    <View style={styles.bottomImageView}>{item.image}</View>
-                    <View style={styles.bottomTextView}>
-                      <Text
-                        style={[
-                          styles.listTitle,
-                          {
-                            marginRight: 20,
-                          },
-                        ]}
-                      >
-                        {item.title}
-                      </Text>
-                    </View>
-                    <View style={{ position: 'absolute', right: 10 }}>
-                      <YellowRightArrow style={styles.arrowIcon} />
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              );
-            } else if (item?.id === 3) {
-              return (
-                <TouchableOpacity activeOpacity={1} onPress={item.onPress}>
-                  <View style={[styles.linearGradientView]}>
-                    <View style={styles.bottomImageView2}>{item.image}</View>
-                    <View style={styles.bottomTextView}>
-                      <Text
-                        style={[
-                          styles.listTitle,
-                          {
-                            marginRight: 20,
-                          },
-                        ]}
-                      >
-                        {item.title}
-                      </Text>
+                    <View style={styles.topImageView}>
+                      {item.image}
+                      <Text style={styles.topTextStyle}>{item.title}</Text>
                     </View>
                     <View style={{ marginRight: 10 }}>
-                      <YellowRightArrow style={styles.arrowIcon} />
+                      <WhiteArrowRightIcon />
                     </View>
-                  </View>
+                  </LinearGradientComponent>
                 </TouchableOpacity>
               );
             } else {
@@ -2755,7 +2683,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   <View style={styles.bottomCardView}>
                     <View style={styles.bottomImageView}>{item.image}</View>
                     <View style={styles.bottomTextView}>
-                      <Text style={styles.listTitle}>{item.title}</Text>
+                      <Text
+                        style={[theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 18)]}
+                      >
+                        {item.title}
+                      </Text>
                     </View>
                   </View>
                 </TouchableOpacity>
@@ -3263,7 +3195,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   ? 'Book Vaccination Slot'
                   : corporateSubscriptions?.length >= 0 && !!vaccinationCmsIdentifier
                   ? 'Book Vaccination Slot'
-                  : 'Register on Cowin'
+                  : 'Book Vaccination Slot'
                 : item?.title
             }
             onPress={() => {
@@ -3394,7 +3326,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               });
             }
           } else {
-            Linking.openURL(string.vaccineBooking.cowin_url).catch((err) => {});
+            props.navigation.navigate(AppRoutes.BookedVaccineScreen, {
+              cmsIdentifier: vaccinationCmsIdentifier || '',
+              subscriptionId: vaccinationSubscriptionId || '',
+              subscriptionInclusionId: vaccinationSubscriptionInclusionId || '',
+              isVaccineSubscription: !!vaccinationCmsIdentifier,
+              isCorporateSubscription: !!corporateSubscriptions?.length,
+            });
           }
         } else {
           props.navigation.navigate(AppRoutes.BookedVaccineScreen, {
@@ -3560,9 +3498,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       >
         <ImageBackground
           style={styles.proHealthBannerImage}
-          source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_banner.png')}
+          source={require('@aph/mobile-patients/src/components/ui/icons/prohealth_2.webp')}
           resizeMode={'stretch'}
-          borderRadius={10}
+          borderRadius={5}
         ></ImageBackground>
       </TouchableOpacity>
     );

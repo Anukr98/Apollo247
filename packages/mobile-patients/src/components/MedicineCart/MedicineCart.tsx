@@ -143,6 +143,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     setDefaultCirclePlan,
     circleSubscriptionId,
     setCircleSubscriptionId,
+    hdfcSubscriptionId,
     pharmacyCircleAttributes,
     newAddressAdded,
     setNewAddressAdded,
@@ -150,6 +151,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     setOrders,
     productDiscount,
     cartPriceNotUpdateRange,
+    uploadPrescriptionRequired
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -474,7 +476,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           setloading!(false);
           setTatResponse(response[0]?.tat);
           addressSelectedEvent(selectedAddress, response[0]?.tat, response);
-          addressChange && NavigateToCartSummary();
           updatePricesAfterTat(inventoryData, updatedCartItems);
         } catch (error) {
           setloading!(false);
@@ -600,7 +601,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     const updatePrices = AppConfig.Configuration.CART_UPDATE_PRICE_CONFIG.updatePrices;
     const updatePricePercent = AppConfig.Configuration.CART_UPDATE_PRICE_CONFIG.percentage;
     const updatePricesNotAllowed = updatePrices === 'No';
-    let didPricesUpdate: boolean = false;
     if (updatePricesNotAllowed) {
       return;
     }
@@ -623,7 +623,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
               : true
             : false;
         if (storeItem?.mrp != 0 && allowPriceUpdate) {
-          didPricesUpdate = true;
           showAphAlert!({
             title: `Hi ${currentPatient?.firstName || ''},`,
             description: `Important message for items in your Cart:\n\nSome items' prices have been updated based on the updated MRP from Manufacturer. Please check before you place the order.`,
@@ -639,7 +638,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       cartItemsAfterPriceUpdate.push(cartItem);
     });
     setCartItems!(cartItemsAfterPriceUpdate);
-    if (didPricesUpdate) await validatePharmaCoupon();
+    await validatePharmaCoupon();
   }
   function hasUnserviceableproduct() {
     return !!cartItems.find(
@@ -1205,7 +1204,11 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           props.navigation.navigate('MEDICINES');
         }}
         onPressTatCard={() => {
-          physicalPrescriptions?.length > 0 ? uploadPhysicalPrescriptons() : onPressReviewOrder();
+          uploadPrescriptionRequired
+            ? redirectToUploadPrescription()
+            : physicalPrescriptions?.length > 0
+            ? uploadPhysicalPrescriptons()
+            : onPressReviewOrder();
         }}
       />
     );

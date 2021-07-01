@@ -40,6 +40,7 @@ import {
   BlackArrowDown,
   Down,
   Up,
+  InfoIconBlue,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
@@ -145,6 +146,7 @@ import {
   sourceHeaders,
   convertNumberToDecimal,
   createAddressObject,
+  DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
@@ -193,6 +195,7 @@ import {
   makeAdressAsDefaultVariables,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 const { width: screenWidth } = Dimensions.get('window');
 type Address = savePatientAddress_savePatientAddress_patientAddress;
 export interface areaObject {
@@ -283,6 +286,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const { currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const [todaySlotNotAvailable, setTodaySlotNotAvailable] = useState<boolean>(false);
   const [showCancellationPolicy, setShowCancellationPolicy] = useState<boolean>(false);
+  const [showPriceMismatch, setShowPriceMismatch] = useState<boolean>(false);
   const currentPatientId =
     !!modifiedOrder && !isEmptyObject(modifiedOrder)
       ? modifiedOrder?.patientId
@@ -593,7 +597,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     if ((isModifyFlow || deliveryAddressId != '') && isFocused) {
       getPinCodeServiceability();
     }
-  }, [deliveryAddressId, addresses, isFocused]);
+  }, [addresses, isFocused]);
 
   //check all webengage events
   useEffect(() => {
@@ -1048,26 +1052,19 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             //mrp
             //show the prices changed pop-over
             isPriceChange = true;
-            showAphAlert?.({
-              unDismissable: true,
-              title: string.common.uhOh,
-              description: string.diagnostics.pricesChangedMessage,
-              onPressOk: () => {
-                hideAphAlert?.();
-                const _itemIds = cartItems?.map((item) => Number(item?.id));
-                isModifyFlow
-                  ? null
-                  : !isEmptyObject(areaSelected)
-                  ? checkSlotSelection(areaSelected, undefined, undefined, _itemIds)
-                  : shouldShowArea
-                  ? fetchAreasForAddress(
-                      addresses?.[selectedAddressIndex]?.id,
-                      addresses?.[selectedAddressIndex]?.zipcode!,
-                      shouldShowArea
-                    )
-                  : getAreas();
-              },
-            });
+            setShowPriceMismatch(true);
+            const _itemIds = cartItems?.map((item) => Number(item?.id));
+            isModifyFlow
+              ? null
+              : !isEmptyObject(areaSelected)
+              ? checkSlotSelection(areaSelected, undefined, undefined, _itemIds)
+              : shouldShowArea
+              ? fetchAreasForAddress(
+                  addresses?.[selectedAddressIndex]?.id,
+                  addresses?.[selectedAddressIndex]?.zipcode!,
+                  shouldShowArea
+                )
+              : getAreas();
             updateCartItem?.({
               id: results?.[isItemInCart]
                 ? String(results?.[isItemInCart]?.itemId)
@@ -1099,27 +1096,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           const disabledCartItemIds = disabledCartItems?.map((item) => item.id);
           setLoading?.(false);
           removeDisabledCartItems(disabledCartItemIds);
+          setShowPriceMismatch(true);
+          const _itemIds = cartItems?.map((item) => Number(item?.id));
 
-          showAphAlert?.({
-            title: string.common.uhOh,
-            description: string.diagnostics.pricesChangedMessage,
-            onPressOk: () => {
-              hideAphAlert?.();
-              const _itemIds = cartItems?.map((item) => Number(item?.id));
-
-              isModifyFlow
-                ? null
-                : !isEmptyObject(areaSelected)
-                ? checkSlotSelection(areaSelected, undefined, undefined, _itemIds)
-                : shouldShowArea
-                ? fetchAreasForAddress(
-                    addresses?.[selectedAddressIndex]?.id,
-                    addresses?.[selectedAddressIndex]?.zipcode!,
-                    shouldShowArea
-                  )
-                : getAreas();
-            },
-          });
+          isModifyFlow
+            ? null
+            : !isEmptyObject(areaSelected)
+            ? checkSlotSelection(areaSelected, undefined, undefined, _itemIds)
+            : shouldShowArea
+            ? fetchAreasForAddress(
+                addresses?.[selectedAddressIndex]?.id,
+                addresses?.[selectedAddressIndex]?.zipcode!,
+                shouldShowArea
+              )
+            : getAreas();
         }
       });
       if (!isItemDisable && !isPriceChange) {
@@ -1762,7 +1752,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               })}
               <Spearator style={{ marginTop: 12, marginBottom: 12 }} />
               {renderPrices('Subtotal', previousSubTotal)}
-              {renderPrices('Home collection Charges', previousCollectionCharges)}
+              {renderPrices('Collection and hygiene charges', previousCollectionCharges)}
               {renderPrices('Total', previousTotalCharges, true)}
             </>
           ) : null}
@@ -1848,8 +1838,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             </View>
           )}
           {
-            isHcApiCalled ?  <View style={styles.rowSpaceBetweenStyle}>
-              <Text style={[styles.blueTextStyle, { width: '60%' }]}>Home Collection Charges</Text>
+            <View style={styles.rowSpaceBetweenStyle}>
+              <Text style={[styles.blueTextStyle, { width: '60%' }]}>
+                Collection and hygiene charges
+              </Text>
               <View style={{ flexDirection: 'row' }}>
                 <Text
                   style={[
@@ -2950,17 +2942,25 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           </View>
         ) : null}
         {addressText ? (
-          <View style={styles.patientNameMainViewStyle}>
-            <View style={styles.patientNameViewStyle}>
-              <Text style={styles.patientNameTextStyle}>{string.diagnostics.homeVisitText}</Text>
-              {isModifyFlow ? null : (
-                <Text style={styles.changeTextStyle} onPress={() => showAddressPopup()}>
-                  {string.diagnostics.changeText}
-                </Text>
-              )}
+          <>
+            <View style={styles.patientNameMainViewStyle}>
+              <View style={styles.patientNameViewStyle}>
+                <Text style={styles.patientNameTextStyle}>{string.diagnostics.homeVisitText}</Text>
+                {isModifyFlow ? null : (
+                  <Text style={styles.changeTextStyle} onPress={() => showAddressPopup()}>
+                    {string.diagnostics.changeText}
+                  </Text>
+                )}
+              </View>
+              <Text style={styles.patientDetailsTextStyle}>{addressText}</Text>
             </View>
-            <Text style={styles.patientDetailsTextStyle}>{addressText}</Text>
-          </View>
+            {showPriceMismatch ? (
+              <View style={styles.blueView}>
+                <InfoIconBlue style={{ width: 18, height: 18 }} />
+                <Text style={styles.lbTextStyle}>{string.diagnostics.pricesChangedMessage}</Text>
+              </View>
+            ) : null}
+          </>
         ) : null}
         {isModifyFlow ? null : showSelectedArea && !isEmptyObject(areaSelected) ? (
           <View style={styles.patientNameMainViewStyle}>
@@ -3300,7 +3300,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           isServiceable={isDiagnosticLocationServiceable}
           isVertical={false}
           navigation={props.navigation}
-          source={'Cart page'}
+          source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.CART_PAGE}
           sourceScreen={AppRoutes.TestsCart}
         />
       </View>
@@ -3440,6 +3440,10 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     alignSelf: 'center',
   },
+  lbTextStyle: {
+    ...theme.viewStyles.text('SB', 14, colors.SHERPA_BLUE, 0.5),
+    marginHorizontal: 5,
+  },
   dateTextStyle: {
     ...theme.fonts.IBMPlexSansMedium(14),
     color: theme.colors.SHERPA_BLUE,
@@ -3532,6 +3536,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginVertical: '2%',
     paddingRight: 15,
+  },
+  blueView: {
+    flexDirection: 'row',
+    backgroundColor: '#E0F0FF',
+    marginTop: -5,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
   },
   dashedBannerViewStyle: {
     ...cardViewStyle,

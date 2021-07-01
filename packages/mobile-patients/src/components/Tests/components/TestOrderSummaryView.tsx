@@ -417,7 +417,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
                 false
               )}
               {renderPrices(
-                'Home collection Charges',
+                'Collection and hygiene charges',
                 title === string.diagnostics.previousCharges
                   ? orderDetails?.collectionCharges!
                   : 0.0,
@@ -497,7 +497,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           {renderPrices('Circle Discount', totalCircleSaving, true)}
           {renderPrices('Cart Savings', totalCartSaving, true)}
           {renderPrices('Coupon Discount', totalDiscountSaving, true)}
-          {renderPrices('Home collection Charges', HomeCollectionCharges, false)}
+          {renderPrices('Collection and hygiene charges', HomeCollectionCharges, false)}
           <Spearator style={{ marginTop: 6, marginBottom: 6 }} />
           {renderPrices('Total', orderDetails?.totalPrice, false, true)}
         </View>

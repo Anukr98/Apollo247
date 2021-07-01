@@ -12,6 +12,7 @@ export enum AppEnv {
   QA = 'QA',
   QA2 = 'QA2',
   QA3 = 'QA3',
+  QA4 = 'QA4',
   QA5 = 'QA5',
   PROD = 'PROD',
   PERFORM = 'PERFORM',
@@ -19,7 +20,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA5 as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA4 as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -30,6 +31,8 @@ const paymentGatewayBaseUrl: string =
     ? 'https://qapmt.apollo247.com'
     : APP_ENV == AppEnv.QA3
     ? 'https://qathreepmt.apollo247.com'
+    : APP_ENV == AppEnv.QA4
+    ? 'https://qa4pmt.apollo247.com'
     : APP_ENV == AppEnv.QA5
     ? 'https://qa5pmt.apollo247.com'
     : APP_ENV == AppEnv.PERFORM
@@ -114,11 +117,6 @@ const covidVaccineSection = {
     },
   ],
 };
-
-const homeScreenConsultationCTAs = [
-  { physicalCTA: 'Hospital Visit', backgroundColor: '#C6EAFE' },
-  { onlineCTA: 'Video Consult', backgroundColor: '#FECF62' },
-];
 
 const QA_covid_items = [2596, 2598, 2462, 2388, 2419, 2411, 2410, 2539, 2446, 2614, 2462, 2613];
 const Prod_covid_items = [2539, 2446, 2410, 2411, 2419, 2613];
@@ -228,8 +226,11 @@ const appStaticVariables = {
   Reopen_Help_Max_Time: 24, // hrs
   Helpdesk_Chat_Confim_Msg:
     'Thank you for reaching out. As we are experiencing a heavy load, our team will get back to you in 24 to 48 hours.',
+  Used_Up_Alotted_Slot_Msg:
+    'Sorry! You have used up all your allotted booking slots under corporate vaccination. You can still continue to book payable slots under pay by self option.',
   Vaccination_Cities_List: ['Delhi', 'Mumbai'],
   Vaccine_Type: ['Covaxin', 'Covishield'],
+  Cancel_Threshold_Pre_Vaccination: 12, //hrs
   Enable_Diagnostics_COD: false,
   Enable_Diagnostics_Cancellation_Policy: false,
   Diagnostics_Cancel_Policy_Text_Msg:
@@ -252,7 +253,6 @@ const appStaticVariables = {
     },
   ],
   DIAGNOSTIC_DEFAULT_ICON: 'https://newassets.apollo247.com/organs/ic_blood.png',
-  HomeScreenConsultationCTAs: homeScreenConsultationCTAs,
 };
 
 const DEV_top_specialties = [
@@ -1159,6 +1159,17 @@ export const DIAGNOSTIC_ORDER_FAILED_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
   DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED,
   DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED,
+];
+export const DIAGNOSTIC_ORDER_FOR_PREPDATA = [
+  DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED,
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN,
+  DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED_REQUEST,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
+  DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL,
 ];
 
 export const DIAGNOSTIC_JUSPAY_REFUND_STATUS = [

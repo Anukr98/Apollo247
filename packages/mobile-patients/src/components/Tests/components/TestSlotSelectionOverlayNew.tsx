@@ -70,7 +70,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   const { onSchedule, isVisible, ...attributes } = props;
   const uniqueSlots = getUniqueTestSlots(slots);
   const dt = moment(props.slotBooked!).format('YYYY-MM-DD') || null;
-  const tm = moment(props.slotBooked!).format('hh:mm') || null;
+  const tm = moment(props.slotBooked!)?.format('hh:mm A') || null; //format changed from hh:mm
   const isSameDate = moment().isSame(moment(date), 'date');
   const itemId = props.itemId;
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id));
@@ -118,9 +118,10 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
       })
       .then(({ data }) => {
         const diagnosticSlots = g(data, 'getDiagnosticSlotsCustomized', 'slots') || [];
+        const timeToCompare = !!tm && moment(tm, 'hh:mm A')?.format('HH:mm');
         const updatedDiagnosticSlots =
-          moment(dateToCheck).format('YYYY-MM-DD') == dt && props.isReschdedule
-            ? diagnosticSlots.filter((item) => item?.Timeslot != tm)
+          moment(dateToCheck)?.format('YYYY-MM-DD') == dt && props.isReschdedule
+            ? diagnosticSlots?.filter((item) => item?.Timeslot != timeToCompare)
             : diagnosticSlots;
         const slotsArray: TestSlot[] = [];
         updatedDiagnosticSlots?.forEach((item) => {
@@ -180,12 +181,6 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
       inactiveImage: <Afternoon />,
       title: 'Afternoon',
     },
-    {
-      tab: 2,
-      activeImage: <NightSelected />,
-      inactiveImage: <Night />,
-      title: 'Evening',
-    },
   ];
 
   let dropDownOptions = uniqueSlots?.map((val) => ({
@@ -195,26 +190,19 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   }));
 
   const time24 = (item: any) => {
-    return moment(item?.value, 'hh:mm A').format('HH');
+    return moment(item?.value, 'hh:mm A')?.format('HH');
   };
 
   if (selectedDayTab == 1) {
     //for afternoon 12-17
-    dropDownOptions = dropDownOptions.filter((item) => {
+    dropDownOptions = dropDownOptions?.filter((item) => {
       if (time24(item) >= '12' && time24(item) < '17') {
-        return item;
-      }
-    });
-  } else if (selectedDayTab == 2) {
-    //for evening 17 - 6
-    dropDownOptions = dropDownOptions.filter((item) => {
-      if (time24(item) >= '17' && time24(item) < '06') {
         return item;
       }
     });
   } else if (selectedDayTab == 0) {
     //for morning 6- 12
-    dropDownOptions = dropDownOptions.filter((item) => {
+    dropDownOptions = dropDownOptions?.filter((item) => {
       if (time24(item) >= '06' && time24(item) < '12') {
         return item;
       }

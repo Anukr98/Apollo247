@@ -87,7 +87,6 @@ export enum WebEngageEventName {
   BOOK_APPOINTMENT = 'Book Appointment',
   TYPE_OF_CONSULT_SELECTED = 'Type of consultation seleted',
   CONSULT_SORT = 'Consult Sort',
-  CONSULT_MODE_TOGGLE = 'Consult Mode Toggle',
   CONSULT_NOW_CLICKED = 'Consult Now clicked',
   CONSULT_SCHEDULE_FOR_LATER_CLICKED = 'Consult Schedule for Later clicked',
   CONSULT_SLOT_SELECTED = 'Consult Slot Selected',
@@ -836,7 +835,6 @@ export interface WebEngageEvents {
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
     User_Type: string;
-    'Mode of consult': 'Hospital Visit' | 'Video Consult';
   };
   [WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED]: PatientInfoWithSource;
   [WebEngageEventName.PAST_DOCTOR_SEARCH]: {
@@ -1494,7 +1492,6 @@ export interface WebEngageEvents {
     'Customer ID': string;
     Rank?: number;
     User_Type: string;
-    'Mode of consult'?: 'Hospital Visit' | 'Video Consult';
   };
   [WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK]: {
     Fee: number;
@@ -1533,7 +1530,6 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Customer ID': string;
     User_Type: string;
-    'Mode of consult'?: 'Hospital Visit' | 'Video Consult';
   };
   [WebEngageEventName.CONSULT_TYPE_SELECTION]: {
     'Consult Type': 'Online' | 'In Person';
@@ -2700,29 +2696,5 @@ export interface WebEngageEvents {
     'Doctor Id': string;
     'Doctor Speciality': string;
     'Bucket viewed': string;
-  };
-
-  [WebEngageEventName.CONSULT_SORT]: {
-    'Patient Name': string;
-    'Patient UHID': string;
-    Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
-    'Mobile Number': string;
-    'Customer ID': string;
-    User_Type: string;
-    'Mode of consult': 'Hospital Visit' | 'Video Consult';
-  };
-  [WebEngageEventName.CONSULT_MODE_TOGGLE]: {
-    'Patient Name': string;
-    'Patient UHID': string;
-    Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
-    'Mobile Number': string;
-    'Customer ID': string;
-    User_Type: string;
-    'Consult flow': 'Hospital Visit' | 'Video Consult' | 'Unknown'; // unknown might come from deeplink
-    Toggle: 'Hospital Visit' | 'Video Consult';
   };
 }

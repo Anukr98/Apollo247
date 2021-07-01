@@ -30,6 +30,7 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { isIphone5s, setBugFenderLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   DIAGNOSTIC_ORDER_FAILED_STATUS,
+  DIAGNOSTIC_ORDER_FOR_PREPDATA,
   DIAGNOSTIC_SHOW_OTP_STATUS,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
@@ -536,7 +537,10 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         {!!ordersData && !!filterOrderLineItem && filterOrderLineItem?.length
           ? renderTestListView()
           : null}
-        {!!ordersData && !!filterOrderLineItem && filterOrderLineItem?.length
+        {!!ordersData &&
+        !!filterOrderLineItem &&
+        filterOrderLineItem?.length &&
+        DIAGNOSTIC_ORDER_FOR_PREPDATA.includes(props.orderLevelStatus)
           ? renderPreparationData()
           : null}
         {!!props.orderLevelStatus && DIAGNOSTIC_ORDER_FAILED_STATUS.includes(props.orderLevelStatus)

@@ -85,11 +85,11 @@ import {
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 interface SlotSelectionProps extends NavigationScreenProps {
   doctorId: string;
   isCircleDoctor?: boolean;
-  consultModeSelected?: string | undefined;
 }
 
 type TimeArray = {
@@ -106,7 +106,6 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   const doctorId = props.navigation.getParam('doctorId');
   const client = useApolloClient();
   const isCircleDoctor = props.navigation.getParam('isCircleDoctor');
-  const consultModeSelected = props.navigation.getParam('consultModeSelected');
   const { showAphAlert } = useUIElements();
   const [doctorDetails, setDoctorDetails] = useState<getDoctorDetailsById_getDoctorDetailsById>();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
@@ -173,16 +172,12 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     { label: '12 PM - 6 PM', time: [] },
     { label: '6 PM - 12 AM', time: [] },
   ];
-  const [selectedTab, setSelectedTab] = useState<string>(
-    !!consultModeSelected && consultModeSelected ? consultModeSelected : consultTabs?.[0].title
-  );
+  const [selectedTab, setSelectedTab] = useState<string>(consultTabs[0].title);
   const [datesSlots, setDatesSlots] = useState<SlotsType[]>();
   const [totalSlots, setTotalSlots] = useState<number>(-1);
   const [timeArray, setTimeArray] = useState<TimeArray>(defaultTimeData);
   const [loadTotalSlots, setLoadTotalSlots] = useState<boolean>(true);
-  const [isOnlineSelected, setIsOnlineSelected] = useState<boolean>(
-    !!consultModeSelected && consultModeSelected === consultPhysicalTab ? false : true
-  );
+  const [isOnlineSelected, setIsOnlineSelected] = useState<boolean>(true);
   const [nextAvailableDate, setNextAvailableDate] = useState<string>('');
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
   const [firstSelectedSlot, setFirstSelectedSlot] = useState<string>('');
@@ -226,34 +221,19 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
       : physicalConsultMRPPrice
     : Number(doctorFees);
 
-  const usePreviousConsultTab = (value: any) => {
-    const ref = useRef();
-    useEffect(() => {
-      ref.current = value;
-    });
-    return ref.current;
-  };
-  const prevSelectedConsult = usePreviousConsultTab({ selectedTab });
-
   useEffect(() => {
     setWebEngageScreenNames('Doctor Profile');
     fetchDoctorDetails();
-    selectedTab === consultOnlineTab && fetchNextAvailabilitySlot(selectedTab, true);
+    fetchNextAvailabilitySlot(consultTabs[0].title, true);
   }, []);
 
   useEffect(() => {
-    onlineSlotsCount &&
-      nextAvailableDate &&
-      selectedTab === prevSelectedConsult?.selectedTab &&
-      calculateNextNDates(onlineSlotsCount);
-  }, [onlineSlotsCount, nextAvailableDate, selectedTab]);
+    onlineSlotsCount && nextAvailableDate && calculateNextNDates(onlineSlotsCount);
+  }, [onlineSlotsCount, nextAvailableDate]);
 
   useEffect(() => {
-    physicalSlotsCount &&
-      nextAvailableDate &&
-      selectedTab === prevSelectedConsult?.selectedTab &&
-      calculateNextNDates(physicalSlotsCount);
-  }, [physicalSlotsCount, nextAvailableDate, selectedTab]);
+    physicalSlotsCount && nextAvailableDate && calculateNextNDates(physicalSlotsCount);
+  }, [physicalSlotsCount, nextAvailableDate]);
 
   useEffect(() => {
     if (nextAvailableDate && timeArray) {
@@ -282,8 +262,6 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
       const data = res?.data?.getDoctorDetailsById;
       if (data) {
         setDoctorDetails(data);
-        selectedTab === consultPhysicalTab &&
-          fetchNextAvailabilitySlot(selectedTab, true, data?.doctorHospital?.[0]?.facility?.id);
       } else {
         showErrorPopup();
       }
@@ -295,8 +273,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
 
   const fetchNextAvailabilitySlot = async (
     consultType: string = consultTabs[0].title,
-    callOnLaunch: boolean = false,
-    facilityId?: string
+    callOnLaunch: boolean = false
   ) => {
     try {
       const todayDate = moment(new Date()).format('YYYY-MM-DD');
@@ -310,8 +287,8 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
         calculateNextNDates();
         setNextAvailableDate(slot);
         consultType === consultTabs[0].title
-          ? fetchOnlineTotalAvailableSlots(nextAvailableDate)
-          : fetchPhysicalTotalAvailableSlots(nextAvailableDate, false, facilityId);
+          ? fetchOnlineTotalAvailableSlots(nextAvailableDate, callOnLaunch)
+          : fetchPhysicalTotalAvailableSlots(nextAvailableDate, callOnLaunch);
 
         if (!callOnLaunch) {
           const checkAvailabilityDate = datesSlots?.filter(
@@ -324,7 +301,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
                 .toDateString()
           );
           const slotsIndex = datesSlots?.indexOf(checkAvailabilityDate?.[0]);
-          const dateIndex = date(slot).isToday ? 0 : date(slot).isTomorrow ? 1 : slotsIndex;
+          const dateIndex = date().isToday ? 0 : date().isTomorrow ? 1 : slotsIndex;
           setTimeout(() => {
             dateScrollViewRef && dateScrollViewRef.current.scrollToIndex({ index: dateIndex });
           }, 500);
@@ -337,7 +314,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
 
   const fetchOnlineTotalAvailableSlots = async (
     selectedDate: any,
-    onDateSelect: boolean = false
+    callOnLaunch: boolean = false
   ) => {
     try {
       const res = await client.query<getDoctorAvailableSlots>({
@@ -353,7 +330,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
       setTimeArray(defaultTimeData);
       const availableSlots = res?.data?.getDoctorAvailableSlots?.availableSlots;
       const slotCounts = res?.data?.getDoctorAvailableSlots?.slotCounts;
-      !onDateSelect && setOnlineSlotsCount(slotCounts);
+      callOnLaunch && setOnlineSlotsCount(slotCounts);
       if (availableSlots) {
         setTotalSlots(availableSlots?.length);
         setTimeArrayData(availableSlots, selectedDate);
@@ -365,8 +342,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
 
   const fetchPhysicalTotalAvailableSlots = async (
     selectedDate: any,
-    onDateSelect: boolean = false,
-    facilityId?: string
+    callOnLaunch: boolean = false
   ) => {
     try {
       const res = await client.query<getDoctorPhysicalAvailableSlots>({
@@ -376,14 +352,14 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           DoctorPhysicalAvailabilityInput: {
             availableDate: moment(selectedDate).format('YYYY-MM-DD'),
             doctorId,
-            facilityId: doctorDetails?.doctorHospital?.[0]?.facility?.id || facilityId,
+            facilityId: doctorDetails?.doctorHospital?.[0]?.facility?.id,
           },
         },
       });
       setTimeArray(defaultTimeData);
       const availableSlots = res?.data?.getDoctorPhysicalAvailableSlots?.availableSlots;
       const slotCounts = res?.data?.getDoctorPhysicalAvailableSlots?.slotCounts;
-      !onDateSelect && setPhysicalSlotsCount(slotCounts);
+      callOnLaunch && setPhysicalSlotsCount(slotCounts);
       if (availableSlots) {
         setTotalSlots(availableSlots?.length);
         setTimeArrayData(availableSlots, selectedDate);
@@ -659,8 +635,8 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     const date = index === 0 ? todayDate : index === 1 ? tomorrowDate : item?.date;
     setLoadTotalSlots(true);
     isOnlineSelected
-      ? fetchOnlineTotalAvailableSlots(date, true)
-      : fetchPhysicalTotalAvailableSlots(date, true);
+      ? fetchOnlineTotalAvailableSlots(date)
+      : fetchPhysicalTotalAvailableSlots(date);
   };
 
   const renderSelectedDate = () => {
@@ -726,7 +702,6 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
             <Text style={styles.physicalConsultNoteTxt}>Note: Pay at Reception is available.</Text>
           )}
         </View>
-        {renderProceedButton()}
       </View>
     );
   };
@@ -735,6 +710,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     return (
       <View style={styles.bottomBtnContainer}>
         <Button
+          disabled={loadTotalSlots}
           title="PROCEED"
           style={styles.viewAvailableSlotsBtn}
           onPress={() => handleProceed()}
@@ -808,17 +784,17 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
       : props.navigation.navigate(AppRoutes.PaymentCheckoutPhysical, passProps);
   };
 
-  const date = (slot = nextAvailableDate) => {
+  const date = () => {
     var today = new Date();
     var tomorrow = moment(new Date()).add(1, 'day');
     var isToday =
       today.toDateString() ==
-      moment(slot)
+      moment(nextAvailableDate)
         .toDate()
         .toDateString();
     const isTomorrow =
       tomorrow.toDate().toDateString() ==
-      moment(slot)
+      moment(nextAvailableDate)
         .toDate()
         .toDateString();
     return {
@@ -826,7 +802,6 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
       isTomorrow,
     };
   };
-
   const renderNoSlotsView = () => {
     var today = new Date();
     var tomorrow = moment(new Date()).add(1, 'day');
@@ -844,7 +819,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     };
     return (
       <View style={styles.noSlotsContainer}>
-        <Text style={styles.noSlotsAvailableText}>No slots available today!</Text>
+        <Text style={styles.noSlotsAvailableText}>No slots available!</Text>
         <Text style={styles.nextAvailabilityTitle}>Next availability - {availabilityTitle}</Text>
         <Button
           title="VIEW AVAILABLE SLOTS"
@@ -894,7 +869,9 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           {loadTotalSlots ? (
             renderTotalSlotsShimmer()
           ) : (
-            <Text style={styles.slotsAvailability}>{item?.time?.length} slots available</Text>
+            <Text style={styles.slotsAvailability}>
+              {item?.time?.length > 0 ? item?.time?.length : 'No'} Slots Available
+            </Text>
           )}
           {item?.time?.length > 0 && firstSelectedSlot !== item?.label && !loadTotalSlots ? (
             <TouchableOpacity
@@ -951,11 +928,19 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
 
   const renderGeneralNotes = () => {
     return (
-      <Text style={styles.noteTxt}>
-        By proceeding, I agree that I have read and understood the{' '}
-        <Text style={{ color: theme.colors.SKY_BLUE }}>Terms & Conditions</Text> of usage of 24x7
-        and consent to the same.{' '}
-      </Text>
+      <TouchableOpacity
+        onPress={() => {
+          props.navigation.navigate(AppRoutes.CommonWebView, {
+            url: AppConfig.Configuration.APOLLO_TERMS_CONDITIONS,
+          });
+        }}
+      >
+        <Text style={styles.noteTxt}>
+          By proceeding, I agree that I have read and understood the{' '}
+          <Text style={{ color: theme.colors.SKY_BLUE }}>Terms & Conditions</Text> of usage of 24x7
+          and consent to the same.{' '}
+        </Text>
+      </TouchableOpacity>
     );
   };
 
@@ -968,6 +953,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           : renderDoctorDetailsShimmer({ height: isCircleDoctor ? 120 : 105 })}
         {renderConsultTypeTabs()}
         {renderTotalSlots()}
+        {totalSlots === 0 && !loadTotalSlots ? <View /> : renderProceedButton()}
       </View>
     </SafeAreaView>
   );
@@ -1067,6 +1053,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     paddingBottom: 16,
     marginHorizontal: 16,
+    justifyContent: 'center',
   },
   viewBtnTxt: {
     ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW),
