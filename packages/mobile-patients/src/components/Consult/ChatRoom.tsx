@@ -96,6 +96,7 @@ import {
   MediaPrescriptionFileProperties,
   Gender,
   USER_STATUS,
+  CheckCallConnectionInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updateAppointmentSession,
@@ -2191,6 +2192,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       });
     } catch (error) {
       CommonBugFender('ChatRoom_updateHealthRecordNudgeStatus', error);
+    }
+  };
+
+  const updateStatusOfCall = async (input: CheckCallConnectionInput) => {
+    let data;
+    try {
+      console.log('here');
+      data = await client.mutate<checkCallConnection, checkCallConnectionVariables>({
+        mutation: CALL_CONNECTION_UPDATES,
+        variables: { CheckCallConnectionInput: input },
+      });
+      console.log(JSON.stringify(data));
+    } catch (error) {
+      CommonBugFender('ChatRoom_updateCallConnectionStatus', error);
+      console.log(error, JSON.stringify(data));
     }
   };
 
@@ -5794,7 +5810,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     });
     BackgroundTimer.setInterval(() => {
       console.log('csk');
-    }, 3000);
+      updateStatusOfCall({ appointmentId: appointmentData.id, patientId: patientId });
+    }, 15000);
   };
 
   const chatDisabled = () => {
