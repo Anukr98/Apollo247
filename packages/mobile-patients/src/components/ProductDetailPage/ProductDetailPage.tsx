@@ -86,6 +86,7 @@ import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/Add
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { MedicineListingHeader } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingHeader';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export type ProductPageViewedEventProps = Pick<
   WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED],
@@ -126,6 +127,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     productDiscount,
     asyncPincode,
     setAsyncPincode,
+    circleMembershipCharges,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
@@ -139,7 +141,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     setAxdcCode,
     isPharmacyLocationServiceable,
     axdcCode,
-    pharmacyUserTypeAttribute,
   } = useAppCommonData();
 
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
@@ -169,7 +170,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const [deliveryTime, setdeliveryTime] = useState<string>('');
   const [tatEventData, setTatEventData] = useState<PharmacyTatApiCalled>();
   const [isPharma, setIsPharma] = useState<boolean>(false);
-  const [skuInCart, setSkuInCart] = useState<ShoppingCartItem[]>([]);
+  const [userType, setUserType] = useState<string>('');
+  const [circleID, setCircleID] = useState<string>('');
 
   const { special_price, price, type_id } = medicineDetails;
   const finalPrice = price - special_price ? special_price : price;
@@ -229,10 +231,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, [props.navigation]);
 
   useEffect(() => {
-    if (medicineDetails?.sku && availabilityCalled === 'yes') {
+    if (
+      medicineDetails?.sku &&
+      availabilityCalled === 'yes' &&
+      (!!deliveryTime || !!deliveryError)
+    ) {
       postProductPageViewedEvent(pincode, isInStock);
     }
-  }, [medicineDetails, availabilityCalled]);
+  }, [medicineDetails, availabilityCalled, deliveryTime]);
 
   useEffect(() => {
     if (axdcCode && medicineDetails?.sku) {
@@ -252,6 +258,16 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       }
     } catch (error) {}
   }, [tatEventData]);
+
+  useEffect(() => {
+    const getUserType = async () => {
+      const pharmacyUserType: any = await AsyncStorage.getItem('PharmacyUserType');
+      const circleId: any = await AsyncStorage.getItem('circleSubscriptionId');
+      setUserType(pharmacyUserType);
+      setCircleID(circleId);
+    };
+    getUserType();
+  }, []);
 
   const getMedicineDetails = (zipcode?: string, pinAcdxCode?: string) => {
     setLoading(true);
@@ -366,7 +382,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, [movedFrom, medicineDetails?.name]);
 
   const fetchSubstitutes = () => {
-    getSubstitutes(sku)
+    getSubstitutes(sku?.toUpperCase())
       .then(({ data }) => {
         try {
           if (data) {
@@ -414,17 +430,18 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         MaxOrderQty,
         price,
         special_price,
+        category_id,
       } = medicineDetails;
       const stock_availability =
         sell_online == 0 ? 'Not for Sale' : !!isProductInStock ? 'Yes' : 'No';
-      const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED] = {
+      let eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED] = {
         source: movedFrom,
-        ProductId: sku,
+        ProductId: sku?.toUpperCase(),
         ProductName: name,
         Stockavailability: stock_availability,
         ...productPageViewedEventProps,
         ...pharmacyCircleAttributes,
-        ...pharmacyUserTypeAttribute,
+        User_Type: userType,
         Pincode: pincode,
         serviceable: notServiceable ? 'No' : 'Yes',
         TATDay: deliveryTime ? moment(deliveryTime).diff(moment(), 'days') : null,
@@ -434,8 +451,16 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         MaxOrderQuantity: MaxOrderQty,
         MRP: price,
         SpecialPrice: special_price || null,
-        CircleCashback: cashback,
+        CircleCashback: cashback?.toFixed(2),
       };
+      if (movedFrom === 'deeplink') {
+        eventAttributes['Circle Membership Added'] = circleID
+          ? 'Existing'
+          : !!circleMembershipCharges
+          ? 'Yes'
+          : 'No';
+        eventAttributes['CategoryID'] = category_id;
+      }
       postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
       postFirebaseEvent(FirebaseEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
@@ -474,12 +499,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         return;
       }
 
-      const checkAvailabilityRes = await availabilityApi247(currentPincode, sku);
+      const checkAvailabilityRes = await availabilityApi247(currentPincode, sku?.toUpperCase());
       const outOfStock = !!!checkAvailabilityRes?.data?.response[0]?.exist;
       setIsInStock(!outOfStock);
       try {
         const { mrp, exist, qty } = checkAvailabilityRes.data.response[0];
-        !checkButtonClicked && setAvailabilityCalled('yes');
         const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED] = {
           Source: 'PDP',
           Input_SKU: sku,
@@ -522,7 +546,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       }
 
       getDeliveryTAT247({
-        items: [{ sku: sku, qty: getItemQuantity(sku) || 1 }],
+        items: [{ sku: sku?.toUpperCase(), qty: getItemQuantity(sku?.toUpperCase()) || 1 }],
         pincode: currentPincode,
         lat: lattitude,
         lng: longitude,
@@ -555,6 +579,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             setdeliveryError(pincodeServiceableItemOutOfStockMsg);
             setdeliveryTime('');
           }
+          !checkButtonClicked && setAvailabilityCalled('yes');
           try {
             const response = res.data.response;
             const item = response.items[0];
@@ -668,7 +693,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       MaxOrderQty,
       url_key,
     } = medicineDetails;
-    if (cartItems.find(({ id }) => id === sku)) {
+    if (cartItems.find(({ id }) => id?.toUpperCase() === sku?.toUpperCase())) {
       updateCartItem?.({ id: sku, quantity: productQuantity });
     } else {
       addCartItem!({
