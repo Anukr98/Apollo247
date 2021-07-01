@@ -900,7 +900,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           <View style={{ marginTop: 28 }}>
             {renderListItem('Consult \n' + caseSheetDetails?.referralSpecialtyName, '')}
             {renderListItem(
-              'Reason for Referral ' + caseSheetDetails?.referralDescription || '',
+              'Reason for Referral\n' + caseSheetDetails?.referralDescription || '',
               ''
             )}
           </View>
@@ -1046,7 +1046,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 {renderTestNotes()}
                 {renderDiagnosis()}
                 {renderGenerealAdvice()}
-                {/* We will use in next release */}
+                {renderReferral()}
                 {/* {renderFollowUp()} */}
               </View>
             </View>
