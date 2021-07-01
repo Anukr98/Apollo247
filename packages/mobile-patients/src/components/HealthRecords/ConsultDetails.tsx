@@ -1046,7 +1046,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 {renderTestNotes()}
                 {renderDiagnosis()}
                 {renderGenerealAdvice()}
-                {renderReferral()}
+                {caseSheetDetails && caseSheetDetails?.referralSpecialtyName !== null
+                  ? renderReferral()
+                  : null}
                 {/* {renderFollowUp()} */}
               </View>
             </View>
