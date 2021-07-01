@@ -130,6 +130,7 @@ import {
 import { saveConsultationLocation } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { Decimal } from 'decimal.js';
 
 interface PaymentCheckoutProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
@@ -206,22 +207,26 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     : physicalConsultDiscountedPrice;
   const storeCode =
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
-  const amount = Number(price) - couponDiscountFees;
+  const amount = Number(Decimal.sub(Number(price), couponDiscountFees));
   const amountToPay =
     circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
-        ? onlineConsultSlashedPrice -
-          couponDiscountFees +
-          (circleSubscriptionId == '' ? Number(circlePlanSelected?.currentSellingPrice) : 0)
-        : physicalConsultSlashedPrice -
-          couponDiscountFees +
-          Number(circlePlanSelected?.currentSellingPrice)
+        ? Number(
+            Decimal.sub(onlineConsultSlashedPrice, couponDiscountFees).plus(
+              circleSubscriptionId == '' ? Number(circlePlanSelected?.currentSellingPrice) : 0
+            )
+          )
+        : Number(
+            Decimal.sub(physicalConsultSlashedPrice, couponDiscountFees).plus(
+              circleSubscriptionId == '' ? Number(circlePlanSelected?.currentSellingPrice) : 0
+            )
+          )
       : amount;
   const consultAmounttoPay =
     circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
-        ? onlineConsultSlashedPrice - couponDiscountFees
-        : physicalConsultSlashedPrice - couponDiscountFees
+        ? Number(Decimal.sub(onlineConsultSlashedPrice, couponDiscountFees))
+        : Number(Decimal.sub(physicalConsultSlashedPrice, couponDiscountFees))
       : amount;
   const notSubscriberUserForCareDoctor =
     isCircleDoctorOnSelectedConsultMode && !circleSubscriptionId && !circlePlanSelected;
