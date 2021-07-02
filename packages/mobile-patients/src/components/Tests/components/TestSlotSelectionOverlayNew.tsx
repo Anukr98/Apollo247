@@ -549,7 +549,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
   premiumTag: {
-    backgroundColor: '#FCFDDA',
+    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
     flexDirection: 'row',
     borderRadius: 10,
     margin: 15,

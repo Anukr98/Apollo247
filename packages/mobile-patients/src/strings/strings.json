@@ -596,8 +596,8 @@
     "subHeadingMultipleUHID": "Please select all the patients for whom you want to book the selected tests.",
     "paidSlotHeading": "This is a Premium Slot -",
     "additionalChargeText": " Additional charge of",
-    "levidText": "will be levied on your total amount."
-
+    "levidText": "will be levied on your total amount.",
+    "nonServiceableText": "This address is not serviceable"
   },
   "orders": {
     "urOrders": "MY ORDERS",

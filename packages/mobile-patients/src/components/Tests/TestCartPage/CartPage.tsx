@@ -88,6 +88,7 @@ import {
   SCREEN_NAMES,
   TimelineWizard,
 } from '@aph/mobile-patients/src/components/Tests/components/TimelineWizard';
+import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/components/InfoMessage';
 
 type Address = savePatientAddress_savePatientAddress_patientAddress;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
@@ -137,6 +138,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const [duplicateNameArray, setDuplicateNameArray] = useState(duplicateItemsArray as any);
   const [showInclusions, setShowInclusions] = useState<boolean>(false);
   const [isServiceable, setIsServiceable] = useState<boolean>(false);
+  const [showNonServiceableText, setShowNonServiceableText] = useState<boolean>(false);
+  const [showPriceMismatch, setShowPriceMismatch] = useState<boolean>(false);
 
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
@@ -355,14 +358,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
             //show the prices changed pop-over
             isPriceChange = true;
             setLoading?.(false);
-            showAphAlert?.({
-              unDismissable: true,
-              title: string.common.uhOh,
-              description: string.diagnostics.pricesChangedMessage,
-              onPressOk: () => {
-                hideAphAlert?.();
-              },
-            });
+            setShowPriceMismatch(true);
             updateCartItem?.({
               id: results?.[isItemInCart]
                 ? String(results?.[isItemInCart]?.itemId)
@@ -394,14 +390,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           const disabledCartItemIds = disabledCartItems?.map((item) => item.id);
           setLoading?.(false);
           removeDisabledCartItems(disabledCartItemIds);
-
-          showAphAlert?.({
-            title: string.common.uhOh,
-            description: string.diagnostics.pricesChangedMessage,
-            onPressOk: () => {
-              hideAphAlert?.();
-            },
-          });
+          setShowPriceMismatch(true);
         }
       });
       if (!isItemDisable && !isPriceChange) {
@@ -426,10 +415,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         Number(selectedAddress?.longitude)
       );
       console.log({ serviceabilityResponse });
-      if (
-        !serviceabilityResponse?.errors &&
-        serviceabilityResponse?.data?.getDiagnosticServiceability
-      ) {
+      if (serviceabilityResponse?.data?.getDiagnosticServiceability?.status) {
         const getServiceableResponse =
           serviceabilityResponse?.data?.getDiagnosticServiceability?.serviceability;
         if (!!getServiceableResponse) {
@@ -443,6 +429,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           setDeliveryAddressCityId?.(String(getServiceableResponse?.cityID));
           setDiagnosticServiceabilityData?.(obj);
           setIsServiceable(true);
+          setShowNonServiceableText(false);
           //call prices api.
           getDiagnosticsAvailability(getServiceableResponse?.cityID!, cartItems)
             .then(({ data }) => {
@@ -459,28 +446,15 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         } else {
           //non-serviceable
           setLoading?.(false);
-          showAphAlert?.({
-            unDismissable: true,
-            title: string.common.uhOh,
-            description: string.diagnostics.nonServiceableConfigPinCodeMsg.replace(
-              '{{pincode}}',
-              selectedAddress?.zipcode!
-            ),
-            onPressOk: () => {
-              hideAphAlert?.();
-              setIsServiceable(false);
-              // setDeliveryAddressCityId?.(''); //otherwise text was removing
-              // setDeliveryAddressId?.('');
-            },
-          });
+          setIsServiceable(false);
+          setShowNonServiceableText(true);
         }
       }
     } catch (error) {
       CommonBugFender('AddPatients_getAddressServiceability', error);
       setLoading?.(false);
       setIsServiceable(false);
-      // setDeliveryAddressCityId?.('');
-      // setDeliveryAddressId?.('');
+      setShowNonServiceableText(true);
     }
   }
 
@@ -689,7 +663,33 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
             )}
           </View>
         </View>
+        {showNonServiceableText ? renderInfoMessage() : null}
+        {showPriceMismatch ? renderMismatchPrice() : null}
       </View>
+    );
+  };
+
+  const renderInfoMessage = () => {
+    return (
+      <InfoMessage
+        content={string.diagnosticsCartPage.nonServiceableText}
+        textStyle={[styles.textStyle, { color: '#FF637B' }]}
+        iconStyle={styles.iconStyle}
+        containerStyle={styles.infoContainerStyle}
+        isCard={false}
+      />
+    );
+  };
+
+  const renderMismatchPrice = () => {
+    return (
+      <InfoMessage
+        content={string.diagnostics.pricesChangedMessage}
+        textStyle={[styles.textStyle, { color: theme.colors.SHERPA_BLUE, opacity: 0.7 }]}
+        iconStyle={[styles.iconStyle, { tintColor: 'rgb(90,175,252)' }]}
+        containerStyle={[styles.infoContainerStyle, { backgroundColor: '#E0F0FF' }]}
+        isCard={false}
+      />
     );
   };
 
@@ -747,7 +747,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const keyExtractor = useCallback((_, index: number) => `${index}`, []);
 
   const renderSeparator = () => {
-    return <Spearator />;
+    return <Spearator style={{ height: 2 }} />;
   };
 
   const renderPatientName = () => {
@@ -993,20 +993,15 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   }
   //applying the first level duplicate checks.
   function _checkInclusionLevelDuplicates() {
-    console.log('inside duplicasteee');
-    console.log({ cartItems });
     const allInclusions = cartItems?.map((item) => item?.inclusions);
     const getPricesForItem = createItemPrice()?.itemPricingObject;
     const getCartItemPrices = createItemPrice()?.pricesForItemArray;
-    console.log({ allInclusions });
     const mergedInclusions = allInclusions?.flat(1); //from array level to single array
-    console.log({ mergedInclusions });
     const duplicateItems_1 = mergedInclusions?.filter(
       (e: any, i: any, a: any) => a.indexOf(e) !== i
     );
 
     const duplicateItems = [...new Set(duplicateItems_1)];
-    console.log({ duplicateItems });
     hideAphAlert?.();
     setLoading?.(false);
     if (duplicateItems?.length) {
@@ -1218,6 +1213,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: 16,
     marginRight: 16,
+    marginBottom: 8,
   },
   addButtonStyle: {
     backgroundColor: theme.colors.WHITE,
@@ -1256,5 +1252,22 @@ const styles = StyleSheet.create({
     zIndex: 100,
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  textStyle: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    lineHeight: 18,
+    letterSpacing: 0.1,
+    width: '94%',
+    marginHorizontal: '2%',
+  },
+  iconStyle: {
+    resizeMode: 'contain',
+    height: 16,
+    width: 16,
+  },
+  infoContainerStyle: {
+    margin: -16,
+    marginBottom: 8,
+    backgroundColor: '#FFE9E4',
   },
 });

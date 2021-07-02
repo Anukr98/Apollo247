@@ -926,7 +926,7 @@ const styles = StyleSheet.create({
   rateYourExpText: { ...theme.viewStyles.text('B', 14, theme.colors.APP_YELLOW) },
   feedbackTouch: { marginBottom: 2, width: '100%' },
   ratingContainer: {
-    backgroundColor: '#FCFDDA',
+    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
     borderRadius: 10,
     marginBottom: 5,
     padding: 5,

@@ -1,21 +1,32 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
-import { ImageStyle, StyleProp, StyleSheet, Text, TextStyle, View } from 'react-native';
+import { ImageStyle, StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle } from 'react-native';
 import { InfoIconRed } from '@aph/mobile-patients/src/components/ui/Icons';
 
 export interface InfoMessageProps {
   content: string;
+  icon?: any;
   textStyle?: StyleProp<TextStyle>;
   iconStyle?: StyleProp<ImageStyle>;
+  containerStyle?: StyleProp<ViewStyle>;
+  isCard?: boolean;
 }
 
 export const InfoMessage: React.FC<InfoMessageProps> = (props) => {
-  const { content, textStyle, iconStyle } = props;
+  const { content, textStyle, iconStyle, icon, containerStyle, isCard } = props;
   return (
     <>
       {content ? (
-        <View style={styles.infoContainer}>
-          <InfoIconRed style={iconStyle} />
+        <View
+          style={[
+            styles.infoContainer,
+            containerStyle,
+            isCard && {
+              ...theme.viewStyles.cardViewStyle,
+            },
+          ]}
+        >
+          {icon ? icon : <InfoIconRed style={iconStyle} />}
           <Text style={textStyle}>{content}</Text>
         </View>
       ) : null}
@@ -25,11 +36,10 @@ export const InfoMessage: React.FC<InfoMessageProps> = (props) => {
 
 const styles = StyleSheet.create({
   infoContainer: {
-    ...theme.viewStyles.cardViewStyle,
     padding: 12,
     margin: 16,
     flexDirection: 'row',
-    backgroundColor: '#FCFDDA',
+    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
   },
   infoText: {
     ...theme.fonts.IBMPlexSansMedium(10),
@@ -38,6 +48,7 @@ const styles = StyleSheet.create({
     color: theme.colors.SHERPA_BLUE,
     opacity: 0.7,
     marginHorizontal: '2%',
+    width: '94%',
   },
   infoIconStyle: { resizeMode: 'contain', height: 18, width: 18 },
 });
@@ -45,4 +56,5 @@ const styles = StyleSheet.create({
 InfoMessage.defaultProps = {
   textStyle: styles.infoText,
   iconStyle: styles.infoIconStyle,
+  isCard: true,
 };

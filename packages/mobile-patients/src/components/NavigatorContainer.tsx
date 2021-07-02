@@ -87,7 +87,6 @@ import { SearchTestScene } from '@aph/mobile-patients/src/components/Tests/Searc
 import { YourOrdersTest } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/YourOrdersTests';
 import { OrderedTestStatus } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/OrderedTestStatus';
 import { TestOrderDetails } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/TestOrderDetails';
-import { ClinicSelection } from '@aph/mobile-patients/src/components/Tests/ClinicSelection';
 import {
   CommonLogEvent,
   CommonBugFender,
@@ -230,7 +229,6 @@ export enum AppRoutes {
   YourOrdersTest = 'YourOrdersTest',
   OrderedTestStatus = 'OrderedTestStatus',
   TestOrderDetails = 'TestOrderDetails',
-  ClinicSelection = 'ClinicSelection',
   RenderPdf = 'RenderPdf',
   Tests = 'Tests',
   CovidScan = 'CovidScan',
@@ -563,9 +561,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.TestOrderDetails]: {
     screen: TestOrderDetails,
-  },
-  [AppRoutes.ClinicSelection]: {
-    screen: ClinicSelection,
   },
   [AppRoutes.RenderPdf]: {
     screen: RenderPdf,

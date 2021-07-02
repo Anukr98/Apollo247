@@ -55,29 +55,34 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
 
     return (
       <TouchableOpacity style={{}} onPress={() => _onPressCard(cartItem)}>
-        <View style={styles.cartItemView}>
-          <View style={styles.itemNameView}>
-            <Text style={styles.cartItemText}>{nameFormater(cartItem?.name, 'title')}</Text>
-          </View>
-          <View style={styles.rightView}>
-            <View style={styles.priceView}>
-              {!!slashedPrice && (
-                <View style={{ marginTop: -10 }}>
-                  <Text style={styles.packageSlashedPrice}>
-                    {string.common.Rs}
-                    {slashedPrice}
-                  </Text>
-                </View>
-              )}
-              <Text style={styles.mainPriceText}>
+        <View style={[styles.cartItemView, { paddingTop: !!slashedPrice ? 10 : 16 }]}>
+          {!!slashedPrice && (
+            <View style={{ alignItems: 'flex-end', width: '87.5%' }}>
+              <Text style={styles.packageSlashedPrice}>
                 {string.common.Rs}
-                {priceToShow}
+                {slashedPrice}
               </Text>
             </View>
-            <View
-              style={[styles.removeIconView, { alignSelf: !!slashedPrice ? 'flex-end' : 'center' }]}
-            >
-              {renderRemoveIcon(cartItem)}
+          )}
+          <View style={{ flexDirection: 'row' }}>
+            <View style={styles.itemNameView}>
+              <Text style={styles.cartItemText}>{nameFormater(cartItem?.name, 'title')}</Text>
+            </View>
+            <View style={styles.rightView}>
+              <View style={styles.priceView}>
+                <Text style={styles.mainPriceText}>
+                  {string.common.Rs}
+                  {priceToShow}
+                </Text>
+              </View>
+              <View
+                style={[
+                  styles.removeIconView,
+                  { alignSelf: !!slashedPrice ? 'flex-end' : 'center' },
+                ]}
+              >
+                {renderRemoveIcon(cartItem)}
+              </View>
             </View>
           </View>
         </View>
@@ -167,7 +172,6 @@ const styles = StyleSheet.create({
   },
   itemNameView: { width: '70%', justifyContent: 'center' },
   cartItemView: {
-    flexDirection: 'row',
     justifyContent: 'space-between',
     padding: 16,
     minHeight: 50,
@@ -175,7 +179,7 @@ const styles = StyleSheet.create({
   removeIconView: { justifyContent: 'center' },
   reportGenTextStyle: {
     ...theme.viewStyles.text('M', 10, theme.colors.SHERPA_BLUE, 0.6, 16),
-    marginLeft: 8,
+    marginLeft: 4,
     marginRight: 10,
   },
   reportGenViewStyle: {
@@ -184,8 +188,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   timeIconStyle: {
-    width: 16,
-    height: 16,
+    width: 14,
+    height: 14,
     marginLeft: 10,
     resizeMode: 'contain',
   },
@@ -197,7 +201,6 @@ const styles = StyleSheet.create({
     maxWidth: 160,
   },
   reportView: {
-    flexDirection: 'row',
     paddingLeft: 16,
     paddingRight: 16,
     paddingBottom: 10,

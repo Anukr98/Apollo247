@@ -1432,12 +1432,12 @@ const styles = StyleSheet.create({
     marginLeft: 16,
   },
   quantityTextStyle: {
-    backgroundColor: '#FCFDDA',
+    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
     marginHorizontal: 10,
     width: 50,
     borderRadius: 5,
     borderWidth: 1,
-    borderColor: '#FCFDDA',
+    borderColor: theme.colors.TEST_CARD_BUTTOM_BG,
     textAlign: 'center',
   },
   totalChargesContainer: {

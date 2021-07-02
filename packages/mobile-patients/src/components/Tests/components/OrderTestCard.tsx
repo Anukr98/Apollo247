@@ -620,11 +620,16 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   yellowText: { ...theme.viewStyles.yellowTextStyle, fontSize: screenWidth > 380 ? 13 : 12 },
-  listViewContainer: { backgroundColor: '#F9F9F9', borderRadius: 5, flex: 1, padding: 10 },
+  listViewContainer: {
+    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
+    borderRadius: 5,
+    flex: 1,
+    padding: 10,
+  },
   rowStyle: { flexDirection: 'row' },
   preparationViewContainer: {
     flexDirection: 'row',
-    backgroundColor: '#FCFDDA',
+    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
     flex: 1,
     padding: 10,
   },
@@ -655,7 +660,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansRegular(10),
   },
   otpContainer: {
-    backgroundColor: '#FCFDDA',
+    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
     justifyContent: 'space-between',
     flexDirection: 'row',
     height: 40,
@@ -731,7 +736,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 13, colors.APP_YELLOW, 1, 18),
   },
   ratingContainer: {
-    backgroundColor: '#FCFDDA',
+    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
     borderBottomLeftRadius: 8,
     borderBottomRightRadius: 8,
     borderRadius: 10,
