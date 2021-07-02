@@ -1009,6 +1009,14 @@ export const NotificationBellIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_notification_a.webp')} />
 );
 
+export const NoticeIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 14, height: 14 }}
+    {...props}
+    source={require('./icons/ic_notice.webp')}
+  />
+);
+
 export const PrimaryUHIDIconWhite: React.FC<IconProps> = (props) => (
   <IconBase
     size="md"

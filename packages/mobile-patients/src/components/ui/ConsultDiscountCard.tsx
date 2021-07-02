@@ -39,7 +39,9 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
     circleSubscriptionId,
     planSelected,
   } = props;
-  const isOnlineConsult = selectedTab === 'Consult Online';
+  const isOnlineConsult =
+    selectedTab === string.consultModeTab.VIDEO_CONSULT ||
+    selectedTab === string.consultModeTab.CONSULT_ONLINE;
   const isPhysicalConsult = isPhysicalConsultation(selectedTab);
   const circleDoctorDetails = calculateCircleDoctorPricing(
     doctor,

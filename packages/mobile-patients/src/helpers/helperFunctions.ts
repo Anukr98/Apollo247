@@ -1,4 +1,5 @@
 import {
+  AppCommonDataContextProps,
   LocationData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
@@ -744,6 +745,77 @@ export const divideSlots = (availableSlots: string[], date: Date) => {
           array[3] = {
             ...array[3],
             time: [...array[3].time, slot],
+          };
+        }
+      }
+    }
+  });
+  return array;
+};
+
+export const generateTimeSlots = (availableSlots: string[], date: Date) => {
+  const todayDate = moment(new Date()).format('YYYY-MM-DD');
+
+  const array: TimeArray = [
+    { label: '12 AM - 6 AM', time: [] },
+    { label: '6 AM - 12 PM', time: [] },
+    { label: '12 PM - 6 PM', time: [] },
+    { label: '6 PM - 12 AM', time: [] },
+  ];
+
+  const morningStartTime = moment('00:00', 'HH:mm');
+  const morningEndTime = moment('05:59', 'HH:mm');
+  const afternoonStartTime = moment('06:00', 'HH:mm');
+  const afternoonEndTime = moment('11:59', 'HH:mm');
+  const eveningStartTime = moment('12:00', 'HH:mm');
+  const eveningEndTime = moment('17:59', 'HH:mm');
+  const nightStartTime = moment('18:00', 'HH:mm');
+  const nightEndTime = moment('23:59', 'HH:mm');
+
+  availableSlots.forEach((slot) => {
+    const IOSFormat = slot; //`${date.toISOString().split('T')[0]}T${slot}:00.000Z`;
+
+    const formatedSlot = moment(IOSFormat)
+      .local()
+      .format('HH:mm'); //.format('HH:mm');
+    const slotTime = moment(formatedSlot, 'HH:mm');
+    if (
+      todayDate === moment(date).format('YYYY-MM-DD') &&
+      todayDate !== moment(IOSFormat).format('YYYY-MM-DD')
+    ) {
+    } else {
+      if (new Date() < new Date(IOSFormat)) {
+        if (
+          slotTime.isBetween(morningStartTime, morningEndTime) ||
+          slotTime.isSame(morningStartTime)
+        ) {
+          array[0] = {
+            label: '12 AM - 6 AM',
+            time: [...array[0]?.time, slot],
+          };
+        } else if (
+          slotTime.isBetween(afternoonStartTime, afternoonEndTime) ||
+          slotTime.isSame(afternoonStartTime)
+        ) {
+          array[1] = {
+            ...array[1],
+            time: [...array[1]?.time, slot],
+          };
+        } else if (
+          slotTime.isBetween(eveningStartTime, eveningEndTime) ||
+          slotTime.isSame(eveningStartTime)
+        ) {
+          array[2] = {
+            ...array[2],
+            time: [...array[2]?.time, slot],
+          };
+        } else if (
+          slotTime.isBetween(nightStartTime, nightEndTime) ||
+          slotTime.isSame(nightStartTime)
+        ) {
+          array[3] = {
+            ...array[3],
+            time: [...array[3]?.time, slot],
           };
         }
       }
@@ -2843,8 +2915,11 @@ export const getHealthCredits = async () => {
   }
 };
 
-export const getPackageIds = (activeUserSubscriptions: any) => {
-  let packageIds: string[] = [];
+export const getPackageIds = (
+  activeUserSubscriptions: AppCommonDataContextProps['activeUserSubscriptions'],
+  circlePlanSelected?: ShoppingCartContextProps['circlePlanSelected']
+) => {
+  const packageIds: string[] = [];
   activeUserSubscriptions &&
     Object.keys(activeUserSubscriptions)?.forEach((subscription: string) => {
       activeUserSubscriptions?.[subscription]?.forEach((item) => {
@@ -2852,6 +2927,9 @@ export const getPackageIds = (activeUserSubscriptions: any) => {
           packageIds.push(`${subscription?.toUpperCase()}:${item?.plan_id}`);
       });
     });
+  if (circlePlanSelected?.subPlanId) {
+    packageIds.push(circlePlanSelected?.subPlanId);
+  }
   return packageIds;
 };
 

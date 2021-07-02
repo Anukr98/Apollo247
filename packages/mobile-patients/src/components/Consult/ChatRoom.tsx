@@ -29,8 +29,6 @@ import {
   UserThumbnailIcon,
   CopyIcon,
   ExternalMeetingVideoCall,
-  InactiveCalenderIcon,
-  ActiveCalenderIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -208,6 +206,8 @@ import { FollowUpChatGuideLines } from '@aph/mobile-patients/src/components/Cons
 import { ChatDisablePrompt } from '@aph/mobile-patients/src/components/Consult/Components/ChatDisablePrompt';
 import { getMedicineDetailsApi, MedicineProductDetailsResponse } from '../../helpers/apiCalls';
 import { AxiosResponse } from 'axios';
+import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/Events';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
 
 interface OpentokStreamObject {
   connection: {
@@ -756,6 +756,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1000,
+  },
+  manageCTAView: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  manageBtn: {
+    width: 68,
+    height: 24,
+    borderRadius: 5,
+    right: 0,
   },
 });
 
@@ -3971,8 +3982,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     });
   };
 
+  function postDiagnosticAddToCart(itemId: string, itemName: string) {
+    DiagnosticAddToCartEvent(
+      itemName,
+      itemId,
+      0, //add price
+      0, //add price
+      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.CONSULT_ROOM
+    );
+  }
+
   const onAddTestsToCart = async () => {
     postWebEngageEvent(WebEngageEventName.BOOK_TESTS_IN_CONSULT_ROOM, UserInfo);
+
     let location: LocationData | null = null;
     setLoading && setLoading(true);
 
@@ -4022,6 +4044,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           (item) => !tests?.find((val) => val?.name!.toLowerCase() == item?.itemname!.toLowerCase())
         );
         const unAvailableItems = unAvailableItemsArray?.map((item) => item?.itemname)?.join(', ');
+        const getItemNames = tests?.map((item) => item?.name)?.join(', ');
+        const getItemIds = tests?.map((item) => Number(item?.id))?.join(', ');
 
         if (tests?.length) {
           addMultipleTestCartItems?.(tests);
@@ -4065,11 +4089,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             },
           });
         }
-        setLoading!(false);
-        props.navigation.push(AppRoutes.TestsCart, { comingFrom: AppRoutes.ConsultDetails });
+        postDiagnosticAddToCart(getItemIds, getItemNames);
+        setLoading?.(false);
       })
       .catch((e) => {
-        setLoading!(false);
+        setLoading?.(false);
         handleGraphQlError(e);
       });
   };
@@ -5213,7 +5237,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       !rowData?.message ||
       patientRejectedCall === (rowData as any) ||
       callRelatedCodes.includes(rowData?.message) ||
-      (!automatedCodesToRender.includes(rowData?.message) && rowData?.message?.startsWith('^^#'))
+      (!automatedCodesToRender.includes(rowData?.message) && rowData?.message?.startsWith('^^#')) ||
+      (rowData?.automatedText === consultPatientStartedMsg && rowData?.message == 'welcome')
     ) {
       return null;
     }
@@ -6434,7 +6459,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setsessionId(sessionInfo.data.updateAppointmentSession.sessionId);
         settoken(sessionInfo.data.updateAppointmentSession.appointmentToken);
 
-        PublishAudioVideo();
+        isUserJoining && PublishAudioVideo();
       })
       .catch((e) => {
         CommonBugFender('ChatRoom_APICallAgain', e);
@@ -6999,6 +7024,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const renderManageCTA = (isDisabled: boolean = false) => {
+    return (
+      <View style={styles.manageCTAView}>
+        <Button
+          disabled={isDisabled}
+          title={'MANAGE'}
+          style={styles.manageBtn}
+          titleTextStyle={theme.viewStyles.text('SB', 12, theme.colors.WHITE)}
+          onPress={() => onPressCalender()}
+        />
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
       <StatusBar hidden={hideStatusBar} />
@@ -7114,11 +7153,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               disabled={doctorJoinedChat || status.current === STATUS.COMPLETED}
               onPress={() => onPressCalender()}
             >
-              {doctorJoinedChat || status.current === STATUS.COMPLETED ? (
-                <InactiveCalenderIcon style={styles.calenderIcon} />
-              ) : (
-                <ActiveCalenderIcon style={styles.calenderIcon} />
-              )}
+              {doctorJoinedChat || status.current === STATUS.COMPLETED
+                ? renderManageCTA(true)
+                : renderManageCTA()}
             </TouchableOpacity>
           }
         />

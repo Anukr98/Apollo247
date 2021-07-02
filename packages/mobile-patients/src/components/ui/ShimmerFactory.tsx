@@ -134,6 +134,10 @@ const styles = StyleSheet.create({
     width: '95%',
     margin: 10,
   },
+  orderNoticeView: { marginBottom: 5, flexDirection: 'row', justifyContent: 'space-between' },
+  orderNoticeIcon: { height: 15, width: '5%', borderRadius: 5 },
+  orderNoticeTitle: { height: 15, width: '93%', borderRadius: 5 },
+  orderNoticeDescription: { height: 45, width: '100%', borderRadius: 5 },
   sortBox: {
     borderWidth: 0.5,
     borderColor: theme.colors.ASTRONAUT_BLUE,
@@ -281,6 +285,27 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     width: '100%',
     marginVertical: 10,
+  },
+  doctorDetails: {
+    height: 105,
+    width: '100%',
+  },
+  dateSlots: {
+    height: 54,
+    width: 101,
+    borderRadius: 10,
+  },
+  totalSlots: {
+    marginLeft: 20,
+    width: 100,
+    height: 15,
+  },
+  slotsButton: {
+    ...theme.viewStyles.cardViewStyle,
+    width: 90,
+    marginRight: 8,
+    marginTop: 12,
+    height: 40,
   },
   rowStyle: {
     flexDirection: 'row',
@@ -503,6 +528,24 @@ export const renderMedicineBannerShimmer = () => {
   );
 };
 
+export const OrderDelayNoticeShimmer = () => {
+  return (
+    <>
+      <View style={styles.orderNoticeView}>
+        <ShimmerPlaceHolder LinearGradient={LinearGradient} shimmerStyle={styles.orderNoticeIcon} />
+        <ShimmerPlaceHolder
+          LinearGradient={LinearGradient}
+          shimmerStyle={styles.orderNoticeTitle}
+        />
+      </View>
+      <ShimmerPlaceHolder
+        LinearGradient={LinearGradient}
+        shimmerStyle={styles.orderNoticeDescription}
+      />
+    </>
+  );
+};
+
 export const renderHealthRecordShimmer = () => {
   return (
     <View style={{ flexDirection: 'row' }}>
@@ -693,15 +736,55 @@ export const CovidButtonShimmer = () => (
   />
 );
 
-export const couponViewShimmer = () => {
+export const renderCouponViewShimmer = () => {
   return (
-    <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
+    <View style={{ marginVertical: 10 }}>
       <ShimmerPlaceHolder
         shimmerColors={shimmerColors}
         LinearGradient={LinearGradient}
         shimmerStyle={styles.couponBlock}
       />
     </View>
+  );
+};
+
+export const renderDoctorDetailsShimmer = (style: any) => {
+  return (
+    <ShimmerPlaceHolder
+      shimmerColors={shimmerColors}
+      LinearGradient={LinearGradient}
+      shimmerStyle={[styles.doctorDetails, style]}
+    />
+  );
+};
+
+export const renderDateSlotsShimmer = () => {
+  return (
+    <ShimmerPlaceHolder
+      shimmerColors={shimmerColors}
+      LinearGradient={LinearGradient}
+      shimmerStyle={styles.dateSlots}
+    />
+  );
+};
+
+export const renderTotalSlotsShimmer = () => {
+  return (
+    <ShimmerPlaceHolder
+      shimmerColors={shimmerColors}
+      LinearGradient={LinearGradient}
+      shimmerStyle={styles.totalSlots}
+    />
+  );
+};
+
+export const renderSlotItemShimmer = () => {
+  return (
+    <ShimmerPlaceHolder
+      shimmerColors={shimmerColors}
+      LinearGradient={LinearGradient}
+      shimmerStyle={styles.slotsButton}
+    />
   );
 };
 

@@ -401,6 +401,7 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
 
   const renderReopenTicket = () => {
     var reopenCTADisabled: boolean = false;
+    let showWhatsappCTA: boolean = false;
 
     if (ticket.closedTime) {
       var closedTime = moment(ticket.closedTime);
@@ -410,6 +411,10 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
       var reopenHelpTicketMaxTime = AppConfig.Configuration.Reopen_Help_Max_Time || 24;
       if (duration > reopenHelpTicketMaxTime) {
         reopenCTADisabled = true;
+      }
+
+      if (duration <= 24) {
+        showWhatsappCTA = true;
       }
     }
 
@@ -430,7 +435,14 @@ export const HelpChatScreen: React.FC<HelpChatProps> = (props) => {
             ticket.
           </Text>
         ) : null}
+        {showWhatsappCTA ? renderWhatsapp() : null}
+      </View>
+    );
+  };
 
+  const renderWhatsapp = () => {
+    return (
+      <View>
         {ticket?.customFields?.Business == BUSINESS.PHARMACY ||
         ticket?.customFields?.Business == BUSINESS.VIRTUAL_CONSULTATION ||
         ticket?.customFields?.Business == BUSINESS.PHYSICAL_CONSULTATION ||

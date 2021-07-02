@@ -477,6 +477,7 @@ export enum ORDER_REQUEST_TYPE {
 export enum ORDER_TYPE {
   CONSULT = "CONSULT",
   PHARMACY = "PHARMACY",
+  DIAGNOSTICS = "DIAGNOSTICS",
 }
 
 export enum OTP_STATUS {
@@ -1480,6 +1481,13 @@ export interface PatientAddressInput {
 export interface PatientAppointmentsInput {
   patientId: string;
   appointmentDate: any;
+}
+
+export interface PatientConsultsAndOrdersByMobileInput {
+  mobileNumber: string;
+  filter?: CONSULTS_RX_SEARCH_FILTER[] | null;
+  offset?: number | null;
+  limit?: number | null;
 }
 
 export interface PatientConsultsAndOrdersInput {

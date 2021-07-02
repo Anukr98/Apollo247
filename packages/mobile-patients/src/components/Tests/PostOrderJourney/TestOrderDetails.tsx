@@ -57,7 +57,6 @@ import {
   MedicalRecordType,
   REFUND_STATUSES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsOrderStatus';
 
 import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpers/clientCalls';
 
@@ -78,11 +77,16 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 
 import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
+
+import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 const DROP_DOWN_ARRAY_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
 ];
+
+type orderStatus = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus;
 export interface TestOrderDetailsProps extends NavigationScreenProps {
   orderId: string;
   showOrderSummaryTab: boolean;
@@ -90,6 +94,7 @@ export interface TestOrderDetailsProps extends NavigationScreenProps {
   selectedTest?: any;
   selectedOrder: object;
   refundStatusArr?: any;
+  refundTransactionId?: string;
   disableTrackOrder?: boolean;
   comingFrom?: string;
 }
@@ -105,6 +110,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const selectedOrder = props.navigation.getParam('selectedOrder');
   const refundStatusArr = props.navigation.getParam('refundStatusArr');
   const source = props.navigation.getParam('comingFrom');
+  const refundTransactionId = props.navigation.getParam('refundTransactionId');
 
   const client = useApolloClient();
   const [selectedTab, setSelectedTab] = useState<string>(
@@ -123,9 +129,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
   const [orderDetails, setOrderDetails] = useState([] as any);
-  const scrollToSlots = () => {
-    scrollViewRef.current &&
-      scrollViewRef.current.scrollTo({ x: 0, y: scrollYValue, animated: true });
+
+  const scrollToSlots = (yValue?: number) => {
+    const setY = yValue == undefined ? scrollYValue : yValue;
+    scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: setY, animated: true });
   };
 
   //for showing the order level status.
@@ -201,6 +208,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    if (selectedTab === string.orders.viewBill) {
+      scrollToSlots(0);
+    }
     if (selectedTab == string.orders.trackOrder && newList?.length > 0) {
       let latestStatus = newList?.[newList?.length - 1]?.orderStatus;
       DiagnosticTrackOrderViewed(currentPatient, latestStatus, orderId, 'Track Order');
@@ -295,6 +305,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     }
     return true;
   };
+
   useEffect(() => {
     const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -383,11 +394,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     );
   };
 
-  const renderCustomDescriptionOrDateAndTime = (
-    data: getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList
-  ) => {
+  const renderCustomDescriptionOrDateAndTime = (data: orderStatus) => {
     return (
-      <View style={{ alignSelf: 'flex-end' }}>
+      <View style={{ marginLeft: 5 }}>
         <Text style={styles.dateTimeStyle}>
           {!!data?.statusDate
             ? getFormattedTime(data?.statusDate)
@@ -412,27 +421,41 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           {newList?.map((order: any, index: number, array: any) => {
             const isStatusDone = true;
             return (
-              <View style={styles.rowStyle}>
+              <View
+                style={styles.rowStyle}
+                onLayout={(event) => {
+                  const layout = event.nativeEvent.layout;
+                  if (isStatusDone && selectedTab === string.orders.trackOrder) {
+                    setScrollYValue(layout.y);
+                  }
+                }}
+              >
                 {renderGraphicalStatus(order, index, isStatusDone, array)}
                 <View style={{ marginBottom: 8, flex: 1 }}>
                   <View style={[isStatusDone ? styles.statusDoneView : { padding: 10 }]}>
-                    <View style={styles.rowStyle}>
-                      <Text
-                        style={[
-                          styles.statusTextStyle,
-                          {
-                            color:
-                              DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus) ||
-                              order?.orderStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB
-                                ? theme.colors.INPUT_FAILURE_TEXT
-                                : theme.colors.SHERPA_BLUE,
-                          },
-                        ]}
-                      >
-                        {nameFormater(getTestOrderStatusText(order?.orderStatus), 'default')}
-                      </Text>
+                    <View style={styles.flexRow}>
+                      <View style={{ width: '75%' }}>
+                        <Text
+                          style={[
+                            styles.statusTextStyle,
+                            {
+                              color:
+                                DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus) ||
+                                order?.orderStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB
+                                  ? theme.colors.INPUT_FAILURE_TEXT
+                                  : theme.colors.SHERPA_BLUE,
+                            },
+                          ]}
+                        >
+                          {nameFormater(getTestOrderStatusText(order?.orderStatus), 'default')}
+                        </Text>
+                      </View>
                       {isStatusDone ? renderCustomDescriptionOrDateAndTime(order) : null}
                     </View>
+
+                    {REFUND_STATUSES.SUCCESS === order?.orderStatus
+                      ? renderTransactionDetails()
+                      : null}
                     {DROP_DOWN_ARRAY_STATUS.includes(order?.orderStatus) &&
                     index == array?.length - 1
                       ? renderInclusionLevelDropDown(order)
@@ -450,6 +473,15 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         {renderRefund()}
         <View style={{ height: 60 }} />
       </View>
+    );
+  };
+
+  const renderTransactionDetails = () => {
+    return (
+      <>
+        <Spearator style={styles.horizontalSeparator} />
+        <Text style={styles.refundTxnId}>Txn id: {refundTransactionId}</Text>
+      </>
     );
   };
 
@@ -680,6 +712,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           onPressViewReport={_onPressViewReportAction}
           onPressDownloadInvoice={onPressInvoice}
           refundDetails={refundStatusArr}
+          refundTransactionId={refundTransactionId}
         />
       )
     );
@@ -761,7 +794,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           data={[{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]}
           selectedTab={selectedTab}
         />
-        <ScrollView bounces={false} style={{ flex: 1 }}>
+        <ScrollView bounces={false} style={{ flex: 1 }} ref={scrollViewRef}>
           {selectedTab == string.orders.trackOrder ? renderOrderTracking() : renderOrderSummary()}
 
           {renderError()}
@@ -906,4 +939,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  refundTxnId: {
+    ...theme.viewStyles.text('M', 11, colors.SHERPA_BLUE, 1, 14),
+  },
+  flexRow: {
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  horizontalSeparator: { marginTop: 8, marginBottom: 8 },
 });

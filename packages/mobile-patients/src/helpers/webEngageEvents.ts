@@ -7,6 +7,7 @@ import {
   PharmaUserStatus,
   UploadPrescSource,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
 
 type YesOrNo = 'Yes' | 'No';
 type HdfcPlan = 'SILVER' | 'GOLD' | 'PLATINUM';
@@ -115,7 +116,9 @@ export enum WebEngageEventName {
   TRUECALLER_APOLLO247_LOGIN_ERRORS = 'Apollo247 truecaller login errors',
   LOGIN_WITH_TRUECALLER_CLICKED = 'Login with truecaller clicked',
   MY_CONSULTED_DOCTORS_CLICKED = 'My doctor clicked',
-
+  VIEW_PROFILE_SLOT_SCREEN = 'View Profile Slot Screen',
+  VIEW_AVAILABLE_SLOTS = 'View Available Slots',
+  VIEW_SLOTS_CLICKED = 'View Slots Clicked',
   //Doctor Share Events
   SHARE_CLICK_DOC_LIST_SCREEN = 'Share clicked doc list screen',
   SHARE_PROFILE_CLICKED_DOC_LIST = 'Share profile clicked doc list',
@@ -136,6 +139,10 @@ export enum WebEngageEventName {
   PHARMACY_TAT_API_CALLED = 'Pharmacy TAT API Called',
   PHARMACY_CART_SELECT_DELIVERY_ADDRESS_CLICKED = 'Pharmacy Cart - Select Delivery Address Clicked',
   PHARMACY_CART_UPLOAD_PRESCRIPTION_CLICKED = 'Pharmacy Cart - Upload Prescription Clicked',
+
+  PHARMACY_POST_CART_PAGE_VIEWED = 'Pharmacy Post Cart Screen Viewed',
+  PHARMACY_ORDER_SUBSTITUTE_OPTION_CLICKED = 'Pharmacy Order Success Substitute Option Clicked',
+
   // HomePageElements Events
   BUY_MEDICINES = 'Buy Medicines',
   ORDER_TESTS = 'Order Tests',
@@ -1292,16 +1299,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.DIAGNOSTIC_ADD_TO_CART]: {
     'Item Name': string;
     'Item ID': string; // (SKUID)
-    Source:
-      | 'Home page'
-      | 'Full search'
-      | 'Details page'
-      | 'Partial search'
-      | 'Listing page'
-      | 'Popular search'
-      | 'Category page'
-      | 'Prescription'
-      | 'Cart page';
+    Source:DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
     Section?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
@@ -1325,6 +1323,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED]: {
     position: number;
     itemId: number;
+    'Banner title': string;
   };
   [WebEngageEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE]: {
     'Selection type': 'New' | 'Existing';
@@ -1824,6 +1823,26 @@ export interface WebEngageEvents {
 
   [WebEngageEventName.PHARMACY_CART_UPLOAD_PRESCRIPTION_CLICKED]: {
     'Customer ID': string;
+  };
+
+  [WebEngageEventName.PHARMACY_POST_CART_PAGE_VIEWED]: {
+    'Payment status': 'Success' | 'Payment Failed' | 'Payment Aborted' | 'Payment Status Not Known';
+    'Payment Type': 'COD' | 'Cashless' | 'No Payment';
+    'Transaction ID': number | string;
+    'Order ID(s)': number | string;
+    'MRP Total': number;
+    'Discount Amount': number;
+    'Payment Instrument': string;
+    'Order Type': string;
+    'Shipping Charges': number;
+    'Circle Member': boolean;
+    'Substitution Option Shown': YesOrNo;
+  };
+
+  [WebEngageEventName.PHARMACY_ORDER_SUBSTITUTE_OPTION_CLICKED]: {
+    'Transaction ID': number | string;
+    'Order ID(s)': number | string;
+    'Substitute Action Taken': 'Agree' | 'Disagree';
   };
 
   // ********** Health Records ********** \\
@@ -2637,5 +2656,49 @@ export interface WebEngageEvents {
       _247_Flag: boolean | undefined;
       'Consult Mode': string;
     };
+  };
+
+  [WebEngageEventName.VIEW_PROFILE_SLOT_SCREEN]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    User_Type: string;
+    'Doctor Name': string;
+    'Doctor Id': string;
+    'Doctor Speciality': string;
+  };
+
+  [WebEngageEventName.VIEW_AVAILABLE_SLOTS]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    User_Type: string;
+    'Doctor Name': string;
+    'Doctor Id': string;
+    'Doctor Speciality': string;
+    'Landing screen date': string;
+  };
+
+  [WebEngageEventName.VIEW_SLOTS_CLICKED]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    User_Type: string;
+    'Doctor Name': string;
+    'Doctor Id': string;
+    'Doctor Speciality': string;
+    'Bucket viewed': string;
   };
 }

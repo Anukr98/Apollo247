@@ -270,6 +270,10 @@ export const GET_AVAILABLE_SLOTS = gql`
   query getDoctorAvailableSlots($DoctorAvailabilityInput: DoctorAvailabilityInput!) {
     getDoctorAvailableSlots(DoctorAvailabilityInput: $DoctorAvailabilityInput) {
       availableSlots
+      slotCounts {
+        date
+        slotCount
+      }
     }
   }
 `;
@@ -1395,6 +1399,10 @@ export const GET_DOCTOR_PHYSICAL_AVAILABLE_SLOTS = gql`
       DoctorPhysicalAvailabilityInput: $DoctorPhysicalAvailabilityInput
     ) {
       availableSlots
+      slotCounts {
+        date
+        slotCount
+      }
     }
   }
 `;
@@ -1698,10 +1706,29 @@ export const SAVE_MEDICINE_ORDER_OMS_V2 = gql`
       errorCode
       errorMessage
       transactionId
+      isSubstitution
+      substitutionTime
+      substitutionMessage
       orders {
         id
         orderAutoId
       }
+    }
+  }
+`;
+
+export const UPDATE_MEDICINE_ORDER_SUBSTITUTION = gql`
+  mutation updateMedicineOrderSubstitution(
+    $transactionId: Int
+    $orderId: Int
+    $substitution: String
+  ) {
+    updateMedicineOrderSubstitution(
+      transactionId: $transactionId
+      orderId: $orderId
+      substitution: $substitution
+    ) {
+      message
     }
   }
 `;
@@ -2738,6 +2765,194 @@ export const GET_PRISM_AUTH_TOKEN = gql`
   }
 `;
 
+export const GET_PRESCRIPTIONS_BY_MOBILE_NUMBER = gql`
+  query getPrescriptionsByMobileNumber(
+    $MobileNumber: String!
+    $recordId: String!
+    $source: String!
+    $records: [MedicalRecordType]!
+  ) {
+    getPrescriptionsByMobileNumber(
+      MobileNumber: $MobileNumber
+      recordId: $recordId
+      source: $source
+      records: $records
+    ) {
+      patientId
+      test_report {
+        response {
+          id
+          labTestName
+          labTestSource
+          packageId
+          packageName
+          labTestDate
+          date
+          labTestRefferedBy
+          siteDisplayName
+          tag
+          consultId
+          identifier
+          additionalNotes
+          observation
+          labTestResults {
+            parameterName
+            unit
+            result
+            range
+          }
+          fileUrl
+          testResultFiles {
+            id
+            fileName
+            mimeType
+          }
+        }
+        errorCode
+        errorMsg
+        errorType
+      }
+      prescription {
+        response {
+          id
+          prescriptionName
+          date
+          prescribedBy
+          notes
+          prescriptionSource
+          siteDisplayName
+          source
+          fileUrl
+          prescriptionFiles {
+            id
+            fileName
+            mimeType
+          }
+          hospital_name
+          hospitalId
+        }
+        errorCode
+        errorMsg
+        errorType
+      }
+    }
+  }
+`;
+
+export const GET_PAST_CONSULTS_PRESCRIPTIONS_BY_MOBILE = gql`
+  query getLinkedProfilesPastConsultsAndPrescriptionsByMobile(
+    $consultsAndOrdersByMobileInput: PatientConsultsAndOrdersByMobileInput
+  ) {
+    getLinkedProfilesPastConsultsAndPrescriptionsByMobile(
+      consultsAndOrdersByMobileInput: $consultsAndOrdersByMobileInput
+    ) {
+      consults {
+        id
+        patientId
+        doctorId
+        appointmentDateTime
+        appointmentType
+        appointmentState
+        hospitalId
+        isFollowUp
+        followUpParentId
+        followUpTo
+        displayId
+        bookingDate
+        caseSheet {
+          notes
+          blobName
+          consultType
+          diagnosis {
+            name
+          }
+          diagnosticPrescription {
+            itemname
+          }
+          doctorId
+          doctorType
+          followUp
+          followUpAfterInDays
+          followUpDate
+          id
+
+          medicinePrescription {
+            id
+            externalId
+            medicineName
+            medicineDosage
+            medicineToBeTaken
+            medicineInstructions
+            medicineTimings
+            medicineUnit
+            medicineConsumptionDurationInDays
+            medicineConsumptionDuration
+            medicineFormTypes
+            medicineFrequency
+            medicineConsumptionDurationUnit
+            routeOfAdministration
+            medicineCustomDosage
+          }
+          symptoms {
+            symptom
+            since
+            howOften
+            severity
+          }
+        }
+        displayId
+        status
+        doctorInfo {
+          id
+          salutation
+          firstName
+          lastName
+          displayName
+          fullName
+          experience
+          city
+          onlineConsultationFees
+          physicalConsultationFees
+          photoUrl
+          qualification
+          specialty {
+            id
+            name
+            userFriendlyNomenclature
+            image
+          }
+          doctorHospital {
+            facility {
+              id
+              name
+            }
+          }
+        }
+      }
+      medicineOrders {
+        id
+        orderDateTime
+        quoteDateTime
+        deliveryType
+        currentStatus
+        orderType
+        estimatedAmount
+        prescriptionImageUrl
+        shopId
+        prismPrescriptionFileId
+        medicineOrderLineItems {
+          medicineSKU
+          medicineName
+          price
+          quantity
+          mrp
+          id
+        }
+      }
+    }
+  }
+`;
+
 export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
   query getPatientPrismMedicalRecords_V2(
     $patientId: ID!
@@ -3247,6 +3462,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
           notes
           blobName
           consultType
+          prescriptionGeneratedDate
           diagnosis {
             name
           }
@@ -3570,6 +3786,15 @@ export const CANCEL_MEDICINE_ORDER_OMS = gql`
   mutation CancelMedicineOrderOMS($medicineOrderCancelOMSInput: MedicineOrderCancelOMSInput) {
     cancelMedicineOrderOMS(medicineOrderCancelOMSInput: $medicineOrderCancelOMSInput) {
       orderStatus
+    }
+  }
+`;
+
+export const PHARMA_ORDER_MESSAGE = gql`
+  query pharmaOrderMessage($orderId: Int) {
+    pharmaOrderMessage(orderId: $orderId) {
+      message
+      title
     }
   }
 `;
@@ -4777,8 +5002,8 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql`
         }
         diagnosticOrderLineItems {
           itemObj {
-            inclusions
             testPreparationData
+            preTestingRequirement
           }
         }
       }
@@ -4825,13 +5050,12 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
         }
         diagnosticOrderLineItems {
           itemObj {
-            inclusions
             testPreparationData
+            preTestingRequirement
           }
         }
         attributesObj {
           reportGenerationTime
-          preTestingRequirement
         }
       }
     }

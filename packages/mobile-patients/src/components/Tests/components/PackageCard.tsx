@@ -17,6 +17,7 @@ import { isSmallDevice, nameFormater } from '@aph/mobile-patients/src/helpers/he
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   convertNumberToDecimal,
+  DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   getPricesForItem,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
@@ -44,15 +45,7 @@ export interface PackageCardProps {
   isVertical: boolean;
   columns?: number;
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
-  source:
-    | 'Home page'
-    | 'Full search'
-    | 'Details page'
-    | 'Partial search'
-    | 'Listing page'
-    | 'Category page'
-    | 'Prescription'
-    | 'Cart page';
+  source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
   sourceScreen: string;
 }
 
@@ -318,6 +311,9 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
     const mrpToDisplay = pricesForItem?.mrpToDisplay;
     const widgetType = data?.diagnosticWidgetType;
 
+    const inclusions =
+      !!item?.inclusionData && item.inclusionData.map((item: any) => Number(item?.incItemId));
+
     DiagnosticAddToCartEvent(
       item?.itemTitle,
       `${item?.itemId}`,
@@ -344,7 +340,7 @@ export const PackageCard: React.FC<PackageCardProps> = (props) => {
       collectionMethod: TEST_COLLECTION_TYPE.HC,
       groupPlan: planToConsider?.groupPlan,
       packageMrp: packageCalculatedMrp,
-      inclusions: [Number(item?.itemId)], // since it's a test
+      inclusions: item?.inclusionData == null ? [Number(item?.itemId)] : inclusions,
     });
   }
 

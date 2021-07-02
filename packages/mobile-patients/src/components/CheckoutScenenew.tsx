@@ -150,6 +150,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     maxCartValueForCOD,
     nonCodSKus,
     clearCartInfo,
+    circlePlanSelected,
   } = useShoppingCart();
   const {
     pharmacyUserTypeAttribute,
@@ -183,6 +184,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const [scrollToend, setScrollToend] = useState<boolean>(false);
   const [showCareDetails, setShowCareDetails] = useState(true);
   const [areNonCODSkus, setAreNonCODSkus] = useState(false);
+  const [isSubstitutionValue, setisSubstitutionValue] = useState<boolean>(false);
+  const [substitutionMessageValue, setSubstitutionMessageValue] = useState<string>('');
+  const [substitutionTimeValue, setSubstitutionTimeValue] = useState<number>(0);
   const client = useApolloClient();
 
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
@@ -456,6 +460,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             transId: orderAutoId,
             orders: orders,
             isStorePickup: isStorePickup,
+            showSubstituteMessage: isSubstitutionValue,
+            substitutionMessage: substitutionMessageValue,
+            substitutionTime: substitutionTimeValue,
           });
         }
       })
@@ -529,6 +536,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             price: getFormattedAmount(grandTotal),
             transId: transactionId,
             orders: orders,
+            showSubstituteMessage: isSubstitutionValue,
+            substitutionMessage: substitutionMessageValue,
+            substitutionTime: substitutionTimeValue,
           });
         }
       })
@@ -563,7 +573,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     transactionId: number,
     paymentMode: string,
     bankCode: string,
-    orderInfo: saveMedicineOrderOMSVariables | saveMedicineOrderV2Variables
+    orderInfo: saveMedicineOrderOMSVariables | saveMedicineOrderV2Variables,
+    showSubstituteMessage?: boolean,
+    substitutionMessage?: string,
+    substitutionTime?: number
   ) => {
     orders?.forEach((order) => {
       firePaymentModeEvent(paymentMode, order?.id!, order?.orderAutoId!);
@@ -586,6 +599,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       planId: circlePlanId || '',
       subPlanId: circleSubPlanId || '',
       isStorePickup,
+      showSubstituteMessage,
+      substitutionMessage,
+      substitutionTime,
     });
   };
 
@@ -614,7 +630,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         quantity: item?.quantity,
         specialPrice: item?.specialPrice || item?.price,
       })),
-      packageIds: activeUserSubscriptions ? getPackageIds(activeUserSubscriptions) : [],
+      packageIds: getPackageIds(activeUserSubscriptions),
       email: g(currentPatient, 'emailAddress'),
     };
     setLoading(true);
@@ -740,7 +756,11 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               subPlanId: circleSubPlanId || '',
             }
           : null,
-        totalCashBack: !coupon?.coupon && isCircleSubscription ? Number(cartTotalCashback) || 0 : 0,
+        totalCashBack:
+          (!coupon?.coupon && isCircleSubscription) ||
+          (coupon?.circleBenefits && isCircleSubscription)
+            ? Number(cartTotalCashback) || 0
+            : 0,
         appVersion: DeviceInfo.getVersion(),
         savedDeliveryCharge:
           !!isFreeDelivery || isCircleSubscription ? 0 : AppConfig.Configuration.DELIVERY_CHARGES,
@@ -822,7 +842,16 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
                   id: orderId,
                   orderAutoId: orderAutoId,
                 };
-                redirectToPaymentGateway(orders, orderAutoId, paymentMode, bankCode, orderInfo)
+                redirectToPaymentGateway(
+                  orders,
+                  orderAutoId,
+                  paymentMode,
+                  bankCode,
+                  orderInfo,
+                  isSubstitutionValue,
+                  substitutionMessageValue,
+                  substitutionTimeValue
+                )
                   .catch((e) => {
                     CommonBugFender('CheckoutScene_redirectToPaymentGateway', e);
                   })
@@ -857,8 +886,18 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           })
       : saveOrderV2(OrderInfoV2)
           .then(({ data }) => {
-            const { orders, transactionId, errorCode, errorMessage } =
-              data?.saveMedicineOrderV2 || {};
+            const {
+              orders,
+              transactionId,
+              errorCode,
+              errorMessage,
+              isSubstitution,
+              substitutionTime,
+              substitutionMessage,
+            } = data?.saveMedicineOrderV2 || {};
+            setisSubstitutionValue(isSubstitution);
+            setSubstitutionMessageValue(substitutionMessage);
+            setSubstitutionTimeValue(substitutionTime);
             if (errorCode || errorMessage) {
               showAphAlert!({
                 title: `Uh oh.. :(`,
@@ -877,7 +916,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
                   transactionId!,
                   paymentMode,
                   bankCode,
-                  OrderInfoV2
+                  OrderInfoV2,
+                  isSubstitution,
+                  substitutionMessage,
+                  substitutionTime
                 )
                   .catch((e) => {
                     CommonBugFender('CheckoutScene_redirectToPaymentGateway', e);
@@ -1065,8 +1107,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         paddingHorizontal: 10,
         paddingVertical: 9,
         borderColor: '#00B38E',
-        borderWidth: 3,
-        borderStyle: 'dashed',
+        borderWidth: 1,
         margin: 0.05 * windowWidth,
       },
       rowSpaceBetween: {

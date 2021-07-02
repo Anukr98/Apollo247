@@ -43,7 +43,14 @@ public class MainActivity extends ReactActivity {
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        //added for vitals crash when goes in background, for lollipop devices
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            super.onCreate(savedInstanceState); 
+        }
+        else{
+            //lollipop devices
+            super.onCreate(null);
+        }
 
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();

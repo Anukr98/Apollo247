@@ -165,7 +165,10 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       'Consult ID': id,
       'Speciality ID': g(doctor, 'specialty', 'id'),
       'Consult Date Time': date,
-      'Consult Mode': tabs[0].title === selectedTab ? 'Online' : 'Physical',
+      'Consult Mode':
+        tabs[0].title === selectedTab || selectedTab === string.consultModeTab.VIDEO_CONSULT
+          ? 'Online'
+          : 'Physical',
       'Hospital Name':
         doctorClinics.length > 0 && doctor!.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics[0].facility.name}`
@@ -191,7 +194,10 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       'customer id': g(currentPatient, 'id'),
       'doctor id': g(doctor, 'id')!,
       'specialty id': g(doctor, 'specialty', 'id')!,
-      'consult type': 'Consult Online' === selectedTab ? 'online' : 'clinic',
+      'consult type':
+        'Consult Online' === selectedTab || selectedTab === string.consultModeTab.VIDEO_CONSULT
+          ? 'online'
+          : 'clinic',
       af_revenue: price,
       af_currency: 'INR',
       'consult id': id,
@@ -216,7 +222,10 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       specialisation: g(doctor, 'specialty', 'userFriendlyNomenclature')!,
       category: g(doctor, 'doctorType')!, // send doctorType
       time: localTimeSlot.format('DD-MM-YYY, hh:mm A'),
-      consultType: tabs[0].title === selectedTab ? 'online' : 'clinic',
+      consultType:
+        tabs[0].title === selectedTab || selectedTab === string.consultModeTab.VIDEO_CONSULT
+          ? 'online'
+          : 'clinic',
       clinic_name: g(doctor, 'doctorHospital', '0' as any, 'facility', 'name')!,
       clinic_address:
         doctorClinics.length > 0 && doctor!.doctorType !== DoctorType.PAYROLL

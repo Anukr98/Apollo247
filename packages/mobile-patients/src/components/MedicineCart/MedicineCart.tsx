@@ -38,7 +38,7 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import {
   getPatientAddressList,
   getPatientAddressListVariables,
-} from '../../graphql/types/getPatientAddressList';
+} from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import {
   GET_PATIENT_ADDRESS_LIST,
   UPLOAD_DOCUMENT,
@@ -125,8 +125,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     deliveryAddressId,
     setDeliveryAddressId,
     addMultipleCartItems,
-    uploadPrescriptionRequired,
-    prescriptionType,
     physicalPrescriptions,
     setPhysicalPrescriptions,
     pinCode,
@@ -152,6 +150,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     orders,
     setOrders,
     productDiscount,
+    cartPriceNotUpdateRange,
+    uploadPrescriptionRequired
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -284,16 +284,15 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }, [couponProducts]);
 
   useEffect(() => {
-    if (!!coupon) {
+    if (!!coupon && !coupon?.circleBenefits) {
+      setIsCircleSubscription?.(false);
+    } else if (coupon?.circleBenefits) {
+      setIsCircleSubscription?.(true);
+    } else if (!coupon && circleSubscriptionId) {
       setCircleMembershipCharges && setCircleMembershipCharges(0);
-      setIsCircleSubscription && setIsCircleSubscription(false);
-    } else {
-      if (!circleSubscriptionId) {
-        setCircleMembershipCharges &&
-          setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
-      } else {
-        setIsCircleSubscription && setIsCircleSubscription(true);
-      }
+      setIsCircleSubscription?.(true);
+    } else if (!circleSubscriptionId) {
+      setCircleMembershipCharges?.(circlePlanSelected?.currentSellingPrice);
     }
   }, [coupon]);
 
@@ -368,7 +367,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
                 productDiscount,
                 cartItems,
                 setCouponProducts,
-                activeUserSubscriptions ? getPackageIds(activeUserSubscriptions) : []
+                getPackageIds(activeUserSubscriptions)
               );
             } catch (error) {
               return;
@@ -602,7 +601,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     const updatePrices = AppConfig.Configuration.CART_UPDATE_PRICE_CONFIG.updatePrices;
     const updatePricePercent = AppConfig.Configuration.CART_UPDATE_PRICE_CONFIG.percentage;
     const updatePricesNotAllowed = updatePrices === 'No';
-    let didPricesUpdate: boolean = false;
     if (updatePricesNotAllowed) {
       return;
     }
@@ -616,11 +614,15 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         const allowPriceUpdate =
           cartItem?.price !== storePrice
             ? updatePrices === 'ByPercentage'
-              ? isPricesWithInSpecifiedRange(cartItem?.price, storePrice, updatePricePercent)
+              ? isPricesWithInSpecifiedRange(
+                  cartItem?.price,
+                  storePrice,
+                  updatePricePercent,
+                  cartPriceNotUpdateRange
+                )
               : true
             : false;
         if (storeItem?.mrp != 0 && allowPriceUpdate) {
-          didPricesUpdate = true;
           showAphAlert!({
             title: `Hi ${currentPatient?.firstName || ''},`,
             description: `Important message for items in your Cart:\n\nSome items' prices have been updated based on the updated MRP from Manufacturer. Please check before you place the order.`,
@@ -636,7 +638,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       cartItemsAfterPriceUpdate.push(cartItem);
     });
     setCartItems!(cartItemsAfterPriceUpdate);
-    if (didPricesUpdate) await validatePharmaCoupon();
+    await validatePharmaCoupon();
   }
   function hasUnserviceableproduct() {
     return !!cartItems.find(
@@ -657,7 +659,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           productDiscount,
           cartItems,
           setCouponProducts,
-          activeUserSubscriptions ? getPackageIds(activeUserSubscriptions) : []
+          getPackageIds(activeUserSubscriptions)
         );
         if (response !== 'success') {
           removeCouponWithAlert(response);
@@ -702,8 +704,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       try {
         const response = await searchPickupStoresApi(pincode);
         const { data } = response;
-        const { Stores } = data;
-        if (Stores?.length) {
+        const { stores_count } = data;
+        if (stores_count) {
           setshowStorePickupCard(true);
         } else {
           setshowStorePickupCard(false);
@@ -876,7 +878,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           productDiscount,
           cartItems,
           setCouponProducts,
-          activeUserSubscriptions ? getPackageIds(activeUserSubscriptions) : []
+          getPackageIds(activeUserSubscriptions)
         );
         if (response !== 'success') {
           removeCouponWithAlert(response);
@@ -957,7 +959,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (cartTotal == 0) {
       renderAlert('Please add items in the cart to apply coupon.');
     } else {
-      props.navigation.navigate(AppRoutes.ViewCoupons);
+      props.navigation.navigate(AppRoutes.ViewCoupons, { movedFrom: 'pharma' });
       setCoupon!(null);
       applyCouponClickedEvent(g(currentPatient, 'id'), JSON.stringify(cartItems));
     }
@@ -1006,21 +1008,28 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       <TouchableOpacity
         activeOpacity={0.7}
         style={styles.applyBenefits}
+        disabled={
+          (!coupon && isCircleSubscription) || (coupon?.circleBenefits && isCircleSubscription)
+        }
         onPress={() => {
-          if (!coupon && isCircleSubscription) {
+          if (
+            (!coupon && isCircleSubscription) ||
+            (coupon?.circleBenefits && isCircleSubscription)
+          ) {
             if (!circleSubscriptionId || cartTotalCashback) {
               setIsCircleSubscription?.(false);
               setDefaultCirclePlan?.(null);
               setCirclePlanSelected?.(null);
               setCircleMembershipCharges?.(0);
+              coupon?.circleBenefits && isCircleSubscription && setCoupon?.(null);
             }
           } else {
-            setCoupon && setCoupon(null);
-            setIsCircleSubscription && setIsCircleSubscription(true);
+            !coupon?.circleBenefits && setCoupon?.(null);
+            setIsCircleSubscription?.(true);
           }
         }}
       >
-        {!coupon && isCircleSubscription ? (
+        {(!coupon && isCircleSubscription) || (coupon?.circleBenefits && isCircleSubscription) ? (
           <View style={{ flexDirection: 'row' }}>
             <CheckedIcon style={{ marginTop: 8, marginRight: 4 }} />
             <CareCashbackBanner
@@ -1154,7 +1163,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           productDiscount,
           cartItems,
           setCouponProducts,
-          activeUserSubscriptions ? getPackageIds(activeUserSubscriptions) : []
+          getPackageIds(activeUserSubscriptions)
         );
         if (response === 'success') {
           redirect();
@@ -1289,10 +1298,19 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   return <View style={{ flex: 1 }}>{cartItems?.length ? renderScreen() : renderEmptyCart()}</View>;
 };
 
-const isPricesWithInSpecifiedRange = (num1: number, num2: number, percentage: number) => {
-  const diffP = ((num1 - num2) / num1) * 100;
+const isPricesWithInSpecifiedRange = (
+  num1: number,
+  num2: number,
+  percentage: number,
+  cartPriceNotUpdateRange: number
+) => {
+  const diff = num1 - num2;
+  const diffP = (diff / num1) * 100;
   const result = diffP <= percentage && diffP >= -percentage;
-  return result;
+  const finalResult = !!cartPriceNotUpdateRange
+    ? result && diff > cartPriceNotUpdateRange && diff < -cartPriceNotUpdateRange
+    : result;
+  return finalResult;
 };
 
 const styles = StyleSheet.create({

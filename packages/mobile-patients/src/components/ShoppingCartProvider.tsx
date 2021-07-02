@@ -82,6 +82,7 @@ export interface PharmaCoupon extends validatePharmaCoupon_validatePharmaCoupon 
   reason: String;
   freeDelivery: boolean;
   products: [];
+  circleBenefits: boolean;
 }
 
 export interface CartProduct {
@@ -241,8 +242,8 @@ export interface ShoppingCartContextProps {
   setMaxCartValueForCOD: ((value: number) => void) | null;
   nonCodSKus: string[];
   setNonCodSKus: ((items: string[]) => void) | null;
-  asyncPincode: any;
-  setAsyncPincode: ((pincode: any) => void) | null;
+  cartPriceNotUpdateRange: number;
+  setCartPriceNotUpdateRange: ((value: number) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -355,8 +356,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setMaxCartValueForCOD: null,
   nonCodSKus: [],
   setNonCodSKus: null,
-  asyncPincode: null,
-  setAsyncPincode: null,
+  cartPriceNotUpdateRange: 0,
+  setCartPriceNotUpdateRange: null,
 });
 
 const AsyncStorageKeys = {
@@ -485,6 +486,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [maxCartValueForCOD, setMaxCartValueForCOD] = useState<
     ShoppingCartContextProps['maxCartValueForCOD']
   >(0);
+  const [cartPriceNotUpdateRange, setCartPriceNotUpdateRange] = useState<
+    ShoppingCartContextProps['cartPriceNotUpdateRange']
+  >(0);
   const [nonCodSKus, setNonCodSKus] = useState<ShoppingCartContextProps['nonCodSKus']>([]);
   const [asyncPincode, setAsyncPincode] = useState<ShoppingCartContextProps['asyncPincode']>();
 
@@ -523,14 +527,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
     if (cartItems.length) {
       // calculate circle cashback
       cartItems.forEach((item) => {
-        const finalPrice = item.specialPrice
-          ? item.price - item.specialPrice
-            ? item.specialPrice
-            : item.price
-          : item.price;
+        const finalPrice = (coupon && item.couponPrice) || item.specialPrice || item.price;
         let cashback = 0;
         const type_id = item?.productType?.toUpperCase();
-        if (!!circleCashback && !!circleCashback[type_id]) {
+        if (!!circleCashback && !!circleCashback[type_id] && !item.isFreeCouponProduct) {
           cashback = finalPrice * item.quantity * (circleCashback[type_id] / 100);
         }
         item.circleCashbackAmt = cashback || 0;
@@ -662,7 +662,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     isFreeDelivery ||
     deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP ||
     isCircleSubscription ||
-    circleMembershipCharges ||
+    (circleMembershipCharges && !coupon) ||
     hdfcPlanName === string.Hdfc_values.PLATINUM_PLAN
       ? 0
       : cartTotal > 0 &&
@@ -1048,6 +1048,14 @@ export const ShoppingCartProvider: React.FC = (props) => {
     }
   }, [cartTotal, coupon]);
 
+  useEffect(() => {
+    const discount = shipments.reduce(
+      (currTotal, currItem) => currTotal + (currItem?.productDiscount || 0),
+      0
+    );
+    setProductDiscount(discount);
+  }, [shipments]);
+
   const deductProductDiscount = (products: CartProduct[]) => {
     let discount = 0;
     products &&
@@ -1234,8 +1242,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setMaxCartValueForCOD,
         nonCodSKus,
         setNonCodSKus,
-        asyncPincode,
-        setAsyncPincode,
+        cartPriceNotUpdateRange,
+        setCartPriceNotUpdateRange,
       }}
     >
       {props.children}

@@ -403,10 +403,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       let response: any = await getDiagnosticRefundOrders(client, orderSelected?.paymentOrderId);
       if (response?.data?.data) {
         const refundData = g(response, 'data', 'data', 'getOrderInternal', 'refunds');
+        const getTransId = g(response, 'data', 'data', 'getOrderInternal', 'txn_id');
         if (refundData?.length! > 0) {
           setRefundStatusArr(refundData);
         }
-        performNavigation(orderSelected, tab, refundData);
+        performNavigation(orderSelected, tab, refundData, getTransId);
       } else {
         performNavigation(orderSelected, tab, []);
       }
@@ -657,7 +658,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         aphConsole.log({ data });
         const rescheduleResponse = g(data, 'data', 'rescheduleDiagnosticsOrder');
         if (rescheduleResponse?.status == 'true' && rescheduleResponse?.rescheduleCount <= 3) {
-          setTimeout(() => refetchOrders(), 2000);
+          setTimeout(() => refetchOrders(), 1700);
           setRescheduleCount(rescheduleResponse?.rescheduleCount);
           setRescheduledTime(dateTimeInUTC);
           showAphAlert?.({
@@ -790,19 +791,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       >
         <View style={{ flex: 1 }}>
           <TouchableOpacity style={{ flex: 1 }} onPress={() => onPressCloseOverlay()}>
-            <View style={styles.overlayTouch}>
-              <TouchableOpacity>
-                <SafeAreaView style={styles.overlaySafeArea}>
-                  <View style={styles.overlayContainer}>
-                    <View>
-                      {showRescheduleOptions && renderRescheduleCancelOptions()}
-                      {showRescheduleReasons && renderRescheduleReasons()}
-                      {showCancelReasons && renderCancelReasons()}
-                    </View>
-                  </View>
-                </SafeAreaView>
-              </TouchableOpacity>
-            </View>
+            <SafeAreaView style={[styles.overlaySafeArea, styles.overlayTouch]}>
+              <View style={styles.overlayContainer}>
+                <View>
+                  {showRescheduleOptions && renderRescheduleCancelOptions()}
+                  {showRescheduleReasons && renderRescheduleReasons()}
+                  {showCancelReasons && renderCancelReasons()}
+                </View>
+              </View>
+            </SafeAreaView>
           </TouchableOpacity>
         </View>
       </Overlay>
@@ -1086,13 +1083,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   }
 
-  function performNavigation(order: any, tab: boolean, refundArray?: any) {
+  function performNavigation(order: any, tab: boolean, refundArray?: any, refundTransId?: string) {
     setLoading?.(false);
     props.navigation.push(AppRoutes.TestOrderDetails, {
       orderId: order?.id,
       setOrders: (orders: orderList[]) => setOrders(orders),
       selectedOrder: order,
       refundStatusArr: refundArray,
+      refundTransactionId: refundTransId,
       comingFrom: AppRoutes.YourOrdersTest,
       showOrderSummaryTab: tab,
     });
