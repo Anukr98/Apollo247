@@ -156,7 +156,7 @@ export function PharmacyCartViewedEvent(
     'Service Area': 'Pharmacy',
     'Customer ID': id,
     'User Type':pharmacyUserTypeAttribute?.User_Type||undefined,
-    'Circle Membership Added':pharmacyCircleEvent?.['Circle Membership Added']||undefined,
+    'Circle Member':pharmacyCircleEvent?.['Circle Membership Added']||undefined,
     'Circle Membership Value':pharmacyCircleEvent?.['Circle Membership Value']||undefined
   };
   if (shoppingCart.coupon) {

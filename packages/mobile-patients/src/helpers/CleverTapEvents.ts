@@ -121,7 +121,7 @@ export enum CleverTapEventName {
   PHARMACY_NONCART_ORDER_SUBMIT_CLICKED = 'Pharmacy Noncart Order Submit Clicked',
   UPLOAD_PRESCRIPTION_OPTION_SELECTED = 'Upload Prescription Option Selected',
   UPLOAD_PRESCRIPTION_IMAGE_UPLOADED = 'Upload Prescription Image Uploaded',
-  BUY_MEDICINES = 'Buy Medicine Clicked',
+  BUY_MEDICINES = 'Pharmacy Buy Medicines Clicked',
   PHARMACY_CART_ADDRESS_SELECTED_SUCCESS = 'Pharmacy Address Selected Success',
   PHARMACY_COUPON_ACTION = 'Pharmacy Coupon Action',
   CART_COUPON_APPLIED = 'Pharmacy cart - coupon applied',
@@ -987,7 +987,7 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.PHARMACY_ADD_TO_CART]: {
     'product name': string;
-    'product id': string; // (SKUID)
+    'product id (SKUID)': string; // (SKUID)
     Price: number;
     'Discounted Price'?: number;
     Quantity: number;
@@ -1031,7 +1031,7 @@ export interface CleverTapEvents {
     'Cart ID'?: string;
     'Cart Items': object[];
     'Service Area': 'Pharmacy' | 'Diagnostic';
-    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
+    'Circle Member': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value'?: number | null;
     'User Type'?: PharmaUserStatus;
   };

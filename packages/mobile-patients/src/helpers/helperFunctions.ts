@@ -1530,7 +1530,7 @@ export const postwebEngageAddToCartEvent = (
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
   const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART] = {
     'product name': name,
-    'product id': sku,
+    'product id (SKUID)': sku,
     'category name': categoryName || undefined,
     'Section Name': sectionName || undefined,
     'category ID': category_id || undefined,
