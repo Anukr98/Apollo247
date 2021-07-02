@@ -472,7 +472,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           return app;
         }
       }).filter((value: any) => value);
-      return apps;
+      return apps || [];
     } else {
       return [];
     }
@@ -556,7 +556,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   const showPaymentOptions = () => {
-    if (amount == 0) return null;
     //showPrepaid is true for all vertical except diagnostics
     return !!paymentMethods?.length
       ? paymentMethods.map((item: any) => {
@@ -565,15 +564,15 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           const methods = item?.payment_methods || [];
           switch (item?.name) {
             case 'COD':
-              return versionCheck && renderPayByCash();
+              return !!amount && versionCheck && renderPayByCash();
             case 'CARD':
-              return versionCheck && showPrepaid && renderCards();
+              return !!amount && versionCheck && showPrepaid && renderCards();
             case 'WALLET':
-              return versionCheck && showPrepaid && renderWallets(methods);
+              return !!amount && versionCheck && showPrepaid && renderWallets(methods);
             case 'UPI':
-              return versionCheck && showPrepaid && renderUPIPayments(filterUPIApps() || []);
+              return !!amount && versionCheck && showPrepaid && renderUPIPayments(filterUPIApps());
             case 'NB':
-              return versionCheck && showPrepaid && renderNetBanking(methods);
+              return !!amount && versionCheck && showPrepaid && renderNetBanking(methods);
             case 'HEALTH_CREDITS':
               return versionCheck && showPrepaid && renderHealthCredits();
           }
