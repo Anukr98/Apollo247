@@ -3197,6 +3197,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           addresses={addresses}
           onPressSelectAddress={(_address) => {
             CommonLogEvent(AppRoutes.TestsCart, 'Check service availability');
+            setAreaSelected?.({});
             setDefaultAddress(_address);
             const tests = cartItems?.filter(
               (item) => item.collectionMethod == TEST_COLLECTION_TYPE.CENTER
