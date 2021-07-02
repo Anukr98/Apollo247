@@ -1305,9 +1305,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const postSpecialityEvent = (speciality: string, specialityId: string) => {
-    const eventAttributes:
-      | WebEngageEvents[WebEngageEventName.SPECIALITY_CLICKED]
-      | CleverTapEvents[CleverTapEventName.CONSULT_SPECIALITY_CLICKED] = {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.SPECIALITY_CLICKED] = {
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
@@ -1322,7 +1320,21 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       User_Type: getUserType(allCurrentPatients),
     };
     postWebEngageEvent(WebEngageEventName.SPECIALITY_CLICKED, eventAttributes);
-    postCleverTapEvent(CleverTapEventName.CONSULT_SPECIALITY_CLICKED, eventAttributes);
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_SPECIALITY_CLICKED] = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      relation: g(currentPatient, 'relation') || undefined,
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      specialityName: speciality,
+      specialityId: specialityId,
+      User_Type: getUserType(allCurrentPatients),
+    };
+    postCleverTapEvent(CleverTapEventName.CONSULT_SPECIALITY_CLICKED, cleverTapEventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.SPECIALITY_CLICKED, eventAttributes);
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.SPECIALITY_CLICKED] = {
       PatientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,

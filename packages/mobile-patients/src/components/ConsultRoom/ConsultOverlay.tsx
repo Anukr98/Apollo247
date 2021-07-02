@@ -156,7 +156,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   ] = useState<getDoctorDetailsById_getDoctorDetailsById_doctorHospital | null>(
     props.clinics && props.clinics.length > 0 ? props.clinics[0] : null
   );
-  console.log('props', props);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
   const isOnlineConsult = selectedTab === consultOnlineTab;

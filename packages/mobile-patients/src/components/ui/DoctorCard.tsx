@@ -724,21 +724,21 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                       const eventAttributes:
                         | WebEngageEvents[WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK]
                         | CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
-                        'Patient Name': currentPatient.firstName,
-                        'Doctor ID': rowData.id,
-                        'Speciality ID': rowData?.specialty?.id,
-                        'Doctor Speciality': rowData?.specialty?.name,
+                        'Patient name': currentPatient.firstName,
+                        docId: rowData.id,
+                        specialityId: rowData?.specialty?.id,
+                        specialityName: rowData?.specialty?.name,
                         'Doctor Experience': Number(rowData?.experience),
-                        'Hospital Name': rowData?.doctorHospital?.[0]?.facility?.name,
-                        'Hospital City': rowData?.doctorHospital?.[0]?.facility?.city,
+                        docHospital: rowData?.doctorHospital?.[0]?.facility?.name,
+                        docCity: rowData?.doctorHospital?.[0]?.facility?.city,
                         'Availability Minutes': getTimeDiff(rowData?.slot),
                         Source: 'List',
                         'Patient UHID': currentPatient.uhid,
                         Relation: currentPatient?.relation,
-                        'Patient Age': Math.round(
+                        'Patient age': Math.round(
                           moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)
                         ),
-                        'Patient Gender': currentPatient.gender,
+                        'Patient gender': currentPatient.gender,
                         'Customer ID': currentPatient.id,
                         User_Type: getUserType(allCurrentPatients),
                       };
@@ -749,9 +749,28 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                         WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK,
                         eventAttributes
                       );
+                      const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
+                        'Patient name': currentPatient.firstName,
+                        docId: rowData.id,
+                        specialityId: rowData?.specialty?.id,
+                        specialityName: rowData?.specialty?.name,
+                        'Doctor Experience': Number(rowData?.experience),
+                        docHospital: rowData?.doctorHospital?.[0]?.facility?.name,
+                        docCity: rowData?.doctorHospital?.[0]?.facility?.city,
+                        'Availability Minutes': getTimeDiff(rowData?.slot),
+                        Source: 'List',
+                        'Patient UHID': currentPatient.uhid,
+                        Relation: currentPatient?.relation,
+                        'Patient age': Math.round(
+                          moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)
+                        ),
+                        'Patient gender': currentPatient.gender,
+                        'Customer ID': currentPatient.id,
+                        User_Type: getUserType(allCurrentPatients),
+                      };
                       postCleverTapEvent(
                         CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED,
-                        eventAttributes
+                        cleverTapEventAttributes
                       );
                     } catch (error) {}
 

@@ -1490,9 +1490,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         return item.facility.facilityType === 'HOSPITAL';
     });
 
-    const eventAttributes:
-      | WebEngageEvents[WebEngageEventName.BOOK_APPOINTMENT]
-      | CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.BOOK_APPOINTMENT] = {
       'Doctor Name': g(doctorDetails, 'fullName')!,
       'Doctor City': g(doctorDetails, 'city')!,
       'Type of Doctor': g(doctorDetails, 'doctorType')!,
@@ -1524,9 +1522,39 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       User_Type: getUserType(allCurrentPatients),
     };
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
+      'Doctor Name': g(doctorDetails, 'fullName')!,
+      'Doctor City': g(doctorDetails, 'city')!,
+      'Type of Doctor': g(doctorDetails, 'doctorType')!,
+      'Doctor Specialty': g(doctorDetails, 'specialty', 'name')! || undefined,
+      Source: 'Profile',
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient age': Math.round(
+        Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      docId: g(doctorDetails, 'id')!,
+      specialityId: g(doctorDetails, 'specialty', 'id')!,
+      docHospital:
+        doctorClinics.length > 0 && doctorDetails!.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics[0].facility.name}`
+          : undefined,
+      docCity:
+        doctorClinics.length > 0 && doctorDetails!.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics[0].facility.city}`
+          : undefined,
+      'Secretary Name': g(secretaryData, 'name'),
+      'Secretary Mobile Number': g(secretaryData, 'mobileNumber'),
+      'Doctor Mobile Number': g(doctorDetails, 'mobileNumber')!,
+      User_Type: getUserType(allCurrentPatients),
+    };
     postCleverTapEvent(
       CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED,
-      eventAttributes
+      cleverTapEventAttributes
     );
     const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.BOOK_APPOINTMENT] = {
       'customer id': currentPatient ? currentPatient.id : '',

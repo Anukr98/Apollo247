@@ -5852,8 +5852,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const followUpMedicineNameText = getMedicines(medicinePrescription!);
     const eventAttributesFollowUp:
       | WebEngageEvents[WebEngageEventName.BOOK_AGAIN_CANCELLED_APPOINTMENT]
-      | WebEngageEvents[WebEngageEventName.PAST_APPOINTMENT_BOOK_FOLLOW_UP_CLICKED]
-      | CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
+      | WebEngageEvents[WebEngageEventName.PAST_APPOINTMENT_BOOK_FOLLOW_UP_CLICKED] = {
       'Customer ID': g(currentPatient, 'id'),
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
@@ -5875,9 +5874,29 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     };
 
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT_CHAT_ROOM, eventAttributesFollowUp);
+    const cleverTapEventAttributesFollowUp: CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
+      'Customer ID': g(currentPatient, 'id'),
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      docId: g(item, 'doctorId') || '',
+      'Doctor Name': g(item, 'doctorInfo', 'fullName') || '',
+      'Doctor Category': g(item, 'doctorInfo', 'doctorType'),
+      'Doctor City': g(item, 'doctorInfo', 'city') || '',
+      specialityId: g(item, 'doctorInfo', 'specialty', 'id') || '',
+      'Speciality Name': g(item, 'doctorInfo', 'specialty', 'name') || '',
+      'Consult ID': g(item, 'id') || '',
+      'Consult Date Time': moment(g(item, 'appointmentDateTime')).toDate(),
+      'Consult Mode': g(item, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
+      isConsultStarted: !!g(item, 'isConsultStarted'),
+      Prescription: followUpMedicineNameText || '',
+      Source: 'Inside consult room',
+    };
     postCleverTapEvent(
       CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED,
-      eventAttributesFollowUp
+      cleverTapEventAttributesFollowUp
     );
   };
   const renderChatView = () => {

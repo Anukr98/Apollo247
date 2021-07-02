@@ -653,9 +653,16 @@ export interface PatientInfoWithNeedHelp extends PatientInfo {
   Source: 'Home Screen' | 'Medicines' | 'Tests' | 'My Account' | 'Doctor Search';
 }
 
-export interface SpecialityClickedEvent extends PatientInfo {
-  'Speciality Name': string;
-  'Speciality ID': string;
+export interface SpecialityClickedEvent {
+  'Patient name': string;
+  'Patient UHID': string;
+  relation?: string;
+  'Patient age': number;
+  'Patient gender': string;
+  'Mobile Number': string;
+  'Customer ID': string;
+  specialityName: string;
+  specialityId: string;
   User_Type: string;
 }
 
@@ -833,15 +840,13 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.MY_ACCOUNT]: PatientInfo;
   [CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED]: {
-    'Patient Name': string;
+    'Patient name': string;
     'Patient UHID': string;
     Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
+    'Patient age': number;
+    'Patient gender': string;
     'Mobile Number': string;
     'Customer ID': string;
-    'Circle Membership Added': 'Yes' | 'No' | 'Existing';
-    'Circle Membership Value': number | null;
     User_Type: string;
   };
   [CleverTapEventName.TABBAR_APPOINTMENTS_CLICKED]: PatientInfoWithSource;
@@ -1481,20 +1486,20 @@ export interface CleverTapEvents {
     User_Type: string;
   };
   [CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED]: {
-    'Patient Name': string;
-    'Doctor ID': string;
-    'Speciality ID': string;
-    'Doctor Speciality': string;
+    'Patient name': string;
+    docId: string;
+    specialityId: string;
+    specialityName: string;
     'Doctor Experience': number;
-    'Language Known'?: string;
-    'Hospital Name': string;
-    'Hospital City': string | null;
+    languagesKnown?: string;
+    docHospital: string;
+    docCity: string | null;
     'Availability Minutes': number;
     Source: 'List' | 'Profile' | 'Inside consult room';
     'Patient UHID': string;
     Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
+    'Patient age': number;
+    'Patient gender': string;
     'Customer ID': string;
     Rank?: number;
     User_Type: string;

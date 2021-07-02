@@ -1344,7 +1344,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       };
     }
     if (eventName == CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED) {
-      eventAttributes = { ...eventAttributes, ...pharmacyCircleAttributes };
+      eventAttributes = {
+        'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+        'Patient UHID': g(currentPatient, 'uhid'),
+        Relation: g(currentPatient, 'relation'),
+        'Patient age': Math.round(
+          moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+        ),
+        'Patient gender': g(currentPatient, 'gender'),
+        'Mobile Number': g(currentPatient, 'mobileNumber'),
+        'Customer ID': g(currentPatient, 'id'),
+        User_Type: getUserType(allCurrentPatients),
+      };
     }
     if (eventName == CleverTapEventName.HDFC_HEALTHY_LIFE) {
       const subscription_name = hdfcUserSubscriptions?.name;
