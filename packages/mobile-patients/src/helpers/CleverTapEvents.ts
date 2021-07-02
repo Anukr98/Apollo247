@@ -56,7 +56,7 @@ export enum CleverTapEventName {
   CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED = 'Consult Book appointment clicked',
   CONSULT_NO_SLOTS_FOUND = 'Consult no slots found',
   CONSULT_BOOK_CTA_CLICKED = 'Consult Book CTA clicked',
-  CONSULT_VIEW_DETAILS_ON_PAST_APPOINTMENT = 'Consult View Details on past appointment',
+  CONSULT_VIEW_DETAILS_ON_PAST_APPOINTMENT = 'Consult View details clicked on past appointment',
   CONSULT_SEARCH_SUGGESTIONS = 'Consult search suggestions',
   CONSULT_SEARCH_SUGGESTIONS_CLICKED = 'Consult search suggestion clicked',
   CONSULT_MODE_SELECTED = 'Consult mode selected',
@@ -1425,12 +1425,12 @@ export interface CleverTapEvents {
     status: boolean;
   };
   [CleverTapEventName.CONSULT_SEARCH]: {
-    'Text typed by the user': string;
-    'Patient Name': string;
+    textSearched: string;
+    'Patient name': string;
     'Patient UHID': string;
     Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
+    'Patient age': number;
+    'Patient gender': string;
     'Mobile Number': string;
     'Customer ID': string;
     User_Type: string;
