@@ -2200,7 +2200,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const updateStatusOfCall = async (input: CheckCallConnectionInput) => {
     let data;
     try {
-      console.log('here');
       data = await client.mutate<checkCallConnection, checkCallConnectionVariables>({
         mutation: CALL_CONNECTION_UPDATES,
         variables: { CheckCallConnectionInput: input },
@@ -5794,7 +5793,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const startCallConnectionUpdateFx = () => {
     const startCallConnectionUpdate = BackgroundTimer.setInterval(() => {
-      console.log('csk');
       updateStatusOfCall({ appointmentId: appointmentData.id, patientId: patientId });
     }, 30000);
     setStartCallConnectionUpdateBT(startCallConnectionUpdate);
