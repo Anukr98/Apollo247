@@ -288,7 +288,7 @@ export enum CleverTapEventName {
   ORDER_TESTS = 'Order Tests',
   MANAGE_DIABETES = 'Manage Diabetes',
   PROHEALTH = 'Prohealth',
-  VIEW_HELATH_RECORDS = 'PHR Click Health records',
+  VIEW_HELATH_RECORDS = 'PHR Click Health Record',
   LEARN_MORE_ABOUT_CORONAVIRUS = 'Learn more about coronavirus',
   CHECK_YOUR_RISK_LEVEL = 'Check your risk level',
   APOLLO_PRO_HEALTH = 'Apollo pro health',
