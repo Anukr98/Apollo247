@@ -76,6 +76,7 @@ import {
 } from '@aph/mobile-patients/src/components/PaymentGateway/Events';
 import { useFetchSavedCards } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useFetchSavedCards';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import Decimal from 'decimal.js';
 
 const { HyperSdkReact } = NativeModules;
 
@@ -151,16 +152,15 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     healthCredits && updateAmount();
   }, [HCSelected]);
 
-  const getFormattedAmount = (num: number) => Number(num.toFixed(2));
-
   const updateAmount = () => {
     const redeemableAmount = grandTotal;
     HCSelected
       ? healthCredits >= redeemableAmount
-        ? (setburnHc(redeemableAmount), setAmount(amount - redeemableAmount))
+        ? (setburnHc(redeemableAmount), setAmount(Number(Decimal.sub(amount, redeemableAmount))))
         : redeemableAmount - healthCredits < 1
-        ? (setburnHc(healthCredits - 1), setAmount(getFormattedAmount(amount - healthCredits + 1)))
-        : (setburnHc(healthCredits), setAmount(getFormattedAmount(amount - healthCredits)))
+        ? (setburnHc(Number(Decimal.sub(healthCredits, 1))),
+          setAmount(Number(Decimal.sub(amount, healthCredits).plus(1))))
+        : (setburnHc(healthCredits), setAmount(Number(Decimal.sub(amount, healthCredits))))
       : (setAmount(props.navigation.getParam('amount')), setburnHc(0));
   };
 
