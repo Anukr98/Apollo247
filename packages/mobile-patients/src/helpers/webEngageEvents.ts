@@ -1333,7 +1333,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED]: {
     position: number;
     itemId: number;
-    "Banner title": string; 
+    'Banner title': string;
   };
   [WebEngageEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE]: {
     'Selection type': 'New' | 'Existing';
@@ -1838,18 +1838,22 @@ export interface WebEngageEvents {
   };
 
   [WebEngageEventName.PHARMACY_POST_CART_PAGE_VIEWED]: {
-    Status: 'Success' | 'Payment Failed' | 'Payment Aborted' | 'Payment Status Not Known';
-    'Payment type': 'COD' | 'Cashless' | 'No Payment';
+    'Payment status': 'Success' | 'Payment Failed' | 'Payment Aborted' | 'Payment Status Not Known';
+    'Payment Type': 'COD' | 'Cashless' | 'No Payment';
     'Transaction ID': number | string;
-    'Order ID 1': number | string;
-    'Order ID 2': number | string;
+    'Order ID(s)': number | string;
+    'MRP Total': number;
+    'Discount Amount': number;
+    'Payment Instrument': string;
+    'Order Type': string;
+    'Shipping Charges': number;
+    'Circle Member': boolean;
     'Substitution Option Shown': YesOrNo;
   };
 
   [WebEngageEventName.PHARMACY_ORDER_SUBSTITUTE_OPTION_CLICKED]: {
     'Transaction ID': number | string;
-    'Order ID 1': number | string;
-    'Order ID 2': number | string;
+    'Order ID(s)': number | string;
     'Substitute Action Taken': 'Agree' | 'Disagree';
   };
 
