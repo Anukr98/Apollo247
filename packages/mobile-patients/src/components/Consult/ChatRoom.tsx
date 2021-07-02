@@ -48,6 +48,7 @@ import {
   UPDATE_HEALTH_RECORD_NUDGE_STATUS,
   GET_APPOINTMENT_DATA,
   GET_DOCTOR_DETAILS_BY_ID,
+  CALL_CONNECTION_UPDATES,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   bookRescheduleAppointment,
@@ -61,6 +62,10 @@ import {
   updateHealthRecordNudgeStatus,
   updateHealthRecordNudgeStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/updateHealthRecordNudgeStatus';
+import {
+  checkCallConnection,
+  checkCallConnectionVariables,
+} from '@aph/mobile-patients/src/graphql/types/checkCallConnection';
 import {
   addChatDocument,
   addChatDocumentVariables,
@@ -89,6 +94,7 @@ import {
   MediaPrescriptionFileProperties,
   Gender,
   USER_STATUS,
+  CheckCallConnectionInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updateAppointmentSession,
@@ -769,6 +775,7 @@ const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG
 export interface ChatRoomProps extends NavigationScreenProps {}
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
+  const [startCallConnectionUpdateBT, setStartCallConnectionUpdateBT] = useState<any>();
   const fromIncomingCall = props.navigation.state.params!.isCall;
   const { isIphoneX } = DeviceHelper();
   const [contentHeight, setContentHeight] = useState(40);
@@ -1548,6 +1555,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }, 10000);
       } else {
         setTextChange(false);
+        BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
       }
     }
   };
@@ -2200,6 +2208,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
+  const updateStatusOfCall = async (input: CheckCallConnectionInput) => {
+    let data;
+    try {
+      data = await client.mutate<checkCallConnection, checkCallConnectionVariables>({
+        mutation: CALL_CONNECTION_UPDATES,
+        variables: { CheckCallConnectionInput: input },
+      });
+      console.log(JSON.stringify(data));
+    } catch (error) {
+      CommonBugFender('ChatRoom_updateCallConnectionStatus', error);
+      console.log(error, JSON.stringify(data));
+    }
+  };
+
   const requestToJrDoctor = async () => {
     //new code
     if (userAnswers) {
@@ -2415,6 +2437,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       );
       stopTimer();
       startTimer(0);
+      startCallConnectionUpdateFx();
     },
     streamDestroyed: (event: string) => {
       openTokWebEngageEvents(
@@ -2424,6 +2447,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       patientJoinedCall.current = false;
       // subscriberConnected.current = false;
       endVoipCall();
+      BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
     },
     error: (error: string) => {
       openTokErrorWebEngageEvents(
@@ -2474,6 +2498,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       patientJoinedCall.current = false;
       subscriberConnected.current = false;
       endVoipCall();
+      BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
     },
     otrnError: (error: string) => {
       openTokErrorWebEngageEvents(
@@ -3402,6 +3427,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setDoctorJoinedChat && setDoctorJoinedChat(false);
         setDoctorJoined(false);
       } else if (message.message.message === endCallMsg) {
+        BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
         resetCurrentRetryAttempt();
         callStatus.current = disconnecting;
         callToastStatus.current = '';
@@ -5790,6 +5816,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const startCallConnectionUpdateFx = () => {
+    const startCallConnectionUpdate = BackgroundTimer.setInterval(() => {
+      updateStatusOfCall({ appointmentId: appointmentData.id, patientId: patientId });
+    }, 30000);
+    setStartCallConnectionUpdateBT(startCallConnectionUpdate);
+  };
+
   const onPressJoinBtn = () => {
     patientJoinedCall.current = true;
     joinCallHandler();
@@ -5812,6 +5845,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       makeUpdateAppointmentCall.current = true;
       APICallAgain(true);
     });
+    //startCallConnectionUpdate();
   };
 
   const chatDisabled = () => {
@@ -6149,6 +6183,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (isIos()) {
       RNCallKeep.endAllCalls();
     }
+    BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
   };
 
   const changeVideoStyles = () => {
@@ -6305,6 +6340,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, [callTimer]);
 
   const handleEndCall = (playSound: boolean = true) => {
+    BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
     APICallAgain(false);
     resetCurrentRetryAttempt();
     setTimeout(() => {
@@ -6354,6 +6390,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const handleEndAudioCall = (playSound: boolean = true) => {
+    BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
     APICallAgain(false);
     resetCurrentRetryAttempt();
     setTimeout(() => {

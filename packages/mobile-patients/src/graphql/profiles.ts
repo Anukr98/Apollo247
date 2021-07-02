@@ -1627,6 +1627,14 @@ export const SAVE_DEVICE_TOKEN = gql`
   }
 `;
 
+export const CALL_CONNECTION_UPDATES = gql`
+  mutation checkCallConnection($CheckCallConnectionInput: CheckCallConnectionInput!) {
+    checkCallConnection(checkCallConnectionInput: $CheckCallConnectionInput) {
+      sucess
+    }
+  }
+`;
+
 export const UPDATE_PATIENT_APP_VERSION = gql`
   mutation UpdatePatientAppVersion(
     $patientId: String!
