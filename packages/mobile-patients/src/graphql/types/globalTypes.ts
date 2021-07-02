@@ -471,6 +471,7 @@ export enum ONE_APOLLO_STORE_CODE {
 export enum ORDER_TYPE {
   CONSULT = "CONSULT",
   PHARMACY = "PHARMACY",
+  DIAGNOSTICS = "DIAGNOSTICS",
 }
 
 export enum OTP_STATUS {

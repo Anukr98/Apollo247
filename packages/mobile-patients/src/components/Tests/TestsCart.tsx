@@ -418,7 +418,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       const listOfIds =
         typeof _cartItemId == 'string' ? removeSpaces?.map((item) => parseInt(item!)) : _cartItemId;
       const res: any = await getDiagnosticCartItemReportGenDetails(
-        listOfIds?.toString() || _cartItemId?.toString()
+        listOfIds?.toString() || _cartItemId?.toString(),
+        Number(addressCityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
       );
       if (res?.data?.success) {
         const result = g(res, 'data', 'data');
@@ -788,6 +789,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       });
     }
   };
+  useEffect(() => {
+    if (isEmptyObject(areaSelected)) {
+      setHcApiCalled(false);
+    } else {
+      setHcApiCalled(true);
+    }
+  }, [areaSelected]);
   const fetchAddresses = async () => {
     try {
       if (addresses?.length) {
@@ -1837,10 +1845,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             </View>
           )}
           {
-            <View style={styles.rowSpaceBetweenStyle}>
-              <Text style={[styles.blueTextStyle, { width: '60%' }]}>
-                Collection and hygiene charges
-              </Text>
+            isHcApiCalled ?  <View style={styles.rowSpaceBetweenStyle}>
+              <Text style={[styles.blueTextStyle, { width: '60%' }]}>Collection and hygiene charges</Text>
               <View style={{ flexDirection: 'row' }}>
                 <Text
                   style={[
@@ -1867,7 +1873,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 ) : null} */}
               </View>
             </View>
-          }
+            : null}
           {normalSaving > 0 && (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>

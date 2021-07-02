@@ -140,6 +140,7 @@ import { VaccineBookingConfirmationScreen } from '@aph/mobile-patients//src/comp
 import { BookedVaccineScreen } from '@aph/mobile-patients//src/components/Vaccination/BookedVaccineScreen';
 import { ActivateCorporateMembership } from '@aph/mobile-patients//src/components/Vaccination/ActivateCorporateMembership';
 import { VaccineTermsAndConditions } from '@aph/mobile-patients//src/components/Vaccination/VaccineTermsAndConditions';
+import { NeedHelpDiagnosticsOrder } from '@aph/mobile-patients/src/components/NeedHelpDiagnosticsOrder/NeedHelpDiagnosticsOrder';
 import { TestReportViewScreen } from '@aph/mobile-patients/src/components/HealthRecords/TestReportScreenView';
 import { CowinRegistrationScreen } from './Vaccination/CowinRegistrationScreen';
 
@@ -158,6 +159,7 @@ export enum AppRoutes {
   SplashScreen = 'SplashScreen',
   MobileHelp = 'MobileHelp',
   NeedHelpPharmacyOrder = 'NeedHelpPharmacyOrder',
+  NeedHelpDiagnosticsOrder = 'NeedHelpDiagnosticsOrder',
   NeedHelpConsultOrder = 'NeedHelpConsultOrder',
   NeedHelpQueryDetails = 'NeedHelpQueryDetails',
   NeedHelpContentView = 'NeedHelpContentView',
@@ -342,6 +344,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.NeedHelpPharmacyOrder]: {
     screen: NeedHelpPharmacyOrder,
+  },
+  [AppRoutes.NeedHelpDiagnosticsOrder]: {
+    screen: NeedHelpDiagnosticsOrder,
   },
   [AppRoutes.NeedHelpConsultOrder]: {
     screen: NeedHelpConsultOrder,

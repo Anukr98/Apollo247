@@ -68,6 +68,7 @@ interface OrderTestCardProps {
   onPressAddTest?: () => void;
   onPressViewReport: () => void;
   phelboObject?: any;
+  isHelp?: boolean;
   orderAttributesObj?: any;
   onPressRatingStar: (star: number) => void;
   onPressCallOption: (name: string, number: string) => void;
@@ -299,10 +300,10 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       <View
         style={[
           styles.ctaContainer,
-          { justifyContent: props.showRescheduleCancel ? 'space-between' : 'flex-end' },
+          { justifyContent: props.showRescheduleCancel && !props.isHelp ? 'space-between' : 'flex-end' },
         ]}
       >
-        {!!props.showRescheduleCancel && props.showRescheduleCancel ? (
+        {!!props.showRescheduleCancel && props.showRescheduleCancel && !props.isHelp ? (
           <TouchableOpacity activeOpacity={1} onPress={props.onPressReschedule}>
             <Text style={[styles.yellowText, { fontSize: screenWidth > 380 ? 14 : 13 }]}>
               RESCHEDULE
@@ -311,7 +312,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         ) : null}
         <TouchableOpacity activeOpacity={1} onPress={props.onPressViewDetails}>
           <Text style={[styles.yellowText, { fontSize: screenWidth > 380 ? 14 : 13 }]}>
-            VIEW DETAILS
+            {props.isHelp ? `HELP` :`VIEW DETAILS`}
           </Text>
         </TouchableOpacity>
       </View>
