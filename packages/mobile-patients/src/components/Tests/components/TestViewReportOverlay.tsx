@@ -1,9 +1,11 @@
 import { AphOverlayProps } from '@aph/mobile-patients/src/components/ui/AphOverlay';
 import { CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
-import { TestSlot } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { downloadDiagnosticReport, g, TestSlot } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useState } from 'react';
+import RNFetchBlob from 'rn-fetch-blob';
+import Share from 'react-native-share';
 import {
   Dimensions,
   Text,
@@ -12,6 +14,7 @@ import {
   TouchableOpacity,
   Linking,
   Clipboard,
+  Platform,
 } from 'react-native';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { Overlay } from 'react-native-elements';
@@ -27,6 +30,7 @@ import {
   CrossPopup,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 
 export interface TestViewReportOverlayProps extends AphOverlayProps {
   onPressViewReport?: any;
@@ -57,6 +61,26 @@ export const TestViewReportOverlay: React.FC<TestViewReportOverlayProps> = (prop
       title: string.Report.copy,
     },
   ];
+  const downloadDocument = (fileUrl: string = '', type: string = 'application/pdf') => {
+    let filePath: string | null = null;
+    let file_url_length = fileUrl.length;
+    const configOptions = { fileCache: true };
+    RNFetchBlob.config(configOptions)
+      .fetch('GET', fileUrl)
+      .then((resp) => {
+        filePath = resp.path();
+        return resp.readFile('base64');
+      })
+      .then(async (base64Data) => {
+        base64Data = `data:${type};base64,` + base64Data;
+        await Share.open({ title: '', url: base64Data });
+        // remove the image or pdf from device's storage
+        // await RNFS.unlink(filePath);
+      })
+      .catch((err) => {
+        console.log('err', err);
+      });
+  };
   return (
     <Overlay
       isVisible
@@ -84,14 +108,7 @@ export const TestViewReportOverlay: React.FC<TestViewReportOverlayProps> = (prop
                   if (item?.title == string.Report.view || item?.title == string.Report.download) {
                     props.onPressViewReport();
                   } else if (item?.title == string.Report.share) {
-                    try {
-                      const whatsAppScheme = `whatsapp://send?text=${props.order?.labReportURL?.replace(
-                        '&',
-                        '%26'
-                      )}`;
-                      const canOpenURL = await Linking.canOpenURL(whatsAppScheme);
-                      canOpenURL && Linking.openURL(whatsAppScheme);
-                    } catch (error) {}
+                    downloadDocument(props?.order?.labReportURL,'application/pdf')
                   } else {
                     copyToClipboard(
                       props.order && props.order?.labReportURL ? props.order?.labReportURL : ''
