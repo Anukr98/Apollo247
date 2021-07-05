@@ -35,6 +35,7 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   CREATE_ORDER,
+  UPDATE_ORDER,
   VERIFY_VPA,
   INITIATE_DIAGNOSTIC_ORDER_PAYMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -276,7 +277,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       return_url: AppConfig.Configuration.baseUrl,
     };
     return client.mutate({
-      mutation: CREATE_ORDER,
+      mutation: !!authToken ? UPDATE_ORDER : CREATE_ORDER,
       variables: { order_input: orderInput },
       fetchPolicy: 'no-cache',
     });
@@ -313,21 +314,19 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const getClientToken = async () => {
     setisTxnProcessing(true);
-    if (!!authToken) {
-      return authToken;
-    } else {
-      try {
-        businessLine == 'diagnostics' && initiateOrderPayment();
-        const response = await createJusPayOrder(false);
-        const { data } = response;
-        const { createOrderV2 } = data;
-        const token = createOrderV2?.mobile_token?.client_auth_token;
-        setauthToken?.(token);
-        return token;
-      } catch (e) {
-        setisTxnProcessing(false);
-        renderErrorPopup();
-      }
+    try {
+      businessLine == 'diagnostics' && initiateOrderPayment();
+      const response = await createJusPayOrder(false);
+      const { data } = response;
+      const { createOrderV2, updateOrderDetails } = data;
+      const token =
+        createOrderV2?.mobile_token?.client_auth_token ||
+        updateOrderDetails?.mobile_token?.client_auth_token;
+      setauthToken?.(token);
+      return token;
+    } catch (e) {
+      setisTxnProcessing(false);
+      renderErrorPopup();
     }
   };
 
@@ -423,9 +422,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       businessLine == 'diagnostics' && initiateOrderPayment();
       const response = await createJusPayOrder(true);
       const { data } = response;
-      data?.createOrderV2?.payment_status == 'TXN_SUCCESS'
-        ? navigatetoOrderStatus(true, 'success')
-        : showTxnFailurePopUP();
+      const status =
+        data?.createOrderV2?.payment_status || data?.updateOrderDetails?.payment_status;
+      status == 'TXN_SUCCESS' ? navigatetoOrderStatus(true, 'success') : showTxnFailurePopUP();
     } catch (e) {
       showTxnFailurePopUP();
     }
@@ -436,9 +435,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       setisTxnProcessing(true);
       const response = await createJusPayOrder(false);
       const { data } = response;
-      data?.createOrderV2?.payment_status == 'TXN_SUCCESS'
-        ? navigatetoOrderStatus(true, 'success')
-        : showTxnFailurePopUP();
+      const status =
+        data?.createOrderV2?.payment_status || data?.updateOrderDetails?.payment_status;
+      status == 'TXN_SUCCESS' ? navigatetoOrderStatus(true, 'success') : showTxnFailurePopUP();
     } catch (e) {
       showTxnFailurePopUP();
     }
