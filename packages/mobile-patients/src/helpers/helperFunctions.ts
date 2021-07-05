@@ -105,6 +105,7 @@ import {
   CleverTapEvents,
   CleverTapEventName,
   ReorderMedicines,
+  PharmacyCircleMemberValues,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const width = Dimensions.get('window').width;
@@ -1540,10 +1541,22 @@ export const postwebEngageAddToCartEvent = (
     Source: source,
     af_revenue: Number(special_price) || price,
     af_currency: 'INR',
-    'Circle Membership Added': pharmacyCircleAttributes?.['Circle Membership Added'] || undefined,
+    'Circle Member':
+      getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+      undefined,
     'Circle Membership Value': pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
   };
   postCleverTapEvent(CleverTapEventName.PHARMACY_ADD_TO_CART, cleverTapEventAttributes);
+};
+
+export const getCleverTapCircleMemberValues = (
+  pharmacyCircleMemeber: PharmacyCircleEvent['Circle Membership Added']
+): PharmacyCircleMemberValues => {
+  return pharmacyCircleMemeber == 'Yes'
+    ? 'Added'
+    : pharmacyCircleMemeber == 'No'
+    ? 'Not Added'
+    : 'Existing';
 };
 
 export const postAppointmentCleverTapEvents = (

@@ -297,7 +297,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
             'Customer ID': g(currentPatient, 'id'),
             'Cart Items': cartItems?.length ? JSON.stringify(cartItems) : undefined,
           };
-          postCleverTapEvent(CleverTapEventName.CART_COUPON_APPLIED, cleverTapEventAttributes);
+          // postCleverTapEvent(CleverTapEventName.CART_COUPON_APPLIED, cleverTapEventAttributes);
           postWebEngageEvent(WebEngageEventName.CART_COUPON_APPLIED, eventAttributes);
         } else {
           CommonBugFender('validatingPharmaCoupon', g(resp?.data, 'errorMsg'));

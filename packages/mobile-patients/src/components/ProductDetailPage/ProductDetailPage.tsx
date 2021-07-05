@@ -47,6 +47,7 @@ import {
   navigateToScreenWithEmptyStack,
   setAsyncPharmaLocation,
   postCleverTapEvent,
+  getCleverTapCircleMemberValues,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   MedicineProductDetails,
@@ -446,13 +447,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       };
       const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_PRODUCT_PAGE_VIEWED] = {
         Source: movedFrom,
-        'product id': sku,
+        'product id (SKUID)': sku,
         'product name': name,
         Stockavailability: stock_availability,
         CategoryID: productPageViewedEventProps?.CategoryID || undefined,
         CategoryName: productPageViewedEventProps?.CategoryName || undefined,
         'Section Name': productPageViewedEventProps?.SectionName || undefined,
-        'Circle Membership Added': pharmacyCircleAttributes?.['Circle Membership Added'],
+        'Circle Member':
+          getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+          undefined,
         'Circle Membership Value':
           pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
         User_Type: pharmacyUserTypeAttribute?.User_Type || undefined,
@@ -529,11 +532,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           Input_SKU: sku || undefined,
           Input_Pincode: currentPincode,
           Input_MRP: medicineDetails?.price,
-          No_of_items_in_the_cart: 1,
+          No_of_items_in_the_cart: cartItems?.length,
           Response_Exist: exist ? 'Yes' : 'No',
           Response_MRP: mrp,
           Response_Qty: qty,
-          'Cart Items': JSON.stringify(cartItems) || undefined,
         };
         postCleverTapEvent(
           CleverTapEventName.PHARMACY_AVAILABILITY_API_CALLED,
@@ -607,13 +609,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             const item = response.items[0];
             const eventAttributes: PharmacyTatApiCalled = {
               Source: 'PDP',
-              Input_sku: sku,
+              Input_SKU: sku,
               Input_qty: getItemQuantity(sku) || 1,
               Input_lat: lattitude,
               Input_long: longitude,
               Input_pincode: currentPincode,
               Input_MRP: medicineDetails?.price, // overriding this value after PDP API call
-              No_of_items_in_the_cart: 1,
+              No_of_items_in_the_cart: cartItems?.length,
               Response_Exist: item.exist ? 'Yes' : 'No',
               Response_MRP: item.mrp, // overriding this value after PDP API call
               Response_Qty: item.qty,
@@ -871,7 +873,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       pincode: pincode,
       serviceable: notServiceable ? 'No' : 'Yes',
     };
-    const cleverTapEventAttributes: WebEngageEvents[WebEngageEventName.NOTIFY_ME] = {
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_NOTIFY_ME] = {
       'product name': medicineDetails?.name,
       'product id': medicineDetails?.sku,
       'category ID': medicineDetails?.category_id || undefined,

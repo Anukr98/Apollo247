@@ -117,7 +117,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       User_Type: pharmacyUserType,
     });
     MedicineSearchEvents.pharmacySearch({
-      Source: 'Pharmacy List',
+      source: 'Pharmacy List',
       keyword: keyword,
       results: results,
       'User Type': pharmacyUserType,

@@ -890,7 +890,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
         MedicineSearchEvents.pharmacySearch({
           keyword: _searchText,
-          Source: 'Pharmacy Home',
+          source: 'Pharmacy Home',
           results: products.length,
           'User Type': pharmacyUserType,
         });

@@ -130,6 +130,7 @@ import {
   persistHealthCredits,
   getHealthCredits,
   postCleverTapEvent,
+  getCleverTapCircleMemberValues,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -1339,8 +1340,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (eventName == CleverTapEventName.BUY_MEDICINES) {
       eventAttributes = {
         ...eventAttributes,
-        ...pharmacyCircleAttributes,
-        ...pharmacyUserTypeAttribute,
+        'Circle Member':
+          getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+          undefined,
+        'Circle Membership Value':
+          pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
+        User_Type: pharmacyUserTypeAttribute?.User_Type || undefined,
       };
     }
     if (eventName == CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED) {

@@ -21,6 +21,7 @@ import {
   postWebEngageEvent,
   postAppsFlyerEvent,
   postFirebaseEvent,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { WebView } from 'react-native-webview';
 import {
@@ -36,6 +37,7 @@ import { ShoppingCartItem } from '@aph/mobile-patients/src/components/ShoppingCa
 import { saveMedicineOrderOMSVariables } from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderOMS';
 import { ONE_APOLLO_STORE_CODE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const styles = StyleSheet.create({
   container: {
@@ -206,6 +208,10 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
         postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, {
           ...checkoutEventAttributes,
           'Cart Items': JSON.stringify(cartItems),
+        });
+        postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, {
+          ...checkoutEventAttributes,
+          'Cart Items': cartItems?.length,
         });
       }
     }

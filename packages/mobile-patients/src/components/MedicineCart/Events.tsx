@@ -13,6 +13,7 @@ import {
   postWebEngageEvent,
   postFirebaseEvent,
   postCleverTapEvent,
+  getCleverTapCircleMemberValues,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import moment from 'moment';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src//helpers/AppsFlyerEvents';
@@ -46,6 +47,7 @@ export function postwebEngageProceedToPayEvent(
     pinCode,
     storeId,
     stores: storesFromContext,
+    coupon
   } = shoppingCart;
   const selectedStore =
     (storeId && storesFromContext.find((item) => item.storeid == storeId)) || undefined;
@@ -77,8 +79,8 @@ export function postwebEngageProceedToPayEvent(
     'Total items in cart': cartItems.length,
     'Sub Total': cartTotal,
     'Shipping Charges': deliveryCharges,
-    'Amount to Pay': grandTotal,
-    'Prescription Required': uploadPrescriptionRequired ? 'Yes' : 'No',
+    'Net after discount': grandTotal,
+    'Prescription Needed?': uploadPrescriptionRequired ? 'Yes' : 'No',
     'Mode of Delivery': !isStorePickup ? 'Home' : 'Pickup',
     'Delivery Date Time': !isStorePickup && moment(deliveryTime).isValid ? deliveryTime||undefined : undefined, // Optional (only if Home)
     'Pin Code': pinCode,
@@ -88,10 +90,11 @@ export function postwebEngageProceedToPayEvent(
     'Prescription Option selected': !!isPrescriptionUploaded
       ? 'Prescription Upload'
       : 'Not Applicable',
-    'Cart Items': itemsInCart || undefined,
+    'Delivery charge': deliveryCharges,
+    'Coupon Applied': coupon?.coupon || undefined,
     'User Type': pharmacyUserTypeAttribute?.User_Type || undefined,
-    'Circle Membership Added':pharmacyCircleEvent?.['Circle Membership Added']||undefined,
-    'Circle Membership Value':pharmacyCircleEvent?.['Circle Membership Value']||undefined,
+    'Circle Member': getCleverTapCircleMemberValues(pharmacyCircleEvent?.['Circle Membership Added']!)||undefined,
+    'Circle Membership Value':pharmacyCircleEvent?.['Circle Membership Value'] || undefined,
     ...splitCartDetails,
   };
   if (selectedStore) {
@@ -156,7 +159,7 @@ export function PharmacyCartViewedEvent(
     'Service Area': 'Pharmacy',
     'Customer ID': id,
     'User Type':pharmacyUserTypeAttribute?.User_Type||undefined,
-    'Circle Member':pharmacyCircleEvent?.['Circle Membership Added']||undefined,
+    'Circle Member': getCleverTapCircleMemberValues(pharmacyCircleEvent?.['Circle Membership Added']!)||undefined,
     'Circle Membership Value':pharmacyCircleEvent?.['Circle Membership Value']||undefined
   };
   if (shoppingCart.coupon) {
@@ -252,7 +255,7 @@ export function applyCouponClickedEvent(id: string, itemsInCart?: string) {
     'Customer ID': id,
     'Cart Items': itemsInCart || undefined,
   };
-  postCleverTapEvent(CleverTapEventName.PHARMACY_COUPON_ACTION,cleverTapEventAttributes);
+  // postCleverTapEvent(CleverTapEventName.PHARMACY_COUPON_ACTION,cleverTapEventAttributes);
   postWebEngageEvent(WebEngageEventName.CART_APPLY_COUPON_CLCIKED, eventAttributes);
 }
 

@@ -266,7 +266,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
         MedicineSearchEvents.pharmacySearch({
           keyword: _searchText,
-          Source: 'Pharmacy Home',
+          source: 'Pharmacy Home',
           results: products.length,
           'User Type': pharmacyUserType,
         });
@@ -308,7 +308,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           };
           MedicineSearchEvents.pharmacySearch({
             keyword: _searchText,
-            Source: 'Pharmacy List',
+            source: 'Pharmacy List',
             results: products.length,
             'User Type': pharmacyUserType,
           });
@@ -317,7 +317,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             | WebEngageEvents[WebEngageEventName.SEARCH_ENTER_CLICK]
             | CleverTapEvents[CleverTapEventName.PHARMACY_SEARCH_ENTER_CLICK] = {
             keyword: searchText,
-            numberofresults: data.product_count,
+            'No of results': data.product_count,
           };
           postWebEngageEvent(WebEngageEventName.SEARCH_ENTER_CLICK, searchEventAttribute);
           postCleverTapEvent(CleverTapEventName.PHARMACY_SEARCH_ENTER_CLICK, searchEventAttribute);

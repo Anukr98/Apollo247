@@ -54,6 +54,7 @@ import {
   persistHealthCredits,
   getPackageIds,
   postCleverTapEvent,
+  getCleverTapCircleMemberValues,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -360,7 +361,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           : 0,
         'Discount Amount': getFormattedAmount(couponDiscount + productDiscount),
         'Shipping Charges': deliveryCharges,
-        'Amount to Pay': getFormattedAmount(grandTotal),
+        'Net after discount': getFormattedAmount(grandTotal),
         'Payment status': 1,
         'Payment Type': isCOD ? 'COD' : 'Prepaid',
         'Service Area': 'Pharmacy',
@@ -373,11 +374,14 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         'Prescription Option selected': uploadPrescriptionRequired
           ? 'Prescription Upload'
           : 'Not Applicable',
-        'Circle Membership Added':
-          pharmacyCircleAttributes?.['Circle Membership Added'] || undefined,
+        'Circle Member':
+          getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+          undefined,
         'Circle Membership Value':
           pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
         'User Type': pharmacyUserTypeAttribute?.User_Type || undefined,
+        'Coupon Applied': coupon?.coupon || undefined,
+        'Pin Code': pinCode || undefined,
       };
       if (store) {
         eventAttributes['Store Id'] = store.storeid;
@@ -431,7 +435,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       'Prescription Option selected': uploadPrescriptionRequired
         ? 'Prescription Upload'
         : 'Not Applicable',
-      'Cart Items': JSON.stringify(cartItems) || undefined,
+      'Cart Items': cartItems?.length || undefined,
     };
     postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, cleverTapEventAttributes);
 
@@ -869,7 +873,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       payMode: isCashOnDelivery ? 'COD' : 'Online',
       amount: grandTotal,
       serviceArea: 'Pharmacy',
-      'Cart Items': JSON.stringify(cartItems) || undefined,
+      'Cart Items': cartItems?.length || undefined,
       Coupon: coupon ? coupon?.coupon : undefined,
     };
     postCleverTapEvent(CleverTapEventName.PHARMACY_PAYMENT_INITIATED, cleverTapEventAttributes);

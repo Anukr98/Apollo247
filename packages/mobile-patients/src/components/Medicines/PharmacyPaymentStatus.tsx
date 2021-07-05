@@ -17,7 +17,11 @@ import {
   SAVE_MEDICINE_ORDER_OMS_V2,
   SAVE_MEDICINE_ORDER_PAYMENT_V2,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { apiCallEnums, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  apiCallEnums,
+  g,
+  postCleverTapEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string, { Payment } from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -78,6 +82,7 @@ import {
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
+import { CleverTapEventName } from '../../helpers/CleverTapEvents';
 
 export interface PharmacyPaymentStatusProps extends NavigationScreenProps {}
 
@@ -372,6 +377,10 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, {
       ...checkoutEventAttributes,
       'Cart Items': JSON.stringify(cartItems),
+    });
+    postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, {
+      ...checkoutEventAttributes,
+      'Cart Items': cartItems?.length,
     });
     firePurchaseEvent(orderAutoId);
   };
