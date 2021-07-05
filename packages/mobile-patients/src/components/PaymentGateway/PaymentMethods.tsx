@@ -527,11 +527,13 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     }
   };
 
-  const renderErrorPopup = () =>
+  const renderErrorPopup = () => {
+    setisTxnProcessing(false);
     showAphAlert!({
       title: 'Uh oh! :(',
       description: 'Oops! seems like we are having an issue. Please try again.',
     });
+  };
 
   const renderHeader = () => {
     return (
