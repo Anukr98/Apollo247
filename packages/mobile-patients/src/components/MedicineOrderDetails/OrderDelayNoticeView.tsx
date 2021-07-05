@@ -33,7 +33,7 @@ const _OrderDelayNoticeView: React.FC<Props> = ({ orderId, containerStyle }) => 
     }
   };
 
-  const showNotice = !!(response?.message || response?.title);
+  const showNotice = !!(response?.message && response?.title);
 
   return (
     <View style={[loading && styles.container, containerStyle]}>
