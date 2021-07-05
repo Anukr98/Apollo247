@@ -957,6 +957,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Diagnostics_City_Level_Payment_Option',
       PROD: 'Diagnostics_City_Level_Payment_Option',
     },
+    Covid_Risk_Level_Url: {
+      QA: 'QA_Covid_Risk_Level_Url',
+      PROD: 'Covid_Risk_Level_Url',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1202,6 +1206,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           JSON.parse(config.getString(key)) ||
           AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_PAYMENT_OPTION
       );
+
+      setAppConfig('Covid_Risk_Level_Url', 'COVID_RISK_LEVEL_URL', (key) => config.getString(key));
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';
