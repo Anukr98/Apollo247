@@ -2846,7 +2846,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       cartSaving -
       (isDiagnosticCircleSubscription ? circleSaving : 0);
 
-    setHcApiCalled(false);
     const selectedAddressIndex = addresses?.findIndex(
       (address) => address?.id == deliveryAddressId
     );
@@ -2903,10 +2902,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       }
       setShowSpinner(false);
       setLoading?.(false);
-      setHcApiCalled(true);
     } catch (error) {
       setShowSpinner(false);
-      setHcApiCalled(true);
       setLoading?.(false);
     }
   };
