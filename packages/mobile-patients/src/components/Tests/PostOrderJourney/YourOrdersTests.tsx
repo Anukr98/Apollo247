@@ -1180,6 +1180,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   //reset to default states
   function onPressCloseOverlay() {
+    setShowMultiUhidOption(false);
     setShowBottomOverlay(false);
     setShowRescheduleOptions(false);
     setShowRescheduleReasons(false);
