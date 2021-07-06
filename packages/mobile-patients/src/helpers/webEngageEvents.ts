@@ -532,6 +532,7 @@ export interface DiagnosticUserInfo {
 export interface DiagnosticLandingPage extends DiagnosticUserInfo {
   Serviceability: 'Yes' | 'No';
   Source?: string;
+  "Circle user": 'Yes' | 'No';
 }
 
 export interface DiagnosticServiceble {
@@ -1314,6 +1315,7 @@ export interface WebEngageEvents {
     'Item ids'?: any;
     'Total items in order': number;
     'Payment type'?: string; //for prepaid
+    "Circle user": 'Yes' | 'No';
   };
   [WebEngageEventName.PAYMENT_INITIATED]: {
     Amount: number;

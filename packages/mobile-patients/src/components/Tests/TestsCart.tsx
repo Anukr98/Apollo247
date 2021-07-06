@@ -2434,6 +2434,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   function createCheckOutEventAttributes(orderId: string, slotStartTime?: string) {
     const attributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED] = {
+      "Circle user": isDiagnosticCircleSubscription ? 'Yes' : 'No',
       'Order id': orderId,
       Pincode: parseInt(selectedAddr?.zipcode!),
       'Patient UHID': g(currentPatient, 'id'),
