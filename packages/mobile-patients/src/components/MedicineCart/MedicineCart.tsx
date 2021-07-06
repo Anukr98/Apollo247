@@ -53,8 +53,6 @@ import {
   getShipmentPrice,
   validateCoupon,
   setAsyncPharmaLocation,
-  getHealthCredits,
-  persistHealthCredits,
   getPackageIds,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
@@ -108,6 +106,7 @@ import { OneApolloCard } from '@aph/mobile-patients/src/components/MedicineCart/
 import AsyncStorage from '@react-native-community/async-storage';
 import { MedicineOrderShipmentInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useFetchHealthCredits } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useFetchHealthCredits';
 
 export interface MedicineCartProps extends NavigationScreenProps {}
 
@@ -171,7 +170,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const [showStorePickupCard, setshowStorePickupCard] = useState<boolean>(false);
   const [suggestedProducts, setsuggestedProducts] = useState<MedicineProduct[]>([]);
   const [appState, setappState] = useState<string>('');
-  const [availableHC, setAvailableHC] = useState<number>(0);
+  const { healthCredits } = useFetchHealthCredits('pharma');
   const shoppingCart = useShoppingCart();
   const pharmacyPincode =
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
@@ -192,7 +191,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     fetchUserSpecificCoupon();
     fetchPickupStores(pharmacyPincode);
     fetchProductSuggestions();
-    fetchHealthCredits();
     cartItems.length &&
       PharmacyCartViewedEvent(
         shoppingCart,
@@ -368,30 +366,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       .catch((error) => {
         CommonBugFender('fetchingUserSpecificCoupon', error);
       });
-  };
-
-  const fetchHealthCredits = async () => {
-    var cachedHealthCredit: any = await getHealthCredits();
-
-    if (cachedHealthCredit != null) {
-      setAvailableHC(cachedHealthCredit.healthCredit);
-      return; // no need to call api
-    }
-
-    try {
-      const response = await client.query({
-        query: GET_ONEAPOLLO_USER,
-        variables: { patientId: currentPatient?.id },
-        fetchPolicy: 'no-cache',
-      });
-
-      if (response?.data?.getOneApolloUser) {
-        setAvailableHC(response?.data?.getOneApolloUser.availableHC);
-        persistHealthCredits(response?.data?.getOneApolloUser.availableHC);
-      }
-    } catch (error) {
-      CommonBugFender('fetchingHealthCreditsonCart', error);
-    }
   };
 
   async function checkServicability(address: savePatientAddress_savePatientAddress_patientAddress) {
@@ -988,7 +962,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     return <SuggestProducts products={suggestedProducts} navigation={props.navigation} />;
   };
 
-  const renderOneApollo = () => <OneApolloCard availableHC={availableHC} />;
+  const renderOneApollo = () => <OneApolloCard availableHC={healthCredits} />;
 
   const renderPrescriptions = () => {
     return (
