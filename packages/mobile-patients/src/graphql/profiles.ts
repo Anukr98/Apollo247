@@ -1630,7 +1630,7 @@ export const SAVE_DEVICE_TOKEN = gql`
 export const CALL_CONNECTION_UPDATES = gql`
   mutation checkCallConnection($CheckCallConnectionInput: CheckCallConnectionInput!) {
     checkCallConnection(checkCallConnectionInput: $CheckCallConnectionInput) {
-      sucess
+      success
     }
   }
 `;
