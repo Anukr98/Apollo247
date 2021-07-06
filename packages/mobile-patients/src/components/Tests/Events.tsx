@@ -33,12 +33,14 @@ function createPatientAttributes(currentPatient: any) {
 export function DiagnosticLandingPageViewedEvent(
   currentPatient: any,
   isServiceable: boolean | undefined,
-  source?: string | undefined
+  isDiagnosticCircleSubscription: boolean | undefined,
+  source?: string | undefined,
 ) {
   const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED] = {
     ...getPatientAttributes,
     Serviceability: isServiceable ? 'Yes' : 'No',
+    "Circle user": isDiagnosticCircleSubscription ? 'Yes' : 'No',
   };
   if (!!source) {
     eventAttributes['Source'] = source;
