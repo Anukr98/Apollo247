@@ -11,7 +11,7 @@ import { CancellationDiagnosticsInputv2 } from "./globalTypes";
 
 export interface cancelDiagnosticOrdersv2_cancelDiagnosticOrdersv2 {
   __typename: "CancellationDiagnosticsOrderResponsev2";
-  status: string;
+  status: boolean;
   message: string;
 }
 

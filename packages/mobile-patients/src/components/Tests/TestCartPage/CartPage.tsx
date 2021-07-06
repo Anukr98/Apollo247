@@ -24,6 +24,7 @@ import {
   setAsyncPharmaLocation,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
+  DiagnosticPatientCartItem,
   DiagnosticsCartItem,
   useDiagnosticsCart,
 } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
@@ -115,6 +116,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     showSelectedPatient,
     duplicateItemsArray,
     setDuplicateItemsArray,
+    patientCartItems,
+    setPatientCartItems,
+    removePatientCartItem,
   } = useDiagnosticsCart();
 
   const { setAddresses: setMedAddresses } = useShoppingCart();
@@ -130,7 +134,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const { setLoading, showAphAlert, hideAphAlert, loading } = useUIElements();
   const client = useApolloClient();
   const sourceScreen = props.navigation.getParam('comingFrom');
-  const { currentPatient, setCurrentPatientId } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const [addressCityId, setAddressCityId] = useState<string>(deliveryAddressCityId);
   const [reportGenDetails, setReportGenDetails] = useState<any>([]);
@@ -143,22 +147,18 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
-  const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
+  const getAddress = addresses?.find((item) => item?.id == deliveryAddressId);
+  const getDefaultAddress = !!getAddress
+    ? getAddress
+    : addresses?.find((item) => item?.defaultAddress);
+  const selectedAddr = !!getDefaultAddress ? getDefaultAddress : addresses?.[0];
+  //if no deliveryAddressId is then , select the first address/ or default address
+
   const addressText = isModifyFlow
     ? formatAddressWithLandmark(modifiedOrder?.patientAddressObj) || ''
     : selectedAddr
     ? formatAddressWithLandmark(selectedAddr) || ''
     : '';
-  const salutation =
-    selectedPatient?.gender === Gender.FEMALE
-      ? 'Ms.'
-      : selectedPatient?.gender === Gender.MALE
-      ? 'Mr.'
-      : '';
-  const patientName = `${selectedPatient?.firstName} ${selectedPatient?.lastName}`;
-  const genderAgeText = `${nameFormater(selectedPatient?.gender, 'title') || ''}, ${
-    selectedPatient?.dateOfBirth ? getAge(selectedPatient?.dateOfBirth) || '' : ''
-  }`;
 
   var pricesForItemArray;
   var modifyPricesForItemArray;
@@ -295,6 +295,22 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       cartItems?.filter((cItem) => !disabledCartItemIds?.find((dItem) => dItem == cItem?.id))
     );
   };
+  const removeDisabledPatientCartItems = (disabledCartItemIds: string[]) => {
+    hideAphAlert?.();
+
+    const newObj = patientCartItems?.map((item) => {
+      const patientCartItemsObj: DiagnosticPatientCartItem = {
+        patientId: item?.patientId,
+        cartItems: item?.cartItems?.filter(
+          (cItem) => !disabledCartItemIds?.find((dItem) => dItem == cItem?.id)
+        ),
+      };
+      //add a check, if disabledItem is not present & isSelected is false then remove it
+      return patientCartItemsObj;
+    });
+
+    setPatientCartItems?.(newObj);
+  };
 
   const updatePricesInCart = (results: any) => {
     const disabledCartItems = cartItems?.filter(
@@ -357,7 +373,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
             //mrp
             //show the prices changed pop-over
             isPriceChange = true;
-            setLoading?.(false);
             setShowPriceMismatch(true);
             updateCartItem?.({
               id: results?.[isItemInCart]
@@ -381,8 +396,37 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                 results?.[isItemInCart]?.inclusions == null
                   ? [Number(results?.[isItemInCart]?.itemId)]
                   : results?.[isItemInCart]?.inclusions,
+              collectionMethod: TEST_COLLECTION_TYPE.HC,
+              isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+            });
+
+            updateItems({
+              id: results?.[isItemInCart]
+                ? String(results?.[isItemInCart]?.itemId)
+                : String(cartItem?.id),
+              name: results?.[isItemInCart]?.itemName || '',
+              price: price,
+              specialPrice: specialPrice || price,
+              circlePrice: circlePrice,
+              circleSpecialPrice: circleSpecialPrice,
+              discountPrice: discountPrice,
+              discountSpecialPrice: discountSpecialPrice,
+              mou:
+                results?.[isItemInCart]?.inclusions !== null
+                  ? results?.[isItemInCart]?.inclusions.length
+                  : 1,
+              thumbnail: cartItem?.thumbnail,
+              groupPlan: planToConsider?.groupPlan,
+              packageMrp: results?.[isItemInCart]?.packageCalculatedMrp,
+              inclusions:
+                results?.[isItemInCart]?.inclusions == null
+                  ? [Number(results?.[isItemInCart]?.itemId)]
+                  : results?.[isItemInCart]?.inclusions,
+              collectionMethod: TEST_COLLECTION_TYPE.HC,
+              isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
             });
           }
+          setLoading?.(false);
         }
         //if items not available
         if (disabledCartItems?.length) {
@@ -390,6 +434,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           const disabledCartItemIds = disabledCartItems?.map((item) => item.id);
           setLoading?.(false);
           removeDisabledCartItems(disabledCartItemIds);
+          removeDisabledPatientCartItems(disabledCartItemIds);
           setShowPriceMismatch(true);
         }
       });
@@ -402,6 +447,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   };
 
   async function getAddressServiceability() {
+    console.log('heree...');
     const selectedAddress = addresses?.find((item) => item?.id === deliveryAddressId);
 
     //on changing the address
@@ -435,6 +481,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
             .then(({ data }) => {
               const diagnosticItems =
                 g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
+              console.log({ diagnosticItems });
               updatePricesInCart(diagnosticItems);
               cartItems?.length == 0 && setLoading?.(false);
             })
@@ -710,7 +757,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       <View style={{ marginTop: 16 }}>
         <Button
           title={'+ ADD TESTS'}
-          onPress={() => _navigateToSearch()}
+          onPress={() => (isModifyFlow ? _navigateToSearch() : _navigateToHomePage())}
           style={styles.addButtonStyle}
           titleTextStyle={styles.addButtonTitleStyle}
         />
@@ -718,10 +765,15 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     );
   };
 
-  const onRemoveCartItem = ({ id, name }: DiagnosticsCartItem) => {
+  const onRemoveCartItem = ({ id, name }: DiagnosticsCartItem, patientId: string) => {
+    console.log('gegejhjeh');
+    console.log({ id });
+    console.log({ patientId });
     removeCartItem?.(id);
+    removePatientCartItem?.(patientId, id);
+
     const newCartItems = cartItems?.filter((item) => Number(item?.id) !== Number(id));
-    const removedItems = newCartItems?.map((item) => Number(item?.id));
+
     setCartItems?.(newCartItems);
     if (deliveryAddressId != '') {
       const selectedAddressIndex = addresses?.findIndex(
@@ -750,12 +802,12 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     return <Spearator style={{ height: 2 }} />;
   };
 
-  const renderPatientName = () => {
+  const renderPatientName = (name: string, genderAgeText: string, salutation: string) => {
     return (
       <View style={styles.patientNameView}>
         <View style={{ width: '72%' }}>
           <Text style={styles.patientNameText}>
-            {salutation} {patientName}
+            {salutation} {name}
           </Text>
         </View>
         {!!genderAgeText && <Text style={styles.patientNameText}>{genderAgeText}</Text>}
@@ -764,21 +816,70 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   };
 
   const renderCartItems = () => {
+    const filterPatients =
+      !!patientCartItems && patientCartItems?.filter((item) => item?.cartItems?.length > 0);
     return (
       <View style={{ marginTop: 16, marginBottom: 150 }}>
-        {!!patientName ? renderPatientName() : null}
-        <FlatList
-          showsVerticalScrollIndicator={false}
-          bounces={false}
-          style={styles.cartItemsFlatList}
-          keyExtractor={keyExtractor}
-          data={cartItems}
-          ItemSeparatorComponent={() => renderSeparator()}
-          renderItem={({ item }) => _renderCartItem(item)}
-        />
+        {!!filterPatients &&
+          filterPatients?.map((pCartItem) => {
+            const getPatient = allCurrentPatients?.find(
+              (item: any) => item?.id === pCartItem?.patientId
+            );
+            const salutation =
+              getPatient?.gender === Gender.FEMALE
+                ? 'Ms.'
+                : getPatient?.gender === Gender.MALE
+                ? 'Mr.'
+                : '';
+            const patientName = `${getPatient?.firstName} ${getPatient?.lastName}`;
+            const genderAgeText = `${nameFormater(getPatient?.gender, 'title') || ''}, ${
+              getPatient?.dateOfBirth ? getAge(getPatient?.dateOfBirth) || '' : ''
+            }`;
+
+            //apply the filter for isSelected.
+            //on clicking of remove, will completly remove the item
+            const patientItems = pCartItem?.cartItems?.filter((cItem) => cItem?.isSelected);
+
+            return (
+              <>
+                {!!patientName ? renderPatientName(patientName, genderAgeText, salutation) : null}
+                <FlatList
+                  showsVerticalScrollIndicator={false}
+                  bounces={false}
+                  style={styles.cartItemsFlatList}
+                  keyExtractor={keyExtractor}
+                  data={patientItems}
+                  ItemSeparatorComponent={() => renderSeparator()}
+                  renderItem={({ item }) => _renderCartItem(item, getPatient)}
+                />
+              </>
+            );
+          })}
       </View>
     );
   };
+
+  function updateItems(itemUpdates: DiagnosticsCartItem) {
+    const newPatientCartItem = patientCartItems?.map((patientItems: DiagnosticPatientCartItem) => {
+      const findLineItemsIndex = patientItems?.cartItems?.findIndex(
+        (lineItems: DiagnosticsCartItem) => lineItems?.id === itemUpdates?.id
+      );
+      console.log({ findLineItemsIndex });
+      if (findLineItemsIndex !== -1) {
+        patientItems.cartItems[findLineItemsIndex] = itemUpdates;
+        const patientLineItemObj: DiagnosticPatientCartItem = {
+          patientId: patientItems?.patientId,
+          cartItems: patientItems?.cartItems,
+        };
+        console.log({ patientLineItemObj });
+        return patientLineItemObj;
+      } else {
+        return patientItems;
+      }
+    });
+    console.log({ newPatientCartItem });
+    setPatientCartItems?.([...newPatientCartItem!]);
+  }
 
   const fetchPackageDetails = (
     itemIds: string | number[],
@@ -858,6 +959,28 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                     item?.inclusions == null
                       ? [Number(item?.itemId || product?.[0]?.id)]
                       : item?.inclusions,
+                  isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+                });
+                //put here...
+                updateItems({
+                  id: item?.itemId?.toString() || product?.[0]?.id!,
+                  name: item?.itemName!,
+                  price: price,
+                  thumbnail: '',
+                  specialPrice: specialPrice! || price,
+                  circlePrice: circlePrice!,
+                  circleSpecialPrice: circleSpecialPrice!,
+                  discountPrice: discountPrice!,
+                  discountSpecialPrice: discountSpecialPrice,
+                  collectionMethod: item?.collectionType!,
+                  groupPlan: planToConsider?.groupPlan,
+                  packageMrp: packageMrp,
+                  mou: item?.inclusions == null ? 1 : item?.inclusions?.length,
+                  inclusions:
+                    item?.inclusions == null
+                      ? [Number(item?.itemId || product?.[0]?.id)]
+                      : item?.inclusions,
+                  isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
                 });
               });
             }
@@ -874,7 +997,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     }
   };
 
-  const _renderCartItem = (test: DiagnosticsCartItem) => {
+  const _renderCartItem = (test: DiagnosticsCartItem, patientItems: any) => {
     const reportGenItem = reportGenDetails?.find((_item: any) => _item?.itemId === test?.id);
     return (
       <CartItemCard
@@ -921,7 +1044,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           if (cartItems?.length == 0) {
             setDeliveryAddressId?.('');
           }
-          onRemoveCartItem(item);
+          onRemoveCartItem(item, patientItems?.id);
         }}
       />
     );
@@ -1149,7 +1272,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     });
   };
 
-  const disableCTA = !(!!addressText && isServiceable) || cartItems?.length === 0;
+  const disableCTA = !(!!addressText && isServiceable) || patientCartItems?.length === 0;
 
   const renderStickyBottom = () => {
     return (

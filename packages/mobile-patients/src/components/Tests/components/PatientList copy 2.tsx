@@ -30,123 +30,191 @@ interface PatientListProps {
   itemsInCart: DiagnosticsCartItem[] | any;
   isCircleSubscribed: boolean;
   patientSelected: any;
-  onPressSelectedPatient?: (item: any) => void;
-  isFocus: boolean;
+  onPressSelectedPatient: (item: any) => void;
 }
 
 export const PatientList: React.FC<PatientListProps> = (props) => {
-  const { isCircleSubscribed, isFocus } = props;
+  const { isCircleSubscribed, onPressSelectedPatient, patientSelected, itemsInCart } = props;
   const { allCurrentPatients } = useAllCurrentPatients();
+
   const {
     patientCartItems,
-    cartItems,
-    removePatientCartItem,
     addPatientCartItem,
     setPatientCartItems,
+    cartItems,
+    setDiagnosticSlot,
   } = useDiagnosticsCart();
 
   const patientListToShow = allCurrentPatients?.filter(
     (item: any) => !!item?.id && item?.id != '+ADD MEMBER'
   );
-  // console.log({ patientCartItems });
-  // useEffect(() => {
-  //   console.log('ahjahj');
-  //   console.log(isFocus);
-  //   console.log({ cartItems });
-  //   if (isFocus && cartItems?.length > 0) {
-  //     var itemsNotPresent = [] as any;
-  //     const ss = patientCartItems?.map((pItem) => {
-  //       cartItems?.map((cItem) => {
-  //         itemsNotPresent = pItem?.cartItems?.filter((item) => item?.id == cItem?.id);
-  //         console.log({ itemsNotPresent });
-  //       });
-  //       const pp = [itemsNotPresent, ...pItem?.cartItems];
-  //       console.log({ pp });
-  //       var obj = {
-  //         patientId: pItem?.patientId,
-  //         cartItems: [itemsNotPresent, ...pItem?.cartItems],
-  //       };
-  //       return obj;
-  //     });
-  //     setPatientCartItems?.(ss);
-  //   }
-  // }, [cartItems]);
 
-  const [showSelectedPatients, setShowSelectedPatients] = useState(patientListToShow);
-  const [itemsSelected, setItemsSelected] = useState(patientCartItems);
-  const keyExtractor = useCallback((_, index: number) => `${index}`, []);
-  const keyExtractor1 = useCallback((_, index: number) => `${index}`, []);
+  const selectedItemsCart = [...itemsInCart];
+  console.log({ selectedItemsCart });
 
-  const renderFooterComponent = () => {
-    return <View style={{ height: 40 }} />;
-  };
+  const array = selectedItemsCart?.map((item: any, index: number) => {
+    item.isSelected = true;
+    return { ...item };
+  });
 
-  const renderSeparator = () => {
-    return <Spearator />;
-  };
+  console.log({ itemsInCart });
+  // console.log({ array });
+  const patientListArray = patientListToShow?.map((item: any, index: number) => {
+    item.isPatientSelected = false;
+    return { ...item };
+  });
 
-  function _onPressPatient(patient: any, index: number) {
-    const isInvalidUser = checkPatientAge(patient);
-    if (isInvalidUser) {
-      _setSelectedPatient?.(null, index);
-    } else {
-      _setSelectedPatient?.(patient, index);
+  const [itemsSelected, setItemsSelected] = useState(array);
+
+  const [showSelectedPatient, setShowSelectedPatient] = useState<any>(patientListArray);
+
+  console.log({ patientCartItems });
+
+  const removeItems = (patientId: string, id?: string) => {
+    const findPatient = patientCartItems?.find((item) => item?.patientId == patientId);
+    if (!!findPatient) {
+      if (!!id) {
+        //check for the item passed
+      } else {
+        //direclty remove the entry
+        const newCartItems = patientCartItems?.filter((item) => item?.patientId !== patientId);
+        setPatientCartItems?.(newCartItems);
+      }
     }
-  }
+  };
+
+  const addItems = (patientId: string, itemToAdd: DiagnosticsCartItem[]) => {
+    const findPatientIndex =
+      !!patientCartItems &&
+      patientCartItems?.find(
+        (patient: DiagnosticPatientCartItem) => patient?.patientId === patientId
+      );
+    console.log({ findPatientIndex });
+    //if already exists
+    if (!!findPatientIndex) {
+      //find the patient , and then search for the item.
+      // if (
+      //   patientCartItems?.[findPatientIndex]?.cartItems?.find((item) => item?.id == itemToAdd?.id)
+      // ) {
+      //   return;
+      // }
+      console.log('push here..');
+      // const newCartItems = [itemToAdd, ...cartItems];
+      // setCartItems(newCartItems);
+    } else {
+      console.log({ patientId });
+      console.log({ cartItems });
+      console.log({ patientCartItems });
+      const patientCartItemsObj: DiagnosticPatientCartItem = {
+        patientId: patientId,
+        cartItems: cartItems,
+      };
+      const newCartItems = [patientCartItemsObj, ...patientCartItems];
+      setPatientCartItems?.(newCartItems);
+    }
+
+    //empty the slots and areas everytime due to dependency of api.
+    setDiagnosticSlot?.(null);
+  };
 
   function _setSelectedPatient(patientDetails: any, ind: number) {
-    console.log({ patientDetails });
-    let arr = showSelectedPatients?.map((newItem: any, index: number) => {
+    let arr = showSelectedPatient?.map((newItem: any, index: number) => {
       if (ind == index && patientDetails != null) {
         newItem.isPatientSelected = !newItem?.isPatientSelected;
       }
       return { ...newItem };
     });
-    console.log({ arr });
-    setShowSelectedPatients(arr); //to show the highlighted
+    setShowSelectedPatient(arr); //to show the highlighted
 
-    //find the selectedItem
     const findSelectedItem = arr?.find((item: any) => item?.id == patientDetails?.id);
-    console.log({ findSelectedItem });
     if (findSelectedItem?.isPatientSelected) {
       //check here, if item is already selected => unselect
-      let newCartItems = [cartItems, { isSelected: true }];
-      addPatientCartItem?.(patientDetails?.id, newCartItems);
+      addItems(patientDetails?.id, cartItems);
     } else {
-      removePatientCartItem?.(patientDetails?.id);
+      removeItems(patientDetails?.id);
     }
+
+    //if patient is valid
+    onPressSelectedPatient(patientDetails);
   }
 
-  function _onPressSelectTest(selectedTest: any, ind: number, selectedPatientDetails: any) {
+  const renderPatientListItem = (item: any, index: number) => {
+    const patientName = `${item?.firstName || ''} ${item?.lastName || ''}`;
+    const genderAgeText = `${nameFormater(item?.gender, 'title') || ''}, ${
+      item?.dateOfBirth ? getAge(item?.dateOfBirth) || '' : ''
+    }`;
+    const patientSalutation = !!item?.gender
+      ? item?.gender === Gender.FEMALE
+        ? 'Ms.'
+        : item?.gender === Gender.MALE
+        ? 'Mr.'
+        : ''
+      : '';
+    const findItem = showSelectedPatient?.find((items: any) => items?.id === item?.id);
+    const showGreenBg = !!findItem && findItem?.isPatientSelected;
+
+    function _selectPatient(patient: any, index: number) {
+      const isInvalidUser = checkPatientAge(patient);
+      if (isInvalidUser) {
+        _setSelectedPatient?.(null, index);
+      } else {
+        _setSelectedPatient?.(item, index);
+      }
+    }
+
+    const itemViewStyle = [
+      styles.patientItemViewStyle,
+      index === 0 && { marginTop: 12 },
+      showGreenBg && { backgroundColor: APP_GREEN },
+    ];
+    return (
+      <View style={{ flex: 1, marginBottom: index === patientListToShow?.length - 1 ? 16 : 0 }}>
+        <TouchableOpacity
+          activeOpacity={1}
+          style={itemViewStyle}
+          onPress={() => _selectPatient(item, index)}
+        >
+          <Text style={[styles.patientNameTextStyle, showGreenBg && { color: WHITE }]}>
+            {patientSalutation} {patientName}
+          </Text>
+          <Text style={[styles.genderAgeTextStyle, showGreenBg && { color: WHITE }]}>
+            {genderAgeText}
+          </Text>
+          <View style={styles.arrowIconView}>
+            {!showGreenBg ? (
+              <AddPatientCircleIcon style={[styles.arrowStyle]} />
+            ) : (
+              <MinusPatientCircleIcon style={[styles.arrowStyle, { tintColor: WHITE }]} />
+            )}
+          </View>
+        </TouchableOpacity>
+        {renderCartItems(item)}
+      </View>
+    );
+  };
+
+  function _selectCartItem(selectedTest: any, ind: number, selectedPatientDetails: any) {
     //find the item in addPatientCartItems  ~ selectedPatientDetails
     // find the selected and add it accordingly
 
-    const selectedPatientIndex = patientCartItems?.findIndex(
-      (item) => item?.patientId == selectedPatientDetails?.patientId
-    );
-
-    // const getPatientDetailsCopy = [...patientCartItems];
-    const getPatientDetailsCopy = JSON.parse(JSON.stringify(patientCartItems)); //created a deep copy
-
-    const arr = getPatientDetailsCopy?.[selectedPatientIndex]?.cartItems?.map(
-      (newItem: any, index: number) => {
-        console.log({ newItem });
-        if (ind == index) {
-          newItem.isSelected = !newItem?.isSelected;
-        }
-        return { ...newItem };
+    let arr = itemsSelected?.map((newItem: any, index: number) => {
+      if (ind == index) {
+        newItem.isSelected = !newItem?.isSelected;
       }
-    );
-    addPatientCartItem?.(selectedPatientDetails?.patientId, arr!); //just change the flag here.
-    setItemsSelected(arr!);
+      return { ...newItem };
+    });
+
+    addPatientCartItem?.(selectedPatientDetails?.id, arr);
+    setItemsSelected(arr);
   }
 
   const renderCartItemList = (test: any, index: number, selectedPatientDetails: any) => {
+    console.log({ test });
     const itemName = test?.name;
     const priceToShow = diagnosticsDisplayPrice(test, isCircleSubscribed)?.priceToShow;
     return (
       <TouchableOpacity
-        onPress={() => _onPressSelectTest(test, index, selectedPatientDetails)}
+        onPress={() => _selectCartItem(test, index, selectedPatientDetails)}
         style={[
           styles.patientSelectTouch,
           {
@@ -179,6 +247,7 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
       !!patientCartItems &&
       patientCartItems?.find((item) => item?.patientId === patientDetails?.id);
 
+    console.log({ findPatientCartMapping });
     return (
       <View>
         {!!findPatientCartMapping ? (
@@ -200,58 +269,17 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
     );
   };
 
-  const renderPatientListItem = (item: any, index: number) => {
-    const patientName = `${item?.firstName || ''} ${item?.lastName || ''}`;
-    const genderAgeText = `${nameFormater(item?.gender, 'title') || ''}, ${
-      item?.dateOfBirth ? getAge(item?.dateOfBirth) || '' : ''
-    }`;
-    const patientSalutation = !!item?.gender
-      ? item?.gender === Gender.FEMALE
-        ? 'Ms.'
-        : item?.gender === Gender.MALE
-        ? 'Mr.'
-        : ''
-      : '';
-
-    const findItem = showSelectedPatients?.find((items: any) => items?.id === item?.id);
-
-    const isPresent =
-      !!patientCartItems && patientCartItems?.find((cart) => cart?.patientId == item?.id);
-
-    const showGreenBg = isPresent;
-    // const showGreenBg = !!findItem && findItem?.isPatientSelected;
-
-    const itemViewStyle = [
-      styles.patientItemViewStyle,
-      index === 0 && { marginTop: 12 },
-      showGreenBg && { backgroundColor: APP_GREEN },
-    ];
-
-    return (
-      <View style={{ flex: 1, marginBottom: index === patientListToShow?.length - 1 ? 16 : 0 }}>
-        <TouchableOpacity
-          activeOpacity={1}
-          style={itemViewStyle}
-          onPress={() => _onPressPatient(item, index)}
-        >
-          <Text style={[styles.patientNameTextStyle, showGreenBg && { color: WHITE }]}>
-            {patientSalutation} {patientName}
-          </Text>
-          <Text style={[styles.genderAgeTextStyle, showGreenBg && { color: WHITE }]}>
-            {genderAgeText}
-          </Text>
-          <View style={styles.arrowIconView}>
-            {!showGreenBg ? (
-              <AddPatientCircleIcon style={[styles.arrowStyle]} />
-            ) : (
-              <MinusPatientCircleIcon style={[styles.arrowStyle, { tintColor: WHITE }]} />
-            )}
-          </View>
-        </TouchableOpacity>
-        {renderCartItems(item)}
-      </View>
-    );
+  const renderSeparator = () => {
+    return <Spearator />;
   };
+
+  const renderFooterComponent = () => {
+    return <View style={{ height: 40 }} />;
+  };
+
+  const keyExtractor = useCallback((_, index: number) => `${index}`, []);
+
+  const keyExtractor1 = useCallback((_, index: number) => `${index}`, []);
 
   return (
     <View style={styles.mainViewStyle}>

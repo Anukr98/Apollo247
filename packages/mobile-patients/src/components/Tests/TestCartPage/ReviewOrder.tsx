@@ -83,7 +83,10 @@ import {
 
 import moment from 'moment';
 import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
-import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  DIAGNOSTIC_GROUP_PLAN,
+  ProceduresAndSymptomsResult,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   WebEngageEventName,
   WebEngageEvents,
@@ -101,6 +104,10 @@ import {
   SCREEN_NAMES,
   TimelineWizard,
 } from '@aph/mobile-patients/src/components/Tests/components/TimelineWizard';
+import {
+  saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2,
+  saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWithOrderIDs,
+} from '@aph/mobile-patients/src/graphql/types/saveDiagnosticBookHCOrderv2';
 
 const screenWidth = Dimensions.get('window').width;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
@@ -183,6 +190,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setDistanceCharges,
     selectedPatient,
     duplicateItemsArray,
+    patientCartItems,
     setDuplicateItemsArray,
   } = useDiagnosticsCart();
 
@@ -212,6 +220,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   var slotBookedArray = ['slot', 'already', 'booked', 'select a slot'];
 
+  var ll;
   const { currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const [phleboMin, setPhleboMin] = useState(0);
   const [showAllPreviousItems, setShowAllPreviousItems] = useState<boolean>(true);
@@ -266,7 +275,57 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       variables: { order: orders },
     });
 
+  //move this to context provider
+
+  function setFinalItemsInCart() {
+    var array = [] as any;
+    const filterPatientItems = patientCartItems?.map((item) => {
+      let obj = {
+        patientId: item?.patientId,
+        cartItems: item?.cartItems?.filter((items) => items?.isSelected == true),
+      };
+      return obj;
+    });
+    const allCartItems = filterPatientItems?.map((item) => item?.cartItems)?.flat();
+    const pp = JSON.parse(JSON.stringify(allCartItems));
+
+    const ss = pp?.map((item: DiagnosticsCartItem) => {
+      const isPresentIndex = array?.findIndex(
+        (val: DiagnosticsCartItem) => Number(val?.id) === Number(item?.id)
+      );
+      if (isPresentIndex !== -1) {
+        const value = array[isPresentIndex];
+        value.id = value.id;
+        value.name = value.name;
+        value.mou = value.mou + 1;
+        value.price = value.price + value.price;
+        value.thumbnail = value.thumbnail;
+        value.specialPrice = !!value.specialPrice
+          ? value.specialPrice + value.specialPrice
+          : value.specialPrice;
+        value.circlePrice = !!value.circlePrice
+          ? value.circlePrice + value.circlePrice
+          : value.circlePrice;
+        (value.circleSpecialPrice = !!value.circleSpecialPrice
+          ? value.circleSpecialPrice + value.circleSpecialPrice
+          : value.circleSpecialPrice),
+          (value.discountPrice = !!value.discountPrice
+            ? value.discountPrice + value.discountPrice
+            : value?.discountPrice);
+        value.collectionMethod = value.collectionMethod;
+        value.groupPlan = value.groupPlan;
+        value.packageMrp = value.packageMrp;
+        (value.inclusions = value.inclusions), (value.isSelected = value.isSelected);
+      } else {
+        array.push(item);
+      }
+      return array;
+    });
+  }
+
   useEffect(() => {
+    setFinalItemsInCart();
+
     fetchFindDiagnosticSettings();
     if (isModifyFlow && modifiedOrder?.slotId && cartItems?.length > 0) {
       const modifyOrderItems = modifiedOrder?.diagnosticOrderLineItems?.map(
@@ -409,9 +468,52 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   };
 
   const renderCartItemCard = () => {
+    var array = [] as any;
+    const filterPatientItems = patientCartItems?.map((item) => {
+      let obj = {
+        patientId: item?.patientId,
+        cartItems: item?.cartItems?.filter((items) => items?.isSelected == true),
+      };
+      return obj;
+    });
+    const allCartItems = filterPatientItems?.map((item) => item?.cartItems)?.flat();
+    const pp = JSON.parse(JSON.stringify(allCartItems));
+
+    const ss = pp?.map((item: DiagnosticsCartItem) => {
+      const isPresentIndex = array?.findIndex(
+        (val: DiagnosticsCartItem) => Number(val?.id) === Number(item?.id)
+      );
+      if (isPresentIndex !== -1) {
+        const value = array[isPresentIndex];
+        value.id = value.id;
+        value.name = value.name;
+        value.mou = value.mou + 1;
+        value.price = value.price + value.price;
+        value.thumbnail = value.thumbnail;
+        value.specialPrice = !!value.specialPrice
+          ? value.specialPrice + value.specialPrice
+          : value.specialPrice;
+        value.circlePrice = !!value.circlePrice
+          ? value.circlePrice + value.circlePrice
+          : value.circlePrice;
+        (value.circleSpecialPrice = !!value.circleSpecialPrice
+          ? value.circleSpecialPrice + value.circleSpecialPrice
+          : value.circleSpecialPrice),
+          (value.discountPrice = !!value.discountPrice
+            ? value.discountPrice + value.discountPrice
+            : value?.discountPrice);
+        value.collectionMethod = value.collectionMethod;
+        value.groupPlan = value.groupPlan;
+        value.packageMrp = value.packageMrp;
+        (value.inclusions = value.inclusions), (value.isSelected = value.isSelected);
+      } else {
+        array.push(item);
+      }
+      return array;
+    });
     return (
       <View style={{ backgroundColor: theme.colors.WHITE }}>
-        {cartItems?.map((item: DiagnosticsCartItem, index: number) => {
+        {array?.map((item: DiagnosticsCartItem, index: number) => {
           return renderItemView(item);
         })}
       </View>
@@ -425,8 +527,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       <View>
         <View style={styles.itemView}>
           <View style={{ flexDirection: 'row', width: '80%' }}>
+            <Text style={[styles.addressTextStyle, styles.quantityTextStyle]}>X{item?.mou}</Text>
             <Text style={styles.addressTextStyle}>{nameFormater(item?.name, 'title')}</Text>
-            <Text style={[styles.addressTextStyle, styles.quantityTextStyle]}>X 1</Text>
           </View>
           <Text style={styles.addressTextStyle}>
             {string.common.Rs}
@@ -552,7 +654,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
               savingView && { color: theme.colors.APP_GREEN },
             ]}
           >
-            {title}
+            {title} {!!savingView && '(-)'}
           </Text>
         </View>
         <View style={{ flex: 1, alignItems: 'flex-end' }}>
@@ -586,7 +688,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             },
           ]}
         >
-          {renderPrices('Subtotal', totalPriceExcludingAnyDiscounts.toFixed(2))}
+          {renderPrices('Total MRP', totalPriceExcludingAnyDiscounts.toFixed(2))}
 
           {couponDiscount > 0 && renderPrices('Coupon Discount', couponDiscount?.toFixed(2))}
           {
@@ -630,7 +732,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
                   }}
                 />
                 <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
-                  Membership discount
+                  Membership discount (-)
                 </Text>
               </View>
               <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
@@ -874,6 +976,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       );
 
       //add a type
+      //check what is slotsInput
       const bookingOrderInfo: SaveBookHomeCollectionOrderInputv2 = {
         patientAddressID: slotsInput?.addressObject?.patientAddressID,
         patientObjWithLineItems: slotsInput?.lineItems?.map((item: any) => item),
@@ -915,8 +1018,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             //handle for multiple uhid
             console.log({ getSaveHomeCollectionResponse });
             callCreateInternalOrder(
-              getSaveHomeCollectionResponse?.[0]?.orderID!,
-              getSaveHomeCollectionResponse?.[0]?.displayID!,
+              getSaveHomeCollectionResponse!,
+              getSaveHomeCollectionResponse,
               slotTimings,
               allItems,
               slotStartTime!,
@@ -1151,34 +1254,52 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     }
   }
 
+  //this is changed for saveBooking, for modify (need to add)
   async function callCreateInternalOrder(
-    getOrderId: string,
-    getDisplayId: string | number,
+    getOrderDetails: any, //getOrderId
+    getDisplayId: any,
     slotTimings: string,
     items: any,
     slotStartTime: string,
     source: string
   ) {
     try {
+      console.log({ getOrderDetails });
       setLoading?.(true);
-      const orderId = getOrderId! || '';
-      const displayId = getDisplayId! || '';
+      // const orderId = getOrderId! || '';
+      // const displayId = getDisplayId! || '';
       const getPatientId =
         source === 'modifyOrder' && isModifyFlow ? modifiedOrder?.patientId : currentPatient?.id;
+      // const orders: OrderVerticals = {
+      //   diagnostics: [{ order_id: orderId, amount: grandTotal, patient_id: getPatientId }],
+      // };
+      var array = [] as any; //define type
+      getOrderDetails?.map(
+        (item: saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWithOrderIDs) => {
+          array.push({
+            order_id: item?.orderID,
+            amount: item?.amount,
+            patient_id: item?.patientID,
+          });
+        }
+      );
+      console.log({ array });
       const orders: OrderVerticals = {
-        diagnostics: [{ order_id: orderId, amount: grandTotal, patient_id: getPatientId }],
+        diagnostics: array,
       };
       const orderInput: OrderCreate = {
         orders: orders,
         total_amount: grandTotal,
         customer_id: currentPatient?.primaryPatientId || getPatientId,
       };
+      console.log({ orderInput });
       const response = await createOrderInternal(orderInput);
       console.log({ response });
       if (response?.data?.createOrderInternal?.success) {
+        //check for webenage
         const orderInfo = {
-          orderId: orderId,
-          displayId: displayId,
+          orderId: getOrderDetails?.[0]?.orderId,
+          displayId: getOrderDetails?.[0]?.displayId,
           diagnosticDate: date!,
           slotTime: slotTimings!,
           cartSaving: cartSaving,
@@ -1186,21 +1307,30 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           cartHasAll: items != undefined ? true : false,
           amount: grandTotal, //actual amount to be payed by customer (topay)
         };
-        const eventAttributes = createCheckOutEventAttributes(orderId, slotStartTime);
+        const eventAttributes = createCheckOutEventAttributes(
+          getOrderDetails?.[0]?.orderId,
+          slotStartTime
+        );
         setauthToken?.('');
         if (
           source === 'modifyOrder' &&
           modifiedOrder?.paymentType !== DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
         ) {
-          //call the process wali api & success page
-          processModifiyCODOrder(orderId, grandTotal, eventAttributes, orderInfo);
+          //call the process wali api & success page (check for modify Order)
+          processModifiyCODOrder(
+            getOrderDetails?.[0]?.orderId,
+            grandTotal,
+            eventAttributes,
+            orderInfo
+          );
         } else {
           setLoading?.(false);
           props.navigation.navigate(AppRoutes.PaymentMethods, {
             paymentId: response?.data?.createOrderInternal?.payment_order_id!,
             amount: grandTotal,
-            orderId: orderId,
+            orderId: getOrderDetails?.[0]?.orderId, //passed only one
             orderDetails: orderInfo,
+            orderResponse: array,
             eventAttributes,
             businessLine: 'diagnostics',
           });
@@ -1433,12 +1563,13 @@ const styles = StyleSheet.create({
   },
   quantityTextStyle: {
     backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
-    marginHorizontal: 10,
-    width: 50,
+    width: 40,
     borderRadius: 5,
     borderWidth: 1,
+    marginRight: 6,
     borderColor: theme.colors.TEST_CARD_BUTTOM_BG,
     textAlign: 'center',
+    fontSize: 12,
   },
   totalChargesContainer: {
     backgroundColor: theme.colors.WHITE,

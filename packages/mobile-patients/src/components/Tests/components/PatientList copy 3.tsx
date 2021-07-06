@@ -31,46 +31,23 @@ interface PatientListProps {
   isCircleSubscribed: boolean;
   patientSelected: any;
   onPressSelectedPatient?: (item: any) => void;
-  isFocus: boolean;
 }
 
 export const PatientList: React.FC<PatientListProps> = (props) => {
-  const { isCircleSubscribed, isFocus } = props;
+  const { isCircleSubscribed } = props;
   const { allCurrentPatients } = useAllCurrentPatients();
   const {
     patientCartItems,
     cartItems,
+    setPatientCartItems,
+    setDiagnosticSlot,
     removePatientCartItem,
     addPatientCartItem,
-    setPatientCartItems,
   } = useDiagnosticsCart();
 
   const patientListToShow = allCurrentPatients?.filter(
     (item: any) => !!item?.id && item?.id != '+ADD MEMBER'
   );
-  // console.log({ patientCartItems });
-  // useEffect(() => {
-  //   console.log('ahjahj');
-  //   console.log(isFocus);
-  //   console.log({ cartItems });
-  //   if (isFocus && cartItems?.length > 0) {
-  //     var itemsNotPresent = [] as any;
-  //     const ss = patientCartItems?.map((pItem) => {
-  //       cartItems?.map((cItem) => {
-  //         itemsNotPresent = pItem?.cartItems?.filter((item) => item?.id == cItem?.id);
-  //         console.log({ itemsNotPresent });
-  //       });
-  //       const pp = [itemsNotPresent, ...pItem?.cartItems];
-  //       console.log({ pp });
-  //       var obj = {
-  //         patientId: pItem?.patientId,
-  //         cartItems: [itemsNotPresent, ...pItem?.cartItems],
-  //       };
-  //       return obj;
-  //     });
-  //     setPatientCartItems?.(ss);
-  //   }
-  // }, [cartItems]);
 
   const [showSelectedPatients, setShowSelectedPatients] = useState(patientListToShow);
   const [itemsSelected, setItemsSelected] = useState(patientCartItems);
@@ -85,6 +62,82 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
     return <Spearator />;
   };
 
+  const addItems = (patientId: string, listofItems: DiagnosticsCartItem[]) => {
+    console.log({ patientId });
+    const findPatient =
+      !!patientCartItems &&
+      patientCartItems?.find(
+        (patient: DiagnosticPatientCartItem) => patient?.patientId === patientId
+      );
+    console.log({ findPatient });
+    const findPatientIndex =
+      !!patientCartItems &&
+      patientCartItems?.findIndex(
+        (patient: DiagnosticPatientCartItem) => patient?.patientId === patientId
+      );
+    console.log({ findPatientIndex });
+
+    console.log({ listofItems });
+    //if already exists
+    if (!!findPatient) {
+      const getSelectedCartItemsForPatient = findPatient?.cartItems?.filter(
+        (item) => item?.isSelected
+      );
+      console.log({ getSelectedCartItemsForPatient });
+      //unselect the patient.
+      if (getSelectedCartItemsForPatient?.length == 0) {
+        removeItems(findPatient?.patientId);
+        console.log('skskjhks');
+        //set the selectedPatientList....
+      } else {
+        //find the patient , and then search for the item.
+        // if (
+        //   patientCartItems?.[findPatientIndex]?.cartItems?.find((item) => item?.id == itemToAdd?.id)
+        // ) {
+        //   return;
+        // }
+        // const isItemPresent = findPatientIndex?.cartItems?.find(
+        //   (item) => Number(item?.id) == Number(itemToAdd?.id)
+        // );
+        // console.log({ isItemPresent });
+        console.log({ patientCartItems });
+        console.log({ listofItems });
+
+        patientCartItems[findPatientIndex].cartItems = listofItems; //just update the list with selected item attribute
+        console.log({ patientCartItems });
+        setPatientCartItems?.(patientCartItems);
+      }
+    } else {
+      console.log({ patientId });
+      console.log({ cartItems });
+      console.log({ patientCartItems });
+      const patientCartItemsObj: DiagnosticPatientCartItem = {
+        patientId: patientId,
+        cartItems: cartItems,
+      };
+      const newCartItems = [patientCartItemsObj, ...patientCartItems];
+      setPatientCartItems?.(newCartItems);
+    }
+
+    //empty the slots and areas everytime due to dependency of api.
+    setDiagnosticSlot?.(null);
+  };
+
+  console.log({ patientCartItems });
+
+  const removeItems = (patientId: string, id?: string) => {
+    const findPatient = patientCartItems?.find((item) => item?.patientId == patientId);
+    if (!!findPatient) {
+      if (!!id) {
+        //check for the item passed
+      } else {
+        //direclty remove the entry
+        const newCartItems = patientCartItems?.filter((item) => item?.patientId !== patientId);
+        setPatientCartItems?.(newCartItems);
+      }
+    }
+  };
+
   function _onPressPatient(patient: any, index: number) {
     const isInvalidUser = checkPatientAge(patient);
     if (isInvalidUser) {
@@ -95,22 +148,22 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
   }
 
   function _setSelectedPatient(patientDetails: any, ind: number) {
-    console.log({ patientDetails });
     let arr = showSelectedPatients?.map((newItem: any, index: number) => {
       if (ind == index && patientDetails != null) {
         newItem.isPatientSelected = !newItem?.isPatientSelected;
       }
       return { ...newItem };
     });
-    console.log({ arr });
     setShowSelectedPatients(arr); //to show the highlighted
 
     //find the selectedItem
     const findSelectedItem = arr?.find((item: any) => item?.id == patientDetails?.id);
-    console.log({ findSelectedItem });
     if (findSelectedItem?.isPatientSelected) {
+      console.log('eyeyeyey');
       //check here, if item is already selected => unselect
       let newCartItems = [cartItems, { isSelected: true }];
+      console.log({ newCartItems });
+      console.log('fkjfkjfk');
       addPatientCartItem?.(patientDetails?.id, newCartItems);
     } else {
       removePatientCartItem?.(patientDetails?.id);
@@ -118,15 +171,16 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
   }
 
   function _onPressSelectTest(selectedTest: any, ind: number, selectedPatientDetails: any) {
+    console.log('on opress test');
+    console.log({ selectedTest });
     //find the item in addPatientCartItems  ~ selectedPatientDetails
     // find the selected and add it accordingly
-
+    console.log({ selectedPatientDetails });
     const selectedPatientIndex = patientCartItems?.findIndex(
       (item) => item?.patientId == selectedPatientDetails?.patientId
     );
-
-    // const getPatientDetailsCopy = [...patientCartItems];
-    const getPatientDetailsCopy = JSON.parse(JSON.stringify(patientCartItems)); //created a deep copy
+    const getPatientDetailsCopy = [...patientCartItems];
+    console.log({ selectedPatientDetails });
 
     const arr = getPatientDetailsCopy?.[selectedPatientIndex]?.cartItems?.map(
       (newItem: any, index: number) => {
@@ -137,11 +191,15 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
         return { ...newItem };
       }
     );
+    console.log('offfff');
+    console.log({ patientCartItems });
+    console.log({ arr });
     addPatientCartItem?.(selectedPatientDetails?.patientId, arr!); //just change the flag here.
     setItemsSelected(arr!);
   }
 
   const renderCartItemList = (test: any, index: number, selectedPatientDetails: any) => {
+    console.log({ test });
     const itemName = test?.name;
     const priceToShow = diagnosticsDisplayPrice(test, isCircleSubscribed)?.priceToShow;
     return (
@@ -179,6 +237,7 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
       !!patientCartItems &&
       patientCartItems?.find((item) => item?.patientId === patientDetails?.id);
 
+    console.log({ findPatientCartMapping });
     return (
       <View>
         {!!findPatientCartMapping ? (
@@ -201,6 +260,9 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
   };
 
   const renderPatientListItem = (item: any, index: number) => {
+    console.log('inside the patient list  itemmmm');
+    console.log({ patientCartItems });
+    console.log({ item });
     const patientName = `${item?.firstName || ''} ${item?.lastName || ''}`;
     const genderAgeText = `${nameFormater(item?.gender, 'title') || ''}, ${
       item?.dateOfBirth ? getAge(item?.dateOfBirth) || '' : ''
@@ -215,11 +277,7 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
 
     const findItem = showSelectedPatients?.find((items: any) => items?.id === item?.id);
 
-    const isPresent =
-      !!patientCartItems && patientCartItems?.find((cart) => cart?.patientId == item?.id);
-
-    const showGreenBg = isPresent;
-    // const showGreenBg = !!findItem && findItem?.isPatientSelected;
+    const showGreenBg = !!findItem && findItem?.isPatientSelected;
 
     const itemViewStyle = [
       styles.patientItemViewStyle,

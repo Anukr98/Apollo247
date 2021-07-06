@@ -491,11 +491,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
       } else {
         setBanners([]);
         setBannerLoading(false);
+        setLoading(false);
       }
     } catch (error) {
       CommonBugFender('getDiagnosticBanner_Tests', error);
       setBanners([]);
       setBannerLoading(false);
+      setLoading(false);
       setReloadWidget(true);
     }
   };
@@ -516,6 +518,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         setWidgetsData([]);
         setLoading?.(false);
         setPageLoading?.(false);
+        setBannerLoading(false);
         setReloadWidget(true);
       }
     } catch (error) {
@@ -525,6 +528,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setReloadWidget(true);
       setPageLoading?.(false);
       setSectionLoading(false);
+      setBannerLoading(false);
     }
   };
 
@@ -592,6 +596,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setLoading?.(false);
       setPageLoading?.(false);
       setReloadWidget(true);
+      setBannerLoading(false);
       showAphAlert?.({
         title: string.common.uhOh,
         description: string.common.tryAgainLater,
@@ -730,6 +735,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         setLoadingContext?.(false);
         setReloadWidget(true);
         setSectionLoading(false);
+        setBannerLoading(false);
       }
     } //end of address exist
   }
@@ -792,6 +798,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       groupPlan: selectedPlan?.groupPlan || DIAGNOSTIC_GROUP_PLAN.ALL,
       packageMrp: pricesObject?.mrpToDisplay || 0,
       inclusions: inclusions == null ? [Number(itemId)] : inclusions,
+      isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
     });
   };
 

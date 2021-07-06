@@ -4730,6 +4730,27 @@ export const GET_INTERNAL_ORDER = gql`
       txn_id
       status_id
       payment_order_id
+      internal_orders{
+        id
+        orderDetailsPayment{
+          ordersList{
+            id
+            patientId
+            patientObj{
+              id
+              firstName
+              lastName
+              gender
+            }
+            displayId
+            diagnosticOrderLineItems{
+              itemId
+              itemName
+              price
+            }
+          }
+        }
+      }
       refunds {
         status
         unique_request_id
@@ -5400,19 +5421,19 @@ export const DIAGNOSITC_EXOTEL_CALLING = gql`
 `;
 
 export const COWIN_REGISTRATION = gql`
-  mutation cowinRegistration($cowinRegistration: CowinRegistrationInput!) {
-    cowinRegistration(cowinRegistration: $cowinRegistration) {
-      code
-      response {
-        txnId
-        beneficiary_reference_id
-        errorCode
-        error
-      }
-      message
-    }
-  }
-`;
+   mutation cowinRegistration($cowinRegistration: CowinRegistrationInput!) {
+     cowinRegistration(cowinRegistration: $cowinRegistration) {
+       code
+       response {
+         txnId
+         beneficiary_reference_id
+         errorCode
+         error
+       }
+       message
+     }
+   }
+ `;
 
 export const GET_DIAGNOSTIC_SERVICEABILITY = gql `
   query getDiagnosticServiceability ($latitude: Float!, $longitude : Float!){
@@ -5449,6 +5470,7 @@ export const SAVE_DIAGNOSTIC_ORDER_V2 = gql`
         status
         orderID
         patientID
+        amount
         errorMessageToDisplay
         displayID
         attributes{
@@ -5483,6 +5505,67 @@ export const DIAGNOSTIC_CANCEL_V2 = gql `
     cancelDiagnosticOrdersv2(cancellationDiagnosticsInput: $cancellationDiagnosticsInput) {
       status
       message
+    }
+  }
+`;
+
+export const DIAGNOSTIC_WRAPPER_PROCESS_HC = gql `
+  mutation wrapperProcessDiagnosticHCOrderCOD($processDiagnosticHCOrdersInput: [ProcessDiagnosticHCOrderInputCOD]) {
+    wrapperProcessDiagnosticHCOrderCOD(processDiagnosticHCOrdersInput: $processDiagnosticHCOrdersInput) {
+      result {
+        status
+        preBookingID
+        message
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_ORDERSLIST_BY_PARENT_ORDER_ID = gql`
+  query getDiagnosticOrdersListByParentOrderID($parentOrderID: String!) {
+    getDiagnosticOrdersListByParentOrderID(parentOrderID: $parentOrderID) {
+      ordersCount
+      ordersList {
+        displayId
+        slotDateTimeInUTC
+        diagnosticDate
+        patientObj {
+          firstName
+          lastName
+        }
+        diagnosticOrderLineItems {
+          id
+          itemId
+          quantity
+          price
+          editOrderID
+          isRemoved
+          groupPlan
+          diagnostics {
+            id
+            itemId
+            itemName
+            inclusions
+          }
+          pricingObj {
+            mrp
+            price
+            groupPlan
+          }
+          itemObj {
+            preTestingRequirement
+            reportGenerationTime
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_PAYMENT_SETTINGS  = `
+  query getDiagnosticPaymentSettings($paymentOrderId: paymentOrderId!) {
+    getDiagnosticPaymentSettings(paymentOrderId: $paymentOrderId) {
+      cod
     }
   }
 `;

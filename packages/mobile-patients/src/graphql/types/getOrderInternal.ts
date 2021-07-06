@@ -9,6 +9,41 @@ import { REFUND_STATUSES } from "./globalTypes";
 // GraphQL query operation: getOrderInternal
 // ====================================================
 
+export interface getOrderInternal_getOrderInternal_internal_orders_orderDetailsPayment_ordersList_patientObj {
+  __typename: "PatientObj";
+  id: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  gender: string | null;
+}
+
+export interface getOrderInternal_getOrderInternal_internal_orders_orderDetailsPayment_ordersList_diagnosticOrderLineItems {
+  __typename: "DiagnosticOrderLineItems";
+  itemId: number | null;
+  itemName: string | null;
+  price: number | null;
+}
+
+export interface getOrderInternal_getOrderInternal_internal_orders_orderDetailsPayment_ordersList {
+  __typename: "DiagnosticOrders";
+  id: string;
+  patientId: string;
+  patientObj: getOrderInternal_getOrderInternal_internal_orders_orderDetailsPayment_ordersList_patientObj | null;
+  displayId: number;
+  diagnosticOrderLineItems: (getOrderInternal_getOrderInternal_internal_orders_orderDetailsPayment_ordersList_diagnosticOrderLineItems | null)[] | null;
+}
+
+export interface getOrderInternal_getOrderInternal_internal_orders_orderDetailsPayment {
+  __typename: "DiagnosticOrdersResult";
+  ordersList: (getOrderInternal_getOrderInternal_internal_orders_orderDetailsPayment_ordersList | null)[] | null;
+}
+
+export interface getOrderInternal_getOrderInternal_internal_orders {
+  __typename: "InternalOrder";
+  id: string;
+  orderDetailsPayment: getOrderInternal_getOrderInternal_internal_orders_orderDetailsPayment | null;
+}
+
 export interface getOrderInternal_getOrderInternal_refunds {
   __typename: "Refund";
   status: REFUND_STATUSES | null;
@@ -27,6 +62,7 @@ export interface getOrderInternal_getOrderInternal {
   txn_id: string | null;
   status_id: number | null;
   payment_order_id: string;
+  internal_orders: (getOrderInternal_getOrderInternal_internal_orders | null)[] | null;
   refunds: (getOrderInternal_getOrderInternal_refunds | null)[] | null;
 }
 

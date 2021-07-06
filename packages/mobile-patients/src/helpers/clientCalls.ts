@@ -47,6 +47,7 @@ import {
   DIAGNOSTIC_CANCEL_V2,
   DIAGNOSTIC_RESCHEDULE_V2,
   DIAGNOSITC_EXOTEL_CALLING,
+  DIAGNOSTIC_WRAPPER_PROCESS_HC,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -109,7 +110,8 @@ import {
   ChargeDetailsInput,
   CancellationDiagnosticsInputv2,
   DiagnosticsRescheduleSource, 
-  slotInfo
+  slotInfo,
+  ProcessDiagnosticHCOrderInputCOD
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { insertMessageVariables } from '@aph/mobile-patients/src/graphql/types/insertMessage';
 import {
@@ -183,6 +185,7 @@ import { getPhleboCharges, getPhleboChargesVariables } from '@aph/mobile-patient
 import { cancelDiagnosticOrdersv2, cancelDiagnosticOrdersv2Variables } from '@aph/mobile-patients/src/graphql/types/cancelDiagnosticOrdersv2';
 import { rescheduleDiagnosticsOrderv2, rescheduleDiagnosticsOrderv2Variables } from '@aph/mobile-patients/src/graphql/types/rescheduleDiagnosticsOrderv2';
 import { diagnosticExotelCalling, diagnosticExotelCallingVariables } from '@aph/mobile-patients/src/graphql/types/diagnosticExotelCalling';
+import { wrapperProcessDiagnosticHCOrderCOD, wrapperProcessDiagnosticHCOrderCODVariables } from '../graphql/types/wrapperProcessDiagnosticHCOrderCOD';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -1297,6 +1300,18 @@ export const diagnosticExotelCall = (client : ApolloClient<object>, orderId: str
       sourceHeaders,
     },
     variables: { orderId: orderId },
+  });
+}
+
+export const processDiagnosticsCODOrderV2 =  (
+  client: ApolloClient<object>,
+  array : [ProcessDiagnosticHCOrderInputCOD]
+) => {
+
+  return client.mutate<wrapperProcessDiagnosticHCOrderCOD, wrapperProcessDiagnosticHCOrderCODVariables>({
+    mutation: DIAGNOSTIC_WRAPPER_PROCESS_HC,
+    variables: { processDiagnosticHCOrdersInput: array },
+    fetchPolicy: 'no-cache',
   });
 }
 

@@ -20,7 +20,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA3 as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA5 as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -268,7 +268,8 @@ const appStaticVariables = {
       stateCode: "TG",
       country: "India",
       pincode: "500030"
-  } 
+  },
+  DEFAULT_ITEM_SELECTION_FLAG : true, 
 };
 
 const DEV_top_specialties = [
@@ -490,10 +491,6 @@ const PharmaApiConfig = {
       // `http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedetail`
       `https://report.apollodiagnostics.in/Apollo/AskApollo.aspx?cmd=getpackagedetail`,
     ],
-    GET_CLINICS: [
-      'http://uatlims.apollohl.in/ApolloLive/CronJob/GetCentreDetail.aspx',
-      testApiCredentialsDev,
-    ],
     PRODUCT_SUGGESTIONS_CATEGORYID: '41920',
     SPECIAL_OFFERS_CATEGORY_ID: '42372',
     MIN_CART_VALUE_FOR_FREE_DELIVERY: 300,
@@ -531,10 +528,6 @@ const PharmaApiConfig = {
     ],
     GET_PACKAGE_DATA: [
       `https://report.apollodiagnostics.in/Apollo/AskApollo.aspx?cmd=getpackagedetail`,
-    ],
-    GET_CLINICS: [
-      'https://report.apollodiagnostics.in/Apollo/CronJob/GetCentreDetail.aspx',
-      testApiCredentialsProd,
     ],
     PRODUCT_SUGGESTIONS_CATEGORYID: '2252',
     SPECIAL_OFFERS_CATEGORY_ID: '2255',

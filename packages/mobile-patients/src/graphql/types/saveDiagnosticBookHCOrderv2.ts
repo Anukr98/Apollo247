@@ -19,6 +19,7 @@ export interface saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patient
   status: boolean;
   orderID: string | null;
   patientID: string;
+  amount: number | null;
   errorMessageToDisplay: string | null;
   displayID: number | null;
   attributes: saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWithOrderIDs_attributes | null;

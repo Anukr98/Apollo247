@@ -344,6 +344,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       groupPlan: planToConsider?.groupPlan,
       packageMrp: packageCalculatedMrp,
       inclusions: [Number(item?.itemId)], // since it's a test
+      isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
     });
     onPressAddToCartFromCart?.(item);
   }

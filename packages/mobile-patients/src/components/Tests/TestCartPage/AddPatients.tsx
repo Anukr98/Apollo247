@@ -80,6 +80,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     modifiedOrder,
     selectedPatient,
     showSelectedPatient,
+    patientCartItems,
     setDeliveryAddressId,
     setDeliveryAddressCityId,
     addresses,
@@ -99,12 +100,15 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
 
   const { setLoading, showAphAlert, hideAphAlert, loading } = useUIElements();
   const [isServiceable, setIsServiceable] = useState<boolean>(false);
+  const [isFocus, setIsFocus] = useState<boolean>(false);
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      setIsFocus(true);
       BackHandler.addEventListener('hardwareBackPress', handleBack);
     });
     const willBlur = props.navigation.addListener('willBlur', (payload) => {
+      setIsFocus(false);
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     });
     return () => {
@@ -475,13 +479,15 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   }
 
   const renderPatientsList = () => {
+    console.log({ isFocus });
     return (
       <View style={styles.patientListView}>
         <PatientList
           itemsInCart={cartItems}
           isCircleSubscribed={isDiagnosticCircleSubscription}
           patientSelected={selectedPatient}
-          onPressSelectedPatient={(item) => _selectedPatientAction(item)}
+          isFocus={isFocus}
+          // onPressSelectedPatient={(item) => _selectedPatientAction(item)}
         />
       </View>
     );
@@ -504,7 +510,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
         <Button
           title={'CONTINUE'}
           onPress={() => _navigateToCartPage()}
-          disabled={!(!!selectedPatient && isServiceable)}
+          disabled={!(!!patientCartItems && patientCartItems?.length > 0 && isServiceable)}
         />
       </StickyBottomComponent>
     );

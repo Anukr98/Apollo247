@@ -1029,8 +1029,9 @@ export interface ChargeDetailsInput {
   patientAddressObj: patientAddressObj;
   patientsObjWithLineItems: (patientObjWithLineItems | null)[];
   billAmount: number;
-  serviceability: DiagnosticsServiceability;
-  slotInfo: slotInfo;
+  serviceability?: DiagnosticsServiceability | null;
+  slotInfo?: slotInfo | null;
+  diagnosticOrdersId?: string | null;
 }
 
 export interface ChooseDoctorInput {
@@ -1637,6 +1638,12 @@ export interface ProcessDiagnosticHCOrderInput {
   orderID: string;
   statusDate?: any | null;
   paymentMode?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
+  amount: number;
+}
+
+export interface ProcessDiagnosticHCOrderInputCOD {
+  orderID: string;
+  statusDate?: any | null;
   amount: number;
 }
 

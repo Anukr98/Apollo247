@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, Text, BackHandler, View, ScrollView, TouchableOpacity } from 'react-native';
 import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
 import {
@@ -6,10 +6,6 @@ import {
   OrderPlacedCheckedIcon,
   OrderProcessingIcon,
   InfoIconRed,
-  ClockIcon,
-  GreenClock,
-  TestTimeIcon,
-  TimeIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -22,7 +18,6 @@ import {
   apiCallEnums,
   navigateToHome,
   nameFormater,
-  isSmallDevice,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -32,23 +27,14 @@ import { firePurchaseEvent } from '@aph/mobile-patients/src/components/Tests/Eve
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { colors } from '../../theme/colors';
-import { StickyBottomComponent } from '../ui/StickyBottomComponent';
-import { Button } from '../ui/Button';
-import { getDiagnosticRefundOrders } from '../../helpers/clientCalls';
-import { useApolloClient } from 'react-apollo-hooks';
-import { CommonBugFender } from '../../FunctionHelpers/DeviceHelper';
-import { Gender } from '../../graphql/types/globalTypes';
 
 export interface OrderStatusProps extends NavigationScreenProps {}
 
 export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
-  console.log({ props });
   const modifiedOrderDetails = props.navigation.getParam('isModify');
   const orderDetails = props.navigation.getParam('orderDetails');
   const eventAttributes = props.navigation.getParam('eventAttributes');
   const isCOD = props.navigation.getParam('isCOD');
-  const paymentId = props.navigation.getParam('paymentId');
   const { currentPatient } = useAllCurrentPatients();
   const pickupDate = !!modifiedOrderDetails
     ? moment(modifiedOrderDetails?.slotDateTimeInUTC)?.format('DD MMM')
@@ -73,8 +59,6 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     cartItems,
   } = useDiagnosticsCart();
   const { circleSubscriptionId } = useShoppingCart();
-
-  const client = useApolloClient();
   const { setLoading } = useUIElements();
   const savings = isDiagnosticCircleSubscription
     ? Number(orderCartSaving) + Number(orderCircleSaving)
@@ -91,8 +75,6 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     ];
     navigateToHome(props.navigation);
   };
-  const [apiOrderDetails, setApiOrderDetails] = useState([]);
-
   const moveToMyOrders = () => {
     props.navigation.popToTop({ immediate: true }); //if not added, stack was getting cleared.
     props.navigation.push(AppRoutes.YourOrdersTest, {
@@ -100,28 +82,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     });
   };
 
-  async function fetchOrderDetailsFromPayments() {
-    setLoading?.(true);
-    try {
-      let response: any = await getDiagnosticRefundOrders(client, paymentId);
-      console.log({ response });
-      if (response?.data?.data?.getOrderInternal) {
-        const getResponse = response?.data?.data?.getOrderInternal?.internal_orders;
-        console.log({ getResponse });
-        setApiOrderDetails(getResponse);
-      } else {
-        setApiOrderDetails([]);
-      }
-      setLoading?.(false);
-    } catch (error) {
-      CommonBugFender('OrderStatus_fetchOrderDetailsFromPayments', error);
-      setApiOrderDetails([]);
-      setLoading?.(false);
-    }
-  }
-
   useEffect(() => {
-    fetchOrderDetailsFromPayments();
     postwebEngageCheckoutCompletedEvent();
     firePurchaseEvent(orderDetails?.orderId, orderDetails?.amount, cartItems);
     clearDiagnoticCartInfo?.();
@@ -165,29 +126,21 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const renderHeader = () => {
     return (
       <View style={[styles.header]}>
-        {/* <TouchableOpacity onPress={() => navigateToOrderDetails(true, orderDetails?.orderId!)}>
+        <Text style={[styles.name]}>
+          {`Hi, ${currentPatient?.firstName.slice(0, 10) || ''} :)`}
+        </Text>
+        <TouchableOpacity onPress={() => navigateToOrderDetails(true, orderDetails?.orderId!)}>
           <Text style={styles.orderSummary}>VIEW ORDER SUMMARY</Text>
-        </TouchableOpacity> */}
+        </TouchableOpacity>
       </View>
     );
   };
 
-  //if payment status is not success, then check
   const renderOrderPlacedMsg = () => {
     return paymentStatus == 'success' ? (
-      <View style={[styles.orderPlaced, { justifyContent: 'center' }]}>
-        <OrderPlacedCheckedIcon
-          style={[styles.placedIcon, { height: 60, width: 60, resizeMode: 'contain' }]}
-        />
-        <View>
-          <Text style={[styles.orderPlacedText, { alignSelf: 'flex-start' }]}>
-            Order Placed Successfully
-          </Text>
-          <Text style={styles.bookedText}>
-            Booked on {moment().format('DD MMM')}, {moment().format('YYYY')} |{' '}
-            {moment().format('hh:mm A')}{' '}
-          </Text>
-        </View>
+      <View style={styles.orderPlaced}>
+        <OrderPlacedCheckedIcon style={styles.placedIcon} />
+        <Text style={styles.orderPlacedText}>Your order has been placed successfully.</Text>
       </View>
     ) : (
       <View style={styles.orderPlaced}>
@@ -195,31 +148,6 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
         <View style={{ flex: 1 }}>
           <Text style={styles.orderPlacedText}>{string.diagnostics.processingOrder}</Text>
         </View>
-      </View>
-    );
-  };
-
-  const renderPickUpTime = () => {
-    return (
-      <View
-        style={{
-          flexDirection: 'row',
-          backgroundColor: '#F3FFFF',
-          marginHorizontal: -20,
-          padding: 16,
-          paddingLeft: 20,
-        }}
-      >
-        <TimeIcon style={{ height: 20, width: 20, resizeMode: 'contain', marginRight: 6 }} />
-        <Text style={styles.pickupText}>
-          Pickup Time :{' '}
-          {!!pickupDate && !!pickupYear && (
-            <Text style={styles.pickupDate}>
-              {pickupDate}, {pickupYear}
-            </Text>
-          )}
-          {!!pickupTime && <Text style={styles.pickupDate}> | {pickupTime}</Text>}
-        </Text>
       </View>
     );
   };
@@ -323,9 +251,12 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
 
   const backToHome = () => {
     return (
-      <StickyBottomComponent>
-        <Button title={'GO TO MY ORDERS'} onPress={() => moveToMyOrders()} />
-      </StickyBottomComponent>
+      <View>
+        <Spearator style={styles.separator} />
+        <TouchableOpacity style={{ alignItems: 'center' }} onPress={() => moveToMyOrders()}>
+          <Text style={styles.homeScreen}>{nameFormater('Go to my orders', 'upper')}</Text>
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -356,115 +287,22 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     );
   };
 
-  const [showMore, setShowMore] = useState<boolean>(false);
-  const [selectedItem, setSelectedItem] = useState<string>('');
-
-  const renderTests = () => {
-    //define type
-    return (
-      <View>
-        {!!apiOrderDetails && apiOrderDetails?.length > 0
-          ? apiOrderDetails?.map((item) => {
-              const orders = item?.orderDetailsPayment?.ordersList?.[0];
-              const displayId = orders?.displayId;
-              const lineItemsLength = orders?.diagnosticOrderLineItems?.length;
-              const lineItems = orders?.diagnosticOrderLineItems;
-              const remainingItems = !!lineItemsLength && lineItemsLength - 1;
-              const patientName = `${orders?.patientObj?.firstName} ${orders?.patientObj?.lastName}`;
-              const salutation = !!orders?.patientObj?.gender
-                ? orders?.patientObj?.gender == Gender.MALE
-                  ? 'Mr.'
-                  : orders?.patientobj?.gender == Gender.FEMALE
-                  ? 'Ms.'
-                  : ''
-                : '';
-              return (
-                <>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      backgroundColor: colors.WHITE,
-                      padding: 10,
-                    }}
-                  >
-                    <Text style={{ width: '60%' }}>
-                      {salutation} {patientName}
-                    </Text>
-                    {!!displayId && <Text>#{displayId}</Text>}
-                  </View>
-                  {!!lineItemsLength && lineItemsLength > 0 && !showMore && (
-                    <View style={{ flexDirection: 'row', backgroundColor: '#F9F9F9', padding: 6 }}>
-                      <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
-                      <Text style={styles.testName}>
-                        {nameFormater(lineItems?.[0]?.itemName, 'title')}
-                      </Text>
-                      {remainingItems > 0 && (
-                        <TouchableOpacity onPress={() => _onPressMore(item, lineItems)} style={{}}>
-                          <Text
-                            style={{
-                              ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW, 1, 18),
-                            }}
-                          >
-                            + {remainingItems} More
-                          </Text>
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                  )}
-                  {showMore && renderMore(item, lineItems)}
-                  <Spearator style={styles.separator} />
-                </>
-              );
-            })
-          : null}
-      </View>
-    );
-  };
-
-  //add order summary
-
-  //define type
-  function _onPressMore(item: any, lineItems: any) {
-    const displayId = item?.orderDetailsPayment?.ordersList?.[0]?.displayId;
-    setShowMore(true);
-    setSelectedItem(displayId);
-  }
-
-  const renderMore = (item: any, lineItems: any) => {
-    return (
-      <View style={{ backgroundColor: '#F9F9F9', padding: 6 }}>
-        {lineItems?.map((items: any) => {
-          return (
-            <View style={{ flexDirection: 'row' }}>
-              <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
-              <Text style={styles.testName}>{nameFormater(items?.itemName, 'title')}</Text>
-            </View>
-          );
-        })}
-      </View>
-    );
-  };
-
   return (
-    <View style={{ flex: 1, backgroundColor: colors.DEFAULT_BACKGROUND_COLOR }}>
+    <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
         <ScrollView bounces={false} style={{ flex: 1 }} showsVerticalScrollIndicator={true}>
-          <View style={{ marginHorizontal: 20, marginBottom: 100 }}>
+          <>
             {renderHeader()}
             {renderOrderPlacedMsg()}
+            {renderBookingInfo()}
             {renderCartSavings()}
-            {renderPickUpTime()}
-            {/* {renderBookingInfo()} */}
-
             {renderNoticeText()}
-            {/* {enable_cancelellation_policy ? renderCancelationPolicy() : null} */}
-            {renderTests()}
+            {enable_cancelellation_policy ? renderCancelationPolicy() : null}
             {renderInvoiceTimeline()}
-          </View>
+            {backToHome()}
+          </>
         </ScrollView>
       </SafeAreaView>
-      {backToHome()}
     </View>
   );
 };
@@ -473,7 +311,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'transparent',
-    // marginHorizontal: 20,
+    marginHorizontal: 20,
     marginTop: 40,
   },
   header: {
@@ -582,14 +420,13 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   totalSavingOuterView: {
-    marginVertical: 30,
+    marginVertical: 10,
     borderColor: theme.colors.APP_GREEN,
     borderWidth: 2,
     borderRadius: 5,
     padding: 16,
     paddingVertical: 10,
     borderStyle: 'dashed',
-    backgroundColor: colors.WHITE,
   },
   savedTxt: {
     color: '#02475B',
@@ -627,43 +464,12 @@ const styles = StyleSheet.create({
   },
   separator: {
     borderColor: 'rgba(2,71,91,0.4)',
+    marginTop: 40,
     borderBottomWidth: 1,
-    height: 1,
   },
   homeScreen: {
     ...theme.viewStyles.text('B', 16, '#FC9916'),
     marginVertical: 20,
   },
   phleboText: { ...theme.fonts.IBMPlexSansRegular(12), lineHeight: 18, color: '#FF748E' },
-  bookedText: {
-    flexWrap: 'wrap',
-    textAlign: 'left',
-    alignSelf: 'flex-start',
-    ...theme.fonts.IBMPlexSansRegular(12),
-    lineHeight: 20,
-    color: '#0087BA',
-  },
-  pickupText: {
-    ...theme.fonts.IBMPlexSansSemiBold(14),
-    lineHeight: 20,
-    color: colors.SHERPA_BLUE,
-  },
-  pickupDate: {
-    ...theme.fonts.IBMPlexSansMedium(12),
-    lineHeight: 18,
-    color: colors.SHERPA_BLUE,
-  },
-  bulletStyle: {
-    color: '#007C9D',
-    fontSize: 5,
-    alignSelf: 'flex-start',
-    marginTop: 4,
-  },
-  testName: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 11.5 : 12, '#007C9D', 1, 17),
-    letterSpacing: 0,
-    marginBottom: '1.5%',
-    marginHorizontal: '3%',
-    maxWidth: '80%',
-  },
 });

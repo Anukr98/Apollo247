@@ -5,7 +5,7 @@ import {
   TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
-import { Clinic, DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import {
@@ -33,12 +33,12 @@ export interface DiagnosticsCartItem {
   groupPlan?: string;
   packageMrp?: number;
   inclusions?: any[];
+  isSelected?: boolean;
 }
-
-export interface DiagnosticClinic extends Clinic {
-  date: number; // timestamp
+export interface DiagnosticPatientCartItem {
+  patientId: string;
+  cartItems: DiagnosticsCartItem[];
 }
-
 export interface DiagnosticSlot {
   slotStartTime: string;
   slotEndTime: string;
@@ -48,7 +48,6 @@ export interface DiagnosticSlot {
   internalSlots: (string | null)[] | null;
   distanceCharges?: number;
 }
-
 export interface DiagnnoticSlots {
   slotDisplayTime: string;
   internalSlots: string;
@@ -59,17 +58,14 @@ export interface AddressServiceability {
   cityID: number;
   stateID: number;
 }
-
 export interface DiagnosticArea {
   key: number | string;
   value: string;
 }
-
 export interface TestBreadcrumbLink {
   title: string;
   onPress?: () => void;
 }
-
 export interface DiagnosticsCartContextProps {
   forPatientId: string;
   setPatientId: ((id: string) => void) | null;
@@ -80,6 +76,14 @@ export interface DiagnosticsCartContextProps {
   addMultipleCartItems: ((items: DiagnosticsCartItem[]) => void) | null;
   removeCartItem: ((itemId: DiagnosticsCartItem['id']) => void) | null;
   updateCartItem:
+    | ((itemUpdates: Partial<DiagnosticsCartItem> & { id: DiagnosticsCartItem['id'] }) => void)
+    | null;
+
+  patientCartItems: DiagnosticPatientCartItem[];
+  setPatientCartItems: ((items: DiagnosticPatientCartItem[]) => void) | null;
+  addPatientCartItem: ((patientId: string, cartItems: DiagnosticsCartItem[]) => void) | null;
+  removePatientCartItem: ((patientId: string, itemId?: DiagnosticsCartItem['id']) => void) | null;
+  updatePatientCartItem:
     | ((itemUpdates: Partial<DiagnosticsCartItem> & { id: DiagnosticsCartItem['id'] }) => void)
     | null;
 
@@ -129,12 +133,6 @@ export interface DiagnosticsCartContextProps {
     | ((addresses: savePatientAddress_savePatientAddress_patientAddress[]) => void)
     | null;
 
-  clinicId: string;
-  setClinicId: ((id: string) => void) | null;
-
-  clinics: Clinic[];
-  setClinics: ((clinic: Clinic[]) => void) | null;
-
   pinCode: string;
   setPinCode: ((pinCode: string) => void) | null;
 
@@ -152,9 +150,6 @@ export interface DiagnosticsCartContextProps {
 
   diagnosticAreas: [];
   setDiagnosticAreas: ((items: any | []) => void) | null;
-
-  diagnosticClinic: DiagnosticClinic | null;
-  setDiagnosticClinic: ((item: DiagnosticClinic) => void) | null;
 
   isDiagnosticCircleSubscription: boolean;
   setIsDiagnosticCircleSubscription: ((value: boolean) => void) | null;
@@ -201,6 +196,8 @@ export interface DiagnosticsCartContextProps {
 
   duplicateItemsArray: [];
   setDuplicateItemsArray: ((items: any | []) => void) | null;
+
+  filterPatientCartItems: DiagnosticPatientCartItem[];
 }
 
 export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>({
@@ -213,6 +210,13 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   addMultipleCartItems: null,
   removeCartItem: null,
   updateCartItem: null,
+
+  patientCartItems: [],
+  setPatientCartItems: null,
+  addPatientCartItem: null,
+  removePatientCartItem: null,
+  updatePatientCartItem: null,
+
   cartTotal: 0,
   totalPriceExcludingAnyDiscounts: 0,
   cartSaving: 0,
@@ -250,9 +254,6 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   coupon: null,
   setCoupon: null,
 
-  clinics: [],
-  setClinics: null,
-
   deliveryAddressId: '',
   setDeliveryAddressId: null,
 
@@ -262,8 +263,6 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   addresses: [],
   setAddresses: null,
   addAddress: null,
-  clinicId: '',
-  setClinicId: null,
   deliveryType: null,
 
   pinCode: '',
@@ -271,9 +270,7 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
 
   clearDiagnoticCartInfo: null,
 
-  diagnosticClinic: null,
   diagnosticSlot: null,
-  setDiagnosticClinic: null,
   setDiagnosticSlot: null,
   areaSelected: {},
   setAreaSelected: null,
@@ -311,6 +308,7 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   showSelectedPatient: null,
   duplicateItemsArray: [],
   setDuplicateItemsArray: null,
+  filterPatientCartItems: [],
 });
 
 const showGenericAlert = (message: string) => {
@@ -323,24 +321,26 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     cartItems: `diagnosticsCartItems${id}`,
     ePrescriptions: `diagnosticsEPrescriptions${id}`,
     physicalPrescriptions: `diagnosticsPhysicalPrescriptions${id}`,
+    patientCartItems: `diagnositcsCartItems${id}`,
   };
 
   const [forPatientId, setPatientId] = useState<string>('');
 
   const [cartItems, _setCartItems] = useState<DiagnosticsCartContextProps['cartItems']>([]);
+  const [patientCartItems, _setPatientCartItems] = useState<
+    DiagnosticsCartContextProps['patientCartItems']
+  >([]);
+
   const [couponDiscount, setCouponDiscount] = useState<
     DiagnosticsCartContextProps['couponDiscount']
   >(0);
 
   const [coupon, setCoupon] = useState<DiagnosticsCartContextProps['coupon']>(null);
 
-  const [clinics, setClinics] = useState<Clinic[]>([]);
   const [addresses, setAddresses] = useState<
     savePatientAddress_savePatientAddress_patientAddress[]
   >([]);
   const [pinCode, setPinCode] = useState<string>('');
-
-  const [clinicId, _setClinicId] = useState<DiagnosticsCartContextProps['clinicId']>('');
 
   const [deliveryAddressId, _setDeliveryAddressId] = useState<
     DiagnosticsCartContextProps['deliveryAddressId']
@@ -375,10 +375,6 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const [newAddressAddedCartPage, setNewAddressAddedCartPage] = useState<
     DiagnosticsCartContextProps['newAddressAddedCartPage']
   >('');
-
-  const [diagnosticClinic, _setDiagnosticClinic] = useState<
-    DiagnosticsCartContextProps['diagnosticClinic']
-  >(null);
 
   const [diagnosticSlot, _setDiagnosticSlot] = useState<
     DiagnosticsCartContextProps['diagnosticSlot']
@@ -421,17 +417,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     DiagnosticsCartContextProps['duplicateItemsArray']
   >([]);
 
-  const setDiagnosticClinic: DiagnosticsCartContextProps['setDiagnosticClinic'] = (item) => {
-    _setDiagnosticClinic(item);
-    _setDiagnosticSlot(null);
-    _setDeliveryAddressId('');
-    setDeliveryAddressCityId('');
-  };
-
   const setDiagnosticSlot: DiagnosticsCartContextProps['setDiagnosticSlot'] = (item) => {
     _setDiagnosticSlot(item);
-    _setDiagnosticClinic(null);
-    _setClinicId('');
   };
 
   const setEPrescriptions: DiagnosticsCartContextProps['setEPrescriptions'] = (items) => {
@@ -539,18 +526,191 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     }
   };
 
-  const withDiscount = cartItems?.filter(
-    (item) => item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+  //patient details for
+  const setPatientCartItems: DiagnosticsCartContextProps['setPatientCartItems'] = (cartItems) => {
+    _setPatientCartItems(cartItems);
+    AsyncStorage.setItem(AsyncStorageKeys.patientCartItems, JSON.stringify(cartItems)).catch(() => {
+      showGenericAlert('Failed to save cart items in local storage.');
+    });
+  };
+
+  const addPatientCartItem: DiagnosticsCartContextProps['addPatientCartItem'] = (
+    patientId,
+    listOfItems
+  ) => {
+    const findPatient =
+      !!patientCartItems &&
+      patientCartItems?.find(
+        (patient: DiagnosticPatientCartItem) => patient?.patientId === patientId
+      );
+    const findPatientIndex =
+      !!patientCartItems &&
+      patientCartItems?.findIndex(
+        (patient: DiagnosticPatientCartItem) => patient?.patientId === patientId
+      );
+
+    //if already exists
+    if (!!findPatient) {
+      const getSelectedCartItemsForPatient = findPatient?.cartItems?.filter(
+        (item) => item?.isSelected
+      );
+      //unselect the patient.
+      if (getSelectedCartItemsForPatient?.length == 0) {
+        removePatientCartItem?.(findPatient?.patientId);
+      } else {
+        patientCartItems[findPatientIndex].cartItems = listOfItems; //just update the list with selected item attribute
+        setPatientCartItems?.(patientCartItems);
+      }
+    } else {
+      const patientCartItemsObj: DiagnosticPatientCartItem = {
+        patientId: patientId,
+        cartItems: cartItems,
+      };
+      const newCartItems = [patientCartItemsObj, ...patientCartItems];
+      setPatientCartItems?.(newCartItems);
+    }
+    //empty the slots and areas everytime due to dependency of api.
+    setDiagnosticSlot?.(null);
+  };
+
+  const removePatientCartItem: DiagnosticsCartContextProps['removePatientCartItem'] = (
+    patientId: string,
+    id?: string
+  ) => {
+    const findPatient = patientCartItems?.find((item) => item?.patientId == patientId);
+    const findPatientIndex = patientCartItems?.findIndex((item) => item?.patientId == patientId);
+    if (!!findPatient) {
+      if (!!id) {
+        const newCartItems = findPatient?.cartItems?.filter(
+          (item) => Number(item?.id) !== Number(id)
+        );
+
+        patientCartItems[findPatientIndex].cartItems = newCartItems; //just update the list with selected item attribute
+        setPatientCartItems?.(patientCartItems);
+        //check for the item passed
+      } else {
+        //direclty remove the entry
+        const newCartItems = patientCartItems?.filter((item) => item?.patientId !== patientId);
+        setPatientCartItems?.(newCartItems);
+      }
+    }
+    setDiagnosticSlot(null);
+  };
+
+  const updatePatientCartItem: DiagnosticsCartContextProps['updatePatientCartItem'] = (
+    itemUpdates
+  ) => {
+    const newPatientCartItem = patientCartItems?.map((patientItems: DiagnosticPatientCartItem) => {
+      const findLineItemsIndex = patientItems?.cartItems?.findIndex(
+        (lineItems: DiagnosticsCartItem) => lineItems?.id === itemUpdates?.id
+      );
+      if (findLineItemsIndex !== -1) {
+        patientItems.cartItems[findLineItemsIndex] = {
+          ...patientItems.cartItems[findLineItemsIndex],
+          ...itemUpdates,
+        };
+      }
+    });
+    setPatientCartItems([...newPatientCartItem!]);
+  };
+
+  const filterPatientCartItems = patientCartItems?.map((item) => {
+    let obj = {
+      patientId: item?.patientId,
+      cartItems: item?.cartItems?.filter((items) => items?.isSelected == true),
+    };
+    return obj;
+  });
+  const allCartItems = filterPatientCartItems?.map((item) => item?.cartItems)?.flat();
+
+  // const withDiscount = cartItems?.filter(
+  //   (item) => item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
+  // );
+
+  const withDiscount = allCartItems?.filter(
+    (item: DiagnosticsCartItem) => item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
   );
 
-  const withAll = cartItems?.filter((item) =>
+  // const withAll = cartItems?.filter((item) =>
+  //   isDiagnosticCircleSubscription
+  //     ? item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.ALL
+  //     : item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.CIRCLE ||
+  //       item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
+  // );
+
+  const withAll = allCartItems?.filter((item: DiagnosticsCartItem) =>
     isDiagnosticCircleSubscription
       ? item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.ALL
       : item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.CIRCLE ||
         item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
   );
+
+  // const discountSaving: DiagnosticsCartContextProps['discountSaving'] = withDiscount?.reduce(
+  //   (currTotal, currItem) =>
+  //     currTotal +
+  //     (currItem?.packageMrp && currItem?.packageMrp > currItem?.discountSpecialPrice!
+  //       ? currItem?.packageMrp! - currItem?.discountSpecialPrice!
+  //       : currItem?.price! - currItem?.discountSpecialPrice!),
+  //   0
+  // );
+  // const normalSaving: DiagnosticsCartContextProps['normalSaving'] = withAll?.reduce(
+  //   (currTotal, currItem) =>
+  //     currTotal +
+  //     (currItem?.packageMrp && currItem?.packageMrp > currItem?.specialPrice!
+  //       ? currItem?.packageMrp! - currItem?.specialPrice!
+  //       : currItem?.price! - currItem?.specialPrice!),
+  //   0
+  // );
+
+  // const cartTotal: DiagnosticsCartContextProps['cartTotal'] = parseFloat(
+  //   cartItems?.reduce((currTotal, currItem) => currTotal + currItem?.price, 0).toFixed(2)
+  // );
+
+  //this takes packageMrp if exists or mrp
+  // const totalPriceExcludingAnyDiscounts: DiagnosticsCartContextProps['totalPriceExcludingAnyDiscounts'] = parseFloat(
+  //   cartItems
+  //     ?.reduce(
+  //       (currTotal, currItem) =>
+  //         currTotal +
+  //         (currItem?.packageMrp! > currItem?.price ? currItem?.packageMrp! : currItem?.price),
+  //       0
+  //     )
+  //     .toFixed(2)
+  // );
+
+  // const cartSaving: DiagnosticsCartContextProps['cartTotal'] = discountSaving + normalSaving;
+  // const circleSaving: DiagnosticsCartContextProps['circleSaving'] = parseFloat(
+  //   cartItems
+  //     ?.reduce(
+  //       (currTotal, currItem) =>
+  //         currTotal +
+  //         (currItem?.groupPlan == 'CIRCLE'
+  //           ? (currItem?.packageMrp! > currItem?.circlePrice!
+  //               ? currItem?.packageMrp!
+  //               : currItem?.circlePrice!) - currItem?.circleSpecialPrice!
+  //           : 0 || 0),
+  //       0
+  //     )
+  //     .toFixed(2)
+  // );
+
+  // const deliveryCharges =
+  //   deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP ? 0 : cartTotal > 0 ? modifyHcCharges : 0;
+
+  // //carttotal
+  // const grandTotal = parseFloat(
+  //   (
+  //     totalPriceExcludingAnyDiscounts +
+  //     deliveryCharges +
+  //     couponDiscount -
+  //     cartSaving -
+  //     (isDiagnosticCircleSubscription ? circleSaving : 0) +
+  //     (!!distanceCharges ? distanceCharges : 0)
+  //   ).toFixed(2)
+  // );
+
   const discountSaving: DiagnosticsCartContextProps['discountSaving'] = withDiscount?.reduce(
-    (currTotal, currItem) =>
+    (currTotal: number, currItem: DiagnosticsCartItem) =>
       currTotal +
       (currItem?.packageMrp && currItem?.packageMrp > currItem?.discountSpecialPrice!
         ? currItem?.packageMrp! - currItem?.discountSpecialPrice!
@@ -558,7 +718,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     0
   );
   const normalSaving: DiagnosticsCartContextProps['normalSaving'] = withAll?.reduce(
-    (currTotal, currItem) =>
+    (currTotal: number, currItem: DiagnosticsCartItem) =>
       currTotal +
       (currItem?.packageMrp && currItem?.packageMrp > currItem?.specialPrice!
         ? currItem?.packageMrp! - currItem?.specialPrice!
@@ -567,14 +727,15 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   );
 
   const cartTotal: DiagnosticsCartContextProps['cartTotal'] = parseFloat(
-    cartItems?.reduce((currTotal, currItem) => currTotal + currItem?.price, 0).toFixed(2)
+    allCartItems
+      ?.reduce((currTotal: number, currItem: DiagnosticsCartItem) => currTotal + currItem?.price, 0)
+      .toFixed(2)
   );
 
-  //this takes packageMrp if exists or mrp
   const totalPriceExcludingAnyDiscounts: DiagnosticsCartContextProps['totalPriceExcludingAnyDiscounts'] = parseFloat(
-    cartItems
+    allCartItems
       ?.reduce(
-        (currTotal, currItem) =>
+        (currTotal: number, currItem: DiagnosticsCartItem) =>
           currTotal +
           (currItem?.packageMrp! > currItem?.price ? currItem?.packageMrp! : currItem?.price),
         0
@@ -612,11 +773,6 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
       (!!distanceCharges ? distanceCharges : 0)
     ).toFixed(2)
   );
-
-  const setClinicId = (id: DiagnosticsCartContextProps['clinicId']) => {
-    setDeliveryType(MEDICINE_DELIVERY_TYPE.STORE_PICKUP);
-    _setClinicId(id);
-  };
 
   const setDeliveryAddressId = (id: DiagnosticsCartContextProps['deliveryAddressId']) => {
     setDeliveryType(MEDICINE_DELIVERY_TYPE.HOME_DELIVERY);
@@ -658,11 +814,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setPhysicalPrescriptions([]);
     setEPrescriptions([]);
     setCartItems([]);
+    setPatientCartItems([]);
     setDeliveryAddressId('');
     setDeliveryAddressCityId('');
-    setClinicId('');
     setPinCode('');
-    setClinics([]);
     setCoupon(null);
     setDiagnosticSlot(null);
     setAreaSelected({});
@@ -690,14 +845,17 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
           AsyncStorageKeys.cartItems,
           AsyncStorageKeys.physicalPrescriptions,
           AsyncStorageKeys.ePrescriptions,
+          AsyncStorageKeys.patientCartItems,
         ]);
         const cartItems = cartItemsFromStorage[0][1];
         const physicalPrescriptions = cartItemsFromStorage[1][1];
         const ePrescriptions = cartItemsFromStorage[2][1];
+        const patientCartItems = cartItemsFromStorage[3][1];
 
         _setCartItems(JSON.parse(cartItems || 'null') || []);
         _setPhysicalPrescriptions(JSON.parse(physicalPrescriptions || 'null') || []);
         _setEPrescriptions(JSON.parse(ePrescriptions || 'null') || []);
+        _setPatientCartItems(JSON.parse(patientCartItems || 'null') || []);
       } catch (error) {
         CommonBugFender('DiagnosticsCartProvider_updateCartItemsFromStorage_try', error);
         showGenericAlert('Failed to get cart items from local storage.');
@@ -742,6 +900,13 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         addMultipleCartItems,
         removeCartItem,
         updateCartItem,
+
+        patientCartItems,
+        addPatientCartItem,
+        setPatientCartItems,
+        updatePatientCartItem,
+        removePatientCartItem,
+
         cartTotal,
         totalPriceExcludingAnyDiscounts,
         cartSaving,
@@ -782,15 +947,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         deliveryType,
         coupon,
         setCoupon,
-        clinics,
-        setClinics,
-        clinicId,
-        setClinicId,
         pinCode,
         setPinCode,
         clearDiagnoticCartInfo,
-        diagnosticClinic,
-        setDiagnosticClinic,
         diagnosticSlot,
         setDiagnosticSlot,
         isDiagnosticCircleSubscription,
@@ -823,6 +982,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         showSelectedPatient,
         duplicateItemsArray,
         setDuplicateItemsArray,
+        filterPatientCartItems,
       }}
     >
       {props.children}

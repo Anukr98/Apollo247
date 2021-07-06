@@ -58,6 +58,7 @@ import { SecureTags } from '@aph/mobile-patients/src/components/PaymentGateway/C
 import {
   createJusPayOrder,
   processDiagnosticsCODOrder,
+  processDiagnosticsCODOrderV2,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   isEmptyObject,
@@ -77,7 +78,7 @@ export interface PaymentMethodsProps extends NavigationScreenProps {
 }
 
 export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
-  const { modifiedOrder, deliveryAddressCityId } = useDiagnosticsCart();
+  const { modifiedOrder, deliveryAddressCityId, patientCartItems } = useDiagnosticsCart();
   const paymentId = props.navigation.getParam('paymentId');
   const amount = props.navigation.getParam('amount');
   const orderId = props.navigation.getParam('orderId');
@@ -85,6 +86,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const eventAttributes = props.navigation.getParam('eventAttributes');
   const businessLine = props.navigation.getParam('businessLine');
   const isDiagnostic = businessLine === 'diagnostics';
+  const orderResponse = props.navigation.getParam('orderResponse');
   const { currentPatient } = useAllCurrentPatients();
   const [banks, setBanks] = useState<any>([]);
   const [loading, setloading] = useState<boolean>(true);
@@ -361,6 +363,18 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     InitiateCardTxn(currentPatient?.id, token, paymentId, cardInfo);
   }
 
+  function createOrderInputArray() {
+    var array = [] as any;
+    console.log({ orderResponse });
+    orderResponse?.map((item) => {
+      array.push({
+        orderID: item?.order_id,
+        amount: item?.amount,
+      });
+    });
+    return array;
+  }
+
   async function onPressPayByCash() {
     triggerWebengege('Cash');
     setisTxnProcessing(true);
@@ -372,13 +386,24 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         AppConfig.Configuration.returnUrl
       );
       const { data } = response;
+      console.log({ response });
       if (data?.createOrder?.success) {
-        const response = await processDiagnosticsCODOrder(client, orderId, amount);
+        const getPaymentId = data?.createOrder?.order_id;
+        const getArray = createOrderInputArray();
+        console.log({ getArray });
+        const response = await processDiagnosticsCODOrderV2(client, getArray);
         console.log({ response });
         const { data } = response;
-        data?.processDiagnosticHCOrder?.status
-          ? navigatetoOrderStatus(true, 'success')
-          : showTxnFailurePopUP();
+        const getResponse = data?.wrapperProcessDiagnosticHCOrderCOD?.result;
+        if (!!getResponse && getResponse?.length > 0) {
+          const isAnyFalse = getResponse?.filter((items) => !items?.status);
+          if (!!isAnyFalse && isAnyFalse?.length > 0) {
+            //show error
+            showTxnFailurePopUP();
+          } else {
+            navigatetoOrderStatus(true, 'success');
+          }
+        }
       } else {
         showTxnFailurePopUP();
       }
@@ -430,6 +455,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     switch (businessLine) {
       case 'diagnostics':
         props.navigation.navigate(AppRoutes.OrderStatus, {
+          paymentId: paymentId,
           orderDetails: orderDetails,
           isCOD: isCOD,
           eventAttributes,

@@ -18,6 +18,7 @@ export interface TestPremiumSlotOverlayProps extends AphOverlayProps {
 const { width } = Dimensions.get('window');
 export const TestPremiumSlotOverlay: React.FC<TestPremiumSlotOverlayProps> = (props) => {
   const { isVisible, onGoBack, slotDetails, ...attributes } = props;
+  console.log({ props });
 
   const renderButtons = () => {
     return (

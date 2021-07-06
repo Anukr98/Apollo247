@@ -46,12 +46,17 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
     setCartPagePopulated,
     selectedPatient,
     setPinCode,
+    patientCartItems,
   } = useDiagnosticsCart();
 
   const { diagnosticServiceabilityData } = useAppCommonData();
 
   const { setLoading, showAphAlert, hideAphAlert, loading } = useUIElements();
   const client = useApolloClient();
+  console.log({ props });
+
+  //after clicking on slot seleftion cta on previous page, remove the items which has isSelected as false
+
   const reportGenDetails = props.navigation.getParam('reportGenDetails');
   const [selectedTimeSlot, setselectedTimeSlot] = useState({}) as any;
   const [slots, setSlots] = useState<TestSlot[]>([]);
@@ -127,9 +132,10 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
     );
   };
 
-  function createLineItemPrices() {
-    pricesForItemArray = cartItems?.map(
-      (item, index) =>
+  //define type
+  function createLineItemPrices(selectedItem: any) {
+    pricesForItemArray = selectedItem?.cartItems?.map(
+      (item: any, index: number) =>
         ({
           itemId: Number(item?.id),
           price:
@@ -165,25 +171,58 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
     };
   }
 
+  // function createPatientObjLineItems() {
+  //   const getPricesForItem = createLineItemPrices()?.pricesForItemArray;
+
+  //   const totalPrice = getPricesForItem
+  //     ?.map((item) => Number(item?.price))
+  //     ?.reduce((prev: number, curr: number) => prev + curr, 0);
+  //   var array = [];
+  //   array.push({
+  //     patientID: selectedPatient?.id || currentPatient?.id,
+  //     lineItems: getPricesForItem,
+  //     totalPrice: totalPrice,
+  //   });
+  //   return array;
+  // }
+
   function createPatientObjLineItems() {
-    const getPricesForItem = createLineItemPrices()?.pricesForItemArray;
-    const totalPrice = getPricesForItem
-      ?.map((item) => Number(item?.price))
-      ?.reduce((prev: number, curr: number) => prev + curr, 0);
-    var array = [];
-    array.push({
-      patientID: selectedPatient?.id || currentPatient?.id,
-      lineItems: getPricesForItem,
-      totalPrice: totalPrice,
+    //move this logic outside
+    const filterPatientItems = patientCartItems?.map((item) => {
+      let obj = {
+        patientId: item?.patientId,
+        cartItems: item?.cartItems?.filter((items) => items?.isSelected == true),
+      };
+      return obj;
     });
+    console.log({ filterPatientItems });
+    var array = [] as any; //define type
+
+    const pp = filterPatientItems?.map((item) => {
+      const getPricesForItem = createLineItemPrices(item)?.pricesForItemArray;
+      console.log({ getPricesForItem });
+      const totalPrice = getPricesForItem
+        ?.map((item: any) => Number(item?.price))
+        ?.reduce((prev: number, curr: number) => prev + curr, 0);
+      console.log({ totalPrice });
+      array.push({
+        patientID: item?.patientId,
+        lineItems: getPricesForItem,
+        totalPrice: totalPrice,
+      });
+    });
+    console.log({ array });
     return array;
   }
 
   async function getSlots() {
+    //if city - state is null then check from the serviceability api
     var getAddressObject = createPatientAddressObject(
       isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr
     );
+    // const getPatientObjWithLineItems = createPatientObjLineItems() as (patientObjWithLineItems | null)[];
     const getPatientObjWithLineItems = createPatientObjLineItems() as (patientObjWithLineItems | null)[];
+
     const billAmount = getPatientObjWithLineItems
       ?.map((item) => Number(item?.totalPrice))
       ?.reduce((prev: number, curr: number) => prev + curr, 0);

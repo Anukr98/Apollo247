@@ -1057,6 +1057,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         ? DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
         : DIAGNOSTIC_GROUP_PLAN.ALL,
       inclusions: testInfo?.inclusions == null ? [Number(itemId)] : testInfo?.inclusions,
+      isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
     });
   }
 

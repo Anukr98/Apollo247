@@ -2099,3 +2099,11 @@ export const MinusPatientCircleIcon: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/circle-minus.webp')}
   />
 );
+
+export const TimeIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/time.webp')}
+  />
+);

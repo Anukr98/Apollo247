@@ -31,6 +31,7 @@ import {
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 const screenWidth = Dimensions.get('window').width;
 const CARD_WIDTH = screenWidth * 0.8; //0.86
 
@@ -349,6 +350,7 @@ const PackageCard: React.FC<PackageCardProps> = (props) => {
       groupPlan: planToConsider?.groupPlan,
       packageMrp: packageCalculatedMrp,
       inclusions: item?.inclusionData == null ? [Number(item?.itemId)] : inclusions,
+      isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
     });
   }
 

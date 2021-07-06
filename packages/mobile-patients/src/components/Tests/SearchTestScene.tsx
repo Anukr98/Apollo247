@@ -304,7 +304,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     savePastSeacrh(`${itemId}`, itemName).catch((e) => {});
     postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, 0, 0);
 
-    addCartItem!({
+    addCartItem?.({
       id: `${itemId}`,
       name: stripHtml(itemName),
       price: pricesObject?.rate || 0,
@@ -319,6 +319,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       groupPlan: selectedPlan?.groupPlan || DIAGNOSTIC_GROUP_PLAN.ALL,
       packageMrp: pricesObject?.packageMrp || 0,
       inclusions: inclusions == null ? [Number(itemId)] : inclusions,
+      isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
     });
   };
 
