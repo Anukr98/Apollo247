@@ -3,6 +3,8 @@ import {
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import stripHtml from 'string-strip-html';
+import Share from 'react-native-share';
+import RNFetchBlob from 'rn-fetch-blob';
 import {
   DiagnosticsCartItem,
   useDiagnosticsCart,
@@ -268,6 +270,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [imgHeight, setImgHeight] = useState(200);
   const [slideIndex, setSlideIndex] = useState(0);
   const [banners, setBanners] = useState([]);
+  const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
 
   const [sectionLoading, setSectionLoading] = useState<boolean>(false);
   const [bookUsSlideIndex, setBookUsSlideIndex] = useState(0);
@@ -2077,6 +2080,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const appointmentDate = moment(clickedItem?.slotDateTimeInUTC)?.format('DD MMM YYYY');
     const patientName = `${clickedItem?.patientObj?.firstName} ${clickedItem?.patientObj?.lastName}`;
     try {
+      setViewReportOrderId(clickedItem?.orderId)
       await downloadDiagnosticReport(
         setLoadingContext,
         clickedItem?.labReportURL,
@@ -2328,6 +2332,27 @@ export const Tests: React.FC<TestsProps> = (props) => {
       </TouchableOpacity>
     );
   };
+  const downloadDocument = (fileUrl: string = '', type: string = 'application/pdf') => {
+    let filePath: string | null = null;
+    let file_url_length = fileUrl.length;
+    const configOptions = { fileCache: true };
+    RNFetchBlob.config(configOptions)
+      .fetch('GET', fileUrl)
+      .then((resp) => {
+        filePath = resp.path();
+        return resp.readFile('base64');
+      })
+      .then(async (base64Data) => {
+        base64Data = `data:${type};base64,` + base64Data;
+        setViewReportOrderId(clickedItem?.orderId)
+        await Share.open({ title: '', url: base64Data });
+        // remove the image or pdf from device's storage
+        // await RNFS.unlink(filePath);
+      })
+      .catch((err) => {
+        console.log('err', err);
+      });
+  };
   const gridWidgetSection = (data: any) => {
     const numColumns = 3;
     let newGridData: any[] = [];
@@ -2379,6 +2404,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setDisplayViewReport(false);
             setClickedItem([]);
           }}
+          downloadDocument={() => downloadDocument(clickedItem?.labReportURL, 'application/pdf')}
+          viewReportOrderId={viewReportOrderId}
           onPressViewReport={() => {
             onPressViewReport();
           }}

@@ -31,14 +31,17 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 
 export interface TestViewReportOverlayProps extends AphOverlayProps {
   onPressViewReport?: any;
+  downloadDocument?: any;
   order?: any;
+  viewReportOrderId?: number;
 }
 export const TestViewReportOverlay: React.FC<TestViewReportOverlayProps> = (props) => {
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
-
+  const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
     setSnackbarState(true);
@@ -61,26 +64,7 @@ export const TestViewReportOverlay: React.FC<TestViewReportOverlayProps> = (prop
       title: string.Report.copy,
     },
   ];
-  const downloadDocument = (fileUrl: string = '', type: string = 'application/pdf') => {
-    let filePath: string | null = null;
-    let file_url_length = fileUrl.length;
-    const configOptions = { fileCache: true };
-    RNFetchBlob.config(configOptions)
-      .fetch('GET', fileUrl)
-      .then((resp) => {
-        filePath = resp.path();
-        return resp.readFile('base64');
-      })
-      .then(async (base64Data) => {
-        base64Data = `data:${type};base64,` + base64Data;
-        await Share.open({ title: '', url: base64Data });
-        // remove the image or pdf from device's storage
-        // await RNFS.unlink(filePath);
-      })
-      .catch((err) => {
-        console.log('err', err);
-      });
-  };
+
   return (
     <Overlay
       isVisible
@@ -105,15 +89,22 @@ export const TestViewReportOverlay: React.FC<TestViewReportOverlayProps> = (prop
             {viewReportItemsArray.map((item) => (
               <TouchableOpacity
                 onPress={async () => {
+                  if (props.viewReportOrderId == props.order?.displayId && item?.title != string.Report.copy) {
+                    showAphAlert!({
+                      title: string.common.uhOh,
+                      description: "Download error. Please try after some time.",
+                    });
+                  } else {
                   if (item?.title == string.Report.view || item?.title == string.Report.download) {
                     props.onPressViewReport();
                   } else if (item?.title == string.Report.share) {
-                    downloadDocument(props?.order?.labReportURL,'application/pdf')
+                    props.downloadDocument(props?.order?.labReportURL,'application/pdf')
                   } else {
                     copyToClipboard(
                       props.order && props.order?.labReportURL ? props.order?.labReportURL : ''
                     );
                   }
+                }
                   setTimeout(() => {
                     props.onClose();
                   }, 500);

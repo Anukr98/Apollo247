@@ -12,6 +12,8 @@ import {
   GET_PHLOBE_DETAILS,
   DIAGNOSITC_EXOTEL_CALLING,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import Share from 'react-native-share';
+import RNFetchBlob from 'rn-fetch-blob';
 import {
   getDiagnosticOrdersListByMobile,
   getDiagnosticOrdersListByMobileVariables,
@@ -143,6 +145,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [date, setDate] = useState<Date>(new Date());
   const [showDisplaySchedule, setDisplaySchedule] = useState<boolean>(false);
   const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
+  const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
   const [selectedOrderId, setSelectedOrderId] = useState<number>(0);
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
@@ -1329,13 +1332,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       / /g,
       '_'
     );
-    downloadLabTest(order?.labReportURL!, appointmentDate, patientName);
+    downloadLabTest(order?.labReportURL!, appointmentDate, patientName, order);
   }
 
-  async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string) {
+  async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string, order: orderList) {
     setLoading?.(true);
     try {
       await downloadDiagnosticReport(setLoading, pdfUrl, appointmentDate, patientName, true);
+      setViewReportOrderId(order?.displayId)
     } catch (error) {
       setLoading?.(false);
       CommonBugFender('YourOrderTests_downloadLabTest', error);
@@ -1425,6 +1429,27 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       );
     }
   };
+  const downloadDocument = (fileUrl: string = '', type: string = 'application/pdf') => {
+    let filePath: string | null = null;
+    let file_url_length = fileUrl.length;
+    const configOptions = { fileCache: true };
+    RNFetchBlob.config(configOptions)
+      .fetch('GET', fileUrl)
+      .then((resp) => {
+        filePath = resp.path();
+        return resp.readFile('base64');
+      })
+      .then(async (base64Data) => {
+        base64Data = `data:${type};base64,` + base64Data;
+        setViewReportOrderId(activeOrder?.displayId)
+        await Share.open({ title: '', url: base64Data });
+        // remove the image or pdf from device's storage
+        // await RNFS.unlink(filePath);
+      })
+      .catch((err) => {
+        console.log('err', err);
+      });
+  };
 
   const renderModalView = (item: any, index: number) => {
     return (
@@ -1469,6 +1494,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           order={activeOrder}
           heading=""
           isVisible={displayViewReport}
+          viewReportOrderId={viewReportOrderId}
+          downloadDocument={()=>{
+            downloadDocument(activeOrder?.labReportURL,'application/pdf')
+          }}
           onClose={() => setDisplayViewReport(false)}
           onPressViewReport={() => {
             DiagnosticViewReportClicked(

@@ -5,6 +5,8 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import Share from 'react-native-share';
+import RNFetchBlob from 'rn-fetch-blob';
 import moment from 'moment';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -63,6 +65,8 @@ export interface OrderedTestStatusProps extends NavigationScreenProps {}
 export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
+
+  const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
 
   const orderSelected = props.navigation.getParam('selectedOrder');
   const individualItemStatus = props.navigation.getParam('itemLevelStatus');
@@ -289,6 +293,27 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
       description: message,
     });
   };
+  const downloadDocument = (fileUrl: string = '', type: string = 'application/pdf') => {
+    let filePath: string | null = null;
+    let file_url_length = fileUrl.length;
+    const configOptions = { fileCache: true };
+    RNFetchBlob.config(configOptions)
+      .fetch('GET', fileUrl)
+      .then((resp) => {
+        filePath = resp.path();
+        return resp.readFile('base64');
+      })
+      .then(async (base64Data) => {
+        base64Data = `data:${type};base64,` + base64Data;
+        setViewReportOrderId(orderSelected?.id)
+        await Share.open({ title: '', url: base64Data });
+        // remove the image or pdf from device's storage
+        // await RNFS.unlink(filePath);
+      })
+      .catch((err) => {
+        console.log('err', err);
+      });
+  };
 
   const renderOrders = () => {
     return (
@@ -376,6 +401,8 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
           order={activeOrder}
           heading=""
           isVisible={displayViewReport}
+          viewReportOrderId={viewReportOrderId}
+          downloadDocument={()=>{downloadDocument()}}
           onClose={() => setDisplayViewReport(false)}
           onPressViewReport={() => {
             fetchTestReportResult(activeOrder);

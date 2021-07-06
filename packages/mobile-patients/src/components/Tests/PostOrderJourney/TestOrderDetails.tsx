@@ -13,6 +13,8 @@ import {
   OrderTrackerSmallIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import _ from 'lodash';
+import Share from 'react-native-share';
+import RNFetchBlob from 'rn-fetch-blob';
 import {
   DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS,
   DIAGNOSTIC_ORDER_FAILED_STATUS,
@@ -124,6 +126,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [scrollYValue, setScrollYValue] = useState(0);
   const [loading1, setLoading] = useState<boolean>(true);
   const [orderLevelStatus, setOrderLevelStatus] = useState([] as any);
+  const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
   const [showInclusionStatus, setShowInclusionStatus] = useState<boolean>(false);
   const [showError, setError] = useState<boolean>(false);
   const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
@@ -735,6 +738,27 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       );
     }
   };
+  const downloadDocument = (fileUrl: string = '', type: string = 'application/pdf') => {
+    let filePath: string | null = null;
+    let file_url_length = fileUrl.length;
+    const configOptions = { fileCache: true };
+    RNFetchBlob.config(configOptions)
+      .fetch('GET', fileUrl)
+      .then((resp) => {
+        filePath = resp.path();
+        return resp.readFile('base64');
+      })
+      .then(async (base64Data) => {
+        base64Data = `data:${type};base64,` + base64Data;
+        setViewReportOrderId(orderId)
+        await Share.open({ title: '', url: base64Data });
+        // remove the image or pdf from device's storage
+        // await RNFS.unlink(filePath);
+      })
+      .catch((err) => {
+        console.log('err', err);
+      });
+  };
 
   const renderMoreMenu = () => {
     return (
@@ -767,6 +791,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           order={orderDetails}
           heading=""
           isVisible={displayViewReport}
+          viewReportOrderId={viewReportOrderId}
+          downloadDocument={() => {
+            downloadDocument(selectedOrder?.labReportURL, 'application/pdf');
+          }}
           onClose={() => setDisplayViewReport(false)}
           onPressViewReport={() => {
             onPressViewReport();
