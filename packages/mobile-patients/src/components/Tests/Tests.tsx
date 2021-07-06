@@ -374,7 +374,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     DiagnosticLandingPageViewedEvent(
       currentPatient,
       isDiagnosticLocationServiceable,
-      movedFrom == 'deeplink' ? 'Deeplink' : undefined
+      movedFrom == 'deeplink' ? 'Deeplink' : undefined,
+      isDiagnosticCircleSubscription
     );
   }, []);
 
