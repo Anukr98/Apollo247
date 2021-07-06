@@ -2480,10 +2480,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     connected: (event: string) => {
       openTokWebEngageEvents(WebEngageEventName.DOCTOR_SUBSCRIBER_CONNECTED, JSON.stringify(event));
       setSnackbarState(false);
-      if (!subscriberConnected.current) {
-        playJoinSound();
-        callToastStatus.current = callConnected;
-      }
+      playJoinSound();
+      callToastStatus.current = callConnected;
+
+      //Intentionally commentted
+      // if (!subscriberConnected.current) {
+      //   playJoinSound();
+      //   callToastStatus.current = callConnected;
+      // }
       subscriberConnected.current = true;
       setTimeout(() => {
         callToastStatus.current = '';
@@ -3366,14 +3370,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         message.message.message === 'Audio call ended' ||
         message.message.message === 'Video call ended'
       ) {
-        resetCurrentRetryAttempt();
+        if (message?.message?.id !== currentPatient?.id) {
+          // call has been ended by doctor
+          callToastStatus.current = 'Call has been ended by doctor.';
+          BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
+        }
+        //resetCurrentRetryAttempt();
         setTimeout(() => {
-          setCallMinimize(false);
-          AsyncStorage.setItem('callDisconnected', 'true');
-          setOnSubscribe(false);
-          callhandelBack = true;
-          setIsCall(false);
-          setIsAudioCall(false);
+          //Intentionally commentted
+          // setCallMinimize(false);
+          // AsyncStorage.setItem('callDisconnected', 'true');
+          // setOnSubscribe(false);
+          // callhandelBack = true;
+          // setIsCall(false);
+          // setIsAudioCall(false);
           addMessages(message);
         }, 2000);
       } else if (message.message.message === covertVideoMsg) {
@@ -3428,10 +3438,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setDoctorJoined(false);
       } else if (message.message.message === endCallMsg) {
         BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
-        resetCurrentRetryAttempt();
-        callStatus.current = disconnecting;
-        callToastStatus.current = '';
-        subscriberConnected.current = false;
+        //Intentionally commented
+        //resetCurrentRetryAttempt();
+        // callStatus.current = disconnecting;
+        // callToastStatus.current = '';
+        // subscriberConnected.current = false;
         setTimeout(() => {
           try {
             const event = _.debounce(() => {
@@ -3445,14 +3456,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             });
             event();
           } catch (error) {}
-          setCallMinimize(false);
-          AsyncStorage.setItem('callDisconnected', 'true');
-          AsyncStorage.getItem('leftSoundPlayed').then((data) => {
-            if (!JSON.parse(data || 'false')) {
-              stopSound();
-              playDisconnectSound();
-            }
-          });
+          //Intentionally commentted
+          // setCallMinimize(false);
+          // AsyncStorage.setItem('callDisconnected', 'true');
+          // AsyncStorage.getItem('leftSoundPlayed').then((data) => {
+          //   if (!JSON.parse(data || 'false')) {
+          //     stopSound();
+          //     playDisconnectSound();
+          //   }
+          // });
         }, 2000);
       } else if (message.message.message === exotelCall) {
         addMessages(message);
@@ -6320,24 +6332,26 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
-  useEffect(() => {
-    if (
-      patientJoinedCall.current &&
-      !subscriberConnected.current &&
-      callTimer === avgTimeForDoctorToJoinInMinutes * 60
-    ) {
-      callStatus.current = ' ';
-      callToastStatus.current = disconnecting;
-      isErrorToast.current = true;
-      setTimeout(() => {
-        if (isAudio.current) {
-          handleEndAudioCall();
-        } else {
-          handleEndCall();
-        }
-      }, 1000);
-    }
-  }, [callTimer]);
+  //Intentionally commentted
+  // useEffect(() => {
+  //   if (
+  //     patientJoinedCall.current &&
+  //     !subscriberConnected.current &&
+  //     callTimer === avgTimeForDoctorToJoinInMinutes * 60
+  //   ) {
+  //     callStatus.current = ' ';
+  //     callToastStatus.current = disconnecting;
+  //     isErrorToast.current = true;
+  //     setTimeout(() => {
+  //       if (isAudio.current) {
+  //         handleEndAudioCall();
+  //       } else {
+  //         console.log('check onPress useEffect callTimer -- ');
+  //         handleEndCall();
+  //       }
+  //     }, 1000);
+  //   }
+  // }, [callTimer]);
 
   const handleEndCall = (playSound: boolean = true) => {
     BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
