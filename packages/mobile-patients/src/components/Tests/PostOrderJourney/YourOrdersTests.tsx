@@ -32,7 +32,13 @@ import {
   Text,
   Modal,
 } from 'react-native';
-import { Down, DownO, InfoIconRed } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  AlertTriangle,
+  Down,
+  DownO,
+  InfoIconRed,
+  TriangleGreyBulletPoint,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { NavigationScreenProps } from 'react-navigation';
 import {
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
@@ -53,6 +59,7 @@ import {
   nameFormater,
   navigateToScreenWithEmptyStack,
   aphConsole,
+  isSmallDevice,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DisabledTickIcon, TickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
@@ -81,6 +88,7 @@ import {
   diagnosticExotelCall,
   diagnosticGetCustomizedSlotsV2,
   diagnosticRescheduleOrder,
+  diagnosticsOrderListByParentId,
   getDiagnosticRefundOrders,
   getPatientPrismMedicalRecordsApi,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
@@ -94,6 +102,7 @@ import {
   getOrderPhleboDetailsBulkVariables,
 } from '@aph/mobile-patients/src/graphql/types/getOrderPhleboDetailsBulk';
 import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
+import { getDiagnosticOrdersListByParentOrderID_getDiagnosticOrdersListByParentOrderID_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByParentOrderID';
 
 type orderList = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList;
 export interface YourOrdersTestProps extends NavigationScreenProps {
@@ -125,7 +134,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [date, setDate] = useState<Date>(new Date());
   const [showDisplaySchedule, setDisplaySchedule] = useState<boolean>(false);
   const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
-  const [selectedOrderId, setSelectedOrderId] = useState<number>(0);
+  const [selectedOrderId, setSelectedOrderId] = useState<string>('');
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
   const [todaySlotNotAvailable, setTodaySlotNotAvailable] = useState<boolean>(false);
@@ -142,6 +151,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [selectCancelReason, setSelectCancelReason] = useState<string>('');
   const [cancelReasonComment, setCancelReasonComment] = useState<string>('');
   const [selectRescheduleReason, setSelectRescheduleReason] = useState<string>('');
+  const [showMultiUhidOption, setShowMultiUhidOption] = useState<boolean>(false);
+  const [isMultiUhid, setIsMultiUhid] = useState<boolean>(false);
+  const [multipleOrdersList, setMultipleOrdersList] = useState<
+    | (getDiagnosticOrdersListByParentOrderID_getDiagnosticOrdersListByParentOrderID_ordersList | null)[]
+    | null
+  >([]);
 
   const [refundStatusArr, setRefundStatusArr] = useState<any>(null);
   const [selectedOrder, setSelectedOrder] = useState<orderList>();
@@ -651,7 +666,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     );
   };
 
-  const _onPressTestReschedule = (item: any) => {
+  const _onPressTestReschedule = (item: orderList) => {
+    const isMultipleOrder = !!item?.attributesObj?.isMultiUhid
+      ? item?.attributesObj?.isMultiUhid
+      : false;
+    setIsMultiUhid(isMultipleOrder);
     setSelectedOrderId(item?.id);
     setSelectedOrder(item);
     setShowBottomOverlay(true); //show the overlay
@@ -694,6 +713,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       DiagnosticsRescheduleSource.MOBILE
     )
       .then((data) => {
+        console.log({ data });
         const rescheduleResponse = data?.data?.rescheduleDiagnosticsOrderv2!;
         if (
           !!rescheduleResponse &&
@@ -727,6 +747,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         setSelectRescheduleReason('');
       })
       .catch((error) => {
+        console.log({ error });
         aphConsole.log({ error });
         setSelectCancelReason('');
         setCancelReasonComment('');
@@ -843,6 +864,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               <View style={styles.overlayContainer}>
                 <View>
                   {showRescheduleOptions && renderRescheduleCancelOptions()}
+                  {showMultiUhidOption &&
+                    !!multipleOrdersList &&
+                    multipleOrdersList?.length > 0 &&
+                    renderMultiUhidMessage()}
                   {showRescheduleReasons && renderRescheduleReasons()}
                   {showCancelReasons && renderCancelReasons()}
                 </View>
@@ -851,6 +876,77 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           </TouchableOpacity>
         </View>
       </Overlay>
+    );
+  };
+
+  const renderMultiUhidMessage = () => {
+    const count = !!multipleOrdersList && multipleOrdersList?.length;
+    return (
+      <View style={{ margin: 16 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <AlertTriangle style={{ height: 27, width: 27, resizeMode: 'contain' }} />
+          <Text style={styles.orangeText}>{count} orders will be Rescheduled</Text>
+        </View>
+        <View style={{ marginTop: 8, marginBottom: 8 }}>
+          <Text style={{ ...theme.viewStyles.text('R', 12, colors.SHERPA_BLUE, 1, 18) }}>
+            The following orders will be rescheduled along with the current order
+          </Text>
+        </View>
+        {!!count &&
+          multipleOrdersList?.map((item, index) => {
+            return renderPatientTestView(item, count, index);
+          })}
+        <View style={styles.buttonView}>
+          <Button
+            title={'CONTINUE'}
+            style={styles.buttonStyle}
+            disabled={false}
+            onPress={() => _onPressMultiUhidContinue()}
+          />
+        </View>
+      </View>
+    );
+  };
+
+  const renderPatientTestView = (item: any, count: number, index: number) => {
+    const patientName = nameFormater(
+      `${item?.patientObj?.firstName} ${item?.patientObj?.lastName}`,
+      'title'
+    );
+    const salutation = !!item?.patientObj?.gender
+      ? item?.patientObj?.gender == Gender.MALE
+        ? 'Mr.'
+        : item?.patientObj?.gender == Gender.FEMALE
+        ? 'Ms.'
+        : ''
+      : '';
+    const remainingItems = item?.diagnosticOrderLineItem?.length - 2;
+    return (
+      <View style={{ marginTop: 2 }}>
+        <Text style={{ ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18) }}>
+          {salutation} {patientName}
+        </Text>
+        <View style={[styles.itemsView]}>
+          {item?.diagnosticOrderLineItems?.map((lineItems: any) => {
+            return renderTestName(lineItems, remainingItems);
+          })}
+        </View>
+        {count - 1 == index ? null : <Spearator />}
+      </View>
+    );
+  };
+
+  const renderTestName = (lineItems: any, remainingItems: number) => {
+    return (
+      <View style={{ flexDirection: 'row' }}>
+        <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
+        <Text style={styles.testName}>{nameFormater(lineItems?.itemName, 'title')}</Text>
+        {remainingItems > 2 && (
+          <TouchableOpacity onPress={() => {}} style={{}}>
+            <Text style={styles.moreText}>+ {remainingItems} More</Text>
+          </TouchableOpacity>
+        )}
+      </View>
     );
   };
 
@@ -1101,11 +1197,49 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       return;
     }
     setShowRescheduleOptions(false); //hide the options view
-    setShowRescheduleReasons(true);
+    if (isMultiUhid) {
+      callMultiUhidApi();
+    } else {
+      setShowRescheduleReasons(true);
+      setSelectRescheduleOption(true);
+    }
+
     showCancelReasons && setShowCancelReasons(false);
-    setSelectRescheduleOption(true);
     setShowCancelReasons(false);
     selectCancelOption && setSelectCancelOption(false);
+  }
+
+  function _onPressMultiUhidContinue() {
+    setShowMultiUhidOption(false);
+    setShowRescheduleReasons(true);
+    setSelectRescheduleOption(true);
+  }
+
+  async function callMultiUhidApi() {
+    setLoading?.(true);
+    const parentOrderId = selectedOrder?.parentOrderId || selectedOrder?.id;
+    try {
+      const res = await diagnosticsOrderListByParentId(client, parentOrderId!);
+      console.log({ res });
+      if (res?.data?.getDiagnosticOrdersListByParentOrderID) {
+        const getOrders = res?.data?.getDiagnosticOrdersListByParentOrderID?.ordersList! || [];
+        setMultipleOrdersList(getOrders);
+        setShowMultiUhidOption(true);
+      } else {
+        setMultipleOrdersList([]);
+        setShowRescheduleReasons(true);
+        setSelectRescheduleOption(true);
+      }
+      setLoading?.(false);
+    } catch (error) {
+      console.log({ error });
+      setMultipleOrdersList([]);
+      setShowRescheduleReasons(true);
+      setSelectRescheduleOption(true);
+
+      setLoading?.(false);
+      CommonBugFender('YourOrdersTest_callMultiUhidApi', error);
+    }
   }
 
   function _onPressProceedToCancel() {
@@ -1777,5 +1911,33 @@ const styles = StyleSheet.create({
     marginLeft: 16,
     marginRight: 16,
     marginBottom: 8,
+  },
+  itemsView: {
+    backgroundColor: '#F9F9F9',
+    margin: 8,
+    padding: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#F9F9F9',
+  },
+  moreText: {
+    ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW, 1, 18),
+  },
+  bulletStyle: {
+    color: '#007C9D',
+    fontSize: 5,
+    alignSelf: 'flex-start',
+    marginTop: 4,
+  },
+  testName: {
+    ...theme.viewStyles.text('M', isSmallDevice ? 11.5 : 12, '#007C9D', 1, 17),
+    letterSpacing: 0,
+    marginBottom: '1.5%',
+    marginHorizontal: '3%',
+    maxWidth: '80%',
+  },
+  orangeText: {
+    ...theme.viewStyles.text('SB', 13, '#EF7A0E', 1, 18),
+    marginHorizontal: 6,
   },
 });

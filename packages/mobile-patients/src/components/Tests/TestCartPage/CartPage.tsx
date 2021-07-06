@@ -859,6 +859,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     );
   };
 
+  console.log({ patientCartItems });
   function updateItems(itemUpdates: DiagnosticsCartItem) {
     const newPatientCartItem = patientCartItems?.map((patientItems: DiagnosticPatientCartItem) => {
       const findLineItemsIndex = patientItems?.cartItems?.findIndex(
@@ -1063,6 +1064,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   function _navigateToAddressSelection() {
     props.navigation.navigate(AppRoutes.AddressSlotSelection, {
       reportGenDetails: reportGenDetails,
+      selectedAddress: selectedAddr,
     });
   }
 

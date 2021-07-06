@@ -13,14 +13,6 @@ export interface getDiagnosticOrdersListByParentOrderID_getDiagnosticOrdersListB
   lastName: string | null;
 }
 
-export interface getDiagnosticOrdersListByParentOrderID_getDiagnosticOrdersListByParentOrderID_ordersList_diagnosticOrderLineItems_diagnostics {
-  __typename: "Diagnostics";
-  id: string;
-  itemId: number;
-  itemName: string;
-  inclusions: (number | null)[] | null;
-}
-
 export interface getDiagnosticOrdersListByParentOrderID_getDiagnosticOrdersListByParentOrderID_ordersList_diagnosticOrderLineItems_pricingObj {
   __typename: "PricingObj";
   mrp: number | null;
@@ -38,12 +30,12 @@ export interface getDiagnosticOrdersListByParentOrderID_getDiagnosticOrdersListB
   __typename: "DiagnosticOrderLineItems";
   id: string;
   itemId: number | null;
+  itemName: string | null;
   quantity: number | null;
   price: number | null;
   editOrderID: string | null;
   isRemoved: boolean | null;
   groupPlan: string | null;
-  diagnostics: getDiagnosticOrdersListByParentOrderID_getDiagnosticOrdersListByParentOrderID_ordersList_diagnosticOrderLineItems_diagnostics | null;
   pricingObj: (getDiagnosticOrdersListByParentOrderID_getDiagnosticOrdersListByParentOrderID_ordersList_diagnosticOrderLineItems_pricingObj | null)[] | null;
   itemObj: getDiagnosticOrdersListByParentOrderID_getDiagnosticOrdersListByParentOrderID_ordersList_diagnosticOrderLineItems_itemObj | null;
 }

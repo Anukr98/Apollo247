@@ -30,6 +30,7 @@ export interface getOrderInternal_getOrderInternal_internal_orders_orderDetailsP
   patientId: string;
   patientObj: getOrderInternal_getOrderInternal_internal_orders_orderDetailsPayment_ordersList_patientObj | null;
   displayId: number;
+  slotDateTimeInUTC: any | null;
   diagnosticOrderLineItems: (getOrderInternal_getOrderInternal_internal_orders_orderDetailsPayment_ordersList_diagnosticOrderLineItems | null)[] | null;
 }
 

@@ -58,6 +58,7 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
   //after clicking on slot seleftion cta on previous page, remove the items which has isSelected as false
 
   const reportGenDetails = props.navigation.getParam('reportGenDetails');
+  const selectedAddr = props.navigation.getParam('selectedAddress');
   const [selectedTimeSlot, setselectedTimeSlot] = useState({}) as any;
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [todaySlotNotAvailable, setTodaySlotNotAvailable] = useState<boolean>(false);
@@ -81,7 +82,7 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
   const { currentPatient } = useAllCurrentPatients();
 
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
-  const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
+  // const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
@@ -414,6 +415,7 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
 
   function _navigateToReview() {
     props.navigation.navigate(AppRoutes.ReviewOrder, {
+      selectedAddress: selectedAddr,
       slotsInput: slotsInput,
       selectedTimeSlot: selectedTimeSlot,
       showPaidPopUp: selectedTimeSlot?.slotInfo?.isPaidSlot,

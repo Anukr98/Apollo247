@@ -6,9 +6,6 @@ import {
   OrderPlacedCheckedIcon,
   OrderProcessingIcon,
   InfoIconRed,
-  ClockIcon,
-  GreenClock,
-  TestTimeIcon,
   TimeIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -32,24 +29,24 @@ import { firePurchaseEvent } from '@aph/mobile-patients/src/components/Tests/Eve
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { colors } from '../../theme/colors';
-import { StickyBottomComponent } from '../ui/StickyBottomComponent';
-import { Button } from '../ui/Button';
-import { getDiagnosticRefundOrders } from '../../helpers/clientCalls';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { getDiagnosticRefundOrders } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { useApolloClient } from 'react-apollo-hooks';
-import { CommonBugFender } from '../../FunctionHelpers/DeviceHelper';
-import { Gender } from '../../graphql/types/globalTypes';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 export interface OrderStatusProps extends NavigationScreenProps {}
 
 export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
-  console.log({ props });
   const modifiedOrderDetails = props.navigation.getParam('isModify');
   const orderDetails = props.navigation.getParam('orderDetails');
   const eventAttributes = props.navigation.getParam('eventAttributes');
   const isCOD = props.navigation.getParam('isCOD');
   const paymentId = props.navigation.getParam('paymentId');
   const { currentPatient } = useAllCurrentPatients();
+  //check for modify
   const pickupDate = !!modifiedOrderDetails
     ? moment(modifiedOrderDetails?.slotDateTimeInUTC)?.format('DD MMM')
     : moment(orderDetails?.diagnosticDate!).format('DD MMM');
@@ -92,6 +89,10 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     navigateToHome(props.navigation);
   };
   const [apiOrderDetails, setApiOrderDetails] = useState([]);
+  const [timeDate, setTimeDate] = useState<string>('');
+  const [showMore, setShowMore] = useState<boolean>(false);
+  const [selectedItem, setSelectedItem] = useState('');
+  const [isSingleUhid, setIsSingleUhid] = useState<boolean>(false);
 
   const moveToMyOrders = () => {
     props.navigation.popToTop({ immediate: true }); //if not added, stack was getting cleared.
@@ -107,8 +108,11 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       console.log({ response });
       if (response?.data?.data?.getOrderInternal) {
         const getResponse = response?.data?.data?.getOrderInternal?.internal_orders;
-        console.log({ getResponse });
+        const getSlotDateTime =
+          getResponse?.[0]?.orderDetailsPayment?.ordersList?.[0]?.slotDateTimeInUTC;
         setApiOrderDetails(getResponse);
+        setTimeDate(getSlotDateTime);
+        setIsSingleUhid(getResponse?.length == 1);
       } else {
         setApiOrderDetails([]);
       }
@@ -200,27 +204,26 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
 
   const renderPickUpTime = () => {
+    const date = timeDate != '' && moment(timeDate)?.format('DD MMM');
+    const year = timeDate != '' && moment(timeDate)?.format('YYYY');
+    const time = timeDate != '' && formatTestSlotWithBuffer(moment(timeDate)?.format('hh:mm A'));
     return (
-      <View
-        style={{
-          flexDirection: 'row',
-          backgroundColor: '#F3FFFF',
-          marginHorizontal: -20,
-          padding: 16,
-          paddingLeft: 20,
-        }}
-      >
-        <TimeIcon style={{ height: 20, width: 20, resizeMode: 'contain', marginRight: 6 }} />
-        <Text style={styles.pickupText}>
-          Pickup Time :{' '}
-          {!!pickupDate && !!pickupYear && (
-            <Text style={styles.pickupDate}>
-              {pickupDate}, {pickupYear}
+      <>
+        {!!date && !!time && !!year ? (
+          <View style={styles.pickupView}>
+            <TimeIcon style={styles.timeIconStyle} />
+            <Text style={styles.pickupText}>
+              Pickup Time :{' '}
+              {!!date && !!year && (
+                <Text style={styles.pickupDate}>
+                  {date}, {year}
+                </Text>
+              )}
+              {!!time && <Text style={styles.pickupDate}> | {time}</Text>}
             </Text>
-          )}
-          {!!pickupTime && <Text style={styles.pickupDate}> | {pickupTime}</Text>}
-        </Text>
-      </View>
+          </View>
+        ) : null}
+      </>
     );
   };
 
@@ -274,7 +277,9 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
         {!!savings && (
           <Text style={{ ...styles.savedTxt, marginTop: 8 }}>
             You {''}
-            <Text style={styles.savedAmt}>saved ₹ {savings}</Text>
+            <Text style={styles.savedAmt}>
+              saved {string.common.Rs} {savings}
+            </Text>
             {''} on your purchase.
           </Text>
         )}
@@ -312,7 +317,11 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       couldBeSaved && (
         <View style={styles.couldBeSavings}>
           <Text style={styles.savedTxt}>
-            You could have <Text style={styles.savedAmt}>saved extra ₹{orderCircleSaving}</Text>{' '}
+            You could have{' '}
+            <Text style={styles.savedAmt}>
+              saved extra {string.common.Rs}
+              {orderCircleSaving}
+            </Text>{' '}
             with
           </Text>
           <CircleLogo style={{ ...styles.circleLogo, marginLeft: 4 }} />
@@ -356,9 +365,6 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     );
   };
 
-  const [showMore, setShowMore] = useState<boolean>(false);
-  const [selectedItem, setSelectedItem] = useState<string>('');
-
   const renderTests = () => {
     //define type
     return (
@@ -378,41 +384,42 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
                   ? 'Ms.'
                   : ''
                 : '';
+
               return (
                 <>
                   <View
                     style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
                       backgroundColor: colors.WHITE,
                       padding: 10,
                     }}
                   >
-                    <Text style={{ width: '60%' }}>
-                      {salutation} {patientName}
-                    </Text>
-                    {!!displayId && <Text>#{displayId}</Text>}
-                  </View>
-                  {!!lineItemsLength && lineItemsLength > 0 && !showMore && (
-                    <View style={{ flexDirection: 'row', backgroundColor: '#F9F9F9', padding: 6 }}>
-                      <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
-                      <Text style={styles.testName}>
-                        {nameFormater(lineItems?.[0]?.itemName, 'title')}
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                      <Text style={styles.patientName}>
+                        {nameFormater(`${salutation} ${patientName}`, 'title')}
                       </Text>
-                      {remainingItems > 0 && (
-                        <TouchableOpacity onPress={() => _onPressMore(item, lineItems)} style={{}}>
-                          <Text
-                            style={{
-                              ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW, 1, 18),
-                            }}
-                          >
-                            + {remainingItems} More
-                          </Text>
-                        </TouchableOpacity>
-                      )}
+
+                      {!!displayId && <Text style={styles.pickupDate}>#{displayId}</Text>}
                     </View>
-                  )}
-                  {showMore && renderMore(item, lineItems)}
+                    {!!lineItemsLength &&
+                      lineItemsLength > 0 &&
+                      (selectedItem == displayId ? null : (
+                        <View style={[styles.itemsView, { flexDirection: 'row' }]}>
+                          <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
+                          <Text style={styles.testName}>
+                            {nameFormater(lineItems?.[0]?.itemName, 'title')}
+                          </Text>
+                          {remainingItems > 0 && (
+                            <TouchableOpacity
+                              onPress={() => _onPressMore(item, lineItems)}
+                              style={{}}
+                            >
+                              <Text style={styles.moreText}>+ {remainingItems} More</Text>
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                      ))}
+                    {selectedItem == displayId && renderMore(item, lineItems)}
+                  </View>
                   <Spearator style={styles.separator} />
                 </>
               );
@@ -433,7 +440,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
 
   const renderMore = (item: any, lineItems: any) => {
     return (
-      <View style={{ backgroundColor: '#F9F9F9', padding: 6 }}>
+      <View style={styles.itemsView}>
         {lineItems?.map((items: any) => {
           return (
             <View style={{ flexDirection: 'row' }}>
@@ -442,6 +449,19 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
             </View>
           );
         })}
+      </View>
+    );
+  };
+
+  const renderOrderSummary = () => {
+    return (
+      <View style={styles.orderSummaryView}>
+        <TouchableOpacity
+          style={styles.orderSummaryTouch}
+          onPress={() => navigateToOrderDetails(true, orderDetails?.orderId!)}
+        >
+          <Text style={styles.orderSummary}>VIEW ORDER SUMMARY</Text>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -460,6 +480,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
             {renderNoticeText()}
             {/* {enable_cancelellation_policy ? renderCancelationPolicy() : null} */}
             {renderTests()}
+            {isSingleUhid && renderOrderSummary()}
             {renderInvoiceTimeline()}
           </View>
         </ScrollView>
@@ -666,4 +687,41 @@ const styles = StyleSheet.create({
     marginHorizontal: '3%',
     maxWidth: '80%',
   },
+  patientName: {
+    width: '60%',
+    ...theme.fonts.IBMPlexSansSemiBold(12),
+    lineHeight: 20,
+    color: colors.SHERPA_BLUE,
+  },
+  orderSummaryView: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 30,
+    marginTop: 16,
+  },
+  orderSummaryTouch: {
+    height: '100%',
+    width: '70%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  itemsView: {
+    backgroundColor: '#F9F9F9',
+    margin: 8,
+    padding: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#F9F9F9',
+  },
+  moreText: {
+    ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW, 1, 18),
+  },
+  pickupView: {
+    flexDirection: 'row',
+    backgroundColor: '#F3FFFF',
+    marginHorizontal: -20,
+    padding: 16,
+    paddingLeft: 20,
+  },
+  timeIconStyle: { height: 20, width: 20, resizeMode: 'contain', marginRight: 6 },
 });

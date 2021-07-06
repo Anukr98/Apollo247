@@ -40,11 +40,7 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
     if (modifyOrderDetails) {
       return isModifyCOD ? `${string.placeOrder} (COD)` : string.proceedToPay;
     } else {
-      return !deliveryAddressId
-        ? addresses?.length
-          ? string.diagnostics.selectAddressText
-          : string.diagnostics.addAddressText
-        : string.proceedToPay;
+      return string.proceedToPay;
     }
   }
 

@@ -24,6 +24,7 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   preTestingRequirement: string | null;
   reportGenerationTime: string | null;
   initialCollectionCharges: number | null;
+  isMultiUhid: boolean | null;
 }
 
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientAddressObj {

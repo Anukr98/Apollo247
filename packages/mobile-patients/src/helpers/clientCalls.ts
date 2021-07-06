@@ -48,6 +48,7 @@ import {
   DIAGNOSTIC_RESCHEDULE_V2,
   DIAGNOSITC_EXOTEL_CALLING,
   DIAGNOSTIC_WRAPPER_PROCESS_HC,
+  GET_DIAGNOSTIC_ORDERSLIST_BY_PARENT_ORDER_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -186,6 +187,7 @@ import { cancelDiagnosticOrdersv2, cancelDiagnosticOrdersv2Variables } from '@ap
 import { rescheduleDiagnosticsOrderv2, rescheduleDiagnosticsOrderv2Variables } from '@aph/mobile-patients/src/graphql/types/rescheduleDiagnosticsOrderv2';
 import { diagnosticExotelCalling, diagnosticExotelCallingVariables } from '@aph/mobile-patients/src/graphql/types/diagnosticExotelCalling';
 import { wrapperProcessDiagnosticHCOrderCOD, wrapperProcessDiagnosticHCOrderCODVariables } from '../graphql/types/wrapperProcessDiagnosticHCOrderCOD';
+import { getDiagnosticOrdersListByParentOrderID, getDiagnosticOrdersListByParentOrderIDVariables } from '../graphql/types/getDiagnosticOrdersListByParentOrderID';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -1310,7 +1312,25 @@ export const processDiagnosticsCODOrderV2 =  (
 
   return client.mutate<wrapperProcessDiagnosticHCOrderCOD, wrapperProcessDiagnosticHCOrderCODVariables>({
     mutation: DIAGNOSTIC_WRAPPER_PROCESS_HC,
+    context: {
+      sourceHeaders,
+    },
     variables: { processDiagnosticHCOrdersInput: array },
+    fetchPolicy: 'no-cache',
+  });
+}
+
+export const diagnosticsOrderListByParentId =  (
+  client: ApolloClient<object>,
+  parentOrderID : string
+) => {
+
+  return client.query<getDiagnosticOrdersListByParentOrderID, getDiagnosticOrdersListByParentOrderIDVariables>({
+    query: GET_DIAGNOSTIC_ORDERSLIST_BY_PARENT_ORDER_ID,
+    context: {
+      sourceHeaders,
+    },
+    variables: { parentOrderID: parentOrderID },
     fetchPolicy: 'no-cache',
   });
 }

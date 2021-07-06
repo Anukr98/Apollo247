@@ -2212,6 +2212,7 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           preTestingRequirement
           reportGenerationTime
           initialCollectionCharges
+          isMultiUhid
         }
         patientAddressObj {
           addressLine1
@@ -4743,6 +4744,7 @@ export const GET_INTERNAL_ORDER = gql`
               gender
             }
             displayId
+            slotDateTimeInUTC
             diagnosticOrderLineItems{
               itemId
               itemName
@@ -5536,17 +5538,12 @@ export const GET_DIAGNOSTIC_ORDERSLIST_BY_PARENT_ORDER_ID = gql`
         diagnosticOrderLineItems {
           id
           itemId
+          itemName
           quantity
           price
           editOrderID
           isRemoved
           groupPlan
-          diagnostics {
-            id
-            itemId
-            itemName
-            inclusions
-          }
           pricingObj {
             mrp
             price

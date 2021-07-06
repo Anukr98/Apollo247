@@ -217,6 +217,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const slotsInput = props.navigation.getParam('slotsInput');
   const selectedTimeSlot = props.navigation.getParam('selectedTimeSlot');
   const showPaidPopUp = props.navigation.getParam('showPaidPopUp');
+  const selectedAddr = props.navigation.getParam('selectedAddress');
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   var slotBookedArray = ['slot', 'already', 'booked', 'select a slot'];
 
@@ -232,7 +233,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
   const [date, setDate] = useState<Date>(new Date());
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
-  const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
+  // const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
   const addressText = isModifyFlow
     ? formatAddressWithLandmark(modifiedOrder?.patientAddressObj) || ''
     : selectedAddr
@@ -1475,11 +1476,15 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     }
   }
 
+  //check here
   const disableProceedToPay = !(isModifyFlow
-    ? cartItems?.length > 0 && modifiedOrder?.slotId && modifiedOrder?.areaId && isHcApiCalled
-    : cartItems?.length > 0 &&
+    ? patientCartItems?.length > 0 &&
+      modifiedOrder?.slotId &&
+      modifiedOrder?.areaId &&
+      isHcApiCalled
+    : patientCartItems?.length > 0 &&
       isHcApiCalled &&
-      !!(deliveryAddressId && diagnosticSlot && diagnosticSlot?.slotStartTime) &&
+      !!(selectedAddr && diagnosticSlot && diagnosticSlot?.slotStartTime) &&
       (uploadPrescriptionRequired
         ? physicalPrescriptions.length > 0 || ePrescriptions.length > 0
         : true));
@@ -1487,8 +1492,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const renderTestProceedBar = () => {
     const showTime = isModifyFlow
       ? modifiedOrder?.areaId && modifiedOrder?.slotDateTimeInUTC
-      : deliveryAddressId;
-    return cartItems?.length > 0 ? (
+      : selectedAddr;
+
+    return patientCartItems?.length > 0 ? (
       <TestProceedBar
         // selectedTimeSlot={selectedTimeSlot} //change the format
         selectedTimeSlot={diagnosticSlot}

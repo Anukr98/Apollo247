@@ -2107,3 +2107,11 @@ export const TimeIcon: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/time.webp')}
   />
 );
+
+export const AlertTriangle: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/alert-triangle.webp')}
+  />
+);
