@@ -184,7 +184,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
       setCirclePlanDetails(data?.APOLLO?.[0]);
       setCircleSubscriptionID(data?.APOLLO?.[0]._id);
-      AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
+      data?.APOLLO?.[0]._id && AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
     } catch (error) {
       CommonBugFender('ConsultRoom_getUserSubscriptionsByStatus', error);
     }

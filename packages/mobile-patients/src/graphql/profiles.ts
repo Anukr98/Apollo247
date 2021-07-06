@@ -4544,6 +4544,19 @@ export const CREATE_ORDER = gql`
   }
 `;
 
+export const UPDATE_ORDER = gql`
+  mutation updateOrderDetails($order_input: OrderInputV2) {
+    updateOrderDetails(order_input: $order_input) {
+      payment_status
+      payment_order_id
+      mobile_token {
+        client_auth_token_expiry
+        client_auth_token
+      }
+    }
+  }
+`;
+
 export const GET_INTERNAL_ORDER = gql`
   query getOrderInternal($order_id: String!) {
     getOrderInternal(order_id: $order_id) {
