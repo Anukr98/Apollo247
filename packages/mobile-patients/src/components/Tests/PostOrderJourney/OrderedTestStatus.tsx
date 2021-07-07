@@ -18,6 +18,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { TestOrderCard } from '@aph/mobile-patients/src/components/ui/TestOrderCard';
 import {
+  downloadDocument,
   g,
   getTestOrderStatusText,
   handleGraphQlError,
@@ -63,6 +64,8 @@ export interface OrderedTestStatusProps extends NavigationScreenProps {}
 export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
+
+  const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
 
   const orderSelected = props.navigation.getParam('selectedOrder');
   const individualItemStatus = props.navigation.getParam('itemLevelStatus');
@@ -376,6 +379,10 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
           order={activeOrder}
           heading=""
           isVisible={displayViewReport}
+          viewReportOrderId={viewReportOrderId}
+          downloadDocument={()=>{
+            downloadDocument
+          }}
           onClose={() => setDisplayViewReport(false)}
           onPressViewReport={() => {
             fetchTestReportResult(activeOrder);
