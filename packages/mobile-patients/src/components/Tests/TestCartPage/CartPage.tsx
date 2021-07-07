@@ -498,6 +498,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           setShowNonServiceableText(true);
         }
       }
+      setLoading?.(false);
     } catch (error) {
       CommonBugFender('AddPatients_getAddressServiceability', error);
       setLoading?.(false);
