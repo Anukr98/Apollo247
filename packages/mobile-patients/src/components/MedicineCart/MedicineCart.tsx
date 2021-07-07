@@ -56,6 +56,7 @@ import {
   getHealthCredits,
   persistHealthCredits,
   getPackageIds,
+  getIsMedicine,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   pinCodeServiceabilityApi247,
@@ -151,7 +152,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     setOrders,
     productDiscount,
     cartPriceNotUpdateRange,
-    uploadPrescriptionRequired
+    uploadPrescriptionRequired,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -732,7 +733,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             specialPrice: Number(couponProducts[index]!.mrp), // special price as coupon product price
             quantity: couponProducts[index]!.quantity,
             prescriptionRequired: medicineDetails.is_prescription_required == '1',
-            isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
+            isMedicine: getIsMedicine(medicineDetails.type_id?.toLowerCase()) || 0,
             thumbnail: medicineDetails.thumbnail || medicineDetails.image,
             isInStock: !!medicineDetails.is_in_stock,
             maxOrderQty: medicineDetails.MaxOrderQty,
