@@ -299,6 +299,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setPhysicalPrescriptions,
     asyncPincode,
     setAsyncPincode,
+    setIsCircleExpired,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
@@ -1453,6 +1454,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             endDate: data?.APOLLO?.[0]?.end_date,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
+          if (data?.APOLLO?.[0]?.status === 'disabled') {
+            setIsCircleExpired && setIsCircleExpired(true);
+            setNonCircleValues();
+          }
         } else {
           setCircleSubscriptionId && setCircleSubscriptionId('');
           setIsCircleSubscription && setIsCircleSubscription(false);
@@ -1478,6 +1483,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       setPageLoading!(false);
       CommonBugFender('ConsultRoom_GetSubscriptionsOfUserByStatus', error);
     }
+  };
+
+  const setNonCircleValues = () => {
+    AsyncStorage.setItem('isCircleMember', 'no');
+    AsyncStorage.removeItem('circleSubscriptionId');
+    setCircleSubscriptionId && setCircleSubscriptionId('');
+    setIsCircleSubscription && setIsCircleSubscription(false);
+    setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
   };
 
   const renderDealsOfTheDay = (title: string, dealsOfTheDay: DealsOfTheDaySection[]) => {
