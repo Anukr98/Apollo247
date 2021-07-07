@@ -1015,7 +1015,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
       setPageLoading!(false);
       if (data) {
-        if (data?.APOLLO?.[0]._id) {
+        if (data?.APOLLO?.[0]._id && data?.APOLLO?.[0]?.status !== 'disabled') {
           AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
           setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
           setIsCircleSubscription && setIsCircleSubscription(true);
@@ -2324,7 +2324,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           )}
         </View>
         <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>
-          {nameFormater(item?.itemTitle, 'default')}
+          {item?.itemTitle}
         </Text>
       </TouchableOpacity>
     );

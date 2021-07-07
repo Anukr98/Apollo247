@@ -738,7 +738,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             ), // (diff of (MRP - discountedPrice) * quantity)
             isPrescriptionNeeded: item.prescriptionRequired ? 1 : 0,
             mou: Number(item.mou),
-            isMedicine: item.isMedicine ? '1' : '0',
+            isMedicine: item.isMedicine,
             couponFree: item?.isFreeCouponProduct ? 1 : 0,
           } as MedicineCartOMSItem;
         }),
