@@ -219,7 +219,8 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
   async function getSlots() {
     //if city - state is null then check from the serviceability api
     var getAddressObject = createPatientAddressObject(
-      isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr
+      isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr,
+      diagnosticServiceabilityData
     );
     // const getPatientObjWithLineItems = createPatientObjLineItems() as (patientObjWithLineItems | null)[];
     const getPatientObjWithLineItems = createPatientObjLineItems() as (patientObjWithLineItems | null)[];

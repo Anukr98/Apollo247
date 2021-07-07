@@ -72,7 +72,8 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   const [isDateAutoSelected, setIsDateAutoSelected] = useState(true);
   const client = useApolloClient();
   const { onSchedule, isVisible, ...attributes } = props;
-  const uniqueSlots = getUniqueTestSlots(slots);
+  const uniqueSlots = getUniqueTestSlots(slots); //removed sorting
+
   const dt = moment(props.slotBooked!).format('YYYY-MM-DD') || null;
   const tm = moment(props.slotBooked!)?.format('hh:mm A') || null; //format changed from hh:mm
   const isSameDate = moment().isSame(moment(date), 'date');
@@ -83,6 +84,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     `${localFormatTestSlot(slotInfo?.slotInfo?.startTime!)}` || ''
   );
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
+  const [newChangedDate, setNewChangedDate] = useState<Date>();
 
   type UniqueSlotType = typeof uniqueSlots[0];
 
@@ -301,7 +303,8 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
                     setSlotInfo(selectedSlot);
                     setPrepaidSlot(item?.slotInfo?.isPaidSlot);
                     setNewSelectedSlot(item?.value);
-                    onSchedule(changedDate!, item, props.date);
+                    props.isReschdedule && setNewChangedDate(changedDate);
+                    props.isReschdedule ? null : onSchedule(changedDate!, item, props.date);
                     // onSchedule(date!, slotInfo!); //if first needs to be selected
                   }}
                   style={[
@@ -433,14 +436,14 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     );
   };
 
-  const isDoneBtnDisabled = !date || !slotInfo;
+  const isDoneBtnDisabled = !newChangedDate || !slotInfo; //!date
 
   const renderBottomButton = (
     <Button
       style={{ margin: 16, marginTop: 5, width: 'auto' }}
       onPress={() => {
         if (!isDoneBtnDisabled) {
-          onSchedule(date!, slotInfo!);
+          onSchedule(newChangedDate!, slotInfo!, new Date()); //date
         }
       }}
       disabled={isDoneBtnDisabled}
@@ -493,7 +496,9 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
             {isPrepaidSlot ? renderPremiumTag() : null}
             {renderSlotSelectionView()}
           </ScrollView>
-          {/* {showInOverlay && dropDownOptions.length ? renderBottomButton : null} */}
+          {showInOverlay && props.isReschdedule && dropDownOptions?.length
+            ? renderBottomButton
+            : null}
           {showSpinner && props.isReschdedule && <Spinner />}
         </View>
       </>

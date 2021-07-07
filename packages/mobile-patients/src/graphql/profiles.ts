@@ -5534,6 +5534,8 @@ export const GET_DIAGNOSTIC_ORDERSLIST_BY_PARENT_ORDER_ID = gql`
         patientObj {
           firstName
           lastName
+          gender
+          dateOfBirth
         }
         diagnosticOrderLineItems {
           id

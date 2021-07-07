@@ -400,7 +400,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
                               onPress={() => _onPressMore(item, lineItems)}
                               style={{}}
                             >
-                              <Text style={styles.moreText}>+ {remainingItems} More</Text>
+                              <Text style={styles.moreText}>+ {remainingItems} MORE</Text>
                             </TouchableOpacity>
                           )}
                         </View>
@@ -441,7 +441,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
               <Text style={styles.testName}>{nameFormater(items?.itemName, 'title')}</Text>
               {lineItems?.length - 1 == index && (
                 <TouchableOpacity onPress={() => _onPressLess(item, lineItems)} style={{}}>
-                  <Text style={styles.moreText}> Less</Text>
+                  <Text style={styles.moreText}> LESS</Text>
                 </TouchableOpacity>
               )}
             </View>

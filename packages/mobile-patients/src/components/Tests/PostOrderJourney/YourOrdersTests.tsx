@@ -31,13 +31,13 @@ import {
   BackHandler,
   Text,
   Modal,
+  Dimensions,
 } from 'react-native';
 import {
   AlertTriangle,
   Down,
   DownO,
   InfoIconRed,
-  TriangleGreyBulletPoint,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NavigationScreenProps } from 'react-navigation';
 import {
@@ -60,6 +60,7 @@ import {
   navigateToScreenWithEmptyStack,
   aphConsole,
   isSmallDevice,
+  extractPatientDetails,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DisabledTickIcon, TickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
@@ -105,6 +106,8 @@ import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests
 import { getDiagnosticOrdersListByParentOrderID_getDiagnosticOrdersListByParentOrderID_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByParentOrderID';
 
 type orderList = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList;
+
+const screenHeight = Dimensions.get('window').height;
 export interface YourOrdersTestProps extends NavigationScreenProps {
   showHeader?: boolean;
 }
@@ -157,6 +160,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     | (getDiagnosticOrdersListByParentOrderID_getDiagnosticOrdersListByParentOrderID_ordersList | null)[]
     | null
   >([]);
+  const [selectedTestArray, setSelectedTestArray] = useState([] as any);
 
   const [refundStatusArr, setRefundStatusArr] = useState<any>(null);
   const [selectedOrder, setSelectedOrder] = useState<orderList>();
@@ -807,6 +811,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           itemId={orderItemId}
           slotBooked={selectedOrder?.slotDateTimeInUTC}
           onSchedule={(date1: Date, slotInfo: TestSlot, currentDate: Date | undefined) => {
+            console.log({ date1 });
+            console.log({ slotInfo });
+            console.log({ currentDate });
             rescheduleDate = date1; //whatever date has been selected
             rescheduleSlotObject = {
               internalSlots: slotInfo?.slotInfo?.internalSlots!,
@@ -860,7 +867,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         <View style={{ flex: 1 }}>
           <TouchableOpacity style={{ flex: 1 }} onPress={() => onPressCloseOverlay()}>
             <SafeAreaView style={[styles.overlaySafeArea, styles.overlayTouch]}>
-              <View style={styles.overlayContainer}>
+              <View
+                style={[
+                  styles.overlayContainer,
+                  showMultiUhidOption ? { maxHeight: screenHeight / 1.5 } : { flex: 1 },
+                ]}
+              >
                 <View>
                   {showRescheduleOptions && renderRescheduleCancelOptions()}
                   {showMultiUhidOption &&
@@ -879,9 +891,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const renderMultiUhidMessage = () => {
-    const count = !!multipleOrdersList && multipleOrdersList?.length;
+    const count = !!multipleOrdersList && multipleOrdersList?.length!;
     return (
-      <View style={{ margin: 16 }}>
+      <View style={styles.multiUhidView}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <AlertTriangle style={{ height: 27, width: 27, resizeMode: 'contain' }} />
           <Text style={styles.orangeText}>{count} orders will be Rescheduled</Text>
@@ -891,61 +903,70 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             The following orders will be rescheduled along with the current order
           </Text>
         </View>
-        {!!count &&
-          multipleOrdersList?.map((item, index) => {
-            return renderPatientTestView(item, count, index);
-          })}
-        <View style={styles.buttonView}>
-          <Button
-            title={'CONTINUE'}
-            style={styles.buttonStyle}
-            disabled={false}
-            onPress={() => _onPressMultiUhidContinue()}
-          />
-        </View>
+        <FlatList
+          bounces={false}
+          data={multipleOrdersList}
+          extraData={selectedPaitentId}
+          keyExtractor={(_, index) => `${index}`}
+          renderItem={({ item, index }) => renderList(item, index, count)}
+        />
+        <Button
+          title={'CONTINUE'}
+          style={styles.buttonStyle}
+          disabled={false}
+          onPress={() => _onPressMultiUhidContinue()}
+        />
       </View>
+    );
+  };
+
+  const renderList = (item: any, index: number, count: number) => {
+    return (
+      <TouchableOpacity onPress={() => {}} style={{}}>
+        {renderPatientTestView(item, count, index)}
+      </TouchableOpacity>
     );
   };
 
   const renderPatientTestView = (item: any, count: number, index: number) => {
-    const patientName = nameFormater(
-      `${item?.patientObj?.firstName} ${item?.patientObj?.lastName}`,
-      'title'
-    );
-    const salutation = !!item?.patientObj?.gender
-      ? item?.patientObj?.gender == Gender.MALE
-        ? 'Mr.'
-        : item?.patientObj?.gender == Gender.FEMALE
-        ? 'Ms.'
-        : ''
-      : '';
-    const remainingItems = item?.diagnosticOrderLineItem?.length - 2;
+    const { patientName, patientSalutation } = extractPatientDetails(item?.patientObj);
+    const remainingItems = item?.diagnosticOrderLineItems?.length - 2;
     return (
       <View style={{ marginTop: 2 }}>
         <Text style={{ ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18) }}>
-          {salutation} {patientName}
+          {patientSalutation} {nameFormater(patientName, 'title')}
         </Text>
         <View style={[styles.itemsView]}>
-          {item?.diagnosticOrderLineItems?.map((lineItems: any) => {
-            return renderTestName(lineItems, remainingItems);
-          })}
+          {remainingItems > 0 &&
+            item?.diagnosticOrderLineItems?.map((lineItems: any, index: number) => {
+              return renderTestName(lineItems, remainingItems, item?.displayId, index);
+            })}
         </View>
-        {count - 1 == index ? null : <Spearator />}
+        {count - 1 == index ? null : <Spearator style={{ marginBottom: 4 }} />}
       </View>
     );
   };
 
-  const renderTestName = (lineItems: any, remainingItems: number) => {
+  const renderTestName = (
+    lineItems: any,
+    remainingItems: number,
+    displayId: number,
+    index: number
+  ) => {
     return (
-      <View style={{ flexDirection: 'row' }}>
-        <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
-        <Text style={styles.testName}>{nameFormater(lineItems?.itemName, 'title')}</Text>
-        {remainingItems > 2 && (
-          <TouchableOpacity onPress={() => {}} style={{}}>
-            <Text style={styles.moreText}>+ {remainingItems} More</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+      <>
+        {
+          <View style={{ flexDirection: 'row' }}>
+            <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
+            <Text style={styles.testName}>{nameFormater(lineItems?.itemName, 'title')}</Text>
+            {/* {remainingItems > 0 && (
+              <TouchableOpacity onPress={() => {}} style={{}}>
+                <Text style={styles.moreText}>+ {remainingItems} More</Text>
+              </TouchableOpacity>
+            )} */}
+          </View>
+        }
+      </>
     );
   };
 
@@ -1751,8 +1772,7 @@ const styles = StyleSheet.create({
   },
   overlaySafeArea: { flex: 1, backgroundColor: colors.CLEAR },
   overlayContainer: {
-    backgroundColor: 'white',
-    flex: 1,
+    backgroundColor: colors.WHITE,
     borderWidth: 1,
     borderRadius: 8,
     borderColor: 'transparent',
@@ -1913,12 +1933,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   itemsView: {
-    backgroundColor: '#F9F9F9',
+    backgroundColor: colors.DEFAULT_BACKGROUND_COLOR,
     margin: 8,
     padding: 8,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#F9F9F9',
+    borderColor: colors.DEFAULT_BACKGROUND_COLOR,
   },
   moreText: {
     ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW, 1, 18),
@@ -1939,5 +1959,12 @@ const styles = StyleSheet.create({
   orangeText: {
     ...theme.viewStyles.text('SB', 13, '#EF7A0E', 1, 18),
     marginHorizontal: 6,
+  },
+  multiUhidView: {
+    backgroundColor: '#F7F8F5',
+    padding: 10,
+    borderRadius: 10,
+    elevation: 2,
+    marginBottom: 250,
   },
 });

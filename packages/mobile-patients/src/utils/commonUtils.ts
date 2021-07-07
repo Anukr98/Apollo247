@@ -358,7 +358,7 @@ export const createAddressObject = (addressObject: any) => {
 
 }
 
-export const createPatientAddressObject = (addressObject : any) =>{
+export const createPatientAddressObject = (addressObject : any, serviceabilityObject: any) =>{
   return {
       addressLine1: addressObject?.addressLine1,
       addressLine2: addressObject?.addressLine2,
@@ -366,8 +366,8 @@ export const createPatientAddressObject = (addressObject : any) =>{
       landmark: addressObject?.landmark,
       latitude: Number(addressObject?.latitude! || 0),
       longitude: Number(addressObject?.longitude! || 0),
-      city: addressObject?.city,
-      state: addressObject?.state,
+      city: addressObject?.city || serviceabilityObject?.city,
+      state: addressObject?.state || serviceabilityObject?.state,
       patientAddressID: addressObject?.id,
     } as patientAddressObj;
 }
