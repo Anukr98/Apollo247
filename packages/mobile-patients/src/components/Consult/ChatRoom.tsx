@@ -3945,6 +3945,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       medicines: (medPrescription || []).map((item: any) => item!.medicineName).join(', '),
       uploadedUrl: docUrl,
     } as EPrescription;
+    postWebEngageEvent(WebEngageEventName.ORDER_MEDICINES_IN_CONSULT_ROOM, {
+      ...UserInfo,
+      'Order Type': isCartOrder ? 'Cart' : 'Non-Cart',
+    });
 
     if (isCartOrder) {
       try {
@@ -3987,10 +3991,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     props.navigation.navigate(AppRoutes.UploadPrescription, {
       ePrescriptionsProp: [presToAdd],
       type: 'E-Prescription',
-    });
-    postWebEngageEvent(WebEngageEventName.ORDER_MEDICINES_IN_CONSULT_ROOM, {
-      ...UserInfo,
-      'Order Type': isCartOrder ? 'Cart' : 'Non-Cart',
     });
   };
 
