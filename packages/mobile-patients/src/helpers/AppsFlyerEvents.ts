@@ -306,6 +306,7 @@ export interface AppsFlyerEvents {
     'Cart ID'?: string | number; // Optional
     'Service Area': 'Pharmacy' | 'Diagnostic';
     'Circle discount': number;
+    "Circle user": 'Yes' | 'No';
   };
   [AppsFlyerEventName.PRODUCT_PAGE_VIEWED]: {
     source: ProductPageViewedSource;

@@ -1159,12 +1159,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         return JSON.parse(config.getString(key));
       });
 
-      setAppConfig(
-        'Cancel_Threshold_Pre_Vaccination',
-        'Cancel_Threshold_Pre_Vaccination',
-        (key) => {
-          config.getNumber(key);
-        }
+      setAppConfig('Cancel_Threshold_Pre_Vaccination', 'Cancel_Threshold_Pre_Vaccination', (key) =>
+        config.getNumber(key)
       );
 
       setAppConfig('Helpdesk_Chat_Confim_Msg', 'Helpdesk_Chat_Confim_Msg', (key) =>

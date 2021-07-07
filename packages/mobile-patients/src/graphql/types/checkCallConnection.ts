@@ -11,7 +11,7 @@ import { CheckCallConnectionInput } from "./globalTypes";
 
 export interface checkCallConnection_checkCallConnection {
   __typename: "CheckCallConnectionInputOutput";
-  sucess: boolean | null;
+  success: boolean | null;
 }
 
 export interface checkCallConnection {

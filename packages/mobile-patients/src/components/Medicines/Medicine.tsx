@@ -103,6 +103,7 @@ import {
   productsThumbnailUrl,
   setWebEngageScreenNames,
   setAsyncPharmaLocation,
+  getIsMedicine,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -298,6 +299,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setPhysicalPrescriptions,
     asyncPincode,
     setAsyncPincode,
+    setIsCircleExpired,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
@@ -1452,6 +1454,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             endDate: data?.APOLLO?.[0]?.end_date,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
+          if (data?.APOLLO?.[0]?.status === 'disabled') {
+            setIsCircleExpired && setIsCircleExpired(true);
+            setNonCircleValues();
+          }
         } else {
           setCircleSubscriptionId && setCircleSubscriptionId('');
           setIsCircleSubscription && setIsCircleSubscription(false);
@@ -1477,6 +1483,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       setPageLoading!(false);
       CommonBugFender('ConsultRoom_GetSubscriptionsOfUserByStatus', error);
     }
+  };
+
+  const setNonCircleValues = () => {
+    AsyncStorage.setItem('isCircleMember', 'no');
+    AsyncStorage.removeItem('circleSubscriptionId');
+    setCircleSubscriptionId && setCircleSubscriptionId('');
+    setIsCircleSubscription && setIsCircleSubscription(false);
+    setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
   };
 
   const renderDealsOfTheDay = (title: string, dealsOfTheDay: DealsOfTheDaySection[]) => {
@@ -1773,7 +1787,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             : special_price
           : undefined,
         prescriptionRequired: is_prescription_required == '1',
-        isMedicine: (type_id || '').toLowerCase() == 'pharma',
+        isMedicine: getIsMedicine(type_id?.toLowerCase()) || 0,
         quantity: Number(1),
         thumbnail: thumbnail,
         isInStock: true,

@@ -2120,7 +2120,7 @@ export const formatToCartItem = ({
     mou: mou,
     quantity: 1,
     prescriptionRequired: is_prescription_required == '1',
-    isMedicine: (type_id || '').toLowerCase() == 'pharma',
+    isMedicine: getIsMedicine(type_id?.toLowerCase()) || 0,
     thumbnail: thumbnail || image,
     maxOrderQty: MaxOrderQty,
     productType: type_id,
@@ -2975,4 +2975,11 @@ export const downloadDocument = (fileUrl: string = '', type: string = 'applicati
     });
 
     return viewReportOrderId;
+export const getIsMedicine = (typeId: string) => {
+  const medicineType = {
+    fmcg: 0,
+    pharma: 1,
+    pl: 2,
+  };
+  return medicineType[typeId] || 0;
 };
