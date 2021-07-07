@@ -109,6 +109,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     setCartPagePopulated,
     removeCartItem,
     updateCartItem,
+    updatePatientCartItem,
     setCartItems,
     selectedPatient,
     deliveryAddressCityId,
@@ -402,7 +403,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
               isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
             });
 
-            updateItems({
+            updatePatientCartItem?.({
               id: results?.[isItemInCart]
                 ? String(results?.[isItemInCart]?.itemId)
                 : String(cartItem?.id),
@@ -849,24 +850,24 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     );
   };
 
-  function updateItems(itemUpdates: DiagnosticsCartItem) {
-    const newPatientCartItem = patientCartItems?.map((patientItems: DiagnosticPatientCartItem) => {
-      const findLineItemsIndex = patientItems?.cartItems?.findIndex(
-        (lineItems: DiagnosticsCartItem) => lineItems?.id === itemUpdates?.id
-      );
-      if (findLineItemsIndex !== -1) {
-        patientItems.cartItems[findLineItemsIndex] = itemUpdates;
-        const patientLineItemObj: DiagnosticPatientCartItem = {
-          patientId: patientItems?.patientId,
-          cartItems: patientItems?.cartItems,
-        };
-        return patientLineItemObj;
-      } else {
-        return patientItems;
-      }
-    });
-    setPatientCartItems?.([...newPatientCartItem!]);
-  }
+  // function updateItems(itemUpdates: DiagnosticsCartItem) {
+  //   const newPatientCartItem = patientCartItems?.map((patientItems: DiagnosticPatientCartItem) => {
+  //     const findLineItemsIndex = patientItems?.cartItems?.findIndex(
+  //       (lineItems: DiagnosticsCartItem) => lineItems?.id === itemUpdates?.id
+  //     );
+  //     if (findLineItemsIndex !== -1) {
+  //       patientItems.cartItems[findLineItemsIndex] = itemUpdates;
+  //       const patientLineItemObj: DiagnosticPatientCartItem = {
+  //         patientId: patientItems?.patientId,
+  //         cartItems: patientItems?.cartItems,
+  //       };
+  //       return patientLineItemObj;
+  //     } else {
+  //       return patientItems;
+  //     }
+  //   });
+  //   setPatientCartItems?.([...newPatientCartItem!]);
+  // }
 
   const fetchPackageDetails = (
     itemIds: string | number[],
@@ -949,7 +950,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                   isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
                 });
                 //put here...
-                updateItems({
+                updatePatientCartItem?.({
                   id: item?.itemId?.toString() || product?.[0]?.id!,
                   name: item?.itemName!,
                   price: price,

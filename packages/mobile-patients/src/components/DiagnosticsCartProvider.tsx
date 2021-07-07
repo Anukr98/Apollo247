@@ -83,9 +83,7 @@ export interface DiagnosticsCartContextProps {
   setPatientCartItems: ((items: DiagnosticPatientCartItem[]) => void) | null;
   addPatientCartItem: ((patientId: string, cartItems: DiagnosticsCartItem[]) => void) | null;
   removePatientCartItem: ((patientId: string, itemId?: DiagnosticsCartItem['id']) => void) | null;
-  updatePatientCartItem:
-    | ((itemUpdates: Partial<DiagnosticsCartItem> & { id: DiagnosticsCartItem['id'] }) => void)
-    | null;
+  updatePatientCartItem: ((itemUpdates: any) => void) | null;
 
   cartTotal: number;
   totalPriceExcludingAnyDiscounts: number;
@@ -611,13 +609,17 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         (lineItems: DiagnosticsCartItem) => lineItems?.id === itemUpdates?.id
       );
       if (findLineItemsIndex !== -1) {
-        patientItems.cartItems[findLineItemsIndex] = {
-          ...patientItems.cartItems[findLineItemsIndex],
-          ...itemUpdates,
+        patientItems.cartItems[findLineItemsIndex] = itemUpdates;
+        const patientLineItemObj: DiagnosticPatientCartItem = {
+          patientId: patientItems?.patientId,
+          cartItems: patientItems?.cartItems,
         };
+        return patientLineItemObj;
+      } else {
+        return patientItems;
       }
     });
-    setPatientCartItems([...newPatientCartItem!]);
+    setPatientCartItems?.([...newPatientCartItem!]);
   };
 
   const filterPatientCartItem = patientCartItems?.map((item: DiagnosticPatientCartItem) => {

@@ -53,6 +53,8 @@ import {
   SCREEN_NAMES,
   TimelineWizard,
 } from '@aph/mobile-patients/src/components/Tests/components/TimelineWizard';
+import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const screenHeight = Dimensions.get('window').height;
 
@@ -65,6 +67,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   const {
     setCartItems,
     updateCartItem,
+    updatePatientCartItem,
     cartItems,
     isDiagnosticCircleSubscription,
     selectedPatient,
@@ -292,6 +295,33 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
                 results?.[isItemInCart]?.inclusions == null
                   ? [Number(results?.[isItemInCart]?.itemId)]
                   : results?.[isItemInCart]?.inclusions,
+              isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+            });
+
+            updatePatientCartItem?.({
+              id: results?.[isItemInCart]
+                ? String(results?.[isItemInCart]?.itemId)
+                : String(cartItem?.id),
+              name: results?.[isItemInCart]?.itemName || '',
+              price: price,
+              specialPrice: specialPrice || price,
+              circlePrice: circlePrice,
+              circleSpecialPrice: circleSpecialPrice,
+              discountPrice: discountPrice,
+              discountSpecialPrice: discountSpecialPrice,
+              mou:
+                results?.[isItemInCart]?.inclusions !== null
+                  ? results?.[isItemInCart]?.inclusions.length
+                  : 1,
+              thumbnail: cartItem?.thumbnail,
+              groupPlan: planToConsider?.groupPlan,
+              packageMrp: results?.[isItemInCart]?.packageCalculatedMrp,
+              inclusions:
+                results?.[isItemInCart]?.inclusions == null
+                  ? [Number(results?.[isItemInCart]?.itemId)]
+                  : results?.[isItemInCart]?.inclusions,
+              collectionMethod: TEST_COLLECTION_TYPE.HC,
+              isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
             });
           }
         }
