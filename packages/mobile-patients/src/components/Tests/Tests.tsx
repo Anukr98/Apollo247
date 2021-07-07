@@ -3,8 +3,6 @@ import {
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import stripHtml from 'string-strip-html';
-import Share from 'react-native-share';
-import RNFetchBlob from 'rn-fetch-blob';
 import {
   DiagnosticsCartItem,
   useDiagnosticsCart,

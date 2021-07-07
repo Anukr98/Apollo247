@@ -5,8 +5,6 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import Share from 'react-native-share';
-import RNFetchBlob from 'rn-fetch-blob';
 import moment from 'moment';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';

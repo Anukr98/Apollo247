@@ -12,8 +12,6 @@ import {
   GET_PHLOBE_DETAILS,
   DIAGNOSITC_EXOTEL_CALLING,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import Share from 'react-native-share';
-import RNFetchBlob from 'rn-fetch-blob';
 import {
   getDiagnosticOrdersListByMobile,
   getDiagnosticOrdersListByMobileVariables,

@@ -13,8 +13,6 @@ import {
   OrderTrackerSmallIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import _ from 'lodash';
-import Share from 'react-native-share';
-import RNFetchBlob from 'rn-fetch-blob';
 import {
   DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS,
   DIAGNOSTIC_ORDER_FAILED_STATUS,
