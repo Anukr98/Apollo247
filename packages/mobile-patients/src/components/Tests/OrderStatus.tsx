@@ -20,6 +20,7 @@ import {
   navigateToHome,
   nameFormater,
   isSmallDevice,
+  extractPatientDetails,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -35,17 +36,25 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { getDiagnosticRefundOrders } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { useApolloClient } from 'react-apollo-hooks';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 export interface OrderStatusProps extends NavigationScreenProps {}
 
 export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
+  const { apisToCall } = useAppCommonData();
+  const {
+    isDiagnosticCircleSubscription,
+    clearDiagnoticCartInfo,
+    cartItems,
+  } = useDiagnosticsCart();
+  const { circleSubscriptionId } = useShoppingCart();
+  const client = useApolloClient();
+  const { setLoading } = useUIElements();
+
   const modifiedOrderDetails = props.navigation.getParam('isModify');
   const orderDetails = props.navigation.getParam('orderDetails');
   const eventAttributes = props.navigation.getParam('eventAttributes');
   const isCOD = props.navigation.getParam('isCOD');
   const paymentId = props.navigation.getParam('paymentId');
-  const { currentPatient } = useAllCurrentPatients();
   //check for modify
   const pickupDate = !!modifiedOrderDetails
     ? moment(modifiedOrderDetails?.slotDateTimeInUTC)?.format('DD MMM')
@@ -63,21 +72,12 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     ? modifiedOrderDetails?.displayId
     : orderDetails?.displayId;
   const showCartSaving = orderCartSaving > 0 && orderDetails?.cartHasAll;
-  const { apisToCall } = useAppCommonData();
-  const {
-    isDiagnosticCircleSubscription,
-    clearDiagnoticCartInfo,
-    cartItems,
-  } = useDiagnosticsCart();
-  const { circleSubscriptionId } = useShoppingCart();
-
-  const client = useApolloClient();
-  const { setLoading } = useUIElements();
   const savings = isDiagnosticCircleSubscription
     ? Number(orderCartSaving) + Number(orderCircleSaving)
     : orderCartSaving;
   const couldBeSaved =
     !isDiagnosticCircleSubscription && orderCircleSaving > 0 && orderCircleSaving > orderCartSaving;
+
   const moveToHome = () => {
     // use apiCallsEnum values here in order to make that api call in home screen
     apisToCall.current = [
@@ -88,11 +88,11 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     ];
     navigateToHome(props.navigation);
   };
+
   const [apiOrderDetails, setApiOrderDetails] = useState([]);
   const [timeDate, setTimeDate] = useState<string>('');
-  const [showMore, setShowMore] = useState<boolean>(false);
-  const [selectedItem, setSelectedItem] = useState('');
   const [isSingleUhid, setIsSingleUhid] = useState<boolean>(false);
+  const [showMoreArray, setShowMoreArray] = useState([] as any);
 
   const moveToMyOrders = () => {
     props.navigation.popToTop({ immediate: true }); //if not added, stack was getting cleared.
@@ -105,7 +105,6 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     setLoading?.(true);
     try {
       let response: any = await getDiagnosticRefundOrders(client, paymentId);
-      console.log({ response });
       if (response?.data?.data?.getOrderInternal) {
         const getResponse = response?.data?.data?.getOrderInternal?.internal_orders;
         const getSlotDateTime =
@@ -376,33 +375,21 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
               const lineItemsLength = orders?.diagnosticOrderLineItems?.length;
               const lineItems = orders?.diagnosticOrderLineItems;
               const remainingItems = !!lineItemsLength && lineItemsLength - 1;
-              const patientName = `${orders?.patientObj?.firstName} ${orders?.patientObj?.lastName}`;
-              const salutation = !!orders?.patientObj?.gender
-                ? orders?.patientObj?.gender == Gender.MALE
-                  ? 'Mr.'
-                  : orders?.patientobj?.gender == Gender.FEMALE
-                  ? 'Ms.'
-                  : ''
-                : '';
+              const { patientName, patientSalutation } = extractPatientDetails(orders?.patientObj);
 
               return (
                 <>
-                  <View
-                    style={{
-                      backgroundColor: colors.WHITE,
-                      padding: 10,
-                    }}
-                  >
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <View style={styles.outerView}>
+                    <View style={styles.patientsView}>
                       <Text style={styles.patientName}>
-                        {nameFormater(`${salutation} ${patientName}`, 'title')}
+                        {nameFormater(`${patientSalutation} ${patientName}`, 'title')}
                       </Text>
 
                       {!!displayId && <Text style={styles.pickupDate}>#{displayId}</Text>}
                     </View>
                     {!!lineItemsLength &&
                       lineItemsLength > 0 &&
-                      (selectedItem == displayId ? null : (
+                      (showMoreArray?.includes(displayId) ? null : (
                         <View style={[styles.itemsView, { flexDirection: 'row' }]}>
                           <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
                           <Text style={styles.testName}>
@@ -418,7 +405,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
                           )}
                         </View>
                       ))}
-                    {selectedItem == displayId && renderMore(item, lineItems)}
+                    {showMoreArray?.includes(displayId) && renderMore(item, lineItems)}
                   </View>
                   <Spearator style={styles.separator} />
                 </>
@@ -434,25 +421,35 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   //define type
   function _onPressMore(item: any, lineItems: any) {
     const displayId = item?.orderDetailsPayment?.ordersList?.[0]?.displayId;
-    setShowMore(true);
-    setSelectedItem(displayId);
+    const array = showMoreArray?.concat(displayId);
+    setShowMoreArray(array);
+  }
+
+  function _onPressLess(item: any, lineItems: any) {
+    const displayId = item?.orderDetailsPayment?.ordersList?.[0]?.displayId;
+    const removeItem = showMoreArray?.filter((id) => id !== displayId);
+    setShowMoreArray(removeItem);
   }
 
   const renderMore = (item: any, lineItems: any) => {
     return (
       <View style={styles.itemsView}>
-        {lineItems?.map((items: any) => {
+        {lineItems?.map((items: any, index: number) => {
           return (
             <View style={{ flexDirection: 'row' }}>
               <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
               <Text style={styles.testName}>{nameFormater(items?.itemName, 'title')}</Text>
+              {lineItems?.length - 1 == index && (
+                <TouchableOpacity onPress={() => _onPressLess(item, lineItems)} style={{}}>
+                  <Text style={styles.moreText}> Less</Text>
+                </TouchableOpacity>
+              )}
             </View>
           );
         })}
       </View>
     );
   };
-
   const renderOrderSummary = () => {
     return (
       <View style={styles.orderSummaryView}>
@@ -724,4 +721,14 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
   },
   timeIconStyle: { height: 20, width: 20, resizeMode: 'contain', marginRight: 6 },
+  patientsView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginLeft: 6,
+    marginRight: 6,
+  },
+  outerView: {
+    backgroundColor: colors.WHITE,
+    padding: 10,
+  },
 });

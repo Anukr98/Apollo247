@@ -402,7 +402,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       .then((data: any) => {
         console.log({ data });
         const cancelResponse = g(data, 'data', 'cancelDiagnosticOrdersv2', 'status');
-        if (!!cancelResponse && (cancelResponse == 'suceess' || cancelResponse === true)) {
+        if (!!cancelResponse && cancelResponse === true) {
           setLoading?.(true);
           setTimeout(() => refetchOrders(), 1000);
           showAphAlert?.({
@@ -681,9 +681,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setLoading?.(true);
     const formattedDate = moment(rescheduleDate || diagnosticSlot?.date).format('YYYY-MM-DD');
     const formatTime = rescheduleSlotObject?.slotStartTime || diagnosticSlot?.slotStartTime;
-
     const dateTimeInUTC = moment(formattedDate + ' ' + formatTime).toISOString();
-    const dateTimeToShow = formattedDate + ', ' + moment(dateTimeInUTC).format('hh:mm A');
+    const dateTimeToShow = formattedDate + ', ' + formatTime;
 
     const comment = '';
     const orderId = !!selectedOrder?.parentOrderId

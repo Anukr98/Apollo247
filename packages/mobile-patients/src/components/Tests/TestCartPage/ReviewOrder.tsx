@@ -1299,8 +1299,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       if (response?.data?.createOrderInternal?.success) {
         //check for webenage
         const orderInfo = {
-          orderId: getOrderDetails?.[0]?.orderId,
-          displayId: getOrderDetails?.[0]?.displayId,
+          orderId: getOrderDetails?.[0]?.orderID,
+          displayId: getOrderDetails?.[0]?.displayID,
           diagnosticDate: date!,
           slotTime: slotTimings!,
           cartSaving: cartSaving,
@@ -1309,7 +1309,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           amount: grandTotal, //actual amount to be payed by customer (topay)
         };
         const eventAttributes = createCheckOutEventAttributes(
-          getOrderDetails?.[0]?.orderId,
+          getOrderDetails?.[0]?.orderID,
           slotStartTime
         );
         setauthToken?.('');
@@ -1319,7 +1319,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         ) {
           //call the process wali api & success page (check for modify Order)
           processModifiyCODOrder(
-            getOrderDetails?.[0]?.orderId,
+            getOrderDetails?.[0]?.orderID,
             grandTotal,
             eventAttributes,
             orderInfo
@@ -1329,7 +1329,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           props.navigation.navigate(AppRoutes.PaymentMethods, {
             paymentId: response?.data?.createOrderInternal?.payment_order_id!,
             amount: grandTotal,
-            orderId: getOrderDetails?.[0]?.orderId, //passed only one
+            orderId: getOrderDetails?.[0]?.orderID, //passed only one
             orderDetails: orderInfo,
             orderResponse: array,
             eventAttributes,

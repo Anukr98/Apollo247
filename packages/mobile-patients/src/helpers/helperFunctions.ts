@@ -2981,3 +2981,23 @@ export  const checkPatientAge = (_selectedPatient: any, fromNewProfile: boolean 
     }
     return false;
   };
+
+export const extractPatientDetails = (patientDetails: any) =>{
+  const patientName = `${patientDetails?.firstName! || ''} ${patientDetails?.lastName! || ''}`;
+  const genderAgeText = `${nameFormater(patientDetails?.gender!, 'title') || ''}, ${
+    patientDetails?.dateOfBirth ? getAge(patientDetails?.dateOfBirth) || '' : ''
+  }`;
+  const patientSalutation = !!patientDetails?.gender
+    ? patientDetails?.gender === Gender.FEMALE
+      ? 'Ms.'
+      : patientDetails?.gender === Gender.MALE
+      ? 'Mr.'
+      : ''
+    : '';
+  
+  return {
+    patientName,
+    genderAgeText,
+    patientSalutation
+  }
+}

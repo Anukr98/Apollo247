@@ -197,7 +197,8 @@ export interface DiagnosticsCartContextProps {
   duplicateItemsArray: [];
   setDuplicateItemsArray: ((items: any | []) => void) | null;
 
-  filterPatientCartItems: DiagnosticPatientCartItem[];
+  filterPatientCartItems: any[];
+  setFilterPatientCartItems: ((items: any[]) => void) | null;
 }
 
 export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>({
@@ -309,6 +310,7 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   duplicateItemsArray: [],
   setDuplicateItemsArray: null,
   filterPatientCartItems: [],
+  setFilterPatientCartItems: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -330,7 +332,6 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const [patientCartItems, _setPatientCartItems] = useState<
     DiagnosticsCartContextProps['patientCartItems']
   >([]);
-
   const [couponDiscount, setCouponDiscount] = useState<
     DiagnosticsCartContextProps['couponDiscount']
   >(0);
@@ -555,12 +556,12 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         (item) => item?.isSelected
       );
       //unselect the patient.
-      if (getSelectedCartItemsForPatient?.length == 0) {
-        removePatientCartItem?.(findPatient?.patientId);
-      } else {
-        patientCartItems[findPatientIndex].cartItems = listOfItems; //just update the list with selected item attribute
-        setPatientCartItems?.(patientCartItems);
-      }
+      // if (getSelectedCartItemsForPatient?.length == 0) {
+      //   removePatientCartItem?.(findPatient?.patientId);
+      // } else {
+      patientCartItems[findPatientIndex].cartItems = listOfItems; //just update the list with selected item attribute
+      setPatientCartItems?.(patientCartItems);
+      // }
     } else {
       const patientCartItemsObj: DiagnosticPatientCartItem = {
         patientId: patientId,
@@ -585,9 +586,14 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
           (item) => Number(item?.id) !== Number(id)
         );
 
-        patientCartItems[findPatientIndex].cartItems = newCartItems; //just update the list with selected item attribute
-        setPatientCartItems?.(patientCartItems);
-        //check for the item passed
+        //if newCart is zero, then simply remove the patient
+        if (newCartItems?.length == 0) {
+          removePatientCartItem?.(patientId);
+        } else {
+          //just update the list with selected item attribute
+          patientCartItems[findPatientIndex].cartItems = newCartItems;
+          setPatientCartItems?.(patientCartItems);
+        }
       } else {
         //direclty remove the entry
         const newCartItems = patientCartItems?.filter((item) => item?.patientId !== patientId);
@@ -614,29 +620,24 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setPatientCartItems([...newPatientCartItem!]);
   };
 
-  const filterPatientCartItems = patientCartItems?.map((item) => {
+  const filterPatientCartItem = patientCartItems?.map((item: DiagnosticPatientCartItem) => {
     let obj = {
       patientId: item?.patientId,
-      cartItems: item?.cartItems?.filter((items) => items?.isSelected == true),
+      cartItems: item?.cartItems?.filter((items: DiagnosticsCartItem) => items?.isSelected == true),
     };
     return obj;
   });
-  const allCartItems = filterPatientCartItems?.map((item) => item?.cartItems)?.flat();
 
-  // const withDiscount = cartItems?.filter(
-  //   (item) => item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
-  // );
+  const [filterPatientCartItems, setFilterPatientCartItems] = useState<
+    DiagnosticsCartContextProps['filterPatientCartItems']
+  >(filterPatientCartItem);
+
+  const allCartItems =
+    !!filterPatientCartItems && filterPatientCartItem?.map((item) => item?.cartItems)?.flat();
 
   const withDiscount = allCartItems?.filter(
     (item: DiagnosticsCartItem) => item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
   );
-
-  // const withAll = cartItems?.filter((item) =>
-  //   isDiagnosticCircleSubscription
-  //     ? item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.ALL
-  //     : item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.CIRCLE ||
-  //       item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
-  // );
 
   const withAll = allCartItems?.filter((item: DiagnosticsCartItem) =>
     isDiagnosticCircleSubscription
@@ -644,70 +645,6 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
       : item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.CIRCLE ||
         item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
   );
-
-  // const discountSaving: DiagnosticsCartContextProps['discountSaving'] = withDiscount?.reduce(
-  //   (currTotal, currItem) =>
-  //     currTotal +
-  //     (currItem?.packageMrp && currItem?.packageMrp > currItem?.discountSpecialPrice!
-  //       ? currItem?.packageMrp! - currItem?.discountSpecialPrice!
-  //       : currItem?.price! - currItem?.discountSpecialPrice!),
-  //   0
-  // );
-  // const normalSaving: DiagnosticsCartContextProps['normalSaving'] = withAll?.reduce(
-  //   (currTotal, currItem) =>
-  //     currTotal +
-  //     (currItem?.packageMrp && currItem?.packageMrp > currItem?.specialPrice!
-  //       ? currItem?.packageMrp! - currItem?.specialPrice!
-  //       : currItem?.price! - currItem?.specialPrice!),
-  //   0
-  // );
-
-  // const cartTotal: DiagnosticsCartContextProps['cartTotal'] = parseFloat(
-  //   cartItems?.reduce((currTotal, currItem) => currTotal + currItem?.price, 0).toFixed(2)
-  // );
-
-  //this takes packageMrp if exists or mrp
-  // const totalPriceExcludingAnyDiscounts: DiagnosticsCartContextProps['totalPriceExcludingAnyDiscounts'] = parseFloat(
-  //   cartItems
-  //     ?.reduce(
-  //       (currTotal, currItem) =>
-  //         currTotal +
-  //         (currItem?.packageMrp! > currItem?.price ? currItem?.packageMrp! : currItem?.price),
-  //       0
-  //     )
-  //     .toFixed(2)
-  // );
-
-  // const cartSaving: DiagnosticsCartContextProps['cartTotal'] = discountSaving + normalSaving;
-  // const circleSaving: DiagnosticsCartContextProps['circleSaving'] = parseFloat(
-  //   cartItems
-  //     ?.reduce(
-  //       (currTotal, currItem) =>
-  //         currTotal +
-  //         (currItem?.groupPlan == 'CIRCLE'
-  //           ? (currItem?.packageMrp! > currItem?.circlePrice!
-  //               ? currItem?.packageMrp!
-  //               : currItem?.circlePrice!) - currItem?.circleSpecialPrice!
-  //           : 0 || 0),
-  //       0
-  //     )
-  //     .toFixed(2)
-  // );
-
-  // const deliveryCharges =
-  //   deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP ? 0 : cartTotal > 0 ? modifyHcCharges : 0;
-
-  // //carttotal
-  // const grandTotal = parseFloat(
-  //   (
-  //     totalPriceExcludingAnyDiscounts +
-  //     deliveryCharges +
-  //     couponDiscount -
-  //     cartSaving -
-  //     (isDiagnosticCircleSubscription ? circleSaving : 0) +
-  //     (!!distanceCharges ? distanceCharges : 0)
-  //   ).toFixed(2)
-  // );
 
   const discountSaving: DiagnosticsCartContextProps['discountSaving'] = withDiscount?.reduce(
     (currTotal: number, currItem: DiagnosticsCartItem) =>
@@ -983,6 +920,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         duplicateItemsArray,
         setDuplicateItemsArray,
         filterPatientCartItems,
+        setFilterPatientCartItems,
       }}
     >
       {props.children}

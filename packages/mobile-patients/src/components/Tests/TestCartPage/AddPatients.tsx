@@ -1,15 +1,7 @@
 import { PlusIconWhite } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import {
-  BackHandler,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  Dimensions,
-  Alert,
-} from 'react-native';
+import { BackHandler, StyleSheet, Text, TouchableOpacity, View, Dimensions } from 'react-native';
 import {
   formatAddressToLocation,
   g,
@@ -69,15 +61,12 @@ type Address = savePatientAddress_savePatientAddress_patientAddress;
 export interface AddPatientsProps extends NavigationScreenProps {}
 
 export const AddPatients: React.FC<AddPatientsProps> = (props) => {
-  const { currentPatient, setCurrentPatientId } = useAllCurrentPatients();
-  //need to handle modify flow once.
+  const { currentPatient, setCurrentPatientId, allCurrentPatients } = useAllCurrentPatients();
   const {
     setCartItems,
-    removeCartItem,
     updateCartItem,
     cartItems,
     isDiagnosticCircleSubscription,
-    modifiedOrder,
     selectedPatient,
     showSelectedPatient,
     patientCartItems,
@@ -85,6 +74,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     setDeliveryAddressCityId,
     addresses,
     setAddresses: setTestAddress,
+    addPatientCartItem,
   } = useDiagnosticsCart();
 
   const { setAddresses } = useShoppingCart();
@@ -95,8 +85,12 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     setDiagnosticLocation,
     setLocationDetails,
   } = useAppCommonData();
-  const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
+
   const client = useApolloClient();
+
+  const patientListToShow = allCurrentPatients?.filter(
+    (item: any) => !!item?.id && item?.id != '+ADD MEMBER'
+  );
 
   const { setLoading, showAphAlert, hideAphAlert, loading } = useUIElements();
   const [isServiceable, setIsServiceable] = useState<boolean>(false);
@@ -104,16 +98,18 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      console.log('focused');
       setIsFocus(true);
       BackHandler.addEventListener('hardwareBackPress', handleBack);
     });
-    const willBlur = props.navigation.addListener('willBlur', (payload) => {
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+      console.log('blur');
       setIsFocus(false);
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     });
     return () => {
       didFocus && didFocus.remove();
-      willBlur && willBlur.remove();
+      didBlur && didBlur.remove();
     };
   }, []);
 
@@ -420,7 +416,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   const onNewProfileAdded = (newPatient: any) => {
     if (newPatient?.profileData) {
       if (!checkPatientAge(newPatient?.profileData, true)) {
-        showSelectedPatient?.(newPatient?.profileData);
+        addPatientCartItem?.(newPatient?.id, cartItems);
         changeCurrentProfile(newPatient?.profileData, false);
       }
     }
@@ -469,17 +465,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     );
   };
 
-  function _selectedPatientAction(item: any) {
-    const isInValidUser = checkPatientAge(item);
-    if (isInValidUser) {
-      showSelectedPatient?.(null);
-    } else {
-      showSelectedPatient?.(item);
-    }
-  }
-
   const renderPatientsList = () => {
-    console.log({ isFocus });
     return (
       <View style={styles.patientListView}>
         <PatientList
@@ -487,7 +473,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
           isCircleSubscribed={isDiagnosticCircleSubscription}
           patientSelected={selectedPatient}
           isFocus={isFocus}
-          // onPressSelectedPatient={(item) => _selectedPatientAction(item)}
+          patientListToShow={patientListToShow}
         />
       </View>
     );
@@ -504,14 +490,17 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     }
   }
 
+  const CTAdisabled = !(
+    !!patientCartItems &&
+    patientCartItems?.length > 0 &&
+    cartItems?.length > 0 &&
+    isServiceable
+  );
+
   const renderStickyBottom = () => {
     return (
       <StickyBottomComponent>
-        <Button
-          title={'CONTINUE'}
-          onPress={() => _navigateToCartPage()}
-          disabled={!(!!patientCartItems && patientCartItems?.length > 0 && isServiceable)}
-        />
+        <Button title={'CONTINUE'} onPress={() => _navigateToCartPage()} disabled={CTAdisabled} />
       </StickyBottomComponent>
     );
   };

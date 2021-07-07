@@ -1,9 +1,8 @@
 import {
-  getAge,
   nameFormater,
   checkPatientAge,
+  extractPatientDetails,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -14,12 +13,8 @@ import {
   MinusPatientCircleIcon,
   UnCheck,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
-import {
-  DiagnosticPatientCartItem,
-  DiagnosticsCartItem,
-} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { diagnosticsDisplayPrice } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
@@ -30,13 +25,13 @@ interface PatientListProps {
   itemsInCart: DiagnosticsCartItem[] | any;
   isCircleSubscribed: boolean;
   patientSelected: any;
+  patientListToShow: any;
   onPressSelectedPatient?: (item: any) => void;
   isFocus: boolean;
 }
 
 export const PatientList: React.FC<PatientListProps> = (props) => {
-  const { isCircleSubscribed, isFocus } = props;
-  const { allCurrentPatients } = useAllCurrentPatients();
+  const { isCircleSubscribed, patientListToShow, isFocus } = props;
   const {
     patientCartItems,
     cartItems,
@@ -45,10 +40,10 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
     setPatientCartItems,
   } = useDiagnosticsCart();
 
-  const patientListToShow = allCurrentPatients?.filter(
-    (item: any) => !!item?.id && item?.id != '+ADD MEMBER'
-  );
-  // console.log({ patientCartItems });
+  const [itemsSelected, setItemsSelected] = useState(patientCartItems);
+  const keyExtractor = useCallback((_, index: number) => `${index}`, []);
+  const keyExtractor1 = useCallback((_, index: number) => `${index}`, []);
+
   // useEffect(() => {
   //   console.log('ahjahj');
   //   console.log(isFocus);
@@ -56,11 +51,12 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
   //   if (isFocus && cartItems?.length > 0) {
   //     var itemsNotPresent = [] as any;
   //     const ss = patientCartItems?.map((pItem) => {
-  //       cartItems?.map((cItem) => {
-  //         itemsNotPresent = pItem?.cartItems?.filter((item) => item?.id == cItem?.id);
+  //       const uu = cartItems?.map((cItem) => {
+  //         itemsNotPresent = pItem?.cartItems?.filter((item) => item?.id != cItem?.id);
   //         console.log({ itemsNotPresent });
+  //         return itemsNotPresent;
   //       });
-  //       const pp = [itemsNotPresent, ...pItem?.cartItems];
+  //       const pp = [uu, ...pItem?.cartItems];
   //       console.log({ pp });
   //       var obj = {
   //         patientId: pItem?.patientId,
@@ -68,14 +64,10 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
   //       };
   //       return obj;
   //     });
+  //     console.log({ ss });
   //     setPatientCartItems?.(ss);
   //   }
-  // }, [cartItems]);
-
-  const [showSelectedPatients, setShowSelectedPatients] = useState(patientListToShow);
-  const [itemsSelected, setItemsSelected] = useState(patientCartItems);
-  const keyExtractor = useCallback((_, index: number) => `${index}`, []);
-  const keyExtractor1 = useCallback((_, index: number) => `${index}`, []);
+  // }, [cartItems, isFocus]);
 
   const renderFooterComponent = () => {
     return <View style={{ height: 40 }} />;
@@ -95,19 +87,15 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
   }
 
   function _setSelectedPatient(patientDetails: any, ind: number) {
-    console.log({ patientDetails });
-    let arr = showSelectedPatients?.map((newItem: any, index: number) => {
+    let arr = patientListToShow?.map((newItem: any, index: number) => {
       if (ind == index && patientDetails != null) {
         newItem.isPatientSelected = !newItem?.isPatientSelected;
       }
       return { ...newItem };
     });
-    console.log({ arr });
-    setShowSelectedPatients(arr); //to show the highlighted
 
     //find the selectedItem
     const findSelectedItem = arr?.find((item: any) => item?.id == patientDetails?.id);
-    console.log({ findSelectedItem });
     if (findSelectedItem?.isPatientSelected) {
       //check here, if item is already selected => unselect
       let newCartItems = [cartItems, { isSelected: true }];
@@ -118,25 +106,22 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
   }
 
   function _onPressSelectTest(selectedTest: any, ind: number, selectedPatientDetails: any) {
-    //find the item in addPatientCartItems  ~ selectedPatientDetails
-    // find the selected and add it accordingly
-
+    console.log({ selectedTest });
     const selectedPatientIndex = patientCartItems?.findIndex(
       (item) => item?.patientId == selectedPatientDetails?.patientId
     );
 
-    // const getPatientDetailsCopy = [...patientCartItems];
     const getPatientDetailsCopy = JSON.parse(JSON.stringify(patientCartItems)); //created a deep copy
 
     const arr = getPatientDetailsCopy?.[selectedPatientIndex]?.cartItems?.map(
       (newItem: any, index: number) => {
-        console.log({ newItem });
         if (ind == index) {
           newItem.isSelected = !newItem?.isSelected;
         }
         return { ...newItem };
       }
     );
+    console.log({ arr });
     addPatientCartItem?.(selectedPatientDetails?.patientId, arr!); //just change the flag here.
     setItemsSelected(arr!);
   }
@@ -156,7 +141,7 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
       >
         <View style={{ width: '70%' }}>
           <Text numberOfLines={1} style={styles.itemNameText}>
-            {nameFormater(itemName, 'title')}
+            {nameFormater(itemName, 'default')}
           </Text>
         </View>
         <View style={{ flexDirection: 'row' }}>
@@ -182,11 +167,10 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
     return (
       <View>
         {!!findPatientCartMapping ? (
-          <View>
+          <View style={styles.cartItemsFlatList}>
             <FlatList
               showsVerticalScrollIndicator={false}
               bounces={false}
-              style={styles.cartItemsFlatList}
               keyExtractor={keyExtractor}
               data={findPatientCartMapping?.cartItems || []}
               renderItem={({ item, index }) =>
@@ -201,25 +185,10 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
   };
 
   const renderPatientListItem = (item: any, index: number) => {
-    const patientName = `${item?.firstName || ''} ${item?.lastName || ''}`;
-    const genderAgeText = `${nameFormater(item?.gender, 'title') || ''}, ${
-      item?.dateOfBirth ? getAge(item?.dateOfBirth) || '' : ''
-    }`;
-    const patientSalutation = !!item?.gender
-      ? item?.gender === Gender.FEMALE
-        ? 'Ms.'
-        : item?.gender === Gender.MALE
-        ? 'Mr.'
-        : ''
-      : '';
-
-    const findItem = showSelectedPatients?.find((items: any) => items?.id === item?.id);
-
+    const { patientName, genderAgeText, patientSalutation } = extractPatientDetails(item);
     const isPresent =
       !!patientCartItems && patientCartItems?.find((cart) => cart?.patientId == item?.id);
-
     const showGreenBg = isPresent;
-    // const showGreenBg = !!findItem && findItem?.isPatientSelected;
 
     const itemViewStyle = [
       styles.patientItemViewStyle,
@@ -281,7 +250,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...cardViewStyle,
     padding: 12,
-    marginTop: 10,
+    marginTop: 16,
     minHeight: 45,
   },
   patientNameTextStyle: {
@@ -302,14 +271,19 @@ const styles = StyleSheet.create({
   },
   cartItemsFlatList: {
     borderColor: 'rgba(2,71,91,0.2)',
-    borderWidth: 1,
-    borderBottomLeftRadius: 10,
-    borderBottomRightRadius: 10,
+    borderWidth: 1.5,
+    marginLeft: 4,
+    marginRight: 4,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
     backgroundColor: colors.WHITE,
-    marginBottom: 10,
     borderStyle: 'solid',
   },
-  patientSelectTouch: { flexDirection: 'row', justifyContent: 'space-between', padding: 16 },
+  patientSelectTouch: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 16,
+  },
   checkBoxIcon: {
     height: 20,
     width: 20,

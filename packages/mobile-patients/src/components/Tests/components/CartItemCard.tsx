@@ -13,6 +13,7 @@ import { diagnosticsDisplayPrice } from '@aph/mobile-patients/src/utils/commonUt
 import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 interface CartItemCardProps {
+  index: number;
   cartItem: any;
   selectedPatient: any;
   isCircleSubscribed: boolean;
@@ -32,6 +33,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     duplicateArray,
     comingFrom,
     showCartInclusions,
+    index,
   } = props;
 
   const inclusionItem =
@@ -52,24 +54,23 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const renderCartItems = () => {
     const priceToShow = diagnosticsDisplayPrice(cartItem, isCircleSubscribed)?.priceToShow;
     const slashedPrice = diagnosticsDisplayPrice(cartItem, isCircleSubscribed)?.slashedPrice;
-
     return (
       <TouchableOpacity style={{}} onPress={() => _onPressCard(cartItem)}>
-        <View style={[styles.cartItemView, { paddingTop: !!slashedPrice ? 10 : 16 }]}>
-          {!!slashedPrice && (
-            <View style={{ alignItems: 'flex-end', width: '87.5%' }}>
-              <Text style={styles.packageSlashedPrice}>
-                {string.common.Rs}
-                {slashedPrice}
-              </Text>
-            </View>
-          )}
+        <View style={[styles.cartItemView, { paddingTop: props.index == 0 ? 22 : 12 }]}>
           <View style={{ flexDirection: 'row' }}>
             <View style={styles.itemNameView}>
-              <Text style={styles.cartItemText}>{nameFormater(cartItem?.name, 'title')}</Text>
+              <Text style={styles.cartItemText}>{nameFormater(cartItem?.name, 'default')}</Text>
             </View>
             <View style={styles.rightView}>
               <View style={styles.priceView}>
+                {!!slashedPrice && (
+                  <View style={{ alignItems: 'center' }}>
+                    <Text style={styles.packageSlashedPrice}>
+                      {string.common.Rs}
+                      {slashedPrice}
+                    </Text>
+                  </View>
+                )}
                 <Text style={styles.mainPriceText}>
                   {string.common.Rs}
                   {priceToShow}
@@ -174,7 +175,7 @@ const styles = StyleSheet.create({
   cartItemView: {
     justifyContent: 'space-between',
     padding: 16,
-    minHeight: 50,
+    minHeight: 46,
   },
   removeIconView: { justifyContent: 'center' },
   reportGenTextStyle: {
