@@ -2324,7 +2324,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           )}
         </View>
         <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>
-          {nameFormater(item?.itemTitle, 'default')}
+          {item?.itemTitle}
         </Text>
       </TouchableOpacity>
     );
