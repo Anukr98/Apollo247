@@ -44,30 +44,31 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
   const keyExtractor = useCallback((_, index: number) => `${index}`, []);
   const keyExtractor1 = useCallback((_, index: number) => `${index}`, []);
 
-  // useEffect(() => {
-  //   console.log('ahjahj');
-  //   console.log(isFocus);
-  //   console.log({ cartItems });
-  //   if (isFocus && cartItems?.length > 0) {
-  //     var itemsNotPresent = [] as any;
-  //     const ss = patientCartItems?.map((pItem) => {
-  //       const uu = cartItems?.map((cItem) => {
-  //         itemsNotPresent = pItem?.cartItems?.filter((item) => item?.id != cItem?.id);
-  //         console.log({ itemsNotPresent });
-  //         return itemsNotPresent;
-  //       });
-  //       const pp = [uu, ...pItem?.cartItems];
-  //       console.log({ pp });
-  //       var obj = {
-  //         patientId: pItem?.patientId,
-  //         cartItems: [itemsNotPresent, ...pItem?.cartItems],
-  //       };
-  //       return obj;
-  //     });
-  //     console.log({ ss });
-  //     setPatientCartItems?.(ss);
-  //   }
-  // }, [cartItems, isFocus]);
+  useEffect(() => {
+    // console.log(isFocus);
+    console.log({ cartItems });
+    if (isFocus && cartItems?.length > 0) {
+      const getExisitngItems = patientCartItems
+        ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
+        ?.flat();
+
+      var getNewItems = cartItems?.filter(function(obj) {
+        return getExisitngItems?.indexOf(obj) == -1;
+      });
+
+      const newCartItems = patientCartItems?.map((item) => {
+        let obj = {
+          patientId: item?.patientId,
+          cartItems: (item?.cartItems).concat(getNewItems),
+        };
+        return obj;
+      });
+
+      console.log({ newCartItems });
+
+      setPatientCartItems?.(newCartItems);
+    }
+  }, [cartItems, isFocus]);
 
   const renderFooterComponent = () => {
     return <View style={{ height: 40 }} />;
