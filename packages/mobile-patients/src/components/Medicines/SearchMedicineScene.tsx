@@ -33,6 +33,7 @@ import {
   addPharmaItemToCart,
   g,
   getMaxQtyForMedicineItem,
+  getIsMedicine,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -378,7 +379,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             : special_price
           : undefined,
         prescriptionRequired: is_prescription_required == '1',
-        isMedicine: (type_id || '').toLowerCase() == 'pharma',
+        isMedicine: getIsMedicine(type_id?.toLowerCase()) || 0,
         quantity: 1,
         thumbnail,
         isInStock: true,

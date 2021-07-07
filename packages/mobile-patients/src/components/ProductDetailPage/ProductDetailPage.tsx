@@ -46,6 +46,7 @@ import {
   navigateToHome,
   navigateToScreenWithEmptyStack,
   setAsyncPharmaLocation,
+  getIsMedicine,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   MedicineProductDetails,
@@ -707,7 +708,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             : special_price
           : undefined,
         prescriptionRequired: is_prescription_required == '1',
-        isMedicine: (type_id || '').toLowerCase() == 'pharma',
+        isMedicine: getIsMedicine(type_id?.toLowerCase()) || 0,
         quantity: productQuantity,
         thumbnail: thumbnail,
         isInStock: true,
