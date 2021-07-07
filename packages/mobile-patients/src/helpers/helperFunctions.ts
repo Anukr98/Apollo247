@@ -2953,7 +2953,11 @@ export const getDiagnosticCityLevelPaymentOptions = (cityId: string) => {
   return paymentValues;
 };
 
-export const downloadDocument = (fileUrl: string = '', type: string = 'application/pdf', orderId: number) => {
+export const downloadDocument = (
+  fileUrl: string = '',
+  type: string = 'application/pdf',
+  orderId: number
+) => {
   let filePath: string | null = null;
   let file_url_length = fileUrl.length;
   let viewReportOrderId = orderId;
@@ -2974,7 +2978,8 @@ export const downloadDocument = (fileUrl: string = '', type: string = 'applicati
       console.log('err', err);
     });
 
-    return viewReportOrderId;
+  return viewReportOrderId;
+};
 export const getIsMedicine = (typeId: string) => {
   const medicineType = {
     fmcg: 0,
