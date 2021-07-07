@@ -59,6 +59,7 @@ import {
   nameFormater,
   navigateToScreenWithEmptyStack,
   aphConsole,
+  downloadDocument,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DisabledTickIcon, TickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
@@ -1429,27 +1430,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       );
     }
   };
-  const downloadDocument = (fileUrl: string = '', type: string = 'application/pdf') => {
-    let filePath: string | null = null;
-    let file_url_length = fileUrl.length;
-    const configOptions = { fileCache: true };
-    RNFetchBlob.config(configOptions)
-      .fetch('GET', fileUrl)
-      .then((resp) => {
-        filePath = resp.path();
-        return resp.readFile('base64');
-      })
-      .then(async (base64Data) => {
-        base64Data = `data:${type};base64,` + base64Data;
-        setViewReportOrderId(activeOrder?.displayId)
-        await Share.open({ title: '', url: base64Data });
-        // remove the image or pdf from device's storage
-        // await RNFS.unlink(filePath);
-      })
-      .catch((err) => {
-        console.log('err', err);
-      });
-  };
 
   const renderModalView = (item: any, index: number) => {
     return (
@@ -1495,8 +1475,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           heading=""
           isVisible={displayViewReport}
           viewReportOrderId={viewReportOrderId}
-          downloadDocument={()=>{
-            downloadDocument(activeOrder?.labReportURL,'application/pdf')
+          downloadDocument={() => {
+            const res = downloadDocument(
+              activeOrder?.labReportURL ? activeOrder?.labReportURL : '',
+              'application/pdf',
+              activeOrder?.displayId
+            );
+            if (res == activeOrder?.displayId) {
+              setViewReportOrderId(activeOrder?.displayId)
+            }
           }}
           onClose={() => setDisplayViewReport(false)}
           onPressViewReport={() => {

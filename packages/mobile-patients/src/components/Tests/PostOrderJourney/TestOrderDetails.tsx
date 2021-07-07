@@ -36,6 +36,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
 import {
   downloadDiagnosticReport,
+  downloadDocument,
   g,
   getPatientNameById,
   getTestOrderStatusText,
@@ -738,27 +739,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       );
     }
   };
-  const downloadDocument = (fileUrl: string = '', type: string = 'application/pdf') => {
-    let filePath: string | null = null;
-    let file_url_length = fileUrl.length;
-    const configOptions = { fileCache: true };
-    RNFetchBlob.config(configOptions)
-      .fetch('GET', fileUrl)
-      .then((resp) => {
-        filePath = resp.path();
-        return resp.readFile('base64');
-      })
-      .then(async (base64Data) => {
-        base64Data = `data:${type};base64,` + base64Data;
-        setViewReportOrderId(orderId)
-        await Share.open({ title: '', url: base64Data });
-        // remove the image or pdf from device's storage
-        // await RNFS.unlink(filePath);
-      })
-      .catch((err) => {
-        console.log('err', err);
-      });
-  };
 
   const renderMoreMenu = () => {
     return (
@@ -793,7 +773,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           isVisible={displayViewReport}
           viewReportOrderId={viewReportOrderId}
           downloadDocument={() => {
-            downloadDocument(selectedOrder?.labReportURL, 'application/pdf');
+            const res = downloadDocument(selectedOrder?.labReportURL, 'application/pdf',orderId);
+            if (res == orderId) {
+              setViewReportOrderId(orderId)
+            }
           }}
           onClose={() => setDisplayViewReport(false)}
           onPressViewReport={() => {

@@ -60,6 +60,7 @@ import {
   handleGraphQlError,
   downloadDiagnosticReport,
   setAsyncPharmaLocation,
+  downloadDocument,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -2332,27 +2333,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       </TouchableOpacity>
     );
   };
-  const downloadDocument = (fileUrl: string = '', type: string = 'application/pdf') => {
-    let filePath: string | null = null;
-    let file_url_length = fileUrl.length;
-    const configOptions = { fileCache: true };
-    RNFetchBlob.config(configOptions)
-      .fetch('GET', fileUrl)
-      .then((resp) => {
-        filePath = resp.path();
-        return resp.readFile('base64');
-      })
-      .then(async (base64Data) => {
-        base64Data = `data:${type};base64,` + base64Data;
-        setViewReportOrderId(clickedItem?.orderId)
-        await Share.open({ title: '', url: base64Data });
-        // remove the image or pdf from device's storage
-        // await RNFS.unlink(filePath);
-      })
-      .catch((err) => {
-        console.log('err', err);
-      });
-  };
   const gridWidgetSection = (data: any) => {
     const numColumns = 3;
     let newGridData: any[] = [];
@@ -2404,7 +2384,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setDisplayViewReport(false);
             setClickedItem([]);
           }}
-          downloadDocument={() => downloadDocument(clickedItem?.labReportURL, 'application/pdf')}
+          downloadDocument={() => {
+            const res = downloadDocument(clickedItem?.labReportURL, 'application/pdf',clickedItem?.orderId)
+            if (res == clickedItem?.orderId) {
+              setViewReportOrderId(clickedItem?.orderId)
+            }
+          }}
           viewReportOrderId={viewReportOrderId}
           onPressViewReport={() => {
             onPressViewReport();
