@@ -2213,8 +2213,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const updateStatusOfCall = async (input: CheckCallConnectionInput) => {
-    console.log('check  API call ---- updateStatusOfCall ---- ', input);
-
     let data;
     try {
       data = await client.mutate<checkCallConnection, checkCallConnectionVariables>({
@@ -2443,7 +2441,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       );
       stopTimer();
       startTimer(0);
-      console.log('check publisherEventHandlers --- streamCreated --- ');
 
       startCallConnectionUpdateFx();
     },

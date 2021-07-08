@@ -188,6 +188,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
       ...pharmacyCircleAttributes!,
       ...pharmacyUserTypeAttribute,
+      TransactionId: isStorePickup ? '' : transactionId,
     };
     return appsflyerEventAttributes;
   };

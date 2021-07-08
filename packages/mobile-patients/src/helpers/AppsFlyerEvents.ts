@@ -288,6 +288,7 @@ export interface AppsFlyerEvents {
     'Circle Membership Value': number | null;
     'Circle Cashback amount': number;
     User_Type?: PharmaUserStatus;
+    TransactionId?: string | number;
   };
   [AppsFlyerEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
