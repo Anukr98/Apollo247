@@ -733,7 +733,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             specialPrice: Number(couponProducts[index]!.mrp), // special price as coupon product price
             quantity: couponProducts[index]!.quantity,
             prescriptionRequired: medicineDetails.is_prescription_required == '1',
-            isMedicine: getIsMedicine(medicineDetails.type_id?.toLowerCase()) || 0,
+            isMedicine: getIsMedicine(medicineDetails.type_id?.toLowerCase()) || '0',
             thumbnail: medicineDetails.thumbnail || medicineDetails.image,
             isInStock: !!medicineDetails.is_in_stock,
             maxOrderQty: medicineDetails.MaxOrderQty,

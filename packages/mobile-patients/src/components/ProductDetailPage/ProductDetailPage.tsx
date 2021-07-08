@@ -708,7 +708,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             : special_price
           : undefined,
         prescriptionRequired: is_prescription_required == '1',
-        isMedicine: getIsMedicine(type_id?.toLowerCase()) || 0,
+        isMedicine: getIsMedicine(type_id?.toLowerCase()) || '0',
         quantity: productQuantity,
         thumbnail: thumbnail,
         isInStock: true,

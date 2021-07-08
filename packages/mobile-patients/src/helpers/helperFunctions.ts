@@ -2954,9 +2954,9 @@ export const getDiagnosticCityLevelPaymentOptions = (cityId: string) => {
 
 export const getIsMedicine = (typeId: string) => {
   const medicineType = {
-    fmcg: 0,
-    pharma: 1,
-    pl: 2,
+    fmcg: '0',
+    pharma: '1',
+    pl: '2',
   };
-  return medicineType[typeId] || 0;
+  return medicineType[typeId] || '0';
 };
