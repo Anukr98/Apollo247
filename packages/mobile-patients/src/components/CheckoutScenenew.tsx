@@ -187,6 +187,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const [isSubstitutionValue, setisSubstitutionValue] = useState<boolean>(false);
   const [substitutionMessageValue, setSubstitutionMessageValue] = useState<string>('');
   const [substitutionTimeValue, setSubstitutionTimeValue] = useState<number>(0);
+  const [orderTransactionId, setOrderTransactionId] = useState<string>('');
   const client = useApolloClient();
 
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
@@ -325,6 +326,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           : 'Not Applicable',
         ...pharmacyCircleAttributes!,
         ...pharmacyUserTypeAttribute,
+        TransactionId: orderTransactionId,
       };
       if (store) {
         eventAttributes['Store Id'] = store.storeid;
@@ -354,6 +356,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
       ...pharmacyCircleAttributes!,
       ...pharmacyUserTypeAttribute,
+      TransactionId: orderTransactionId,
     };
     return appsflyerEventAttributes;
   };
@@ -898,6 +901,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             setisSubstitutionValue(isSubstitution);
             setSubstitutionMessageValue(substitutionMessage);
             setSubstitutionTimeValue(substitutionTime);
+            setOrderTransactionId(transactionId);
             if (errorCode || errorMessage) {
               showAphAlert!({
                 title: `Uh oh.. :(`,
