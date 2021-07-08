@@ -1717,9 +1717,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           //retry time out
           hideCallUI();
           if (isAudio.current) {
-            handleEndAudioCall(false);
+            handleEndAudioCall(false, false);
           } else {
-            handleEndCall(false);
+            handleEndCall(false, false);
           }
           clearNetworkCheckInterval();
         }
@@ -6388,7 +6388,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   //   }
   // }, [callTimer]);
 
-  const handleEndCall = (playSound: boolean = true) => {
+  const handleEndCall = (playSound: boolean = true, publishPubnub: boolean = true) => {
     AsyncStorage.getItem('startCallConnectionUpdateBT').then((data) => {
       BackgroundTimer.clearInterval(Number.parseInt(data || '0'));
     });
@@ -6411,38 +6411,41 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setChatReceived(false);
       postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
       callEndWebengageEvent('Patient');
-      pubnub.publish(
-        {
-          message: {
-            isTyping: true,
-            message: 'Video call ended',
-            duration: callTimerStarted,
-            id: patientId,
-            messageDate: new Date(),
-          },
-          channel: channel,
-          storeInHistory: true,
-        },
-        (status, response) => {}
-      );
 
-      pubnub.publish(
-        {
-          message: {
-            isTyping: true,
-            message: endCallMsg,
-            id: patientId,
-            messageDate: new Date(),
+      if (publishPubnub) {
+        pubnub.publish(
+          {
+            message: {
+              isTyping: true,
+              message: 'Video call ended',
+              duration: callTimerStarted,
+              id: patientId,
+              messageDate: new Date(),
+            },
+            channel: channel,
+            storeInHistory: true,
           },
-          channel: channel,
-          storeInHistory: true,
-        },
-        (status, response) => {}
-      );
+          (status, response) => {}
+        );
+
+        pubnub.publish(
+          {
+            message: {
+              isTyping: true,
+              message: endCallMsg,
+              id: patientId,
+              messageDate: new Date(),
+            },
+            channel: channel,
+            storeInHistory: true,
+          },
+          (status, response) => {}
+        );
+      }
     }, 2000);
   };
 
-  const handleEndAudioCall = (playSound: boolean = true) => {
+  const handleEndAudioCall = (playSound: boolean = true, publishPubnub: boolean = true) => {
     AsyncStorage.getItem('startCallConnectionUpdateBT').then((data) => {
       BackgroundTimer.clearInterval(Number.parseInt(data || '0'));
     });
@@ -6465,34 +6468,36 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setCameraPosition('front');
       postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
       callEndWebengageEvent('Patient');
-      pubnub.publish(
-        {
-          message: {
-            isTyping: true,
-            message: 'Audio call ended',
-            duration: callTimerStarted,
-            id: patientId,
-            messageDate: new Date(),
+      if (publishPubnub) {
+        pubnub.publish(
+          {
+            message: {
+              isTyping: true,
+              message: 'Audio call ended',
+              duration: callTimerStarted,
+              id: patientId,
+              messageDate: new Date(),
+            },
+            channel: channel,
+            storeInHistory: true,
           },
-          channel: channel,
-          storeInHistory: true,
-        },
-        (status, response) => {}
-      );
+          (status, response) => {}
+        );
 
-      pubnub.publish(
-        {
-          message: {
-            isTyping: true,
-            message: endCallMsg,
-            id: patientId,
-            messageDate: new Date(),
+        pubnub.publish(
+          {
+            message: {
+              isTyping: true,
+              message: endCallMsg,
+              id: patientId,
+              messageDate: new Date(),
+            },
+            channel: channel,
+            storeInHistory: true,
           },
-          channel: channel,
-          storeInHistory: true,
-        },
-        (status, response) => {}
-      );
+          (status, response) => {}
+        );
+      }
     }, 2000);
   };
 
