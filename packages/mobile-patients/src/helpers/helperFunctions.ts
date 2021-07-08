@@ -44,7 +44,7 @@ import {
 } from 'react-native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import Permissions from 'react-native-permissions';
-import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { DiagnosticPatientCartItem, DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription } from '../graphql/types/getCaseSheet';
 import { apiRoutes } from './apiRoutes';
 import {
@@ -3000,4 +3000,20 @@ export const extractPatientDetails = (patientDetails: any) =>{
     genderAgeText,
     patientSalutation
   }
+}
+
+export const isDiagnosticSelectedCartEmpty = (patientCartItems: DiagnosticPatientCartItem[]) =>{
+const getAllSelectedItems = patientCartItems?.map((item: DiagnosticPatientCartItem) => {
+  let obj = {
+    patientId: item?.patientId,
+    cartItems: item?.cartItems?.filter((items) => items?.isSelected == true),
+  };
+  return obj;
+});
+const finalPatientCartItems = getAllSelectedItems?.filter((item: DiagnosticPatientCartItem) => {
+  if (item?.cartItems?.length > 0) {
+    return item;
+  }
+});
+  return finalPatientCartItems
 }

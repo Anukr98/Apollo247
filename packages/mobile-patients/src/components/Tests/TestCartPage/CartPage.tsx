@@ -17,6 +17,7 @@ import {
   formatAddressWithLandmark,
   g,
   isAddressLatLngInValid,
+  isDiagnosticSelectedCartEmpty,
   isEmptyObject,
   nameFormater,
   postAppsFlyerEvent,
@@ -155,10 +156,11 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const selectedAddr = !!getDefaultAddress ? getDefaultAddress : addresses?.[0];
   //if no deliveryAddressId is then , select the first address/ or default address
 
-  const getAllSelectedItems = patientCartItems?.map((item) =>
-    item?.cartItems?.filter((cItem) => cItem?.isSelected)
-  );
-  const isCartEmpty = getAllSelectedItems?.filter((item) => item?.length > 0);
+  const isCartEmpty = isDiagnosticSelectedCartEmpty(patientCartItems);
+  // const getAllSelectedItems = patientCartItems?.map((item) =>
+  //   item?.cartItems?.filter((cItem) => cItem?.isSelected)
+  // );
+  // const isCartEmpty = getAllSelectedItems?.filter((item) => item?.length > 0);
 
   const addressText = isModifyFlow
     ? formatAddressWithLandmark(modifiedOrder?.patientAddressObj) || ''

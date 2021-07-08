@@ -1,7 +1,12 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { BackHandler, StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
-import { g, isEmptyObject, TestSlot } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { BackHandler, StyleSheet, Text, View, ScrollView } from 'react-native';
+import {
+  g,
+  isDiagnosticSelectedCartEmpty,
+  isEmptyObject,
+  TestSlot,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -29,6 +34,7 @@ import {
   SCREEN_NAMES,
   TimelineWizard,
 } from '@aph/mobile-patients/src/components/Tests/components/TimelineWizard';
+import { DiagnosticAppointmentTimeSlot } from '@aph/mobile-patients/src/components/Tests/Events';
 
 export interface AddressSlotSelectionProps extends NavigationScreenProps {
   reportGenDetails: any;
@@ -47,13 +53,13 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
     selectedPatient,
     setPinCode,
     patientCartItems,
+    diagnosticSlot,
   } = useDiagnosticsCart();
 
   const { diagnosticServiceabilityData } = useAppCommonData();
 
   const { setLoading, showAphAlert, hideAphAlert, loading } = useUIElements();
   const client = useApolloClient();
-  console.log({ props });
 
   //after clicking on slot seleftion cta on previous page, remove the items which has isSelected as false
 
@@ -172,47 +178,21 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
     };
   }
 
-  // function createPatientObjLineItems() {
-  //   const getPricesForItem = createLineItemPrices()?.pricesForItemArray;
-
-  //   const totalPrice = getPricesForItem
-  //     ?.map((item) => Number(item?.price))
-  //     ?.reduce((prev: number, curr: number) => prev + curr, 0);
-  //   var array = [];
-  //   array.push({
-  //     patientID: selectedPatient?.id || currentPatient?.id,
-  //     lineItems: getPricesForItem,
-  //     totalPrice: totalPrice,
-  //   });
-  //   return array;
-  // }
-
   function createPatientObjLineItems() {
-    //move this logic outside
-    const filterPatientItems = patientCartItems?.map((item) => {
-      let obj = {
-        patientId: item?.patientId,
-        cartItems: item?.cartItems?.filter((items) => items?.isSelected == true),
-      };
-      return obj;
-    });
-    console.log({ filterPatientItems });
+    const filterPatientItems = isDiagnosticSelectedCartEmpty(patientCartItems);
     var array = [] as any; //define type
 
     const pp = filterPatientItems?.map((item) => {
       const getPricesForItem = createLineItemPrices(item)?.pricesForItemArray;
-      console.log({ getPricesForItem });
       const totalPrice = getPricesForItem
         ?.map((item: any) => Number(item?.price))
         ?.reduce((prev: number, curr: number) => prev + curr, 0);
-      console.log({ totalPrice });
       array.push({
         patientID: item?.patientId,
         lineItems: getPricesForItem,
         totalPrice: totalPrice,
       });
     });
-    console.log({ array });
     return array;
   }
 
@@ -415,12 +395,22 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
   };
 
   function _navigateToReview() {
+    triggerWebengageEvent();
     props.navigation.navigate(AppRoutes.ReviewOrder, {
       selectedAddress: selectedAddr,
       slotsInput: slotsInput,
       selectedTimeSlot: selectedTimeSlot,
       showPaidPopUp: selectedTimeSlot?.slotInfo?.isPaidSlot,
     });
+  }
+
+  function triggerWebengageEvent() {
+    const slotType = selectedTimeSlot?.slotInfo?.isPaidSlot ? 'Paid' : 'Free';
+    const slotTime = selectedTimeSlot?.slotInfo?.startTime;
+    const slotDate = moment(diagnosticSlot?.selectedDate)?.format('DD-MM-YYYY');
+    const numberOfSlots = selectedTimeSlot?.slotInfo?.internalSlots?.length;
+
+    DiagnosticAppointmentTimeSlot(slotType, slotTime, numberOfSlots, slotDate);
   }
 
   const disableCTA = !(

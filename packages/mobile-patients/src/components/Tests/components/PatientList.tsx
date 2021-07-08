@@ -2,6 +2,7 @@ import {
   nameFormater,
   checkPatientAge,
   extractPatientDetails,
+  isDiagnosticSelectedCartEmpty,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -18,16 +19,18 @@ import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/Diagnos
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { diagnosticsDisplayPrice } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 
 const { SHERPA_BLUE, WHITE, APP_GREEN } = theme.colors;
 
 interface PatientListProps {
   itemsInCart: DiagnosticsCartItem[] | any;
   isCircleSubscribed: boolean;
-  patientSelected: any;
   patientListToShow: any;
   onPressSelectedPatient?: (item: any) => void;
   isFocus: boolean;
+  onPressContinue: () => void;
 }
 
 export const PatientList: React.FC<PatientListProps> = (props) => {
@@ -43,6 +46,7 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
   const [itemsSelected, setItemsSelected] = useState(patientCartItems);
   const keyExtractor = useCallback((_, index: number) => `${index}`, []);
   const keyExtractor1 = useCallback((_, index: number) => `${index}`, []);
+  const isCartEmpty = isDiagnosticSelectedCartEmpty(patientCartItems);
 
   useEffect(() => {
     if (isFocus && cartItems?.length > 0) {
@@ -222,17 +226,34 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
     );
   };
 
+  const CTAdisabled = !(
+    !!patientCartItems &&
+    patientCartItems?.length > 0 &&
+    isCartEmpty?.length > 0
+  );
+
+  const renderStickyBottom = () => {
+    return (
+      <StickyBottomComponent style={{ margin: -16, marginBottom: -50 }}>
+        <Button title={'CONTINUE'} onPress={props.onPressContinue} disabled={CTAdisabled} />
+      </StickyBottomComponent>
+    );
+  };
+
   return (
-    <View style={styles.mainViewStyle}>
-      <FlatList
-        showsVerticalScrollIndicator={false}
-        bounces={false}
-        contentContainerStyle={{ marginBottom: 20 }}
-        keyExtractor={keyExtractor1}
-        data={patientListToShow || []}
-        renderItem={({ item, index }) => renderPatientListItem(item, index)}
-        ListFooterComponent={renderFooterComponent}
-      />
+    <View>
+      <View style={styles.mainViewStyle}>
+        <FlatList
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+          contentContainerStyle={{ marginBottom: 20 }}
+          keyExtractor={keyExtractor1}
+          data={patientListToShow || []}
+          renderItem={({ item, index }) => renderPatientListItem(item, index)}
+          ListFooterComponent={renderFooterComponent}
+        />
+      </View>
+      {renderStickyBottom()}
     </View>
   );
 };

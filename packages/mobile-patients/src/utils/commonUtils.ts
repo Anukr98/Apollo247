@@ -447,3 +447,9 @@ export const diagnosticsDisplayPrice = (item: DiagnosticsCartItem , isCircleMemb
     slashedPrice
   }
 }
+
+export enum DIAGNOSTIC_PINCODE_SOURCE_TYPE  {
+  SEARCH = 'Search',
+  AUTO = 'Auto-select',
+  ADDRESS = 'Saved Address'
+}

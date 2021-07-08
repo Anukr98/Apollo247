@@ -927,7 +927,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   };
 
   const bookDiagnosticOrder = async () => {
-    console.log({ props });
     saveHomeCollectionOrder();
   };
 
@@ -1149,7 +1148,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   }
 
   const checkDuplicateItems_Level2 = (pricesForItem: any, getItemIds: any, cartItemPrices: any) => {
-    console.log('ayayay');
     //no inclusion level duplicates are found...
     if (getItemIds?.length > 0) {
       const getCartItemsId = cartItemPrices?.map((item: any) => item?.itemId);

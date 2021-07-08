@@ -1,4 +1,4 @@
-import { formatTestSlot } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { formatTestSlot, nameFormater } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { TestInfoWhiteIcon } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -38,9 +38,9 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
 
   function getButtonTitle() {
     if (modifyOrderDetails) {
-      return isModifyCOD ? `${string.placeOrder} (COD)` : string.proceedToPay;
+      return isModifyCOD ? `${string.placeOrder} (COD)` : string.makePayment;
     } else {
-      return string.proceedToPay;
+      return string.makePayment;
     }
   }
 
@@ -96,11 +96,11 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
   const renderButton = () => {
     const disableProceedToPayButton = !!modifyOrderDetails
       ? getButtonTitle() === `${string.placeOrder} (COD)` && disableProceedToPay
-      : getButtonTitle() === string.proceedToPay && disableProceedToPay;
+      : getButtonTitle() === string.makePayment && disableProceedToPay;
     return (
       <Button
         disabled={disableProceedToPayButton}
-        title={getButtonTitle()}
+        title={nameFormater(getButtonTitle(), 'upper')}
         onPress={() => onPressButton()}
         style={{ flex: 1, marginLeft: 15, borderRadius: 5 }}
       />

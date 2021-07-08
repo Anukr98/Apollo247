@@ -105,6 +105,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+  DIAGNOSTIC_PINCODE_SOURCE_TYPE,
   sourceHeaders,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import Carousel from 'react-native-snap-carousel';
@@ -113,6 +114,7 @@ import {
   DiagnosticAddToCartEvent,
   DiagnosticBannerClick,
   DiagnosticHomePageWidgetClicked,
+  DiagnosticPinCodeClicked,
   DiagnosticTrackOrderViewed,
   DiagnosticTrackPhleboClicked,
   DiagnosticViewReportClicked,
@@ -266,6 +268,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
   const [clickedItem, setClickedItem] = useState<any>([]);
   const [showLocationPopup, setLocationPopup] = useState<boolean>(false);
+  const [mode, setMode] = useState<string>('');
+  const [source, setSource] = useState<DIAGNOSTIC_PINCODE_SOURCE_TYPE>();
 
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
   const [serviceableObject, setServiceableObject] = useState({} as any);
@@ -309,7 +313,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   //sync pharma with diag?
 
-  function saveDiagnosticLocation(locationDetails: LocationData) {
+  function saveDiagnosticLocation(
+    locationDetails: LocationData,
+    mode: string,
+    source: DIAGNOSTIC_PINCODE_SOURCE_TYPE
+  ) {
+    setMode(mode);
+    setSource(source);
     setDiagnosticLocation?.(locationDetails);
     setLocationDetails?.(locationDetails);
   }
@@ -322,7 +332,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
   useEffect(() => {
     if (newAddressAddedHomePage != '') {
       const selectedAddress = addresses?.find((item) => item?.id === deliveryAddressId);
-      saveDiagnosticLocation(formatAddressToLocation(selectedAddress));
+      saveDiagnosticLocation(
+        formatAddressToLocation(selectedAddress),
+        'Manual',
+        DIAGNOSTIC_PINCODE_SOURCE_TYPE.ADDRESS
+      );
       setNewAddressAddedHomePage?.('');
     }
   }, [newAddressAddedHomePage]);
@@ -348,7 +362,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
       if (!!addresses && addresses?.length > 0) {
         const defaultAddress = addresses?.find((item) => item?.defaultAddress);
         const getFirstAddress = addresses?.[0];
-        saveDiagnosticLocation(formatAddressToLocation(defaultAddress! || getFirstAddress!));
+        saveDiagnosticLocation(
+          formatAddressToLocation(defaultAddress! || getFirstAddress!),
+          'Manual',
+          DIAGNOSTIC_PINCODE_SOURCE_TYPE.ADDRESS
+        );
       } else {
         const getDefaultLocation = createDefaultAddress();
         //if everything is null, then load it from hyderabad.
@@ -359,7 +377,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
               : !!locationDetails
               ? locationDetails
               : getDefaultLocation
-          )
+          ),
+          'Automatic',
+          DIAGNOSTIC_PINCODE_SOURCE_TYPE.AUTO
         );
       }
     }
@@ -650,7 +670,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
         if (deliveryAddress) {
           setDeliveryAddressId?.(deliveryAddress?.id);
           if (!diagnosticLocation) {
-            saveDiagnosticLocation?.(formatAddressToLocation(deliveryAddress));
+            saveDiagnosticLocation?.(
+              formatAddressToLocation(deliveryAddress),
+              'Automatic',
+              DIAGNOSTIC_PINCODE_SOURCE_TYPE.ADDRESS
+            );
             return;
           }
         }
@@ -668,7 +692,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
       if (deliveryAddress) {
         setDeliveryAddressId?.(deliveryAddress?.id);
         if (!diagnosticLocation) {
-          saveDiagnosticLocation?.(formatAddressToLocation(deliveryAddress));
+          saveDiagnosticLocation?.(
+            formatAddressToLocation(deliveryAddress),
+            'Automatic',
+            DIAGNOSTIC_PINCODE_SOURCE_TYPE.ADDRESS
+          );
         }
       } else {
         //  -> load default hyderabad.
@@ -683,6 +711,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   async function fetchAddressServiceability(selectedAddress: LocationData) {
     let obj = {} as DiagnosticData;
+    const pincode = String(selectedAddress?.pincode);
     if (!!selectedAddress && !!selectedAddress?.latitude && !!selectedAddress?.longitude) {
       setPageLoading?.(true);
       setSectionLoading(true);
@@ -706,6 +735,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setDiagnosticServiceabilityData?.(obj); //sets the city,state, and there id's
             setDiagnosticLocationServiceable?.(true);
             setServiceabilityMsg('');
+            DiagnosticPinCodeClicked(
+              currentPatient,
+              !!mode && mode != '' ? mode : 'Automatic',
+              pincode,
+              true,
+              !!source ? source : DIAGNOSTIC_PINCODE_SOURCE_TYPE.AUTO
+            );
           } else {
             //null in case of non-serviceable
             obj = {
@@ -724,6 +760,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
               : null;
 
             setServiceabilityMsg(string.diagnostics.nonServiceableMsg1);
+            DiagnosticPinCodeClicked(
+              currentPatient,
+              !!mode && mode != '' ? mode : 'Automatic',
+              pincode,
+              false,
+              !!source ? source : DIAGNOSTIC_PINCODE_SOURCE_TYPE.AUTO
+            );
           }
           getDiagnosticBanner(Number(getServiceableResponse?.cityID));
           getHomePageWidgets(obj?.cityId);
@@ -946,7 +989,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   function handleLocationBack(locationResponse: LocationData | null) {
     setLocationPopup(false);
     if (!!locationResponse) {
-      saveDiagnosticLocation(locationResponse);
+      saveDiagnosticLocation(locationResponse, 'Manual', DIAGNOSTIC_PINCODE_SOURCE_TYPE.AUTO);
     }
   }
 
@@ -960,7 +1003,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   function handleSelectedSuggestion(selectedLocation: any) {
     setLocationPopup(false);
-    saveDiagnosticLocation(formatAddressToLocation(selectedLocation));
+    saveDiagnosticLocation(
+      formatAddressToLocation(selectedLocation),
+      'Manual',
+      DIAGNOSTIC_PINCODE_SOURCE_TYPE.SEARCH
+    );
   }
 
   async function setDefaultAddress(address: Address) {
@@ -988,7 +1035,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
         setDiagnosticSlot?.(null);
         const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
         console.log({ deliveryAddress });
-        saveDiagnosticLocation(formatAddressToLocation(deliveryAddress));
+        saveDiagnosticLocation(
+          formatAddressToLocation(deliveryAddress),
+          'Manual',
+          DIAGNOSTIC_PINCODE_SOURCE_TYPE.ADDRESS
+        );
         setLoading?.(false);
       }
     } catch (error) {

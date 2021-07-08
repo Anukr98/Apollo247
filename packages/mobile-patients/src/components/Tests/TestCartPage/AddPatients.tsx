@@ -8,8 +8,10 @@ import {
   isEmptyObject,
   nameFormater,
   checkPatientAge,
+  isDiagnosticSelectedCartEmpty,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
+  DiagnosticPatientCartItem,
   DiagnosticsCartItem,
   useDiagnosticsCart,
 } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
@@ -55,6 +57,7 @@ import {
 } from '@aph/mobile-patients/src/components/Tests/components/TimelineWizard';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { DiagnosticPatientSelected } from '@aph/mobile-patients/src/components/Tests/Events';
 
 const screenHeight = Dimensions.get('window').height;
 
@@ -94,6 +97,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   const patientListToShow = allCurrentPatients?.filter(
     (item: any) => !!item?.id && item?.id != '+ADD MEMBER'
   );
+  var isCartEmpty = isDiagnosticSelectedCartEmpty(patientCartItems);
 
   const { setLoading, showAphAlert, hideAphAlert, loading } = useUIElements();
   const [isServiceable, setIsServiceable] = useState<boolean>(false);
@@ -101,12 +105,10 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
-      console.log('focused');
       setIsFocus(true);
       BackHandler.addEventListener('hardwareBackPress', handleBack);
     });
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
-      console.log('blur');
       setIsFocus(false);
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     });
@@ -501,15 +503,16 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
         <PatientList
           itemsInCart={cartItems}
           isCircleSubscribed={isDiagnosticCircleSubscription}
-          patientSelected={selectedPatient}
           isFocus={isFocus}
           patientListToShow={patientListToShow}
+          onPressContinue={_navigateToCartPage}
         />
       </View>
     );
   };
 
   function _navigateToCartPage() {
+    triggerWebengageEvent();
     if (addresses?.length == 0) {
       props.navigation.navigate(AppRoutes.AddAddressNew, {
         addOnly: true,
@@ -519,6 +522,27 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     } else {
       props.navigation.navigate(AppRoutes.CartPage);
     }
+  }
+
+  function triggerWebengageEvent() {
+    const selectedPatientCount = patientCartItems?.length;
+    const selectedPatientId = patientCartItems?.map(
+      (items: DiagnosticPatientCartItem) => items?.patientId
+    );
+    const filterSelectedPatients = patientListToShow?.filter((item: any) =>
+      selectedPatientId?.includes(item?.id)
+    );
+    const patientName =
+      !!filterSelectedPatients &&
+      filterSelectedPatients
+        ?.map((item: any) => `${item?.firstName} ${item?.lastName}`)
+        ?.join(', ');
+
+    const patientUHID =
+      !!filterSelectedPatients &&
+      filterSelectedPatients?.map((item: any) => item?.uhid)?.join(', ');
+
+    DiagnosticPatientSelected(selectedPatientCount, patientUHID, patientName);
   }
 
   const CTAdisabled = !(
@@ -564,7 +588,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
         {renderWizard()}
         {renderMainView()}
       </SafeAreaView>
-      {renderStickyBottom()}
+      {/* {renderStickyBottom()} */}
     </View>
   );
 };
