@@ -1308,7 +1308,7 @@ export interface MedicineCartOMSItem {
   itemDiscount?: number | null;
   isPrescriptionNeeded?: number | null;
   mou?: number | null;
-  isMedicine: number;
+  isMedicine: string;
   specialPrice: number;
   subCategory?: string | null;
 }

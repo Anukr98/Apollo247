@@ -1774,7 +1774,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             : special_price
           : undefined,
         prescriptionRequired: is_prescription_required == '1',
-        isMedicine: getIsMedicine(type_id?.toLowerCase()) || 0,
+        isMedicine: getIsMedicine(type_id?.toLowerCase()) || '0',
         quantity: Number(1),
         thumbnail: thumbnail,
         isInStock: true,

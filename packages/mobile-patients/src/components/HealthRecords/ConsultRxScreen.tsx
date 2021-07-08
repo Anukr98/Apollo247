@@ -710,7 +710,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
                   : undefined,
                 quantity: qty,
                 prescriptionRequired: medicineDetails?.is_prescription_required == '1',
-                isMedicine: getIsMedicine(medicineDetails?.type_id?.toLowerCase()) || 0,
+                isMedicine: getIsMedicine(medicineDetails?.type_id?.toLowerCase()) || '0',
                 thumbnail: medicineDetails?.thumbnail || medicineDetails?.image,
                 isInStock: !!medicineDetails?.is_in_stock,
                 productType: medicineDetails?.type_id,
