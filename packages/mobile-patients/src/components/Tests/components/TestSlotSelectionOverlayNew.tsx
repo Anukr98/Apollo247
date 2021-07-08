@@ -255,7 +255,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   };
   const renderSlotSelectionView = () => {
     return (
-      <View>
+      <View style={{ marginBottom: 30 }}>
         <View style={styles.dayPhaseContainer}>
           {dayPhaseArray.map((item, index) => (
             <TouchableOpacity

@@ -155,6 +155,11 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const selectedAddr = !!getDefaultAddress ? getDefaultAddress : addresses?.[0];
   //if no deliveryAddressId is then , select the first address/ or default address
 
+  const getAllSelectedItems = patientCartItems?.map((item) =>
+    item?.cartItems?.filter((cItem) => cItem?.isSelected)
+  );
+  const isCartEmpty = getAllSelectedItems?.filter((item) => item?.length > 0);
+
   const addressText = isModifyFlow
     ? formatAddressWithLandmark(modifiedOrder?.patientAddressObj) || ''
     : selectedAddr
@@ -195,6 +200,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     if ((isModifyFlow || deliveryAddressId != '') && isFocused) {
       setIsServiceable(false);
       setShowNonServiceableText(false);
+      setShowPriceMismatch(false);
       getAddressServiceability();
     }
   }, [addresses, isFocused]);
@@ -316,6 +322,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   };
 
   const updatePricesInCart = (results: any) => {
+    if (results?.length == 0) {
+      setLoading?.(false);
+    }
     const disabledCartItems = cartItems?.filter(
       (cartItem) =>
         !results?.find(
@@ -497,8 +506,11 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           setIsServiceable(false);
           setShowNonServiceableText(true);
         }
+      } else {
+        setLoading?.(false);
+        setIsServiceable(false);
+        setShowNonServiceableText(true);
       }
-      setLoading?.(false);
     } catch (error) {
       CommonBugFender('AddPatients_getAddressServiceability', error);
       setLoading?.(false);
@@ -851,24 +863,13 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     );
   };
 
-  // function updateItems(itemUpdates: DiagnosticsCartItem) {
-  //   const newPatientCartItem = patientCartItems?.map((patientItems: DiagnosticPatientCartItem) => {
-  //     const findLineItemsIndex = patientItems?.cartItems?.findIndex(
-  //       (lineItems: DiagnosticsCartItem) => lineItems?.id === itemUpdates?.id
-  //     );
-  //     if (findLineItemsIndex !== -1) {
-  //       patientItems.cartItems[findLineItemsIndex] = itemUpdates;
-  //       const patientLineItemObj: DiagnosticPatientCartItem = {
-  //         patientId: patientItems?.patientId,
-  //         cartItems: patientItems?.cartItems,
-  //       };
-  //       return patientLineItemObj;
-  //     } else {
-  //       return patientItems;
-  //     }
-  //   });
-  //   setPatientCartItems?.([...newPatientCartItem!]);
-  // }
+  const renderEmptyCart = () => {
+    return (
+      <View style={{ marginTop: 20 }}>
+        <Text style={styles.cartEmpty}>Your Cart is empty</Text>
+      </View>
+    );
+  };
 
   const fetchPackageDetails = (
     itemIds: string | number[],
@@ -1045,7 +1046,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       <View style={{ margin: 16 }}>
         {renderAddressSection()}
         {renderAddTestOption()}
-        {renderCartItems()}
+        {!!isCartEmpty && !isCartEmpty ? renderEmptyCart() : renderCartItems()}
       </View>
     );
   };
@@ -1263,9 +1264,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     });
   };
 
-  console.log({ patientCartItems });
-
-  const disableCTA = !(!!addressText && isServiceable) || patientCartItems?.length === 0;
+  const disableCTA =
+    !(!!addressText && isServiceable) || patientCartItems?.length === 0 || isCartEmpty?.length == 0;
 
   const renderStickyBottom = () => {
     return (
@@ -1385,5 +1385,12 @@ const styles = StyleSheet.create({
     margin: -16,
     marginBottom: 8,
     backgroundColor: '#FFE9E4',
+  },
+  cartEmpty: {
+    color: theme.colors.SHERPA_BLUE,
+    ...theme.fonts.IBMPlexSansBold(15),
+    margin: 20,
+    textAlign: 'center',
+    textTransform: 'capitalize',
   },
 });

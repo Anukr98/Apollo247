@@ -514,6 +514,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       props.navigation.navigate(AppRoutes.AddAddressNew, {
         addOnly: true,
         source: 'Diagnostics Cart' as AddressSource,
+        ComingFrom: AppRoutes.AddPatients,
       });
     } else {
       props.navigation.navigate(AppRoutes.CartPage);

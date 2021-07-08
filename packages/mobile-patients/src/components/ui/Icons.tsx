@@ -2088,7 +2088,7 @@ export const AddPatientCircleIcon: React.FC<IconProps> = (props) => (
   <IconBase
     size="sm"
     {...props}
-    source={require('@aph/mobile-patients/src/components/ui/icons/icon.webp')}
+    source={require('@aph/mobile-patients/src/components/ui/icons/circle-plus.webp')}
   />
 );
 

@@ -891,7 +891,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const renderMultiUhidMessage = () => {
-    const count = !!multipleOrdersList && multipleOrdersList?.length!;
+    const count = !!multipleOrdersList && multipleOrdersList?.length;
     return (
       <View style={styles.multiUhidView}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -910,12 +910,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           keyExtractor={(_, index) => `${index}`}
           renderItem={({ item, index }) => renderList(item, index, count)}
         />
-        <Button
-          title={'CONTINUE'}
-          style={styles.buttonStyle}
-          disabled={false}
-          onPress={() => _onPressMultiUhidContinue()}
-        />
+        <View style={{ margin: 4 }}>
+          <Button
+            title={'CONTINUE'}
+            style={styles.buttonStyle}
+            disabled={false}
+            onPress={() => _onPressMultiUhidContinue()}
+          />
+        </View>
       </View>
     );
   };

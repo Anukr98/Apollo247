@@ -45,26 +45,25 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
   const keyExtractor1 = useCallback((_, index: number) => `${index}`, []);
 
   useEffect(() => {
-    // console.log(isFocus);
-    console.log({ cartItems });
     if (isFocus && cartItems?.length > 0) {
       const getExisitngItems = patientCartItems
         ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
         ?.flat();
 
-      var getNewItems = cartItems?.filter(function(obj) {
-        return getExisitngItems?.indexOf(obj) == -1;
-      });
+      let existingId = getExisitngItems?.map((items: DiagnosticsCartItem) => items?.id);
+
+      let getNewItems = cartItems?.filter((cItems) => !existingId?.includes(cItems?.id));
+
+      //added since, zero price + updated price item was getting added
+      const isPriceNotZero = getNewItems?.filter((item) => item?.price != 0);
 
       const newCartItems = patientCartItems?.map((item) => {
         let obj = {
           patientId: item?.patientId,
-          cartItems: (item?.cartItems).concat(getNewItems),
+          cartItems: (item?.cartItems).concat(isPriceNotZero),
         };
         return obj;
       });
-
-      console.log({ newCartItems });
 
       setPatientCartItems?.(newCartItems);
     }
@@ -107,7 +106,6 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
   }
 
   function _onPressSelectTest(selectedTest: any, ind: number, selectedPatientDetails: any) {
-    console.log({ selectedTest });
     const selectedPatientIndex = patientCartItems?.findIndex(
       (item) => item?.patientId == selectedPatientDetails?.patientId
     );
@@ -122,7 +120,6 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
         return { ...newItem };
       }
     );
-    console.log({ arr });
     addPatientCartItem?.(selectedPatientDetails?.patientId, arr!); //just change the flag here.
     setItemsSelected(arr!);
   }
@@ -214,7 +211,9 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
             {!showGreenBg ? (
               <AddPatientCircleIcon style={[styles.arrowStyle]} />
             ) : (
-              <MinusPatientCircleIcon style={[styles.arrowStyle, { tintColor: WHITE }]} />
+              <MinusPatientCircleIcon
+                style={[styles.arrowStyle, { tintColor: WHITE, marginLeft: -6 }]}
+              />
             )}
           </View>
         </TouchableOpacity>
@@ -263,7 +262,7 @@ const styles = StyleSheet.create({
   },
   arrowStyle: {
     tintColor: SHERPA_BLUE,
-    height: 17,
+    height: 18,
     width: 20,
     resizeMode: 'contain',
   },
