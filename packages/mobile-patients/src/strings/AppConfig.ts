@@ -828,7 +828,7 @@ const ConfigurationQA6 = {
   DOCUMENT_BASE_URL: 'https://devaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top_specialties,
-  ...PharmaApiConfig.dev,
+  ...PharmaApiConfig.prod,
   ...appStaticVariables,
   ...Apollo247Config.dev,
   ...ServiceabiltyAvailabilityConfig.dev,
