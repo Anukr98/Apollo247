@@ -1154,6 +1154,7 @@ export interface WebEngageEvents {
     User_Type?: PharmaUserStatus;
     'Split Cart'?: YesOrNo;
     'Prescription Option selected'?: PrescriptionOptions;
+    TransactionId?: string | number;
   };
   [WebEngageEventName.PHARMACY_DETAIL_IMAGE_CLICK]: {
     'Product ID': string;
@@ -1299,7 +1300,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.DIAGNOSTIC_ADD_TO_CART]: {
     'Item Name': string;
     'Item ID': string; // (SKUID)
-    Source:DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+    Source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
     Section?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
