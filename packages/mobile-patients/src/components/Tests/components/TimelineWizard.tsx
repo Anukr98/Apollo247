@@ -38,10 +38,11 @@ export interface TimelineWizardProps extends NavigationScreenProps {
   upcomingPages: any;
   donePages: any;
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
+  isModify?: boolean;
 }
 
 export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
-  const { currentPage, upcomingPages, donePages } = props;
+  const { currentPage, upcomingPages, donePages, isModify } = props;
 
   function imageRules(currentPage: SCREEN_NAMES) {
     switch (currentPage) {
@@ -63,9 +64,11 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
         break;
       case SCREEN_NAMES.CART:
         return {
-          patientComponent: <TimelinePatientDone style={styles.iconStyle} />,
+          patientComponent: (
+            <TimelinePatientDone style={[styles.iconStyle, isModify && { opacity: 0.5 }]} />
+          ),
           cartComponent: <TimelineCartProgress style={styles.iconStyle} />,
-          scheduleComponent: <TimelineScheduleUnselected style={styles.iconStyle} />,
+          scheduleComponent: <TimelineScheduleUnselected style={[styles.iconStyle]} />,
           reviewComponent: <TimelineReviewUnselected style={styles.iconStyle} />,
           onPressActionOnPatient: true,
           onPressActionOnCart: false, //set current screen to be false
@@ -75,6 +78,7 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
           bold_cart: true,
           bold_slot: false,
           bold_review: false,
+          disable_addPatient: isModify,
         };
         break;
       case SCREEN_NAMES.SCHEDULE:
@@ -95,7 +99,9 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
         break;
       case SCREEN_NAMES.REVIEW:
         return {
-          patientComponent: <TimelinePatientDone style={styles.iconStyle} />,
+          patientComponent: (
+            <TimelinePatientDone style={[styles.iconStyle, isModify && { opacity: 0.5 }]} />
+          ),
           cartComponent: <TimelineCartDone style={styles.iconStyle} />,
           scheduleComponent: <TimelineScheduleDone style={styles.iconStyle} />,
           reviewComponent: <TimelineReviewProgress style={styles.iconStyle} />,
@@ -107,6 +113,7 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
           bold_cart: true,
           bold_slot: true,
           bold_review: true,
+          disable_addPatient: isModify,
         };
         break;
     }
@@ -118,7 +125,9 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
         <View style={styles.flexRow}>
           <TouchableOpacity
             onPress={() =>
-              imageRules(currentPage)?.onPressActionOnPatient
+              isModify
+                ? {}
+                : imageRules(currentPage)?.onPressActionOnPatient
                 ? props.navigation.navigate(AppRoutes.AddPatients)
                 : {}
             }
@@ -131,6 +140,9 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
               styles.progressLine,
               {
                 height: imageRules(currentPage)?.onPressActionOnPatient ? 3 : 1,
+                opacity: isModify ? 0.3 : 1,
+                left: isModify ? 30 : 16,
+                width: isModify ? screenWidth / 4 : screenWidth / 3.2,
               },
             ]}
           />
@@ -140,9 +152,12 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
             style={[
               styles.headingStyle,
               {
-                color: imageRules(currentPage)?.bold_patient
+                color: isModify
+                  ? colors.SHERPA_BLUE
+                  : imageRules(currentPage)?.bold_patient
                   ? colors.APP_GREEN
                   : colors.SHERPA_BLUE,
+                opacity: isModify ? 0.4 : 1,
               },
             ]}
           >
@@ -200,7 +215,9 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
         <View style={styles.flexRow}>
           <TouchableOpacity
             onPress={() =>
-              imageRules(currentPage)?.onPressActionOnPatient
+              isModify
+                ? {}
+                : imageRules(currentPage)?.onPressActionOnPatient
                 ? props.navigation.navigate(AppRoutes.AddressSlotSelection)
                 : {}
             }
@@ -213,7 +230,9 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
               styles.progressLine,
               {
                 height: imageRules(currentPage)?.onPressActionOnSchedule ? 3 : 1,
-                left: 9,
+                opacity: isModify ? 0.3 : 1,
+                left: isModify ? 20 : 9,
+                width: isModify ? screenWidth / 4 : screenWidth / 3.2,
               },
             ]}
           />
@@ -225,6 +244,7 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
               {
                 color: imageRules(currentPage)?.bold_slot ? colors.APP_GREEN : colors.SHERPA_BLUE,
                 left: -3,
+                opacity: isModify ? 0.4 : 1,
               },
             ]}
           >

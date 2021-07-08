@@ -115,12 +115,16 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     selectedPatient,
     deliveryAddressCityId,
     setDeliveryAddressCityId,
-    showSelectedPatient,
     duplicateItemsArray,
     setDuplicateItemsArray,
     patientCartItems,
     setPatientCartItems,
     removePatientCartItem,
+    setModifiedOrder,
+    setModifyHcCharges,
+    setModifiedOrderItemIds,
+    setHcCharges,
+    setAreaSelected,
   } = useDiagnosticsCart();
 
   const { setAddresses: setMedAddresses } = useShoppingCart();
@@ -157,10 +161,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   //if no deliveryAddressId is then , select the first address/ or default address
 
   const isCartEmpty = isDiagnosticSelectedCartEmpty(patientCartItems);
-  // const getAllSelectedItems = patientCartItems?.map((item) =>
-  //   item?.cartItems?.filter((cItem) => cItem?.isSelected)
-  // );
-  // const isCartEmpty = getAllSelectedItems?.filter((item) => item?.length > 0);
+
+  console.log({ isModifyFlow });
 
   const addressText = isModifyFlow
     ? formatAddressWithLandmark(modifiedOrder?.patientAddressObj) || ''
@@ -187,8 +189,44 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   }, []);
 
   function handleBack() {
-    props.navigation.goBack();
+    if (isModifyFlow) {
+      showAphAlert?.({
+        title: string.common.hiWithSmiley,
+        description: string.diagnostics.modifyDiscardText,
+        unDismissable: true,
+        CTAs: [
+          {
+            text: 'DISCARD',
+            onPress: () => {
+              hideAphAlert?.();
+              clearModifyDetails();
+            },
+            type: 'orange-button',
+          },
+          {
+            text: 'CANCEL',
+            onPress: () => {
+              hideAphAlert?.();
+            },
+            type: 'orange-button',
+          },
+        ],
+      });
+    } else {
+      props.navigation.goBack();
+    }
+
     return true;
+  }
+
+  function clearModifyDetails() {
+    setModifiedOrder?.(null);
+    setModifyHcCharges?.(0);
+    setModifiedOrderItemIds?.([]);
+    setHcCharges?.(0);
+    setAreaSelected?.({});
+    //go back to homepage
+    props.navigation.navigate('TESTS', { focusSearch: true });
   }
 
   useEffect(() => {
@@ -596,7 +634,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           borderRadius: 0,
         }}
         leftIcon={'backArrow'}
-        title={'CART'}
+        title={isModifyFlow ? 'MODIFY ORDERS' : 'CART'}
         onPressLeftIcon={() => handleBack()}
       />
     );
@@ -1288,6 +1326,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         upcomingPages={[SCREEN_NAMES.SCHEDULE, SCREEN_NAMES.REVIEW]}
         donePages={[SCREEN_NAMES.PATIENT]}
         navigation={props.navigation}
+        isModify={isModifyFlow}
       />
     );
   };
