@@ -206,6 +206,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         pharmacyCircleAttributes!,
         pharmacyUserTypeAttribute!
       );
+    setIsCircleSubscription?.(false);
     if (!circleSubPlanId) {
       setCircleMembershipCharges && setCircleMembershipCharges(0);
     }
@@ -961,7 +962,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (cartTotal == 0) {
       renderAlert('Please add items in the cart to apply coupon.');
     } else {
-      props.navigation.navigate(AppRoutes.ViewCoupons, { movedFrom: 'pharma' });
+      props.navigation.navigate(AppRoutes.ViewCoupons);
       setCoupon!(null);
       applyCouponClickedEvent(g(currentPatient, 'id'), JSON.stringify(cartItems));
     }
