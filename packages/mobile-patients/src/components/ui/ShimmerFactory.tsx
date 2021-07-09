@@ -736,9 +736,9 @@ export const CovidButtonShimmer = () => (
   />
 );
 
-export const renderCouponViewShimmer = () => {
+export const couponViewShimmer = () => {
   return (
-    <View style={{ marginVertical: 10 }}>
+    <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
       <ShimmerPlaceHolder
         shimmerColors={shimmerColors}
         LinearGradient={LinearGradient}
