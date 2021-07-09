@@ -12,6 +12,7 @@ import {
   Alert,
 } from 'react-native';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import Share from 'react-native-share';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -219,7 +220,7 @@ export const CowinProfileSelection: React.FC<CowinProfileSelectionProps> = (prop
   const downloadDocument = (url: any) => {
     setSpinner!(true);
     const dirs = RNFetchBlob.fs.dirs;
-    let fileName: string = 'COWIN_CERTIFICATE' + '.pdf';
+    const fileName: string = 'COWIN_CERTIFICATE' + '.pdf';
     const downloadPath =
       Platform.OS === 'ios'
         ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + fileName
@@ -227,16 +228,32 @@ export const CowinProfileSelection: React.FC<CowinProfileSelectionProps> = (prop
     RNFetchBlob.config({
       fileCache: true,
       path: downloadPath,
+      addAndroidDownloads: {
+        title: fileName,
+        useDownloadManager: true,
+        notification: true,
+        path: downloadPath,
+        mediaScannable: true,
+        mime: 'application/pdf',
+      },
     })
       .fetch('GET', url, {
         Authorization: `Bearer ${token}`,
         //some headers ..
       })
       .then((res) => {
+        console.log(res.path());
         setSpinner!(false);
+        const shareOptions = {
+          title: mimeType(res.path()),
+          url: `file://${res.path()}`,
+          failOnCancel: false,
+          showAppsToView: true,
+          mime: 'application/pdf',
+        };
         Platform.OS === 'ios'
           ? RNFetchBlob.ios.previewDocument(res.path())
-          : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+          : Share.open(shareOptions);
       })
       .catch((err) => {
         setSpinner!(false);
