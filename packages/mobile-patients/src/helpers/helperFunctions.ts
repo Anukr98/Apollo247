@@ -102,6 +102,7 @@ import RNFetchBlob from 'rn-fetch-blob';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { HEALTH_CREDITS } from '../utils/AsyncStorageKey';
 import { getPatientByMobileNumber_getPatientByMobileNumber_patients } from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
+import Share from 'react-native-share';
 
 const width = Dimensions.get('window').width;
 
@@ -2952,6 +2953,33 @@ export const getDiagnosticCityLevelPaymentOptions = (cityId: string) => {
   return paymentValues;
 };
 
+export const downloadDocument = (
+  fileUrl: string = '',
+  type: string = 'application/pdf',
+  orderId: number
+) => {
+  let filePath: string | null = null;
+  let file_url_length = fileUrl.length;
+  let viewReportOrderId = orderId;
+  const configOptions = { fileCache: true };
+  RNFetchBlob.config(configOptions)
+    .fetch('GET', fileUrl)
+    .then((resp) => {
+      filePath = resp.path();
+      return resp.readFile('base64');
+    })
+    .then(async (base64Data) => {
+      base64Data = `data:${type};base64,` + base64Data;
+      await Share.open({ title: '', url: base64Data });
+      // remove the image or pdf from device's storage
+      // await RNFS.unlink(filePath);
+    })
+    .catch((err) => {
+      console.log('err', err);
+    });
+
+  return viewReportOrderId;
+};
 export const getIsMedicine = (typeId: string) => {
   const medicineType = {
     fmcg: '0',

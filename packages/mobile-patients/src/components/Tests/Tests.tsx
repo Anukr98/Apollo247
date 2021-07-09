@@ -58,6 +58,7 @@ import {
   handleGraphQlError,
   downloadDiagnosticReport,
   setAsyncPharmaLocation,
+  downloadDocument,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -268,6 +269,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [imgHeight, setImgHeight] = useState(200);
   const [slideIndex, setSlideIndex] = useState(0);
   const [banners, setBanners] = useState([]);
+  const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
 
   const [sectionLoading, setSectionLoading] = useState<boolean>(false);
   const [bookUsSlideIndex, setBookUsSlideIndex] = useState(0);
@@ -2078,6 +2080,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const appointmentDate = moment(clickedItem?.slotDateTimeInUTC)?.format('DD MMM YYYY');
     const patientName = `${clickedItem?.patientObj?.firstName} ${clickedItem?.patientObj?.lastName}`;
     try {
+      setViewReportOrderId(clickedItem?.orderId)
       await downloadDiagnosticReport(
         setLoadingContext,
         clickedItem?.labReportURL,
@@ -2380,6 +2383,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setDisplayViewReport(false);
             setClickedItem([]);
           }}
+          downloadDocument={() => {
+            const res = downloadDocument(clickedItem?.labReportURL, 'application/pdf',clickedItem?.orderId)
+            if (res == clickedItem?.orderId) {
+              setViewReportOrderId(clickedItem?.orderId)
+            }
+          }}
+          viewReportOrderId={viewReportOrderId}
           onPressViewReport={() => {
             onPressViewReport();
           }}

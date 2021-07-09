@@ -1242,7 +1242,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             func && func(product[0]!);
 
             if (comingFrom == 'diagnosticServiceablityChange') {
-              product?.map((item) => {
+              product?.map((item,index) => {
                 const diagnosticPricing = g(item, 'diagnosticPricing');
                 const packageMrp = item?.packageCalculatedMrp!;
                 const pricesForItem = getPricesForItem(diagnosticPricing, packageMrp);
@@ -1257,10 +1257,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 const discountPrice = pricesForItem?.discountPrice!;
                 const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
                 const planToConsider = pricesForItem?.planToConsider;
-
+                const styleFreeItem = cartItems.map((i)=>{
+                  if (i?.id == item?.itemId.toString()) {
+                    return i?.name
+                  }
+                })
                 updateCartItem?.({
                   id: item?.itemId?.toString() || product?.[0]?.id!,
-                  name: item?.itemName,
+                  name: styleFreeItem?.[index] ? styleFreeItem?.[index] : item?.itemName,
                   price: price,
                   thumbnail: '',
                   specialPrice: specialPrice! || price,
