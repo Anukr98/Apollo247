@@ -143,6 +143,13 @@ import { VaccineTermsAndConditions } from '@aph/mobile-patients//src/components/
 import { NeedHelpDiagnosticsOrder } from '@aph/mobile-patients/src/components/NeedHelpDiagnosticsOrder/NeedHelpDiagnosticsOrder';
 import { TestReportViewScreen } from '@aph/mobile-patients/src/components/HealthRecords/TestReportScreenView';
 import { CowinRegistrationScreen } from './Vaccination/CowinRegistrationScreen';
+import { VaccinationScreen } from '@aph/mobile-patients/src/components/HealthRecords/VaccinationScreen';
+import { VaccinationDoseScreen } from '@aph/mobile-patients/src/components/HealthRecords/VaccinationDoseScreen';
+import { AddVaccinationRecord } from '@aph/mobile-patients/src/components/HealthRecords/AddVaccinationRecord';
+import { CowinCertificateOTPScreen } from '@aph/mobile-patients/src/components/HealthRecords/CowinCertificateOTPScreen';
+import { CowinCertificateGetOTP } from '@aph/mobile-patients/src/components/HealthRecords/CowinCertificateGetOTP';
+import { CowinProfileSelection } from '@aph/mobile-patients/src/components/HealthRecords/CowinProfileSelection';
+import { CowinCertificateViewer } from '@aph/mobile-patients/src/components/HealthRecords/CowinCertificateViewer';
 
 export enum AppRoutes {
   Login = 'Login',
@@ -273,6 +280,12 @@ export enum AppRoutes {
   VaccineTermsAndConditions = 'VaccineTermsAndConditions',
   TestReportViewScreen = 'TestReportViewScreen',
   CowinRegistration = 'CowinRegistration',
+  VaccinationScreen = 'VaccinationScreen',
+  VaccinationDoseScreen = 'VaccinationDoseScreen',
+  AddVaccinationRecord = 'AddVaccinationRecord',
+  CowinCertificateOTPScreen = 'CowinCertificateOTPScreen',
+  CowinCertificateGetOTP = 'CowinCertificateGetOTP',
+  CowinProfileSelection = 'CowinProfileSelection',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -695,6 +708,24 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.CowinRegistration]: {
     screen: CowinRegistrationScreen,
+  },
+  [AppRoutes.VaccinationScreen]: {
+    screen: VaccinationScreen,
+  },
+  [AppRoutes.VaccinationDoseScreen]: {
+    screen: VaccinationDoseScreen,
+  },
+  [AppRoutes.AddVaccinationRecord]: {
+    screen: AddVaccinationRecord,
+  },
+  [AppRoutes.CowinCertificateOTPScreen]: {
+    screen: CowinCertificateOTPScreen,
+  },
+  [AppRoutes.CowinCertificateGetOTP]: {
+    screen: CowinCertificateGetOTP,
+  },
+  [AppRoutes.CowinProfileSelection]: {
+    screen: CowinProfileSelection,
   },
 };
 

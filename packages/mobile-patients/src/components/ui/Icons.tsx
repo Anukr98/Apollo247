@@ -602,8 +602,16 @@ export const PhrRemoveBlueIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_phr_remove_icon.webp')} />
 );
 
+export const SchedulTime: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/schedule_time.webp')} />
+);
+
 export const PhrAddTestDetailsIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_phr_add_test_details.webp')} />
+);
+
+export const CalendarBlackIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/calendar_black.webp')} />
 );
 
 export const PhrRemoveTestDetailsIcon: React.FC<IconProps> = (props) => (
@@ -891,6 +899,10 @@ export const ShareYellowDocIcon: React.FC<IconProps> = (props) => (
 
 export const ShareIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/ic_share.webp')} />
+);
+
+export const Vaccination: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/Vaccination.webp')} />
 );
 
 export const WhiteListViewIcon: React.FC<IconProps> = (props) => (

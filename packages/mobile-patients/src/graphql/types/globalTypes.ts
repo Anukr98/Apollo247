@@ -179,6 +179,22 @@ export enum DOCTOR_ONLINE_STATUS {
   ONLINE = 'ONLINE',
 }
 
+export interface CowinLoginVerifyInput {
+  operationType: OperationType;
+  mobileNumber: string;
+  otp?: string | null;
+  txnId?: string | null;
+}
+
+export interface GetCowinBeneficiaryInput {
+  mobileNumber: string;
+}
+
+export enum OperationType {
+  GENERATE_OTP = 'GENERATE_OTP',
+  VERIFY_OTP = 'VERIFY_OTP',
+}
+
 export enum DiagnosticsBookingSource {
   MOBILE = 'MOBILE',
   OP_CALL_CENTER = 'OP_CALL_CENTER',
@@ -447,6 +463,7 @@ export enum MedicalRecordType {
   HEALTHCHECK = 'HEALTHCHECK',
   HEALTHRESTRICTION = 'HEALTHRESTRICTION',
   HOSPITALIZATION = 'HOSPITALIZATION',
+  IMMUNIZATION = 'IMMUNIZATION',
   MEDICALBILL = 'MEDICALBILL',
   MEDICALCONDITION = 'MEDICALCONDITION',
   MEDICALINSURANCE = 'MEDICALINSURANCE',
@@ -808,6 +825,28 @@ export interface AddHospitalizationRecordInput {
   doctorName: string;
   diagnosisNotes?: string | null;
   hospitalizationFiles?: (HospitalizationFileProperties | null)[] | null;
+}
+
+export interface AddImmunizationRecordInput {
+  id?: string | null;
+  registrationId?: string | null;
+  dateOfImmunization?: any | null;
+  patientId: string;
+  recordType: MedicalRecordType;
+  immunizationName: string;
+  dateAdministered?: any | null;
+  followUpDate?: any | null;
+  doctorName?: string | null;
+  manufacturer?: string | null;
+  batchno?: string | null;
+  vaccineName?: string | null;
+  potency?: string | null;
+  hospitalName?: string | null;
+  vaccine_location?: string | null;
+  notes?: string | null;
+  source?: string | null;
+  reactions?: (ImmunizationReactionsParameters | null)[] | null;
+  immunizationFiles?: (ImmunizationFileProperties | null)[] | null;
 }
 
 export interface AddLabTestRecordInput {
@@ -1212,6 +1251,18 @@ export interface HospitalizationFileProperties {
   fileName?: string | null;
   mimeType?: string | null;
   content?: string | null;
+}
+
+export interface ImmunizationFileProperties {
+  fileName?: string | null;
+  mimeType?: string | null;
+  content?: string | null;
+}
+
+export interface ImmunizationReactionsParameters {
+  type?: string | null;
+  from?: any | null;
+  to?: any | null;
 }
 
 export interface LabTestFileProperties {
@@ -1855,6 +1906,46 @@ export interface voipPushTokenInput {
   voipToken?: string | null;
 }
 
+/** * current status of appointment */
+export enum APPOINTMENT_STATUS {
+  BOOKED = 'BOOKED',
+  CANCELLED = 'CANCELLED',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
+  VERIFIED = 'VERIFIED',
+}
+/** * dose number first second */
+export enum DOSE_NUMBER {
+  FIRST = 'FIRST',
+  SECOND = 'SECOND',
+}
+/** * payment type for appointment */
+export enum PAYMENT_TYPE {
+  CASHLESS = 'CASHLESS',
+  COD = 'COD',
+  PREPAID = 'PREPAID',
+}
+/** * booking source */
+export enum VACCINE_BOOKING_SOURCE {
+  AP_IN = 'AP_IN',
+  MOBILE = 'MOBILE',
+  WEB = 'WEB',
+}
+/** * types of vaccine */
+export enum VACCINE_TYPE {
+  COVAXIN = 'COVAXIN',
+  COVISHIELD = 'COVISHIELD',
+  SPUTNIK = 'SPUTNIK',
+  MORDERNA = 'MORDERNA',
+}
+export interface CreateAppointmentInput {
+  appointment_id?: string | null;
+  patient_id: string;
+  resource_session_id: string;
+  dose_number: DOSE_NUMBER;
+  booking_source?: VACCINE_BOOKING_SOURCE | null;
+  corporate_name?: string | null;
+}
 //==============================================================
 // END Enums and Input Objects
 //==============================================================
