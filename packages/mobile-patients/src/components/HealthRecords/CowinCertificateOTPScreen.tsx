@@ -160,6 +160,8 @@ export const CowinCertificateOTPScreen: React.FC<CowinCertificateOTPScreenProps>
               maxLength={10}
               style={[styles.doctorInputContainer, { bottom: Platform.OS === 'android' ? 0 : 5 }]}
               numberOfLines={1}
+              returnKeyType="done"
+              onSubmitEditing={() => getOTPFromCOWIN(phoneNo)}
               value={phoneNo}
               onChangeText={(phoneNo) => {
                 if (isValidText(phoneNo)) {

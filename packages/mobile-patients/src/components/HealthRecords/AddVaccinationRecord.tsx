@@ -339,15 +339,6 @@ export const AddVaccinationRecord: React.FC<AAddVaccinationRecordProps> = (props
       setshowSpinner(true);
       const formatDate = moment(dateOfTest).format('YYYY-MM-DD');
       const doseType = doseCount === 'Dose 1' ? '1' : '2';
-      console.log(
-        currentPatient?.id,
-        MedicalRecordType.IMMUNIZATION,
-        formatDate,
-        vaccinationName,
-        doseType,
-        registrationID,
-        vaccinationCener
-      );
       client
         .mutate<addPatientImmunizationRecord, addPatientImmunizationRecordVariables>({
           mutation: GET_IMMUNIZATION_DETAILS,
@@ -380,7 +371,6 @@ export const AddVaccinationRecord: React.FC<AAddVaccinationRecordProps> = (props
             phrSession,
             setPhrSession
           );
-          console.log(data?.addPatientImmunizationRecord.status);
           if (data?.addPatientImmunizationRecord.status) {
             gotoHealthRecordsHomeScreen();
           }
@@ -391,7 +381,6 @@ export const AddVaccinationRecord: React.FC<AAddVaccinationRecordProps> = (props
             title: 'Network Error!',
             description: 'Please try again later.',
           });
-          console.log(e, 'error');
           CommonBugFender('AddVaccinationRecord_addPatientImmunizationRecord', e);
         });
     }

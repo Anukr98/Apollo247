@@ -177,7 +177,6 @@ export const CowinCertificateGetOTP: React.FC<CowinCertificateGetOTPProps> = (pr
         .catch((error: any) => {
           setshowSpinner!(false);
           Alert.alert(string.login.oops, string.common.phr_api_error_text);
-          console.log(error, 'errr');
         })
         .finally(() => {
           setshowSpinner!(false);
@@ -299,6 +298,8 @@ export const CowinCertificateGetOTP: React.FC<CowinCertificateGetOTPProps> = (pr
               maxLength={6}
               style={[styles.doctorInputContainer, { bottom: Platform.OS === 'android' ? 0 : 5 }]}
               numberOfLines={1}
+              returnKeyType="done"
+              onSubmitEditing={() => verifyOTPFromCowin()}
               value={enterOTP}
               onChangeText={(OTP) => {
                 if (isValidText(OTP)) {

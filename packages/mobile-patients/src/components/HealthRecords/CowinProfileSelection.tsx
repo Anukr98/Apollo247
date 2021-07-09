@@ -12,19 +12,14 @@ import {
   Alert,
 } from 'react-native';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import Share from 'react-native-share';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import _ from 'lodash';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import {
-  handleGraphQlError,
-  removeObjectProperty,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import RNFetchBlob from 'rn-fetch-blob';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
@@ -203,17 +198,12 @@ export const CowinProfileSelection: React.FC<CowinProfileSelectionProps> = (prop
       .then((data: any) => {
         setSpinner!(false);
         downloadDocument(data?.url);
-        // props.navigation.navigate(AppRoutes.CowinCertificateViewer, {
-        //   pdfURI: data?.url,
-        //   cowinToken: token,
-        // });
       })
       .catch((error) => {
         setSpinner!(false);
         Alert.alert('Oh Sorry... :(', 'Your certificate is not ready yet..!!', [
           { text: 'OK', onPress: () => onGoBack() },
         ]);
-        console.log(error, 'err');
       });
   };
 
@@ -242,18 +232,10 @@ export const CowinProfileSelection: React.FC<CowinProfileSelectionProps> = (prop
         //some headers ..
       })
       .then((res) => {
-        console.log(res.path());
         setSpinner!(false);
-        const shareOptions = {
-          title: mimeType(res.path()),
-          url: `file://${res.path()}`,
-          failOnCancel: false,
-          showAppsToView: true,
-          mime: 'application/pdf',
-        };
         Platform.OS === 'ios'
           ? RNFetchBlob.ios.previewDocument(res.path())
-          : Share.open(shareOptions);
+          : Alert.alert('Hello!', 'Your vaccination certificate is downloaded');
       })
       .catch((err) => {
         setSpinner!(false);
@@ -315,11 +297,13 @@ export const CowinProfileSelection: React.FC<CowinProfileSelectionProps> = (prop
 
   const renderViewAndDownloadCertificate = () => {
     const vaccinationBool =
-      vaccinationStatus === 'Partially Vaccinated' || 'Vaccinated' ? true : false;
+      vaccinationStatus === 'Partially Vaccinated' || vaccinationStatus === 'Vaccinated'
+        ? false
+        : true;
     return (
       <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
         <Button
-          disabled={!vaccinationBool}
+          disabled={vaccinationBool}
           style={{ width: '100%' }}
           title={'View and Download Certificate'}
           onPress={() => {

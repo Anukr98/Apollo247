@@ -151,7 +151,6 @@ export const VaccinationScreen: React.FC<VaccinationScreenProps> = (props) => {
           'immunizations',
           'response'
         );
-        console.log(immunizations, 'immunizations');
         if (!!immunizations) {
           finalData = initialSortByDays('immunization', immunizations, finalData);
           setLocalVaccinationData(finalData);

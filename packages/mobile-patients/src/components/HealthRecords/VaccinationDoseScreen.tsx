@@ -188,26 +188,10 @@ const styles = StyleSheet.create({
 export interface VaccinationDoseScreenProps extends NavigationScreenProps {}
 
 export const VaccinationDoseScreen: React.FC<VaccinationDoseScreenProps> = (props) => {
-  const [showPrescription, setshowPrescription] = useState<boolean>(true);
-  const [showAdditionalNotes, setShowAdditionalNotes] = useState<boolean>(false);
   const [data, setData] = useState<any>(
     props.navigation.state.params ? props.navigation.state.params.data : {}
   );
   const [apiError, setApiError] = useState(false);
-  const [showPDF, setShowPDF] = useState<boolean>(false);
-  const [fileNamePDF, setFileNamePDF] = useState<string>('');
-  const [pdfFileUrl, setPdfFileUrl] = useState<string>('');
-  const { currentPatient } = useAllCurrentPatients();
-  const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
-  const { authToken } = useAuth();
-  const apolloVaccineClient = buildVaccineApolloClient(authToken);
-
-  //for deeplink
-  const movedFrom = props.navigation.getParam('movedFrom');
-
-  useEffect(() => {
-    console.log(data, 'data');
-  }, []);
 
   const handleBack = async () => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
