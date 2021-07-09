@@ -22,7 +22,6 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import RNFetchBlob from 'rn-fetch-blob';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 
 const styles = StyleSheet.create({
   cardViewStyle: {
