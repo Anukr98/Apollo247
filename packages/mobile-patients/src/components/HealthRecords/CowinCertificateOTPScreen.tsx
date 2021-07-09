@@ -206,8 +206,11 @@ export const CowinCertificateOTPScreen: React.FC<CowinCertificateOTPScreenProps>
 
   const getOTPFromCOWIN = (phoneNum: any) => {
     const prefixNumber = `+91${phoneNum}`;
+    if (!phoneNum) {
+      return Alert.alert('OOPS!', 'Please provide your number');
+    }
     setshowSpinner!(true);
-    if (phoneNum) {
+    if (phoneNum.length === 10) {
       apolloVaccineClient
         .query<CowinLoginVerify>({
           query: GET_OTP_COWIN,
@@ -238,6 +241,9 @@ export const CowinCertificateOTPScreen: React.FC<CowinCertificateOTPScreenProps>
         .finally(() => {
           setshowSpinner!(false);
         });
+    } else {
+      setshowSpinner!(false);
+      return Alert.alert('Warning!!', 'Phone number must contain 10 numbers');
     }
   };
 
