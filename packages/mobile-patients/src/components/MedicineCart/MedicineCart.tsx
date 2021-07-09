@@ -1011,9 +1011,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       <TouchableOpacity
         activeOpacity={0.7}
         style={styles.applyBenefits}
-        disabled={
-          (!coupon && isCircleSubscription) || (coupon?.circleBenefits && isCircleSubscription)
-        }
         onPress={() => {
           if (!coupon && isCircleSubscription) {
             if (!circleSubscriptionId || cartTotalCashback) {
