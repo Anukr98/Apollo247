@@ -142,7 +142,7 @@ export interface pharma_coupon {
   message: string;
   applicable?: string;
   textOffer?: string;
-  frontEndCategory?: string;
+  frontendCategory?: string;
 }
 
 export interface ViewCouponsProps extends NavigationScreenProps {
@@ -209,17 +209,15 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
       email: g(currentPatient, 'emailAddress'),
       type: isFromConsult ? 'Consult' : 'Pharmacy',
     };
-
     fetchConsultCoupons(data)
       .then((res: any) => {
-        const coupons: pharma_coupon[] = res?.data?.response || [];
-        const circleCoupons = coupons.filter(isCircleCoupon);
-        setCircleCoupons(circleCoupons || []);
-        const productOfferCoupons = !isFromConsult ? coupons?.filter(isProductOfferCoupon) : [];
+        const coupons = res?.data?.response || [];
+        const productOfferCoupons = !isFromConsult
+          ? coupons?.filter((coupon: pharma_coupon) => coupon?.frontEndCategory === 'productOffers')
+          : [];
         setProductOffers(productOfferCoupons || []);
         const nonSpecialOfferCoupons =
-          coupons.filter((coupon) => !isProductOfferCoupon(coupon) && !isCircleCoupon(coupon)) ||
-          [];
+          coupons.filter((coupon: pharma_coupon) => !productOfferCoupons.includes(coupon)) || [];
         setCouponList(nonSpecialOfferCoupons || []);
         setShimmerLoading(false);
       })
@@ -232,14 +230,6 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
         });
       });
   }, []);
-
-  const isCircleCoupon = (coupon: pharma_coupon) => {
-    return coupon?.applicable?.toLowerCase().includes('APOLLO:Circle'.toLowerCase());
-  };
-
-  const isProductOfferCoupon = (coupon: pharma_coupon) => {
-    return coupon?.frontEndCategory?.toLowerCase() === 'productOffers'.toLowerCase();
-  };
 
   const applyCoupon = (
     coupon: string,
