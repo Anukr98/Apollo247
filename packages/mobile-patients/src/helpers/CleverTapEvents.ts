@@ -2242,6 +2242,14 @@ export interface CleverTapEvents {
     User_Type?: PharmaUserStatus;
     Pincode?: string;
     serviceable: YesOrNo;
+    TATDay?: number | null;
+    TatHour?: number | null;
+    TatDateTime?: Date | string;
+    ProductType?: string;
+    MaxOrderQuantity?: number;
+    MRP?: number;
+    SpecialPrice?: number | null;
+    CircleCashback?: number;
   };
   [CleverTapEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
     'Patient Name': string;

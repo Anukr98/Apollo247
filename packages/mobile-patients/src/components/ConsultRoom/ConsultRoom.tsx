@@ -1334,8 +1334,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       locationDetails.pincode &&
       eventName == CleverTapEventName.BUY_MEDICINES
     ) {
-      (eventAttributes as PatientInfoWithSource)['Pincode'] = locationDetails.pincode;
-      (eventAttributes as PatientInfoWithSource)['Serviceability'] = serviceable;
+      (eventAttributes as PatientInfoWithSource)['Pincode'] = locationDetails?.pincode || undefined;
+      (eventAttributes as PatientInfoWithSource)['Serviceability'] = serviceable || undefined;
     }
     if (eventName == CleverTapEventName.BUY_MEDICINES) {
       eventAttributes = {
@@ -1446,7 +1446,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
         postHomeCleverTapEvent(
-          CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED
+          CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED,
+          'Home Screen'
         );
         props.navigation.navigate(AppRoutes.DoctorSearch);
       },
@@ -1458,6 +1459,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Home Screen');
+        postHomeCleverTapEvent(CleverTapEventName.BUY_MEDICINES, 'Home Screen');
         props.navigation.navigate('MEDICINES', { focusSearch: true });
         const eventAttributes:
           | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
@@ -1490,6 +1492,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.VIEW_HELATH_RECORDS, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Home Screen');
+        postHomeCleverTapEvent(CleverTapEventName.VIEW_HELATH_RECORDS, 'Home Screen');
         props.navigation.navigate('HEALTH RECORDS');
       },
     },
@@ -1514,7 +1517,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         postCleverTapEvent(CleverTapEventName.SYMPTOM_TRACKER_PAGE_CLICKED, eventAttributes);
         postHomeFireBaseEvent(FirebaseEventName.TRACK_SYMPTOMS, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.TRACK_SYMPTOMS);
-        postHomeCleverTapEvent(CleverTapEventName.TRACK_SYMPTOMS);
+        postHomeCleverTapEvent(CleverTapEventName.TRACK_SYMPTOMS, 'Home Screen');
         props.navigation.navigate(AppRoutes.SymptomTracker);
       },
     },
@@ -2578,11 +2581,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 } else if (i == 1) {
                   postHomeFireBaseEvent(FirebaseEventName.VIEW_HELATH_RECORDS, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Menu');
+                  postHomeCleverTapEvent(CleverTapEventName.VIEW_HELATH_RECORDS, 'Menu');
                   CommonLogEvent(AppRoutes.ConsultRoom, 'HEALTH_RECORDS clicked');
                   props.navigation.navigate('HEALTH RECORDS');
                 } else if (i == 2) {
                   postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Menu');
+                  postHomeCleverTapEvent(CleverTapEventName.BUY_MEDICINES, 'Menu');
                   CommonLogEvent(AppRoutes.ConsultRoom, 'MEDICINES clicked');
                   const eventAttributes:
                     | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
