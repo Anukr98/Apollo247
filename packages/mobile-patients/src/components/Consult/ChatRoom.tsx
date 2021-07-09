@@ -775,7 +775,7 @@ const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG
 export interface ChatRoomProps extends NavigationScreenProps {}
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
-  const [startCallConnectionUpdateBT, setStartCallConnectionUpdateBT] = useState<any>();
+  const [startCallConnectionUpdateBT, setStartCallConnectionUpdateBT] = useState<number>(0);
   const fromIncomingCall = props.navigation.state.params!.isCall;
   const { isIphoneX } = DeviceHelper();
   const [contentHeight, setContentHeight] = useState(40);
@@ -1555,6 +1555,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }, 10000);
       } else {
         setTextChange(false);
+
+        AsyncStorage.getItem('startCallConnectionUpdateBT').then((data) => {
+          BackgroundTimer.clearInterval(Number.parseInt(data || '0'));
+        });
         BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
       }
     }
@@ -1713,9 +1717,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           //retry time out
           hideCallUI();
           if (isAudio.current) {
-            handleEndAudioCall(false);
+            handleEndAudioCall(false, false);
           } else {
-            handleEndCall(false);
+            handleEndCall(false, false);
           }
           clearNetworkCheckInterval();
         }
@@ -2437,6 +2441,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       );
       stopTimer();
       startTimer(0);
+
       startCallConnectionUpdateFx();
     },
     streamDestroyed: (event: string) => {
@@ -2447,6 +2452,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       patientJoinedCall.current = false;
       // subscriberConnected.current = false;
       endVoipCall();
+      AsyncStorage.getItem('startCallConnectionUpdateBT').then((data) => {
+        BackgroundTimer.clearInterval(Number.parseInt(data || '0'));
+      });
       BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
     },
     error: (error: string) => {
@@ -2502,6 +2510,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       patientJoinedCall.current = false;
       subscriberConnected.current = false;
       endVoipCall();
+      AsyncStorage.getItem('startCallConnectionUpdateBT').then((data) => {
+        BackgroundTimer.clearInterval(Number.parseInt(data || '0'));
+      });
       BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
     },
     otrnError: (error: string) => {
@@ -3372,8 +3383,24 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       ) {
         if (message?.message?.id !== currentPatient?.id) {
           // call has been ended by doctor
+
+          AsyncStorage.getItem('startCallConnectionUpdateBT').then((data) => {
+            BackgroundTimer.clearInterval(Number.parseInt(data || '0'));
+          });
+
+          // Disconnecting the call as doctor disconnected --------- */
+          callStatus.current = disconnecting;
           callToastStatus.current = 'Call has been ended by doctor.';
-          BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
+          isErrorToast.current = true;
+          setTimeout(() => {
+            hideCallUI();
+          }, 2000);
+          if (isAudio.current) {
+            handleEndAudioCall();
+          } else {
+            handleEndCall();
+          }
+          ////------------ */
         }
         //resetCurrentRetryAttempt();
         setTimeout(() => {
@@ -3437,7 +3464,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setDoctorJoinedChat && setDoctorJoinedChat(false);
         setDoctorJoined(false);
       } else if (message.message.message === endCallMsg) {
+        AsyncStorage.getItem('startCallConnectionUpdateBT').then((data) => {
+          BackgroundTimer.clearInterval(Number.parseInt(data || '0'));
+        });
         BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
+
         //Intentionally commented
         //resetCurrentRetryAttempt();
         // callStatus.current = disconnecting;
@@ -3945,6 +3976,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       medicines: (medPrescription || []).map((item: any) => item!.medicineName).join(', '),
       uploadedUrl: docUrl,
     } as EPrescription;
+    postWebEngageEvent(WebEngageEventName.ORDER_MEDICINES_IN_CONSULT_ROOM, {
+      ...UserInfo,
+      'Order Type': isCartOrder ? 'Cart' : 'Non-Cart',
+    });
 
     if (isCartOrder) {
       try {
@@ -3987,10 +4022,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     props.navigation.navigate(AppRoutes.UploadPrescription, {
       ePrescriptionsProp: [presToAdd],
       type: 'E-Prescription',
-    });
-    postWebEngageEvent(WebEngageEventName.ORDER_MEDICINES_IN_CONSULT_ROOM, {
-      ...UserInfo,
-      'Order Type': isCartOrder ? 'Cart' : 'Non-Cart',
     });
   };
 
@@ -5829,10 +5860,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const startCallConnectionUpdateFx = () => {
-    const startCallConnectionUpdate = BackgroundTimer.setInterval(() => {
+    const startCallConnectionUpdateBT = BackgroundTimer.setInterval(() => {
       updateStatusOfCall({ appointmentId: appointmentData.id, patientId: patientId });
     }, 30000);
-    setStartCallConnectionUpdateBT(startCallConnectionUpdate);
+    setStartCallConnectionUpdateBT(startCallConnectionUpdateBT);
+    AsyncStorage.setItem('startCallConnectionUpdateBT', startCallConnectionUpdateBT.toString());
   };
 
   const onPressJoinBtn = () => {
@@ -6195,6 +6227,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (isIos()) {
       RNCallKeep.endAllCalls();
     }
+    AsyncStorage.getItem('startCallConnectionUpdateBT').then((data) => {
+      BackgroundTimer.clearInterval(Number.parseInt(data || '0'));
+    });
     BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
   };
 
@@ -6353,8 +6388,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   //   }
   // }, [callTimer]);
 
-  const handleEndCall = (playSound: boolean = true) => {
+  const handleEndCall = (playSound: boolean = true, publishPubnub: boolean = true) => {
+    AsyncStorage.getItem('startCallConnectionUpdateBT').then((data) => {
+      BackgroundTimer.clearInterval(Number.parseInt(data || '0'));
+    });
     BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
+
     APICallAgain(false);
     resetCurrentRetryAttempt();
     setTimeout(() => {
@@ -6372,38 +6411,46 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setChatReceived(false);
       postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
       callEndWebengageEvent('Patient');
-      pubnub.publish(
-        {
-          message: {
-            isTyping: true,
-            message: 'Video call ended',
-            duration: callTimerStarted,
-            id: patientId,
-            messageDate: new Date(),
-          },
-          channel: channel,
-          storeInHistory: true,
-        },
-        (status, response) => {}
-      );
 
-      pubnub.publish(
-        {
-          message: {
-            isTyping: true,
-            message: endCallMsg,
-            id: patientId,
-            messageDate: new Date(),
+      if (publishPubnub) {
+        pubnub.publish(
+          {
+            message: {
+              isTyping: true,
+              message: 'Video call ended',
+              duration: callTimerStarted,
+              id: patientId,
+              messageDate: new Date(),
+            },
+            channel: channel,
+            storeInHistory: true,
           },
-          channel: channel,
-          storeInHistory: true,
-        },
-        (status, response) => {}
-      );
+          (status, response) => {}
+        );
+
+        pubnub.publish(
+          {
+            message: {
+              isTyping: true,
+              message: endCallMsg,
+              id: patientId,
+              messageDate: new Date(),
+            },
+            channel: channel,
+            storeInHistory: true,
+          },
+          (status, response) => {}
+        );
+      }
     }, 2000);
   };
 
-  const handleEndAudioCall = (playSound: boolean = true) => {
+  const handleEndAudioCall = (playSound: boolean = true, publishPubnub: boolean = true) => {
+    AsyncStorage.getItem('startCallConnectionUpdateBT').then((data) => {
+      BackgroundTimer.clearInterval(Number.parseInt(data || '0'));
+    });
+    BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
+
     BackgroundTimer.clearInterval(startCallConnectionUpdateBT);
     APICallAgain(false);
     resetCurrentRetryAttempt();
@@ -6421,34 +6468,36 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setCameraPosition('front');
       postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
       callEndWebengageEvent('Patient');
-      pubnub.publish(
-        {
-          message: {
-            isTyping: true,
-            message: 'Audio call ended',
-            duration: callTimerStarted,
-            id: patientId,
-            messageDate: new Date(),
+      if (publishPubnub) {
+        pubnub.publish(
+          {
+            message: {
+              isTyping: true,
+              message: 'Audio call ended',
+              duration: callTimerStarted,
+              id: patientId,
+              messageDate: new Date(),
+            },
+            channel: channel,
+            storeInHistory: true,
           },
-          channel: channel,
-          storeInHistory: true,
-        },
-        (status, response) => {}
-      );
+          (status, response) => {}
+        );
 
-      pubnub.publish(
-        {
-          message: {
-            isTyping: true,
-            message: endCallMsg,
-            id: patientId,
-            messageDate: new Date(),
+        pubnub.publish(
+          {
+            message: {
+              isTyping: true,
+              message: endCallMsg,
+              id: patientId,
+              messageDate: new Date(),
+            },
+            channel: channel,
+            storeInHistory: true,
           },
-          channel: channel,
-          storeInHistory: true,
-        },
-        (status, response) => {}
-      );
+          (status, response) => {}
+        );
+      }
     }, 2000);
   };
 

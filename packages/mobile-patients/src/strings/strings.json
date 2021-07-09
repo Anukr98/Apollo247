@@ -483,6 +483,7 @@
       "bookedByMistake": "Booked by Mistake",
       "lesserPrice": "Got lesser price elsewhere",
       "urgentReport": "Need Report Urgently",
+      "needModifyOrder": "Need to modify patient / order details",
       "anotherChannel": "Booked from other channel",
       "otherReasons": "Others (Please specify)"
     },

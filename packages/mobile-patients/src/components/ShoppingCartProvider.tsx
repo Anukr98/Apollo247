@@ -32,7 +32,7 @@ export interface ShoppingCartItem {
   isInStock: boolean;
   unserviceable?: boolean;
   unavailableOnline?: boolean; // sell_online
-  isMedicine: boolean;
+  isMedicine: string;
   productType?: 'FMCG' | 'Pharma' | 'PL';
   isFreeCouponProduct?: boolean;
   applicable?: boolean;
@@ -822,7 +822,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
               ), // (diff of (MRP - discountedPrice) * quantity)
               isPrescriptionNeeded: item?.prescriptionRequired ? 1 : 0,
               mou: Number(item?.mou),
-              isMedicine: item?.isMedicine ? '1' : '0',
+              isMedicine: item?.isMedicine?.toString(),
               couponFree: item?.isFreeCouponProduct ? 1 : 0,
             } as MedicineCartOMSItem;
           }
@@ -891,7 +891,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
           ), // (diff of (MRP - discountedPrice) * quantity)
           isPrescriptionNeeded: item?.prescriptionRequired ? 1 : 0,
           mou: Number(item?.mou),
-          isMedicine: item?.isMedicine ? '1' : '0',
+          isMedicine: item?.isMedicine?.toString(),
           couponFree: item?.isFreeCouponProduct ? 1 : 0,
         } as MedicineCartOMSItem;
       })

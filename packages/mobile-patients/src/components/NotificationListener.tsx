@@ -20,6 +20,7 @@ import {
   g,
   postWebEngageEvent,
   overlyCallPermissions,
+  getIsMedicine,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -654,7 +655,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                           : undefined,
                         quantity: items[index].qty || 1,
                         prescriptionRequired: medicineDetails.is_prescription_required == '1',
-                        isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
+                        isMedicine: getIsMedicine(medicineDetails.type_id?.toLowerCase()) || '0',
                         thumbnail: medicineDetails.thumbnail || medicineDetails.image,
                         maxOrderQty: medicineDetails.MaxOrderQty,
                         productType: medicineDetails.type_id,

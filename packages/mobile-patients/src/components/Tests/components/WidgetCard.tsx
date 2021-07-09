@@ -30,7 +30,7 @@ export const WidgetCard: React.FC<WidgetCardProps> = (props) => {
         )}
       </View>
       <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>
-        {nameFormater(data?.itemTitle, 'default')}
+        {data?.itemTitle}
       </Text>
     </TouchableOpacity>
   );

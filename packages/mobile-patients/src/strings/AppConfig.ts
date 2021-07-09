@@ -1373,6 +1373,7 @@ export const TestCancelReasons = {
     string.diagnostics.reasonForCancel_TestOrder.anotherChannel,
     string.diagnostics.reasonForCancel_TestOrder.urgentReport,
     string.diagnostics.reasonForCancel_TestOrder.lesserPrice,
+    string.diagnostics.reasonForCancel_TestOrder.needModifyOrder,
     string.diagnostics.reasonForCancel_TestOrder.otherReasons,
   ],
 };
@@ -1382,6 +1383,7 @@ export const TestCancelReasonsPre = {
     string.diagnostics.reasonForCancel_TestOrder.anotherChannel,
     string.diagnostics.reasonForCancel_TestOrder.urgentReport,
     string.diagnostics.reasonForCancel_TestOrder.lesserPrice,
+    string.diagnostics.reasonForCancel_TestOrder.needModifyOrder,
     string.diagnostics.reasonForCancel_TestOrder.otherReasons,
   ],
 };
