@@ -255,6 +255,13 @@ const styles = StyleSheet.create({
   bottomWhiteButtonTextStyle: {
     color: theme.colors.APP_YELLOW,
   },
+  calendarIcon: {
+    width: 20,
+    height: 20,
+    right: 10,
+    bottom: 3,
+    left: 0,
+  },
   addMoreImageViewStyle: { width: 82, height: 82, paddingTop: 10 },
 });
 
@@ -484,9 +491,7 @@ export const AddVaccinationRecord: React.FC<AAddVaccinationRecordProps> = (props
                   <Text style={styles.recordCalendar}>
                     {dateOfTest !== '' ? dateOfTest : 'DD/MM/YYYY'}
                   </Text>
-                  <CalendarBlackIcon
-                    style={{ width: 20, height: 20, right: 10, bottom: 3, left: 0 }}
-                  />
+                  <CalendarBlackIcon style={styles.calendarIcon} />
                 </TouchableOpacity>
               </View>
               <View style={styles.dropDownContainer}>
