@@ -134,6 +134,9 @@ export enum CleverTapEventName {
   PHARMACY_PAYMENT_INITIATED = 'Pharmacy Payment Initiated',
   PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED = 'Pharmacy Enter Delivery Pincode Submitted',
   PHARMACY_AUTO_SELECT_LOCATION_CLICKED = 'Pharmacy Pincode auto-selection clicked',
+  PHARMACY_RE_ORDER_MEDICINE = 'Pharmacy Reorder Clicked',
+  PHARMACY_MY_ORDERS_CLICKED = 'Pharmacy My Orders Clicked',
+  PHARMACY_MY_ORDER_TRACKING_CLICKED = 'Pharmacy Track Order Clicked',
 
   // Diagnostics Events
   DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic landing page viewed',
@@ -179,7 +182,6 @@ export enum CleverTapEventName {
   ITEMS_CLICKED = 'Items Clicked',
   PHR_ORDER_MEDS_TESTS = 'PHR Order Tests and Meds Prescription',
   PHR_CONSULT_CARD_CLICK = 'PHR Consult Card click',
-  RE_ORDER_MEDICINE = 'ReOrder Medicine',
   PHR_CLICK_DOCTOR_CONSULTATIONS = 'PHR Click Doctor Consultations',
   PHR_CLICK_TEST_REPORTS = 'PHR Click Test Reports',
   PHR_CLICK_HOSPITALIZATIONS = 'PHR Click Hospitalizations',
@@ -282,8 +284,6 @@ export enum CleverTapEventName {
   TRUECALLER_APOLLO247_LOGIN_ERRORS = 'Apollo247 truecaller login errors',
   LOGIN_WITH_TRUECALLER_CLICKED = 'Login with truecaller clicked',
 
-  MY_ORDERS_CLICKED = 'My Orders Clicked',
-  PHARMACY_MY_ORDER_TRACKING_CLICKED = 'Pharmacy My Order Tracking Clicked',
   PHARMACY_CART_ADDRESS_SELECTED_FAILURE = 'Pharmacy Cart Address Selected Failure',
   PHARMACY_CART_SELECT_DELIVERY_ADDRESS_CLICKED = 'Pharmacy Cart - Select Delivery Address Clicked',
   PHARMACY_CART_UPLOAD_PRESCRIPTION_CLICKED = 'Pharmacy Cart - Upload Prescription Clicked',
@@ -1140,7 +1140,7 @@ export interface CleverTapEvents {
     'User Type'?: PharmaUserStatus;
   };
   [CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED]: {
-    'Order ID': string | number;
+    'Transaction ID': string | number;
     'Order Type': 'Cart' | 'Non Cart';
     'Prescription Required': YesOrNo;
     'Prescription Added': boolean;

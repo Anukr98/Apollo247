@@ -20,7 +20,9 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
-type MyOrdersClicked = WebEngageEvents[WebEngageEventName.MY_ORDERS_CLICKED];
+type MyOrdersClicked =
+  | WebEngageEvents[WebEngageEventName.MY_ORDERS_CLICKED]
+  | CleverTapEvents[CleverTapEventName.PHARMACY_MY_ORDERS_CLICKED];
 
 export const postMyOrdersClicked = (
   source: MyOrdersClicked['Source'],
@@ -32,9 +34,12 @@ export const postMyOrdersClicked = (
     'Mobile Number': g(customer, 'mobileNumber')!,
   };
   postWebEngageEvent(WebEngageEventName.MY_ORDERS_CLICKED, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.PHARMACY_MY_ORDERS_CLICKED, eventAttributes);
 };
 
-type PharmacyMyOrderTrackingClicked = WebEngageEvents[WebEngageEventName.PHARMACY_MY_ORDER_TRACKING_CLICKED];
+type PharmacyMyOrderTrackingClicked =
+  | WebEngageEvents[WebEngageEventName.PHARMACY_MY_ORDER_TRACKING_CLICKED]
+  | CleverTapEvents[CleverTapEventName.PHARMACY_MY_ORDER_TRACKING_CLICKED];
 
 export const postPharmacyMyOrderTrackingClicked = (
   orderId: PharmacyMyOrderTrackingClicked['Order ID'],
@@ -54,6 +59,7 @@ export const postPharmacyMyOrderTrackingClicked = (
     'Mobile Number': g(customer, 'mobileNumber')!,
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_MY_ORDER_TRACKING_CLICKED, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.PHARMACY_MY_ORDER_TRACKING_CLICKED, eventAttributes);
 };
 
 type PharmacyAddNewAddressClick =
