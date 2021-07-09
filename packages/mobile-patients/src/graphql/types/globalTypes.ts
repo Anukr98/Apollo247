@@ -482,6 +482,7 @@ export enum ORDER_REQUEST_TYPE {
 
 export enum ORDER_TYPE {
   CONSULT = "CONSULT",
+  DIAGNOSTICS = "DIAGNOSTICS",
   PHARMACY = "PHARMACY",
 }
 
@@ -1471,6 +1472,7 @@ export interface OrderVerticals {
   consult?: (OrderInputEntity | null)[] | null;
   diagnostics?: (OrderInputEntity | null)[] | null;
   subscription?: (OrderInputEntity | null)[] | null;
+  vaccination?: (OrderInputEntity | null)[] | null;
 }
 
 export interface OtpVerificationInput {
@@ -1942,7 +1944,7 @@ export interface slotInfo {
   slotDetails?: slotDetail | null;
   status?: number | null;
   phleboID?: number | null;
-  paidSlot: boolean;
+  paidSlot?: boolean | null;
 }
 
 export interface voipPushTokenInput {

@@ -390,9 +390,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       if (data?.createOrder?.success) {
         const getPaymentId = data?.createOrder?.order_id;
         const getArray = createOrderInputArray();
-        console.log({ getArray });
         const response = await processDiagnosticsCODOrderV2(client, getArray);
-        console.log({ response });
         const { data } = response;
         const getResponse = data?.wrapperProcessDiagnosticHCOrderCOD?.result;
         if (!!getResponse && getResponse?.length > 0) {

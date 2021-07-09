@@ -1,4 +1,7 @@
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import {
+  DiagnosticPatientCartItem,
+  useDiagnosticsCart,
+} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { CartIcon } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -108,6 +111,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     asyncDiagnosticPincode,
     setModifiedOrder,
     modifiedOrder,
+    patientCartItems,
+    setPatientCartItems,
   } = useDiagnosticsCart();
   const { cartItems: shopCartItems } = useShoppingCart();
   const { showAphAlert, setLoading: setGlobalLoading, hideAphAlert } = useUIElements();
@@ -130,6 +135,22 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
+    if (isModify) {
+      const unSelectRemainingPatients = patientCartItems?.filter(
+        (item) => item?.patientId !== modifiedOrder?.patientId
+      );
+      if (
+        patientCartItems?.length > 0 &&
+        !!unSelectRemainingPatients &&
+        unSelectRemainingPatients?.length > 0
+      ) {
+        const obj = {
+          patientId: modifiedOrder?.patientId,
+          cartItems: cartItems,
+        } as DiagnosticPatientCartItem;
+        setPatientCartItems?.([obj]);
+      }
+    }
     searchTextFromProp && onSearchTest(searchTextFromProp);
   }, []);
 

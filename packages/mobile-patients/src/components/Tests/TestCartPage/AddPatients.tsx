@@ -73,7 +73,6 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     updatePatientCartItem,
     cartItems,
     isDiagnosticCircleSubscription,
-    selectedPatient,
     showSelectedPatient,
     patientCartItems,
     setDeliveryAddressId,

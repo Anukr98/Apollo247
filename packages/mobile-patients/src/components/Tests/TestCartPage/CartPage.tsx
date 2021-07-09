@@ -125,6 +125,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     setModifiedOrderItemIds,
     setHcCharges,
     setAreaSelected,
+    setPinCode,
   } = useDiagnosticsCart();
 
   const { setAddresses: setMedAddresses } = useShoppingCart();
@@ -162,8 +163,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
   const isCartEmpty = isDiagnosticSelectedCartEmpty(patientCartItems);
 
-  console.log({ isModifyFlow });
-
   const addressText = isModifyFlow
     ? formatAddressWithLandmark(modifiedOrder?.patientAddressObj) || ''
     : selectedAddr
@@ -172,6 +171,31 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
   var pricesForItemArray;
   var modifyPricesForItemArray;
+
+  useEffect(() => {
+    if (isModifyFlow && isFocused && cartItems?.length > 0) {
+      const getExisitngItems = patientCartItems
+        ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
+        ?.flat();
+
+      let existingId = getExisitngItems?.map((items: DiagnosticsCartItem) => items?.id);
+
+      let getNewItems = cartItems?.filter((cItems) => !existingId?.includes(cItems?.id));
+
+      //added since, zero price + updated price item was getting added
+      const isPriceNotZero = getNewItems?.filter((item) => item?.price != 0);
+
+      const newCartItems = patientCartItems?.map((item) => {
+        let obj = {
+          patientId: item?.patientId,
+          cartItems: (item?.cartItems).concat(isPriceNotZero),
+        };
+        return obj;
+      });
+
+      setPatientCartItems?.(newCartItems);
+    }
+  }, [cartItems, isFocused]);
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
@@ -426,7 +450,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
             //show the prices changed pop-over
             isPriceChange = true;
             setShowPriceMismatch(true);
-            updateCartItem?.({
+            let updateObject = {
               id: results?.[isItemInCart]
                 ? String(results?.[isItemInCart]?.itemId)
                 : String(cartItem?.id),
@@ -450,35 +474,13 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                   : results?.[isItemInCart]?.inclusions,
               collectionMethod: TEST_COLLECTION_TYPE.HC,
               isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
-            });
-
-            updatePatientCartItem?.({
-              id: results?.[isItemInCart]
-                ? String(results?.[isItemInCart]?.itemId)
-                : String(cartItem?.id),
-              name: results?.[isItemInCart]?.itemName || '',
-              price: price,
-              specialPrice: specialPrice || price,
-              circlePrice: circlePrice,
-              circleSpecialPrice: circleSpecialPrice,
-              discountPrice: discountPrice,
-              discountSpecialPrice: discountSpecialPrice,
-              mou:
-                results?.[isItemInCart]?.inclusions !== null
-                  ? results?.[isItemInCart]?.inclusions.length
-                  : 1,
-              thumbnail: cartItem?.thumbnail,
-              groupPlan: planToConsider?.groupPlan,
-              packageMrp: results?.[isItemInCart]?.packageCalculatedMrp,
-              inclusions:
-                results?.[isItemInCart]?.inclusions == null
-                  ? [Number(results?.[isItemInCart]?.itemId)]
-                  : results?.[isItemInCart]?.inclusions,
-              collectionMethod: TEST_COLLECTION_TYPE.HC,
-              isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
-            });
+            };
+            console.log({ updateObject });
+            updateCartItem?.(updateObject);
+            updatePatientCartItem?.(updateObject);
           }
           setLoading?.(false);
+          console.log({ patientCartItems });
         }
         //if items not available
         if (disabledCartItems?.length) {
@@ -499,7 +501,10 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   };
 
   async function getAddressServiceability() {
-    const selectedAddress = addresses?.find((item) => item?.id === deliveryAddressId);
+    //check in case of modify
+
+    const selectedAddress = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
+    setPinCode?.(selectedAddr?.zipcode!);
     //on changing the address
     let obj = {} as DiagnosticData;
     setLoading?.(true);
@@ -634,7 +639,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           borderRadius: 0,
         }}
         leftIcon={'backArrow'}
-        title={isModifyFlow ? 'MODIFY ORDERS' : 'CART'}
+        title={isModifyFlow ? 'MODIFY ORDER' : 'CART'}
         onPressLeftIcon={() => handleBack()}
       />
     );
@@ -1091,10 +1096,22 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     );
   };
 
+  function _navigateToNextScreen() {
+    isModifyFlow ? _navigateToReviewPage() : _navigateToAddressSelection();
+  }
+
   function _navigateToAddressSelection() {
     props.navigation.navigate(AppRoutes.AddressSlotSelection, {
       reportGenDetails: reportGenDetails,
       selectedAddress: selectedAddr,
+    });
+  }
+
+  //will be called in case of modify flow
+  function _navigateToReviewPage() {
+    props.navigation.navigate(AppRoutes.ReviewOrder, {
+      reportGenDetails: reportGenDetails,
+      selectedAddress: modifiedOrder?.patientAddressObj,
     });
   }
 
@@ -1146,7 +1163,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       pricesForItemArray,
     };
   }
-  //applying the first level duplicate checks.
+  //applying the first level duplicate checks. (check for normal + modify ) - single/multi
   function _checkInclusionLevelDuplicates() {
     const allInclusions = cartItems?.map((item) => item?.inclusions);
     const getPricesForItem = createItemPrice()?.itemPricingObject;
@@ -1162,7 +1179,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     if (duplicateItems?.length) {
       checkDuplicateItems_Level1(getPricesForItem, duplicateItems, getCartItemPrices);
     } else {
-      _navigateToAddressSelection(); //move to next screen
+      _navigateToNextScreen(); //move to next screen
     }
   }
 
@@ -1232,7 +1249,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         if (higherPricesItems?.length == 0) {
           setLoading?.(false);
           //for further processing
-          _navigateToAddressSelection();
+          _navigateToNextScreen();
         } else {
           //there can be case, that they are found in the inclusion level.
           const formattedHigherPriceItemName = higherPricesItems?.map(

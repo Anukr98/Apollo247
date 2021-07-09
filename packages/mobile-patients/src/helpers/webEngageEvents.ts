@@ -197,7 +197,7 @@ export enum WebEngageEventName {
   DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE = 'Address Non Serviceable on Diagnostic Cart Page',
   DIAGNOSTIC_AREA_SELECTED = 'Diagnostic Area Selected on Cart',
   DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Diagnostic slot time selected',
-  DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic make payment clicked',
+  DIAGNOSTIC_MAKE_PAYMENT_CLICKED = 'Diagnostic make payment clicked',
   DIAGNOSTIC_PATIENT_SELECTED = 'Diagnostic patient selected',
   PAYMENT_INITIATED = 'Payment Initiated',
   DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
@@ -686,7 +686,6 @@ export interface ItemClickedOnLanding extends DiagnosticUserInfo {
 }
 
 export interface DiagnosticPinCode extends DiagnosticUserInfo {
-  Mode: string;
   Pincode: number | string;
   Serviceability: 'Yes' | 'No';
   Source : DIAGNOSTIC_PINCODE_SOURCE_TYPE
@@ -1258,24 +1257,19 @@ export interface WebEngageEvents {
     'No. of slots' : number;
     'Slot date' : string;
   };
-  [WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED]: {
-    'Patient Name selected': string;
-    'Total items in cart': number;
-    'Sub Total': number;
-    // 'Delivery charge': number;
-    'Net after discount': number;
-    'Prescription Uploaded?': boolean;
-    'Prescription Mandatory?': boolean;
-    'Mode of Sample Collection': 'Home Visit' | 'Clinic Visit';
-    'Pin Code': string | number;
-    'Service Area': 'Pharmacy' | 'Diagnostic';
-    'Area Name': string;
-    'Area id': string | number;
-    'Home collection charges'?: number;
-    Discount?: number;
-    'Collection Time Slot': string;
+  [WebEngageEventName.DIAGNOSTIC_MAKE_PAYMENT_CLICKED]: {
     'No. of patients': number;
     'No. of slots': number;
+    'Slot type': 'Free' | 'Paid';
+    'Total items in cart': number;
+    'Sub Total': number;
+    'Net after discount': number;
+    'Pin Code': string | number;
+    'Address': string;
+    'Home collection charges'?: number;
+    'Collection Time Slot': string;
+    'Collection Date Slot': string | Date;
+    'Circle user': 'Yes' | 'No';
   };
   [WebEngageEventName.DIAGNOSTIC_PATIENT_SELECTED]: {
       'No. of patients': number;

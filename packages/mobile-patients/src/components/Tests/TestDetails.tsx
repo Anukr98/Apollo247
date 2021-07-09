@@ -917,9 +917,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       <TestListingHeader
         navigation={props.navigation}
         headerText={nameFormater(
-          !!modifiedOrder && !isEmptyObject(modifiedOrder)
-            ? 'MODIFIED ORDER'
-            : 'TEST PACKAGE DETAIL',
+          !!modifiedOrder && !isEmptyObject(modifiedOrder) ? 'MODIFY ORDER' : 'TEST PACKAGE DETAIL',
           'upper'
         )}
         movedFrom={'testDetails'}

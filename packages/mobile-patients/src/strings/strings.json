@@ -584,7 +584,8 @@
     "sampleCollected": "Sample Collected",
     "sampleCollectedContent": "Our phlebotomist has successfully collected the samples.",
     "nonServiceableMsg1": "Diagnostics services are not available.",
-    "whyBookUs": "why book with us"
+    "whyBookUs": "why book with us",
+    "discardAllPatients": "Your cart has been updated, with the selected patient"
   },
   "diagnosticCategoryTitle": {
     "category": "Category",

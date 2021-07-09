@@ -34,7 +34,6 @@ import {
   SCREEN_NAMES,
   TimelineWizard,
 } from '@aph/mobile-patients/src/components/Tests/components/TimelineWizard';
-import { DiagnosticAppointmentTimeSlot } from '@aph/mobile-patients/src/components/Tests/Events';
 
 export interface AddressSlotSelectionProps extends NavigationScreenProps {
   reportGenDetails: any;
@@ -119,26 +118,6 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
     }
   }, [isFocus]);
 
-  const setWebEnageEventForAppointmentTimeSlot = (
-    mode: 'Automatic' | 'Manual',
-    slotDetails: TestSlot
-  ) => {
-    const area = null;
-    const timeSlot = !!slotDetails ? slotDetails?.slotInfo?.startTime! : 'No slot';
-    const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
-    const selectionMode = mode;
-    const isSlotAvailable = slotDetails?.slotInfo?.startTime! ? 'Yes' : 'No';
-
-    DiagnosticAppointmentTimeSlot(
-      selectedAddr,
-      null,
-      timeSlot,
-      selectionMode,
-      isSlotAvailable,
-      currentPatient
-    );
-  };
-
   //define type
   function createLineItemPrices(selectedItem: any) {
     pricesForItemArray = selectedItem?.cartItems?.map(
@@ -197,12 +176,7 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
   }
 
   async function getSlots() {
-    //if city - state is null then check from the serviceability api
-    var getAddressObject = createPatientAddressObject(
-      isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr,
-      diagnosticServiceabilityData
-    );
-    // const getPatientObjWithLineItems = createPatientObjLineItems() as (patientObjWithLineItems | null)[];
+    const getAddressObject = createPatientAddressObject(selectedAddr, diagnosticServiceabilityData);
     const getPatientObjWithLineItems = createPatientObjLineItems() as (patientObjWithLineItems | null)[];
 
     const billAmount = getPatientObjWithLineItems
@@ -274,16 +248,14 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
 
           setDiagnosticSlot?.({
             isPaidSlot: slotDetails?.isPaidSlot,
-            internalSlot: slotDetails?.internalSlot!,
+            internalSlots: slotDetails?.internalSlot!,
             slotStartTime: slotDetails?.slotInfo?.startTime!,
             slotEndTime: slotDetails?.slotInfo?.endTime!,
             date: new Date(dateToCheck)?.getTime(), //date,
             selectedDate: moment(dateToCheck),
             distanceCharges:
               !!slotDetails?.isPaidSlot && slotDetails?.isPaidSlot ? getDistanceCharges! : 0,
-            city: selectedAddr ? selectedAddr?.city! : '', // not using city from this in order place API
           });
-          setWebEnageEventForAppointmentTimeSlot('Automatic', slotDetails);
           setCartPagePopulated?.(true);
           setLoading?.(false);
         }
@@ -377,7 +349,6 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
             date: date?.getTime(),
             selectedDate: date,
           });
-          setWebEnageEventForAppointmentTimeSlot('Manual', slotInfo);
         }}
       />
     ) : null;

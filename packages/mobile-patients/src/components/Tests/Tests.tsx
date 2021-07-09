@@ -268,7 +268,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
   const [clickedItem, setClickedItem] = useState<any>([]);
   const [showLocationPopup, setLocationPopup] = useState<boolean>(false);
-  const [mode, setMode] = useState<string>('');
   const [source, setSource] = useState<DIAGNOSTIC_PINCODE_SOURCE_TYPE>();
 
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
@@ -315,10 +314,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   function saveDiagnosticLocation(
     locationDetails: LocationData,
-    mode: string,
     source: DIAGNOSTIC_PINCODE_SOURCE_TYPE
   ) {
-    setMode(mode);
     setSource(source);
     setDiagnosticLocation?.(locationDetails);
     setLocationDetails?.(locationDetails);
@@ -334,7 +331,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       const selectedAddress = addresses?.find((item) => item?.id === deliveryAddressId);
       saveDiagnosticLocation(
         formatAddressToLocation(selectedAddress),
-        'Manual',
         DIAGNOSTIC_PINCODE_SOURCE_TYPE.ADDRESS
       );
       setNewAddressAddedHomePage?.('');
@@ -364,7 +360,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         const getFirstAddress = addresses?.[0];
         saveDiagnosticLocation(
           formatAddressToLocation(defaultAddress! || getFirstAddress!),
-          'Manual',
           DIAGNOSTIC_PINCODE_SOURCE_TYPE.ADDRESS
         );
       } else {
@@ -378,7 +373,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
               ? locationDetails
               : getDefaultLocation
           ),
-          'Automatic',
           DIAGNOSTIC_PINCODE_SOURCE_TYPE.AUTO
         );
       }
@@ -672,7 +666,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
           if (!diagnosticLocation) {
             saveDiagnosticLocation?.(
               formatAddressToLocation(deliveryAddress),
-              'Automatic',
               DIAGNOSTIC_PINCODE_SOURCE_TYPE.ADDRESS
             );
             return;
@@ -694,7 +687,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         if (!diagnosticLocation) {
           saveDiagnosticLocation?.(
             formatAddressToLocation(deliveryAddress),
-            'Automatic',
             DIAGNOSTIC_PINCODE_SOURCE_TYPE.ADDRESS
           );
         }
@@ -735,13 +727,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setDiagnosticServiceabilityData?.(obj); //sets the city,state, and there id's
             setDiagnosticLocationServiceable?.(true);
             setServiceabilityMsg('');
-            DiagnosticPinCodeClicked(
-              currentPatient,
-              !!mode && mode != '' ? mode : 'Automatic',
-              pincode,
-              true,
-              !!source ? source : DIAGNOSTIC_PINCODE_SOURCE_TYPE.AUTO
-            );
+            !!source && DiagnosticPinCodeClicked(currentPatient, pincode, true, source);
           } else {
             //null in case of non-serviceable
             obj = {
@@ -760,13 +746,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               : null;
 
             setServiceabilityMsg(string.diagnostics.nonServiceableMsg1);
-            DiagnosticPinCodeClicked(
-              currentPatient,
-              !!mode && mode != '' ? mode : 'Automatic',
-              pincode,
-              false,
-              !!source ? source : DIAGNOSTIC_PINCODE_SOURCE_TYPE.AUTO
-            );
+            !!source && DiagnosticPinCodeClicked(currentPatient, pincode, false, source);
           }
           getDiagnosticBanner(Number(getServiceableResponse?.cityID));
           getHomePageWidgets(obj?.cityId);
@@ -989,7 +969,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   function handleLocationBack(locationResponse: LocationData | null) {
     setLocationPopup(false);
     if (!!locationResponse) {
-      saveDiagnosticLocation(locationResponse, 'Manual', DIAGNOSTIC_PINCODE_SOURCE_TYPE.AUTO);
+      saveDiagnosticLocation(locationResponse, DIAGNOSTIC_PINCODE_SOURCE_TYPE.AUTO);
     }
   }
 
@@ -1005,7 +985,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setLocationPopup(false);
     saveDiagnosticLocation(
       formatAddressToLocation(selectedLocation),
-      'Manual',
       DIAGNOSTIC_PINCODE_SOURCE_TYPE.SEARCH
     );
   }
@@ -1037,7 +1016,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         console.log({ deliveryAddress });
         saveDiagnosticLocation(
           formatAddressToLocation(deliveryAddress),
-          'Manual',
           DIAGNOSTIC_PINCODE_SOURCE_TYPE.ADDRESS
         );
         setLoading?.(false);

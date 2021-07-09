@@ -64,21 +64,18 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
         break;
       case SCREEN_NAMES.CART:
         return {
-          patientComponent: (
-            <TimelinePatientDone style={[styles.iconStyle, isModify && { opacity: 0.5 }]} />
-          ),
+          patientComponent: <TimelinePatientDone style={styles.iconStyle} />,
           cartComponent: <TimelineCartProgress style={styles.iconStyle} />,
           scheduleComponent: <TimelineScheduleUnselected style={[styles.iconStyle]} />,
           reviewComponent: <TimelineReviewUnselected style={styles.iconStyle} />,
           onPressActionOnPatient: true,
-          onPressActionOnCart: false, //set current screen to be false
+          onPressActionOnCart: false,
           onPressActionOnSchedule: false,
           onPressActionOnReview: false,
           bold_patient: true,
           bold_cart: true,
           bold_slot: false,
           bold_review: false,
-          disable_addPatient: isModify,
         };
         break;
       case SCREEN_NAMES.SCHEDULE:
@@ -99,9 +96,7 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
         break;
       case SCREEN_NAMES.REVIEW:
         return {
-          patientComponent: (
-            <TimelinePatientDone style={[styles.iconStyle, isModify && { opacity: 0.5 }]} />
-          ),
+          patientComponent: <TimelinePatientDone style={styles.iconStyle} />,
           cartComponent: <TimelineCartDone style={styles.iconStyle} />,
           scheduleComponent: <TimelineScheduleDone style={styles.iconStyle} />,
           reviewComponent: <TimelineReviewProgress style={styles.iconStyle} />,
@@ -113,7 +108,6 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
           bold_cart: true,
           bold_slot: true,
           bold_review: true,
-          disable_addPatient: isModify,
         };
         break;
     }
@@ -140,9 +134,6 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
               styles.progressLine,
               {
                 height: imageRules(currentPage)?.onPressActionOnPatient ? 3 : 1,
-                opacity: isModify ? 0.3 : 1,
-                left: isModify ? 30 : 16,
-                width: isModify ? screenWidth / 4 : screenWidth / 3.2,
               },
             ]}
           />
@@ -152,12 +143,9 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
             style={[
               styles.headingStyle,
               {
-                color: isModify
-                  ? colors.SHERPA_BLUE
-                  : imageRules(currentPage)?.bold_patient
+                color: imageRules(currentPage)?.bold_patient
                   ? colors.APP_GREEN
                   : colors.SHERPA_BLUE,
-                opacity: isModify ? 0.4 : 1,
               },
             ]}
           >
@@ -187,7 +175,7 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
               styles.progressLine,
               {
                 height: imageRules(currentPage)?.onPressActionOnCart ? 3 : 1,
-                width: screenWidth / 3.3,
+                width: isModify ? screenWidth / 2 : screenWidth / 3.2,
               },
             ]}
           />
@@ -230,9 +218,8 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
               styles.progressLine,
               {
                 height: imageRules(currentPage)?.onPressActionOnSchedule ? 3 : 1,
-                opacity: isModify ? 0.3 : 1,
-                left: isModify ? 20 : 9,
-                width: isModify ? screenWidth / 4 : screenWidth / 3.2,
+
+                left: 9,
               },
             ]}
           />
@@ -244,7 +231,6 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
               {
                 color: imageRules(currentPage)?.bold_slot ? colors.APP_GREEN : colors.SHERPA_BLUE,
                 left: -3,
-                opacity: isModify ? 0.4 : 1,
               },
             ]}
           >
@@ -287,11 +273,11 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
   };
 
   return (
-    <View style={{ backgroundColor: colors.WHITE }}>
-      <View style={styles.timelineView}>
-        {renderPatientPage()}
+    <View style={styles.outerContainer}>
+      <View style={[isModify ? styles.centerTimelineView : styles.timelineView]}>
+        {isModify ? null : renderPatientPage()}
         {renderCartPage()}
-        {renderSlotPage()}
+        {isModify ? null : renderSlotPage()}
         {renderReviewPage()}
       </View>
     </View>
@@ -299,16 +285,24 @@ export const TimelineWizard: React.FC<TimelineWizardProps> = (props) => {
 };
 
 const styles = StyleSheet.create({
+  outerContainer: {
+    backgroundColor: colors.WHITE,
+    elevation: 4,
+    shadowColor: colors.SHADOW_GRAY,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+  },
   flexRow: { flexDirection: 'row', alignItems: 'center' },
-  iconStyle: { height: 30, width: 30, resizeMode: 'contain' },
+  iconStyle: { height: 27, width: 27, resizeMode: 'contain' },
   headingStyle: {
     ...theme.fonts.IBMPlexSansMedium(12),
     lineHeight: 14,
     textAlign: 'center',
   },
-  textIconView: { paddingTop: 12, paddingBottom: 12 },
+  textIconView: { paddingTop: 12, paddingBottom: 8 },
   textView: {
-    marginTop: 10,
+    marginTop: 4,
   },
   iconTouch: {
     height: '100%',
@@ -329,5 +323,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginLeft: 16,
     marginRight: 16,
+  },
+  centerTimelineView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: screenWidth / 1.6,
+    alignSelf: 'center',
   },
 });
