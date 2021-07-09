@@ -89,7 +89,6 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     productDiscount,
     pinCode,
     setCouponProducts,
-    circlePlanSelected,
   } = useShoppingCart();
   const {
     pharmacyUserTypeAttribute,
@@ -365,17 +364,12 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           productDiscount,
           cartItems,
           setCouponProducts,
-          getPackageIds(activeUserSubscriptions)
+          activeUserSubscriptions ? getPackageIds(activeUserSubscriptions) : []
         );
         if (response !== 'success') {
           removeCouponWithAlert(response);
         }
       } catch (error) {
-        CommonBugFender(`${AppRoutes.CartSummary}_onPressProceedtoPay`, Error(error));
-        showAphAlert?.({
-          title: string.common.uhOh,
-          description: string.common.somethingWentWrong,
-        });
         return;
       }
     }

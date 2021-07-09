@@ -138,7 +138,6 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     circleMembershipCharges,
     setIsFreeDelivery,
     productDiscount,
-    circlePlanSelected,
   } = useShoppingCart();
   const { showAphAlert } = useUIElements();
   const [loading, setLoading] = useState<boolean>(true);
@@ -151,7 +150,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
 
   useEffect(() => {
     const data = {
-      packageId: getPackageIds(activeUserSubscriptions)?.join(),
+      packageId: activeUserSubscriptions ? getPackageIds(activeUserSubscriptions)?.join() : '',
       mobile: g(currentPatient, 'mobileNumber'),
       email: g(currentPatient, 'emailAddress'),
       type: isDiag ? 'Diag' : 'Pharmacy',
@@ -186,7 +185,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
         quantity: item.quantity,
         specialPrice: item.specialPrice || item.price,
       })),
-      packageIds: getPackageIds(activeUserSubscriptions),
+      packageIds: activeUserSubscriptions ? getPackageIds(activeUserSubscriptions) : [],
       email: g(currentPatient, 'emailAddress'),
     };
     validateConsultCoupon(data)
