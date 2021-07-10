@@ -14,7 +14,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Image } from 'react-native-elements';
-import { isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { isEmptyObject, isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   convertNumberToDecimal,
@@ -54,7 +54,16 @@ export interface ItemCardProps {
 }
 
 const ItemCard: React.FC<ItemCardProps> = (props) => {
-  const { cartItems, addCartItem, removeCartItem, modifiedOrderItemIds } = useDiagnosticsCart();
+  const {
+    cartItems,
+    addCartItem,
+    removeCartItem,
+    modifiedOrderItemIds,
+    modifiedOrder,
+    setModifiedPatientCart,
+    patientCartItems,
+    removePatientCartItem,
+  } = useDiagnosticsCart();
   const {
     data,
     isCircleSubscribed,
@@ -65,6 +74,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     onPressRemoveItemFromCart,
   } = props;
 
+  const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const actualItemsToShow =
     source === 'Cart page'
       ? data?.length > 0 && data?.filter((item: any) => item?.diagnosticPricing)
@@ -329,7 +339,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
         ? 'Category page'
         : data?.diagnosticWidgetTitle
     );
-    addCartItem?.({
+    const addedItems = {
       id: `${item?.itemId}`,
       mou: 1,
       name: item?.itemTitle!,
@@ -345,12 +355,21 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       packageMrp: packageCalculatedMrp,
       inclusions: [Number(item?.itemId)], // since it's a test
       isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
-    });
+    };
+    addCartItem?.(addedItems);
+    isModifyFlow &&
+      setModifiedPatientCart?.([
+        {
+          patientId: modifiedOrder?.patientId,
+          cartItems: cartItems?.concat(addedItems),
+        },
+      ]);
     onPressAddToCartFromCart?.(item);
   }
 
   function onPressRemoveFromCart(item: any) {
-    removeCartItem!(`${item?.itemId}`);
+    removeCartItem?.(`${item?.itemId}`);
+    patientCartItems?.map((pItem) => removePatientCartItem?.(pItem?.patientId, `${item?.itemId}`));
     onPressRemoveItemFromCart?.(item);
   }
 

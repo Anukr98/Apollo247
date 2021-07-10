@@ -156,8 +156,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     setModifyHcCharges,
     setModifiedOrderItemIds,
     setHcCharges,
-    setAreaSelected,
     setModifiedOrder,
+    setModifiedPatientCart,
+    setDistanceCharges,
   } = useDiagnosticsCart();
   const { pharmacyCircleAttributes } = useShoppingCart();
 
@@ -407,7 +408,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     setModifyHcCharges?.(0);
     setModifiedOrderItemIds?.([]);
     setHcCharges?.(0);
-    setAreaSelected?.({});
+    setDistanceCharges?.(0);
+    setModifiedPatientCart?.([]);
     //go back to homepage
     props.navigation.navigate('TESTS');
   }
@@ -1036,7 +1038,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       discountToDisplay,
       DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS
     );
-    addCartItem?.({
+    const addedItem = {
       id: `${itemId!}`,
       mou: cmsTestDetails?.diagnosticInclusionName?.length + 1 || testInfo?.mou,
       name: cmsTestDetails?.diagnosticItemName || testInfo?.itemName,
@@ -1056,7 +1058,16 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         : DIAGNOSTIC_GROUP_PLAN.ALL,
       inclusions: testInfo?.inclusions == null ? [Number(itemId)] : testInfo?.inclusions,
       isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
-    });
+    };
+
+    isModify &&
+      setModifiedPatientCart?.([
+        {
+          patientId: modifiedOrder?.patientId,
+          cartItems: cartItems?.concat(addedItem),
+        },
+      ]);
+    addCartItem?.(addedItem);
   }
 
   function onPressRemoveFromCart() {

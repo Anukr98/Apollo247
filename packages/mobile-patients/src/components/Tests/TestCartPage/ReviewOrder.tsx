@@ -42,7 +42,6 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
@@ -78,7 +77,6 @@ import {
 import {
   diagnosticGetPhleboCharges,
   diagnosticSaveBookHcCollectionV2,
-  processDiagnosticsCODOrder,
   processDiagnosticsCODOrderV2,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
@@ -113,6 +111,10 @@ import { saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWith
 const screenWidth = Dimensions.get('window').width;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
 
+enum BOOKING_TYPE {
+  SAVE = 'saveOrder',
+  MODIFY = 'modifyOrder',
+}
 export interface orderDetails {
   orderId: string | null;
   displayId: string | null;
@@ -161,6 +163,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     duplicateItemsArray,
     patientCartItems,
     setDuplicateItemsArray,
+    modifiedPatientCart,
+    setModifiedPatientCart,
   } = useDiagnosticsCart();
 
   const { setAddresses: setMedAddresses, circleSubscriptionId } = useShoppingCart();
@@ -170,7 +174,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
 
-  var modifyPricesForItemArray, pricesForItemArray, pricesForItemArrayNew, pricesForItemArrayForHC;
+  var modifyPricesForItemArray, pricesForItemArray, pricesForItemArrayForHC;
+
   const slotsInput = props.navigation.getParam('slotsInput');
   const selectedTimeSlot = props.navigation.getParam('selectedTimeSlot');
   const showPaidPopUp = props.navigation.getParam('showPaidPopUp');
@@ -236,64 +241,20 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     return prevPrice + prevPrice;
   }
 
-  function setFinalItemsInCart() {
-    var array = [] as any;
-    const filterPatientItems = patientCartItems?.map((item) => {
-      let obj = {
-        patientId: item?.patientId,
-        cartItems: item?.cartItems?.filter((items) => items?.isSelected == true),
-      };
-      return obj;
-    });
-    const allCartItems = filterPatientItems?.map((item) => item?.cartItems)?.flat();
-    const copyAllCartItems = JSON.parse(JSON.stringify(allCartItems));
-
-    copyAllCartItems?.map((item: DiagnosticsCartItem) => {
-      const isPresentIndex = array?.findIndex(
-        (val: DiagnosticsCartItem) => Number(val?.id) === Number(item?.id)
-      );
-      if (isPresentIndex !== -1) {
-        const value = array[isPresentIndex];
-        value.id = value?.id;
-        value.name = value?.name;
-        value.mou = value?.mou + 1;
-        value.price = addPrices(value?.price);
-        value.thumbnail = value?.thumbnail;
-        value.specialPrice = !!value?.specialPrice
-          ? addPrices(value?.specialPrice)
-          : value?.specialPrice;
-        value.circlePrice = !!value?.circlePrice
-          ? addPrices(value?.circlePrice)
-          : value?.circlePrice;
-        (value.circleSpecialPrice = !!value.circleSpecialPrice
-          ? addPrices(value.circleSpecialPrice)
-          : value.circleSpecialPrice),
-          (value.discountPrice = !!value.discountPrice
-            ? addPrices(value.discountPrice)
-            : value?.discountPrice);
-        value.collectionMethod = value.collectionMethod;
-        value.groupPlan = value.groupPlan;
-        value.packageMrp = value.packageMrp;
-        value.inclusions = value.inclusions;
-        value.isSelected = value.isSelected;
-      } else {
-        array.push(item);
-      }
-      return array;
-    });
+  function clearCollectionCharges() {
+    setHcApiCalled(true);
+    setHcCharges?.(0);
+    setDistanceCharges?.(0);
+    setModifyHcCharges?.(0);
   }
 
   useEffect(() => {
-    setFinalItemsInCart();
     fetchFindDiagnosticSettings();
     //modify case
-    if (isModifyFlow && modifiedOrder?.slotId && cartItems?.length > 0) {
-      const modifyOrderItems = modifiedOrder?.diagnosticOrderLineItems?.map(
-        (item: orderListLineItems) => item
-      );
+    if (isModifyFlow && cartItems?.length > 0 && modifiedPatientCart?.length > 0) {
       //if multi-uhid modify -> don't call phleboCharges api
       !!modifiedOrder?.attributesObj?.isMultiUhid && modifiedOrder?.attributesObj?.isMultiUhid
-        ? null
+        ? clearCollectionCharges()
         : fetchHC_ChargesForTest();
     } else {
       fetchHC_ChargesForTest();
@@ -370,7 +331,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   }
 
   function createPatientObjLineItems(modifiedLineItems?: any) {
-    const filterPatientItems = isDiagnosticSelectedCartEmpty(patientCartItems);
+    const filterPatientItems = isDiagnosticSelectedCartEmpty(
+      isModifyFlow ? modifiedPatientCart : patientCartItems
+    );
     const finalLineItems =
       !!modifiedLineItems && createFinalItems(modifiedLineItems, filterPatientItems);
     //will be for 1 patient
@@ -389,7 +352,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       });
     });
     return array;
-    console.log({ array });
   }
 
   const fetchHC_ChargesForTest = async () => {
@@ -470,7 +432,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             ? 0
             : getCharges;
         setHcCharges?.(getCharges);
-        setDistanceCharges?.(distanceCharges);
+        setDistanceCharges?.(isModifyFlow ? 0 : distanceCharges); //should not get applied
         setModifyHcCharges?.(updatedHcCharges); //used for calculating subtotal & topay
       }
       setLoading?.(false);
@@ -499,7 +461,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           borderRadius: 0,
         }}
         leftIcon={'backArrow'}
-        title={'REVIEW ORDER'}
+        title={isModifyFlow ? string.diagnostics.modifyHeader : 'REVIEW ORDER'}
         onPressLeftIcon={() => handleBack()}
       />
     );
@@ -532,8 +494,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   };
 
   const renderCartItemCard = () => {
-    var array = [] as any;
-    const filterPatientItems = patientCartItems?.map((item) => {
+    var itemsWithQuantity: any = [];
+    const arrayToChoose = isModifyFlow ? modifiedPatientCart : patientCartItems;
+    const filterPatientItems = arrayToChoose?.map((item) => {
       let obj = {
         patientId: item?.patientId,
         cartItems: item?.cartItems?.filter((items) => items?.isSelected == true),
@@ -541,43 +504,44 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       return obj;
     });
     const allCartItems = filterPatientItems?.map((item) => item?.cartItems)?.flat();
-    const pp = JSON.parse(JSON.stringify(allCartItems));
+    const copyAllCartItems = JSON.parse(JSON.stringify(allCartItems));
 
-    const ss = pp?.map((item: DiagnosticsCartItem) => {
-      const isPresentIndex = array?.findIndex(
+    copyAllCartItems?.map((item: DiagnosticsCartItem) => {
+      const isPresentIndex = itemsWithQuantity?.findIndex(
         (val: DiagnosticsCartItem) => Number(val?.id) === Number(item?.id)
       );
       if (isPresentIndex !== -1) {
-        const value = array[isPresentIndex];
-        value.id = value.id;
-        value.name = value.name;
-        value.mou = value.mou + 1;
-        value.price = value.price + value.price;
-        value.thumbnail = value.thumbnail;
-        value.specialPrice = !!value.specialPrice
-          ? value.specialPrice + value.specialPrice
-          : value.specialPrice;
-        value.circlePrice = !!value.circlePrice
-          ? value.circlePrice + value.circlePrice
-          : value.circlePrice;
-        (value.circleSpecialPrice = !!value.circleSpecialPrice
-          ? value.circleSpecialPrice + value.circleSpecialPrice
-          : value.circleSpecialPrice),
-          (value.discountPrice = !!value.discountPrice
-            ? value.discountPrice + value.discountPrice
+        const value = itemsWithQuantity[isPresentIndex];
+        value.id = value?.id;
+        value.name = value?.name;
+        value.mou = value?.mou + 1;
+        value.price = addPrices(value?.price);
+        value.thumbnail = value?.thumbnail;
+        value.specialPrice = !!value?.specialPrice
+          ? addPrices(value?.specialPrice)
+          : value?.specialPrice;
+        value.circlePrice = !!value?.circlePrice
+          ? addPrices(value?.circlePrice)
+          : value?.circlePrice;
+        (value.circleSpecialPrice = !!value?.circleSpecialPrice
+          ? addPrices(value?.circleSpecialPrice)
+          : value?.circleSpecialPrice),
+          (value.discountPrice = !!value?.discountPrice
+            ? addPrices(value?.discountPrice)
             : value?.discountPrice);
-        value.collectionMethod = value.collectionMethod;
-        value.groupPlan = value.groupPlan;
-        value.packageMrp = value.packageMrp;
-        (value.inclusions = value.inclusions), (value.isSelected = value.isSelected);
+        value.collectionMethod = value?.collectionMethod;
+        value.groupPlan = value?.groupPlan;
+        value.packageMrp = value?.packageMrp;
+        value.inclusions = value?.inclusions;
+        value.isSelected = value?.isSelected;
       } else {
-        array.push(item);
+        itemsWithQuantity.push(item);
       }
-      return array;
+      return itemsWithQuantity;
     });
     return (
       <View style={{ backgroundColor: theme.colors.WHITE }}>
-        {array?.map((item: DiagnosticsCartItem, index: number) => {
+        {itemsWithQuantity?.map((item: DiagnosticsCartItem, index: number) => {
           return renderItemView(item);
         })}
       </View>
@@ -693,7 +657,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
               })}
               <Spearator style={{ marginTop: 12, marginBottom: 12 }} />
               {renderPrices('Subtotal', previousSubTotal)}
-              {renderPrices('Collection and hygiene charges', previousCollectionCharges)}
+              {!!previousCollectionCharges &&
+                renderPrices('Collection and hygiene charges', previousCollectionCharges)}
               {renderPrices('Total', previousTotalCharges, true)}
             </>
           ) : null}
@@ -1081,7 +1046,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           );
           // in case duplicate test, price mismatch, address mismatch, slot issue
           if (!!checkIsFalse) {
-            apiHandleErrorFunction(bookingOrderInfo, getSaveHomeCollectionResponse, 'saveOrder');
+            apiHandleErrorFunction(
+              bookingOrderInfo,
+              getSaveHomeCollectionResponse,
+              BOOKING_TYPE.SAVE
+            );
           } else {
             //handle for multiple uhid
             console.log({ getSaveHomeCollectionResponse });
@@ -1091,7 +1060,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
               slotTimings,
               allItems,
               slotStartTime!,
-              'saveOrder'
+              BOOKING_TYPE.SAVE
             );
           }
         })
@@ -1180,11 +1149,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     console.log({ data });
     //take overall object
     let errorMsgToRead =
-      source == 'saveOrder' ? data?.[0]?.errorMessageToDisplay : data?.errorMessageToDisplay;
+      source === BOOKING_TYPE.SAVE ? data?.[0]?.errorMessageToDisplay : data?.errorMessageToDisplay;
     let message = errorMsgToRead || string.diagnostics.bookingOrderFailedMessage;
     //itemIds will only come in case of duplicate
     let itemIds =
-      source == 'saveOrder' ? data?.[0]?.attributes?.itemids : data?.attributes?.itemids;
+      source === BOOKING_TYPE.SAVE ? data?.[0]?.attributes?.itemids : data?.attributes?.itemids;
     if (itemIds?.length! > 0) {
       showAphAlert?.({
         unDismissable: true,
@@ -1335,9 +1304,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     try {
       setLoading?.(true);
       const getPatientId =
-        source === 'modifyOrder' && isModifyFlow ? modifiedOrder?.patientId : currentPatient?.id;
+        source === BOOKING_TYPE.MODIFY && isModifyFlow
+          ? modifiedOrder?.patientId
+          : currentPatient?.id;
       var array = [] as any; //define type
-      if (source == 'modifyOrder') {
+      if (source === BOOKING_TYPE.MODIFY) {
         //will for single order
         array = [{ order_id: getOrderDetails, amount: grandTotal, patient_id: getPatientId }];
       } else {
@@ -1368,11 +1339,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       const response = await createOrderInternal(orderInput);
       console.log({ response });
       if (response?.data?.createOrderInternal?.success) {
-        console.log('sksksk');
         //check for webenage
         const orderInfo = {
-          orderId: getOrderDetails?.[0]?.orderID,
-          displayId: getOrderDetails?.[0]?.displayID,
+          orderId: source === BOOKING_TYPE.MODIFY ? getOrderDetails : getOrderDetails?.[0]?.orderID,
+          displayId:
+            source === BOOKING_TYPE.MODIFY ? getDisplayId : getOrderDetails?.[0]?.displayID,
           diagnosticDate: date!,
           slotTime: slotTimings!,
           cartSaving: cartSaving,
@@ -1387,17 +1358,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         );
         setauthToken?.('');
         if (
-          source === 'modifyOrder' &&
+          source === BOOKING_TYPE.MODIFY &&
           modifiedOrder?.paymentType !== DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
         ) {
-          console.log('innprocess code');
           //call the process wali api & success page (check for modify Order)
-          processModifiyCODOrder(
-            getOrderDetails?.[0]?.orderID,
-            grandTotal,
-            eventAttributes,
-            orderInfo
-          );
+          processModifiyCODOrder(getOrderDetails, grandTotal, eventAttributes, orderInfo);
         } else {
           setLoading?.(false);
           props.navigation.navigate(AppRoutes.PaymentMethods, {
@@ -1455,12 +1420,30 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       console.log({ amount });
       console.log({ eventAttributes });
       console.log({ orderInfo });
-      const response = await processDiagnosticsCODOrderV2(client, orderId, amount);
+
+      const array = [
+        {
+          orderID: orderId,
+          amount: amount,
+        },
+      ];
+      console.log({ array });
+      const response = await processDiagnosticsCODOrderV2(client, array);
       const { data } = response;
-      data?.processDiagnosticHCOrder?.status
-        ? _navigatetoOrderStatus(true, 'success', eventAttributes, orderInfo)
-        : renderAlert(string.common.tryAgainLater);
+      console.log({ response });
+      const getResponse = data?.wrapperProcessDiagnosticHCOrderCOD?.result;
+      if (!!getResponse && getResponse?.length > 0) {
+        const isAnyFalse = getResponse?.filter((items) => !items?.status);
+        if (!!isAnyFalse && isAnyFalse?.length > 0) {
+          renderAlert(string.common.tryAgainLater);
+        } else {
+          _navigatetoOrderStatus(true, 'success', eventAttributes, orderInfo);
+        }
+      } else {
+        renderAlert(string.common.tryAgainLater);
+      }
     } catch (e) {
+      console.log({ e });
       setLoading?.(false);
       renderAlert(string.common.tryAgainLater);
     }
@@ -1492,7 +1475,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     });
 
   function saveModifiedOrder() {
-    console.log('hereee');
     // const calHcChargers = modifiedOrder?.collectionCharges === 0 ? hcCharges :  0.0;
     //since we need to pass the overall collection charges applied.
     const calHcChargers =
@@ -1524,7 +1506,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         const getModifyResponse = data?.data?.saveModifyDiagnosticOrder;
         console.log({ getModifyResponse });
         if (!getModifyResponse?.status) {
-          apiHandleErrorFunction(modifyBookingInput, getModifyResponse, 'modifyOrder');
+          apiHandleErrorFunction(modifyBookingInput, getModifyResponse, BOOKING_TYPE.MODIFY);
         } else {
           callCreateInternalOrder(
             getModifyResponse?.orderId!,
@@ -1532,7 +1514,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             slotTimings,
             allItems,
             slotStartTime!,
-            'modifyOrder'
+            BOOKING_TYPE.MODIFY
           );
         }
       })
@@ -1561,7 +1543,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
   //check here
   const disableProceedToPay = !(isModifyFlow
-    ? patientCartItems?.length > 0 && isHcApiCalled
+    ? modifiedPatientCart?.length > 0 && isHcApiCalled
     : patientCartItems?.length > 0 &&
       isHcApiCalled &&
       !!(selectedAddr && diagnosticSlot && diagnosticSlot?.slotStartTime) &&
@@ -1571,10 +1553,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
   const renderTestProceedBar = () => {
     const showTime = isModifyFlow
-      ? modifiedOrder?.areaId && modifiedOrder?.slotDateTimeInUTC
+      ? modifiedOrder && modifiedOrder?.slotDateTimeInUTC
       : selectedAddr;
+    const cartItemToCheck = isModifyFlow ? modifiedPatientCart : patientCartItems;
 
-    return patientCartItems?.length > 0 ? (
+    return cartItemToCheck?.length > 0 ? (
       <TestProceedBar
         // selectedTimeSlot={selectedTimeSlot} //change the format
         selectedTimeSlot={diagnosticSlot}

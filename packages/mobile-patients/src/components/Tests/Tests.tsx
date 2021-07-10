@@ -1295,7 +1295,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 isServiceable={isDiagnosticLocationServiceable}
                 isVertical={false}
                 navigation={props.navigation}
-                source={'Home page'}
+                source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME}
                 sourceScreen={AppRoutes.Tests}
               />
             )}
@@ -1362,7 +1362,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 isServiceable={isDiagnosticLocationServiceable}
                 isVertical={false}
                 navigation={props.navigation}
-                source={'Home page'}
+                source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME}
                 sourceScreen={AppRoutes.Tests}
               />
             )}

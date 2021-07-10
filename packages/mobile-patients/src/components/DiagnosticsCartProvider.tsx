@@ -197,6 +197,9 @@ export interface DiagnosticsCartContextProps {
 
   filterPatientCartItems: any[];
   setFilterPatientCartItems: ((items: any[]) => void) | null;
+
+  modifiedPatientCart: DiagnosticPatientCartItem[];
+  setModifiedPatientCart: ((items: DiagnosticPatientCartItem[]) => void) | null;
 }
 
 export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>({
@@ -309,6 +312,8 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   setDuplicateItemsArray: null,
   filterPatientCartItems: [],
   setFilterPatientCartItems: null,
+  modifiedPatientCart: [],
+  setModifiedPatientCart: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -329,6 +334,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const [cartItems, _setCartItems] = useState<DiagnosticsCartContextProps['cartItems']>([]);
   const [patientCartItems, _setPatientCartItems] = useState<
     DiagnosticsCartContextProps['patientCartItems']
+  >([]);
+  const [modifiedPatientCart, setModifiedPatientCart] = useState<
+    DiagnosticsCartContextProps['modifiedPatientCart']
   >([]);
   const [couponDiscount, setCouponDiscount] = useState<
     DiagnosticsCartContextProps['couponDiscount']
@@ -622,7 +630,12 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setPatientCartItems?.([...newPatientCartItem!]);
   };
 
-  const filterPatientCartItem = patientCartItems?.map((item: DiagnosticPatientCartItem) => {
+  const selectedPatientCartItems =
+    !!modifiedPatientCart && modifiedPatientCart?.length > 0
+      ? modifiedPatientCart
+      : patientCartItems;
+
+  const filterPatientCartItem = selectedPatientCartItems?.map((item: DiagnosticPatientCartItem) => {
     let obj = {
       patientId: item?.patientId,
       cartItems: item?.cartItems?.filter((items: DiagnosticsCartItem) => items?.isSelected == true),
@@ -774,6 +787,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setServiceabilityObject({});
     showSelectedPatient(null);
     setDuplicateItemsArray([]);
+    setModifiedPatientCart([]);
   };
 
   useEffect(() => {
@@ -923,6 +937,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         setDuplicateItemsArray,
         filterPatientCartItems,
         setFilterPatientCartItems,
+        modifiedPatientCart,
+        setModifiedPatientCart,
       }}
     >
       {props.children}

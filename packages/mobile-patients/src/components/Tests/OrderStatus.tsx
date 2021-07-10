@@ -10,7 +10,6 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import moment from 'moment';
 import {
@@ -55,17 +54,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const eventAttributes = props.navigation.getParam('eventAttributes');
   const isCOD = props.navigation.getParam('isCOD');
   const paymentId = props.navigation.getParam('paymentId');
-  //check for modify
-  const pickupDate = !!modifiedOrderDetails
-    ? moment(modifiedOrderDetails?.slotDateTimeInUTC)?.format('DD MMM')
-    : moment(orderDetails?.diagnosticDate!).format('DD MMM');
-  const pickupYear = !!modifiedOrderDetails
-    ? moment(modifiedOrderDetails?.slotDateTimeInUTC)?.format('YYYY')
-    : moment(orderDetails?.diagnosticDate!).format('YYYY');
   const paymentStatus = props.navigation.getParam('paymentStatus');
-  const pickupTime = !!modifiedOrderDetails
-    ? formatTestSlotWithBuffer(moment(modifiedOrderDetails?.slotDateTimeInUTC)?.format('hh:mm'))
-    : orderDetails && formatTestSlotWithBuffer(orderDetails?.slotTime!);
   const orderCartSaving = orderDetails?.cartSaving!;
   const orderCircleSaving = orderDetails?.circleSaving!;
   const displayId = !!modifiedOrderDetails
@@ -203,9 +192,15 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
 
   const renderPickUpTime = () => {
-    const date = timeDate != '' && moment(timeDate)?.format('DD MMM');
-    const year = timeDate != '' && moment(timeDate)?.format('YYYY');
-    const time = timeDate != '' && formatTestSlotWithBuffer(moment(timeDate)?.format('hh:mm A'));
+    const date = !!modifiedOrderDetails
+      ? moment(modifiedOrderDetails?.slotDateTimeInUTC)?.format('DD MMM')
+      : timeDate != '' && moment(timeDate)?.format('DD MMM');
+    const year = !!modifiedOrderDetails
+      ? moment(modifiedOrderDetails?.slotDateTimeInUTC)?.format('YYYY')
+      : timeDate != '' && moment(timeDate)?.format('YYYY');
+    const time = !!modifiedOrderDetails
+      ? formatTestSlotWithBuffer(moment(modifiedOrderDetails?.slotDateTimeInUTC)?.format('hh:mm'))
+      : timeDate != '' && formatTestSlotWithBuffer(moment(timeDate)?.format('hh:mm A'));
     return (
       <>
         {!!date && !!time && !!year ? (
@@ -223,40 +218,6 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
           </View>
         ) : null}
       </>
-    );
-  };
-
-  const renderBookingInfo = () => {
-    return (
-      <View style={styles.bookingInfo}>
-        <Text style={styles.bookingIdText}>
-          Your Booking ID is
-          <Text style={styles.bookingNumberText}> #{displayId!}</Text>
-        </Text>
-        <Spearator style={styles.horizontalSeparator} />
-        <View style={styles.pickUpInfo}>
-          {!!pickupDate && !!pickupYear && (
-            <View>
-              <Text style={styles.placeholderText}>PICKUP DATE</Text>
-              <Text style={styles.date}>
-                {pickupDate}, {pickupYear}
-              </Text>
-            </View>
-          )}
-          {!!pickupTime && (
-            <View>
-              <Text style={styles.placeholderText}>PICKUP TIME</Text>
-              <Text style={styles.date}>{pickupTime}</Text>
-            </View>
-          )}
-        </View>
-        <View style={{ marginHorizontal: 20 }}>
-          <Text style={styles.placeholderText}>BOOKING DATE/TIME</Text>
-          <Text style={styles.date}>
-            {moment().format('DD MMM')}, {moment().format('YYYY')} | {moment().format('hh:mm A')}
-          </Text>
-        </View>
-      </View>
     );
   };
 
@@ -472,8 +433,6 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
             {renderOrderPlacedMsg()}
             {renderCartSavings()}
             {renderPickUpTime()}
-            {/* {renderBookingInfo()} */}
-
             {renderNoticeText()}
             {/* {enable_cancelellation_policy ? renderCancelationPolicy() : null} */}
             {renderTests()}

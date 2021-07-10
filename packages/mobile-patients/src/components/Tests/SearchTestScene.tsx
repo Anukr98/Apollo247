@@ -102,6 +102,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const client = useApolloClient();
   const {
     addCartItem,
+    removePatientCartItem,
     removeCartItem,
     cartItems,
     setModifyHcCharges,
@@ -113,6 +114,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     modifiedOrder,
     patientCartItems,
     setPatientCartItems,
+    setModifiedPatientCart,
+    modifiedPatientCart,
+    setDistanceCharges,
   } = useDiagnosticsCart();
   const { cartItems: shopCartItems } = useShoppingCart();
   const { showAphAlert, setLoading: setGlobalLoading, hideAphAlert } = useUIElements();
@@ -324,8 +328,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   ) => {
     savePastSeacrh(`${itemId}`, itemName).catch((e) => {});
     postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, 0, 0);
-
-    addCartItem?.({
+    const addedItem = {
       id: `${itemId}`,
       name: stripHtml(itemName),
       price: pricesObject?.rate || 0,
@@ -341,11 +344,29 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       packageMrp: pricesObject?.packageMrp || 0,
       inclusions: inclusions == null ? [Number(itemId)] : inclusions,
       isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
-    });
+    };
+    isModify &&
+      setModifiedPatientCart?.([
+        {
+          patientId: modifiedOrder?.patientId,
+          cartItems: cartItems?.concat(addedItem),
+        },
+      ]);
+    addCartItem?.(addedItem);
   };
 
   const onRemoveCartItem = (itemId: string | number) => {
-    removeCartItem!(`${itemId}`);
+    if (isModify) {
+      const newCartItems = cartItems?.filter((item) => Number(item?.id) !== Number(itemId));
+      setModifiedPatientCart?.([
+        {
+          patientId: modifiedOrder?.patientId,
+          cartItems: newCartItems,
+        },
+      ]);
+    }
+    patientCartItems?.map((pItem) => removePatientCartItem?.(pItem?.patientId, `${itemId}`));
+    removeCartItem?.(`${itemId}`);
   };
 
   const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
@@ -362,7 +383,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       <Header
         container={{ borderBottomWidth: 0 }}
         leftIcon={'backArrow'}
-        title={isModify ? 'MODIFY ORDERS' : 'SEARCH TESTS'}
+        title={isModify ? string.diagnostics.modifyHeader : 'SEARCH TESTS'}
         rightComponent={
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity
@@ -421,7 +442,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     setModifyHcCharges?.(0);
     setModifiedOrderItemIds?.([]);
     setHcCharges?.(0);
-    setAreaSelected?.({});
+    setDistanceCharges?.(0);
+    setModifiedPatientCart?.([]);
     //go back to homepage
     props.navigation.navigate('TESTS', { focusSearch: true });
   }
@@ -694,7 +716,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           marginHorizontal: 5,
           paddingBottom: index == diagnosticResults?.length - 1 ? 20 : 0,
         }}
-        onPressRemoveFromCart={() => removeCartItem!(`${item?.diagnostic_item_id}`)}
+        onPressRemoveFromCart={() => onRemoveCartItem(`${item?.diagnostic_item_id}`)}
       />
     );
   };

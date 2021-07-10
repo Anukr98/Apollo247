@@ -609,5 +609,9 @@ const styles = StyleSheet.create({
   subHeadingText: {
     ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 1, 18),
   },
-  patientListView: { flexGrow: 1, marginBottom: 16, height: screenHeight - 300 },
+  patientListView: {
+    flexGrow: 1,
+    marginBottom: 16,
+    height: screenHeight - 230, //300
+  },
 });

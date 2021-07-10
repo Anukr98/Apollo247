@@ -7,7 +7,7 @@ import {
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useCallback, useEffect, useState } from 'react';
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import {
   AddPatientCircleIcon,
   Check,
@@ -22,6 +22,7 @@ import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/Diagnost
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 
+const screenHeight = Dimensions.get('window').height;
 const { SHERPA_BLUE, WHITE, APP_GREEN } = theme.colors;
 
 interface PatientListProps {
@@ -68,7 +69,6 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
         };
         return obj;
       });
-
       setPatientCartItems?.(newCartItems);
     }
   }, [cartItems, isFocus]);
@@ -234,14 +234,14 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
 
   const renderStickyBottom = () => {
     return (
-      <StickyBottomComponent style={{ margin: -16, marginBottom: -50 }}>
+      <StickyBottomComponent style={styles.buttonView}>
         <Button title={'CONTINUE'} onPress={props.onPressContinue} disabled={CTAdisabled} />
       </StickyBottomComponent>
     );
   };
 
   return (
-    <View>
+    <View style={{ flex: 1 }}>
       <View style={styles.mainViewStyle}>
         <FlatList
           showsVerticalScrollIndicator={false}
@@ -263,6 +263,7 @@ const styles = StyleSheet.create({
   mainViewStyle: {
     flexGrow: 1,
     marginVertical: 16,
+    flex: 1,
   },
   patientItemViewStyle: {
     flexDirection: 'row',
@@ -315,5 +316,9 @@ const styles = StyleSheet.create({
     height: 20,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  buttonView: {
+    marginLeft: -16,
+    marginRight: -16,
   },
 });

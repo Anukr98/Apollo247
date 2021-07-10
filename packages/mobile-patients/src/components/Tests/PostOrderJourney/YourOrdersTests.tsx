@@ -131,6 +131,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     removeCartItem,
     setModifiedOrderItemIds,
     setModifiedOrder,
+    removePatientCartItem,
+    patientCartItems,
+    setDistanceCharges,
+    setModifiedPatientCart,
   } = useDiagnosticsCart();
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
@@ -243,6 +247,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     //clear the modify data.
     setModifiedOrder?.(null);
     setModifiedOrderItemIds?.([]);
+    setModifiedPatientCart?.([]);
 
     try {
       setLoading?.(true);
@@ -1482,6 +1487,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       ) => Number(item?.itemId)
     );
     const getCartItemsWithId = cartItems?.length > 0 && cartItems?.map((item) => Number(item?.id));
+    const findSelectedPatient = patientCartItems?.find(
+      (item) => item?.patientId === order?.patientId
+    );
     const isAlreadyPartOfOrder =
       !!getCartItemsWithId &&
       getCartItemsWithId?.length > 0 &&
@@ -1490,21 +1498,30 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     updateModifyData(order, getOrderItems);
 
     if (!!isAlreadyPartOfOrder && isAlreadyPartOfOrder?.length > 0) {
-      isAlreadyPartOfOrder?.map((id: number) => removeCartItem?.(String(id)));
+      isAlreadyPartOfOrder?.map((id: number) => {
+        removeCartItem?.(String(id));
+        !!findSelectedPatient && removePatientCartItem?.(order?.patientId, String(id));
+      });
       showAphAlert?.({
         onPressOk: () => {
           hideAphAlert && hideAphAlert();
-          _navigateToSearchPage();
+          _navigateToSearchPage(order?.patientId);
         },
         title: string.common.uhOh,
         description: string.diagnostics.modifyItemAlreadyExist,
       });
     } else {
-      _navigateToSearchPage();
+      _navigateToSearchPage(order?.patientId);
     }
   }
 
-  function _navigateToSearchPage() {
+  function _navigateToSearchPage(patientId: string) {
+    setModifiedPatientCart?.([
+      {
+        patientId: patientId,
+        cartItems: cartItems,
+      },
+    ]);
     props.navigation.navigate(AppRoutes.SearchTestScene, {
       searchText: '',
     });
@@ -1515,6 +1532,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setModifyHcCharges?.(0);
     setModifiedOrder?.(order);
     setModifiedOrderItemIds?.(modifiedItems);
+    setDistanceCharges?.(0);
+    setModifiedPatientCart?.([]);
   }
 
   function _onPressViewReportAction(order: orderList) {

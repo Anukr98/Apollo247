@@ -122,10 +122,14 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     removePatientCartItem,
     setModifiedOrder,
     setModifyHcCharges,
+    addPatientCartItem,
     setModifiedOrderItemIds,
     setHcCharges,
     setAreaSelected,
     setPinCode,
+    modifiedPatientCart,
+    setModifiedPatientCart,
+    setDistanceCharges,
   } = useDiagnosticsCart();
 
   const { setAddresses: setMedAddresses } = useShoppingCart();
@@ -151,7 +155,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const [isServiceable, setIsServiceable] = useState<boolean>(false);
   const [showNonServiceableText, setShowNonServiceableText] = useState<boolean>(false);
   const [showPriceMismatch, setShowPriceMismatch] = useState<boolean>(false);
-
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const getAddress = addresses?.find((item) => item?.id == deliveryAddressId);
@@ -172,30 +175,20 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   var pricesForItemArray;
   var modifyPricesForItemArray;
 
-  useEffect(() => {
-    if (isModifyFlow && isFocused && cartItems?.length > 0) {
-      const getExisitngItems = patientCartItems
-        ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
-        ?.flat();
-
-      let existingId = getExisitngItems?.map((items: DiagnosticsCartItem) => items?.id);
-
-      let getNewItems = cartItems?.filter((cItems) => !existingId?.includes(cItems?.id));
-
-      //added since, zero price + updated price item was getting added
-      const isPriceNotZero = getNewItems?.filter((item) => item?.price != 0);
-
-      const newCartItems = patientCartItems?.map((item) => {
-        let obj = {
-          patientId: item?.patientId,
-          cartItems: (item?.cartItems).concat(isPriceNotZero),
-        };
-        return obj;
-      });
-
-      setPatientCartItems?.(newCartItems);
-    }
-  }, [cartItems, isFocused]);
+  // useEffect(() => {
+  //   if (isModifyFlow && isFocused && cartItems?.length > 0) {
+  //     console.log({ patientCartItems });
+  //     const newCartItems = patientCartItems?.map((item) => {
+  //       let obj = {
+  //         patientId: item?.patientId,
+  //         cartItems: cartItems,
+  //       };
+  //       return obj;
+  //     });
+  //     console.log({ newCartItems });
+  //     setModifiedPatientCart?.(newCartItems);
+  //   }
+  // }, [cartItems, isFocused]);
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
@@ -248,7 +241,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     setModifyHcCharges?.(0);
     setModifiedOrderItemIds?.([]);
     setHcCharges?.(0);
-    setAreaSelected?.({});
+    setDistanceCharges?.(0);
+    setModifiedPatientCart?.([]);
     //go back to homepage
     props.navigation.navigate('TESTS', { focusSearch: true });
   }
@@ -261,7 +255,10 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   useEffect(() => {
     const getDeliveryAddressId = selectedAddr?.id;
     deliveryAddressId == '' && setDeliveryAddressId?.(getDeliveryAddressId);
-    if ((isModifyFlow || deliveryAddressId != '') && isFocused) {
+    if (
+      ((isModifyFlow && modifiedPatientCart?.length > 0) || deliveryAddressId != '') &&
+      isFocused
+    ) {
       setIsServiceable(false);
       setShowNonServiceableText(false);
       setShowPriceMismatch(false);
@@ -385,6 +382,17 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     setPatientCartItems?.(newObj);
   };
 
+  function updateModifiedPatientCartItem(updatedObject: any) {
+    const foundIndex =
+      !!modifiedPatientCart &&
+      modifiedPatientCart?.[0]?.cartItems?.findIndex((item) => item?.id == updatedObject?.id);
+
+    if (foundIndex !== -1) {
+      modifiedPatientCart[0].cartItems[foundIndex] = updatedObject;
+    }
+    setModifiedPatientCart?.(modifiedPatientCart?.slice(0));
+  }
+
   const updatePricesInCart = (results: any) => {
     if (results?.length == 0) {
       setLoading?.(false);
@@ -446,11 +454,12 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
             cartPriceToCompare = Number(cartItem?.specialPrice || cartItem?.price);
           }
           if (priceToCompare !== cartPriceToCompare) {
+            console.log('isprice changed');
             //mrp
             //show the prices changed pop-over
             isPriceChange = true;
             setShowPriceMismatch(true);
-            let updateObject = {
+            let updatedObject = {
               id: results?.[isItemInCart]
                 ? String(results?.[isItemInCart]?.itemId)
                 : String(cartItem?.id),
@@ -475,17 +484,17 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
               collectionMethod: TEST_COLLECTION_TYPE.HC,
               isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
             };
-            console.log({ updateObject });
-            updateCartItem?.(updateObject);
-            updatePatientCartItem?.(updateObject);
+
+            updateCartItem?.(updatedObject);
+            updatePatientCartItem?.(updatedObject);
+            isModifyFlow && updateModifiedPatientCartItem?.(updatedObject);
           }
           setLoading?.(false);
-          console.log({ patientCartItems });
         }
         //if items not available
         if (disabledCartItems?.length) {
           isItemDisable = true;
-          const disabledCartItemIds = disabledCartItems?.map((item) => item.id);
+          const disabledCartItemIds = disabledCartItems?.map((item) => item?.id);
           setLoading?.(false);
           removeDisabledCartItems(disabledCartItemIds);
           removeDisabledPatientCartItems(disabledCartItemIds);
@@ -502,7 +511,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
   async function getAddressServiceability() {
     //check in case of modify
-
     const selectedAddress = isModifyFlow ? modifiedOrder?.patientAddressObj : selectedAddr;
     setPinCode?.(selectedAddr?.zipcode!);
     //on changing the address
@@ -639,7 +647,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           borderRadius: 0,
         }}
         leftIcon={'backArrow'}
-        title={isModifyFlow ? 'MODIFY ORDER' : 'CART'}
+        title={isModifyFlow ? string.diagnostics.modifyHeader : 'CART'}
         onPressLeftIcon={() => handleBack()}
       />
     );
@@ -827,6 +835,16 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     removeCartItem?.(id);
     removePatientCartItem?.(patientId, id);
 
+    if (isModifyFlow) {
+      const newCartItems = cartItems?.filter((item) => Number(item?.id) !== Number(id));
+      setModifiedPatientCart?.([
+        {
+          patientId: modifiedOrder?.patientId,
+          cartItems: newCartItems,
+        },
+      ]);
+    }
+
     const newCartItems = cartItems?.filter((item) => Number(item?.id) !== Number(id));
 
     setCartItems?.(newCartItems);
@@ -834,7 +852,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       const selectedAddressIndex = addresses?.findIndex(
         (address) => address?.id == deliveryAddressId
       );
-      // isModifyFlow ? null : getSlots(removedItems);
       DiagnosticRemoveFromCartClicked(
         id,
         name,
@@ -872,7 +889,10 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
   const renderCartItems = () => {
     const filterPatients =
-      !!patientCartItems && patientCartItems?.filter((item) => item?.cartItems?.length > 0);
+      isModifyFlow && !!modifiedPatientCart && modifiedPatientCart?.length > 0
+        ? modifiedPatientCart
+        : !!patientCartItems && patientCartItems?.filter((item) => item?.cartItems?.length > 0);
+
     return (
       <View style={{ marginTop: 16, marginBottom: 150 }}>
         {!!filterPatients &&
@@ -894,6 +914,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                   <FlatList
                     showsVerticalScrollIndicator={false}
                     bounces={false}
+                    extraData={patientItems}
                     style={styles.cartItemsFlatList}
                     keyExtractor={keyExtractor}
                     data={patientItems}
@@ -1109,6 +1130,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
   //will be called in case of modify flow
   function _navigateToReviewPage() {
+    console.log('hgehr');
+    console.log({ modifiedPatientCart });
     props.navigation.navigate(AppRoutes.ReviewOrder, {
       reportGenDetails: reportGenDetails,
       selectedAddress: modifiedOrder?.patientAddressObj,
@@ -1189,7 +1212,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     getCartItemPrices: any
   ) {
     //search for duplicate items in cart. (single tests added)
-    let duplicateItemIds = cartItems?.filter((item) => duplicateItems?.includes(Number(item?.id)));
+    let duplicateItemIds =
+      !!cartItems && cartItems?.filter((item) => duplicateItems?.includes(Number(item?.id)));
 
     let itemIdRemove = duplicateItemIds?.map((item) => Number(item?.id));
 
@@ -1321,8 +1345,12 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     });
   };
 
-  const disableCTA =
-    !(!!addressText && isServiceable) || patientCartItems?.length === 0 || isCartEmpty?.length == 0;
+  const disableCTA = isModifyFlow
+    ? (!(!!addressText && isServiceable) && modifiedPatientCart?.length == 0) ||
+      modifiedPatientCart?.[0]?.cartItems?.length == 0
+    : !(!!addressText && isServiceable) ||
+      patientCartItems?.length === 0 ||
+      isCartEmpty?.length == 0;
 
   const renderStickyBottom = () => {
     return (

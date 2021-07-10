@@ -108,7 +108,6 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
   };
 
   return (
-    // <SafeAreaView style={{ flex: 1 }}>
     <View style={styles.container}>
       {selectedTimeSlot || !!modifyOrderDetails ? renderTimeSlot() : null}
       <View style={styles.subContainer}>
@@ -116,7 +115,6 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
         {renderButton()}
       </View>
     </View>
-    // </SafeAreaView>
   );
 };
 
