@@ -375,6 +375,54 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   response: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_familyHistory_response | null)[] | null;
 }
 
+export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_immunizations_response_reactions {
+  __typename: "ImmunizationReactions";
+  type: string | null;
+  from: any | null;
+  to: any | null;
+}
+
+export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_immunizations_response_immunizationFiles {
+  __typename: "ImmunizationFileParameters";
+  id: string | null;
+  fileName: string | null;
+  mimeType: string | null;
+  content: string | null;
+  byteContent: string | null;
+  dateCreated: number | null;
+}
+
+export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_immunizations_response {
+  __typename: "ImmunizationsBaseResult";
+  id: string | null;
+  immunizationName: string | null;
+  dateAdministered: any | null;
+  followUpDate: any | null;
+  regstrationId: string | null;
+  dateOfImmunization: string | null;
+  dueDate: any | null;
+  fileUrl: string | null;
+  doctorName: string | null;
+  manufacturer: string | null;
+  batchno: string | null;
+  vaccineName: string | null;
+  potency: string | null;
+  hospitalName: string | null;
+  vaccine_location: string | null;
+  notes: string | null;
+  source: string | null;
+  reactions: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_immunizations_response_reactions | null)[] | null;
+  immunizationFiles: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_immunizations_response_immunizationFiles | null)[] | null;
+}
+
+export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_immunizations {
+  __typename: "ImmunizationsResult";
+  errorCode: number | null;
+  errorMsg: string | null;
+  errorType: string | null;
+  response: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_immunizations_response | null)[] | null;
+}
+
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2 {
   __typename: "PrismMedicalRecordsResult_V2";
   labResults: getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults | null;
@@ -388,6 +436,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   healthRestrictions: getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_healthRestrictions | null;
   allergies: getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_allergies | null;
   familyHistory: getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_familyHistory | null;
+  immunizations: getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_immunizations | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2 {
@@ -397,6 +446,4 @@ export interface getPatientPrismMedicalRecords_V2 {
 export interface getPatientPrismMedicalRecords_V2Variables {
   patientId: string;
   records?: (MedicalRecordType | null)[] | null;
-  recordId?: string | null;
-  source?: string | null;
 }

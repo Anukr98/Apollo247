@@ -150,7 +150,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     maxCartValueForCOD,
     nonCodSKus,
     clearCartInfo,
-    circlePlanSelected,
   } = useShoppingCart();
   const {
     pharmacyUserTypeAttribute,
@@ -759,11 +758,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               subPlanId: circleSubPlanId || '',
             }
           : null,
-        totalCashBack:
-          (!coupon?.coupon && isCircleSubscription) ||
-          (coupon?.circleBenefits && isCircleSubscription)
-            ? Number(cartTotalCashback) || 0
-            : 0,
+        totalCashBack: !coupon?.coupon && isCircleSubscription ? Number(cartTotalCashback) || 0 : 0,
         appVersion: DeviceInfo.getVersion(),
         savedDeliveryCharge:
           !!isFreeDelivery || isCircleSubscription ? 0 : AppConfig.Configuration.DELIVERY_CHARGES,
@@ -1111,7 +1106,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         paddingHorizontal: 10,
         paddingVertical: 9,
         borderColor: '#00B38E',
-        borderWidth: 1,
+        borderWidth: 3,
+        borderStyle: 'dashed',
         margin: 0.05 * windowWidth,
       },
       rowSpaceBetween: {

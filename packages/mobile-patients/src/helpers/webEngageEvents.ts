@@ -216,6 +216,7 @@ export enum WebEngageEventName {
   CONSULT_RX = 'PHR Consult & RX',
   MEDICAL_RECORDS = 'PHR Medical Records',
   ADD_RECORD = 'Add Record',
+  ADD_VACCINATION_RECORD = 'Add Vaccination Record',
   UPLOAD_PRESCRIPTION = 'Upload Prescription',
   UPLOAD_PHOTO = 'Upload Photo',
   ITEMS_CLICKED = 'Items Clicked',
@@ -227,6 +228,7 @@ export enum WebEngageEventName {
   PHR_CLICK_HOSPITALIZATIONS = 'PHR Click Hospitalizations',
   PHR_CLICK_HEALTH_CONDITIONS = 'PHR Click Health Conditions',
   PHR_CLICK_BILLS = 'PHR Click Bills',
+  PHR_CLICK_VACCINATION = 'PHR Click Vaccination',
   PHR_CLICK_INSURANCES = 'PHR Click Insurances',
   PHR_ADD_DOCTOR_CONSULTATIONS = 'PHR Add Doctor Consultation',
   PHR_ADD_TEST_REPORT = 'PHR Add Test Report',
@@ -1861,7 +1863,8 @@ export interface WebEngageEvents {
       | 'Hospitalization'
       | 'Health Condition'
       | 'Bill'
-      | 'Insurance'; // List/Profile
+      | 'Insurance'
+      | 'Vaccination'; // List/Profile
   };
 
   [WebEngageEventName.UPLOAD_PRESCRIPTION]: PatientInfo;

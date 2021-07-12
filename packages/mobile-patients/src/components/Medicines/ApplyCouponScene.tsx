@@ -138,7 +138,6 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     circleMembershipCharges,
     setIsFreeDelivery,
     productDiscount,
-    circlePlanSelected,
   } = useShoppingCart();
   const { showAphAlert } = useUIElements();
   const [loading, setLoading] = useState<boolean>(true);

@@ -1,7 +1,4 @@
-import {
-  AppCommonDataContextProps,
-  LocationData,
-} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { LocationData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   getPlaceInfoByLatLng,
@@ -498,6 +495,8 @@ const getConsiderDate = (type: string, dataObject: any) => {
       return dataObject?.billDateTime;
     case 'health-conditions':
       return dataObject?.startDateTime || dataObject?.recordDateTime;
+    case 'immunization':
+      return dataObject?.dateOfImmunization;
   }
 };
 
@@ -521,7 +520,10 @@ export const initialSortByDays = (
     const dateDifferenceInDays = moment(startDate).diff(dateToConsider, 'days');
     const dateDifferenceInMonths = moment(startDate).diff(dateToConsider, 'months');
     const dateDifferenceInYears = moment(startDate).diff(dateToConsider, 'years');
-    if (dateDifferenceInYears !== 0) {
+
+    if (dateDifferenceInDays <= 0 && dateDifferenceInMonths <= 0 && dateDifferenceInYears <= 0) {
+      finalData = getFinalSortData('Upcoming', finalData, dataObject);
+    } else if (dateDifferenceInYears !== 0) {
       if (dateDifferenceInYears >= 5) {
         finalData = getFinalSortData('More than 5 years', finalData, dataObject);
       } else if (dateDifferenceInYears >= 2) {
@@ -2916,11 +2918,8 @@ export const getHealthCredits = async () => {
   }
 };
 
-export const getPackageIds = (
-  activeUserSubscriptions: AppCommonDataContextProps['activeUserSubscriptions'],
-  circlePlanSelected?: ShoppingCartContextProps['circlePlanSelected']
-) => {
-  const packageIds: string[] = [];
+export const getPackageIds = (activeUserSubscriptions: any) => {
+  let packageIds: string[] = [];
   activeUserSubscriptions &&
     Object.keys(activeUserSubscriptions)?.forEach((subscription: string) => {
       activeUserSubscriptions?.[subscription]?.forEach((item) => {
@@ -2928,9 +2927,6 @@ export const getPackageIds = (
           packageIds.push(`${subscription?.toUpperCase()}:${item?.plan_id}`);
       });
     });
-  if (circlePlanSelected?.subPlanId) {
-    packageIds.push(circlePlanSelected?.subPlanId);
-  }
   return packageIds;
 };
 
@@ -2982,9 +2978,9 @@ export const downloadDocument = (
 };
 export const getIsMedicine = (typeId: string) => {
   const medicineType = {
-    fmcg: 0,
-    pharma: 1,
-    pl: 2,
+    fmcg: '0',
+    pharma: '1',
+    pl: '2',
   };
-  return medicineType[typeId] || 0;
+  return medicineType[typeId] || '0';
 };

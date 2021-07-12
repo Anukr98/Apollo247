@@ -178,7 +178,7 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
               {selfUpload
                 ? sourceName === string.common.clicnical_document_text
                   ? sourceName
-                  : item?.siteDisplayName || '-'
+                  : item?.siteDisplayName || 'NOT AVAILABLE'
                 : sourceName}
             </Text>
           </View>
