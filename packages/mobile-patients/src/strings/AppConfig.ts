@@ -253,6 +253,11 @@ const appStaticVariables = {
     },
   ],
   DIAGNOSTIC_DEFAULT_ICON: 'https://newassets.apollo247.com/organs/ic_blood.png',
+  Diagnostics_Help_NonOrder_Queries: [
+    "96b606f4-dd13-46ff-8bce-85315efee053",
+    "78c2dc50-dc16-44c6-bd2d-d4b14c97b521",
+    "10788a46-512c-41c0-8c59-e31ff7eebbe4"
+    ],
 };
 
 const DEV_top_specialties = [
