@@ -174,21 +174,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
   var pricesForItemArray;
   var modifyPricesForItemArray;
-
-  // useEffect(() => {
-  //   if (isModifyFlow && isFocused && cartItems?.length > 0) {
-  //     console.log({ patientCartItems });
-  //     const newCartItems = patientCartItems?.map((item) => {
-  //       let obj = {
-  //         patientId: item?.patientId,
-  //         cartItems: cartItems,
-  //       };
-  //       return obj;
-  //     });
-  //     console.log({ newCartItems });
-  //     setModifiedPatientCart?.(newCartItems);
-  //   }
-  // }, [cartItems, isFocused]);
+  var patientCartItemsCopy = JSON.parse(JSON.stringify(isCartEmpty));
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
@@ -454,7 +440,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
             cartPriceToCompare = Number(cartItem?.specialPrice || cartItem?.price);
           }
           if (priceToCompare !== cartPriceToCompare) {
-            console.log('isprice changed');
             //mrp
             //show the prices changed pop-over
             isPriceChange = true;
@@ -549,6 +534,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
               patientCartItems?.length == 0 && setLoading?.(false);
             })
             .catch((e) => {
+              console.log({ e });
               CommonBugFender('AddPatients_getAddressServiceability_getDiagnosticsAvailability', e);
               setLoading?.(false);
               errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
@@ -1130,8 +1116,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
   //will be called in case of modify flow
   function _navigateToReviewPage() {
-    console.log('hgehr');
-    console.log({ modifiedPatientCart });
     props.navigation.navigate(AppRoutes.ReviewOrder, {
       reportGenDetails: reportGenDetails,
       selectedAddress: modifiedOrder?.patientAddressObj,
@@ -1188,32 +1172,52 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   }
   //applying the first level duplicate checks. (check for normal + modify ) - single/multi
   function _checkInclusionLevelDuplicates() {
-    const allInclusions = cartItems?.map((item) => item?.inclusions);
-    const getPricesForItem = createItemPrice()?.itemPricingObject;
-    const getCartItemPrices = createItemPrice()?.pricesForItemArray;
-    const mergedInclusions = allInclusions?.flat(1); //from array level to single array
-    const duplicateItems_1 = mergedInclusions?.filter(
-      (e: any, i: any, a: any) => a.indexOf(e) !== i
-    );
+    const filteredPatientItems = !!isCartEmpty && isCartEmpty;
+    filteredPatientItems?.map((pItem, index) => {
+      const allInclusions = pItem?.cartItems?.map((item) => item?.inclusions);
+      const getPricesForItem = createItemPrice()?.itemPricingObject;
+      const getCartItemPrices = createItemPrice()?.pricesForItemArray;
+      const mergedInclusions = allInclusions?.flat(1); //from array level to single array
+      const duplicateItems_1 = mergedInclusions?.filter(
+        (e: any, i: any, a: any) => a.indexOf(e) !== i
+      );
 
-    const duplicateItems = [...new Set(duplicateItems_1)];
-    hideAphAlert?.();
-    setLoading?.(false);
-    if (duplicateItems?.length) {
-      checkDuplicateItems_Level1(getPricesForItem, duplicateItems, getCartItemPrices);
-    } else {
-      _navigateToNextScreen(); //move to next screen
-    }
+      const duplicateItems = [...new Set(duplicateItems_1)];
+      hideAphAlert?.();
+      setLoading?.(false);
+      if (duplicateItems?.length) {
+        checkDuplicateItems_Level1(
+          getPricesForItem,
+          duplicateItems,
+          getCartItemPrices,
+          pItem?.patientId,
+          pItem?.cartItems,
+          index,
+          filteredPatientItems?.length
+        );
+      } else {
+        if (index === isCartEmpty?.length - 1) {
+          _navigateToNextScreen(); //move to next screen
+        } else {
+          index++;
+        }
+      }
+    });
   }
 
   function checkDuplicateItems_Level1(
     getPricesForItem: any,
     duplicateItems: any,
-    getCartItemPrices: any
+    getCartItemPrices: any,
+    patientId: string,
+    cartItemsToCheck: DiagnosticsCartItem[],
+    index: number,
+    totalLength: number
   ) {
     //search for duplicate items in cart. (single tests added)
     let duplicateItemIds =
-      !!cartItems && cartItems?.filter((item) => duplicateItems?.includes(Number(item?.id)));
+      !!cartItemsToCheck &&
+      cartItemsToCheck?.filter((item) => duplicateItems?.includes(Number(item?.id)));
 
     let itemIdRemove = duplicateItemIds?.map((item) => Number(item?.id));
 
@@ -1252,7 +1256,12 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     let finalRemovalId = [...itemIdRemove, remainingPackageDuplicateItemId]?.flat(1);
 
     setLoading?.(true);
-    getDiagnosticsAvailability(Number(addressCityId), cartItems, finalRemovalId, 'proceedToPay')
+    getDiagnosticsAvailability(
+      Number(addressCityId),
+      cartItemsToCheck,
+      finalRemovalId,
+      'proceedToPay'
+    )
       .then(({ data }) => {
         const diagnosticItems = g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
         const formattedDuplicateTest = diagnosticItems?.map((item) =>
@@ -1260,7 +1269,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         );
         const duplicateTests = formattedDuplicateTest?.join(', ');
         //remaining itemId's
-        const updatedCartItems = cartItems?.filter(function(items: any) {
+        const updatedCartItems = cartItemsToCheck?.filter(function(items: any) {
           return finalRemovalId?.indexOf(Number(items?.id)) < 0;
         });
 
@@ -1272,8 +1281,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         //if not found at inclusion level, then show whatever is coming from api.
         if (higherPricesItems?.length == 0) {
           setLoading?.(false);
-          //for further processing
-          _navigateToNextScreen();
+          index == totalLength - 1 && _navigateToNextScreen();
         } else {
           //there can be case, that they are found in the inclusion level.
           const formattedHigherPriceItemName = higherPricesItems?.map(
@@ -1282,7 +1290,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           const higherPricesName = formattedHigherPriceItemName?.join(', ');
 
           //clear cart
-          onChangeCartItems(updatedCartItems, duplicateTests, finalRemovalId);
+          onChangeCartItems(updatedCartItems, duplicateTests, finalRemovalId, patientId);
 
           //show inclusions
           let array = [] as any;
@@ -1314,8 +1322,19 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       });
   }
 
-  function onChangeCartItems(updatedCartItems: any, removedTest: string, removedTestItemId: any) {
+  function onChangeCartItems(
+    updatedCartItems: any,
+    removedTest: string,
+    removedTestItemId: any,
+    patientId: string
+  ) {
+    const findIndex = patientCartItemsCopy?.findIndex(
+      (item: DiagnosticPatientCartItem) => item?.patientId == patientId
+    );
+    patientCartItemsCopy[findIndex].cartItems = updatedCartItems;
+
     setDiagnosticSlot?.(null);
+    setPatientCartItems?.(patientCartItemsCopy);
     setCartItems?.(updatedCartItems);
     //refetch the areas
     if (deliveryAddressId != '') {
@@ -1356,7 +1375,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     return (
       <StickyBottomComponent>
         <Button
-          title={'SCHEDULE APPOINTMENT'}
+          title={isModifyFlow ? 'CHECKOUT' : 'SCHEDULE APPOINTMENT'}
           onPress={() => _checkInclusionLevelDuplicates()}
           disabled={disableCTA}
         />

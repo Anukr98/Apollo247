@@ -44,8 +44,9 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const filterInclusions =
     duplicateArray?.length > 0 && inclusionItem?.filter((item: string) => item != '');
 
-  const inclusionItemToShow =
-    filterInclusions?.length > 0 && filterInclusions && filterInclusions?.join(', ');
+  const finalFilterInclusions = filterInclusions?.length > 0 && [...new Set(filterInclusions)];
+
+  const inclusionItemToShow = !!finalFilterInclusions && finalFilterInclusions?.join(', ');
 
   function _onPressCard(item: DiagnosticsCartItem) {
     props.onPressCard(item);

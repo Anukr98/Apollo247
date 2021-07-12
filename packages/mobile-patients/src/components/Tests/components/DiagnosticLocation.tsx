@@ -191,7 +191,6 @@ export const DiagnosticLocation: React.FC<DiagnosticLocationProps> = (props) => 
     setshowSpinner(true);
     doRequestAndAccessLocationModified(false, true, false)
       .then((response) => {
-        console.log({ response });
         //if response, then -> populate on homepage
         if (response) {
           //go back to home page , if already given
@@ -200,11 +199,9 @@ export const DiagnosticLocation: React.FC<DiagnosticLocationProps> = (props) => 
           //no location...
           // if neever.... on ios... response is undefined.
           setShowPermissionView(2);
-          console.log('inside the else of current location');
         }
       })
       .catch((e) => {
-        console.log({ e });
         if (Platform.OS == 'android') {
           e === 'denied'
             ? setShowPermissionView(1)
@@ -224,8 +221,6 @@ export const DiagnosticLocation: React.FC<DiagnosticLocationProps> = (props) => 
   };
 
   function _performPermissionCTAAction() {
-    console.log({ showPermissionView });
-    console.log('permission touch function');
     switch (showPermissionView) {
       case 1:
         //1 -> permission denied

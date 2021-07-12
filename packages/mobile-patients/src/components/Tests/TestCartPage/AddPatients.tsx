@@ -265,15 +265,6 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
             //mrp
             //show the prices changed pop-over
             isPriceChange = true;
-            setLoading?.(false);
-            showAphAlert?.({
-              unDismissable: true,
-              title: string.common.uhOh,
-              description: string.diagnostics.pricesChangedMessage,
-              onPressOk: () => {
-                hideAphAlert?.();
-              },
-            });
             updateCartItem?.({
               id: results?.[isItemInCart]
                 ? String(results?.[isItemInCart]?.itemId)
@@ -324,6 +315,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
               collectionMethod: TEST_COLLECTION_TYPE.HC,
               isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
             });
+            setLoading?.(false);
           }
         }
         //if items not available
@@ -332,14 +324,6 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
           const disabledCartItemIds = disabledCartItems?.map((item) => item.id);
           setLoading?.(false);
           removeDisabledCartItems(disabledCartItemIds);
-
-          showAphAlert?.({
-            title: string.common.uhOh,
-            description: string.diagnostics.pricesChangedMessage,
-            onPressOk: () => {
-              hideAphAlert?.();
-            },
-          });
         }
       });
       if (!isItemDisable && !isPriceChange) {
@@ -376,37 +360,18 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
           //serviceable
           setDeliveryAddressCityId?.(String(getServiceableResponse?.cityID));
           setDiagnosticServiceabilityData?.(obj);
-          setIsServiceable(true);
-          //call prices api.
-          getDiagnosticsAvailability(getServiceableResponse?.cityID!, cartItems)
-            .then(({ data }) => {
-              const diagnosticItems =
-                g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
-              updatePricesInCart(diagnosticItems);
-              cartItems?.length == 0 && setLoading?.(false);
-            })
-            .catch((e) => {
-              CommonBugFender('AddPatients_getAddressServiceability_getDiagnosticsAvailability', e);
-              setLoading?.(false);
-              errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
-            });
+          fetchPricesForItems(getServiceableResponse);
         } else {
           //non-serviceable
-          setLoading?.(false);
-          showAphAlert?.({
-            unDismissable: true,
-            title: string.common.uhOh,
-            description: string.diagnostics.nonServiceableConfigPinCodeMsg.replace(
-              '{{pincode}}',
-              diagnosticLocation?.pincode!
-            ),
-            onPressOk: () => {
-              hideAphAlert?.();
-              setIsServiceable(false);
-              setDeliveryAddressCityId?.('');
-              setDeliveryAddressId?.('');
-            },
-          });
+          // setLoading?.(false);
+          let obj = {
+            cityID: 9,
+            stateID: 1,
+            state: 'Telangana',
+            city: 'Hyderabad',
+          };
+          //if non - serviceable then fetch from the hyderabad city
+          fetchPricesForItems(obj);
         }
       }
     } catch (error) {
@@ -417,6 +382,21 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       setDeliveryAddressId?.('');
     }
   }
+
+  const fetchPricesForItems = (getServiceableResponse: any) => {
+    getDiagnosticsAvailability(Number(getServiceableResponse?.cityID!), cartItems)
+      .then(({ data }) => {
+        const diagnosticItems = g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
+        updatePricesInCart(diagnosticItems);
+        cartItems?.length == 0 && setLoading?.(false);
+      })
+      .catch((e) => {
+        console.log({ e });
+        CommonBugFender('AddPatients_getAddressServiceability_getDiagnosticsAvailability', e);
+        setLoading?.(false);
+        errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
+      });
+  };
 
   const renderHeader = () => {
     return (

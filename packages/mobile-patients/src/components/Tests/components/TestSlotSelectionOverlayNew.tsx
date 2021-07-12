@@ -85,9 +85,11 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   );
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [newChangedDate, setNewChangedDate] = useState<Date>();
+  const [noSlotsArray, setNoSlotsArray] = useState([] as any);
 
   type UniqueSlotType = typeof uniqueSlots[0];
 
+  var noSlot = [];
   var offsetDays = 0;
   var offsetDates = 0;
   var offsetTimestamp = 0;
@@ -172,6 +174,8 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
             .toDate();
 
           fetchSlots(changedDate);
+          const array = noSlotsArray?.concat(moment(dateToCheck)?.format('DD'));
+          setNoSlotsArray(array);
         } else {
           setSlots(slotsArray);
           setChangedDate(moment(dateToCheck)?.toDate());
@@ -235,7 +239,6 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     });
   }
 
-  //add a price here....
   const renderPremiumTag = () => {
     const distanceCharges =
       !!slotInfo?.slotInfo?.distanceCharges && slotInfo?.slotInfo?.distanceCharges;
@@ -257,7 +260,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     return (
       <View style={{ marginBottom: 30 }}>
         <View style={styles.dayPhaseContainer}>
-          {dayPhaseArray.map((item, index) => (
+          {dayPhaseArray?.map((item, index) => (
             <TouchableOpacity
               style={[
                 styles.dayPhaseStyle,
@@ -276,7 +279,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
                 style={{
                   ...theme.fonts.IBMPlexSansMedium(16),
                   color: selectedDayTab == index ? theme.colors.APP_GREEN : theme.colors.LIGHT_BLUE,
-                  padding: 10,
+                  padding: 16,
                 }}
               >
                 {item?.title}
@@ -349,22 +352,6 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
      * as soon as current date has no slot selection, then change it to next date (autoselection)
      */
 
-    const isCurrentDateSlotUnavailable = isSameDate && uniqueSlots?.length == 0;
-    //date is the selected date & minDate : date to show.
-    const dateToHighlight =
-      isCurrentDateSlotUnavailable && isDateAutoSelected
-        ? moment(date)
-            .add(1, 'day')
-            .toDate()
-        : date;
-
-    const minDateToShow = props.isReschdedule
-      ? new Date()
-      : !!isTodaySlotUnavailable && isTodaySlotUnavailable
-      ? moment(new Date())
-          .add(1, 'day')
-          .toDate()
-      : new Date();
     return (
       <View>
         <View style={styles.monthHeading}>
@@ -396,7 +383,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
                   {
                     backgroundColor:
                       selectedDate == item?.dates ? theme.colors.APP_GREEN : 'transparent',
-                    marginHorizontal: showInOverlay ? (width > 400 ? 5 : 1) : width > 400 ? 1 : -4,
+                    marginHorizontal: showInOverlay ? (width > 400 ? 5 : 1) : width > 400 ? 5 : 1, //1 : -4 (if width is 16 pixels gap)
                   },
                 ]}
               >
@@ -405,6 +392,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
                     styles.dateStyle,
                     {
                       color: selectedDate == item?.dates ? 'white' : theme.colors.SHERPA_BLUE,
+                      opacity: noSlotsArray?.includes(item?.dates) ? 0.6 : 1,
                     },
                   ]}
                 >
@@ -415,6 +403,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
                     styles.dayStyle,
                     {
                       color: selectedDate == item?.dates ? 'white' : theme.colors.SHERPA_BLUE,
+                      opacity: noSlotsArray?.includes(item?.dates) ? 0.6 : 1,
                     },
                   ]}
                 >

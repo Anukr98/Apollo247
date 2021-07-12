@@ -26,6 +26,7 @@ import {
   Remove,
   DropdownGreen,
   WidgetLiverIcon,
+  PolygonIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -85,6 +86,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import {
   CommonBugFender,
   CommonLogEvent,
+  isIphone5s,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
@@ -158,6 +160,7 @@ import {
   makeAdressAsDefault,
   makeAdressAsDefaultVariables,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
+import { Button } from '../ui/Button';
 
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
@@ -269,6 +272,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [clickedItem, setClickedItem] = useState<any>([]);
   const [showLocationPopup, setLocationPopup] = useState<boolean>(false);
   const [source, setSource] = useState<DIAGNOSTIC_PINCODE_SOURCE_TYPE>();
+  const [showUnserviceablePopup, setUnserviceablePopup] = useState<boolean>(false);
 
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
   const [serviceableObject, setServiceableObject] = useState({} as any);
@@ -727,6 +731,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setDiagnosticServiceabilityData?.(obj); //sets the city,state, and there id's
             setDiagnosticLocationServiceable?.(true);
             setServiceabilityMsg('');
+            setUnserviceablePopup(false);
             !!source && DiagnosticPinCodeClicked(currentPatient, pincode, true, source);
           } else {
             //null in case of non-serviceable
@@ -740,10 +745,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setDiagnosticServiceabilityData?.(obj);
             setPageLoading?.(false);
             setDiagnosticLocationServiceable?.(false);
+            setUnserviceablePopup(true);
             //not serving pop-up needs to be seen.
-            isCurrentScreen == AppRoutes.Tests
-              ? renderNonServiceablePopUp(selectedAddress?.displayName) //returned by api displayName
-              : null;
+            // isCurrentScreen == AppRoutes.Tests
+            //   ? renderNonServiceablePopUp(selectedAddress?.displayName) //returned by api displayName
+            //   : null;
 
             setServiceabilityMsg(string.diagnostics.nonServiceableMsg1);
             !!source && DiagnosticPinCodeClicked(currentPatient, pincode, false, source);
@@ -989,6 +995,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   }
 
+  function _onPressChangeLocation() {
+    setLocationPopup(true);
+    setUnserviceablePopup(false);
+  }
+
   async function setDefaultAddress(address: Address) {
     try {
       const isSelectedAddressWithNoLatLng = isAddressLatLngInValid(address);
@@ -1072,6 +1083,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             style={{ marginTop: -7.5 }}
             onPress={() => {
               setLocationPopup(true);
+              setUnserviceablePopup(false);
             }}
           >
             <Text numberOfLines={1} style={styles.deliverToText}>
@@ -1092,6 +1104,38 @@ export const Tests: React.FC<TestsProps> = (props) => {
         )}
         {!!serviceabilityMsg && <Text style={styles.serviceabilityMsg}>{serviceabilityMsg}</Text>}
       </View>
+    );
+  };
+
+  const renderNonServiceableToolTip = () => {
+    return (
+      <TouchableOpacity
+        onPress={() => setUnserviceablePopup(false)}
+        style={{
+          position: 'absolute',
+          height: winHeight,
+          width: winWidth,
+        }}
+      >
+        <View style={styles.nonServiceableToolTip}>
+          <PolygonIcon style={styles.toolTipIcon} />
+          <View style={{ padding: 12 }}>
+            <Text style={styles.unserviceableHeading}>
+              {string.addressSelection.unserviceableHeading}
+            </Text>
+            <Text style={styles.unserviceableMsg}>{string.addressSelection.unserviceableText}</Text>
+
+            <View style={{ marginTop: 12 }}>
+              <Button
+                style={styles.unserviceableButton}
+                titleTextStyle={styles.unserviceableCTAStyle}
+                title={'CHANGE LOCATION'}
+                onPress={() => _onPressChangeLocation()}
+              />
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
     );
   };
 
@@ -1871,7 +1915,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const renderCartIcon = () => (
       <View style={{ flex: 1 }}>
         <TouchableOpacity
-          style={{ alignItems: 'flex-end' }}
+          style={styles.cartIconTouch}
           activeOpacity={1}
           onPress={() => props.navigation.navigate(AppRoutes.AddPatients)}
         >
@@ -2086,6 +2130,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           </>
         )}
         {showLocationPopup && renderLocationSearch()}
+        {showUnserviceablePopup && renderNonServiceableToolTip()}
       </SafeAreaView>
       {showbookingStepsModal ? renderBookingStepsModal() : null}
     </View>
@@ -2309,4 +2354,39 @@ const styles = StyleSheet.create({
   },
   homeIconStyle: { height: 33, width: 33, resizeMode: 'contain' },
   notificationIconStyle: { marginLeft: 10, marginRight: 5 },
+  nonServiceableToolTip: {
+    backgroundColor: '#CE3737',
+    flex: 1,
+    position: 'absolute',
+    top: winHeight / 7,
+    left: winWidth / 3.8,
+    width: winWidth / 1.7,
+  },
+  toolTipIcon: {
+    height: 20,
+    width: 20,
+    marginTop: -10,
+    resizeMode: 'contain',
+    marginBottom: -10,
+    marginLeft: winWidth / 5,
+    tintColor: '#CE3737',
+  },
+  unserviceableHeading: { ...theme.viewStyles.text('B', 12, colors.WHITE, 1, 20) },
+  unserviceableMsg: { ...theme.viewStyles.text('M', 11, colors.WHITE, 1, 16), marginTop: 8 },
+  unserviceableButton: {
+    height: 30,
+    alignSelf: 'flex-end',
+    backgroundColor: '#EF6D6D',
+    borderRadius: 0,
+    width: winWidth / 3.5,
+  },
+  unserviceableCTAStyle: {
+    ...theme.viewStyles.text('SB', isIphone5s() ? 9 : 10, theme.colors.BUTTON_TEXT),
+    textAlign: 'center',
+  },
+  cartIconTouch: {
+    alignSelf: 'flex-end',
+    width: 35,
+    alignItems: 'flex-end',
+  },
 });

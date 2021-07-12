@@ -400,6 +400,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   };
 
+  function updateCancelCard(orderId: string) {
+    const findOrderIndex = orders?.findIndex((arrObj: orderListByMobile) => arrObj?.id === orderId);
+    if (findOrderIndex !== -1) {
+      orders[findOrderIndex].orderStatus = DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED;
+    }
+    setLoading?.(false);
+  }
+
   const onSubmitCancelOrder = (reason: string, comment: string) => {
     setLoading?.(true);
     const orderCancellationInput: CancellationDiagnosticsInputv2 = {
@@ -413,8 +421,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         console.log({ data });
         const cancelResponse = g(data, 'data', 'cancelDiagnosticOrdersv2', 'status');
         if (!!cancelResponse && cancelResponse === true) {
-          setLoading?.(true);
-          setTimeout(() => refetchOrders(), 1000);
+          updateCancelCard(selectedOrderId);
           showAphAlert?.({
             unDismissable: true,
             title: string.common.hiWithSmiley,
@@ -945,10 +952,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           {patientSalutation} {nameFormater(patientName, 'title')}
         </Text>
         <View style={[styles.itemsView]}>
-          {remainingItems > 0 &&
-            item?.diagnosticOrderLineItems?.map((lineItems: any, index: number) => {
-              return renderTestName(lineItems, remainingItems, item?.displayId, index);
-            })}
+          {item?.diagnosticOrderLineItems?.map((lineItems: any, index: number) => {
+            return renderTestName(lineItems, remainingItems, item?.displayId, index);
+          })}
         </View>
         {count - 1 == index ? null : <Spearator style={{ marginBottom: 4 }} />}
       </View>
@@ -1252,6 +1258,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       console.log({ res });
       if (res?.data?.getDiagnosticOrdersListByParentOrderID) {
         const getOrders = res?.data?.getDiagnosticOrdersListByParentOrderID?.ordersList! || [];
+
         setMultipleOrdersList(getOrders);
         setShowMultiUhidOption(true);
       } else {

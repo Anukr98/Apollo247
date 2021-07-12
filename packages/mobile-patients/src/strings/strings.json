@@ -1095,7 +1095,9 @@
     "NO_RESULTS_FOUND": "No Results Found",
     "MARKER_TEXT": "MOVE MAP TO ADJUST",
     "HELP_US_LOCATE_TEXT": "Identify your delivery location",
-    "CONFIRM_LOCATION_AND_PROCEED": "CONFIRM LOCATION AND PROCEED"
+    "CONFIRM_LOCATION_AND_PROCEED": "CONFIRM LOCATION AND PROCEED",
+    "unserviceableHeading": "This location is Unserviceable",
+    "unserviceableText": " This area is not servicable by us yet, until then please try different location."
   },
   "accessLocationPopUp": {
     "chooseFromAddressText": "Choose from saved addresses",

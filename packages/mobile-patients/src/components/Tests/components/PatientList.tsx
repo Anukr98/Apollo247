@@ -65,7 +65,7 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
       const newCartItems = patientCartItems?.map((item) => {
         let obj = {
           patientId: item?.patientId,
-          cartItems: (item?.cartItems).concat(isPriceNotZero),
+          cartItems: item?.cartItems?.concat(isPriceNotZero),
         };
         return obj;
       });
