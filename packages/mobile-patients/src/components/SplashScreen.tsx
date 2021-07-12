@@ -961,6 +961,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Covid_Risk_Level_Url',
       PROD: 'Covid_Risk_Level_Url',
     },
+    Diagnostics_Help_NonOrder_Queries: {
+      QA: 'QA_Diagnostics_Help_NonOrder_Queries',
+      PROD: 'Diagnostics_Help_NonOrder_Queries'
+    }
   };
 
   const getKeyBasedOnEnv = (
@@ -1204,6 +1208,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       );
 
       setAppConfig('Covid_Risk_Level_Url', 'COVID_RISK_LEVEL_URL', (key) => config.getString(key));
+      setAppConfig(
+        'Diagnostics_Help_NonOrder_Queries',
+        'Diagnostics_Help_NonOrder_Queries',
+        (key) => config.getString(key)
+      );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';
