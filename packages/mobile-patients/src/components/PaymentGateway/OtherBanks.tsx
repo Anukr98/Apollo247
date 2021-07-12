@@ -9,6 +9,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import {
   CREATE_ORDER,
   INITIATE_DIAGNOSTIC_ORDER_PAYMENT,
+  UPDATE_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { InitiateNetBankingTxn } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -57,7 +58,7 @@ export const OtherBanks: React.FC<OtherBanksProps> = (props) => {
     } catch (error) {}
   };
 
-  const createJusPayOrder = (paymentMode: 'PREPAID' | 'COD') => {
+  const createJusPayOrder = () => {
     const orderInput = {
       payment_order_id: paymentId,
       health_credits_used: burnHc,
@@ -68,29 +69,27 @@ export const OtherBanks: React.FC<OtherBanksProps> = (props) => {
       return_url: AppConfig.Configuration.baseUrl,
     };
     return client.mutate({
-      mutation: CREATE_ORDER,
+      mutation: !!authToken ? UPDATE_ORDER : CREATE_ORDER,
       variables: { order_input: orderInput },
       fetchPolicy: 'no-cache',
     });
   };
 
   const getClientToken = async () => {
-    if (!!authToken) {
-      return authToken;
-    } else {
-      setisTxnProcessing(true);
-      try {
-        businessLine == 'diagnostics' && initiateOrderPayment();
-        const response = await createJusPayOrder('PREPAID');
-        const { data } = response;
-        const { createOrder } = data;
-        const token = createOrder?.juspay?.client_auth_token;
-        setauthToken?.(token);
-        return token;
-      } catch (e) {
-        setisTxnProcessing(false);
-        props.navigation.goBack();
-      }
+    setisTxnProcessing(true);
+    try {
+      businessLine == 'diagnostics' && initiateOrderPayment();
+      const response = await createJusPayOrder();
+      const { data } = response;
+      const { createOrderV2, updateOrderDetails } = data;
+      const token =
+        createOrderV2?.mobile_token?.client_auth_token ||
+        updateOrderDetails?.mobile_token?.client_auth_token;
+      setauthToken?.(token);
+      return token;
+    } catch (e) {
+      setisTxnProcessing(false);
+      props.navigation.goBack();
     }
   };
 
