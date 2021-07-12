@@ -5561,8 +5561,8 @@ export const GET_DIAGNOSTIC_ORDERSLIST_BY_PARENT_ORDER_ID = gql`
   }
 `;
 
-export const GET_DIAGNOSTIC_PAYMENT_SETTINGS  = `
-  query getDiagnosticPaymentSettings($paymentOrderId: paymentOrderId!) {
+export const GET_DIAGNOSTIC_PAYMENT_SETTINGS  = gql`
+  query getDiagnosticPaymentSettings($paymentOrderId: String!) {
     getDiagnosticPaymentSettings(paymentOrderId: $paymentOrderId) {
       cod
     }

@@ -49,6 +49,7 @@ import {
   DIAGNOSITC_EXOTEL_CALLING,
   DIAGNOSTIC_WRAPPER_PROCESS_HC,
   GET_DIAGNOSTIC_ORDERSLIST_BY_PARENT_ORDER_ID,
+  GET_DIAGNOSTIC_PAYMENT_SETTINGS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -188,6 +189,7 @@ import { rescheduleDiagnosticsOrderv2, rescheduleDiagnosticsOrderv2Variables } f
 import { diagnosticExotelCalling, diagnosticExotelCallingVariables } from '@aph/mobile-patients/src/graphql/types/diagnosticExotelCalling';
 import { wrapperProcessDiagnosticHCOrderCOD, wrapperProcessDiagnosticHCOrderCODVariables } from '../graphql/types/wrapperProcessDiagnosticHCOrderCOD';
 import { getDiagnosticOrdersListByParentOrderID, getDiagnosticOrdersListByParentOrderIDVariables } from '../graphql/types/getDiagnosticOrdersListByParentOrderID';
+import { getDiagnosticPaymentSettings, getDiagnosticPaymentSettingsVariables } from '../graphql/types/getDiagnosticPaymentSettings';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -1333,5 +1335,18 @@ export const diagnosticsOrderListByParentId =  (
     variables: { parentOrderID: parentOrderID },
     fetchPolicy: 'no-cache',
   });
+}
+
+export const diagnosticPaymentSettings = (  client: ApolloClient<object>,
+  paymentId : string) =>
+  {
+    return client.query<getDiagnosticPaymentSettings, getDiagnosticPaymentSettingsVariables>({
+      query: GET_DIAGNOSTIC_PAYMENT_SETTINGS,
+      context: {
+        sourceHeaders,
+      },
+      variables: { paymentOrderId: paymentId },
+      fetchPolicy: 'no-cache',
+    }); 
 }
 

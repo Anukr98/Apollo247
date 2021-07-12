@@ -19,11 +19,11 @@ export const InfoMessage: React.FC<InfoMessageProps> = (props) => {
       {content ? (
         <View
           style={[
-            styles.infoContainer,
-            containerStyle,
             isCard && {
               ...theme.viewStyles.cardViewStyle,
             },
+            styles.infoContainer,
+            !!containerStyle && containerStyle,
           ]}
         >
           {icon ? icon : <InfoIconRed style={iconStyle} />}

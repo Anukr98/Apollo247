@@ -57,18 +57,18 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import { SecureTags } from '@aph/mobile-patients/src/components/PaymentGateway/Components/SecureTag';
 import {
   createJusPayOrder,
-  processDiagnosticsCODOrder,
+  diagnosticPaymentSettings,
   processDiagnosticsCODOrderV2,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   isEmptyObject,
-  getDiagnosticCityLevelPaymentOptions,
   isSmallDevice,
   paymentModeVersionCheck,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/components/InfoMessage';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const { HyperSdkReact } = NativeModules;
 
@@ -112,6 +112,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       handleEventListener(resp);
     });
     fecthPaymentOptions();
+
     fetchTopBanks();
     isPhonePeReady();
     isGooglePayReady();
@@ -123,16 +124,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       DiagnosticPaymentPageViewed(currentPatient, amount);
       //modify -> always show prepaid
       // modify -> not to show cod
-      setShowPrepaid(
-        isDiagnosticModify
-          ? true
-          : getDiagnosticCityLevelPaymentOptions(deliveryAddressCityId)?.prepaid
-      );
-      setShowCOD(
-        isDiagnosticModify
-          ? false
-          : getDiagnosticCityLevelPaymentOptions(deliveryAddressCityId)?.cod
-      );
+
+      setShowPrepaid(AppConfig.Configuration.Enable_Diagnostics_Prepaid);
+      isDiagnosticModify ? setShowCOD(false) : fetchDiagnosticPaymentMethods();
     }
   }, []);
 
@@ -142,6 +136,23 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     });
     return () => BackHandler.removeEventListener('hardwareBackPress', () => null);
   }, []);
+
+  async function fetchDiagnosticPaymentMethods() {
+    const DEFAULT_COD_CONFIGURATION = AppConfig.Configuration.Enable_Diagnostics_COD;
+    try {
+      setloading?.(true);
+      const response = await diagnosticPaymentSettings(client, paymentId);
+      if (response?.data) {
+        const getCodSetting = response?.data?.getDiagnosticPaymentSettings?.cod;
+        setShowCOD(getCodSetting!);
+      }
+    } catch (error) {
+      CommonBugFender('PaymentMethods_fetchDiagnosticPaymentMethods', error);
+      setShowCOD(DEFAULT_COD_CONFIGURATION);
+    } finally {
+      setloading(false);
+    }
+  }
 
   const handleEventListener = (resp: any) => {
     var data = JSON.parse(resp);
