@@ -479,9 +479,13 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
             }
 
             if (circlePlan) {
-              const circleSubscription = setCircleSubscriptionData(circlePlan[0]);
-              if (!!circlePlan[0]?._id) {
-                setIsCircleSubscription && setIsCircleSubscription(true);
+              const circleSubscription = setCircleSubscriptionData(circlePlan?.[0]);
+              if (!!circlePlan?.[0]?._id) {
+                if (circlePlan?.[0]?.status === 'disabled') {
+                  setIsCircleSubscription && setIsCircleSubscription(false);
+                } else {
+                  setIsCircleSubscription && setIsCircleSubscription(true);
+                }
               }
               setCircleSubscription && setCircleSubscription(circleSubscription);
             }
