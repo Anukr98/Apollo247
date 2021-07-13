@@ -32,7 +32,13 @@ import { RenderPdf } from '../ui/RenderPdf';
 import { mimeType } from '../../helpers/mimeType';
 import { Image } from 'react-native-elements';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
-import { postWebEngageEvent, g, formatToCartItem } from '../../helpers/helperFunctions';
+import {
+  postWebEngageEvent,
+  g,
+  formatToCartItem,
+  postCleverTapPHR,
+} from '../../helpers/helperFunctions';
+import { CleverTapEventName, CleverTapEvents } from '../../helpers/CleverTapEvents';
 
 export interface RecordDetailsProps
   extends NavigationScreenProps<{
@@ -132,6 +138,18 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           'Mobile Number': g(currentPatient, 'mobileNumber'),
           'Customer ID': g(currentPatient, 'id'),
         };
+        const cleverTapeEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_RE_ORDER_MEDICINE] = {
+          orderType: 'Cart',
+          source: 'PHR',
+          'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+          'Patient UHID': g(currentPatient, 'uhid'),
+          Relation: g(currentPatient, 'relation'),
+          'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+          'Patient Gender': g(currentPatient, 'gender'),
+          'Mobile Number': g(currentPatient, 'mobileNumber'),
+          'Customer ID': g(currentPatient, 'id'),
+        };
+        postCleverTapPHR(CleverTapEventName.PHARMACY_RE_ORDER_MEDICINE, cleverTapeEventAttributes);
         postWebEngageEvent(WebEngageEventName.RE_ORDER_MEDICINE, eventAttributes);
 
         props.navigation.navigate(AppRoutes.MedicineCart);

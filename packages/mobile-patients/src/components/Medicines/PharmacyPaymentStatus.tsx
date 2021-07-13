@@ -125,6 +125,9 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const deliveryTime = props.navigation.getParam('deliveryTime');
   const orderInfo = props.navigation.getParam('orderInfo');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
+  const cleverTapCheckoutEventAttributes = props.navigation.getParam(
+    'cleverTapCheckoutEventAttributes'
+  );
   const orders = props.navigation.getParam('orders');
   const orderIds = orders.map(
     (item: any, index: number) => item?.orderAutoId + (index != orders?.length - 1 && ', ')
@@ -408,6 +411,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       if (errorCode || errorMessage) {
         errorPopUp();
       } else {
+        fireCleverTapOrderSuccessEvent();
         orders?.forEach((order) => {
           handleOrderSuccess(`${order?.orderAutoId}`, order?.id!);
         });
@@ -471,11 +475,14 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       ...checkoutEventAttributes,
       'Cart Items': JSON.stringify(cartItems),
     });
+    firePurchaseEvent(orderAutoId);
+  };
+
+  const fireCleverTapOrderSuccessEvent = () => {
     postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, {
-      ...checkoutEventAttributes,
+      ...cleverTapCheckoutEventAttributes,
       'Cart Items': cartItems?.length,
     });
-    firePurchaseEvent(orderAutoId);
   };
 
   const fireOrderFailedEvent = () => {

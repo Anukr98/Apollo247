@@ -503,12 +503,12 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       User_Type: pharmacyUserType,
     };
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED] = {
-      'Order ID': `${orderAutoId}`,
+      'Order_ID(s)': `${orderAutoId}`,
       'Order Type': 'Non Cart',
       'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
       'Store Id': storeId || undefined, // incase of store delivery
       'Shipping information': deliveryAddressId ? deliveryAddressLine : storeAddressLine,
-      'Pin Code': pinCode || undefined,
+      Pincode: pinCode || undefined,
       'User Type': pharmacyUserType || undefined,
       'Service Area': 'Pharmacy',
     };
@@ -811,14 +811,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                     OptionSelected: optionSelected,
                     User_Type: pharmacyUserType,
                   };
-                  const cleverTapEventAttribute: CleverTapEvents[CleverTapEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED] = {
-                    OptionSelected: optionSelected,
-                    'User Type': pharmacyUserType || undefined,
-                  };
-                  postCleverTapEvent(
-                    CleverTapEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED,
-                    cleverTapEventAttribute
-                  );
                   postWebEngageEvent(
                     WebEngageEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED,
                     eventAttribute

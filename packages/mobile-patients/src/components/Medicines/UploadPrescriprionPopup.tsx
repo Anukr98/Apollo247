@@ -238,16 +238,21 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
       User_Type: pharmacyUserType,
       'Upload Source': props.type,
     };
+    postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED, eventAttributes);
+  };
+
+  const postCleverTapUPrescriptionEvents = (
+    source: CleverTapEvents[CleverTapEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
+  ) => {
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED] = {
       Source: source,
       'User Type': pharmacyUserType || undefined,
-      'Upload Source': props.type,
+      Location: props.type == 'Non-cart' ? 'Noncart' : props.type,
     };
     postCleverTapEvent(
       CleverTapEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED,
       cleverTapEventAttributes
     );
-    postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED, eventAttributes);
   };
 
   useEffect(() => {
@@ -291,6 +296,7 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
   const onClickTakePhoto = () => {
     if (!props.blockCamera) {
       postUPrescriptionWEGEvent('Take a Photo');
+      postCleverTapUPrescriptionEvents('Camera');
       CommonLogEvent('UPLAOD_PRESCRIPTION_POPUP', 'Take photo on click');
 
       const eventAttributes: WebEngageEvents['Upload Photo'] = {
@@ -360,6 +366,7 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
 
   const onBrowseClicked = async () => {
     postUPrescriptionWEGEvent('Choose Gallery');
+    postCleverTapUPrescriptionEvents('Gallery');
     CommonLogEvent('UPLAOD_PRESCRIPTION_POPUP', 'Gallery opened');
 
     const eventAttributes: WebEngageEvents['Upload Photo'] = {
@@ -412,6 +419,7 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
 
   const openGallery = () => {
     postUPrescriptionWEGEvent('Choose Gallery');
+    postCleverTapUPrescriptionEvents('Gallery');
     CommonLogEvent('UPLAOD_PRESCRIPTION_POPUP', 'Gallery opened');
 
     const eventAttributes: WebEngageEvents['Upload Photo'] = {
@@ -590,6 +598,7 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
             style={[styles.cardContainer, getOptionStyle('E-PRESCRIPTION')]}
             onPress={() => {
               postUPrescriptionWEGEvent('E-Rx');
+              postCleverTapUPrescriptionEvents('My Prescription');
               props.onResponse('E-PRESCRIPTION', []);
             }}
           >

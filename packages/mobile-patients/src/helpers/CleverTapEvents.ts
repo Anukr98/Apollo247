@@ -54,7 +54,7 @@ export enum CleverTapEventName {
   CONSULT_SORT = 'Consult Sort',
   CONSULT_BOOK_TESTS_IN_CHATROOM = 'Consult Book tests in Chatroom',
   CONSULT_ACTIVE_APPOINTMENTS = 'Consult Active appointments',
-  CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED = 'Consult Book appointment clicked',
+  CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED = 'Consult book appointment clicked',
   CONSULT_NO_SLOTS_FOUND = 'Consult no slots found',
   CONSULT_BOOK_CTA_CLICKED = 'Consult Book CTA clicked',
   CONSULT_VIEW_DETAILS_ON_PAST_APPOINTMENT = 'Consult View details clicked on past appointment',
@@ -64,13 +64,13 @@ export enum CleverTapEventName {
   CONSULT_MY_DOCTOR_CLICKED = 'Consult my doctor clicked',
   CONSULT_DOCTOR_TAB_CLICKED = 'Consult Doctor tab clicked',
   CONSULT_TYPE_SELECTION = 'Consult Consult Type Selection',
-  CONSULTATION_BOOKED = 'Consultation booked',
+  CONSULTATION_BOOKED = 'Consultation Booked',
   CONSULT_ORDER_MEDICINES_IN_CHATROOM_CLICKED = 'Consult order medicines in chatroom clicked',
   CONSULT_UPLOAD_PRESCRIPTION_ADDRESS_SELECTED = 'Consult Upload prescription - Address selected',
   CONSULT_SEARCH = 'Consult Search',
   CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION = 'Consult Proceed Clicked on Slot Selection',
   CONSULT_PAYMENT_INITIATED = 'Consult Payment Initiated',
-  CONSULT_USER_LOCATION = 'Consult User location',
+  CONSULT_USER_LOCATION = 'Consult user location',
   CONSULT_LOCATION_PERMISSION = 'Consult Location permission',
   USER_CHANGED_LOCATION = 'Change location',
   CONSULT_FILTER_APPLIED = 'Consult Filter applied',
@@ -115,7 +115,7 @@ export enum CleverTapEventName {
   PHARMACY_PRODUCT_PAGE_VIEWED = 'Pharmacy Product Page Viewed',
   PHARMACY_SEARCH = 'Pharmacy Search',
   PHARMACY_NOTIFY_ME = 'Pharmacy Notify Me',
-  PHARMACY_UPLOAD_PRESCRIPTION_CLICKED = 'Pharmacy Upload Prescription Selected',
+  PHARMACY_UPLOAD_PRESCRIPTION_CLICKED = 'Pharmacy Upload Prescription Clicked',
   PHARMACY_TAT_API_CALLED = 'Pharmacy TAT API Called',
   PHARMACY_PROCEED_TO_ADD_NEW_ADDRESS_CLICK = 'Pharmacy Proceed to Add Address Clicked',
   PHARMACY_PAYMENT_INSTRUMENT_SELECTED = 'Pharmacy Payment Instrument Selected',
@@ -1127,8 +1127,8 @@ export interface CleverTapEvents {
     User_Type?: PharmaUserStatus;
   };
   [CleverTapEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]: {
-    Source: 'Take a Photo' | 'Choose Gallery' | 'E-Rx';
-    'Upload Source'?: UploadPrescSource;
+    Source: 'Camera' | 'Gallery' | 'My Prescription';
+    Location?: UploadPrescSource;
     'User Type'?: PharmaUserStatus;
   };
   [CleverTapEventName.PHARMACY_NONCART_ORDER_SUBMIT_CLICKED]: {
@@ -1140,7 +1140,7 @@ export interface CleverTapEvents {
     'User Type'?: PharmaUserStatus;
   };
   [CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED]: {
-    'Transaction ID': string | number;
+    'Transaction ID'?: string | number;
     'Order Type': 'Cart' | 'Non Cart';
     'Prescription Required': YesOrNo;
     'Prescription Added': boolean;
@@ -1165,12 +1165,14 @@ export interface CleverTapEvents {
     'Circle Member'?: PharmacyCircleMemberValues;
     'Circle Membership Value'?: number | null;
     'Circle Cashback amount': number;
-    'Cart Items'?: number;
+    'Cart Items'?: string | undefined;
     'User Type'?: PharmaUserStatus;
     'Split Cart'?: YesOrNo;
     'Prescription Option selected'?: PrescriptionOptions;
     'Coupon Applied'?: string;
-    'Pin Code'?: string | number;
+    Pincode?: string | number;
+    'Payment Instrument'?: string;
+    'Order_ID(s)'?: string;
   };
   [CleverTapEventName.PHARMACY_DETAIL_IMAGE_CLICK]: {
     'Product ID': string;
@@ -1835,7 +1837,7 @@ export interface CleverTapEvents {
 
   [CleverTapEventName.PHR_CONSULT_CARD_CLICK]: PatientInfoWithConsultId;
 
-  [CleverTapEventName.RE_ORDER_MEDICINE]: ReorderMedicine;
+  [CleverTapEventName.PHARMACY_RE_ORDER_MEDICINE]: ReorderMedicine;
 
   // ********** ConsultRoom Events ********** \\
 

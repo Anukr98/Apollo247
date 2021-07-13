@@ -389,17 +389,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       pincode: pincode,
       Serviceability: serviceable,
     };
-    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_AUTO_SELECT_LOCATION_CLICKED] = {
-      'Patient UHID': currentPatient.uhid,
-      'Mobile Number': currentPatient.mobileNumber,
-      'Customer ID': currentPatient.id,
-      pincode: pincode,
-      serviceability: serviceable,
-    };
-    postCleverTapEvent(
-      CleverTapEventName.PHARMACY_AUTO_SELECT_LOCATION_CLICKED,
-      cleverTapEventAttributes
-    );
     postWebEngageEvent(WebEngageEventName.PHARMACY_AUTO_SELECT_LOCATION_CLICKED, eventAttributes);
   };
 
@@ -412,18 +401,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       Keyword: pincode,
       Source: 'Pharmacy Home',
     };
-    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED] = {
-      'Patient UHID': currentPatient.uhid,
-      'Mobile Number': currentPatient.mobileNumber,
-      'Customer ID': currentPatient.id,
-      serviceability: serviceable ? 'true' : 'false',
-      pincode: pincode,
-      source: 'Pharmacy Home',
-    };
-    postCleverTapEvent(
-      CleverTapEventName.PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED,
-      cleverTapEventAttributes
-    );
     postWebEngageEvent(
       WebEngageEventName.PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED,
       eventAttributes
