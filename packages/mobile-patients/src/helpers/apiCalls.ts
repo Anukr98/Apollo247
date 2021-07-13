@@ -96,6 +96,10 @@ export interface NewPharmaOverview {
   WarningsAndPrecautions: string;
   CompositionContentFAQs: PharmaFAQ[];
   SideEffects: string;
+  DiseaseConditionGlossary?: string;
+  DietAndLifestyle?: string;
+  SpecialAdvise?: string;
+  HabitForming?: string;
 }
 
 export interface PharmaFAQ {
@@ -1165,10 +1169,12 @@ export const searchProceduresAndSymptoms = (
 
 export const getDiagnosticTestDetails = (
   pageName: string,
-  itemId: number
+  itemId: number,
+  itemName: string,
+  cityId: number
 ): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
-  const getDetails = `${baseurl}/${pageName}/${itemId}`;
+  const getDetails = `${baseurl}/${pageName}/${itemId}?ctag=${itemName}&cityId=${cityId}`;
   return Axios.get(getDetails, {
     headers: {
       Authorization: config.DRUPAL_CONFIG[1],
@@ -1205,10 +1211,11 @@ export const GenrateVitalsToken_CM = (
 };
 
 export const getDiagnosticCartItemReportGenDetails = (
-  itemIds: string
+  itemIds: string,
+  cityId: number
 ): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
-  const getReportGenDetails = `${baseurl}/diagnostic/cart-items?itemId=${itemIds}`;
+  const getReportGenDetails = `${baseurl}/diagnostic/cart-items?itemId=${itemIds}&cityId=${cityId}`;
   return Axios.get(getReportGenDetails, {
     headers: {
       Authorization: config.DRUPAL_CONFIG[1],

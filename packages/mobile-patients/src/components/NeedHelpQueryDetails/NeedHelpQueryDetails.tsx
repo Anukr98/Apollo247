@@ -163,6 +163,8 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           ? ORDER_TYPE.PHARMACY
           : parentQuery?.id == helpSectionQueryId.consult
           ? ORDER_TYPE.CONSULT
+          : parentQuery?.id == helpSectionQueryId.diagnostic
+          ? ORDER_TYPE.DIAGNOSTICS
           : null;
       const reason = subQueries?.find(({ id }) => id === selectedQueryId)?.title;
       const variables: SendHelpEmailVariables = {

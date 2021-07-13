@@ -150,7 +150,9 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   const selectedTimeSlot = props.navigation.getParam('selectedTimeSlot');
   const whatsAppUpdate = props.navigation.getParam('whatsAppUpdate');
   const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
-  const isOnlineConsult = selectedTab === 'Consult Online';
+  const isOnlineConsult =
+    selectedTab === string.consultModeTab.VIDEO_CONSULT ||
+    selectedTab === string.consultModeTab.CONSULT_ONLINE;
   const isPhysicalConsult = isPhysicalConsultation(selectedTab);
   const [doctorDiscountedFees, setDoctorDiscountedFees] = useState<number>(0);
   const [showList, setShowList] = useState<boolean>(false);
@@ -760,7 +762,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       'customer id': g(currentPatient, 'id'),
       'doctor id': g(doctor, 'id')!,
       'specialty id': g(doctor, 'specialty', 'id')!,
-      'consult type': 'Consult Online' === selectedTab ? 'online' : 'clinic',
+      'consult type': isOnlineConsult ? 'online' : 'clinic',
       af_revenue: amountToPay,
       af_currency: 'INR',
       'consult id': id,

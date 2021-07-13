@@ -305,6 +305,11 @@ const BOOKING_STATUS = {
   CANCELLED: 'CANCELLED',
   REJECTED: 'REJECTED',
   COMPLETED: 'COMPLETED',
+  PAYMENT_PENDING: 'PAYMENT_PENDING',
+  PAYMENT_FAILED: 'PAYMENT_FAILED',
+  AUTO_REFUNDED: 'AUTO_REFUNDED',
+  ORDER_INITIATED: 'ORDER_INITIATED',
+  ABORTED: 'ABORTED',
 };
 export interface VaccineBookingConfirmationScreenProps extends NavigationScreenProps<{}> {
   appointmentId: string;
@@ -550,16 +555,23 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
   };
 
   const renderHeaderBanner = () => {
+    if (
+      bookingInfo?.status == BOOKING_STATUS.AUTO_REFUNDED ||
+      bookingInfo?.status == BOOKING_STATUS.PAYMENT_FAILED ||
+      bookingInfo?.status == BOOKING_STATUS.ORDER_INITIATED ||
+      bookingInfo?.status == BOOKING_STATUS.ABORTED
+    ) {
+      return null;
+    }
+
+    let statusBackgroundColor = getStatusColor();
+
     return (
       <View
         style={[
           styles.headerBannerContainer,
           {
-            backgroundColor:
-              bookingInfo?.status == BOOKING_STATUS.CANCELLED ||
-              bookingInfo?.status == BOOKING_STATUS.REJECTED
-                ? '#edc6c2'
-                : '#00B38E40',
+            backgroundColor: statusBackgroundColor,
           },
         ]}
       >
@@ -590,6 +602,23 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
     );
   };
 
+  const getStatusColor = () => {
+    let statusBackgroundColor = '#00B38E40';
+
+    if (
+      bookingInfo?.status == BOOKING_STATUS.CANCELLED ||
+      bookingInfo?.status == BOOKING_STATUS.REJECTED
+    ) {
+      statusBackgroundColor = '#edc6c2';
+    } else if (bookingInfo?.status == BOOKING_STATUS.PAYMENT_PENDING) {
+      statusBackgroundColor = '#FFD580';
+    } else {
+      statusBackgroundColor = '#00B38E40';
+    }
+
+    return statusBackgroundColor;
+  };
+
   const renderBookingDetailsMatrixItem = (title: string, value: string) => {
     return (
       <View style={{ flexDirection: 'row', marginVertical: 3 }}>
@@ -600,16 +629,14 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
   };
 
   const renderStatusStrip = () => {
+    let statusBackgroundColor = getStatusColor();
+
     return (
       <View
         style={[
           styles.statusStripContainerSuccess,
           {
-            backgroundColor:
-              bookingInfo?.status == BOOKING_STATUS.CANCELLED ||
-              bookingInfo?.status == BOOKING_STATUS.REJECTED
-                ? '#edc6c2'
-                : '#00B38E40',
+            backgroundColor: statusBackgroundColor,
           },
         ]}
       >
@@ -664,9 +691,23 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
           <Text style={styles.cancelledTextStyle}>CANCELLED! </Text>
         ) : null}
 
-        <Text style={styles.bookingConfirmationStyle}>
-          Your booking has been {bookingInfo?.status.toLowerCase()}.
-        </Text>
+        {bookingInfo?.status == BOOKING_STATUS.BOOKED ? (
+          <Text style={styles.bookingConfirmationStyle}>
+            Your appointment has been successfully booked.
+          </Text>
+        ) : null}
+
+        {bookingInfo?.status == BOOKING_STATUS.CANCELLED ? (
+          <Text style={styles.bookingConfirmationStyle}>
+            Your appointment has been {bookingInfo?.status.toLowerCase()}.
+          </Text>
+        ) : null}
+
+        {bookingInfo?.status == BOOKING_STATUS.PAYMENT_PENDING ? (
+          <Text style={styles.bookingConfirmationStyle}>
+            Your appointment payment is being verified .
+          </Text>
+        ) : null}
 
         {renderUserDetailHeader()}
 
@@ -682,11 +723,13 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
           string.vaccineBooking.site,
           (bookingInfo?.resource_session_details?.resource_detail?.name || '') +
             (bookingInfo?.resource_session_details?.resource_detail?.street_line1 || '') +
+            ' ' +
             (bookingInfo?.resource_session_details?.resource_detail?.street_line2 || '') +
+            ' ' +
             (bookingInfo?.resource_session_details?.resource_detail?.street_line3 || '') +
-            ' , ' +
+            ', ' +
             (bookingInfo?.resource_session_details?.resource_detail?.city || '') +
-            ' , ' +
+            ', ' +
             (bookingInfo?.resource_session_details?.resource_detail?.state || '')
         )}
 

@@ -62,6 +62,9 @@ export interface PaymentSceneProps
     planId?: string;
     subPlanId?: string;
     isStorePickup: boolean;
+    showSubstituteMessage?: boolean;
+    substitutionMessage?: string;
+    substitutionTime?: string;
   }> {}
 
 export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
@@ -87,6 +90,9 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const orderInfo = props.navigation.getParam('orderInfo');
   const planId = props.navigation.getParam('planId');
   const subPlanId = props.navigation.getParam('subPlanId');
+  const showSubstituteMessage = props.navigation.getParam('showSubstituteMessage');
+  const substitutionMessage = props.navigation.getParam('substitutionMessage');
+  const substitutionTime = props.navigation.getParam('substitutionTime');
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
   const { getPatientApiCall } = useAuth();
@@ -184,6 +190,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
       ...pharmacyCircleAttributes!,
       ...pharmacyUserTypeAttribute,
+      TransactionId: isStorePickup ? '' : transactionId,
     };
     return appsflyerEventAttributes;
   };
@@ -227,6 +234,9 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       deliveryTime: deliveryTime,
       checkoutEventAttributes: checkoutEventAttributes,
       isStorePickup: isStorePickup,
+      showSubstituteMessage,
+      substitutionMessage,
+      substitutionTime,
     });
   };
 

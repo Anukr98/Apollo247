@@ -41,10 +41,11 @@ export interface TestOrderSummaryViewProps {
   onPressViewReport?: () => void;
   onPressDownloadInvoice?: any;
   refundDetails?: any;
+  refundTransactionId?: string;
 }
 
 export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props) => {
-  const { orderDetails, refundDetails } = props;
+  const { orderDetails, refundDetails, refundTransactionId } = props;
   const filterOrderLineItem =
     !!orderDetails &&
     orderDetails?.diagnosticOrderLineItems?.filter((item: any) => !item?.isRemoved);
@@ -208,9 +209,12 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     const bookedOn = moment(orderDetails?.createdDate)?.format('Do MMM') || null;
     return (
       <View style={{ justifyContent: 'space-between', flexDirection: 'row' }}>
-        <View style={{ flex: 0.8 }}>
+        <View style={{ flex: 0.9 }}>
           <Text style={styles.orderId}>Order ID #{orderDetails?.displayId}</Text>
           <Text style={styles.bookedOn}>Booked on {bookedOn}</Text>
+          {refundDetails?.[0]?.status === REFUND_STATUSES.SUCCESS && !!refundTransactionId ? (
+            <Text style={styles.bookedOn}>Refund id: {refundTransactionId}</Text>
+          ) : null}
         </View>
         <View>
           <StatusCard titleText={orderDetails?.orderStatus} />

@@ -23,6 +23,7 @@ import {
 import { circleValidity } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
 
 function createPatientAttributes(currentPatient: any) {
   const patientAttributes = {
@@ -37,6 +38,7 @@ function createPatientAttributes(currentPatient: any) {
 export function DiagnosticLandingPageViewedEvent(
   currentPatient: any,
   isServiceable: boolean | undefined,
+  isDiagnosticCircleSubscription: boolean | undefined,
   source?: string | undefined
 ) {
   const getPatientAttributes = createPatientAttributes(currentPatient);
@@ -45,6 +47,7 @@ export function DiagnosticLandingPageViewedEvent(
     | CleverTapEvents[CleverTapEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED] = {
     ...getPatientAttributes,
     Serviceability: isServiceable ? 'Yes' : 'No',
+    'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
   };
   if (!!source) {
     eventAttributes['Source'] = source;
@@ -125,16 +128,7 @@ export function DiagnosticAddToCartEvent(
   id: string,
   price: number,
   discountedPrice: number,
-  source:
-    | 'Home page'
-    | 'Full search'
-    | 'Details page'
-    | 'Partial search'
-    | 'Listing page'
-    | 'Popular search'
-    | 'Category page'
-    | 'Prescription'
-    | 'Cart page',
+  source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   section?: string
 ) {
   const eventAttributes:
@@ -243,12 +237,13 @@ export function DiagnosticDetailsViewed(
   postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
 }
 
-export function DiagnosticBannerClick(slideIndex: number, itemId: number) {
+export function DiagnosticBannerClick(slideIndex: number, itemId: number, title: string) {
   const eventAttributes:
     | WebEngageEvents[WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED]
     | CleverTapEvents[CleverTapEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED] = {
     position: slideIndex,
     itemId: itemId,
+    'Banner title': title,
   };
 
   postWebEngageEvent(WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED, eventAttributes);

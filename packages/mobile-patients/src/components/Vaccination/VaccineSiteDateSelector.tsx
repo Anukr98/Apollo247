@@ -96,6 +96,8 @@ export interface VaccineSiteDateSelectorProps {
   isRetail: boolean;
   onRetailChanged: (isRetail: boolean) => void;
   showFilterStrip: boolean;
+  city: string;
+  vaccineType: string;
 }
 
 export const VaccineSiteDateSelector: React.FC<VaccineSiteDateSelectorProps> = (props) => {
@@ -114,6 +116,9 @@ export const VaccineSiteDateSelector: React.FC<VaccineSiteDateSelectorProps> = (
 
     let previousDay = today.subtract(1, 'days');
 
+    let firstAvailableDate: any;
+    let firstAvailableDateVerticalRowIndex = -1;
+
     for (let day = 0; day <= 30; day++) {
       //generate strips ; strips will be equal to number of days;add next 30 days
       var newDay = previousDay.add(1, 'days');
@@ -128,12 +133,33 @@ export const VaccineSiteDateSelector: React.FC<VaccineSiteDateSelectorProps> = (
           const sessionItem = site.session_dates[sessionIndex];
           if (sessionItem.date == newDayString) {
             isDateFound = true;
+
             if (sessionItem.available === true) {
-              siteWiseAvailabilityForTheDay.push({
-                availableState: AVAILABILTY.UNSELECTED,
-                site: site,
-                date: newDayString,
-              });
+              let availableDate: any;
+
+              if (firstAvailableDate == undefined) {
+                firstAvailableDateVerticalRowIndex = day;
+
+                availableDate = {
+                  availableState: AVAILABILTY.SELECTED,
+                  site: site,
+                  date: newDayString,
+                };
+
+                props.onSiteResourceIdSelected(site.id);
+                props.onDateSelected(newDayString);
+                props.onHospitalSiteSelected(site.name);
+
+                firstAvailableDate = availableDate;
+              } else {
+                availableDate = {
+                  availableState: AVAILABILTY.UNSELECTED,
+                  site: site,
+                  date: newDayString,
+                };
+              }
+
+              siteWiseAvailabilityForTheDay.push(availableDate);
             } else {
               siteWiseAvailabilityForTheDay.push({
                 availableState: AVAILABILTY.FILLED,
@@ -163,6 +189,16 @@ export const VaccineSiteDateSelector: React.FC<VaccineSiteDateSelectorProps> = (
     }
 
     setDateStripList(arrDays);
+
+    setTimeout(function() {
+      if (firstAvailableDateVerticalRowIndex >= 0) {
+        flatListRef.current! &&
+          flatListRef.current!.scrollToIndex({
+            index: firstAvailableDateVerticalRowIndex,
+            animated: true,
+          });
+      }
+    }, 2000);
   };
 
   useEffect(() => {
@@ -299,12 +335,12 @@ export const VaccineSiteDateSelector: React.FC<VaccineSiteDateSelectorProps> = (
       {/* render filter strip  */}
       {renderFilterStrip()}
 
-      <ScrollView>
+      <ScrollView nestedScrollEnabled={true}>
         <View style={{ backgroundColor: '#fff', flex: 1, flexDirection: 'row' }}>
           <View
             style={{
               backgroundColor: '#fff',
-              flex: 2,
+              flex: 2.5,
             }}
           >
             <TouchableOpacity
@@ -328,7 +364,7 @@ export const VaccineSiteDateSelector: React.FC<VaccineSiteDateSelectorProps> = (
               showsHorizontalScrollIndicator={false}
             />
           </View>
-          <View style={{ flex: 3 }}>
+          <View style={{ flex: 2.5 }}>
             <FlatList
               ref={(ref) => (flatListRef.current = ref)}
               horizontal
@@ -353,8 +389,12 @@ export const VaccineSiteDateSelector: React.FC<VaccineSiteDateSelectorProps> = (
       </ScrollView>
 
       {props.siteList == undefined || props.siteList.length == 0 ? (
-        <Text style={{ ...theme.viewStyles.text('R', 11, '#890000') }}>
-          No site available for this criteria{' '}
+        <Text style={{ ...theme.viewStyles.text('M', 12, '#890000') }}>
+          {'Vaccine ' +
+            props.vaccineType +
+            ' is not available in  ' +
+            props.city +
+            '  for now.\nPlease change your vaccine or city preference to see available slots.'}
         </Text>
       ) : null}
     </View>

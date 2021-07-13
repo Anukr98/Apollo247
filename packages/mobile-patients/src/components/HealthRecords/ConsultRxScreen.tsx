@@ -61,6 +61,7 @@ import {
   postCleverTapEvent,
   postCleverTapIfNewSession,
   removeObjectProperty,
+  getIsMedicine,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   EPrescription,
@@ -103,6 +104,8 @@ import moment from 'moment';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
+import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/Events';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const { width, height } = Dimensions.get('window');
 
@@ -632,6 +635,10 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     postCleverTapEvent(CleverTapEventName.PHR_ORDER_MEDS_TESTS, eventAttributes);
   };
 
+  function postDiagnosticAddToCart(itemId: string, itemName: string) {
+    DiagnosticAddToCartEvent(itemName, itemId, 0, 0, DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PHR);
+  }
+
   const onOrderTestMedPress = async (selectedItem: any, caseSheetDetails: any) => {
     postOrderMedsAndTestsEvent(selectedItem?.id, caseSheetDetails);
     let item =
@@ -705,7 +712,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
                   : undefined,
                 quantity: qty,
                 prescriptionRequired: medicineDetails?.is_prescription_required == '1',
-                isMedicine: (medicineDetails?.type_id || '').toLowerCase() == 'pharma',
+                isMedicine: getIsMedicine(medicineDetails?.type_id?.toLowerCase()) || '0',
                 thumbnail: medicineDetails?.thumbnail || medicineDetails?.image,
                 isInStock: !!medicineDetails?.is_in_stock,
                 productType: medicineDetails?.type_id,
@@ -755,6 +762,8 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
             }
           })
           .then((tests) => {
+            const getItemNames = tests?.map((item) => item?.name)?.join(', ');
+            const getItemIds = tests?.map((item) => Number(item?.id))?.join(', ');
             if (testPrescription.length) {
               addMultipleTestCartItems!(tests! || []);
               // Adding ePrescriptions to DiagnosticsCart
@@ -768,6 +777,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
                   },
                 ]);
             }
+            postDiagnosticAddToCart(getItemNames!, getItemIds!);
           })
           .catch((e) => {
             CommonBugFender('DoctorConsultation_getMedicineDetailsApi', e);
@@ -905,6 +915,18 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       }
       return moment(new Date(date)).format('DD MMM');
     };
+    let prescriptionGeneratedDate = '';
+    const getPrescriptionGeneratedDate = () => {
+      item?.data?.caseSheet?.map((dateItem: any) => {
+        if (dateItem?.prescriptionGeneratedDate) {
+          if (!prescriptionGeneratedDate) {
+            prescriptionGeneratedDate = dateItem?.prescriptionGeneratedDate;
+            return;
+          }
+        }
+      });
+      return prescriptionGeneratedDate || item?.data?.appointmentDateTime;
+    };
     const prescriptionName = item?.data?.prescriptionName || 'Prescription';
     const doctorName = item?.data?.prescriptionName
       ? item?.data?.prescribedBy && item?.data?.prescribedBy !== item?.data?.prescriptionName
@@ -918,7 +940,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     const dateText =
       item?.data?.prescriptionName || item?.data?.date
         ? getPresctionDate(item?.data?.date)
-        : getPresctionDate(item?.data?.appointmentDateTime);
+        : getPresctionDate(getPrescriptionGeneratedDate());
     const soureName =
       item?.data?.prescriptionName || item?.data?.date
         ? getSourceName(item?.data?.source) || '-'

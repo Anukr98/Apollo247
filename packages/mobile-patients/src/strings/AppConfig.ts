@@ -20,7 +20,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA5 as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -169,6 +169,7 @@ const appStaticVariables = {
     pharmacy: '5df80ade-4eba-4ad3-9caf-e1169fcaeb32',
     consult: 'd70e6ee8-ecf1-4c75-ae00-2f968641f260',
     returnOrder: 'e2fc95ff-3ef5-4a9d-8fed-31609e426cbc',
+    diagnostic: '6ce8d555-9be5-48b5-b4de-06480f9c9cab',
     deliveryStatus: '3df5b586-ce39-478a-a5ec-1e525f5dc42a',
     vaccination: 'd73f3dc4-bc92-11eb-8529-0242ac130003',
   },
@@ -252,6 +253,11 @@ const appStaticVariables = {
     },
   ],
   DIAGNOSTIC_DEFAULT_ICON: 'https://newassets.apollo247.com/organs/ic_blood.png',
+  Diagnostics_Help_NonOrder_Queries: [
+    "96b606f4-dd13-46ff-8bce-85315efee053",
+    "78c2dc50-dc16-44c6-bd2d-d4b14c97b521",
+    "10788a46-512c-41c0-8c59-e31ff7eebbe4"
+    ],
 };
 
 const DEV_top_specialties = [
@@ -1372,6 +1378,7 @@ export const TestCancelReasons = {
     string.diagnostics.reasonForCancel_TestOrder.anotherChannel,
     string.diagnostics.reasonForCancel_TestOrder.urgentReport,
     string.diagnostics.reasonForCancel_TestOrder.lesserPrice,
+    string.diagnostics.reasonForCancel_TestOrder.needModifyOrder,
     string.diagnostics.reasonForCancel_TestOrder.otherReasons,
   ],
 };
@@ -1381,6 +1388,7 @@ export const TestCancelReasonsPre = {
     string.diagnostics.reasonForCancel_TestOrder.anotherChannel,
     string.diagnostics.reasonForCancel_TestOrder.urgentReport,
     string.diagnostics.reasonForCancel_TestOrder.lesserPrice,
+    string.diagnostics.reasonForCancel_TestOrder.needModifyOrder,
     string.diagnostics.reasonForCancel_TestOrder.otherReasons,
   ],
 };

@@ -107,6 +107,7 @@ import {
   ReorderMedicines,
   PharmacyCircleMemberValues,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import Share from 'react-native-share';
 
 const width = Dimensions.get('window').width;
 
@@ -507,6 +508,8 @@ const getConsiderDate = (type: string, dataObject: any) => {
       return dataObject?.billDateTime;
     case 'health-conditions':
       return dataObject?.startDateTime || dataObject?.recordDateTime;
+    case 'immunization':
+      return dataObject?.dateOfImmunization;
   }
 };
 
@@ -530,7 +533,10 @@ export const initialSortByDays = (
     const dateDifferenceInDays = moment(startDate).diff(dateToConsider, 'days');
     const dateDifferenceInMonths = moment(startDate).diff(dateToConsider, 'months');
     const dateDifferenceInYears = moment(startDate).diff(dateToConsider, 'years');
-    if (dateDifferenceInYears !== 0) {
+
+    if (dateDifferenceInDays <= 0 && dateDifferenceInMonths <= 0 && dateDifferenceInYears <= 0) {
+      finalData = getFinalSortData('Upcoming', finalData, dataObject);
+    } else if (dateDifferenceInYears !== 0) {
       if (dateDifferenceInYears >= 5) {
         finalData = getFinalSortData('More than 5 years', finalData, dataObject);
       } else if (dateDifferenceInYears >= 2) {
@@ -755,6 +761,77 @@ export const divideSlots = (availableSlots: string[], date: Date) => {
           array[3] = {
             ...array[3],
             time: [...array[3].time, slot],
+          };
+        }
+      }
+    }
+  });
+  return array;
+};
+
+export const generateTimeSlots = (availableSlots: string[], date: Date) => {
+  const todayDate = moment(new Date()).format('YYYY-MM-DD');
+
+  const array: TimeArray = [
+    { label: '12 AM - 6 AM', time: [] },
+    { label: '6 AM - 12 PM', time: [] },
+    { label: '12 PM - 6 PM', time: [] },
+    { label: '6 PM - 12 AM', time: [] },
+  ];
+
+  const morningStartTime = moment('00:00', 'HH:mm');
+  const morningEndTime = moment('05:59', 'HH:mm');
+  const afternoonStartTime = moment('06:00', 'HH:mm');
+  const afternoonEndTime = moment('11:59', 'HH:mm');
+  const eveningStartTime = moment('12:00', 'HH:mm');
+  const eveningEndTime = moment('17:59', 'HH:mm');
+  const nightStartTime = moment('18:00', 'HH:mm');
+  const nightEndTime = moment('23:59', 'HH:mm');
+
+  availableSlots.forEach((slot) => {
+    const IOSFormat = slot; //`${date.toISOString().split('T')[0]}T${slot}:00.000Z`;
+
+    const formatedSlot = moment(IOSFormat)
+      .local()
+      .format('HH:mm'); //.format('HH:mm');
+    const slotTime = moment(formatedSlot, 'HH:mm');
+    if (
+      todayDate === moment(date).format('YYYY-MM-DD') &&
+      todayDate !== moment(IOSFormat).format('YYYY-MM-DD')
+    ) {
+    } else {
+      if (new Date() < new Date(IOSFormat)) {
+        if (
+          slotTime.isBetween(morningStartTime, morningEndTime) ||
+          slotTime.isSame(morningStartTime)
+        ) {
+          array[0] = {
+            label: '12 AM - 6 AM',
+            time: [...array[0]?.time, slot],
+          };
+        } else if (
+          slotTime.isBetween(afternoonStartTime, afternoonEndTime) ||
+          slotTime.isSame(afternoonStartTime)
+        ) {
+          array[1] = {
+            ...array[1],
+            time: [...array[1]?.time, slot],
+          };
+        } else if (
+          slotTime.isBetween(eveningStartTime, eveningEndTime) ||
+          slotTime.isSame(eveningStartTime)
+        ) {
+          array[2] = {
+            ...array[2],
+            time: [...array[2]?.time, slot],
+          };
+        } else if (
+          slotTime.isBetween(nightStartTime, nightEndTime) ||
+          slotTime.isSame(nightStartTime)
+        ) {
+          array[3] = {
+            ...array[3],
+            time: [...array[3]?.time, slot],
           };
         }
       }
@@ -2254,7 +2331,7 @@ export const formatToCartItem = ({
     mou: mou,
     quantity: 1,
     prescriptionRequired: is_prescription_required == '1',
-    isMedicine: (type_id || '').toLowerCase() == 'pharma',
+    isMedicine: getIsMedicine(type_id?.toLowerCase()) || 0,
     thumbnail: thumbnail || image,
     maxOrderQty: MaxOrderQty,
     productType: type_id,
@@ -3080,4 +3157,40 @@ export const getDiagnosticCityLevelPaymentOptions = (cityId: string) => {
       : AppConfig.Configuration.Enable_Diagnostics_COD,
   };
   return paymentValues;
+};
+
+export const downloadDocument = (
+  fileUrl: string = '',
+  type: string = 'application/pdf',
+  orderId: number
+) => {
+  let filePath: string | null = null;
+  let file_url_length = fileUrl.length;
+  let viewReportOrderId = orderId;
+  const configOptions = { fileCache: true };
+  RNFetchBlob.config(configOptions)
+    .fetch('GET', fileUrl)
+    .then((resp) => {
+      filePath = resp.path();
+      return resp.readFile('base64');
+    })
+    .then(async (base64Data) => {
+      base64Data = `data:${type};base64,` + base64Data;
+      await Share.open({ title: '', url: base64Data });
+      // remove the image or pdf from device's storage
+      // await RNFS.unlink(filePath);
+    })
+    .catch((err) => {
+      console.log('err', err);
+    });
+
+  return viewReportOrderId;
+};
+export const getIsMedicine = (typeId: string) => {
+  const medicineType = {
+    fmcg: '0',
+    pharma: '1',
+    pl: '2',
+  };
+  return medicineType[typeId] || '0';
 };

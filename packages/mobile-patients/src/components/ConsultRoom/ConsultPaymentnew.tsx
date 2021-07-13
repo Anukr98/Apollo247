@@ -24,6 +24,7 @@ import {
   calculateCircleDoctorPricing,
   isPhysicalConsultation,
 } from '@aph/mobile-patients/src/utils/commonUtils';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 export interface ConsultPaymentnewProps extends NavigationScreenProps {}
 
@@ -53,7 +54,10 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const storeCode =
     Platform.OS === 'ios' ? ONE_APOLLO_STORE_CODE.IOSCUS : ONE_APOLLO_STORE_CODE.ANDCUS;
-  const isOnlineConsult = selectedTab === 'Consult Online';
+  const isOnlineConsult =
+    selectedTab === string.consultModeTab.VIDEO_CONSULT ||
+    selectedTab === string.consultModeTab.CONSULT_ONLINE;
+
   const isPhysicalConsult = isPhysicalConsultation(selectedTab);
 
   const circleDoctorDetails = calculateCircleDoctorPricing(

@@ -209,7 +209,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
 
   useEffect(() => {
     const data = {
-      packageId: activeUserSubscriptions ? getPackageIds(activeUserSubscriptions)?.join() : '',
+      packageId: getPackageIds(activeUserSubscriptions)?.join(),
       mobile: g(currentPatient, 'mobileNumber'),
       email: g(currentPatient, 'emailAddress'),
       type: isFromConsult ? 'Consult' : 'Pharmacy',

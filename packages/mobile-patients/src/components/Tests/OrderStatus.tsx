@@ -99,6 +99,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       ...eventAttributes,
       'Payment mode': isCOD ? 'Cash' : 'Prepaid',
       'Circle discount': circleSubscriptionId && orderCircleSaving ? orderCircleSaving : 0,
+      "Circle user":  isDiagnosticCircleSubscription ? 'Yes' : 'No',
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED, attributes);
     postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_CHECKOUT_COMPLETED, attributes);

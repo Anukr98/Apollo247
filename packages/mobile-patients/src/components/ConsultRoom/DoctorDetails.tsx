@@ -1597,9 +1597,14 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const onPressConsultNow = () => {
-    onlineSelected
-      ? (postWebengaegConsultType('Online'), openConsultPopup(ConsultMode.ONLINE))
-      : (postWebengaegConsultType('In Person'), openConsultPopup(ConsultMode.PHYSICAL));
+    props.navigation.navigate(AppRoutes.SlotSelection, {
+      doctorId,
+      callSaveSearch,
+      isCircleDoctor,
+      consultModeSelected: onlineSelected
+        ? string.consultModeTab.VIDEO_CONSULT
+        : string.consultModeTab.HOSPITAL_VISIT,
+    });
   };
 
   const getTitle = () => {

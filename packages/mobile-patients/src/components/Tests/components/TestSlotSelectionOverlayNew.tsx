@@ -57,7 +57,6 @@ export interface TestSlotSelectionOverlayNewProps extends AphOverlayProps {
   addressDetails?: any;
 }
 const { width } = Dimensions.get('window');
-
 export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewProps> = (props) => {
   const { isTodaySlotUnavailable, maxDate, addressDetails } = props;
   const { cartItems } = useDiagnosticsCart();

@@ -288,6 +288,7 @@ export interface AppsFlyerEvents {
     'Circle Membership Value': number | null;
     'Circle Cashback amount': number;
     User_Type?: PharmaUserStatus;
+    TransactionId?: string | number;
   };
   [AppsFlyerEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
@@ -306,6 +307,7 @@ export interface AppsFlyerEvents {
     'Cart ID'?: string | number; // Optional
     'Service Area': 'Pharmacy' | 'Diagnostic';
     'Circle discount': number;
+    "Circle user": 'Yes' | 'No';
   };
   [AppsFlyerEventName.PRODUCT_PAGE_VIEWED]: {
     source: ProductPageViewedSource;
@@ -467,7 +469,7 @@ export interface AppsFlyerEvents {
   [AppsFlyerEventName.DIAGNOSTIC_ITEM_VIEWED]: {
     PatientUHID: string;
     PatientName: string;
-    Source: 'Search Page' | 'Landing Page' | 'Cart Page';
+    Source: 'Search Page' | 'Landing Page' | 'Cart page';
     ItemName: string;
     ItemType: string;
     ItemCode: string;

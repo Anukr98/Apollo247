@@ -23,6 +23,7 @@ import {
   InsurancePhrSearchIcon,
   HospitalPhrSearchIcon,
   HealthConditionPhrSearchIcon,
+  Vaccination,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -1022,10 +1023,12 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         case 4:
           return <HealthConditionPhrIcon style={{ height: 24.94, width: 20 }} />;
         case 5:
-          return <BillPhrIcon style={{ height: 18.63, width: 24 }} />;
+          return <Vaccination style={{ height: 20, width: 20 }} />;
         case 6:
-          return <InsurancePhrIcon style={{ height: 16.71, width: 20 }} />;
+          return <BillPhrIcon style={{ height: 18.63, width: 24 }} />;
         case 7:
+          return <InsurancePhrIcon style={{ height: 16.71, width: 20 }} />;
+        case 8:
           return <ClinicalDocumentPhrIcon style={{ height: 27.92, width: 20 }} />;
       }
     };
@@ -1066,20 +1069,27 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           });
           break;
         case 5:
+          tabsClickedCleverTapEvent(CleverTapEventName.PHR_CLICK_VACCINATION);
+          props.navigation.navigate(AppRoutes.VaccinationScreen, {
+            authToken: prismAuthToken,
+            onPressBack: onBackArrowPressed,
+          });
+          break;
+        case 6:
           tabsClickedCleverTapEvent(CleverTapEventName.PHR_CLICK_BILLS);
           props.navigation.navigate(AppRoutes.BillScreen, {
             authToken: prismAuthToken,
             onPressBack: onBackArrowPressed,
           });
           break;
-        case 6:
+        case 7:
           tabsClickedCleverTapEvent(CleverTapEventName.PHR_CLICK_INSURANCES);
           props.navigation.navigate(AppRoutes.InsuranceScreen, {
             authToken: prismAuthToken,
             onPressBack: onBackArrowPressed,
           });
           break;
-        case 7:
+        case 8:
           props.navigation.navigate(AppRoutes.ClinicalDocumentScreen);
           break;
       }
@@ -1132,7 +1142,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         pad={0}
         containerStyle={[
           styles.listItemViewStyle,
-          (id === 7 || id === 4 || id === 6) && { borderBottomWidth: 0 },
+          (id === 7 || id === 5) && { borderBottomWidth: 0 },
         ]}
         underlayColor={'#FFFFFF'}
         activeOpacity={1}
@@ -1156,6 +1166,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           {pageLoading ? renderHealthRecordShimmer() : renderListItemView('Test Reports', 2)}
           {renderListItemView('Hospitalization', 3)}
           {renderListItemView('Health Conditions', 4)}
+          {renderListItemView('Vaccination', 5)}
         </View>
       </View>
     );
@@ -1168,8 +1179,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           {'More From Health'}
         </Text>
         <View style={styles.listItemCardStyle}>
-          {renderListItemView('Bills', 5)}
-          {renderListItemView('Insurance', 6)}
+          {renderListItemView('Bills', 6)}
+          {renderListItemView('Insurance', 7)}
         </View>
       </View>
     );
@@ -1178,7 +1189,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const renderClinicalDocumentsView = () => {
     return (
       <View style={styles.clinicalDocumentViewStyle}>
-        {renderListItemView('Clinical Documents', 7)}
+        {renderListItemView('Clinical Documents', 8)}
       </View>
     );
   };

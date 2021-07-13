@@ -300,12 +300,13 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           CommonBugFender('DoctorCard_navigateToDetails', error);
         });
     }
-    props.navigation.navigate(AppRoutes.DoctorDetails, {
+    props.navigation.navigate(AppRoutes.SlotSelection, {
       doctorId: id,
       consultModeSelected: onlineConsult ? ConsultMode.ONLINE : ConsultMode.PHYSICAL,
       externalConnect: null,
       callSaveSearch: props.callSaveSearch,
       ...params,
+      isCircleDoctor: isCircleDoctorOnSelectedConsultMode,
     });
   };
 

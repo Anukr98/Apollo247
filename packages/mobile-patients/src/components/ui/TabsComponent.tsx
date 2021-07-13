@@ -30,14 +30,19 @@ const styles = StyleSheet.create({
     borderBottomColor: theme.colors.CLEAR,
   },
   textStyle: theme.viewStyles.text('M', isIphone5s() ? 14 : 16, 'rgba(2, 71, 91, 0.5)'),
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
 });
 
+interface tabData {
+  title: string;
+  selectedIcon?: React.ReactNode;
+  unselectedIcon?: React.ReactNode;
+}
 export interface TabsComponentProps {
-  data: {
-    title: string;
-    selectedIcon?: React.ReactNode;
-    unselectedIcon?: React.ReactNode;
-  }[];
+  data: tabData[];
   selectedTab: string;
   onChange: (title: string) => void;
   style?: StyleProp<ViewStyle>;
@@ -48,6 +53,7 @@ export interface TabsComponentProps {
   tabViewStyle?: StyleProp<ViewStyle>;
   selectedTitleStyle?: StyleProp<TextStyle>;
   titleStyle?: StyleProp<TextStyle>;
+  showTitleAndIcons?: boolean;
 }
 
 export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
@@ -74,7 +80,13 @@ export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
           ]}
           onPress={() => props.onChange(item.title)}
         >
-          {props.showIcons ? (
+          {props.showTitleAndIcons ? (
+            <View style={styles.row}>
+              {isSelected ? item.selectedIcon : null}
+              {selected !== item.title ? item.unselectedIcon : null}
+              {renderTitle(item, index, 10)}
+            </View>
+          ) : props.showIcons ? (
             <View
               style={{
                 paddingTop: 18,
@@ -85,26 +97,34 @@ export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
               {selected !== item.title ? item.unselectedIcon : null}
             </View>
           ) : (
-            <Text
-              style={[
-                styles.textStyle,
-                isSelected ? { color: theme.colors.LIGHT_BLUE } : {},
-                props.textStyle,
-                props.scrollable
-                  ? {
-                      paddingLeft: index === 0 ? 20 : 15,
-                      paddingRight: index + 1 === props.data.length ? 20 : 15,
-                    }
-                  : {},
-                isSelected ? props.selectedTitleStyle : props.titleStyle,
-              ]}
-            >
-              {item.title}
-            </Text>
+            renderTitle(item, index)
           )}
         </TouchableOpacity>
       );
     });
+  };
+
+  const renderTitle = (item: tabData, index: number, marginLeft: number = 0) => {
+    const isSelected = selected == item.title;
+    return (
+      <Text
+        style={[
+          styles.textStyle,
+          isSelected ? { color: theme.colors.LIGHT_BLUE } : {},
+          props.textStyle,
+          { marginLeft },
+          props.scrollable
+            ? {
+                paddingLeft: index === 0 ? 20 : 15,
+                paddingRight: index + 1 === props.data.length ? 20 : 15,
+              }
+            : {},
+          isSelected ? props.selectedTitleStyle : props.titleStyle,
+        ]}
+      >
+        {item.title}
+      </Text>
+    );
   };
 
   return (
