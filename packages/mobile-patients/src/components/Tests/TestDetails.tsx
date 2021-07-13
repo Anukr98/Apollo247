@@ -1115,11 +1115,15 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               }
               onPress={() =>
                 isAlreadyPartOfOrder
-                  ? props.navigation.navigate(AppRoutes.AddPatients, {
+                  ? props.navigation.navigate(AppRoutes.CartPage, {
                       orderDetails: modifiedOrder,
                     })
                   : isAddedToCart
-                  ? props.navigation.navigate(AppRoutes.AddPatients)
+                  ? isModify
+                    ? props.navigation.navigate(AppRoutes.CartPage, {
+                        orderDetails: modifiedOrder,
+                      })
+                    : props.navigation.navigate(AppRoutes.AddPatients)
                   : onPressAddToCart()
               }
             />

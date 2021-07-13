@@ -514,19 +514,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     const findPriceobj = item?.pricingObj?.find(
       (items: any) => items?.groupPlan === selectedGroupPlan
     );
-    console.log({ findPriceobj });
     const mrp = !!item?.itemObj?.packageCalculatedMrp
       ? item?.itemObj?.packageCalculatedMrp
       : !!findPriceobj && findPriceobj?.mrp;
-    console.log({ mrp });
     return mrp;
   }
 
   var pricesForItemArray;
   //add a type
   function createPatientObjLineItems(selectedOrder: any) {
-    console.log({ selectedOrder });
-
     pricesForItemArray = selectedOrder?.diagnosticOrderLineItems?.map(
       (item: any, index: number) =>
         ({
@@ -546,7 +542,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       lineItems: pricesForItemArray,
       totalPrice: totalPrice,
     });
-    console.log({ array });
     return array;
   }
 
@@ -824,12 +819,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           itemId={orderItemId}
           slotBooked={selectedOrder?.slotDateTimeInUTC}
           onSchedule={(date1: Date, slotInfo: TestSlot, currentDate: Date | undefined) => {
-            console.log({ date1 });
-            console.log({ slotInfo });
-            console.log({ currentDate });
             rescheduleDate = date1; //whatever date has been selected
-            rescheduleSlotObject = {
-              internalSlots: slotInfo?.slotInfo?.internalSlots!,
+            let rescheduleObject = {
+              internalSlots: slotInfo?.slotInfo?.internalSlots! as any,
               distanceCharges:
                 !!slotInfo?.slotInfo?.isPaidSlot && slotInfo?.slotInfo?.isPaidSlot!
                   ? slotInfo?.slotInfo?.distanceCharges!
@@ -837,23 +829,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               slotStartTime: slotInfo?.slotInfo?.startTime!,
               slotEndTime: slotInfo?.slotInfo?.endTime!,
               date: date1?.getTime(),
+              selectedDate: date1,
               isPaidSlot: !!slotInfo?.slotInfo?.isPaidSlot ? slotInfo?.slotInfo?.isPaidSlot : false,
             };
+            rescheduleSlotObject = rescheduleObject;
 
             setDate(currentDate!);
             setselectedTimeSlot(slotInfo);
-            setDiagnosticSlot?.({
-              internalSlots: slotInfo?.slotInfo?.internalSlots!,
-              distanceCharges:
-                !!slotInfo?.slotInfo?.isPaidSlot && slotInfo?.slotInfo?.isPaidSlot
-                  ? slotInfo?.slotInfo?.distanceCharges!
-                  : 0,
-              slotStartTime: slotInfo?.slotInfo?.startTime!,
-              slotEndTime: slotInfo?.slotInfo?.endTime!,
-              date: slotInfo?.date?.getTime(),
-              selectedDate: date1,
-              isPaidSlot: slotInfo?.slotInfo?.isPaidSlot!,
-            });
+            setDiagnosticSlot?.(rescheduleObject);
 
             setDisplaySchedule(false);
             //call rechedule api
@@ -904,26 +887,27 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const renderMultiUhidMessage = () => {
-    const count = !!multipleOrdersList && multipleOrdersList?.length;
+    const count = !!multipleOrdersList ? multipleOrdersList?.length : 0;
     return (
       <View style={styles.multiUhidView}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <AlertTriangle style={{ height: 27, width: 27, resizeMode: 'contain' }} />
+        <View style={styles.topMultiUhidView}>
+          <AlertTriangle style={styles.alertIconStyle} />
           <Text style={styles.orangeText}>{count} orders will be Rescheduled</Text>
         </View>
         <View style={{ marginTop: 8, marginBottom: 8 }}>
-          <Text style={{ ...theme.viewStyles.text('R', 12, colors.SHERPA_BLUE, 1, 18) }}>
+          <Text style={styles.muhidSubheading}>
             The following orders will be rescheduled along with the current order
           </Text>
         </View>
         <FlatList
+          style={{ flexGrow: 1 }}
           bounces={false}
           data={multipleOrdersList}
           extraData={selectedPaitentId}
           keyExtractor={(_, index) => `${index}`}
           renderItem={({ item, index }) => renderList(item, index, count)}
         />
-        <View style={{ margin: 4 }}>
+        <View style={{ marginTop: 16, marginBottom: 16 }}>
           <Button
             title={'CONTINUE'}
             style={styles.buttonStyle}
@@ -946,14 +930,21 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const renderPatientTestView = (item: any, count: number, index: number) => {
     const { patientName, patientSalutation } = extractPatientDetails(item?.patientObj);
     const remainingItems = item?.diagnosticOrderLineItems?.length - 2;
+    const totalLineItems = item?.diagnosticOrderLineItems;
     return (
       <View style={{ marginTop: 2 }}>
-        <Text style={{ ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18) }}>
+        <Text style={styles.patientNameText}>
           {patientSalutation} {nameFormater(patientName, 'title')}
         </Text>
         <View style={[styles.itemsView]}>
           {item?.diagnosticOrderLineItems?.map((lineItems: any, index: number) => {
-            return renderTestName(lineItems, remainingItems, item?.displayId, index);
+            return renderTestNames1(
+              lineItems,
+              remainingItems,
+              item?.displayId,
+              index,
+              totalLineItems
+            );
           })}
         </View>
         {count - 1 == index ? null : <Spearator style={{ marginBottom: 4 }} />}
@@ -961,26 +952,59 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     );
   };
 
+  const renderTestNames1 = (
+    lineItems: any,
+    remainingItems: number,
+    displayId: number,
+    index: number,
+    totalLineItems: any
+  ) => {
+    return (
+      <>
+        {!selectedTestArray?.includes(displayId)
+          ? index < 2 && (
+              <View style={{ flexDirection: 'row' }}>
+                <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
+                <Text style={styles.testName}>{nameFormater(lineItems?.itemName, 'title')}</Text>
+                {remainingItems > 0 && index == 1 && (
+                  <TouchableOpacity onPress={() => _onPressMore(displayId)} style={{}}>
+                    <Text style={styles.moreText}>+ {remainingItems} MORE</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )
+          : renderTestName(lineItems, remainingItems, displayId, index, totalLineItems)}
+      </>
+    );
+  };
+
+  function _onPressMore(displayId: number) {
+    const array = selectedTestArray?.concat(displayId);
+    setSelectedTestArray(array);
+  }
+
+  function _onPressLess(displayId: number) {
+    const removeItem = selectedTestArray?.filter((id: number) => id !== displayId);
+    setSelectedTestArray(removeItem);
+  }
+
   const renderTestName = (
     lineItems: any,
     remainingItems: number,
     displayId: number,
-    index: number
+    index: number,
+    totalLineItems: any
   ) => {
     return (
-      <>
-        {
-          <View style={{ flexDirection: 'row' }}>
-            <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
-            <Text style={styles.testName}>{nameFormater(lineItems?.itemName, 'title')}</Text>
-            {/* {remainingItems > 0 && (
-              <TouchableOpacity onPress={() => {}} style={{}}>
-                <Text style={styles.moreText}>+ {remainingItems} More</Text>
-              </TouchableOpacity>
-            )} */}
-          </View>
-        }
-      </>
+      <View style={{ flexDirection: 'row' }}>
+        <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
+        <Text style={styles.testName}>{nameFormater(lineItems?.itemName, 'title')}</Text>
+        {index === totalLineItems?.length - 1 && (
+          <TouchableOpacity onPress={() => _onPressLess(displayId)} style={{}}>
+            <Text style={styles.moreText}>SHOW LESS</Text>
+          </TouchableOpacity>
+        )}
+      </View>
     );
   };
 
@@ -1224,6 +1248,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setSelectRescheduleReason('');
     setSelectCancelReason('');
     setCancelReasonComment('');
+    setSelectedTestArray([]);
   }
 
   function _onPressProceedToReschedule(count: number) {
@@ -1255,7 +1280,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     const parentOrderId = selectedOrder?.parentOrderId || selectedOrder?.id;
     try {
       const res = await diagnosticsOrderListByParentId(client, parentOrderId!);
-      console.log({ res });
       if (res?.data?.getDiagnosticOrdersListByParentOrderID) {
         const getOrders = res?.data?.getDiagnosticOrdersListByParentOrderID?.ordersList! || [];
 
@@ -1993,6 +2017,12 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 10,
     elevation: 2,
-    marginBottom: 250,
+    flexGrow: 1,
+    maxHeight: screenHeight / 1.8,
+    paddingBottom: 0,
   },
+  topMultiUhidView: { flexDirection: 'row', alignItems: 'center' },
+  alertIconStyle: { height: 27, width: 27, resizeMode: 'contain' },
+  muhidSubheading: { ...theme.viewStyles.text('R', 12, colors.SHERPA_BLUE, 1, 18) },
+  patientNameText: { ...theme.viewStyles.text('SB', 12, colors.SHERPA_BLUE, 1, 18) },
 });

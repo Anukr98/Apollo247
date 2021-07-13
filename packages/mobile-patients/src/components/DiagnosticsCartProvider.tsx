@@ -536,9 +536,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   //patient details for
   const setPatientCartItems: DiagnosticsCartContextProps['setPatientCartItems'] = (cartItems) => {
     _setPatientCartItems(cartItems);
-    AsyncStorage.setItem(AsyncStorageKeys.patientCartItems, JSON.stringify(cartItems)).catch(() => {
-      showGenericAlert('Failed to save cart items in local storage.');
-    });
+    // AsyncStorage.setItem(AsyncStorageKeys.patientCartItems, JSON.stringify(cartItems)).catch(() => {
+    // showGenericAlert('Failed to save cart items in local storage.');
+    // });
   };
 
   const addPatientCartItem: DiagnosticsCartContextProps['addPatientCartItem'] = (

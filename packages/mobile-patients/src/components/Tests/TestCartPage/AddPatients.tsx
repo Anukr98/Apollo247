@@ -592,6 +592,6 @@ const styles = StyleSheet.create({
   patientListView: {
     flexGrow: 1,
     marginBottom: 16,
-    height: screenHeight - 230, //300
+    height: screenHeight - 240, //300
   },
 });

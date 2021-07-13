@@ -164,7 +164,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const selectedAddr = !!getDefaultAddress ? getDefaultAddress : addresses?.[0];
   //if no deliveryAddressId is then , select the first address/ or default address
 
-  const isCartEmpty = isDiagnosticSelectedCartEmpty(patientCartItems);
+  const isCartEmpty = isDiagnosticSelectedCartEmpty(
+    isModifyFlow ? modifiedPatientCart : patientCartItems
+  );
 
   const addressText = isModifyFlow
     ? formatAddressWithLandmark(modifiedOrder?.patientAddressObj) || ''
@@ -367,6 +369,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
     setPatientCartItems?.(newObj);
   };
+
+  console.log({ modifiedPatientCart });
 
   function updateModifiedPatientCartItem(updatedObject: any) {
     const foundIndex =
@@ -1172,7 +1176,10 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   }
   //applying the first level duplicate checks. (check for normal + modify ) - single/multi
   function _checkInclusionLevelDuplicates() {
-    const filteredPatientItems = !!isCartEmpty && isCartEmpty;
+    console.log('tiotio');
+    const arrayToSelect = isModifyFlow ? modifiedPatientCart : isCartEmpty;
+    const filteredPatientItems = !!arrayToSelect && arrayToSelect;
+    console.log({ filteredPatientItems });
     filteredPatientItems?.map((pItem, index) => {
       const allInclusions = pItem?.cartItems?.map((item) => item?.inclusions);
       const getPricesForItem = createItemPrice()?.itemPricingObject;
@@ -1183,6 +1190,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       );
 
       const duplicateItems = [...new Set(duplicateItems_1)];
+      console.log({ duplicateItems });
       hideAphAlert?.();
       setLoading?.(false);
       if (duplicateItems?.length) {
@@ -1197,6 +1205,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         );
       } else {
         if (index === isCartEmpty?.length - 1) {
+          console.log('po');
           _navigateToNextScreen(); //move to next screen
         } else {
           index++;
@@ -1336,6 +1345,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     setDiagnosticSlot?.(null);
     setPatientCartItems?.(patientCartItemsCopy);
     setCartItems?.(updatedCartItems);
+    isModifyFlow && setModifiedPatientCart?.(updatedCartItems);
     //refetch the areas
     if (deliveryAddressId != '') {
       const selectedAddressIndex = addresses?.findIndex(

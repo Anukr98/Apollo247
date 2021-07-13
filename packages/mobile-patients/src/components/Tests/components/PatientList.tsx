@@ -21,6 +21,7 @@ import { diagnosticsDisplayPrice } from '@aph/mobile-patients/src/utils/commonUt
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { SafeAreaView } from 'react-navigation';
 
 const screenHeight = Dimensions.get('window').height;
 const { SHERPA_BLUE, WHITE, APP_GREEN } = theme.colors;
@@ -241,7 +242,7 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.mainViewStyle}>
         <FlatList
           showsVerticalScrollIndicator={false}
@@ -254,7 +255,7 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
         />
       </View>
       {renderStickyBottom()}
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -320,5 +321,6 @@ const styles = StyleSheet.create({
   buttonView: {
     marginLeft: -16,
     marginRight: -16,
+    marginBottom: 20,
   },
 });

@@ -621,7 +621,7 @@ const styles = StyleSheet.create({
   },
   yellowText: { ...theme.viewStyles.yellowTextStyle, fontSize: screenWidth > 380 ? 13 : 12 },
   listViewContainer: {
-    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
+    backgroundColor: '#F9F9F9',
     borderRadius: 5,
     flex: 1,
     padding: 10,

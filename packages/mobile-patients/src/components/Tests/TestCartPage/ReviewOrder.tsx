@@ -165,6 +165,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setDuplicateItemsArray,
     modifiedPatientCart,
     setModifiedPatientCart,
+    setPatientCartItems,
   } = useDiagnosticsCart();
 
   const { setAddresses: setMedAddresses, circleSubscriptionId } = useShoppingCart();
@@ -200,6 +201,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     : selectedAddr
     ? formatAddressWithLandmark(selectedAddr) || ''
     : '';
+  const isCartEmpty = isDiagnosticSelectedCartEmpty(
+    isModifyFlow ? modifiedPatientCart : patientCartItems
+  );
+  var patientCartItemsCopy = JSON.parse(JSON.stringify(isCartEmpty));
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
@@ -1077,7 +1082,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     }
   };
 
-  function createItemPrice() {
+  function createItemPrice(itemsInCart: DiagnosticsCartItem[]) {
+    //check in case of modify
     modifyPricesForItemArray =
       isModifyFlow &&
       modifiedOrder?.diagnosticOrderLineItems?.map(
@@ -1092,7 +1098,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           } as DiagnosticLineItem)
       );
 
-    pricesForItemArray = cartItems?.map(
+    pricesForItemArray = itemsInCart?.map(
       (item, index) =>
         ({
           itemId: Number(item?.id),
@@ -1127,12 +1133,17 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     };
   }
 
-  function removeDuplicateCartItems(itemIds: string, pricesOfEach: any) {
+  function removeDuplicateCartItems(itemIds: string, pricesOfEach: any, patientId: string) {
     //can be used only when itdose starts returning all id
     const getItemIds = itemIds?.split(',');
-    const allInclusions = cartItems?.map((item) => item?.inclusions);
-    const getPricesForItem = createItemPrice()?.itemPricingObject;
-    const getCartItemPrices = createItemPrice()?.pricesForItemArray;
+    const findPatient = isDiagnosticSelectedCartEmpty(patientCartItems)?.find(
+      (item) => item?.patientId === patientId
+    );
+    const itemsInCart = !!findPatient ? findPatient?.cartItems : [];
+
+    const allInclusions = itemsInCart?.map((item) => item?.inclusions);
+    const getPricesForItem = createItemPrice(itemsInCart)?.itemPricingObject;
+    const getCartItemPrices = createItemPrice(itemsInCart)?.pricesForItemArray;
 
     const mergedInclusions = allInclusions?.flat(1); //from array level to single array
     const duplicateItems_1 = mergedInclusions?.filter(
@@ -1142,7 +1153,13 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const duplicateItems = [...new Set(duplicateItems_1)];
     hideAphAlert?.();
     setLoading?.(false);
-    checkDuplicateItems_Level2(getPricesForItem, getItemIds, getCartItemPrices);
+    checkDuplicateItems_Level2(
+      getPricesForItem,
+      getItemIds,
+      getCartItemPrices,
+      patientId,
+      itemsInCart
+    );
   }
 
   function apiHandleErrorFunction(input: any, data: any, source: string) {
@@ -1154,13 +1171,15 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     //itemIds will only come in case of duplicate
     let itemIds =
       source === BOOKING_TYPE.SAVE ? data?.[0]?.attributes?.itemids : data?.attributes?.itemids;
+    let patientId =
+      source === BOOKING_TYPE.SAVE ? data?.[0]?.patientID : modifiedPatientCart?.[0]?.patientId;
     if (itemIds?.length! > 0) {
       showAphAlert?.({
         unDismissable: true,
         title: string.common.uhOh,
         description: message,
         onPressOk: () => {
-          removeDuplicateCartItems(itemIds!, input?.items);
+          removeDuplicateCartItems(itemIds!, input?.items, patientId);
         },
       });
     } else {
@@ -1186,7 +1205,13 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     }
   }
 
-  const checkDuplicateItems_Level2 = (pricesForItem: any, getItemIds: any, cartItemPrices: any) => {
+  const checkDuplicateItems_Level2 = (
+    pricesForItem: any,
+    getItemIds: any,
+    cartItemPrices: any,
+    patientId: string,
+    itemsInCart: DiagnosticsCartItem[]
+  ) => {
     //no inclusion level duplicates are found...
     if (getItemIds?.length > 0) {
       const getCartItemsId = cartItemPrices?.map((item: any) => item?.itemId);
@@ -1205,13 +1230,13 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         : getDuplicateItems?.splice(1, getDuplicateItems?.length - 1);
 
       const itemIdToRemove = itemsToRemove?.map((item: any) => item?.itemId);
-      const updatedCartItems = cartItems?.filter(function(items: any) {
+      const updatedCartItems = itemsInCart?.filter(function(items: any) {
         return itemIdToRemove?.indexOf(Number(items?.id)) < 0;
       });
 
       //assuming get two values.
       let array = [] as any;
-      cartItems?.forEach((cItem) => {
+      itemsInCart?.forEach((cItem) => {
         itemIdToRemove?.forEach((idToRemove: any) => {
           if (Number(cItem?.id) == idToRemove) {
             array.push({
@@ -1229,7 +1254,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           (item: any) => Number(item?.itemId) !== Number(array?.[0]?.removalId)
         );
 
-      const highPricesItem = cartItems?.map((cItem) =>
+      const highPricesItem = itemsInCart?.map((cItem) =>
         Number(cItem?.id) == Number(getDuplicateItems?.[0]?.itemId)
           ? !!cItem?.name && nameFormater(cItem?.name, 'default')
           : isModifyFlow
@@ -1240,7 +1265,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       const duplicateTests = array?.[0]?.removalName;
 
       let arrayToSet = [...duplicateNameArray, array]?.flat(1);
-      onChangeCartItems(updatedCartItems, duplicateTests, itemIdToRemove);
+      onChangeCartItems(updatedCartItems, duplicateTests, itemIdToRemove, patientId, itemsInCart);
       setShowInclusions(true);
       setDuplicateNameArray(arrayToSet);
       setDuplicateItemsArray?.(arrayToSet);
@@ -1272,10 +1297,29 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     });
   };
 
-  function onChangeCartItems(updatedCartItems: any, removedTest: string, removedTestItemId: any) {
+  function onChangeCartItems(
+    updatedCartItems: any,
+    removedTest: string,
+    removedTestItemId: any,
+    patientId: string,
+    itemsInCart: DiagnosticsCartItem[]
+  ) {
+    const arrayToSelect = isModifyFlow ? modifiedPatientCart : patientCartItemsCopy;
+    const findIndex = arrayToSelect?.findIndex(
+      (item: DiagnosticPatientCartItem) => item?.patientId == patientId
+    );
+    arrayToSelect[findIndex].cartItems = updatedCartItems;
+
     setDiagnosticSlot?.(null);
+    setPatientCartItems?.(patientCartItemsCopy);
     setCartItems?.(updatedCartItems);
-    //refetch the areas
+    isModifyFlow &&
+      setModifiedPatientCart?.([
+        {
+          patientId: arrayToSelect[findIndex].patientId,
+          cartItems: updatedCartItems,
+        },
+      ]);
     if (deliveryAddressId != '') {
       const selectedAddressIndex = addresses?.findIndex(
         (address) => address?.id == deliveryAddressId
@@ -1414,23 +1458,16 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     orderInfo: any
   ) {
     PaymentInitiated(amount, 'Diagnostic', 'Cash');
-    console.log('dddd');
     try {
-      console.log({ orderId });
-      console.log({ amount });
-      console.log({ eventAttributes });
-      console.log({ orderInfo });
-
       const array = [
         {
           orderID: orderId,
           amount: amount,
         },
       ];
-      console.log({ array });
       const response = await processDiagnosticsCODOrderV2(client, array);
-      const { data } = response;
       console.log({ response });
+      const { data } = response;
       const getResponse = data?.wrapperProcessDiagnosticHCOrderCOD?.result;
       if (!!getResponse && getResponse?.length > 0) {
         const isAnyFalse = getResponse?.filter((items) => !items?.status);
@@ -1495,7 +1532,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       collectionCharges: calHcChargers,
       bookingSource: DiagnosticsBookingSource.MOBILE,
       deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
-      items: createItemPrice()?.itemPricingObject, //total (prev+ curr)
+      items: createItemPrice(cartItems)?.itemPricingObject, //total (prev+ curr)
       userSubscriptionId: circleSubscriptionId,
       subscriptionInclusionId: null,
       amountToPay: grandTotal, //total amount to pay
@@ -1588,7 +1625,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, marginBottom: 10 }}>
       <SafeAreaView style={[{ ...theme.viewStyles.container }]}>
         {renderHeader()}
         {renderWizard()}
