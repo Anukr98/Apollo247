@@ -193,7 +193,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         const strengths = pharmaOverview?.Strength?.split('+');
         const units = pharmaOverview?.Unit?.split('+');
         generics.forEach((value: string, index: number) => {
-          compositions = compositions + `${value}-${strengths[index].trim()}${units[index].trim()}`;
+          compositions =
+            compositions +
+            `${value.trim()}-${strengths[index].trim()}${units[index].trim()}${
+              index + 1 != generics?.length ? ` + ` : ``
+            }`;
         });
         setComposition(compositions);
       }

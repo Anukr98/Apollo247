@@ -135,8 +135,12 @@ export const PharmaMedicineInfo: React.FC<PharmaMedicineInfoProps> = (props) => 
       {!!renderSideEffects && renderSideEffects(pharmaSideEffects)}
       {!!pharmaOverview && renderPrecautionsAndWarnings()}
       {renderAdvice()}
-      <Text style={styles.heading}>Patients Concern</Text>
-      {!!diseaseConditionGlossary && renderDiseaseAndConditionsGlossary()}
+      {!!diseaseConditionGlossary && (
+        <View>
+          <Text style={styles.heading}>Patients Concern</Text>
+          {renderDiseaseAndConditionsGlossary()}
+        </View>
+      )}
       {!!faqContent && faqContent.length && <FaqComponent faqs={faqContent} name={name} />}
     </View>
   );
@@ -158,9 +162,5 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderBottomWidth: 0.5,
     borderBottomColor: theme.colors.LIGHT_GRAY,
-  },
-  heading: {
-    ...theme.viewStyles.text('SB', 17, '#02475B', 1, 25, 0.35),
-    marginBottom: 2,
   },
 });
