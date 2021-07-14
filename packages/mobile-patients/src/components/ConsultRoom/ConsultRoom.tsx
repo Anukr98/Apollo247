@@ -1160,11 +1160,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       : `Dr ${params?.doctorName}`;
     let physical = false;
     const appointmentDate = moment(appointmentDateTime).format('Do MMMM YYYY');
-    const appointmentTime = moment(appointmentDateTime).format('h:mm a');
+    const appointmentTime = moment(appointmentDateTime).format('h:mm A');
+    const diffMins = Math.ceil(moment(appointmentDateTime).diff(moment(), 'minutes', true));
     let hospitalLocation = '';
-    let description = `Your appointment has been successfully booked with ${doctorName} for ${appointmentDate} at ${appointmentTime}. Please be in the consult room before the appointment time.`;
-    if (!isJdQuestionsComplete && !skipAutoQuestions) {
-      description = `Your appointment has been successfully booked with ${doctorName} for ${appointmentDate} at ${appointmentTime}. Please go to the consult room to answer a few medical questions.`;
+    let description = `Your online appointment with ${doctorName} is confirmed for ${appointmentDate} at ${appointmentTime}. You can expect your appointment to start between ${moment(
+      appointmentDateTime
+    ).format('h:mm A')} - ${moment(appointmentDateTime)
+      .add('15', 'minutes')
+      .format('h:mm A')} via an audio/video call.`;
+    if (diffMins >= 30 && !isJdQuestionsComplete) {
+      description = `${description} Please go to the consult to answer a few medical questions.`;
     }
     if (isPhysicalConsultBooked) {
       hospitalLocation = doctorInfo?.doctorHospital?.[0]?.facility?.name;
@@ -1968,6 +1973,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const profileType = data?.data?.getUserProfileType?.profile;
         if (!!profileType) {
           setPharmacyUserType && setPharmacyUserType(profileType);
+          AsyncStorage.setItem('PharmacyUserType', profileType);
         }
       })
       .catch((e) => {
@@ -2444,8 +2450,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           if (getAllAppointments?.length > 0) {
             let getUpcomingAppointments = getAllAppointments?.filter(
               (item: any) =>
-                (item?.status === BookingStatus.COMPLETED ||
-                  item?.status === BookingStatus?.INPROGRESS) &&
+                (item?.status ===
+                  (!!BookingStatus.COMPLETED ? BookingStatus.COMPLETED : 'COMPLETED') ||
+                  (item?.status === !!BookingStatus?.INPROGRESS
+                    ? BookingStatus?.INPROGRESS
+                    : 'INPROGRESS')) &&
                 moment(item?.appointmentStartDateTimeUTC).diff(moment(), 'minutes') > 0
             );
             if (getUpcomingAppointments?.length > 0) {
@@ -3510,7 +3519,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const regenerateJWTToken = async (source: string, id?: string) => {
     let deviceType =
-      Platform.OS == 'android' ? BookingSource?.Apollo247_Android : BookingSource?.Apollo247_Ios;
+      Platform.OS == 'android'
+        ? !!BookingSource?.Apollo247_Android
+          ? BookingSource?.Apollo247_Android
+          : 'Apollo247_Android'
+        : !!BookingSource?.Apollo247_Ios
+        ? BookingSource?.Apollo247_Ios
+        : 'Apollo247_Ios';
     setLoading?.(true);
     const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
     if (userLoggedIn == 'true') {

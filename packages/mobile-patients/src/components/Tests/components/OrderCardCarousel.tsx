@@ -31,10 +31,10 @@ export const OrderCardCarousel: React.FC<OrderCardCarousel> = (props) => {
   }) => {
     const appointmentTime = moment(item?.slotDateTimeInUTC)?.format('DD MMM, hh:mm a');
     const testPrepData = item?.diagnosticOrderLineItems?.filter(
-      (item) => !!item?.itemObj?.testPreparationData && item?.itemObj?.testPreparationData != ''
+      (item) => !!item?.itemObj?.preTestingRequirement && item?.itemObj?.preTestingRequirement != ''
     );
     const filterTestPrepData = testPrepData?.length
-      ? testPrepData?.map((item) => item?.itemObj?.testPreparationData)
+      ? testPrepData?.map((item) => item?.itemObj?.preTestingRequirement)
       : [];
 
     const testPrepDataToShow = filterTestPrepData?.length ? filterTestPrepData : null;

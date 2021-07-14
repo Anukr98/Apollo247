@@ -18,6 +18,7 @@ import { isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions'
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   convertNumberToDecimal,
+  DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   getPricesForItem,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
@@ -46,15 +47,7 @@ export interface ItemCardProps {
   isVertical: boolean;
   columns?: number;
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
-  source:
-    | 'Home page'
-    | 'Full search'
-    | 'Details page'
-    | 'Partial search'
-    | 'Listing page'
-    | 'Category page'
-    | 'Prescription'
-    | 'Cart page';
+  source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
   sourceScreen: string;
   onPressAddToCartFromCart?: (item: any) => void;
   onPressRemoveItemFromCart?: (item: any) => void;
@@ -539,7 +532,6 @@ const styles = StyleSheet.create({
   itemNameText: {
     ...theme.viewStyles.text('M', isSmallDevice ? 15 : 16, theme.colors.SHERPA_BLUE, 1, 20),
     textAlign: 'left',
-    textTransform: 'capitalize',
   },
   parameterText: {
     ...theme.viewStyles.text('R', 11, theme.colors.SHERPA_BLUE, 1, 16),

@@ -21,7 +21,7 @@ import {
   TouchableOpacityProps,
   Dimensions,
 } from 'react-native';
-import { getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
+import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { DisclaimerSection } from '@aph/mobile-patients/src/components/Tests/components/DisclaimerSection';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -482,7 +482,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
         {props.isComingFrom == 'individualOrders' ? (
           props.ordersData.map(
             (
-              item: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems
+              item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems
             ) => {
               return (
                 <>
@@ -538,7 +538,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
         {props.isComingFrom != 'individualTest' ? (
           props.ordersData?.map(
             (
-              item: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems,
+              item: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems,
               index: any
             ) => {
               return (

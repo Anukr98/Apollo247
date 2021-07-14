@@ -9,9 +9,16 @@ import { DoctorAvailabilityInput } from "./globalTypes";
 // GraphQL query operation: getDoctorAvailableSlots
 // ====================================================
 
+export interface getDoctorAvailableSlots_getDoctorAvailableSlots_slotCounts {
+  __typename: "slotCountsWithDate";
+  date: any | null;
+  slotCount: number;
+}
+
 export interface getDoctorAvailableSlots_getDoctorAvailableSlots {
   __typename: "AvailabilityResult";
   availableSlots: string[] | null;
+  slotCounts: (getDoctorAvailableSlots_getDoctorAvailableSlots_slotCounts | null)[] | null;
 }
 
 export interface getDoctorAvailableSlots {

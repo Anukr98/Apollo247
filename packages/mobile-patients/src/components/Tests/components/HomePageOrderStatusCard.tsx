@@ -158,7 +158,9 @@ export const HomePageOrderStatusCard: React.FC<HomePageOrderStatusCardProps> = (
           { minHeight: AFTER_COLLECTION_STATUS.includes(status) ? 60 : 30 },
         ]}
       >
-        <Text style={styles.content1}>{content}</Text>
+        <Text numberOfLines={2} style={[styles.content1]}>
+          {content}
+        </Text>
       </View>
       {prepData ? (
         <View>
@@ -217,7 +219,12 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('R', 13, colors.SHERPA_BLUE, 1, 18),
     marginTop: 6,
   },
-  buttonView: { alignSelf: 'flex-end', marginTop: 15 },
+  buttonView: {
+    position: 'absolute',
+    alignSelf: 'flex-end',
+    bottom: 16,
+    right: 16,
+  },
   bookNowText: {
     ...theme.viewStyles.text('B', 15, theme.colors.APP_YELLOW, 1, 20),
     textAlign: 'right',

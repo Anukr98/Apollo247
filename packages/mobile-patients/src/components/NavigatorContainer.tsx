@@ -87,7 +87,6 @@ import { SearchTestScene } from '@aph/mobile-patients/src/components/Tests/Searc
 import { YourOrdersTest } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/YourOrdersTests';
 import { OrderedTestStatus } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/OrderedTestStatus';
 import { TestOrderDetails } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/TestOrderDetails';
-import { TestOrderDetailsSummary } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/TestOrderDetailsSummary';
 import { ClinicSelection } from '@aph/mobile-patients/src/components/Tests/ClinicSelection';
 import {
   CommonLogEvent,
@@ -134,14 +133,23 @@ import { OrderStatus } from '@aph/mobile-patients/src/components/Tests/OrderStat
 import { ProHealthWebView } from '@aph/mobile-patients/src/components/ProHealthWebView';
 import MyOrdersScreen from '@aph/mobile-patients/src/components/MyOrders/MyOrdersScreen';
 import { TestRatingScreen } from '@aph/mobile-patients/src/components/Tests/PostOrderJourney/TestRatingScreen';
+import { SlotSelection } from '@aph/mobile-patients/src/components/Consult/SlotSelection';
 
 import { VaccineBookingScreen } from '@aph/mobile-patients/src/components/Vaccination/VaccineBookingScreen';
 import { VaccineBookingConfirmationScreen } from '@aph/mobile-patients//src/components/Vaccination/VaccineBookingConfirmationScreen';
 import { BookedVaccineScreen } from '@aph/mobile-patients//src/components/Vaccination/BookedVaccineScreen';
 import { ActivateCorporateMembership } from '@aph/mobile-patients//src/components/Vaccination/ActivateCorporateMembership';
 import { VaccineTermsAndConditions } from '@aph/mobile-patients//src/components/Vaccination/VaccineTermsAndConditions';
+import { NeedHelpDiagnosticsOrder } from '@aph/mobile-patients/src/components/NeedHelpDiagnosticsOrder/NeedHelpDiagnosticsOrder';
 import { TestReportViewScreen } from '@aph/mobile-patients/src/components/HealthRecords/TestReportScreenView';
 import { CowinRegistrationScreen } from './Vaccination/CowinRegistrationScreen';
+import { VaccinationScreen } from '@aph/mobile-patients/src/components/HealthRecords/VaccinationScreen';
+import { VaccinationDoseScreen } from '@aph/mobile-patients/src/components/HealthRecords/VaccinationDoseScreen';
+import { AddVaccinationRecord } from '@aph/mobile-patients/src/components/HealthRecords/AddVaccinationRecord';
+import { CowinCertificateOTPScreen } from '@aph/mobile-patients/src/components/HealthRecords/CowinCertificateOTPScreen';
+import { CowinCertificateGetOTP } from '@aph/mobile-patients/src/components/HealthRecords/CowinCertificateGetOTP';
+import { CowinProfileSelection } from '@aph/mobile-patients/src/components/HealthRecords/CowinProfileSelection';
+import { CowinCertificateViewer } from '@aph/mobile-patients/src/components/HealthRecords/CowinCertificateViewer';
 
 export enum AppRoutes {
   Login = 'Login',
@@ -158,6 +166,7 @@ export enum AppRoutes {
   SplashScreen = 'SplashScreen',
   MobileHelp = 'MobileHelp',
   NeedHelpPharmacyOrder = 'NeedHelpPharmacyOrder',
+  NeedHelpDiagnosticsOrder = 'NeedHelpDiagnosticsOrder',
   NeedHelpConsultOrder = 'NeedHelpConsultOrder',
   NeedHelpQueryDetails = 'NeedHelpQueryDetails',
   NeedHelpContentView = 'NeedHelpContentView',
@@ -225,7 +234,6 @@ export enum AppRoutes {
   YourOrdersTest = 'YourOrdersTest',
   OrderedTestStatus = 'OrderedTestStatus',
   TestOrderDetails = 'TestOrderDetails',
-  TestOrderDetailsSummary = 'TestOrderDetailsSummary',
   ClinicSelection = 'ClinicSelection',
   RenderPdf = 'RenderPdf',
   Tests = 'Tests',
@@ -263,14 +271,21 @@ export enum AppRoutes {
   TestWidgetListing = 'TestWidgetListing',
   ProHealthWebView = 'ProHealthWebView',
   MyOrdersScreen = 'MyOrdersScreen',
+  TestRatingScreen = 'TestRatingScreen',
+  SlotSelection = 'SlotSelection',
   VaccineBookingScreen = 'VaccineBookingScreen',
   VaccineBookingConfirmationScreen = 'VaccineBookingConfirmationScreen',
   BookedVaccineScreen = 'BookedVaccineScreen',
   ActivateCorporateMembership = 'ActivateCorporateMembership',
   VaccineTermsAndConditions = 'VaccineTermsAndConditions',
-  TestRatingScreen = 'TestRatingScreen',
   TestReportViewScreen = 'TestReportViewScreen',
   CowinRegistration = 'CowinRegistration',
+  VaccinationScreen = 'VaccinationScreen',
+  VaccinationDoseScreen = 'VaccinationDoseScreen',
+  AddVaccinationRecord = 'AddVaccinationRecord',
+  CowinCertificateOTPScreen = 'CowinCertificateOTPScreen',
+  CowinCertificateGetOTP = 'CowinCertificateGetOTP',
+  CowinProfileSelection = 'CowinProfileSelection',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -342,6 +357,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.NeedHelpPharmacyOrder]: {
     screen: NeedHelpPharmacyOrder,
+  },
+  [AppRoutes.NeedHelpDiagnosticsOrder]: {
+    screen: NeedHelpDiagnosticsOrder,
   },
   [AppRoutes.NeedHelpConsultOrder]: {
     screen: NeedHelpConsultOrder,
@@ -555,9 +573,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.TestOrderDetails]: {
     screen: TestOrderDetails,
   },
-  [AppRoutes.TestOrderDetailsSummary]: {
-    screen: TestOrderDetailsSummary,
-  },
   [AppRoutes.ClinicSelection]: {
     screen: ClinicSelection,
   },
@@ -685,11 +700,32 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.TestRatingScreen]: {
     screen: TestRatingScreen,
   },
+  [AppRoutes.SlotSelection]: {
+    screen: SlotSelection,
+  },
   [AppRoutes.TestReportViewScreen]: {
     screen: TestReportViewScreen,
   },
   [AppRoutes.CowinRegistration]: {
     screen: CowinRegistrationScreen,
+  },
+  [AppRoutes.VaccinationScreen]: {
+    screen: VaccinationScreen,
+  },
+  [AppRoutes.VaccinationDoseScreen]: {
+    screen: VaccinationDoseScreen,
+  },
+  [AppRoutes.AddVaccinationRecord]: {
+    screen: AddVaccinationRecord,
+  },
+  [AppRoutes.CowinCertificateOTPScreen]: {
+    screen: CowinCertificateOTPScreen,
+  },
+  [AppRoutes.CowinCertificateGetOTP]: {
+    screen: CowinCertificateGetOTP,
+  },
+  [AppRoutes.CowinProfileSelection]: {
+    screen: CowinProfileSelection,
   },
 };
 

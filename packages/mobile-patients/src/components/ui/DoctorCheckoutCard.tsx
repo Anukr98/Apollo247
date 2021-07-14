@@ -38,7 +38,9 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
     circleSubscriptionId,
     planSelected,
   } = props;
-  const isOnlineConsult = selectedTab === 'Consult Online';
+  const isOnlineConsult =
+    selectedTab === string.consultModeTab.VIDEO_CONSULT ||
+    selectedTab === string.consultModeTab.CONSULT_ONLINE;
   const isPhysicalConsult = isPhysicalConsultation(selectedTab);
   const circleDoctorDetails = calculateCircleDoctorPricing(
     doctor,
@@ -116,7 +118,7 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
             source={{
               uri: doctor?.photoUrl!,
             }}
-            resizeMode={'contain'}
+            resizeMode={'cover'}
           />
         ) : (
           <DoctorPlaceholderImage />
@@ -144,7 +146,7 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
             <ImageBackground
               source={require('@aph/mobile-patients/src/components/ui/icons/doctor_ring.webp')}
               style={styles.drImageBackground}
-              resizeMode="contain"
+              resizeMode="cover"
             >
               {renderDoctorProfile()}
             </ImageBackground>
