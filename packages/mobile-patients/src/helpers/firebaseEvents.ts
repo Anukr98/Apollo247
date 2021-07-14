@@ -380,6 +380,7 @@ export interface FirebaseEvents {
     Cart_ID?: string | number; // Optional
     Service_Area: 'Pharmacy' | 'Diagnostic';
     'Circle discount': number;
+    "Circle user": 'Yes' | 'No';
   };
 
   [FirebaseEventName.PRODUCT_PAGE_VIEWED]: {
@@ -581,7 +582,7 @@ export interface FirebaseEvents {
   [FirebaseEventName.DIAGNOSTIC_ITEM_VIEWED]: {
     PatientUHID: string;
     PatientName: string;
-    Source: 'Search Page' | 'Landing Page' | 'Cart Page';
+    Source: 'Search Page' | 'Landing Page' | 'Cart page';
     ItemName: string;
     ItemType: string;
     ItemCode: string;

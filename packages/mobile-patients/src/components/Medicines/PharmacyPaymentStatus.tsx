@@ -16,6 +16,7 @@ import {
   GET_PHARMA_TRANSACTION_STATUS_V2,
   SAVE_MEDICINE_ORDER_OMS_V2,
   SAVE_MEDICINE_ORDER_PAYMENT_V2,
+  UPDATE_MEDICINE_ORDER_SUBSTITUTION,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { apiCallEnums, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -59,7 +60,10 @@ import {
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { OrderPlacedPopUp } from '@aph/mobile-patients/src/components/ui/OrderPlacedPopUp';
-import { MEDICINE_ORDER_PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  MEDICINE_ORDER_PAYMENT_TYPE,
+  MEDICINE_ORDER_STATUS,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   AppsFlyerEventName,
   AppsFlyerEvents,
@@ -78,6 +82,16 @@ import {
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  updateMedicineOrderSubstitution,
+  updateMedicineOrderSubstitutionVariables,
+} from '@aph/mobile-patients/src/graphql/types/updateMedicineOrderSubstitution';
+import { SubstituteItemsCard } from '@aph/mobile-patients/src/components/Medicines/Components/SubstituteItemsCard';
+
+enum SUBSTITUTION_RESPONSE {
+  OK = 'OK',
+  NOT_OK = 'not-OK',
+}
 
 export interface PharmacyPaymentStatusProps extends NavigationScreenProps {}
 
@@ -96,6 +110,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     grandTotal,
     cartTotalCashback,
     pharmacyCircleAttributes,
+    deliveryCharges,
   } = useShoppingCart();
   const [loading, setLoading] = useState<boolean>(false);
   const [status, setStatus] = useState<string>(props.navigation.getParam('status'));
@@ -106,6 +121,9 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const orderInfo = props.navigation.getParam('orderInfo');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
   const orders = props.navigation.getParam('orders');
+  const orderIds = orders.map(
+    (item: any, index: number) => item?.orderAutoId + (index != orders?.length - 1 && ', ')
+  );
   const price = props.navigation.getParam('price');
   const transId = props.navigation.getParam('transId');
   const isStorePickup = props.navigation.getParam('isStorePickup');
@@ -120,6 +138,32 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const [circlePlanDetails, setCirclePlanDetails] = useState({});
   const [codOrderProcessing, setcodOrderProcessing] = useState<boolean>(false);
   const { apisToCall, pharmacyUserTypeAttribute } = useAppCommonData();
+
+  const [showSubstituteMessage, setShowSubstituteMessage] = useState<boolean>(
+    props.navigation.getParam('showSubstituteMessage') || false
+  );
+  const [substituteMessage, setSubstituteMessage] = useState<string>(
+    props.navigation.getParam('substitutionMessage') || ''
+  );
+  const [substituteTime, setSubstituteTime] = useState<number>(
+    props.navigation.getParam('substitutionTime') || 0
+  );
+  const [transactionId, setTransactionId] = useState(null);
+  const [showSubstituteConfirmation, setShowSubstituteConfirmation] = useState<boolean>(false);
+  const isSplitCart: boolean = orders?.length > 1 ? true : false;
+
+  useEffect(() => {
+    if (!!substituteTime && showSubstituteMessage) {
+      const interval = setInterval(() => {
+        if (substituteTime < 1) {
+          clearInterval(interval);
+        } else {
+          setSubstituteTime((substituteTime) => substituteTime - 1);
+        }
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [substituteTime]);
 
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
@@ -156,9 +200,15 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         setpaymentRefId(pharmaPaymentStatus?.paymentRefId);
         setStatus(pharmaPaymentStatus?.paymentStatus);
         setPaymentMode(pharmaPaymentStatus?.paymentMode);
+        setTransactionId(pharmaPaymentStatus?.bankTxnId);
         setIsCircleBought(!!pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
         setTotalCashBack(pharmaPaymentStatus?.planPurchaseDetails?.totalCashBack);
         setLoading(false);
+        firePaymentStatusPageViewedEvent(
+          pharmaPaymentStatus?.paymentStatus,
+          pharmaPaymentStatus?.bankTxnId,
+          pharmaPaymentStatus?.paymentMode
+        );
         fireCirclePlanActivatedEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
         fireCirclePurchaseEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
       })
@@ -222,6 +272,48 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     navigateToHome(props.navigation);
   };
 
+  const firePaymentStatusPageViewedEvent = (
+    status: string,
+    transactionId: number,
+    paymentMode: string
+  ) => {
+    const paymentStatus =
+      status == MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS
+        ? 'Success'
+        : status == MEDICINE_ORDER_STATUS.PAYMENT_FAILED
+        ? 'Payment Failed'
+        : status == 'PAYMENT_STATUS_NOT_KNOWN' // for COD
+        ? 'Payment Status Not Known'
+        : 'Payment Aborted';
+    const paymentType = paymentMode == MEDICINE_ORDER_PAYMENT_TYPE.COD ? 'COD' : 'Cashless';
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_POST_CART_PAGE_VIEWED] = {
+      'Payment status': paymentStatus,
+      'Payment Type': paymentType,
+      'Transaction ID': transactionId,
+      'Order ID(s)': orderIds,
+      'MRP Total': getFormattedAmount(grandTotal),
+      'Discount Amount': totalCashBack,
+      'Payment Instrument': paymentMode,
+      'Order Type': 'Cart',
+      'Shipping Charges': deliveryCharges,
+      'Circle Member': circleSubscriptionId || isCircleSubscription ? true : false,
+      'Substitution Option Shown': showSubstituteMessage ? 'Yes' : 'No',
+    };
+    postWebEngageEvent(WebEngageEventName.PHARMACY_POST_CART_PAGE_VIEWED, eventAttributes);
+  };
+
+  const fireSubstituteResponseEvent = (action: string) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ORDER_SUBSTITUTE_OPTION_CLICKED] = {
+      'Transaction ID': transactionId,
+      'Order ID(s)': transId,
+      'Substitute Action Taken': action == SUBSTITUTION_RESPONSE.OK ? 'Agree' : 'Disagree',
+    };
+    postWebEngageEvent(
+      WebEngageEventName.PHARMACY_ORDER_SUBSTITUTE_OPTION_CLICKED,
+      eventAttributes
+    );
+  };
+
   const fireCirclePlanActivatedEvent = (planPurchased: boolean) => {
     const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PURCHASE_CIRCLE] = {
       'Patient UHID': currentPatient?.uhid,
@@ -267,6 +359,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
       ...pharmacyCircleAttributes!,
       ...pharmacyUserTypeAttribute,
+      TransactionId: transId,
     };
     return appsflyerEventAttributes;
   };
@@ -533,10 +626,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
           >
             <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 30, 0.7)}>Order ID : </Text>
             <Text style={theme.viewStyles.text('M', 15, theme.colors.SHADE_GREY, 1, 30)}>
-              {orders.map(
-                (item: any, index: number) =>
-                  item?.orderAutoId + (index != orders?.length - 1 && ', ')
-              )}
+              {orderIds}
             </Text>
           </View>
           {!!paymentRefId && (
@@ -613,6 +703,51 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         </View>
       </View>
     );
+  };
+
+  const substituteItemsCard = () => {
+    return (
+      <SubstituteItemsCard
+        orderId={orderIds?.[0]}
+        transactionId={transId}
+        substituteMessage={substituteMessage}
+        substituteTime={substituteTime}
+        updateOrderSubstitution={updateOrderSubstitution}
+        setShowSubstituteMessage={setShowSubstituteMessage}
+        setShowSubstituteConfirmation={setShowSubstituteConfirmation}
+      />
+    );
+  };
+
+  const renderSubstituteSnackBar = () => {
+    return (
+      <Snackbar
+        style={{ position: 'absolute', zIndex: 1001, backgroundColor: theme.colors.GRAY }}
+        visible={showSubstituteConfirmation}
+        onDismiss={() => {
+          setShowSubstituteConfirmation(false);
+        }}
+        duration={3000}
+      >
+        Response Received.
+      </Snackbar>
+    );
+  };
+
+  const updateOrderSubstitution = (paymentInfo: updateMedicineOrderSubstitutionVariables) => {
+    client
+      .mutate<updateMedicineOrderSubstitution, updateMedicineOrderSubstitutionVariables>({
+        mutation: UPDATE_MEDICINE_ORDER_SUBSTITUTION,
+        variables: paymentInfo,
+      })
+      .then((data) => {
+        if (data?.data?.updateMedicineOrderSubstitution?.message === 'success') {
+          fireSubstituteResponseEvent(paymentInfo?.substitution);
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('updateMedicineOrderSubstitution Error', error);
+      });
   };
 
   const renderNote = () => {
@@ -752,6 +887,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         {!loading ? (
           <View style={styles.container}>
             <ScrollView style={styles.container}>
+              {showSubstituteMessage && !!substituteTime && substituteItemsCard()}
               {renderStatusCard()}
               {status === 'PAYMENT_SUCCESS' && isCircleBought
                 ? renderAddedCirclePlanWithValidity()
@@ -766,6 +902,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
               {status != failure && status != aborted && appointmentCard()}
               {renderNote()}
               {status == failure || status == aborted ? renderRetryPayment() : renderButton()}
+              {renderSubstituteSnackBar()}
             </ScrollView>
           </View>
         ) : (

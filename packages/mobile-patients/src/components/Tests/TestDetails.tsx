@@ -56,6 +56,7 @@ import {
   getPricesForItem,
   sourceHeaders,
   convertNumberToDecimal,
+  DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
 import {
@@ -125,6 +126,7 @@ export interface CMSTestDetails {
   diagnosticUrlAlias: string;
   diagnosticGender: string;
   diagnosticAge: string;
+  diagnosticReportCustomerText: string;
   diagnosticReportGenerationTime: string;
   diagnosticPretestingRequirement: string;
   diagnosticOverview: any;
@@ -223,9 +225,16 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     }
   }, [itemId]);
 
-  const fetchTestDetails_CMS = async (itemId: string | number) => {
+  const fetchTestDetails_CMS = async (
+    itemId: string | number
+  ) => {
     setLoadingContext?.(true);
-    const res: any = await getDiagnosticTestDetails('diagnostic-details', Number(itemId));
+    const res: any = await getDiagnosticTestDetails(
+      'diagnostic-details',
+      Number(itemId),
+      cmsTestDetails?.diagnosticUrlAlias,
+      Number(diagnosticServiceabilityData?.cityId!) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
+    );
     if (res?.data?.success) {
       const result = g(res, 'data', 'data');
       setCmsTestDetails(result);
@@ -723,7 +732,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const renderCardMidView = () => {
     return (
       <>
-        {!!cmsTestDetails?.diagnosticReportGenerationTime ? (
+        {!!cmsTestDetails?.diagnosticReportGenerationTime || !!cmsTestDetails?.diagnosticReportCustomerText ? (
           <>
             {renderSeparator()}
             <View style={styles.midCardView}>
@@ -732,7 +741,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               <View style={styles.midCardTextView}>
                 <Text style={styles.reportTimeText}>Report generation Time</Text>
                 <Text style={styles.reportTime}>
-                  {cmsTestDetails?.diagnosticReportGenerationTime}
+                  {cmsTestDetails?.diagnosticReportCustomerText ? cmsTestDetails?.diagnosticReportCustomerText : cmsTestDetails?.diagnosticReportGenerationTime}
                 </Text>
               </View>
             </View>
@@ -1035,7 +1044,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       itemId!,
       mrpToDisplay,
       discountToDisplay,
-      'Details page'
+      DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS
     );
     addCartItem?.({
       id: `${itemId!}`,
@@ -1212,7 +1221,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     alignSelf: 'center',
   },
-  midCardView: { flexDirection: 'row', height: 60 },
+  midCardView: { flexDirection: 'row', height: 60, width: '90%' },
   clockIconStyle: { height: 32, width: 32, resizeMode: 'contain', alignSelf: 'center' },
   midCardTextView: {
     flexDirection: 'column',
@@ -1246,7 +1255,6 @@ const styles = StyleSheet.create({
   itemNameText: {
     ...theme.viewStyles.text('SB', isSmallDevice ? 16.5 : 18, theme.colors.SHERPA_BLUE, 1, 25),
     textAlign: 'left',
-    textTransform: 'capitalize',
   },
   inclusionsView: { width: '100%', marginVertical: '4%' },
   testIncludedText: {

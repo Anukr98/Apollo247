@@ -9,6 +9,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { OrderSummary } from '@aph/mobile-patients/src/components/OrderSummaryView';
 import { RefundDetails } from '@aph/mobile-patients/src/components/RefundDetails';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { OrderDelayNoticeView } from '@aph/mobile-patients/src/components/MedicineOrderDetails';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { ChatWithUs } from '@aph/mobile-patients/src/components/ui/ChatWithUs';
@@ -213,7 +214,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const reasonForOnHold = order?.medicineOrdersStatus!.find(
     (item) =>
       item?.orderStatus == MEDICINE_ORDER_STATUS.VERIFICATION_DONE ||
-      item?.orderStatus == MEDICINE_ORDER_STATUS.READY_FOR_VERIFICATION
+      item?.orderStatus == MEDICINE_ORDER_STATUS.READY_FOR_VERIFICATION ||
+      item?.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
   )
     ? false
     : orderOnHold! &&
@@ -1037,11 +1039,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
     ];
 
-    const isNotTatBreach = tatInfo == null ? true : moment(tatInfo!).isSameOrAfter(moment(), 'day');
-    const shouldScrollToSlot = (isNotTatBreach: boolean) => {
-      !isNotTatBreach && statusToConsiderTatBreach.includes(orderDetails.currentStatus!)
-        ? null
-        : scrollToSlots();
+    const shouldScrollToSlot = () => {
+      if (statusToConsiderTatBreach.includes(orderDetails.currentStatus!)) scrollToSlots();
     };
 
     let statusList = orderStatusList
@@ -1050,7 +1049,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       )
       .concat([]);
     order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-      ? shouldScrollToSlot(isNotTatBreach!)
+      ? shouldScrollToSlot()
       : scrollToSlots();
 
     if (
@@ -1064,7 +1063,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         )
         .concat([]);
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED) {
       statusList = orderStatusList
@@ -1124,7 +1123,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               ]
         );
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED) {
       statusList = orderStatusList
@@ -1175,7 +1174,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               ]
         );
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     }
     //added for on-hold
@@ -1227,7 +1226,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               ]
         );
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_VERIFIED) {
       statusList = orderStatusList
@@ -1267,7 +1266,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               ]
         );
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.READY_AT_STORE) {
       statusList = orderStatusList
@@ -1282,7 +1281,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
         ]);
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED) {
       statusList = orderStatusList
@@ -1302,7 +1301,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
         ]);
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY) {
       statusList = orderStatusList
@@ -1317,7 +1316,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
         ]);
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     } else if (
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
@@ -1329,7 +1328,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         )
         .concat([]);
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     }
 
@@ -2236,6 +2235,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               selectedTab={selectedTab}
             />
             {selectedTab == string.orders.trackOrder && renderOrderTrackTopView()}
+            {!!Number(orderAutoId) && (
+              <OrderDelayNoticeView
+                orderId={Number(orderAutoId)}
+                containerStyle={selectedTab === string.orders.viewBill && styles.hidden}
+              />
+            )}
             {renderInconvenienceView()}
             <ScrollView bounces={false} ref={scrollViewRef}>
               {selectedTab == string.orders.trackOrder
@@ -2411,6 +2416,11 @@ const styles = StyleSheet.create({
   queryText: {
     ...theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE),
     marginRight: 6,
+  },
+  hidden: {
+    height: 0,
+    width: 0,
+    overflow: 'hidden',
   },
   chatBtnTxt: {
     ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW),

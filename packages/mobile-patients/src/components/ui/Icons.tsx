@@ -602,8 +602,16 @@ export const PhrRemoveBlueIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_phr_remove_icon.webp')} />
 );
 
+export const SchedulTime: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/schedule_time.webp')} />
+);
+
 export const PhrAddTestDetailsIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_phr_add_test_details.webp')} />
+);
+
+export const CalendarBlackIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/calendar_black.webp')} />
 );
 
 export const PhrRemoveTestDetailsIcon: React.FC<IconProps> = (props) => (
@@ -893,6 +901,10 @@ export const ShareIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/ic_share.webp')} />
 );
 
+export const Vaccination: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/Vaccination.webp')} />
+);
+
 export const WhiteListViewIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/list_view_white.webp')} />
 );
@@ -1007,6 +1019,14 @@ export const PrescriptionPad: React.FC<IconProps> = (props) => (
 
 export const NotificationBellIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_notification_a.webp')} />
+);
+
+export const NoticeIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 14, height: 14 }}
+    {...props}
+    source={require('./icons/ic_notice.webp')}
+  />
 );
 
 export const PrimaryUHIDIconWhite: React.FC<IconProps> = (props) => (
@@ -1928,5 +1948,12 @@ export const WidgetLiverIcon: React.FC<IconProps> = (props) => (
   <IconBase
     {...props}
     source={require('@aph/mobile-patients/src/components/ui/icons/ic_liver_icon.webp')}
+  />
+);
+
+export const GreenClock: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/green_clock.webp')}
   />
 );

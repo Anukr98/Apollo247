@@ -72,6 +72,14 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
     !!pharmaSideEffects ||
     !!pharmaOverview?.length;
   const [showAllContent, setShowAllContent] = useState<boolean>(!showShowMore);
+  const ignoreStyles = [
+    'line-height',
+    'margin-bottom',
+    'color',
+    'text-align',
+    'font-size',
+    'font-family',
+  ];
 
   const renderShowMore = () => {
     return (
@@ -94,7 +102,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
               ...theme.viewStyles.text('R', 14, '#02475B', 1, 20),
             }}
             imagesMaxWidth={Dimensions.get('window').width}
-            ignoredStyles={['line-height', 'margin-bottom']}
+            ignoredStyles={ignoreStyles}
           />
         </View>
       )
@@ -115,7 +123,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
               ...theme.viewStyles.text('R', 14, '#02475B', 1, 20),
             }}
             imagesMaxWidth={Dimensions.get('window').width}
-            ignoredStyles={['line-height', 'margin-bottom']}
+            ignoredStyles={ignoreStyles}
           />
         </View>
       )
@@ -136,7 +144,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
               ...theme.viewStyles.text('R', 14, '#02475B', 1, 20),
             }}
             imagesMaxWidth={Dimensions.get('window').width}
-            ignoredStyles={['line-height', 'margin-bottom']}
+            ignoredStyles={ignoreStyles}
           />
         </View>
       )
@@ -157,7 +165,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
               ...theme.viewStyles.text('R', 14, '#02475B', 1, 20),
             }}
             imagesMaxWidth={Dimensions.get('window').width}
-            ignoredStyles={['line-height', 'margin-bottom']}
+            ignoredStyles={ignoreStyles}
           />
         </View>
       )
@@ -257,6 +265,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = (props) => {
           {!!safety_information && renderSafetyInfo()}
         </>
       )}
+      {showShowMore && renderShowMore()}
       {renderOtherInformation()}
     </View>
   );
@@ -294,6 +303,10 @@ const styles = StyleSheet.create({
   },
   readMoreText: {
     ...theme.viewStyles.text('SB', 14, '#02475B', 1, 30),
+    textAlign: 'right',
+  },
+  showMoreText: {
+    ...theme.viewStyles.text('SB', 13, '#FC9916', 1, 25, 0.35),
     textAlign: 'right',
   },
 });

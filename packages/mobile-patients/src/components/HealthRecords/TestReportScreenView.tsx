@@ -602,6 +602,9 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   };
 
   const renderDetailsFinding = () => {
+    const hasNumber = (myString: string) => {
+      return /\d/.test(myString);
+    };
     const renderTestReportDetails = () => {
       return (
         <>
@@ -619,28 +622,27 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
             var stringColorChanger: boolean;
             var rangeColorChanger: boolean;
             var columnDecider: boolean;
+            var symbolSearch: boolean;
             var numberOfLineBreaks: any;
-            var letterCheck: any;
             if (!!item?.range) {
-              var symbolSearch =
-                item?.range?.includes('<') ||
-                item?.range?.includes('>') ||
-                item?.range?.includes(':');
-              var regExp = /[a-zA-Z]/g;
-              var resBool = regExp.test(item?.range);
-              var letterCheck = item?.range?.includes('-');
-              if (letterCheck && !symbolSearch && !resBool) {
-                minNum = item?.range.split('-')[0].trim();
-                maxNum = item?.range.split('-')[1].trim();
+              var regExp = /[a-zA-Z!<:;>@#%^~=`{};&*]/g;
+              var rangeBool = regExp.test(item?.range);
+              var numCheck = hasNumber(item?.range);
+              if (!rangeBool && !!numCheck) {
+                minNum = item?.range?.split(/[-_–]/)[0].trim();
+                maxNum = item?.range?.split(/[-_–]/)[1].trim();
                 let parseResult = Number(item?.result);
-                parseResult >= minNum && parseResult <= maxNum
-                  ? (resultColorChanger = true)
-                  : (resultColorChanger = false);
+                if (!!minNum && !!maxNum) {
+                  parseResult >= minNum && parseResult <= maxNum
+                    ? (resultColorChanger = true)
+                    : (resultColorChanger = false);
+                }
               }
-
-              if (symbolSearch || resBool || item?.result?.includes(',')) {
+              if (rangeBool) {
+                symbolSearch = true;
                 rangeColorChanger = true;
               } else {
+                symbolSearch = false;
                 rangeColorChanger = false;
               }
               if (item?.range?.length > 40) {
@@ -649,7 +651,15 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                 columnDecider = false;
               }
             }
+
             if (!!item?.result) {
+              var regex = /[a-zA-Z-!$%^&*()_+|~=`{}[:;<>?,@#\]]/g;
+              var resultStr = regex.test(item?.result);
+              if (resultStr) {
+                rangeColorChanger = true;
+              } else {
+                rangeColorChanger = false;
+              }
               if (item?.result?.length > 14) {
                 stringColorChanger = true;
               }
@@ -665,8 +675,9 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                         stringColorChanger === true ||
                         rangeColorChanger === true ||
                         !item?.range ||
-                        item?.range === item?.result ||
-                        !letterCheck
+                        !numCheck ||
+                        symbolSearch === true ||
+                        item?.range === item?.result
                           ? '#9B9B9B'
                           : resultColorChanger
                           ? '#16DE9B'
@@ -674,11 +685,19 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                       height:
                         stringColorChanger === true && item?.result?.length > 100
                           ? 170
-                          : !!item.range && item?.range?.length > 40
-                          ? 220
-                          : !!item.result && numberOfLineBreaks > 3
-                          ? 180
-                          : 120,
+                          : !!item.range &&
+                            item?.range?.length > 70 &&
+                            item?.parameterName?.length > 70
+                          ? 330
+                          : !!item.range && item?.range?.length > 70
+                          ? 280
+                          : !!item.range && item?.range?.length < 70 && item?.range?.length > 30
+                          ? 210
+                          : !!item.result && numberOfLineBreaks >= 3
+                          ? 190
+                          : !!item?.parameterName && item?.parameterName?.length > 60
+                          ? 150
+                          : 150,
                     },
                   ]}
                 >
@@ -725,9 +744,10 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                             backgroundColor:
                               stringColorChanger === true ||
                               rangeColorChanger === true ||
+                              symbolSearch === true ||
+                              !numCheck ||
                               !item?.range ||
-                              item?.range === item?.result ||
-                              !letterCheck
+                              item?.range === item?.result
                                 ? '#F7F7F7'
                                 : resultColorChanger
                                 ? theme.colors.COMPLETE_STATUS_BGK
@@ -735,9 +755,10 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                             color:
                               stringColorChanger === true ||
                               rangeColorChanger === true ||
+                              symbolSearch === true ||
+                              !numCheck ||
                               !item?.range ||
-                              item?.range === item?.result ||
-                              !letterCheck
+                              item?.range === item?.result
                                 ? theme.colors.ASTRONAUT_BLUE
                                 : resultColorChanger
                                 ? theme.colors.COMPLETE_STATUS_TEXT
@@ -748,7 +769,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                               Platform.OS === 'android' &&
                               item?.result?.length > 100
                                 ? 55
-                                : !!item.result && numberOfLineBreaks > 3
+                                : !!item.result && numberOfLineBreaks >= 3
                                 ? 80
                                 : undefined,
                             width:

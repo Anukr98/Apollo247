@@ -94,6 +94,8 @@ import _ from 'lodash';
 import { AxiosResponse } from 'axios';
 import { getMedicineDetailsApi, MedicineProductDetailsResponse } from '../../helpers/apiCalls';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/Events';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -246,6 +248,7 @@ const styles = StyleSheet.create({
     marginLeft: 2,
   },
   downloadIconStyle: { width: 20, height: 20 },
+  phrGeneralIconStyle: { width: 20, height: 24.84, marginRight: 12 },
 });
 
 export interface ConsultDetailsProps
@@ -502,6 +505,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     pharmacyLocation,
   } = useAppCommonData();
 
+  function postDiagnosticAddToCart(itemId: string, itemName: string) {
+    DiagnosticAddToCartEvent(itemName, itemId, 0, 0, DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PHR);
+  }
+
   const onAddTestsToCart = async () => {
     let location: LocationData | null = null;
     setLoading && setLoading(true);
@@ -550,6 +557,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           (item) => !tests.find((val) => val?.name!.toLowerCase() == item?.itemname!.toLowerCase())
         );
         const unAvailableItems = unAvailableItemsArray.map((item) => item.itemname).join(', ');
+        const getItemNames = tests?.map((item) => item?.name)?.join(', ');
+        const getItemIds = tests?.map((item) => Number(item?.id))?.join(', ');
 
         if (tests.length) {
           addMultipleTestCartItems!(tests);
@@ -593,11 +602,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             },
           });
         }
-        setLoading!(false);
-        props.navigation.push(AppRoutes.TestsCart, { comingFrom: AppRoutes.ConsultDetails });
+        setLoading?.(false);
+        postDiagnosticAddToCart(getItemIds, getItemNames);
       })
       .catch((e) => {
-        setLoading!(false);
+        setLoading?.(false);
         handleGraphQlError(e);
       });
   };
@@ -867,22 +876,37 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   };
 
   const renderGenerealAdvice = () => {
+    let listOfAdvices =
+      caseSheetDetails?.otherInstructions?.map((item, i) => {
+        if (item?.instruction !== '') {
+          return `${item?.instruction}`;
+        }
+      }) || [];
+    const listStrings = listOfAdvices.join('\n');
     return (
       <>
         {renderHeadingView(
           'General Advice',
-          <PhrGeneralAdviceIcon style={{ width: 20, height: 24.84, marginRight: 12 }} />
+          <PhrGeneralAdviceIcon style={styles.phrGeneralIconStyle} />
         )}
         {caseSheetDetails?.otherInstructions !== null ? (
+          <View style={{ marginTop: 28 }}>{renderListItem(listStrings || '', '')}</View>
+        ) : (
+          renderNoData('No advice')
+        )}
+      </>
+    );
+  };
+
+  const renderReferral = () => {
+    return (
+      <>
+        {renderHeadingView('Referral', <PhrGeneralAdviceIcon style={styles.phrGeneralIconStyle} />)}
+        {caseSheetDetails?.otherInstructions !== null ? (
           <View style={{ marginTop: 28 }}>
+            {renderListItem('Consult \n' + caseSheetDetails?.referralSpecialtyName, '')}
             {renderListItem(
-              caseSheetDetails?.otherInstructions
-                ?.map((item, i) => {
-                  if (item?.instruction !== '') {
-                    return `${item?.instruction}`;
-                  }
-                })
-                .join('\n') || '',
+              'Reason for Referral\n' + caseSheetDetails?.referralDescription || '',
               ''
             )}
           </View>
@@ -1028,7 +1052,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 {renderTestNotes()}
                 {renderDiagnosis()}
                 {renderGenerealAdvice()}
-                {/* We will use in next release */}
+                {caseSheetDetails && caseSheetDetails?.referralSpecialtyName !== null
+                  ? renderReferral()
+                  : null}
                 {/* {renderFollowUp()} */}
               </View>
             </View>

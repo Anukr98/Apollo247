@@ -82,7 +82,6 @@ export const FaqComponent: React.FC<FaqComponentProps> = (props) => {
 
   return (
     <View style={styles.cardStyle}>
-      <Text style={styles.heading}>Patients Concern</Text>
       <View style={styles.flexRow}>
         <Text style={styles.subHeading}>FAQs</Text>
         <TouchableOpacity onPress={() => returnFaqs(true)}>
@@ -98,8 +97,7 @@ const styles = StyleSheet.create({
   cardStyle: {
     marginTop: 10,
   },
-  heading: theme.viewStyles.text('M', 17, '#02475B', 1, 25, 0.35),
-  subHeading: theme.viewStyles.text('M', 16, '#02475B', 1, 25, 0.35),
+  subHeading: theme.viewStyles.text('SB', 17, '#02475B', 1, 25, 0.35),
   flexRow: {
     marginTop: 7,
     flexDirection: 'row',

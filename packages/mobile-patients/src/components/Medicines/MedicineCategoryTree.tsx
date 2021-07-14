@@ -13,8 +13,10 @@ import {
   TouchableOpacity,
   View,
   ViewProps,
+  Image,
 } from 'react-native';
 import { ListItem } from 'react-native-elements';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface Props {
   onPressCategory: (category: Category, categoryTree: Category[]) => void;
@@ -45,11 +47,19 @@ export const MedicineCategoryTree: React.FC<Props> = ({
     const rightIcon = (
       <TouchableOpacity onPress={onPress}>{Child?.length ? <ArrowRight /> : null}</TouchableOpacity>
     );
+    const leftIcon = (
+      <Image
+        style={styles.categoryImage}
+        source={{ uri: `${AppConfig.Configuration.IMAGES_BASE_URL[0]}${item?.image_url}` }}
+        resizeMode={'contain'}
+      />
+    );
     return (
       <ListItem
         key={category_id}
         title={title}
         rightIcon={rightIcon}
+        leftIcon={leftIcon}
         titleStyle={styles.itemTitle}
         containerStyle={styles.listItemContainer}
         onPress={onPressListItem}
@@ -109,4 +119,9 @@ const styles = StyleSheet.create({
   sectionTitleSelected: { ...text('B', 16, APP_GREEN) },
   sectionTitle: { ...text('B', 16, LIGHT_BLUE) },
   listItemContainer: { paddingHorizontal: 0, paddingVertical: 8 },
+  categoryImage: {
+    resizeMode: 'contain',
+    width: 30,
+    height: 30,
+  },
 });
