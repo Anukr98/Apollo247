@@ -469,6 +469,12 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
   const remainingVaccineSlots = props.navigation.getParam('remainingVaccineSlots');
   const isCorporateSubscription = props.navigation.getParam('isCorporateSubscription');
 
+  const cancellationThreshholdPreVaccination =
+    AppConfig.Configuration.Cancel_Threshold_Pre_Vaccination || 12;
+
+  const [isCancellationWarningAlertShown, setCancellationWarningAlertShown] = useState<boolean>(
+    false
+  );
   const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
   const [requestSubmissionErrorAlert, setRequestSubmissionErrorAlert] = useState<boolean>(false);
   const [vaccineSiteList, setVaccineSiteList] = useState<any>([]);
@@ -916,7 +922,40 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
       scrollViewRef?.current?.scrollTo(0);
       setPageState(PAGE_STATE.CONFRIMATON_PAGE);
     } else {
-      submitVaccineBooking();
+      if (checkNonCancellableAlert() == false) {
+        submitVaccineBooking();
+      }
+    }
+  };
+
+  const checkNonCancellableAlert = () => {
+    if (isCancellationWarningAlertShown == true) {
+      return false;
+    }
+
+    var endTime = moment(selectedSlot.end_date_time);
+    var nowTime = moment(new Date());
+    var duration = moment.duration(endTime.diff(nowTime)).asHours();
+
+    if (duration < cancellationThreshholdPreVaccination) {
+      showAphAlert &&
+        showAphAlert({
+          title: 'Alert !',
+          unDismissable: true,
+          description:
+            'This booking will be Non-cancellable/Non-Refundable as the slot time is less than ' +
+            cancellationThreshholdPreVaccination +
+            ' hours from now. Booking cancellation window is till ' +
+            cancellationThreshholdPreVaccination +
+            ' hours before slot time only',
+          onPressOk: () => {
+            setCancellationWarningAlertShown(true);
+            hideAphAlert!();
+          },
+        });
+      return true;
+    } else {
+      return false;
     }
   };
 
@@ -1145,6 +1184,8 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
               style={{ alignSelf: 'center' }}
               activeOpacity={1}
               onPress={() => {
+                setSelectedSlot(undefined);
+                setCancellationWarningAlertShown(false);
                 setPageState(PAGE_STATE.DETAIL_PAGE);
               }}
             >
