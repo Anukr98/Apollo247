@@ -402,11 +402,11 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       specialtyName: g(props.doctor, 'specialty', 'name')!,
       experience: Number(g(props.doctor, 'experience')!),
       languagesKnown: g(props.doctor, 'languages')! || 'NA',
-      'Consult Mode': consultOnlineTab === selectedTab ? 'Online' : 'Physical',
+      appointmentType: consultOnlineTab === selectedTab ? 'ONLINE' : 'PHYSICAL',
       docId: g(props.doctor, 'id')!,
       SpecialtyId: g(props.doctor, 'specialty', 'id')!,
       'Patient UHID': g(currentPatient, 'uhid'),
-      'Consult Date Time': moment(selectedTimeSlot).toDate(),
+      appointmentDateTime: moment(selectedTimeSlot).toDate(),
       'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
@@ -414,7 +414,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       'Patient gender': g(currentPatient, 'gender'),
       onlineConsultFee: onlineConsultMRPPrice || undefined,
       physicalConsultFee: physicalConsultMRPPrice || undefined,
-      Source: isConsultOnline ? 'Consult now' : 'Schedule for later',
+      Source: isConsultOnline ? 'Consult Now' : 'Schedule for Later',
       User_Type: getUserType(allCurrentPatients),
     };
     postCleverTapEvent(

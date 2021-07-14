@@ -1365,6 +1365,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         'Mobile Number': g(currentPatient, 'mobileNumber'),
         'Customer ID': g(currentPatient, 'id'),
         User_Type: getUserType(allCurrentPatients),
+        isConsulted: getUserType(allCurrentPatients),
       };
     }
     if (eventName == CleverTapEventName.HDFC_HEALTHY_LIFE) {

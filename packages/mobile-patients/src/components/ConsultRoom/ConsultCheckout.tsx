@@ -169,10 +169,10 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       ),
       'Patient Gender': g(currentPatient, 'gender'),
       'Customer ID': g(currentPatient, 'id'),
-      'Consult ID': id,
+      consultId: id,
       'Speciality ID': g(doctor, 'specialty', 'id'),
-      'Consult Date Time': date,
-      'Consult Mode':
+      consultDateTime: date,
+      consultMode:
         tabs[0].title === selectedTab || selectedTab === string.consultModeTab.VIDEO_CONSULT
           ? 'Online'
           : 'Physical',
@@ -192,6 +192,55 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
       'Circle discount': circleDiscountedPrice,
       User_Type: getUserType(allCurrentPatients),
+    };
+    return eventAttributes;
+  };
+
+  const getConsultationBookedCleverTapEventAttributes = (time: string, id: string) => {
+    const localTimeSlot = moment(new Date(time));
+    let date = moment(time).toDate();
+    const doctorClinics = (g(doctor, 'doctorHospital') || []).filter((item) => {
+      if (item && item.facility && item.facility.facilityType)
+        return item.facility.facilityType === 'HOSPITAL';
+    });
+
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULTATION_BOOKED] = {
+      name: g(doctor, 'fullName'),
+      specialisation: g(doctor, 'specialty', 'name'),
+      category: g(doctor, 'doctorType'), // send doctorType
+      patientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      relation: g(currentPatient, 'relation'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      patientGender: g(currentPatient, 'gender'),
+      'Customer ID': g(currentPatient, 'id'),
+      consultId: id,
+      'Speciality ID': g(doctor, 'specialty', 'id'),
+      consultDateTime: date,
+      consultMode:
+        tabs[0].title === selectedTab || selectedTab === string.consultModeTab.VIDEO_CONSULT
+          ? 'ONLINE'
+          : 'PHYSICAL',
+      hospitalName:
+        doctorClinics.length > 0 && doctor!.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics[0].facility.name}`
+          : '',
+      'Hospital City':
+        doctorClinics.length > 0 && doctor!.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics[0].facility.city}`
+          : '',
+      'Doctor ID': g(doctor, 'id')!,
+      doctorName: g(doctor, 'fullName')!,
+      'Net Amount': price,
+      af_revenue: price,
+      af_currency: 'INR',
+      'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
+      circleSavings: circleDiscountedPrice,
+      userType: getUserType(allCurrentPatients),
+      patientNumber: g(currentPatient, 'mobileNumber'),
+      doctorNumber: g(doctor, 'mobileNumber')! || undefined,
     };
     return eventAttributes;
   };
@@ -316,6 +365,10 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                 g(apptmt, 'appointmentDateTime'),
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
               ),
+              cleverTapConsultBookedEventAttributes: getConsultationBookedCleverTapEventAttributes(
+                g(apptmt, 'appointmentDateTime'),
+                g(data, 'data', 'bookAppointment', 'appointment', 'id')!
+              ),
               appsflyerEventAttributes: getConsultationBookedAppsFlyerEventAttributes(
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!,
                 g(data, 'data', 'bookAppointment', 'appointment', 'displayId')!
@@ -342,8 +395,13 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                 g(apptmt, 'appointmentDateTime'),
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
               ),
-              appsflyerEventAttributes: getConsultationBookedAppsFlyerEventAttributes(
+              cleverTapConsultBookedEventAttributes: getConsultationBookedCleverTapEventAttributes(
+                g(apptmt, 'appointmentDateTime'),
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
+              ),
+              appsflyerEventAttributes: getConsultationBookedAppsFlyerEventAttributes(
+                g(data, 'data', 'bookAppointment', 'appointment', 'id')!,
+                g(data, 'data', 'bookAppointment', 'appointment', 'displayId')!
               ),
               fireBaseEventAttributes: getConsultationBookedFirebaseEventAttributes(
                 g(apptmt, 'appointmentDateTime'),

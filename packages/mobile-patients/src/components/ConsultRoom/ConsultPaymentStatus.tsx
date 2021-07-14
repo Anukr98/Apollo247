@@ -134,6 +134,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     appointmentDateTime,
     appointmentType,
     webEngageEventAttributes,
+    cleverTapConsultBookedEventAttributes,
     appsflyerEventAttributes,
     fireBaseEventAttributes,
     isDoctorsOfTheHourStatus,
@@ -347,12 +348,18 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       let eventAttributes = webEngageEventAttributes;
       eventAttributes['Display ID'] = displayId;
       eventAttributes['User_Type'] = getUserType(allCurrentPatients);
+      let cleverTapEventAttributes = cleverTapConsultBookedEventAttributes;
+      cleverTapEventAttributes['displayId'] = displayId;
+      cleverTapEventAttributes['userType'] = getUserType(allCurrentPatients);
       postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, appsflyerEventAttributes);
       postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
       firePurchaseEvent(amountBreakup);
       eventAttributes['Dr of hour appointment'] = !!isDoctorsOfTheHourStatus ? 'Yes' : 'No';
+      cleverTapEventAttributes['Dr of hour appointment'] = !!isDoctorsOfTheHourStatus
+        ? 'Yes'
+        : 'No';
       postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
-      postCleverTapEvent(CleverTapEventName.CONSULTATION_BOOKED, eventAttributes);
+      postCleverTapEvent(CleverTapEventName.CONSULTATION_BOOKED, cleverTapEventAttributes);
       if (!currentPatient?.isConsulted) getPatientApiCall();
     } catch (error) {
       console.log(error);

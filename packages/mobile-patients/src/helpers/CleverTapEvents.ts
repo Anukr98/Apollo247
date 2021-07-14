@@ -708,7 +708,7 @@ export interface DoctorFilterClick {
   User_Type: string;
   docCategoryTab: string;
   selectedCity: string;
-  'Filter Applied': string;
+  filtersApplied: string;
   'Filter Value': string;
 }
 
@@ -723,13 +723,14 @@ export interface FollowUpAppointment {
   specialityId?: string;
   doctorCategory?: DoctorType;
   consultDateTime?: Date;
-  consultMode: 'Online' | 'Physical';
+  consultMode: 'ONLINE' | 'PHYSICAL';
   doctorCity?: string;
   consultId?: string;
   isConsulted?: string;
   isConsultStarted: boolean;
   Prescription?: string;
   Source: 'Cancelled appointment' | 'Past appointment' | undefined;
+  patientGender: string;
 }
 
 export interface consultCallEndData {
@@ -849,6 +850,7 @@ export interface CleverTapEvents {
     'Mobile Number': string;
     'Customer ID': string;
     User_Type: string;
+    isConsulted: string;
   };
   [CleverTapEventName.TABBAR_APPOINTMENTS_CLICKED]: PatientInfoWithSource;
   [CleverTapEventName.CONSULT_PAST_SEARCHES_CLICKED]: {
@@ -1359,6 +1361,7 @@ export interface CleverTapEvents {
   [CleverTapEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED]: {
     position: number;
     itemId: number;
+    'Banner title': string;
   };
   [CleverTapEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE]: {
     'Selection type': 'New' | 'Existing';
@@ -1441,7 +1444,7 @@ export interface CleverTapEvents {
     'Mobile Number': string;
     'Customer ID': string;
     User_Type: string;
-    Source: 'Speciality screen' | 'Doctor listing screen';
+    Source: 'speciality screen' | 'Doctor listing screen';
     'search result success': YesOrNo;
   };
   [CleverTapEventName.CONSULT_FILTER_APPLIED]: DoctorFilterClick;
@@ -1497,19 +1500,21 @@ export interface CleverTapEvents {
     docId: string;
     specialityId: string;
     specialityName: string;
-    'Doctor Experience': number;
+    exp: number;
     languagesKnown?: string;
     docHospital: string;
     docCity: string | null;
-    'Availability Minutes': number;
-    Source: 'List' | 'Profile' | 'Inside consult room';
+    availableInMins: number;
+    Source: 'Doctor card doctor listing screen' | 'doctor profile' | 'Inside Consult Room';
     'Patient UHID': string;
     Relation: string;
     'Patient age': number;
     'Patient gender': string;
     'Customer ID': string;
-    Rank?: number;
+    rank?: number;
     User_Type: string;
+    onlineConsultFee?: number;
+    physicalConsultFee?: number;
   };
   [CleverTapEventName.DOCTOR_CONNECT_CARD_CLICK]: {
     Fee: number;
@@ -1607,18 +1612,21 @@ export interface CleverTapEvents {
     specialtyName: string;
     experience: number;
     languagesKnown: string; // Comma separated values
-    'Consult Mode': 'Online' | 'Physical';
+    appointmentType: 'ONLINE' | 'PHYSICAL';
     docId: string;
     SpecialtyId: string;
     'Patient UHID': string;
     'Patient name': string;
     'Patient gender': string;
     'Patient age': number;
-    'Consult Date Time': Date;
+    appointmentDateTime: Date;
     onlineConsultFee?: number;
     physicalConsultFee?: number;
-    Source: 'Consult now' | 'Schedule for later';
+    Source: 'Consult Now' | 'Schedule for Later';
     User_Type: string;
+    price?: number;
+    docHospital?: string;
+    docCity?: string | null;
   };
   [CleverTapEventName.CONSULT_COUPON_APPLIED]: {
     CouponCode: string;
@@ -1642,7 +1650,7 @@ export interface CleverTapEvents {
     'Patient age': number;
     'Patient gender': string;
     'Patient UHID': string;
-    consultType: 'clinic' | 'online';
+    consultType: 'CLINIC' | 'ONLINE';
     'Doctor ID': string;
     'Speciality ID': string;
     'Hospital Name': string;
@@ -1651,30 +1659,34 @@ export interface CleverTapEvents {
     User_Type: string;
   };
   [CleverTapEventName.CONSULTATION_BOOKED]: {
-    'Consult ID': string;
-    'Display ID'?: string;
+    consultId: string;
+    displayId?: string;
     name: string;
     specialisation: string;
     category: string;
-    'Patient Name': string;
+    patientName: string;
     'Patient UHID': string;
-    Relation: string;
+    relation: string;
     'Patient Age': number;
-    'Patient Gender': string;
+    patientGender: string;
     'Customer ID': string;
     'Speciality ID': string;
-    'Consult Date Time': Date;
-    'Consult Mode': 'Online' | 'Physical';
-    'Hospital Name': string;
+    consultDateTime: Date;
+    consultMode: 'ONLINE' | 'PHYSICAL';
+    hospitalName: string;
     'Hospital City': string;
     'Doctor ID': string;
-    'Doctor Name': string;
+    doctorName: string;
     'Net Amount': number;
     af_revenue: number;
     af_currency: string;
     'Dr of hour appointment'?: YesOrNo;
-    'Circle discount': number;
-    User_Type: string;
+    circleSavings: number;
+    userType: string;
+    secretaryName: string;
+    secretaryNumber: string;
+    patientNumber: string;
+    doctorNumber: string;
   };
   [CleverTapEventName.CONSULT_FEEDBACK_GIVEN]: {
     'Doctor Name': string;

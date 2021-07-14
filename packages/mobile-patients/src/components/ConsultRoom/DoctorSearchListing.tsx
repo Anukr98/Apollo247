@@ -75,6 +75,7 @@ import {
   postCleverTapEvent,
   postDoctorShareCleverTapEvents,
   postConsultSearchCleverTapEvent,
+  getTimeDiff,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -1121,7 +1122,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const postPlatinumDoctorWEGEvents = (
     doctorData: any,
     eventName: WebEngageEventName,
-    states: any
+    states?: any
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DOH_Viewed] = {
       doctorId: doctorData?.id,
@@ -1181,8 +1182,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       ),
       'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Doctor ID': g(doctorDetails, 'id')!,
-      'Doctor Name': g(doctorDetails, 'displayName')!,
+      'Doctor ID': g(doctorDetails, 'id')! || undefined,
+      'Doctor Name': g(doctorDetails, 'displayName')! || undefined,
       'Speciality Name': doctorDetails?.specialtydisplayName,
       'Speciality ID': props.navigation.getParam('specialityId') || '',
       'Media Source': 'NA',
@@ -1219,11 +1220,31 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       postAppsFlyerEvent(AppsFlyerEventName.CONSULT_NOW_CLICKED, appsflyereventAttributes);
       postFirebaseEvent(FirebaseEventName.CONSULT_NOW_CLICKED, eventAttributesFirebase);
     } else if (type == 'book-appointment') {
+      const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
+        'Patient name': currentPatient.firstName,
+        docId: doctorDetails?.id,
+        specialityId: doctorDetails?.specialty?.id,
+        specialityName: doctorDetails?.specialty?.name,
+        exp: Number(doctorDetails?.experience),
+        docHospital: doctorDetails?.doctorHospital?.[0]?.facility?.name,
+        docCity: doctorDetails?.doctorHospital?.[0]?.facility?.city,
+        availableInMins: getTimeDiff(doctorDetails?.slot),
+        Source: 'Doctor card doctor listing screen',
+        'Patient UHID': currentPatient.uhid,
+        Relation: currentPatient?.relation,
+        'Patient age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
+        'Patient gender': currentPatient.gender,
+        'Customer ID': currentPatient.id,
+        User_Type: getUserType(allCurrentPatients),
+        rank: doctorDetails.rowId || undefined,
+        onlineConsultFee: doctorDetails?.onlineConsultationFees || doctorDetails?.fee,
+        physicalConsultFee: doctorDetails?.physicalConsultationFees || doctorDetails?.fee,
+      };
       eventAttributes['Source'] = 'List';
       postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
       postCleverTapEvent(
         CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED,
-        eventAttributes
+        cleverTapEventAttributes
       );
       const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.BOOK_APPOINTMENT] = {
         'customer id': currentPatient ? currentPatient.id : '',
@@ -1312,7 +1333,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         }}
         onPressShare={(doctorData) => onClickDoctorShare(doctorData, index + 1)}
         onPressConsultNowOrBookAppointment={(type) => {
-          postDoctorClickWEGEvent(rowData, 'List', type);
+          postDoctorClickWEGEvent(rowData, 'List', false, type);
         }}
         onPlanSelected={() => setShowCarePlanNotification(true)}
         selectedConsultMode={filter}
@@ -1853,7 +1874,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         'Sort By': 'distance',
       });
       postCleverTapEvent(CleverTapEventName.CONSULT_SORT, {
-        'sort names': 'distance',
+        'sort names': 'Nearby',
       });
       setSortValue('distance');
       if (locationDetails) {
@@ -1887,7 +1908,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         'Sort By': 'availability',
       });
       postCleverTapEvent(CleverTapEventName.CONSULT_SORT, {
-        'sort names': 'availability',
+        'sort names': 'Availability',
       });
       setSortValue('availability');
       fetchSpecialityFilterData(
@@ -1928,7 +1949,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       User_Type: getUserType(allCurrentPatients),
       docCategoryTab: doctorsType || undefined,
       selectedCity: g(locationDetails, 'city') || undefined,
-      'Filter Applied': filterApplied || undefined,
+      filtersApplied: filterApplied || undefined,
       'Filter Value': filterValue || undefined,
       ...filterAppliedData,
     };

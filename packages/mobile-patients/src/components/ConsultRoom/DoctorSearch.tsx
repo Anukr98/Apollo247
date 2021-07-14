@@ -505,7 +505,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               currentPatient,
               allCurrentPatients,
               searchResults,
-              'Speciality screen'
+              'speciality screen'
             );
           } catch (e) {
             CommonBugFender('DoctorSearch_fetchSearchData_try', e);

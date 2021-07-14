@@ -1671,17 +1671,27 @@ export const postAppointmentCleverTapEvents = (
     secretaryName: g(secretaryData, 'name'),
     secretaryNumber: g(secretaryData, 'mobileNumber'),
     doctorNumber: g(data, 'doctorInfo', 'mobileNumber')!,
-    patientNumber: g(currentPatient, 'mobileNumber'),
+    patientNumber: g(currentPatient, 'mobileNumber') || undefined,
   };
   postCleverTapEvent(type, eventAttributes);
 };
+
+export function getTimeDiff(nextSlot: any) {
+  let timeDiff: number = 0;
+  const today: Date = new Date();
+  const date2: Date = new Date(nextSlot);
+  if (date2 && today) {
+    timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
+  }
+  return timeDiff;
+}
 
 export const postConsultSearchCleverTapEvent = (
   searchInput: string,
   currentPatient: any,
   allCurrentPatients: any,
   noResults: boolean,
-  source: 'Speciality screen' | 'Doctor listing screen'
+  source: 'speciality screen' | 'Doctor listing screen'
 ) => {
   const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_SEARCH] = {
     textSearched: searchInput,

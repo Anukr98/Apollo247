@@ -5998,7 +5998,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       'Consult Mode': g(item, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
       isConsultStarted: !!g(item, 'isConsultStarted'),
       Prescription: followUpMedicineNameText || '',
-      Source: 'Inside consult room',
+      Source: 'Inside Consult Room',
     };
     postCleverTapEvent(
       CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED,

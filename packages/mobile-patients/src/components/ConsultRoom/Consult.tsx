@@ -1064,8 +1064,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     const fireWebengageEvent = (item: Appointment, eventType: string) => {
       const eventAttributesFollowUp:
         | WebEngageEvents[WebEngageEventName.BOOK_AGAIN_CANCELLED_APPOINTMENT]
-        | WebEngageEvents[WebEngageEventName.PAST_APPOINTMENT_BOOK_FOLLOW_UP_CLICKED]
-        | CleverTapEvents[CleverTapEventName.CONSULT_BOOK_CTA_CLICKED] = {
+        | WebEngageEvents[WebEngageEventName.PAST_APPOINTMENT_BOOK_FOLLOW_UP_CLICKED] = {
         'Customer ID': g(currentPatient, 'id'),
         patientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
         patientUhid: g(currentPatient, 'uhid'),
@@ -1098,13 +1097,38 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           : WebEngageEventName.VIEW_DETAILS_PAST_APPOINTMENT,
         eventAttributesFollowUp
       );
+      const cleverTapEventAttributesFollowUp: CleverTapEvents[CleverTapEventName.CONSULT_BOOK_CTA_CLICKED] = {
+        'Customer ID': g(currentPatient, 'id'),
+        patientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+        patientUhid: g(currentPatient, 'uhid'),
+        patientAge: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+        doctorId: g(item, 'doctorId') || undefined,
+        doctorName: g(item, 'doctorInfo', 'fullName') || undefined,
+        doctorCategory: g(item, 'doctorInfo', 'doctorType') || undefined,
+        doctorCity: g(item, 'doctorInfo', 'city') || undefined,
+        specialityId: g(item, 'doctorInfo', 'specialty', 'id') || undefined,
+        specialityName: g(item, 'doctorInfo', 'specialty', 'name') || undefined,
+        consultId: g(item, 'id') || undefined,
+        consultDateTime: moment(g(item, 'appointmentDateTime')).toDate(),
+        consultMode: g(item, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'ONLINE' : 'PHYSICAL',
+        isConsultStarted: !!g(item, 'isConsultStarted'),
+        Prescription: followUpMedicineNameText || undefined,
+        Source:
+          eventType === 'cancel'
+            ? 'Cancelled appointment'
+            : eventType === 'followup'
+            ? 'Past appointment'
+            : undefined,
+        isConsulted: getUserType(allCurrentPatients),
+        patientGender: g(currentPatient, 'gender'),
+      };
       postCleverTapEvent(
         eventType === 'cancel'
           ? CleverTapEventName.CONSULT_BOOK_CTA_CLICKED
           : eventType === 'followup'
           ? CleverTapEventName.CONSULT_BOOK_CTA_CLICKED
           : CleverTapEventName.CONSULT_VIEW_DETAILS_ON_PAST_APPOINTMENT,
-        eventAttributesFollowUp
+        cleverTapEventAttributesFollowUp
       );
     };
 
