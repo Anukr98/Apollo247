@@ -254,8 +254,13 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
   confirmationDetailInfo: {
+    ...theme.viewStyles.text('M', 14, '#01475B'),
+    marginTop: 5,
+  },
+  confirmationDetailAddress: {
     ...theme.viewStyles.text('M', 12, '#01475B'),
     marginTop: 5,
+    marginRight: 10,
   },
   confirmationDetailSubInfo: {
     ...theme.viewStyles.text('L', 12, '#000', 0.5),
@@ -472,6 +477,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
   const [selectedCity, setSelectedCity] = useState('');
   const [hospitalSitesLoading, setHospitalSitesLoading] = useState<boolean>(false);
   const [selectedHospitalSite, setSelectedHospitalSite] = useState('');
+  const [selectedHospitalSiteAddress, setSelectedHospitalSiteAddress] = useState('');
   const [selectedHospitalSiteResourceID, setSelectedHospitalSiteResourceID] = useState('');
   const [availableDatesLoading, setAvailableDatesLoading] = useState<boolean>(false);
   const [availableDates, setAvailableDates] = useState<any>([]);
@@ -545,6 +551,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
   useEffect(() => {
     setSelectedHospitalSite('');
     setSelectedHospitalSiteResourceID('');
+    setSelectedHospitalSiteAddress('');
     setAvailableSlots([]);
 
     let result = validateCityConstraints();
@@ -1006,6 +1013,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
 
             setSelectedHospitalSite('');
             setSelectedHospitalSiteResourceID('');
+            setSelectedHospitalSiteAddress('');
 
             setAvailableDates([]);
 
@@ -1043,6 +1051,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
             setSelectedVaccineType('');
             setSelectedHospitalSite('');
             setSelectedHospitalSiteResourceID('');
+            setSelectedHospitalSiteAddress('');
 
             setAvailableDates([]);
             setAvailableSlots([]);
@@ -1173,7 +1182,10 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
                   {string.vaccineBooking.vaccination_site.toUpperCase()}
                 </Text>
                 <Text style={styles.confirmationDetailInfo}>{selectedHospitalSite}</Text>
-                <Text style={styles.confirmationDetailInfo}>{selectedCity}</Text>
+                <Text style={styles.confirmationDetailAddress}>{selectedHospitalSiteAddress}</Text>
+                <Text style={{ ...theme.viewStyles.text('R', 13, '#01475B'), marginTop: 5 }}>
+                  {selectedCity}
+                </Text>
               </View>
             </View>
           </View>
@@ -1413,8 +1425,9 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
         onDateSelected={(date) => {
           setPreferredDate(date);
         }}
-        onHospitalSiteSelected={(hospitalSiteName) => {
+        onHospitalSiteSelected={(hospitalSiteName, address) => {
           setSelectedHospitalSite(hospitalSiteName);
+          setSelectedHospitalSiteAddress(address);
         }}
       />
     );
