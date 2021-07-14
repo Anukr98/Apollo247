@@ -11,6 +11,7 @@ import moment from 'moment';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
+import { MultiVariant } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/MultiVariant';
 
 export interface ProductPriceDeliveryProps {
   price: number;
@@ -27,6 +28,11 @@ export interface ProductPriceDeliveryProps {
   finalPrice: number;
   showDeliverySpinner: boolean;
   isBanned: boolean;
+  sku: string;
+  multiVariantAttributes?: any[];
+  multiVariantProducts?: any[];
+  skusInformation?: any[];
+  onSelectVariant?: (sku: string) => void;
 }
 
 export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props) => {
@@ -44,6 +50,11 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     isSellOnline,
     showDeliverySpinner,
     isBanned,
+    multiVariantAttributes,
+    multiVariantProducts,
+    skusInformation,
+    sku,
+    onSelectVariant,
   } = props;
   const { currentPatient } = useAllCurrentPatients();
   const { addresses, deliveryAddressId, circleSubscriptionId, asyncPincode } = useShoppingCart();
@@ -52,6 +63,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
   const hoursMoment = moment.duration(momentDiff);
   const hours = hoursMoment.asHours().toFixed();
   const showExpress = Number(hours) <= AppConfig.Configuration.EXPRESS_MAXIMUM_HOURS;
+  const showMultiVariantOption = !!multiVariantAttributes?.length && !!skusInformation?.length;
 
   const renderProductPrice = () => {
     const discountPercent = getDiscountPercentage(price, specialPrice);
@@ -196,6 +208,19 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     );
   };
 
+  const renderMultiVariantOptions = () => {
+    return (
+      <MultiVariant
+        multiVariantAttributes={multiVariantAttributes}
+        multiVariantProducts={multiVariantProducts}
+        skusInformation={skusInformation}
+        currentSku={sku}
+        onSelectVariant={onSelectVariant}
+        pincode={asyncPincode?.pincode || pharmacyLocation?.pincode}
+      />
+    );
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.cardStyle}>
@@ -204,6 +229,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
       </View>
       {!!circleSubscriptionId && !!cashback && renderCareCashback()}
       {!!manufacturer && !isPharma && renderManufacturer()}
+      {showMultiVariantOption && renderMultiVariantOptions()}
       {isSellOnline && renderDeliverTo()}
       {!isBanned &&
         isSellOnline &&

@@ -164,6 +164,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(false);
   const [availabilityCalled, setAvailabilityCalled] = useState<string>('no');
 
+  const [multiVariantAttributes, setMultiVariantAttributes] = useState([]);
+  const [multiVariantProducts, setMultiVariantProducts] = useState([]);
+  const [multiVariantSkuInformation, setMultiVariantSkuInformation] = useState<any[]>([]);
+
   const pharmacyPincode =
     g(asyncPincode, 'pincode') || g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
   const [pincode, setpincode] = useState<string>(pharmacyPincode || '');
@@ -270,10 +274,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     getUserType();
   }, []);
 
-  const getMedicineDetails = (zipcode?: string, pinAcdxCode?: string) => {
+  const getMedicineDetails = (zipcode?: string, pinAcdxCode?: string, selectedSku?: string) => {
     setLoading(true);
-    if (urlKey) {
-      getMedicineDetailsApiV2(urlKey, pinAcdxCode || axdcCode, zipcode || pincode)
+    if (urlKey || selectedSku) {
+      getMedicineDetailsApiV2(selectedSku || urlKey, pinAcdxCode || axdcCode, zipcode || pincode)
         .then(({ data }) => {
           const productDetails = g(data, 'productdp', '0' as any);
           if (productDetails) {
@@ -322,6 +326,25 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       patient: currentPatient?.id,
       image: productDetails?.thumbnail,
     });
+
+    if (productDetails?.multi_variants_products) {
+      const attributes = productDetails?.multi_variants_products?.attributes;
+      const products = productDetails?.multi_variants_products?.products;
+      setMultiVariantAttributes(attributes);
+      setMultiVariantProducts(products);
+      const skusInformation = Object.keys(products).map((data) => {
+        return {
+          code: data,
+          sku: products[data].sku,
+          available: products[data].is_in_stock,
+        };
+      });
+      setMultiVariantSkuInformation(skusInformation);
+    }
+  };
+
+  const onSelectVariant = (sku: string) => {
+    getMedicineDetails(pincode, axdcCode, sku);
   };
 
   const homeBreadCrumb: BreadcrumbLink = {
@@ -924,6 +947,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 finalPrice={finalPrice}
                 showDeliverySpinner={showDeliverySpinner}
                 isBanned={medicineDetails?.banned === 'Yes'}
+                multiVariantAttributes={multiVariantAttributes}
+                multiVariantProducts={multiVariantProducts}
+                skusInformation={multiVariantSkuInformation}
+                sku={medicineDetails?.sku}
+                onSelectVariant={onSelectVariant}
               />
               <View
                 ref={buttonRef}
