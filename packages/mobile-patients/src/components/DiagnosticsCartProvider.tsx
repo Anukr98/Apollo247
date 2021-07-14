@@ -697,9 +697,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
 
   const cartSaving: DiagnosticsCartContextProps['cartTotal'] = discountSaving + normalSaving;
   const circleSaving: DiagnosticsCartContextProps['circleSaving'] = parseFloat(
-    cartItems
+    allCartItems
       ?.reduce(
-        (currTotal, currItem) =>
+        (currTotal: number, currItem: DiagnosticsCartItem) =>
           currTotal +
           (currItem?.groupPlan == 'CIRCLE'
             ? (currItem?.packageMrp! > currItem?.circlePrice!
