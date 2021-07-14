@@ -1,4 +1,5 @@
 import {
+  CircleLogo,
   RemoveIcon,
   TestInfoIcon,
   TestTimeIcon,
@@ -48,6 +49,12 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
 
   const inclusionItemToShow = !!finalFilterInclusions && finalFilterInclusions?.join(', ');
 
+  const hasExtraData =
+    !!reportGenItem && (reportGenItem?.itemPrepration || reportGenItem?.itemReportTat);
+  const inclusionCount = !!reportGenItem && reportGenItem?.itemParameterCount;
+
+  const showSavingsView = isCircleSubscribed && !!cartItem?.circlePrice;
+
   function _onPressCard(item: DiagnosticsCartItem) {
     props.onPressCard(item);
   }
@@ -57,7 +64,15 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     const slashedPrice = diagnosticsDisplayPrice(cartItem, isCircleSubscribed)?.slashedPrice;
     return (
       <TouchableOpacity style={{}} onPress={() => _onPressCard(cartItem)}>
-        <View style={[styles.cartItemView, { paddingTop: props.index == 0 ? 22 : 12 }]}>
+        <View
+          style={[
+            styles.cartItemView,
+            {
+              paddingTop: props.index == 0 ? 22 : 12,
+              paddingBottom: !!(hasExtraData || inclusionCount || showSavingsView) ? 8 : 16,
+            },
+          ]}
+        >
           <View style={{ flexDirection: 'row' }}>
             <View style={styles.itemNameView}>
               <Text style={styles.cartItemText}>{nameFormater(cartItem?.name, 'default')}</Text>
@@ -88,6 +103,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
             </View>
           </View>
         </View>
+        {renderInclusionsCount()}
         {!!reportGenItem && renderReportTat_preTestingReqrmnt()}
         {comingFrom == AppRoutes.CartPage && showCartInclusions && !!inclusionItemToShow ? (
           <View style={styles.inclusionView}>
@@ -99,13 +115,36 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     );
   };
 
+  const renderInclusionsCount = () => {
+    return (
+      <View
+        style={[
+          styles.inclusionSavingContainer,
+          {
+            justifyContent: !!inclusionCount ? 'space-between' : 'flex-end',
+            paddingBottom: !!hasExtraData ? 0 : 8,
+          },
+        ]}
+      >
+        {!!inclusionCount ? (
+          <View style={{ marginLeft: 4 }}>
+            <Text style={styles.inclusionCountText}>{`Includes ${inclusionCount} test${
+              inclusionCount == 1 ? '' : 's'
+            }`}</Text>
+          </View>
+        ) : null}
+        {showSavingsView && renderSavingView()}
+      </View>
+    );
+  };
+
   const renderReportTat_preTestingReqrmnt = () => {
-    return reportGenItem?.itemPrepration || reportGenItem?.itemReportTat ? (
+    return !!hasExtraData ? (
       <View style={styles.reportView}>
         {reportGenItem?.itemReportTat ? (
           <View style={[styles.reportGenViewStyle, styles.reportViewStyle]}>
-            <TestTimeIcon style={styles.timeIconStyle} />
-            <Text style={styles.reportGenTextStyle}>
+            <TestTimeIcon style={[styles.timeIconStyle, { marginLeft: 4 }]} />
+            <Text style={[styles.reportGenTextStyle, { textAlign: 'right' }]}>
               {`Report in ${reportGenItem?.itemReportTat}`}
             </Text>
           </View>
@@ -115,13 +154,15 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
             style={[
               styles.reportGenViewStyle,
               {
-                maxWidth: 180,
-                marginLeft: !!reportGenItem?.itemReportTat ? 10 : -10,
+                justifyContent: 'flex-start',
+                marginLeft: !!reportGenItem?.itemReportTat ? -4 : -8,
               },
             ]}
           >
             <TestInfoIcon style={styles.timeIconStyle} />
-            <Text style={styles.reportGenTextStyle}>{reportGenItem?.itemPrepration}</Text>
+            <Text style={[styles.reportGenTextStyle, { marginLeft: 6 }]}>
+              {reportGenItem?.itemPrepration}
+            </Text>
           </View>
         ) : null}
       </View>
@@ -139,6 +180,27 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
           <RemoveIcon />
         </TouchableOpacity>
       </View>
+    );
+  };
+
+  const renderSavingView = () => {
+    const mrpToDisplay = diagnosticsDisplayPrice(cartItem, isCircleSubscribed)?.mrpToDisplay;
+
+    const savingAmount =
+      Number((!!cartItem?.packageMrp && cartItem?.packageMrp!) || mrpToDisplay) -
+      Number(cartItem?.circlePrice!);
+
+    return (
+      <>
+        {!!savingAmount && savingAmount > 0 ? (
+          <View style={styles.flexRow}>
+            <CircleLogo style={styles.circleLogoIcon} />
+            <Text style={styles.savingTextStyle}>
+              {'Savings'} {string.common.Rs} {savingAmount}
+            </Text>
+          </View>
+        ) : null}
+      </>
     );
   };
 
@@ -186,8 +248,8 @@ const styles = StyleSheet.create({
   },
   reportGenViewStyle: {
     flexDirection: 'row',
-    marginBottom: 8,
-    alignItems: 'center',
+    marginBottom: 6,
+    alignItems: 'flex-start',
   },
   timeIconStyle: {
     width: 14,
@@ -200,7 +262,9 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     borderWidth: 1,
     borderColor: theme.colors.TEST_CARD_BUTTOM_BG,
-    maxWidth: 160,
+    maxWidth: 130, //160
+    minWidth: 100,
+    justifyContent: 'flex-start',
   },
   reportView: {
     paddingLeft: 16,
@@ -218,5 +282,29 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 10, theme.colors.SHERPA_BLUE, 0.6, 16),
     padding: 8,
     width: '87%',
+  },
+  inclusionCountText: {
+    ...theme.viewStyles.text('M', isSmallDevice ? 10 : 11, theme.colors.LIGHT_BLUE, 0.6, 18, 0.04),
+    marginBottom: 3,
+  },
+  flexRow: {
+    flexDirection: 'row',
+    alignSelf: 'flex-end',
+  },
+  savingTextStyle: {
+    ...theme.viewStyles.text('M', isSmallDevice ? 10.5 : 11, theme.colors.APP_GREEN, 1, 18),
+    lineHeight: 18,
+    textAlign: 'center',
+    alignSelf: 'center',
+  },
+  circleLogoIcon: {
+    height: 18,
+    width: isSmallDevice ? 30 : 34,
+    resizeMode: 'contain',
+  },
+  inclusionSavingContainer: {
+    flexDirection: 'row',
+    paddingLeft: 16,
+    paddingRight: 16,
   },
 });

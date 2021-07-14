@@ -61,7 +61,14 @@ const { width, height } = Dimensions.get('window');
 const localFormatTestSlot = (slotTime: string) => moment(slotTime, 'hh:mm A')?.format('HH:mm');
 
 export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewProps> = (props) => {
-  const { isTodaySlotUnavailable, maxDate, showInOverlay, slotInput, isPremium } = props;
+  const {
+    isTodaySlotUnavailable,
+    maxDate,
+    showInOverlay,
+    slotInput,
+    isPremium,
+    isReschdedule,
+  } = props;
   const { setLoading } = useUIElements();
   const { cartItems } = useDiagnosticsCart();
   const [selectedDayTab, setSelectedDayTab] = useState(0);
@@ -79,7 +86,11 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
   const isSameDate = moment().isSame(moment(date), 'date');
 
   const [selectedDate, setSelectedDate] = useState<string>(moment(date).format('DD') || '');
-  const [isPrepaidSlot, setPrepaidSlot] = useState<boolean>(!!isPremium ? isPremium : false);
+  const [isPrepaidSlot, setPrepaidSlot] = useState<boolean>(
+    !!isReschdedule ? false : !!isPremium ? isPremium : false
+  );
+  //no need to show premium segregation in case of reschedule
+
   const [newSelectedSlot, setNewSelectedSlot] = useState(
     `${localFormatTestSlot(slotInfo?.slotInfo?.startTime!)}` || ''
   );
@@ -322,7 +333,9 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
                 >
                   <>
                     {item?.slotInfo?.isPaidSlot ? (
-                      <PremiumIcon style={styles.premiumIconAbsolute} />
+                      isReschdedule ? null : (
+                        <PremiumIcon style={styles.premiumIconAbsolute} />
+                      )
                     ) : null}
                     <Text
                       style={[

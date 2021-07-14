@@ -60,6 +60,7 @@ const PackageCard: React.FC<PackageCardProps> = (props) => {
     cartItems,
     addCartItem,
     removeCartItem,
+    setCartItems,
     modifiedOrderItemIds,
     setModifiedPatientCart,
     modifiedOrder,
@@ -375,7 +376,6 @@ const PackageCard: React.FC<PackageCardProps> = (props) => {
   function onPressRemoveFromCart(item: any) {
     removeCartItem?.(`${item?.itemId}`);
     patientCartItems?.map((pItem) => {
-      console.log({ pItem });
       setLoading?.(true);
       removePatientCartItem?.(pItem?.patientId, `${item?.itemId}`);
       setLoading?.(false);

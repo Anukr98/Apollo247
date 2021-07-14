@@ -100,7 +100,7 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
     return (
       <Button
         disabled={disableProceedToPayButton}
-        title={nameFormater(getButtonTitle(), 'upper')}
+        title={getButtonTitle()}
         onPress={() => onPressButton()}
         style={{ flex: 1, marginLeft: 15, borderRadius: 5 }}
       />

@@ -337,7 +337,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       circleSpecialPrice: pricesObject?.circleSpecialPrice,
       discountPrice: pricesObject?.discountPrice,
       discountSpecialPrice: pricesObject?.discountSpecialPrice,
-      mou: inclusions == null ? 1 : inclusions.length,
+      mou: 1,
       thumbnail: '',
       collectionMethod: collectionType! || TEST_COLLECTION_TYPE?.HC,
       groupPlan: selectedPlan?.groupPlan || DIAGNOSTIC_GROUP_PLAN.ALL,

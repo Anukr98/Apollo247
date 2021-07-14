@@ -55,14 +55,10 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
       const getExisitngItems = patientCartItems
         ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
         ?.flat();
-
       let existingId = getExisitngItems?.map((items: DiagnosticsCartItem) => items?.id);
-
       let getNewItems = cartItems?.filter((cItems) => !existingId?.includes(cItems?.id));
-
       //added since, zero price + updated price item was getting added
       const isPriceNotZero = getNewItems?.filter((item) => item?.price != 0);
-
       const newCartItems = patientCartItems?.map((item) => {
         let obj = {
           patientId: item?.patientId,
@@ -191,7 +187,10 @@ export const PatientList: React.FC<PatientListProps> = (props) => {
     const { patientName, genderAgeText, patientSalutation } = extractPatientDetails(item);
     const isPresent =
       !!patientCartItems && patientCartItems?.find((cart) => cart?.patientId == item?.id);
-    const showGreenBg = isPresent;
+    const patientSelectedItems =
+      isPresent && isPresent?.cartItems?.filter((item) => item?.isSelected);
+
+    const showGreenBg = !!patientSelectedItems && patientSelectedItems?.length > 0;
 
     const itemViewStyle = [
       styles.patientItemViewStyle,
@@ -321,6 +320,6 @@ const styles = StyleSheet.create({
   buttonView: {
     marginLeft: -16,
     marginRight: -16,
-    marginBottom: 20,
+    marginBottom: screenHeight > 1000 ? 20 : -3,
   },
 });

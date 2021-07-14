@@ -410,6 +410,15 @@ export const diagnosticsDisplayPrice = (item: DiagnosticsCartItem , isCircleMemb
   const promoteCircle = discount < circleDiscount && specialDiscount < circleDiscount;
   const promoteDiscount = promoteCircle ? false : discount < specialDiscount;
 
+  const mrpToDisplay = calculateMrpToDisplay(
+    promoteCircle,
+    promoteDiscount,
+    itemPackageMrp,
+    price,
+    circlePrice,
+    discountPrice
+  );
+
   //1. circle sub + promote circle -> circleSpecialPrice
   //2. circle sub + discount -> dicount Price
   //3. circle sub + none -> special price | price
@@ -444,7 +453,8 @@ export const diagnosticsDisplayPrice = (item: DiagnosticsCartItem , isCircleMemb
 
   return {
     priceToShow,
-    slashedPrice
+    slashedPrice,
+    mrpToDisplay
   }
 }
 

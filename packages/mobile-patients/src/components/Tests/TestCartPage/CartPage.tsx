@@ -282,12 +282,14 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
   const fetchTestReportGenDetails = async (_cartItemId: string | number[]) => {
     try {
+      console.log({ addressCityId });
       const removeSpaces =
         typeof _cartItemId == 'string' ? _cartItemId.replace(/\s/g, '').split(',') : null;
       const listOfIds =
         typeof _cartItemId == 'string' ? removeSpaces?.map((item) => parseInt(item!)) : _cartItemId;
       const res: any = await getDiagnosticCartItemReportGenDetails(
-        listOfIds?.toString() || _cartItemId?.toString()
+        listOfIds?.toString() || _cartItemId?.toString(),
+        Number(addressCityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
       );
       if (res?.data?.success) {
         const result = g(res, 'data', 'data');
@@ -528,6 +530,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           setDiagnosticServiceabilityData?.(obj);
           setIsServiceable(true);
           setShowNonServiceableText(false);
+          setAddressCityId(String(getServiceableResponse?.cityID));
           //call prices api.
           getDiagnosticsAvailability(getServiceableResponse?.cityID!, cartItems)
             .then(({ data }) => {
@@ -548,6 +551,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           setLoading?.(false);
           setIsServiceable(false);
           setShowNonServiceableText(true);
+          setAddressCityId(String(AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID));
         }
       } else {
         setLoading?.(false);
@@ -1062,6 +1066,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
             (product) => {
               props.navigation.navigate(AppRoutes.TestDetails, {
                 comingFrom: AppRoutes.TestsCart,
+                cityId: addressCityId,
                 testDetails: {
                   ItemID: item?.id,
                   ItemName: item?.name,
@@ -1176,10 +1181,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   }
   //applying the first level duplicate checks. (check for normal + modify ) - single/multi
   function _checkInclusionLevelDuplicates() {
-    console.log('tiotio');
     const arrayToSelect = isModifyFlow ? modifiedPatientCart : isCartEmpty;
     const filteredPatientItems = !!arrayToSelect && arrayToSelect;
-    console.log({ filteredPatientItems });
+
     filteredPatientItems?.map((pItem, index) => {
       const allInclusions = pItem?.cartItems?.map((item) => item?.inclusions);
       const getPricesForItem = createItemPrice()?.itemPricingObject;
@@ -1205,7 +1209,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         );
       } else {
         if (index === isCartEmpty?.length - 1) {
-          console.log('po');
           _navigateToNextScreen(); //move to next screen
         } else {
           index++;
@@ -1236,9 +1239,13 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     });
 
     //search for remaining duplicate items in cart's package inclusions
-    let itemIdWithPackageInclusions = cartItems?.filter(({ inclusions }) =>
-      inclusions?.some((num) => remainingDuplicateItems?.includes(num))
-    );
+    let itemIdWithPackageInclusions =
+      !!cartItemsToCheck &&
+      cartItemsToCheck?.filter(({ inclusions }) =>
+        inclusions?.some((num) => remainingDuplicateItems?.includes(num))
+      );
+
+    console.log({ itemIdWithPackageInclusions });
     //get only itemId
     let packageInclusionItemId = itemIdWithPackageInclusions?.map((item) => Number(item?.id));
 
@@ -1385,7 +1392,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     return (
       <StickyBottomComponent>
         <Button
-          title={isModifyFlow ? 'CHECKOUT' : 'SCHEDULE APPOINTMENT'}
+          title={isModifyFlow ? 'PROCEED TO NEW CART' : 'SCHEDULE APPOINTMENT'}
           onPress={() => _checkInclusionLevelDuplicates()}
           disabled={disableCTA}
         />

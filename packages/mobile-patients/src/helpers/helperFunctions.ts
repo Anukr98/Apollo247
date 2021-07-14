@@ -1402,7 +1402,7 @@ export const addTestsToCart = async (
           name: s?.diagnostic_item_name,
           price: 0,
           specialPrice: undefined,
-          mou: testIncludedCount,
+          mou: 1,
           thumbnail: '',
           collectionMethod: TEST_COLLECTION_TYPE.HC,
           inclusions: s?.inclusions == null ? [Number(s?.diagnostic_item_id)] : s?.inclusions,

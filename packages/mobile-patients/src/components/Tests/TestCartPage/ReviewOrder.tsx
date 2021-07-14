@@ -883,7 +883,12 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         {renderAddressHeading()}
         {renderCartItems()}
         {isModifyFlow ? renderPreviouslyAddedItems() : null}
-        {renderLabel(nameFormater('Total charges', 'title'))}
+        {renderLabel(
+          nameFormater(
+            isModifyFlow ? 'Additional amount that needs to be paid' : 'Total charges',
+            'title'
+          )
+        )}
         {renderTotalCharges()}
       </View>
     );
@@ -1136,21 +1141,15 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   function removeDuplicateCartItems(itemIds: string, pricesOfEach: any, patientId: string) {
     //can be used only when itdose starts returning all id
     const getItemIds = itemIds?.split(',');
-    const findPatient = isDiagnosticSelectedCartEmpty(patientCartItems)?.find(
-      (item) => item?.patientId === patientId
-    );
+    const selectedArray = isModifyFlow
+      ? modifiedPatientCart
+      : isDiagnosticSelectedCartEmpty(patientCartItems);
+    const findPatient = selectedArray?.find((item) => item?.patientId === patientId);
     const itemsInCart = !!findPatient ? findPatient?.cartItems : [];
 
-    const allInclusions = itemsInCart?.map((item) => item?.inclusions);
     const getPricesForItem = createItemPrice(itemsInCart)?.itemPricingObject;
     const getCartItemPrices = createItemPrice(itemsInCart)?.pricesForItemArray;
 
-    const mergedInclusions = allInclusions?.flat(1); //from array level to single array
-    const duplicateItems_1 = mergedInclusions?.filter(
-      (e: any, i: any, a: any) => a.indexOf(e) !== i
-    );
-
-    const duplicateItems = [...new Set(duplicateItems_1)];
     hideAphAlert?.();
     setLoading?.(false);
     checkDuplicateItems_Level2(
@@ -1324,7 +1323,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       const selectedAddressIndex = addresses?.findIndex(
         (address) => address?.id == deliveryAddressId
       );
-      const _itemIds = updatedCartItems?.map((item: any) => Number(item?.id));
       props.navigation.navigate(AppRoutes.CartPage);
       let removedItems = removedTestItemId?.join(', ');
       DiagnosticRemoveFromCartClicked(
@@ -1335,6 +1333,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       );
     }
   }
+
+  console.log({ cartItems });
 
   //this is changed for saveBooking, for modify (need to add)
   async function callCreateInternalOrder(

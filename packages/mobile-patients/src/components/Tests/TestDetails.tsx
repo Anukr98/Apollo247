@@ -126,6 +126,7 @@ export interface CMSTestDetails {
   diagnosticUrlAlias: string;
   diagnosticGender: string;
   diagnosticAge: string;
+  diagnosticReportCustomerText: string;
   diagnosticReportGenerationTime: string;
   diagnosticPretestingRequirement: string;
   diagnosticOverview: any;
@@ -141,6 +142,7 @@ export interface TestDetailsProps
     comingFrom?: string;
     itemName?: string;
     movedFrom?: string;
+    cityId?: string;
   }> {}
 
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
@@ -168,6 +170,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const testName = props.navigation.getParam('itemName');
   const { setLoading: setLoadingContext, showAphAlert, hideAphAlert } = useUIElements();
 
+  const addressCityId = props.navigation.getParam('cityId');
   const movedFrom = props.navigation.getParam('comingFrom');
   const isDeep = props.navigation.getParam('movedFrom');
   const itemId =
@@ -177,6 +180,13 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     !!modifiedOrderItemIds &&
     modifiedOrderItemIds?.length &&
     modifiedOrderItemIds?.find((id: number) => Number(id) == Number(itemId));
+
+  //if passed from cartPage
+  const cityIdToUse = !!addressCityId
+    ? Number(addressCityId)
+    : Number(
+        diagnosticServiceabilityData?.cityId! || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
+      );
 
   const [cmsTestDetails, setCmsTestDetails] = useState((([] as unknown) as CMSTestDetails) || []);
   const [testInfo, setTestInfo] = useState(movedFrom == 'TestsCart' ? testDetails : ({} as any));
@@ -227,7 +237,12 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   const fetchTestDetails_CMS = async (itemId: string | number) => {
     setLoadingContext?.(true);
-    const res: any = await getDiagnosticTestDetails('diagnostic-details', Number(itemId));
+    const res: any = await getDiagnosticTestDetails(
+      'diagnostic-details',
+      Number(itemId),
+      cmsTestDetails?.diagnosticUrlAlias,
+      cityIdToUse
+    );
     if (res?.data?.success) {
       const result = g(res, 'data', 'data');
       setCmsTestDetails(result);
@@ -235,7 +250,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
       !!result?.diagnosticWidgetsData &&
         result?.diagnosticWidgetsData?.length > 0 &&
-        fetchWidgetPrices(result?.diagnosticWidgetsData, diagnosticServiceabilityData?.cityId!);
+        fetchWidgetPrices(result?.diagnosticWidgetsData, cityIdToUse);
     } else {
       setLoadingContext?.(false);
       setErrorState(true);
@@ -260,9 +275,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           sourceHeaders,
         },
         variables: {
-          cityID:
-            Number(diagnosticServiceabilityData?.cityId!) ||
-            AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
+          cityID: cityIdToUse,
           itemIDs: listOfIds,
         },
         fetchPolicy: 'no-cache',
@@ -332,7 +345,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     }
   };
 
-  const fetchWidgetPrices = async (widgetsData: any, cityId: string) => {
+  const fetchWidgetPrices = async (widgetsData: any, cityId: string | number) => {
     const itemIds = widgetsData?.map((item: any) =>
       item?.diagnosticWidgetData?.map((data: any, index: number) => Number(data?.itemId))
     );
@@ -340,7 +353,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     try {
       const res = Promise.all(
         itemIds?.map((item: any) =>
-          fetchPricesForCityId(Number(cityId!) || 9, item?.length > 12 ? item?.slice(0, 12) : item)
+          fetchPricesForCityId(Number(cityId!), item?.length > 12 ? item?.slice(0, 12) : item)
         )
       );
 
@@ -726,7 +739,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const renderCardMidView = () => {
     return (
       <>
-        {!!cmsTestDetails?.diagnosticReportGenerationTime ? (
+        {!!cmsTestDetails?.diagnosticReportGenerationTime ||
+        !!cmsTestDetails?.diagnosticReportCustomerText ? (
           <>
             {renderSeparator()}
             <View style={styles.midCardView}>
@@ -735,7 +749,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               <View style={styles.midCardTextView}>
                 <Text style={styles.reportTimeText}>Report generation Time</Text>
                 <Text style={styles.reportTime}>
-                  {cmsTestDetails?.diagnosticReportGenerationTime}
+                  {cmsTestDetails?.diagnosticReportCustomerText
+                    ? cmsTestDetails?.diagnosticReportCustomerText
+                    : cmsTestDetails?.diagnosticReportGenerationTime}
                 </Text>
               </View>
             </View>
@@ -1038,10 +1054,17 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       discountToDisplay,
       DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS
     );
-    const addedItem = {
-      id: `${itemId!}`,
-      mou: cmsTestDetails?.diagnosticInclusionName?.length + 1 || testInfo?.mou,
-      name: cmsTestDetails?.diagnosticItemName || testInfo?.itemName,
+    const testInclusions =
+      testInfo?.inclusions == null
+        ? [Number(itemId)]
+        : testInfo?.inclusions?.length > 0
+        ? testInfo?.inclusions
+        : [Number(testInfo?.inclusions)];
+
+    const addedItems = {
+      id: `${itemId}`,
+      mou: 1,
+      name: cmsTestDetails?.diagnosticItemName || testInfo?.ItemName,
       price: price,
       specialPrice: specialPrice! | price,
       circlePrice: circlePrice,
@@ -1050,13 +1073,13 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       discountSpecialPrice: discountSpecialPrice,
       thumbnail: cmsTestDetails?.diagnosticItemImageUrl,
       collectionMethod: TEST_COLLECTION_TYPE.HC,
-      packageMrp: Number(testInfo?.packageMrp!),
       groupPlan: testInfo?.promoteCircle
         ? DIAGNOSTIC_GROUP_PLAN.CIRCLE
         : testInfo?.promoteDiscount
         ? DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
         : DIAGNOSTIC_GROUP_PLAN.ALL,
-      inclusions: testInfo?.inclusions == null ? [Number(itemId)] : testInfo?.inclusions,
+      packageMrp: Number(testInfo?.packageMrp!),
+      inclusions: testInclusions,
       isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
     };
 
@@ -1064,10 +1087,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       setModifiedPatientCart?.([
         {
           patientId: modifiedOrder?.patientId,
-          cartItems: cartItems?.concat(addedItem),
+          cartItems: cartItems?.concat(addedItems),
         },
       ]);
-    addCartItem?.(addedItem);
+    addCartItem?.(addedItems);
   }
 
   function onPressRemoveFromCart() {
@@ -1227,7 +1250,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     alignSelf: 'center',
   },
-  midCardView: { flexDirection: 'row', height: 60 },
+  midCardView: { flexDirection: 'row', height: 60, width: '90%' },
   clockIconStyle: { height: 32, width: 32, resizeMode: 'contain', alignSelf: 'center' },
   midCardTextView: {
     flexDirection: 'column',
