@@ -52,6 +52,8 @@ import {
   handleGraphQlError,
   downloadDiagnosticReport,
   isAddressLatLngInValid,
+  setAsyncPharmaLocation,
+  downloadDocument,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -249,6 +251,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [imgHeight, setImgHeight] = useState(200);
   const [slideIndex, setSlideIndex] = useState(0);
   const [banners, setBanners] = useState([]);
+  const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
 
   const [sectionLoading, setSectionLoading] = useState<boolean>(false);
   const [bookUsSlideIndex, setBookUsSlideIndex] = useState(0);
@@ -851,7 +854,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
       setPageLoading!(false);
       if (data) {
-        if (data?.APOLLO?.[0]._id) {
+        if (data?.APOLLO?.[0]._id && data?.APOLLO?.[0]?.status !== 'disabled') {
           AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
           setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
           setIsCircleSubscription && setIsCircleSubscription(true);
@@ -1313,20 +1316,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     ),
                   },
                 ]}
-                rightText={showViewAll ? 'VIEW ALL' : ''}
-                rightTextStyle={showViewAll ? styles.widgetViewAllText : {}}
-                onPressRightText={
-                  showViewAll
-                    ? () => {
-                        props.navigation.navigate(AppRoutes.TestListing, {
-                          movedFrom: AppRoutes.Tests,
-                          data: data,
-                          cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
-                          widgetType: data?.diagnosticWidgetType,
-                        });
-                      }
-                    : undefined
-                }
                 style={showViewAll ? { paddingBottom: 1 } : {}}
               />
             )}
@@ -1380,20 +1369,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     ),
                   },
                 ]}
-                rightText={showViewAll ? 'VIEW ALL' : ''}
-                rightTextStyle={showViewAll ? styles.widgetViewAllText : {}}
-                onPressRightText={
-                  showViewAll
-                    ? () => {
-                        props.navigation.navigate(AppRoutes.TestListing, {
-                          movedFrom: AppRoutes.Tests,
-                          data: data,
-                          cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
-                          widgetType: data?.diagnosticWidgetType,
-                        });
-                      }
-                    : undefined
-                }
                 style={showViewAll ? { paddingBottom: 1 } : {}}
               />
             )}
@@ -1799,6 +1774,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const appointmentDate = moment(clickedItem?.slotDateTimeInUTC)?.format('DD MMM YYYY');
     const patientName = `${clickedItem?.patientObj?.firstName} ${clickedItem?.patientObj?.lastName}`;
     try {
+      setViewReportOrderId(clickedItem?.orderId);
       await downloadDiagnosticReport(
         setLoadingContext,
         clickedItem?.labReportURL,
@@ -1959,15 +1935,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
               ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE, 1, 20),
             },
           ]}
-          rightText={'VIEW ALL'}
-          rightTextStyle={styles.widgetViewAllText} //showViewAll ? styles.widgetViewAllText : {}
-          onPressRightText={() => {
-            props.navigation.navigate(AppRoutes.TestWidgetListing, {
-              movedFrom: AppRoutes.Tests,
-              data: data,
-              cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
-            });
-          }}
         />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sectionView}>
           {data?.diagnosticWidgetData?.map((item: any) => (
@@ -2030,7 +1997,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           )}
         </View>
         <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>
-          {nameFormater(item?.itemTitle, 'default')}
+          {item?.itemTitle}
         </Text>
       </TouchableOpacity>
     );
@@ -2063,15 +2030,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
               ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE, 1, 20),
             },
           ]}
-          rightText={'VIEW ALL'}
-          rightTextStyle={styles.widgetViewAllText} //showViewAll ? styles.widgetViewAllText : {}
-          onPressRightText={() => {
-            props.navigation.navigate(AppRoutes.TestWidgetListing, {
-              movedFrom: AppRoutes.Tests,
-              data: data,
-              cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
-            });
-          }}
         />
         <View style={styles.gridConatiner}>
           <FlatList
@@ -2096,6 +2054,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setDisplayViewReport(false);
             setClickedItem([]);
           }}
+          downloadDocument={() => {
+            const res = downloadDocument(
+              clickedItem?.labReportURL,
+              'application/pdf',
+              clickedItem?.orderId
+            );
+            if (res == clickedItem?.orderId) {
+              setViewReportOrderId(clickedItem?.orderId);
+            }
+          }}
+          viewReportOrderId={viewReportOrderId}
           onPressViewReport={() => {
             onPressViewReport();
           }}

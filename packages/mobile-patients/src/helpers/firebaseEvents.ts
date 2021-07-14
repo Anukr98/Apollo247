@@ -380,6 +380,7 @@ export interface FirebaseEvents {
     Cart_ID?: string | number; // Optional
     Service_Area: 'Pharmacy' | 'Diagnostic';
     'Circle discount': number;
+    "Circle user": 'Yes' | 'No';
   };
 
   [FirebaseEventName.PRODUCT_PAGE_VIEWED]: {

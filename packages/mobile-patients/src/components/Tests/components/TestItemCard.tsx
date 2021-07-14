@@ -210,14 +210,14 @@ export const TestItemCard: React.FC<TestItemCardProps> = (props) => {
   };
 
   const renderReportTimeAndInfoView = () => {
-    return reportGenItem?.itemPrepration || reportGenItem?.itemReportTat ? (
+    return reportGenItem?.itemPrepration || reportGenItem?.itemReportTat || reportGenItem?.itemCustomerText ? (
       <View style={styles.timeAndInfoMainViewStyle}>
-        {reportGenItem?.itemReportTat ? (
+        {reportGenItem?.itemCustomerText || reportGenItem?.itemReportTat ? (
           <View style={styles.reportGenViewStyle}>
             <TestTimeIcon style={styles.timeIconStyle} />
             <Text
               style={styles.reportGenTextStyle}
-            >{`Report Generation time - ${reportGenItem?.itemReportTat}`}</Text>
+            >{`Report Generation time - ${reportGenItem?.itemCustomerText ? reportGenItem?.itemCustomerText : reportGenItem?.itemReportTat}`}</Text>
           </View>
         ) : null}
         {reportGenItem?.itemPrepration ? (
@@ -337,12 +337,13 @@ const styles = StyleSheet.create({
   timeIconStyle: {
     width: 16,
     height: 16,
+    alignSelf: 'flex-start'
   },
   reportGenTextStyle: {
     ...text('M', 10, SHERPA_BLUE, 0.6, 16),
     marginLeft: 8,
   },
-  reportGenViewStyle: { flexDirection: 'row', marginBottom: 8, alignItems: 'center' },
+  reportGenViewStyle: { flexDirection: 'row', marginBottom: 8, alignItems: 'center',width:'98%' },
   removeTouch: {
     height: 30,
     width: 30,

@@ -56,6 +56,7 @@ import {
   getHealthCredits,
   persistHealthCredits,
   getPackageIds,
+  getIsMedicine,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   pinCodeServiceabilityApi247,
@@ -205,6 +206,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         pharmacyCircleAttributes!,
         pharmacyUserTypeAttribute!
       );
+    setIsCircleSubscription?.(false);
     if (!circleSubPlanId) {
       setCircleMembershipCharges && setCircleMembershipCharges(0);
     }
@@ -284,15 +286,16 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }, [couponProducts]);
 
   useEffect(() => {
-    if (!!coupon && !coupon?.circleBenefits) {
-      setIsCircleSubscription?.(false);
-    } else if (coupon?.circleBenefits) {
-      setIsCircleSubscription?.(true);
-    } else if (!coupon && circleSubscriptionId) {
+    if (!!coupon) {
       setCircleMembershipCharges && setCircleMembershipCharges(0);
-      setIsCircleSubscription?.(true);
-    } else if (!circleSubscriptionId) {
-      setCircleMembershipCharges?.(circlePlanSelected?.currentSellingPrice);
+      setIsCircleSubscription?.(false);
+    } else {
+      if (!circleSubscriptionId) {
+        setCircleMembershipCharges &&
+          setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
+      } else {
+        setIsCircleSubscription && setIsCircleSubscription(true);
+      }
     }
   }, [coupon]);
 
@@ -367,7 +370,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
                 productDiscount,
                 cartItems,
                 setCouponProducts,
-                getPackageIds(activeUserSubscriptions)
+                activeUserSubscriptions ? getPackageIds(activeUserSubscriptions) : []
               );
             } catch (error) {
               return;
@@ -659,7 +662,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           productDiscount,
           cartItems,
           setCouponProducts,
-          getPackageIds(activeUserSubscriptions)
+          activeUserSubscriptions ? getPackageIds(activeUserSubscriptions) : []
         );
         if (response !== 'success') {
           removeCouponWithAlert(response);
@@ -732,7 +735,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             specialPrice: Number(couponProducts[index]!.mrp), // special price as coupon product price
             quantity: couponProducts[index]!.quantity,
             prescriptionRequired: medicineDetails.is_prescription_required == '1',
-            isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
+            isMedicine: getIsMedicine(medicineDetails.type_id?.toLowerCase()) || '0',
             thumbnail: medicineDetails.thumbnail || medicineDetails.image,
             isInStock: !!medicineDetails.is_in_stock,
             maxOrderQty: medicineDetails.MaxOrderQty,
@@ -878,7 +881,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           productDiscount,
           cartItems,
           setCouponProducts,
-          getPackageIds(activeUserSubscriptions)
+          activeUserSubscriptions ? getPackageIds(activeUserSubscriptions) : []
         );
         if (response !== 'success') {
           removeCouponWithAlert(response);
@@ -959,7 +962,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (cartTotal == 0) {
       renderAlert('Please add items in the cart to apply coupon.');
     } else {
-      props.navigation.navigate(AppRoutes.ViewCoupons, { movedFrom: 'pharma' });
+      props.navigation.navigate(AppRoutes.ViewCoupons);
       setCoupon!(null);
       applyCouponClickedEvent(g(currentPatient, 'id'), JSON.stringify(cartItems));
     }
@@ -1008,28 +1011,21 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       <TouchableOpacity
         activeOpacity={0.7}
         style={styles.applyBenefits}
-        disabled={
-          (!coupon && isCircleSubscription) || (coupon?.circleBenefits && isCircleSubscription)
-        }
         onPress={() => {
-          if (
-            (!coupon && isCircleSubscription) ||
-            (coupon?.circleBenefits && isCircleSubscription)
-          ) {
+          if (!coupon && isCircleSubscription) {
             if (!circleSubscriptionId || cartTotalCashback) {
               setIsCircleSubscription?.(false);
               setDefaultCirclePlan?.(null);
               setCirclePlanSelected?.(null);
               setCircleMembershipCharges?.(0);
-              coupon?.circleBenefits && isCircleSubscription && setCoupon?.(null);
             }
           } else {
-            !coupon?.circleBenefits && setCoupon?.(null);
-            setIsCircleSubscription?.(true);
+            setCoupon && setCoupon(null);
+            setIsCircleSubscription && setIsCircleSubscription(true);
           }
         }}
       >
-        {(!coupon && isCircleSubscription) || (coupon?.circleBenefits && isCircleSubscription) ? (
+        {!coupon && isCircleSubscription ? (
           <View style={{ flexDirection: 'row' }}>
             <CheckedIcon style={{ marginTop: 8, marginRight: 4 }} />
             <CareCashbackBanner
@@ -1163,7 +1159,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           productDiscount,
           cartItems,
           setCouponProducts,
-          getPackageIds(activeUserSubscriptions)
+          activeUserSubscriptions ? getPackageIds(activeUserSubscriptions) : []
         );
         if (response === 'success') {
           redirect();

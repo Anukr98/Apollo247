@@ -150,7 +150,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     maxCartValueForCOD,
     nonCodSKus,
     clearCartInfo,
-    circlePlanSelected,
   } = useShoppingCart();
   const {
     pharmacyUserTypeAttribute,
@@ -187,6 +186,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const [isSubstitutionValue, setisSubstitutionValue] = useState<boolean>(false);
   const [substitutionMessageValue, setSubstitutionMessageValue] = useState<string>('');
   const [substitutionTimeValue, setSubstitutionTimeValue] = useState<number>(0);
+  const [orderTransactionId, setOrderTransactionId] = useState<string>('');
   const client = useApolloClient();
 
   const getFormattedAmount = (num: number) => Number(num.toFixed(2));
@@ -325,6 +325,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           : 'Not Applicable',
         ...pharmacyCircleAttributes!,
         ...pharmacyUserTypeAttribute,
+        TransactionId: orderTransactionId,
       };
       if (store) {
         eventAttributes['Store Id'] = store.storeid;
@@ -354,6 +355,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
       ...pharmacyCircleAttributes!,
       ...pharmacyUserTypeAttribute,
+      TransactionId: orderTransactionId,
     };
     return appsflyerEventAttributes;
   };
@@ -738,7 +740,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             ), // (diff of (MRP - discountedPrice) * quantity)
             isPrescriptionNeeded: item.prescriptionRequired ? 1 : 0,
             mou: Number(item.mou),
-            isMedicine: item.isMedicine ? '1' : '0',
+            isMedicine: item.isMedicine,
             couponFree: item?.isFreeCouponProduct ? 1 : 0,
           } as MedicineCartOMSItem;
         }),
@@ -756,11 +758,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               subPlanId: circleSubPlanId || '',
             }
           : null,
-        totalCashBack:
-          (!coupon?.coupon && isCircleSubscription) ||
-          (coupon?.circleBenefits && isCircleSubscription)
-            ? Number(cartTotalCashback) || 0
-            : 0,
+        totalCashBack: !coupon?.coupon && isCircleSubscription ? Number(cartTotalCashback) || 0 : 0,
         appVersion: DeviceInfo.getVersion(),
         savedDeliveryCharge:
           !!isFreeDelivery || isCircleSubscription ? 0 : AppConfig.Configuration.DELIVERY_CHARGES,
@@ -804,7 +802,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         healthCreditUsed: hcOrder ? getFormattedAmount(grandTotal) : 0,
         shipments: shipments,
         appointmentId: appointmentIds?.length ? appointmentIds.join(',') : '',
-        tatType: tatType,
       },
     };
 
@@ -899,6 +896,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             setisSubstitutionValue(isSubstitution);
             setSubstitutionMessageValue(substitutionMessage);
             setSubstitutionTimeValue(substitutionTime);
+            setOrderTransactionId(transactionId);
             if (errorCode || errorMessage) {
               showAphAlert!({
                 title: `Uh oh.. :(`,
@@ -1108,7 +1106,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         paddingHorizontal: 10,
         paddingVertical: 9,
         borderColor: '#00B38E',
-        borderWidth: 1,
+        borderWidth: 3,
+        borderStyle: 'dashed',
         margin: 0.05 * windowWidth,
       },
       rowSpaceBetween: {

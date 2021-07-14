@@ -3,6 +3,7 @@ import DateTimePicker, { DateTimePickerProps } from 'react-native-modal-datetime
 
 export interface DatePickerProps {
   date?: Date;
+  time?: boolean;
   isDateTimePickerVisible: boolean;
   maximumDate?: boolean;
   minimumDate?: Date;
@@ -13,6 +14,7 @@ export interface DatePickerProps {
 export const DatePicker: React.FC<DatePickerProps> = (props) => {
   return (
     <DateTimePicker
+      mode={props.time ? 'time' : 'date'}
       date={props.date}
       isVisible={props.isDateTimePickerVisible}
       onConfirm={props.handleDatePicked}

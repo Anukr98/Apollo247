@@ -60,6 +60,7 @@ import {
   phrSearchWebEngageEvents,
   postWebEngageIfNewSession,
   removeObjectProperty,
+  getIsMedicine,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   EPrescription,
@@ -709,7 +710,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
                   : undefined,
                 quantity: qty,
                 prescriptionRequired: medicineDetails?.is_prescription_required == '1',
-                isMedicine: (medicineDetails?.type_id || '').toLowerCase() == 'pharma',
+                isMedicine: getIsMedicine(medicineDetails?.type_id?.toLowerCase()) || '0',
                 thumbnail: medicineDetails?.thumbnail || medicineDetails?.image,
                 isInStock: !!medicineDetails?.is_in_stock,
                 productType: medicineDetails?.type_id,

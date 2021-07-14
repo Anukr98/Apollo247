@@ -248,6 +248,7 @@ const styles = StyleSheet.create({
     marginLeft: 2,
   },
   downloadIconStyle: { width: 20, height: 20 },
+  phrGeneralIconStyle: { width: 20, height: 24.84, marginRight: 12 },
 });
 
 export interface ConsultDetailsProps
@@ -875,22 +876,37 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   };
 
   const renderGenerealAdvice = () => {
+    let listOfAdvices =
+      caseSheetDetails?.otherInstructions?.map((item, i) => {
+        if (item?.instruction !== '') {
+          return `${item?.instruction}`;
+        }
+      }) || [];
+    const listStrings = listOfAdvices.join('\n');
     return (
       <>
         {renderHeadingView(
           'General Advice',
-          <PhrGeneralAdviceIcon style={{ width: 20, height: 24.84, marginRight: 12 }} />
+          <PhrGeneralAdviceIcon style={styles.phrGeneralIconStyle} />
         )}
         {caseSheetDetails?.otherInstructions !== null ? (
+          <View style={{ marginTop: 28 }}>{renderListItem(listStrings || '', '')}</View>
+        ) : (
+          renderNoData('No advice')
+        )}
+      </>
+    );
+  };
+
+  const renderReferral = () => {
+    return (
+      <>
+        {renderHeadingView('Referral', <PhrGeneralAdviceIcon style={styles.phrGeneralIconStyle} />)}
+        {caseSheetDetails?.otherInstructions !== null ? (
           <View style={{ marginTop: 28 }}>
+            {renderListItem('Consult \n' + caseSheetDetails?.referralSpecialtyName, '')}
             {renderListItem(
-              caseSheetDetails?.otherInstructions
-                ?.map((item, i) => {
-                  if (item?.instruction !== '') {
-                    return `${item?.instruction}`;
-                  }
-                })
-                .join('\n') || '',
+              'Reason for Referral\n' + caseSheetDetails?.referralDescription || '',
               ''
             )}
           </View>
@@ -1036,7 +1052,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 {renderTestNotes()}
                 {renderDiagnosis()}
                 {renderGenerealAdvice()}
-                {/* We will use in next release */}
+                {caseSheetDetails && caseSheetDetails?.referralSpecialtyName !== null
+                  ? renderReferral()
+                  : null}
                 {/* {renderFollowUp()} */}
               </View>
             </View>

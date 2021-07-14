@@ -102,6 +102,7 @@ import RNFetchBlob from 'rn-fetch-blob';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { HEALTH_CREDITS } from '../utils/AsyncStorageKey';
 import { getPatientByMobileNumber_getPatientByMobileNumber_patients } from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
+import Share from 'react-native-share';
 
 const width = Dimensions.get('window').width;
 
@@ -495,6 +496,8 @@ const getConsiderDate = (type: string, dataObject: any) => {
       return dataObject?.billDateTime;
     case 'health-conditions':
       return dataObject?.startDateTime || dataObject?.recordDateTime;
+    case 'immunization':
+      return dataObject?.dateOfImmunization;
   }
 };
 
@@ -518,7 +521,10 @@ export const initialSortByDays = (
     const dateDifferenceInDays = moment(startDate).diff(dateToConsider, 'days');
     const dateDifferenceInMonths = moment(startDate).diff(dateToConsider, 'months');
     const dateDifferenceInYears = moment(startDate).diff(dateToConsider, 'years');
-    if (dateDifferenceInYears !== 0) {
+
+    if (dateDifferenceInDays <= 0 && dateDifferenceInMonths <= 0 && dateDifferenceInYears <= 0) {
+      finalData = getFinalSortData('Upcoming', finalData, dataObject);
+    } else if (dateDifferenceInYears !== 0) {
       if (dateDifferenceInYears >= 5) {
         finalData = getFinalSortData('More than 5 years', finalData, dataObject);
       } else if (dateDifferenceInYears >= 2) {
@@ -953,11 +959,7 @@ export const getDiffInMinutes = (doctorAvailableSlots: string) => {
   }
 };
 
-export const nextAvailability = (
-  nextSlot: string,
-  type: 'Available' | 'Consult' = 'Available',
-  isPhysical: boolean = false
-) => {
+export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult' = 'Available') => {
   const isValidTime = moment(nextSlot).isValid();
   if (isValidTime) {
     const d = new Date();
@@ -978,23 +980,17 @@ export const nextAvailability = (
         })
     );
     if (differenceMinute < 60 && differenceMinute > 0) {
-      return isPhysical
-        ? `${type} Today`
-        : `${type} in ${differenceMinute} min${differenceMinute !== 1 ? 's' : ''}`;
+      return `${type} in ${differenceMinute} min${differenceMinute !== 1 ? 's' : ''}`;
     } else if (differenceMinute <= 0) {
       return 'BOOK APPOINTMENT';
     } else if (differenceMinute >= 60 && !isTomorrow) {
-      return isPhysical ? `${type} Today` : `${type} at ${moment(nextSlot).format('hh:mm A')}`;
+      return `${type} at ${moment(nextSlot).format('hh:mm A')}`;
     } else if (isTomorrow && differenceMinute < 2880 - minPassedToday) {
-      return isPhysical
-        ? `${type} Tomorrow`
-        : `${type} Tomorrow${
-            type === 'Available' ? ` at ${moment(nextSlot).format('hh:mm A')}` : ''
-          }`;
+      return `${type} Tomorrow${
+        type === 'Available' ? ` at ${moment(nextSlot).format('hh:mm A')}` : ''
+      }`;
     } else if ((diffDays >= 2 && diffDays <= 30) || type == 'Consult') {
-      return isPhysical
-        ? `${type} from ${moment(nextSlot).format('D  MMM')}`
-        : `${type} in ${diffDays} days`;
+      return `${type} in ${diffDays} days`;
     } else {
       return `${type} after a month`;
     }
@@ -1340,14 +1336,18 @@ export const reOrderMedicines = async (
     .split(',')
     .map((item) => item.trim())
     .filter((v) => v);
+  const appointmentIds = (order?.appointmentId || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter((v) => v);
   const medicineNames = (billedLineItems
     ? billedLineItems.filter((item) => item.itemName).map((item) => item.itemName)
     : lineItems.filter((item) => item.medicineName).map((item) => item.medicineName!)
   ).join(',');
   const prescriptionsToAdd = prescriptionUrls.map(
-    (item) =>
+    (item, index) =>
       ({
-        id: item,
+        id: appointmentIds?.[index],
         date: moment(g(order, 'createdDate')).format('DD MMM YYYY'),
         doctorName: `Meds Rx ${(order.id && order.id.substring(0, order.id.indexOf('-'))) || ''}`,
         forPatient: g(currentPatient, 'firstName') || '',
@@ -2121,7 +2121,7 @@ export const formatToCartItem = ({
     mou: mou,
     quantity: 1,
     prescriptionRequired: is_prescription_required == '1',
-    isMedicine: (type_id || '').toLowerCase() == 'pharma',
+    isMedicine: getIsMedicine(type_id?.toLowerCase()) || 0,
     thumbnail: thumbnail || image,
     maxOrderQty: MaxOrderQty,
     productType: type_id,
@@ -2917,11 +2917,8 @@ export const getHealthCredits = async () => {
   }
 };
 
-export const getPackageIds = (
-  activeUserSubscriptions: AppCommonDataContextProps['activeUserSubscriptions'],
-  circlePlanSelected?: ShoppingCartContextProps['circlePlanSelected']
-) => {
-  const packageIds: string[] = [];
+export const getPackageIds = (activeUserSubscriptions: any) => {
+  let packageIds: string[] = [];
   activeUserSubscriptions &&
     Object.keys(activeUserSubscriptions)?.forEach((subscription: string) => {
       activeUserSubscriptions?.[subscription]?.forEach((item) => {
@@ -2929,9 +2926,6 @@ export const getPackageIds = (
           packageIds.push(`${subscription?.toUpperCase()}:${item?.plan_id}`);
       });
     });
-  if (circlePlanSelected?.subPlanId) {
-    packageIds.push(circlePlanSelected?.subPlanId);
-  }
   return packageIds;
 };
 
@@ -3004,3 +2998,38 @@ const finalPatientCartItems = getAllSelectedItems?.filter((item: DiagnosticPatie
 });
   return finalPatientCartItems
 }
+export const downloadDocument = (
+  fileUrl: string = '',
+  type: string = 'application/pdf',
+  orderId: number
+) => {
+  let filePath: string | null = null;
+  let file_url_length = fileUrl.length;
+  let viewReportOrderId = orderId;
+  const configOptions = { fileCache: true };
+  RNFetchBlob.config(configOptions)
+    .fetch('GET', fileUrl)
+    .then((resp) => {
+      filePath = resp.path();
+      return resp.readFile('base64');
+    })
+    .then(async (base64Data) => {
+      base64Data = `data:${type};base64,` + base64Data;
+      await Share.open({ title: '', url: base64Data });
+      // remove the image or pdf from device's storage
+      // await RNFS.unlink(filePath);
+    })
+    .catch((err) => {
+      console.log('err', err);
+    });
+
+  return viewReportOrderId;
+};
+export const getIsMedicine = (typeId: string) => {
+  const medicineType = {
+    fmcg: '0',
+    pharma: '1',
+    pl: '2',
+  };
+  return medicineType[typeId] || '0';
+};

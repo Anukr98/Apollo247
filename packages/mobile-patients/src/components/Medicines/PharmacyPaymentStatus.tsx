@@ -110,6 +110,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     grandTotal,
     cartTotalCashback,
     pharmacyCircleAttributes,
+    deliveryCharges,
   } = useShoppingCart();
   const [loading, setLoading] = useState<boolean>(false);
   const [status, setStatus] = useState<string>(props.navigation.getParam('status'));
@@ -286,11 +287,16 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         : 'Payment Aborted';
     const paymentType = paymentMode == MEDICINE_ORDER_PAYMENT_TYPE.COD ? 'COD' : 'Cashless';
     const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_POST_CART_PAGE_VIEWED] = {
-      Status: paymentStatus,
-      'Payment type': paymentType,
+      'Payment status': paymentStatus,
+      'Payment Type': paymentType,
       'Transaction ID': transactionId,
-      'Order ID 1': transId,
-      'Order ID 2': isSplitCart ? transId : null,
+      'Order ID(s)': orderIds,
+      'MRP Total': getFormattedAmount(grandTotal),
+      'Discount Amount': totalCashBack,
+      'Payment Instrument': paymentMode,
+      'Order Type': 'Cart',
+      'Shipping Charges': deliveryCharges,
+      'Circle Member': circleSubscriptionId || isCircleSubscription ? true : false,
       'Substitution Option Shown': showSubstituteMessage ? 'Yes' : 'No',
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_POST_CART_PAGE_VIEWED, eventAttributes);
@@ -299,8 +305,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const fireSubstituteResponseEvent = (action: string) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ORDER_SUBSTITUTE_OPTION_CLICKED] = {
       'Transaction ID': transactionId,
-      'Order ID 1': transId,
-      'Order ID 2': isSplitCart ? transId : null,
+      'Order ID(s)': transId,
       'Substitute Action Taken': action == SUBSTITUTION_RESPONSE.OK ? 'Agree' : 'Disagree',
     };
     postWebEngageEvent(
@@ -354,6 +359,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
       ...pharmacyCircleAttributes!,
       ...pharmacyUserTypeAttribute,
+      TransactionId: transId,
     };
     return appsflyerEventAttributes;
   };

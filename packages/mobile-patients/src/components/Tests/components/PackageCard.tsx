@@ -547,7 +547,6 @@ const styles = StyleSheet.create({
   itemNameText: {
     ...theme.viewStyles.text('M', isSmallDevice ? 16.5 : 18, theme.colors.SHERPA_BLUE, 1, 24),
     textAlign: 'left',
-    textTransform: 'capitalize',
   },
   inclusionsText: {
     ...theme.viewStyles.text('M', 12.5, theme.colors.SHERPA_BLUE, 1, 13),

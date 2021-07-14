@@ -32,7 +32,7 @@ export interface ShoppingCartItem {
   isInStock: boolean;
   unserviceable?: boolean;
   unavailableOnline?: boolean; // sell_online
-  isMedicine: boolean;
+  isMedicine: string;
   productType?: 'FMCG' | 'Pharma' | 'PL';
   isFreeCouponProduct?: boolean;
   applicable?: boolean;
@@ -82,7 +82,6 @@ export interface PharmaCoupon extends validatePharmaCoupon_validatePharmaCoupon 
   reason: String;
   freeDelivery: boolean;
   products: [];
-  circleBenefits: boolean;
 }
 
 export interface CartProduct {
@@ -527,10 +526,14 @@ export const ShoppingCartProvider: React.FC = (props) => {
     if (cartItems.length) {
       // calculate circle cashback
       cartItems.forEach((item) => {
-        const finalPrice = (coupon && item.couponPrice) || item.specialPrice || item.price;
+        const finalPrice = item.specialPrice
+          ? item.price - item.specialPrice
+            ? item.specialPrice
+            : item.price
+          : item.price;
         let cashback = 0;
         const type_id = item?.productType?.toUpperCase();
-        if (!!circleCashback && !!circleCashback[type_id] && !item.isFreeCouponProduct) {
+        if (!!circleCashback && !!circleCashback[type_id]) {
           cashback = finalPrice * item.quantity * (circleCashback[type_id] / 100);
         }
         item.circleCashbackAmt = cashback || 0;
@@ -662,7 +665,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     isFreeDelivery ||
     deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP ||
     isCircleSubscription ||
-    (circleMembershipCharges && !coupon) ||
+    circleMembershipCharges ||
     hdfcPlanName === string.Hdfc_values.PLATINUM_PLAN
       ? 0
       : cartTotal > 0 &&
@@ -822,7 +825,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
               ), // (diff of (MRP - discountedPrice) * quantity)
               isPrescriptionNeeded: item?.prescriptionRequired ? 1 : 0,
               mou: Number(item?.mou),
-              isMedicine: item?.isMedicine ? '1' : '0',
+              isMedicine: item?.isMedicine?.toString(),
               couponFree: item?.isFreeCouponProduct ? 1 : 0,
             } as MedicineCartOMSItem;
           }
@@ -891,7 +894,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
           ), // (diff of (MRP - discountedPrice) * quantity)
           isPrescriptionNeeded: item?.prescriptionRequired ? 1 : 0,
           mou: Number(item?.mou),
-          isMedicine: item?.isMedicine ? '1' : '0',
+          isMedicine: item?.isMedicine?.toString(),
           couponFree: item?.isFreeCouponProduct ? 1 : 0,
         } as MedicineCartOMSItem;
       })
@@ -1047,14 +1050,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
       setisProuctFreeCouponApplied(false);
     }
   }, [cartTotal, coupon]);
-
-  useEffect(() => {
-    const discount = shipments.reduce(
-      (currTotal, currItem) => currTotal + (currItem?.productDiscount || 0),
-      0
-    );
-    setProductDiscount(discount);
-  }, [shipments]);
 
   const deductProductDiscount = (products: CartProduct[]) => {
     let discount = 0;

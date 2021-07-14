@@ -35,6 +35,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
 import {
   downloadDiagnosticReport,
+  downloadDocument,
   g,
   getPatientNameById,
   getTestOrderStatusText,
@@ -125,6 +126,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [scrollYValue, setScrollYValue] = useState(0);
   const [loading1, setLoading] = useState<boolean>(true);
   const [orderLevelStatus, setOrderLevelStatus] = useState([] as any);
+  const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
   const [showInclusionStatus, setShowInclusionStatus] = useState<boolean>(false);
   const [showError, setError] = useState<boolean>(false);
   const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
@@ -143,6 +145,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       variables: { diagnosticOrderID: orderId },
       fetchPolicy: 'no-cache',
     });
+
   const fetchOrderDetails = () =>
     client.query<getDiagnosticOrderDetails, getDiagnosticOrderDetailsVariables>({
       query: GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
@@ -768,6 +771,13 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           order={orderDetails}
           heading=""
           isVisible={displayViewReport}
+          viewReportOrderId={viewReportOrderId}
+          downloadDocument={() => {
+            const res = downloadDocument(selectedOrder?.labReportURL, 'application/pdf', orderId);
+            if (res == orderId) {
+              setViewReportOrderId(orderId);
+            }
+          }}
           onClose={() => setDisplayViewReport(false)}
           onPressViewReport={() => {
             onPressViewReport();

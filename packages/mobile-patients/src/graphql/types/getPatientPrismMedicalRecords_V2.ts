@@ -3,19 +3,14 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import {
-  MedicalRecordType,
-  MedicalConditionIllnessTypes,
-  HealthRestrictionNature,
-  AllergySeverity,
-} from './globalTypes';
+import { MedicalRecordType, MedicalConditionIllnessTypes, HealthRestrictionNature, AllergySeverity } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getPatientPrismMedicalRecords_V2
 // ====================================================
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response_labTestResults {
-  __typename: 'LabTestFileParameters';
+  __typename: "LabTestFileParameters";
   parameterName: string | null;
   unit: string | null;
   result: string | null;
@@ -24,7 +19,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response_testResultFiles {
-  __typename: 'PrecriptionFileParameters';
+  __typename: "PrecriptionFileParameters";
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
@@ -33,7 +28,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response {
-  __typename: 'LabResultsBaseResponse';
+  __typename: "LabResultsBaseResponse";
   id: string;
   labTestName: string;
   labTestSource: string;
@@ -47,27 +42,21 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   identifier: string | null;
   additionalNotes: string | null;
   observation: string | null;
-  labTestResults:
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response_labTestResults | null)[]
-    | null;
+  labTestResults: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response_labTestResults | null)[] | null;
   fileUrl: string;
-  testResultFiles:
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response_testResultFiles | null)[]
-    | null;
+  testResultFiles: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response_testResultFiles | null)[] | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults {
-  __typename: 'LabResultsDownloadResponse';
-  response:
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response | null)[]
-    | null;
+  __typename: "LabResultsDownloadResponse";
+  response: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response | null)[] | null;
   errorCode: number;
   errorMsg: string | null;
   errorType: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_prescriptions_response_prescriptionFiles {
-  __typename: 'PrecriptionFileParameters';
+  __typename: "PrecriptionFileParameters";
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
@@ -76,7 +65,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_prescriptions_response {
-  __typename: 'PrescriptionsBaseResponse';
+  __typename: "PrescriptionsBaseResponse";
   id: string;
   prescriptionName: string;
   date: any;
@@ -86,25 +75,21 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   siteDisplayName: string | null;
   source: string;
   fileUrl: string;
-  prescriptionFiles:
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_prescriptions_response_prescriptionFiles | null)[]
-    | null;
+  prescriptionFiles: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_prescriptions_response_prescriptionFiles | null)[] | null;
   hospital_name: string | null;
   hospitalId: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_prescriptions {
-  __typename: 'PrescriptionDownloadResponse';
-  response:
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_prescriptions_response | null)[]
-    | null;
+  __typename: "PrescriptionDownloadResponse";
+  response: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_prescriptions_response | null)[] | null;
   errorCode: number | null;
   errorMsg: string | null;
   errorType: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_healthChecks_response_healthCheckFiles {
-  __typename: 'HealthCheckFileParameters';
+  __typename: "HealthCheckFileParameters";
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
@@ -112,7 +97,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_healthChecks_response {
-  __typename: 'HealthChecksBaseResponse';
+  __typename: "HealthChecksBaseResponse";
   authToken: string | null;
   userId: string | null;
   id: string;
@@ -122,26 +107,22 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   healthCheckDate: number | null;
   siteDisplayName: string | null;
   healthCheckSummary: string | null;
-  healthCheckFiles:
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_healthChecks_response_healthCheckFiles | null)[]
-    | null;
+  healthCheckFiles: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_healthChecks_response_healthCheckFiles | null)[] | null;
   source: string | null;
   healthCheckType: string | null;
   followupDate: number | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_healthChecks {
-  __typename: 'HealthChecksDownloadResponse';
+  __typename: "HealthChecksDownloadResponse";
   errorCode: number;
   errorMsg: string | null;
   errorType: string | null;
-  response:
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_healthChecks_response | null)[]
-    | null;
+  response: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_healthChecks_response | null)[] | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_hospitalizations_response_hospitalizationFiles {
-  __typename: 'HospitalizationFilesParameters';
+  __typename: "HospitalizationFilesParameters";
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
@@ -150,7 +131,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_hospitalizations_response {
-  __typename: 'DischargeSummaryBaseResponse';
+  __typename: "DischargeSummaryBaseResponse";
   authToken: string | null;
   userId: string | null;
   id: string | null;
@@ -167,24 +148,20 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   dischargeSummary: string | null;
   doctorInstruction: string | null;
   dateOfNextVisit: number | null;
-  hospitalizationFiles:
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_hospitalizations_response_hospitalizationFiles | null)[]
-    | null;
+  hospitalizationFiles: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_hospitalizations_response_hospitalizationFiles | null)[] | null;
   source: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_hospitalizations {
-  __typename: 'DischargeSummaryDownloadResponse';
+  __typename: "DischargeSummaryDownloadResponse";
   errorCode: number;
   errorMsg: string | null;
   errorType: string | null;
-  response:
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_hospitalizations_response | null)[]
-    | null;
+  response: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_hospitalizations_response | null)[] | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalBills_response_billFiles {
-  __typename: 'MedicalBillFileParameters';
+  __typename: "MedicalBillFileParameters";
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
@@ -193,7 +170,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalBills_response {
-  __typename: 'MedicalBillsBaseResult';
+  __typename: "MedicalBillsBaseResult";
   id: string | null;
   bill_no: string | null;
   hospitalName: string | null;
@@ -203,23 +180,19 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   notes: string | null;
   fileUrl: string | null;
   billDateTime: any | null;
-  billFiles:
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalBills_response_billFiles | null)[]
-    | null;
+  billFiles: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalBills_response_billFiles | null)[] | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalBills {
-  __typename: 'MedicalBillsResult';
+  __typename: "MedicalBillsResult";
   errorCode: number | null;
   errorMsg: string | null;
   errorType: string | null;
-  response:
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalBills_response | null)[]
-    | null;
+  response: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalBills_response | null)[] | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalInsurances_response_insuranceFiles {
-  __typename: 'MedicalInsuranceFileParameters';
+  __typename: "MedicalInsuranceFileParameters";
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
@@ -228,7 +201,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalInsurances_response {
-  __typename: 'MedicalInsurancesBaseResult';
+  __typename: "MedicalInsurancesBaseResult";
   id: string | null;
   insuranceCompany: string | null;
   policyNumber: string | null;
@@ -241,23 +214,19 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   fileUrl: string | null;
   notes: string | null;
   sumInsured: string | null;
-  insuranceFiles:
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalInsurances_response_insuranceFiles | null)[]
-    | null;
+  insuranceFiles: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalInsurances_response_insuranceFiles | null)[] | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalInsurances {
-  __typename: 'MedicalInsurancesResult';
+  __typename: "MedicalInsurancesResult";
   errorCode: number | null;
   errorMsg: string | null;
   errorType: string | null;
-  response:
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalInsurances_response | null)[]
-    | null;
+  response: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalInsurances_response | null)[] | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalConditions_response_medicationFiles {
-  __typename: 'MedicationFileParameters';
+  __typename: "MedicationFileParameters";
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
@@ -266,7 +235,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalConditions_response {
-  __typename: 'MedicalConditionBaseResponse';
+  __typename: "MedicalConditionBaseResponse";
   id: string | null;
   medicalConditionName: string | null;
   doctorTreated: string | null;
@@ -279,23 +248,19 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   siteDisplayName: string | null;
   startDateTime: any | null;
   endDateTime: any | null;
-  medicationFiles:
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalConditions_response_medicationFiles | null)[]
-    | null;
+  medicationFiles: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalConditions_response_medicationFiles | null)[] | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalConditions {
-  __typename: 'MedicalConditionDownloadResponse';
+  __typename: "MedicalConditionDownloadResponse";
   errorCode: number | null;
   errorMsg: string | null;
   errorType: string | null;
-  response:
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalConditions_response | null)[]
-    | null;
+  response: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalConditions_response | null)[] | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medications_response {
-  __typename: 'MedicationsBaseResult';
+  __typename: "MedicationsBaseResult";
   id: string | null;
   medicineName: string | null;
   medicalCondition: string | null;
@@ -313,17 +278,15 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medications {
-  __typename: 'MedicationsResult';
+  __typename: "MedicationsResult";
   errorCode: number | null;
   errorMsg: string | null;
   errorType: string | null;
-  response:
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medications_response | null)[]
-    | null;
+  response: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medications_response | null)[] | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_healthRestrictions_response {
-  __typename: 'HealthRestrictionsBaseResult';
+  __typename: "HealthRestrictionsBaseResult";
   id: string | null;
   startDate: number | null;
   endDate: number | null;
@@ -338,17 +301,15 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_healthRestrictions {
-  __typename: 'HealthRestrictionsResult';
+  __typename: "HealthRestrictionsResult";
   errorCode: number | null;
   errorMsg: string | null;
   errorType: string | null;
-  response:
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_healthRestrictions_response | null)[]
-    | null;
+  response: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_healthRestrictions_response | null)[] | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_allergies_response_attachmentList {
-  __typename: 'AllergyFileParameters';
+  __typename: "AllergyFileParameters";
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
@@ -357,7 +318,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_allergies_response {
-  __typename: 'AllergiesBaseResult';
+  __typename: "AllergiesBaseResult";
   id: string | null;
   startDate: number | null;
   endDate: number | null;
@@ -371,23 +332,19 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   notes: string | null;
   siteDisplayName: string | null;
   source: string | null;
-  attachmentList:
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_allergies_response_attachmentList | null)[]
-    | null;
+  attachmentList: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_allergies_response_attachmentList | null)[] | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_allergies {
-  __typename: 'AllergiesResult';
+  __typename: "AllergiesResult";
   errorCode: number | null;
   errorMsg: string | null;
   errorType: string | null;
-  response:
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_allergies_response | null)[]
-    | null;
+  response: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_allergies_response | null)[] | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_familyHistory_response_familyHistoryFiles {
-  __typename: 'FamilyHistoryFiles';
+  __typename: "FamilyHistoryFiles";
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
@@ -396,7 +353,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_familyHistory_response {
-  __typename: 'FamilyHistoryResponse';
+  __typename: "FamilyHistoryResponse";
   id: string | null;
   diseaseName: string | null;
   authToken: string | null;
@@ -407,23 +364,67 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   siteDisplayName: string | null;
   recordDateTime: any | null;
   age: number | null;
-  familyHistoryFiles:
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_familyHistory_response_familyHistoryFiles | null)[]
-    | null;
+  familyHistoryFiles: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_familyHistory_response_familyHistoryFiles | null)[] | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_familyHistory {
-  __typename: 'PrismFamilyHistoryResponse';
+  __typename: "PrismFamilyHistoryResponse";
   errorCode: number | null;
   errorMsg: string | null;
   errorType: string | null;
-  response:
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_familyHistory_response | null)[]
-    | null;
+  response: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_familyHistory_response | null)[] | null;
+}
+
+export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_immunizations_response_reactions {
+  __typename: "ImmunizationReactions";
+  type: string | null;
+  from: any | null;
+  to: any | null;
+}
+
+export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_immunizations_response_immunizationFiles {
+  __typename: "ImmunizationFileParameters";
+  id: string | null;
+  fileName: string | null;
+  mimeType: string | null;
+  content: string | null;
+  byteContent: string | null;
+  dateCreated: number | null;
+}
+
+export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_immunizations_response {
+  __typename: "ImmunizationsBaseResult";
+  id: string | null;
+  immunizationName: string | null;
+  dateAdministered: any | null;
+  followUpDate: any | null;
+  regstrationId: string | null;
+  dateOfImmunization: string | null;
+  dueDate: any | null;
+  fileUrl: string | null;
+  doctorName: string | null;
+  manufacturer: string | null;
+  batchno: string | null;
+  vaccineName: string | null;
+  potency: string | null;
+  hospitalName: string | null;
+  vaccine_location: string | null;
+  notes: string | null;
+  source: string | null;
+  reactions: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_immunizations_response_reactions | null)[] | null;
+  immunizationFiles: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_immunizations_response_immunizationFiles | null)[] | null;
+}
+
+export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_immunizations {
+  __typename: "ImmunizationsResult";
+  errorCode: number | null;
+  errorMsg: string | null;
+  errorType: string | null;
+  response: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_immunizations_response | null)[] | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2 {
-  __typename: 'PrismMedicalRecordsResult_V2';
+  __typename: "PrismMedicalRecordsResult_V2";
   labResults: getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults | null;
   prescriptions: getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_prescriptions | null;
   healthChecks: getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_healthChecks | null;
@@ -435,6 +436,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   healthRestrictions: getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_healthRestrictions | null;
   allergies: getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_allergies | null;
   familyHistory: getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_familyHistory | null;
+  immunizations: getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_immunizations | null;
 }
 
 export interface getPatientPrismMedicalRecords_V2 {
@@ -444,6 +446,4 @@ export interface getPatientPrismMedicalRecords_V2 {
 export interface getPatientPrismMedicalRecords_V2Variables {
   patientId: string;
   records?: (MedicalRecordType | null)[] | null;
-  recordId?: string | null;
-  source?: string | null;
 }

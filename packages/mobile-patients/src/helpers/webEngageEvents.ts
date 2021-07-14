@@ -87,7 +87,6 @@ export enum WebEngageEventName {
   BOOK_APPOINTMENT = 'Book Appointment',
   TYPE_OF_CONSULT_SELECTED = 'Type of consultation seleted',
   CONSULT_SORT = 'Consult Sort',
-  CONSULT_MODE_TOGGLE = 'Consult Mode Toggle',
   CONSULT_NOW_CLICKED = 'Consult Now clicked',
   CONSULT_SCHEDULE_FOR_LATER_CLICKED = 'Consult Schedule for Later clicked',
   CONSULT_SLOT_SELECTED = 'Consult Slot Selected',
@@ -218,6 +217,7 @@ export enum WebEngageEventName {
   CONSULT_RX = 'PHR Consult & RX',
   MEDICAL_RECORDS = 'PHR Medical Records',
   ADD_RECORD = 'Add Record',
+  ADD_VACCINATION_RECORD = 'Add Vaccination Record',
   UPLOAD_PRESCRIPTION = 'Upload Prescription',
   UPLOAD_PHOTO = 'Upload Photo',
   ITEMS_CLICKED = 'Items Clicked',
@@ -229,6 +229,7 @@ export enum WebEngageEventName {
   PHR_CLICK_HOSPITALIZATIONS = 'PHR Click Hospitalizations',
   PHR_CLICK_HEALTH_CONDITIONS = 'PHR Click Health Conditions',
   PHR_CLICK_BILLS = 'PHR Click Bills',
+  PHR_CLICK_VACCINATION = 'PHR Click Vaccination',
   PHR_CLICK_INSURANCES = 'PHR Click Insurances',
   PHR_ADD_DOCTOR_CONSULTATIONS = 'PHR Add Doctor Consultation',
   PHR_ADD_TEST_REPORT = 'PHR Add Test Report',
@@ -534,6 +535,7 @@ export interface DiagnosticUserInfo {
 export interface DiagnosticLandingPage extends DiagnosticUserInfo {
   Serviceability: 'Yes' | 'No';
   Source?: string;
+  "Circle user": 'Yes' | 'No';
 }
 
 export interface DiagnosticServiceble {
@@ -837,7 +839,6 @@ export interface WebEngageEvents {
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
     User_Type: string;
-    'Mode of consult': 'Hospital Visit' | 'Video Consult';
   };
   [WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED]: PatientInfoWithSource;
   [WebEngageEventName.PAST_DOCTOR_SEARCH]: {
@@ -1157,6 +1158,7 @@ export interface WebEngageEvents {
     User_Type?: PharmaUserStatus;
     'Split Cart'?: YesOrNo;
     'Prescription Option selected'?: PrescriptionOptions;
+    TransactionId?: string | number;
   };
   [WebEngageEventName.PHARMACY_DETAIL_IMAGE_CLICK]: {
     'Product ID': string;
@@ -1302,7 +1304,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.DIAGNOSTIC_ADD_TO_CART]: {
     'Item Name': string;
     'Item ID': string; // (SKUID)
-    Source:DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+    Source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
     Section?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
@@ -1317,6 +1319,7 @@ export interface WebEngageEvents {
     'Item ids'?: any;
     'Total items in order': number;
     'Payment type'?: string; //for prepaid
+    "Circle user": 'Yes' | 'No';
   };
   [WebEngageEventName.PAYMENT_INITIATED]: {
     Amount: number;
@@ -1326,7 +1329,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED]: {
     position: number;
     itemId: number;
-    "Banner title": string; 
+    'Banner title': string;
   };
   [WebEngageEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE]: {
     'Selection type': 'New' | 'Existing';
@@ -1495,7 +1498,6 @@ export interface WebEngageEvents {
     'Customer ID': string;
     Rank?: number;
     User_Type: string;
-    'Mode of consult'?: 'Hospital Visit' | 'Video Consult';
   };
   [WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK]: {
     Fee: number;
@@ -1534,7 +1536,6 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Customer ID': string;
     User_Type: string;
-    'Mode of consult'?: 'Hospital Visit' | 'Video Consult';
   };
   [WebEngageEventName.CONSULT_TYPE_SELECTION]: {
     'Consult Type': 'Online' | 'In Person';
@@ -1831,18 +1832,22 @@ export interface WebEngageEvents {
   };
 
   [WebEngageEventName.PHARMACY_POST_CART_PAGE_VIEWED]: {
-    Status: 'Success' | 'Payment Failed' | 'Payment Aborted' | 'Payment Status Not Known';
-    'Payment type': 'COD' | 'Cashless' | 'No Payment';
+    'Payment status': 'Success' | 'Payment Failed' | 'Payment Aborted' | 'Payment Status Not Known';
+    'Payment Type': 'COD' | 'Cashless' | 'No Payment';
     'Transaction ID': number | string;
-    'Order ID 1': number | string;
-    'Order ID 2': number | string;
+    'Order ID(s)': number | string;
+    'MRP Total': number;
+    'Discount Amount': number;
+    'Payment Instrument': string;
+    'Order Type': string;
+    'Shipping Charges': number;
+    'Circle Member': boolean;
     'Substitution Option Shown': YesOrNo;
   };
 
   [WebEngageEventName.PHARMACY_ORDER_SUBSTITUTE_OPTION_CLICKED]: {
     'Transaction ID': number | string;
-    'Order ID 1': number | string;
-    'Order ID 2': number | string;
+    'Order ID(s)': number | string;
     'Substitute Action Taken': 'Agree' | 'Disagree';
   };
 
@@ -1859,7 +1864,8 @@ export interface WebEngageEvents {
       | 'Hospitalization'
       | 'Health Condition'
       | 'Bill'
-      | 'Insurance'; // List/Profile
+      | 'Insurance'
+      | 'Vaccination'; // List/Profile
   };
 
   [WebEngageEventName.UPLOAD_PRESCRIPTION]: PatientInfo;
@@ -2701,29 +2707,5 @@ export interface WebEngageEvents {
     'Doctor Id': string;
     'Doctor Speciality': string;
     'Bucket viewed': string;
-  };
-
-  [WebEngageEventName.CONSULT_SORT]: {
-    'Patient Name': string;
-    'Patient UHID': string;
-    Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
-    'Mobile Number': string;
-    'Customer ID': string;
-    User_Type: string;
-    'Mode of consult': 'Hospital Visit' | 'Video Consult';
-  };
-  [WebEngageEventName.CONSULT_MODE_TOGGLE]: {
-    'Patient Name': string;
-    'Patient UHID': string;
-    Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
-    'Mobile Number': string;
-    'Customer ID': string;
-    User_Type: string;
-    'Consult flow': 'Hospital Visit' | 'Video Consult' | 'Unknown'; // unknown might come from deeplink
-    Toggle: 'Hospital Visit' | 'Video Consult';
   };
 }

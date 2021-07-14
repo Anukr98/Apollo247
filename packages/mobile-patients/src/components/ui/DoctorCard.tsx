@@ -9,9 +9,6 @@ import {
   InfoBlue,
   CircleLogo,
   ShareYellowDocIcon,
-  LocationGrey,
-  HospitalPhrIcon,
-  VideoActiveIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   CommonBugFender,
@@ -51,7 +48,6 @@ import {
   View,
   ViewStyle,
   ImageBackground,
-  Dimensions,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors } from '../../graphql/types/SearchDoctorAndSpecialtyByName';
@@ -62,21 +58,20 @@ import {
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
-const { width } = Dimensions.get('window');
 
+import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 const styles = StyleSheet.create({
   doctorView: {
     flex: 1,
     marginHorizontal: 20,
     ...theme.viewStyles.cardViewStyle,
-    marginBottom: 30,
+    marginBottom: 20,
     borderRadius: 10,
   },
   buttonText: {
     ...theme.fonts.IBMPlexSansBold(14),
+    color: theme.colors.BUTTON_TEXT,
     textTransform: 'uppercase',
-    color: theme.colors.BUTTON_BG,
   },
   availableView: {
     position: 'absolute',
@@ -98,7 +93,7 @@ const styles = StyleSheet.create({
   },
   drImageMargins: {
     marginHorizontal: 12,
-    marginTop: 12,
+    marginTop: 32,
   },
   doctorNameStyles: {
     paddingTop: 0,
@@ -106,22 +101,23 @@ const styles = StyleSheet.create({
     flex: 1,
     textTransform: 'capitalize',
     ...theme.fonts.IBMPlexSansMedium(18),
-    color: theme.colors.LIGHT_BLUE,
+    color: theme.colors.SEARCH_DOCTOR_NAME,
   },
   doctorSpecializationStyles: {
     paddingTop: 4,
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansSemiBold(12),
     color: theme.colors.SKY_BLUE,
+    textTransform: 'uppercase',
   },
   doctorLocation: {
+    paddingTop: 2,
+    paddingLeft: 0,
     ...theme.fonts.IBMPlexSansMedium(12),
     color: theme.colors.SEARCH_EDUCATION_COLOR,
-    marginLeft: 4,
   },
   educationTextStyles: {
-    // paddingTop: 10,
-    paddingTop: 4,
+    paddingTop: 10,
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansMedium(12),
     color: theme.colors.SEARCH_EDUCATION_COLOR,
@@ -173,132 +169,9 @@ const styles = StyleSheet.create({
   },
   doctorNameViewStyle: {
     flexDirection: 'row',
-    paddingTop: 8,
+    paddingTop: 35,
     justifyContent: 'space-between',
     flex: 1,
-  },
-  brandContainer: {
-    ...theme.viewStyles.cardViewStyle,
-    height: 24,
-    backgroundColor: 'white',
-    borderRadius: 6,
-    width: 60,
-    marginLeft: -8,
-    marginTop: -12,
-    paddingHorizontal: 10,
-    justifyContent: 'center',
-  },
-  cardContainer: {
-    flex: 1,
-    paddingRight: 16,
-    marginBottom: 10,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginLeft: 20,
-    marginBottom: 10,
-    width: width - 85,
-  },
-  centerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    marginBottom: 5,
-  },
-  availabilityText: {
-    ...theme.viewStyles.text('M', 12, theme.colors.BORDER_BOTTOM_COLOR),
-  },
-  bottomBtnView: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  bottomLeftBtn: {
-    height: 40,
-    backgroundColor: theme.colors.SKY_LIGHT_BLUE,
-    width: '49.3%',
-    borderRadius: 0,
-    borderBottomLeftRadius: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  bottomRightBtn: {
-    height: 40,
-    backgroundColor: theme.colors.GOLDEN,
-    width: '49.3%',
-    borderRadius: 0,
-    borderBottomRightRadius: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  hospitalIcon: {
-    width: 13,
-    height: 16,
-    marginRight: 7,
-  },
-  onlineConsultIcon: {
-    width: 19,
-    height: 19,
-    marginRight: 7,
-  },
-  fullWidthBtn: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-    flexWrap: 'wrap',
-    alignSelf: 'center',
-  },
-  bottomBtnText: {
-    ...theme.viewStyles.text('B', 12, theme.colors.LIGHT_BLUE),
-    textAlign: 'center',
-  },
-  doctorPartnerLabel: {
-    position: 'absolute',
-    top: -6,
-    right: -6,
-  },
-  doctorLabelIcon: {
-    width: 80,
-    height: 32,
-  },
-  inPersonIcon: {
-    width: 14,
-    height: 16,
-    marginBottom: 5,
-  },
-  onlineConsultMode: {
-    ...theme.viewStyles.text('M', 7, theme.colors.light_label),
-    marginBottom: 3.5,
-  },
-  physicalConsultView: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  physicalConsultMode: {
-    ...theme.viewStyles.text('M', 7, theme.colors.light_label),
-    marginBottom: 5,
-  },
-  onlineConsultView: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  consultModesView: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginHorizontal: 20,
-  },
-  shareIcon: {
-    width: 24,
-    height: 24,
-  },
-  doctorPartnerBottomBtn: {
-    ...theme.viewStyles.cardViewStyle,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });
 
@@ -311,10 +184,7 @@ export interface DoctorCardProps extends NavigationScreenProps {
     | any
     | null;
   onPress?: (doctorId: string, onlineConsult: boolean) => void;
-  onPressConsultNowOrBookAppointment?: (
-    type: 'consult-now' | 'book-appointment',
-    consultMode?: ConsultMode
-  ) => void;
+  onPressConsultNowOrBookAppointment?: (type: 'consult-now' | 'book-appointment') => void;
   displayButton?: boolean;
   style?: StyleProp<ViewStyle>;
   buttonViewStyle?: StyleProp<ViewStyle>;
@@ -371,6 +241,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     ? [ConsultMode.ONLINE, ConsultMode.BOTH].includes(availableModes)
     : false;
   const isBoth = availableModes ? [ConsultMode.BOTH].includes(availableModes) : false;
+
   let nonCircleDoctorFees = rowData?.onlineConsultationFees || rowData?.fee; // default fee
   if (isPhysicalConsultSelected) {
     nonCircleDoctorFees = rowData?.physicalConsultationFees || rowData?.fee;
@@ -390,17 +261,12 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     !selectedConsultMode || isCircleAvailForOnline
       ? onlineConsultDiscountedPrice
       : physicalConsultDiscountedPrice;
-  const clinicAddress = rowData?.doctorfacility;
-  const isDoctorPartner = rowData?.doctorType === DoctorType?.DOCTOR_CONNECT;
-  const physicalCTATitle = rowData?.doctorCardActiveCTA?.PHYSICAL || 'Book Hospital Visit';
-  const onlineCTATitle = rowData?.doctorCardActiveCTA?.ONLINE || 'Book Video Consult';
+  const ctaTitle = rowData?.doctorCardActiveCTA?.DEFAULT;
   const onlineConsult = selectedConsultMode
     ? isOnlineConsultSelected
     : isBoth || isOnline
     ? true
     : false;
-  const onlineSlot = rowData?.doctorNextAvailSlots?.onlineSlot;
-  const physicalSlot = rowData?.doctorNextAvailSlots?.physicalSlot;
 
   useEffect(() => {
     if (!currentPatient) {
@@ -431,35 +297,28 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     }
     props.navigation.navigate(AppRoutes.SlotSelection, {
       doctorId: id,
+      consultModeSelected: onlineConsult ? ConsultMode.ONLINE : ConsultMode.PHYSICAL,
+      externalConnect: null,
       callSaveSearch: props.callSaveSearch,
       ...params,
       isCircleDoctor: isCircleDoctorOnSelectedConsultMode,
-      consultModeSelected:
-        params?.consultModeSelected === ConsultMode.PHYSICAL
-          ? string.consultModeTab.HOSPITAL_VISIT
-          : string.consultModeTab.VIDEO_CONSULT,
     });
   };
 
-  const calculatefee = () => {
+  const calculatefee = (rowData: any, consultTypeBoth: boolean, consultTypeOnline: boolean) => {
     return (
       <View style={{ flexDirection: 'row', marginTop: 5 }}>
         <Text style={{ ...theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE) }}>
-          {!isDoctorPartner && (
-            <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.light_label) }}>
-              You pay{'  '}
-            </Text>
-          )}
           {string.common.Rs}
         </Text>
         <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.SKY_BLUE), paddingTop: 1 }}>
-          {convertNumberToDecimal(nonCircleDoctorFees)}{' '}
+          {convertNumberToDecimal(nonCircleDoctorFees)}
         </Text>
       </View>
     );
   };
 
-  const renderCircleDoctorsFee = () => {
+  const renderCareDoctorsFee = () => {
     if (showCircleSubscribed) {
       return (
         <View style={{ marginTop: 5 }}>
@@ -559,12 +418,10 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const renderSpecialities = () => {
     return (
       <View>
-        <Text style={[styles.doctorSpecializationStyles, { textTransform: 'uppercase' }]}>
-          {rowData?.specialtydisplayName || ''}
-        </Text>
-        <Text style={[styles.doctorSpecializationStyles, { ...theme.fonts.IBMPlexSansBold(12) }]}>
-          {rowData?.experience} Year
-          {Number(rowData?.experience) != 1 ? 's Exp.' : ' Exp.'}
+        <Text style={styles.doctorSpecializationStyles}>{rowData?.specialtydisplayName || ''}</Text>
+        <Text style={styles.doctorSpecializationStyles}>
+          {rowData?.experience} YR
+          {Number(rowData?.experience) != 1 ? 'S Exp.' : ' Exp.'}
         </Text>
       </View>
     );
@@ -602,16 +459,16 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     } catch (error) {}
   };
 
-  const getButtonTitle = (slot: string, isPhysical: boolean = false) => {
+  function getButtonTitle(slot: string) {
     const title =
       slot && moment(slot).isValid()
-        ? nextAvailability(slot, 'Available', isPhysical)
+        ? nextAvailability(slot, 'Consult')
         : string.common.book_apointment;
     if (title == 'BOOK APPOINTMENT') {
       fetchNextAvailableSlot();
     }
     return title;
-  };
+  }
   //Only triggered past the next available slot of a doctor
   async function fetchNextAvailableSlot() {
     const todayDate = new Date().toISOString().slice(0, 10);
@@ -619,409 +476,309 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     setfetchedSlot(response?.data?.[0]?.availableSlot);
   }
 
-  const renderBrandName = () => {
-    return (
-      <View style={styles.brandContainer}>
-        <Image
-          resizeMode="contain"
-          style={{ alignSelf: 'center', width: '100%', height: 18 }}
-          source={{ uri: rowData?.doctorBrandImage }}
-        />
-      </View>
-    );
-  };
-
-  const renderAvailability = () => {
-    return (
-      <View style={styles.centerRow}>
-        {rowData?.doctorType !== DoctorType.PAYROLL ? (
-          isOnline && isPhysical ? (
-            <>
-              <Text style={styles.availabilityText}>{getButtonTitle(physicalSlot, true)}</Text>
-              <Text style={styles.availabilityText}>{getButtonTitle(onlineSlot)}</Text>
-            </>
-          ) : isPhysical ? (
-            <Text style={styles.availabilityText}>{getButtonTitle(physicalSlot, true)}</Text>
-          ) : (
-            <Text style={styles.availabilityText}>{getButtonTitle(onlineSlot)}</Text>
-          )
-        ) : (
-          <Text style={styles.availabilityText}>{getButtonTitle(onlineSlot)}</Text>
-        )}
-      </View>
-    );
-  };
-
-  const renderClinicAddress = () => {
-    return (
-      <View>
-        {!!clinicAddress && (
-          <View style={styles.row}>
-            <LocationGrey style={{ width: 12, height: 15 }} />
-            <Text style={styles.doctorLocation} numberOfLines={props.numberOfLines}>
-              {clinicAddress}
-            </Text>
-          </View>
-        )}
-      </View>
-    );
-  };
-
-  const renderDoctorImage = () => {
-    return (
-      <View>
-        {isCircleDoctorOnSelectedConsultMode ? (
-          <ImageBackground
-            source={require('@aph/mobile-patients/src/components/ui/icons/doctor_ring.webp')}
-            style={[
-              styles.drImageBackground,
-              styles.drImageMargins,
-              {
-                marginBottom: isCircleDoctorOnSelectedConsultMode ? 0 : 22,
-                marginTop: isDoctorPartner ? 32 : 12,
-              },
-            ]}
-            resizeMode="cover"
-          >
-            {renderDoctorProfile()}
-          </ImageBackground>
-        ) : (
-          <View
-            style={[
-              styles.drImageMargins,
-              {
-                marginBottom: isCircleDoctorOnSelectedConsultMode ? 0 : 22,
-                marginTop: isDoctorPartner ? 32 : 12,
-              },
-            ]}
-          >
-            {renderDoctorProfile()}
-          </View>
-        )}
-      </View>
-    );
-  };
-
-  const renderQualifications = () => {
-    return (
-      <Text style={styles.educationTextStyles} numberOfLines={props.numberOfLines}>
-        {rowData.qualification}
-      </Text>
-    );
-  };
-
-  const renderDoctorFees = () => {
-    return (
-      <View>{isCircleDoctorOnSelectedConsultMode ? renderCircleDoctorsFee() : calculatefee()}</View>
-    );
-  };
-
-  const renderDoctorSlashedPrice = () => {
-    return (
-      <View>
-        {isCircleDoctorOnSelectedConsultMode &&
-        circleDoctorDiscountedPrice > -1 &&
-        showCircleSubscribed ? (
-          <Text
-            style={{
-              ...theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW),
-              marginTop: 2,
-            }}
-          >
-            {string.circleDoctors.circleSavings.replace(
-              '{amount}',
-              `${convertNumberToDecimal(circleDoctorDiscountedPrice)}`
-            )}
-          </Text>
-        ) : null}
-      </View>
-    );
-  };
-
-  const renderBottomButtons = () => {
-    return (
-      <View>
-        {rowData?.doctorType !== DoctorType.PAYROLL
-          ? isOnline && isPhysical
-            ? renderBothBottomCTAs()
-            : isPhysical
-            ? renderSingleBottomCTA(isPhysical)
-            : renderSingleBottomCTA(isOnline)
-          : renderSingleBottomCTA(isOnline)}
-      </View>
-    );
-  };
-
-  const renderBothBottomCTAs = () => {
-    return (
-      <View style={styles.bottomBtnView}>
-        <TouchableOpacity
-          style={styles.bottomLeftBtn}
-          onPress={() => onPressConsultConfigCTA(ConsultMode.PHYSICAL)}
-        >
-          <View style={styles.fullWidthBtn}>
-            <HospitalPhrIcon style={styles.hospitalIcon} />
-            <Text style={styles.bottomBtnText} numberOfLines={2}>
-              {physicalCTATitle}
-            </Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.bottomRightBtn}
-          onPress={() => onPressConsultConfigCTA(ConsultMode.ONLINE)}
-        >
-          <View style={styles.fullWidthBtn}>
-            <VideoActiveIcon style={styles.onlineConsultIcon} />
-            <Text style={styles.bottomBtnText} numberOfLines={2}>
-              {onlineCTATitle}
-            </Text>
-          </View>
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
-  const renderSingleBottomCTA = (online: boolean) => {
-    return (
-      <View style={styles.bottomBtnView}>
-        <TouchableOpacity
-          style={[
-            styles.bottomLeftBtn,
-            {
-              width: '100%',
-              backgroundColor: online ? theme.colors.GOLDEN : theme.colors.SKY_LIGHT_BLUE,
-            },
-          ]}
-          onPress={() =>
-            onPressConsultConfigCTA(online ? ConsultMode.ONLINE : ConsultMode.PHYSICAL)
-          }
-        >
-          <View style={styles.fullWidthBtn}>
-            {online ? (
-              <VideoActiveIcon style={styles.onlineConsultIcon} />
-            ) : (
-              <HospitalPhrIcon style={styles.hospitalIcon} />
-            )}
-            <Text style={styles.bottomBtnText} numberOfLines={2}>
-              {online ? onlineCTATitle : physicalCTATitle}
-            </Text>
-          </View>
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
-  const renderDoctorPartnerTabBottomBtn = () => {
-    return (
-      <View>
-        {props.displayButton && (
-          <View>
-            <TouchableOpacity
-              activeOpacity={1}
-              style={[styles.doctorPartnerBottomBtn, props.buttonStyle]}
-              onPress={() => {
-                onPressConsultConfigCTA();
-              }}
-            >
-              <Text style={[styles.buttonText, props.buttonTextStyle]}>
-                {!!ctaBannerText
-                  ? ctaBannerText.CONSULT_NOW
-                  : !!fetchedSlot
-                  ? getButtonTitle(fetchedSlot)
-                  : getButtonTitle(rowData?.slot)}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-    );
-  };
-  const renderDoctorPartnerBadges = () => {
-    return (
-      <>
-        {rowData.slot ? (
-          <AvailabilityCapsule
-            availableTime={rowData.slot}
-            styles={styles.availableView}
-            availNowText={!!ctaBannerText ? ctaBannerText.AVAILABLE_NOW : ''}
-          />
-        ) : null}
-        <View style={styles.doctorPartnerLabel}>
-          {rowData.doctorType !== 'DOCTOR_CONNECT' ? (
-            <ApolloDoctorIcon style={styles.doctorLabelIcon} />
-          ) : (
-            <ApolloPartnerIcon style={styles.doctorLabelIcon} />
-          )}
-        </View>
-      </>
-    );
-  };
-
-  const renderConsultModes = () => {
-    return (
-      <>
-        {isOnline && (
-          <View style={styles.onlineConsultView}>
-            <Online />
-            <Text style={styles.onlineConsultMode}>Online</Text>
-          </View>
-        )}
-        {isPhysical && (
-          <View style={[styles.physicalConsultView, { marginLeft: isOnline ? 12 : 0 }]}>
-            <InPerson style={styles.inPersonIcon} />
-            <Text style={styles.physicalConsultMode}>In-Person</Text>
-          </View>
-        )}
-      </>
-    );
-  };
-
-  const renderShareProfile = () => {
-    return (
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={() => props.onPressShare && props.onPressShare(rowData)}
-        style={{ paddingLeft: 5 }}
-      >
-        <ShareYellowDocIcon style={styles.shareIcon} />
-      </TouchableOpacity>
-    );
-  };
-
-  const onPressConsultConfigCTA = (consultMode?: ConsultMode) => {
-    try {
-      let eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK] = {
-        'Patient Name': currentPatient?.firstName,
-        'Doctor ID': rowData?.id,
-        'Speciality ID': rowData?.specialty?.id,
-        'Doctor Speciality': rowData?.specialty?.name,
-        'Doctor Experience': Number(rowData?.experience),
-        'Hospital Name': rowData?.doctorHospital?.[0]?.facility?.name,
-        'Hospital City': rowData?.doctorHospital?.[0]?.facility?.city,
-        'Availability Minutes': getTimeDiff(rowData?.slot),
-        Source: 'List',
-        'Patient UHID': currentPatient?.uhid,
-        Relation: currentPatient?.relation,
-        'Patient Age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
-        'Patient Gender': currentPatient?.gender,
-        'Customer ID': currentPatient?.id,
-      };
-      if (consultMode) {
-        eventAttributes['Mode of consult'] =
-          consultMode === ConsultMode.ONLINE ? 'Video Consult' : 'Hospital Visit';
-      }
-      if (props.rowId) {
-        eventAttributes['Rank'] = props.rowId;
-      }
-      postWebEngageEvent(WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK, eventAttributes);
-    } catch (error) {}
-
-    props.onPressConsultNowOrBookAppointment?.(
-      rowData.slot && moment(rowData.slot).isValid() ? 'consult-now' : 'book-appointment',
-      consultMode
-    );
-    CommonLogEvent(AppRoutes.DoctorSearchListing, 'Consult now clicked');
-    navigateToDetails(rowData?.id || '', {
-      showBookAppointment: true,
-      consultModeSelected: consultMode,
-    });
-  };
-
-  const onPressDoctorCard = () => {
-    try {
-      if (rowData?.doctorType === DoctorType.PAYROLL) {
-        const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK] = {
-          Fee: Number(nonCircleDoctorFees),
-          'Doctor Speciality': g(rowData, 'specialty', 'name')!,
-          'Doctor Name': g(rowData, 'fullName')!,
-          Source: 'List',
-          'Language known': rowData.languages,
-        };
-        postWebEngageEvent(WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK, eventAttributes);
-      }
-    } catch (error) {}
-    try {
-      const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK] = {
-        'Patient Name': currentPatient.firstName,
-        'Doctor ID': rowData.id,
-        'Speciality ID': rowData?.specialty?.id,
-        'Doctor Speciality': rowData?.specialty?.name,
-        'Doctor Experience': Number(rowData?.experience),
-        'Hospital Name': rowData?.doctorHospital?.[0]?.facility?.name,
-        'Hospital City': rowData?.doctorHospital?.[0]?.facility?.city,
-        'Availability Minutes': getTimeDiff(rowData?.slot),
-        Source: 'List',
-        'Patient UHID': currentPatient?.uhid,
-        Relation: currentPatient?.relation,
-        'Patient Age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
-        'Patient Gender': currentPatient?.gender,
-        'Customer ID': currentPatient?.id,
-      };
-      if (props.rowId) {
-        eventAttributes['Rank'] = props.rowId;
-      }
-      postWebEngageEvent(WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK, eventAttributes);
-    } catch (error) {}
-    props.onPress ? props.onPress(rowData?.id, onlineConsult) : navigateToDetails(rowData?.id);
-  };
-
   if (rowData) {
+    const clinicAddress = rowData?.doctorfacility;
     return (
       <TouchableOpacity
-        key={rowData?.id}
+        key={rowData.id}
         activeOpacity={1}
         style={[
           styles.doctorView,
           {
-            backgroundColor: !isDoctorPartner ? theme.colors.WHITE : 'transparent',
-            shadowColor: !isDoctorPartner ? theme.colors.SHADOW_GRAY : theme.colors.WHITE,
-            shadowOffset: !isDoctorPartner ? { width: 0, height: 2 } : { width: 0, height: 0 },
-            shadowOpacity: !isDoctorPartner ? 0.4 : 0,
-            shadowRadius: !isDoctorPartner ? 8 : 0,
-            elevation: !isDoctorPartner ? 4 : 0,
+            backgroundColor:
+              rowData.doctorType !== 'DOCTOR_CONNECT' ? theme.colors.WHITE : 'transparent',
+            shadowColor:
+              rowData.doctorType !== 'DOCTOR_CONNECT'
+                ? theme.colors.SHADOW_GRAY
+                : theme.colors.WHITE,
+            shadowOffset:
+              rowData.doctorType !== 'DOCTOR_CONNECT'
+                ? { width: 0, height: 2 }
+                : { width: 0, height: 0 },
+            shadowOpacity: rowData.doctorType !== 'DOCTOR_CONNECT' ? 0.4 : 0,
+            shadowRadius: rowData.doctorType !== 'DOCTOR_CONNECT' ? 8 : 0,
+            elevation: rowData.doctorType !== 'DOCTOR_CONNECT' ? 4 : 0,
           },
           props.style,
         ]}
-        onPress={() => onPressDoctorCard()}
+        onPress={() => {
+          try {
+            if (rowData.doctorType === DoctorType.PAYROLL) {
+              const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK] = {
+                Fee: Number(nonCircleDoctorFees),
+                'Doctor Speciality': g(rowData, 'specialty', 'name')!,
+                'Doctor Name': g(rowData, 'fullName')!,
+                Source: 'List',
+                'Language known': rowData.languages,
+              };
+              postWebEngageEvent(WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK, eventAttributes);
+            }
+          } catch (error) {}
+          try {
+            const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK] = {
+              'Patient Name': currentPatient.firstName,
+              'Doctor ID': rowData.id,
+              'Speciality ID': rowData?.specialty?.id,
+              'Doctor Speciality': rowData?.specialty?.name,
+              'Doctor Experience': Number(rowData?.experience),
+              'Hospital Name': rowData?.doctorHospital?.[0]?.facility?.name,
+              'Hospital City': rowData?.doctorHospital?.[0]?.facility?.city,
+              'Availability Minutes': getTimeDiff(rowData?.slot),
+              Source: 'List',
+              'Patient UHID': currentPatient.uhid,
+              Relation: currentPatient?.relation,
+              'Patient Age': Math.round(
+                moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)
+              ),
+              'Patient Gender': currentPatient.gender,
+              'Customer ID': currentPatient.id,
+              User_Type: getUserType(allCurrentPatients),
+            };
+            if (props.rowId) {
+              eventAttributes['Rank'] = props.rowId;
+            }
+            postWebEngageEvent(WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK, eventAttributes);
+          } catch (error) {}
+
+          props.onPress
+            ? props.onPress(rowData.id!, onlineConsult)
+            : navigateToDetails(rowData.id!);
+        }}
       >
         <View style={{ borderRadius: 10, flex: 1, zIndex: 1 }}>
-          {!isDoctorPartner && renderBrandName()}
           <View style={{ flexDirection: 'row' }}>
-            {isDoctorPartner && renderDoctorPartnerBadges()}
+            {rowData.slot ? (
+              <AvailabilityCapsule
+                availableTime={rowData.slot}
+                styles={styles.availableView}
+                availNowText={!!ctaBannerText ? ctaBannerText.AVAILABLE_NOW : ''}
+              />
+            ) : null}
+            <View style={{ position: 'absolute', top: -6, right: -6 }}>
+              {rowData.doctorType !== 'DOCTOR_CONNECT' ? (
+                <ApolloDoctorIcon style={{ width: 80, height: 32 }} />
+              ) : (
+                <ApolloPartnerIcon style={{ width: 80, height: 32 }} />
+              )}
+            </View>
             <View>
-              {renderDoctorImage()}
+              {isCircleDoctorOnSelectedConsultMode ? (
+                <ImageBackground
+                  source={require('@aph/mobile-patients/src/components/ui/icons/doctor_ring.webp')}
+                  style={[
+                    styles.drImageBackground,
+                    styles.drImageMargins,
+                    { marginBottom: isCircleDoctorOnSelectedConsultMode ? 0 : 22 },
+                  ]}
+                  resizeMode="cover"
+                >
+                  {renderDoctorProfile()}
+                </ImageBackground>
+              ) : (
+                <View
+                  style={[
+                    styles.drImageMargins,
+                    { marginBottom: isCircleDoctorOnSelectedConsultMode ? 0 : 22 },
+                  ]}
+                >
+                  {renderDoctorProfile()}
+                </View>
+              )}
+
+              {/* </TouchableOpacity> */}
               {isCircleDoctorOnSelectedConsultMode && renderCareLogo()}
               <View
-                style={[
-                  styles.consultModesView,
-                  { marginTop: isCircleDoctorOnSelectedConsultMode ? 3 : 0 },
-                ]}
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginHorizontal: 20,
+                  marginTop: isCircleDoctorOnSelectedConsultMode ? 3 : 0,
+                }}
               >
-                {isDoctorPartner && renderConsultModes()}
+                {isOnline && (
+                  <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                    <Online />
+                    <Text
+                      style={{
+                        ...theme.viewStyles.text('M', 7, theme.colors.light_label),
+                        marginBottom: 3.5,
+                      }}
+                    >
+                      Online
+                    </Text>
+                  </View>
+                )}
+                {isPhysical && (
+                  <View
+                    style={{
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      marginLeft: isOnline ? 12 : 0,
+                    }}
+                  >
+                    <InPerson style={{ width: 14, height: 16, marginBottom: 5 }} />
+                    <Text
+                      style={{
+                        ...theme.viewStyles.text('M', 7, theme.colors.light_label),
+                        marginBottom: 5,
+                      }}
+                    >
+                      In-Person
+                    </Text>
+                  </View>
+                )}
               </View>
             </View>
 
-            <View style={styles.cardContainer}>
-              <View
-                style={[
-                  styles.doctorNameViewStyle,
-                  {
-                    paddingTop: isDoctorPartner ? 35 : 8,
-                  },
-                ]}
-              >
+            <View style={{ flex: 1, paddingRight: 16, marginBottom: 16 }}>
+              <View style={styles.doctorNameViewStyle}>
                 <Text style={styles.doctorNameStyles}>{rowData.displayName}</Text>
-                {isDoctorPartner && renderShareProfile()}
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => props.onPressShare && props.onPressShare(rowData)}
+                  style={{ paddingLeft: 5 }}
+                >
+                  <ShareYellowDocIcon style={{ width: 24, height: 24 }} />
+                </TouchableOpacity>
               </View>
               {renderSpecialities()}
-              {renderQualifications()}
-              {renderDoctorFees()}
-              {renderDoctorSlashedPrice()}
+              {isCircleDoctorOnSelectedConsultMode
+                ? renderCareDoctorsFee()
+                : calculatefee(rowData, isBoth, isOnline)}
+              {isCircleDoctorOnSelectedConsultMode &&
+              circleDoctorDiscountedPrice > -1 &&
+              showCircleSubscribed ? (
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW),
+                    marginTop: 2,
+                  }}
+                >
+                  {string.circleDoctors.circleSavings.replace(
+                    '{amount}',
+                    `${convertNumberToDecimal(circleDoctorDiscountedPrice)}`
+                  )}
+                </Text>
+              ) : null}
+              <Text
+                style={[
+                  styles.educationTextStyles,
+                  { marginTop: isCircleDoctorOnSelectedConsultMode ? 10 : 0 },
+                ]}
+                numberOfLines={props.numberOfLines}
+              >
+                {rowData.qualification}
+              </Text>
+              {!!clinicAddress && (
+                <Text style={styles.doctorLocation} numberOfLines={props.numberOfLines}>
+                  {clinicAddress}
+                </Text>
+              )}
             </View>
           </View>
-          {renderClinicAddress()}
-          {!isDoctorPartner && renderAvailability()}
-          {isDoctorPartner ? renderDoctorPartnerTabBottomBtn() : renderBottomButtons()}
+          <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+            {props.displayButton && (
+              <View
+                style={[
+                  {
+                    overflow: rowData.doctorType !== 'DOCTOR_CONNECT' ? 'hidden' : 'visible',
+                    borderBottomLeftRadius: 10,
+                    borderBottomRightRadius: 10,
+                  },
+                  props.buttonViewStyle,
+                ]}
+              >
+                <TouchableOpacity
+                  activeOpacity={1}
+                  style={[
+                    {
+                      backgroundColor:
+                        rowData.doctorType !== 'DOCTOR_CONNECT'
+                          ? theme.colors.BUTTON_BG
+                          : theme.colors.WHITE,
+                      shadowColor:
+                        rowData.doctorType === 'DOCTOR_CONNECT'
+                          ? theme.colors.SHADOW_GRAY
+                          : theme.colors.WHITE,
+                      shadowOffset:
+                        rowData.doctorType === 'DOCTOR_CONNECT'
+                          ? { width: 0, height: 2 }
+                          : { width: 0, height: 0 },
+                      shadowOpacity: rowData.doctorType === 'DOCTOR_CONNECT' ? 0.4 : 0,
+                      shadowRadius: rowData.doctorType === 'DOCTOR_CONNECT' ? 8 : 0,
+                      elevation: rowData.doctorType === 'DOCTOR_CONNECT' ? 4 : 0,
+                      height: 44,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: rowData.doctorType === 'DOCTOR_CONNECT' ? 10 : 0,
+                    },
+                    props.buttonStyle,
+                  ]}
+                  onPress={() => {
+                    try {
+                      const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK] = {
+                        'Patient Name': currentPatient.firstName,
+                        'Doctor ID': rowData.id,
+                        'Speciality ID': rowData?.specialty?.id,
+                        'Doctor Speciality': rowData?.specialty?.name,
+                        'Doctor Experience': Number(rowData?.experience),
+                        'Hospital Name': rowData?.doctorHospital?.[0]?.facility?.name,
+                        'Hospital City': rowData?.doctorHospital?.[0]?.facility?.city,
+                        'Availability Minutes': getTimeDiff(rowData?.slot),
+                        Source: 'List',
+                        'Patient UHID': currentPatient.uhid,
+                        Relation: currentPatient?.relation,
+                        'Patient Age': Math.round(
+                          moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)
+                        ),
+                        'Patient Gender': currentPatient.gender,
+                        'Customer ID': currentPatient.id,
+                        User_Type: getUserType(allCurrentPatients),
+                      };
+                      if (props.rowId) {
+                        eventAttributes['Rank'] = props.rowId;
+                      }
+                      postWebEngageEvent(
+                        WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK,
+                        eventAttributes
+                      );
+                    } catch (error) {}
+
+                    props.onPressConsultNowOrBookAppointment &&
+                      props.onPressConsultNowOrBookAppointment(
+                        rowData.slot && moment(rowData.slot).isValid()
+                          ? 'consult-now'
+                          : 'book-appointment'
+                      );
+                    CommonLogEvent(AppRoutes.DoctorSearchListing, 'Consult now clicked');
+                    navigateToDetails(rowData.id ? rowData.id : '', {
+                      showBookAppointment: true,
+                    });
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.buttonText,
+                      {
+                        color:
+                          rowData.doctorType !== 'DOCTOR_CONNECT'
+                            ? theme.colors.BUTTON_TEXT
+                            : theme.colors.BUTTON_BG,
+                      },
+                      props.buttonTextStyle,
+                    ]}
+                  >
+                    {!!ctaTitle
+                      ? ctaTitle
+                      : !!fetchedSlot
+                      ? getButtonTitle(fetchedSlot)
+                      : getButtonTitle(rowData?.slot)}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
         </View>
       </TouchableOpacity>
     );

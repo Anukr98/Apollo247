@@ -288,6 +288,14 @@ export const GET_PATIENT_FUTURE_APPOINTMENT_COUNT = gql`
   }
 `;
 
+export const GET_IMMUNIZATION_DETAILS = gql`
+  mutation addPatientImmunizationRecord($addImmunizationRecordInput: AddImmunizationRecordInput) {
+    addPatientImmunizationRecord(addImmunizationRecordInput: $addImmunizationRecordInput) {
+      status
+    }
+  }
+`;
+
 export const GET_PATIENT_APPOINTMENTS = gql`
   query getPatinetAppointments($patientAppointmentsInput: PatientAppointmentsInput!) {
     getPatinetAppointments(patientAppointmentsInput: $patientAppointmentsInput) {
@@ -1628,6 +1636,14 @@ export const SAVE_DEVICE_TOKEN = gql`
   }
 `;
 
+export const CALL_CONNECTION_UPDATES = gql`
+  mutation checkCallConnection($CheckCallConnectionInput: CheckCallConnectionInput!) {
+    checkCallConnection(checkCallConnectionInput: $CheckCallConnectionInput) {
+      success
+    }
+  }
+`;
+
 export const UPDATE_PATIENT_APP_VERSION = gql`
   mutation UpdatePatientAppVersion(
     $patientId: String!
@@ -2031,6 +2047,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
     ) {
       medicineOrderDetails {
         id
+        appointmentId
         createdDate
         orderAutoId
         billNumber
@@ -2736,7 +2753,6 @@ export const SAVE_NOTIFICATION_SETTINGS = gql`
 //     }
 //   }
 // `;
-
 export const ADD_PATIENT_HOSPITALIZATION_RECORD = gql`
   mutation addPatientHospitalizationRecord(
     $AddHospitalizationRecordInput: AddHospitalizationRecordInput
@@ -2955,18 +2971,8 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS_BY_MOBILE = gql`
 `;
 
 export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
-  query getPatientPrismMedicalRecords_V2(
-    $patientId: ID!
-    $records: [MedicalRecordType]
-    $recordId: String
-    $source: String
-  ) {
-    getPatientPrismMedicalRecords_V2(
-      patientId: $patientId
-      records: $records
-      recordId: $recordId
-      source: $source
-    ) {
+  query getPatientPrismMedicalRecords_V2($patientId: ID!, $records: [MedicalRecordType]) {
+    getPatientPrismMedicalRecords_V2(patientId: $patientId, records: $records) {
       labResults {
         response {
           id
@@ -3274,6 +3280,43 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
             # content
             # byteContent
             # dateCreated
+          }
+        }
+      }
+      immunizations {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          immunizationName
+          dateAdministered
+          followUpDate
+          registrationId
+          dateOfImmunization
+          dueDate
+          fileUrl
+          doctorName
+          manufacturer
+          batchno
+          vaccineName
+          potency
+          hospitalName
+          vaccine_location
+          notes
+          source
+          reactions {
+            type
+            from
+            to
+          }
+          immunizationFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+            dateCreated
           }
         }
       }
@@ -5257,6 +5300,40 @@ export const GET_VACCINATION_SITES = gql`
           date
           available
         }
+      }
+    }
+  }
+`;
+
+export const GET_OTP_COWIN = gql`
+  mutation CowinLoginVerify($cowinLoginVerify: CowinLoginVerifyInput!) {
+    cowinLoginVerify(cowinLoginVerify: $cowinLoginVerify) {
+      code
+      message
+      response {
+        txnId
+        token
+        errorCode
+        error
+      }
+    }
+  }
+`;
+
+export const GET_BENEFICIARY_PROFILES = gql`
+  query GetCowinBeneficiary($getCowinBeneficiary: GetCowinBeneficiaryInput!) {
+    getCowinBeneficiary(getCowinBeneficiary: $getCowinBeneficiary) {
+      code
+      message
+      response {
+        beneficiary_reference_id
+        name
+        photo_id_type
+        photo_id_number
+        vaccination_status
+        vaccine
+        dose1_date
+        dose2_date
       }
     }
   }

@@ -61,6 +61,7 @@ import {
   aphConsole,
   isSmallDevice,
   extractPatientDetails,
+  downloadDocument,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DisabledTickIcon, TickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
@@ -142,7 +143,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [date, setDate] = useState<Date>(new Date());
   const [showDisplaySchedule, setDisplaySchedule] = useState<boolean>(false);
   const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
-  const [selectedOrderId, setSelectedOrderId] = useState<string>('');
+  const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
+  const [selectedOrderId, setSelectedOrderId] = useState<number>(0);
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
   const [todaySlotNotAvailable, setTodaySlotNotAvailable] = useState<boolean>(false);
@@ -1424,7 +1426,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         }
         showAddTest={
           order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED ||
-          DIAGNOSTIC_CONFIRMED_STATUS.includes(order?.orderStatus)
+          order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED
         }
         ordersData={order?.diagnosticOrderLineItems!}
         showPretesting={showPreTesting!}
@@ -1588,13 +1590,19 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       / /g,
       '_'
     );
-    downloadLabTest(order?.labReportURL!, appointmentDate, patientName);
+    downloadLabTest(order?.labReportURL!, appointmentDate, patientName, order);
   }
 
-  async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string) {
+  async function downloadLabTest(
+    pdfUrl: string,
+    appointmentDate: string,
+    patientName: string,
+    order: orderList
+  ) {
     setLoading?.(true);
     try {
       await downloadDiagnosticReport(setLoading, pdfUrl, appointmentDate, patientName, true);
+      setViewReportOrderId(order?.displayId);
     } catch (error) {
       setLoading?.(false);
       CommonBugFender('YourOrderTests_downloadLabTest', error);
@@ -1728,6 +1736,17 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           order={activeOrder}
           heading=""
           isVisible={displayViewReport}
+          viewReportOrderId={viewReportOrderId}
+          downloadDocument={() => {
+            const res = downloadDocument(
+              activeOrder?.labReportURL ? activeOrder?.labReportURL : '',
+              'application/pdf',
+              activeOrder?.displayId
+            );
+            if (res == activeOrder?.displayId) {
+              setViewReportOrderId(activeOrder?.displayId);
+            }
+          }}
           onClose={() => setDisplayViewReport(false)}
           onPressViewReport={() => {
             DiagnosticViewReportClicked(

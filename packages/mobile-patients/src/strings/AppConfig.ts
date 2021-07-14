@@ -118,11 +118,6 @@ const covidVaccineSection = {
   ],
 };
 
-const homeScreenConsultationCTAs = [
-  { physicalCTA: 'Hospital Visit', backgroundColor: '#C6EAFE' },
-  { onlineCTA: 'Video Consult', backgroundColor: '#FECF62' },
-];
-
 const QA_covid_items = [2596, 2598, 2462, 2388, 2419, 2411, 2410, 2539, 2446, 2614, 2462, 2613];
 const Prod_covid_items = [2539, 2446, 2410, 2411, 2419, 2613];
 const covidMaxSlotDays = 7;
@@ -174,6 +169,7 @@ const appStaticVariables = {
     pharmacy: '5df80ade-4eba-4ad3-9caf-e1169fcaeb32',
     consult: 'd70e6ee8-ecf1-4c75-ae00-2f968641f260',
     returnOrder: 'e2fc95ff-3ef5-4a9d-8fed-31609e426cbc',
+    diagnostic: '6ce8d555-9be5-48b5-b4de-06480f9c9cab',
     deliveryStatus: '3df5b586-ce39-478a-a5ec-1e525f5dc42a',
     vaccination: 'd73f3dc4-bc92-11eb-8529-0242ac130003',
   },
@@ -270,6 +266,11 @@ const appStaticVariables = {
       pincode: "500030"
   },
   DEFAULT_ITEM_SELECTION_FLAG : true, 
+  Diagnostics_Help_NonOrder_Queries: [
+    "96b606f4-dd13-46ff-8bce-85315efee053",
+    "78c2dc50-dc16-44c6-bd2d-d4b14c97b521",
+    "10788a46-512c-41c0-8c59-e31ff7eebbe4"
+    ],
 };
 
 const DEV_top_specialties = [
@@ -801,7 +802,6 @@ const ConfigurationQA5 = {
   PROHEALTH_BOOKING_URL: 'https://qa5patients.apollo247.com/apollo-prohealth',
   APOLLO_PRO_HEALTH_URL:
     'https://qa5patients.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
-  CIRCLE_CONSULT_URL: 'https://qa5patients.apollo247.com/consult-landing?header=false',
 };
 
 // VAPT
@@ -1383,6 +1383,7 @@ export const TestCancelReasons = {
     string.diagnostics.reasonForCancel_TestOrder.anotherChannel,
     string.diagnostics.reasonForCancel_TestOrder.urgentReport,
     string.diagnostics.reasonForCancel_TestOrder.lesserPrice,
+    string.diagnostics.reasonForCancel_TestOrder.needModifyOrder,
     string.diagnostics.reasonForCancel_TestOrder.otherReasons,
   ],
 };
@@ -1392,6 +1393,7 @@ export const TestCancelReasonsPre = {
     string.diagnostics.reasonForCancel_TestOrder.anotherChannel,
     string.diagnostics.reasonForCancel_TestOrder.urgentReport,
     string.diagnostics.reasonForCancel_TestOrder.lesserPrice,
+    string.diagnostics.reasonForCancel_TestOrder.needModifyOrder,
     string.diagnostics.reasonForCancel_TestOrder.otherReasons,
   ],
 };
