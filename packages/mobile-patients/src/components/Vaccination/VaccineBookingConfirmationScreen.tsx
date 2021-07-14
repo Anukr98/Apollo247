@@ -885,38 +885,42 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
         </Text>
 
         <View style={{ flexDirection: 'row', marginTop: 15 }}>
-          <Button
-            title={'DOWNLOAD INVOICE'}
-            style={[
-              styles.actionFooterCTA,
-              {
-                flex: 1,
-                marginHorizontal: 5,
-                opacity:
+          {bookingInfo?.payment_type == PAYMENT_TYPE.IN_APP_PURCHASE ||
+          bookingInfo?.payment_type == PAYMENT_TYPE.COD ? (
+            <Button
+              title={'DOWNLOAD INVOICE'}
+              style={[
+                styles.actionFooterCTA,
+                {
+                  flex: 1,
+                  marginHorizontal: 5,
+                  opacity:
+                    bookingInfo?.status == BOOKING_STATUS.COMPLETED ||
+                    bookingInfo?.status == BOOKING_STATUS.VERIFIED
+                      ? 1
+                      : 0.5,
+                },
+              ]}
+              onPress={() => {
+                if (
                   bookingInfo?.status == BOOKING_STATUS.COMPLETED ||
                   bookingInfo?.status == BOOKING_STATUS.VERIFIED
-                    ? 1
-                    : 0.5,
-              },
-            ]}
-            onPress={() => {
-              if (
-                bookingInfo?.status == BOOKING_STATUS.COMPLETED ||
-                bookingInfo?.status == BOOKING_STATUS.VERIFIED
-              ) {
-                fetchInvoiceHTMLText();
-              } else if (
-                bookingInfo?.status == BOOKING_STATUS.CANCELLED ||
-                bookingInfo?.status == BOOKING_STATUS.REJECTED
-              ) {
-                showCommonAlertMessage('Invoice for the cancelled booking cannot be generated.');
-              } else {
-                showCommonAlertMessage(
-                  "You'll be able to download the invoice only after your vaccination is complete."
-                );
-              }
-            }}
-          />
+                ) {
+                  fetchInvoiceHTMLText();
+                } else if (
+                  bookingInfo?.status == BOOKING_STATUS.CANCELLED ||
+                  bookingInfo?.status == BOOKING_STATUS.REJECTED
+                ) {
+                  showCommonAlertMessage('Invoice for the cancelled booking cannot be generated.');
+                } else {
+                  showCommonAlertMessage(
+                    "You'll be able to download the invoice only after your vaccination is complete."
+                  );
+                }
+              }}
+            />
+          ) : null}
+
           <Button
             title={'GO TO HOMEPAGE'}
             style={[styles.actionFooterCTA, { flex: 1, marginHorizontal: 5 }]}

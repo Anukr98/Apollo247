@@ -1924,6 +1924,7 @@ export enum PAYMENT_TYPE {
   CASHLESS = 'CASHLESS',
   COD = 'COD',
   PREPAID = 'PREPAID',
+  IN_APP_PURCHASE='IN_APP_PURCHASE',
 }
 /** * booking source */
 export enum VACCINE_BOOKING_SOURCE {
