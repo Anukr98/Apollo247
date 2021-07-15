@@ -790,7 +790,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
       specialtyName: g(doctorDetails, 'specialty', 'name')!,
       experience: Number(g(doctorDetails, 'experience')!),
       languagesKnown: g(doctorDetails, 'languages')! || 'NA',
-      appointmentType: consultOnlineTab === selectedTab ? 'ONLINE' : 'PHYSICAL',
+      appointmentType: isOnlineSelected ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
       docId: g(doctorDetails, 'id')!,
       SpecialtyId: g(doctorDetails, 'specialty', 'id')!,
       'Patient UHID': g(currentPatient, 'uhid'),

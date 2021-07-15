@@ -1716,15 +1716,9 @@ export const postCleverTapPHR = (
   data: any = {}
 ) => {
   const eventAttributes: CleverTapEvents[CleverTapEventName.MEDICAL_RECORDS] = {
-    ...data,
+    ...removeObjectNullUndefinedProperties(data),
     Source: source,
-    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-    'Patient UHID': g(currentPatient, 'uhid'),
-    Relation: g(currentPatient, 'relation'),
-    'Patient Age': Math.round(moment().diff(currentPatient?.dateOfBirth, 'years', true)),
-    'Patient Gender': g(currentPatient, 'gender'),
-    'Mobile Number': g(currentPatient, 'mobileNumber'),
-    'Customer ID': g(currentPatient, 'id'),
+    ...removeObjectNullUndefinedProperties(currentPatient),
   };
   postWebEngageEvent(cleverTapEventName, eventAttributes);
   postCleverTapEvent(cleverTapEventName, eventAttributes);
@@ -1794,10 +1788,10 @@ export const postCleverTapIfNewSession = (
     setPhrSession?.(JSON.stringify(obj));
     postCleverTapPHR(
       currentPatient,
-      WebEngageEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS.replace(
+      CleverTapEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS.replace(
         '{0}',
         type
-      ) as WebEngageEventName,
+      ) as CleverTapEventName,
       type,
       {
         sessionId,
@@ -1815,10 +1809,10 @@ export const postCleverTapIfNewSession = (
       setPhrSession?.(JSON.stringify(newSessionObj));
       postCleverTapPHR(
         currentPatient,
-        WebEngageEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS.replace(
+        CleverTapEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS.replace(
           '{0}',
           type
-        ) as WebEngageEventName,
+        ) as CleverTapEventName,
         type,
         {
           sessionId,
@@ -1832,6 +1826,15 @@ export const postCleverTapIfNewSession = (
 export const removeObjectProperty = (object: any, property: string) => {
   return _.omit(object, property);
 };
+
+export function removeObjectNullUndefinedProperties(_object: any) {
+  for (let propName in _object) {
+    if (_object[propName] === null || _object[propName] === undefined || _object[propName] === '') {
+      delete _object[propName];
+    }
+  }
+  return _object;
+}
 
 export const postWEGNeedHelpEvent = (
   currentPatient: GetCurrentPatients_getCurrentPatients_patients,

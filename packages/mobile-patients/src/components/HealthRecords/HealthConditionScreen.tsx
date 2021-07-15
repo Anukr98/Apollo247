@@ -307,7 +307,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
           phrSearchCleverTapEvents(
             CleverTapEventName.PHR_NO_USERS_SEARCHED_LOCAL.replace(
               '{0}',
-              'Health Conditions'
+              'HealthConditions'
             ) as CleverTapEventName,
             currentPatient,
             _searchText
@@ -470,7 +470,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
       case HEALTH_CONDITIONS_TITLE.ALLERGY:
         eventInputData = removeObjectProperty(selectedItem, 'attachmentList');
         postCleverTapIfNewSession(
-          'Allergy',
+          'Allergies',
           currentPatient,
           eventInputData,
           phrSession,
@@ -479,7 +479,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         break;
       case HEALTH_CONDITIONS_TITLE.MEDICATION:
         postCleverTapIfNewSession(
-          'Medication',
+          'Medications',
           currentPatient,
           selectedItem,
           phrSession,
@@ -488,7 +488,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         break;
       case HEALTH_CONDITIONS_TITLE.HEALTH_RESTRICTION:
         postCleverTapIfNewSession(
-          'Restriction',
+          'Restrictions',
           currentPatient,
           selectedItem,
           phrSession,

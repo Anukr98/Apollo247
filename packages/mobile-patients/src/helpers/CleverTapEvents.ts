@@ -190,7 +190,7 @@ export enum CleverTapEventName {
   PHR_CLICK_INSURANCES = 'PHR Click Insurances',
   PHR_ADD_DOCTOR_CONSULTATIONS = 'PHR Add Doctor Consultation',
   PHR_ADD_TEST_REPORT = 'PHR Add Test Report',
-  PHR_ADD_HOSPITALIZATIONS = 'PHR Add Hospitalization',
+  PHR_ADD_HOSPITALIZATIONS = 'PHR Add Hospitalization', //acd
   PHR_ADD_ALLERGY = 'PHR Add Allergy',
   PHR_ADD_FAMILY_HISTORY = 'PHR Add Family History',
   PHR_ADD_MEDICATION = 'PHR Add Medication',
@@ -198,7 +198,7 @@ export enum CleverTapEventName {
   PHR_ADD_MEDICAL_CONDITION = 'PHR Add Medical Condition',
   PHR_ADD_BILLS = 'PHR Add Bills',
   PHR_ADD_INSURANCE = 'PHR Add Insurance',
-  PHR_ADD_HEIGHT = 'PHR Add Height',
+  PHR_ADD_HEIGHT = 'PHR Add Height', //acd
   PHR_ADD_WEIGHT = 'PHR Add Weight',
   PHR_ADD_BLOOD_GROUP = 'PHR Add BloodGroup',
   PHR_DOWNLOAD_DOCTOR_CONSULTATION = 'PHR Download Doctor Consultation',
@@ -211,7 +211,7 @@ export enum CleverTapEventName {
   PHR_DOWNLOAD_BILLS = 'PHR Download Bill',
   PHR_DOWNLOAD_INSURANCE = 'PHR Download Insurance',
   PHR_UPDATE_DOCTOR_CONSULTATION = 'PHR Update Doctor Consultation',
-  PHR_UPDATE_TEST_REPORT = 'PHR Update Test Report',
+  PHR_UPDATE_TEST_REPORT = 'PHR Update Test Report', //acd
   PHR_UPDATE_HOSPITALIZATIONS = 'PHR Update Hospitalization',
   PHR_UPDATE_ALLERGY = 'PHR Update Allergy',
   PHR_UPDATE_FAMILY_HISTORY = 'PHR Update Family History',
@@ -220,11 +220,11 @@ export enum CleverTapEventName {
   PHR_UPDATE_MEDICAL_CONDITION = 'PHR Update Medical Condition',
   PHR_UPDATE_BILLS = 'PHR Update Bill',
   PHR_UPDATE_INSURANCE = 'PHR Update Insurance',
-  PHR_UPDATE_HEIGHT = 'PHR Update Height',
+  PHR_UPDATE_HEIGHT = 'PHR Update Height', //acd
   PHR_UPDATE_WEIGHT = 'PHR Update Weight',
   PHR_UPDATE_BLOOD_GROUP = 'PHR Update BloodGroup',
   PHR_DELETE_DOCTOR_CONSULTATION = 'PHR Delete Doctor Consultation',
-  PHR_DELETE_TEST_REPORT = 'PHR Delete Test Report',
+  PHR_DELETE_TEST_REPORT = 'PHR Delete Test Report', //acd
   PHR_DELETE_HOSPITALIZATIONS = 'PHR Delete Hospitalization',
   PHR_DELETE_ALLERGY = 'PHR Delete Allergy',
   PHR_DELETE_FAMILY_HISTORY = 'PHR Delete Family History',
@@ -236,7 +236,7 @@ export enum CleverTapEventName {
   PHR_LOAD_HEALTH_RECORDS = 'PHR Load Health Records',
   PHR_USER_LINKING = 'PHR User Linking',
   PHR_USER_DELINKING = 'PHR User DeLinking',
-  PHR_NO_OF_USERS_SEARCHED_GLOBAL = 'PHR No Of Users searched Global',
+  PHR_NO_OF_USERS_SEARCHED_GLOBAL = 'PHR No Of Users searched Global', //acd
   PHR_NO_USERS_SEARCHED_LOCAL = 'PHR No Of Users searched Local {0}',
   PHR_NO_OF_USERS_CLICKED_ON_RECORDS = 'PHR users seen on records in {0}',
 

@@ -53,6 +53,7 @@ import {
   HEALTH_CONDITIONS_TITLE,
   getPhrHighlightText,
   phrSearchCleverTapEvents,
+  removeObjectNullUndefinedProperties,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   CleverTapEventName,
@@ -473,6 +474,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     currentPatient?.patientMedicalHistory?.weight !== 'Not Recorded';
 
   useEffect(() => {
+    removeObjectNullUndefinedProperties(currentPatient);
     currentPatient && setProfile(currentPatient!);
     if (!currentPatient) {
       getPatientApiCall();
@@ -776,13 +778,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     const eventAttributes = {
       type,
       value,
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient UHID': g(currentPatient, 'uhid'),
-      Relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Customer ID': g(currentPatient, 'id'),
+      ...removeObjectNullUndefinedProperties(currentPatient),
     };
     postWebEngageEvent(cleverTapEventName, eventAttributes);
     postCleverTapEvent(cleverTapEventName, eventAttributes);

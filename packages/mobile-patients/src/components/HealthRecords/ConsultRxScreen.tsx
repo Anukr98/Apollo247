@@ -488,7 +488,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
           phrSearchCleverTapEvents(
             CleverTapEventName.PHR_NO_USERS_SEARCHED_LOCAL.replace(
               '{0}',
-              'Doctor Consultations'
+              'Prescription'
             ) as CleverTapEventName,
             currentPatient,
             _searchText
@@ -839,7 +839,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   const onHealthCardItemPress = (selectedItem: any) => {
     const eventInputData = removeObjectProperty(selectedItem, 'prescriptionFiles');
     postCleverTapIfNewSession(
-      'Doctor Consults',
+      'Doctor Consultations',
       currentPatient,
       eventInputData,
       phrSession,

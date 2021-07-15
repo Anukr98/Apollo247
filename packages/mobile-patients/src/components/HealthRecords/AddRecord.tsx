@@ -1146,7 +1146,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               eventInputData
             );
             postCleverTapIfNewSession(
-              'Doctor Consultation',
+              'Doctor Consultations',
               currentPatient,
               eventInputData,
               phrSession,
@@ -1156,7 +1156,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             postCleverTapPHR(
               currentPatient,
               CleverTapEventName.PHR_ADD_DOCTOR_CONSULTATIONS,
-              'Doctor Consultation',
+              'Doctor Consultations',
               eventInputData
             );
             postCleverTapIfNewSession(
@@ -1225,7 +1225,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               eventInputData
             );
             postCleverTapIfNewSession(
-              'Allergy',
+              'Allergies',
               currentPatient,
               eventInputData,
               phrSession,
@@ -1239,7 +1239,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               eventInputData
             );
             postCleverTapIfNewSession(
-              'Allergy',
+              'Allergies',
               currentPatient,
               eventInputData,
               phrSession,
@@ -1302,7 +1302,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               inputData
             );
             postCleverTapIfNewSession(
-              'Medication',
+              'Medications',
               currentPatient,
               inputData,
               phrSession,
@@ -1316,7 +1316,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               inputData
             );
             postCleverTapIfNewSession(
-              'Medication',
+              'Medications',
               currentPatient,
               inputData,
               phrSession,
@@ -1376,7 +1376,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               inputData
             );
             postCleverTapIfNewSession(
-              'Restriction',
+              'Restrictions',
               currentPatient,
               inputData,
               phrSession,
@@ -1390,7 +1390,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               inputData
             );
             postCleverTapIfNewSession(
-              'Restriction',
+              'Restrictions',
               currentPatient,
               inputData,
               phrSession,
@@ -1581,7 +1581,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               eventInputData
             );
             postCleverTapIfNewSession(
-              'Test Report',
+              'Test Reports',
               currentPatient,
               eventInputData,
               phrSession,
@@ -1595,7 +1595,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               eventInputData
             );
             postCleverTapIfNewSession(
-              'Test Report',
+              'Test Reports',
               currentPatient,
               eventInputData,
               phrSession,
@@ -1648,7 +1648,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               eventInputData
             );
             postCleverTapIfNewSession(
-              'Hospitalization',
+              'Hospitalizations',
               currentPatient,
               eventInputData,
               phrSession,
@@ -1662,7 +1662,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               eventInputData
             );
             postCleverTapIfNewSession(
-              'Hospitalization',
+              'Hospitalizations',
               currentPatient,
               eventInputData,
               phrSession,
@@ -1714,7 +1714,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               eventInputData
             );
             postCleverTapIfNewSession(
-              'Bill',
+              'Bills',
               currentPatient,
               eventInputData,
               phrSession,
@@ -1728,7 +1728,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               eventInputData
             );
             postCleverTapIfNewSession(
-              'Bill',
+              'Bills',
               currentPatient,
               eventInputData,
               phrSession,

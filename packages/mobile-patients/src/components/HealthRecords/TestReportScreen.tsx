@@ -58,6 +58,7 @@ import {
   postCleverTapIfNewSession,
   removeObjectProperty,
   postCleverTapEvent,
+  removeObjectNullUndefinedProperties,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -324,7 +325,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
           phrSearchCleverTapEvents(
             CleverTapEventName.PHR_NO_USERS_SEARCHED_LOCAL.replace(
               '{0}',
-              'Test Reports'
+              'LabTest'
             ) as CleverTapEventName,
             currentPatient,
             _searchText
@@ -589,7 +590,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   const onHealthCardItemPress = (selectedItem: any) => {
     const eventInputData = removeObjectProperty(selectedItem, 'testResultFiles');
     postCleverTapIfNewSession(
-      'Test Report',
+      'Test Reports',
       currentPatient,
       eventInputData,
       phrSession,

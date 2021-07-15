@@ -339,7 +339,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
   const onHealthCardItemPress = (selectedItem: HospitalizationType) => {
     const eventInputData = removeObjectProperty(selectedItem, 'hospitalizationFiles');
     postCleverTapIfNewSession(
-      'Hospitalization',
+      'Hospitalizations',
       currentPatient,
       eventInputData,
       phrSession,

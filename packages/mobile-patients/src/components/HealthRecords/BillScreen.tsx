@@ -355,7 +355,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
 
   const onHealthCardItemPress = (selectedItem: MedicalBillsType) => {
     const eventInputData = removeObjectProperty(selectedItem, 'billFiles');
-    postCleverTapIfNewSession('Bill', currentPatient, eventInputData, phrSession, setPhrSession);
+    postCleverTapIfNewSession('Bills', currentPatient, eventInputData, phrSession, setPhrSession);
     props.navigation.navigate(AppRoutes.HealthRecordDetails, {
       data: selectedItem,
       medicalBill: true,
