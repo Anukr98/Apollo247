@@ -46,13 +46,16 @@ export const handleOpenURL = (event: any) => {
     try {
       if (data?.length >= 2) {
         linkId = data?.[1]?.split('?');
+        console.log({linkId})
         const params = data[1]?.split('&');
         const utmParams = params?.map((item: any) => item.split('='));
         utmParams?.forEach(
           (item: any) => item?.length == 2 && (attributes?.[item?.[0]] = item?.[1])
         );
         if (linkId?.length > 0) {
-          linkId = linkId?.[0];
+        
+            linkId = linkId?.[0];
+              
           setBugFenderLog('DEEP_LINK_SPECIALITY_ID', linkId);
         }
       }
@@ -61,6 +64,7 @@ export const handleOpenURL = (event: any) => {
     route = routeNameParam ? routeNameParam?.[0]?.toLowerCase() : '';
     const paramData = getParamData(linkId)?.[0];
     linkId = paramData ? paramData : linkId;
+    console.log({route})
     switch (route) {
       case 'consult':
       case 'consults':
@@ -103,11 +107,21 @@ export const handleOpenURL = (event: any) => {
 
       case 'test':
       case 'tests':
-        return {
-          routeName: 'Test',
-        };
+      case 'lab-tests':
+        if (a === 0) {
+          // www.apollo247.com as url
+          const redirectTestDetails = data.length >= 2;
+          return {
+            routeName: redirectTestDetails ? 'TestDetails' : 'Test',
+            id: redirectTestDetails ? linkId : undefined,
+          };
+        } else {
+          // apollopatients:
+          return {
+            routeName: 'Test',
+          };
+        }
         break;
-
       case 'speciality':
         if (linkId) {
           return {
@@ -352,6 +366,13 @@ export const handleOpenURL = (event: any) => {
           routeName: 'mobilehelp',
         };
         break;
+      case 'tests-cart':
+      case 'testscart':
+        return {
+          routeName: 'TestsCart',
+          id: linkId ? linkId : undefined,
+        };
+        break;
 
       default:
         if (b === 0) {
@@ -503,8 +524,10 @@ export const pushTheView = (
       navigateToView(navigation, AppRoutes.OneApolloMembership);
       break;
     case 'TestDetails':
+      const isItemId = id.indexOf('-') !== -1;
       navigateToView(navigation, AppRoutes.TestDetails, {
-        itemId: id,
+        itemId: isItemId ? null : id,
+        itemName : isItemId ? id : null,
         movedFrom: 'deeplink',
       });
       break;
@@ -585,6 +608,8 @@ export const pushTheView = (
     case 'mobilehelp':
       navigateToView(navigation, AppRoutes.MobileHelp);
       break;
+    case 'TestsCart':
+      navigateToView(navigation, AppRoutes.TestsCart);
     default:
       const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
         source: 'deeplink',

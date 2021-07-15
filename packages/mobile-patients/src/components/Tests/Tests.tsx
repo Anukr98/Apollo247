@@ -1636,7 +1636,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 isServiceable={isDiagnosticLocationServiceable}
                 isVertical={false}
                 navigation={props.navigation}
-                source={'Home page'}
+                source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME}
                 sourceScreen={AppRoutes.Tests}
               />
             )}
@@ -1689,7 +1689,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 isServiceable={isDiagnosticLocationServiceable}
                 isVertical={false}
                 navigation={props.navigation}
-                source={'Home page'}
+                source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME}
                 sourceScreen={AppRoutes.Tests}
               />
             )}
@@ -2080,7 +2080,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const appointmentDate = moment(clickedItem?.slotDateTimeInUTC)?.format('DD MMM YYYY');
     const patientName = `${clickedItem?.patientObj?.firstName} ${clickedItem?.patientObj?.lastName}`;
     try {
-      setViewReportOrderId(clickedItem?.orderId)
+      setViewReportOrderId(clickedItem?.orderId);
       await downloadDiagnosticReport(
         setLoadingContext,
         clickedItem?.labReportURL,
@@ -2384,9 +2384,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setClickedItem([]);
           }}
           downloadDocument={() => {
-            const res = downloadDocument(clickedItem?.labReportURL, 'application/pdf',clickedItem?.orderId)
+            const res = downloadDocument(
+              clickedItem?.labReportURL,
+              'application/pdf',
+              clickedItem?.orderId
+            );
             if (res == clickedItem?.orderId) {
-              setViewReportOrderId(clickedItem?.orderId)
+              setViewReportOrderId(clickedItem?.orderId);
             }
           }}
           viewReportOrderId={viewReportOrderId}
