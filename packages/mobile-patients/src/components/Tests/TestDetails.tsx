@@ -84,13 +84,7 @@ const screenWidth = Dimensions.get('window').width;
 export interface TestPackageForDetails extends TestPackage {
   collectionType: TEST_COLLECTION_TYPE;
   preparation: string;
-  source:
-    | 'Home Page'
-    | 'Full Search'
-    | 'Cart page'
-    | 'Partial Search'
-    | 'Deeplink'
-    | 'Category page';
+  source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
   type: string;
   specialPrice?: string | number;
   circleRate?: string | number;
@@ -188,7 +182,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
 
   const itemName =
-    testDetails?.ItemName ||
+    (!!testDetails && testDetails?.ItemName) ||
     testName ||
     cmsTestDetails?.diagnosticItemName ||
     testInfo?.ItemName ||
@@ -218,25 +212,27 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
    */
   useEffect(() => {
     if (itemId) {
-      fetchTestDetails_CMS(itemId);
+      fetchTestDetails_CMS(itemId, null);
       loadTestDetails(itemId);
+    } else if (testName) {
+      fetchTestDetails_CMS(99999, testName);
     } else {
       setErrorState(true);
     }
   }, [itemId]);
 
-  const fetchTestDetails_CMS = async (
-    itemId: string | number
-  ) => {
+  const fetchTestDetails_CMS = async (itemId: string | number, itemName: string | null) => {
     setLoadingContext?.(true);
     const res: any = await getDiagnosticTestDetails(
       'diagnostic-details',
       Number(itemId),
-      cmsTestDetails?.diagnosticUrlAlias,
-      Number(diagnosticServiceabilityData?.cityId!) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
+      !!itemName ? itemName : cmsTestDetails?.diagnosticUrlAlias,
+      Number(diagnosticServiceabilityData?.cityId!) ||
+        AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
     );
     if (res?.data?.success) {
       const result = g(res, 'data', 'data');
+      !!itemName && loadTestDetails(result?.diagnosticItemID);
       setCmsTestDetails(result);
       setLoadingContext?.(false);
 
@@ -732,7 +728,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const renderCardMidView = () => {
     return (
       <>
-        {!!cmsTestDetails?.diagnosticReportGenerationTime || !!cmsTestDetails?.diagnosticReportCustomerText ? (
+        {!!cmsTestDetails?.diagnosticReportGenerationTime ||
+        !!cmsTestDetails?.diagnosticReportCustomerText ? (
           <>
             {renderSeparator()}
             <View style={styles.midCardView}>
@@ -741,7 +738,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               <View style={styles.midCardTextView}>
                 <Text style={styles.reportTimeText}>Report generation Time</Text>
                 <Text style={styles.reportTime}>
-                  {cmsTestDetails?.diagnosticReportCustomerText ? cmsTestDetails?.diagnosticReportCustomerText : cmsTestDetails?.diagnosticReportGenerationTime}
+                  {cmsTestDetails?.diagnosticReportCustomerText
+                    ? cmsTestDetails?.diagnosticReportCustomerText
+                    : cmsTestDetails?.diagnosticReportGenerationTime}
                 </Text>
               </View>
             </View>
@@ -989,7 +988,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               isServiceable={isDiagnosticLocationServiceable}
               isVertical={false}
               navigation={props.navigation}
-              source={'Details page'}
+              source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS}
               sourceScreen={AppRoutes.TestDetails}
             />
           </>
@@ -1019,7 +1018,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               isServiceable={isDiagnosticLocationServiceable}
               isVertical={false}
               navigation={props.navigation}
-              source={'Details page'}
+              source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS}
               sourceScreen={AppRoutes.TestDetails}
             />
           </>
@@ -1046,9 +1045,17 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       discountToDisplay,
       DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.DETAILS
     );
+
+    const testInclusions =
+      testInfo?.inclusions == null
+        ? [Number(itemId)]
+        : testInfo?.inclusions?.length > 0
+        ? testInfo?.inclusions
+        : [Number(testInfo?.inclusions)];
+
     addCartItem?.({
       id: `${itemId!}`,
-      mou: cmsTestDetails?.diagnosticInclusionName?.length + 1 || testInfo?.mou,
+      mou: 1,
       name: cmsTestDetails?.diagnosticItemName || testInfo?.itemName,
       price: price,
       specialPrice: specialPrice! | price,
@@ -1064,7 +1071,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         : testInfo?.promoteDiscount
         ? DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
         : DIAGNOSTIC_GROUP_PLAN.ALL,
-      inclusions: testInfo?.inclusions == null ? [Number(itemId)] : testInfo?.inclusions,
+      inclusions: testInclusions,
     });
   }
 
