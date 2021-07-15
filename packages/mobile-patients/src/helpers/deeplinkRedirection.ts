@@ -64,7 +64,6 @@ export const handleOpenURL = (event: any) => {
     route = routeNameParam ? routeNameParam?.[0]?.toLowerCase() : '';
     const paramData = getParamData(linkId)?.[0];
     linkId = paramData ? paramData : linkId;
-    console.log({route})
     switch (route) {
       case 'consult':
       case 'consults':
