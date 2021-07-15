@@ -303,8 +303,15 @@ export const handleOpenURL = (event: any) => {
 
       case 'circle-membership':
       case 'circlemembershipdetails':
+      case 'circle':
         return {
           routeName: 'CircleMembershipDetails',
+        };
+        break;
+
+      case 'my-membership':
+        return {
+          routeName: 'MyMembership',
         };
         break;
 
@@ -477,13 +484,15 @@ export const pushTheView = (
       navigateToView(navigation, AppRoutes.MedicineListing, { categoryName: id });
       break;
     case 'MedicineSearch':
-      if (id) {
+      if (id && !id.includes('=')) {
         const [itemId, name] = id.split(',');
         navigateToView(navigation, AppRoutes.MedicineListing, {
           category_id: itemId,
           title: `${name ? name : 'Products'}`.toUpperCase(),
           movedFrom: 'deeplink',
         });
+      } else {
+        navigateToView(navigation, AppRoutes.MedicineSearch);
       }
       break;
     case 'MedicineCart':
@@ -561,6 +570,9 @@ export const pushTheView = (
       } else {
         navigation.replace(AppRoutes.ConsultRoom);
       }
+      break;
+    case 'MyMembership':
+      navigateToView(navigation, AppRoutes.MyMembership);
       break;
     case 'corporatemembership':
       if (isCorporateSubscribed) {

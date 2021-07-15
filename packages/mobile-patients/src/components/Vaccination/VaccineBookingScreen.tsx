@@ -1469,6 +1469,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
         onHospitalSiteSelected={(hospitalSiteName, address) => {
           setSelectedHospitalSite(hospitalSiteName);
           setSelectedHospitalSiteAddress(address);
+          setSelectedSlot(undefined);
         }}
       />
     );
