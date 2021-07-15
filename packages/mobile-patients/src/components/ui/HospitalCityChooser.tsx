@@ -145,6 +145,11 @@ export const HospitalCityChooser: React.FC<HospitalCityChooserProps> = (props) =
           style={styles.hospitalItemContainer}
           onPress={() => {
             props.onCityChoosed(item);
+
+            setSearchText('');
+            setSearchFocused(false);
+            setCityList(props.dataList);
+
             hideMenu();
           }}
         >
