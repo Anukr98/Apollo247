@@ -253,7 +253,6 @@ const appStaticVariables = {
     },
   ],
   DIAGNOSTIC_DEFAULT_ICON: 'https://newassets.apollo247.com/organs/ic_blood.png',
-  HomeScreenConsultationCTAs: homeScreenConsultationCTAs,
   DIAGNOSTIC_DEFAULT_LOCATION : {
     displayName: "Hyderabad",
       latitude: 17.3202127,

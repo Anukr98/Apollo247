@@ -1953,29 +1953,6 @@ export const GreenClock: React.FC<IconProps> = (props) => (
   />
 );
 
-export const LocationGrey: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/location_grey.webp')} />
-);
-
-export const Sort: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/sort.webp')} />
-);
-
-export const Toggle: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/rightToggle.webp')} />
-);
-
-export const LeftToggle: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/leftToggle.webp')} />
-);
-
-export const VideoConsult: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/videoConsult.webp')} />
-);
-
-export const YellowRightArrow: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/yellowRightArrow.webp')} />
-);
 export const SyringSmall: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/syring_small.webp')} />
 );
