@@ -46,16 +46,13 @@ export const handleOpenURL = (event: any) => {
     try {
       if (data?.length >= 2) {
         linkId = data?.[1]?.split('?');
-        console.log({linkId})
         const params = data[1]?.split('&');
         const utmParams = params?.map((item: any) => item.split('='));
         utmParams?.forEach(
           (item: any) => item?.length == 2 && (attributes?.[item?.[0]] = item?.[1])
         );
         if (linkId?.length > 0) {
-        
             linkId = linkId?.[0];
-              
           setBugFenderLog('DEEP_LINK_SPECIALITY_ID', linkId);
         }
       }
@@ -621,6 +618,7 @@ export const pushTheView = (
       break;
     case 'TestsCart':
       navigateToView(navigation, AppRoutes.TestsCart);
+      break;
     default:
       const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
         source: 'deeplink',
