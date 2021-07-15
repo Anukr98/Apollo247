@@ -1415,6 +1415,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
         }}
         onHospitalSiteSelected={(hospitalSiteName) => {
           setSelectedHospitalSite(hospitalSiteName);
+          setSelectedSlot(undefined);
         }}
       />
     );

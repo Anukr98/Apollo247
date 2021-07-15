@@ -1801,6 +1801,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             setCirclePaymentReference(paymentStoredVal);
         } else {
           setNonCircleValues();
+          setIsCircleMember('no');
           setCirclePlanValidity && setCirclePlanValidity(null);
           setCirclePaymentReference && setCirclePaymentReference(null);
           setCirclePlanId && setCirclePlanId('');
@@ -1848,7 +1849,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const setNonCircleValues = () => {
     AsyncStorage.setItem('isCircleMember', 'no');
     AsyncStorage.removeItem('circleSubscriptionId');
-    setIsCircleMember && setIsCircleMember('no');
     setCircleSubscriptionId && setCircleSubscriptionId('');
     setIsCircleSubscription && setIsCircleSubscription(false);
     setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
