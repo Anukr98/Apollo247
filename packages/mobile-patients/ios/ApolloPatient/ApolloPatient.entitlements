@@ -8,6 +8,7 @@
 	<array>
 		<string>applinks:apl247.onelink.me</string>
 		<string>applinks:www.apollopharmacy.in</string>
+		<string>applinks:www.apollo247.com</string>
 	</array>
 	<key>com.apple.developer.healthkit</key>
 	<true/>
