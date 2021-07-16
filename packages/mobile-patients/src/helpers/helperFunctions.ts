@@ -1340,14 +1340,18 @@ export const reOrderMedicines = async (
     .split(',')
     .map((item) => item.trim())
     .filter((v) => v);
+  const appointmentIds = (order?.appointmentId || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter((v) => v);
   const medicineNames = (billedLineItems
     ? billedLineItems.filter((item) => item.itemName).map((item) => item.itemName)
     : lineItems.filter((item) => item.medicineName).map((item) => item.medicineName!)
   ).join(',');
   const prescriptionsToAdd = prescriptionUrls.map(
-    (item) =>
+    (item, index) =>
       ({
-        id: item,
+        id: appointmentIds?.[index],
         date: moment(g(order, 'createdDate')).format('DD MMM YYYY'),
         doctorName: `Meds Rx ${(order.id && order.id.substring(0, order.id.indexOf('-'))) || ''}`,
         forPatient: g(currentPatient, 'firstName') || '',

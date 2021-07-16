@@ -146,6 +146,7 @@ export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetail
 export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails {
   __typename: "MedicineOrdersOMS";
   id: string;
+  appointmentId: string | null;
   createdDate: any | null;
   orderAutoId: number | null;
   billNumber: string | null;

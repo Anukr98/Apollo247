@@ -2046,6 +2046,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
     ) {
       medicineOrderDetails {
         id
+        appointmentId
         createdDate
         orderAutoId
         billNumber
