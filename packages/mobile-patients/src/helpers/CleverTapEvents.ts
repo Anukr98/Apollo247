@@ -180,7 +180,7 @@ export enum CleverTapEventName {
   UPLOAD_PRESCRIPTION = 'Upload Prescription',
   UPLOAD_PHOTO = 'Upload Photo',
   ITEMS_CLICKED = 'Items Clicked',
-  PHR_ORDER_MEDS_TESTS = 'PHR Order Tests and Meds Prescription',
+  PHR_ORDER_MEDS_TESTS = 'PHR Order Order Tests and Meds Prescription Detail',
   PHR_CONSULT_CARD_CLICK = 'PHR Consult Card click',
   PHR_CLICK_DOCTOR_CONSULTATIONS = 'PHR Click Doctor Consultations',
   PHR_CLICK_TEST_REPORTS = 'PHR Click Test Reports',

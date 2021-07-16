@@ -62,6 +62,7 @@ import {
   postCleverTapIfNewSession,
   removeObjectProperty,
   getIsMedicine,
+  removeObjectNullUndefinedProperties,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   EPrescription,
@@ -622,13 +623,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   const postOrderMedsAndTestsEvent = (id: any, caseSheetDetails: any) => {
     const eventAttributes: CleverTapEvents[CleverTapEventName.PHR_ORDER_MEDS_TESTS] = {
       ...caseSheetDetails,
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient UHID': g(currentPatient, 'uhid'),
-      Relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Customer ID': g(currentPatient, 'id'),
+      ...removeObjectNullUndefinedProperties(currentPatient),
       'Consult ID': g(id, 'id'),
     };
     postWebEngageEvent(CleverTapEventName.PHR_ORDER_MEDS_TESTS, eventAttributes);

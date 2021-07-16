@@ -758,13 +758,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
   const tabsClickedCleverTapEvent = (cleverTapEventName: CleverTapEventName) => {
     const eventAttributes: CleverTapEvents[CleverTapEventName.MEDICAL_RECORDS] = {
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient UHID': g(currentPatient, 'uhid'),
-      Relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Customer ID': g(currentPatient, 'id'),
+      ...removeObjectNullUndefinedProperties(currentPatient),
     };
     postWebEngageEvent(cleverTapEventName, eventAttributes);
     postCleverTapEvent(cleverTapEventName, eventAttributes);
