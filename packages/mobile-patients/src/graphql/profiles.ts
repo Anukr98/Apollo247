@@ -4138,6 +4138,7 @@ export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
             refundId
             refundAmount
             refundStatus
+            txnTimestamp
           }
         }
       }
