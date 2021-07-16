@@ -153,7 +153,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const isSplitCart: boolean = orders?.length > 1 ? true : false;
 
   useEffect(() => {
-    if (!!substituteTime && showSubstituteMessage) {
+    if (!!substituteTime && showSubstituteMessage && status == success) {
       const interval = setInterval(() => {
         if (substituteTime < 1) {
           clearInterval(interval);
@@ -706,17 +706,21 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const substituteItemsCard = () => {
-    return (
-      <SubstituteItemsCard
-        orderId={orderIds?.[0]}
-        transactionId={transId}
-        substituteMessage={substituteMessage}
-        substituteTime={substituteTime}
-        updateOrderSubstitution={updateOrderSubstitution}
-        setShowSubstituteMessage={setShowSubstituteMessage}
-        setShowSubstituteConfirmation={setShowSubstituteConfirmation}
-      />
-    );
+    if (status == success) {
+      return (
+        <SubstituteItemsCard
+          orderId={orderIds?.[0]}
+          transactionId={transId}
+          substituteMessage={substituteMessage}
+          substituteTime={substituteTime}
+          updateOrderSubstitution={updateOrderSubstitution}
+          setShowSubstituteMessage={setShowSubstituteMessage}
+          setShowSubstituteConfirmation={setShowSubstituteConfirmation}
+        />
+      );
+    } else {
+      return null;
+    }
   };
 
   const renderSubstituteSnackBar = () => {
