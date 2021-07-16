@@ -81,7 +81,7 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
         const { paymentStatus, paymentRefId, amountPaid } = paymentInfo;
         refId = paymentRefId;
         price = amountPaid;
-        status = currentStatus === 'CANCELLED' && refundInfo.length ? REFUND : paymentStatus;
+        status = currentStatus === 'CANCELLED' && refundInfo?.length ? REFUND : paymentStatus;
       }
       return { status: status, refId: refId, price: price };
     }
