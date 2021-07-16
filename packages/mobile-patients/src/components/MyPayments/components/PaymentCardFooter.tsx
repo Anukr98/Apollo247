@@ -81,10 +81,21 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
         };
       }
     } else {
-      const { medicineOrderPayments, orderAutoId, orderDateTime, currentStatus } = item;
+      const {
+        medicineOrderPayments,
+        orderAutoId,
+        orderDateTime,
+        currentStatus,
+        PaymentOrdersPharma,
+      } = item;
+      const { refund } = PaymentOrdersPharma;
+      const refundInfo = refund?.length ? refund : medicineOrderPayments[0]?.medicineOrderRefunds;
+      const paymentInfo = PaymentOrdersPharma?.paymentStatus
+        ? PaymentOrdersPharma
+        : medicineOrderPayments[0];
       orderID = orderAutoId;
       dateAndTime = orderDateTime;
-      if (!medicineOrderPayments || !medicineOrderPayments.length) {
+      if (!paymentInfo) {
         type = '';
         status = 'PENDING';
         return {
@@ -96,12 +107,10 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
           aptType: aptType,
         };
       } else {
-        const { paymentType, paymentMode, medicineOrderRefunds } = medicineOrderPayments[0];
+        const { paymentType, paymentMode } = paymentInfo;
         type = !paymentMode ? paymentType : PaymentModes[paymentMode];
         status =
-          currentStatus === 'CANCELLED' && medicineOrderRefunds.length
-            ? REFUND
-            : medicineOrderPayments[0].paymentStatus;
+          currentStatus === 'CANCELLED' && refundInfo.length ? REFUND : paymentInfo.paymentStatus;
         return {
           leftHeaderText: 'Order No. - ' + orderAutoId,
           dateAndTime: getDate(dateAndTime),
