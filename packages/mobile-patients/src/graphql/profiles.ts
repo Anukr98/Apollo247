@@ -4128,6 +4128,17 @@ export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
             txnId
           }
         }
+        PaymentOrdersPharma {
+          paymentRefId
+          paymentStatus
+          paymentDateTime
+          amountPaid
+          refund {
+            refundId
+            refundAmount
+            refundStatus
+          }
+        }
       }
     }
   }
