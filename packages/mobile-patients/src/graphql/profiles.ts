@@ -4133,6 +4133,7 @@ export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
           paymentStatus
           paymentDateTime
           amountPaid
+          paymentMode
           refund {
             refundId
             refundAmount
