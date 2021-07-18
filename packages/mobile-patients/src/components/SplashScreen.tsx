@@ -963,8 +963,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     },
     Diagnostics_Help_NonOrder_Queries: {
       QA: 'QA_Diagnostics_Help_NonOrder_Queries',
-      PROD: 'Diagnostics_Help_NonOrder_Queries'
-    }
+      PROD: 'Diagnostics_Help_NonOrder_Queries',
+    },
   };
 
   const getKeyBasedOnEnv = (

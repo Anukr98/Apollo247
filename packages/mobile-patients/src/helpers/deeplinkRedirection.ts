@@ -46,7 +46,9 @@ export const handleOpenURL = (event: any) => {
     try {
       if (data?.length >= 2) {
         linkId = data?.[1]?.split('?');
+
         const params = data[1]?.split('&');
+
         const utmParams = params?.map((item: any) => item.split('='));
         utmParams?.forEach(
           (item: any) => item?.length == 2 && (attributes?.[item?.[0]] = item?.[1])
@@ -58,10 +60,13 @@ export const handleOpenURL = (event: any) => {
       }
     } catch (error) {}
     const routeNameParam = route?.split('?');
+
     route = routeNameParam ? routeNameParam?.[0]?.toLowerCase() : '';
     const paramData = getParamData(linkId)?.[0];
     linkId = paramData ? paramData : linkId;
+
     switch (route) {
+      case 'appointments':
       case 'consult':
       case 'consults':
         return {
@@ -118,6 +123,8 @@ export const handleOpenURL = (event: any) => {
           };
         }
         break;
+
+      case 'specialties':
       case 'speciality':
         if (linkId) {
           return {
@@ -131,6 +138,7 @@ export const handleOpenURL = (event: any) => {
         }
         break;
 
+      case 'doctors':
       case 'doctor':
         if (linkId) {
           return {
@@ -473,6 +481,7 @@ export const pushTheView = (
     case 'DoctorSearch':
       navigateToView(navigation, AppRoutes.DoctorSearch);
       break;
+
     case 'MedicineSearchText':
       navigateToView(navigation, AppRoutes.MedicineListing, { searchText: id });
       break;

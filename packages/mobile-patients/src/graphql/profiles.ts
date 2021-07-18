@@ -1092,6 +1092,7 @@ export const GET_ALL_SPECIALTIES = gql`
       image
       specialistSingularTerm
       specialistPluralTerm
+      slugName
       userFriendlyNomenclature
       # displayOrder
       shortDescription

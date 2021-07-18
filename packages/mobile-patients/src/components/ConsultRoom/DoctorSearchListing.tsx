@@ -74,6 +74,11 @@ import {
   getUserType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
+  getAllSpecialties,
+  getAllSpecialties_getAllSpecialties,
+} from '@aph/mobile-patients/src/graphql/types/getAllSpecialties';
+import { GET_ALL_SPECIALTIES } from '@aph/mobile-patients/src/graphql/profiles';
+import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -83,6 +88,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
+
 import {
   BackHandler,
   Dimensions,
@@ -291,7 +297,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [doctorShareData, setDoctorShareData] = useState<any>();
   const [showDoctorSharePopup, setShowDoctorSharePopup] = useState<boolean>(false);
   const [doctorShareRank, setDoctorShareRank] = useState<number>(1);
-  const specialityId = props.navigation.getParam('specialityId') || '';
+  const [specialityId, setSpecialityId] = useState<string>(
+    props.navigation.getParam('specialityId') || ''
+  );
 
   let DoctorsflatListRef: any;
   const filterOptions = (filters: any) => {
@@ -342,13 +350,65 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [fetching, setfetching] = useState<boolean>(false);
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
 
+  const checkIsSpecialtyId = (uuid: string) => {
+    let s: any = uuid;
+    s = s.match('^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
+    if (s === null) {
+      return false;
+    }
+    return true;
+  };
+
   useEffect(() => {
     async function fetchFilter() {
       const retrievedFilterOptions: any = await AsyncStorage.getItem('FilterOptions');
       retrievedFilterOptions && setFilterData(filterOptions(JSON.parse(retrievedFilterOptions)));
     }
     fetchFilter();
+
+    let isSpecialtyId = checkIsSpecialtyId(specialityId);
+
+    if (isSpecialtyId == false) {
+      fetchAllSpecialities();
+    }
   }, []);
+
+  const fetchAllSpecialities = () => {
+    client
+      .query<getAllSpecialties>({
+        query: GET_ALL_SPECIALTIES,
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        try {
+          let specialitiesList = data.getAllSpecialties.filter(function(specialty) {
+            let obtainedSpecialtyId = specialityId;
+            obtainedSpecialtyId = obtainedSpecialtyId.replace('and', '&');
+
+            let specialityName: string = specialty?.name || '';
+            specialityName = specialityName.toLowerCase().replace(' ', '-');
+
+            let specialistPluralTerm: string = specialty?.specialistPluralTerm || '';
+            specialistPluralTerm = specialistPluralTerm.toLowerCase().replace(' ', '-');
+
+            let specialistSingularTerm: string = specialty?.specialistSingularTerm || '';
+            specialistSingularTerm = specialistSingularTerm.toLowerCase().replace(' ', '-');
+
+            return (
+              specialty?.slugName == obtainedSpecialtyId ||
+              specialityName == obtainedSpecialtyId ||
+              specialistPluralTerm == obtainedSpecialtyId ||
+              specialistSingularTerm == obtainedSpecialtyId
+            );
+          });
+
+          setSpecialityId(specialitiesList?.[0].id);
+          setDoctorSearch('');
+        } catch (error) {}
+      })
+      .catch((e) => {});
+  };
+
   useEffect(() => {
     fetchDoctorListByAvailability();
     setDeepLinkFilter();
@@ -393,7 +453,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         query: GET_PLATINUM_DOCTOR,
         fetchPolicy: 'no-cache',
         variables: {
-          specialtyId: props.navigation.getParam('specialityId') || '',
+          specialtyId: specialityId,
           zoneType: ZoneType.STATE,
           zone: state || locationDetails?.state,
           partnerDoctor,
@@ -771,7 +831,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
     const FilterInput: FilterDoctorInput = {
       patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-      specialty: props.navigation.getParam('specialityId') || '',
+      specialty: specialityId,
       pincode: pinCode || g(locationDetails, 'pincode') || null,
       doctorType:
         brandFilter === undefined || brandFilter === null
@@ -795,8 +855,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       searchText: searchText,
       isCare: careDoctorsSwitch,
     };
+
     setBugFenderLog('DOCTOR_FILTER_INPUT', JSON.stringify(FilterInput));
     !pageNo && setshowSpinner(true);
+
     client
       .query<getDoctorList>({
         query: GET_DOCTOR_LIST,
@@ -1100,7 +1162,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       doctorId: doctorData?.id,
       doctorName: doctorData?.displayName,
       doctorType: doctorData?.doctorType,
-      specialtyId: props.navigation.getParam('specialityId') || '',
+      specialtyId: specialityId,
       specialtyName: props.navigation.getParam('specialityName') || '',
       zone: states || locationDetails?.state || '',
       userName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
@@ -1119,7 +1181,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       'Doctor Name': doctorDetails.displayName!,
       Source: source,
       'Doctor ID': doctorDetails.id,
-      'Speciality ID': props.navigation.getParam('specialityId') || '',
+      'Speciality ID': specialityId,
       'Doctor Category': doctorDetails.doctorType,
       Fee: Number(doctorDetails?.fee),
       'Doctor Speciality': doctorDetails?.specialtydisplayName,
@@ -1132,7 +1194,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       DoctorName: doctorDetails.fullName!,
       Source: source,
       DoctorID: doctorDetails.id,
-      SpecialityID: props.navigation.getParam('specialityId') || '',
+      SpecialityID: specialityId,
       DoctorCategory: doctorDetails.doctorType,
       Fee: Number(doctorDetails?.fee),
       DoctorSpeciality: doctorDetails?.specialistSingularTerm,
@@ -1143,7 +1205,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.CONSULT_NOW_CLICKED] = {
         'customer id': currentPatient ? currentPatient.id : '',
         'doctor id': doctorDetails.id,
-        'specialty id': props.navigation.getParam('specialityId') || '',
+        'specialty id': specialityId,
       };
       postAppsFlyerEvent(AppsFlyerEventName.CONSULT_NOW_CLICKED, appsflyereventAttributes);
       postFirebaseEvent(FirebaseEventName.CONSULT_NOW_CLICKED, eventAttributesFirebase);
