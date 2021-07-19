@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
   },
   itemPrice: {
     ...theme.viewStyles.cardViewStyle,
-    width: '90%',
+    width: '80%',
     marginRight: 5,
     marginTop: 5,
     height: 40,
