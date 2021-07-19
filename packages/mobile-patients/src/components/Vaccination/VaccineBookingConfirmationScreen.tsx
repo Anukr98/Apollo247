@@ -906,7 +906,15 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
                   bookingInfo?.status == BOOKING_STATUS.COMPLETED ||
                   bookingInfo?.status == BOOKING_STATUS.VERIFIED
                 ) {
-                  fetchInvoiceHTMLText();
+                  setTimeout(() => {
+                    if (Platform.OS === 'android') {
+                      storagePermissions(() => {
+                        fetchInvoiceHTMLText();
+                      });
+                    } else {
+                      fetchInvoiceHTMLText();
+                    }
+                  }, 100);
                 } else if (
                   bookingInfo?.status == BOOKING_STATUS.CANCELLED ||
                   bookingInfo?.status == BOOKING_STATUS.REJECTED
@@ -1059,6 +1067,8 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
             });
           })
           .catch((error) => {
+            console.log(' fetchInvoiceHTMLText --- error ', error);
+
             showAphAlert!({
               title: 'Oops !',
               description: string.vaccineBooking.unable_to_generate_invoice_pdf,
@@ -1069,6 +1079,8 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
           });
       })
       .catch((error) => {
+        console.log(' fetchInvoiceHTMLText --- error 2 ', error);
+
         setPdfLoading(false);
         showAphAlert!({
           title: 'Oops !',
