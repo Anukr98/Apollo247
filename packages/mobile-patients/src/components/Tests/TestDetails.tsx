@@ -8,7 +8,6 @@ import {
   CircleLogo,
   ClockIcon,
   InfoIconRed,
-  WhyBookUs,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
