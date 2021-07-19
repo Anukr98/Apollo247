@@ -382,6 +382,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
+    if (currentPatient) {
+      checkPatientAge(currentPatient);
+    }
+  }, [currentPatient]);
+
+  useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setIsFocused(true);
       BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -419,7 +425,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         typeof _cartItemId == 'string' ? removeSpaces?.map((item) => parseInt(item!)) : _cartItemId;
       const res: any = await getDiagnosticCartItemReportGenDetails(
         listOfIds?.toString() || _cartItemId?.toString(),
-        Number(addressCityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
+        Number(addressCityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
       );
       if (res?.data?.success) {
         const result = g(res, 'data', 'data');
@@ -505,14 +511,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     if (age && age <= 10) {
       setSelectedPatient(null);
       setShowSelectPatient?.(false);
-      Alert.alert(string.common.uhOh, string.diagnostics.minorAgeText, [
-        {
-          text: 'OK',
-          onPress: () => {
-            fromNewProfile && setShowPatientListOverlay(true);
-          },
+      setShowPatientListOverlay?.(false);
+      showAphAlert?.({
+        title: string.common.uhOh,
+        description: string.diagnostics.minorAgeText,
+        onPressOk: () => {
+          hideAphAlert?.();
+          setShowPatientListOverlay(true);
         },
-      ]);
+      });
       return true;
     }
     return false;
@@ -1242,7 +1249,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             func && func(product[0]!);
 
             if (comingFrom == 'diagnosticServiceablityChange') {
-              product?.map((item,index) => {
+              product?.map((item, index) => {
                 const diagnosticPricing = g(item, 'diagnosticPricing');
                 const packageMrp = item?.packageCalculatedMrp!;
                 const pricesForItem = getPricesForItem(diagnosticPricing, packageMrp);
@@ -1257,11 +1264,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 const discountPrice = pricesForItem?.discountPrice!;
                 const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
                 const planToConsider = pricesForItem?.planToConsider;
-                const styleFreeItem = cartItems.map((i)=>{
+                const styleFreeItem = cartItems.map((i) => {
                   if (i?.id == item?.itemId.toString()) {
-                    return i?.name
+                    return i?.name;
                   }
-                })
+                });
                 updateCartItem?.({
                   id: item?.itemId?.toString() || product?.[0]?.id!,
                   name: styleFreeItem?.[index] ? styleFreeItem?.[index] : item?.itemName,
@@ -1848,9 +1855,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               </Text>
             </View>
           )}
-          {
-            isHcApiCalled ?  <View style={styles.rowSpaceBetweenStyle}>
-              <Text style={[styles.blueTextStyle, { width: '60%' }]}>Collection and hygiene charges</Text>
+          {isHcApiCalled ? (
+            <View style={styles.rowSpaceBetweenStyle}>
+              <Text style={[styles.blueTextStyle, { width: '60%' }]}>
+                Collection and hygiene charges
+              </Text>
               <View style={{ flexDirection: 'row' }}>
                 <Text
                   style={[
@@ -1877,7 +1886,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 ) : null} */}
               </View>
             </View>
-            : null}
+          ) : null}
           {normalSaving > 0 && (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
@@ -2438,7 +2447,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   function createCheckOutEventAttributes(orderId: string, slotStartTime?: string) {
     const attributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED] = {
-      "Circle user": isDiagnosticCircleSubscription ? 'Yes' : 'No',
+      'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
       'Order id': orderId,
       Pincode: parseInt(selectedAddr?.zipcode!),
       'Patient UHID': g(currentPatient, 'id'),
