@@ -716,7 +716,9 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
             message += `Date: ${moment(date).format('DD-MMM-YYYY') || '-'}\n`;
             message += `Summary: ${data?.healthCheckSummary}\n`;
             message += ` ${data?.followupDate ? `Follow-up Date: ${data?.followupDate}` : ``}`;
-            prismImages = data?.healthCheckPrismFileIds && data?.healthCheckPrismFileIds.join(',');
+            prismImages =
+              data?.healthCheckPrismFileIds &&
+              data?.healthCheckPrismFileIds?.filter((i) => i)?.join(',');
             urls = '';
           } else if (type === 'hospital') {
             date = data?.dateOfHospitalization;
@@ -726,7 +728,8 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
               '-'}\n`;
             message += `Diagnosis Notes: ${data?.diagnosisNotes}`;
             prismImages =
-              data?.hospitalizationPrismFileIds && data?.hospitalizationPrismFileIds.join(',');
+              data?.hospitalizationPrismFileIds &&
+              data?.hospitalizationPrismFileIds?.filter((i) => i)?.join(',');
             urls = '';
           }
           submitValues.push({
