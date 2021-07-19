@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, BackHandler, View, ScrollView, TouchableOpacity } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  BackHandler,
+  View,
+  ScrollView,
+  TouchableOpacity,
+  Dimensions,
+} from 'react-native';
 import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
 import {
   CircleLogo,
@@ -35,6 +43,13 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { getDiagnosticRefundOrders } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { useApolloClient } from 'react-apollo-hooks';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  getDiagnosticOrderDetails,
+  getDiagnosticOrderDetailsVariables,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
+import { GET_DIAGNOSTIC_ORDER_LIST_DETAILS } from '@aph/mobile-patients/src/graphql/profiles';
+
+const width = Dimensions.get('window').width;
 
 export interface OrderStatusProps extends NavigationScreenProps {}
 
@@ -67,6 +82,13 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const couldBeSaved =
     !isDiagnosticCircleSubscription && orderCircleSaving > 0 && orderCircleSaving > orderCartSaving;
 
+  const fetchOrderDetails = (orderId: string) =>
+    client.query<getDiagnosticOrderDetails, getDiagnosticOrderDetailsVariables>({
+      query: GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
+      variables: { diagnosticOrderId: orderId },
+      fetchPolicy: 'no-cache',
+    });
+
   const moveToHome = () => {
     // use apiCallsEnum values here in order to make that api call in home screen
     apisToCall.current = [
@@ -82,6 +104,8 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const [timeDate, setTimeDate] = useState<string>('');
   const [isSingleUhid, setIsSingleUhid] = useState<boolean>(false);
   const [showMoreArray, setShowMoreArray] = useState([] as any);
+  const [apiPrimaryOrderDetails, setApiPrimaryOrderDetails] = useState([] as any);
+  const [primaryOrderId, setPrimaryOrderId] = useState<string>('');
 
   const moveToMyOrders = () => {
     props.navigation.popToTop({ immediate: true }); //if not added, stack was getting cleared.
@@ -89,6 +113,24 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       source: AppRoutes.OrderStatus,
     });
   };
+
+  async function getOrderDetails(primaryId: string) {
+    setLoading?.(true);
+    try {
+      let response = await fetchOrderDetails(primaryId);
+      if (!!response && response?.data && !response?.errors) {
+        let getOrderDetails = response?.data?.getDiagnosticOrderDetails?.ordersList || [];
+        setApiPrimaryOrderDetails([getOrderDetails]!);
+      } else {
+        setApiPrimaryOrderDetails([]);
+      }
+      setLoading?.(false);
+    } catch (error) {
+      setLoading?.(false);
+      setApiPrimaryOrderDetails([]);
+      CommonBugFender('getDiagnosticOrderDetails_TestOrderDetails', error);
+    }
+  }
 
   async function fetchOrderDetailsFromPayments() {
     setLoading?.(true);
@@ -98,9 +140,14 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
         const getResponse = response?.data?.data?.getOrderInternal?.internal_orders;
         const getSlotDateTime =
           getResponse?.[0]?.orderDetailsPayment?.ordersList?.[0]?.slotDateTimeInUTC;
+        const primaryOrderID = getResponse?.[0]?.orderDetailsPayment?.ordersList[0]?.primaryOrderID;
         setApiOrderDetails(getResponse);
         setTimeDate(getSlotDateTime);
         setIsSingleUhid(getResponse?.length == 1);
+        if (primaryOrderID) {
+          setPrimaryOrderId(primaryOrderID);
+          getOrderDetails(primaryOrderID);
+        }
       } else {
         setApiOrderDetails([]);
       }
@@ -156,13 +203,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
 
   const renderHeader = () => {
-    return (
-      <View style={[styles.header]}>
-        {/* <TouchableOpacity onPress={() => navigateToOrderDetails(true, orderDetails?.orderId!)}>
-          <Text style={styles.orderSummary}>VIEW ORDER SUMMARY</Text>
-        </TouchableOpacity> */}
-      </View>
-    );
+    return <View style={[styles.header]}></View>;
   };
 
   //if payment status is not success, then check
@@ -328,17 +369,21 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
 
   const renderTests = () => {
     //define type
+    const arrayToUse =
+      !!primaryOrderId && primaryOrderId != '' ? apiPrimaryOrderDetails : apiOrderDetails;
     return (
       <View>
-        {!!apiOrderDetails && apiOrderDetails?.length > 0
-          ? apiOrderDetails?.map((item) => {
-              const orders = item?.orderDetailsPayment?.ordersList?.[0];
+        {!!arrayToUse && arrayToUse?.length > 0
+          ? arrayToUse?.map((item: any) => {
+              const orders =
+                !!primaryOrderId && primaryOrderId != ''
+                  ? item
+                  : item?.orderDetailsPayment?.ordersList?.[0];
               const displayId = orders?.displayId;
               const lineItemsLength = orders?.diagnosticOrderLineItems?.length;
               const lineItems = orders?.diagnosticOrderLineItems;
               const remainingItems = !!lineItemsLength && lineItemsLength - 1;
               const { patientName, patientSalutation } = extractPatientDetails(orders?.patientObj);
-
               return (
                 <>
                   <View style={styles.outerView}>
@@ -382,14 +427,20 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
 
   //define type
   function _onPressMore(item: any, lineItems: any) {
-    const displayId = item?.orderDetailsPayment?.ordersList?.[0]?.displayId;
+    const displayId =
+      !!primaryOrderId && primaryOrderId != ''
+        ? item?.displayId
+        : item?.orderDetailsPayment?.ordersList?.[0]?.displayId;
     const array = showMoreArray?.concat(displayId);
     setShowMoreArray(array);
   }
 
   function _onPressLess(item: any, lineItems: any) {
-    const displayId = item?.orderDetailsPayment?.ordersList?.[0]?.displayId;
-    const removeItem = showMoreArray?.filter((id) => id !== displayId);
+    const displayId =
+      !!primaryOrderId && primaryOrderId != ''
+        ? item?.displayId
+        : item?.orderDetailsPayment?.ordersList?.[0]?.displayId;
+    const removeItem = showMoreArray?.filter((id: number) => id !== displayId);
     setShowMoreArray(removeItem);
   }
 
@@ -679,6 +730,7 @@ const styles = StyleSheet.create({
     marginHorizontal: -20,
     padding: 16,
     paddingLeft: 20,
+    paddingRight: width > 350 ? 16 : 35,
   },
   timeIconStyle: { height: 20, width: 20, resizeMode: 'contain', marginRight: 6 },
   patientsView: {

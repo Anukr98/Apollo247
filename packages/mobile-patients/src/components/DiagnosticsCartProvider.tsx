@@ -800,12 +800,12 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
           AsyncStorageKeys.ePrescriptions,
           // AsyncStorageKeys.patientCartItems,
         ]);
-        // const cartItems = cartItemsFromStorage[0][1];
+        const cartItems = cartItemsFromStorage[0][1];
         const physicalPrescriptions = cartItemsFromStorage[1][1];
         const ePrescriptions = cartItemsFromStorage[2][1];
         // const patientCartItems = cartItemsFromStorage[3][1];
 
-        // _setCartItems(JSON.parse(cartItems || 'null') || []);
+        _setCartItems(JSON.parse(cartItems || 'null') || []);
         _setPhysicalPrescriptions(JSON.parse(physicalPrescriptions || 'null') || []);
         _setEPrescriptions(JSON.parse(ePrescriptions || 'null') || []);
         // _setPatientCartItems(JSON.parse(patientCartItems || 'null') || []);

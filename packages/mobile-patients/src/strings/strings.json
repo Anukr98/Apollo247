@@ -595,10 +595,12 @@
     "addPatient": "Add member",
     "subHeadingSingleUHID": "Please select the patient for whom you want to book the selected tests.",
     "subHeadingMultipleUHID": "Please select all the patients for whom you want to book the selected tests.",
-    "paidSlotHeading": "This is a Premium Slot -",
+    "paidSlotHeading": "This is a Paid Slot -",
     "additionalChargeText": " Additional charge of",
     "levidText": "will be levied on your total amount.",
-    "nonServiceableText": "This address is not serviceable"
+    "nonServiceableText": "This address is not serviceable",
+    "homeCollectionText" : "Collection and hygiene charges",
+    "paidSlotText": "Paid slot charges"
   },
   "orders": {
     "urOrders": "MY ORDERS",

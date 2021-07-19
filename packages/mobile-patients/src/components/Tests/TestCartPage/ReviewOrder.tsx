@@ -132,8 +132,6 @@ export interface ReviewOrderProps extends NavigationScreenProps {
 
 export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const {
-    removeCartItem,
-    updateCartItem,
     cartItems,
     setCartItems,
     addresses,
@@ -559,7 +557,12 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     return (
       <View>
         <View style={styles.itemView}>
-          <View style={{ flexDirection: 'row', width: '80%' }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              width: screenWidth > 350 ? '80%' : '75%',
+            }}
+          >
             <Text style={[styles.addressTextStyle, styles.quantityTextStyle]}>X{item?.mou}</Text>
             <Text style={styles.addressTextStyle}>{nameFormater(item?.name, 'title')}</Text>
           </View>
@@ -663,7 +666,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
               <Spearator style={{ marginTop: 12, marginBottom: 12 }} />
               {renderPrices('Subtotal', previousSubTotal)}
               {!!previousCollectionCharges &&
-                renderPrices('Collection and hygiene charges', previousCollectionCharges)}
+                renderPrices(
+                  string.diagnosticsCartPage.homeCollectionText,
+                  previousCollectionCharges
+                )}
               {renderPrices('Total', previousTotalCharges, true)}
             </>
           ) : null}
@@ -713,12 +719,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     return (
       <>
         {/* {renderCouponView()} */}
-        {isDiagnosticCircleSubscription && circleSaving > 0 ? renderCircleMemberBanner() : null}
         <View
           style={[
             styles.totalChargesContainer,
             {
-              marginTop: isDiagnosticCircleSubscription && circleSaving > 0 ? 25 : 0,
+              marginTop: 0,
             },
           ]}
         >
@@ -728,7 +733,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           {
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={[styles.pricesNormalText, { width: '60%' }]}>
-                Collection and hygiene charges
+                {string.diagnosticsCartPage.homeCollectionText}
               </Text>
               <View style={{ flexDirection: 'row' }}>
                 <Text
@@ -751,7 +756,12 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             </View>
           }
           {distanceCharges > 0 &&
-            renderPrices('Phlebo Charges', distanceCharges?.toFixed(2), false, false)}
+            renderPrices(
+              string.diagnosticsCartPage.paidSlotText,
+              distanceCharges?.toFixed(2),
+              false,
+              false
+            )}
           {normalSaving > 0 && renderPrices('Cart Savings', normalSaving?.toFixed(2), false, true)}
           {isDiagnosticCircleSubscription && circleSaving > 0 && (
             <View style={[styles.rowSpaceBetweenStyle]}>
@@ -833,6 +843,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             justifyContent: imagePosition == 'left' ? 'flex-start' : 'center',
             borderStyle: imageType == 'saving' ? 'solid' : 'dashed',
             borderWidth: imageType == 'saving' ? 1 : 2,
+            marginTop: imageType == 'circle' ? 16 : 10,
           },
           imageType === 'saving' && { backgroundColor: '#F3FFFF' },
         ]}
@@ -845,9 +856,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
                 <CircleLogo style={styles.circleLogoStyle} />
               </View>
             ) : (
-              <View style={{ marginLeft: 30 }}>
-                <SavingsIcon style={styles.savingIconStyle} />
-              </View>
+              <SavingsIcon style={styles.savingIconStyle} />
             )}
           </>
         )}
@@ -883,6 +892,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         {renderAddressHeading()}
         {renderCartItems()}
         {isModifyFlow ? renderPreviouslyAddedItems() : null}
+        {isDiagnosticCircleSubscription && circleSaving > 0 ? renderCircleMemberBanner() : null}
+
         {renderLabel(
           nameFormater(
             isModifyFlow ? 'Additional amount that needs to be paid' : 'Total charges',
@@ -1334,8 +1345,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     }
   }
 
-  console.log({ cartItems });
-
   //this is changed for saveBooking, for modify (need to add)
   async function callCreateInternalOrder(
     getOrderDetails: any, //getOrderId (in case of modify)
@@ -1379,9 +1388,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         total_amount: grandTotal,
         customer_id: currentPatient?.primaryPatientId || getPatientId,
       };
-      console.log({ orderInput });
       const response = await createOrderInternal(orderInput);
-      console.log({ response });
       if (response?.data?.createOrderInternal?.success) {
         //check for webenage
         const orderInfo = {
@@ -1395,22 +1402,22 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           cartHasAll: items != undefined ? true : false,
           amount: grandTotal, //actual amount to be payed by customer (topay)
         };
-        console.log({ orderInfo });
         const eventAttributes = createCheckOutEventAttributes(
-          getOrderDetails?.[0]?.orderID,
+          isModifyFlow ? getOrderDetails : getOrderDetails?.[0]?.orderID,
           slotStartTime
         );
         setauthToken?.('');
+        const payId = response?.data?.createOrderInternal?.payment_order_id;
         if (
           source === BOOKING_TYPE.MODIFY &&
           modifiedOrder?.paymentType !== DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
         ) {
           //call the process wali api & success page (check for modify Order)
-          processModifiyCODOrder(getOrderDetails, grandTotal, eventAttributes, orderInfo);
+          processModifiyCODOrder(getOrderDetails, grandTotal, eventAttributes, orderInfo, payId);
         } else {
           setLoading?.(false);
           props.navigation.navigate(AppRoutes.PaymentMethods, {
-            paymentId: response?.data?.createOrderInternal?.payment_order_id!,
+            paymentId: payId!,
             amount: grandTotal,
             orderId: getOrderDetails?.[0]?.orderID, //passed only one
             orderDetails: orderInfo,
@@ -1423,7 +1430,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     } catch (error) {
       CommonBugFender('TestCart_callInternalOrder', error);
       setLoading?.(false);
-      console.log('odoo');
       aphConsole.log({ error });
       showAphAlert?.({
         unDismissable: true,
@@ -1455,7 +1461,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     orderId: string,
     amount: number,
     eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED],
-    orderInfo: any
+    orderInfo: any,
+    paymentId: string | number
   ) {
     PaymentInitiated(amount, 'Diagnostic', 'Cash');
     try {
@@ -1466,7 +1473,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         },
       ];
       const response = await processDiagnosticsCODOrderV2(client, array);
-      console.log({ response });
       const { data } = response;
       const getResponse = data?.wrapperProcessDiagnosticHCOrderCOD?.result;
       if (!!getResponse && getResponse?.length > 0) {
@@ -1474,13 +1480,12 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         if (!!isAnyFalse && isAnyFalse?.length > 0) {
           renderAlert(string.common.tryAgainLater);
         } else {
-          _navigatetoOrderStatus(true, 'success', eventAttributes, orderInfo);
+          _navigatetoOrderStatus(true, 'success', eventAttributes, orderInfo, paymentId);
         }
       } else {
         renderAlert(string.common.tryAgainLater);
       }
     } catch (e) {
-      console.log({ e });
       setLoading?.(false);
       renderAlert(string.common.tryAgainLater);
     }
@@ -1490,7 +1495,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     isCOD: boolean,
     paymentStatus: string,
     eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED],
-    orderInfo: any
+    orderInfo: any,
+    paymentId: string | number
   ) {
     setLoading?.(false);
     props.navigation.navigate(AppRoutes.OrderStatus, {
@@ -1499,6 +1505,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       isCOD: isCOD,
       eventAttributes,
       paymentStatus: paymentStatus,
+      paymentId: paymentId,
     });
   }
 
@@ -1625,7 +1632,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   };
 
   return (
-    <View style={{ flex: 1, marginBottom: 10 }}>
+    <View style={{ flex: 1 }}>
       <SafeAreaView style={[{ ...theme.viewStyles.container }]}>
         {renderHeader()}
         {renderWizard()}
@@ -1677,6 +1684,7 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.TEST_CARD_BUTTOM_BG,
     textAlign: 'center',
     fontSize: 12,
+    alignSelf: 'center',
   },
   totalChargesContainer: {
     backgroundColor: theme.colors.WHITE,

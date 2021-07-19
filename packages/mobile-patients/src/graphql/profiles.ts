@@ -1869,6 +1869,10 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         visitNo
         invoiceURL
         labReportURL
+        attributesObj{
+          initialCollectionCharges
+          distanceCharges
+        }
         diagnosticOrderLineItems {
           id
           itemId
@@ -2230,6 +2234,7 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           reportGenerationTime
           initialCollectionCharges
           isMultiUhid
+          distanceCharges
         }
         patientAddressObj {
           addressLine1
@@ -4780,6 +4785,7 @@ export const GET_INTERNAL_ORDER = gql`
           ordersList{
             id
             patientId
+            primaryOrderID
             patientObj{
               id
               firstName
@@ -5489,16 +5495,6 @@ export const GET_ALL_VACCINATION_APPOINTMENTS = gql`
   }
 `;
 
-export const DIAGNOSITC_EXOTEL_CALLING = gql`
-  mutation diagnosticExotelCalling($orderId: ID!) {
-    diagnosticExotelCalling(orderId: $orderId) {
-      errorMessage
-      sid
-      success
-    }
-  }
-`;
-
 export const COWIN_REGISTRATION = gql`
    mutation cowinRegistration($cowinRegistration: CowinRegistrationInput!) {
      cowinRegistration(cowinRegistration: $cowinRegistration) {
@@ -5513,6 +5509,16 @@ export const COWIN_REGISTRATION = gql`
      }
    }
  `;
+
+export const DIAGNOSITC_EXOTEL_CALLING = gql`
+  mutation diagnosticExotelCalling($orderId: ID!) {
+    diagnosticExotelCalling(orderId: $orderId) {
+      errorMessage
+      sid
+      success
+    }
+  }
+`;
 
 export const GET_DIAGNOSTIC_SERVICEABILITY = gql `
   query getDiagnosticServiceability ($latitude: Float!, $longitude : Float!){

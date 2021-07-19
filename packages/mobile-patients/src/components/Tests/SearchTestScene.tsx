@@ -30,6 +30,7 @@ import {
   aphConsole,
   g,
   isEmptyObject,
+  isSmallDevice,
   isValidSearch,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -76,6 +77,8 @@ import {
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
+const GO_TO_CART_HEIGHT = 50;
+
 export interface SearchTestSceneProps
   extends NavigationScreenProps<{
     searchText: string;
@@ -108,20 +111,20 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     setModifyHcCharges,
     setModifiedOrderItemIds,
     setHcCharges,
-    setAreaSelected,
     asyncDiagnosticPincode,
     setModifiedOrder,
     modifiedOrder,
     patientCartItems,
     setPatientCartItems,
     setModifiedPatientCart,
-    modifiedPatientCart,
     setDistanceCharges,
+    setDeliveryAddressId,
   } = useDiagnosticsCart();
   const { cartItems: shopCartItems } = useShoppingCart();
   const { showAphAlert, setLoading: setGlobalLoading, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
+  const showGoToCart = isModify && cartItems?.length > 0;
 
   //add the cityId in case of modifyFlow
   const cityId = isModify
@@ -444,6 +447,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     setHcCharges?.(0);
     setDistanceCharges?.(0);
     setModifiedPatientCart?.([]);
+    setDeliveryAddressId?.('');
     //go back to homepage
     props.navigation.navigate('TESTS', { focusSearch: true });
   }
@@ -661,7 +665,16 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             }
           />
         ) : (
-          <ScrollView showsVerticalScrollIndicator={false} style={styles.viewDefaultContainer}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            style={[
+              styles.viewDefaultContainer,
+              {
+                marginBottom: showGoToCart ? GO_TO_CART_HEIGHT + 10 : 0,
+              },
+            ]}
+            bounces={false}
+          >
             {popularPackages?.length > 0 ? (
               <View>
                 <Text style={styles.headingSections}>Popular Packages</Text>
@@ -721,6 +734,22 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     );
   };
 
+  const renderCartPlaceholder = () => {
+    return (
+      <View style={styles.cartDetailView}>
+        <Text style={styles.itemAddedText}>
+          {cartItems?.length} {cartItems?.length == 1 ? 'Item' : 'Items'} Added to Cart
+        </Text>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => props.navigation.navigate(AppRoutes.CartPage)}
+        >
+          <Text style={styles.goToCartText}>GO TO CART</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.safeAreaViewStyle}>
       <View style={styles.headerSearchInputShadow}>
@@ -728,6 +757,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         {renderSearchInput()}
       </View>
       {renderMatchingTests()}
+      {showGoToCart && renderCartPlaceholder()}
     </SafeAreaView>
   );
 };
@@ -825,6 +855,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f7f8f5',
     borderTopWidth: 1,
     borderTopColor: '#E5E5E5',
+    flexGrow: 1,
   },
   defaultContainer: {
     width: '100%',
@@ -832,5 +863,29 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     paddingVertical: 0,
     backgroundColor: 'white',
+  },
+  cartDetailView: {
+    position: 'absolute',
+    backgroundColor: theme.colors.APP_YELLOW_COLOR,
+    bottom: 0,
+    height: GO_TO_CART_HEIGHT,
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  itemAddedText: {
+    marginLeft: 20,
+    ...theme.viewStyles.text('SB', isSmallDevice ? 13 : 14, theme.colors.WHITE),
+    lineHeight: 16,
+    textAlign: 'left',
+    alignSelf: 'center',
+  },
+  goToCartText: {
+    marginRight: 20,
+    ...theme.viewStyles.text('SB', isSmallDevice ? 15 : 16, theme.colors.WHITE),
+    lineHeight: 20,
+    textAlign: 'right',
+    alignSelf: 'center',
   },
 });

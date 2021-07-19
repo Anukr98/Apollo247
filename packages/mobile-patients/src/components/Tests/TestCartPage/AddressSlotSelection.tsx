@@ -392,7 +392,7 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
 
   const renderStickyBottom = () => {
     return (
-      <StickyBottomComponent>
+      <StickyBottomComponent style={{ position: 'absolute', bottom: 0 }}>
         <Button title={'CHECKOUT'} onPress={() => _navigateToReview()} disabled={disableCTA} />
       </StickyBottomComponent>
     );

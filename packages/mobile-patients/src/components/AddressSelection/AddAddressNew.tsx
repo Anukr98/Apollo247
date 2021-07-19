@@ -244,41 +244,52 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
         fetchLatLongFromGoogleApi(getAddress, newAddressDetails);
       }
     } else {
-      setLoadingContext!(true);
-      //if no location permissions are given then prompt for the permission
-      doRequestAndAccessLocation(true)
-        .then((response) => {
-          //after getting permission, navigate to map screen
-          //undefined in the case, if user has denied the permission.
-          if (response) {
-            const address = formatLocalAddress(response);
-            setAddressString(address);
-
-            setLatitude(Number(response?.latitude! || 0));
-            setLongitude(Number(response?.longitude! || 0));
-            setRegion({
-              latitude: Number(response?.latitude! || 0),
-              longitude: Number(response?.longitude! || 0),
-              latitudeDelta: latitudeDelta,
-              longitudeDelta: longitudeDelta,
-            });
-
-            isConfirmButtonDisabled && setConfirmButtonDisabled(false);
-            isMapDisabled && setMapDisabled(false);
-            createLocationResponse(response);
-          }
-          //if user denied the permission
-          else {
-            setAddressFromHomepage();
-          }
-        })
-        .catch((e) => {
-          setAddressFromHomepage();
-          CommonBugFender('AddAddress_doRequestAndAccessLocation_error', e);
-        })
-        .finally(() => {
-          setLoadingContext!(false);
+      if (ComingFrom == AppRoutes.AddPatients) {
+        setRegion({
+          latitude: Number(diagnosticLocation?.latitude),
+          longitude: Number(diagnosticLocation?.longitude),
+          latitudeDelta: latitudeDelta,
+          longitudeDelta: longitudeDelta,
         });
+        createLocationResponse(diagnosticLocation);
+        // fetchLatLongFromGoogleApi(diagnosticLocation, newAddressDetails); -> set the address string
+      } else {
+        setLoadingContext?.(true);
+        //if no location permissions are given then prompt for the permission
+        doRequestAndAccessLocation(true)
+          .then((response) => {
+            //after getting permission, navigate to map screen
+            //undefined in the case, if user has denied the permission.
+            if (response) {
+              const address = formatLocalAddress(response);
+              setAddressString(address);
+
+              setLatitude(Number(response?.latitude! || 0));
+              setLongitude(Number(response?.longitude! || 0));
+              setRegion({
+                latitude: Number(response?.latitude! || 0),
+                longitude: Number(response?.longitude! || 0),
+                latitudeDelta: latitudeDelta,
+                longitudeDelta: longitudeDelta,
+              });
+
+              isConfirmButtonDisabled && setConfirmButtonDisabled(false);
+              isMapDisabled && setMapDisabled(false);
+              createLocationResponse(response);
+            }
+            //if user denied the permission
+            else {
+              setAddressFromHomepage();
+            }
+          })
+          .catch((e) => {
+            setAddressFromHomepage();
+            CommonBugFender('AddAddress_doRequestAndAccessLocation_error', e);
+          })
+          .finally(() => {
+            setLoadingContext!(false);
+          });
+      }
     }
   }, []);
 

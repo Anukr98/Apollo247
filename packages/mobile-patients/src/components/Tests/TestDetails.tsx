@@ -161,6 +161,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     setModifiedOrder,
     setModifiedPatientCart,
     setDistanceCharges,
+    setDeliveryAddressId,
   } = useDiagnosticsCart();
   const { pharmacyCircleAttributes } = useShoppingCart();
 
@@ -423,6 +424,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     setHcCharges?.(0);
     setDistanceCharges?.(0);
     setModifiedPatientCart?.([]);
+    setDeliveryAddressId?.('');
     //go back to homepage
     props.navigation.navigate('TESTS');
   }

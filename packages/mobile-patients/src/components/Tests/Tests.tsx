@@ -669,7 +669,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       if (addresses?.length) {
         const deliveryAddress = addresses?.find((item) => item?.defaultAddress);
         if (deliveryAddress) {
-          setDeliveryAddressId?.(deliveryAddress?.id);
           if (!diagnosticLocation) {
             saveDiagnosticLocation?.(
               formatAddressToLocation(deliveryAddress),
@@ -690,7 +689,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setTestAddress?.(addressList);
       const deliveryAddress = addressList?.find((item) => item?.defaultAddress);
       if (deliveryAddress) {
-        setDeliveryAddressId?.(deliveryAddress?.id);
         if (!diagnosticLocation) {
           saveDiagnosticLocation?.(
             formatAddressToLocation(deliveryAddress),
@@ -720,7 +718,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
           Number(selectedAddress?.latitude),
           Number(selectedAddress?.longitude)
         );
-        if (!response?.errors && response?.data?.getDiagnosticServiceability) {
+        if (
+          !response?.errors &&
+          response?.data?.getDiagnosticServiceability &&
+          response?.data?.getDiagnosticServiceability?.status
+        ) {
           const getServiceableResponse =
             response?.data?.getDiagnosticServiceability?.serviceability;
           if (!!getServiceableResponse) {
@@ -738,28 +740,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
             !!source && DiagnosticPinCodeClicked(currentPatient, pincode, true, source);
           } else {
             //null in case of non-serviceable
-            obj = {
-              cityId: String(AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID),
-              stateId: '0',
-              state: '',
-              city: 'Hyderabad',
-            };
-            setServiceableObject(obj);
-            setDiagnosticServiceabilityData?.(obj);
-            setPageLoading?.(false);
-            setDiagnosticLocationServiceable?.(false);
-            setUnserviceablePopup(true);
-            //not serving pop-up needs to be seen.
-            // isCurrentScreen == AppRoutes.Tests
-            //   ? renderNonServiceablePopUp(selectedAddress?.displayName) //returned by api displayName
-            //   : null;
-
-            setServiceabilityMsg(string.diagnostics.nonServiceableMsg1);
-            !!source && DiagnosticPinCodeClicked(currentPatient, pincode, false, source);
+            obj = getNonServiceableObject();
+            setNonServiceableValues(obj, pincode);
           }
           getDiagnosticBanner(Number(getServiceableResponse?.cityID));
           getHomePageWidgets(obj?.cityId);
         } //end of if
+        else {
+          obj = getNonServiceableObject();
+          setNonServiceableValues(obj, pincode);
+        }
+        getDiagnosticBanner(AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID);
+        getHomePageWidgets(obj?.cityId);
       } catch (error) {
         //end of try
         setPageLoading?.(false);
@@ -770,6 +762,31 @@ export const Tests: React.FC<TestsProps> = (props) => {
         setBannerLoading(false);
       }
     } //end of address exist
+  }
+
+  function getNonServiceableObject() {
+    var obj;
+    return (obj = {
+      cityId: String(AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID),
+      stateId: '0',
+      state: '',
+      city: 'Hyderabad',
+    });
+  }
+
+  function setNonServiceableValues(obj: any, pincode: string) {
+    setServiceableObject(obj);
+    setDiagnosticServiceabilityData?.(obj);
+    setPageLoading?.(false);
+    setDiagnosticLocationServiceable?.(false);
+    setUnserviceablePopup(true);
+    //not serving pop-up needs to be seen.
+    // isCurrentScreen == AppRoutes.Tests
+    //   ? renderNonServiceablePopUp(selectedAddress?.displayName) //returned by api displayName
+    //   : null;
+
+    setServiceabilityMsg(string.diagnostics.nonServiceableMsg1);
+    !!source && DiagnosticPinCodeClicked(currentPatient, pincode, false, source);
   }
 
   const renderYourOrders = () => {
@@ -978,6 +995,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
   function handleLocationBack(locationResponse: LocationData | null) {
     setLocationPopup(false);
     if (!!locationResponse) {
+      //empty the deliveryAddressId -> default -> needs to show the one closest
+      setDeliveryAddressId?.('');
       saveDiagnosticLocation(locationResponse, DIAGNOSTIC_PINCODE_SOURCE_TYPE.AUTO);
     }
   }
@@ -985,13 +1004,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
   function handleSelectedAddress(selectedAddress: Address) {
     setLocationPopup(false);
     if (!!selectedAddress) {
-      //set the selected address to be the default address.
+      //set the selected address to be the default address & set the deliveryAddressId
       setDefaultAddress(selectedAddress);
     }
   }
 
   function handleSelectedSuggestion(selectedLocation: any) {
     setLocationPopup(false);
+    //empty the deliveryAddressId -> default -> needs to show the one closest
+    setDeliveryAddressId?.('');
     saveDiagnosticLocation(
       formatAddressToLocation(selectedLocation),
       DIAGNOSTIC_PINCODE_SOURCE_TYPE.SEARCH

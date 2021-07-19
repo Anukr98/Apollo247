@@ -16,6 +16,12 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_
   gender: string | null;
 }
 
+export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_attributesObj {
+  __typename: "AttributesObj";
+  initialCollectionCharges: number | null;
+  distanceCharges: number | null;
+}
+
 export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_itemObj {
   __typename: "ItemObj";
   itemType: string | null;
@@ -107,6 +113,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList 
   visitNo: string | null;
   invoiceURL: string | null;
   labReportURL: string | null;
+  attributesObj: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_attributesObj | null;
   diagnosticOrderLineItems: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems | null)[] | null;
   diagnosticOrdersStatus: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrdersStatus | null)[] | null;
 }

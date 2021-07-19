@@ -28,6 +28,7 @@ export interface getOrderInternal_getOrderInternal_internal_orders_orderDetailsP
   __typename: "DiagnosticOrders";
   id: string;
   patientId: string;
+  primaryOrderID: string | null;
   patientObj: getOrderInternal_getOrderInternal_internal_orders_orderDetailsPayment_ordersList_patientObj | null;
   displayId: number;
   slotDateTimeInUTC: any | null;

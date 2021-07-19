@@ -157,11 +157,11 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const [showPriceMismatch, setShowPriceMismatch] = useState<boolean>(false);
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
-  const getAddress = addresses?.find((item) => item?.id == deliveryAddressId);
-  const getDefaultAddress = !!getAddress
-    ? getAddress
-    : addresses?.find((item) => item?.defaultAddress);
-  const selectedAddr = !!getDefaultAddress ? getDefaultAddress : addresses?.[0];
+  const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
+  // const getDefaultAddress = !!getAddress
+  //   ? getAddress
+  //   : addresses?.find((item) => item?.defaultAddress);
+  // const selectedAddr = !!getDefaultAddress ? getDefaultAddress : addresses?.[0];
   //if no deliveryAddressId is then , select the first address/ or default address
 
   const isCartEmpty = isDiagnosticSelectedCartEmpty(
@@ -231,6 +231,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     setHcCharges?.(0);
     setDistanceCharges?.(0);
     setModifiedPatientCart?.([]);
+    setDeliveryAddressId?.('');
     //go back to homepage
     props.navigation.navigate('TESTS', { focusSearch: true });
   }
@@ -242,7 +243,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
   useEffect(() => {
     const getDeliveryAddressId = selectedAddr?.id;
-    deliveryAddressId == '' && setDeliveryAddressId?.(getDeliveryAddressId);
+    // deliveryAddressId == '' &&  setDeliveryAddressId?.(getDeliveryAddressId!);
+    isModifyFlow && setDeliveryAddressId?.(modifiedOrder?.patientAddressId);
     if (
       ((isModifyFlow && modifiedPatientCart?.length > 0) || deliveryAddressId != '') &&
       isFocused
@@ -372,8 +374,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     setPatientCartItems?.(newObj);
   };
 
-  console.log({ modifiedPatientCart });
-
   function updateModifiedPatientCartItem(updatedObject: any) {
     const foundIndex =
       !!modifiedPatientCart &&
@@ -461,10 +461,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
               circleSpecialPrice: circleSpecialPrice,
               discountPrice: discountPrice,
               discountSpecialPrice: discountSpecialPrice,
-              mou:
-                results?.[isItemInCart]?.inclusions !== null
-                  ? results?.[isItemInCart]?.inclusions.length
-                  : 1,
+              mou: 1,
               thumbnail: cartItem?.thumbnail,
               groupPlan: planToConsider?.groupPlan,
               packageMrp: results?.[isItemInCart]?.packageCalculatedMrp,
@@ -1004,14 +1001,14 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                   collectionMethod: item?.collectionType!,
                   groupPlan: planToConsider?.groupPlan,
                   packageMrp: packageMrp,
-                  mou: item?.inclusions == null ? 1 : item?.inclusions?.length,
+                  mou: 1,
                   inclusions:
                     item?.inclusions == null
                       ? [Number(item?.itemId || product?.[0]?.id)]
                       : item?.inclusions,
                   isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
                 });
-                //put here...
+
                 updatePatientCartItem?.({
                   id: item?.itemId?.toString() || product?.[0]?.id!,
                   name: item?.itemName!,
@@ -1025,7 +1022,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                   collectionMethod: item?.collectionType!,
                   groupPlan: planToConsider?.groupPlan,
                   packageMrp: packageMrp,
-                  mou: item?.inclusions == null ? 1 : item?.inclusions?.length,
+                  mou: 1,
                   inclusions:
                     item?.inclusions == null
                       ? [Number(item?.itemId || product?.[0]?.id)]

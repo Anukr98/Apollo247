@@ -259,7 +259,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           <View style={styles.premiumTag}>
             <PremiumIcon style={styles.premiumIcon} />
             <Text style={styles.premiumText}>
-              Premium Slot - Additional charge of {string.common.Rs}
+              Paid Slot - Additional charge of {string.common.Rs}
               {slotInfo?.slotInfo?.distanceCharges} will be levied
             </Text>
           </View>
@@ -396,7 +396,15 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
                   {
                     backgroundColor:
                       selectedDate == item?.dates ? theme.colors.APP_GREEN : 'transparent',
-                    marginHorizontal: showInOverlay ? (width > 400 ? 5 : 1) : width > 400 ? 5 : 1, //1 : -4 (if width is 16 pixels gap)
+                    marginHorizontal: showInOverlay
+                      ? width > 400
+                        ? 5
+                        : 1
+                      : width > 400
+                      ? 5
+                      : width > 340
+                      ? 1
+                      : -7, //1 : -4 (if width is 16 pixels gap)
                   },
                 ]}
               >

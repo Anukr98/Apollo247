@@ -9,6 +9,7 @@ import {
   nameFormater,
   checkPatientAge,
   isDiagnosticSelectedCartEmpty,
+  distanceBwTwoLatLng,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   DiagnosticPatientCartItem,
@@ -76,6 +77,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     showSelectedPatient,
     patientCartItems,
     setDeliveryAddressId,
+    deliveryAddressId,
     setDeliveryAddressCityId,
     addresses,
     setAddresses: setTestAddress,
@@ -141,7 +143,6 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     setDiagnosticLocation?.(locationDetails);
     setLocationDetails?.(locationDetails);
   }
-
   async function fetchAddress() {
     try {
       setLoading?.(true);
@@ -157,7 +158,6 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       //set the default address
       const deliveryAddress = addressList?.find((item) => item?.defaultAddress);
       if (deliveryAddress) {
-        setDeliveryAddressId?.(deliveryAddress?.id);
         if (!diagnosticLocation) {
           saveDiagnosticLocation?.(formatAddressToLocation(deliveryAddress));
         }
@@ -276,10 +276,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
               circleSpecialPrice: circleSpecialPrice,
               discountPrice: discountPrice,
               discountSpecialPrice: discountSpecialPrice,
-              mou:
-                results?.[isItemInCart]?.inclusions !== null
-                  ? results?.[isItemInCart]?.inclusions.length
-                  : 1,
+              mou: 1,
               thumbnail: cartItem?.thumbnail,
               groupPlan: planToConsider?.groupPlan,
               packageMrp: results?.[isItemInCart]?.packageCalculatedMrp,
@@ -301,10 +298,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
               circleSpecialPrice: circleSpecialPrice,
               discountPrice: discountPrice,
               discountSpecialPrice: discountSpecialPrice,
-              mou:
-                results?.[isItemInCart]?.inclusions !== null
-                  ? results?.[isItemInCart]?.inclusions.length
-                  : 1,
+              mou: 1,
               thumbnail: cartItem?.thumbnail,
               groupPlan: planToConsider?.groupPlan,
               packageMrp: results?.[isItemInCart]?.packageCalculatedMrp,
@@ -346,7 +340,8 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       );
       if (
         !serviceabilityResponse?.errors &&
-        serviceabilityResponse?.data?.getDiagnosticServiceability
+        serviceabilityResponse?.data?.getDiagnosticServiceability &&
+        serviceabilityResponse?.data?.getDiagnosticServiceability?.status
       ) {
         const getServiceableResponse =
           serviceabilityResponse?.data?.getDiagnosticServiceability?.serviceability;
@@ -363,16 +358,10 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
           fetchPricesForItems(getServiceableResponse);
         } else {
           //non-serviceable
-          // setLoading?.(false);
-          let obj = {
-            cityID: 9,
-            stateID: 1,
-            state: 'Telangana',
-            city: 'Hyderabad',
-          };
-          //if non - serviceable then fetch from the hyderabad city
-          fetchPricesForItems(obj);
+          setNonServicebleData();
         }
+      } else {
+        setNonServicebleData();
       }
     } catch (error) {
       CommonBugFender('AddPatients_getAddressServiceability', error);
@@ -381,6 +370,18 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       setDeliveryAddressCityId?.('');
       setDeliveryAddressId?.('');
     }
+  }
+
+  function setNonServicebleData() {
+    // setLoading?.(false);
+    let obj = {
+      cityID: 9,
+      stateID: 1,
+      state: 'Telangana',
+      city: 'Hyderabad',
+    };
+    //if non - serviceable then fetch from the hyderabad city
+    fetchPricesForItems(obj);
   }
 
   const fetchPricesForItems = (getServiceableResponse: any) => {
@@ -484,7 +485,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
           isCircleSubscribed={isDiagnosticCircleSubscription}
           isFocus={isFocus}
           patientListToShow={patientListToShow}
-          onPressContinue={_navigateToCartPage}
+          onPressContinue={_checkAddresses}
         />
       </View>
     );
@@ -492,15 +493,70 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
 
   function _navigateToCartPage() {
     triggerWebengageEvent();
+    props.navigation.navigate(AppRoutes.CartPage);
+  }
+
+  function _navigateToAddressPage() {
+    props.navigation.navigate(AppRoutes.AddAddressNew, {
+      addOnly: true,
+      source: 'Diagnostics Cart' as AddressSource,
+      ComingFrom: AppRoutes.AddPatients,
+    });
+  }
+
+  function _checkAddresses() {
+    /**
+   * find the address (if i have the saved addresses)
+   1. if deliveryAddressId is there -> selected from the saved address (manual selection)
+   2. if deliveryAddressId is not there -> 
+   2.1. current location or search address (manual changed) 
+        => search the address, with the pincode 
+        => multiple results then closest pincode 
+        => set that address  in the delivery id
+    2.2. current location or search address or previous address without manual intervntion
+        => search the address , with the pincode
+        => no results are there, then take the user to the add address screen, with lat lng from the previous i.e homepage
+   3. If no address is there, then take user directly to enter the new address (with the lat-lng from the homepage)
+   4. check for the delivery address id
+  **/
     if (addresses?.length == 0) {
-      props.navigation.navigate(AppRoutes.AddAddressNew, {
-        addOnly: true,
-        source: 'Diagnostics Cart' as AddressSource,
-        ComingFrom: AppRoutes.AddPatients,
-      });
+      _navigateToAddressPage();
     } else {
-      props.navigation.navigate(AppRoutes.CartPage);
+      if (deliveryAddressId != '') {
+        _navigateToCartPage();
+      } else {
+        const getHomePagePincode = diagnosticLocation?.pincode;
+        const getHomePageLat = diagnosticLocation?.latitude;
+        const getHomePageLong = diagnosticLocation?.longitude;
+        if (!!getHomePagePincode) {
+          const getNearByAddresses = addresses?.filter(
+            (item) => Number(item?.zipcode) === Number(getHomePagePincode)
+          );
+          if (!!getNearByAddresses && getNearByAddresses?.length > 1) {
+            _getAddressWithLatLng(getHomePageLat!, getHomePageLong!, getNearByAddresses);
+          } else if (!!getNearByAddresses && getNearByAddresses?.length == 1) {
+            setDeliveryAddressId?.(getNearByAddresses?.[0]?.id);
+            _navigateToCartPage();
+          } else {
+            _navigateToAddressPage();
+          }
+        } else {
+          _navigateToAddressPage();
+        }
+      }
     }
+  }
+
+  function _getAddressWithLatLng(lat: number, lng: number, filteredAddresses?: Address[]) {
+    const findFromAddress = !!filteredAddresses ? filteredAddresses : addresses;
+    const diffArray = findFromAddress?.map((item) =>
+      distanceBwTwoLatLng(lat, lng, item?.latitude!, item?.longitude!)
+    );
+
+    const indexOfMinDistance = diffArray?.indexOf(Math.min.apply(null, diffArray));
+    const nearestAddress = findFromAddress?.[indexOfMinDistance];
+    !!nearestAddress && setDeliveryAddressId?.(nearestAddress?.id);
+    _navigateToCartPage();
   }
 
   function triggerWebengageEvent() {

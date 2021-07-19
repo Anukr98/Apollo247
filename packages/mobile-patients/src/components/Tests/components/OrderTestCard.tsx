@@ -147,7 +147,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                     style={{
                       flexDirection: 'row',
                       minWidth: 0,
-                      maxWidth: !!item?.editOrderID ? '75%' : '80%',
+                      maxWidth: !!item?.editOrderID ? (screenWidth > 350 ? '75%' : '57%') : '80%',
                     }}
                   >
                     <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
@@ -300,7 +300,10 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       <View
         style={[
           styles.ctaContainer,
-          { justifyContent: props.showRescheduleCancel && !props.isHelp ? 'space-between' : 'flex-end' },
+          {
+            justifyContent:
+              props.showRescheduleCancel && !props.isHelp ? 'space-between' : 'flex-end',
+          },
         ]}
       >
         {!!props.showRescheduleCancel && props.showRescheduleCancel && !props.isHelp ? (
@@ -312,7 +315,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         ) : null}
         <TouchableOpacity activeOpacity={1} onPress={props.onPressViewDetails}>
           <Text style={[styles.yellowText, { fontSize: screenWidth > 380 ? 14 : 13 }]}>
-            {props.isHelp ? `HELP` :`VIEW DETAILS`}
+            {props.isHelp ? `HELP` : `VIEW DETAILS`}
           </Text>
         </TouchableOpacity>
       </View>

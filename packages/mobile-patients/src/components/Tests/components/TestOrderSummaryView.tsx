@@ -205,6 +205,8 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     ?.map((item: any) => Number(item?.price))
     ?.reduce((preVal: number, curVal: number) => preVal + curVal, 0);
 
+  const paidSlotCharges = orderDetails?.attributesObj?.distanceCharges;
+
   const renderOrderId = () => {
     const bookedOn = moment(orderDetails?.createdDate)?.format('Do MMM') || null;
     return (
@@ -417,9 +419,18 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
                 false
               )}
               {renderPrices(
-                'Collection and hygiene charges',
+                string.diagnosticsCartPage.homeCollectionText,
                 title === string.diagnostics.previousCharges
                   ? orderDetails?.collectionCharges!
+                  : 0.0,
+                false
+              )}
+              {renderPrices(
+                string.diagnosticsCartPage.paidSlotText,
+                title === string.diagnosticsCartPage.paidSlotText
+                  ? !!orderDetails?.attributesObj?.distanceCharges
+                    ? orderDetails?.attributesObj?.distanceCharges
+                    : 0.0
                   : 0.0,
                 false
               )}
@@ -497,7 +508,13 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           {renderPrices('Circle Discount', totalCircleSaving, true)}
           {renderPrices('Cart Savings', totalCartSaving, true)}
           {renderPrices('Coupon Discount', totalDiscountSaving, true)}
-          {renderPrices('Collection and hygiene charges', HomeCollectionCharges, false)}
+          {renderPrices(
+            string.diagnosticsCartPage.homeCollectionText,
+            HomeCollectionCharges,
+            false
+          )}
+          {!!paidSlotCharges &&
+            renderPrices(string.diagnosticsCartPage.paidSlotText, paidSlotCharges, false)}
           <Spearator style={{ marginTop: 6, marginBottom: 6 }} />
           {renderPrices('Total', orderDetails?.totalPrice, false, true)}
         </View>
