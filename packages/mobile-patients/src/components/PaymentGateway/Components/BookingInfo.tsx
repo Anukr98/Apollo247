@@ -49,7 +49,7 @@ export const BookingInfo: React.FC<BookingInfoProps> = (props) => {
     return !!subTxt ? <Text style={styles.subTxt}>{subTxt}</Text> : null;
   };
 
-  return LOB == 'diagnostics' || LOB == 'consult' ? (
+  return LOB == 'consult' || LOB == 'diagnostics' ? (
     <View style={styles.card}>
       {renderHeading()}
       {renderSubText()}

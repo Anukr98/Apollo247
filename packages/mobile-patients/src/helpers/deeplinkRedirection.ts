@@ -57,7 +57,8 @@ export const handleOpenURL = (event: any) => {
         }
       }
     } catch (error) {}
-    route = route ? route?.toLowerCase() : '';
+    const routeNameParam = route?.split('?');
+    route = routeNameParam ? routeNameParam?.[0]?.toLowerCase() : '';
     const paramData = getParamData(linkId)?.[0];
     linkId = paramData ? paramData : linkId;
     switch (route) {
@@ -65,7 +66,7 @@ export const handleOpenURL = (event: any) => {
       case 'consults':
         return {
           routeName: 'Consult',
-          id: data.length === 2 ? linkId : undefined,
+          id: linkId ? linkId : undefined,
         };
         break;
 
@@ -73,7 +74,7 @@ export const handleOpenURL = (event: any) => {
       case 'medicine':
         if (b === 0) {
           // apollopharmacy.in url
-          const redirectToMedicineDetail = data.length === 2;
+          const redirectToMedicineDetail = data.length >= 2;
           return {
             routeName: redirectToMedicineDetail ? 'MedicineDetail' : 'Medicine',
             id: redirectToMedicineDetail ? linkId : undefined,
@@ -89,7 +90,7 @@ export const handleOpenURL = (event: any) => {
       case 'uploadprescription':
         return {
           routeName: 'UploadPrescription',
-          id: data.length === 2 ? linkId : undefined,
+          id: linkId ? linkId : undefined,
         };
         break;
 
@@ -108,7 +109,7 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'speciality':
-        if (data.length === 2) {
+        if (linkId) {
           return {
             routeName: 'Speciality',
             id: linkId,
@@ -121,7 +122,7 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'doctor':
-        if (data.length === 2) {
+        if (linkId) {
           return {
             routeName: 'Doctor',
             id: linkId,
@@ -145,7 +146,7 @@ export const handleOpenURL = (event: any) => {
       case 'search-medicines':
         return {
           routeName: 'MedicineSearchText',
-          id: data.length === 2 ? linkId : undefined,
+          id: linkId ? linkId : undefined,
         };
         break;
 
@@ -153,10 +154,10 @@ export const handleOpenURL = (event: any) => {
       case 'shop-by-category':
       case 'shop-by-brand':
       case 'explore-popular-products':
-        if (data[1]) {
+        if (linkId) {
           return {
             routeName: 'MedicineCategory',
-            id: data[1],
+            id: linkId,
           };
         } else {
           return {
@@ -168,14 +169,14 @@ export const handleOpenURL = (event: any) => {
       case 'medicinesearch':
         return {
           routeName: 'MedicineSearch',
-          id: data.length === 2 ? linkId : undefined,
+          id: linkId ? linkId : undefined,
         };
         break;
 
       case 'medicinedetail':
         return {
           routeName: 'MedicineDetail',
-          id: data.length === 2 ? linkId : undefined,
+          id: linkId ? linkId : undefined,
         };
         break;
 
@@ -183,7 +184,7 @@ export const handleOpenURL = (event: any) => {
       case 'medicinecart':
         return {
           routeName: 'MedicineCart',
-          id: data.length === 2 ? linkId : undefined,
+          id: linkId ? linkId : undefined,
         };
         break;
 
@@ -217,7 +218,7 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'order':
-        if (data.length === 2) {
+        if (linkId) {
           return {
             routeName: 'Order',
             id: linkId,
@@ -246,7 +247,7 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'finddoctors':
-        if (data.length === 2) {
+        if (linkId) {
           return {
             routeName: 'FindDoctors',
             id: linkId,
@@ -275,14 +276,14 @@ export const handleOpenURL = (event: any) => {
       case 'testdetails':
         return {
           routeName: 'TestDetails',
-          id: data.length === 2 ? linkId : undefined,
+          id: linkId ? linkId : undefined,
         };
         break;
 
       case 'consultdetails':
         return {
           routeName: 'ConsultDetails',
-          id: data.length === 2 ? linkId : undefined,
+          id: linkId ? linkId : undefined,
         };
         break;
 
@@ -308,14 +309,14 @@ export const handleOpenURL = (event: any) => {
       case 'testlisting':
         return {
           routeName: 'TestListing',
-          id: data?.length === 2 ? linkId : undefined,
+          id: linkId ? linkId : undefined,
         };
         break;
 
       case 'testreport':
         return {
           routeName: 'TestReport',
-          id: data?.length === 2 ? linkId : undefined,
+          id: linkId ? linkId : undefined,
         };
         break;
 
@@ -332,7 +333,7 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'prohealth':
-        if (data.length === 2) {
+        if (data.length >= 2) {
           return {
             routeName: 'prohealth',
             id: linkId,

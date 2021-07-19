@@ -57,6 +57,7 @@ import {
   nameFormater,
   navigateToScreenWithEmptyStack,
   aphConsole,
+  downloadDocument,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DisabledTickIcon, TickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
@@ -143,6 +144,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [date, setDate] = useState<Date>(new Date());
   const [showDisplaySchedule, setDisplaySchedule] = useState<boolean>(false);
   const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
+  const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
   const [selectedOrderId, setSelectedOrderId] = useState<number>(0);
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
@@ -403,10 +405,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       let response: any = await getDiagnosticRefundOrders(client, orderSelected?.paymentOrderId);
       if (response?.data?.data) {
         const refundData = g(response, 'data', 'data', 'getOrderInternal', 'refunds');
+        const getTransId = g(response, 'data', 'data', 'getOrderInternal', 'txn_id');
         if (refundData?.length! > 0) {
           setRefundStatusArr(refundData);
         }
-        performNavigation(orderSelected, tab, refundData);
+        performNavigation(orderSelected, tab, refundData, getTransId);
       } else {
         performNavigation(orderSelected, tab, []);
       }
@@ -657,7 +660,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         aphConsole.log({ data });
         const rescheduleResponse = g(data, 'data', 'rescheduleDiagnosticsOrder');
         if (rescheduleResponse?.status == 'true' && rescheduleResponse?.rescheduleCount <= 3) {
-          setTimeout(() => refetchOrders(), 2000);
+          setTimeout(() => refetchOrders(), 1700);
           setRescheduleCount(rescheduleResponse?.rescheduleCount);
           setRescheduledTime(dateTimeInUTC);
           showAphAlert?.({
@@ -790,19 +793,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       >
         <View style={{ flex: 1 }}>
           <TouchableOpacity style={{ flex: 1 }} onPress={() => onPressCloseOverlay()}>
-            <View style={styles.overlayTouch}>
-              <TouchableOpacity>
-                <SafeAreaView style={styles.overlaySafeArea}>
-                  <View style={styles.overlayContainer}>
-                    <View>
-                      {showRescheduleOptions && renderRescheduleCancelOptions()}
-                      {showRescheduleReasons && renderRescheduleReasons()}
-                      {showCancelReasons && renderCancelReasons()}
-                    </View>
-                  </View>
-                </SafeAreaView>
-              </TouchableOpacity>
-            </View>
+            <SafeAreaView style={[styles.overlaySafeArea, styles.overlayTouch]}>
+              <View style={styles.overlayContainer}>
+                <View>
+                  {showRescheduleOptions && renderRescheduleCancelOptions()}
+                  {showRescheduleReasons && renderRescheduleReasons()}
+                  {showCancelReasons && renderCancelReasons()}
+                </View>
+              </View>
+            </SafeAreaView>
           </TouchableOpacity>
         </View>
       </Overlay>
@@ -1086,13 +1085,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   }
 
-  function performNavigation(order: any, tab: boolean, refundArray?: any) {
+  function performNavigation(order: any, tab: boolean, refundArray?: any, refundTransId?: string) {
     setLoading?.(false);
     props.navigation.push(AppRoutes.TestOrderDetails, {
       orderId: order?.id,
       setOrders: (orders: orderList[]) => setOrders(orders),
       selectedOrder: order,
       refundStatusArr: refundArray,
+      refundTransactionId: refundTransId,
       comingFrom: AppRoutes.YourOrdersTest,
       showOrderSummaryTab: tab,
     });
@@ -1331,13 +1331,19 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       / /g,
       '_'
     );
-    downloadLabTest(order?.labReportURL!, appointmentDate, patientName);
+    downloadLabTest(order?.labReportURL!, appointmentDate, patientName, order);
   }
 
-  async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string) {
+  async function downloadLabTest(
+    pdfUrl: string,
+    appointmentDate: string,
+    patientName: string,
+    order: orderList
+  ) {
     setLoading?.(true);
     try {
       await downloadDiagnosticReport(setLoading, pdfUrl, appointmentDate, patientName, true);
+      setViewReportOrderId(order?.displayId);
     } catch (error) {
       setLoading?.(false);
       CommonBugFender('YourOrderTests_downloadLabTest', error);
@@ -1471,6 +1477,17 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           order={activeOrder}
           heading=""
           isVisible={displayViewReport}
+          viewReportOrderId={viewReportOrderId}
+          downloadDocument={() => {
+            const res = downloadDocument(
+              activeOrder?.labReportURL ? activeOrder?.labReportURL : '',
+              'application/pdf',
+              activeOrder?.displayId
+            );
+            if (res == activeOrder?.displayId) {
+              setViewReportOrderId(activeOrder?.displayId);
+            }
+          }}
           onClose={() => setDisplayViewReport(false)}
           onPressViewReport={() => {
             DiagnosticViewReportClicked(

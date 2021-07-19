@@ -1,6 +1,6 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { Input, InputProps } from 'react-native-elements';
+
 import {
   ScrollView,
   StyleSheet,
@@ -16,36 +16,14 @@ import {
   Alert,
 } from 'react-native';
 
-import {
-  dataSavedUserID,
-  g,
-  getNetStatus,
-  isValidSearch,
-  postAppsFlyerEvent,
-  postFirebaseEvent,
-  postWebEngageEvent,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
-import {
-  CommonBugFender,
-  CommonLogEvent,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { isValidSearch } from '@aph/mobile-patients/src/helpers/helperFunctions';
+
 import Menu, { MenuItem } from 'react-native-material-menu';
 import { WhiteSearchIcon } from './Icons';
 import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
 import { Spearator } from './BasicComponents';
-import string from '@aph/mobile-patients/src/strings/strings.json';
-import { Mutation } from 'react-apollo';
 import { useApolloClient } from 'react-apollo-hooks';
-import { getDoctorList } from '@aph/mobile-patients/src/graphql/types/getDoctorList';
-import {
-  GET_ALL_SPECIALTIES,
-  GET_PATIENT_PAST_SEARCHES,
-  SAVE_SEARCH,
-  GET_DOCTOR_LIST,
-  GET_PATIENT_ALL_CONSULTED_DOCTORS,
-} from '@aph/mobile-patients/src/graphql/profiles';
 import _ from 'lodash';
-var allSettled = require('promise.allsettled');
 
 const styles = StyleSheet.create({
   menuContainer: {
@@ -73,7 +51,7 @@ const styles = StyleSheet.create({
   },
   hospitalItemContainer: {
     marginHorizontal: 20,
-    marginVertical: 10,
+    marginTop: 10,
   },
   cityName: {
     ...theme.viewStyles.text('R', 13, '#02475B'),
@@ -94,7 +72,6 @@ export interface HospitalCityChooserProps {
 
 export const HospitalCityChooser: React.FC<HospitalCityChooserProps> = (props) => {
   const menuRef = React.useRef<any>(null);
-  const client = useApolloClient();
   const [searchText, setSearchText] = useState<string>('');
   const [isSearching, setisSearching] = useState<boolean>(false);
   const [cityList, setCityList] = useState(props.dataList);
@@ -163,32 +140,28 @@ export const HospitalCityChooser: React.FC<HospitalCityChooserProps> = (props) =
   const renderCityListItem = () => {
     return cityList.map(function(item, i) {
       return (
-        <>
-          <TouchableOpacity
-            key={i}
-            style={styles.hospitalItemContainer}
-            onPress={() => {
-              props.onCityChoosed(item);
-              hideMenu();
-            }}
-          >
-            <Text style={styles.cityName}>{item}</Text>
-          </TouchableOpacity>
-          <Spearator />
-        </>
+        <TouchableOpacity
+          key={i}
+          style={styles.hospitalItemContainer}
+          onPress={() => {
+            props.onCityChoosed(item);
+
+            setSearchText('');
+            setSearchFocused(false);
+            setCityList(props.dataList);
+
+            hideMenu();
+          }}
+        >
+          <Text style={styles.cityName}>{item}</Text>
+          <Spearator style={{ marginTop: 10 }} />
+        </TouchableOpacity>
       );
     });
   };
 
   const renderCityList = () => {
-    return (
-      <View style={{ marginBottom: 16 }}>
-        {/* <Text style={styles.stateLabel}>State</Text> */}
-        {renderCityListItem()}
-        {/* <Text style={styles.stateLabel}>City Name</Text>
-        {renderCityListItem()} */}
-      </View>
-    );
+    return <View style={{ marginBottom: 16 }}>{renderCityListItem()}</View>;
   };
 
   return (
@@ -210,7 +183,7 @@ export const HospitalCityChooser: React.FC<HospitalCityChooserProps> = (props) =
           <ActivityIndicator animating={true} size="large" color="green" />
         </View>
       ) : (
-        <ScrollView style={{ flexGrow: 1, marginBottom: 10 }} bounces={false}>
+        <ScrollView showsVerticalScrollIndicator={true} style={{ flexGrow: 1, marginBottom: 10 }}>
           {renderCityList()}
         </ScrollView>
       )}

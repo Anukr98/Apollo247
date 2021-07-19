@@ -456,7 +456,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           productDiscount,
           cartItems,
           setCouponProducts,
-          activeUserSubscriptions ? getPackageIds(activeUserSubscriptions) : []
+          getPackageIds(activeUserSubscriptions)
         );
         if (response !== 'success') {
           removeCouponWithAlert(response);

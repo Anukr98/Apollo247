@@ -76,8 +76,8 @@ import {
   PharmaOrderPlaced,
 } from '@aph/mobile-patients/src/components/PaymentGateway/Events';
 import { useFetchSavedCards } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useFetchSavedCards';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import Decimal from 'decimal.js';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const { HyperSdkReact } = NativeModules;
 

@@ -146,6 +146,7 @@ import {
   sourceHeaders,
   convertNumberToDecimal,
   createAddressObject,
+  DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import {
   initiateSDK,
@@ -441,7 +442,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       const listOfIds =
         typeof _cartItemId == 'string' ? removeSpaces?.map((item) => parseInt(item!)) : _cartItemId;
       const res: any = await getDiagnosticCartItemReportGenDetails(
-        listOfIds?.toString() || _cartItemId?.toString()
+        listOfIds?.toString() || _cartItemId?.toString(),
+        Number(addressCityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
       );
       if (res?.data?.success) {
         const result = g(res, 'data', 'data');
@@ -802,6 +804,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       });
     }
   };
+  useEffect(() => {
+    if (isEmptyObject(areaSelected)) {
+      setHcApiCalled(false);
+    } else {
+      setHcApiCalled(true);
+    }
+  }, [areaSelected]);
   const fetchAddresses = async () => {
     try {
       if (addresses?.length) {
@@ -1248,7 +1257,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             func && func(product[0]!);
 
             if (comingFrom == 'diagnosticServiceablityChange') {
-              product?.map((item) => {
+              product?.map((item, index) => {
                 const diagnosticPricing = g(item, 'diagnosticPricing');
                 const packageMrp = item?.packageCalculatedMrp!;
                 const pricesForItem = getPricesForItem(diagnosticPricing, packageMrp);
@@ -1263,10 +1272,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 const discountPrice = pricesForItem?.discountPrice!;
                 const discountSpecialPrice = pricesForItem?.discountSpecialPrice!;
                 const planToConsider = pricesForItem?.planToConsider;
-
+                const styleFreeItem = cartItems.map((i) => {
+                  if (i?.id == item?.itemId.toString()) {
+                    return i?.name;
+                  }
+                });
                 updateCartItem?.({
                   id: item?.itemId?.toString() || product?.[0]?.id!,
-                  name: item?.itemName,
+                  name: styleFreeItem?.[index] ? styleFreeItem?.[index] : item?.itemName,
                   price: price,
                   thumbnail: '',
                   specialPrice: specialPrice! || price,
@@ -1850,7 +1863,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               </Text>
             </View>
           )}
-          {
+          {isHcApiCalled ? (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={[styles.blueTextStyle, { width: '60%' }]}>
                 Collection and hygiene charges
@@ -1881,7 +1894,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 ) : null} */}
               </View>
             </View>
-          }
+          ) : null}
           {normalSaving > 0 && (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
@@ -2442,6 +2455,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   function createCheckOutEventAttributes(orderId: string, slotStartTime?: string) {
     const attributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED] = {
+      'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
       'Order id': orderId,
       Pincode: parseInt(selectedAddr?.zipcode!),
       'Patient UHID': g(currentPatient, 'id'),
@@ -2854,7 +2868,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       cartSaving -
       (isDiagnosticCircleSubscription ? circleSaving : 0);
 
-    setHcApiCalled(false);
     const selectedAddressIndex = addresses?.findIndex(
       (address) => address?.id == deliveryAddressId
     );
@@ -2914,7 +2927,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setHcApiCalled(true);
     } catch (error) {
       setShowSpinner(false);
-      setHcApiCalled(true);
       setLoading?.(false);
     }
   };
@@ -3313,7 +3325,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           isServiceable={isDiagnosticLocationServiceable}
           isVertical={false}
           navigation={props.navigation}
-          source={'Cart page'}
+          source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.CART_PAGE}
           sourceScreen={AppRoutes.TestsCart}
         />
       </View>

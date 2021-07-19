@@ -40,7 +40,11 @@
     "patient_uploaded_text": "Patient Uploaded",
     "error_enter_number_text": "Please enter numeric values (eg. 0,1...)",
     "addPrescriptionText": "ADD PRESCRIPTION",
+    "addVaccinationText": "ADD VACCINATION",
     "addTestReportText": "ADD TEST REPORT",
+    "cowinDelayMessage": "There might be some delay in receiving the OTP due to heavy traffic.",
+    "cowinPhoneAlertMessage": "Note: In case you are already registered on CoWIN enter the phone number linked with your CoWIN registration.",
+    "cowinSelectProfile": "Select the profile for downloading the Vaccine Certificate. Please note that only provisional certificate is available if you have taken only 1 Dose",
     "doctorConsultPHRText": "For privacy reasons, reports uploaded here are for your view only. To share with doctors, please upload selected reports in your chat with the doctor.",
     "addDischargeSummaryText": "ADD DISCHARGE SUMMARY",
     "addHealthConditionText": "ADD HEALTH CONDITIONS",
@@ -52,6 +56,7 @@
     "uploadHealthConditionText": "UPLOAD HEALTH CONDITIONS",
     "uploadBillText": "UPLOAD BILL",
     "uploadInsuranceText": "UPLOAD INSURANCE",
+    "uploadVaccinationText": "UPLOAD VACCINATION",
     "best_doctor_text": "Here are our best ",
     "phr_api_error_text": "We are really sorry, something went wrong !!!",
     "all_consults": "All Consults",
@@ -478,6 +483,7 @@
       "bookedByMistake": "Booked by Mistake",
       "lesserPrice": "Got lesser price elsewhere",
       "urgentReport": "Need Report Urgently",
+      "needModifyOrder": "Need to modify patient / order details",
       "anotherChannel": "Booked from other channel",
       "otherReasons": "Others (Please specify)"
     },
@@ -975,7 +981,7 @@
     "FAQ": [
       {
         "faqQuestion": "What is the Apollo 24|7 CIRCLE Membership program?",
-        "faqAnswer": "Apollo 24|7 CIRCLE membership is a one-of-its-kind program designed to give the best care and value to its members. Once you sign up by choosing the plan that suits your needs, you will receive benefits like an emergency doctor-on-call, cashback on medicines, discounts on doctor consultations, and diagnostics. Did we also tell you that all your deliveries will be done free of cost and on a priority basis?"
+        "faqAnswer": "Apollo 24|7 CIRCLE membership is a one-of-its-kind program designed to give the best care and value to its members. Once you sign up by choosing the plan that suits your needs, you will receive benefits like an emergency doctor-on-call, cashback on medicines, discounts on selected doctor consultations, and diagnostics. Did we also tell you that all your deliveries will be done free of cost and on a priority basis?"
       },
       {
         "faqQuestion": "Sounds good. Tell me more about the plans?",
@@ -1236,11 +1242,11 @@
     "wrong_otp": "Seems you have entered wrong OTP.Please try with right one.",
     "unable_to_validate": "We are unable to validate OTP right now. Please try again after some time. If this issue persists, send an email to corporate-helpdesk@apollo247.com and attach the screenshot of this error.",
     "CORPORATE_VACCINATION": "CORPORATE_VACCINATION",
-    "booking_detail_pdf":"DOWNLOAD PDF",
-    "unable_to_generate_pdf":"Unable to generate booking pdf.",
-    "success_generate_pdf":"Successfully generated vaccination booking PDF ",
-    "dose_2_alert":"Please make sure that the difference between 1st and 2nd dose is as per Govt. guidelines. If difference in 2nd dose is less than Govt. guideline, you will not be given 2nd dose.",
-    "verify_title":"VERIFY",
-    "submit_title":"SUBMIT "
+    "booking_detail_pdf": "DOWNLOAD PDF",
+    "unable_to_generate_pdf": "Unable to generate booking pdf.",
+    "success_generate_pdf": "Successfully generated vaccination booking PDF ",
+    "dose_2_alert": "Please make sure that the difference between 1st and 2nd dose is as per Govt. guidelines. If difference in 2nd dose is less than Govt. guideline, you will not be given 2nd dose.",
+    "verify_title": "VERIFY",
+    "submit_title": "SUBMIT "
   }
 }

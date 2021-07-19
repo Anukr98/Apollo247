@@ -428,7 +428,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         }
       );
       const params = id?.split('+');
-      getAppointmentDataAndNavigate(params?.[0]!, false);
+      if (getCurrentRoute() !== AppRoutes.ChatRoom) {
+        getAppointmentDataAndNavigate(params?.[0]!, false);
+      }
     } else if (routeName == 'prohealth') {
       fetchProhealthHospitalDetails(id!);
     } else {
@@ -737,6 +739,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setMinCartValueForCOD,
     setMaxCartValueForCOD,
     setNonCodSKus,
+    setCartPriceNotUpdateRange,
   } = useShoppingCart();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -926,6 +929,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'Used_Up_Alotted_Slot_Msg_QA',
       PROD: 'Used_Up_Alotted_Slot_Msg_Prod',
     },
+    Vacc_City_Rule: {
+      QA: 'Vacc_City_Rule_QA',
+      PROD: 'Vacc_City_Rule_Prod',
+    },
     Enable_Diagnostics_COD: {
       QA: 'QA_Enable_Diagnostics_COD',
       PROD: 'Enable_Diagnostics_COD',
@@ -949,6 +956,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Diagnostics_CityLevel_Payment_Option: {
       QA: 'QA_Diagnostics_City_Level_Payment_Option',
       PROD: 'Diagnostics_City_Level_Payment_Option',
+    },
+    Covid_Risk_Level_Url: {
+      QA: 'QA_Covid_Risk_Level_Url',
+      PROD: 'Covid_Risk_Level_Url',
+    },
+    Diagnostics_Help_NonOrder_Queries: {
+      QA: 'QA_Diagnostics_Help_NonOrder_Queries',
+      PROD: 'Diagnostics_Help_NonOrder_Queries',
     },
   };
 
@@ -1059,6 +1074,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         setMinCartValueForCOD?.(minMaxCartValues?.minCartValueCOD);
       minMaxCartValues?.maxCartValueCOD &&
         setMaxCartValueForCOD?.(minMaxCartValues?.maxCartValueCOD);
+      minMaxCartValues?.priceNotUpdateRange &&
+        setCartPriceNotUpdateRange?.(minMaxCartValues?.priceNotUpdateRange);
 
       const nonCodSkuList = getRemoteConfigValue(
         'Sku_Non_COD',
@@ -1142,12 +1159,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         return JSON.parse(config.getString(key)) || AppConfig.Configuration.Vaccine_Type;
       });
 
-      setAppConfig(
-        'Cancel_Threshold_Pre_Vaccination',
-        'Cancel_Threshold_Pre_Vaccination',
-        (key) => {
-          config.getNumber(key);
-        }
+      setAppConfig('Vacc_City_Rule', 'Vacc_City_Rule', (key) => {
+        return JSON.parse(config.getString(key));
+      });
+
+      setAppConfig('Cancel_Threshold_Pre_Vaccination', 'Cancel_Threshold_Pre_Vaccination', (key) =>
+        config.getNumber(key)
       );
 
       setAppConfig('Helpdesk_Chat_Confim_Msg', 'Helpdesk_Chat_Confim_Msg', (key) =>
@@ -1188,6 +1205,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) =>
           JSON.parse(config.getString(key)) ||
           AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_PAYMENT_OPTION
+      );
+
+      setAppConfig('Covid_Risk_Level_Url', 'COVID_RISK_LEVEL_URL', (key) => config.getString(key));
+      setAppConfig(
+        'Diagnostics_Help_NonOrder_Queries',
+        'Diagnostics_Help_NonOrder_Queries',
+        (key) => config.getString(key)
       );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;

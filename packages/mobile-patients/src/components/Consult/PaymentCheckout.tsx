@@ -170,7 +170,9 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const selectedTimeSlot = props.navigation.getParam('selectedTimeSlot');
   const whatsAppUpdate = props.navigation.getParam('whatsAppUpdate');
   const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
-  const isOnlineConsult = selectedTab === 'Consult Online';
+  const isOnlineConsult =
+    selectedTab === string.consultModeTab.VIDEO_CONSULT ||
+    selectedTab === string.consultModeTab.CONSULT_ONLINE;
   const isPhysicalConsult = isPhysicalConsultation(selectedTab);
   const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
   const [couponDiscountFees, setCouponDiscountFees] = useState<number>(0);
@@ -691,7 +693,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           doctorId: g(doctor, 'id'),
           specialityId: g(doctor, 'specialty', 'id'),
           consultationTime: ts, //Unix timestamp“
-          consultationType: selectedTab === 'Consult Online' ? 1 : 0, //Physical 0, Virtual 1,  All -1
+          consultationType: isOnlineConsult ? 1 : 0, //Physical 0, Virtual 1,  All -1
           cost: billAmount,
           rescheduling: false,
         },
@@ -1040,7 +1042,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       'customer id': g(currentPatient, 'id'),
       'doctor id': g(doctor, 'id')!,
       'specialty id': g(doctor, 'specialty', 'id')!,
-      'consult type': 'Consult Online' === selectedTab ? 'online' : 'clinic',
+      'consult type': isOnlineConsult ? 'online' : 'clinic',
       af_revenue: amountToPay,
       af_currency: 'INR',
       'consult id': id,
