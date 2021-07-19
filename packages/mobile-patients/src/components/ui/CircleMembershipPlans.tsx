@@ -139,6 +139,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     if (buyNow && props.membershipPlans?.length > 0) {
       setDefaultCirclePlan && setDefaultCirclePlan(null);
     }
+    console.log('CIRCLE ===== Circle Pop up viewed (Plans only) '); // if isModal
   }, []);
 
   const fireMembershipPlanSelected = () => {
@@ -215,6 +216,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     } else {
       setIsCircleSubscription && setIsCircleSubscription(true);
       setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+      console.log('CIRCLE ===== Circle Plan to Cart ');
       setCircleMembershipCharges && setCircleMembershipCharges(membershipPlan?.currentSellingPrice);
       onSelectMembershipPlan && onSelectMembershipPlan(membershipPlan);
     }
@@ -223,6 +225,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   };
 
   const fireCircleKnowMoreEvent = () => {
+    console.log('CIRCLE ===== Circle Landing page viewed ');
     source == 'Pharma' &&
       postWebEngageEvent(
         WebEngageEventName.PHARMA_HOME_KNOW_MORE_CLICKED_CIRCLE_POPUP,
@@ -246,6 +249,9 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   };
 
   const fireCircleBuyNowEvent = () => {
+    console.log('CIRCLE ===== Circle Plan to Cart ');
+    // circlePlanSelected
+    // CircleEventAttributes
     source == 'Product Detail' &&
       postWebEngageEvent(
         WebEngageEventName.PHARMA_PRODUCT_ADD_TO_CART_CLICKED_CIRCLE_POPUP,
@@ -259,6 +265,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   };
 
   const fireCirclePlanRemovedEvent = () => {
+    console.log('CIRCLE ===== Circle Plan Removed from cart ');
     source == 'Pharma Cart' &&
       postWebEngageEvent(
         WebEngageEventName.PHARMA_CART_CIRCLE_MEMBERSHIP_REMOVED,
@@ -583,6 +590,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   };
 
   const removeAutoAddedPlan = () => {
+    console.log('CIRCLE ===== Circle Plan Removed from cart ');
     setCirclePlanSelected && setCirclePlanSelected(null);
     setDefaultCirclePlan && setDefaultCirclePlan(null);
     setIsCircleSubscription && setIsCircleSubscription(false);
@@ -729,6 +737,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         setCirclePlanSelected && setCirclePlanSelected(defaultPlan[0]);
         AsyncStorage.setItem('circlePlanSelected', JSON.stringify(defaultPlan[0]));
         setCircleSubPlanId && setCircleSubPlanId(defaultPlan[0].subPlanId);
+        console.log('CIRCLE ===== Circle Plan to Cart ');
         setCircleMembershipCharges &&
           setCircleMembershipCharges(defaultPlan[0]?.currentSellingPrice);
       }

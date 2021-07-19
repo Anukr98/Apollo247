@@ -63,6 +63,7 @@ export const CircleCartItem: React.FC<CircleCartItemProps> = (props) => {
           <View>
             <TouchableOpacity
               onPress={() => {
+                console.log('CIRCLE ===== Circle Plan Removed from cart ');
                 fireCirclePlanRemovedEvent(props?.currentPatient);
                 setCirclePlanSelected && setCirclePlanSelected(null);
                 setIsCircleSubscription && setIsCircleSubscription(false);
