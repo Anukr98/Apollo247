@@ -1957,3 +1957,11 @@ export const GreenClock: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/green_clock.webp')}
   />
 );
+
+export const SavingsIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/saving_icon.webp')}
+  />
+);
