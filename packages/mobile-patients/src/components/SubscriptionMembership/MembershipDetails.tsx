@@ -479,6 +479,9 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
             }
 
             if (circlePlan) {
+              console.log('CIRCLE ===== Circle membership page viewed');
+              // comingFrom
+              // rest data from circlePlan?.[0]
               const circleSubscription = setCircleSubscriptionData(circlePlan?.[0]);
               if (!!circlePlan?.[0]?._id) {
                 if (circlePlan?.[0]?.status === 'disabled') {
@@ -828,6 +831,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   };
 
   const handleCircleWebengageEvents = (attribute: string) => {
+    console.log('CIRCLE ===== Circle Benefit Clicked');
+    // circleSubscription
     const circleMembershipType = setCircleMembershipType(
       circleSubscription?.startDate!,
       circleSubscription?.endDate!

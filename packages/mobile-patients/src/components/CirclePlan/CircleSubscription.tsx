@@ -22,6 +22,8 @@ export const CircleSubscription: React.FC<CirclePaymentProps> = (props) => {
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
+    console.log('CIRCLE ===== Circle payment page viewed (Standalone circle purchase page) ');
+    // selectedPlan
   }, []);
 
   const handleBack = () => {
