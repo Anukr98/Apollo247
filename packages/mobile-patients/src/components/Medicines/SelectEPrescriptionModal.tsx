@@ -407,6 +407,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
         (item) =>
           ({
             id: item!.id,
+            appointmentId: item?.id,
             date: moment(item!.appointmentDateTime).format(DATE_FORMAT),
             uploadedUrl: getBlobUrl(item?.caseSheet),
             doctorName: item!.doctorInfo ? `${item!.doctorInfo.fullName}` : '',
