@@ -31,7 +31,12 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  getUserType,
+  postCleverTapEvent,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
   WebEngageEvents,
@@ -50,6 +55,10 @@ import moment from 'moment';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const { width } = Dimensions.get('window');
 interface CircleMembershipPlansProps extends NavigationScreenProps {
@@ -112,7 +121,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     cartItems,
   } = useShoppingCart();
   const { setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { setLoading } = useUIElements();
   const storeCode =
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
@@ -139,8 +148,42 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     if (buyNow && props.membershipPlans?.length > 0) {
       setDefaultCirclePlan && setDefaultCirclePlan(null);
     }
-    console.log('CIRCLE ===== Circle Pop up viewed (Plans only) '); // if isModal
+    if (isModal) {
+      fireCleverTapCircleEvents();
+    }
+    console.log('CIRCLE ===== Circle Pop up viewed (Plans only) ', screenName, from); // if isModal
   }, []);
+
+  const fireCleverTapCircleEvents = () => {
+    const source =
+      from === string.banner_context.HOME
+        ? 'Landing Home Page banners'
+        : from === string.banner_context.PHARMACY_HOME
+        ? 'Medicine Home page Banner'
+        : from === string.banner_context.PHARMACY_HOME_STICKY
+        ? 'Medicine Homepage Sticky'
+        : from === string.banner_context.DIAGNOSTIC_HOME
+        ? 'Diagnostic Home page Banner'
+        : from === string.banner_context.VC_DOCTOR_PROFILE
+        ? 'VC Doctor Profile'
+        : from === string.banner_context.MEMBERSHIP_DETAILS
+        ? from
+        : undefined;
+    const circleNoSubscriptionText = string.common.circleNoSubscriptionText;
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_POP_UP_VIEWED_PLANS_ONLY] = {
+      navigation_source: source,
+      circle_planid: circleNoSubscriptionText,
+      circle_end_date: circleNoSubscriptionText,
+      circle_start_date: circleNoSubscriptionText,
+      customer_id: currentPatient?.id,
+      duration_in_month: circleNoSubscriptionText,
+      user_type: getUserType(allCurrentPatients),
+    };
+    postCleverTapEvent(
+      CleverTapEventName.CIRCLE_POP_UP_VIEWED_PLANS_ONLY,
+      cleverTapEventAttributes
+    );
+  };
 
   const fireMembershipPlanSelected = () => {
     const CircleEventAttributes: WebEngageEvents[WebEngageEventName.NON_CIRCLE_PLAN_SELECTED] = {

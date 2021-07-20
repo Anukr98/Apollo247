@@ -2213,7 +2213,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         closeModal={() => setShowCirclePopup(false)}
         navigation={props.navigation}
         isConsultJourney={false}
-        from={string.banner_context.PHARMACY_HOME}
+        from={string.banner_context.PHARMACY_HOME_STICKY}
         source={'Pharma'}
         onSelectMembershipPlan={(plan) => {
           if (plan) {

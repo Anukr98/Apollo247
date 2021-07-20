@@ -133,7 +133,8 @@
     "lowNetworkText": "We were unable to load the page properly because of low network. Please try again",
     "CorporateVaccineBenefit": "DEPENDENT_VACCINATION_REG",
     "noDiagnosticsAvailable": "Unfortunately, we do not have any diagnostic(s) available right now.",
-    "unableToSetDeliveryAddress": "We're sorry! Unable to set delivery address. Please try again after some time"
+    "unableToSetDeliveryAddress": "We're sorry! Unable to set delivery address. Please try again after some time",
+    "circleNoSubscriptionText": "No Subscription"
   },
   "components": {
     "medicineDetails": {
@@ -1044,7 +1045,11 @@
     "HOME": "HOME",
     "PHARMACY_HOME": "PHARMACY_HOME",
     "DIAGNOSTIC_HOME": "DIAGNOSTIC_HOME",
-    "MEMBERSHIP_DETAILS": "MEMBERSHIP_DETAILS"
+    "MEMBERSHIP_DETAILS": "MEMBERSHIP_DETAILS",
+    "PHARMACY_HOME_STICKY": "PHARMACY_HOME_STICKY",
+    "VC_DOCTOR_PROFILE": "VC_DOCTOR_PROFILE",
+    "PHARMA_CART": "PHARMA_CART",
+    "VC_CART": "VC_CART"
   },
   "circleMembershipBenefits": {
     "PHARMA_CASHBACK": "Pharma Cashback",

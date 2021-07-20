@@ -611,6 +611,18 @@ interface CircleRenewalAttributes {
   'Membership State': 'Expired' | 'About to Expire' | 'Not Expiring';
 }
 
+interface CircleAttributes {
+  customer_id: string;
+  circle_planid?: string;
+  circle_start_date?: Date | string;
+  circle_end_date?: Date | string;
+  user_type?: string;
+  navigation_source?: string;
+  duration_in_month?: string;
+  corporate_name?: string;
+  source_identifier?: string;
+}
+
 interface CircleRenewalSubscriptionAttributes {
   'Patient Name': string;
   'Patient UHID': string;
@@ -2621,7 +2633,13 @@ export interface CleverTapEvents {
     Relation: string;
     'Selected Symptoms': string;
   };
-  [CleverTapEventName.CIRCLE_LANDING_PAGE_VIEWED]: {};
+  [CleverTapEventName.CIRCLE_LANDING_PAGE_VIEWED]: CircleAttributes;
+  [CleverTapEventName.CIRCLE_POP_UP_VIEWED_PLANS_ONLY]: CircleAttributes;
+  [CleverTapEventName.CIRCLE_MEMBERSHIP_PAGE_VIEWED]: CircleAttributes;
+  [CleverTapEventName.CIRCLE_PLAN_TO_CART]: CircleAttributes;
+  [CleverTapEventName.CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE]: CircleAttributes;
+  [CleverTapEventName.CIRCLE_BENIFIT_CLICKED]: CircleAttributes;
+
   [CleverTapEventName.SYMPTOM_TRACKER_FOR_MYSELF]: SymptomTrackerPatientInfo;
   [CleverTapEventName.CIRCLE_RENEW_NOW_CLICKED]: CircleRenewalAttributes;
   [CleverTapEventName.CIRCLE_VIEW_BENEFITS_CLICKED]: CircleRenewalAttributes;

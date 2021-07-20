@@ -1194,6 +1194,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         membershipPlans={membershipPlans}
         closeModal={() => setShowCirclePlans(false)}
         isConsultJourney={true}
+        from={string.banner_context.VC_DOCTOR_PROFILE}
       />
     );
   };
