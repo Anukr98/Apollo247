@@ -5481,3 +5481,11 @@ export const COWIN_REGISTRATION = gql`
     }
   }
 `;
+export const GET_RESCHEDULE_AND_CANCELLATION_REASONS = gql`
+query getRescheduleAndCancellationReasons {
+  getRescheduleAndCancellationReasons {
+    rescheduleReasons
+    cancellationReasons
+  }
+}
+`;

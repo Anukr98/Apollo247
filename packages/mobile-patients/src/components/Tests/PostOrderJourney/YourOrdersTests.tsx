@@ -11,6 +11,7 @@ import {
   GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE,
   GET_PHLOBE_DETAILS,
   DIAGNOSITC_EXOTEL_CALLING,
+  GET_RESCHEDULE_AND_CANCELLATION_REASONS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticOrdersListByMobile,
@@ -113,6 +114,7 @@ import {
   diagnosticExotelCalling,
   diagnosticExotelCallingVariables,
 } from '@aph/mobile-patients/src/graphql/types/diagnosticExotelCalling';
+import { getRescheduleAndCancellationReasons } from '@aph/mobile-patients/src/graphql/types/getRescheduleAndCancellationReasons';
 
 type orderList = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList;
 export interface YourOrdersTestProps extends NavigationScreenProps {
@@ -159,6 +161,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [selectCancelOption, setSelectCancelOption] = useState<boolean>(false);
   const [showRescheduleReasons, setShowRescheduleReasons] = useState<boolean>(false);
   const [showCancelReasons, setShowCancelReasons] = useState<boolean>(false);
+  const [cancelReasonList, setCancelReasonList] = useState<any>([]);
+  const [rescheduleReasonList, setRescheduleReasonList] = useState<any>([]);
   const [selectCancelReason, setSelectCancelReason] = useState<string>('');
   const [cancelReasonComment, setCancelReasonComment] = useState<string>('');
   const [selectRescheduleReason, setSelectRescheduleReason] = useState<string>('');
@@ -229,6 +233,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   useEffect(() => {
+    getReasons()
     const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       BackHandler.addEventListener('hardwareBackPress', handleBack);
     });
@@ -315,6 +320,31 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       setLoading?.(false);
       setError(true);
       CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrders`, error);
+    }
+  };
+  const getReasons = async () => {
+    try {
+      client
+        .query<getRescheduleAndCancellationReasons>({
+          query: GET_RESCHEDULE_AND_CANCELLATION_REASONS,
+          context: {
+            sourceHeaders,
+          },
+          variables: {},
+          fetchPolicy: 'no-cache',
+        })
+        .then((data) => {
+          const reasonList = data?.data?.getRescheduleAndCancellationReasons || [];
+          setCancelReasonList(reasonList?.cancellationReasons)
+          setRescheduleReasonList(reasonList?.rescheduleReasons)
+        })
+        .catch((error) => {
+          setError(true);
+          CommonBugFender(`${AppRoutes.YourOrdersTest}_getReasons`, error);
+        });
+    } catch (error) {
+      setError(true);
+      CommonBugFender(`${AppRoutes.YourOrdersTest}_getReasons`, error);
     }
   };
 
@@ -815,7 +845,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           {string.diagnostics.reasonForReschedulingText}
         </Text>
         <View style={styles.reasonsContainer}>
-          {RESCHEDULE_REASONS?.map((item: string, index: number) => {
+          {rescheduleReasonList?.map((item: string, index: number) => {
             return (
               <>
                 <TouchableOpacity
@@ -831,7 +861,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                     )}
                   </View>
                 </TouchableOpacity>
-                {index === RESCHEDULE_REASONS?.length - 1 ? null : <Spearator />}
+                {index === rescheduleReasonList?.length - 1 ? null : <Spearator />}
               </>
             );
           })}
@@ -853,9 +883,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     let selectedOrderTime = selectedOrder?.slotDateTimeInUTC;
     selectedOrderTime = moment(selectedOrderTime);
     const current = moment();
-    const cancelReasonArray = moment(current).isAfter(selectedOrderTime)
-      ? CANCELLATION_REASONS
-      : PRE_CANCELLATION_REASONS;
+    // const cancelReasonArray = moment(current).isAfter(selectedOrderTime)
+    //   ? CANCELLATION_REASONS
+    //   : PRE_CANCELLATION_REASONS;
+    const cancelReasonArray = cancelReasonList;
     return (
       <View>
         <Text style={styles.overlayHeadingText}>
