@@ -1626,6 +1626,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     ),
                   },
                 ]}
+                rightText={showViewAll ? 'VIEW ALL' : ''}
+                rightTextStyle={showViewAll ? styles.widgetViewAllText : {}}
+                onPressRightText={
+                  showViewAll
+                    ? () => {
+                        props.navigation.navigate(AppRoutes.TestListing, {
+                          movedFrom: AppRoutes.Tests,
+                          data: data,
+                          cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+                          widgetType: data?.diagnosticWidgetType,
+                        });
+                      }
+                    : undefined
+                }
                 style={showViewAll ? { paddingBottom: 1 } : {}}
               />
             )}
@@ -1680,6 +1694,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     ),
                   },
                 ]}
+                rightText={showViewAll ? 'VIEW ALL' : ''}
+                rightTextStyle={showViewAll ? styles.widgetViewAllText : {}}
+                onPressRightText={
+                  showViewAll
+                    ? () => {
+                        props.navigation.navigate(AppRoutes.TestListing, {
+                          movedFrom: AppRoutes.Tests,
+                          data: data,
+                          cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+                          widgetType: data?.diagnosticWidgetType,
+                        });
+                      }
+                    : undefined
+                }
                 style={showViewAll ? { paddingBottom: 1 } : {}}
               />
             )}
@@ -2259,6 +2287,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
   const scrollWidgetSection = (data: any) => {
+    const showViewAll = data?.diagnosticWidgetData && data?.diagnosticWidgetData?.length > 2;
     return (
       <View style={styles.container}>
         <SectionHeader
@@ -2269,6 +2298,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
               ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE, 1, 20),
             },
           ]}
+          rightText={showViewAll ?  'VIEW ALL' : ''}
+          rightTextStyle={styles.widgetViewAllText} //showViewAll ? styles.widgetViewAllText : {}
+          onPressRightText={() => {
+            props.navigation.navigate(AppRoutes.TestWidgetListing, {
+              movedFrom: AppRoutes.Tests,
+              data: data,
+              cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+            });
+          }}
         />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sectionView}>
           {data?.diagnosticWidgetData?.map((item: any) => (
@@ -2353,6 +2391,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     } else {
       newGridData = data?.diagnosticWidgetData;
     }
+    const showViewAll = newGridData && newGridData?.length > 2;
     return (
       <View style={{ marginTop: 10 }}>
         <SectionHeader
@@ -2363,6 +2402,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
               ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE, 1, 20),
             },
           ]}
+          rightText={showViewAll ? 'VIEW ALL' : ''}
+          rightTextStyle={styles.widgetViewAllText} //showViewAll ? styles.widgetViewAllText : {}
+          onPressRightText={() => {
+            props.navigation.navigate(AppRoutes.TestWidgetListing, {
+              movedFrom: AppRoutes.Tests,
+              data: data,
+              cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
+            });
+          }}
         />
         <View style={styles.gridConatiner}>
           <FlatList
