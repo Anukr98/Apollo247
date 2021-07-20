@@ -8,7 +8,6 @@ import {
   CircleLogo,
   ClockIcon,
   InfoIconRed,
-  WhyBookUs,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -568,13 +567,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     );
   };
 
-  const renderWhyBookUs = () => {
-    return (
-      <View>
-        <WhyBookUs style={{ height: screenWidth / 5, width: screenWidth, resizeMode: 'cover' }} />
-      </View>
-    );
-  };
   const renderItemCard = () => {
     return (
       <View style={styles.descriptionCardOuterView}>
@@ -1099,7 +1091,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             ref={scrollViewRef}
           >
             {!_.isEmpty(testInfo) && !!cmsTestDetails && renderItemCard()}
-            {renderWhyBookUs()}
             {renderDescriptionCard()}
             {!!cmsTestDetails?.diagnosticFAQs && cmsTestDetails?.diagnosticFAQs?.length > 0
               ? renderFAQView()
