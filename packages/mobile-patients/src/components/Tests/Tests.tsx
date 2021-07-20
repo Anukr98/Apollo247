@@ -209,6 +209,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setDiagnosticSlot,
     newAddressAddedHomePage,
     setNewAddressAddedHomePage,
+    patientCartItems,
   } = useDiagnosticsCart();
   const {
     cartItems: shopCartItems,
@@ -1404,6 +1405,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 navigation={props.navigation}
                 source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME}
                 sourceScreen={AppRoutes.Tests}
+                patientCartItems={patientCartItems}
               />
             )}
           </>

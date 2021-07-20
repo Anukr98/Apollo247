@@ -84,6 +84,7 @@ export interface DiagnosticsCartContextProps {
   addPatientCartItem: ((patientId: string, cartItems: DiagnosticsCartItem[]) => void) | null;
   removePatientCartItem: ((patientId: string, itemId?: DiagnosticsCartItem['id']) => void) | null;
   updatePatientCartItem: ((itemUpdates: any) => void) | null;
+  removeMultiPatientCartItems: ((itemId: DiagnosticsCartItem['id']) => void) | null;
 
   cartTotal: number;
   totalPriceExcludingAnyDiscounts: number;
@@ -218,6 +219,7 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   addPatientCartItem: null,
   removePatientCartItem: null,
   updatePatientCartItem: null,
+  removeMultiPatientCartItems: null,
 
   cartTotal: 0,
   totalPriceExcludingAnyDiscounts: 0,
@@ -332,7 +334,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const [forPatientId, setPatientId] = useState<string>('');
 
   const [cartItems, _setCartItems] = useState<DiagnosticsCartContextProps['cartItems']>([]);
-  const [patientCartItems, _setPatientCartItems] = useState<
+  const [patientCartItems, setPatientCartItems] = useState<
     DiagnosticsCartContextProps['patientCartItems']
   >([]);
   const [modifiedPatientCart, setModifiedPatientCart] = useState<
@@ -534,12 +536,13 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   };
 
   //patient details for
-  const setPatientCartItems: DiagnosticsCartContextProps['setPatientCartItems'] = (cartItems) => {
-    _setPatientCartItems(cartItems);
-    // AsyncStorage.setItem(AsyncStorageKeys.patientCartItems, JSON.stringify(cartItems)).catch(() => {
-    // showGenericAlert('Failed to save cart items in local storage.');
-    // });
-  };
+  // const setPatientCartItems: DiagnosticsCartContextProps['setPatientCartItems'] = (cartItems) => {
+  //   console.log({ cartItems });
+  //   _setPatientCartItems(cartItems);
+  //   // AsyncStorage.setItem(AsyncStorageKeys.patientCartItems, JSON.stringify(cartItems)).catch(() => {
+  //   // showGenericAlert('Failed to save cart items in local storage.');
+  //   // });
+  // };
 
   const addPatientCartItem: DiagnosticsCartContextProps['addPatientCartItem'] = (
     patientId,
@@ -607,6 +610,14 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
       }
     }
     setDiagnosticSlot(null);
+  };
+
+  const removeMultiPatientCartItems: DiagnosticsCartContextProps['removeMultiPatientCartItems'] = (
+    id
+  ) => {
+    console.log('inside remove function');
+    console.log({ patientCartItems });
+    patientCartItems?.map((pItem) => removePatientCartItem?.(pItem?.patientId, `${id}`));
   };
 
   const updatePatientCartItem: DiagnosticsCartContextProps['updatePatientCartItem'] = (
@@ -939,6 +950,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         setFilterPatientCartItems,
         modifiedPatientCart,
         setModifiedPatientCart,
+        removeMultiPatientCartItems,
       }}
     >
       {props.children}
