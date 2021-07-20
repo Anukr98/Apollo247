@@ -740,6 +740,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setMaxCartValueForCOD,
     setNonCodSKus,
     setCartPriceNotUpdateRange,
+    setPdpDisclaimerMessage,
   } = useShoppingCart();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -963,8 +964,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     },
     Diagnostics_Help_NonOrder_Queries: {
       QA: 'QA_Diagnostics_Help_NonOrder_Queries',
-      PROD: 'Diagnostics_Help_NonOrder_Queries'
-    }
+      PROD: 'Diagnostics_Help_NonOrder_Queries',
+    },
+    Pharma_Discailmer_Message: {
+      QA: 'QA_Pharma_PDP_Disclaimer',
+      PROD: 'Pharma_PDP_Disclaimer',
+    },
   };
 
   const getKeyBasedOnEnv = (
@@ -1082,6 +1087,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) => JSON.parse(config.getString(key)) || []
       );
       nonCodSkuList?.length && setNonCodSKus?.(nonCodSkuList);
+
+      const disclaimerMessagePdp = getRemoteConfigValue('Pharma_Discailmer_Message', (key) =>
+        config.getString(key)
+      );
+      setPdpDisclaimerMessage?.(disclaimerMessagePdp);
 
       setAppConfig(
         'Min_Value_For_Pharmacy_Free_Delivery',

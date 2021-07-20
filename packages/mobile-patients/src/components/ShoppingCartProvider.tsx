@@ -243,6 +243,8 @@ export interface ShoppingCartContextProps {
   setNonCodSKus: ((items: string[]) => void) | null;
   cartPriceNotUpdateRange: number;
   setCartPriceNotUpdateRange: ((value: number) => void) | null;
+  pdpDisclaimerMessage: string;
+  setPdpDisclaimerMessage: ((message: string) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -357,6 +359,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setNonCodSKus: null,
   cartPriceNotUpdateRange: 0,
   setCartPriceNotUpdateRange: null,
+  pdpDisclaimerMessage: '',
+  setPdpDisclaimerMessage: null,
 });
 
 const AsyncStorageKeys = {
@@ -497,6 +501,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const setEPrescriptions: ShoppingCartContextProps['setEPrescriptions'] = (items) => {
     _setEPrescriptions(items);
   };
+
+  const [pdpDisclaimerMessage, setPdpDisclaimerMessage] = useState<
+    ShoppingCartContextProps['pdpDisclaimerMessage']
+  >('');
 
   const setPhysicalPrescriptions: ShoppingCartContextProps['setPhysicalPrescriptions'] = (
     items
@@ -1239,6 +1247,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setNonCodSKus,
         cartPriceNotUpdateRange,
         setCartPriceNotUpdateRange,
+        pdpDisclaimerMessage,
+        setPdpDisclaimerMessage,
       }}
     >
       {props.children}
