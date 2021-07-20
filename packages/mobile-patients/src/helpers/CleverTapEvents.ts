@@ -242,6 +242,12 @@ export enum CleverTapEventName {
 
   // Circle Events
   CIRCLE_LANDING_PAGE_VIEWED = 'Circle Landing page viewed',
+  CIRCLE_MEMBERSHIP_PAGE_VIEWED = 'Circle membership page viewed',
+  CIRCLE_POP_UP_VIEWED_PLANS_ONLY = 'Circle Pop up viewed (Plans only)',
+  CIRCLE_PLAN_TO_CART = 'Circle Plan to Cart',
+  CIRCLE_PLAN_REMOVE_FROM_CART = 'Circle Plan Removed from cart',
+  CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE = 'Circle payment page viewed (Standalone circle purchase page)',
+  CIRCLE_BENIFIT_CLICKED = 'Circle Benefit Clicked',
 
   // other
   MOBILE_ENTRY = 'Mobile Entry',
@@ -418,7 +424,6 @@ export enum CleverTapEventName {
   VC_NON_CIRCLE_PLAN_3 = 'VC Non Circle chooses Plan 3 in Consult Web View',
   VC_NON_CIRCLE_ADDS_CART = 'VC Non Circle adds Circle to Cart',
   VC_NON_CIRCLE_REMOVES_CART = 'VC Non Circle removes Circle from Cart',
-  CIRCLE_BENIFIT_CLICKED = 'Circle Section Benefits Clicked',
   CIRCLE_RENEW_NOW_CLICKED = 'Circle Section Renew Now Clicked',
   CIRCLE_VIEW_BENEFITS_CLICKED = 'Circle Section View Benefits Clicked',
   CIRCLE_MEMBERSHIP_RENEWED = 'Circle Membership Renewed',
@@ -2601,7 +2606,6 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.CIRCLE_LANDING_PAGE_VIEWED]: {};
   [CleverTapEventName.SYMPTOM_TRACKER_FOR_MYSELF]: SymptomTrackerPatientInfo;
-  [CleverTapEventName.CIRCLE_BENIFIT_CLICKED]: CircleRenewalAttributes;
   [CleverTapEventName.CIRCLE_RENEW_NOW_CLICKED]: CircleRenewalAttributes;
   [CleverTapEventName.CIRCLE_VIEW_BENEFITS_CLICKED]: CircleRenewalAttributes;
   [CleverTapEventName.CIRCLE_MEMBERSHIP_RENEWED]: CircleRenewalSubscriptionAttributes;
