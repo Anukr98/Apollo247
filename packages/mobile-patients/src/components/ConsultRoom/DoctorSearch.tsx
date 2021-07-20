@@ -44,6 +44,7 @@ import {
   getUserType,
   postCleverTapEvent,
   postConsultSearchCleverTapEvent,
+  postConsultPastSearchSpecialityClicked,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -738,17 +739,13 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         try {
           setshowPastSearchSpinner(false);
           if (data && data.getPatientPastSearches) {
-            const eventAttributes:
-              | WebEngageEvents[WebEngageEventName.PAST_DOCTOR_SEARCH]
-              | CleverTapEvents[CleverTapEventName.CONSULT_PAST_SEARCHES_CLICKED] = {
+            const eventAttributes: WebEngageEvents[WebEngageEventName.PAST_DOCTOR_SEARCH] = {
               'Patient UHID': g(currentPatient, 'uhid'),
               'Mobile Number': g(currentPatient, 'mobileNumber'),
               'Customer ID': g(currentPatient, 'id'),
               'Past Searches': data.getPatientPastSearches,
             };
             postWebEngageEvent(WebEngageEventName.PAST_DOCTOR_SEARCH, eventAttributes);
-            data?.getPatientPastSearches?.length > 0 &&
-              postCleverTapEvent(CleverTapEventName.CONSULT_PAST_SEARCHES_CLICKED, eventAttributes);
             setPastSearches(data.getPatientPastSearches);
           }
           !!searchText && fetchSearchData();
@@ -961,12 +958,15 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               props.navigation.navigate(AppRoutes.DoctorDetails, {
                 doctorId: rowData.typeId,
                 callSaveSearch: 'true',
+                fromPastSearch: true,
               });
             }
             if (rowData.searchType === 'SPECIALTY') {
               CommonLogEvent(AppRoutes.DoctorSearch, 'Doctor Search Move  SPECIALTY clicked');
-              if (rowData.typeId && rowData.name)
-                onClickSearch(rowData.typeId, rowData.name, 'true');
+              if (rowData?.typeId && rowData?.name) {
+                postConsultPastSearchSpecialityClicked(currentPatient, allCurrentPatients, rowData);
+                onClickSearch(rowData?.typeId, rowData?.name, 'true');
+              }
             }
           }}
         />

@@ -1713,6 +1713,24 @@ export const postConsultSearchCleverTapEvent = (
   postCleverTapEvent(CleverTapEventName.CONSULT_SEARCH, eventAttributes);
 };
 
+export const postConsultPastSearchSpecialityClicked = (
+  currentPatient: any,
+  allCurrentPatients: any,
+  rowData: any
+) => {
+  const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PAST_SEARCHES_CLICKED] = {
+    'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    'Patient age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+    'Patient gender': g(currentPatient, 'gender'),
+    User_Type: getUserType(allCurrentPatients) || undefined,
+    isConsulted: getUserType(allCurrentPatients) || undefined,
+    specialtyId: rowData?.typeId || undefined,
+    specialtyName: rowData?.name || undefined,
+  };
+  postCleverTapEvent(CleverTapEventName.CONSULT_PAST_SEARCHES_CLICKED, cleverTapEventAttributes);
+};
+
 export const postCleverTapPHR = (
   currentPatient: any,
   cleverTapEventName: CleverTapEventName,

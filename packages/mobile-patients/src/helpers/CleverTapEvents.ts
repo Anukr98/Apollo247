@@ -47,7 +47,7 @@ export enum CleverTapEventName {
   CONSULT_CANCEL_CLICKED_BY_PATIENT = 'Consult cancel clicked by patient',
   CONSULT_CONTINUE_CONSULTATION_CLICKED = 'Consult continue consultation clicked',
   CONSULT_CANCELLED_BY_PATIENT = 'Consult cancelled by patient',
-  CONSULT_PAST_SEARCHES_CLICKED = 'Consult Past searches',
+  CONSULT_PAST_SEARCHES_CLICKED = 'Consult past searches clicked',
   CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED = 'Consult Homescreen Book doctor appointment clicked',
   CONSULT_SPECIALITY_CLICKED = 'Consult Speciality Clicked',
   CONSULT_PAY_BUTTON_CLICKED = 'Consult Pay Button Clicked',
@@ -862,10 +862,21 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.TABBAR_APPOINTMENTS_CLICKED]: PatientInfoWithSource;
   [CleverTapEventName.CONSULT_PAST_SEARCHES_CLICKED]: {
+    'Patient name': string;
     'Patient UHID': string;
-    'Mobile Number': string;
-    'Customer ID': string;
-    'Past Searches': any;
+    'Patient age': number;
+    'Patient gender': string;
+    User_Type?: string;
+    doctorName?: string;
+    doctorId?: string;
+    specialtyName?: string;
+    specialtyId?: string;
+    fee?: number;
+    languages?: string;
+    doctorHospital?: string;
+    city?: string;
+    address?: string;
+    isConsulted?: string;
   };
 
   // ********** PharmaCircleEvents ********** \\
@@ -2303,7 +2314,13 @@ export interface CleverTapEvents {
     'Doctor Category': DoctorType;
     Rank: number | string;
     Is_TopDoc?: YesOrNo;
-    Source: 'Deeplink' | 'Doctor Card clicked' | 'Search' | 'My Doctors' | 'Appointment CTA';
+    Source:
+      | 'Deeplink'
+      | 'Doctor Card clicked'
+      | 'Search'
+      | 'My Doctors'
+      | 'Appointment CTA'
+      | 'Past search clicked';
     'Doctor card clicked': YesOrNo;
     DOTH: 'T' | 'F';
     'Doctor Tab': 'Apollo Tab' | 'Doctor Partner Tab' | 'NA';

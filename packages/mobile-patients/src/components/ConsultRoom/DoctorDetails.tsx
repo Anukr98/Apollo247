@@ -375,6 +375,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [showVideo, setShowVideo] = useState<boolean>(false);
   const [isFocused, setisFocused] = useState<boolean>(false);
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
+  const fromPastSearch = props.navigation.getParam('fromPastSearch') || false;
   const [secretaryData, setSecretaryData] = useState<any>([]);
   const fromDeeplink = props.navigation.getParam('fromDeeplink');
   const mediaSource = props.navigation.getParam('mediaSource');
@@ -607,7 +608,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       .then(({ data }) => {
         try {
           if (data && data.getDoctorDetailsById && doctorDetails !== data.getDoctorDetailsById) {
-            (cleverTapAppointmentAttributes || fromDeeplink) &&
+            (cleverTapAppointmentAttributes || fromDeeplink || fromPastSearch) &&
               fireDeepLinkTriggeredEvent(data.getDoctorDetailsById);
             setDoctorDetails(data.getDoctorDetailsById);
             setDoctorId(data.getDoctorDetailsById.id);
@@ -663,7 +664,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Media Source': mediaSource,
       User_Type: getUserType(allCurrentPatients),
       Fee: Number(doctorDetails?.onlineConsultationFees),
-      Source: cleverTapAppointmentAttributes?.source || 'Deeplink',
+      Source:
+        cleverTapAppointmentAttributes?.source || fromPastSearch
+          ? 'Past search clicked'
+          : 'Deeplink',
       'Doctor card clicked': 'No',
       Rank: 'NA',
       Is_TopDoc: doctorDetails?.doctorsOfTheHourStatus ? 'Yes' : 'No',
@@ -680,6 +684,37 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED,
         cleverTapEventAttributes
       );
+    if (fromPastSearch) {
+      const cleverTapPastSearchEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PAST_SEARCHES_CLICKED] = {
+        'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+        'Patient UHID': g(currentPatient, 'uhid'),
+        'Patient age': Math.round(
+          Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+        ),
+        'Patient gender': g(currentPatient, 'gender'),
+        doctorId: g(doctorDetails, 'id')!,
+        doctorName: g(doctorDetails, 'fullName')!,
+        specialtyName: g(doctorDetails, 'specialty', 'name')! || undefined,
+        specialtyId: g(doctorDetails, 'specialty', 'id')! || undefined,
+        User_Type: getUserType(allCurrentPatients),
+        fee: Number(doctorDetails?.onlineConsultationFees),
+        isConsulted: getUserType(allCurrentPatients),
+        city: g(doctorDetails, 'doctorHospital', 0, 'facility', 'city') || undefined,
+        doctorHospital: g(doctorDetails, 'doctorHospital', 0, 'facility', 'name') || undefined,
+        address: `${g(doctorDetails, 'doctorHospital', 0, 'facility', 'name') || ''}, ${g(
+          doctorDetails,
+          'doctorHospital',
+          0,
+          'facility',
+          'city'
+        ) || ''}`,
+        languages: g(doctorDetails, 'languages') || undefined,
+      };
+      postCleverTapEvent(
+        CleverTapEventName.CONSULT_PAST_SEARCHES_CLICKED,
+        cleverTapPastSearchEventAttributes
+      );
+    }
   };
 
   const setAvailableModes = (availabilityMode: any) => {
