@@ -266,10 +266,10 @@ const appStaticVariables = {
   },
   DEFAULT_ITEM_SELECTION_FLAG : true, 
   Diagnostics_Help_NonOrder_Queries: [
-    "96b606f4-dd13-46ff-8bce-85315efee053",
-    "78c2dc50-dc16-44c6-bd2d-d4b14c97b521",
-    "10788a46-512c-41c0-8c59-e31ff7eebbe4"
-    ],
+    '96b606f4-dd13-46ff-8bce-85315efee053',
+    '78c2dc50-dc16-44c6-bd2d-d4b14c97b521',
+    '10788a46-512c-41c0-8c59-e31ff7eebbe4',
+  ],
 };
 
 const DEV_top_specialties = [
@@ -1377,23 +1377,36 @@ export const TestsFeedBackData = {
 
 export const TestCancelReasons = {
   reasons: [
-    string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
-    string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
-    string.diagnostics.reasonForCancel_TestOrder.anotherChannel,
     string.diagnostics.reasonForCancel_TestOrder.urgentReport,
-    string.diagnostics.reasonForCancel_TestOrder.lesserPrice,
+    string.diagnostics.reasonForCancel_TestOrder.notArrived,
+    string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
+    string.diagnostics.reasonForCancel_TestOrder.priceHigh,
+    string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
+    string.diagnostics.reasonForCancel_TestOrder.needModifyPatient,
     string.diagnostics.reasonForCancel_TestOrder.needModifyOrder,
-    string.diagnostics.reasonForCancel_TestOrder.otherReasons,
+    string.diagnostics.reasonForCancel_TestOrder.homeChargesHigh,
+    string.diagnostics.reasonForCancel_TestOrder.changePlans,
+    string.diagnostics.reasonForCancel_TestOrder.symptomsSubdued,
+    string.diagnostics.reasonForCancel_TestOrder.missedFasting,
+    string.diagnostics.reasonForCancel_TestOrder.needMorningSlot,
+    string.diagnostics.reasonForCancel_TestOrder.waitingDocPrescription,
+    string.diagnostics.reasonForCancel_TestOrder.deniedSample,
   ],
 };
 export const TestCancelReasonsPre = {
   reasons: [
-    string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
-    string.diagnostics.reasonForCancel_TestOrder.anotherChannel,
     string.diagnostics.reasonForCancel_TestOrder.urgentReport,
-    string.diagnostics.reasonForCancel_TestOrder.lesserPrice,
+    string.diagnostics.reasonForCancel_TestOrder.priceHigh,
+    string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
+    string.diagnostics.reasonForCancel_TestOrder.needModifyPatient,
     string.diagnostics.reasonForCancel_TestOrder.needModifyOrder,
-    string.diagnostics.reasonForCancel_TestOrder.otherReasons,
+    string.diagnostics.reasonForCancel_TestOrder.homeChargesHigh,
+    string.diagnostics.reasonForCancel_TestOrder.changePlans,
+    string.diagnostics.reasonForCancel_TestOrder.symptomsSubdued,
+    string.diagnostics.reasonForCancel_TestOrder.missedFasting,
+    string.diagnostics.reasonForCancel_TestOrder.needMorningSlot,
+    string.diagnostics.reasonForCancel_TestOrder.waitingDocPrescription,
+    string.diagnostics.reasonForCancel_TestOrder.deniedSample,
   ],
 };
 

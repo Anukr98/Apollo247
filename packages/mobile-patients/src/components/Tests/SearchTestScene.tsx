@@ -545,7 +545,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
                 collectionType: product?.collectionType,
                 preparation: product?.testPreparationData,
                 testDescription: product?.testPreparationData,
-                source: 'Full Search',
+                source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.FULL_SEARCH,
                 type: product?.itemType,
                 packageMrp: product?.packageCalculatedMrp!,
                 mrpToDisplay: mrpToDisplay,

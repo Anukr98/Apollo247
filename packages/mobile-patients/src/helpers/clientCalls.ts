@@ -187,10 +187,9 @@ import { getPhleboCharges, getPhleboChargesVariables } from '@aph/mobile-patient
 import { cancelDiagnosticOrdersv2, cancelDiagnosticOrdersv2Variables } from '@aph/mobile-patients/src/graphql/types/cancelDiagnosticOrdersv2';
 import { rescheduleDiagnosticsOrderv2, rescheduleDiagnosticsOrderv2Variables } from '@aph/mobile-patients/src/graphql/types/rescheduleDiagnosticsOrderv2';
 import { diagnosticExotelCalling, diagnosticExotelCallingVariables } from '@aph/mobile-patients/src/graphql/types/diagnosticExotelCalling';
-import { wrapperProcessDiagnosticHCOrderCOD, wrapperProcessDiagnosticHCOrderCODVariables } from '../graphql/types/wrapperProcessDiagnosticHCOrderCOD';
-import { getDiagnosticOrdersListByParentOrderID, getDiagnosticOrdersListByParentOrderIDVariables } from '../graphql/types/getDiagnosticOrdersListByParentOrderID';
-import { getDiagnosticPaymentSettings, getDiagnosticPaymentSettingsVariables } from '../graphql/types/getDiagnosticPaymentSettings';
-
+import { wrapperProcessDiagnosticHCOrderCOD, wrapperProcessDiagnosticHCOrderCODVariables } from '@aph/mobile-patients/src/graphql/types/wrapperProcessDiagnosticHCOrderCOD';
+import { getDiagnosticOrdersListByParentOrderID, getDiagnosticOrdersListByParentOrderIDVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByParentOrderID';
+import { getDiagnosticPaymentSettings, getDiagnosticPaymentSettingsVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticPaymentSettings';
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
   doctorIds: (string | null)[] | (string | undefined)[] | string[],

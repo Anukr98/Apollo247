@@ -385,6 +385,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
+    if (currentPatient) {
+      checkPatientAge(currentPatient);
+    }
+  }, [currentPatient]);
+
+  useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setIsFocused(true);
       BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -508,14 +514,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     if (age && age <= 10) {
       setSelectedPatient(null);
       setShowSelectPatient?.(false);
-      Alert.alert(string.common.uhOh, string.diagnostics.minorAgeText, [
-        {
-          text: 'OK',
-          onPress: () => {
-            fromNewProfile && setShowPatientListOverlay(true);
-          },
+      setShowPatientListOverlay?.(false);
+      showAphAlert?.({
+        title: string.common.uhOh,
+        description: string.diagnostics.minorAgeText,
+        onPressOk: () => {
+          hideAphAlert?.();
+          setShowPatientListOverlay(true);
         },
-      ]);
+      });
       return true;
     }
     return false;

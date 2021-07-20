@@ -7,6 +7,7 @@ import {
   NativeEventEmitter,
   ScrollView,
   View,
+  Text,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -69,6 +70,8 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/components/InfoMessage';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { SavingsIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 
 const { HyperSdkReact } = NativeModules;
 
@@ -105,6 +108,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const isDiagnosticModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const [showPrepaid, setShowPrepaid] = useState<boolean>(isDiagnostic ? false : true);
   const [showCOD, setShowCOD] = useState<boolean>(isDiagnostic ? false : true);
+  const [showDiagnosticHCMsg, setShowDiagnosticHCMsg] = useState<string>('');
 
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
@@ -124,7 +128,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       DiagnosticPaymentPageViewed(currentPatient, amount);
       //modify -> always show prepaid
       // modify -> not to show cod
-
       setShowPrepaid(AppConfig.Configuration.Enable_Diagnostics_Prepaid);
       isDiagnosticModify ? setShowCOD(false) : fetchDiagnosticPaymentMethods();
     }
@@ -144,7 +147,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       const response = await diagnosticPaymentSettings(client, paymentId);
       if (response?.data) {
         const getCodSetting = response?.data?.getDiagnosticPaymentSettings?.cod;
+        const getHCMsgSetting = response?.data?.getDiagnosticPaymentSettings?.hc_credits_message;
         setShowCOD(getCodSetting!);
+        !!getHCMsgSetting && getHCMsgSetting != '' && setShowDiagnosticHCMsg(getHCMsgSetting);
       }
     } catch (error) {
       CommonBugFender('PaymentMethods_fetchDiagnosticPaymentMethods', error);
@@ -596,9 +601,19 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
           <View>
             {!showCOD && renderInfoMessage()}
             <PayByCash onPressPlaceOrder={onPressPayByCash} disableCOD={!showCOD} />
+            {!!showDiagnosticHCMsg && showDiagnosticHCMsg != '' && renderHCMsg()}
           </View>
         ) : null}
       </>
+    );
+  };
+
+  const renderHCMsg = () => {
+    return (
+      <View style={styles.savingContainer}>
+        <SavingsIcon style={styles.savingIconStyle} />
+        <Text style={styles.savingText}>{showDiagnosticHCMsg}</Text>
+      </View>
     );
   };
 
@@ -662,5 +677,25 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     height: isSmallDevice ? 13 : 14,
     width: isSmallDevice ? 13 : 14,
+  },
+  savingContainer: {
+    backgroundColor: '#F3FFFF',
+    flexDirection: 'row',
+    margin: 16,
+    padding: 8,
+    borderColor: colors.APP_GREEN,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  savingIconStyle: {
+    height: 25,
+    width: 25,
+    resizeMode: 'contain',
+  },
+  savingText: {
+    ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1, 20),
+    width: '89%',
+    alignSelf: 'center',
+    marginLeft: 10,
   },
 });

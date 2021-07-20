@@ -90,6 +90,7 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 interface SlotSelectionProps extends NavigationScreenProps {
   doctorId: string;
   isCircleDoctor?: boolean;
+  consultModeSelected: string;
 }
 
 type TimeArray = {
@@ -172,7 +173,12 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     { label: '12 PM - 6 PM', time: [] },
     { label: '6 PM - 12 AM', time: [] },
   ];
-  const [selectedTab, setSelectedTab] = useState<string>(consultTabs[0].title);
+
+  const [selectedTab, setSelectedTab] = useState<string>(
+    props.navigation.getParam('consultModeSelected') === consultPhysicalTab
+      ? consultPhysicalTab
+      : consultOnlineTab
+  );
   const [datesSlots, setDatesSlots] = useState<SlotsType[]>();
   const [totalSlots, setTotalSlots] = useState<number>(-1);
   const [timeArray, setTimeArray] = useState<TimeArray>(defaultTimeData);

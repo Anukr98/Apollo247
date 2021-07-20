@@ -1092,6 +1092,7 @@ export const GET_ALL_SPECIALTIES = gql`
       image
       specialistSingularTerm
       specialistPluralTerm
+      slugName
       userFriendlyNomenclature
       # displayOrder
       shortDescription
@@ -5594,60 +5595,12 @@ export const DIAGNOSTIC_CANCEL_V2 = gql `
   }
 `;
 
-export const DIAGNOSTIC_WRAPPER_PROCESS_HC = gql `
-  mutation wrapperProcessDiagnosticHCOrderCOD($processDiagnosticHCOrdersInput: [ProcessDiagnosticHCOrderInputCOD]) {
-    wrapperProcessDiagnosticHCOrderCOD(processDiagnosticHCOrdersInput: $processDiagnosticHCOrdersInput) {
-      result {
-        status
-        preBookingID
-        message
-      }
-    }
-  }
-`;
-
-export const GET_DIAGNOSTIC_ORDERSLIST_BY_PARENT_ORDER_ID = gql`
-  query getDiagnosticOrdersListByParentOrderID($parentOrderID: String!) {
-    getDiagnosticOrdersListByParentOrderID(parentOrderID: $parentOrderID) {
-      ordersCount
-      ordersList {
-        displayId
-        slotDateTimeInUTC
-        diagnosticDate
-        patientObj {
-          firstName
-          lastName
-          gender
-          dateOfBirth
-        }
-        diagnosticOrderLineItems {
-          id
-          itemId
-          itemName
-          quantity
-          price
-          editOrderID
-          isRemoved
-          groupPlan
-          pricingObj {
-            mrp
-            price
-            groupPlan
-          }
-          itemObj {
-            preTestingRequirement
-            reportGenerationTime
-          }
-        }
-      }
-    }
-  }
-`;
-
 export const GET_DIAGNOSTIC_PAYMENT_SETTINGS  = gql`
   query getDiagnosticPaymentSettings($paymentOrderId: String!) {
     getDiagnosticPaymentSettings(paymentOrderId: $paymentOrderId) {
       cod
+      hc_credits_message
     }
   }
 `;
+

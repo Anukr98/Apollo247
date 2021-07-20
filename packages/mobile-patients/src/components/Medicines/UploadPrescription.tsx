@@ -373,7 +373,9 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         selectedMedicineOption === CALL_ME && !!userComment
           ? `${prescriptionOption}, ${userComment}`?.trim()
           : prescriptionOption;
-      const appointmentIds = e_Prescription.length ? e_Prescription?.map((item) => item?.id) : [];
+      const appointmentIds = e_Prescription.length
+        ? e_Prescription?.filter((item) => item?.appointmentId)?.map((item) => item?.appointmentId)
+        : [];
 
       const prescriptionMedicineInput: savePrescriptionMedicineOrderOMSVariables = {
         prescriptionMedicineOMSInput: {

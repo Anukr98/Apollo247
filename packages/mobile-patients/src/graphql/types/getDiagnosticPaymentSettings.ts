@@ -10,6 +10,7 @@
 export interface getDiagnosticPaymentSettings_getDiagnosticPaymentSettings {
   __typename: "DiagnosticPaymentSettingsResponse";
   cod: boolean | null;
+  hc_credits_message: string | null;
 }
 
 export interface getDiagnosticPaymentSettings {

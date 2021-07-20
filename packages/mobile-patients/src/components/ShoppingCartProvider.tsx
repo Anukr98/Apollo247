@@ -72,6 +72,7 @@ export interface EPrescription {
   prismPrescriptionFileId: string;
   message?: string;
   healthRecord?: boolean;
+  appointmentId?: string;
 }
 
 export interface PharmaCoupon extends validatePharmaCoupon_validatePharmaCoupon {

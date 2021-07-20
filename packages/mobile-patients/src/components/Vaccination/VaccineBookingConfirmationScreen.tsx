@@ -425,6 +425,17 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
       });
   };
 
+  const showCommonAlertMessage = (message: string) => {
+    showAphAlert &&
+      showAphAlert({
+        title: 'Hi !',
+        description: message,
+        onPressOk: () => {
+          hideAphAlert!();
+        },
+      });
+  };
+
   const postBookingCancellationEvent = () => {
     try {
       const eventAttributes = {
@@ -872,20 +883,67 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
             CLICK HERE
           </Text>
         </Text>
-        <Text
-          onPress={() => {
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-              })
-            );
-          }}
-          style={styles.homepageCta}
-        >
-          GO TO HOMEPAGE
-        </Text>
+
+        <View style={{ flexDirection: 'row', marginTop: 15 }}>
+          {bookingInfo?.payment_type == PAYMENT_TYPE.IN_APP_PURCHASE ||
+          bookingInfo?.payment_type == PAYMENT_TYPE.COD ? (
+            <Button
+              title={'DOWNLOAD INVOICE'}
+              style={[
+                styles.actionFooterCTA,
+                {
+                  flex: 1,
+                  marginHorizontal: 5,
+                  opacity:
+                    bookingInfo?.status == BOOKING_STATUS.COMPLETED ||
+                    bookingInfo?.status == BOOKING_STATUS.VERIFIED
+                      ? 1
+                      : 0.5,
+                },
+              ]}
+              onPress={() => {
+                if (
+                  bookingInfo?.status == BOOKING_STATUS.COMPLETED ||
+                  bookingInfo?.status == BOOKING_STATUS.VERIFIED
+                ) {
+                  setTimeout(() => {
+                    if (Platform.OS === 'android') {
+                      storagePermissions(() => {
+                        fetchInvoiceHTMLText();
+                      });
+                    } else {
+                      fetchInvoiceHTMLText();
+                    }
+                  }, 100);
+                } else if (
+                  bookingInfo?.status == BOOKING_STATUS.CANCELLED ||
+                  bookingInfo?.status == BOOKING_STATUS.REJECTED
+                ) {
+                  showCommonAlertMessage('Invoice for the cancelled booking cannot be generated.');
+                } else {
+                  showCommonAlertMessage(
+                    "You'll be able to download the invoice only after your vaccination is complete."
+                  );
+                }
+              }}
+            />
+          ) : null}
+
+          <Button
+            title={'GO TO HOMEPAGE'}
+            style={[styles.actionFooterCTA, { flex: 1, marginHorizontal: 5 }]}
+            onPress={() => {
+              props.navigation.dispatch(
+                StackActions.reset({
+                  index: 0,
+                  key: null,
+                  actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+                })
+              );
+            }}
+            disabled={bookingInfo?.status == BOOKING_STATUS.CANCELLED ? true : false}
+          />
+        </View>
       </View>
     );
   };
@@ -894,6 +952,17 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
     let options = {
       html: htmlText,
       fileName: 'apollo_vaccine_booking_' + displayId,
+      directory: 'Download',
+    };
+
+    let file = await RNHTMLtoPDF.convert(options);
+    return file;
+  };
+
+  const generateInvoicePDF = async (htmlText: any) => {
+    let options = {
+      html: htmlText,
+      fileName: 'apollo_vaccine_booking_invoice_' + displayId,
       directory: 'Download',
     };
 
@@ -950,6 +1019,68 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
           });
       })
       .catch((error) => {
+        setPdfLoading(false);
+        showAphAlert!({
+          title: 'Oops !',
+          description: string.vaccineBooking.unable_to_generate_pdf,
+        });
+      })
+      .finally(() => {});
+  };
+
+  const fetchInvoiceHTMLText = () => {
+    setPdfLoading(true);
+
+    fetch(vaccineBookingPDFBaseUrl + 'invoice/' + bookingInfo?.id)
+      .then((resp) => {
+        return resp.text();
+      })
+      .then((text) => {
+        setPdfLoading(true);
+        generateInvoicePDF(text)
+          .then((file) => {
+            showAphAlert!({
+              title: 'Great !',
+              description: string.vaccineBooking.success_generate_invoice_pdf,
+              showCloseIcon: true,
+              onCloseIconPress: () => {
+                hideAphAlert!();
+              },
+              CTAs: [
+                {
+                  text: 'OPEN',
+                  onPress: () => {
+                    try {
+                      hideAphAlert!();
+                      Platform.OS === 'ios'
+                        ? RNFetchBlob.ios.previewDocument(file.filePath)
+                        : RNFetchBlob.android.actionViewIntent(file.filePath, 'application/pdf');
+                    } catch (error) {
+                      showAphAlert!({
+                        title: 'Oops !',
+                        description: "Can't open file .",
+                      });
+                    }
+                  },
+                },
+              ],
+            });
+          })
+          .catch((error) => {
+            console.log(' fetchInvoiceHTMLText --- error ', error);
+
+            showAphAlert!({
+              title: 'Oops !',
+              description: string.vaccineBooking.unable_to_generate_invoice_pdf,
+            });
+          })
+          .finally(() => {
+            setPdfLoading(false);
+          });
+      })
+      .catch((error) => {
+        console.log(' fetchInvoiceHTMLText --- error 2 ', error);
+
         setPdfLoading(false);
         showAphAlert!({
           title: 'Oops !',

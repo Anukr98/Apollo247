@@ -32,6 +32,7 @@ import {
   Text,
   Modal,
   Dimensions,
+  ScrollView,
 } from 'react-native';
 import {
   AlertTriangle,
@@ -137,6 +138,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setDistanceCharges,
     setModifiedPatientCart,
   } = useDiagnosticsCart();
+  const { width, height } = Dimensions.get('window');
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
@@ -1059,11 +1061,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       ? CANCELLATION_REASONS
       : PRE_CANCELLATION_REASONS;
     return (
-      <View>
+      <View style={{ height: height - 150 }}>
         <Text style={styles.overlayHeadingText}>
           {string.diagnostics.reasonForCancellationText}
         </Text>
-        <View style={styles.reasonsContainer}>
+        <ScrollView style={[styles.reasonsContainer, { height: '90%' }]}>
           {cancelReasonArray?.map((item: string, index: number) => {
             return (
               <View style={{ flex: 1 }}>
@@ -1104,9 +1106,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                     </View>
                   ) : null}
 
-                  {index === CANCELLATION_REASONS?.length - 2 ? null : (
-                    <Spearator style={{ marginTop: 6 }} />
-                  )}
+                  {index === CANCELLATION_REASONS?.length - 1 ? null : <Spearator />}
                   {selectCancelReason ===
                     string.diagnostics.reasonForCancel_TestOrder.otherReasons &&
                   item === string.diagnostics.reasonForCancel_TestOrder.otherReasons ? (
@@ -1123,7 +1123,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               </View>
             );
           })}
-        </View>
+        </ScrollView>
         <View style={styles.buttonView}>
           <Button
             title={'CANCEL NOW'}
