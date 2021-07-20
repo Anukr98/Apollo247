@@ -545,7 +545,6 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
             showsVerticalScrollIndicator={false}
             horizontal={!props.isVertical}
             data={actualItemsToShow}
-            extraData={actualItemsToShow}
             onEndReached={props.onEndReached}
             onEndReachedThreshold={0.1}
             renderItem={renderItemCard}
