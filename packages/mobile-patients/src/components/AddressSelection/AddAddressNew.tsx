@@ -208,7 +208,7 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
 
   const createLocationResponse = (response: any) => {
     var object = {} as locationResponseProps;
-    object.area = response?.area || response?.addressLine2;
+    object.area = response?.area! || response?.addressLine2!;
     object.displayName = response?.displayName || response?.addressLine1;
     object.country = response?.country || 'India';
     object.latitude = Number(response?.latitude! || 0);
@@ -252,7 +252,8 @@ export const AddAddressNew: React.FC<MapProps> = (props) => {
           longitudeDelta: longitudeDelta,
         });
         createLocationResponse(diagnosticLocation);
-        // fetchLatLongFromGoogleApi(diagnosticLocation, newAddressDetails); -> set the address string
+        const address = formatLocalAddress(diagnosticLocation);
+        setAddressString(address);
       } else {
         setLoadingContext?.(true);
         //if no location permissions are given then prompt for the permission

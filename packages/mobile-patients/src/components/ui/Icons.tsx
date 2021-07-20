@@ -2109,11 +2109,3 @@ export const AlertTriangle: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/alert-triangle.webp')}
   />
 );
-
-export const SavingsIcon: React.FC<IconProps> = (props) => (
-  <IconBase
-    size="sm"
-    {...props}
-    source={require('@aph/mobile-patients/src/components/ui/icons/saving_icon.webp')}
-  />
-);
