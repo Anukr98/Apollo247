@@ -1547,10 +1547,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             if (circlePlan) {
               const circleSubscription = setCircleSubscriptionData(circlePlan[0]);
               if (!!circlePlan[0]?._id) {
-                AsyncStorage.setItem('circleSubscriptionId', circlePlan[0]?.subscription_id);
-                setCircleSubscriptionId && setCircleSubscriptionId(circlePlan[0]?.subscription_id);
-                setIsCircleSubscription && setIsCircleSubscription(true);
-
+                if (circlePlan[0]?.status === 'active') {
+                  AsyncStorage.setItem('circleSubscriptionId', circlePlan[0]?.subscription_id);
+                  setCircleSubscriptionId &&
+                    setCircleSubscriptionId(circlePlan[0]?.subscription_id);
+                  setIsCircleSubscription && setIsCircleSubscription(true);
+                }
                 if (circlePlan[0]?.status === 'disabled') {
                   setIsCircleExpired && setIsCircleExpired(true);
                   setNonCircleValues();
