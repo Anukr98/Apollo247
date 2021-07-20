@@ -1490,11 +1490,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const handleScroll = () => {};
 
   const postBookAppointmentWEGEvent = () => {
-    const doctorClinics = ((doctorDetails && doctorDetails.doctorHospital) || []).filter((item) => {
-      if (item && item.facility && item.facility.facilityType)
-        return item.facility.facilityType === 'HOSPITAL';
-    });
-
+    const doctorClinics = ((doctorDetails && doctorDetails?.doctorHospital) || [])?.filter(
+      (item) => {
+        if (item && item?.facility && item?.facility?.facilityType)
+          return item?.facility?.facilityType === 'HOSPITAL';
+      }
+    );
     const eventAttributes: WebEngageEvents[WebEngageEventName.BOOK_APPOINTMENT] = {
       'Doctor Name': g(doctorDetails, 'fullName')!,
       'Doctor City': g(doctorDetails, 'city')!,
@@ -1528,10 +1529,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
-      'Doctor Name': g(doctorDetails, 'fullName')!,
-      'Doctor City': g(doctorDetails, 'city')!,
-      'Type of Doctor': g(doctorDetails, 'doctorType')!,
-      'Doctor Specialty': g(doctorDetails, 'specialty', 'name')! || undefined,
+      docName: g(doctorDetails, 'fullName')! || undefined,
       Source: 'doctor profile',
       'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
@@ -1540,7 +1538,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
       'Patient gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      specialityName: g(doctorDetails, 'specialty', 'name')! || undefined,
+      exp: Number(g(doctorDetails, 'experience')) || undefined,
       'Customer ID': g(currentPatient, 'id'),
       docId: g(doctorDetails, 'id')!,
       specialityId: g(doctorDetails, 'specialty', 'id')!,
@@ -1552,13 +1551,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         doctorClinics.length > 0 && doctorDetails!.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics[0].facility.city}`
           : undefined,
-      'Secretary Name': g(secretaryData, 'name'),
-      'Secretary Mobile Number': g(secretaryData, 'mobileNumber'),
-      'Doctor Mobile Number': g(doctorDetails, 'mobileNumber')!,
       User_Type: getUserType(allCurrentPatients),
-      onlineConsultFee: doctorDetails?.onlineConsultationFees || undefined,
-      physicalConsultFee: doctorDetails?.physicalConsultationFees || undefined,
-      availableInMins: getTimeDiff(doctorDetails?.slot),
+      onlineConsultFee: Number(doctorDetails?.onlineConsultationFees) || undefined,
+      physicalConsultFee: Number(doctorDetails?.physicalConsultationFees) || undefined,
+      availableInMins:
+        getTimeDiff(onlineSelected ? availableTime : physicalAvailableTime) || undefined,
     };
     postCleverTapEvent(
       CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED,

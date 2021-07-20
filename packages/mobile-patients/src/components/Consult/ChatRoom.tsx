@@ -5987,12 +5987,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       'Patient age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
-      docId: g(item, 'doctorId') || '',
-      'Doctor Name': g(item, 'doctorInfo', 'fullName') || '',
-      'Doctor Category': g(item, 'doctorInfo', 'doctorType'),
-      'Doctor City': g(item, 'doctorInfo', 'city') || '',
-      specialityId: g(item, 'doctorInfo', 'specialty', 'id') || '',
-      'Speciality Name': g(item, 'doctorInfo', 'specialty', 'name') || '',
+      docId: g(item, 'doctorId') || undefined,
+      docName: g(item, 'doctorInfo', 'fullName') || undefined,
+      docCity: g(item, 'doctorInfo', 'city') || undefined,
+      specialityId: g(item, 'doctorInfo', 'specialty', 'id') || undefined,
+      specialityName: g(item, 'doctorInfo', 'specialty', 'name') || undefined,
+      'Doctor Category': g(item, 'doctorInfo', 'doctorType') || undefined,
       'Consult ID': g(item, 'id') || '',
       'Consult Date Time': moment(g(item, 'appointmentDateTime')).toDate(),
       'Consult Mode': g(item, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',

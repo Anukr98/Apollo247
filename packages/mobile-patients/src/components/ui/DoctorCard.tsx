@@ -758,8 +758,14 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                         'Customer ID': currentPatient.id,
                         User_Type: getUserType(allCurrentPatients),
                         rank: props.rowId || undefined,
-                        onlineConsultFee: rowData?.onlineConsultationFees || rowData?.fee,
-                        physicalConsultFee: rowData?.physicalConsultationFees || rowData?.fee,
+                        onlineConsultFee:
+                          Number(rowData?.onlineConsultationFees) ||
+                          Number(rowData?.fee) ||
+                          undefined,
+                        physicalConsultFee:
+                          Number(rowData?.physicalConsultationFees) ||
+                          Number(rowData?.fee) ||
+                          undefined,
                       };
                       postCleverTapEvent(
                         CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED,

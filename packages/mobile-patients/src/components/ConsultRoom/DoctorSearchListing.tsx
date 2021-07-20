@@ -1220,7 +1220,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       postAppsFlyerEvent(AppsFlyerEventName.CONSULT_NOW_CLICKED, appsflyereventAttributes);
       postFirebaseEvent(FirebaseEventName.CONSULT_NOW_CLICKED, eventAttributesFirebase);
     } else if (type == 'book-appointment') {
-      const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
+      const _cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
         'Patient name': currentPatient.firstName,
         docId: doctorDetails?.id,
         specialityId: doctorDetails?.specialty?.id,
@@ -1237,14 +1237,18 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         'Customer ID': currentPatient.id,
         User_Type: getUserType(allCurrentPatients),
         rank: doctorDetails.rowId || undefined,
-        onlineConsultFee: doctorDetails?.onlineConsultationFees || doctorDetails?.fee,
-        physicalConsultFee: doctorDetails?.physicalConsultationFees || doctorDetails?.fee,
+        onlineConsultFee:
+          Number(doctorDetails?.onlineConsultationFees) || Number(doctorDetails?.fee) || undefined,
+        physicalConsultFee:
+          Number(doctorDetails?.physicalConsultationFees) ||
+          Number(doctorDetails?.fee) ||
+          undefined,
       };
       eventAttributes['Source'] = 'List';
       postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
       postCleverTapEvent(
         CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED,
-        cleverTapEventAttributes
+        _cleverTapEventAttributes
       );
       const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.BOOK_APPOINTMENT] = {
         'customer id': currentPatient ? currentPatient.id : '',

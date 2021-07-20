@@ -93,7 +93,7 @@ export enum CleverTapEventName {
   SYMPTOM_TRACKER_ADD_SELECTED_SYMPTOMS_CLICKED = 'Symptoms_Add selected symptoms clicked',
   SYMPTOM_TRACKER_RESTART_CLICKED = 'Symptoms_restart symptom checker clicked',
   SYMPTOM_TRACKER_NO_OTHER_SYMPTOM_CLICKED = 'Symptoms_No other symptom clicked',
-  SYMPTOM_TRACKER_CONSULT_DOCTOR_CLICKED = 'user clicked on consult doc symptom check',
+  SYMPTOM_TRACKER_CONSULT_DOCTOR_CLICKED = 'Symptoms_Consult doctor clicked',
   TRACK_SYMPTOMS = 'Track Symptoms',
 
   //Doctor Share Events
@@ -239,6 +239,9 @@ export enum CleverTapEventName {
   PHR_NO_OF_USERS_SEARCHED_GLOBAL = 'PHR No Of Users searched Global', //acd
   PHR_NO_USERS_SEARCHED_LOCAL = 'PHR No Of Users searched Local {0}',
   PHR_NO_OF_USERS_CLICKED_ON_RECORDS = 'PHR users seen on records in {0}',
+
+  // Circle Events
+  CIRCLE_LANDING_PAGE_VIEWED = 'Circle Landing page viewed',
 
   // other
   MOBILE_ENTRY = 'Mobile Entry',
@@ -1497,14 +1500,15 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED]: {
     'Patient name': string;
-    docId: string;
-    specialityId: string;
-    specialityName: string;
-    exp: number;
+    docName?: string;
+    docId?: string;
+    specialityId?: string;
+    specialityName?: string;
+    exp?: number;
     languagesKnown?: string;
-    docHospital: string;
-    docCity: string | null;
-    availableInMins: number;
+    docHospital?: string;
+    docCity?: string | null;
+    availableInMins?: number;
     Source: 'Doctor card doctor listing screen' | 'doctor profile' | 'Inside Consult Room';
     'Patient UHID': string;
     Relation: string;
@@ -2595,6 +2599,7 @@ export interface CleverTapEvents {
     Relation: string;
     'Selected Symptoms': string;
   };
+  [CleverTapEventName.CIRCLE_LANDING_PAGE_VIEWED]: {};
   [CleverTapEventName.SYMPTOM_TRACKER_FOR_MYSELF]: SymptomTrackerPatientInfo;
   [CleverTapEventName.CIRCLE_BENIFIT_CLICKED]: CircleRenewalAttributes;
   [CleverTapEventName.CIRCLE_RENEW_NOW_CLICKED]: CircleRenewalAttributes;
