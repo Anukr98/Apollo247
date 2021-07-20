@@ -129,6 +129,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     asyncPincode,
     setAsyncPincode,
     circleMembershipCharges,
+    pdpDisclaimerMessage,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
@@ -871,6 +872,17 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     ? !!cartItems.find(({ id }) => id === medicineDetails?.sku)
     : false;
 
+  const renderDisclaimerMessage = () => {
+    if (pdpDisclaimerMessage && isPharma) {
+      return (
+        <View>
+          <Text style={styles.disclaimerHeading}>Disclaimer</Text>
+          <Text style={styles.disclaimerMessage}>{pdpDisclaimerMessage}</Text>
+        </View>
+      );
+    } else return null;
+  };
+
   let buttonRef = React.useRef<View>(null);
   return (
     <View style={{ flex: 1 }}>
@@ -1017,6 +1029,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               {!!medicineDetails?.marketer_address && (
                 <ProductManufacturer address={medicineDetails?.marketer_address} />
               )}
+              {renderDisclaimerMessage()}
               <View style={{ height: 130 }} />
             </KeyboardAwareScrollView>
           ) : (
@@ -1173,4 +1186,9 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('B', 14, '#FFFFFF', 1, 25, 0.35),
     textAlign: 'center',
   },
+  disclaimerHeading: {
+    ...theme.viewStyles.text('M', 16, '#02475B', 1, 35, 0.35),
+    marginTop: 7,
+  },
+  disclaimerMessage: theme.viewStyles.text('R', 14, '#02475B', 1, 17, 0.35),
 });
