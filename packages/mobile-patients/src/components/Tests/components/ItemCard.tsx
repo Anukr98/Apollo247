@@ -87,7 +87,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
   //     ? data?.length > 0 && data?.filter((item: any) => item?.diagnosticPricing)
   //     : data?.diagnosticWidgetData?.length > 0 &&
   //       data?.diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
-  const actualItemsToShow =
+  let actualItemsToShow =
     source === 'Cart page'
       ? data?.length > 0 && data
       : diagnosticWidgetData?.length > 0 &&
@@ -304,7 +304,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
         priceToShow = specialPrice || price;
       }
     }
-    console.log('actualItemsToShow :>> ', !!actualItemsToShow);
+    // console.log('actualItemsToShow :>> ', !!actualItemsToShow);
     const slashedPrice =
       !!packageMrpForItem && packageMrpForItem > price ? packageMrpForItem : price;
     //1. circle sub + promote -> packageMrp/price
@@ -545,7 +545,6 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
             showsVerticalScrollIndicator={false}
             horizontal={!props.isVertical}
             data={actualItemsToShow}
-            extraData={actualItemsToShow}
             onEndReached={props.onEndReached}
             onEndReachedThreshold={0.1}
             renderItem={renderItemCard}

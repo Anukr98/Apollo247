@@ -124,13 +124,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   };
   useEffect(() => {
     fetchWidgetsPrices(widgetsData);
-  }, [widgetsData])
+  }, [widgetsData?.diagnosticWidgetData?.[0]])
 
-  useEffect(() => {
-    setWidgetsData(widgetsData)
-  }, [loading])
-
-  console.log('loading :>> ',loading);
  
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
@@ -148,6 +143,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   //add try catch.
   const fetchWidgetsPrices = async (widgetsData: any) => {
     const itemIds = widgetsData?.diagnosticWidgetData?.map((item: any) => Number(item?.itemId));
+    setLoading?.(true);
 
     const res = Promise.all(
       itemIds?.map((item: any) =>
@@ -277,19 +273,28 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       </View>
     );
   };
+  let countDown: any;
   const loadMoreFuction = () => {
     if (widgetsData?.diagnosticWidgetData?.length > limit * currentOffset) {
-      setTestLength(widgetsData?.diagnosticWidgetData?.length)
+      setTestLength(widgetsData?.diagnosticWidgetData?.length);
     } else {
-      setTestLength(limit * currentOffset)
+      setTestLength(limit * currentOffset);
     }
-    setShowLoadMore(false)
-  }
+    setShowLoadMore(false);
+  };
 
   const onEndReached = () => {
+    if (testLength <= widgetsData?.diagnosticWidgetData?.length) {
     setCurrentOffset(currentOffset + 1);
     setShowLoadMore(true);
+    countDown = setTimeout(function() {
     loadMoreFuction();
+    }, 2000);
+    } else {
+      setCurrentOffset(currentOffset);
+      setShowLoadMore(false);
+      clearTimeout(countDown)
+    }
   };
 
   const renderBreadCrumb = () => {
@@ -353,6 +358,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       </>
     );
   };
+  // console.log(currentOffset,showLoadMore,'object :>> ', testLength ,testLength == widgetsData?.diagnosticWidgetData?.length, widgetsData?.diagnosticWidgetData?.length);
 
   return (
     <View style={{ flex: 1 }}>
