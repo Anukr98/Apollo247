@@ -76,14 +76,23 @@ export const MultiVariant: React.FC<MultiVariantProps> = (props) => {
     if (sku) {
       setSelectedOptions(newSelectedItems);
       onSelectVariant?.(sku);
+    } else {
+      const selectedItem = Object.keys(multiVariantProducts)?.filter((item) =>
+        item.includes(newSelectedItems?.[variant])
+      );
+      let sku = multiVariantProducts?.[selectedItem?.[0]]?.sku;
+      if (sku) {
+        setSelectedOptions(selectedItem);
+        onSelectVariant?.(sku);
+      }
     }
   };
 
   const renderMultiVariantAttributes = () => {
     return multiVariantAttributes?.map((value, index) => {
-      const selectedVariantLabel = multiVariantAttributes[index].values.filter(
-        (data) => data.code === selectedOptions[index]
-      )[0].label;
+      const selectedVariantLabel = multiVariantAttributes?.[index]?.values?.filter(
+        (data) => data?.code === selectedOptions?.[index]
+      )?.[0]?.label;
       return (
         <View style={{ marginBottom: 7 }}>
           <View style={styles.flexRow}>

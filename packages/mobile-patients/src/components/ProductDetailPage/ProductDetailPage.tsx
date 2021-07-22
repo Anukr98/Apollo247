@@ -107,7 +107,7 @@ export interface ProductDetailPageProps
 type PharmacyTatApiCalled = WebEngageEvents[WebEngageEventName.PHARMACY_TAT_API_CALLED];
 
 export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
-  const movedFrom = props.navigation.getParam('movedFrom');
+  const [movedFrom, setMovedFrom] = useState(props.navigation.getParam('movedFrom'));
   const [sku, setSku] = useState(props.navigation.getParam('sku'));
   const urlKey = props.navigation.getParam('urlKey');
   const sectionName = props.navigation.getParam('sectionName');
@@ -238,8 +238,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   useEffect(() => {
     if (
       medicineDetails?.sku &&
-      availabilityCalled === 'yes' &&
-      (!!deliveryTime || !!deliveryError)
+      (availabilityCalled === 'yes' || !!deliveryTime || !!deliveryError)
     ) {
       postProductPageViewedEvent(pincode, isInStock);
     }
@@ -344,6 +343,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   };
 
   const onSelectVariant = (sku: string) => {
+    setMovedFrom(ProductPageViewedSource.MULTI_VARIANT);
     getMedicineDetails(pincode, axdcCode, sku);
   };
 
@@ -476,6 +476,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         MRP: price,
         SpecialPrice: special_price || null,
         CircleCashback: cashback?.toFixed(2),
+        isMultiVariant: multiVariantAttributes.length ? 1 : 0,
       };
       if (movedFrom === 'deeplink') {
         eventAttributes['Circle Membership Added'] = circleID
@@ -603,7 +604,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             setdeliveryError(pincodeServiceableItemOutOfStockMsg);
             setdeliveryTime('');
           }
-          !checkButtonClicked && setAvailabilityCalled('yes');
           try {
             const response = res.data.response;
             const item = response.items[0];
@@ -637,6 +637,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           setdeliveryError('');
         })
         .finally(() => {
+          setAvailabilityCalled('yes');
           setshowDeliverySpinner(false);
         });
     } catch (error) {
