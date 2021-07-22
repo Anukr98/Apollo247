@@ -183,7 +183,9 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   const [totalSlots, setTotalSlots] = useState<number>(-1);
   const [timeArray, setTimeArray] = useState<TimeArray>(defaultTimeData);
   const [loadTotalSlots, setLoadTotalSlots] = useState<boolean>(true);
-  const [isOnlineSelected, setIsOnlineSelected] = useState<boolean>(true);
+  const [isOnlineSelected, setIsOnlineSelected] = useState<boolean>(
+    selectedTab === consultPhysicalTab ? false : true
+  );
   const [nextAvailableDate, setNextAvailableDate] = useState<string>('');
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
   const [firstSelectedSlot, setFirstSelectedSlot] = useState<string>('');
