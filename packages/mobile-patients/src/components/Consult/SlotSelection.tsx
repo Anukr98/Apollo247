@@ -755,6 +755,14 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
 
     const hospitalId = doctorClinics?.[0]?.facility?.id || '';
 
+    const eventAttributes = {
+      Source: 'Profile',
+      'Consult Mode': isOnlineSelected ? 'Online' : 'Physical',
+      'Consult Date Time': new Date(selectedTimeSlot),
+    };
+
+    callWEGEvent(WebEngageEventName.CONSULT_NOW_CLICKED, eventAttributes);
+
     const appointmentInput: BookAppointmentInput = {
       patientId: currentPatient?.id,
       doctorId,
