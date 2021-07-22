@@ -41,7 +41,10 @@ import {
   CorporateFaq,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
+  CircleEventSource,
   g,
+  getUserType,
+  postCleverTapEvent,
   postWebEngageEvent,
   setCircleMembershipType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -92,6 +95,10 @@ import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/Med
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 import { getCorporateMembershipData } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -241,12 +248,14 @@ export interface MembershipDetailsProps extends NavigationScreenProps {
   comingFrom?: string;
   isCorporatePlan?: boolean;
   planId?: string;
+  circleEventSource?: CircleEventSource;
 }
 
 export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const [membershipType, setMembershipType] = useState(props.navigation.getParam('membershipType'));
   const comingFrom = props.navigation.getParam('comingFrom');
   const isCorporatePlan = props.navigation.getParam('isCorporatePlan');
+  const circleEventSource = props.navigation.getParam('circleEventSource');
   const [planId, setPlanId] = useState(props.navigation.getParam('planId'));
   const isCirclePlan = membershipType === Circle.planName;
   const source = props.navigation.getParam('source');
@@ -276,7 +285,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     circlePlanValidity,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const planName = g(hdfcUserSubscriptions, 'name');
   const plan = planName?.substring(0, planName?.indexOf('+'));
   const upgradePlanName = hdfcUpgradeUserSubscriptions[0]?.name;
@@ -479,10 +488,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
             }
 
             if (circlePlan) {
-              console.log('CIRCLE ===== Circle membership page viewed');
-              // comingFrom
-              // rest data from circlePlan?.[0]
               const circleSubscription = setCircleSubscriptionData(circlePlan?.[0]);
+              fireCircleMembershipPageViewed(circlePlan?.[0]);
               if (!!circlePlan?.[0]?._id) {
                 if (circlePlan?.[0]?.status === 'disabled') {
                   setIsCircleSubscription && setIsCircleSubscription(false);
@@ -498,6 +505,25 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           setLoading(false);
           CommonBugFender('ConsultRoom_getUserSubscriptionsWithBenefits', e);
         });
+  };
+
+  const fireCircleMembershipPageViewed = (_circleData: any) => {
+    const circlePriceAndDuration = _circleData?.plan_summary?.find(
+      (_item) => _item?.subPlanId === circlePlanValidity?.plan_id
+    );
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_MEMBERSHIP_PAGE_VIEWED] = {
+      navigation_source: circleEventSource,
+      circle_planid: circlePlanValidity?.plan_id,
+      circle_end_date: circlePlanValidity?.endDate,
+      circle_start_date: circlePlanValidity?.startDate,
+      customer_id: currentPatient?.id,
+      duration_in_month: circlePriceAndDuration?.durationInMonth,
+      user_type: getUserType(allCurrentPatients),
+      price: circlePriceAndDuration?.price,
+      source_identifier: circlePlanValidity?.source_identifier,
+      corporate_name: currentPatient?.partnerId,
+    };
+    postCleverTapEvent(CleverTapEventName.CIRCLE_MEMBERSHIP_PAGE_VIEWED, cleverTapEventAttributes);
   };
 
   const setCircleSubscriptionData = (plan: any) => {
@@ -831,8 +857,6 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   };
 
   const handleCircleWebengageEvents = (attribute: string) => {
-    console.log('CIRCLE ===== Circle Benefit Clicked');
-    // circleSubscription
     const circleMembershipType = setCircleMembershipType(
       circleSubscription?.startDate!,
       circleSubscription?.endDate!
@@ -941,6 +965,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
 
     if (isCirclePlan) {
       handleCircleWebengageEvents(attribute || '');
+      fireCircleBenefitClickedEvents(action);
     }
 
     if (type == Hdfc_values.REDIRECT) {
@@ -1014,6 +1039,26 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     } else {
       props.navigation.navigate(AppRoutes.ConsultRoom);
     }
+  };
+
+  const fireCircleBenefitClickedEvents = (action: string) => {
+    const circlePriceAndDuration = circleSubscription?.planSummary?.find(
+      (_item) => _item?.subPlanId === circlePlanValidity?.plan_id
+    );
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_BENIFIT_CLICKED] = {
+      navigation_source: 'Circle Membership page',
+      circle_planid: circlePlanValidity?.plan_id,
+      circle_end_date: circlePlanValidity?.endDate,
+      circle_start_date: circlePlanValidity?.startDate,
+      customer_id: currentPatient?.id,
+      duration_in_month: circlePriceAndDuration?.durationInMonth,
+      user_type: getUserType(allCurrentPatients),
+      price: circlePriceAndDuration?.price,
+      source_identifier: circlePlanValidity?.source_identifier,
+      corporate_name: currentPatient?.partnerId,
+      destination: action,
+    };
+    postCleverTapEvent(CleverTapEventName.CIRCLE_BENIFIT_CLICKED, cleverTapEventAttributes);
   };
 
   const renderBenefitsConsumed = () => {
@@ -1440,6 +1485,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           setShowCircleActivation(true);
         }}
         screenName={'Membership Details'}
+        circleEventSource={'Membership Details'}
       />
     );
   };
@@ -1469,6 +1515,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       circlePlanValidity={{ endDate: planValidity.current }}
       source={'Consult'}
       from={string.banner_context.MEMBERSHIP_DETAILS}
+      circleEventSource={'Membership Details'}
     />
   );
 

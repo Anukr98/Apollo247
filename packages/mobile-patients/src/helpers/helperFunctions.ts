@@ -1541,14 +1541,14 @@ const webengage = new WebEngage();
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
-    // console.log('postWebEngageEvent', eventName, JSON.stringify(attributes));
+    console.log('postWebEngageEvent', eventName, JSON.stringify(attributes));
     webengage.track(eventName, attributes);
   } catch (error) {}
 };
 
 export const postCleverTapEvent = (eventName: CleverTapEventName, attributes: Object) => {
   try {
-    // console.log('postCleverTapEvent', eventName, JSON.stringify(attributes));
+    console.log('postCleverTapEvent', eventName, JSON.stringify(attributes));
     CleverTap.recordEvent(eventName, attributes);
   } catch (error) {}
 };
@@ -1579,6 +1579,23 @@ export const onCleverTapUserLogin = async (_currentPatient: any) => {
     CommonBugFender('setCleverTapUserLogin', error);
   }
 };
+
+export type CircleEventSource =
+  | 'Circle Popup Plan only'
+  | 'Landing Home Page banners'
+  | 'Medicine Home page banners'
+  | 'Medicine Homepage Sticky'
+  | 'Diagnostic Home page Banner'
+  | 'VC Doctor Profile'
+  | 'Cart(Pharma)'
+  | 'Cart(VC)'
+  | 'Membership Details'
+  | 'Landing Home Page'
+  | 'My Account-My membership section'
+  | 'Corporate Membership Page'
+  | 'Circle Membership page';
+
+export const getCircleNoSubscriptionText = () => string.common.circleNoSubscriptionText;
 
 export const postwebEngageAddToCartEvent = (
   {

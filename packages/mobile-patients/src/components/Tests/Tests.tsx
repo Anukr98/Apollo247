@@ -654,6 +654,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           from={string.banner_context.DIAGNOSTIC_HOME}
           source={'Diagnostic'}
           circleActivated={false}
+          circleEventSource={'Diagnostic Home page Banner'}
         />
       );
     }
@@ -1025,6 +1026,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
           const planValidity = {
             startDate: data?.APOLLO?.[0]?.start_date,
             endDate: data?.APOLLO?.[0]?.end_date,
+            plan_id: data?.APOLLO?.[0]?.plan_id,
+            source_identifier: data?.APOLLO?.[0]?.source_meta_data?.source_identifier,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
         } else {
@@ -2080,7 +2083,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const appointmentDate = moment(clickedItem?.slotDateTimeInUTC)?.format('DD MMM YYYY');
     const patientName = `${clickedItem?.patientObj?.firstName} ${clickedItem?.patientObj?.lastName}`;
     try {
-      setViewReportOrderId(clickedItem?.orderId)
+      setViewReportOrderId(clickedItem?.orderId);
       await downloadDiagnosticReport(
         setLoadingContext,
         clickedItem?.labReportURL,
@@ -2384,9 +2387,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setClickedItem([]);
           }}
           downloadDocument={() => {
-            const res = downloadDocument(clickedItem?.labReportURL, 'application/pdf',clickedItem?.orderId)
+            const res = downloadDocument(
+              clickedItem?.labReportURL,
+              'application/pdf',
+              clickedItem?.orderId
+            );
             if (res == clickedItem?.orderId) {
-              setViewReportOrderId(clickedItem?.orderId)
+              setViewReportOrderId(clickedItem?.orderId);
             }
           }}
           viewReportOrderId={viewReportOrderId}

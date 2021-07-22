@@ -7,6 +7,7 @@ import {
   PharmaUserStatus,
   UploadPrescSource,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { CircleEventSource } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 type YesOrNo = 'Yes' | 'No';
 type HdfcPlan = 'SILVER' | 'GOLD' | 'PLATINUM';
@@ -617,10 +618,12 @@ interface CircleAttributes {
   circle_start_date?: Date | string;
   circle_end_date?: Date | string;
   user_type?: string;
-  navigation_source?: string;
-  duration_in_month?: string;
+  navigation_source?: string | CircleEventSource;
+  duration_in_month?: string | number;
   corporate_name?: string;
   source_identifier?: string;
+  price?: number | string;
+  destination?: string;
 }
 
 interface CircleRenewalSubscriptionAttributes {

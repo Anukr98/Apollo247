@@ -14,6 +14,10 @@ import {
   postFirebaseEvent,
   postCleverTapEvent,
   getCleverTapCircleMemberValues,
+  getCircleEventSource,
+  getCircleNoSubscriptionText,
+  getUserType,
+  CircleEventSource,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import moment from 'moment';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src//helpers/AppsFlyerEvents';
@@ -315,5 +319,27 @@ export const fireCirclePlanRemovedEvent = (currentPatient: any) => {
   postWebEngageEvent(
     WebEngageEventName.PHARMA_CART_CIRCLE_MEMBERSHIP_REMOVED,
     CircleEventAttributes
+  );
+};
+
+export const fireCleverTapCirclePlanRemovedEvent = (
+  currentPatient: any,
+  circleEventSource?: CircleEventSource,
+  circleData?: any,
+  allCurrentPatients?: any
+) => {
+  const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_PLAN_TO_CART] = {
+    navigation_source: circleEventSource,
+    circle_end_date: getCircleNoSubscriptionText(),
+    circle_start_date: getCircleNoSubscriptionText(),
+    circle_planid: circleData?.subPlanId,
+    customer_id: currentPatient?.id,
+    duration_in_month: circleData?.durationInMonth,
+    user_type: getUserType(allCurrentPatients),
+    price: circleData?.currentSellingPrice,
+  };
+  postCleverTapEvent(
+    CleverTapEventName.CIRCLE_PLAN_REMOVE_FROM_CART,
+    cleverTapEventAttributes
   );
 };

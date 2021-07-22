@@ -658,6 +658,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           }}
           from={string.banner_context.PHARMACY_HOME}
           source={'Pharma'}
+          circleEventSource={'Medicine Home page banners'}
         />
       );
     }
@@ -1476,6 +1477,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           const planValidity = {
             startDate: data?.APOLLO?.[0]?.start_date,
             endDate: data?.APOLLO?.[0]?.end_date,
+            plan_id: data?.APOLLO?.[0]?.plan_id,
+            source_identifier: data?.APOLLO?.[0]?.source_meta_data?.source_identifier,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
           if (data?.APOLLO?.[0]?.status === 'disabled') {
@@ -2213,7 +2216,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         closeModal={() => setShowCirclePopup(false)}
         navigation={props.navigation}
         isConsultJourney={false}
-        from={string.banner_context.PHARMACY_HOME_STICKY}
+        from={string.banner_context.PHARMACY_HOME}
         source={'Pharma'}
         onSelectMembershipPlan={(plan) => {
           if (plan) {
@@ -2225,6 +2228,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setCircleMembershipCharges && setCircleMembershipCharges(0);
           }
         }}
+        circleEventSource={'Medicine Homepage Sticky'}
       />
     );
   };

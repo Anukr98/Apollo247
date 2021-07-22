@@ -40,7 +40,10 @@ import {
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
-import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  CircleEventSource,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
 import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
@@ -54,6 +57,7 @@ interface props extends NavigationScreenProps {
   circlePlanValidity?: string;
   from: string;
   source?: 'Pharma' | 'Product Detail' | 'Pharma Cart' | 'Diagnostic' | 'Consult';
+  circleEventSource?: CircleEventSource;
 }
 export const CircleMembershipActivation: React.FC<props> = (props) => {
   const {
@@ -65,6 +69,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
     circlePlanValidity,
     from,
     source,
+    circleEventSource,
   } = props;
   const planActivated = useRef<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -175,6 +180,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
             props.navigation.navigate(AppRoutes.MembershipDetails, {
               membershipType: Circle.planName,
               comingFrom: 'Circle Membership Activation Know More CTA',
+              circleEventSource,
             });
           }}
         >

@@ -1079,6 +1079,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             }
           }}
           source={'Pharma Cart'}
+          from={string.banner_context.PHARMA_CART}
+          circleEventSource={'Cart(Pharma)'}
         />
       );
     } else {

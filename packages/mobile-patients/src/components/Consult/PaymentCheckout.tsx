@@ -586,6 +586,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           }, 300);
         }}
         onEndApiCall={() => setDisabledCheckout(false)}
+        from={string.banner_context.VC_CART}
+        circleEventSource={'Cart(VC)'}
       />
     );
   };

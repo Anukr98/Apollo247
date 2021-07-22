@@ -1893,6 +1893,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             startDate: circleData?.start_date,
             endDate: circleData?.end_date,
             expiry: circleData?.expires_in,
+            plan_id: circleData?.plan_id,
+            source_identifier: circleData?.source_meta_data?.source_identifier,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
           setRenewNow(circleData?.renewNow ? 'yes' : 'no');
@@ -2831,6 +2833,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           successCallback={() => {
             getUserSubscriptionsWithBenefits();
           }}
+          circleEventSource={'Landing Home Page banners'}
         />
       );
     }
@@ -3025,6 +3028,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
           setShowCircleActivationcr(true);
         }}
+        circleEventSource={'Landing Home Page banners'}
       />
     );
   };
@@ -3041,6 +3045,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       circlePlanValidity={{ endDate: planValiditycr?.current }}
       source={'Consult'}
       from={string.banner_context.MEMBERSHIP_DETAILS}
+      circleEventSource={'Landing Home Page'}
     />
   );
 
@@ -3115,6 +3120,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 membershipType: 'CIRCLE PLAN',
                 isActive: true,
                 comingFrom: 'Circle Benifits(Home Screen)',
+                circleEventSource: 'Landing Home Page',
               });
             }}
             credits={healthCredits}
@@ -3128,6 +3134,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 membershipType: 'CIRCLE PLAN',
                 isActive: true,
                 comingFrom: 'Circle Benifits(Home Screen)',
+                circleEventSource: 'Landing Home Page',
               });
             }}
             credits={healthCredits}
