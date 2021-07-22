@@ -2083,7 +2083,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setViewReportOrderId(clickedItem?.orderId)
       await downloadDiagnosticReport(
         setLoadingContext,
-        clickedItem?.labReportURL,
+        (clickedItem?.labReportURL).trim(),
         appointmentDate,
         !!patientName ? patientName : '_',
         true,
