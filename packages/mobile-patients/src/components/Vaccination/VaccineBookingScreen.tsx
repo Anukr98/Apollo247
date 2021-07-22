@@ -26,40 +26,15 @@ import {
   View,
   StyleSheet,
   ScrollView,
-  ActivityIndicator,
-  Alert,
   TouchableOpacity,
   Modal,
   PixelRatio,
-  FlatList,
 } from 'react-native';
-import {
-  dataSavedUserID,
-  g,
-  getNetStatus,
-  isValidSearch,
-  postAppsFlyerEvent,
-  postFirebaseEvent,
-  postWebEngageEvent,
-  getAge,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { postWebEngageEvent, getAge } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
-import { ProfileList } from '../ui/ProfileList';
 import DeviceInfo from 'react-native-device-info';
-import {
-  CovidVaccine,
-  LinkedUhidIcon,
-  RequestSubmitted,
-  VaccineBookingFailed,
-  RadioButtonIcon,
-  RadioButtonUnselectedIcon,
-  ArrowLeft,
-  ArrowRight,
-} from '@aph/mobile-patients/src/components/ui/Icons';
-import {
-  CommonBugFender,
-  CommonLogEvent,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { CovidVaccine, VaccineBookingFailed } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   CalendarShow,
   DropdownGreen,
@@ -1347,7 +1322,22 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
             mobileNumber: currentPatient?.mobileNumber,
             onNewProfileAdded: onNewProfileAdded,
             onPressBackButton: _onPressBackButton,
+            isForVaccination: true,
           });
+
+          try {
+            const eventAttributes = {
+              'Patient ID': selectedPatient?.id || '',
+              'Patient First Name': selectedPatient?.firstName.trim(),
+              'Patient Last Name': selectedPatient?.lastName.trim(),
+              'Patient UHID': selectedPatient?.uhid,
+              'Patient Number': selectedPatient?.mobileNumber,
+              'Patient Gender': selectedPatient?.gender,
+              'Pateint Age ': getAge(selectedPatient?.dateOfBirth),
+              'Source ': Platform.OS === 'ios' ? 'ios' : 'android',
+            };
+            postWebEngageEvent(WebEngageEventName.ADD_MEMBER_CLICKED, eventAttributes);
+          } catch (error) {}
         }}
         patientSelected={selectedPatient}
         onPressAndroidBack={() => {
@@ -1360,6 +1350,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
 
   const setUpSelectedPatient = (_selectedPatient: any) => {
     setSelectedPatient(_selectedPatient);
+    console.log('check _selectedPatient -- ', _selectedPatient);
   };
 
   const onNewProfileAdded = (newPatient: any) => {
@@ -1369,6 +1360,20 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
       setShowPatientListOverlay(true);
       changeCurrentProfile(newPatient?.profileData, false);
     }
+
+    try {
+      const eventAttributes = {
+        'Patient ID': selectedPatient?.id || '',
+        'Patient First Name': selectedPatient?.firstName.trim(),
+        'Patient Last Name': selectedPatient?.lastName.trim(),
+        'Patient UHID': selectedPatient?.uhid,
+        'Patient Number': selectedPatient?.mobileNumber,
+        'Patient Gender': selectedPatient?.gender,
+        'Pateint Age ': getAge(selectedPatient?.dateOfBirth),
+        'Source ': Platform.OS === 'ios' ? 'ios' : 'android',
+      };
+      postWebEngageEvent(WebEngageEventName.VACCINE_REGISTRATION_COMPLETED, eventAttributes);
+    } catch (error) {}
   };
   const _onPressBackButton = () => {
     if (!selectedPatient) {
