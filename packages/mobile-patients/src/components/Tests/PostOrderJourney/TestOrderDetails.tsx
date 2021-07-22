@@ -562,7 +562,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                               {nameFormater(item?.itemName, 'default')}
                             </Text>
                           </View>
-                          <StatusCard titleText={item?.orderStatus} />
+                          <StatusCard titleText={item?.itemId == 8 && item?.orderStatus == DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB ? "2ND SAMPLE PENDING" : item?.orderStatus} />
                         </View>
                       </View>
                     ) : null}
