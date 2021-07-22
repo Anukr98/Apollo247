@@ -56,6 +56,7 @@ import {
   renderSlotItemShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 const { width } = Dimensions.get('window');
+const tabWidth = width / 4;
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
@@ -1047,7 +1048,7 @@ const styles = StyleSheet.create({
   },
   buttonStyle: {
     ...theme.viewStyles.cardViewStyle,
-    width: 90,
+    width: tabWidth - 22,
     marginRight: 8,
     marginTop: 12,
     backgroundColor: theme.colors.WHITE,
