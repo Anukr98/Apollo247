@@ -1714,9 +1714,6 @@ export const SAVE_MEDICINE_ORDER_OMS_V2 = gql`
       errorCode
       errorMessage
       transactionId
-      isSubstitution
-      substitutionTime
-      substitutionMessage
       orders {
         id
         orderAutoId
@@ -4240,6 +4237,9 @@ export const GET_PHARMA_TRANSACTION_STATUS_V2 = gql`
       paymentStatus
       paymentDateTime
       paymentMode
+      isSubstitution
+      substitutionTime
+      substitutionMessage
       planPurchaseDetails {
         planPurchased
         totalCashBack

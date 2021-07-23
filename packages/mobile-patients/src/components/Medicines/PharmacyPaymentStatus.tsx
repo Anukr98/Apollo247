@@ -139,15 +139,9 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const [codOrderProcessing, setcodOrderProcessing] = useState<boolean>(false);
   const { apisToCall, pharmacyUserTypeAttribute } = useAppCommonData();
 
-  const [showSubstituteMessage, setShowSubstituteMessage] = useState<boolean>(
-    props.navigation.getParam('showSubstituteMessage') || false
-  );
-  const [substituteMessage, setSubstituteMessage] = useState<string>(
-    props.navigation.getParam('substitutionMessage') || ''
-  );
-  const [substituteTime, setSubstituteTime] = useState<number>(
-    props.navigation.getParam('substitutionTime') || 0
-  );
+  const [showSubstituteMessage, setShowSubstituteMessage] = useState<boolean>(false);
+  const [substituteMessage, setSubstituteMessage] = useState<string>('');
+  const [substituteTime, setSubstituteTime] = useState<number>(0);
   const [transactionId, setTransactionId] = useState(null);
   const [showSubstituteConfirmation, setShowSubstituteConfirmation] = useState<boolean>(false);
   const isSplitCart: boolean = orders?.length > 1 ? true : false;
@@ -203,6 +197,9 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         setTransactionId(pharmaPaymentStatus?.bankTxnId);
         setIsCircleBought(!!pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
         setTotalCashBack(pharmaPaymentStatus?.planPurchaseDetails?.totalCashBack);
+        setShowSubstituteMessage(pharmaPaymentStatus?.isSubstitution);
+        setSubstituteMessage(pharmaPaymentStatus?.substitutionMessage);
+        setSubstituteTime(pharmaPaymentStatus?.substitutionTime);
         setLoading(false);
         firePaymentStatusPageViewedEvent(
           pharmaPaymentStatus?.paymentStatus,
