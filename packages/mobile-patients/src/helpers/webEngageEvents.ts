@@ -33,6 +33,7 @@ export enum ProductPageViewedSource {
   SUBSTITUTES = 'substitutes',
   CROSS_SELLING_PRODUCTS = 'cross selling products',
   SIMILAR_PRODUCTS = 'similar products',
+  MULTI_VARIANT = 'multivariant',
 }
 
 export enum WebEngageEventName {
@@ -534,7 +535,7 @@ export interface DiagnosticUserInfo {
 export interface DiagnosticLandingPage extends DiagnosticUserInfo {
   Serviceability: 'Yes' | 'No';
   Source?: string;
-  "Circle user": 'Yes' | 'No';
+  'Circle user': 'Yes' | 'No';
 }
 
 export interface DiagnosticServiceble {
@@ -1318,7 +1319,7 @@ export interface WebEngageEvents {
     'Item ids'?: any;
     'Total items in order': number;
     'Payment type'?: string; //for prepaid
-    "Circle user": 'Yes' | 'No';
+    'Circle user': 'Yes' | 'No';
   };
   [WebEngageEventName.PAYMENT_INITIATED]: {
     Amount: number;
@@ -2297,6 +2298,7 @@ export interface WebEngageEvents {
     MRP?: number;
     SpecialPrice?: number | null;
     CircleCashback?: number;
+    isMultiVariant: number;
   };
   [WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
     'Patient Name': string;

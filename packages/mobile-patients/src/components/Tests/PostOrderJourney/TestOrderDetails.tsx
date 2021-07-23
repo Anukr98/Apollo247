@@ -23,6 +23,7 @@ import {
   GetPatientFeedbackVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetPatientFeedback';
 import {
+  GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID,
   GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
   GET_ORDER_LEVEL_DIAGNOSTIC_STATUS,
   GET_PATIENT_FEEDBACK,
@@ -82,6 +83,10 @@ import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersL
 
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
+import {
+  getDiagnosticOrderDetailsByDisplayID,
+  getDiagnosticOrderDetailsByDisplayIDVariables,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetailsByDisplayID';
 const DROP_DOWN_ARRAY_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
@@ -130,36 +135,75 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [showError, setError] = useState<boolean>(false);
   const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
-  const [orderDetails, setOrderDetails] = useState([] as any);
 
+  const [orderDetails, setOrderDetails] = useState([] as any);
   const scrollToSlots = (yValue?: number) => {
     const setY = yValue == undefined ? scrollYValue : yValue;
     scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: setY, animated: true });
   };
 
   //for showing the order level status.
-  const fetchOrderLevelStatus = () =>
+  const fetchOrderLevelStatus = (orderId: string) =>
     client.query<getHCOrderFormattedTrackingHistory, getHCOrderFormattedTrackingHistoryVariables>({
       query: GET_ORDER_LEVEL_DIAGNOSTIC_STATUS,
       variables: { diagnosticOrderID: orderId },
       fetchPolicy: 'no-cache',
     });
 
-  const fetchOrderDetails = () =>
+  const fetchOrderDetails = (orderId: string) =>
     client.query<getDiagnosticOrderDetails, getDiagnosticOrderDetailsVariables>({
       query: GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
       variables: { diagnosticOrderId: orderId },
       fetchPolicy: 'no-cache',
     });
 
+  const getOrderDetails = async (displayId: string) => {
+    const res = await client.query<
+      getDiagnosticOrderDetailsByDisplayID,
+      getDiagnosticOrderDetailsByDisplayIDVariables
+    >({
+      query: GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID,
+      variables: {
+        displayId: Number(displayId),
+      },
+      fetchPolicy: 'no-cache',
+    });
+    return res;
+  };
+
   useEffect(() => {
-    callOrderLevelStatusApi();
-    callOrderDetailsApi();
+    if (source === 'deeplink') {
+      fetchDiagnosticOrderDetails(orderId); //displayId
+    } else {
+      callOrderLevelStatusApi(orderId);
+      callOrderDetailsApi(orderId);
+    }
   }, []);
 
-  async function callOrderLevelStatusApi() {
+  const fetchDiagnosticOrderDetails = async (displayId: string) => {
+    setLoading?.(true);
     try {
-      let response = await fetchOrderLevelStatus();
+      const res = await getOrderDetails(displayId);
+      const { data } = res;
+      const getData = g(data, 'getDiagnosticOrderDetailsByDisplayID', 'ordersList');
+      const getOrderId = getData?.id;
+      if (!!getOrderId) {
+        callOrderLevelStatusApi(getOrderId);
+        callOrderDetailsApi(getOrderId);
+      } else {
+        setLoading?.(false);
+        setError(true);
+      }
+    } catch (error) {
+      CommonBugFender('TestOrderDetails_fetchDiagnosticOrderDetails', error);
+      setLoading?.(false);
+      setError(true);
+    }
+  };
+
+  async function callOrderLevelStatusApi(orderId: string) {
+    try {
+      let response = await fetchOrderLevelStatus(orderId);
       if (!!response && response?.data && !response?.errors) {
         let getOrderLevelStatus = g(response, 'data', 'getHCOrderFormattedTrackingHistory');
         setOrderLevelStatus(getOrderLevelStatus);
@@ -175,11 +219,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       CommonBugFender('getHCOrderFormattedTrackingHistory_TestOrderDetails', error);
     }
   }
-
-  async function callOrderDetailsApi() {
+  async function callOrderDetailsApi(orderId: string) {
     try {
       setLoading?.(true);
-      let response = await fetchOrderDetails();
+      let response = await fetchOrderDetails(orderId);
       if (!!response && response?.data && !response?.errors) {
         let getOrderDetails = response?.data?.getDiagnosticOrderDetails?.ordersList;
         setOrderDetails(getOrderDetails);
@@ -520,6 +563,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             sampleSubmittedInclusions?.length == 1 ? 'test' : 'tests'
           } in order are sample submitted `
         : '';
+
     return (
       <>
         {!hasDiffStatusLevelInclusion ? null : (
@@ -540,6 +584,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                 />
               </TouchableOpacity>
             </View>
+
             {showInclusionStatus &&
               orderLevelStatus?.statusInclusions?.map((item: any, index: number) => {
                 let selectedItem = selectedOrder?.diagnosticOrderLineItems;
@@ -562,7 +607,15 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                               {nameFormater(item?.itemName, 'default')}
                             </Text>
                           </View>
-                          <StatusCard titleText={item?.orderStatus} />
+                          <StatusCard
+                            titleText={
+                              item?.itemId == 8 &&
+                              item?.orderStatus ==
+                                DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB
+                                ? '2ND SAMPLE PENDING'
+                                : item?.orderStatus
+                            }
+                          />
                         </View>
                       </View>
                     ) : null}
@@ -771,9 +824,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           isVisible={displayViewReport}
           viewReportOrderId={viewReportOrderId}
           downloadDocument={() => {
-            const res = downloadDocument(selectedOrder?.labReportURL, 'application/pdf',orderId);
+            const res = downloadDocument(selectedOrder?.labReportURL, 'application/pdf', orderId);
             if (res == orderId) {
-              setViewReportOrderId(orderId)
+              setViewReportOrderId(orderId);
             }
           }}
           onClose={() => setDisplayViewReport(false)}

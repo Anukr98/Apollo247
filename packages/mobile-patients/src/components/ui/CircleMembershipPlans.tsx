@@ -49,7 +49,10 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import moment from 'moment';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
+import {
+  postCircleWEGEvent,
+  postAppsFlyerCircleAddRemoveCartEvent,
+} from '@aph/mobile-patients/src/components/CirclePlan/Events';
 
 const { width } = Dimensions.get('window');
 interface CircleMembershipPlansProps extends NavigationScreenProps {
@@ -205,6 +208,9 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     const membershipPlan = membershipPlans?.[index];
     setCirclePlanSelected && setCirclePlanSelected(membershipPlan);
     AsyncStorage.setItem('circlePlanSelected', JSON.stringify(membershipPlan));
+    if (source === 'Pharma Cart') {
+      postAppsFlyerCircleAddRemoveCartEvent(membershipPlan, source, 'add', currentPatient);
+    }
     if (isConsultJourney) {
       !isModal &&
         circleWebEngageEventForAddToCart(
@@ -682,6 +688,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         ]}
         onPress={() => {
           fireCircleBuyNowEvent();
+          postAppsFlyerCircleAddRemoveCartEvent(circlePlanSelected, source, 'add', currentPatient);
           isConsultJourney &&
             circleWebEngageEventForAddToCart(
               WebEngageEventName.VC_NON_CIRCLE_ADDS_CART,
@@ -778,6 +785,12 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         <TouchableOpacity
           style={{ marginTop: 7 }}
           onPress={() => {
+            postAppsFlyerCircleAddRemoveCartEvent(
+              circlePlanSelected,
+              source,
+              'remove',
+              currentPatient
+            );
             fireCirclePlanRemovedEvent();
             setCirclePlanSelected && setCirclePlanSelected(null);
             setIsCircleSubscription && setIsCircleSubscription(false);

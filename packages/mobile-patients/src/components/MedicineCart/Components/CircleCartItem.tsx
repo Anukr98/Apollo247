@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import moment from 'moment';
 import { fireCirclePlanRemovedEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
+import { postAppsFlyerCircleAddRemoveCartEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 
 export interface CircleCartItemProps {
   currentPatient: any;
@@ -63,6 +64,12 @@ export const CircleCartItem: React.FC<CircleCartItemProps> = (props) => {
           <View>
             <TouchableOpacity
               onPress={() => {
+                postAppsFlyerCircleAddRemoveCartEvent(
+                  circlePlanSelected,
+                  'Pharma Cart',
+                  'remove',
+                  props?.currentPatient
+                );
                 fireCirclePlanRemovedEvent(props?.currentPatient);
                 setCirclePlanSelected && setCirclePlanSelected(null);
                 setIsCircleSubscription && setIsCircleSubscription(false);
