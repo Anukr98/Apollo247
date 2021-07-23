@@ -889,7 +889,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         setRecommendedProducts(formattedRecommendedProducts);
         showRecommendedSection &&
           props.navigation.navigate(AppRoutes.MedicineListing, {
-            category_id: -1,
+            category_id: undefined,
             products: formattedRecommendedProducts,
             title: string.medicine.recommendedForYou,
             movedFrom: 'home',

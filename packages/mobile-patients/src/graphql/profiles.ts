@@ -1092,6 +1092,7 @@ export const GET_ALL_SPECIALTIES = gql`
       image
       specialistSingularTerm
       specialistPluralTerm
+      slugName
       userFriendlyNomenclature
       # displayOrder
       shortDescription
@@ -5547,16 +5548,6 @@ export const FETCH_JUSPAY_CUSTOMERID = gql`
   }
 `;
 
-export const DIAGNOSITC_EXOTEL_CALLING = gql`
-  mutation diagnosticExotelCalling($orderId: ID!) {
-    diagnosticExotelCalling(orderId: $orderId) {
-      errorMessage
-      sid
-      success
-    }
-  }
-`;
-
 export const FETCH_SAVED_CARDS = gql`
   query getSavedCardList($customer_id: String!) {
     getSavedCardList(customer_id: $customer_id) {
@@ -5598,6 +5589,25 @@ export const COWIN_REGISTRATION = gql`
         error
       }
       message
+    }
+  }
+`;
+
+export const DIAGNOSITC_EXOTEL_CALLING = gql`
+  mutation diagnosticExotelCalling($orderId: ID!) {
+    diagnosticExotelCalling(orderId: $orderId) {
+      errorMessage
+      sid
+      success
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_PAYMENT_SETTINGS = gql`
+  query getDiagnosticPaymentSettings($paymentOrderId: String!) {
+    getDiagnosticPaymentSettings(paymentOrderId: $paymentOrderId) {
+      cod
+      hc_credits_message
     }
   }
 `;

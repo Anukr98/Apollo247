@@ -20,6 +20,7 @@ import {
   FlatList,
   Linking,
 } from 'react-native';
+import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
@@ -29,6 +30,7 @@ import {
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { renderVaccineBookingListShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { useApolloClient } from 'react-apollo-hooks';
+import { postWebEngageEvent, getAge } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   AgentIcon,
   CurrencyIcon,
@@ -430,9 +432,27 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
       onPress={() => {
         fetchAllAppointments();
         setShowRetailUserPage(true);
+
+        sendBookVaccinationBookingCTAEvent();
       }}
     />
   );
+
+  const sendBookVaccinationBookingCTAEvent = () => {
+    try {
+      const eventAttributes = {
+        'Patient ID': currentPatient?.id || '',
+        'Patient First Name': currentPatient?.firstName.trim(),
+        'Patient Last Name': currentPatient?.lastName.trim(),
+        'Patient UHID': currentPatient?.uhid,
+        'Patient Number': currentPatient?.mobileNumber,
+        'Patient Gender': currentPatient?.gender,
+        'Pateint Age ': getAge(currentPatient?.dateOfBirth),
+        'Source ': Platform.OS === 'ios' ? 'ios' : 'android',
+      };
+      postWebEngageEvent(WebEngageEventName.VACCINATION_BOOKING_CLICKED, eventAttributes);
+    } catch (error) {}
+  };
 
   const renderEnrollCorporateCta = () => (
     <TouchableOpacity
@@ -487,6 +507,7 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
                   remainingVaccineSlots: remainingVaccineSlots,
                   isCorporateSubscription: isCorporateSubscription,
                 });
+                sendBookASlotCTAEvent();
               } catch (e) {}
             }}
           />
@@ -515,11 +536,28 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
                 remainingVaccineSlots: remainingVaccineSlots,
                 isCorporateSubscription: isCorporateSubscription,
               });
+              sendBookASlotCTAEvent();
             } catch (e) {}
           }}
         />
       );
     }
+  };
+
+  const sendBookASlotCTAEvent = () => {
+    try {
+      const eventAttributes = {
+        'Patient ID': currentPatient?.id || '',
+        'Patient First Name': currentPatient?.firstName.trim(),
+        'Patient Last Name': currentPatient?.lastName.trim(),
+        'Patient UHID': currentPatient?.uhid,
+        'Patient Number': currentPatient?.mobileNumber,
+        'Patient Gender': currentPatient?.gender,
+        'Patient Age ': getAge(currentPatient?.dateOfBirth),
+        'Source ': Platform.OS === 'ios' ? 'ios' : 'android',
+      };
+      postWebEngageEvent(WebEngageEventName.BOOK_A_SLOT_CLICKED, eventAttributes);
+    } catch (error) {}
   };
 
   const checkBookSlotByFamilySlotAvaialbilty = () => {
@@ -739,12 +777,6 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
   return (
     <SafeAreaView style={theme.viewStyles.container}>
       {renderHeader(props)}
-
-      {/* 
-      renderEnrollOnCowin happens for 
-           isCorporateSubscription- true
-           isVaccineSubscription--false
-       */}
 
       {showRetailUserPage ? (
         <>

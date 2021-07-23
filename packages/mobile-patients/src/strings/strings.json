@@ -477,14 +477,24 @@
     "reschduleCountExceed": "You have rescheduled thrice. You're out of reschedule attempts.",
     "rescheduleCountText": "You can reschedule to a maximum of 3 times. If you click ok, you will have {{setRescheduleCount}} reschedule attempt(s) left.",
     "reasonForCancel_TestOrder": {
-      "latePhelbo": "Phlebo did not arrive on time",
+      "notArrived": "Phlebo did not arrive",
+      "latePhelbo": "Phlebo arrived late",
+      "priceHigh": "Prices are high comparatively",
       "editOrder": "Need to Modify Order Details",
-      "userUnavailable": "I am not available",
+      "homeChargesHigh": "Home collection charges are high",
+      "changePlans": "Change in travel plans",
+      "symptomsSubdued": "My symptoms have subdued",
+      "missedFasting": "Missed the fasting requirement",
+      "waitingDocPrescription": "Waiting for doctor prescription",
+      "deniedSample": "Executive denied sample collection",
+      "userUnavailable": "I am not available at location",
       "bookedByMistake": "Booked by Mistake",
       "lesserPrice": "Got lesser price elsewhere",
       "urgentReport": "Need Report Urgently",
-      "needModifyOrder": "Need to modify patient / order details",
+      "needModifyPatient": "Need to modify patient details",
+      "needModifyOrder": "Need to modify test details",
       "anotherChannel": "Booked from other channel",
+      "needMorningSlot": "Need an early morning slot",
       "otherReasons": "Others (Please specify)"
     },
     "reasonForReschedule_TestOrder": {
@@ -981,7 +991,7 @@
     "FAQ": [
       {
         "faqQuestion": "What is the Apollo 24|7 CIRCLE Membership program?",
-        "faqAnswer": "Apollo 24|7 CIRCLE membership is a one-of-its-kind program designed to give the best care and value to its members. Once you sign up by choosing the plan that suits your needs, you will receive benefits like an emergency doctor-on-call, cashback on medicines, discounts on selected doctor consultations, and diagnostics. Did we also tell you that all your deliveries will be done free of cost and on a priority basis?"
+        "faqAnswer": "Apollo 24|7 CIRCLE membership is a one-of-its-kind program designed to give the best care and value to its members. Once you sign up by choosing the plan that suits your needs, you will receive benefits like an emergency doctor-on-call, cashback on medicines, discounts on doctor consultations, and diagnostics. Did we also tell you that all your deliveries will be done free of cost and on a priority basis?"
       },
       {
         "faqQuestion": "Sounds good. Tell me more about the plans?",
@@ -1001,7 +1011,7 @@
       },
       {
         "faqQuestion": "Where will I get the Circle cashback?",
-        "faqAnswer": "You will be eligible for Circle cashback every time you buy medicines or Apollo products. We also have discounts on doctor consultations and diagnostic tests. Cashback will be credited to your OneApollo Health Credits as soon as a transaction gets completed."
+        "faqAnswer": "You will be eligible for Circle cashback every time you buy medicines or Apollo products. We also have discounts on selected doctor consultations and diagnostic tests. Cashback will be credited to your OneApollo Health Credits as soon as a transaction gets completed."
       },
       {
         "faqQuestion": "How can I use Circle cashback?",
@@ -1244,7 +1254,9 @@
     "CORPORATE_VACCINATION": "CORPORATE_VACCINATION",
     "booking_detail_pdf": "DOWNLOAD PDF",
     "unable_to_generate_pdf": "Unable to generate booking pdf.",
+    "unable_to_generate_invoice_pdf": "Unable to generate invoice pdf.",
     "success_generate_pdf": "Successfully generated vaccination booking PDF ",
+    "success_generate_invoice_pdf": "Successfully generated vaccination invoice.",
     "dose_2_alert": "Please make sure that the difference between 1st and 2nd dose is as per Govt. guidelines. If difference in 2nd dose is less than Govt. guideline, you will not be given 2nd dose.",
     "verify_title": "VERIFY",
     "submit_title": "SUBMIT "

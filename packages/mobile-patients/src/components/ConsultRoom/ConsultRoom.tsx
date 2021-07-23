@@ -129,6 +129,7 @@ import {
   getUserType,
   persistHealthCredits,
   getHealthCredits,
+  getAge,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -1547,10 +1548,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             if (circlePlan) {
               const circleSubscription = setCircleSubscriptionData(circlePlan[0]);
               if (!!circlePlan[0]?._id) {
-                AsyncStorage.setItem('circleSubscriptionId', circlePlan[0]?.subscription_id);
-                setCircleSubscriptionId && setCircleSubscriptionId(circlePlan[0]?.subscription_id);
-                setIsCircleSubscription && setIsCircleSubscription(true);
-
+                if (circlePlan[0]?.status === 'active') {
+                  AsyncStorage.setItem('circleSubscriptionId', circlePlan[0]?.subscription_id);
+                  setCircleSubscriptionId &&
+                    setCircleSubscriptionId(circlePlan[0]?.subscription_id);
+                  setIsCircleSubscription && setIsCircleSubscription(true);
+                }
                 if (circlePlan[0]?.status === 'disabled') {
                   setIsCircleExpired && setIsCircleExpired(true);
                   setNonCircleValues();
@@ -3326,6 +3329,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 isVaccineSubscription: !!vaccinationCmsIdentifier,
                 isCorporateSubscription: !!corporateSubscriptions?.length,
               });
+              sendBookVaccinationSlotCTAEvent();
             } else {
               props.navigation.navigate(AppRoutes.VaccineTermsAndConditions, {
                 isCorporateSubscription: !!corporateSubscriptions?.length,
@@ -3339,6 +3343,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               isVaccineSubscription: !!vaccinationCmsIdentifier,
               isCorporateSubscription: !!corporateSubscriptions?.length,
             });
+            sendBookVaccinationSlotCTAEvent();
           }
         } else {
           props.navigation.navigate(AppRoutes.BookedVaccineScreen, {
@@ -3348,6 +3353,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             isVaccineSubscription: !!vaccinationCmsIdentifier,
             isCorporateSubscription: !!corporateSubscriptions?.length,
           });
+          sendBookVaccinationSlotCTAEvent();
         }
       } else if (item?.url?.includes('apollopatients://')) {
         // handling speciality deeplink only on this phase
@@ -3366,6 +3372,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         regenerateJWTToken('vaccine', item?.url);
       }
     } catch (e) {}
+  };
+
+  const sendBookVaccinationSlotCTAEvent = () => {
+    try {
+      const eventAttributes = {
+        'Patient ID': currentPatient?.id || '',
+        'Patient First Name': currentPatient?.firstName.trim(),
+        'Patient Last Name': currentPatient?.lastName.trim(),
+        'Patient UHID': currentPatient?.uhid,
+        'Patient Number': currentPatient?.mobileNumber,
+        'Patient Gender': currentPatient?.gender,
+        'Pateint Age ': getAge(currentPatient?.dateOfBirth),
+        'Source ': Platform.OS === 'ios' ? 'ios' : 'android',
+      };
+      postWebEngageEvent(WebEngageEventName.BOOK_VACCINATION_SLOT, eventAttributes);
+    } catch (error) {}
   };
 
   const onPressHealthPro = async () => {

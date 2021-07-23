@@ -477,6 +477,12 @@ export enum WebEngageEventName {
   //Vaccination Booking
   VACCINATION_BOOKING_CONFIRMATION = 'Vaccine_Booking confirmation',
   VACCINATION_CANCELLATION = 'Vaccine_Cancellation',
+  BOOK_VACCINATION_SLOT = 'Book Vaccination slot',
+  VACCINATION_BOOKING_CLICKED = 'Vaccination Booking Clicked',
+  BOOK_A_SLOT_CLICKED = 'Book a Slot Clicked',
+  ADD_MEMBER_CLICKED = 'Add Member Clicked',
+  MEMBER_DETAILS_SAVED = 'Member Details Saved',
+  VACCINE_REGISTRATION_COMPLETED = 'Vaccine Registeration Completed',
 }
 
 export interface PatientInfo {

@@ -26,40 +26,15 @@ import {
   View,
   StyleSheet,
   ScrollView,
-  ActivityIndicator,
-  Alert,
   TouchableOpacity,
   Modal,
   PixelRatio,
-  FlatList,
 } from 'react-native';
-import {
-  dataSavedUserID,
-  g,
-  getNetStatus,
-  isValidSearch,
-  postAppsFlyerEvent,
-  postFirebaseEvent,
-  postWebEngageEvent,
-  getAge,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { postWebEngageEvent, getAge } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
-import { ProfileList } from '../ui/ProfileList';
 import DeviceInfo from 'react-native-device-info';
-import {
-  CovidVaccine,
-  LinkedUhidIcon,
-  RequestSubmitted,
-  VaccineBookingFailed,
-  RadioButtonIcon,
-  RadioButtonUnselectedIcon,
-  ArrowLeft,
-  ArrowRight,
-} from '@aph/mobile-patients/src/components/ui/Icons';
-import {
-  CommonBugFender,
-  CommonLogEvent,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { CovidVaccine, VaccineBookingFailed } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   CalendarShow,
   DropdownGreen,
@@ -257,8 +232,13 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
   confirmationDetailInfo: {
+    ...theme.viewStyles.text('M', 14, '#01475B'),
+    marginTop: 5,
+  },
+  confirmationDetailAddress: {
     ...theme.viewStyles.text('M', 12, '#01475B'),
     marginTop: 5,
+    marginRight: 10,
   },
   confirmationDetailSubInfo: {
     ...theme.viewStyles.text('L', 12, '#000', 0.5),
@@ -467,6 +447,12 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
   const remainingVaccineSlots = props.navigation.getParam('remainingVaccineSlots');
   const isCorporateSubscription = props.navigation.getParam('isCorporateSubscription');
 
+  const cancellationThreshholdPreVaccination =
+    AppConfig.Configuration.Cancel_Threshold_Pre_Vaccination || 12;
+
+  const [isCancellationWarningAlertShown, setCancellationWarningAlertShown] = useState<boolean>(
+    false
+  );
   const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
   const [requestSubmissionErrorAlert, setRequestSubmissionErrorAlert] = useState<boolean>(false);
   const [vaccineSiteList, setVaccineSiteList] = useState<any>([]);
@@ -475,6 +461,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
   const [selectedCity, setSelectedCity] = useState('');
   const [hospitalSitesLoading, setHospitalSitesLoading] = useState<boolean>(false);
   const [selectedHospitalSite, setSelectedHospitalSite] = useState('');
+  const [selectedHospitalSiteAddress, setSelectedHospitalSiteAddress] = useState('');
   const [selectedHospitalSiteResourceID, setSelectedHospitalSiteResourceID] = useState('');
   const [availableDatesLoading, setAvailableDatesLoading] = useState<boolean>(false);
   const [availableDates, setAvailableDates] = useState<any>([]);
@@ -549,6 +536,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
   useEffect(() => {
     setSelectedHospitalSite('');
     setSelectedHospitalSiteResourceID('');
+    setSelectedHospitalSiteAddress('');
     setAvailableSlots([]);
 
     let result = validateCityConstraints();
@@ -918,7 +906,40 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
       scrollViewRef?.current?.scrollTo(0);
       setPageState(PAGE_STATE.CONFRIMATON_PAGE);
     } else {
-      submitVaccineBooking();
+      if (checkNonCancellableAlert() == false) {
+        submitVaccineBooking();
+      }
+    }
+  };
+
+  const checkNonCancellableAlert = () => {
+    if (isCancellationWarningAlertShown == true) {
+      return false;
+    }
+
+    var endTime = moment(selectedSlot.end_date_time);
+    var nowTime = moment(new Date());
+    var duration = moment.duration(endTime.diff(nowTime)).asHours();
+
+    if (duration < cancellationThreshholdPreVaccination) {
+      showAphAlert &&
+        showAphAlert({
+          title: 'Alert !',
+          unDismissable: true,
+          description:
+            'This booking will be Non-cancellable/Non-Refundable as the slot time is less than ' +
+            cancellationThreshholdPreVaccination +
+            ' hours from now. Booking cancellation window is till ' +
+            cancellationThreshholdPreVaccination +
+            ' hours before slot time only',
+          onPressOk: () => {
+            setCancellationWarningAlertShown(true);
+            hideAphAlert!();
+          },
+        });
+      return true;
+    } else {
+      return false;
     }
   };
 
@@ -1015,6 +1036,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
 
             setSelectedHospitalSite('');
             setSelectedHospitalSiteResourceID('');
+            setSelectedHospitalSiteAddress('');
 
             setAvailableDates([]);
 
@@ -1058,6 +1080,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
             setSelectedVaccineType('');
             setSelectedHospitalSite('');
             setSelectedHospitalSiteResourceID('');
+            setSelectedHospitalSiteAddress('');
 
             setAvailableDates([]);
             setAvailableSlots([]);
@@ -1151,6 +1174,8 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
               style={{ alignSelf: 'center' }}
               activeOpacity={1}
               onPress={() => {
+                setSelectedSlot(undefined);
+                setCancellationWarningAlertShown(false);
                 setPageState(PAGE_STATE.DETAIL_PAGE);
               }}
             >
@@ -1188,7 +1213,10 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
                   {string.vaccineBooking.vaccination_site.toUpperCase()}
                 </Text>
                 <Text style={styles.confirmationDetailInfo}>{selectedHospitalSite}</Text>
-                <Text style={styles.confirmationDetailInfo}>{selectedCity}</Text>
+                <Text style={styles.confirmationDetailAddress}>{selectedHospitalSiteAddress}</Text>
+                <Text style={{ ...theme.viewStyles.text('R', 13, '#01475B'), marginTop: 5 }}>
+                  {selectedCity}
+                </Text>
               </View>
             </View>
           </View>
@@ -1309,7 +1337,22 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
             mobileNumber: currentPatient?.mobileNumber,
             onNewProfileAdded: onNewProfileAdded,
             onPressBackButton: _onPressBackButton,
+            isForVaccination: true,
           });
+
+          try {
+            const eventAttributes = {
+              'Patient ID': selectedPatient?.id || '',
+              'Patient First Name': selectedPatient?.firstName.trim(),
+              'Patient Last Name': selectedPatient?.lastName.trim(),
+              'Patient UHID': selectedPatient?.uhid,
+              'Patient Number': selectedPatient?.mobileNumber,
+              'Patient Gender': selectedPatient?.gender,
+              'Pateint Age ': getAge(selectedPatient?.dateOfBirth),
+              'Source ': Platform.OS === 'ios' ? 'ios' : 'android',
+            };
+            postWebEngageEvent(WebEngageEventName.ADD_MEMBER_CLICKED, eventAttributes);
+          } catch (error) {}
         }}
         patientSelected={selectedPatient}
         onPressAndroidBack={() => {
@@ -1322,6 +1365,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
 
   const setUpSelectedPatient = (_selectedPatient: any) => {
     setSelectedPatient(_selectedPatient);
+    console.log('check _selectedPatient -- ', _selectedPatient);
   };
 
   const onNewProfileAdded = (newPatient: any) => {
@@ -1331,6 +1375,20 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
       setShowPatientListOverlay(true);
       changeCurrentProfile(newPatient?.profileData, false);
     }
+
+    try {
+      const eventAttributes = {
+        'Patient ID': selectedPatient?.id || '',
+        'Patient First Name': selectedPatient?.firstName.trim(),
+        'Patient Last Name': selectedPatient?.lastName.trim(),
+        'Patient UHID': selectedPatient?.uhid,
+        'Patient Number': selectedPatient?.mobileNumber,
+        'Patient Gender': selectedPatient?.gender,
+        'Pateint Age ': getAge(selectedPatient?.dateOfBirth),
+        'Source ': Platform.OS === 'ios' ? 'ios' : 'android',
+      };
+      postWebEngageEvent(WebEngageEventName.VACCINE_REGISTRATION_COMPLETED, eventAttributes);
+    } catch (error) {}
   };
   const _onPressBackButton = () => {
     if (!selectedPatient) {
@@ -1428,8 +1486,9 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
         onDateSelected={(date) => {
           setPreferredDate(date);
         }}
-        onHospitalSiteSelected={(hospitalSiteName) => {
+        onHospitalSiteSelected={(hospitalSiteName, address) => {
           setSelectedHospitalSite(hospitalSiteName);
+          setSelectedHospitalSiteAddress(address);
           setSelectedSlot(undefined);
         }}
       />

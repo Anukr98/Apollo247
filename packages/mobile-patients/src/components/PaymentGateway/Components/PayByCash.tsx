@@ -3,28 +3,22 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { CollapseView } from '@aph/mobile-patients/src/components/PaymentGateway/Components/CollapseView';
 import { Cash } from '@aph/mobile-patients/src/components/ui/Icons';
-import {
-  isSmallDevice,
-  getDiagnosticCityLevelPaymentOptions,
-  isEmptyObject,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/components/InfoMessage';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { SavingsIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 export interface PayByCashProps {
   onPressPlaceOrder: () => void;
   HCselected: boolean;
   businessLine: 'consult' | 'diagnostics' | 'pharma' | 'subscription';
+  showDiagCOD: boolean;
+  diagMsg: string;
 }
 
 export const PayByCash: React.FC<PayByCashProps> = (props) => {
-  const { onPressPlaceOrder, HCselected, businessLine } = props;
-  const { modifiedOrder, deliveryAddressCityId } = useDiagnosticsCart();
-  const isDiagnosticModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
-  const disableDiagCOD =
-    businessLine == 'diagnostics' &&
-    (isDiagnosticModify ? true : !getDiagnosticCityLevelPaymentOptions(deliveryAddressCityId)?.cod);
+  const { onPressPlaceOrder, HCselected, businessLine, showDiagCOD, diagMsg } = props;
+  const disableDiagCOD = businessLine == 'diagnostics' && !showDiagCOD;
 
   const renderPaybyCash = () => {
     return (
@@ -73,6 +67,18 @@ export const PayByCash: React.FC<PayByCashProps> = (props) => {
     );
   };
 
+  const renderHCMsg = () => {
+    return (
+      !!diagMsg &&
+      businessLine == 'diagnostics' && (
+        <View style={styles.savingContainer}>
+          <SavingsIcon style={styles.savingIconStyle} />
+          <Text style={styles.savingText}>{diagMsg}</Text>
+        </View>
+      )
+    );
+  };
+
   const renderChildComponent = () => {
     return (
       <View>
@@ -84,6 +90,7 @@ export const PayByCash: React.FC<PayByCashProps> = (props) => {
           {renderPaybyCash()}
           {renderPlaceOrder()}
         </View>
+        {renderHCMsg()}
         {businessLine == 'pharma' && renderMsg()}
       </View>
     );
@@ -142,5 +149,25 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     height: isSmallDevice ? 13 : 14,
     width: isSmallDevice ? 13 : 14,
+  },
+  savingContainer: {
+    backgroundColor: '#F3FFFF',
+    flexDirection: 'row',
+    margin: 16,
+    padding: 8,
+    borderColor: colors.APP_GREEN,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  savingIconStyle: {
+    height: 25,
+    width: 25,
+    resizeMode: 'contain',
+  },
+  savingText: {
+    ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1, 20),
+    width: '89%',
+    alignSelf: 'center',
+    marginLeft: 10,
   },
 });

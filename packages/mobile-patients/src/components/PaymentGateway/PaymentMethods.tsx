@@ -63,10 +63,9 @@ import { useFetchHealthCredits } from '@aph/mobile-patients/src/components/Payme
 import { HealthCredits } from '@aph/mobile-patients/src/components/PaymentGateway/Components/HealthCredits';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useGetPaymentMethods } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useGetPaymentMethods';
+import { diagnosticPaymentSettings } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   isEmptyObject,
-  getDiagnosticCityLevelPaymentOptions,
-  isSmallDevice,
   paymentModeVersionCheck,
   goToConsultRoom,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -78,6 +77,7 @@ import {
 import { useFetchSavedCards } from '@aph/mobile-patients/src/components/PaymentGateway/Hooks/useFetchSavedCards';
 import Decimal from 'decimal.js';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const { HyperSdkReact } = NativeModules;
 
@@ -118,6 +118,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { savedCards } = useFetchSavedCards(customerId);
   const isDiagnosticModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const [showPrepaid, setShowPrepaid] = useState<boolean>(isDiagnostic ? false : true);
+  const [showCOD, setShowCOD] = useState<boolean>(isDiagnostic ? false : true);
+  const [showDiagnosticHCMsg, setShowDiagnosticHCMsg] = useState<string>('');
 
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
@@ -134,11 +136,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     if (isDiagnostic) {
       DiagnosticPaymentPageViewed(currentPatient, amount);
       //modify -> always show prepaid
-      setShowPrepaid(
-        isDiagnosticModify
-          ? true
-          : getDiagnosticCityLevelPaymentOptions(deliveryAddressCityId)?.prepaid
-      );
+      // modify -> not to show cod
+      setShowPrepaid(AppConfig.Configuration.Enable_Diagnostics_Prepaid);
+      isDiagnosticModify ? setShowCOD(false) : fetchDiagnosticPaymentMethods();
     }
   }, []);
 
@@ -164,6 +164,21 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         : (setburnHc(healthCredits), setAmount(Number(Decimal.sub(amount, healthCredits))))
       : (setAmount(props.navigation.getParam('amount')), setburnHc(0));
   };
+  async function fetchDiagnosticPaymentMethods() {
+    const DEFAULT_COD_CONFIGURATION = AppConfig.Configuration.Enable_Diagnostics_COD;
+    try {
+      const response = await diagnosticPaymentSettings(client, paymentId);
+      if (response?.data) {
+        const getCodSetting = response?.data?.getDiagnosticPaymentSettings?.cod;
+        const getHCMsgSetting = response?.data?.getDiagnosticPaymentSettings?.hc_credits_message;
+        setShowCOD(getCodSetting!);
+        !!getHCMsgSetting && getHCMsgSetting != '' && setShowDiagnosticHCMsg(getHCMsgSetting);
+      }
+    } catch (error) {
+      CommonBugFender('PaymentMethods_fetchDiagnosticPaymentMethods', error);
+      setShowCOD(DEFAULT_COD_CONFIGURATION);
+    }
+  }
 
   const handleEventListener = (resp: any) => {
     var data = JSON.parse(resp);
@@ -488,6 +503,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     switch (businessLine) {
       case 'diagnostics':
         props.navigation.navigate(AppRoutes.OrderStatus, {
+          paymentId: paymentId,
           orderDetails: orderDetails,
           isCOD: isCOD,
           eventAttributes,
@@ -640,6 +656,8 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         businessLine={businessLine}
         HCselected={HCSelected}
         onPressPlaceOrder={onPressPayByCash}
+        showDiagCOD={showCOD}
+        diagMsg={showDiagnosticHCMsg}
       />
     );
   };
@@ -684,18 +702,5 @@ const styles = StyleSheet.create({
   header: {
     ...theme.viewStyles.cardViewStyle,
     borderRadius: 0,
-  },
-  textStyle: {
-    ...theme.fonts.IBMPlexSansMedium(isSmallDevice ? 8.5 : 9),
-    lineHeight: isSmallDevice ? 13 : 14,
-    letterSpacing: 0.1,
-    color: theme.colors.SHERPA_BLUE,
-    opacity: 0.7,
-    marginHorizontal: '2%',
-  },
-  iconStyle: {
-    resizeMode: 'contain',
-    height: isSmallDevice ? 13 : 14,
-    width: isSmallDevice ? 13 : 14,
   },
 });

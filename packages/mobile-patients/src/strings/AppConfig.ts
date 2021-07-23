@@ -1444,23 +1444,36 @@ export const TestsFeedBackData = {
 
 export const TestCancelReasons = {
   reasons: [
-    string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
-    string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
-    string.diagnostics.reasonForCancel_TestOrder.anotherChannel,
     string.diagnostics.reasonForCancel_TestOrder.urgentReport,
-    string.diagnostics.reasonForCancel_TestOrder.lesserPrice,
+    string.diagnostics.reasonForCancel_TestOrder.notArrived,
+    string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
+    string.diagnostics.reasonForCancel_TestOrder.priceHigh,
+    string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
+    string.diagnostics.reasonForCancel_TestOrder.needModifyPatient,
     string.diagnostics.reasonForCancel_TestOrder.needModifyOrder,
-    string.diagnostics.reasonForCancel_TestOrder.otherReasons,
+    string.diagnostics.reasonForCancel_TestOrder.homeChargesHigh,
+    string.diagnostics.reasonForCancel_TestOrder.changePlans,
+    string.diagnostics.reasonForCancel_TestOrder.symptomsSubdued,
+    string.diagnostics.reasonForCancel_TestOrder.missedFasting,
+    string.diagnostics.reasonForCancel_TestOrder.needMorningSlot,
+    string.diagnostics.reasonForCancel_TestOrder.waitingDocPrescription,
+    string.diagnostics.reasonForCancel_TestOrder.deniedSample,
   ],
 };
 export const TestCancelReasonsPre = {
   reasons: [
-    string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
-    string.diagnostics.reasonForCancel_TestOrder.anotherChannel,
     string.diagnostics.reasonForCancel_TestOrder.urgentReport,
-    string.diagnostics.reasonForCancel_TestOrder.lesserPrice,
+    string.diagnostics.reasonForCancel_TestOrder.priceHigh,
+    string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
+    string.diagnostics.reasonForCancel_TestOrder.needModifyPatient,
     string.diagnostics.reasonForCancel_TestOrder.needModifyOrder,
-    string.diagnostics.reasonForCancel_TestOrder.otherReasons,
+    string.diagnostics.reasonForCancel_TestOrder.homeChargesHigh,
+    string.diagnostics.reasonForCancel_TestOrder.changePlans,
+    string.diagnostics.reasonForCancel_TestOrder.symptomsSubdued,
+    string.diagnostics.reasonForCancel_TestOrder.missedFasting,
+    string.diagnostics.reasonForCancel_TestOrder.needMorningSlot,
+    string.diagnostics.reasonForCancel_TestOrder.waitingDocPrescription,
+    string.diagnostics.reasonForCancel_TestOrder.deniedSample,
   ],
 };
 
