@@ -785,7 +785,7 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
           paymentId: res?.data?.createOrderInternal?.payment_order_id!,
           amount: amountToPay,
           orderDetails: orderDetails,
-          businessLine: 'vaccine',
+          businessLine: 'vaccination',
           customerId: cusId,
         });
       } else {

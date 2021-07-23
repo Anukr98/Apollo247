@@ -6,7 +6,9 @@ import {
   getPaymentMethodsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPaymentMethods';
 
-export const useGetPaymentMethods = () => {
+export const useGetPaymentMethods = (
+  businessLine: 'consult' | 'diagnostics' | 'pharma' | 'subscription' | 'vaccination'
+) => {
   const client = useApolloClient();
   const [paymentMethods, setPaymentMethods] = useState<any>([]);
   const [cardTypes, setCardTypes] = useState<any>([]);
@@ -15,7 +17,7 @@ export const useGetPaymentMethods = () => {
   const fetchPaymentOptions = () => {
     return client.query<getPaymentMethods, getPaymentMethodsVariables>({
       query: GET_PAYMENT_METHODS,
-      variables: { is_mobile: true },
+      variables: { is_mobile: true, vertical: businessLine },
       fetchPolicy: 'no-cache',
     });
   };

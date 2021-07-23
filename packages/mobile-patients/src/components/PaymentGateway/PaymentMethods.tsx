@@ -83,7 +83,7 @@ const { HyperSdkReact } = NativeModules;
 
 export interface PaymentMethodsProps extends NavigationScreenProps {
   source?: string;
-  businessLine: 'consult' | 'diagnostics' | 'pharma' | 'subscription' | 'vaccine';
+  businessLine: 'consult' | 'diagnostics' | 'pharma' | 'subscription' | 'vaccination';
 }
 
 export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
@@ -109,7 +109,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const { authToken, setauthToken } = useAppCommonData();
   const { grandTotal, deliveryCharges, packagingCharges } = useShoppingCart();
   const { healthCredits } = useFetchHealthCredits(businessLine);
-  const { paymentMethods, cardTypes, fetching } = useGetPaymentMethods();
+  const { paymentMethods, cardTypes, fetching } = useGetPaymentMethods(businessLine);
   const [HCSelected, setHCSelected] = useState<boolean>(false);
   const [burnHc, setburnHc] = useState<number>(0);
   const storeCode =
@@ -517,7 +517,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         const params = orderDetails?.circleParams;
         goToConsultRoom(props.navigation, params);
         break;
-      case 'vaccine':
+      case 'vaccination':
         props.navigation.navigate(AppRoutes.VaccineBookingConfirmationScreen, {
           appointmentId: orderDetails?.orderId,
           displayId: orderDetails?.displayId,

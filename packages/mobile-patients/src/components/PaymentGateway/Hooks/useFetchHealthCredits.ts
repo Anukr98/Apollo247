@@ -9,7 +9,7 @@ import {
 import { persistHealthCredits } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export const useFetchHealthCredits = (
-  businessLine: 'consult' | 'diagnostics' | 'pharma' | 'subscription'
+  businessLine: 'consult' | 'diagnostics' | 'pharma' | 'subscription' | 'vaccination'
 ) => {
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
