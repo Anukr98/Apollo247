@@ -55,6 +55,7 @@ import {
   g,
   setFirebaseUserId,
   onCleverTapUserLogin,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { TextInputComponent } from './ui/TextInputComponent';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -76,6 +77,10 @@ import {
   createOneApolloUserVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOneApolloUser';
 import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const { width, height } = Dimensions.get('window');
 
@@ -492,14 +497,25 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
         Email: (email || '').trim(),
         'Mobile Number': currentPatient?.mobileNumber,
       };
+      const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.REGISTRATION_DONE] = {
+        'Customer ID': currentPatient?.id,
+        'Full Name': (firstName || '')!.trim() + ' ' + (lastName || '')!.trim(),
+        DOB: currentPatient?.dateOfBirth || date ? moment(date, 'DD/MM/YYYY').toDate() : undefined,
+        Gender: gender!,
+        'Email ID': email?.trim(),
+        'Mobile Number': currentPatient?.mobileNumber,
+        'Nav src': 'App login screen',
+        'Page Name': 'Multi Signup Screen',
+      };
       if (referral) {
         // only send if referral has a value
         eventAttributes['Referral Code'] = referral;
+        cleverTapEventAttributes['Referral Code'] = referral;
         postWEGReferralCodeEvent(referral);
       }
 
       postWebEngageEvent(WebEngageEventName.REGISTRATION_DONE, eventAttributes);
-
+      postCleverTapEvent(CleverTapEventName.REGISTRATION_DONE, cleverTapEventAttributes);
       const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.REGISTRATION_DONE] = {
         'customer id': currentPatient ? currentPatient.id : '',
       };

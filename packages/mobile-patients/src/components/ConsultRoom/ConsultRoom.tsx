@@ -198,6 +198,7 @@ import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/G
 import {
   CleverTapEventName,
   CleverTapEvents,
+  HomeScreenAttributes,
   PatientInfo as PatientInfoObj,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
@@ -850,6 +851,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const isAppOpened = await AsyncStorage.getItem('APP_OPENED');
     if (isAppOpened) {
       postHomeWEGEvent(WebEngageEventName.HOME_VIEWED, undefined, attributes);
+      postHomeCleverTapEvent(CleverTapEventName.HOME_VIEWED, undefined, attributes);
     }
   };
 
@@ -1310,20 +1312,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const postHomeCleverTapEvent = (
     eventName: CleverTapEventName,
-    source?: PatientInfoWithSource['Source'],
+    source?: HomeScreenAttributes['Source'],
     attributes?: any
   ) => {
-    let eventAttributes: PatientInfoObj = {
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    let eventAttributes: HomeScreenAttributes = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(
+      'Patient age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
-      'Patient Gender': g(currentPatient, 'gender'),
+      'Patient gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
       User_Type: getUserType(allCurrentPatients),
+      'Nav src': source === 'Home Screen' ? 'hero banner' : 'Bottom bar',
+      'Page Name': 'Home Screen',
     };
     if (
       source &&
@@ -1332,15 +1336,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         eventName == CleverTapEventName.VIEW_HELATH_RECORDS ||
         eventName == CleverTapEventName.NEED_HELP)
     ) {
-      (eventAttributes as PatientInfoWithSource)['Source'] = source;
+      (eventAttributes as HomeScreenAttributes)['Source'] = source;
     }
     if (
       locationDetails &&
       locationDetails.pincode &&
       eventName == CleverTapEventName.BUY_MEDICINES
     ) {
-      (eventAttributes as PatientInfoWithSource)['Pincode'] = locationDetails?.pincode || undefined;
-      (eventAttributes as PatientInfoWithSource)['Serviceability'] = serviceable || undefined;
+      (eventAttributes as HomeScreenAttributes)['Pincode'] = locationDetails?.pincode || undefined;
+      (eventAttributes as HomeScreenAttributes)['Serviceability'] = serviceable || undefined;
     }
     if (eventName == CleverTapEventName.BUY_MEDICINES) {
       eventAttributes = {
@@ -1355,16 +1359,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
     if (eventName == CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED) {
       eventAttributes = {
-        'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-        'Patient UHID': g(currentPatient, 'uhid'),
-        Relation: g(currentPatient, 'relation'),
-        'Patient age': Math.round(
-          moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-        ),
-        'Patient gender': g(currentPatient, 'gender'),
-        'Mobile Number': g(currentPatient, 'mobileNumber'),
-        'Customer ID': g(currentPatient, 'id'),
-        User_Type: getUserType(allCurrentPatients),
+        ...eventAttributes,
         isConsulted: getUserType(allCurrentPatients),
       };
     }
@@ -1378,7 +1373,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       eventAttributes = { ...eventAttributes, ...newAttributes };
     }
     if (eventName == CleverTapEventName.HOME_VIEWED) {
-      eventAttributes = { ...eventAttributes, ...attributes };
+      eventAttributes = { ...attributes, ...eventAttributes, 'Nav src': 'app launch' };
     }
     if (eventName == CleverTapEventName.COVID_VACCINATION_SECTION_CLICKED) {
       eventAttributes = { ...eventAttributes, ...attributes };
@@ -1538,6 +1533,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.MANAGE_DIABETES, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.MANAGE_DIABETES);
+        postHomeCleverTapEvent(CleverTapEventName.MANAGE_DIABETES, 'Home Screen');
         getTokenforCM();
       },
     },

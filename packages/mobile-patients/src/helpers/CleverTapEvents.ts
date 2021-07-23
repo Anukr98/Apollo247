@@ -95,7 +95,7 @@ export enum CleverTapEventName {
   SYMPTOM_TRACKER_RESTART_CLICKED = 'Symptoms_restart symptom checker clicked',
   SYMPTOM_TRACKER_NO_OTHER_SYMPTOM_CLICKED = 'Symptoms_No other symptom clicked',
   SYMPTOM_TRACKER_CONSULT_DOCTOR_CLICKED = 'Symptoms_Consult doctor clicked',
-  TRACK_SYMPTOMS = 'Track Symptoms',
+  TRACK_SYMPTOMS = 'Symptom Checker Clicked',
 
   //Doctor Share Events
   CONSULT_SHARE_PROFILE_CLICKED = 'Consult share profile clicked',
@@ -234,7 +234,7 @@ export enum CleverTapEventName {
   PHR_DELETE_MEDICAL_CONDITION = 'PHR Delete Medical Condition',
   PHR_DELETE_BILLS = 'PHR Delete Bill',
   PHR_DELETE_INSURANCE = 'PHR Delete Insurance',
-  PHR_LOAD_HEALTH_RECORDS = 'PHR Load Health Records',
+  PHR_LOAD_HEALTH_RECORDS = 'PHR Load Health Record',
   PHR_USER_LINKING = 'PHR User Linking',
   PHR_USER_DELINKING = 'PHR User DeLinking',
   PHR_NO_OF_USERS_SEARCHED_GLOBAL = 'PHR No Of Users searched Global', //acd
@@ -250,14 +250,18 @@ export enum CleverTapEventName {
   CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE = 'Circle payment page viewed (Standalone circle purchase page)',
   CIRCLE_BENIFIT_CLICKED = 'Circle Benefit Clicked',
 
+  //HomePage Events
+  MANAGE_DIABETES = 'Diabetes Program Viewed',
+  HOME_VIEWED = 'Home page viewed',
+  MOBILE_NUMBER_ENTERED = 'Login Mobile Number Entered',
+  OTP_VERIFICATION_SUCCESS = 'OTP Verification Success',
+  OTP_ENTERED = 'Login OTP Submitted',
+  REGISTRATION_DONE = 'Registration Done',
+
   // other
   MOBILE_ENTRY = 'Mobile Entry',
-  MOBILE_NUMBER_ENTERED = 'Mobile Number Entered',
-  OTP_ENTERED = 'OTP Entered',
   PRE_APOLLO_CUSTOMER = 'Pre Apollo Customer',
-  OTP_VERIFICATION_SUCCESS = 'OTP Verification Success',
   OTP_ON_CALL_CLICK = 'OTP on call clicked',
-  REGISTRATION_DONE = 'Registration Done',
   NUMBER_OF_PROFILES_FETCHED = 'Number of Profiles fetched',
   PHARMACY_SEARCH_RESULTS = 'Pharmacy Search Results',
   PRODUCT_DETAIL_TAB_CLICKED = 'Product Detail Tab Clicked',
@@ -287,7 +291,6 @@ export enum CleverTapEventName {
   SEARCH_SUGGESTIONS_VIEW_ALL = 'User clicked on View All',
   RETURN_REQUEST_START = 'Return Request Start',
   RETURN_REQUEST_SUBMITTED = 'Return Request Submitted',
-  HOME_VIEWED = 'Home page viewed',
   MOVED_AWAY_FROM_HOME = 'User moved away from Homepage',
   USER_LOGGED_IN_WITH_TRUECALLER = 'User logged in with truecaller',
   TRUECALLER_EVENT_ERRORS = 'Truecaller event errors',
@@ -299,7 +302,6 @@ export enum CleverTapEventName {
   PHARMACY_CART_UPLOAD_PRESCRIPTION_CLICKED = 'Pharmacy Cart - Upload Prescription Clicked',
   // HomePageElements Events
   ORDER_TESTS = 'Order Tests',
-  MANAGE_DIABETES = 'Manage Diabetes',
   PROHEALTH = 'Prohealth',
   VIEW_HELATH_RECORDS = 'PHR Click Health Record',
   LEARN_MORE_ABOUT_CORONAVIRUS = 'Learn more about coronavirus',
@@ -576,6 +578,21 @@ export interface PatientInfoWithSource extends PatientInfo {
   Serviceability?: String;
 }
 
+export interface HomeScreenAttributes {
+  'Patient name': string;
+  'Patient UHID': string;
+  Relation: string;
+  'Patient age': number;
+  'Patient gender': string;
+  'Mobile Number': string;
+  'Customer ID': string;
+  User_Type: string;
+  isConsulted: string;
+  Source?: 'Home Screen' | 'Menu';
+  'Page Name'?: string;
+  'Nav src'?: 'hero banner' | 'Bottom bar' | 'app launch';
+}
+
 export interface HdfcCustomerInfo {
   'Patient UHID': string;
   'Customer ID': string;
@@ -785,28 +802,34 @@ interface consultLocation {
   'Doctor details': any;
   Type: 'Auto Detect' | 'Manual entry';
 }
+
+interface LoginOtpAttributes {
+  'Mobile Number': string;
+  'Nav src': string;
+  'Page Name': string;
+  value?: YesOrNo;
+}
 export interface CleverTapEvents {
   // ********** AppEvents ********** \\
 
   [CleverTapEventName.MOBILE_ENTRY]: {};
-  [CleverTapEventName.MOBILE_NUMBER_ENTERED]: { mobilenumber: string };
-  [CleverTapEventName.OTP_ENTERED]: { value: YesOrNo };
+  [CleverTapEventName.MOBILE_NUMBER_ENTERED]: LoginOtpAttributes;
+  [CleverTapEventName.OTP_ENTERED]: LoginOtpAttributes;
   [CleverTapEventName.PRE_APOLLO_CUSTOMER]: { value: YesOrNo };
-  [CleverTapEventName.OTP_VERIFICATION_SUCCESS]: {
-    'Mobile Number': string;
-  };
+  [CleverTapEventName.OTP_VERIFICATION_SUCCESS]: LoginOtpAttributes;
   [CleverTapEventName.OTP_ON_CALL_CLICK]: {
     'Mobile Number': string;
   };
   [CleverTapEventName.REGISTRATION_DONE]: {
     'Customer ID': string;
-    'Customer First Name': string;
-    'Customer Last Name': string;
-    'Date of Birth': Date | string;
-    Gender: string;
-    Email: string;
+    'Full Name': string;
+    DOB?: Date | string;
+    Gender?: string;
+    'Email ID'?: string;
     'Referral Code'?: string;
     'Mobile Number': string;
+    'Nav src': string;
+    'Page Name': string;
   };
   [CleverTapEventName.NUMBER_OF_PROFILES_FETCHED]: { count: number };
   [CleverTapEventName.CONSULT_ORDER_MEDICINES_IN_CHATROOM_CLICKED]: UserInfo;
@@ -874,6 +897,7 @@ export interface CleverTapEvents {
     'Customer ID': string;
     User_Type: string;
     isConsulted: string;
+    Source?: 'Home Screen' | 'Menu';
   };
   [CleverTapEventName.TABBAR_APPOINTMENTS_CLICKED]: PatientInfoWithSource;
   [CleverTapEventName.CONSULT_PAST_SEARCHES_CLICKED]: {

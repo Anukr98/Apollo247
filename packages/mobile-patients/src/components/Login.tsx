@@ -21,6 +21,7 @@ import {
   SetAppsFlyerCustID,
   onCleverTapUserLogin,
   setCleverTapAppsFlyerCustID,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { loginAPI } from '@aph/mobile-patients/src/helpers/loginCalls';
 import {
@@ -73,6 +74,10 @@ import {
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import { truecallerWEBEngage } from '@aph/mobile-patients/src/helpers/CommonEvents';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 let TRUECALLER: any;
 
@@ -582,6 +587,12 @@ export const Login: React.FC<LoginProps> = (props) => {
           mobilenumber: phoneNumber,
         };
         postWebEngageEvent(WebEngageEventName.MOBILE_NUMBER_ENTERED, eventAttributes);
+        const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.MOBILE_NUMBER_ENTERED] = {
+          'Mobile Number': phoneNumber,
+          'Nav src': 'App login screen',
+          'Page Name': 'Login Screen',
+        };
+        postCleverTapEvent(CleverTapEventName.MOBILE_NUMBER_ENTERED, cleverTapEventAttributes);
       }, 3000);
 
       Keyboard.dismiss();
