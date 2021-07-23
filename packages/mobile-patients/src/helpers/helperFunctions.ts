@@ -2959,7 +2959,7 @@ export const downloadDocument = (
   let viewReportOrderId = orderId;
   const configOptions = { fileCache: true };
   RNFetchBlob.config(configOptions)
-    .fetch('GET', fileUrl.trim())
+    .fetch('GET', fileUrl.replace(/\s/g, ""))
     .then((resp) => {
       filePath = resp.path();
       return resp.readFile('base64');

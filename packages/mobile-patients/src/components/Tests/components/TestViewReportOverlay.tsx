@@ -98,10 +98,10 @@ export const TestViewReportOverlay: React.FC<TestViewReportOverlayProps> = (prop
                   if (item?.title == string.Report.view || item?.title == string.Report.download) {
                     props.onPressViewReport();
                   } else if (item?.title == string.Report.share) {
-                    props.downloadDocument((props?.order?.labReportURL).trim(),'application/pdf')
+                    props.downloadDocument((props?.order?.labReportURL).replace(/\s/g, ""),'application/pdf')
                   } else {
                     copyToClipboard(
-                      props.order && props.order?.labReportURL ? (props.order?.labReportURL).trim() : ''
+                      props.order && props.order?.labReportURL ? (props.order?.labReportURL).replace(/\s/g, "") : ''
                     );
                   }
                 }

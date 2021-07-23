@@ -703,7 +703,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       'Download Report PDF',
       orderDetails?.id
     );
-    downloadLabTest((orderDetails?.labReportURL).trim()!, appointmentDate, patientName);
+    downloadLabTest((orderDetails?.labReportURL).replace(/\s/g, "")!, appointmentDate, patientName);
   };
 
   async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string) {

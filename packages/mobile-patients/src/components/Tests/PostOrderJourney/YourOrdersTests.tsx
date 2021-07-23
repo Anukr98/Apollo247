@@ -1331,7 +1331,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       / /g,
       '_'
     );
-    downloadLabTest((order?.labReportURL)?.trim()!, appointmentDate, patientName, order);
+    downloadLabTest((order?.labReportURL)?.replace(/\s/g, "")!, appointmentDate, patientName, order);
   }
 
   async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string, order: orderList) {
