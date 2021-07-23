@@ -59,8 +59,8 @@ export const MultiVariant: React.FC<MultiVariantProps> = (props) => {
         data.split('_').filter((data) => selectedOptions?.includes(data)).length;
       const filteredArray = skuAvailability?.filter((data) =>
         selectedOptions.length > 1
-          ? data.code.includes(`${code}`) && checkItem(data.code)
-          : data.code.includes(`${code}`)
+          ? data?.code.includes(`${code}`) && checkItem(data?.code)
+          : data?.code.includes(`${code}`)
       );
       const status = filteredArray && filteredArray.length ? filteredArray[0].available : '';
       skuStatus = status ? '' : 'outOfStock';
