@@ -3,6 +3,7 @@ import {
   g,
   postWebEngageEvent,
   setCircleMembershipType,
+  postAppsFlyerEvent,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import moment from 'moment';
 import {
@@ -10,6 +11,10 @@ import {
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import {
+  AppsFlyerEvents,
+  AppsFlyerEventName,
+} from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 
 export const postCircleWEGEvent = (
   currentPatient: any,
@@ -65,5 +70,25 @@ export const postCircleWEGEvent = (
     postWebEngageEvent(WebEngageEventName.CIRCLE_VIEW_BENEFITS_CLICKED, eventAttributes);
   } else {
     postWebEngageEvent(WebEngageEventName.CIRCLE_BENIFIT_CLICKED, eventAttributes);
+  }
+};
+
+export const postAppsFlyerCircleAddRemoveCartEvent = (
+  membershipPlan: any,
+  source: string,
+  action: 'add' | 'remove',
+  currentPatient: any
+) => {
+  const eventAttributes: AppsFlyerEvents[AppsFlyerEventName.CIRCLE_ADD_TO_CART] = {
+    navigation_source: source,
+    price: membershipPlan?.currentSellingPrice,
+    duration_in_month: membershipPlan?.durationInMonth,
+    circle_plan_id: membershipPlan?.subPlanId,
+    corporate_name: currentPatient?.partnerId,
+  };
+  if (action == 'add') {
+    postAppsFlyerEvent(AppsFlyerEventName.CIRCLE_ADD_TO_CART, eventAttributes);
+  } else {
+    postAppsFlyerEvent(AppsFlyerEventName.CIRCLE_REMOVE_FROM_CART, eventAttributes);
   }
 };
