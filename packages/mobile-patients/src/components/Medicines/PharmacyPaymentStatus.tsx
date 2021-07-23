@@ -190,9 +190,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         fetchPolicy: 'no-cache',
       })
       .then((res) => {
-        const pharmaPaymentStatus = isStorePickup
-          ? res?.data?.pharmaPaymentStatus
-          : res?.data?.pharmaPaymentStatusV2;
+        const pharmaPaymentStatus = res?.data?.pharmaPaymentStatusV2;
         setorderDateTime(pharmaPaymentStatus?.orderDateTime);
         setpaymentRefId(pharmaPaymentStatus?.paymentRefId);
         setStatus(pharmaPaymentStatus?.paymentStatus);
