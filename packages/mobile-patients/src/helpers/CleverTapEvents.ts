@@ -590,7 +590,7 @@ export interface HomeScreenAttributes {
   isConsulted: string;
   Source?: 'Home Screen' | 'Menu';
   'Page Name'?: string;
-  'Nav src'?: 'hero banner' | 'Bottom bar' | 'app launch';
+  'Nav src'?: 'hero banner' | 'Bottom bar' | 'app launch' | 'homepage bar';
 }
 
 export interface HdfcCustomerInfo {

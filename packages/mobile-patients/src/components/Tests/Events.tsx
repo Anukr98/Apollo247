@@ -39,7 +39,8 @@ export function DiagnosticLandingPageViewedEvent(
   currentPatient: any,
   isServiceable: boolean | undefined,
   isDiagnosticCircleSubscription: boolean | undefined,
-  source?: string | undefined
+  source?: string | undefined,
+  homeScreenAttributes?: any
 ) {
   const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes:
@@ -49,11 +50,18 @@ export function DiagnosticLandingPageViewedEvent(
     Serviceability: isServiceable ? 'Yes' : 'No',
     'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
   };
+  const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED] = {
+    ...getPatientAttributes,
+    Serviceability: isServiceable ? 'Yes' : 'No',
+    'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
+    ...homeScreenAttributes,
+  };
   if (!!source) {
     eventAttributes['Source'] = source;
+    cleverTapEventAttributes['Source'] = source;
   }
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, eventAttributes);
-  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, eventAttributes);
+  postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, cleverTapEventAttributes);
 }
 
 export function DiagnosticHomePageSearchItem(currentPatient: any, keyword: string, results: any[]) {

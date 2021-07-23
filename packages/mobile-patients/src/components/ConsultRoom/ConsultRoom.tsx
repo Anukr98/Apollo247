@@ -1363,6 +1363,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         isConsulted: getUserType(allCurrentPatients),
       };
     }
+    if (eventName == CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS) {
+      eventAttributes = {
+        ...eventAttributes,
+        'Nav src': source === 'Home Screen' ? 'homepage bar' : 'Bottom bar',
+      };
+    }
     if (eventName == CleverTapEventName.HDFC_HEALTHY_LIFE) {
       const subscription_name = hdfcUserSubscriptions?.name;
       const newAttributes = {
@@ -1467,7 +1473,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
           source: 'app home',
         };
-        postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED, eventAttributes);
+        setTimeout(
+          () => postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED, eventAttributes),
+          500
+        );
         postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
       },
     },
@@ -1476,9 +1485,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       title: 'Book Lab Tests',
       image: <TestsCartIcon style={styles.menuOptionIconStyle} />,
       onPress: () => {
+        const homeScreenAttributes = {
+          'Nav src': 'hero banner',
+          'Page Name': 'Home Screen',
+        };
         postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Home Screen');
-        props.navigation.navigate('TESTS', { focusSearch: true });
+        props.navigation.navigate('TESTS', { focusSearch: true, homeScreenAttributes });
       },
     },
     {
@@ -1515,7 +1528,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           Relation: g(currentPatient, 'relation'),
         };
         postWebEngageEvent(WebEngageEventName.SYMPTOM_TRACKER_PAGE_CLICKED, eventAttributes);
-        postCleverTapEvent(CleverTapEventName.SYMPTOM_TRACKER_PAGE_CLICKED, eventAttributes);
         postHomeFireBaseEvent(FirebaseEventName.TRACK_SYMPTOMS, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.TRACK_SYMPTOMS);
         postHomeCleverTapEvent(CleverTapEventName.TRACK_SYMPTOMS, 'Home Screen');
@@ -2589,6 +2601,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 if (i === 0) {
                   postHomeFireBaseEvent(FirebaseEventName.TABBAR_APPOINTMENTS_CLICKED, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED, 'Menu');
+                  postHomeCleverTapEvent(CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS, 'Menu');
                   CommonLogEvent(AppRoutes.ConsultRoom, 'APPOINTMENTS clicked');
                   props.navigation.navigate('APPOINTMENTS');
                 } else if (i == 1) {
@@ -2607,14 +2620,25 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
                     source: 'app home',
                   };
-                  postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED, eventAttributes);
+                  setTimeout(
+                    () =>
+                      postCleverTapEvent(
+                        CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED,
+                        eventAttributes
+                      ),
+                    500
+                  );
                   postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
                   props.navigation.navigate('MEDICINES');
                 } else if (i == 3) {
+                  const homeScreenAttributes = {
+                    'Nav src': 'Bottom bar',
+                    'Page Name': 'Home Screen',
+                  };
                   postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Menu');
                   CommonLogEvent(AppRoutes.ConsultRoom, 'TESTS clicked');
-                  props.navigation.navigate('TESTS');
+                  props.navigation.navigate('TESTS', { homeScreenAttributes });
                 } else if (i == 4) {
                   postHomeFireBaseEvent(FirebaseEventName.MY_ACCOUNT, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.MY_ACCOUNT);
@@ -2724,7 +2748,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               }
             } else {
               postHomeWEGEvent(WebEngageEventName.ACTIVE_APPOINTMENTS);
-              postHomeCleverTapEvent(CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS);
+              postHomeCleverTapEvent(CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS, 'Home Screen');
               props.navigation.navigate('APPOINTMENTS');
             }
           }}

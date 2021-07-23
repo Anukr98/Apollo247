@@ -258,6 +258,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   type Address = savePatientAddress_savePatientAddress_patientAddress;
 
   const movedFrom = props.navigation.getParam('movedFrom');
+  const homeScreenAttributes = props.navigation.getParam('homeScreenAttributes');
   const { currentPatient } = useAllCurrentPatients();
 
   const hdfc_values = string.Hdfc_values;
@@ -377,7 +378,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
       currentPatient,
       isDiagnosticLocationServiceable,
       movedFrom == 'deeplink' ? 'Deeplink' : undefined,
-      isDiagnosticCircleSubscription
+      isDiagnosticCircleSubscription,
+      homeScreenAttributes
     );
   }, []);
 
