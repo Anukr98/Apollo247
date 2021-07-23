@@ -80,26 +80,31 @@ export const truecallerWEBEngage = (
   allCurrentPatients?: any
 ) => {
   if (currentPatient) {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.USER_LOGGED_IN_WITH_TRUECALLER] = {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.USER_LOGGED_IN_WITH_TRUECALLER]
+      | CleverTapEvents[CleverTapEventName.USER_LOGGED_IN_WITH_TRUECALLER] = {
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient UHID': g(currentPatient, 'uhid'),
-      Relation: g(currentPatient, 'relation'),
+      'Patient UHID': g(currentPatient, 'uhid') || undefined,
+      Relation: g(currentPatient, 'relation') || undefined,
       'Patient Age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
       ),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Patient Gender': g(currentPatient, 'gender') || undefined,
+      'Mobile Number': g(currentPatient, 'mobileNumber') || undefined,
       'Customer ID': g(currentPatient, 'id'),
-      User_Type: allCurrentPatients ? getUserType(allCurrentPatients) : '',
+      User_Type: allCurrentPatients ? getUserType(allCurrentPatients) : undefined,
     };
     if (action === 'login') {
       postWebEngageEvent(WebEngageEventName.USER_LOGGED_IN_WITH_TRUECALLER, eventAttributes);
+      postCleverTapEvent(CleverTapEventName.USER_LOGGED_IN_WITH_TRUECALLER, eventAttributes);
     }
   } else {
     if (action === 'sdk error') {
       postWebEngageEvent(WebEngageEventName.TRUECALLER_EVENT_ERRORS, errorAttributes);
+      postCleverTapEvent(CleverTapEventName.TRUECALLER_EVENT_ERRORS, errorAttributes);
     } else {
       postWebEngageEvent(WebEngageEventName.TRUECALLER_APOLLO247_LOGIN_ERRORS, errorAttributes);
+      postCleverTapEvent(CleverTapEventName.TRUECALLER_APOLLO247_LOGIN_ERRORS, errorAttributes);
     }
   }
 };

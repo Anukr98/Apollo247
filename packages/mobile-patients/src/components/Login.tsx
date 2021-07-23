@@ -676,6 +676,7 @@ export const Login: React.FC<LoginProps> = (props) => {
      * If you are checking in local, then you need to change truecaller_appkey(debug key) from strings.xml file
      */
     postWebEngageEvent(WebEngageEventName.LOGIN_WITH_TRUECALLER_CLICKED, {});
+    postCleverTapEvent(CleverTapEventName.LOGIN_WITH_TRUECALLER_CLICKED, {});
     TRUECALLER.isUsable((result: boolean) => {
       if (result) {
         // Authenticate via truecaller flow can be used

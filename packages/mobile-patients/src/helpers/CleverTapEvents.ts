@@ -257,6 +257,10 @@ export enum CleverTapEventName {
   OTP_VERIFICATION_SUCCESS = 'OTP Verification Success',
   OTP_ENTERED = 'Login OTP Submitted',
   REGISTRATION_DONE = 'Registration Done',
+  USER_LOGGED_IN_WITH_TRUECALLER = 'User logged in with truecaller',
+  TRUECALLER_EVENT_ERRORS = 'Truecaller event errors',
+  TRUECALLER_APOLLO247_LOGIN_ERRORS = 'Apollo247 truecaller login errors',
+  LOGIN_WITH_TRUECALLER_CLICKED = 'Login with truecaller clicked',
 
   // other
   MOBILE_ENTRY = 'Mobile Entry',
@@ -292,10 +296,6 @@ export enum CleverTapEventName {
   RETURN_REQUEST_START = 'Return Request Start',
   RETURN_REQUEST_SUBMITTED = 'Return Request Submitted',
   MOVED_AWAY_FROM_HOME = 'User moved away from Homepage',
-  USER_LOGGED_IN_WITH_TRUECALLER = 'User logged in with truecaller',
-  TRUECALLER_EVENT_ERRORS = 'Truecaller event errors',
-  TRUECALLER_APOLLO247_LOGIN_ERRORS = 'Apollo247 truecaller login errors',
-  LOGIN_WITH_TRUECALLER_CLICKED = 'Login with truecaller clicked',
 
   PHARMACY_CART_ADDRESS_SELECTED_FAILURE = 'Pharmacy Cart Address Selected Failure',
   PHARMACY_CART_SELECT_DELIVERY_ADDRESS_CLICKED = 'Pharmacy Cart - Select Delivery Address Clicked',
@@ -493,7 +493,7 @@ export interface PatientInfo {
   'Patient Gender': string;
   'Mobile Number': string;
   'Customer ID': string;
-  User_Type: string;
+  User_Type?: string;
 }
 
 export interface UserInfo {
