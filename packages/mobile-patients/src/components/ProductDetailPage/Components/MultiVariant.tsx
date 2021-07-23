@@ -39,9 +39,9 @@ export const MultiVariant: React.FC<MultiVariantProps> = (props) => {
     availabilityApi247(pincode, skus.join(',')).then((res) => {
       if (res?.data?.response?.length) {
         const availabilityInfo = skuAvailability?.map((data, index) => {
-          const checkExist = res.data.response.filter((resData) => resData.sku === data.sku);
-          if (checkExist.length) {
-            return { ...data, available: checkExist[0].exist };
+          const checkExist = res?.data?.response?.filter((resData) => resData?.sku === data?.sku);
+          if (checkExist?.length) {
+            return { ...data, available: checkExist?.[0].exist };
           }
           return { ...data, available: false };
         });
