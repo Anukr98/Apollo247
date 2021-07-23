@@ -44,19 +44,25 @@ export const CircleSubscription: React.FC<CirclePaymentProps> = (props) => {
   }, []);
 
   const fireCirclePaymentPageViewedEvent = () => {
+    const circleData = circlePlanSelected || selectedPlan;
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE] = {
       navigation_source: circleEventSource,
       circle_end_date: getCircleNoSubscriptionText(),
       circle_start_date: getCircleNoSubscriptionText(),
-      circle_planid: circlePlanSelected?.subPlanId,
+      circle_planid: circleData?.subPlanId,
       customer_id: currentPatient?.id,
-      duration_in_month: circlePlanSelected?.durationInMonth,
+      duration_in_month: circleData?.durationInMonth,
       user_type: getUserType(allCurrentPatients),
-      price: circlePlanSelected?.currentSellingPrice,
+      price: circleData?.currentSellingPrice,
     };
-    postCleverTapEvent(
-      CleverTapEventName.CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE,
-      cleverTapEventAttributes
+    postCleverTapEvent(CleverTapEventName.CIRCLE_PLAN_TO_CART, cleverTapEventAttributes);
+    setTimeout(
+      () =>
+        postCleverTapEvent(
+          CleverTapEventName.CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE,
+          cleverTapEventAttributes
+        ),
+      1000
     );
   };
 

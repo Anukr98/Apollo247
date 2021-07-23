@@ -758,6 +758,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         navigation={props.navigation}
         availNowText={ctaBannerText?.AVAILABLE_NOW || ''}
         consultNowText={ctaBannerText?.CONSULT_NOW || ''}
+        circleEventSource={'VC Doctor Profile'}
       />
     );
   };
@@ -829,6 +830,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const openCircleWebView = () => {
     props.navigation.navigate(AppRoutes.CommonWebView, {
       url: AppConfig.Configuration.CIRCLE_CONSULT_URL,
+      circleEventSource: 'VC Doctor Profile',
     });
     circlePlanWebEngage(WebEngageEventName.VC_NON_CIRCLE_KNOWMORE_PROFILE);
   };

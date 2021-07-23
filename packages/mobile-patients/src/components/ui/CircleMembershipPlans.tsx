@@ -260,7 +260,6 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   };
 
   const fireCircleKnowMoreEvent = () => {
-    fireCircleLandingPageViewedEvent();
     source == 'Pharma' &&
       postWebEngageEvent(
         WebEngageEventName.PHARMA_HOME_KNOW_MORE_CLICKED_CIRCLE_POPUP,
@@ -296,28 +295,10 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       );
   };
 
-  const fireCircleLandingPageViewedEvent = () => {
-    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_LANDING_PAGE_VIEWED] = {
-      navigation_source: circleEventSource,
-      circle_end_date: getCircleNoSubscriptionText(),
-      circle_start_date: getCircleNoSubscriptionText(),
-      circle_planid: getCircleNoSubscriptionText(),
-      customer_id: currentPatient?.id,
-      duration_in_month: getCircleNoSubscriptionText(),
-      user_type: getUserType(allCurrentPatients),
-      price: getCircleNoSubscriptionText(),
-    };
-    postCleverTapEvent(CleverTapEventName.CIRCLE_LANDING_PAGE_VIEWED, cleverTapEventAttributes);
-  };
-
   const fireCirclePlanToCartEvent = (_circlePlan?: any) => {
     const circleData = _circlePlan || circlePlanSelected;
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_PLAN_TO_CART] = {
-      navigation_source:
-        (isConsultJourney && from === string.banner_context.VC_DOCTOR_PROFILE) ||
-        from === string.banner_context.PHARMACY_HOME
-          ? 'Circle Popup Plan only'
-          : circleEventSource,
+      navigation_source: circleEventSource,
       circle_end_date: getCircleNoSubscriptionText(),
       circle_start_date: getCircleNoSubscriptionText(),
       circle_planid: circleData?.subPlanId,
@@ -622,6 +603,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         ? AppConfig.Configuration.CIRCLE_TEST_URL
         : AppConfig.Configuration.CIRLCE_PHARMA_URL,
       source: source,
+      circleEventSource,
     });
   };
 

@@ -1541,14 +1541,14 @@ const webengage = new WebEngage();
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
-    console.log('postWebEngageEvent', eventName, JSON.stringify(attributes));
+    // console.log('postWebEngageEvent', eventName, JSON.stringify(attributes));
     webengage.track(eventName, attributes);
   } catch (error) {}
 };
 
 export const postCleverTapEvent = (eventName: CleverTapEventName, attributes: Object) => {
   try {
-    console.log('postCleverTapEvent', eventName, JSON.stringify(attributes));
+    // console.log('postCleverTapEvent', eventName, JSON.stringify(attributes));
     CleverTap.recordEvent(eventName, attributes);
   } catch (error) {}
 };
@@ -1593,7 +1593,8 @@ export type CircleEventSource =
   | 'Landing Home Page'
   | 'My Account-My membership section'
   | 'Corporate Membership Page'
-  | 'Circle Membership page';
+  | 'Circle Membership page'
+  | 'VC Doctor Card';
 
 export const getCircleNoSubscriptionText = () => string.common.circleNoSubscriptionText;
 

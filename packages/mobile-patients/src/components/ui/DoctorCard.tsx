@@ -398,6 +398,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       url: AppConfig.Configuration.CIRCLE_CONSULT_URL,
       isCallback: true,
       onPlanSelected: onPlanSelected,
+      circleEventSource: 'VC Doctor Card',
     });
     webEngageAttributes(WebEngageEventName.VC_NON_CIRCLE);
   };

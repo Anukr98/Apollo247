@@ -8,12 +8,21 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Spinner } from './ui/Spinner';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import AsyncStorage from '@react-native-community/async-storage';
-import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  getCircleNoSubscriptionText,
+  getUserType,
+  postCleverTapEvent,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 export interface CommonWebViewProps extends NavigationScreenProps {}
 
@@ -23,9 +32,10 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
   const isCallback = props.navigation.getParam('isCallback');
   const isGoBack = props.navigation.getParam('isGoBack');
+  const circleEventSource = props.navigation.getParam('circleEventSource');
   const [canGoBack, setCanGoBack] = useState<boolean>(false);
   let WebViewRef: any;
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const {
     setCirclePlanSelected,
     setDefaultCirclePlan,
@@ -43,6 +53,38 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
     };
     source == ('Pharma' || 'Product Detail' || 'Pharma Cart') &&
       postWebEngageEvent(WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED, CircleEventAttributes);
+  };
+
+  useEffect(() => {
+    if (circleEventSource) fireCircleLandingPageViewedEvent();
+  }, []);
+
+  const fireCircleLandingPageViewedEvent = () => {
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_LANDING_PAGE_VIEWED] = {
+      navigation_source: circleEventSource,
+      circle_end_date: getCircleNoSubscriptionText(),
+      circle_start_date: getCircleNoSubscriptionText(),
+      circle_planid: getCircleNoSubscriptionText(),
+      customer_id: currentPatient?.id,
+      duration_in_month: getCircleNoSubscriptionText(),
+      user_type: getUserType(allCurrentPatients),
+      price: getCircleNoSubscriptionText(),
+    };
+    postCleverTapEvent(CleverTapEventName.CIRCLE_LANDING_PAGE_VIEWED, cleverTapEventAttributes);
+  };
+
+  const fireCirclePlanToCartEvent = (circleData: any) => {
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE] = {
+      navigation_source: circleEventSource,
+      circle_end_date: getCircleNoSubscriptionText(),
+      circle_start_date: getCircleNoSubscriptionText(),
+      circle_planid: circleData?.subPlanId,
+      customer_id: currentPatient?.id,
+      duration_in_month: circleData?.durationInMonth,
+      user_type: getUserType(allCurrentPatients),
+      price: circleData?.currentSellingPrice,
+    };
+    postCleverTapEvent(CleverTapEventName.CIRCLE_PLAN_TO_CART, cleverTapEventAttributes);
   };
 
   useEffect(() => {
@@ -103,6 +145,7 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
               setDefaultCirclePlan && setDefaultCirclePlan(null);
               setCirclePlanSelected && setCirclePlanSelected(responseData);
               setIsCircleSubscription && setIsCircleSubscription(true);
+              fireCirclePlanToCartEvent(responseData);
               setCircleMembershipCharges &&
                 setCircleMembershipCharges(responseData?.currentSellingPrice);
               setCircleSubPlanId && setCircleSubPlanId(responseData?.subPlanId);
