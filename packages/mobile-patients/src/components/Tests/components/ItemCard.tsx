@@ -432,13 +432,17 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     const isAlreadyPartOfOrder =
       !!modifiedOrderItemIds &&
       modifiedOrderItemIds?.length &&
-      modifiedOrderItemIds?.find((id: number) => Number(id) == Number(item?.id));
+      modifiedOrderItemIds?.find(
+        (id: number) =>
+          Number(id) == Number(props.sourceScreen === AppRoutes.TestsCart ? item?.itemId : item?.id)
+      );
     return (
       <Text
         style={[
           styles.addToCartText,
           {
             ...theme.viewStyles.text('B', isSmallDevice ? 13 : 14, '#fc9916', 1, 24),
+            width: isAlreadyPartOfOrder ? '80%' : '70%',
           },
         ]}
         onPress={() =>
