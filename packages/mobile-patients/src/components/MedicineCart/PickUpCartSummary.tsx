@@ -50,6 +50,7 @@ import {
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
+import { getCheckoutCompletedEventAttributes } from '@aph/mobile-patients/src//helpers/helperFunctions';
 
 export interface PickUpCartSummaryProps extends NavigationScreenProps {}
 
@@ -101,7 +102,7 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
           setTimeout(() => createHyperServiceObject(), 500),
           setTimeout(
             () => (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true)),
-            1000
+            1200
           ))
         : (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true));
     } catch (error) {
@@ -242,12 +243,18 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
       const orders = [{ id: orderId, orderAutoId: orderAutoId, estimatedAmount: estimatedAmount }];
       if (data?.data?.createOrderInternal?.success) {
         setauthToken?.('');
+        const paymentId = data?.data?.createOrderInternal?.payment_order_id!;
         props.navigation.navigate(AppRoutes.PaymentMethods, {
-          paymentId: data?.data?.createOrderInternal?.payment_order_id!,
+          paymentId: paymentId,
           amount: grandTotal,
           orderDetails: getOrderDetails(orders),
           businessLine: 'pharma',
           customerId: cusId,
+          checkoutEventAttributes: getCheckoutCompletedEventAttributes(
+            shoppingCart,
+            paymentId,
+            pharmacyUserTypeAttribute
+          ),
         });
       }
       setloading(false);

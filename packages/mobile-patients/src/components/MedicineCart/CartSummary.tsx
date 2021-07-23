@@ -182,7 +182,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           setTimeout(() => createHyperServiceObject(), 500),
           setTimeout(
             () => (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true)),
-            1000
+            1200
           ))
         : (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true));
     } catch (error) {

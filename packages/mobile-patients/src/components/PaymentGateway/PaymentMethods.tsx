@@ -437,7 +437,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
       const { data } = response;
       const status =
         data?.createOrderV2?.payment_status || data?.updateOrderDetails?.payment_status;
-      status == 'TXN_SUCCESS' ? navigatetoOrderStatus(true, 'success') : showTxnFailurePopUP();
+      status == 'TXN_SUCCESS' ? navigatetoOrderStatus(false, 'success') : showTxnFailurePopUP();
     } catch (e) {
       showTxnFailurePopUP();
     }
@@ -479,6 +479,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const onPressRetryBooking = () => {
     hideAphAlert?.();
+    setHCSelected(false);
     businessLine == 'diagnostics' && props.navigation.goBack();
   };
 
@@ -503,7 +504,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         break;
       case 'pharma':
         paymentStatus == 'success' &&
-          PharmaOrderPlaced(checkoutEventAttributes, shoppingCart, paymentId, burnHc, false);
+          PharmaOrderPlaced(checkoutEventAttributes, shoppingCart, paymentId, burnHc, isCOD);
         props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
           status: paymentStatus,
           price: amount,
