@@ -556,13 +556,10 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
 
   const initiateHyperSDK = async (cusId: any) => {
     try {
-      const isInitiated: boolean = await isSDKInitialised();
       const merchantId = AppConfig.Configuration.merchantId;
-      isInitiated
-        ? (terminateSDK(),
-          setTimeout(() => createHyperServiceObject(), 500),
-          setTimeout(() => initiateSDK(cusId, cusId, merchantId), 1000))
-        : initiateSDK(cusId, cusId, merchantId);
+      terminateSDK();
+      setTimeout(() => createHyperServiceObject(), 1000);
+      setTimeout(() => initiateSDK(cusId, cusId, merchantId), 1200);
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
