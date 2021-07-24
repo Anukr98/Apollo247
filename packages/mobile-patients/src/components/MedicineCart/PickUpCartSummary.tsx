@@ -97,8 +97,8 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
     try {
       const merchantId = AppConfig.Configuration.pharmaMerchantId;
       terminateSDK();
-      setTimeout(() => createHyperServiceObject(), 1000);
-      setTimeout(() => (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true)), 1200);
+      setTimeout(() => createHyperServiceObject(), 1400);
+      setTimeout(() => (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true)), 1500);
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
