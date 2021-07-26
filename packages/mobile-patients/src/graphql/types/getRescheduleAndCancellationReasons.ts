@@ -16,3 +16,7 @@ export interface getRescheduleAndCancellationReasons {
     rescheduleReasons: any;
     cancellationReasons: any;
   }
+
+  export interface getRescheduleAndCancellationReasonsVariables {
+    appointmentDateTimeInUTC: any;
+  }

@@ -114,7 +114,7 @@ import {
   diagnosticExotelCalling,
   diagnosticExotelCallingVariables,
 } from '@aph/mobile-patients/src/graphql/types/diagnosticExotelCalling';
-import { getRescheduleAndCancellationReasons } from '@aph/mobile-patients/src/graphql/types/getRescheduleAndCancellationReasons';
+import { getRescheduleAndCancellationReasons, getRescheduleAndCancellationReasonsVariables } from '@aph/mobile-patients/src/graphql/types/getRescheduleAndCancellationReasons';
 
 type orderList = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList;
 export interface YourOrdersTestProps extends NavigationScreenProps {
@@ -233,7 +233,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   useEffect(() => {
-    getReasons()
     const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       BackHandler.addEventListener('hardwareBackPress', handleBack);
     });
@@ -322,15 +321,16 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchOrders`, error);
     }
   };
-  const getReasons = async () => {
+  const getReasons = async (item: any) => {
+    let selectedOrderTime = item?.slotDateTimeInUTC;
     try {
       client
-        .query<getRescheduleAndCancellationReasons>({
+        .query<getRescheduleAndCancellationReasons,getRescheduleAndCancellationReasonsVariables>({
           query: GET_RESCHEDULE_AND_CANCELLATION_REASONS,
           context: {
             sourceHeaders,
           },
-          variables: {},
+          variables: { appointmentDateTimeInUTC: selectedOrderTime },
           fetchPolicy: 'no-cache',
         })
         .then((data) => {
@@ -339,11 +339,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           setRescheduleReasonList(reasonList?.rescheduleReasons)
         })
         .catch((error) => {
-          setError(true);
           CommonBugFender(`${AppRoutes.YourOrdersTest}_getReasons`, error);
         });
     } catch (error) {
-      setError(true);
       CommonBugFender(`${AppRoutes.YourOrdersTest}_getReasons`, error);
     }
   };
@@ -653,6 +651,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const _onPressTestReschedule = (item: any) => {
+    getReasons(item)
     setSelectedOrderId(item?.id);
     setSelectedOrder(item);
     setShowBottomOverlay(true); //show the overlay
