@@ -6601,39 +6601,38 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         };
         try {
           const response = await callUploadMediaDocumentApiV2(inputData);
-          const recordId = g(response, 'data', 'uploadMediaDocument', 'recordId');
-          if (recordId) {
-            getPrismUrls(client, patientId, [recordId])
-              .then((data: any) => {
-                const text = {
-                  id: patientId,
-                  message: imageconsult,
-                  fileType: item.fileType == 'pdf' ? 'pdf' : 'image',
-                  fileName: item.title + '.' + item.fileType,
-                  prismId: recordId,
-                  url: (data.urls && data.urls[0]) || '',
-                  messageDate: new Date(),
-                };
-                pubnub.publish(
-                  {
-                    channel: channel,
-                    message: text,
-                    storeInHistory: true,
-                    sendByPost: true,
-                  },
-                  (status, response) => {
-                    if (status.statusCode == 200) {
-                      HereNowPubnub('ImageUploaded');
-                    }
-                  }
-                );
-                KeepAwake.activate();
-              })
-              .catch((e) => {
-                CommonBugFender('ChatRoom_getPrismUrls_uploadDocument', e);
-              });
+
+          if (
+            response?.data?.uploadMediaDocumentV2 &&
+            Array.isArray(response.data.uploadMediaDocumentV2) &&
+            response.data.uploadMediaDocumentV2.length &&
+            response.data.uploadMediaDocumentV2[0]?.fileUrl
+          ) {
+            const text = {
+              id: patientId,
+              message: imageconsult,
+              fileType: item.fileType == 'pdf' ? 'pdf' : 'image',
+              fileName: item.title + '.' + item.fileType,
+              url: response.data.uploadMediaDocumentV2[0].fileUrl || '',
+              messageDate: new Date(),
+            };
+            pubnub.publish(
+              {
+                channel: channel,
+                message: text,
+                storeInHistory: true,
+                sendByPost: true,
+              },
+              (status, response) => {
+                if (status.statusCode == 200) {
+                  HereNowPubnub('ImageUploaded');
+                }
+              }
+            );
+            KeepAwake.activate();
           } else {
             Alert.alert('Upload document failed');
+            console.log('csk', JSON.stringify(response));
             CommonLogEvent('ChatRoom_callUploadMediaDocumentApiV2_Failed', response);
           }
         } catch (e) {
