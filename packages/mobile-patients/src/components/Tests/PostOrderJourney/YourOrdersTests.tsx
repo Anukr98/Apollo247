@@ -110,6 +110,13 @@ import { getDiagnosticOrdersListByParentOrderID_getDiagnosticOrdersListByParentO
 
 type orderList = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList;
 
+type OrderRescheduleType = {
+  utcFormatedDate: string;
+  date: string | Date;
+  slot: string;
+  rescheduleCount: number;
+};
+
 const screenHeight = Dimensions.get('window').height;
 export interface YourOrdersTestProps extends NavigationScreenProps {
   showHeader?: boolean;
@@ -693,10 +700,42 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setShowRescheduleOptions(true); //show the cancel, reschedule options
   };
 
+  function rescheduleSelectedOrder(resOrder: OrderRescheduleType) {
+    //if multiple uhid,
+    if (selectedOrder?.attributesObj?.isMultiUhid) {
+      const multiUhidOrderIds: orderListByMobile[] = orders?.filter(
+        (order: orderListByMobile) => order?.parentOrderId === selectedOrder?.parentOrderId
+      );
+      multiUhidOrderIds?.forEach((multiOrder: orderListByMobile) => {
+        const findOrderIndex = orders.findIndex(
+          (arrObj: orderListByMobile) => arrObj?.id === multiOrder?.id
+        );
+        if (findOrderIndex !== -1) {
+          orders[findOrderIndex].rescheduleCount = resOrder?.rescheduleCount;
+          orders[findOrderIndex].slotDateTimeInUTC = resOrder?.utcFormatedDate;
+        }
+      });
+    }
+    //for single uhid
+    else {
+      const findOrderIndex = orders.findIndex(
+        (arrObj: orderListByMobile) => arrObj?.id === selectedOrder?.id
+      );
+      if (findOrderIndex !== -1) {
+        orders[findOrderIndex].rescheduleCount = resOrder?.rescheduleCount;
+        orders[findOrderIndex].slotDateTimeInUTC = resOrder?.utcFormatedDate;
+      }
+    }
+    setLoading?.(false);
+  }
+
   const onReschduleDoneSelected = () => {
     setLoading?.(true);
-    const formattedDate = moment(rescheduleDate || diagnosticSlot?.date).format('YYYY-MM-DD');
-    const formatTime = rescheduleSlotObject?.slotStartTime || diagnosticSlot?.slotStartTime;
+    const formattedDate = moment(rescheduleDate || diagnosticSlot?.date).format(
+      'YYYY-MM-DD'
+    ) as string;
+    const formatTime =
+      rescheduleSlotObject?.slotStartTime || (diagnosticSlot?.slotStartTime as string);
     const dateTimeInUTC = moment(formattedDate + ' ' + formatTime).toISOString();
     const dateTimeToShow = formattedDate + ', ' + formatTime;
 
@@ -735,7 +774,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           rescheduleResponse?.status === true &&
           rescheduleResponse?.rescheduleCount <= 3
         ) {
-          setTimeout(() => refetchOrders(), 1500);
+          const obj: OrderRescheduleType = {
+            utcFormatedDate: dateTimeInUTC,
+            date: formattedDate,
+            slot: formatTime,
+            rescheduleCount: rescheduleResponse?.rescheduleCount,
+          };
+          rescheduleSelectedOrder(obj);
           setRescheduleCount(rescheduleResponse?.rescheduleCount);
           setRescheduledTime(dateTimeInUTC);
           showAphAlert?.({
