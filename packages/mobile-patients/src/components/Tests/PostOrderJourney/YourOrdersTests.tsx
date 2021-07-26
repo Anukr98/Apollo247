@@ -58,6 +58,7 @@ import {
   navigateToScreenWithEmptyStack,
   aphConsole,
   downloadDocument,
+  removeWhiteSpaces,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DisabledTickIcon, TickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
@@ -1331,7 +1332,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       / /g,
       '_'
     );
-    downloadLabTest(order?.labReportURL!, appointmentDate, patientName, order);
+    downloadLabTest(removeWhiteSpaces(order?.labReportURL)!, appointmentDate, patientName, order);
   }
 
   async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string, order: orderList) {

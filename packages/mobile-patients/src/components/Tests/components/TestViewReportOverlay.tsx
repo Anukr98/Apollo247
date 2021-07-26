@@ -1,6 +1,6 @@
 import { AphOverlayProps } from '@aph/mobile-patients/src/components/ui/AphOverlay';
 import { CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
-import { downloadDiagnosticReport, g, TestSlot } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { downloadDiagnosticReport, g, removeWhiteSpaces, TestSlot } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useState } from 'react';
@@ -98,10 +98,10 @@ export const TestViewReportOverlay: React.FC<TestViewReportOverlayProps> = (prop
                   if (item?.title == string.Report.view || item?.title == string.Report.download) {
                     props.onPressViewReport();
                   } else if (item?.title == string.Report.share) {
-                    props.downloadDocument(props?.order?.labReportURL,'application/pdf')
+                    props.downloadDocument(removeWhiteSpaces(props?.order?.labReportURL),'application/pdf')
                   } else {
                     copyToClipboard(
-                      props.order && props.order?.labReportURL ? props.order?.labReportURL : ''
+                      props.order && props.order?.labReportURL ? removeWhiteSpaces(props.order?.labReportURL) : ''
                     );
                   }
                 }
