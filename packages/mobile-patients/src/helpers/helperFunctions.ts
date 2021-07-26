@@ -2984,3 +2984,7 @@ export const getIsMedicine = (typeId: string) => {
   };
   return medicineType[typeId] || '0';
 };
+export const removeWhiteSpaces = (item: any) => {
+  const newItem = item?.replace(/\s/g, "")
+  return newItem;
+}

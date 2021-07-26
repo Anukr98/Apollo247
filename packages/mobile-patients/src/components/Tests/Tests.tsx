@@ -59,6 +59,7 @@ import {
   downloadDiagnosticReport,
   setAsyncPharmaLocation,
   downloadDocument,
+  removeWhiteSpaces,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -2083,7 +2084,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setViewReportOrderId(clickedItem?.orderId)
       await downloadDiagnosticReport(
         setLoadingContext,
-        (clickedItem?.labReportURL).replace(/\s/g, ""),
+        removeWhiteSpaces(clickedItem?.labReportURL),
         appointmentDate,
         !!patientName ? patientName : '_',
         true,

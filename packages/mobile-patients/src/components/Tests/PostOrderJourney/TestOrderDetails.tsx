@@ -42,6 +42,7 @@ import {
   handleGraphQlError,
   nameFormater,
   navigateToScreenWithEmptyStack,
+  removeWhiteSpaces,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -703,7 +704,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       'Download Report PDF',
       orderDetails?.id
     );
-    downloadLabTest((orderDetails?.labReportURL).replace(/\s/g, "")!, appointmentDate, patientName);
+    downloadLabTest(removeWhiteSpaces(orderDetails?.labReportURL)!, appointmentDate, patientName);
   };
 
   async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string) {
