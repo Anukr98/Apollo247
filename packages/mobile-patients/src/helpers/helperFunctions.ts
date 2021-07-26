@@ -2424,14 +2424,32 @@ export const removeConsecutiveComma = (value: string) => {
   return value.replace(/^,|,$|,(?=,)/g, '');
 };
 
-export const getCareCashback = (price: number, type_id: string | null | undefined) => {
+export const calculateCashbackForItem = (
+  price: number,
+  type_id: any,
+  subcategory: any,
+  sku: any
+) => {
   const { circleCashback } = useShoppingCart();
-  let typeId = !!type_id ? type_id.toUpperCase() : '';
-  let cashback = 0;
-  if (!!circleCashback && !!circleCashback[typeId]) {
-    cashback = price * (circleCashback[typeId] / 100);
-  }
-  return cashback;
+  const getFirstLevelCashback = () => {
+    // categoty level cashback
+    const key = type_id?.toUpperCase();
+    return circleCashback?.[key] || 0;
+  };
+  const getSecondLevelCashback = () => {
+    // sub categoty level cashback
+    const key = `${type_id?.toUpperCase()}~${subcategory}`;
+    return circleCashback?.[key] || 0;
+  };
+  const getThirdLevelCashback = () => {
+    // sku level cashback
+    const key = `${type_id?.toUpperCase()}~${subcategory}~${sku}`;
+    return circleCashback?.[key] || 0;
+  };
+  const cashbackFactor =
+    getThirdLevelCashback() || getSecondLevelCashback() || getFirstLevelCashback();
+  const cashback = ((price * cashbackFactor) / 100).toFixed(2);
+  return cashback || 0;
 };
 
 export const readableParam = (param: string) => {

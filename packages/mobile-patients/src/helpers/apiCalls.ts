@@ -45,6 +45,7 @@ export interface MedicineProduct {
   product_form?: string | null;
   pack_size?: string | null;
   banned?: 'Yes' | 'No';
+  subcategory?: string | null;
 }
 
 export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
@@ -1109,7 +1110,10 @@ export const getCorporateMembershipData = (planId: string): Promise<AxiosRespons
   });
 };
 
-export const getLandingPageBanners = (pageName: string, cityId: number): Promise<AxiosResponse<any>> => {
+export const getLandingPageBanners = (
+  pageName: string,
+  cityId: number
+): Promise<AxiosResponse<any>> => {
   const baseurl = config.DRUPAL_CONFIG[0];
   const getBanners = `${baseurl}/banner/${pageName}?city=${cityId}`;
   return Axios.get(getBanners, {
