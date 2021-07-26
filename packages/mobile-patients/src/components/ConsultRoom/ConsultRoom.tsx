@@ -1387,6 +1387,34 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     postCleverTapEvent(eventName, eventAttributes);
   };
 
+  const postVaccineWidgetEvents = (
+    eventName: CleverTapEventName,
+    navSrc?: HomeScreenAttributes['Nav src']
+  ) => {
+    let eventAttributes: HomeScreenAttributes = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
+      'Nav src': navSrc || 'Vaccine Widget',
+      'Page Name': 'Home Screen',
+    };
+    if (
+      eventName === CleverTapEventName.KAVACH_PROGRAM_CLICKED ||
+      eventName === CleverTapEventName.EXPLORE_CORPORATE_MEMBERSHIP_CLICKED ||
+      eventName === CleverTapEventName.CHECK_RISK_LEVEL_CLICKED
+    ) {
+      eventAttributes['Nav src'] = undefined;
+    }
+    postCleverTapEvent(eventName, eventAttributes);
+  };
+
   const fireFirstTimeLanded = () => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.NON_CIRCLE_HOMEPAGE_VIEWED] = {
       'Patient UHID': currentPatient?.uhid,
@@ -3387,6 +3415,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const attibutes = {
       'CTA Clicked': item?.title,
     };
+    postVaccineWidgetEvents(CleverTapEventName.VACCINATION_CALL_A_DOCTOR_CLICKED);
     postHomeWEGEvent(WebEngageEventName.COVID_VACCINATION_SECTION_CLICKED, undefined, attibutes);
     setShowHdfcConnectPopup(true);
   };
@@ -3433,6 +3462,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const onPressReadArticles = () => {
+    postVaccineWidgetEvents(CleverTapEventName.READ_BLOG_VIEWED, 'Blog Widget');
     postHomeWEGEvent(WebEngageEventName.READ_ARTICLES);
     try {
       const openUrl = AppConfig.Configuration.BLOG_URL;
@@ -3450,6 +3480,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
     try {
       if (item?.action === string.vaccineBooking.CORPORATE_VACCINATION) {
+        postVaccineWidgetEvents(CleverTapEventName.VACCINATION_BOOK_SLOT_CLICKED);
         AsyncStorage.setItem('verifyCorporateEmailOtpAndSubscribe', 'false');
         if (corporateSubscriptions?.length) {
           if (!!vaccinationCmsIdentifier) {
@@ -3485,6 +3516,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           });
         }
       } else if (item?.url?.includes('apollopatients://')) {
+        postVaccineWidgetEvents(CleverTapEventName.VACCINATION_CONSULT_CLICKED);
         // handling speciality deeplink only on this phase
         const data = handleOpenURL(item?.url);
         const { routeName, id, isCall, mediaSource } = data;
@@ -3498,6 +3530,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           mediaSource
         );
       } else {
+        postVaccineWidgetEvents(CleverTapEventName.FAQs_ARTICLES_CLICKED);
         regenerateJWTToken('vaccine', item?.url);
       }
     } catch (e) {}
@@ -3524,6 +3557,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const onPressRiskLevel = () => {
+    postVaccineWidgetEvents(CleverTapEventName.CHECK_RISK_LEVEL_CLICKED);
     postHomeWEGEvent(WebEngageEventName.CHECK_YOUR_RISK_LEVEL);
     const urlToOpen = AppConfig.Configuration.COVID_RISK_LEVEL_URL;
     try {
@@ -3547,10 +3581,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const onPressCorporateMembership = async () => {
+    postVaccineWidgetEvents(CleverTapEventName.EXPLORE_CORPORATE_MEMBERSHIP_CLICKED);
     props.navigation.navigate(AppRoutes.MyMembership);
   };
 
   const onPressKavach = () => {
+    postVaccineWidgetEvents(CleverTapEventName.KAVACH_PROGRAM_CLICKED);
     postHomeWEGEvent(WebEngageEventName.APOLLO_KAVACH_PROGRAM);
     try {
       const openUrl = AppConfig.Configuration.KAVACH_URL;
@@ -3587,6 +3623,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderTopIcons = () => {
     const onPressCart = () => {
+      postVaccineWidgetEvents(CleverTapEventName.MY_CART_CLICKED, 'Top bar');
       const route =
         (shopCartItems.length && cartItems.length) || (!shopCartItems.length && !cartItems.length)
           ? AppRoutes.MedAndTestCart
@@ -3618,6 +3655,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
+              postVaccineWidgetEvents(CleverTapEventName.NOTIFICATION_CENTER_CLICKED, 'Top bar');
               postHomeWEGEvent(WebEngageEventName.NOTIFICATION_ICON);
               props.navigation.navigate(AppRoutes.NotificationScreen);
             }}

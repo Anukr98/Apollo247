@@ -262,6 +262,28 @@ export enum CleverTapEventName {
   TRUECALLER_APOLLO247_LOGIN_ERRORS = 'Apollo247 truecaller login errors',
   LOGIN_WITH_TRUECALLER_CLICKED = 'Login with truecaller clicked',
 
+  FAQs_ARTICLES_CLICKED = 'Vaccination FAQs & Articles clicked',
+  VACCINATION_CALL_A_DOCTOR_CLICKED = 'Vaccination Call a doctor clicked',
+  VACCINATION_CONSULT_CLICKED = 'Vaccination Consult Clicked',
+  VACCINATION_BOOK_SLOT_CLICKED = 'Vaccination Book Slot Clicked',
+  READ_BLOG_VIEWED = 'Read Blog Clicked',
+  CHECK_RISK_LEVEL_CLICKED = 'Check Risk Level Clicked',
+  EXPLORE_CORPORATE_MEMBERSHIP_CLICKED = 'Explore Corporate Membership Clicked',
+  KAVACH_PROGRAM_CLICKED = 'Kavach Program Clicked',
+  MY_CART_CLICKED = 'My Cart Clicked',
+  NOTIFICATION_CENTER_CLICKED = 'Notification Center Clicked',
+
+  //My Accounts
+  MY_ACCOUNT_NEED_HELP_CLICKED = 'My Account Need help Clicked',
+  MY_ACCOUNT_USER_LOGOUT = 'User Logout Clicked',
+  MY_ACCOUNT_ABOUT = 'My Account About',
+  MY_ACCOUNT_MEMBERSHIP_CLICKED = 'My Account Membership Clicked',
+  MY_ACCOUNT_ONE_APOLLO_MEMBERSHIP_CLICKED = 'My Account One Apollo Membership Clicked',
+  MY_ACCOUNT_PAYMENT_CLICKED = 'My Account Payment Clicked',
+  MY_ACCOUNT_ORDERS_CLICKED = 'My Account Orders Clicked',
+  MY_ACCOUNT_FAMILY_MEMBER_CLICK = 'My Account Family Member Clicked',
+  MY_ACCOUNT_ADDRESS_BOOK_CLICKED = 'My Account  Address Book Clicked',
+
   // other
   MOBILE_ENTRY = 'Mobile Entry',
   PRE_APOLLO_CUSTOMER = 'Pre Apollo Customer',
@@ -319,8 +341,6 @@ export enum CleverTapEventName {
   READ_ARTICLES = 'Read Articles',
   HDFC_HEALTHY_LIFE = 'Explore HDFC Tile Clicked on Homepage',
 
-  FAQs_ARTICLES_CLICKED = 'Vaccination FAQs & Articles clicked',
-  VACCINATION_CALL_A_DOCTOR_CLICKED = 'Vaccination Call a doctor clicked',
   VACCINATION_PROCEED_TO_CONNECT_A_DOCTOR_CLICKED = 'Vaccination Call a doctor - Proceed to connect',
   VACCINATION_CHAT_WITH_US = 'Vaccination Chat with us',
   VACCINATION_TRACKER_ON_HOME_PAGE = 'Vaccine tracker on home page',
@@ -588,9 +608,17 @@ export interface HomeScreenAttributes {
   'Customer ID': string;
   User_Type: string;
   isConsulted: string;
-  Source?: 'Home Screen' | 'Menu';
+  Source?: 'Home Screen' | 'Menu' | 'My Account Screen';
   'Page Name'?: string;
-  'Nav src'?: 'hero banner' | 'Bottom bar' | 'app launch' | 'homepage bar';
+  'Nav src'?:
+    | 'hero banner'
+    | 'Bottom bar'
+    | 'app launch'
+    | 'homepage bar'
+    | 'Vaccine Widget'
+    | 'Blog Widget'
+    | 'my account'
+    | 'Top bar';
 }
 
 export interface HdfcCustomerInfo {
