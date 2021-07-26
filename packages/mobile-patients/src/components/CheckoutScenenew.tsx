@@ -358,7 +358,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       const eventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED] = {
         'Transaction ID': transactionId || undefined,
         'Order Type': 'Cart',
-        'Prescription Required': uploadPrescriptionRequired ? 'Yes' : 'No',
         'Prescription Added': !!(physicalPrescriptions.length || ePrescriptions.length),
         'Shipping information': shippingInformation, // (Home/Store address)
         'Total items in cart': cartItems.length,

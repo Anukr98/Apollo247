@@ -1095,8 +1095,8 @@ export interface CleverTapEvents {
     'category ID'?: string;
     Section?: string;
     'Section Name'?: string;
-    af_revenue: number;
-    af_currency: string;
+    af_revenue?: number;
+    af_currency?: string;
     'Circle Member': PharmacyCircleMemberValues;
     'Circle Membership Value'?: number | null;
     'Cart Items'?: number;
@@ -1230,7 +1230,7 @@ export interface CleverTapEvents {
   [CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED]: {
     'Transaction ID'?: string | number;
     'Order Type': 'Cart' | 'Non Cart';
-    'Prescription Required': YesOrNo;
+    'Prescription Required'?: YesOrNo;
     'Prescription Added': boolean;
     'Shipping information'?: string; // (Home/Store address)
     'Total items in cart'?: number; // Optional
