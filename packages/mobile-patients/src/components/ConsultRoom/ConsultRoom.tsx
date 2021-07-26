@@ -2668,6 +2668,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   CommonLogEvent(AppRoutes.ConsultRoom, 'TESTS clicked');
                   props.navigation.navigate('TESTS', { homeScreenAttributes });
                 } else if (i == 4) {
+                  postHomeCleverTapEvent(CleverTapEventName.MY_ACCOUNT, 'Menu');
                   postHomeFireBaseEvent(FirebaseEventName.MY_ACCOUNT, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.MY_ACCOUNT);
                   CommonLogEvent(AppRoutes.ConsultRoom, 'MY_ACCOUNT clicked');

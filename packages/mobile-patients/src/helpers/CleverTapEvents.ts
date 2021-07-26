@@ -274,6 +274,7 @@ export enum CleverTapEventName {
   NOTIFICATION_CENTER_CLICKED = 'Notification Center Clicked',
 
   //My Accounts
+  MY_ACCOUNT = 'My Account Clicked',
   MY_ACCOUNT_NEED_HELP_CLICKED = 'My Account Need help Clicked',
   MY_ACCOUNT_USER_LOGOUT = 'User Logout Clicked',
   MY_ACCOUNT_ABOUT = 'My Account About',
@@ -334,7 +335,6 @@ export enum CleverTapEventName {
   NEED_HELP = 'Need Help?',
   TICKET_RAISED = 'Ticket raised',
   HELP_TICKET_SUBMITTED = 'Help_Ticket_Submitted',
-  MY_ACCOUNT = 'My Account',
   TABBAR_APPOINTMENTS_CLICKED = 'Appointments Clicked on tab bar',
   APOLLO_KAVACH_PROGRAM = 'Apollo Kavach Program',
   COVID_VACCINE_TRACKER = 'Covid Vaccine Tracker',

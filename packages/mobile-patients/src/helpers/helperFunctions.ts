@@ -1638,8 +1638,6 @@ export const postwebEngageAddToCartEvent = (
     'Discounted Price': Number(special_price) || undefined,
     Quantity: 1,
     Source: source,
-    af_revenue: Number(special_price) || price,
-    af_currency: 'INR',
     'Circle Member':
       getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
       undefined,
