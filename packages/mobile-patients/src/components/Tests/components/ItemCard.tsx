@@ -49,8 +49,6 @@ export interface ItemCardProps {
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
   source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
   sourceScreen: string;
-  onPressAddToCartFromCart?: (item: any) => void;
-  onPressRemoveItemFromCart?: (item: any) => void;
 }
 
 const ItemCard: React.FC<ItemCardProps> = (props) => {
@@ -61,18 +59,10 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     modifiedOrderItemIds,
     modifiedOrder,
     setModifiedPatientCart,
+    removeMultiPatientCartItems,
     patientCartItems,
-    removePatientCartItem,
   } = useDiagnosticsCart();
-  const {
-    data,
-    isCircleSubscribed,
-    navigation,
-    source,
-    sourceScreen,
-    onPressAddToCartFromCart,
-    onPressRemoveItemFromCart,
-  } = props;
+  const { data, isCircleSubscribed, navigation, source, sourceScreen } = props;
 
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const actualItemsToShow =
@@ -177,7 +167,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
         </TouchableOpacity>
       );
     },
-    [cartItems]
+    [cartItems, patientCartItems]
   );
 
   const renderPercentageDiscount = (discount: string | number) => {
@@ -364,14 +354,12 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
           cartItems: cartItems?.concat(addedItems),
         },
       ]);
-    onPressAddToCartFromCart?.(item);
   }
 
-  function onPressRemoveFromCart(item: any) {
+  const onPressRemoveFromCart = (item: any) => {
     removeCartItem?.(`${item?.itemId}`);
-    patientCartItems?.map((pItem) => removePatientCartItem?.(pItem?.patientId, `${item?.itemId}`));
-    onPressRemoveItemFromCart?.(item);
-  }
+    removeMultiPatientCartItems?.(`${item?.itemId}`);
+  };
 
   function postHomePageWidgetClicked(name: string, id: string, section: string) {
     DiagnosticHomePageWidgetClicked(section, name, id);
@@ -461,18 +449,35 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
             ...theme.viewStyles.text('B', isSmallDevice ? 13 : 14, '#fc9916', 1, 24),
           },
         ]}
-        onPress={() =>
-          isAlreadyPartOfOrder
-            ? {}
-            : isAddedToCart
-            ? onPressRemoveFromCart(item)
-            : onPressAddToCart(item, pricesForItem, packageCalculatedMrp)
-        }
+        onPress={() => {
+          _onPressFunction(
+            isAlreadyPartOfOrder,
+            isAddedToCart,
+            item,
+            pricesForItem,
+            packageCalculatedMrp
+          );
+        }}
       >
         {isAlreadyPartOfOrder ? 'ALREADY ADDED' : isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
       </Text>
     );
   };
+
+  function _onPressFunction(
+    isAlreadyPartOfOrder: any,
+    isAddedToCart: boolean,
+    item: any,
+    pricesForItem: any,
+    packageCalculatedMrp: number
+  ) {
+    if (isAlreadyPartOfOrder) {
+    } else if (isAddedToCart) {
+      onPressRemoveFromCart(item);
+    } else {
+      onPressAddToCart(item, pricesForItem, packageCalculatedMrp);
+    }
+  }
 
   const renderError = () => {
     if (props.isVertical)

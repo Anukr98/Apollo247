@@ -156,11 +156,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const selectedAddr = addresses?.find((item) => item?.id == deliveryAddressId);
-  // const getDefaultAddress = !!getAddress
-  //   ? getAddress
-  //   : addresses?.find((item) => item?.defaultAddress);
-  // const selectedAddr = !!getDefaultAddress ? getDefaultAddress : addresses?.[0];
-  //if no deliveryAddressId is then , select the first address/ or default address
+  const [overallArray, setOverallArray] = useState([] as any);
 
   const isCartEmpty = isDiagnosticSelectedCartEmpty(
     isModifyFlow ? modifiedPatientCart : patientCartItems
@@ -175,6 +171,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   var pricesForItemArray;
   var modifyPricesForItemArray;
   var patientCartItemsCopy = JSON.parse(JSON.stringify(isCartEmpty));
+  var fullHighPriceItems = '',
+    fullDuplicateItems = '';
+  var overallDuplicateArray = [] as any;
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
@@ -282,7 +281,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
   const fetchTestReportGenDetails = async (_cartItemId: string | number[]) => {
     try {
-      console.log({ addressCityId });
       const removeSpaces =
         typeof _cartItemId == 'string' ? _cartItemId.replace(/\s/g, '').split(',') : null;
       const listOfIds =
@@ -509,7 +507,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         Number(selectedAddress?.latitude),
         Number(selectedAddress?.longitude)
       );
-      console.log({ serviceabilityResponse });
       if (serviceabilityResponse?.data?.getDiagnosticServiceability?.status) {
         const getServiceableResponse =
           serviceabilityResponse?.data?.getDiagnosticServiceability?.serviceability;
@@ -531,7 +528,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
             .then(({ data }) => {
               const diagnosticItems =
                 g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
-              console.log({ diagnosticItems });
               updatePricesInCart(diagnosticItems);
               patientCartItems?.length == 0 && setLoading?.(false);
             })
@@ -753,21 +749,27 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
   const renderAddressSection = () => {
     return (
-      <View style={{ marginTop: 16 }}>
-        <Text style={styles.addressHeadingText}>{string.diagnostics.homeVisitText}</Text>
-        <View style={styles.addressOuterView}>
-          <View style={styles.addressTextView}>
-            <Text style={styles.addressTextStyle}>{addressText}</Text>
-            {isModifyFlow ? null : (
-              <Text style={styles.changeTextStyle} onPress={() => showAddressPopup()}>
-                {string.diagnostics.changeText}
-              </Text>
-            )}
-          </View>
-        </View>
+      <>
         {showNonServiceableText ? renderInfoMessage() : null}
         {showPriceMismatch ? renderMismatchPrice() : null}
-      </View>
+        <View style={styles.addressOutermostView}>
+          <Text style={styles.addressHeadingText}>
+            {nameFormater(string.diagnostics.homeVisitText, 'title')}
+          </Text>
+          <View>
+            <View style={styles.addressTextView}>
+              <Text numberOfLines={4} style={styles.addressTextStyle}>
+                {addressText}
+              </Text>
+              {isModifyFlow ? null : (
+                <Text style={styles.changeTextStyle} onPress={() => showAddressPopup()}>
+                  {string.diagnostics.changeText}
+                </Text>
+              )}
+            </View>
+          </View>
+        </View>
+      </>
     );
   };
 
@@ -787,7 +789,10 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     return (
       <InfoMessage
         content={string.diagnostics.pricesChangedMessage}
-        textStyle={[styles.textStyle, { color: theme.colors.SHERPA_BLUE, opacity: 0.7 }]}
+        textStyle={[
+          styles.textStyle,
+          { color: theme.colors.SHERPA_BLUE, opacity: 0.7, width: '85%' },
+        ]}
         iconStyle={[styles.iconStyle, { tintColor: 'rgb(90,175,252)' }]}
         containerStyle={[styles.infoContainerStyle, { backgroundColor: '#E0F0FF' }]}
         isCard={false}
@@ -807,22 +812,53 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     });
   }
 
+  function getSelectedPatientCartMapping() {
+    const filterPatients =
+      isModifyFlow && !!modifiedPatientCart && modifiedPatientCart?.length > 0
+        ? modifiedPatientCart
+        : !!patientCartItems && isDiagnosticSelectedCartEmpty(patientCartItems);
+    return filterPatients;
+  }
+
   const renderAddTestOption = () => {
+    const getFilteredPatients = getSelectedPatientCartMapping();
+    const highlightButton = !!getFilteredPatients && getFilteredPatients?.length > 0;
     return (
       <View style={{ marginTop: 16 }}>
         <Button
           title={'+ ADD TESTS'}
           onPress={() => (isModifyFlow ? _navigateToSearch() : _navigateToHomePage())}
-          style={styles.addButtonStyle}
-          titleTextStyle={styles.addButtonTitleStyle}
+          style={
+            !!highlightButton && highlightButton
+              ? styles.addButtonStyle
+              : styles.addButtonHighlightStyle
+          }
+          titleTextStyle={
+            !!highlightButton && highlightButton
+              ? styles.addButtonTitleStyle
+              : styles.addButtonHighlightTitleStyle
+          }
         />
       </View>
     );
   };
 
   const onRemoveCartItem = ({ id, name }: DiagnosticsCartItem, patientId: string) => {
-    removeCartItem?.(id);
+    // check if patient cartItems has the removed item. If it does, then don't remove it from the overall.
+    const getSelectedCartItems = isDiagnosticSelectedCartEmpty(patientCartItems);
+    const getExisitngItems = getSelectedCartItems
+      ?.map((item: DiagnosticPatientCartItem) => item?.cartItems?.filter((idd) => idd?.id))
+      ?.flat();
+    const getAllItemIds = getExisitngItems?.map((items: DiagnosticsCartItem) => Number(items?.id));
     removePatientCartItem?.(patientId, id);
+    const selectedItemPresent =
+      !!getAllItemIds && getAllItemIds?.filter((itemIds: number) => itemIds == Number(id));
+    if (selectedItemPresent?.length == 1) {
+      removeCartItem?.(id);
+      const newCartItems = cartItems?.filter((item) => Number(item?.id) !== Number(id));
+      setCartItems?.(newCartItems);
+    }
+    setPatientCartItems?.(patientCartItems.slice(0));
 
     if (isModifyFlow) {
       const newCartItems = cartItems?.filter((item) => Number(item?.id) !== Number(id));
@@ -834,9 +870,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       ]);
     }
 
-    const newCartItems = cartItems?.filter((item) => Number(item?.id) !== Number(id));
-
-    setCartItems?.(newCartItems);
     if (deliveryAddressId != '') {
       const selectedAddressIndex = addresses?.findIndex(
         (address) => address?.id == deliveryAddressId
@@ -877,43 +910,41 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   };
 
   const renderCartItems = () => {
-    const filterPatients =
-      isModifyFlow && !!modifiedPatientCart && modifiedPatientCart?.length > 0
-        ? modifiedPatientCart
-        : !!patientCartItems && patientCartItems?.filter((item) => item?.cartItems?.length > 0);
-
+    const getFilteredPatients = getSelectedPatientCartMapping();
+    //marginBottom : 150
     return (
-      <View style={{ marginTop: 16, marginBottom: 150 }}>
-        {!!filterPatients &&
-          filterPatients?.map((pCartItem) => {
-            const getPatient = allCurrentPatients?.find(
-              (item: any) => item?.id === pCartItem?.patientId
-            );
-            const { patientName, genderAgeText, patientSalutation } = extractPatientDetails(
-              getPatient
-            );
-            const patientItems = pCartItem?.cartItems?.filter((cItem) => cItem?.isSelected);
+      <View style={{ marginTop: 16, marginBottom: 50 }}>
+        {!!getFilteredPatients && getFilteredPatients?.length > 0
+          ? getFilteredPatients?.map((pCartItem) => {
+              const getPatient = allCurrentPatients?.find(
+                (item: any) => item?.id === pCartItem?.patientId
+              );
+              const { patientName, genderAgeText, patientSalutation } = extractPatientDetails(
+                getPatient
+              );
+              const patientItems = pCartItem?.cartItems?.filter((cItem) => cItem?.isSelected);
 
-            return (
-              <>
-                {!!patientName && !!patientItems && patientItems?.length > 0
-                  ? renderPatientName(patientName, genderAgeText, patientSalutation)
-                  : null}
-                {!!patientItems && patientItems?.length > 0 && (
-                  <FlatList
-                    showsVerticalScrollIndicator={false}
-                    bounces={false}
-                    extraData={patientItems}
-                    style={styles.cartItemsFlatList}
-                    keyExtractor={keyExtractor}
-                    data={patientItems}
-                    ItemSeparatorComponent={() => renderSeparator()}
-                    renderItem={({ item, index }) => _renderCartItem(item, getPatient, index)}
-                  />
-                )}
-              </>
-            );
-          })}
+              return (
+                <>
+                  {!!patientName && !!patientItems && patientItems?.length > 0
+                    ? renderPatientName(patientName, genderAgeText, patientSalutation)
+                    : null}
+                  {!!patientItems && patientItems?.length > 0 && (
+                    <FlatList
+                      showsVerticalScrollIndicator={false}
+                      bounces={false}
+                      extraData={patientItems}
+                      style={styles.cartItemsFlatList}
+                      keyExtractor={keyExtractor}
+                      data={patientItems}
+                      ItemSeparatorComponent={() => renderSeparator()}
+                      renderItem={({ item, index }) => _renderCartItem(item, getPatient, index)}
+                    />
+                  )}
+                </>
+              );
+            })
+          : renderEmptyCart()}
       </View>
     );
   };
@@ -1044,6 +1075,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
   const _renderCartItem = (test: DiagnosticsCartItem, patientItems: any, index: number) => {
     const reportGenItem = reportGenDetails?.find((_item: any) => _item?.itemId === test?.id);
+    const filterDuplicateItemsForPatients =
+      !!overallArray && overallArray?.filter((item: any) => item?.patientId == patientItems?.id);
     return (
       <CartItemCard
         index={index}
@@ -1053,7 +1086,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         isCircleSubscribed={isDiagnosticCircleSubscription}
         reportGenItem={reportGenItem}
         showCartInclusions={showInclusions}
-        duplicateArray={duplicateNameArray}
+        duplicateArray={filterDuplicateItemsForPatients} //duplicateNameArray
         onPressCard={(item) => {
           CommonLogEvent(AppRoutes.CartPage, 'Navigate to test details scene');
           fetchPackageDetails(
@@ -1088,9 +1121,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         }}
         onPressRemove={(item) => {
           CommonLogEvent(AppRoutes.TestsCart, 'Remove item from cart');
-          if (cartItems?.length == 0) {
-            setDeliveryAddressId?.('');
-          }
           onRemoveCartItem(item, patientItems?.id);
         }}
       />
@@ -1100,7 +1130,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const renderMainView = () => {
     return (
       <View style={{ margin: 16 }}>
-        {renderAddressSection()}
         {renderAddTestOption()}
         {!!isCartEmpty && !isCartEmpty ? renderEmptyCart() : renderCartItems()}
       </View>
@@ -1240,7 +1269,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         inclusions?.some((num) => remainingDuplicateItems?.includes(num))
       );
 
-    console.log({ itemIdWithPackageInclusions });
     //get only itemId
     let packageInclusionItemId = itemIdWithPackageInclusions?.map((item) => Number(item?.id));
 
@@ -1312,6 +1340,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                   id: item?.id,
                   removalId: dItem?.itemId,
                   removalName: dItem?.itemName,
+                  patientId: patientId,
                 });
               }
             })
@@ -1320,13 +1349,28 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           setShowInclusions(true);
           let arrayToSet = [...duplicateNameArray, array].flat(1);
           setDuplicateNameArray(arrayToSet);
-          setDuplicateItemsArray?.(arrayToSet);
+          // setDuplicateItemsArray?.(arrayToSet);
+          // setOverallArray([...overallArray, arrayToSet]);
 
-          renderDuplicateMessage(duplicateTests, higherPricesName);
+          overallDuplicateArray = [...overallDuplicateArray, arrayToSet]?.flat(1);
+
+          setDuplicateItemsArray?.(overallDuplicateArray);
+          fullHighPriceItems = fullHighPriceItems?.concat(
+            fullHighPriceItems === '' ? higherPricesName : ', ' + higherPricesName
+          );
+          fullDuplicateItems = fullDuplicateItems?.concat(
+            fullDuplicateItems === '' ? duplicateTests : ', ' + duplicateTests
+          );
+
+          if (index === isCartEmpty?.length - 1) {
+            renderDuplicateMessage(fullDuplicateItems, fullHighPriceItems);
+            setOverallArray(overallDuplicateArray);
+          }
         }
       })
       .catch((e) => {
         //if api fails then also show the name... & remove..
+        console.log({ e });
         CommonBugFender('TestsCart_getDiagnosticsAvailability', e);
         setLoading?.(false);
         errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
@@ -1346,7 +1390,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
     setDiagnosticSlot?.(null);
     setPatientCartItems?.(patientCartItemsCopy);
-    setCartItems?.(updatedCartItems);
+    setCartItems?.(updatedCartItems); //this needs to be updated
     isModifyFlow && setModifiedPatientCart?.(updatedCartItems);
     //refetch the areas
     if (deliveryAddressId != '') {
@@ -1385,7 +1429,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
   const renderStickyBottom = () => {
     return (
-      <StickyBottomComponent>
+      <StickyBottomComponent style={{ shadowColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}>
         <Button
           title={isModifyFlow ? 'PROCEED TO NEW CART' : 'SCHEDULE APPOINTMENT'}
           onPress={() => _checkInclusionLevelDuplicates()}
@@ -1415,6 +1459,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         <ScrollView bounces={false} style={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
           {renderMainView()}
         </ScrollView>
+        {renderAddressSection()}
       </SafeAreaView>
       {renderStickyBottom()}
     </View>
@@ -1422,15 +1467,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 };
 
 const styles = StyleSheet.create({
-  addressOuterView: {
-    backgroundColor: theme.colors.WHITE,
-    marginTop: 10,
-    paddingVertical: 10,
-    marginBottom: 8,
-    marginLeft: -16,
-    marginRight: -16,
-  },
   addressHeadingText: {
+    marginLeft: 16,
+    marginTop: 16,
     ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 1, 20),
   },
   changeTextStyle: {
@@ -1446,7 +1485,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: 16,
     marginRight: 16,
-    marginBottom: 8,
   },
   addButtonStyle: {
     backgroundColor: theme.colors.WHITE,
@@ -1461,6 +1499,20 @@ const styles = StyleSheet.create({
   },
   addButtonTitleStyle: {
     color: theme.colors.APP_YELLOW,
+  },
+  addButtonHighlightStyle: {
+    backgroundColor: theme.colors.APP_YELLOW_COLOR,
+    borderColor: theme.colors.APP_YELLOW_COLOR,
+    borderWidth: 1,
+    shadowColor: 'rgba(0,0,0,0.2)',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 3,
+    height: 50,
+  },
+  addButtonHighlightTitleStyle: {
+    color: theme.colors.WHITE,
   },
   cartItemsFlatList: {
     ...theme.viewStyles.cardViewStyle,
@@ -1492,16 +1544,19 @@ const styles = StyleSheet.create({
     letterSpacing: 0.1,
     width: '94%',
     marginHorizontal: '2%',
+    padding: 4,
   },
   iconStyle: {
     resizeMode: 'contain',
     height: 16,
     width: 16,
+    marginLeft: 16,
   },
   infoContainerStyle: {
     margin: -16,
     marginBottom: 8,
     backgroundColor: '#FFE9E4',
+    alignItems: 'center',
   },
   cartEmpty: {
     color: theme.colors.SHERPA_BLUE,
@@ -1509,5 +1564,15 @@ const styles = StyleSheet.create({
     margin: 20,
     textAlign: 'center',
     textTransform: 'capitalize',
+  },
+  addressOutermostView: {
+    backgroundColor: '#F5FFFD',
+    maxHeight: 210,
+    minHeight: 150, //175
+    shadowColor: theme.colors.SHADE_GREY,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 8,
   },
 });

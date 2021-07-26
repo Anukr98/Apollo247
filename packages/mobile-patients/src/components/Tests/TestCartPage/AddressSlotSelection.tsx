@@ -161,7 +161,7 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
     const filterPatientItems = isDiagnosticSelectedCartEmpty(patientCartItems);
     var array = [] as any; //define type
 
-    const pp = filterPatientItems?.map((item) => {
+    filterPatientItems?.map((item) => {
       const getPricesForItem = createLineItemPrices(item)?.pricesForItemArray;
       const totalPrice = getPricesForItem
         ?.map((item: any) => Number(item?.price))
@@ -392,7 +392,7 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
 
   const renderStickyBottom = () => {
     return (
-      <StickyBottomComponent style={{ position: 'absolute', bottom: 0, zIndex: 100 }}>
+      <StickyBottomComponent style={{ shadowColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}>
         <Button title={'CHECKOUT'} onPress={() => _navigateToReview()} disabled={disableCTA} />
       </StickyBottomComponent>
     );

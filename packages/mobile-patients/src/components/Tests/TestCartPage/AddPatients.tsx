@@ -1,7 +1,22 @@
-import { PlusIconWhite } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  AddPatientCircleIcon,
+  Check,
+  MinusPatientCircleIcon,
+  PlusIconWhite,
+  UnCheck,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect, useState } from 'react';
-import { BackHandler, StyleSheet, Text, TouchableOpacity, View, Dimensions } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import {
+  BackHandler,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Dimensions,
+  FlatList,
+  Image,
+} from 'react-native';
 import {
   formatAddressToLocation,
   g,
@@ -10,6 +25,7 @@ import {
   checkPatientAge,
   isDiagnosticSelectedCartEmpty,
   distanceBwTwoLatLng,
+  extractPatientDetails,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   DiagnosticPatientCartItem,
@@ -19,7 +35,6 @@ import {
 import { NavigationScreenProps, SafeAreaView } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { PatientList } from '@aph/mobile-patients/src/components/Tests/components/PatientList';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -39,10 +54,15 @@ import {
   findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsByItemIDsAndCityID';
 import {
+  FIND_DIAGNOSTIC_SETTINGS,
   GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
   GET_PATIENT_ADDRESS_LIST,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { getPricesForItem, sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  diagnosticsDisplayPrice,
+  getPricesForItem,
+  sourceHeaders,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
@@ -56,11 +76,14 @@ import {
   SCREEN_NAMES,
   TimelineWizard,
 } from '@aph/mobile-patients/src/components/Tests/components/TimelineWizard';
-import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { DiagnosticPatientSelected } from '@aph/mobile-patients/src/components/Tests/Events';
+import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { findDiagnosticSettings } from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
 
 const screenHeight = Dimensions.get('window').height;
+const { SHERPA_BLUE, WHITE, APP_GREEN } = theme.colors;
 
 type Address = savePatientAddress_savePatientAddress_patientAddress;
 
@@ -82,6 +105,12 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     addresses,
     setAddresses: setTestAddress,
     addPatientCartItem,
+    removePatientCartItem,
+    setPatientCartItems,
+    removeMultiPatientCartItems,
+    setPhleboETA,
+    showMultiPatientMsg,
+    setShowMultiPatientMsg,
   } = useDiagnosticsCart();
 
   const { setAddresses } = useShoppingCart();
@@ -103,6 +132,12 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   const { setLoading, showAphAlert, hideAphAlert, loading } = useUIElements();
   const [isServiceable, setIsServiceable] = useState<boolean>(false);
   const [isFocus, setIsFocus] = useState<boolean>(false);
+  const [itemsSelected, setItemsSelected] = useState(patientCartItems);
+  const [patientLimit, setPatientLimit] = useState<number>(0);
+  const [limitMsg, setLimitMsg] = useState<string>('');
+
+  const keyExtractor = useCallback((_, index: number) => `${index}`, []);
+  const keyExtractor1 = useCallback((_, index: number) => `${index}`, []);
 
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
@@ -119,6 +154,38 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (isFocus) {
+      //remove iterate over patients and remove the items not present in cartItems
+      const newPatientCartItems = patientCartItems?.map((pCartItems) =>
+        pCartItems?.cartItems?.map((cItem) => !cartItems?.includes(cItem))
+      );
+      console.log({ newPatientCartItems });
+      // setPatientCartItems?.(newPatientCartItems);
+    }
+    if (isFocus && cartItems?.length > 0) {
+      const getExisitngItems = patientCartItems
+        ?.map((item) => item?.cartItems?.filter((idd) => idd?.id))
+        ?.flat();
+      let existingId = getExisitngItems?.map((items: DiagnosticsCartItem) => items?.id);
+      let getNewItems = cartItems?.filter((cItems) => !existingId?.includes(cItems?.id));
+      //added since, zero price + updated price item was getting added
+      const isPriceNotZero = getNewItems?.filter((item) => item?.price != 0);
+      const newCartItems = patientCartItems?.map((item) => {
+        let obj = {
+          patientId: item?.patientId,
+          cartItems: item?.cartItems?.concat(isPriceNotZero),
+        };
+        return obj;
+      });
+      setPatientCartItems?.(newCartItems);
+    }
+    //if cartitems is zero, then remove all selected patients
+    else if (isFocus && cartItems?.length == 0) {
+      removeMultiPatientCartItems?.();
+    }
+  }, [cartItems, isFocus]);
+
   function handleBack() {
     props.navigation.goBack();
     return true;
@@ -126,8 +193,26 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
 
   useEffect(() => {
     addresses?.length == 0 && fetchAddress();
+    fetchFindDiagnosticSettings();
+    if (showMultiPatientMsg) {
+      renderMultiPatientAlert();
+    }
   }, []);
 
+  /**
+   * for showing the alert msg if patient selected exceeds the limit
+   */
+  useEffect(() => {
+    const actualSelectedPatients = isDiagnosticSelectedCartEmpty(patientCartItems);
+    if (patientLimit > 0 && actualSelectedPatients?.length > patientLimit) {
+      renderAlert();
+      patientCartItems?.shift();
+    }
+  }, [patientCartItems]);
+
+  /**
+   * for fetching the prices based on the address selected on homepage
+   */
   useEffect(() => {
     if (
       (!!diagnosticServiceabilityData &&
@@ -139,10 +224,55 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     }
   }, []);
 
+  const fetchFindDiagnosticSettings = async () => {
+    try {
+      const response = await client.query<findDiagnosticSettings>({
+        query: FIND_DIAGNOSTIC_SETTINGS,
+        context: {
+          sourceHeaders,
+        },
+        variables: {
+          phleboETAInMinutes: 0,
+        },
+        fetchPolicy: 'no-cache',
+      });
+      if (!response?.errors && response?.data?.findDiagnosticSettings) {
+        const getResponse = response?.data?.findDiagnosticSettings;
+        const phleboMin =
+          (!!getResponse && getResponse?.phleboETAInMinutes) ||
+          AppConfig.Configuration.DEFAULT_PHELBO_ETA;
+        const maxPatient =
+          (!!getResponse && getResponse?.maxAllowedUhidsCount) ||
+          AppConfig.Configuration.MAX_PATIENT_SELECTION;
+        const patientLimitMsg =
+          (!!getResponse && getResponse?.maxUhidsLimitExceededMessage) ||
+          string.diagnosticsCartPage.patientSelectionLimit?.replace(
+            '{{count}}',
+            String(AppConfig.Configuration.MAX_PATIENT_SELECTION)
+          );
+        setPatientLimit(maxPatient);
+        setPhleboETA?.(phleboMin);
+        setLimitMsg(patientLimitMsg);
+      } else {
+        setPatientLimit(AppConfig.Configuration.MAX_PATIENT_SELECTION);
+        setPhleboETA?.(AppConfig.Configuration.DEFAULT_PHELBO_ETA);
+        setLimitMsg(
+          string.diagnosticsCartPage.patientSelectionLimit?.replace(
+            '{{count}}',
+            String(AppConfig.Configuration.MAX_PATIENT_SELECTION)
+          )
+        );
+      }
+    } catch (error) {
+      CommonBugFender('ReviewOrder_fetchFindDiagnosticSettings', error);
+    }
+  };
+
   function saveDiagnosticLocation(locationDetails: LocationData) {
     setDiagnosticLocation?.(locationDetails);
     setLocationDetails?.(locationDetails);
   }
+
   async function fetchAddress() {
     try {
       setLoading?.(true);
@@ -187,6 +317,38 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       },
       variables: { cityID: cityIdForAddress, itemIDs: itemIds! },
       fetchPolicy: 'no-cache',
+    });
+  };
+
+  function _onPresssMultiPatientMsgCTA() {
+    hideAphAlert?.();
+    setShowMultiPatientMsg?.(false);
+  }
+
+  const renderMultiPatientAlert = () => {
+    showAphAlert?.({
+      removeTopIcon: true,
+      onPressOutside: () => {
+        _onPresssMultiPatientMsgCTA();
+      },
+      children: (
+        <View style={{ padding: 16 }}>
+          <Text style={styles.multiPatientText}>{string.diagnosticsCartPage.multiPatientMsg}</Text>
+          <Image
+            source={require('@aph/mobile-patients/src/components/ui/icons/multiTestImage.webp')}
+          />
+          <View style={styles.multiPatientCTAView}>
+            <Button title={'OK, GOT IT'} onPress={() => _onPresssMultiPatientMsgCTA()} />
+          </View>
+        </View>
+      ),
+    });
+  };
+
+  const renderAlert = () => {
+    showAphAlert?.({
+      title: string.common.uhOh,
+      description: limitMsg,
     });
   };
 
@@ -265,7 +427,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
             //mrp
             //show the prices changed pop-over
             isPriceChange = true;
-            updateCartItem?.({
+            const updatedItems = {
               id: results?.[isItemInCart]
                 ? String(results?.[isItemInCart]?.itemId)
                 : String(cartItem?.id),
@@ -284,31 +446,12 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
                 results?.[isItemInCart]?.inclusions == null
                   ? [Number(results?.[isItemInCart]?.itemId)]
                   : results?.[isItemInCart]?.inclusions,
-              isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
-            });
+              isSelected:
+                cartItem?.isSelected || AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+            };
+            updateCartItem?.(updatedItems);
+            updatePatientCartItem?.(updatedItems);
 
-            updatePatientCartItem?.({
-              id: results?.[isItemInCart]
-                ? String(results?.[isItemInCart]?.itemId)
-                : String(cartItem?.id),
-              name: results?.[isItemInCart]?.itemName || '',
-              price: price,
-              specialPrice: specialPrice || price,
-              circlePrice: circlePrice,
-              circleSpecialPrice: circleSpecialPrice,
-              discountPrice: discountPrice,
-              discountSpecialPrice: discountSpecialPrice,
-              mou: 1,
-              thumbnail: cartItem?.thumbnail,
-              groupPlan: planToConsider?.groupPlan,
-              packageMrp: results?.[isItemInCart]?.packageCalculatedMrp,
-              inclusions:
-                results?.[isItemInCart]?.inclusions == null
-                  ? [Number(results?.[isItemInCart]?.itemId)]
-                  : results?.[isItemInCart]?.inclusions,
-              collectionMethod: TEST_COLLECTION_TYPE.HC,
-              isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
-            });
             setLoading?.(false);
           }
         }
@@ -471,8 +614,167 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     return (
       <View style={{ marginTop: 6 }}>
         <Text style={styles.subHeadingText}>
-          {string.diagnosticsCartPage.subHeadingMultipleUHID}
+          {string.diagnosticsCartPage.subHeadingMultipleUHID}{' '}
+          {patientLimit != 0 && `(Max : ${patientLimit})`}
         </Text>
+      </View>
+    );
+  };
+
+  function _onPressSelectTest(selectedTest: any, ind: number, selectedPatientDetails: any) {
+    const selectedPatientIndex = patientCartItems?.findIndex(
+      (item) => item?.patientId == selectedPatientDetails?.patientId
+    );
+
+    const getPatientDetailsCopy = JSON.parse(JSON.stringify(patientCartItems)); //created a deep copy
+
+    const arr = getPatientDetailsCopy?.[selectedPatientIndex]?.cartItems?.map(
+      (newItem: any, index: number) => {
+        if (ind == index) {
+          newItem.isSelected = !newItem?.isSelected;
+        }
+        return { ...newItem };
+      }
+    );
+    addPatientCartItem?.(selectedPatientDetails?.patientId, arr!); //just change the flag here.
+    setItemsSelected(arr!);
+  }
+
+  function _onPressPatient(patient: any, index: number) {
+    // if (cartItems?.length == 0) {
+    //   return;
+    // }
+    const isInvalidUser = checkPatientAge(patient);
+    if (isInvalidUser) {
+      _setSelectedPatient?.(null, index);
+    } else {
+      _setSelectedPatient?.(patient, index);
+    }
+  }
+
+  function _setSelectedPatient(patientDetails: any, ind: number) {
+    let arr = patientListToShow?.map((newItem: any, index: number) => {
+      if (ind == index && patientDetails != null) {
+        newItem.isPatientSelected = !newItem?.isPatientSelected;
+      }
+      return { ...newItem };
+    });
+
+    //find the selectedItem
+    const findSelectedItem = arr?.find((item: any) => item?.id == patientDetails?.id);
+    if (findSelectedItem?.isPatientSelected) {
+      //check here, if item is already selected => unselect
+      addPatientCartItem?.(patientDetails?.id, cartItems);
+    } else {
+      removePatientCartItem?.(patientDetails?.id);
+    }
+  }
+
+  const renderFooterComponent = () => {
+    return <View style={{ height: 40 }} />;
+  };
+
+  const renderSeparator = () => {
+    return <Spearator />;
+  };
+
+  const renderCartItemList = (test: any, index: number, selectedPatientDetails: any) => {
+    const itemName = test?.name;
+    const priceToShow = diagnosticsDisplayPrice(test, isDiagnosticCircleSubscription)?.priceToShow;
+    return (
+      <TouchableOpacity
+        onPress={() => _onPressSelectTest(test, index, selectedPatientDetails)}
+        style={[
+          styles.patientSelectTouch,
+          {
+            backgroundColor: !!test?.isSelected && test?.isSelected ? '#F5FFFD' : colors.WHITE,
+          },
+        ]}
+      >
+        <View style={{ width: '70%' }}>
+          <Text numberOfLines={1} style={styles.itemNameText}>
+            {nameFormater(itemName, 'default')}
+          </Text>
+        </View>
+        <View style={{ flexDirection: 'row' }}>
+          <Text style={[styles.itemNameText, { marginRight: 8 }]}>
+            {string.common.Rs}
+            {priceToShow}
+          </Text>
+          {!!test?.isSelected && test?.isSelected ? (
+            <Check style={styles.checkBoxIcon} />
+          ) : (
+            <UnCheck style={styles.checkBoxIcon} />
+          )}
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderCartItems = (patientDetails: any) => {
+    const findPatientCartMapping =
+      !!patientCartItems &&
+      patientCartItems?.find((item) => item?.patientId === patientDetails?.id);
+
+    return (
+      <View>
+        {!!findPatientCartMapping ? (
+          <View style={styles.cartItemsFlatList}>
+            <FlatList
+              showsVerticalScrollIndicator={false}
+              bounces={false}
+              keyExtractor={keyExtractor}
+              data={findPatientCartMapping?.cartItems || []}
+              renderItem={({ item, index }) =>
+                renderCartItemList(item, index, findPatientCartMapping)
+              }
+              ItemSeparatorComponent={renderSeparator}
+            />
+          </View>
+        ) : null}
+      </View>
+    );
+  };
+
+  const renderPatientListItem = (item: any, index: number) => {
+    const { patientName, genderAgeText, patientSalutation } = extractPatientDetails(item);
+    const isPresent =
+      !!patientCartItems && patientCartItems?.find((cart) => cart?.patientId == item?.id);
+    const patientSelectedItems =
+      isPresent && isPresent?.cartItems?.filter((item) => item?.isSelected);
+
+    const showGreenBg = !!patientSelectedItems && patientSelectedItems?.length > 0;
+
+    const itemViewStyle = [
+      styles.patientItemViewStyle,
+      index === 0 && { marginTop: 12 },
+      showGreenBg && { backgroundColor: APP_GREEN },
+    ];
+
+    return (
+      <View style={{ flex: 1, marginBottom: index === patientListToShow?.length - 1 ? 16 : 0 }}>
+        <TouchableOpacity
+          activeOpacity={1}
+          style={itemViewStyle}
+          onPress={() => _onPressPatient(item, index)}
+        >
+          <Text style={[styles.patientNameTextStyle, showGreenBg && { color: WHITE }]}>
+            {patientSalutation} {patientName}
+          </Text>
+          <Text style={[styles.genderAgeTextStyle, showGreenBg && { color: WHITE }]}>
+            {genderAgeText}
+          </Text>
+          <View style={styles.arrowIconView}>
+            {!showGreenBg ? (
+              <AddPatientCircleIcon style={[styles.arrowStyle]} />
+            ) : (
+              <MinusPatientCircleIcon
+                style={[styles.arrowStyle, { tintColor: WHITE, marginLeft: -6 }]}
+              />
+            )}
+          </View>
+        </TouchableOpacity>
+        {renderCartItems(item)}
       </View>
     );
   };
@@ -480,13 +782,17 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   const renderPatientsList = () => {
     return (
       <View style={styles.patientListView}>
-        <PatientList
-          itemsInCart={cartItems}
-          isCircleSubscribed={isDiagnosticCircleSubscription}
-          isFocus={isFocus}
-          patientListToShow={patientListToShow}
-          onPressContinue={_checkAddresses}
-        />
+        <View style={styles.mainViewStyle}>
+          <FlatList
+            showsVerticalScrollIndicator={false}
+            bounces={false}
+            contentContainerStyle={{ marginBottom: 20 }}
+            keyExtractor={keyExtractor1}
+            data={patientListToShow || []}
+            renderItem={({ item, index }) => renderPatientListItem(item, index)}
+            ListFooterComponent={renderFooterComponent}
+          />
+        </View>
       </View>
     );
   };
@@ -583,14 +889,13 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   const CTAdisabled = !(
     !!patientCartItems &&
     patientCartItems?.length > 0 &&
-    cartItems?.length > 0 &&
-    isServiceable
+    isCartEmpty?.length > 0
   );
 
   const renderStickyBottom = () => {
     return (
-      <StickyBottomComponent>
-        <Button title={'CONTINUE'} onPress={() => _navigateToCartPage()} disabled={CTAdisabled} />
+      <StickyBottomComponent style={{ shadowColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}>
+        <Button title={'CONTINUE'} onPress={() => _checkAddresses()} disabled={CTAdisabled} />
       </StickyBottomComponent>
     );
   };
@@ -623,11 +928,12 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
         {renderWizard()}
         {renderMainView()}
       </SafeAreaView>
-      {/* {renderStickyBottom()} */}
+      {renderStickyBottom()}
     </View>
   );
 };
 
+const { text, cardViewStyle } = theme.viewStyles;
 const styles = StyleSheet.create({
   rowStyle: { flexDirection: 'row', justifyContent: 'space-between' },
   flexRow: { flexDirection: 'row' },
@@ -648,6 +954,74 @@ const styles = StyleSheet.create({
   patientListView: {
     flexGrow: 1,
     marginBottom: 16,
-    height: screenHeight - 240, //300
+    height: screenHeight - 300, //240
   },
+
+  mainViewStyle: {
+    flexGrow: 1,
+    marginVertical: 16,
+    flex: 1,
+  },
+  patientItemViewStyle: {
+    flexDirection: 'row',
+    flex: 1,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    ...cardViewStyle,
+    padding: 12,
+    marginTop: 16,
+    minHeight: 45,
+  },
+  patientNameTextStyle: {
+    ...text('SB', 14, SHERPA_BLUE, 1, 19, 0),
+    width: '70%',
+  },
+  genderAgeTextStyle: {
+    ...text('M', 12, SHERPA_BLUE, 1, 15.6, -0.36),
+  },
+  arrowStyle: {
+    tintColor: SHERPA_BLUE,
+    height: 18,
+    width: 20,
+    resizeMode: 'contain',
+  },
+  itemNameText: {
+    ...text('M', 14.5, '#313131', 1, 19.1),
+  },
+  cartItemsFlatList: {
+    borderColor: 'rgba(2,71,91,0.2)',
+    borderWidth: 1.5,
+    marginLeft: 4,
+    marginRight: 4,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    backgroundColor: colors.WHITE,
+    borderStyle: 'solid',
+  },
+  patientSelectTouch: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 16,
+  },
+  checkBoxIcon: {
+    height: 20,
+    width: 20,
+    resizeMode: 'contain',
+  },
+  arrowIconView: {
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonView: {
+    marginLeft: -16,
+    marginRight: -16,
+    marginBottom: screenHeight > 1000 ? 20 : -3,
+  },
+  multiPatientText: {
+    ...text('B', 16, SHERPA_BLUE, 1, 24),
+    marginBottom: 10,
+  },
+  multiPatientCTAView: { marginTop: 16, width: '87%', alignSelf: 'center' },
 });

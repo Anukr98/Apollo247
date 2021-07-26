@@ -241,8 +241,8 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       ? moment(modifiedOrderDetails?.slotDateTimeInUTC)?.format('YYYY')
       : timeDate != '' && moment(timeDate)?.format('YYYY');
     const time = !!modifiedOrderDetails
-      ? formatTestSlotWithBuffer(moment(modifiedOrderDetails?.slotDateTimeInUTC)?.format('hh:mm'))
-      : timeDate != '' && formatTestSlotWithBuffer(moment(timeDate)?.format('hh:mm A'));
+      ? moment(modifiedOrderDetails?.slotDateTimeInUTC)?.format('hh:mm')
+      : timeDate != '' && moment(timeDate)?.format('hh:mm A');
     return (
       <>
         {!!date && !!time && !!year ? (

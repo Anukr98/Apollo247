@@ -1049,7 +1049,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         patientAddress?.defaultAddress && setDeliveryAddressId?.(patientAddress?.id);
         setDiagnosticSlot?.(null);
         const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
-        console.log({ deliveryAddress });
         saveDiagnosticLocation(
           formatAddressToLocation(deliveryAddress),
           DIAGNOSTIC_PINCODE_SOURCE_TYPE.ADDRESS
@@ -1433,7 +1432,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 navigation={props.navigation}
                 source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.HOME}
                 sourceScreen={AppRoutes.Tests}
-                patientCartItems={patientCartItems}
               />
             )}
           </>
@@ -1987,7 +1985,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE, 1, 20),
             },
           ]}
-          rightText={showViewAll ?  'VIEW ALL' : ''}
+          rightText={showViewAll ? 'VIEW ALL' : ''}
           rightTextStyle={styles.widgetViewAllText} //showViewAll ? styles.widgetViewAllText : {}
           onPressRightText={() => {
             props.navigation.navigate(AppRoutes.TestWidgetListing, {

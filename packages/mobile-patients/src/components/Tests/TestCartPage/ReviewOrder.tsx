@@ -164,6 +164,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     modifiedPatientCart,
     setModifiedPatientCart,
     setPatientCartItems,
+    phleboETA,
   } = useDiagnosticsCart();
 
   const { setAddresses: setMedAddresses, circleSubscriptionId } = useShoppingCart();
@@ -252,7 +253,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   }
 
   useEffect(() => {
-    fetchFindDiagnosticSettings();
+    isModifyFlow && fetchFindDiagnosticSettings();
     //modify case
     if (isModifyFlow && cartItems?.length > 0 && modifiedPatientCart?.length > 0) {
       //if multi-uhid modify -> don't call phleboCharges api
@@ -563,7 +564,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
               width: screenWidth > 350 ? '80%' : '75%',
             }}
           >
-            <Text style={[styles.addressTextStyle, styles.quantityTextStyle]}>X{item?.mou}</Text>
+            <View style={styles.quantityViewStyle}>
+              <Text style={[styles.addressTextStyle, styles.quantityTextStyle]}>X{item?.mou}</Text>
+            </View>
             <Text style={styles.addressTextStyle}>{nameFormater(item?.name, 'title')}</Text>
           </View>
           <Text style={styles.addressTextStyle}>
@@ -1179,6 +1182,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       source === BOOKING_TYPE.SAVE ? data?.[0]?.errorMessageToDisplay : data?.errorMessageToDisplay;
     let message = errorMsgToRead || string.diagnostics.bookingOrderFailedMessage;
     //itemIds will only come in case of duplicate
+    //fix this for all itemIds ->
     let itemIds =
       source === BOOKING_TYPE.SAVE ? data?.[0]?.attributes?.itemids : data?.attributes?.itemids;
     let patientId =
@@ -1608,7 +1612,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         disableProceedToPay={disableProceedToPay}
         onPressProceedtoPay={() => onPressProceedToPay()}
         showTime={showTime}
-        phleboMin={phleboMin}
+        phleboMin={isModifyFlow ? phleboMin : phleboETA}
         isModifyCOD={
           isModifyFlow
             ? modifiedOrder?.paymentType !== DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT
@@ -1676,15 +1680,19 @@ const styles = StyleSheet.create({
     marginLeft: 16,
   },
   quantityTextStyle: {
-    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
-    width: 40,
-    borderRadius: 5,
-    borderWidth: 1,
-    marginRight: 6,
-    borderColor: theme.colors.TEST_CARD_BUTTOM_BG,
     textAlign: 'center',
     fontSize: 12,
     alignSelf: 'center',
+  },
+  quantityViewStyle: {
+    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
+    width: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 6,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: theme.colors.TEST_CARD_BUTTOM_BG,
   },
   totalChargesContainer: {
     backgroundColor: theme.colors.WHITE,
@@ -1788,6 +1796,3 @@ const styles = StyleSheet.create({
     margin: 16,
   },
 });
-function createOrderInternal(orderInput: OrderCreate) {
-  throw new Error('Function not implemented.');
-}

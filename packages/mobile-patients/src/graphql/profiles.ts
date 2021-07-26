@@ -5237,6 +5237,8 @@ export const FIND_DIAGNOSTIC_SETTINGS = gql`
   query findDiagnosticSettings {
     findDiagnosticSettings {
       phleboETAInMinutes
+      maxAllowedUhidsCount
+      maxUhidsLimitExceededMessage
     }
   }
 `;

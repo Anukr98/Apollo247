@@ -610,7 +610,9 @@
     "levidText": "will be levied on your total amount.",
     "nonServiceableText": "This address is not serviceable",
     "homeCollectionText" : "Collection and hygiene charges",
-    "paidSlotText": "Paid slot charges"
+    "paidSlotText": "Paid slot charges",
+    "patientSelectionLimit" : "You can add only {{count}} patients. Please remove extra patients",
+    "multiPatientMsg": "You can now book tests for your family and friends in a single order"
   },
   "orders": {
     "urOrders": "MY ORDERS",
