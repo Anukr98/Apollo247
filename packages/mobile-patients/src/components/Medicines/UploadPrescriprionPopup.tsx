@@ -203,7 +203,7 @@ export interface UploadPrescriprionPopupRefProps {
   onPressGallery: () => void;
 }
 
-const MAX_FILE_SIZE = 2000000; // 2MB
+const MAX_FILE_SIZE = 25000000; // ~25MB
 
 export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
   UploadPrescriprionPopupProps
@@ -368,7 +368,7 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
           strings.common.uhOh,
           !isValidPdf
             ? `Invalid File Type. File type must be PDF.`
-            : `Invalid File Size. File size must be less than 2MB.`
+            : `Invalid File Size. File size must be less than 25MB.`
         );
         return;
       }
@@ -424,7 +424,7 @@ export const UploadPrescriprionPopup: ForwardRefExoticComponent<PropsWithoutRef<
           : Number(images['size']) > MAX_FILE_SIZE;
         setshowSpinner(false);
         if (isGreaterThanSpecifiedSize) {
-          Alert.alert(strings.common.uhOh, `Invalid File Size. File size must be less than 2MB.`);
+          Alert.alert(strings.common.uhOh, `Invalid File Size. File size must be less than 25MB.`);
           return;
         }
         props.onResponse('CAMERA_AND_GALLERY', formatResponse(images), 'Gallery');
