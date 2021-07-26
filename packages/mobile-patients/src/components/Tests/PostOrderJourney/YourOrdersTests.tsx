@@ -882,9 +882,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     let selectedOrderTime = selectedOrder?.slotDateTimeInUTC;
     selectedOrderTime = moment(selectedOrderTime);
     const current = moment();
-    // const cancelReasonArray = moment(current).isAfter(selectedOrderTime)
-    //   ? CANCELLATION_REASONS
-    //   : PRE_CANCELLATION_REASONS;
     const cancelReasonArray = cancelReasonList;
     return (
       <View>
