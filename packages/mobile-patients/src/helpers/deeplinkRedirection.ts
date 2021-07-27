@@ -385,7 +385,7 @@ export const handleOpenURL = (event: any) => {
         };
         break;
       case 'testordersummary':
-      case 'test-order-sumarry':
+      case 'test-order-summary':
         return {
           routeName: 'TestOrderSummary',
           id: linkId ? linkId : undefined
