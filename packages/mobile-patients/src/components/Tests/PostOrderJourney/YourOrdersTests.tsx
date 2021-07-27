@@ -66,10 +66,7 @@ import {
   BLACK_LIST_CANCEL_STATUS_ARRAY,
   BLACK_LIST_RESCHEDULE_STATUS_ARRAY,
   DIAGNOSTIC_ORDER_FAILED_STATUS,
-  TestCancelReasons,
-  TestReschedulingReasons,
   DIAGNOSTIC_CONFIRMED_STATUS,
-  TestCancelReasonsPre,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -122,9 +119,6 @@ export interface YourOrdersTestProps extends NavigationScreenProps {
 }
 
 export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
-  const RESCHEDULE_REASONS = TestReschedulingReasons.reasons;
-  const CANCELLATION_REASONS = TestCancelReasons.reasons;
-  const PRE_CANCELLATION_REASONS = TestCancelReasonsPre.reasons;
   const CANCEL_RESCHEDULE_OPTION = [
     string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
     string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
@@ -928,7 +922,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                     </View>
                   ) : null}
 
-                  {index === CANCELLATION_REASONS?.length - 1 ? null : (
+                  {index === cancelReasonArray?.length - 1 ? null : (
                     <Spearator style={{ marginTop: 6 }} />
                   )}
                   {selectCancelReason ===
