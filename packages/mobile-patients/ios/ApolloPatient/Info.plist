@@ -49,6 +49,10 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>CleverTapAccountID</key>
+	<string>TEST-KK4-4K4-6R6Z</string>
+	<key>CleverTapToken</key>
+	<string>TEST-434-433</string>
 	<key>CodePushDeploymentKey</key>
 	<string>N9LT5oUoB9DUv394XXz05Tywn3LKgHsugfl3i</string>
 	<key>FirebaseScreenReportingEnabled</key>
@@ -161,9 +165,5 @@
 	<string>VERBOSE</string>
 	<key>WEGManualIntegration</key>
 	<true/>
-	<key>CleverTapAccountID</key>
-	<string>TEST-9W8-97W-7Z6Z</string>
-	<key>CleverTapToken</key>
-	<string>TEST-0ac-b0c</string>
 </dict>
 </plist>

@@ -30,6 +30,8 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.clevertap.android.sdk.CleverTapAPI;
 import com.clevertap.android.sdk.pushnotification.NotificationInfo;
+import com.clevertap.pushtemplates.TemplateRenderer;
+import com.clevertap.pushtemplates.Utils;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -101,7 +103,11 @@ public class MyFirebaseMessagingService
                 Log.e("TAG","onReceived Mesaage Called");
                 NotificationInfo info = CleverTapAPI.getNotificationInfo(extras);
                 if (info.fromCleverTap) {
-                    CleverTapAPI.createNotification(getApplicationContext(), extras);
+                    if (Utils.isForPushTemplates(extras)) {
+                        TemplateRenderer.createNotification(getApplicationContext(), extras);
+                    } else {
+                        CleverTapAPI.createNotification(getApplicationContext(), extras);
+                    }
                 }
             }
 

@@ -62,7 +62,7 @@ public class MainActivity extends ReactActivity {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            CleverTapAPI.createNotificationChannel(getApplicationContext(),"Marketing","Marketing","Marketing Push Notification Channel",NotificationManager.IMPORTANCE_HIGH,true);
+            CleverTapAPI.createNotificationChannel(getApplicationContext(),"Marketing","Marketing","",NotificationManager.IMPORTANCE_HIGH,true);
         }
 
         try {

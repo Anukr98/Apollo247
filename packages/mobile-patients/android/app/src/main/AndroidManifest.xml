@@ -103,10 +103,22 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+        <service
+            android:name="com.clevertap.pushtemplates.PTNotificationIntentService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.clevertap.PT_PUSH_EVENT"/>
+            </intent-filter>
+        </service>
         <service android:name=".RingtonePlayingService" />
 
         <receiver
             android:name="com.clevertap.android.sdk.pushnotification.CTPushNotificationReceiver"
+            android:exported="false"
+            android:enabled="true">
+        </receiver>
+        <receiver
+            android:name="com.clevertap.pushtemplates.PushTemplateReceiver"
             android:exported="false"
             android:enabled="true">
         </receiver>
