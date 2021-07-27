@@ -13,6 +13,7 @@ import {
   UnCheck,
   CheckIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { paymentModeVersionCheck } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export interface NewCardProps {
   onPressNewCardPayNow: (cardInfo: any, saveCard: any) => void;
@@ -46,15 +47,29 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
     ExpYear: validity.slice(3),
     CVV: CVV,
   };
+  const [isCardSupported, setIsCardSupported] = useState<boolean>(true);
+
+  useEffect(() => {
+    isCardValid && cardNumber?.replace(/\-/g, '')?.length >= 6
+      ? checkIsCardSupported()
+      : setIsCardSupported(true);
+  }, [cardbin]);
 
   const fetchCardInfo = async (text: any) => {
     const number = text.replace(/\-/g, '');
     if (number.length >= 6) {
       try {
         const response = await CardInfo(number.slice(0, 6));
-        response && setCardbin(response?.data);
-        response?.data?.brand == '' ? setisCardValid(false) : setisCardValid(true);
-      } catch (e) {}
+        response?.data && setCardbin(response?.data);
+        response?.data
+          ? response?.data?.brand
+            ? setisCardValid(true)
+            : setisCardValid(false)
+          : setisCardValid(false);
+      } catch (e) {
+        setisCardValid(false);
+        setCardbin({});
+      }
     } else if (number.length < 6) {
       setCardbin({});
       setisCardValid(true);
@@ -63,6 +78,14 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
       var card = cardValidator(text);
       setCardDetails(card.getCardDetails());
     }
+  };
+
+  const checkIsCardSupported = () => {
+    const cardInfo =
+      cardbin?.brand && cardTypes?.find((item: any) => item?.payment_method_code == cardbin?.brand);
+    cardInfo && paymentModeVersionCheck(cardInfo?.minimum_supported_version)
+      ? setIsCardSupported(true)
+      : setIsCardSupported(false);
   };
 
   function updateCard(num: string) {
@@ -104,7 +127,8 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
       validity.length != 5 ||
       CVV.length < (cardDetails?.cvv_length || 3) ||
       name == '' ||
-      !isCardValid
+      !isCardValid ||
+      !isCardSupported
     );
   }
 
@@ -121,7 +145,7 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
   const cardNumberInput = () => {
     const inputStyle = {
       ...styles.inputStyle,
-      borderBottomColor: isCardValid ? '#00B38E' : '#FF748E',
+      borderBottomColor: isCardValid && isCardSupported ? '#00B38E' : '#FF748E',
     };
     return (
       <View>
@@ -151,6 +175,8 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
   const renderInvalidCardNumber = () => {
     return !isCardValid ? (
       <Text style={styles.inValidText}>Invalid Card number</Text>
+    ) : !isCardSupported ? (
+      <Text style={styles.inValidText}>Card is not supported</Text>
     ) : (
       <View style={{ height: 14 }}></View>
     );
