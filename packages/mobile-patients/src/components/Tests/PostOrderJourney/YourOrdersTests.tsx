@@ -1338,11 +1338,16 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     downloadLabTest(order?.labReportURL!, appointmentDate, patientName, order);
   }
 
-  async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string, order: orderList) {
+  async function downloadLabTest(
+    pdfUrl: string,
+    appointmentDate: string,
+    patientName: string,
+    order: orderList
+  ) {
     setLoading?.(true);
     try {
       await downloadDiagnosticReport(setLoading, pdfUrl, appointmentDate, patientName, true);
-      setViewReportOrderId(order?.displayId)
+      setViewReportOrderId(order?.displayId);
     } catch (error) {
       setLoading?.(false);
       CommonBugFender('YourOrderTests_downloadLabTest', error);
@@ -1484,7 +1489,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               activeOrder?.displayId
             );
             if (res == activeOrder?.displayId) {
-              setViewReportOrderId(activeOrder?.displayId)
+              setViewReportOrderId(activeOrder?.displayId);
             }
           }}
           onClose={() => setDisplayViewReport(false)}

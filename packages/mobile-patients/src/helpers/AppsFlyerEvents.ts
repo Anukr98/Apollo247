@@ -277,12 +277,12 @@ export interface AppsFlyerEvents {
     Pincode: string | number;
   };
   [AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED]: {
-    'customer id': string;
+    'customer id'?: string;
     'cart size': number;
     af_revenue: number;
     af_currency: string;
     'order id': string;
-    orderAutoId: string;
+    orderAutoId?: string;
     'coupon applied': boolean;
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
@@ -552,5 +552,11 @@ export interface AppsFlyerEvents {
     transaction_id: string;
     af_revenue: number;
     af_currency: string;
+  };
+
+  [AppsFlyerEventName.PAYMENT_STATUS]: {
+    status: string;
+    LOB: string;
+    paymentOrderId: number;
   };
 }
