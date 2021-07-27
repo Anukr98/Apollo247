@@ -14,7 +14,6 @@ import {
   postFirebaseEvent,
   postCleverTapEvent,
   getCleverTapCircleMemberValues,
-  getCircleEventSource,
   getCircleNoSubscriptionText,
   getUserType,
   CircleEventSource,

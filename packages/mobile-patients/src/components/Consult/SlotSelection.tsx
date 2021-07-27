@@ -801,7 +801,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
       whatsAppUpdate: whatsAppUpdate,
       isDoctorsOfTheHourStatus: doctorDetails?.doctorsOfTheHourStatus,
     };
-    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION] = {
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION] = {
       docName: g(doctorDetails, 'fullName')!,
       specialtyName: g(doctorDetails, 'specialty', 'name')!,
       experience: Number(g(doctorDetails, 'experience')!),
@@ -826,7 +826,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     };
     postCleverTapEvent(
       CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION,
-      eventAttributes
+      cleverTapEventAttributes
     );
     isOnlineSelected
       ? props.navigation.navigate(AppRoutes.PaymentCheckout, passProps)
