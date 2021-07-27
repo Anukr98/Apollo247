@@ -1590,7 +1590,7 @@ const styles = StyleSheet.create({
   addressOutermostView: {
     backgroundColor: '#F5FFFD',
     maxHeight: 210,
-    minHeight: screenHeight > 800 ? 150 : 175,
+    minHeight: screenHeight > 800 ? 150 : screenHeight < 600 ? 165 : 175,
     shadowColor: theme.colors.SHADE_GREY,
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.5,

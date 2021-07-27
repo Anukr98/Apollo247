@@ -153,7 +153,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [showDisplaySchedule, setDisplaySchedule] = useState<boolean>(false);
   const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
   const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
-  const [selectedOrderId, setSelectedOrderId] = useState<number>(0);
+  const [selectedOrderId, setSelectedOrderId] = useState<string>('');
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
   const [todaySlotNotAvailable, setTodaySlotNotAvailable] = useState<boolean>(false);
@@ -411,7 +411,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   };
 
-  function updateCancelCard(orderId: string) {
+  function updateCancelCard(orderId: string | number) {
     const findOrderIndex = orders?.findIndex((arrObj: orderListByMobile) => arrObj?.id === orderId);
     if (findOrderIndex !== -1) {
       orders[findOrderIndex].orderStatus = DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED;
@@ -614,11 +614,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         const diagnosticSlots = getSlotResponse?.available_slots || [];
         const updatedDiagnosticSlots =
           moment(date).format('YYYY-MM-DD') == dt
-            ? diagnosticSlots?.filter((item) => item?.slotDetail?.slotDisplayTime != tm)
+            ? diagnosticSlots?.filter((item: any) => item?.slotDetail?.slotDisplayTime != tm)
             : diagnosticSlots;
 
         let slotsArray: any = [];
-        updatedDiagnosticSlots?.forEach((item) => {
+        updatedDiagnosticSlots?.forEach((item: any) => {
           slotsArray.push({
             slotInfo: {
               endTime: item?.slotDetail?.slotDisplayTime,
@@ -1106,7 +1106,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       ? CANCELLATION_REASONS
       : PRE_CANCELLATION_REASONS;
     return (
-      <View style={{ height: height - 180}}>
+      <View style={{ height: height - 180 }}>
         <Text style={styles.overlayHeadingText}>
           {string.diagnostics.reasonForCancellationText}
         </Text>
@@ -1126,8 +1126,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                           ? 100
                           : 40,
                       paddingTop: 10,
-                      justifyContent:'space-between'
-
+                      justifyContent: 'space-between',
                     },
                     styles.marginStyle,
                   ]}

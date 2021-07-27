@@ -838,7 +838,6 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         const ePrescriptions = cartItemsFromStorage[2][1];
         const showMultiPatientMsg = cartItemsFromStorage[3][1];
         // const patientCartItems = cartItemsFromStorage[4][1];
-        console.log({ cartItemsFromStorage });
         _setCartItems(JSON.parse(cartItems || 'null') || []);
         _setPhysicalPrescriptions(JSON.parse(physicalPrescriptions || 'null') || []);
         _setEPrescriptions(JSON.parse(ePrescriptions || 'null') || []);

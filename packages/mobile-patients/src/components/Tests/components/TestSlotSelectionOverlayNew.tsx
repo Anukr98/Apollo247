@@ -480,10 +480,8 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
               borderTopLeftRadius: showInOverlay ? 10 : 0,
               borderTopRightRadius: showInOverlay ? 10 : 0,
               marginTop: showInOverlay ? 140 : 16,
-              marginBottom: !showInOverlay ? height / 2.8 : 0,
+              marginBottom: !showInOverlay ? height / 2.8 : 0, //2.8
             },
-            showInOverlay && { flex: 1 },
-            !showInOverlay && { height: height / 1.5 },
           ]}
         >
           {showInOverlay ? (
@@ -538,12 +536,14 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
 const styles = StyleSheet.create({
   containerStyle: {
     backgroundColor: theme.colors.WHITE,
+    flex: 1,
   },
   containerContentStyle: {
     flex: 1,
     backgroundColor: theme.colors.WHITE,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
+    flexGrow: 1,
   },
   closeContainer: {
     alignSelf: 'flex-end',
