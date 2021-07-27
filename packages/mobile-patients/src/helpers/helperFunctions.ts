@@ -1557,7 +1557,7 @@ export const onCleverTapUserLogin = async (_currentPatient: any) => {
     const _userProfile = {
       Name: _currentPatient?.firstName + ' ' + (_currentPatient?.lastName || ''),
       UHID: _currentPatient?.uhid || '',
-      Identity: _currentPatient?.mobileNumber || '',
+      Identity: _currentPatient?.mobileNumber?.replace('+', '') || '',
       MobileNumber: _currentPatient?.mobileNumber || '',
       Firstname: _currentPatient?.firstName || '',
       ...(_currentPatient?.lastName && { Lastname: _currentPatient?.lastName }),
