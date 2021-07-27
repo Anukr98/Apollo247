@@ -9,6 +9,7 @@ import {
   View,
   FlatList,
   ScrollView,
+  Dimensions,
 } from 'react-native';
 import {
   aphConsole,
@@ -94,7 +95,7 @@ import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/component
 
 type Address = savePatientAddress_savePatientAddress_patientAddress;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
-
+const screenHeight = Dimensions.get('window').height;
 export interface CartPageProps extends NavigationScreenProps {}
 
 export const CartPage: React.FC<CartPageProps> = (props) => {
@@ -1584,7 +1585,7 @@ const styles = StyleSheet.create({
   addressOutermostView: {
     backgroundColor: '#F5FFFD',
     maxHeight: 210,
-    minHeight: 150, //175
+    minHeight: screenHeight > 800 ? 150 : 175,
     shadowColor: theme.colors.SHADE_GREY,
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.5,
