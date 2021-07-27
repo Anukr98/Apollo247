@@ -515,7 +515,30 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       .catch((e) => {
         CommonBugFender('DoctorDetails_getNetStatus', e);
       });
+
+    let trimmedDoctorId = doctorId;
+    if (doctorId.length > 36) {
+      // trimming off doctorId if greater the uuid size
+      trimmedDoctorId = doctorId.substring(doctorId.length - 36);
+      setDoctorId(trimmedDoctorId);
+    }
   }, []);
+
+  useEffect(() => {
+    getNetStatus()
+      .then((status) => {
+        if (status) {
+          fetchDoctorDetails();
+          fetchAppointmentHistory();
+        } else {
+          setshowSpinner(false);
+          setshowOfflinePopup(true);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('DoctorDetails_getNetStatus', e);
+      });
+  }, [doctorId]);
 
   useEffect(() => {
     const display = props.navigation.state.params
@@ -596,6 +619,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const fetchDoctorDetails = () => {
+    //the obtained uuid is not valid, it is the obtained deeplink slug
+    if (doctorId.length > 36) {
+      return;
+    }
+
     const input = {
       id: doctorId,
     };
@@ -1091,7 +1119,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       onPress={() => onPressMeetInPersonCard()}
                     >
                       <View>
-                        <Text style={styles.onlineConsultLabel}>Meet in Person</Text>
+                        <Text style={styles.onlineConsultLabel}>
+                          {string.consultModeTab.HOSPITAL_VISIT}
+                        </Text>
                         {isCircleDoctor && physicalConsultMRPPrice > 0 ? (
                           renderCareDoctorPricing(ConsultMode.PHYSICAL)
                         ) : (

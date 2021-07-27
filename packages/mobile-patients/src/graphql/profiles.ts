@@ -1092,6 +1092,7 @@ export const GET_ALL_SPECIALTIES = gql`
       image
       specialistSingularTerm
       specialistPluralTerm
+      slugName
       userFriendlyNomenclature
       # displayOrder
       shortDescription
@@ -5462,16 +5463,6 @@ export const GET_ALL_VACCINATION_APPOINTMENTS = gql`
   }
 `;
 
-export const DIAGNOSITC_EXOTEL_CALLING = gql`
-  mutation diagnosticExotelCalling($orderId: ID!) {
-    diagnosticExotelCalling(orderId: $orderId) {
-      errorMessage
-      sid
-      success
-    }
-  }
-`;
-
 export const COWIN_REGISTRATION = gql`
   mutation cowinRegistration($cowinRegistration: CowinRegistrationInput!) {
     cowinRegistration(cowinRegistration: $cowinRegistration) {
@@ -5486,3 +5477,23 @@ export const COWIN_REGISTRATION = gql`
     }
   }
 `;
+
+export const DIAGNOSITC_EXOTEL_CALLING = gql`
+  mutation diagnosticExotelCalling($orderId: ID!) {
+    diagnosticExotelCalling(orderId: $orderId) {
+      errorMessage
+      sid
+      success
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_PAYMENT_SETTINGS  = gql`
+  query getDiagnosticPaymentSettings($paymentOrderId: String!) {
+    getDiagnosticPaymentSettings(paymentOrderId: $paymentOrderId) {
+      cod
+      hc_credits_message
+    }
+  }
+`;
+

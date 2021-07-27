@@ -3982,7 +3982,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       caseSheet?.[0]?.blobName! || currentCaseSheet?.[0]?.blobName!
     );
     const presToAdd = {
-      id: caseSheet?.[0]?.id || currentCaseSheet?.[0].id,
+      id: appointmentData?.id,
+      appointmentId: appointmentData?.id,
       date: moment(appointmentData?.appointmentDateTime).format('DD MMM YYYY'),
       doctorName: appointmentData?.doctorInfo?.displayName || '',
       forPatient: currentPatient?.firstName || '',

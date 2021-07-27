@@ -211,7 +211,9 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
         .map((item) => item.prismPrescriptionFileId)
         .filter((i) => i);
       const days = durationDays ? parseInt(durationDays) : null;
-      const appointmentIds = ePrescription?.length ? ePrescription?.map((item) => item?.id) : [];
+      const appointmentIds = ePrescription?.length
+        ? ePrescription?.filter((item) => item?.appointmentId)?.map((item) => item?.appointmentId)
+        : [];
 
       const prescriptionMedicineInput: savePrescriptionMedicineOrderOMSVariables = {
         prescriptionMedicineOMSInput: {

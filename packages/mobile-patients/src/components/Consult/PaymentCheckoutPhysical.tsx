@@ -388,7 +388,9 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
             </Text>
             <View style={styles.doctorPointers}>
               <PhysicalAppointmentMarkerIcon style={styles.doctorPointersImage} />
-              <Text style={styles.appointmentTimeStyle}>Meet In Person</Text>
+              <Text style={styles.appointmentTimeStyle}>
+                {string.consultModeTab.HOSPITAL_VISIT}
+              </Text>
             </View>
             <View style={styles.doctorPointers}>
               <AppointmentCalendarIcon style={[styles.doctorPointersImage, { marginTop: -1 }]} />

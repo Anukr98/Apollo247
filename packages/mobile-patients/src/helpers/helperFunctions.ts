@@ -1352,6 +1352,7 @@ export const reOrderMedicines = async (
     (item, index) =>
       ({
         id: appointmentIds?.[index],
+        appointmentId: appointmentIds?.[index],
         date: moment(g(order, 'createdDate')).format('DD MMM YYYY'),
         doctorName: `Meds Rx ${(order.id && order.id.substring(0, order.id.indexOf('-'))) || ''}`,
         forPatient: g(currentPatient, 'firstName') || '',

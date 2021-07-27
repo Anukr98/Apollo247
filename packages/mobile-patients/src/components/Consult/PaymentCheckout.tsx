@@ -228,12 +228,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     isCircleDoctorOnSelectedConsultMode && !circleSubscriptionId && !circlePlanSelected;
   let finalAppointmentInput = appointmentInput;
   finalAppointmentInput['couponCode'] = coupon ? coupon : null;
-  finalAppointmentInput['actualAmount'] =
-    circlePlanSelected && isCircleDoctorOnSelectedConsultMode
-      ? isOnlineConsult
-        ? onlineConsultSlashedPrice
-        : physicalConsultSlashedPrice
-      : Number(price);
+  finalAppointmentInput['actualAmount'] = Number(price);
   const planPurchaseDetails = {
     TYPE: PLAN.CARE_PLAN,
     PlanAmount: circlePlanSelected?.currentSellingPrice,
@@ -247,7 +242,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         : physicalConsultSlashedPrice
       : Number(price);
   const [doctorDiscountedFees, setDoctorDiscountedFees] = useState<number>(actualAmount);
-  finalAppointmentInput['discountedAmount'] = doctorDiscountedFees;
+  finalAppointmentInput['discountedAmount'] = consultAmounttoPay;
   const totalSavings =
     isCircleDoctorOnSelectedConsultMode && (circleSubscriptionId || circlePlanSelected)
       ? isOnlineConsult

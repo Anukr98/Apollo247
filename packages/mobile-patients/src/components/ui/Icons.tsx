@@ -1782,9 +1782,6 @@ export const InfoIconRed: React.FC<IconProps> = (props) => (
 export const InfoIconBlue: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_info_blue_2x.webp')} />
 );
-export const WhyBookUs: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/whyBookUsDetail_Icon.webp')} />
-);
 
 export const ExpiredBanner: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/Expired_banner.webp')} />
@@ -1955,5 +1952,13 @@ export const GreenClock: React.FC<IconProps> = (props) => (
   <IconBase
     {...props}
     source={require('@aph/mobile-patients/src/components/ui/icons/green_clock.webp')}
+  />
+);
+
+export const SavingsIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/saving_icon.webp')}
   />
 );
