@@ -1106,11 +1106,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       ? CANCELLATION_REASONS
       : PRE_CANCELLATION_REASONS;
     return (
-      <View style={{ height: height - 150 }}>
+      <View style={{ height: height - 180}}>
         <Text style={styles.overlayHeadingText}>
           {string.diagnostics.reasonForCancellationText}
         </Text>
-        <ScrollView style={[styles.reasonsContainer, { height: '90%' }]}>
+        <ScrollView style={[styles.reasonsContainer]}>
           {cancelReasonArray?.map((item: string, index: number) => {
             return (
               <View style={{ flex: 1 }}>
@@ -1125,6 +1125,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                         CANCEL_RESCHEDULE_OPTION.includes(selectCancelReason)
                           ? 100
                           : 40,
+                      paddingTop: 10,
+                      justifyContent:'space-between'
+
                     },
                     styles.marginStyle,
                   ]}

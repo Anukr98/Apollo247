@@ -1990,6 +1990,7 @@ export enum APPOINTMENT_STATUS {
   COMPLETED = 'COMPLETED',
   FAILED = 'FAILED',
   VERIFIED = 'VERIFIED',
+  REJECTED = "REJECTED"
 }
 /** * dose number first second */
 export enum DOSE_NUMBER {
@@ -2001,7 +2002,7 @@ export enum PAYMENT_TYPE {
   CASHLESS = 'CASHLESS',
   COD = 'COD',
   PREPAID = 'PREPAID',
-  IN_APP_PURCHASE='IN_APP_PURCHASE',
+  IN_APP_PURCHASE = "IN_APP_PURCHASE"
 }
 /** * booking source */
 export enum VACCINE_BOOKING_SOURCE {
@@ -2023,6 +2024,35 @@ export interface CreateAppointmentInput {
   dose_number: DOSE_NUMBER;
   booking_source?: VACCINE_BOOKING_SOURCE | null;
   corporate_name?: string | null;
+}
+
+/** * COWIN_GENDER */
+export enum COWIN_GENDER { 
+  FEMALE = "FEMALE",
+  MALE = "MALE",
+  OTHERS = "OTHERS",
+}
+
+export enum COWIN_GOVT_PHOTO_ID { 
+  AADHAAR_CARD = "AADHAAR_CARD",
+  DRIVING_LICENSE = "DRIVING_LICENSE", 
+  NPR_SMART_CARD = "NPR_SMART_CARD", 
+  PAN_CARD = "PAN_CARD", 
+  PASSPORT = "PASSPORT", 
+  PENSION_PASSBOOK = "PENSION_PASSBOOK", 
+  UNIQUE_DISABILITY_ID = "UNIQUE_DISABILITY_ID", 
+  VOTER_ID = "VOTER_ID",
+}
+
+export interface CowinRegistrationInput { 
+  operationType: OperationType; 
+  name: string; 
+  gender_id: COWIN_GENDER; 
+  birth_year: string;
+  photo_id_type: COWIN_GOVT_PHOTO_ID; 
+  photo_id_number: string;
+  otp?: string | null; 
+  txnId?: string | null;
 }
 //==============================================================
 // END Enums and Input Objects

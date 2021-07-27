@@ -632,6 +632,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!);
     const presToAdd = {
       id: caseSheetDetails!.id,
+      appointmentId: appointmentId,
       date: moment(caseSheetDetails!.appointment!.appointmentDateTime).format('DD MMM YYYY'),
       doctorName: g(data, 'displayName') || '',
       forPatient: (currentPatient && currentPatient.firstName) || '',

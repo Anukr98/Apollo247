@@ -775,7 +775,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
                   },
                 ]);
             }
-            postDiagnosticAddToCart(getItemNames!, getItemIds!);
+            postDiagnosticAddToCart(getItemIds!, getItemNames!);
           })
           .catch((e) => {
             CommonBugFender('DoctorConsultation_getMedicineDetailsApi', e);
