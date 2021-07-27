@@ -78,7 +78,6 @@ export function postwebEngageProceedToPayEvent(
     ...pharmacyCircleEvent,
     ...splitCartDetails,
   };
-  console.log('deliveryTime', deliveryTime);
   const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_PROCEED_TO_PAY_CLICKED] = {
     'Total items in cart': cartItems.length,
     'Sub Total': cartTotal,

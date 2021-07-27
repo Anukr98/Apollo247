@@ -1542,14 +1542,12 @@ const webengage = new WebEngage();
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
-    // console.log('postWebEngageEvent', eventName, JSON.stringify(attributes));
     webengage.track(eventName, attributes);
   } catch (error) {}
 };
 
 export const postCleverTapEvent = (eventName: CleverTapEventName, attributes: Object) => {
   try {
-    // console.log('postCleverTapEvent', eventName, JSON.stringify(attributes));
     CleverTap.recordEvent(eventName, attributes);
   } catch (error) {}
 };
