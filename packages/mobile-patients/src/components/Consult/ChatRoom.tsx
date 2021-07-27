@@ -6632,7 +6632,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             KeepAwake.activate();
           } else {
             Alert.alert('Upload document failed');
-            console.log('csk', JSON.stringify(response));
             CommonLogEvent('ChatRoom_callUploadMediaDocumentApiV2_Failed', response);
           }
         } catch (e) {
