@@ -1384,6 +1384,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       data?.diagnosticWidgetData?.find((item: any) => item?.diagnosticPricing);
     const showViewAll = !!isPricesAvailable && data?.diagnosticWidgetData?.length > 2;
     const lengthOfTitle = data?.diagnosticWidgetTitle?.length;
+    console.log('data?.diagnosticWidgetTitle TestWidgets :>> ', data?.diagnosticWidgetTitle, data);
 
     return (
       <View style={!!isPricesAvailable ? styles.widgetSpacing : {}}>
@@ -1428,6 +1429,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             ) : (
               <ItemCard
                 data={data}
+                diagnosticWidgetData={data?.diagnosticWidgetData}
                 isCircleSubscribed={isDiagnosticCircleSubscription}
                 isServiceable={isDiagnosticLocationServiceable}
                 isVertical={false}
