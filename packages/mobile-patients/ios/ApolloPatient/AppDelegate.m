@@ -38,8 +38,6 @@
   
   [CleverTap autoIntegrate]; // integrate CleverTap SDK using the autoIntegrate option
   [[CleverTapReactManager sharedInstance] applicationDidLaunchWithOptions:launchOptions];
-  [CleverTap setDebugLevel:CleverTapLogDebug];
-  // [CleverTap setDebugLevel:CleverTapLogOff]; //Switch off logs for Production environment
 
   rootView.backgroundColor = [[UIColor alloc] initWithRed:1.0f green:1.0f blue:1.0f alpha:1];
   
