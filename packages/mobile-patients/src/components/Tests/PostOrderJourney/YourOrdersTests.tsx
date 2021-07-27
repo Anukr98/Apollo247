@@ -947,10 +947,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     return (
       <View>
         <Text style={styles.overlayHeadingText}>{string.diagnostics.promoteCashbackHeading}</Text>
-        <View style={{justifyContent:'center',flex:1,alignItems:'center',paddingVertical:20}}>
+        <View style={styles.promoContainer}>
           <PromoCashback />
         </View>
-        <View style={{flexDirection:'row',justifyContent:'space-around',alignItems:'center',paddingVertical:10}}>
+        <View style={styles.promoButtonContainer}>
           <TouchableOpacity onPress={()=>{
             _onPressProceedToCancel()
           }}>
@@ -1598,6 +1598,8 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     marginBottom: 8,
   },
+  promoContainer: { justifyContent: 'center', flex: 1, alignItems: 'center', paddingVertical: 20 },
+  promoButtonContainer: {flexDirection:'row',justifyContent:'space-around',alignItems:'center',paddingVertical:10},
   yellowText: { ...theme.viewStyles.yellowTextStyle, fontSize: 14, textAlign: 'left' },
   noDataCard: {
     height: 'auto',
