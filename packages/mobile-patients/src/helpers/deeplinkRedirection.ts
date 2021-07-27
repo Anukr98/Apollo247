@@ -633,7 +633,7 @@ export const pushTheView = (
       navigateToView(navigation, AppRoutes.MobileHelp);
       break;
     case 'TestsCart':
-      navigateToView(navigation, AppRoutes.TestsCart);
+      navigateToView(navigation, AppRoutes.AddPatients);
       break;
     case 'TestOrderSummary':
         navigateToView(navigation, AppRoutes.TestOrderDetails, {

@@ -1492,7 +1492,6 @@ export const getTestSlotDetailsByTime = (slots: TestSlot[], startTime: string, e
   )!;
 };
 
-//add a type here
 export const getUniqueTestSlots = (slots: any[]) => {
   return slots
     .filter(
@@ -1510,13 +1509,6 @@ export const getUniqueTestSlots = (slots: any[]) => {
       internalSlots: val?.slotInfo?.internalSlots,
       distanceCharges: val?.slotInfo?.distanceCharges
     }))
-    // .sort((a, b) => {
-    //   if (moment(a?.startTime?.trim(), 'HH:mm').isAfter(moment(b?.startTime.trim(), 'HH:mm')))
-    //     return 1;
-    //   else if (moment(b?.startTime?.trim(), 'HH:mm').isAfter(moment(a?.startTime.trim(), 'HH:mm')))
-    //     return -1;
-    //   return 0;
-    // });
 };
 
 

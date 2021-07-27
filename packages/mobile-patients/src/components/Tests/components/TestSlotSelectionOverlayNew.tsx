@@ -198,7 +198,6 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
         }
       }
     } catch (e) {
-      console.log({ e });
       const noHubSlots = g(e, 'graphQLErrors', '0', 'message') === 'NO_HUB_SLOTS';
       if (!noHubSlots) {
         handleGraphQlError(e);

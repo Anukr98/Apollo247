@@ -163,7 +163,7 @@ import {
   makeAdressAsDefault,
   makeAdressAsDefaultVariables,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
-import { Button } from '../ui/Button';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 
 const imagesArray = [
   require('@aph/mobile-patients/src/components/ui/icons/diagnosticCertificate_1.webp'),
