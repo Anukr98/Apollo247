@@ -36,6 +36,8 @@ import {
   BackHandler,
   Text,
   Modal,
+  ScrollView,
+  Dimensions
 } from 'react-native';
 import { Down, DownO, InfoIconRed } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NavigationScreenProps } from 'react-navigation';
@@ -113,6 +115,8 @@ import {
   diagnosticExotelCallingVariables,
 } from '@aph/mobile-patients/src/graphql/types/diagnosticExotelCalling';
 import { getRescheduleAndCancellationReasons, getRescheduleAndCancellationReasonsVariables } from '@aph/mobile-patients/src/graphql/types/getRescheduleAndCancellationReasons';
+
+const { width, height } = Dimensions.get('window');
 
 type orderList = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList;
 export interface YourOrdersTestProps extends NavigationScreenProps {
@@ -881,11 +885,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     const current = moment();
     const cancelReasonArray = cancelReasonList;
     return (
-      <View>
+      <View style={{ height: height - 200}}>
         <Text style={styles.overlayHeadingText}>
           {string.diagnostics.reasonForCancellationText}
         </Text>
-        <View style={styles.reasonsContainer}>
+        <ScrollView style={styles.reasonsContainer}>
           {cancelReasonArray?.map((item: string, index: number) => {
             return (
               <>
@@ -943,7 +947,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               </>
             );
           })}
-        </View>
+        </ScrollView>
         <View style={styles.buttonView}>
           <Button
             title={'CANCEL NOW'}
@@ -973,7 +977,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           <Text style={styles.yellowText}>PROCEED TO CANCEL</Text></TouchableOpacity>
           <Button
           onPress={() => {
-            // _onPressProceedToReschedule(selectedOrderRescheduleCount!)
+            setShowPromoteCashback(false)
             _onPressTestReschedule(selectedOrder)
           }}
           style={{width:'40%'}}
@@ -1046,8 +1050,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               <View style={{ marginVertical: '2%' }}>
                 <Text style={styles.optionSubHeadingText}>{string.diagnostics.sureCancelText}</Text>
                 <Button onPress={() => {
-                  // _onPressProceedToCancel()
-                  _onPressProceedToCancelForPromo()
+                  if (selectedOrder?.totalPrice && selectedOrder?.totalPrice >= 500) {
+                    _onPressProceedToCancelForPromo()
+                  } else {
+                    _onPressProceedToCancel()
+                  }
                   }} title={'PROCEED TO CANCEL'} />
               </View>
             )}
