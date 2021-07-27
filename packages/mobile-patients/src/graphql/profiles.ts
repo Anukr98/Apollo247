@@ -422,6 +422,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isConsultStarted
         isSeniorConsultStarted
         isJdQuestionsComplete
+        isAutomatedQuestionsComplete
         symptoms
         doctorInfo {
           awards
@@ -589,6 +590,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isConsultStarted
         isSeniorConsultStarted
         isJdQuestionsComplete
+        isAutomatedQuestionsComplete
         symptoms
         doctorInfo {
           awards
@@ -756,6 +758,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isConsultStarted
         isSeniorConsultStarted
         isJdQuestionsComplete
+        isAutomatedQuestionsComplete
         symptoms
         doctorInfo {
           awards
@@ -923,6 +926,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isConsultStarted
         isSeniorConsultStarted
         isJdQuestionsComplete
+        isAutomatedQuestionsComplete
         symptoms
         doctorInfo {
           awards
@@ -4038,15 +4042,7 @@ export const ADD_PATIENT_FEEDBACK = gql`
 export const AUTOMATED_QUESTIONS = gql`
   mutation addToConsultQueueWithAutomatedQuestions($ConsultQueueInput: ConsultQueueInput) {
     addToConsultQueueWithAutomatedQuestions(consultQueueInput: $ConsultQueueInput) {
-      id
-      doctorId
       totalJuniorDoctorsOnline
-      juniorDoctorsList {
-        juniorDoctorId
-        doctorName
-        # queueCount
-      }
-      totalJuniorDoctors
       isJdAllowed
       isJdAssigned
     }

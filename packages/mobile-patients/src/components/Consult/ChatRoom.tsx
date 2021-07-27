@@ -254,7 +254,7 @@ let joinTimerId: any;
 let diffInHours: number;
 let rescheduleInitiatedBy: string;
 let callhandelBack: boolean = true;
-let jdCount: any = 1;
+// let jdCount: any = 1;          // For now jd is assigned from backend 
 let isJdAllowed: boolean = true;
 let abondmentStarted = false;
 let jdAssigned: boolean = false;
@@ -1000,6 +1000,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const sectionHeader = '^^#sectionHeader';
   const followUpChatGuideLines = '^^#followUpChatGuideLines';
   const externalMeetingLink = '^^#externalMeetingLink';
+  const jdAutoAssign = '^^#JdInfoMsg';
 
   const disconnecting = 'Disconnecting...';
   const callConnected = 'Call Connected';
@@ -1515,7 +1516,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const checkVitalQuestionsStatus = () => {
-    if (appointmentData.isJdQuestionsComplete) {
+    if (appointmentData.isAutomatedQuestionsComplete) {
       requestToJrDoctor();
       if (
         !disableChat &&
@@ -2234,10 +2235,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           getPatientApiCall();
           getPatientApiCallWithHistory();
           postAppointmentWEGEvent(WebEngageEventName.COMPLETED_AUTOMATED_QUESTIONS);
-          jdCount = parseInt(
-            data.data.addToConsultQueueWithAutomatedQuestions.totalJuniorDoctorsOnline,
-            10
-          );
+          // jdCount = parseInt(
+          //   data.data.addToConsultQueueWithAutomatedQuestions.totalJuniorDoctorsOnline,
+          //   10
+          // );
           isJdAllowed = data.data.addToConsultQueueWithAutomatedQuestions.isJdAllowed;
           jdAssigned = data.data.addToConsultQueueWithAutomatedQuestions.isJdAssigned;
         })
@@ -2248,7 +2249,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     } else {
       addToConsultQueue(client, appointmentData.id)
         .then(({ data }: any) => {
-          jdCount = parseInt(data.data.addToConsultQueue.totalJuniorDoctorsOnline, 10);
+          // jdCount = parseInt(data.data.addToConsultQueue.totalJuniorDoctorsOnline, 10);
           isJdAllowed = data.data.addToConsultQueue.isJdAllowed;
           jdAssigned = data.data.addToConsultQueue.isJdAssigned;
         })
@@ -3011,7 +3012,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       '2. Be present here in the consult room at the time of appointment \n',
       '3. Wait for the doctor to connect with you via audio/video call\n',
     ];
-    if (appointmentData.isJdQuestionsComplete || skipAutoQuestions.current) {
+    if (appointmentData.isAutomatedQuestionsComplete || skipAutoQuestions.current) {
       successSteps = [
         'Please follow these simple steps for your appointment: \n',
         '1. Be present here in the consult room at the time of appointment \n',
@@ -3039,7 +3040,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
       describeYourMedicalConditionAutomatedText();
     } else {
-      if (appointmentData.isJdQuestionsComplete) {
+      if (appointmentData.isAutomatedQuestionsComplete) {
         const result = insertText.filter((obj: any) => {
           return obj.message === consultPatientStartedMsg;
         });
@@ -3151,8 +3152,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         jdThankyouResult.length === 0 &&
         stopConsultjrResult.length === 0 &&
         languageQueueResult.length === 0 &&
-        !appointmentData.isJdQuestionsComplete &&
-        jdCount > 0 &&
+        !appointmentData.isAutomatedQuestionsComplete &&
+        // jdCount > 0 &&
         isJdAllowed === true
       ) {
         pubnub.publish(
@@ -3214,8 +3215,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         jdThankyouResult.length === 0 &&
         stopConsultjrResult.length === 0 &&
         languageQueueResult.length === 0 &&
-        !appointmentData.isJdQuestionsComplete &&
-        jdCount > 0 &&
+        !appointmentData.isAutomatedQuestionsComplete &&
+        // jdCount > 0 &&
         isJdAllowed === true &&
         !!(textChange && !jrDoctorJoined.current) &&
         status.current !== STATUS.COMPLETED &&
@@ -3355,6 +3356,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         updateSessionAPI();
         checkingAppointmentDates();
         addMessages(message);
+        setDisplayChatQuestions(false);
       } else if (message.message.message === stopConsultJr) {
         stopInterval();
         thirtySecondTimer && clearTimeout(thirtySecondTimer);
@@ -5281,7 +5283,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       patientRejectedCall === (rowData as any) ||
       callRelatedCodes.includes(rowData?.message) ||
       (!automatedCodesToRender.includes(rowData?.message) && rowData?.message?.startsWith('^^#')) ||
-      (rowData?.automatedText === consultPatientStartedMsg && rowData?.message == 'welcome')
+      (rowData?.automatedText === consultPatientStartedMsg && rowData?.message == 'welcome') ||
+      (rowData?.automatedText === jdAutoAssign)
     ) {
       return null;
     }
