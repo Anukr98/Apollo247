@@ -1699,6 +1699,25 @@ export const postWEGNeedHelpEvent = (
   postWebEngageEvent(WebEngageEventName.NEED_HELP, eventAttributes);
 };
 
+export const postWEGPatientAPIError = (
+  currentPatient:GetCurrentPatients_getCurrentPatients_patients,
+  doc:string|null,
+  screen:string,
+  api:string,
+  error:any,
+) => {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.Patient_API_Error] = {
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient ID': g(currentPatient, 'id')!,
+    'Patient Number': g(currentPatient, 'mobileNumber')!,
+    'Doctor ID':doc,
+    'Screen Name':screen,
+    'API Name':api,
+    'Error Name':error
+    };
+  postWebEngageEvent(WebEngageEventName.Patient_API_Error, eventAttributes);
+};
+
 export const postWEGWhatsAppEvent = (whatsAppAllow: boolean) => {
   webengage.user.setAttribute('whatsapp_opt_in', whatsAppAllow); //WhatsApp
 };
