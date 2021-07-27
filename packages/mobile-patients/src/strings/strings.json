@@ -604,7 +604,7 @@
     "patientHeading": "Select Patient Names",
     "addPatient": "Add member",
     "subHeadingSingleUHID": "Please select the patient for whom you want to book the selected tests.",
-    "subHeadingMultipleUHID": "Please select all the patients for whom you want to book the selected tests.",
+    "subHeadingMultipleUHID": "You can add selected tests for upto {{patientCount}} patients",
     "paidSlotHeading": "This is a Paid Slot -",
     "additionalChargeText": " Additional charge of",
     "levidText": "will be levied on your total amount.",

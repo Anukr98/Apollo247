@@ -5,7 +5,6 @@ import {
   BackHandler,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
   FlatList,
   ScrollView,
@@ -533,7 +532,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
               patientCartItems?.length == 0 && setLoading?.(false);
             })
             .catch((e) => {
-              console.log({ e });
               CommonBugFender('AddPatients_getAddressServiceability_getDiagnosticsAvailability', e);
               setLoading?.(false);
               errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
@@ -846,7 +844,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
   const onRemoveCartItem = ({ id, name }: DiagnosticsCartItem, patientId: string) => {
     // check if patient cartItems has the removed item. If it does, then don't remove it from the overall.
-    const getSelectedItemInCart = checkIsItemRemovedFromAll(patientCartItems);
+    const getSelectedItemInCart = checkIsItemRemovedFromAll(patientCartItems, id);
     removePatientCartItem?.(patientId, id);
     if (getSelectedItemInCart?.length == 1) {
       removeCartItem?.(id);
@@ -1213,9 +1211,10 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       );
 
       const duplicateItems = [...new Set(duplicateItems_1)];
-      console.log({ duplicateItems });
+
       hideAphAlert?.();
       setLoading?.(false);
+
       if (duplicateItems?.length) {
         checkDuplicateItems_Level1(
           getPricesForItem,
@@ -1372,18 +1371,17 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       });
   }
 
-  function checkIsItemRemovedFromAll(pCartItems: DiagnosticPatientCartItem[]) {
+  function checkIsItemRemovedFromAll(
+    pCartItems: DiagnosticPatientCartItem[],
+    itemId: number | string
+  ) {
     const getSelectedCartItems = isDiagnosticSelectedCartEmpty(pCartItems);
-    console.log({ getSelectedCartItems });
     const getExisitngItems = getSelectedCartItems
       ?.map((item: DiagnosticPatientCartItem) => item?.cartItems?.filter((idd) => idd?.id))
       ?.flat();
-    console.log({ getExisitngItems });
     const getAllItemIds = getExisitngItems?.map((items: DiagnosticsCartItem) => Number(items?.id));
-    console.log({ getAllItemIds });
     const selectedItemPresent =
-      !!getAllItemIds && getAllItemIds?.filter((itemIds: number) => itemIds == Number(id));
-    console.log({ selectedItemPresent });
+      !!getAllItemIds && getAllItemIds?.filter((itemIds: number) => itemIds == Number(itemId));
     return selectedItemPresent;
   }
 
@@ -1396,14 +1394,21 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     const findIndex = patientCartItemsCopy?.findIndex(
       (item: DiagnosticPatientCartItem) => item?.patientId == patientId
     );
-    patientCartItemsCopy[findIndex].cartItems = updatedCartItems;
-    const getSelectedItemInCart = checkIsItemRemovedFromAll(patientCartItemsCopy);
+    const getSelectedItemInCart = checkIsItemRemovedFromAll(
+      patientCartItemsCopy,
+      removedTestItemId
+    );
 
-    console.log({ getSelectedItemInCart });
+    patientCartItemsCopy[findIndex].cartItems = updatedCartItems;
+
     setDiagnosticSlot?.(null);
     setPatientCartItems?.(patientCartItemsCopy);
     if (getSelectedItemInCart?.length == 1) {
-      setCartItems?.(updatedCartItems);
+      removeCartItem?.(removedTestItemId);
+      const newCartItems = cartItems?.filter(
+        (item) => Number(item?.id) !== Number(removedTestItemId)
+      );
+      setCartItems?.(newCartItems);
     }
 
     isModifyFlow && setModifiedPatientCart?.(updatedCartItems);

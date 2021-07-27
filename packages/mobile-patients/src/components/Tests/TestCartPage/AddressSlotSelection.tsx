@@ -208,7 +208,6 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
         dateToCheck, //will be current date
         getServiceabilityObject
       );
-      console.log({ slotsResponse });
       if (slotsResponse?.data?.getCustomizedSlotsv2) {
         const getSlotResponse = slotsResponse?.data?.getCustomizedSlotsv2;
         const getDistanceCharges = getSlotResponse?.distanceCharges;
@@ -262,7 +261,6 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
       }
       setLoading?.(false);
     } catch (error) {
-      console.log({ error });
       CommonBugFender('AddressSlotselection_getSlots', error);
       setDiagnosticSlot && setDiagnosticSlot(null);
       setselectedTimeSlot(undefined);
@@ -334,7 +332,6 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
         slotInput={slotsInput}
         //add a type here
         onSchedule={(date: Date, slotInfo: TestSlot, currentDate: Date | undefined) => {
-          console.log({ slotInfo });
           setDate(date);
           setselectedTimeSlot(slotInfo);
           setDiagnosticSlot?.({

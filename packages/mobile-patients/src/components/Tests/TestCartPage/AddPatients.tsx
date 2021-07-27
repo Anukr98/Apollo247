@@ -160,7 +160,6 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       const newPatientCartItems = patientCartItems?.map((pCartItems) =>
         pCartItems?.cartItems?.map((cItem) => !cartItems?.includes(cItem))
       );
-      console.log({ newPatientCartItems });
       // setPatientCartItems?.(newPatientCartItems);
     }
     if (isFocus && cartItems?.length > 0) {
@@ -614,8 +613,10 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     return (
       <View style={{ marginTop: 6 }}>
         <Text style={styles.subHeadingText}>
-          {string.diagnosticsCartPage.subHeadingMultipleUHID}{' '}
-          {patientLimit != 0 && `(Max : ${patientLimit})`}
+          {string.diagnosticsCartPage.subHeadingMultipleUHID?.replace(
+            '{{patientCount}}',
+            `${patientLimit}`
+          )}
         </Text>
       </View>
     );

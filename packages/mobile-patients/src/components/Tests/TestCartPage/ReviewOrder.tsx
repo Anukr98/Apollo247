@@ -1058,10 +1058,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         subscriptionInclusionId: null,
         userSubscriptionId: circleSubscriptionId,
       };
-      console.log({ bookingOrderInfo });
       diagnosticSaveBookHcCollectionV2(client, bookingOrderInfo)
         .then(async ({ data }) => {
-          aphConsole.log({ data });
           const getSaveHomeCollectionResponse =
             data?.saveDiagnosticBookHCOrderv2?.patientsObjWithOrderIDs;
           //check if at any level we have false (duplicate data.)
@@ -1077,7 +1075,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             );
           } else {
             //handle for multiple uhid
-            console.log({ getSaveHomeCollectionResponse });
             callCreateInternalOrder(
               getSaveHomeCollectionResponse!,
               getSaveHomeCollectionResponse,
@@ -1089,7 +1086,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           }
         })
         .catch((error) => {
-          aphConsole.log({ error });
           CommonBugFender('TestsCart_saveHomeCollectionOrder', error);
           setLoading?.(false);
           showAphAlert?.({
@@ -1176,7 +1172,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   }
 
   function apiHandleErrorFunction(input: any, data: any, source: string) {
-    console.log({ data });
     //take overall object
     let errorMsgToRead =
       source === BOOKING_TYPE.SAVE ? data?.[0]?.errorMessageToDisplay : data?.errorMessageToDisplay;
@@ -1382,8 +1377,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         );
       }
 
-      console.log({ array });
-
       const orders: OrderVerticals = {
         diagnostics: array,
       };
@@ -1548,11 +1541,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       subscriptionInclusionId: null,
       amountToPay: grandTotal, //total amount to pay
     };
-    console.log({ modifyBookingInput });
     saveModifyOrder?.(modifyBookingInput)
       .then((data) => {
         const getModifyResponse = data?.data?.saveModifyDiagnosticOrder;
-        console.log({ getModifyResponse });
         if (!getModifyResponse?.status) {
           apiHandleErrorFunction(modifyBookingInput, getModifyResponse, BOOKING_TYPE.MODIFY);
         } else {
