@@ -254,7 +254,7 @@ let joinTimerId: any;
 let diffInHours: number;
 let rescheduleInitiatedBy: string;
 let callhandelBack: boolean = true;
-// let jdCount: any = 1;
+// let jdCount: any = 1;          // For now jd is assigned from backend 
 let isJdAllowed: boolean = true;
 let abondmentStarted = false;
 let jdAssigned: boolean = false;
