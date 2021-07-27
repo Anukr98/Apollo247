@@ -132,6 +132,7 @@ import {
   postCleverTapEvent,
   getCleverTapCircleMemberValues,
   getAge,
+  removeObjectNullUndefinedProperties,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -1380,7 +1381,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       eventAttributes = { ...eventAttributes, ...newAttributes };
     }
     if (eventName == CleverTapEventName.HOME_VIEWED) {
-      eventAttributes = { ...attributes, ...eventAttributes, 'Nav src': 'app launch' };
+      eventAttributes = {
+        ...removeObjectNullUndefinedProperties(attributes),
+        ...eventAttributes,
+        'Nav src': 'app launch',
+      };
     }
     if (eventName == CleverTapEventName.COVID_VACCINATION_SECTION_CLICKED) {
       eventAttributes = { ...eventAttributes, ...attributes };
