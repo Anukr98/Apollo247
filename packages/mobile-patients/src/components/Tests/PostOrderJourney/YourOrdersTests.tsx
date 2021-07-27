@@ -116,6 +116,8 @@ import {
   diagnosticExotelCallingVariables,
 } from '@aph/mobile-patients/src/graphql/types/diagnosticExotelCalling';
 
+const { width, height } = Dimensions.get('window');
+
 type orderList = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList;
 export interface YourOrdersTestProps extends NavigationScreenProps {
   showHeader?: boolean;
@@ -955,7 +957,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           <Text style={styles.yellowText}>PROCEED TO CANCEL</Text></TouchableOpacity>
           <Button
           onPress={() => {
-            // _onPressProceedToReschedule(selectedOrderRescheduleCount!)
+            setShowPromoteCashback(false)
             _onPressTestReschedule(selectedOrder)
           }}
           style={{width:'40%'}}
@@ -1028,8 +1030,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               <View style={{ marginVertical: '2%' }}>
                 <Text style={styles.optionSubHeadingText}>{string.diagnostics.sureCancelText}</Text>
                 <Button onPress={() => {
-                  // _onPressProceedToCancel()
-                  _onPressProceedToCancelForPromo()
+                  if (selectedOrder?.totalPrice && selectedOrder?.totalPrice >= 500) {
+                    _onPressProceedToCancelForPromo()
+                  } else {
+                    _onPressProceedToCancel()
+                  }
                   }} title={'PROCEED TO CANCEL'} />
               </View>
             )}
