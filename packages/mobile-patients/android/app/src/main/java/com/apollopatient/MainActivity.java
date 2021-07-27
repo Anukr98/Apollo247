@@ -60,7 +60,8 @@ public class MainActivity extends ReactActivity {
             String referrerString = bundle.get(Intent.EXTRA_REFERRER) != null ? bundle.get(Intent.EXTRA_REFERRER).toString() : "";
             setReferrer(referrerString);
         }
-
+        // CleverTapAPI.setDebugLevel(CleverTapAPI.LogLevel.OFF);     //Switch off logs for Production environment
+        CleverTapAPI.setDebugLevel(CleverTapAPI.LogLevel.DEBUG);   //Set Log level to DEBUG log warnings or other important messages
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             CleverTapAPI.createNotificationChannel(getApplicationContext(),"Marketing","Marketing","",NotificationManager.IMPORTANCE_HIGH,true);
         }
