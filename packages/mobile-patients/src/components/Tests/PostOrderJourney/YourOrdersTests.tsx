@@ -61,7 +61,7 @@ import {
   downloadDocument,
   removeWhiteSpaces,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { DisabledTickIcon, TickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { DisabledTickIcon, TickIcon, PromoCashback } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   AppConfig,
   BLACK_LIST_CANCEL_STATUS_ARRAY,
@@ -156,6 +156,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [selectCancelOption, setSelectCancelOption] = useState<boolean>(false);
   const [showRescheduleReasons, setShowRescheduleReasons] = useState<boolean>(false);
   const [showCancelReasons, setShowCancelReasons] = useState<boolean>(false);
+  const [showPromoteCashback, setShowPromoteCashback] = useState<boolean>(false);
   const [cancelReasonList, setCancelReasonList] = useState<any>([]);
   const [rescheduleReasonList, setRescheduleReasonList] = useState<any>([]);
   const [selectCancelReason, setSelectCancelReason] = useState<string>('');
@@ -823,6 +824,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   {showRescheduleOptions && renderRescheduleCancelOptions()}
                   {showRescheduleReasons && renderRescheduleReasons()}
                   {showCancelReasons && renderCancelReasons()}
+                  {showPromoteCashback && renderPromoteCashback()}
                 </View>
               </View>
             </SafeAreaView>
@@ -957,6 +959,30 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       </View>
     );
   };
+  const renderPromoteCashback = () => {
+    return (
+      <View>
+        <Text style={styles.overlayHeadingText}>{string.diagnostics.promoteCashbackHeading}</Text>
+        <View style={{justifyContent:'center',flex:1,alignItems:'center',paddingVertical:20}}>
+          <PromoCashback />
+        </View>
+        <View style={{flexDirection:'row',justifyContent:'space-around',alignItems:'center',paddingVertical:10}}>
+          <TouchableOpacity onPress={()=>{
+            _onPressProceedToCancel()
+          }}>
+          <Text style={styles.yellowText}>PROCEED TO CANCEL</Text></TouchableOpacity>
+          <Button
+          onPress={() => {
+            // _onPressProceedToReschedule(selectedOrderRescheduleCount!)
+            _onPressTestReschedule(selectedOrder)
+          }}
+          style={{width:'40%'}}
+          title={'GO BACK'}
+          />
+        </View>
+      </View>
+    );
+  };
   const enable_cancelellation_policy =
     AppConfig.Configuration.Enable_Diagnostics_Cancellation_Policy;
   const cancelellation_policy_text = AppConfig.Configuration.Diagnostics_Cancel_Policy_Text_Msg;
@@ -1019,7 +1045,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             {selectCancelOption && (
               <View style={{ marginVertical: '2%' }}>
                 <Text style={styles.optionSubHeadingText}>{string.diagnostics.sureCancelText}</Text>
-                <Button onPress={() => _onPressProceedToCancel()} title={'PROCEED TO CANCEL'} />
+                <Button onPress={() => {
+                  // _onPressProceedToCancel()
+                  _onPressProceedToCancelForPromo()
+                  }} title={'PROCEED TO CANCEL'} />
               </View>
             )}
           </View>
@@ -1081,18 +1110,27 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     selectCancelOption && setSelectCancelOption(false);
   }
 
+  function _onPressProceedToCancelForPromo() {
+    setShowRescheduleOptions(false); //hide the options view
+    setShowCancelReasons(false);
+    setShowRescheduleReasons(false);
+    setShowPromoteCashback(true);
+  }
   function _onPressProceedToCancel() {
+    setShowPromoteCashback(false);
     setShowRescheduleOptions(false); //hide the options view
     setShowCancelReasons(true);
     showRescheduleReasons && setShowRescheduleReasons(false);
   }
 
   function _onPressReschduleOption() {
+    setShowPromoteCashback(false);
     setSelectRescheduleOption(true);
     setSelectCancelOption(false);
   }
 
   function _onPressCancelOption() {
+    setShowPromoteCashback(false);
     setSelectCancelOption(true);
     setSelectRescheduleOption(false);
   }
