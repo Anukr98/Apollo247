@@ -456,7 +456,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 }
               });
             });
-            setAlsoAddListData(_diagnosticWidgetData);
+            const filteredItems = !!_diagnosticWidgetData && _diagnosticWidgetData?.filter(
+              (diagItem: any) => !listOfIds?.includes(Number(diagItem?.itemId))
+            );
+            setAlsoAddListData(filteredItems);
           })
           .catch((error) => {
             setAlsoAddListData([]);

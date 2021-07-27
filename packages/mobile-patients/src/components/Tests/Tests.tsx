@@ -1416,6 +1416,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const handleOnPress = () => {
       if (item?.redirectUrl && item?.redirectUrl != '') {
         //for rtpcr - drive through - open webview
+        DiagnosticBannerClick(slideIndex + 1, Number(item?.itemId), item?.bannerTitle);
         if (item?.redirectUrlText === 'WebView') {
           try {
             const openUrl = item?.redirectUrl || AppConfig.Configuration.RTPCR_Google_Form;
@@ -2081,7 +2082,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const appointmentDate = moment(clickedItem?.slotDateTimeInUTC)?.format('DD MMM YYYY');
     const patientName = `${clickedItem?.patientObj?.firstName} ${clickedItem?.patientObj?.lastName}`;
     try {
-      setViewReportOrderId(clickedItem?.orderId)
+      setViewReportOrderId(clickedItem?.orderId);
       await downloadDiagnosticReport(
         setLoadingContext,
         removeWhiteSpaces(clickedItem?.labReportURL),
@@ -2385,9 +2386,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setClickedItem([]);
           }}
           downloadDocument={() => {
-            const res = downloadDocument(clickedItem?.labReportURL, 'application/pdf',clickedItem?.orderId)
+            const res = downloadDocument(
+              clickedItem?.labReportURL,
+              'application/pdf',
+              clickedItem?.orderId
+            );
             if (res == clickedItem?.orderId) {
-              setViewReportOrderId(clickedItem?.orderId)
+              setViewReportOrderId(clickedItem?.orderId);
             }
           }}
           viewReportOrderId={viewReportOrderId}
