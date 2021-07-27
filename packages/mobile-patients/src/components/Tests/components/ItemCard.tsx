@@ -304,7 +304,6 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
         priceToShow = specialPrice || price;
       }
     }
-    // console.log('actualItemsToShow :>> ', !!actualItemsToShow);
     const slashedPrice =
       !!packageMrpForItem && packageMrpForItem > price ? packageMrpForItem : price;
     //1. circle sub + promote -> packageMrp/price
