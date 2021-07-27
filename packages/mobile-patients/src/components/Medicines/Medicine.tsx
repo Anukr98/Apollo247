@@ -84,6 +84,7 @@ import {
   MedicineProduct,
   OfferBannerSection,
   pinCodeServiceabilityApi247,
+  SearchSuggestion,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { getUserBannersList } from '@aph/mobile-patients/src/helpers/clientCalls';
@@ -222,7 +223,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   searchResults: {
-    paddingTop: 10.5,
     maxHeight: 266,
     backgroundColor: '#f7f8f5',
   },
@@ -1642,7 +1642,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const [searchText, setSearchText] = useState<string>('');
-  const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
+  const [medicineList, setMedicineList] = useState<(MedicineProduct | SearchSuggestion)[]>([]);
   const [isSearchFocused, setSearchFocused] = useState(false);
   const [itemsLoading, setItemsLoading] = useState<{ [key: string]: boolean }>({});
   const [medicineSearchLoading, setMedicineSearchLoading] = useState<boolean>(false);
@@ -1652,9 +1652,28 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     getMedicineSearchSuggestionsApi(_searchText, axdcCode, pinCode)
       .then(({ data }) => {
         const products = data.products || [];
+        const queries = data.queries || [];
         const inStockProducts = products.filter((product) => !!isProductInStock(product));
         const outOfStockProducts = products.filter((product) => !isProductInStock(product));
-        setMedicineList([...inStockProducts, ...outOfStockProducts]);
+
+        const formattedQuery: SearchSuggestion[] = [];
+        if (queries?.length) {
+          queries.map((query, index) => {
+            if (index < 2) {
+              const category_id = query?.filter?.__categories?.[0];
+              const queryData = query?.query;
+              const queryName = queryData?.[queryData?.length - 1];
+              formattedQuery.push({
+                name: category_id,
+                categoryId: category_id,
+                queryName,
+                superQuery: queryData?.length > 1 ? `in ${queryData?.[0]}` : '',
+              });
+            }
+          });
+        }
+        setMedicineList([...formattedQuery, ...inStockProducts, ...outOfStockProducts]);
+
         setMedicineSearchLoading(false);
         const eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH] = {
           keyword: _searchText,
@@ -1829,17 +1848,27 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     removeCartItem!(id);
   };
 
-  const renderSearchSuggestionItemView = (data: ListRenderItemInfo<MedicineProduct>) => {
+  const renderSearchSuggestionItemView = (
+    data: ListRenderItemInfo<MedicineProduct | SearchSuggestion>
+  ) => {
     const { item, index } = data;
     return (
       <MedicineSearchSuggestionItem
         onPress={() => {
           CommonLogEvent(AppRoutes.Medicine, 'Search suggestion Item');
-          props.navigation.navigate(AppRoutes.ProductDetailPage, {
-            urlKey: item?.url_key,
-            sku: item.sku,
-            movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
-          });
+          if (item?.categoryId) {
+            props.navigation.navigate(AppRoutes.MedicineListing, {
+              category_id: item?.categoryId,
+              title: item?.queryName || 'Products',
+            });
+          }
+          if (item?.url_key || item?.sku) {
+            props.navigation.navigate(AppRoutes.ProductDetailPage, {
+              urlKey: item?.url_key,
+              sku: item.sku,
+              movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
+            });
+          }
         }}
         onPressAddToCart={() => {
           onAddCartItem(item);
