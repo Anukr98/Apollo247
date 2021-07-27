@@ -305,9 +305,6 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   };
 
   const renderList = () => {
-    // const actualItemsToShow = widgetsData?.diagnosticWidgetData?.filter(
-    //   (item: any) => item?.diagnosticPricing
-    // );
     const actualItemsToShow = widgetsData?.diagnosticWidgetData;
     return (
       <>
@@ -354,7 +351,6 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       </>
     );
   };
-  // console.log(currentOffset,showLoadMore,'object :>> ', testLength ,testLength == widgetsData?.diagnosticWidgetData?.length, widgetsData?.diagnosticWidgetData?.length);
 
   return (
     <View style={{ flex: 1 }}>

@@ -73,11 +73,6 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     onPressRemoveItemFromCart,
   } = props;
 
-  // const actualItemsToShow =
-  //   source === 'Cart page'
-  //     ? data?.length > 0 && data?.filter((item: any) => item?.diagnosticPricing)
-  //     : data?.diagnosticWidgetData?.length > 0 &&
-  //       data?.diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
   let actualItemsToShow =
     source === 'Cart page'
       ? data?.length > 0 && data
@@ -295,7 +290,6 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
         priceToShow = specialPrice || price;
       }
     }
-    // console.log('actualItemsToShow :>> ', !!actualItemsToShow);
     const slashedPrice =
       !!packageMrpForItem && packageMrpForItem > price ? packageMrpForItem : price;
     //1. circle sub + promote -> packageMrp/price
