@@ -42,6 +42,7 @@ import {
   postFirebaseEvent,
   postWebEngageEvent,
   getUserType,
+  postWEGPatientAPIError,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,

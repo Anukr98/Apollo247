@@ -72,6 +72,7 @@ import {
   getDoctorShareMessage,
   postDoctorShareWEGEvents,
   getUserType,
+  postWEGPatientAPIError,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,

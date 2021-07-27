@@ -35,6 +35,7 @@ import {
   navigateToHome,
   getUserType,
   getPackageIds,
+  postWEGPatientAPIError,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {

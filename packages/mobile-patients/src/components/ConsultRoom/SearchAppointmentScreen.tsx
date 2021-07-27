@@ -53,6 +53,7 @@ import {
   g,
   followUpChatDaysCaseSheet,
   isPastAppointment,
+  postWEGPatientAPIError,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const { width, height } = Dimensions.get('window');
