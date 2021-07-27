@@ -1257,13 +1257,13 @@
     "wrong_otp": "Seems you have entered wrong OTP.Please try with right one.",
     "unable_to_validate": "We are unable to validate OTP right now. Please try again after some time. If this issue persists, send an email to corporate-helpdesk@apollo247.com and attach the screenshot of this error.",
     "CORPORATE_VACCINATION": "CORPORATE_VACCINATION",
-    "booking_detail_pdf":"DOWNLOAD PDF",
-    "unable_to_generate_pdf":"Unable to generate booking pdf.",
-    "unable_to_generate_invoice_pdf":"Unable to generate invoice pdf.",
-    "success_generate_pdf":"Successfully generated vaccination booking PDF ",
-    "success_generate_invoice_pdf":"Successfully generated vaccination invoice.",
-    "dose_2_alert":"Please make sure that the difference between 1st and 2nd dose is as per Govt. guidelines. If difference in 2nd dose is less than Govt. guideline, you will not be given 2nd dose.",
-    "verify_title":"VERIFY",
-    "submit_title":"SUBMIT "
+    "booking_detail_pdf": "DOWNLOAD PDF",
+    "unable_to_generate_pdf": "Unable to generate booking pdf.",
+    "unable_to_generate_invoice_pdf": "Unable to generate invoice pdf.",
+    "success_generate_pdf": "Successfully generated vaccination booking PDF ",
+    "success_generate_invoice_pdf": "Successfully generated vaccination invoice.",
+    "dose_2_alert": "Please make sure that the difference between 1st and 2nd dose is as per Govt. guidelines. If difference in 2nd dose is less than Govt. guideline, you will not be given 2nd dose.",
+    "verify_title": "VERIFY",
+    "submit_title": "SUBMIT "
   }
 }

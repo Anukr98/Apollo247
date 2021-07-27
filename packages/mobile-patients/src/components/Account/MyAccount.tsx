@@ -550,15 +550,15 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           }}
         />
         <ListCard
-          title={'My Payments'}
+          title={'Transactions and Payments'}
           leftIcon={<CurrencyIcon />}
           onPress={() => {
             postMyAccountCleverTapEvents(CleverTapEventName.MY_ACCOUNT_PAYMENT_CLICKED);
-            props.navigation.navigate(AppRoutes.MyPaymentsScreen, {
+            props.navigation.navigate(AppRoutes.TxnsandPayments, {
               patientId: currentPatient.id,
               fromNotification: false,
             });
-            fireProfileAccessedEvent('My Payments');
+            fireProfileAccessedEvent('Transactions and Payments');
           }}
         />
         <ListCard

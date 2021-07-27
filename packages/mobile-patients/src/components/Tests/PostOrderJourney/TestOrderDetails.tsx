@@ -771,9 +771,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           isVisible={displayViewReport}
           viewReportOrderId={viewReportOrderId}
           downloadDocument={() => {
-            const res = downloadDocument(selectedOrder?.labReportURL, 'application/pdf',orderId);
+            const res = downloadDocument(selectedOrder?.labReportURL, 'application/pdf', orderId);
             if (res == orderId) {
-              setViewReportOrderId(orderId)
+              setViewReportOrderId(orderId);
             }
           }}
           onClose={() => setDisplayViewReport(false)}

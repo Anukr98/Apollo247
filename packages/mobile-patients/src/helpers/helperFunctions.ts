@@ -2780,7 +2780,7 @@ export const navigateToHome = (
   }
 };
 
-const goToConsultRoom = (
+export const goToConsultRoom = (
   navigation: NavigationScreenProp<NavigationRoute<object>, object>,
   params?: any
 ) => {
@@ -3194,6 +3194,75 @@ export const isSatisfyingEmailRegex = (value: string) =>
   /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
     value
   );
+
+export const getCheckoutCompletedEventAttributes = (
+  shoppingCart: ShoppingCartContextProps,
+  paymentOrderId: string,
+  pharmacyUserTypeAttribute: any
+) => {
+  const {
+    deliveryAddressId,
+    addresses,
+    storeId,
+    stores,
+    uploadPrescriptionRequired,
+    physicalPrescriptions,
+    cartItems,
+    cartTotal,
+    deliveryCharges,
+    coupon,
+    couponDiscount,
+    productDiscount,
+    ePrescriptions,
+    grandTotal,
+    circleSubscriptionId,
+    isCircleSubscription,
+    cartTotalCashback,
+    pharmacyCircleAttributes,
+    orders,
+  } = shoppingCart;
+  const addr = deliveryAddressId && addresses.find((item) => item.id == deliveryAddressId);
+  const store = storeId && stores.find((item) => item.storeid == storeId);
+  const shippingInformation = addr ? formatAddress(addr) : store ? store.address : '';
+  const getFormattedAmount = (num: number) => Number(num.toFixed(2));
+
+  const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED] = {
+    'Order ID': paymentOrderId,
+    'Order Type': 'Cart',
+    'Prescription Required': uploadPrescriptionRequired,
+    'Prescription Added': !!(physicalPrescriptions.length || ePrescriptions.length),
+    'Shipping information': shippingInformation, // (Home/Store address)
+    'Total items in cart': cartItems.length,
+    'Grand Total': cartTotal + deliveryCharges,
+    'Total Discount %': coupon
+      ? getFormattedAmount(((couponDiscount + productDiscount) / cartTotal) * 100)
+      : 0,
+    'Discount Amount': getFormattedAmount(couponDiscount + productDiscount),
+    'Delivery charge': deliveryCharges,
+    'Net after discount': getFormattedAmount(grandTotal),
+    'Payment status': 1,
+    'Service Area': 'Pharmacy',
+    'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
+    af_revenue: getFormattedAmount(grandTotal),
+    af_currency: 'INR',
+    'Circle Cashback amount':
+      circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
+    'Split Cart': orders?.length > 1 ? 'Yes' : 'No',
+    'Prescription Option selected': uploadPrescriptionRequired
+      ? 'Prescription Upload'
+      : 'Not Applicable',
+    ...pharmacyCircleAttributes!,
+    ...pharmacyUserTypeAttribute,
+    'Cart Items': JSON.stringify(cartItems),
+  };
+  if (store) {
+    eventAttributes['Store Id'] = store.storeid;
+    eventAttributes['Store Name'] = store.storename;
+    eventAttributes['Store Number'] = store.phone;
+    eventAttributes['Store Address'] = store.address;
+  }
+  return eventAttributes;
+};
 
 export const getDiagnosticCityLevelPaymentOptions = (cityId: string) => {
   let remoteData = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_PAYMENT_OPTION;

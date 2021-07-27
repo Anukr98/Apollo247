@@ -117,24 +117,23 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     pharmacyCircleAttributes,
     deliveryCharges,
   } = useShoppingCart();
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [status, setStatus] = useState<string>(props.navigation.getParam('status'));
   const [paymentRefId, setpaymentRefId] = useState<string>('');
   const [orderDateTime, setorderDateTime] = useState('');
   const [paymentMode, setPaymentMode] = useState('');
-  const deliveryTime = props.navigation.getParam('deliveryTime');
-  const orderInfo = props.navigation.getParam('orderInfo');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
   const cleverTapCheckoutEventAttributes = props.navigation.getParam(
     'cleverTapCheckoutEventAttributes'
   );
-  const orders = props.navigation.getParam('orders');
+  const price = props.navigation.getParam('price');
+  const transId = props.navigation.getParam('transId');
+  const { orders, deliveryTime, orderInfo, isStorePickup } = props.navigation.getParam(
+    'orderDetails'
+  );
   const orderIds = orders.map(
     (item: any, index: number) => item?.orderAutoId + (index != orders?.length - 1 && ', ')
   );
-  const price = props.navigation.getParam('price');
-  const transId = props.navigation.getParam('transId');
-  const isStorePickup = props.navigation.getParam('isStorePickup');
   const [circleSubscriptionID, setCircleSubscriptionID] = useState<string>('');
   const [isCircleBought, setIsCircleBought] = useState<boolean>(false);
   const [totalCashBack, setTotalCashBack] = useState<number>(0);
@@ -189,10 +188,8 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
 
   useEffect(() => {
     setLoading(true);
-    const apiCall = isStorePickup
-      ? GET_PHARMA_TRANSACTION_STATUS
-      : GET_PHARMA_TRANSACTION_STATUS_V2;
-    const variables = isStorePickup ? { orderId: transId } : { transactionId: transId };
+    const apiCall = GET_PHARMA_TRANSACTION_STATUS_V2;
+    const variables = { paymentOrderId: transId };
 
     client
       .query({
@@ -201,9 +198,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         fetchPolicy: 'no-cache',
       })
       .then((res) => {
-        const pharmaPaymentStatus = isStorePickup
-          ? res?.data?.pharmaPaymentStatus
-          : res?.data?.pharmaPaymentStatusV2;
+        const pharmaPaymentStatus = res?.data?.pharmaPaymentStatusV2;
         setorderDateTime(pharmaPaymentStatus?.orderDateTime);
         setpaymentRefId(pharmaPaymentStatus?.paymentRefId);
         setStatus(pharmaPaymentStatus?.paymentStatus);
@@ -245,7 +240,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
       setCirclePlanDetails(data?.APOLLO?.[0]);
       setCircleSubscriptionID(data?.APOLLO?.[0]._id);
-      AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
+      data?.APOLLO?.[0]._id && AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
     } catch (error) {
       CommonBugFender('ConsultRoom_getUserSubscriptionsByStatus', error);
     }

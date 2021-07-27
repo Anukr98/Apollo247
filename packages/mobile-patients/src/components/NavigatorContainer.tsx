@@ -140,6 +140,8 @@ import { VaccineBookingConfirmationScreen } from '@aph/mobile-patients//src/comp
 import { BookedVaccineScreen } from '@aph/mobile-patients//src/components/Vaccination/BookedVaccineScreen';
 import { ActivateCorporateMembership } from '@aph/mobile-patients//src/components/Vaccination/ActivateCorporateMembership';
 import { VaccineTermsAndConditions } from '@aph/mobile-patients//src/components/Vaccination/VaccineTermsAndConditions';
+import { TxnsandPayments } from '@aph/mobile-patients/src/components/MyPayments/TxnsandPayments';
+import { ManagePayments } from '@aph/mobile-patients/src/components/MyPayments/ManagePayments';
 import { NeedHelpDiagnosticsOrder } from '@aph/mobile-patients/src/components/NeedHelpDiagnosticsOrder/NeedHelpDiagnosticsOrder';
 import { TestReportViewScreen } from '@aph/mobile-patients/src/components/HealthRecords/TestReportScreenView';
 import { CowinRegistrationScreen } from './Vaccination/CowinRegistrationScreen';
@@ -271,13 +273,15 @@ export enum AppRoutes {
   TestWidgetListing = 'TestWidgetListing',
   ProHealthWebView = 'ProHealthWebView',
   MyOrdersScreen = 'MyOrdersScreen',
-  TestRatingScreen = 'TestRatingScreen',
   SlotSelection = 'SlotSelection',
   VaccineBookingScreen = 'VaccineBookingScreen',
   VaccineBookingConfirmationScreen = 'VaccineBookingConfirmationScreen',
   BookedVaccineScreen = 'BookedVaccineScreen',
   ActivateCorporateMembership = 'ActivateCorporateMembership',
   VaccineTermsAndConditions = 'VaccineTermsAndConditions',
+  TestRatingScreen = 'TestRatingScreen',
+  TxnsandPayments = 'TxnsandPayments',
+  ManagePayments = 'ManagePayments',
   TestReportViewScreen = 'TestReportViewScreen',
   CowinRegistration = 'CowinRegistration',
   VaccinationScreen = 'VaccinationScreen',
@@ -699,6 +703,12 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.TestRatingScreen]: {
     screen: TestRatingScreen,
+  },
+  [AppRoutes.TxnsandPayments]: {
+    screen: TxnsandPayments,
+  },
+  [AppRoutes.ManagePayments]: {
+    screen: ManagePayments,
   },
   [AppRoutes.SlotSelection]: {
     screen: SlotSelection,
