@@ -43,7 +43,7 @@ import {
   BOOK_APPOINTMENT_TRANSFER,
   UPDATE_APPOINTMENT_SESSION,
   ADD_CHAT_DOCUMENTS,
-  UPLOAD_MEDIA_DOCUMENT_PRISM,
+  UPLOAD_MEDIA_DOCUMENT_V2,
   SEND_PATIENT_WAIT_NOTIFICATION,
   UPDATE_HEALTH_RECORD_NUDGE_STATUS,
   GET_APPOINTMENT_DATA,
@@ -6563,9 +6563,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
   };
 
-  const callUploadMediaDocumentApi = (inputData: MediaPrescriptionUploadRequest) =>
+  const callUploadMediaDocumentApiV2 = (inputData: MediaPrescriptionUploadRequest) =>
     client.mutate({
-      mutation: UPLOAD_MEDIA_DOCUMENT_PRISM,
+      mutation: UPLOAD_MEDIA_DOCUMENT_V2,
       fetchPolicy: 'no-cache',
       variables: {
         MediaPrescriptionUploadRequest: inputData,
@@ -6600,41 +6600,39 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           prescriptionFiles: [prescriptionFile],
         };
         try {
-          const response = await callUploadMediaDocumentApi(inputData);
-          const recordId = g(response, 'data', 'uploadMediaDocument', 'recordId');
-          if (recordId) {
-            getPrismUrls(client, patientId, [recordId])
-              .then((data: any) => {
-                const text = {
-                  id: patientId,
-                  message: imageconsult,
-                  fileType: item.fileType == 'pdf' ? 'pdf' : 'image',
-                  fileName: item.title + '.' + item.fileType,
-                  prismId: recordId,
-                  url: (data.urls && data.urls[0]) || '',
-                  messageDate: new Date(),
-                };
-                pubnub.publish(
-                  {
-                    channel: channel,
-                    message: text,
-                    storeInHistory: true,
-                    sendByPost: true,
-                  },
-                  (status, response) => {
-                    if (status.statusCode == 200) {
-                      HereNowPubnub('ImageUploaded');
-                    }
-                  }
-                );
-                KeepAwake.activate();
-              })
-              .catch((e) => {
-                CommonBugFender('ChatRoom_getPrismUrls_uploadDocument', e);
-              });
+          const response = await callUploadMediaDocumentApiV2(inputData);
+
+          if (
+            response?.data?.uploadMediaDocumentV2 &&
+            Array.isArray(response.data.uploadMediaDocumentV2) &&
+            response.data.uploadMediaDocumentV2.length &&
+            response.data.uploadMediaDocumentV2[0]?.fileUrl
+          ) {
+            const text = {
+              id: patientId,
+              message: imageconsult,
+              fileType: item.fileType == 'pdf' ? 'pdf' : 'image',
+              fileName: item.title + '.' + item.fileType,
+              url: response.data.uploadMediaDocumentV2[0].fileUrl || '',
+              messageDate: new Date(),
+            };
+            pubnub.publish(
+              {
+                channel: channel,
+                message: text,
+                storeInHistory: true,
+                sendByPost: true,
+              },
+              (status, response) => {
+                if (status.statusCode == 200) {
+                  HereNowPubnub('ImageUploaded');
+                }
+              }
+            );
+            KeepAwake.activate();
           } else {
             Alert.alert('Upload document failed');
-            CommonLogEvent('ChatRoom_callUploadMediaDocumentApi_Failed', response);
+            CommonLogEvent('ChatRoom_callUploadMediaDocumentApiV2_Failed', response);
           }
         } catch (e) {
           // adding retry
@@ -6661,7 +6659,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         instructions={[
           'Take clear Picture of your entire file.',
           'Doctor details & date of the test should be clearly visible.',
-          'Only JPG / PNG type files up to 2 mb are allowed',
+          'Only JPG / PNG / PDF type files up to 25 MB are allowed',
         ]}
         isVisible={isDropdownVisible}
         disabledOption={'NONE'}
@@ -6669,7 +6667,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         blockCameraMessage={strings.alerts.Open_camera_in_video_call}
         optionTexts={{
           camera: 'TAKE A PHOTO',
-          gallery: 'CHOOSE FROM\nGALLERY',
+          gallery: 'CHOOSE FROM\nDEVICE',
           prescription: 'UPLOAD\nFROM PHR',
         }}
         hideTAndCs={true}

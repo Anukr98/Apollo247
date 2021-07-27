@@ -3968,6 +3968,22 @@ export const UPLOAD_DOCUMENT = gql`
   }
 `;
 
+export const UPLOAD_MEDIA_DOCUMENT_V2 = gql`
+  mutation uploadMediaDocumentV2(
+    $MediaPrescriptionUploadRequest: MediaPrescriptionUploadRequest
+    $uhid: String!
+    $appointmentId: ID!
+  ) {
+    uploadMediaDocumentV2(
+      prescriptionInput: $MediaPrescriptionUploadRequest
+      uhid: $uhid
+      appointmentId: $appointmentId
+    ) {
+      fileUrl
+    }
+  }
+`;
+
 export const DOWNLOAD_DOCUMENT = gql`
   query downloadDocuments($downloadDocumentsInput: DownloadDocumentsInput!) {
     downloadDocuments(downloadDocumentsInput: $downloadDocumentsInput) {
