@@ -100,7 +100,6 @@ public class MyFirebaseMessagingService
                 for (Map.Entry<String, String> entry : remoteMessage.getData().entrySet()) {
                     extras.putString(entry.getKey(), entry.getValue());
                 }
-                Log.e("TAG","onReceived Mesaage Called");
                 NotificationInfo info = CleverTapAPI.getNotificationInfo(extras);
                 if (info.fromCleverTap) {
                     if (Utils.isForPushTemplates(extras)) {
