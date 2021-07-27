@@ -56,6 +56,7 @@ import {
   renderSlotItemShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 const { width } = Dimensions.get('window');
+const tabWidth = width / 4;
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
@@ -183,7 +184,9 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   const [totalSlots, setTotalSlots] = useState<number>(-1);
   const [timeArray, setTimeArray] = useState<TimeArray>(defaultTimeData);
   const [loadTotalSlots, setLoadTotalSlots] = useState<boolean>(true);
-  const [isOnlineSelected, setIsOnlineSelected] = useState<boolean>(true);
+  const [isOnlineSelected, setIsOnlineSelected] = useState<boolean>(
+    selectedTab === consultPhysicalTab ? false : true
+  );
   const [nextAvailableDate, setNextAvailableDate] = useState<string>('');
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
   const [firstSelectedSlot, setFirstSelectedSlot] = useState<string>('');
@@ -752,6 +755,14 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
 
     const hospitalId = doctorClinics?.[0]?.facility?.id || '';
 
+    const eventAttributes = {
+      Source: 'Profile',
+      'Consult Mode': isOnlineSelected ? 'Online' : 'Physical',
+      'Consult Date Time': new Date(selectedTimeSlot),
+    };
+
+    callWEGEvent(WebEngageEventName.CONSULT_NOW_CLICKED, eventAttributes);
+
     const appointmentInput: BookAppointmentInput = {
       patientId: currentPatient?.id,
       doctorId,
@@ -1045,7 +1056,7 @@ const styles = StyleSheet.create({
   },
   buttonStyle: {
     ...theme.viewStyles.cardViewStyle,
-    width: 90,
+    width: tabWidth - 22,
     marginRight: 8,
     marginTop: 12,
     backgroundColor: theme.colors.WHITE,
