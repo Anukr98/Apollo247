@@ -282,9 +282,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const fetchTestReportGenDetails = async (_cartItemId: string | number[]) => {
     try {
       const removeSpaces =
-        typeof _cartItemId == 'string' ? _cartItemId.replace(/\s/g, '').split(',') : null;
+        typeof _cartItemId == 'string' ? _cartItemId?.replace(/\s/g, '')?.split(',') : null;
       const listOfIds =
-        typeof _cartItemId == 'string' ? removeSpaces?.map((item) => parseInt(item!)) : _cartItemId;
+        typeof _cartItemId == 'string' ? removeSpaces?.map((item) => Number(item!)) : _cartItemId;
       const res: any = await getDiagnosticCartItemReportGenDetails(
         listOfIds?.toString() || _cartItemId?.toString(),
         Number(addressCityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
@@ -845,15 +845,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
   const onRemoveCartItem = ({ id, name }: DiagnosticsCartItem, patientId: string) => {
     // check if patient cartItems has the removed item. If it does, then don't remove it from the overall.
-    const getSelectedCartItems = isDiagnosticSelectedCartEmpty(patientCartItems);
-    const getExisitngItems = getSelectedCartItems
-      ?.map((item: DiagnosticPatientCartItem) => item?.cartItems?.filter((idd) => idd?.id))
-      ?.flat();
-    const getAllItemIds = getExisitngItems?.map((items: DiagnosticsCartItem) => Number(items?.id));
+    const getSelectedItemInCart = checkIsItemRemovedFromAll(patientCartItems);
     removePatientCartItem?.(patientId, id);
-    const selectedItemPresent =
-      !!getAllItemIds && getAllItemIds?.filter((itemIds: number) => itemIds == Number(id));
-    if (selectedItemPresent?.length == 1) {
+    if (getSelectedItemInCart?.length == 1) {
       removeCartItem?.(id);
       const newCartItems = cartItems?.filter((item) => Number(item?.id) !== Number(id));
       setCartItems?.(newCartItems);
@@ -1377,6 +1371,21 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       });
   }
 
+  function checkIsItemRemovedFromAll(pCartItems: DiagnosticPatientCartItem[]) {
+    const getSelectedCartItems = isDiagnosticSelectedCartEmpty(pCartItems);
+    console.log({ getSelectedCartItems });
+    const getExisitngItems = getSelectedCartItems
+      ?.map((item: DiagnosticPatientCartItem) => item?.cartItems?.filter((idd) => idd?.id))
+      ?.flat();
+    console.log({ getExisitngItems });
+    const getAllItemIds = getExisitngItems?.map((items: DiagnosticsCartItem) => Number(items?.id));
+    console.log({ getAllItemIds });
+    const selectedItemPresent =
+      !!getAllItemIds && getAllItemIds?.filter((itemIds: number) => itemIds == Number(id));
+    console.log({ selectedItemPresent });
+    return selectedItemPresent;
+  }
+
   function onChangeCartItems(
     updatedCartItems: any,
     removedTest: string,
@@ -1387,10 +1396,15 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       (item: DiagnosticPatientCartItem) => item?.patientId == patientId
     );
     patientCartItemsCopy[findIndex].cartItems = updatedCartItems;
+    const getSelectedItemInCart = checkIsItemRemovedFromAll(patientCartItemsCopy);
 
+    console.log({ getSelectedItemInCart });
     setDiagnosticSlot?.(null);
     setPatientCartItems?.(patientCartItemsCopy);
-    setCartItems?.(updatedCartItems); //this needs to be updated
+    if (getSelectedItemInCart?.length == 1) {
+      setCartItems?.(updatedCartItems);
+    }
+
     isModifyFlow && setModifiedPatientCart?.(updatedCartItems);
     //refetch the areas
     if (deliveryAddressId != '') {
@@ -1408,11 +1422,13 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   }
 
   const renderDuplicateMessage = (duplicateTests: string, higherPricesName: string) => {
+    const getUniqueDuplicateName = [...new Set(duplicateTests?.split(','))]?.join(',');
+    const getUniqueHighPricesName = [...new Set(higherPricesName?.split(','))]?.join(',');
     showAphAlert?.({
       title: 'Your cart has been revised!',
       description: isModifyFlow
-        ? `The "${duplicateTests}" has been removed from your cart as it is already included in your order. Kindly proceed to pay the revised amount`
-        : `The "${duplicateTests}" has been removed from your cart as it is already included in another test "${higherPricesName}" in your cart. Kindly proceed to pay the revised amount`,
+        ? `The "${getUniqueDuplicateName}" has been removed from your cart as it is already included in your order. Kindly proceed to pay the revised amount`
+        : `The "${getUniqueDuplicateName}" has been removed from your cart as it is already included in another test "${getUniqueHighPricesName}" in your cart. Kindly proceed to pay the revised amount`,
       onPressOk: () => {
         setLoading?.(false);
         hideAphAlert?.();

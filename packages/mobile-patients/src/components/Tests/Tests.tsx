@@ -77,6 +77,7 @@ import {
   Linking,
   FlatList,
   Modal,
+  Platform,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
@@ -1221,6 +1222,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       if (item?.redirectUrl && item?.redirectUrl != '') {
         //for rtpcr - drive through - open webview
         if (item?.redirectUrlText === 'WebView') {
+          DiagnosticBannerClick(slideIndex + 1, Number(item?.itemId), item?.bannerTitle);
           try {
             const openUrl = item?.redirectUrl || AppConfig.Configuration.RTPCR_Google_Form;
             props.navigation.navigate(AppRoutes.CovidScan, {
@@ -2396,8 +2398,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#CE3737',
     flex: 1,
     position: 'absolute',
-    top: winHeight / 7,
-    left: winWidth / 3.8,
+    top: Platform.OS == 'ios' ? winHeight / 7 : winHeight / (winHeight > 700 ? 10 : 8),
+    left: winWidth / 4.5, //3.8
     width: winWidth / 1.7,
   },
   toolTipIcon: {
