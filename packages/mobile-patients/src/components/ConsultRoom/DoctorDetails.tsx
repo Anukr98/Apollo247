@@ -102,6 +102,7 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { useRef } from 'react';
 
 const { height, width } = Dimensions.get('window');
 
@@ -385,6 +386,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const circleDoctorDetails = calculateCircleDoctorPricing(doctorDetails);
   const [showDoctorSharePopup, setShowDoctorSharePopup] = useState<boolean>(false);
+  const callCleverTapEvent = useRef<boolean>(true);
   const consultModeSelected = props.navigation.getParam('consultModeSelected');
   const {
     isCircleDoctor,
@@ -708,6 +710,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     fromDeeplink &&
       postWebEngageEvent(WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK, eventAttributes);
     !displayoverlay &&
+      callCleverTapEvent.current &&
       postCleverTapEvent(
         CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED,
         cleverTapEventAttributes
@@ -738,11 +741,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         ) || ''}`,
         languages: g(doctorDetails, 'languages') || undefined,
       };
-      postCleverTapEvent(
-        CleverTapEventName.CONSULT_PAST_SEARCHES_CLICKED,
-        cleverTapPastSearchEventAttributes
-      );
+      callCleverTapEvent.current &&
+        postCleverTapEvent(
+          CleverTapEventName.CONSULT_PAST_SEARCHES_CLICKED,
+          cleverTapPastSearchEventAttributes
+        );
     }
+    callCleverTapEvent.current = false;
   };
 
   const setAvailableModes = (availabilityMode: any) => {
