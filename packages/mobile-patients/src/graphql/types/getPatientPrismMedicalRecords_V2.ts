@@ -41,6 +41,7 @@ export interface getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_
   consultId: string | null;
   identifier: string | null;
   additionalNotes: string | null;
+  billNo: string | null;
   observation: string | null;
   labTestResults: (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response_labTestResults | null)[] | null;
   fileUrl: string;

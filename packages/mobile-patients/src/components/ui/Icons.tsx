@@ -744,6 +744,10 @@ export const Download: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_download.webp')} />
 );
 
+export const Highlighter: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_highligther.webp')} />
+);
+
 export const WhiteDownloadIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_white_download.png')} />
 );
