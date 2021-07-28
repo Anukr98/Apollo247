@@ -60,7 +60,10 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import moment from 'moment';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
+import {
+  fireCirclePaymentPageViewedEvent,
+  postCircleWEGEvent,
+} from '@aph/mobile-patients/src/components/CirclePlan/Events';
 import {
   CleverTapEventName,
   CleverTapEvents,
@@ -417,29 +420,6 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     });
   };
 
-  const fireCirclePaymentPageViewedEvent = () => {
-    const circleData = circlePlanSelected;
-    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE] = {
-      navigation_source: circleEventSource,
-      circle_end_date: getCircleNoSubscriptionText(),
-      circle_start_date: getCircleNoSubscriptionText(),
-      circle_planid: circleData?.subPlanId,
-      customer_id: currentPatient?.id,
-      duration_in_month: circleData?.durationInMonth,
-      user_type: getUserType(allCurrentPatients),
-      price: circleData?.currentSellingPrice,
-    };
-    postCleverTapEvent(CleverTapEventName.CIRCLE_PLAN_TO_CART, cleverTapEventAttributes);
-    setTimeout(
-      () =>
-        postCleverTapEvent(
-          CleverTapEventName.CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE,
-          cleverTapEventAttributes
-        ),
-      1000
-    );
-  };
-
   const initiateCirclePurchase = async () => {
     try {
       setSpinning(true);
@@ -456,7 +436,12 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       setSpinning(false);
       closeModal && closeModal();
       if (data?.data?.createOrderInternal?.success) {
-        fireCirclePaymentPageViewedEvent();
+        fireCirclePaymentPageViewedEvent(
+          circlePlanSelected,
+          circleEventSource!,
+          allCurrentPatients,
+          currentPatient
+        );
         props.navigation.navigate(AppRoutes.PaymentMethods, {
           paymentId: data?.data?.createOrderInternal?.payment_order_id!,
           amount: amountToPay,
