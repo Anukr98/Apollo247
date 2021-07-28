@@ -965,7 +965,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
   const renderPromoteCashback = () => {
     return (
-      <View>
+      <View style={styles.promoViewContainer}>
         <Text style={styles.overlayHeadingText}>{string.diagnostics.promoteCashbackHeading}</Text>
         <View style={styles.promoContainer}>
           <PromoCashback />
@@ -1098,6 +1098,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     setShowRescheduleReasons(false);
     setShowCancelReasons(false);
     setSelectRescheduleOption(true);
+    setShowPromoteCashback(false);
     setSelectCancelOption(false);
     setSelectRescheduleReason('');
     setSelectCancelReason('');
@@ -1613,8 +1614,14 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     marginBottom: 8,
   },
+  promoViewContainer: { height: 300 },
   promoContainer: { justifyContent: 'center', flex: 1, alignItems: 'center', paddingVertical: 20 },
-  promoButtonContainer: {flexDirection:'row',justifyContent:'space-around',alignItems:'center',paddingVertical:10},
+  promoButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
   yellowText: { ...theme.viewStyles.yellowTextStyle, fontSize: 14, textAlign: 'left' },
   noDataCard: {
     height: 'auto',
