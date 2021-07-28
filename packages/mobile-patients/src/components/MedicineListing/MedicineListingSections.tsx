@@ -32,6 +32,7 @@ export interface Props {
   setShowListView: React.Dispatch<React.SetStateAction<boolean>>;
   setFilterVisible: React.Dispatch<React.SetStateAction<boolean>>;
   setSortByVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  showFilterOption: boolean;
 }
 
 export const MedicineListingSections: React.FC<Props> = ({
@@ -47,6 +48,7 @@ export const MedicineListingSections: React.FC<Props> = ({
   setShowListView,
   setFilterVisible,
   setSortByVisible,
+  showFilterOption,
 }) => {
   const isFiltersApplied = Object.keys(filterBy).find((k) => filterBy[k]?.length);
 
@@ -124,10 +126,12 @@ export const MedicineListingSections: React.FC<Props> = ({
     onPress: () => {},
   };
 
+  const optionsViewData = showFilterOption
+    ? [sortByOption, filterByOption, listGridSelection]
+    : [sortByOption, listGridSelection];
+
   const optionsView = (
-    <OptionsDisplayView
-      options={searchText ? [listGridSelection] : [sortByOption, filterByOption, listGridSelection]}
-    />
+    <OptionsDisplayView options={searchText ? [listGridSelection] : optionsViewData} />
   );
 
   const views = [breadCrumbView, pageTitleView, [divider, optionsView]];
