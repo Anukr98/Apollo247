@@ -410,6 +410,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         }
       })
       .catch((e) => {
+        postWEGPatientAPIError(currentPatient, '', 'DoctorSearchListing', 'GET_PLATINUM_DOCTOR', e);
         setPlatinumDoctor(null);
         CommonBugFender('GET_PLATINUM_DOCTOR', e);
       });
@@ -434,7 +435,23 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       if (state) {
         await getDoctorOfTheHour(partnerDoctor, state);
       }
+      response?.data.getPatientAddressList
+        ? null
+        : postWEGPatientAPIError(
+            currentPatient,
+            '',
+            'DoctorSearchListing',
+            'GET_PATIENT_ADDRESS_LIST',
+            response
+          );
     } catch (error) {
+      postWEGPatientAPIError(
+        currentPatient,
+        '',
+        'DoctorSearchListing',
+        'GET_PATIENT_ADDRESS_LIST',
+        error
+      );
       CommonBugFender('DoctorSearchListing_fetchAddress', error);
     }
   }
