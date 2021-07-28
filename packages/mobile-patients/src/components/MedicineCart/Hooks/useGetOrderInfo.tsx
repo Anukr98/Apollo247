@@ -67,6 +67,10 @@ export const useGetOrderInfo = () => {
     subPlanId: circleSubPlanId || '',
   };
 
+  const appointmentIds = ePrescriptions
+    ?.filter((item) => !!item?.appointmentId)
+    ?.map((item) => item?.appointmentId);
+
   const OrderInfo: saveMedicineOrderV2Variables = {
     medicineOrderInput: {
       patientId: currentPatient?.id || '',
@@ -92,6 +96,7 @@ export const useGetOrderInfo = () => {
       planPurchaseDetails: !!circleMembershipCharges ? planPurchaseDetails : null,
       // healthCreditUsed: hcOrder ? getFormattedAmount(grandTotal) : 0,
       shipments: shipments,
+      appointmentId: appointmentIds?.length ? appointmentIds.join(',') : '',
     },
   };
 
@@ -119,7 +124,6 @@ export const useGetOrderInfo = () => {
 
   const selectedStore = storeId && stores.find((item) => item.storeid == storeId);
   const { storename, address, workinghrs, phone, city, state, state_id } = selectedStore || {};
-  const appointmentIds = ePrescriptions?.map((item) => item?.id);
 
   const pickUpOrderInfo: saveMedicineOrderOMSVariables = {
     medicineCartOMSInput: {
