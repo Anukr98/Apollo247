@@ -1355,7 +1355,6 @@ export interface WebEngageEvents {
     'Order id': string;
     'Patient Name': string;
     'Display Order ID': number;
-    'DateTime'?: string 
   };
   [WebEngageEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED]: {
     UHID: string;

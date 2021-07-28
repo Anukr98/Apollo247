@@ -360,6 +360,7 @@ export function DiagnosticAppointmentTimeSlot(
     'No. of slots': noOfSlots,
     'Slot date': slotDate,
   };
+  console.log({ eventAttributes });
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED, eventAttributes);
 }
 
@@ -413,8 +414,7 @@ export function DiagnosticRescheduleOrder(
   orderId: string,
   displayId: number,
   currentPatient: any,
-  patientObject: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj,
-  dateTimeInUTC?: string
+  patientObject: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj
 ) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ORDER_RESCHEDULE] = {
     'Reschedule reason': reason,
@@ -422,14 +422,10 @@ export function DiagnosticRescheduleOrder(
     'Slot Date': moment(date)?.format('DD-MM-YYYY'),
     'Order id': orderId,
     'Patient Name':
-      (!!patientObject && `${patientObject?.dateOfBirth} ${patientObject?.lastName}`) ||
+      (!!patientObject && `${patientObject?.firstName} ${patientObject?.lastName}`) ||
       `${currentPatient?.firstName} ${currentPatient?.lastName}`,
     'Display Order ID': displayId,
   };
-  if (!!dateTimeInUTC) {
-    eventAttributes['DateTime'] = dateTimeInUTC;
-  }
-  console.log({ eventAttributes });
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ORDER_RESCHEDULE, eventAttributes);
 }
 

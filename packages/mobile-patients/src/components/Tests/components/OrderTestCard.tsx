@@ -75,7 +75,6 @@ interface OrderTestCardProps {
 }
 
 export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
-  console.log({ props });
   const [moreTests, setMoreTests] = useState<boolean>(false);
   const { ordersData } = props;
   //added if item is removed from phelbo app.
