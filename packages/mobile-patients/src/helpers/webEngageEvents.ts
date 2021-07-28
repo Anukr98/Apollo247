@@ -1353,6 +1353,9 @@ export interface WebEngageEvents {
     'Slot Time': string;
     'Slot Date': string;
     'Order id': string;
+    'Patient Name': string;
+    'Display Order ID': number;
+    'DateTime'?: string 
   };
   [WebEngageEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED]: {
     UHID: string;

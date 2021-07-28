@@ -751,12 +751,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       paidSlot: rescheduleSlotObject?.isPaidSlot,
     };
 
-    DiagnosticRescheduleOrder(
-      selectRescheduleReason,
-      formatTime,
-      formattedDate,
-      String(selectedOrder?.displayId)
-    );
     diagnosticRescheduleOrder(
       client,
       String(orderId),
@@ -780,6 +774,16 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             slot: formatTime,
             rescheduleCount: rescheduleResponse?.rescheduleCount,
           };
+          DiagnosticRescheduleOrder(
+            selectRescheduleReason,
+            formatTime,
+            formattedDate,
+            String(selectedOrder?.id),
+            selectedOrder?.displayId!,
+            currentPatient,
+            selectedOrder?.patientObj!,
+            dateTimeInUTC
+          );
           rescheduleSelectedOrder(obj);
           setRescheduleCount(rescheduleResponse?.rescheduleCount);
           setRescheduledTime(dateTimeInUTC);

@@ -22,6 +22,7 @@ import {
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   DIAGNOSTIC_PINCODE_SOURCE_TYPE,
 } from '@aph/mobile-patients/src/utils/commonUtils';
+import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj } from '../../graphql/types/getDiagnosticOrdersListByMobile';
 
 function createPatientAttributes(currentPatient: any) {
   const patientAttributes = {
@@ -409,14 +410,26 @@ export function DiagnosticRescheduleOrder(
   reason: string,
   time: string,
   date: string,
-  orderId: string
+  orderId: string,
+  displayId: number,
+  currentPatient: any,
+  patientObject: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj,
+  dateTimeInUTC?: string
 ) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ORDER_RESCHEDULE] = {
     'Reschedule reason': reason,
     'Slot Time': time,
-    'Slot Date': date,
+    'Slot Date': moment(date)?.format('DD-MM-YYYY'),
     'Order id': orderId,
+    'Patient Name':
+      (!!patientObject && `${patientObject?.dateOfBirth} ${patientObject?.lastName}`) ||
+      `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+    'Display Order ID': displayId,
   };
+  if (!!dateTimeInUTC) {
+    eventAttributes['DateTime'] = dateTimeInUTC;
+  }
+  console.log({ eventAttributes });
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ORDER_RESCHEDULE, eventAttributes);
 }
 
