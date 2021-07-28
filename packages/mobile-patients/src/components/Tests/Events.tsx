@@ -22,7 +22,7 @@ import {
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   DIAGNOSTIC_PINCODE_SOURCE_TYPE,
 } from '@aph/mobile-patients/src/utils/commonUtils';
-import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj } from '../../graphql/types/getDiagnosticOrdersListByMobile';
+import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
 function createPatientAttributes(currentPatient: any) {
   const patientAttributes = {
@@ -315,7 +315,6 @@ export function DiagnosticProceedToPay(
     'Collection Date Slot': timeDate,
     'Circle user': isCircle,
   };
-  console.log({ eventAttributes });
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_MAKE_PAYMENT_CLICKED, eventAttributes);
 }
 
@@ -360,7 +359,6 @@ export function DiagnosticAppointmentTimeSlot(
     'No. of slots': noOfSlots,
     'Slot date': slotDate,
   };
-  console.log({ eventAttributes });
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED, eventAttributes);
 }
 
