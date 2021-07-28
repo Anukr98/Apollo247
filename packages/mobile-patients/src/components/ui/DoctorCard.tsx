@@ -183,18 +183,18 @@ const styles = StyleSheet.create({
   doctorInfoIcon: {
     height: 14,
     width: 14,
-    marginEnd: 6
+    marginEnd: 6,
   },
   consultBtnContainer: {
     flex: 1, 
     justifyContent: 'flex-end',
     marginTop: 7 
   },
-  doctorInfoContainer: {
+  infoContainer: {
     flexDirection: 'row', 
     alignItems: 'center',
     paddingHorizontal: 16, 
-    paddingBottom: 7
+    paddingBottom: 7,
   },
   doctorLanguage: {
     flex: 1,
@@ -203,6 +203,11 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(12),
     color: theme.colors.SKY_BLUE,
   },
+  doctorInfoContainer: { 
+    flex: 1, 
+    paddingRight: 16, 
+    marginBottom: 16,
+   },
 });
 
 export interface DoctorCardProps extends NavigationScreenProps {
@@ -646,7 +651,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               </View>
             </View>
 
-            <View style={{ flex: 1, paddingRight: 16, marginBottom: 16 }}>
+            <View style={styles.doctorInfoContainer}>
               <Text
                 style={[styles.doctorNameStyles, styles.doctorNameViewStyle]} 
                 numberOfLines={1}
@@ -677,14 +682,14 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               ) : null}
             </View>
           </View>
-          <View style={styles.doctorInfoContainer}>
+          <View style={styles.infoContainer}>
             <DoctorLanguage style={styles.doctorInfoIcon} />
             <Text style={styles.doctorLanguage} numberOfLines={1}>
               {rowData?.languages.join(', ')}
             </Text>
           </View>
           {!!clinicAddress && 
-          <View style={styles.doctorInfoContainer}>
+          <View style={styles.infoContainer}>
             <DoctorLocation style={styles.doctorInfoIcon} />
             <Text style={styles.doctorLocation} numberOfLines={1}>
               {clinicAddress}
