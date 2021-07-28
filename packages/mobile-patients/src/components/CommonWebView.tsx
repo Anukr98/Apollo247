@@ -54,6 +54,7 @@ import {
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
+import { fireCirclePaymentPageViewedEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 export interface CommonWebViewProps extends NavigationScreenProps {}
 
 export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
@@ -216,6 +217,12 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
       };
       setLoading(false);
       if (data?.data?.createOrderInternal?.success) {
+        fireCirclePaymentPageViewedEvent(
+          selectedPlan,
+          circleEventSource,
+          allCurrentPatients,
+          currentPatient
+        );
         props.navigation.navigate(AppRoutes.PaymentMethods, {
           paymentId: data?.data?.createOrderInternal?.payment_order_id!,
           amount: Number(selectedPlan?.currentSellingPrice),
