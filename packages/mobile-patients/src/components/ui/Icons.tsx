@@ -1808,6 +1808,9 @@ export const Truecaller: React.FC<IconProps> = (props) => (
 export const DisabledTickIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_tick_disabled.webp')} />
 );
+export const PromoCashback: React.FC<IconProps> = (props) => (
+  <IconBase style={{width: 200, height: 75}} {...props} source={require('./icons/promoCashback2x.webp')} />
+);
 
 export const Msgs: React.FC<IconProps> = (props) => (
   <IconBase style={{ width: 27, height: 28 }} {...props} source={require('./icons/3msgs.webp')} />
