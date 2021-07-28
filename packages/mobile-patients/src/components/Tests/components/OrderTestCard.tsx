@@ -147,7 +147,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                     style={{
                       flexDirection: 'row',
                       minWidth: 0,
-                      maxWidth: !!item?.editOrderID ? '68%' : '80%',
+                      maxWidth: !!item?.editOrderID ? (screenWidth > 350 ? '75%' : '57%') : '80%',
                     }}
                   >
                     <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
@@ -300,7 +300,10 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       <View
         style={[
           styles.ctaContainer,
-          { justifyContent: props.showRescheduleCancel && !props.isHelp ? 'space-between' : 'flex-end' },
+          {
+            justifyContent:
+              props.showRescheduleCancel && !props.isHelp ? 'space-between' : 'flex-end',
+          },
         ]}
       >
         {!!props.showRescheduleCancel && props.showRescheduleCancel && !props.isHelp ? (
@@ -312,7 +315,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         ) : null}
         <TouchableOpacity activeOpacity={1} onPress={props.onPressViewDetails}>
           <Text style={[styles.yellowText, { fontSize: screenWidth > 380 ? 14 : 13 }]}>
-            {props.isHelp ? `HELP` :`VIEW DETAILS`}
+            {props.isHelp ? `HELP` : `VIEW DETAILS`}
           </Text>
         </TouchableOpacity>
       </View>
@@ -621,11 +624,16 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   yellowText: { ...theme.viewStyles.yellowTextStyle, fontSize: screenWidth > 380 ? 13 : 12 },
-  listViewContainer: { backgroundColor: '#F9F9F9', borderRadius: 5, flex: 1, padding: 10 },
+  listViewContainer: {
+    backgroundColor: '#F9F9F9',
+    borderRadius: 5,
+    flex: 1,
+    padding: 10,
+  },
   rowStyle: { flexDirection: 'row' },
   preparationViewContainer: {
     flexDirection: 'row',
-    backgroundColor: '#FCFDDA',
+    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
     flex: 1,
     padding: 10,
   },
@@ -656,7 +664,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansRegular(10),
   },
   otpContainer: {
-    backgroundColor: '#FCFDDA',
+    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
     justifyContent: 'space-between',
     flexDirection: 'row',
     height: 40,
@@ -732,7 +740,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 13, colors.APP_YELLOW, 1, 18),
   },
   ratingContainer: {
-    backgroundColor: '#FCFDDA',
+    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
     borderBottomLeftRadius: 8,
     borderBottomRightRadius: 8,
     borderRadius: 10,

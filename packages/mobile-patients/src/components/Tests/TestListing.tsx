@@ -20,8 +20,9 @@ import {
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   sourceHeaders,
 } from '@aph/mobile-patients/src/utils/commonUtils';
-import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
-import { PackageCard } from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
+import ItemCard from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
+import PackageCard from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
+
 import { TestListingHeader } from '@aph/mobile-patients/src/components/Tests/components/TestListingHeader';
 import { Breadcrumb } from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
 import {
@@ -65,7 +66,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
 
   const errorStates = !loading && widgetsData?.length == 0;
-  let deepLinkWidgetName: String;
+  let deepLinkWidgetName: string;
 
   //handle deeplinks as well here.
   useEffect(() => {
@@ -206,14 +207,14 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         breadcrumb.push({
           title: 'Cart',
           onPress: () => {
-            navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TestsCart);
+            navigateToScreenWithEmptyStack(props.navigation, AppRoutes.AddPatients);
           },
         });
       }
       breadcrumb.push({
         title:
           movedFrom === 'deeplink' && !!widgetName
-            ? nameFormater(deepLinkWidgetName?.replace(/-/g, ' '), 'title')
+            ? nameFormater(decodeURIComponent(deepLinkWidgetName?.replace(/-/g, ' ')), 'title')
             : nameFormater(title, 'title'),
         onPress: () => {},
       });

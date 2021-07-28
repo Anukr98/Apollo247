@@ -8,6 +8,7 @@ export interface SearchInputProps extends InputProps {
   _isSearchFocused?: boolean;
   _rigthIconView: React.ReactElement;
   _itemsNotFound: boolean;
+  _rightIconStyle?: any;
 }
 
 export const SearchInput: React.FC<SearchInputProps> = (props) => {
@@ -45,7 +46,7 @@ export const SearchInput: React.FC<SearchInputProps> = (props) => {
 
     const rightSearchIcon = (
       <View>
-        <WhiteSearchIcon />
+        <WhiteSearchIcon style={props._rightIconStyle ? props._rightIconStyle : {}} />
       </View>
     );
 

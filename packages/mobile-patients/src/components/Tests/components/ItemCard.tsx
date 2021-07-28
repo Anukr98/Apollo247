@@ -14,7 +14,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Image } from 'react-native-elements';
-import { isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { isEmptyObject, isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   convertNumberToDecimal,
@@ -49,22 +49,22 @@ export interface ItemCardProps {
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
   source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
   sourceScreen: string;
-  onPressAddToCartFromCart?: (item: any) => void;
-  onPressRemoveItemFromCart?: (item: any) => void;
 }
 
-export const ItemCard: React.FC<ItemCardProps> = (props) => {
-  const { cartItems, addCartItem, removeCartItem, modifiedOrderItemIds } = useDiagnosticsCart();
+const ItemCard: React.FC<ItemCardProps> = (props) => {
   const {
-    data,
-    isCircleSubscribed,
-    navigation,
-    source,
-    sourceScreen,
-    onPressAddToCartFromCart,
-    onPressRemoveItemFromCart,
-  } = props;
+    cartItems,
+    addCartItem,
+    removeCartItem,
+    modifiedOrderItemIds,
+    modifiedOrder,
+    setModifiedPatientCart,
+    removeMultiPatientCartItems,
+    patientCartItems,
+  } = useDiagnosticsCart();
+  const { data, isCircleSubscribed, navigation, source, sourceScreen } = props;
 
+  const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const actualItemsToShow =
     source === 'Cart page'
       ? data?.length > 0 && data?.filter((item: any) => item?.diagnosticPricing)
@@ -126,7 +126,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
             ]}
           >
             <View style={{ flexDirection: 'row' }}>
-              <View style={{ width: '69%' }}>
+              <View style={{ width: screenWidth < 340 ? '60%' : '69%' }}>
                 {imageUrl == '' ? (
                   <WidgetLiverIcon style={styles.imageStyle} resizeMode={'contain'} />
                 ) : (
@@ -167,7 +167,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
         </TouchableOpacity>
       );
     },
-    [cartItems]
+    [cartItems, patientCartItems]
   );
 
   const renderPercentageDiscount = (discount: string | number) => {
@@ -329,7 +329,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
         ? 'Category page'
         : data?.diagnosticWidgetTitle
     );
-    addCartItem?.({
+    const addedItems = {
       id: `${item?.itemId}`,
       mou: 1,
       name: item?.itemTitle!,
@@ -344,14 +344,22 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
       groupPlan: planToConsider?.groupPlan,
       packageMrp: packageCalculatedMrp,
       inclusions: [Number(item?.itemId)], // since it's a test
-    });
-    onPressAddToCartFromCart?.(item);
+      isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+    };
+    addCartItem?.(addedItems);
+    isModifyFlow &&
+      setModifiedPatientCart?.([
+        {
+          patientId: modifiedOrder?.patientId,
+          cartItems: cartItems?.concat(addedItems),
+        },
+      ]);
   }
 
-  function onPressRemoveFromCart(item: any) {
-    removeCartItem!(`${item?.itemId}`);
-    onPressRemoveItemFromCart?.(item);
-  }
+  const onPressRemoveFromCart = (item: any) => {
+    removeCartItem?.(`${item?.itemId}`);
+    removeMultiPatientCartItems?.(`${item?.itemId}`);
+  };
 
   function postHomePageWidgetClicked(name: string, id: string, section: string) {
     DiagnosticHomePageWidgetClicked(section, name, id);
@@ -441,18 +449,35 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
             ...theme.viewStyles.text('B', isSmallDevice ? 13 : 14, '#fc9916', 1, 24),
           },
         ]}
-        onPress={() =>
-          isAlreadyPartOfOrder
-            ? {}
-            : isAddedToCart
-            ? onPressRemoveFromCart(item)
-            : onPressAddToCart(item, pricesForItem, packageCalculatedMrp)
-        }
+        onPress={() => {
+          _onPressFunction(
+            isAlreadyPartOfOrder,
+            isAddedToCart,
+            item,
+            pricesForItem,
+            packageCalculatedMrp
+          );
+        }}
       >
         {isAlreadyPartOfOrder ? 'ALREADY ADDED' : isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
       </Text>
     );
   };
+
+  function _onPressFunction(
+    isAlreadyPartOfOrder: any,
+    isAddedToCart: boolean,
+    item: any,
+    pricesForItem: any,
+    packageCalculatedMrp: number
+  ) {
+    if (isAlreadyPartOfOrder) {
+    } else if (isAddedToCart) {
+      onPressRemoveFromCart(item);
+    } else {
+      onPressAddToCart(item, pricesForItem, packageCalculatedMrp);
+    }
+  }
 
   const renderError = () => {
     if (props.isVertical)
@@ -514,6 +539,8 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     </>
   );
 };
+
+export default React.memo(ItemCard);
 
 const styles = StyleSheet.create({
   itemCardView: {

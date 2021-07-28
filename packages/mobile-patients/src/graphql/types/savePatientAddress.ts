@@ -27,6 +27,7 @@ export interface savePatientAddress_savePatientAddress_patientAddress {
   longitude: number | null;
   stateCode: string | null;
   name: string | null;
+  defaultAddress: boolean | null;
 }
 
 export interface savePatientAddress_savePatientAddress {

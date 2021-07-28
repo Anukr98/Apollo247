@@ -7,7 +7,7 @@ import {
   PharmaUserStatus,
   UploadPrescSource,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE, DIAGNOSTIC_PINCODE_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
 
 type YesOrNo = 'Yes' | 'No';
 type HdfcPlan = 'SILVER' | 'GOLD' | 'PLATINUM';
@@ -196,7 +196,8 @@ export enum WebEngageEventName {
   DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE = 'Address Non Serviceable on Diagnostic Cart Page',
   DIAGNOSTIC_AREA_SELECTED = 'Diagnostic Area Selected on Cart',
   DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Diagnostic slot time selected',
-  DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic proceed to pay clicked',
+  DIAGNOSTIC_MAKE_PAYMENT_CLICKED = 'Diagnostic make payment clicked',
+  DIAGNOSTIC_PATIENT_SELECTED = 'Diagnostic patient selected',
   PAYMENT_INITIATED = 'Payment Initiated',
   DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
   DIAGNOSTIC_TRACK_ORDER_VIEWED = 'Diagnostic track Order viewed',
@@ -687,9 +688,9 @@ export interface ItemClickedOnLanding extends DiagnosticUserInfo {
 }
 
 export interface DiagnosticPinCode extends DiagnosticUserInfo {
-  Mode: string;
   Pincode: number | string;
   Serviceability: 'Yes' | 'No';
+  Source : DIAGNOSTIC_PINCODE_SOURCE_TYPE
 }
 
 export interface DoctorFilterClick {
@@ -1253,30 +1254,30 @@ export interface WebEngageEvents {
     'Area Selected': string;
   };
   [WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED]: {
-    'Address Pincode': number;
-    'Area Selected': string;
-    'Time Selected': string;
-    'Slot selected': 'Manual' | 'Automatic';
-    'Slot available': 'Yes' | 'No';
-    UHID: string;
+    'Type': 'Free' | 'Paid';
+    'Slot time': string;
+    'No. of slots' : number;
+    'Slot date' : string;
   };
-  [WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED]: {
-    'Patient Name selected': string;
+  [WebEngageEventName.DIAGNOSTIC_MAKE_PAYMENT_CLICKED]: {
+    'No. of patients': number;
+    'No. of slots': number;
+    'Slot type': 'Free' | 'Paid';
     'Total items in cart': number;
     'Sub Total': number;
-    // 'Delivery charge': number;
     'Net after discount': number;
-    'Prescription Uploaded?': boolean;
-    'Prescription Mandatory?': boolean;
-    'Mode of Sample Collection': 'Home Visit' | 'Clinic Visit';
     'Pin Code': string | number;
-    'Service Area': 'Pharmacy' | 'Diagnostic';
-    'Area Name': string;
-    'Area id': string | number;
+    'Address': string;
     'Home collection charges'?: number;
-    Discount?: number;
     'Collection Time Slot': string;
+    'Collection Date Slot': string | Date;
+    'Circle user': 'Yes' | 'No';
   };
+  [WebEngageEventName.DIAGNOSTIC_PATIENT_SELECTED]: {
+      'No. of patients': number;
+      'Patient UHID': string;
+      'Patient name': string;
+  },
   [WebEngageEventName.DIAGNOSTIC_TRACK_ORDER_VIEWED]: {
     'Patient UHID': string;
     'Patient Name': string;

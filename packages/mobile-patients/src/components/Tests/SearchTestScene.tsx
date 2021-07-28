@@ -1,4 +1,7 @@
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import {
+  DiagnosticPatientCartItem,
+  useDiagnosticsCart,
+} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { CartIcon } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -27,6 +30,7 @@ import {
   aphConsole,
   g,
   isEmptyObject,
+  isSmallDevice,
   isValidSearch,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -73,6 +77,8 @@ import {
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
+const GO_TO_CART_HEIGHT = 50;
+
 export interface SearchTestSceneProps
   extends NavigationScreenProps<{
     searchText: string;
@@ -99,20 +105,26 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const client = useApolloClient();
   const {
     addCartItem,
+    removePatientCartItem,
     removeCartItem,
     cartItems,
     setModifyHcCharges,
     setModifiedOrderItemIds,
     setHcCharges,
-    setAreaSelected,
     asyncDiagnosticPincode,
     setModifiedOrder,
     modifiedOrder,
+    patientCartItems,
+    setPatientCartItems,
+    setModifiedPatientCart,
+    setDistanceCharges,
+    setDeliveryAddressId,
   } = useDiagnosticsCart();
   const { cartItems: shopCartItems } = useShoppingCart();
   const { showAphAlert, setLoading: setGlobalLoading, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
+  const showGoToCart = isModify && cartItems?.length > 0;
 
   //add the cityId in case of modifyFlow
   const cityId = isModify
@@ -130,6 +142,22 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
+    if (isModify) {
+      const unSelectRemainingPatients = patientCartItems?.filter(
+        (item) => item?.patientId !== modifiedOrder?.patientId
+      );
+      if (
+        patientCartItems?.length > 0 &&
+        !!unSelectRemainingPatients &&
+        unSelectRemainingPatients?.length > 0
+      ) {
+        const obj = {
+          patientId: modifiedOrder?.patientId,
+          cartItems: cartItems,
+        } as DiagnosticPatientCartItem;
+        setPatientCartItems?.([obj]);
+      }
+    }
     searchTextFromProp && onSearchTest(searchTextFromProp);
   }, []);
 
@@ -303,8 +331,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   ) => {
     savePastSeacrh(`${itemId}`, itemName).catch((e) => {});
     postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, 0, 0);
-
-    addCartItem!({
+    const addedItem = {
       id: `${itemId}`,
       name: stripHtml(itemName),
       price: pricesObject?.rate || 0,
@@ -313,17 +340,36 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       circleSpecialPrice: pricesObject?.circleSpecialPrice,
       discountPrice: pricesObject?.discountPrice,
       discountSpecialPrice: pricesObject?.discountSpecialPrice,
-      mou: inclusions == null ? 1 : inclusions.length,
+      mou: 1,
       thumbnail: '',
       collectionMethod: collectionType! || TEST_COLLECTION_TYPE?.HC,
       groupPlan: selectedPlan?.groupPlan || DIAGNOSTIC_GROUP_PLAN.ALL,
       packageMrp: pricesObject?.packageMrp || 0,
       inclusions: inclusions == null ? [Number(itemId)] : inclusions,
-    });
+      isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
+    };
+    isModify &&
+      setModifiedPatientCart?.([
+        {
+          patientId: modifiedOrder?.patientId,
+          cartItems: cartItems?.concat(addedItem),
+        },
+      ]);
+    addCartItem?.(addedItem);
   };
 
   const onRemoveCartItem = (itemId: string | number) => {
-    removeCartItem!(`${itemId}`);
+    if (isModify) {
+      const newCartItems = cartItems?.filter((item) => Number(item?.id) !== Number(itemId));
+      setModifiedPatientCart?.([
+        {
+          patientId: modifiedOrder?.patientId,
+          cartItems: newCartItems,
+        },
+      ]);
+    }
+    patientCartItems?.map((pItem) => removePatientCartItem?.(pItem?.patientId, `${itemId}`));
+    removeCartItem?.(`${itemId}`);
   };
 
   const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
@@ -340,7 +386,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       <Header
         container={{ borderBottomWidth: 0 }}
         leftIcon={'backArrow'}
-        title={isModify ? 'MODIFY ORDERS' : 'SEARCH TESTS'}
+        title={isModify ? string.diagnostics.modifyHeader : 'SEARCH TESTS'}
         rightComponent={
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity
@@ -348,7 +394,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               onPress={() => {
                 CommonLogEvent(AppRoutes.SearchTestScene, 'Navigate to your cart');
                 isModify
-                  ? props.navigation.navigate(AppRoutes.TestsCart, {
+                  ? props.navigation.navigate(AppRoutes.CartPage, {
                       orderDetails: modifiedOrder,
                     })
                   : props.navigation.navigate(AppRoutes.MedAndTestCart);
@@ -399,7 +445,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     setModifyHcCharges?.(0);
     setModifiedOrderItemIds?.([]);
     setHcCharges?.(0);
-    setAreaSelected?.({});
+    setDistanceCharges?.(0);
+    setModifiedPatientCart?.([]);
+    setDeliveryAddressId?.('');
     //go back to homepage
     props.navigation.navigate('TESTS', { focusSearch: true });
   }
@@ -617,7 +665,16 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
             }
           />
         ) : (
-          <ScrollView showsVerticalScrollIndicator={false} style={styles.viewDefaultContainer}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            style={[
+              styles.viewDefaultContainer,
+              {
+                marginBottom: showGoToCart ? GO_TO_CART_HEIGHT + 10 : 0,
+              },
+            ]}
+            bounces={false}
+          >
             {popularPackages?.length > 0 ? (
               <View>
                 <Text style={styles.headingSections}>Popular Packages</Text>
@@ -672,8 +729,24 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           marginHorizontal: 5,
           paddingBottom: index == diagnosticResults?.length - 1 ? 20 : 0,
         }}
-        onPressRemoveFromCart={() => removeCartItem!(`${item?.diagnostic_item_id}`)}
+        onPressRemoveFromCart={() => onRemoveCartItem(`${item?.diagnostic_item_id}`)}
       />
+    );
+  };
+
+  const renderCartPlaceholder = () => {
+    return (
+      <View style={styles.cartDetailView}>
+        <Text style={styles.itemAddedText}>
+          {cartItems?.length} {cartItems?.length == 1 ? 'Item' : 'Items'} Added to Cart
+        </Text>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => props.navigation.navigate(AppRoutes.CartPage)}
+        >
+          <Text style={styles.goToCartText}>GO TO CART</Text>
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -684,6 +757,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         {renderSearchInput()}
       </View>
       {renderMatchingTests()}
+      {showGoToCart && renderCartPlaceholder()}
     </SafeAreaView>
   );
 };
@@ -781,6 +855,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f7f8f5',
     borderTopWidth: 1,
     borderTopColor: '#E5E5E5',
+    flexGrow: 1,
   },
   defaultContainer: {
     width: '100%',
@@ -788,5 +863,29 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     paddingVertical: 0,
     backgroundColor: 'white',
+  },
+  cartDetailView: {
+    position: 'absolute',
+    backgroundColor: theme.colors.APP_YELLOW_COLOR,
+    bottom: 0,
+    height: GO_TO_CART_HEIGHT,
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  itemAddedText: {
+    marginLeft: 20,
+    ...theme.viewStyles.text('SB', isSmallDevice ? 13 : 14, theme.colors.WHITE),
+    lineHeight: 16,
+    textAlign: 'left',
+    alignSelf: 'center',
+  },
+  goToCartText: {
+    marginRight: 20,
+    ...theme.viewStyles.text('SB', isSmallDevice ? 15 : 16, theme.colors.WHITE),
+    lineHeight: 20,
+    textAlign: 'right',
+    alignSelf: 'center',
   },
 });

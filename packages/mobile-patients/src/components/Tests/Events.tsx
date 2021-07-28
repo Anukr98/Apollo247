@@ -18,7 +18,10 @@ import {
 import { circleValidity } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
-import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+  DIAGNOSTIC_PINCODE_SOURCE_TYPE,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 
 function createPatientAttributes(currentPatient: any) {
   const patientAttributes = {
@@ -34,13 +37,13 @@ export function DiagnosticLandingPageViewedEvent(
   currentPatient: any,
   isServiceable: boolean | undefined,
   isDiagnosticCircleSubscription: boolean | undefined,
-  source?: string | undefined,
+  source?: string | undefined
 ) {
   const getPatientAttributes = createPatientAttributes(currentPatient);
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED] = {
     ...getPatientAttributes,
     Serviceability: isServiceable ? 'Yes' : 'No',
-    "Circle user": isDiagnosticCircleSubscription ? 'Yes' : 'No',
+    'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
   };
   if (!!source) {
     eventAttributes['Source'] = source;
@@ -63,17 +66,17 @@ export function DiagnosticHomePageSearchItem(currentPatient: any, keyword: strin
 
 export function DiagnosticPinCodeClicked(
   currentPatient: any,
-  mode: string,
   pincode: string,
-  serviceable: boolean
+  serviceable: boolean,
+  source: DIAGNOSTIC_PINCODE_SOURCE_TYPE
 ) {
   const getPatientAttributes = createPatientAttributes(currentPatient);
 
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR] = {
     ...getPatientAttributes,
-    Mode: mode,
-    Pincode: parseInt(pincode!),
+    Pincode: Number(pincode!),
     Serviceability: serviceable ? 'Yes' : 'No',
+    Source: source,
   };
   postWebEngageEvent(
     WebEngageEventName.DIAGNOSTIC_PINCODE_ENTERED_ON_LOCATION_BAR,
@@ -284,37 +287,35 @@ function fireCircleBenifitAppliedEvent(
 }
 
 export function DiagnosticProceedToPay(
-  date: Date,
-  currentPatient: any,
-  cartItems: DiagnosticsCartItem[],
-  cartTotal: number,
-  grandTotal: number,
-  prescRqd: boolean,
-  mode: 'Home Visit' | 'Clinic Visit',
+  noOfPatient: number,
+  noOfSlots: number,
+  slotType: 'Free' | 'Paid',
+  totalItems: number,
+  cartTotal: number, //subtotal
+  grandTotal: number, //net after discount
   pincode: string | number,
-  serviceName: 'Pharmacy' | 'Diagnostic',
-  areaName: string,
-  areaId: string | number,
+  address: string,
   collectionCharges: number,
-  timeSlot: string
+  timeSlot: string,
+  timeDate: string | Date,
+  isCircle: 'Yes' | 'No'
 ) {
-  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED] = {
-    'Patient Name selected': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-    'Total items in cart': cartItems?.length,
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_MAKE_PAYMENT_CLICKED] = {
+    'No. of patients': noOfPatient,
+    'No. of slots': noOfSlots,
+    'Slot type': slotType,
+    'Total items in cart': totalItems,
     'Sub Total': cartTotal,
-    // 'Delivery charge': deliveryCharges,
     'Net after discount': grandTotal,
-    'Prescription Uploaded?': false, //from backend
-    'Prescription Mandatory?': prescRqd,
-    'Mode of Sample Collection': mode,
     'Pin Code': pincode,
-    'Service Area': serviceName,
-    'Area Name': areaName,
-    'Area id': areaId,
+    Address: address,
     'Home collection charges': collectionCharges,
     'Collection Time Slot': timeSlot,
+    'Collection Date Slot': timeDate,
+    'Circle user': isCircle,
   };
-  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED, eventAttributes);
+  console.log({ eventAttributes });
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_MAKE_PAYMENT_CLICKED, eventAttributes);
 }
 
 export function DiagnosticNonServiceableAddressSelected(
@@ -347,20 +348,16 @@ export function DiagnosticAreaSelected(selectedAddr: any, area: string) {
 }
 
 export function DiagnosticAppointmentTimeSlot(
-  selectedAddr: any,
-  area: string,
-  time: string,
-  slotSelectedMode: 'Manual' | 'Automatic',
-  isSlotAvailable: 'Yes' | 'No',
-  currentPatient: any
+  type: 'Free' | 'Paid',
+  slot: string,
+  noOfSlots: number,
+  slotDate: string
 ) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED] = {
-    'Address Pincode': Number(selectedAddr?.zipcode!),
-    'Area Selected': area,
-    'Time Selected': time,
-    'Slot selected': slotSelectedMode,
-    'Slot available': isSlotAvailable,
-    UHID: currentPatient?.uhid,
+    Type: type,
+    'Slot time': slot,
+    'No. of slots': noOfSlots,
+    'Slot date': slotDate,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED, eventAttributes);
 }
@@ -580,4 +577,17 @@ export function DiagnosticUserPaymentAborted(currentPatient: any, orderId: strin
     UHID: currentPatient?.uhid,
   };
   postWebEngageEvent(WebEngageEventName.DIGNOSTIC_PAYMENT_ABORTED, eventAttributes);
+}
+
+export function DiagnosticPatientSelected(
+  patientCount: number,
+  patientUhid: string,
+  patientNames: string
+) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PATIENT_SELECTED] = {
+    'No. of patients': patientCount,
+    'Patient UHID': patientUhid,
+    'Patient name': patientNames,
+  };
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PATIENT_SELECTED, eventAttributes);
 }

@@ -3459,7 +3459,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           ? AppRoutes.MedAndTestCart
           : shopCartItems.length
           ? AppRoutes.MedicineCart
-          : AppRoutes.TestsCart;
+          : AppRoutes.AddPatients;
       props.navigation.navigate(route);
     };
 
