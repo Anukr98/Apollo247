@@ -2014,3 +2014,17 @@ export const SavingsIcon: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/saving_icon.webp')}
   />
 );
+
+export const DoctorLocation: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/doctor_location.webp')}
+  />
+);
+
+export const DoctorLanguage: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/language.webp')}
+  />
+);
