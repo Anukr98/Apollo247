@@ -1773,6 +1773,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       MaxOrderQty,
       category_id,
       url_key,
+      subcategory,
     } = item;
     setItemsLoading({ ...itemsLoading, [sku]: true });
     addPharmaItemToCart(
@@ -1795,6 +1796,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         productType: type_id,
         circleCashbackAmt: 0,
         url_key,
+        subcategory,
       },
       asyncPincode?.pincode || pharmacyPincode!,
       addCartItem,

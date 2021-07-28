@@ -237,6 +237,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       type_id,
       MaxOrderQty,
       url_key,
+      subcategory,
     } = item;
     suggestionItem && setItemsLoading({ ...itemsLoading, [sku]: true });
     addPharmaItemToCart(
@@ -258,6 +259,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         maxOrderQty: MaxOrderQty,
         productType: type_id,
         url_key,
+        subcategory,
       },
       asyncPincode?.pincode || pharmacyPincode!,
       addCartItem,

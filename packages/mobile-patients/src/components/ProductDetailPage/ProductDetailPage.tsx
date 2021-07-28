@@ -744,6 +744,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         maxOrderQty: MaxOrderQty,
         productType: type_id,
         url_key,
+        subcategory,
       });
     }
     postwebEngageAddToCartEvent(

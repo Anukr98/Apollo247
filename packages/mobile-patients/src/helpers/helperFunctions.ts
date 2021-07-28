@@ -2113,6 +2113,7 @@ export const formatToCartItem = ({
   image,
   sell_online,
   url_key,
+  subcategory,
 }: MedicineProduct): ShoppingCartItem => {
   return {
     id: sku,
@@ -2129,6 +2130,7 @@ export const formatToCartItem = ({
     isInStock: is_in_stock == 1,
     unavailableOnline: sell_online == 0,
     url_key,
+    subcategory,
   };
 };
 
