@@ -63,7 +63,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const [showLoadMore, setShowLoadMore] = useState<boolean>(false);
   const limit = 10;
   const [currentOffset, setCurrentOffset] = useState<number>(1);
-  const [testLength, setTestLength] = useState<number>(limit)
+  const [testLength, setTestLength] = useState<number>(limit);
+  const [error, setError] = useState<boolean>(false);
   const client = useApolloClient();
 
   const [widgetsData, setWidgetsData] = useState([] as any);
@@ -115,6 +116,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       } else {
         setWidgetsData([]);
         setLoading?.(false);
+        setError(true)
       }
     } catch (error) {
       CommonBugFender('fetchWidgets_TestListing', error);
@@ -172,7 +174,6 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
               response?.[i]?.[0]?.diagnosticPricing);
         }
       }
-
       setWidgetsData(newWidgetsData);
       setLoading?.(false);
     } catch (error) {
@@ -262,6 +263,19 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
           />
         </View>
       );
+  };
+  const renderEmptyMessage = () => {
+      return (
+        <View style={styles.emptyContainer}>
+          <Card
+            cardContainer={[styles.noDataCardEmpty]}
+            heading={string.common.uhOh}
+            description={string.common.noDiagnosticsAvailable}
+            descriptionTextStyle={{ fontSize: 14 }}
+            headingTextStyle={{ fontSize: 14 }}
+          />
+        </View>
+      )
   };
   const renderLoadMore = () => {
     return (
@@ -361,6 +375,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       <SafeAreaView style={{ ...viewStyles.container }}>
         {renderHeader()}
         {!errorStates ? renderBreadCrumb() : null}
+        {error ? renderEmptyMessage() : null}
         <View style={{ flex: 1, marginBottom: '5%' }}>{renderList()}</View>
         {showLoadMore ? renderLoadMore() : null}
       </SafeAreaView>
@@ -376,12 +391,20 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE, 1, 21, 0),
     marginBottom: '3%',
   },
+  emptyContainer:{ flex:1,justifyContent: 'center' },
   itemCountText: {
     marginTop: '3%',
     marginVertical: 5,
     ...theme.viewStyles.text('SB', 13, theme.colors.SHERPA_BLUE, 1, 19, 0),
   },
   noDataCard: {
+    height: 'auto',
+    shadowRadius: 0,
+    shadowOffset: { width: 0, height: 0 },
+    shadowColor: 'white',
+    elevation: 0,
+  },
+  noDataCardEmpty: {
     height: 'auto',
     shadowRadius: 0,
     shadowOffset: { width: 0, height: 0 },
