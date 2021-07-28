@@ -845,6 +845,14 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
             orderDetails: getOrderDetails(apptmt),
             businessLine: 'consult',
           });
+        } else {
+          postWEGPatientAPIError(
+            currentPatient,
+            '',
+            'PaymentCheckout',
+            'CREATE_INTERNAL_ORDER',
+            data
+          );
         }
       }
     } catch (error) {
@@ -949,6 +957,13 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         handleOrderSuccess(`${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`, id);
       })
       .catch((e) => {
+        postWEGPatientAPIError(
+          currentPatient,
+          '',
+          'PaymentCheckout',
+          'MAKE_APPOINTMENT_PAYMENT',
+          e
+        );
         setLoading!(false);
         handleGraphQlError(e);
       });
@@ -995,6 +1010,13 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       })
       .catch((e) => {
         setLoading && setLoading(false);
+        postWEGPatientAPIError(
+          currentPatient,
+          '',
+          'PaymentCheckout',
+          'MAKE_APPOINTMENT_PAYMENT',
+          e
+        );
         props.navigation.navigate('APPOINTMENTS');
       });
   };
@@ -1122,6 +1144,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         getPatientApiCall();
       })
       .catch((e: any) => {
+        postWEGPatientAPIError(currentPatient, '', 'PaymentCheckout', 'UPDATE_WHATSAPP_STATUS', e);
         CommonBugFender('ConsultOverlay_whatsAppUpdateAPICall_error', e);
       });
   };
