@@ -70,6 +70,32 @@ const styles = StyleSheet.create({
     marginRight: 8,
     top: 3,
   },
+  elementText: {
+    ...theme.viewStyles.text('M', 14, '#01475B', 1, 20.8),
+    width: '85%',
+  },
+  arrowRightIcon: {
+    height: 35,
+    width: 35,
+  },
+  elementSubContainer: {
+    flexDirection: 'column',
+    bottom: 5,
+    marginTop: 15,
+  },
+  highLighterIcon: {
+    width: 10,
+    height: 10,
+  },
+  hospitalText: {
+    ...theme.viewStyles.text('R', 12, '#67909C', 1, 20.8),
+    width: '60%',
+  },
+  downloadLabTestContainer: {
+    position: 'absolute',
+    right: 5,
+    bottom: 0,
+  },
 });
 
 export interface BillRecordCardProps {
@@ -84,16 +110,12 @@ export const BillRecordCard: React.FC<BillRecordCardProps> = (props) => {
   const { item, onHealthCardPress, onDownloadLabTestReports, testReportItems } = props;
 
   const renderElements = () => {
-    console.log(testReportItems?.length, 'testReportItems?.length');
     return testReportItems?.map((items: any) => {
       return (
         <>
-          <View style={{ flexDirection: 'column', bottom: 5, marginTop: 15 }}>
+          <View style={styles.elementSubContainer}>
             <TouchableOpacity onPress={() => onHealthCardPress(items.data)}>
-              <Text
-                numberOfLines={1}
-                style={{ ...theme.viewStyles.text('M', 14, '#01475B', 1, 20.8), width: '85%' }}
-              >
+              <Text numberOfLines={1} style={styles.elementText}>
                 {items?.data?.labTestName}
               </Text>
               <Text style={{ ...theme.viewStyles.text('R', 12, '#01475B', 1, 20.8) }}>
@@ -104,7 +126,7 @@ export const BillRecordCard: React.FC<BillRecordCardProps> = (props) => {
                   : `${'DR.' + items?.data?.labTestRefferedBy}`}
               </Text>
               <View style={styles.arrowIcon}>
-                <ArrowRight style={{ height: 35, width: 35 }} />
+                <ArrowRight style={styles.arrowRightIcon} />
               </View>
             </TouchableOpacity>
           </View>
@@ -131,7 +153,7 @@ export const BillRecordCard: React.FC<BillRecordCardProps> = (props) => {
     <View style={styles.cardMainContainerStyle}>
       <View style={styles.subContainer}>
         <View style={styles.highlighterStyling}>
-          <Highlighter size={'sm'} style={{ width: 10, height: 10 }} />
+          <Highlighter size={'sm'} style={styles.highLighterIcon} />
         </View>
         <View style={styles.billNoTxt}>
           <Text style={{ ...theme.viewStyles.text('R', 10, '#67909C', 1, 13) }}>
@@ -147,17 +169,14 @@ export const BillRecordCard: React.FC<BillRecordCardProps> = (props) => {
         {renderElements()}
         <View style={styles.hospitalContainer}>
           <HospitalUploadPhrIcon style={styles.hospitalIcon} />
-          <Text
-            numberOfLines={1}
-            style={{ ...theme.viewStyles.text('R', 12, '#67909C', 1, 20.8), width: '60%' }}
-          >
+          <Text numberOfLines={1} style={styles.hospitalText}>
             {item[0]?.data?.siteDisplayName || 'N/A'}
           </Text>
         </View>
 
         <TouchableOpacity
           onPress={() => onDownloadLabTestReports && onDownloadLabTestReports(testReportItems)}
-          style={{ position: 'absolute', right: 5, bottom: 0 }}
+          style={styles.downloadLabTestContainer}
         >
           <Text
             style={{
