@@ -633,8 +633,17 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           g(apptmt, 'appointmentDateTime'),
           g(apptmt, 'displayId')!
         );
+      } else {
+        postWEGPatientAPIError(
+          currentPatient,
+          '',
+          'PaymentCheckoutPhysical',
+          'CREATE_INTERNAL_ORDER',
+          data
+        );
       }
     } catch (error) {
+      postWEGPatientAPIError(currentPatient, '', 'PaymentCheckoutPhysical', '', error);
       handleError(error);
     }
   };
@@ -701,6 +710,13 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         handleOrderSuccess(`${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`, id);
       })
       .catch((e) => {
+        postWEGPatientAPIError(
+          currentPatient,
+          '',
+          'PaymentCheckoutPhysical',
+          'MAKE_APPOINTMENT_PAYMENT',
+          e
+        );
         setLoading!(false);
         handleGraphQlError(e);
       });
