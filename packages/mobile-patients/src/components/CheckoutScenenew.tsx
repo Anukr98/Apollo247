@@ -53,6 +53,8 @@ import {
   postFirebaseEvent,
   persistHealthCredits,
   getPackageIds,
+  postCleverTapEvent,
+  getCleverTapCircleMemberValues,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -98,6 +100,10 @@ import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
 import DeviceInfo from 'react-native-device-info';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 export interface CheckoutSceneNewProps extends NavigationScreenProps {}
 
@@ -339,6 +345,64 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     }
   };
 
+  const getPrepaidCheckoutCompletedCleverTapEventAttributes = (
+    orderAutoId: string,
+    isCOD?: boolean,
+    paymentMode?: string,
+    transactionId?: number | string
+  ) => {
+    try {
+      const addr = deliveryAddressId && addresses.find((item) => item.id == deliveryAddressId);
+      const store = storeId && stores.find((item) => item.storeid == storeId);
+      const shippingInformation = addr ? formatAddress(addr) : store ? store.address : '';
+      const eventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED] = {
+        'Transaction ID': transactionId || undefined,
+        'Order Type': 'Cart',
+        'Prescription Added': !!(physicalPrescriptions.length || ePrescriptions.length),
+        'Shipping information': shippingInformation, // (Home/Store address)
+        'Total items in cart': cartItems.length,
+        'Grand Total': cartTotal + deliveryCharges,
+        'Total Discount %': coupon
+          ? getFormattedAmount(((couponDiscount + productDiscount) / cartTotal) * 100)
+          : 0,
+        'Discount Amount': getFormattedAmount(couponDiscount + productDiscount),
+        'Shipping Charges': deliveryCharges,
+        'Net after discount': getFormattedAmount(grandTotal),
+        'Payment status': 1,
+        'Payment Type': isCOD ? 'COD' : 'Prepaid',
+        'Service Area': 'Pharmacy',
+        'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
+        af_revenue: getFormattedAmount(grandTotal),
+        'Circle Cashback amount':
+          circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
+        'Split Cart': orders?.length > 1 ? 'Yes' : 'No',
+        'Prescription Option selected': uploadPrescriptionRequired
+          ? 'Prescription Upload'
+          : 'Not Applicable',
+        'Circle Member':
+          getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+          undefined,
+        'Circle Membership Value':
+          pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
+        'User Type': pharmacyUserTypeAttribute?.User_Type || undefined,
+        'Coupon Applied': coupon?.coupon || undefined,
+        Pincode: pinCode || undefined,
+        'Cart Items': JSON.stringify(cartItems) || undefined,
+        'Order_ID(s)': orderAutoId || undefined,
+        'Payment Instrument': isCOD ? 'COD' : paymentMode || undefined,
+      };
+      if (store) {
+        eventAttributes['Store Id'] = store.storeid;
+        eventAttributes['Store Name'] = store.storename;
+        eventAttributes['Store Number'] = store.phone;
+        eventAttributes['Store Address'] = store.address;
+      }
+      return eventAttributes;
+    } catch (error) {
+      return {};
+    }
+  };
+
   const getPrepaidCheckoutCompletedAppsFlyerEventAttributes = (
     orderId: string,
     orderAutoId: string
@@ -360,6 +424,23 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     return appsflyerEventAttributes;
   };
 
+  const postCleverTapCheckoutCompletedEvent = (
+    orderAutoId: string,
+    isCOD?: boolean,
+    paymentMode?: string,
+    transactionId?: number | string
+  ) => {
+    const cleverTapEventAttributes = {
+      ...getPrepaidCheckoutCompletedCleverTapEventAttributes(
+        `${orderAutoId}`,
+        isCOD,
+        paymentMode,
+        transactionId
+      ),
+    };
+    postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, cleverTapEventAttributes);
+  };
+
   const postwebEngageCheckoutCompletedEvent = (
     orderAutoId: string,
     orderId: string,
@@ -374,7 +455,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       'Cart Items': JSON.stringify(cartItems),
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
-
     const appsflyerEventAttributes = {
       ...getPrepaidCheckoutCompletedAppsFlyerEventAttributes(`${orderId}`, orderAutoId),
     };
@@ -402,7 +482,13 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     }
   };
 
-  const placeOrder = (orderId: string, orderAutoId: number, orderType: string, isCOD?: boolean) => {
+  const placeOrder = (
+    orderId: string,
+    orderAutoId: number,
+    orderType: string,
+    isCOD?: boolean,
+    paymentMode?: string
+  ) => {
     const paymentInfo: SaveMedicineOrderPaymentMqVariables = {
       medicinePaymentMqInput: {
         orderAutoId: orderAutoId,
@@ -447,6 +533,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           // Order-Success, Show popup here & clear cart info
           try {
             clearCartInfo?.();
+            postCleverTapCheckoutCompletedEvent(`${orderAutoId}`, isCOD, paymentMode);
             postwebEngageCheckoutCompletedEvent(`${orderAutoId}`, orderId, isCOD);
             firePurchaseEvent(orderId);
           } catch (error) {}
@@ -483,7 +570,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     orders: (saveMedicineOrderV2_saveMedicineOrderV2_orders | null)[],
     transactionId: number,
     orderType: string,
-    isCOD?: boolean
+    isCOD?: boolean,
+    paymentMode?: string
   ) => {
     const paymentInfo: saveMedicineOrderPaymentMqV2Variables = {
       medicinePaymentMqInput: {
@@ -527,6 +615,12 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         } else {
           // Order-Success, Show popup here & clear cart info
           try {
+            postCleverTapCheckoutCompletedEvent(
+              orders?.map((i) => i?.orderAutoId)?.join(','),
+              isCOD,
+              paymentMode,
+              transactionId
+            );
             orders?.forEach((order) => {
               postwebEngageCheckoutCompletedEvent(`${order?.orderAutoId}`, order?.id!, isCOD);
               firePurchaseEvent(order?.id!);
@@ -564,6 +658,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         order_AutoId: orderAutoId,
         LOB: 'Pharmacy',
       };
+      postCleverTapEvent(
+        CleverTapEventName.PHARMACY_PAYMENT_INSTRUMENT_SELECTED,
+        paymentEventAttributes
+      );
       postWebEngageEvent(WebEngageEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
       postFirebaseEvent(FirebaseEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
@@ -586,6 +684,14 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     const checkoutEventAttributes = {
       ...getPrepaidCheckoutCompletedEventAttributes(`${transactionId}`, false),
     };
+    const cleverTapCheckoutEventAttributes = {
+      ...getPrepaidCheckoutCompletedCleverTapEventAttributes(
+        `${orders?.map((i) => i?.orderAutoId).join(',')}`,
+        false,
+        paymentMode,
+        transactionId
+      ),
+    };
     props.navigation.navigate(AppRoutes.PaymentScene, {
       orders,
       transactionId,
@@ -593,6 +699,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       burnHC: burnHC,
       deliveryTime,
       checkoutEventAttributes,
+      cleverTapCheckoutEventAttributes,
       paymentTypeID: paymentMode,
       bankCode: bankCode,
       coupon: coupon ? coupon.coupon : null,
@@ -815,6 +922,14 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       Coupon: coupon ? coupon.coupon : '',
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_PAYMENT_INITIATED, eventAttributes);
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_PAYMENT_INITIATED] = {
+      payMode: isCashOnDelivery ? 'COD' : 'Online',
+      amount: grandTotal,
+      serviceArea: 'Pharmacy',
+      'Cart Items': cartItems?.length || undefined,
+      Coupon: coupon ? coupon?.coupon : undefined,
+    };
+    postCleverTapEvent(CleverTapEventName.PHARMACY_PAYMENT_INITIATED, cleverTapEventAttributes);
 
     isStorePickup
       ? saveOrder(orderInfo)
@@ -832,9 +947,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               return;
             } else {
               if (isCOD) {
-                placeOrder(orderId, orderAutoId, 'COD', true);
+                placeOrder(orderId, orderAutoId, 'COD', true, paymentMode);
               } else if (hcOrder) {
-                placeOrder(orderId, orderAutoId, 'HCorder', false);
+                placeOrder(orderId, orderAutoId, 'HCorder', false, paymentMode);
               } else {
                 let orders: (saveMedicineOrderV2_saveMedicineOrderV2_orders | null)[] = [];
                 orders[0] = {
@@ -908,9 +1023,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               return;
             } else {
               if (isCOD) {
-                placeOrderV2(orders!, transactionId!, 'COD', true);
+                placeOrderV2(orders!, transactionId!, 'COD', true, paymentMode);
               } else if (hcOrder) {
-                placeOrderV2(orders!, transactionId!, 'HCorder', false);
+                placeOrderV2(orders!, transactionId!, 'HCorder', false, paymentMode);
               } else {
                 redirectToPaymentGateway(
                   orders!,

@@ -22,6 +22,7 @@ import {
   findAddrComponents,
   formatAddress,
   setAsyncPharmaLocation,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
@@ -93,6 +94,10 @@ import {
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import moment from 'moment';
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
     paddingTop: 7,
@@ -499,6 +504,17 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       Pincode: pinCode,
       User_Type: pharmacyUserType,
     };
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED] = {
+      'Order_ID(s)': `${orderAutoId}`,
+      'Order Type': 'Non Cart',
+      'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
+      'Store Id': storeId || undefined, // incase of store delivery
+      'Shipping information': deliveryAddressId ? deliveryAddressLine : storeAddressLine,
+      Pincode: pinCode || undefined,
+      'User Type': pharmacyUserType || undefined,
+      'Service Area': 'Pharmacy',
+    };
+    postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, cleverTapEventAttributes);
     postWebEngageEvent(WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION, eventAttributes);
   };
 

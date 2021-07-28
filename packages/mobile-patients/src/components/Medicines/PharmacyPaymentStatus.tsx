@@ -18,7 +18,11 @@ import {
   SAVE_MEDICINE_ORDER_PAYMENT_V2,
   UPDATE_MEDICINE_ORDER_SUBSTITUTION,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { apiCallEnums, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  apiCallEnums,
+  g,
+  postCleverTapEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string, { Payment } from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -82,6 +86,7 @@ import {
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import {
   updateMedicineOrderSubstitution,
   updateMedicineOrderSubstitutionVariables,
@@ -118,6 +123,9 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const [orderDateTime, setorderDateTime] = useState('');
   const [paymentMode, setPaymentMode] = useState('');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
+  const cleverTapCheckoutEventAttributes = props.navigation.getParam(
+    'cleverTapCheckoutEventAttributes'
+  );
   const price = props.navigation.getParam('price');
   const transId = props.navigation.getParam('transId');
   const { orders, deliveryTime, orderInfo, isStorePickup } = props.navigation.getParam(
@@ -398,6 +406,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       if (errorCode || errorMessage) {
         errorPopUp();
       } else {
+        fireCleverTapOrderSuccessEvent();
         orders?.forEach((order) => {
           handleOrderSuccess(`${order?.orderAutoId}`, order?.id!);
         });
@@ -462,6 +471,13 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       'Cart Items': JSON.stringify(cartItems),
     });
     firePurchaseEvent(orderAutoId);
+  };
+
+  const fireCleverTapOrderSuccessEvent = () => {
+    postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, {
+      ...cleverTapCheckoutEventAttributes,
+      'Cart Items': cartItems?.length,
+    });
   };
 
   const fireOrderFailedEvent = () => {

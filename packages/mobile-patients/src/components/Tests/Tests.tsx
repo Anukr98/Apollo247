@@ -258,6 +258,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   type Address = savePatientAddress_savePatientAddress_patientAddress;
 
   const movedFrom = props.navigation.getParam('movedFrom');
+  const homeScreenAttributes = props.navigation.getParam('homeScreenAttributes');
   const { currentPatient } = useAllCurrentPatients();
 
   const hdfc_values = string.Hdfc_values;
@@ -377,7 +378,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
       currentPatient,
       isDiagnosticLocationServiceable,
       movedFrom == 'deeplink' ? 'Deeplink' : undefined,
-      isDiagnosticCircleSubscription
+      isDiagnosticCircleSubscription,
+      homeScreenAttributes
     );
   }, []);
 
@@ -654,6 +656,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           from={string.banner_context.DIAGNOSTIC_HOME}
           source={'Diagnostic'}
           circleActivated={false}
+          circleEventSource={'Diagnostic Home page Banner'}
         />
       );
     }
@@ -1025,6 +1028,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
           const planValidity = {
             startDate: data?.APOLLO?.[0]?.start_date,
             endDate: data?.APOLLO?.[0]?.end_date,
+            plan_id: data?.APOLLO?.[0]?.plan_id,
+            source_identifier: data?.APOLLO?.[0]?.source_meta_data?.source_identifier,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
         } else {

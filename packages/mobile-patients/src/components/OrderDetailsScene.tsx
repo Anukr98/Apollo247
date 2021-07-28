@@ -81,6 +81,8 @@ import {
   getOrderStatusText,
   handleGraphQlError,
   isEmptyObject,
+  postCleverTapEvent,
+  postCleverTapPHR,
   postWebEngageEvent,
   reOrderMedicines,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -111,6 +113,10 @@ import {
 import { Overlay } from 'react-native-elements';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 const screenWidth = Dimensions.get('window').width;
 
 export interface OrderDetailsSceneProps
@@ -460,6 +466,23 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         'Mobile Number': g(currentPatient, 'mobileNumber'),
         'Customer ID': g(currentPatient, 'id'),
       };
+      const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_RE_ORDER_MEDICINE] = {
+        orderType: !!g(order, 'billNumber')
+          ? 'Offline'
+          : orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION
+          ? 'Non Cart'
+          : 'Cart',
+        noOfItemsNotAvailable: unavailableItems.length,
+        source: selectedTab,
+        'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+        'Patient UHID': g(currentPatient, 'uhid'),
+        Relation: g(currentPatient, 'relation'),
+        'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+        'Patient Gender': g(currentPatient, 'gender'),
+        'Mobile Number': g(currentPatient, 'mobileNumber'),
+        'Customer ID': g(currentPatient, 'id'),
+      };
+      postCleverTapPHR(CleverTapEventName.PHARMACY_RE_ORDER_MEDICINE, cleverTapEventAttributes);
       postWebEngageEvent(WebEngageEventName.RE_ORDER_MEDICINE, eventAttributes);
       items.length && addMultipleCartItems!(items);
       items.length && prescriptions.length && addMultipleEPrescriptions!(prescriptions);
@@ -1932,6 +1955,22 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       orderStatus: orderDetails.currentStatus!,
     };
     postWebEngageEvent(WebEngageEventName.ORDER_SUMMARY_CLICKED, eventAttributes);
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_ORDER_SUMMARY_CLICKED] = {
+      'Order ID': orderDetails.id,
+      'Order date': getFormattedOrderPlacedDateTime(orderDetails) || undefined,
+      'Order type': !!g(order, 'billNumber')
+        ? 'Offline'
+        : orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION
+        ? 'Non Cart'
+        : 'Cart',
+      'Customer ID': currentPatient && currentPatient.id,
+      'Delivery date': orderDetails.orderTat
+        ? moment(orderDetails.orderTat).format('ddd, D MMMM, hh:mm A')
+        : undefined,
+      'Mobile number': currentPatient && currentPatient.mobileNumber,
+      'Order status': orderDetails.currentStatus!,
+    };
+    postCleverTapEvent(CleverTapEventName.PHARMACY_ORDER_SUMMARY_CLICKED, cleverTapEventAttributes);
     return (
       <View>
         <OrderSummary

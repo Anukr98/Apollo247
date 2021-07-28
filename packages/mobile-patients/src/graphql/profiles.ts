@@ -5123,6 +5123,10 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql`
             preTestingRequirement
           }
         }
+        attributesObj {
+          reportGenerationTime
+          preTestingRequirement
+        }
       }
     }
   }

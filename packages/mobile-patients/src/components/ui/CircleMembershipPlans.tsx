@@ -33,7 +33,14 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  CircleEventSource,
+  g,
+  getCircleNoSubscriptionText,
+  getUserType,
+  postCleverTapEvent,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
   WebEngageEvents,
@@ -54,6 +61,11 @@ import moment from 'moment';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { postCircleWEGEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { fireCleverTapCirclePlanRemovedEvent } from '../MedicineCart/Events';
 import {
   createOrderInternal,
   createOrderInternalVariables,
@@ -82,6 +94,7 @@ interface CircleMembershipPlansProps extends NavigationScreenProps {
   source?: 'Pharma' | 'Product Detail' | 'Pharma Cart' | 'Diagnostic' | 'Consult';
   from?: string;
   healthCredits?: number;
+  circleEventSource?: CircleEventSource;
   onPurchaseWithHCCallback?: (res: any) => void;
   screenName?: string;
 }
@@ -106,6 +119,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     healthCredits,
     onPurchaseWithHCCallback,
     screenName,
+    circleEventSource,
   } = props;
   const client = useApolloClient();
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
@@ -127,7 +141,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     cartItems,
   } = useShoppingCart();
   const { setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { setLoading } = useUIElements();
   const storeCode =
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
@@ -157,7 +171,27 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     if (buyNow && props.membershipPlans?.length > 0) {
       setDefaultCirclePlan && setDefaultCirclePlan(null);
     }
+    if (isModal) {
+      fireCleverTapCircleEvents();
+    }
   }, []);
+
+  const fireCleverTapCircleEvents = () => {
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_POP_UP_VIEWED_PLANS_ONLY] = {
+      navigation_source: circleEventSource,
+      circle_planid: getCircleNoSubscriptionText(),
+      circle_end_date: getCircleNoSubscriptionText(),
+      circle_start_date: getCircleNoSubscriptionText(),
+      customer_id: currentPatient?.id,
+      duration_in_month: getCircleNoSubscriptionText(),
+      user_type: getUserType(allCurrentPatients),
+      price: getCircleNoSubscriptionText(),
+    };
+    postCleverTapEvent(
+      CleverTapEventName.CIRCLE_POP_UP_VIEWED_PLANS_ONLY,
+      cleverTapEventAttributes
+    );
+  };
 
   useEffect(() => {
     !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
@@ -245,10 +279,12 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           WebEngageEventName.VC_NON_CIRCLE_ADDS_CART,
           membershipPlan
         );
+      !isModal && fireCirclePlanToCartEvent(membershipPlan);
       onSelectMembershipPlan && onSelectMembershipPlan();
     } else {
       setIsCircleSubscription && setIsCircleSubscription(true);
       setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+      !isModal && fireCirclePlanToCartEvent(membershipPlan);
       setCircleMembershipCharges && setCircleMembershipCharges(membershipPlan?.currentSellingPrice);
       onSelectMembershipPlan && onSelectMembershipPlan(membershipPlan);
     }
@@ -290,6 +326,22 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         WebEngageEventName.DIAGNOSTICS_BUY_NOW_CLICKED_CIRCLE_POPUP,
         CircleEventAttributes
       );
+  };
+
+  const fireCirclePlanToCartEvent = (_circlePlan?: any) => {
+    const circleData = _circlePlan || circlePlanSelected;
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_PLAN_TO_CART] = {
+      navigation_source: circleEventSource,
+      circle_end_date: getCircleNoSubscriptionText(),
+      circle_start_date: getCircleNoSubscriptionText(),
+      circle_planid: circleData?.subPlanId,
+      customer_id: currentPatient?.id,
+      duration_in_month: circleData?.durationInMonth,
+      user_type: getUserType(allCurrentPatients),
+      price: circleData?.currentSellingPrice,
+    };
+    if (isConsultJourney || getButtonTitle() === string.circleDoctors.addToCart)
+      postCleverTapEvent(CleverTapEventName.CIRCLE_PLAN_TO_CART, cleverTapEventAttributes);
   };
 
   const fireCirclePlanRemovedEvent = () => {
@@ -365,6 +417,29 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     });
   };
 
+  const fireCirclePaymentPageViewedEvent = () => {
+    const circleData = circlePlanSelected;
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE] = {
+      navigation_source: circleEventSource,
+      circle_end_date: getCircleNoSubscriptionText(),
+      circle_start_date: getCircleNoSubscriptionText(),
+      circle_planid: circleData?.subPlanId,
+      customer_id: currentPatient?.id,
+      duration_in_month: circleData?.durationInMonth,
+      user_type: getUserType(allCurrentPatients),
+      price: circleData?.currentSellingPrice,
+    };
+    postCleverTapEvent(CleverTapEventName.CIRCLE_PLAN_TO_CART, cleverTapEventAttributes);
+    setTimeout(
+      () =>
+        postCleverTapEvent(
+          CleverTapEventName.CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE,
+          cleverTapEventAttributes
+        ),
+      1000
+    );
+  };
+
   const initiateCirclePurchase = async () => {
     try {
       setSpinning(true);
@@ -381,6 +456,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       setSpinning(false);
       closeModal && closeModal();
       if (data?.data?.createOrderInternal?.success) {
+        fireCirclePaymentPageViewedEvent();
         props.navigation.navigate(AppRoutes.PaymentMethods, {
           paymentId: data?.data?.createOrderInternal?.payment_order_id!,
           amount: amountToPay,
@@ -677,6 +753,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         ? AppConfig.Configuration.CIRCLE_TEST_URL
         : AppConfig.Configuration.CIRLCE_PHARMA_URL,
       source: source,
+      circleEventSource,
     });
   };
 
@@ -757,32 +834,33 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     }
   };
 
+  const getButtonTitle = () =>
+    buyNow && from !== string.banner_context.PHARMACY_HOME
+      ? purchaseWithHC
+        ? string.circleDoctors.upgradeWithHC.replace(
+            '{hc}',
+            circlePlanSelected?.currentSellingPrice
+          )
+        : !circlePlanSelected
+        ? string.circleDoctors.upgrade
+        : string.circleDoctors.upgradeWithPrice.replace(
+            '{price}',
+            circlePlanSelected?.currentSellingPrice
+          )
+      : !cartItems?.length
+      ? !circlePlanSelected
+        ? string.circleDoctors.upgrade
+        : string.circleDoctors.upgradeWithPrice.replace(
+            '{price}',
+            circlePlanSelected?.currentSellingPrice
+          )
+      : string.circleDoctors.addToCart;
+
   const renderAddToCart = () => {
     return (
       <Button
         disabled={!defaultCirclePlan && !circlePlanSelected}
-        title={
-          buyNow && from !== string.banner_context.PHARMACY_HOME
-            ? purchaseWithHC
-              ? string.circleDoctors.upgradeWithHC.replace(
-                  '{hc}',
-                  circlePlanSelected?.currentSellingPrice
-                )
-              : !circlePlanSelected
-              ? string.circleDoctors.upgrade
-              : string.circleDoctors.upgradeWithPrice.replace(
-                  '{price}',
-                  circlePlanSelected?.currentSellingPrice
-                )
-            : !cartItems?.length
-            ? !circlePlanSelected
-              ? string.circleDoctors.upgrade
-              : string.circleDoctors.upgradeWithPrice.replace(
-                  '{price}',
-                  circlePlanSelected?.currentSellingPrice
-                )
-            : string.circleDoctors.addToCart
-        }
+        title={getButtonTitle()}
         style={[
           styles.buyNowBtn,
           {
@@ -799,6 +877,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           setDefaultCirclePlan && setDefaultCirclePlan(null);
           setIsCircleSubscription && setIsCircleSubscription(true);
           autoSelectDefaultPlan(membershipPlans);
+          fireCirclePlanToCartEvent();
           if (buyNow && from !== string.banner_context.PHARMACY_HOME) {
             if (purchaseWithHC) {
               closeModal && closeModal();
@@ -881,6 +960,12 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           style={{ marginTop: 7 }}
           onPress={() => {
             fireCirclePlanRemovedEvent();
+            fireCleverTapCirclePlanRemovedEvent(
+              currentPatient,
+              circleEventSource,
+              circlePlanSelected,
+              allCurrentPatients
+            );
             setCirclePlanSelected && setCirclePlanSelected(null);
             setIsCircleSubscription && setIsCircleSubscription(false);
             setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);

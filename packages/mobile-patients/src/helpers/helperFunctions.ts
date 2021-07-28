@@ -24,6 +24,7 @@ import {
   MEDICINE_TIMINGS,
   MEDICINE_CONSUMPTION_DURATION,
   TEST_COLLECTION_TYPE,
+  APPOINTMENT_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from 'react-native-geolocation-service';
@@ -99,6 +100,13 @@ import RNFetchBlob from 'rn-fetch-blob';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { HEALTH_CREDITS } from '../utils/AsyncStorageKey';
 import { getPatientByMobileNumber_getPatientByMobileNumber_patients } from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
+import CleverTap from 'clevertap-react-native';
+import {
+  CleverTapEvents,
+  CleverTapEventName,
+  ReorderMedicines,
+  PharmacyCircleMemberValues,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import Share from 'react-native-share';
 
 const width = Dimensions.get('window').width;
@@ -116,6 +124,11 @@ interface AphConsole {
   debug(message?: any, ...optionalParams: any[]): void;
   table(...data: any[]): void;
 }
+
+type ConsultPermissionScreenName =
+  | 'Home Screen'
+  | 'Payment Confirmation Screen'
+  | 'Appointment Screen';
 
 export interface TestSlot {
   employeeCode: string;
@@ -1533,6 +1546,58 @@ export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Ob
   } catch (error) {}
 };
 
+export const postCleverTapEvent = (eventName: CleverTapEventName, attributes: Object) => {
+  try {
+    CleverTap.recordEvent(eventName, attributes);
+  } catch (error) {}
+};
+
+export const onCleverTapUserLogin = async (_currentPatient: any) => {
+  try {
+    const _userProfile = {
+      Name: _currentPatient?.firstName + ' ' + (_currentPatient?.lastName || ''),
+      UHID: _currentPatient?.uhid || '',
+      Identity: _currentPatient?.mobileNumber?.substr(3) || '',
+      Phone: _currentPatient?.mobileNumber || '',
+      MobileNumber: _currentPatient?.mobileNumber || '',
+      Firstname: _currentPatient?.firstName || '',
+      ...(_currentPatient?.lastName && { Lastname: _currentPatient?.lastName }),
+      Relation: _currentPatient?.relation || '',
+      Gender:
+        _currentPatient?.gender == Gender.MALE
+          ? 'M'
+          : _currentPatient?.gender == Gender.FEMALE
+          ? 'F'
+          : '',
+      DOB: new Date(_currentPatient?.dateOfBirth),
+      ...(_currentPatient?.emailAddress && { Email: _currentPatient?.emailAddress }),
+      ...(_currentPatient?.photoUrl && { Photo: _currentPatient?.photoUrl }),
+      ...(_currentPatient?.createdDate && { CreatedDate: _currentPatient?.createdDate }),
+    };
+    CleverTap.onUserLogin(_userProfile);
+  } catch (error) {
+    CommonBugFender('setCleverTapUserLogin', error);
+  }
+};
+
+export type CircleEventSource =
+  | 'Circle Popup Plan only'
+  | 'Landing Home Page banners'
+  | 'Medicine Home page banners'
+  | 'Medicine Homepage Sticky'
+  | 'Diagnostic Home page Banner'
+  | 'VC Doctor Profile'
+  | 'Cart(Pharma)'
+  | 'Cart(VC)'
+  | 'Membership Details'
+  | 'Landing Home Page'
+  | 'My Account-My membership section'
+  | 'Corporate Membership Page'
+  | 'Circle Membership page'
+  | 'VC Doctor Card';
+
+export const getCircleNoSubscriptionText = () => string.common.circleNoSubscriptionText;
+
 export const postwebEngageAddToCartEvent = (
   {
     sku,
@@ -1563,30 +1628,142 @@ export const postwebEngageAddToCartEvent = (
     ...pharmacyCircleAttributes,
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
+  const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART] = {
+    'product name': name,
+    'product id (SKUID)': sku,
+    'category name': categoryName || undefined,
+    'Section Name': sectionName || undefined,
+    'category ID': category_id || undefined,
+    Price: price,
+    'Discounted Price': Number(special_price) || undefined,
+    Quantity: 1,
+    Source: source,
+    'Circle Member':
+      getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+      undefined,
+    'Circle Membership Value': pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
+  };
+  postCleverTapEvent(CleverTapEventName.PHARMACY_ADD_TO_CART, cleverTapEventAttributes);
 };
 
-export const postWebEngagePHR = (
+export const getCleverTapCircleMemberValues = (
+  pharmacyCircleMemeber: PharmacyCircleEvent['Circle Membership Added']
+): PharmacyCircleMemberValues => {
+  return pharmacyCircleMemeber == 'Yes'
+    ? 'Added'
+    : pharmacyCircleMemeber == 'No'
+    ? 'Not Added'
+    : 'Existing';
+};
+
+export const postAppointmentCleverTapEvents = (
+  type:
+    | CleverTapEventName.CONSULT_RESCHEDULE_CLICKED
+    | CleverTapEventName.CONSULT_CANCEL_CLICKED_BY_PATIENT
+    | CleverTapEventName.CONSULT_CONTINUE_CONSULTATION_CLICKED
+    | CleverTapEventName.CONSULT_CANCELLED_BY_PATIENT
+    | CleverTapEventName.CONSULT_RESCHEDULED_BY_THE_PATIENT,
+  data: any,
   currentPatient: any,
-  webEngageEventName: WebEngageEventName,
+  secretaryData: any
+) => {
+  const eventAttributes:
+    | CleverTapEvents[CleverTapEventName.CONSULT_RESCHEDULE_CLICKED]
+    | CleverTapEvents[CleverTapEventName.CONSULT_CANCEL_CLICKED_BY_PATIENT]
+    | CleverTapEvents[CleverTapEventName.CONSULT_CONTINUE_CONSULTATION_CLICKED]
+    | CleverTapEvents[CleverTapEventName.CONSULT_CANCELLED_BY_PATIENT]
+    | CleverTapEvents[CleverTapEventName.CONSULT_RESCHEDULED_BY_THE_PATIENT] = {
+    doctorName: g(data, 'doctorInfo', 'fullName')!,
+    'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
+    'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
+    'Doctor Category': g(data, 'doctorInfo', 'doctorType')!,
+    'Consult Date Time': moment(g(data, 'appointmentDateTime')).toDate(),
+    'Consult Mode': g(data, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
+    'Hospital Name': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')!,
+    'Hospital City': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'city')!,
+    docId: g(data, 'doctorId') || undefined,
+    patientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    Relation: g(currentPatient, 'relation'),
+    'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Customer ID': g(currentPatient, 'id'),
+    secretaryName: g(secretaryData, 'name'),
+    secretaryNumber: g(secretaryData, 'mobileNumber'),
+    doctorNumber: g(data, 'doctorInfo', 'mobileNumber')!,
+    patientNumber: g(currentPatient, 'mobileNumber') || undefined,
+  };
+  postCleverTapEvent(type, eventAttributes);
+};
+
+export function getTimeDiff(nextSlot: any) {
+  let timeDiff: number = 0;
+  const today: Date = new Date();
+  const date2: Date = new Date(nextSlot);
+  if (date2 && today) {
+    timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
+  }
+  return timeDiff;
+}
+
+export const postConsultSearchCleverTapEvent = (
+  searchInput: string,
+  currentPatient: any,
+  allCurrentPatients: any,
+  noResults: boolean,
+  source: 'speciality screen' | 'Doctor listing screen'
+) => {
+  const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_SEARCH] = {
+    textSearched: searchInput,
+    'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    Relation: g(currentPatient, 'relation'),
+    'Patient age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+    'Patient gender': g(currentPatient, 'gender'),
+    'Mobile Number': g(currentPatient, 'mobileNumber'),
+    'Customer ID': g(currentPatient, 'id'),
+    User_Type: getUserType(allCurrentPatients),
+    Source: source,
+    'search result success': noResults ? 'No' : 'Yes',
+  };
+  postCleverTapEvent(CleverTapEventName.CONSULT_SEARCH, eventAttributes);
+};
+
+export const postConsultPastSearchSpecialityClicked = (
+  currentPatient: any,
+  allCurrentPatients: any,
+  rowData: any
+) => {
+  const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PAST_SEARCHES_CLICKED] = {
+    'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    'Patient age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+    'Patient gender': g(currentPatient, 'gender'),
+    User_Type: getUserType(allCurrentPatients) || undefined,
+    isConsulted: getUserType(allCurrentPatients) || undefined,
+    specialtyId: rowData?.typeId || undefined,
+    specialtyName: rowData?.name || undefined,
+  };
+  postCleverTapEvent(CleverTapEventName.CONSULT_PAST_SEARCHES_CLICKED, cleverTapEventAttributes);
+};
+
+export const postCleverTapPHR = (
+  currentPatient: any,
+  cleverTapEventName: CleverTapEventName,
   source: string = '',
   data: any = {}
 ) => {
-  const eventAttributes: WebEngageEvents[WebEngageEventName.MEDICAL_RECORDS] = {
-    ...data,
+  const eventAttributes: CleverTapEvents[CleverTapEventName.MEDICAL_RECORDS] = {
+    ...removeObjectNullUndefinedProperties(data),
     Source: source,
-    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-    'Patient UHID': g(currentPatient, 'uhid'),
-    Relation: g(currentPatient, 'relation'),
-    'Patient Age': Math.round(moment().diff(currentPatient?.dateOfBirth, 'years', true)),
-    'Patient Gender': g(currentPatient, 'gender'),
-    'Mobile Number': g(currentPatient, 'mobileNumber'),
-    'Customer ID': g(currentPatient, 'id'),
+    ...removeObjectNullUndefinedProperties(currentPatient),
   };
-  postWebEngageEvent(webEngageEventName, eventAttributes);
+  postWebEngageEvent(cleverTapEventName, eventAttributes);
+  postCleverTapEvent(cleverTapEventName, eventAttributes);
 };
 
-export const phrSearchWebEngageEvents = (
-  webEngageEventName: WebEngageEventName,
+export const phrSearchCleverTapEvents = (
+  cleverTapEventName: CleverTapEventName,
   currentPatient: any,
   searchKey: string
 ) => {
@@ -1600,7 +1777,8 @@ export const phrSearchWebEngageEvents = (
     'Mobile Number': g(currentPatient, 'mobileNumber'),
     'Customer ID': g(currentPatient, 'id'),
   };
-  postWebEngageEvent(webEngageEventName, eventAttributes);
+  postWebEngageEvent(cleverTapEventName, eventAttributes);
+  postCleverTapEvent(cleverTapEventName, eventAttributes);
 };
 
 export const getUsageKey = (type: string) => {
@@ -1624,7 +1802,7 @@ export const getUsageKey = (type: string) => {
   }
 };
 
-export const postWebEngageIfNewSession = (
+export const postCleverTapIfNewSession = (
   type: string,
   currentPatient: any,
   data: any,
@@ -1646,12 +1824,12 @@ export const postWebEngageIfNewSession = (
     const usageKey = getUsageKey(type);
     obj[usageKey] = sessionId;
     setPhrSession?.(JSON.stringify(obj));
-    postWebEngagePHR(
+    postCleverTapPHR(
       currentPatient,
-      WebEngageEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS.replace(
+      CleverTapEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS.replace(
         '{0}',
         type
-      ) as WebEngageEventName,
+      ) as CleverTapEventName,
       type,
       {
         sessionId,
@@ -1667,12 +1845,12 @@ export const postWebEngageIfNewSession = (
       const newSessionObj = { ...sessionObj };
       newSessionObj[usageKey] = sessionId;
       setPhrSession?.(JSON.stringify(newSessionObj));
-      postWebEngagePHR(
+      postCleverTapPHR(
         currentPatient,
-        WebEngageEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS.replace(
+        CleverTapEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS.replace(
           '{0}',
           type
-        ) as WebEngageEventName,
+        ) as CleverTapEventName,
         type,
         {
           sessionId,
@@ -1686,6 +1864,15 @@ export const postWebEngageIfNewSession = (
 export const removeObjectProperty = (object: any, property: string) => {
   return _.omit(object, property);
 };
+
+export function removeObjectNullUndefinedProperties(_object: any) {
+  for (let propName in _object) {
+    if (_object[propName] === null || _object[propName] === undefined || _object[propName] === '') {
+      delete _object[propName];
+    }
+  }
+  return _object;
+}
 
 export const postWEGNeedHelpEvent = (
   currentPatient: GetCurrentPatients_getCurrentPatients_patients,
@@ -1734,16 +1921,44 @@ export const postDoctorShareWEGEvents = (
   postWebEngageEvent(eventName, eventAttributes);
 };
 
+export const postDoctorShareCleverTapEvents = (
+  doctorData: any,
+  eventName: CleverTapEventName,
+  currentPatient: any,
+  specialityId: string,
+  rank: number = 1
+) => {
+  const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_SHARE_ICON_CLICKED] = {
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Mobile Number': g(currentPatient, 'mobileNumber'),
+    'Doctor ID': g(doctorData, 'id')!,
+    'Doctor Name': g(doctorData, 'displayName')!,
+    'Speciality Name': g(doctorData, 'specialtydisplayName')!,
+    'Doctor card rank': rank,
+    'Speciality ID': specialityId,
+    Source: 'Doctor listing',
+  };
+  postCleverTapEvent(eventName, eventAttributes);
+};
+
 export const permissionHandler = (
   permission: string,
   deniedMessage: string,
-  doRequest: () => void
+  doRequest: () => void,
+  screenName?: ConsultPermissionScreenName
 ) => {
   Permissions.request(permission)
     .then((message) => {
       if (message === 'authorized') {
         doRequest();
+        permission === 'camera' && consultPermissionCameraCleverTapEvents(screenName, true);
+        permission === 'microphone' && consultPermissionCleverTapEvents(screenName, true);
       } else if (message === 'denied' || message === 'restricted') {
+        permission === 'camera' && consultPermissionCameraCleverTapEvents(screenName, false);
+        permission === 'microphone' && consultPermissionCleverTapEvents(screenName, false);
         Alert.alert(permission.toUpperCase(), deniedMessage, [
           {
             text: 'Cancel',
@@ -1762,16 +1977,47 @@ export const permissionHandler = (
     .catch((e) => {});
 };
 
-export const callPermissions = (doRequest?: () => void) => {
-  permissionHandler('camera', 'Enable camera from settings for calls during consultation.', () => {
-    permissionHandler(
-      'microphone',
-      'Enable microphone from settings for calls during consultation.',
-      () => {
-        doRequest && doRequest();
-      }
-    );
-  });
+const consultPermissionCleverTapEvents = (
+  screenName?: ConsultPermissionScreenName,
+  microphoneAuth?: boolean
+) => {
+  const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PERMISSIONS] = {
+    'Screen Name': screenName!,
+    Microphone: microphoneAuth,
+  };
+  postCleverTapEvent(CleverTapEventName.CONSULT_PERMISSIONS, eventAttributes);
+};
+
+const consultPermissionCameraCleverTapEvents = (
+  screenName?: ConsultPermissionScreenName,
+  cameraAuth?: boolean
+) => {
+  const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PERMISSIONS] = {
+    'Screen Name': screenName!,
+    Camera: cameraAuth,
+  };
+  postCleverTapEvent(CleverTapEventName.CONSULT_PERMISSIONS, eventAttributes);
+};
+
+export const callPermissions = (
+  doRequest?: () => void,
+  screenName?: ConsultPermissionScreenName
+) => {
+  permissionHandler(
+    'camera',
+    'Enable camera from settings for calls during consultation.',
+    () => {
+      permissionHandler(
+        'microphone',
+        'Enable microphone from settings for calls during consultation.',
+        () => {
+          doRequest && doRequest();
+        },
+        screenName
+      );
+    },
+    screenName
+  );
 };
 
 export const storagePermissions = (doRequest?: () => void) => {
@@ -1869,6 +2115,15 @@ export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Ob
       (res) => {},
       (err) => {}
     );
+  } catch (error) {}
+};
+
+export const setCleverTapAppsFlyerCustID = () => {
+  try {
+    CleverTap.profileGetCleverTapAttributionIdentifier((err, res) => {
+      const userId = res;
+      SetAppsFlyerCustID(userId?.toString());
+    });
   } catch (error) {}
 };
 
@@ -2294,7 +2549,8 @@ export const overlyCallPermissions = (
   showAphAlert: any,
   hideAphAlert: any,
   isDissmiss: boolean,
-  callback?: () => void | null
+  callback?: () => void | null,
+  screenName?: ConsultPermissionScreenName
 ) => {
   if (Platform.OS === 'android') {
     const showPermissionPopUp = (description: string, onPressCallback: () => void) => {
@@ -2347,17 +2603,17 @@ export const overlyCallPermissions = (
 
           showPermissionPopUp(
             string.callRelatedPermissions.camAndMPPermission.replace('{0}', doctorName),
-            () => callPermissions()
+            () => callPermissions(() => {}, screenName)
           );
         } else if (cameraYes && microphoneNo) {
           showPermissionPopUp(
             string.callRelatedPermissions.onlyMPPermission.replace('{0}', doctorName),
-            () => callPermissions()
+            () => callPermissions(() => {}, screenName)
           );
         } else if (cameraNo && microphoneYes) {
           showPermissionPopUp(
             string.callRelatedPermissions.onlyCameraPermission.replace('{0}', doctorName),
-            () => callPermissions()
+            () => callPermissions(() => {}, screenName)
           );
         }
       })
@@ -2402,7 +2658,7 @@ export const overlyCallPermissions = (
                   hideAphAlert!();
                   onPressAllow();
                   callback?.();
-                  callPermissions();
+                  callPermissions(() => {}, screenName);
                 },
               },
             ],
