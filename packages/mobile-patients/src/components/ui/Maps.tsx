@@ -28,6 +28,7 @@ import {
   postWebEngageEvent,
   doRequestAndAccessLocationModified,
   distanceBwTwoLatLng,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   getLatLongFromAddress,
@@ -56,6 +57,10 @@ import MapView, { PROVIDER_GOOGLE, Circle } from 'react-native-maps';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Location } from './Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const FakeMarker = require('../ui/icons/ic-marker.webp');
 const icon_gps = require('../ui/icons/ic_gps_fixed.webp');
@@ -422,11 +427,17 @@ export const Maps: React.FC<MapProps> = (props) => {
         addDiagnosticAddress!(address);
 
         if (isComingFrom === 'Upload Prescription') {
-          const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED] = {
+          const eventAttributes:
+            | WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED]
+            | CleverTapEvents[CleverTapEventName.CONSULT_UPLOAD_PRESCRIPTION_ADDRESS_SELECTED] = {
             Serviceable: isAddressServiceable ? 'Yes' : 'No',
           };
           postWebEngageEvent(
             WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED,
+            eventAttributes
+          );
+          postCleverTapEvent(
+            CleverTapEventName.CONSULT_UPLOAD_PRESCRIPTION_ADDRESS_SELECTED,
             eventAttributes
           );
         }

@@ -17,7 +17,7 @@ import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { addToCartTagalysEvent } from '@aph/mobile-patients/src/helpers/Tagalys';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-
+import { Decimal } from 'decimal.js';
 export interface ShoppingCartItem {
   id: string;
   name: string;
@@ -72,6 +72,7 @@ export interface EPrescription {
   prismPrescriptionFileId: string;
   message?: string;
   healthRecord?: boolean;
+  appointmentId?: string;
 }
 
 export interface PharmaCoupon extends validatePharmaCoupon_validatePharmaCoupon {
@@ -110,6 +111,8 @@ export interface onHold {
 export interface circleValidity {
   startDate: Date;
   endDate: Date;
+  plan_id: string;
+  source_identifier: string;
 }
 
 export type EPrescriptionDisableOption = 'CAMERA_AND_GALLERY' | 'E-PRESCRIPTION' | 'NONE';
@@ -684,9 +687,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
   const getGrandTotalFromShipments = () => {
     let total = 0;
-    shipments.forEach((item: any) => (total = total + item.estimatedAmount));
+    shipments.forEach((item: any) => (total = Number(Decimal.add(total, item.estimatedAmount))));
     if (circleMembershipCharges) {
-      total += circleMembershipCharges;
+      total = Number(Decimal.add(total, circleMembershipCharges));
     }
     return total;
   };

@@ -1,6 +1,7 @@
 import { trackTagalysEvent } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   postAppsFlyerEvent,
+  postCleverTapEvent,
   postFirebaseEvent,
   postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -11,9 +12,15 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 type CategoryListGridView = WebEngageEvents[WebEngageEventName.CATEGORY_LIST_GRID_VIEW];
-type SearchEnterClick = WebEngageEvents[WebEngageEventName.SEARCH_ENTER_CLICK];
+type SearchEnterClick =
+  | WebEngageEvents[WebEngageEventName.SEARCH_ENTER_CLICK]
+  | CleverTapEvents[CleverTapEventName.PHARMACY_SEARCH_ENTER_CLICK];
 type PharmacySearchResults = WebEngageEvents[WebEngageEventName.PHARMACY_SEARCH_RESULTS];
 type Search = WebEngageEvents[WebEngageEventName.SEARCH];
 type CategoryPageViewed = WebEngageEvents[WebEngageEventName.CATEGORY_PAGE_VIEWED];
@@ -33,6 +40,7 @@ export const MedicineListingEvents = {
 
   searchEnterClick: (attributes: SearchEnterClick) => {
     postWebEngageEvent(WebEngageEventName.SEARCH_ENTER_CLICK, attributes);
+    postCleverTapEvent(CleverTapEventName.PHARMACY_SEARCH_ENTER_CLICK, attributes);
   },
 
   categoryPageViewed: (attributes: CategoryPageViewed) => {

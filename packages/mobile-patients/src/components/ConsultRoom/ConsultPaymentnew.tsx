@@ -43,6 +43,9 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
   const selectedTab = props.navigation.getParam('selectedTab');
   const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
+  const cleverTapConsultBookedEventAttributes = props.navigation.getParam(
+    'cleverTapConsultBookedEventAttributes'
+  );
   const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
   const planSelected = props.navigation.getParam('planSelected');
@@ -102,6 +105,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
       displayID: displayID,
       status: status,
       webEngageEventAttributes: webEngageEventAttributes,
+      cleverTapConsultBookedEventAttributes: cleverTapConsultBookedEventAttributes,
       fireBaseEventAttributes: fireBaseEventAttributes,
       appsflyerEventAttributes: appsflyerEventAttributes,
       paymentTypeID: paymentTypeID,

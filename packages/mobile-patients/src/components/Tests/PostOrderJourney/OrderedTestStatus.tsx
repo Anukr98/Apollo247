@@ -380,8 +380,8 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
           heading=""
           isVisible={displayViewReport}
           viewReportOrderId={viewReportOrderId}
-          downloadDocument={()=>{
-            downloadDocument
+          downloadDocument={() => {
+            downloadDocument;
           }}
           onClose={() => setDisplayViewReport(false)}
           onPressViewReport={() => {

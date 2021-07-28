@@ -43,6 +43,8 @@ import {
   nextAvailability,
   getDoctorShareMessage,
   getUserType,
+  postCleverTapEvent,
+  getTimeDiff,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -96,6 +98,10 @@ import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/G
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { DoctorShareComponent } from '@aph/mobile-patients/src/components/ConsultRoom/Components/DoctorShareComponent';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const { height, width } = Dimensions.get('window');
 
@@ -329,6 +335,11 @@ const Appointments: Appointments[] = [
   },
 ];
 
+type AppointmentCleverTapAttribute = {
+  source: CleverTapEvents[CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED]['Source'];
+  appointmentCTA: CleverTapEvents[CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED]['Appointment CTA'];
+};
+
 export interface DoctorDetailsProps extends NavigationScreenProps {}
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const consultedWithDoctorBefore = props.navigation.getParam('consultedWithDoctorBefore');
@@ -364,9 +375,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [showVideo, setShowVideo] = useState<boolean>(false);
   const [isFocused, setisFocused] = useState<boolean>(false);
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
+  const fromPastSearch = props.navigation.getParam('fromPastSearch') || false;
   const [secretaryData, setSecretaryData] = useState<any>([]);
   const fromDeeplink = props.navigation.getParam('fromDeeplink');
   const mediaSource = props.navigation.getParam('mediaSource');
+  const cleverTapAppointmentAttributes: AppointmentCleverTapAttribute = props.navigation.getParam(
+    'cleverTapAppointmentAttributes'
+  );
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const circleDoctorDetails = calculateCircleDoctorPricing(doctorDetails);
   const [showDoctorSharePopup, setShowDoctorSharePopup] = useState<boolean>(false);
@@ -500,7 +515,30 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       .catch((e) => {
         CommonBugFender('DoctorDetails_getNetStatus', e);
       });
+
+    let trimmedDoctorId = doctorId;
+    if (doctorId.length > 36) {
+      // trimming off doctorId if greater the uuid size
+      trimmedDoctorId = doctorId.substring(doctorId.length - 36);
+      setDoctorId(trimmedDoctorId);
+    }
   }, []);
+
+  useEffect(() => {
+    getNetStatus()
+      .then((status) => {
+        if (status) {
+          fetchDoctorDetails();
+          fetchAppointmentHistory();
+        } else {
+          setshowSpinner(false);
+          setshowOfflinePopup(true);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('DoctorDetails_getNetStatus', e);
+      });
+  }, [doctorId]);
 
   useEffect(() => {
     const display = props.navigation.state.params
@@ -581,6 +619,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const fetchDoctorDetails = () => {
+    //the obtained uuid is not valid, it is the obtained deeplink slug
+    if (doctorId.length > 36) {
+      return;
+    }
+
     const input = {
       id: doctorId,
     };
@@ -593,7 +636,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       .then(({ data }) => {
         try {
           if (data && data.getDoctorDetailsById && doctorDetails !== data.getDoctorDetailsById) {
-            fromDeeplink && fireDeepLinkTriggeredEvent(data.getDoctorDetailsById);
+            (cleverTapAppointmentAttributes || fromDeeplink || fromPastSearch) &&
+              fireDeepLinkTriggeredEvent(data.getDoctorDetailsById);
             setDoctorDetails(data.getDoctorDetailsById);
             setDoctorId(data.getDoctorDetailsById.id);
             setCtaBannerText(data?.getDoctorDetailsById?.availabilityTitle);
@@ -633,7 +677,72 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Media Source': mediaSource,
       User_Type: getUserType(allCurrentPatients),
     };
-    postWebEngageEvent(WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK, eventAttributes);
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED] = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient Age': Math.round(
+        Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Doctor ID': g(doctorDetails, 'id')!,
+      'Doctor Name': g(doctorDetails, 'fullName')!,
+      'Speciality Name': g(doctorDetails, 'specialty', 'name')!,
+      'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
+      'Media Source': mediaSource,
+      User_Type: getUserType(allCurrentPatients),
+      Fee: Number(doctorDetails?.onlineConsultationFees),
+      Source:
+        cleverTapAppointmentAttributes?.source || fromPastSearch
+          ? 'Past search clicked'
+          : 'Deeplink',
+      'Doctor card clicked': 'No',
+      Rank: 'NA',
+      Is_TopDoc: doctorDetails?.doctorsOfTheHourStatus ? 'Yes' : 'No',
+      DOTH: doctorDetails?.doctorsOfTheHourStatus ? 'T' : 'F',
+      'Doctor Tab': 'NA',
+      'Doctor Category': doctorDetails?.doctorType,
+      'Search screen': 'NA',
+      'Appointment CTA': cleverTapAppointmentAttributes?.appointmentCTA || 'NA',
+    };
+    fromDeeplink &&
+      postWebEngageEvent(WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK, eventAttributes);
+    !displayoverlay &&
+      postCleverTapEvent(
+        CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED,
+        cleverTapEventAttributes
+      );
+    if (fromPastSearch) {
+      const cleverTapPastSearchEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PAST_SEARCHES_CLICKED] = {
+        'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+        'Patient UHID': g(currentPatient, 'uhid'),
+        'Patient age': Math.round(
+          Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+        ),
+        'Patient gender': g(currentPatient, 'gender'),
+        doctorId: g(doctorDetails, 'id')!,
+        doctorName: g(doctorDetails, 'fullName')!,
+        specialtyName: g(doctorDetails, 'specialty', 'name')! || undefined,
+        specialtyId: g(doctorDetails, 'specialty', 'id')! || undefined,
+        User_Type: getUserType(allCurrentPatients),
+        fee: Number(doctorDetails?.onlineConsultationFees),
+        isConsulted: getUserType(allCurrentPatients),
+        city: g(doctorDetails, 'doctorHospital', 0, 'facility', 'city') || undefined,
+        doctorHospital: g(doctorDetails, 'doctorHospital', 0, 'facility', 'name') || undefined,
+        address: `${g(doctorDetails, 'doctorHospital', 0, 'facility', 'name') || ''}, ${g(
+          doctorDetails,
+          'doctorHospital',
+          0,
+          'facility',
+          'city'
+        ) || ''}`,
+        languages: g(doctorDetails, 'languages') || undefined,
+      };
+      postCleverTapEvent(
+        CleverTapEventName.CONSULT_PAST_SEARCHES_CLICKED,
+        cleverTapPastSearchEventAttributes
+      );
+    }
   };
 
   const setAvailableModes = (availabilityMode: any) => {
@@ -677,6 +786,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         navigation={props.navigation}
         availNowText={ctaBannerText?.AVAILABLE_NOW || ''}
         consultNowText={ctaBannerText?.CONSULT_NOW || ''}
+        circleEventSource={'VC Doctor Profile'}
       />
     );
   };
@@ -748,6 +858,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const openCircleWebView = () => {
     props.navigation.navigate(AppRoutes.CommonWebView, {
       url: AppConfig.Configuration.CIRCLE_CONSULT_URL,
+      circleEventSource: 'VC Doctor Profile',
     });
     circlePlanWebEngage(WebEngageEventName.VC_NON_CIRCLE_KNOWMORE_PROFILE);
   };
@@ -765,8 +876,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     );
   };
 
-  const postDoctorShareWEGEvents = (eventName: WebEngageEventName) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.SHARE_CLICK_DOC_LIST_SCREEN] = {
+  const postDoctorShareCleverTapEvents = (eventName: WebEngageEventName | CleverTapEventName) => {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.SHARE_CLICK_DOC_LIST_SCREEN]
+      | CleverTapEvents[CleverTapEventName.CONSULT_SHARE_ICON_CLICKED] = {
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       'Patient Age': Math.round(
@@ -778,13 +891,16 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Doctor Name': g(doctorDetails, 'fullName')!,
       'Speciality Name': g(doctorDetails, 'specialty', 'name')!,
       'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
+      Source: 'Doctor profile',
     };
     postWebEngageEvent(eventName, eventAttributes);
+    postCleverTapEvent(eventName, eventAttributes);
   };
 
   const onClickDoctorShare = () => {
     setShowDoctorSharePopup(true);
-    postDoctorShareWEGEvents(WebEngageEventName.SHARE_CLICKED_DOC_PROFILE_SCREEN);
+    postDoctorShareCleverTapEvents(WebEngageEventName.SHARE_CLICKED_DOC_PROFILE_SCREEN);
+    postDoctorShareCleverTapEvents(CleverTapEventName.CONSULT_SHARE_ICON_CLICKED);
   };
 
   const renderDoctorDetails = () => {
@@ -913,7 +1029,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     onPress={() => {
                       setOnlineSelected(true);
                       set_follow_up_chat_message_visibility(true);
-                      const eventAttributes: WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED] = {
+                      const eventAttributes:
+                        | WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED]
+                        | CleverTapEvents[CleverTapEventName.CONSULT_MODE_SELECTED] = {
                         'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
                         'Patient Name': `${g(currentPatient, 'firstName')} ${g(
                           currentPatient,
@@ -934,6 +1052,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                         WebEngageEventName.TYPE_OF_CONSULT_SELECTED,
                         eventAttributes
                       );
+                      postCleverTapEvent(CleverTapEventName.CONSULT_MODE_SELECTED, eventAttributes);
                     }}
                   >
                     <View>
@@ -1000,7 +1119,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       onPress={() => onPressMeetInPersonCard()}
                     >
                       <View>
-                        <Text style={styles.onlineConsultLabel}>Meet in Person</Text>
+                        <Text style={styles.onlineConsultLabel}>
+                          {string.consultModeTab.HOSPITAL_VISIT}
+                        </Text>
                         {isCircleDoctor && physicalConsultMRPPrice > 0 ? (
                           renderCareDoctorPricing(ConsultMode.PHYSICAL)
                         ) : (
@@ -1036,7 +1157,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const onPressMeetInPersonCard = () => {
     set_follow_up_chat_message_visibility(false);
-    const eventAttributes: WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED] = {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED]
+      | CleverTapEvents[CleverTapEventName.CONSULT_MODE_SELECTED] = {
       'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
@@ -1051,6 +1174,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Consultation Type': 'physical',
     };
     postWebEngageEvent(WebEngageEventName.TYPE_OF_CONSULT_SELECTED, eventAttributes);
+    postCleverTapEvent(CleverTapEventName.CONSULT_MODE_SELECTED, eventAttributes);
     !isPayrollDoctor && setOnlineSelected(false);
   };
 
@@ -1102,6 +1226,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         membershipPlans={membershipPlans}
         closeModal={() => setShowCirclePlans(false)}
         isConsultJourney={true}
+        from={string.banner_context.VC_DOCTOR_PROFILE}
+        circleEventSource={'VC Doctor Profile'}
       />
     );
   };
@@ -1257,14 +1383,16 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         message: shareDoctorMessage,
       });
       if (result.action === Share.sharedAction) {
-        postDoctorShareWEGEvents(WebEngageEventName.SHARE_PROFILE_CLICKED_DOC_PROFILE);
+        postDoctorShareCleverTapEvents(WebEngageEventName.SHARE_PROFILE_CLICKED_DOC_PROFILE);
+        postDoctorShareCleverTapEvents(CleverTapEventName.CONSULT_SHARE_PROFILE_CLICKED);
       }
     } catch (error) {}
   };
 
   const onPressGoBackShareDoctor = () => {
     setShowDoctorSharePopup(false);
-    postDoctorShareWEGEvents(WebEngageEventName.GO_BACK_CLICKED_DOC_PROFILE);
+    postDoctorShareCleverTapEvents(WebEngageEventName.GO_BACK_CLICKED_DOC_PROFILE);
+    postDoctorShareCleverTapEvents(CleverTapEventName.CONSULT_GO_BACK_CLICKED);
   };
 
   const renderDoctorShareComponent = () => {
@@ -1431,11 +1559,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const handleScroll = () => {};
 
   const postBookAppointmentWEGEvent = () => {
-    const doctorClinics = ((doctorDetails && doctorDetails.doctorHospital) || []).filter((item) => {
-      if (item && item.facility && item.facility.facilityType)
-        return item.facility.facilityType === 'HOSPITAL';
-    });
-
+    const doctorClinics = ((doctorDetails && doctorDetails?.doctorHospital) || [])?.filter(
+      (item) => {
+        if (item && item?.facility && item?.facility?.facilityType)
+          return item?.facility?.facilityType === 'HOSPITAL';
+      }
+    );
     const eventAttributes: WebEngageEvents[WebEngageEventName.BOOK_APPOINTMENT] = {
       'Doctor Name': g(doctorDetails, 'fullName')!,
       'Doctor City': g(doctorDetails, 'city')!,
@@ -1468,6 +1597,39 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       User_Type: getUserType(allCurrentPatients),
     };
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
+      docName: g(doctorDetails, 'fullName')! || undefined,
+      Source: 'doctor profile',
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient age': Math.round(
+        Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      specialityName: g(doctorDetails, 'specialty', 'name')! || undefined,
+      exp: Number(g(doctorDetails, 'experience')) || undefined,
+      'Customer ID': g(currentPatient, 'id'),
+      docId: g(doctorDetails, 'id')!,
+      specialityId: g(doctorDetails, 'specialty', 'id')!,
+      docHospital:
+        doctorClinics.length > 0 && doctorDetails!.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics[0].facility.name}`
+          : undefined,
+      docCity:
+        doctorClinics.length > 0 && doctorDetails!.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics[0].facility.city}`
+          : undefined,
+      User_Type: getUserType(allCurrentPatients),
+      onlineConsultFee: Number(doctorDetails?.onlineConsultationFees) || undefined,
+      physicalConsultFee: Number(doctorDetails?.physicalConsultationFees) || undefined,
+      availableInMins:
+        getTimeDiff(onlineSelected ? availableTime : physicalAvailableTime) || undefined,
+    };
+    postCleverTapEvent(
+      CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED,
+      cleverTapEventAttributes
+    );
     const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.BOOK_APPOINTMENT] = {
       'customer id': currentPatient ? currentPatient.id : '',
     };
@@ -1506,6 +1668,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const onPressConsultNow = () => {
+    postBookAppointmentWEGEvent();
     props.navigation.navigate(AppRoutes.SlotSelection, {
       doctorId,
       callSaveSearch,
