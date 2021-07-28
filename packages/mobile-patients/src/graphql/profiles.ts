@@ -2376,6 +2376,14 @@ export const GET_PATIENT_FEEDBACK = gql`
   }
 `;
 
+export const MERGE_PDF = gql`
+  mutation mergePDFS($uhid: String!, $fileUrls: [String]!) {
+    mergePDFS(fileUrls: $fileUrls, uhid: $uhid) {
+      mergepdfUrl
+    }
+  }
+`;
+
 export const SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS = gql`
   mutation savePrescriptionMedicineOrderOMS(
     $prescriptionMedicineOMSInput: PrescriptionMedicineOrderOMSInput
@@ -2979,6 +2987,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
           consultId
           identifier
           additionalNotes
+          billNo
           observation
           labTestResults {
             parameterName
