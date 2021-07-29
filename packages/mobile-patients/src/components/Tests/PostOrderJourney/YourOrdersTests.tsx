@@ -157,8 +157,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
   const [todaySlotNotAvailable, setTodaySlotNotAvailable] = useState<boolean>(false);
-  const [rescheduleCount, setRescheduleCount] = useState<any>(null);
-  const [rescheduledTime, setRescheduledTime] = useState<any>('');
 
   //new reschedule.
   const [showBottomOverlay, setShowBottomOverlay] = useState<boolean>(false);
@@ -736,9 +734,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     ) as string;
     const formatTime =
       rescheduleSlotObject?.slotStartTime || (diagnosticSlot?.slotStartTime as string);
-    const dateTimeInUTC = moment(formattedDate + ' ' + formatTime).toISOString();
+    const dateTimeInUTC = moment(
+      `${formattedDate} ${formatTime}`,
+      'YYYY-MM-DD HH:mm:ss'
+    ).toISOString();
     const dateTimeToShow = formattedDate + ', ' + formatTime;
-
     const comment = '';
     const orderId = !!selectedOrder?.parentOrderId
       ? selectedOrder?.parentOrderId
@@ -751,12 +751,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       paidSlot: rescheduleSlotObject?.isPaidSlot,
     };
 
-    DiagnosticRescheduleOrder(
-      selectRescheduleReason,
-      formatTime,
-      formattedDate,
-      String(selectedOrder?.displayId)
-    );
     diagnosticRescheduleOrder(
       client,
       String(orderId),
@@ -780,9 +774,16 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             slot: formatTime,
             rescheduleCount: rescheduleResponse?.rescheduleCount,
           };
+          DiagnosticRescheduleOrder(
+            selectRescheduleReason,
+            formatTime,
+            formattedDate,
+            String(selectedOrder?.id),
+            selectedOrder?.displayId!,
+            currentPatient,
+            selectedOrder?.patientObj!
+          );
           rescheduleSelectedOrder(obj);
-          setRescheduleCount(rescheduleResponse?.rescheduleCount);
-          setRescheduledTime(dateTimeInUTC);
           showAphAlert?.({
             unDismissable: true,
             title: string.common.hiWithSmiley,

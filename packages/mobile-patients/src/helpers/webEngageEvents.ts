@@ -195,7 +195,7 @@ export enum WebEngageEventName {
 
   DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE = 'Address Non Serviceable on Diagnostic Cart Page',
   DIAGNOSTIC_AREA_SELECTED = 'Diagnostic Area Selected on Cart',
-  DIAGNOSTIC_APPOINTMENT_TIME_SELECTED = 'Diagnostic slot time selected',
+  DIAGNOSTIC_SLOT_TIME_SELECTED = 'Diagnostic slot time selected',
   DIAGNOSTIC_MAKE_PAYMENT_CLICKED = 'Diagnostic make payment clicked',
   DIAGNOSTIC_PATIENT_SELECTED = 'Diagnostic patient selected',
   PAYMENT_INITIATED = 'Payment Initiated',
@@ -749,6 +749,11 @@ interface consultLocation {
   'Doctor details': any;
   Type: 'Auto Detect' | 'Manual entry';
 }
+
+export enum DIAGNOSTIC_SLOT_TYPE {
+  FREE = 'Free',
+  PAID = 'PAID'
+}
 export interface WebEngageEvents {
   // ********** AppEvents ********** \\
 
@@ -1253,16 +1258,16 @@ export interface WebEngageEvents {
     'Address Pincode': number;
     'Area Selected': string;
   };
-  [WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED]: {
-    'Type': 'Free' | 'Paid';
+  [WebEngageEventName.DIAGNOSTIC_SLOT_TIME_SELECTED]: {
     'Slot time': string;
     'No. of slots' : number;
     'Slot date' : string;
+    'Type': DIAGNOSTIC_SLOT_TYPE
   };
   [WebEngageEventName.DIAGNOSTIC_MAKE_PAYMENT_CLICKED]: {
     'No. of patients': number;
     'No. of slots': number;
-    'Slot type': 'Free' | 'Paid';
+    'Slot type': DIAGNOSTIC_SLOT_TYPE;
     'Total items in cart': number;
     'Sub Total': number;
     'Net after discount': number;
@@ -1308,7 +1313,7 @@ export interface WebEngageEvents {
     Section?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
-    'Order id': string | number;
+    'Order id': any;
     Pincode: string | number;
     'Patient UHID': string;
     'Order amount': number; // Optional
@@ -1353,6 +1358,8 @@ export interface WebEngageEvents {
     'Slot Time': string;
     'Slot Date': string;
     'Order id': string;
+    'Patient Name': string;
+    'Display Order ID': number;
   };
   [WebEngageEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED]: {
     UHID: string;

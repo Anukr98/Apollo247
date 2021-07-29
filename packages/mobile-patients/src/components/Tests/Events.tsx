@@ -7,6 +7,7 @@ import {
   setCircleMembershipType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
+  DIAGNOSTIC_SLOT_TYPE,
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -22,6 +23,7 @@ import {
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   DIAGNOSTIC_PINCODE_SOURCE_TYPE,
 } from '@aph/mobile-patients/src/utils/commonUtils';
+import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
 function createPatientAttributes(currentPatient: any) {
   const patientAttributes = {
@@ -289,7 +291,7 @@ function fireCircleBenifitAppliedEvent(
 export function DiagnosticProceedToPay(
   noOfPatient: number,
   noOfSlots: number,
-  slotType: 'Free' | 'Paid',
+  slotType: DIAGNOSTIC_SLOT_TYPE,
   totalItems: number,
   cartTotal: number, //subtotal
   grandTotal: number, //net after discount
@@ -314,7 +316,6 @@ export function DiagnosticProceedToPay(
     'Collection Date Slot': timeDate,
     'Circle user': isCircle,
   };
-  console.log({ eventAttributes });
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_MAKE_PAYMENT_CLICKED, eventAttributes);
 }
 
@@ -348,18 +349,18 @@ export function DiagnosticAreaSelected(selectedAddr: any, area: string) {
 }
 
 export function DiagnosticAppointmentTimeSlot(
-  type: 'Free' | 'Paid',
-  slot: string,
-  noOfSlots: number,
+  slotType: DIAGNOSTIC_SLOT_TYPE,
+  time: string,
+  numOfSlots: number,
   slotDate: string
 ) {
-  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED] = {
-    Type: type,
-    'Slot time': slot,
-    'No. of slots': noOfSlots,
+  const attributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_SLOT_TIME_SELECTED] = {
+    'Slot time': time,
     'Slot date': slotDate,
+    'No. of slots': numOfSlots,
+    Type: slotType,
   };
-  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED, eventAttributes);
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_SLOT_TIME_SELECTED, attributes);
 }
 
 export function PaymentInitiated(grandTotal: number, LOB: string, type: string) {
@@ -409,13 +410,20 @@ export function DiagnosticRescheduleOrder(
   reason: string,
   time: string,
   date: string,
-  orderId: string
+  orderId: string,
+  displayId: number,
+  currentPatient: any,
+  patientObject: getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientObj
 ) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ORDER_RESCHEDULE] = {
     'Reschedule reason': reason,
     'Slot Time': time,
-    'Slot Date': date,
+    'Slot Date': moment(date)?.format('DD-MM-YYYY'),
     'Order id': orderId,
+    'Patient Name':
+      (!!patientObject && `${patientObject?.firstName} ${patientObject?.lastName}`) ||
+      `${currentPatient?.firstName} ${currentPatient?.lastName}`,
+    'Display Order ID': displayId,
   };
   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ORDER_RESCHEDULE, eventAttributes);
 }

@@ -268,7 +268,8 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
     const bookedForDate = !!props.dateTime
       ? moment(props.dateTime)?.format('ddd, DD MMM YYYY') || null
       : null;
-    const bookedForTime = moment(props.slotTime).format('hh:mm a');
+
+    const bookedForTime = moment(props.slotTime)?.format('hh:mm a');
 
     return (
       <View style={styles.bottomContainer}>
