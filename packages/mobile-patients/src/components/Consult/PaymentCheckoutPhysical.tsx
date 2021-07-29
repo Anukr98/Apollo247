@@ -33,6 +33,7 @@ import {
   apiCallEnums,
   navigateToHome,
   getUserType,
+  postWEGPatientAPIError,
   postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
@@ -652,12 +653,27 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           if (!currentPatient?.isConsulted) getPatientApiCall();
           handleOrderSuccess(`${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`, apptmt?.id!);
         } else {
+          postWEGPatientAPIError(
+            currentPatient,
+            '',
+            'PaymentCheckoutPhysical',
+            'CREATE_ORDER(JUSPAY)',
+            data
+          );
           renderErrorPopup(string.common.tryAgainLater);
         }
       } else {
+        postWEGPatientAPIError(
+          currentPatient,
+          '',
+          'PaymentCheckoutPhysical',
+          'CREATE_INTERNAL_ORDER',
+          data
+        );
         renderErrorPopup(string.common.tryAgainLater);
       }
     } catch (error) {
+      postWEGPatientAPIError(currentPatient, '', 'PaymentCheckoutPhysical', '', error);
       handleError(error);
     }
   };
@@ -731,6 +747,13 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         handleOrderSuccess(`${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`, id);
       })
       .catch((e) => {
+        postWEGPatientAPIError(
+          currentPatient,
+          '',
+          'PaymentCheckoutPhysical',
+          'MAKE_APPOINTMENT_PAYMENT',
+          e
+        );
         setLoading!(false);
         handleGraphQlError(e);
       });

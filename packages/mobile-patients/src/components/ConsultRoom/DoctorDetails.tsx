@@ -43,6 +43,7 @@ import {
   nextAvailability,
   getDoctorShareMessage,
   getUserType,
+  postWEGPatientAPIError,
   postCleverTapEvent,
   getTimeDiff,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -479,7 +480,23 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           setMembershipPlans(membershipPlans);
           selectDefaultPlan && selectDefaultPlan(membershipPlans);
         }
+        res?.data?.GetPlanDetailsByPlanId
+          ? null
+          : postWEGPatientAPIError(
+              currentPatient,
+              '',
+              'DoctorDetails',
+              'GET_PLAN_DETAILS_BY_PLAN_ID',
+              res
+            );
       } catch (error) {
+        postWEGPatientAPIError(
+          currentPatient,
+          '',
+          'DoctorDetails',
+          'GET_PLAN_DETAILS_BY_PLAN_ID',
+          error
+        );
         CommonBugFender('CircleMembershipPlans_GetPlanDetailsByPlanId', error);
       }
     }

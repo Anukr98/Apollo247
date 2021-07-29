@@ -26,6 +26,7 @@ import {
   postWebEngageEvent,
   generateTimeSlots,
   timeTo12HrFormat,
+  postWEGPatientAPIError,
   postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';

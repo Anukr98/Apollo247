@@ -37,9 +37,11 @@ export enum ProductPageViewedSource {
 }
 
 export enum WebEngageEventName {
-  //doh
-  DOH_Viewed = 'DOH Viewed',
+
+  Patient_API_Error='Patient_API_Error',
+  //DOH
   DOH_Clicked = 'DOH Clicked',
+  DOH_Viewed = 'DOH Viewed',
 
   MOBILE_ENTRY = 'Mobile Entry',
   MOBILE_NUMBER_ENTERED = 'Mobile Number Entered',
@@ -785,6 +787,16 @@ export interface WebEngageEvents {
   // DOH Events \\
   [WebEngageEventName.DOH_Viewed]: DOHInfo;
   [WebEngageEventName.DOH_Clicked]: DOHInfo;
+
+  [WebEngageEventName.Patient_API_Error]: {
+  'Patient Name':string;
+  'Patient ID':string;
+  'Patient Number':string;
+  'Doctor ID':string | null;
+  'Screen Name':string;
+  'API Name':string;
+  'Error Name':any;
+    };
 
   // ********** Home Screen Events ********** \\
 
