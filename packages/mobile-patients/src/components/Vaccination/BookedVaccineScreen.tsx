@@ -253,7 +253,6 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
           setVaccineSubscription(true);
         }
         fetchAllAppointments();
-
         getUserSubscriptionsWithBenefits();
       });
     });
@@ -264,6 +263,8 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
   }, []);
 
   useEffect(() => {
+    //console.log('check allCurrentPatients-- ', allCurrentPatients);
+
     setExcludeProfileListIds([]);
     let excludeProfileList: string[] = [];
     bookingList?.forEach((bookingItem: any) => {

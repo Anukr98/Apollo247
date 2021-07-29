@@ -235,6 +235,15 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('R', 10, '#01475B'),
     textAlign: 'center',
   },
+
+  qrCodePendingText: {
+    ...theme.viewStyles.text('M', 14, '#000'),
+    width: 200,
+    marginTop: 75,
+    textAlign: 'center',
+    position: 'absolute',
+    backgroundColor: '#DDC487',
+  },
   importantInfoContainer: {
     margin: 20,
     borderWidth: 1,
@@ -589,28 +598,58 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
         <Apollo247Icon style={styles.apollo247Icon} />
 
         <View style={styles.qrCodeContainer}>
-          <QRCode
-            value={qrCodeLink}
-            size={200}
-            backgroundColor="transparent"
-            logoBackgroundColor="#fff"
-          />
+          {showBookingConfirmedStatus() ? (
+            <QRCode
+              value={qrCodeLink}
+              size={200}
+              backgroundColor="transparent"
+              logoBackgroundColor="#fff"
+            />
+          ) : (
+            <View style={{ height: 200 }}>
+              <QRCode
+                value={'Payment beign verified'}
+                size={200}
+                color="#DDC487"
+                backgroundColor="transparent"
+              />
+              <Text style={styles.qrCodePendingText}>
+                QR Code will only be available once your booking has been confirmed !{' '}
+              </Text>
+            </View>
+          )}
 
-          <TouchableOpacity
-            style={styles.qrCodeLinkContainer}
-            onPress={() => {
-              try {
-                Clipboard.setString(qrCodeLink);
-                showAlertMessage('Copied! ', 'Link ' + qrCodeLink + ' copied to clipboard.');
-              } catch (error) {}
-            }}
-          >
-            <Text style={styles.qrCodeLinkText}>{qrCodeLink}</Text>
-            <Copy style={styles.copyIcon} />
-          </TouchableOpacity>
+          {showBookingConfirmedStatus() ? (
+            <TouchableOpacity
+              style={styles.qrCodeLinkContainer}
+              onPress={() => {
+                try {
+                  Clipboard.setString(qrCodeLink);
+                  showAlertMessage('Copied! ', 'Link ' + qrCodeLink + ' copied to clipboard.');
+                } catch (error) {}
+              }}
+            >
+              <Text style={styles.qrCodeLinkText}>{qrCodeLink}</Text>
+              <Copy style={styles.copyIcon} />
+            </TouchableOpacity>
+          ) : null}
         </View>
       </View>
     );
+  };
+
+  const showBookingConfirmedStatus = () => {
+    if (
+      bookingInfo?.status == BOOKING_STATUS.BOOKED ||
+      bookingInfo?.status == BOOKING_STATUS.VERIFIED ||
+      bookingInfo?.status == BOOKING_STATUS.COMPLETED ||
+      bookingInfo?.status == BOOKING_STATUS.CANCELLED ||
+      bookingInfo?.status == BOOKING_STATUS.REJECTED
+    ) {
+      return true;
+    } else {
+      return false;
+    }
   };
 
   const getStatusColor = () => {
@@ -724,12 +763,15 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
 
         <Text style={styles.orderDetailsStyle}>{string.vaccineBooking.appointment_details}</Text>
 
-        {bookingInfo?.display_id
-          ? renderBookingDetailsMatrixItem(
-              string.vaccineBooking.booking_number,
-              bookingInfo?.display_id
-            )
-          : null}
+        {showBookingConfirmedStatus()
+          ? bookingInfo?.display_id
+            ? renderBookingDetailsMatrixItem(
+                string.vaccineBooking.booking_number,
+                bookingInfo?.display_id
+              )
+            : null
+          : renderBookingDetailsMatrixItem(string.vaccineBooking.booking_number, '-----')}
+
         {renderBookingDetailsMatrixItem(
           string.vaccineBooking.site,
           (bookingInfo?.resource_session_details?.resource_detail?.name || '') +
@@ -1095,6 +1137,14 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
       <TouchableOpacity
         style={styles.generatePDFContainer}
         onPress={() => {
+          if (showBookingConfirmedStatus() == false) {
+            showAlertMessage(
+              'Oops! ',
+              'Download booking PDF option will only be available once your booking has been confirmed.'
+            );
+            return;
+          }
+
           setTimeout(() => {
             if (Platform.OS === 'android') {
               storagePermissions(() => {

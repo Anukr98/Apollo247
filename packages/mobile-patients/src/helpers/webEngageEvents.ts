@@ -33,12 +33,15 @@ export enum ProductPageViewedSource {
   SUBSTITUTES = 'substitutes',
   CROSS_SELLING_PRODUCTS = 'cross selling products',
   SIMILAR_PRODUCTS = 'similar products',
+  MULTI_VARIANT = 'multivariant',
 }
 
 export enum WebEngageEventName {
-  //doh
-  DOH_Viewed = 'DOH Viewed',
+
+  Patient_API_Error='Patient_API_Error',
+  //DOH
   DOH_Clicked = 'DOH Clicked',
+  DOH_Viewed = 'DOH Viewed',
 
   MOBILE_ENTRY = 'Mobile Entry',
   MOBILE_NUMBER_ENTERED = 'Mobile Number Entered',
@@ -785,6 +788,16 @@ export interface WebEngageEvents {
   [WebEngageEventName.DOH_Viewed]: DOHInfo;
   [WebEngageEventName.DOH_Clicked]: DOHInfo;
 
+  [WebEngageEventName.Patient_API_Error]: {
+  'Patient Name':string;
+  'Patient ID':string;
+  'Patient Number':string;
+  'Doctor ID':string | null;
+  'Screen Name':string;
+  'API Name':string;
+  'Error Name':any;
+    };
+
   // ********** Home Screen Events ********** \\
 
   [WebEngageEventName.BUY_MEDICINES]: {
@@ -1330,6 +1343,12 @@ export interface WebEngageEvents {
     Amount: number;
     LOB: string;
     type?: string;
+    paymentOrderId: string;
+  };
+  [WebEngageEventName.PAYMENT_STATUS]: {
+    status: string;
+    LOB: string;
+    paymentOrderId: string;
   };
   [WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED]: {
     position: number;
@@ -2303,6 +2322,7 @@ export interface WebEngageEvents {
     MRP?: number;
     SpecialPrice?: number | null;
     CircleCashback?: number;
+    isMultiVariant: number;
   };
   [WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
     'Patient Name': string;

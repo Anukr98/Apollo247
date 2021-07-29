@@ -137,8 +137,8 @@ android {
         applicationId "com.apollo.patientapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 131
-        versionName "5.6.1"
+        versionCode 132
+        versionName "5.7.0"
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
@@ -234,6 +234,9 @@ dependencies {
     implementation project(':react-native-system-setting')
     implementation project(':opentok-react-native')
     implementation project(':react-native-sms-retriever')
+    implementation project(':clevertap-react-native')
+    implementation 'com.clevertap.android:push-templates:0.0.8'
+    implementation 'com.clevertap.android:clevertap-android-sdk:4.2.0'
     implementation 'com.webengage:android-sdk:3.+'
     implementation 'com.google.android.gms:play-services-ads:15.0.1' // optional for webengage
     implementation 'com.android.installreferrer:installreferrer:1.1.1'

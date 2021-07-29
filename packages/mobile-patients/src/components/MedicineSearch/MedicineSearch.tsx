@@ -116,6 +116,12 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       resultsdisplayed: results,
       User_Type: pharmacyUserType,
     });
+    MedicineSearchEvents.pharmacySearch({
+      source: 'Pharmacy List',
+      keyword: keyword,
+      results: results,
+      'User Type': pharmacyUserType,
+    });
   };
 
   const fetchSearchSuggestions = async (searchText: string) => {

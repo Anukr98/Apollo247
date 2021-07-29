@@ -18,7 +18,11 @@ import {
   SAVE_MEDICINE_ORDER_PAYMENT_V2,
   UPDATE_MEDICINE_ORDER_SUBSTITUTION,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { apiCallEnums, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  apiCallEnums,
+  g,
+  postCleverTapEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string, { Payment } from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -82,6 +86,7 @@ import {
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import {
   updateMedicineOrderSubstitution,
   updateMedicineOrderSubstitutionVariables,
@@ -112,21 +117,23 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     pharmacyCircleAttributes,
     deliveryCharges,
   } = useShoppingCart();
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [status, setStatus] = useState<string>(props.navigation.getParam('status'));
   const [paymentRefId, setpaymentRefId] = useState<string>('');
   const [orderDateTime, setorderDateTime] = useState('');
   const [paymentMode, setPaymentMode] = useState('');
-  const deliveryTime = props.navigation.getParam('deliveryTime');
-  const orderInfo = props.navigation.getParam('orderInfo');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
-  const orders = props.navigation.getParam('orders');
-  const orderIds = orders.map(
-    (item: any, index: number) => item?.orderAutoId + (index != orders?.length - 1 && ', ')
+  const cleverTapCheckoutEventAttributes = props.navigation.getParam(
+    'cleverTapCheckoutEventAttributes'
   );
   const price = props.navigation.getParam('price');
   const transId = props.navigation.getParam('transId');
-  const isStorePickup = props.navigation.getParam('isStorePickup');
+  const { orders, deliveryTime, orderInfo, isStorePickup } = props.navigation.getParam(
+    'orderDetails'
+  );
+  const orderIds = orders.map(
+    (item: any, index: number) => item?.orderAutoId + (index != orders?.length - 1 && ', ')
+  );
   const [circleSubscriptionID, setCircleSubscriptionID] = useState<string>('');
   const [isCircleBought, setIsCircleBought] = useState<boolean>(false);
   const [totalCashBack, setTotalCashBack] = useState<number>(0);
@@ -139,21 +146,15 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const [codOrderProcessing, setcodOrderProcessing] = useState<boolean>(false);
   const { apisToCall, pharmacyUserTypeAttribute } = useAppCommonData();
 
-  const [showSubstituteMessage, setShowSubstituteMessage] = useState<boolean>(
-    props.navigation.getParam('showSubstituteMessage') || false
-  );
-  const [substituteMessage, setSubstituteMessage] = useState<string>(
-    props.navigation.getParam('substitutionMessage') || ''
-  );
-  const [substituteTime, setSubstituteTime] = useState<number>(
-    props.navigation.getParam('substitutionTime') || 0
-  );
+  const [showSubstituteMessage, setShowSubstituteMessage] = useState<boolean>(false);
+  const [substituteMessage, setSubstituteMessage] = useState<string>('');
+  const [substituteTime, setSubstituteTime] = useState<number>(0);
   const [transactionId, setTransactionId] = useState(null);
   const [showSubstituteConfirmation, setShowSubstituteConfirmation] = useState<boolean>(false);
   const isSplitCart: boolean = orders?.length > 1 ? true : false;
 
   useEffect(() => {
-    if (!!substituteTime && showSubstituteMessage) {
+    if (!!substituteTime && showSubstituteMessage && status == success) {
       const interval = setInterval(() => {
         if (substituteTime < 1) {
           clearInterval(interval);
@@ -181,10 +182,8 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
 
   useEffect(() => {
     setLoading(true);
-    const apiCall = isStorePickup
-      ? GET_PHARMA_TRANSACTION_STATUS
-      : GET_PHARMA_TRANSACTION_STATUS_V2;
-    const variables = isStorePickup ? { orderId: transId } : { transactionId: transId };
+    const apiCall = GET_PHARMA_TRANSACTION_STATUS_V2;
+    const variables = { paymentOrderId: transId };
 
     client
       .query({
@@ -193,9 +192,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         fetchPolicy: 'no-cache',
       })
       .then((res) => {
-        const pharmaPaymentStatus = isStorePickup
-          ? res?.data?.pharmaPaymentStatus
-          : res?.data?.pharmaPaymentStatusV2;
+        const pharmaPaymentStatus = res?.data?.pharmaPaymentStatusV2;
         setorderDateTime(pharmaPaymentStatus?.orderDateTime);
         setpaymentRefId(pharmaPaymentStatus?.paymentRefId);
         setStatus(pharmaPaymentStatus?.paymentStatus);
@@ -203,6 +200,9 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         setTransactionId(pharmaPaymentStatus?.bankTxnId);
         setIsCircleBought(!!pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
         setTotalCashBack(pharmaPaymentStatus?.planPurchaseDetails?.totalCashBack);
+        setShowSubstituteMessage(pharmaPaymentStatus?.isSubstitution);
+        setSubstituteMessage(pharmaPaymentStatus?.substitutionMessage);
+        setSubstituteTime(pharmaPaymentStatus?.substitutionTime);
         setLoading(false);
         firePaymentStatusPageViewedEvent(
           pharmaPaymentStatus?.paymentStatus,
@@ -237,7 +237,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
       setCirclePlanDetails(data?.APOLLO?.[0]);
       setCircleSubscriptionID(data?.APOLLO?.[0]._id);
-      AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
+      data?.APOLLO?.[0]._id && AsyncStorage.setItem('circleSubscriptionId', data?.APOLLO?.[0]._id);
     } catch (error) {
       CommonBugFender('ConsultRoom_getUserSubscriptionsByStatus', error);
     }
@@ -403,6 +403,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       if (errorCode || errorMessage) {
         errorPopUp();
       } else {
+        fireCleverTapOrderSuccessEvent();
         orders?.forEach((order) => {
           handleOrderSuccess(`${order?.orderAutoId}`, order?.id!);
         });
@@ -467,6 +468,13 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       'Cart Items': JSON.stringify(cartItems),
     });
     firePurchaseEvent(orderAutoId);
+  };
+
+  const fireCleverTapOrderSuccessEvent = () => {
+    postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, {
+      ...cleverTapCheckoutEventAttributes,
+      'Cart Items': cartItems?.length,
+    });
   };
 
   const fireOrderFailedEvent = () => {
@@ -706,17 +714,21 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const substituteItemsCard = () => {
-    return (
-      <SubstituteItemsCard
-        orderId={orderIds?.[0]}
-        transactionId={transId}
-        substituteMessage={substituteMessage}
-        substituteTime={substituteTime}
-        updateOrderSubstitution={updateOrderSubstitution}
-        setShowSubstituteMessage={setShowSubstituteMessage}
-        setShowSubstituteConfirmation={setShowSubstituteConfirmation}
-      />
-    );
+    if (status == success) {
+      return (
+        <SubstituteItemsCard
+          orderId={orderIds?.[0]}
+          transactionId={transId}
+          substituteMessage={substituteMessage}
+          substituteTime={substituteTime}
+          updateOrderSubstitution={updateOrderSubstitution}
+          setShowSubstituteMessage={setShowSubstituteMessage}
+          setShowSubstituteConfirmation={setShowSubstituteConfirmation}
+        />
+      );
+    } else {
+      return null;
+    }
   };
 
   const renderSubstituteSnackBar = () => {

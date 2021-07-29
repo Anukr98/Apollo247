@@ -26,6 +26,8 @@ import {
   postWebEngageEvent,
   generateTimeSlots,
   timeTo12HrFormat,
+  postWEGPatientAPIError,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -56,6 +58,7 @@ import {
   renderSlotItemShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 const { width } = Dimensions.get('window');
+const tabWidth = width / 4;
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
@@ -86,6 +89,10 @@ import {
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 interface SlotSelectionProps extends NavigationScreenProps {
   doctorId: string;
@@ -183,7 +190,9 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   const [totalSlots, setTotalSlots] = useState<number>(-1);
   const [timeArray, setTimeArray] = useState<TimeArray>(defaultTimeData);
   const [loadTotalSlots, setLoadTotalSlots] = useState<boolean>(true);
-  const [isOnlineSelected, setIsOnlineSelected] = useState<boolean>(true);
+  const [isOnlineSelected, setIsOnlineSelected] = useState<boolean>(
+    selectedTab === consultPhysicalTab ? false : true
+  );
   const [nextAvailableDate, setNextAvailableDate] = useState<string>('');
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
   const [firstSelectedSlot, setFirstSelectedSlot] = useState<string>('');
@@ -752,6 +761,14 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
 
     const hospitalId = doctorClinics?.[0]?.facility?.id || '';
 
+    const eventAttributes = {
+      Source: 'Profile',
+      'Consult Mode': isOnlineSelected ? 'Online' : 'Physical',
+      'Consult Date Time': new Date(selectedTimeSlot),
+    };
+
+    callWEGEvent(WebEngageEventName.CONSULT_NOW_CLICKED, eventAttributes);
+
     const appointmentInput: BookAppointmentInput = {
       patientId: currentPatient?.id,
       doctorId,
@@ -785,6 +802,33 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
       whatsAppUpdate: whatsAppUpdate,
       isDoctorsOfTheHourStatus: doctorDetails?.doctorsOfTheHourStatus,
     };
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION] = {
+      docName: g(doctorDetails, 'fullName')!,
+      specialtyName: g(doctorDetails, 'specialty', 'name')!,
+      experience: Number(g(doctorDetails, 'experience')!),
+      languagesKnown: g(doctorDetails, 'languages')! || 'NA',
+      appointmentType: isOnlineSelected ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
+      docId: g(doctorDetails, 'id')!,
+      SpecialtyId: g(doctorDetails, 'specialty', 'id')!,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      appointmentDateTime: moment(selectedTimeSlot).toDate(),
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      onlineConsultFee: onlineConsultMRPPrice || undefined,
+      physicalConsultFee: physicalConsultMRPPrice || undefined,
+      Source: isOnlineSelected ? 'Consult Now' : 'Schedule for Later',
+      User_Type: getUserType(allCurrentPatients),
+      price: actualPrice,
+      docHospital: doctorDetails?.doctorHospital?.[0]?.facility?.name || undefined,
+      docCity: doctorDetails?.doctorHospital?.[0]?.facility?.city || undefined,
+    };
+    postCleverTapEvent(
+      CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION,
+      cleverTapEventAttributes
+    );
     isOnlineSelected
       ? props.navigation.navigate(AppRoutes.PaymentCheckout, passProps)
       : props.navigation.navigate(AppRoutes.PaymentCheckoutPhysical, passProps);
@@ -1045,7 +1089,7 @@ const styles = StyleSheet.create({
   },
   buttonStyle: {
     ...theme.viewStyles.cardViewStyle,
-    width: 90,
+    width: tabWidth - 22,
     marginRight: 8,
     marginTop: 12,
     backgroundColor: theme.colors.WHITE,

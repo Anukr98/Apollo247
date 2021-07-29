@@ -122,6 +122,10 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
     myConsultedDoctorsClickedWEBEngage(currentPatient, item, allCurrentPatients);
     props.navigation.navigate(AppRoutes.DoctorDetails, {
       doctorId: item?.id,
+      cleverTapAppointmentAttributes: {
+        source: 'My Doctors',
+        appointmentCTA: 'NA',
+      },
     });
   };
 

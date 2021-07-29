@@ -218,6 +218,7 @@ export interface getPatientAllAppointments_getPatientAllAppointments_cancelledAp
   isConsultStarted: boolean | null;
   isSeniorConsultStarted: boolean | null;
   isJdQuestionsComplete: boolean | null;
+  isAutomatedQuestionsComplete: boolean | null;
   symptoms: string | null;
   doctorInfo: getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_doctorInfo | null;
   caseSheet: (getPatientAllAppointments_getPatientAllAppointments_cancelledAppointments_caseSheet | null)[] | null;
@@ -432,6 +433,7 @@ export interface getPatientAllAppointments_getPatientAllAppointments_followUpApp
   isConsultStarted: boolean | null;
   isSeniorConsultStarted: boolean | null;
   isJdQuestionsComplete: boolean | null;
+  isAutomatedQuestionsComplete: boolean | null;
   symptoms: string | null;
   doctorInfo: getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_doctorInfo | null;
   caseSheet: (getPatientAllAppointments_getPatientAllAppointments_followUpAppointments_caseSheet | null)[] | null;
@@ -646,6 +648,7 @@ export interface getPatientAllAppointments_getPatientAllAppointments_activeAppoi
   isConsultStarted: boolean | null;
   isSeniorConsultStarted: boolean | null;
   isJdQuestionsComplete: boolean | null;
+  isAutomatedQuestionsComplete: boolean | null;
   symptoms: string | null;
   doctorInfo: getPatientAllAppointments_getPatientAllAppointments_activeAppointments_doctorInfo | null;
   caseSheet: (getPatientAllAppointments_getPatientAllAppointments_activeAppointments_caseSheet | null)[] | null;
@@ -860,6 +863,7 @@ export interface getPatientAllAppointments_getPatientAllAppointments_completedAp
   isConsultStarted: boolean | null;
   isSeniorConsultStarted: boolean | null;
   isJdQuestionsComplete: boolean | null;
+  isAutomatedQuestionsComplete: boolean | null;
   symptoms: string | null;
   doctorInfo: getPatientAllAppointments_getPatientAllAppointments_completedAppointments_doctorInfo | null;
   caseSheet: (getPatientAllAppointments_getPatientAllAppointments_completedAppointments_caseSheet | null)[] | null;

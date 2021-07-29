@@ -84,6 +84,7 @@ import {
   MedicineProduct,
   OfferBannerSection,
   pinCodeServiceabilityApi247,
+  SearchSuggestion,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { getUserBannersList } from '@aph/mobile-patients/src/helpers/clientCalls';
@@ -103,6 +104,7 @@ import {
   productsThumbnailUrl,
   setWebEngageScreenNames,
   setAsyncPharmaLocation,
+  postCleverTapEvent,
   getIsMedicine,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
@@ -151,6 +153,11 @@ import {
   renderMedicinesShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import AsyncStorage from '@react-native-community/async-storage';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { MedicineSearchEvents } from '@aph/mobile-patients/src/components/MedicineSearch/MedicineSearchEvents';
 
 const styles = StyleSheet.create({
   buyAgain: {
@@ -222,7 +229,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   searchResults: {
-    paddingTop: 10.5,
     maxHeight: 266,
     backgroundColor: '#f7f8f5',
   },
@@ -343,6 +349,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       Source: source,
     };
     postWebEngageEvent(WebEngageEventName.CATEGORY_CLICKED, eventAttributes);
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CATEGORY_VIEWED] = {
+      'category name': categoryName || undefined,
+      'category ID': categoryId || undefined,
+      'Section Name': sectionName || undefined,
+      Source: source,
+    };
+    postCleverTapEvent(CleverTapEventName.PHARMACY_CATEGORY_VIEWED, cleverTapEventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.CATEGORY_CLICKED, eventAttributes);
 
     const firebaseEventAttributes: FirebaseEvents[FirebaseEventName.CATEGORY_CLICKED] = {
@@ -645,6 +658,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           }}
           from={string.banner_context.PHARMACY_HOME}
           source={'Pharma'}
+          circleEventSource={'Medicine Home page banners'}
         />
       );
     }
@@ -1139,10 +1153,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderSliderItem = ({ item, index }: { item: OfferBannerSection; index: number }) => {
     const handleOnPress = () => {
-      const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_BANNER_CLICK] = {
+      const eventAttributes:
+        | WebEngageEvents[WebEngageEventName.PHARMACY_BANNER_CLICK]
+        | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_BANNER] = {
         BannerPosition: slideIndex + 1,
       };
       postWebEngageEvent(WebEngageEventName.PHARMACY_BANNER_CLICK, eventAttributes);
+      postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_BANNER, eventAttributes);
       if (item.category_id) {
         props.navigation.navigate(AppRoutes.MedicineListing, {
           category_id: item.category_id,
@@ -1224,6 +1241,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 Source: 'Home',
                 User_Type: pharmacyUserType,
               };
+              const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED] = {
+                Source: 'Home',
+                'User Type': pharmacyUserType,
+              };
+              postCleverTapEvent(
+                CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED,
+                cleverTapEventAttributes
+              );
               postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED, eventAttributes);
               setEPrescriptions && setEPrescriptions([]);
               setPhysicalPrescriptions && setPhysicalPrescriptions([]);
@@ -1452,6 +1477,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           const planValidity = {
             startDate: data?.APOLLO?.[0]?.start_date,
             endDate: data?.APOLLO?.[0]?.end_date,
+            plan_id: data?.APOLLO?.[0]?.plan_id,
+            source_identifier: data?.APOLLO?.[0]?.source_meta_data?.source_identifier,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
           if (data?.APOLLO?.[0]?.status === 'disabled') {
@@ -1642,7 +1669,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const [searchText, setSearchText] = useState<string>('');
-  const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
+  const [medicineList, setMedicineList] = useState<(MedicineProduct | SearchSuggestion)[]>([]);
   const [isSearchFocused, setSearchFocused] = useState(false);
   const [itemsLoading, setItemsLoading] = useState<{ [key: string]: boolean }>({});
   const [medicineSearchLoading, setMedicineSearchLoading] = useState<boolean>(false);
@@ -1652,9 +1679,28 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     getMedicineSearchSuggestionsApi(_searchText, axdcCode, pinCode)
       .then(({ data }) => {
         const products = data.products || [];
+        const queries = data.queries || [];
         const inStockProducts = products.filter((product) => !!isProductInStock(product));
         const outOfStockProducts = products.filter((product) => !isProductInStock(product));
-        setMedicineList([...inStockProducts, ...outOfStockProducts]);
+
+        const formattedQuery: SearchSuggestion[] = [];
+        if (queries?.length) {
+          queries.map((query, index) => {
+            if (index < 2) {
+              const category_id = query?.filter?.__categories?.[0];
+              const queryData = query?.query;
+              const queryName = queryData?.[queryData?.length - 1];
+              formattedQuery.push({
+                name: category_id,
+                categoryId: category_id,
+                queryName,
+                superQuery: queryData?.length > 1 ? `in ${queryData?.[0]}` : '',
+              });
+            }
+          });
+        }
+        setMedicineList([...formattedQuery, ...inStockProducts, ...outOfStockProducts]);
+
         setMedicineSearchLoading(false);
         const eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH] = {
           keyword: _searchText,
@@ -1663,6 +1709,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           User_Type: pharmacyUserType,
         };
         postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
+        MedicineSearchEvents.pharmacySearch({
+          keyword: _searchText,
+          source: 'Pharmacy Home',
+          results: products.length,
+          'User Type': pharmacyUserType,
+        });
       })
       .catch((e) => {
         CommonBugFender('Medicine_onSearchMedicine', e);
@@ -1829,17 +1881,27 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     removeCartItem!(id);
   };
 
-  const renderSearchSuggestionItemView = (data: ListRenderItemInfo<MedicineProduct>) => {
+  const renderSearchSuggestionItemView = (
+    data: ListRenderItemInfo<MedicineProduct | SearchSuggestion>
+  ) => {
     const { item, index } = data;
     return (
       <MedicineSearchSuggestionItem
         onPress={() => {
           CommonLogEvent(AppRoutes.Medicine, 'Search suggestion Item');
-          props.navigation.navigate(AppRoutes.ProductDetailPage, {
-            urlKey: item?.url_key,
-            sku: item.sku,
-            movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
-          });
+          if (item?.categoryId) {
+            props.navigation.navigate(AppRoutes.MedicineListing, {
+              category_id: item?.categoryId,
+              title: item?.queryName || 'Products',
+            });
+          }
+          if (item?.url_key || item?.sku) {
+            props.navigation.navigate(AppRoutes.ProductDetailPage, {
+              urlKey: item?.url_key,
+              sku: item.sku,
+              movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
+            });
+          }
         }}
         onPressAddToCart={() => {
           onAddCartItem(item);
@@ -2195,6 +2257,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setCircleMembershipCharges && setCircleMembershipCharges(0);
           }
         }}
+        circleEventSource={'Medicine Homepage Sticky'}
       />
     );
   };

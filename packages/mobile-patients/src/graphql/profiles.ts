@@ -422,6 +422,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isConsultStarted
         isSeniorConsultStarted
         isJdQuestionsComplete
+        isAutomatedQuestionsComplete
         symptoms
         doctorInfo {
           awards
@@ -589,6 +590,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isConsultStarted
         isSeniorConsultStarted
         isJdQuestionsComplete
+        isAutomatedQuestionsComplete
         symptoms
         doctorInfo {
           awards
@@ -756,6 +758,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isConsultStarted
         isSeniorConsultStarted
         isJdQuestionsComplete
+        isAutomatedQuestionsComplete
         symptoms
         doctorInfo {
           awards
@@ -923,6 +926,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isConsultStarted
         isSeniorConsultStarted
         isJdQuestionsComplete
+        isAutomatedQuestionsComplete
         symptoms
         doctorInfo {
           awards
@@ -1715,12 +1719,74 @@ export const SAVE_MEDICINE_ORDER_OMS_V2 = gql`
       errorCode
       errorMessage
       transactionId
-      isSubstitution
-      substitutionTime
-      substitutionMessage
       orders {
         id
         orderAutoId
+        estimatedAmount
+      }
+    }
+  }
+`;
+
+export const SAVE_ORDER_WITH_SUBSCRIPTION = gql`
+  mutation saveOrderWithSubscription(
+    $medicineOrderInput: SaveMedicineOrderV2Input!
+    $userSubscription: CreateUserSubscriptionInput!
+  ) {
+    saveMedicineOrderV2(medicineOrderInput: $medicineOrderInput) {
+      errorCode
+      errorMessage
+      transactionId
+      orders {
+        id
+        orderAutoId
+        estimatedAmount
+      }
+    }
+    CreateUserSubscription(UserSubscription: $userSubscription) {
+      code
+      success
+      message
+      response {
+        _id
+        mobile_number
+        status
+        start_date
+        end_date
+        group_plan {
+          name
+          plan_id
+        }
+      }
+    }
+  }
+`;
+
+export const SAVE_PICKUP_ORDER_WITH_SUBSCRIPTION = gql`
+  mutation savePickUpOrderWithSubscription(
+    $medicineCartOMSInput: MedicineCartOMSInput!
+    $userSubscription: CreateUserSubscriptionInput!
+  ) {
+    saveMedicineOrderOMS(medicineCartOMSInput: $medicineCartOMSInput) {
+      errorCode
+      errorMessage
+      orderId
+      orderAutoId
+    }
+    CreateUserSubscription(UserSubscription: $userSubscription) {
+      code
+      success
+      message
+      response {
+        _id
+        mobile_number
+        status
+        start_date
+        end_date
+        group_plan {
+          name
+          plan_id
+        }
       }
     }
   }
@@ -2377,6 +2443,14 @@ export const GET_PATIENT_FEEDBACK = gql`
   }
 `;
 
+export const MERGE_PDF = gql`
+  mutation mergePDFS($uhid: String!, $fileUrls: [String]!) {
+    mergePDFS(fileUrls: $fileUrls, uhid: $uhid) {
+      mergepdfUrl
+    }
+  }
+`;
+
 export const SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS = gql`
   mutation savePrescriptionMedicineOrderOMS(
     $prescriptionMedicineOMSInput: PrescriptionMedicineOrderOMSInput
@@ -2980,6 +3054,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
           consultId
           identifier
           additionalNotes
+          billNo
           observation
           labTestResults {
             parameterName
@@ -3973,6 +4048,22 @@ export const UPLOAD_DOCUMENT = gql`
   }
 `;
 
+export const UPLOAD_MEDIA_DOCUMENT_V2 = gql`
+  mutation uploadMediaDocumentV2(
+    $MediaPrescriptionUploadRequest: MediaPrescriptionUploadRequest
+    $uhid: String!
+    $appointmentId: ID!
+  ) {
+    uploadMediaDocumentV2(
+      prescriptionInput: $MediaPrescriptionUploadRequest
+      uhid: $uhid
+      appointmentId: $appointmentId
+    ) {
+      fileUrl
+    }
+  }
+`;
+
 export const DOWNLOAD_DOCUMENT = gql`
   query downloadDocuments($downloadDocumentsInput: DownloadDocumentsInput!) {
     downloadDocuments(downloadDocumentsInput: $downloadDocumentsInput) {
@@ -4027,15 +4118,7 @@ export const ADD_PATIENT_FEEDBACK = gql`
 export const AUTOMATED_QUESTIONS = gql`
   mutation addToConsultQueueWithAutomatedQuestions($ConsultQueueInput: ConsultQueueInput) {
     addToConsultQueueWithAutomatedQuestions(consultQueueInput: $ConsultQueueInput) {
-      id
-      doctorId
       totalJuniorDoctorsOnline
-      juniorDoctorsList {
-        juniorDoctorId
-        doctorName
-        # queueCount
-      }
-      totalJuniorDoctors
       isJdAllowed
       isJdAssigned
     }
@@ -4234,14 +4317,17 @@ export const GET_PHARMA_TRANSACTION_STATUS = gql`
 `;
 
 export const GET_PHARMA_TRANSACTION_STATUS_V2 = gql`
-  query pharmaPaymentStatusV2($transactionId: Int!) {
-    pharmaPaymentStatusV2(transactionId: $transactionId) {
+  query pharmaPaymentStatusV2($paymentOrderId: String) {
+    pharmaPaymentStatusV2(paymentOrderId: $paymentOrderId) {
       paymentRefId
       bankTxnId
       amountPaid
       paymentStatus
       paymentDateTime
       paymentMode
+      isSubstitution
+      substitutionTime
+      substitutionMessage
       planPurchaseDetails {
         planPurchased
         totalCashBack
@@ -4330,6 +4416,19 @@ export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
             refundStatus
             refundId
             txnId
+          }
+        }
+        PaymentOrdersPharma {
+          paymentRefId
+          paymentStatus
+          paymentDateTime
+          amountPaid
+          paymentMode
+          refund {
+            refundId
+            refundAmount
+            refundStatus
+            txnTimestamp
           }
         }
       }
@@ -4507,6 +4606,7 @@ export const CREATE_USER_SUBSCRIPTION = gql`
       success
       message
       response {
+        _id
         mobile_number
         status
         start_date
@@ -4735,29 +4835,31 @@ export const GET_PAYMENT_METHODS = gql`
 `;
 
 export const CREATE_ORDER = gql`
-  mutation createOrder($order_input: OrderInput) {
-    createOrder(order_input: $order_input) {
-      ... on OrderSuccessResponsePrepaid {
-        status_id
-        status
-        id
-        payment_links {
-          mobile
-          web
-        }
-        order_id
-        juspay {
-          client_auth_token_expiry
-          client_auth_token
-        }
-      }
-      ... on OrderSuccessResponseCOD {
-        order_id
-        success
+  mutation createOrder($order_input: OrderInputV2) {
+    createOrderV2(order_input: $order_input) {
+      payment_status
+      payment_order_id
+      mobile_token {
+        client_auth_token_expiry
+        client_auth_token
       }
     }
   }
 `;
+
+export const UPDATE_ORDER = gql`
+  mutation updateOrderDetails($order_input: OrderInputV2) {
+    updateOrderDetails(order_input: $order_input) {
+      payment_status
+      payment_order_id
+      mobile_token {
+        client_auth_token_expiry
+        client_auth_token
+      }
+    }
+  }
+`;
+
 export const GET_INTERNAL_ORDER = gql`
   query getOrderInternal($order_id: String!) {
     getOrderInternal(order_id: $order_id) {
@@ -5041,6 +5143,10 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql`
             testPreparationData
             preTestingRequirement
           }
+        }
+        attributesObj {
+          reportGenerationTime
+          preTestingRequirement
         }
       }
     }
@@ -5459,6 +5565,44 @@ export const GET_ALL_VACCINATION_APPOINTMENTS = gql`
   }
 `;
 
+export const FETCH_JUSPAY_CUSTOMERID = gql`
+  mutation generateUniqueCustomerId {
+    generateUniqueCustomerId {
+      customer_id
+    }
+  }
+`;
+
+export const FETCH_SAVED_CARDS = gql`
+  query getSavedCardList($customer_id: String!) {
+    getSavedCardList(customer_id: $customer_id) {
+      customer_id
+      merchantId
+      cards {
+        card_number
+        card_isin
+        card_exp_year
+        card_exp_month
+        card_type
+        card_issuer
+        card_brand
+        name_on_card
+        expired
+        card_token
+      }
+    }
+  }
+`;
+
+export const DELETE_SAVED_CARD = gql`
+  mutation deleteCardFromLocker($cardToken: String!) {
+    deleteCardFromLocker(cardToken: $cardToken) {
+      card_token
+      deleted
+    }
+  }
+`;
+
 export const COWIN_REGISTRATION = gql`
   mutation cowinRegistration($cowinRegistration: CowinRegistrationInput!) {
     cowinRegistration(cowinRegistration: $cowinRegistration) {
@@ -5474,6 +5618,15 @@ export const COWIN_REGISTRATION = gql`
   }
 `;
 
+export const GET_RESCHEDULE_AND_CANCELLATION_REASONS = gql`
+  query getRescheduleAndCancellationReasons($appointmentDateTimeInUTC: DateTime!) {
+    getRescheduleAndCancellationReasons(appointmentDateTimeInUTC: $appointmentDateTimeInUTC) {
+      rescheduleReasons
+      cancellationReasons
+    }
+  }
+`;
+
 export const DIAGNOSITC_EXOTEL_CALLING = gql`
   mutation diagnosticExotelCalling($orderId: ID!) {
     diagnosticExotelCalling(orderId: $orderId) {
@@ -5484,7 +5637,7 @@ export const DIAGNOSITC_EXOTEL_CALLING = gql`
   }
 `;
 
-export const GET_DIAGNOSTIC_PAYMENT_SETTINGS  = gql`
+export const GET_DIAGNOSTIC_PAYMENT_SETTINGS = gql`
   query getDiagnosticPaymentSettings($paymentOrderId: String!) {
     getDiagnosticPaymentSettings(paymentOrderId: $paymentOrderId) {
       cod
@@ -5492,4 +5645,3 @@ export const GET_DIAGNOSTIC_PAYMENT_SETTINGS  = gql`
     }
   }
 `;
-

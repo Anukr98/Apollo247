@@ -20,6 +20,8 @@
 #import <PushKit/PushKit.h>
 #import "RNCallKeep.h"
 #import "RNVoipPushNotificationManager.h"
+#import <CleverTapSDK/CleverTap.h>
+#import <CleverTapReact/CleverTapReactManager.h>
 @import GoogleMaps;
 #import <AppTrackingTransparency/AppTrackingTransparency.h>
 
@@ -34,6 +36,9 @@
                                                    moduleName:@"ApolloPatient"
                                             initialProperties:nil];
   
+  [CleverTap autoIntegrate]; // integrate CleverTap SDK using the autoIntegrate option
+  [[CleverTapReactManager sharedInstance] applicationDidLaunchWithOptions:launchOptions];
+
   rootView.backgroundColor = [[UIColor alloc] initWithRed:1.0f green:1.0f blue:1.0f alpha:1];
   
   self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];

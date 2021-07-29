@@ -121,7 +121,22 @@ export interface MedicineOrderBilledItem {
   mrp: number;
 }
 
+export interface SearchSuggestion {
+  name: string;
+  categoryId: string;
+  queryName: string;
+  superQuery?: string;
+}
+
+export interface MedicineSearchQueryFilter {
+  query: string[];
+  filter: {
+    __categories: string[];
+  };
+}
+
 export interface MedicineProductsResponse {
+  queries?: MedicineSearchQueryFilter[];
   products: MedicineProduct[];
   product_count?: number;
   count?: number;

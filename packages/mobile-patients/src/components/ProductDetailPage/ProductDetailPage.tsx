@@ -46,6 +46,8 @@ import {
   navigateToHome,
   navigateToScreenWithEmptyStack,
   setAsyncPharmaLocation,
+  postCleverTapEvent,
+  getCleverTapCircleMemberValues,
   getIsMedicine,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
@@ -87,6 +89,10 @@ import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/Add
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { MedicineListingHeader } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingHeader';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import AsyncStorage from '@react-native-community/async-storage';
 
 export type ProductPageViewedEventProps = Pick<
@@ -104,10 +110,12 @@ export interface ProductDetailPageProps
     urlKey?: string;
   }> {}
 
-type PharmacyTatApiCalled = WebEngageEvents[WebEngageEventName.PHARMACY_TAT_API_CALLED];
+type PharmacyTatApiCalled =
+  | WebEngageEvents[WebEngageEventName.PHARMACY_TAT_API_CALLED]
+  | CleverTapEvents[CleverTapEventName.PHARMACY_TAT_API_CALLED];
 
 export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
-  const movedFrom = props.navigation.getParam('movedFrom');
+  const [movedFrom, setMovedFrom] = useState(props.navigation.getParam('movedFrom'));
   const [sku, setSku] = useState(props.navigation.getParam('sku'));
   const urlKey = props.navigation.getParam('urlKey');
   const sectionName = props.navigation.getParam('sectionName');
@@ -129,6 +137,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     asyncPincode,
     setAsyncPincode,
     circleMembershipCharges,
+    pdpDisclaimerMessage,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
@@ -163,6 +172,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const [showSubstituteInfo, setShowSubstituteInfo] = useState<boolean>(false);
   const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(false);
   const [availabilityCalled, setAvailabilityCalled] = useState<string>('no');
+
+  const [multiVariantAttributes, setMultiVariantAttributes] = useState([]);
+  const [multiVariantProducts, setMultiVariantProducts] = useState([]);
+  const [multiVariantSkuInformation, setMultiVariantSkuInformation] = useState<any[]>([]);
 
   const pharmacyPincode =
     g(asyncPincode, 'pincode') || g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
@@ -238,8 +251,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   useEffect(() => {
     if (
       medicineDetails?.sku &&
-      availabilityCalled === 'yes' &&
-      (!!deliveryTime || !!deliveryError)
+      (availabilityCalled === 'yes' || !!deliveryTime || !!deliveryError)
     ) {
       postProductPageViewedEvent(pincode, isInStock);
     }
@@ -260,6 +272,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           Response_MRP: tatEventData?.Response_MRP * Number(medicineDetails?.mou || 1),
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_TAT_API_CALLED, eventAttributes);
+        postCleverTapEvent(CleverTapEventName.PHARMACY_TAT_API_CALLED, eventAttributes);
       }
     } catch (error) {}
   }, [tatEventData]);
@@ -274,10 +287,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     getUserType();
   }, []);
 
-  const getMedicineDetails = (zipcode?: string, pinAcdxCode?: string) => {
+  const getMedicineDetails = (zipcode?: string, pinAcdxCode?: string, selectedSku?: string) => {
     setLoading(true);
-    if (urlKey) {
-      getMedicineDetailsApiV2(urlKey, pinAcdxCode || axdcCode, zipcode || pincode)
+    if (urlKey || selectedSku) {
+      getMedicineDetailsApiV2(selectedSku || urlKey, pinAcdxCode || axdcCode, zipcode || pincode)
         .then(({ data }) => {
           const productDetails = g(data, 'productdp', '0' as any);
           if (productDetails) {
@@ -326,6 +339,26 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       patient: currentPatient?.id,
       image: productDetails?.thumbnail,
     });
+
+    if (productDetails?.multi_variants_products) {
+      const attributes = productDetails?.multi_variants_products?.attributes;
+      const products = productDetails?.multi_variants_products?.products;
+      setMultiVariantAttributes(attributes);
+      setMultiVariantProducts(products);
+      const skusInformation = Object.keys(products).map((data) => {
+        return {
+          code: data,
+          sku: products[data].sku,
+          available: products[data].is_in_stock,
+        };
+      });
+      setMultiVariantSkuInformation(skusInformation);
+    }
+  };
+
+  const onSelectVariant = (sku: string) => {
+    setMovedFrom(ProductPageViewedSource.MULTI_VARIANT);
+    getMedicineDetails(pincode, axdcCode, sku);
   };
 
   const homeBreadCrumb: BreadcrumbLink = {
@@ -457,6 +490,32 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         MRP: price,
         SpecialPrice: special_price || null,
         CircleCashback: cashback?.toFixed(2),
+        isMultiVariant: multiVariantAttributes.length ? 1 : 0,
+      };
+      let cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_PRODUCT_PAGE_VIEWED] = {
+        Source: movedFrom,
+        'product id (SKUID)': sku?.toUpperCase(),
+        'product name': name,
+        Stockavailability: stock_availability,
+        CategoryID: category_id || undefined,
+        CategoryName: productPageViewedEventProps?.CategoryName || undefined,
+        'Section Name': productPageViewedEventProps?.SectionName || undefined,
+        'Circle Member':
+          getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+          undefined,
+        'Circle Membership Value':
+          pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
+        User_Type: userType || undefined,
+        Pincode: pincode,
+        serviceable: notServiceable ? 'No' : 'Yes',
+        TATDay: deliveryTime ? moment(deliveryTime).diff(moment(), 'days') : undefined,
+        TatHour: deliveryTime ? moment(deliveryTime).diff(moment(), 'hours') : undefined,
+        TatDateTime: deliveryTime || undefined,
+        ProductType: type_id || undefined,
+        MaxOrderQuantity: MaxOrderQty,
+        MRP: price,
+        SpecialPrice: special_price || undefined,
+        CircleCashback: cashback?.toFixed(2),
       };
       if (movedFrom === 'deeplink') {
         eventAttributes['Circle Membership Added'] = circleID
@@ -465,7 +524,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           ? 'Yes'
           : 'No';
         eventAttributes['CategoryID'] = category_id;
+        cleverTapEventAttributes['Circle Member'] = circleID
+          ? 'Existing'
+          : !!circleMembershipCharges
+          ? 'Added'
+          : 'Not Added';
       }
+      postCleverTapEvent(CleverTapEventName.PHARMACY_PRODUCT_PAGE_VIEWED, cleverTapEventAttributes);
       postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
       postFirebaseEvent(FirebaseEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
@@ -521,6 +586,20 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           'Cart Items': JSON.stringify(cartItems),
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
+        const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_AVAILABILITY_API_CALLED] = {
+          Source: 'PDP',
+          Input_SKU: sku || undefined,
+          Input_Pincode: currentPincode,
+          Input_MRP: medicineDetails?.price,
+          No_of_items_in_the_cart: cartItems?.length,
+          Response_Exist: exist ? 'Yes' : 'No',
+          Response_MRP: mrp,
+          Response_Qty: qty,
+        };
+        postCleverTapEvent(
+          CleverTapEventName.PHARMACY_AVAILABILITY_API_CALLED,
+          cleverTapEventAttributes
+        );
       } catch (error) {}
 
       if (outOfStock) {
@@ -584,19 +663,18 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             setdeliveryError(pincodeServiceableItemOutOfStockMsg);
             setdeliveryTime('');
           }
-          !checkButtonClicked && setAvailabilityCalled('yes');
           try {
             const response = res.data.response;
             const item = response.items[0];
             const eventAttributes: PharmacyTatApiCalled = {
               Source: 'PDP',
-              Input_sku: sku,
+              Input_SKU: sku,
               Input_qty: getItemQuantity(sku) || 1,
               Input_lat: lattitude,
               Input_long: longitude,
               Input_pincode: currentPincode,
               Input_MRP: medicineDetails?.price, // overriding this value after PDP API call
-              No_of_items_in_the_cart: 1,
+              No_of_items_in_the_cart: cartItems?.length,
               Response_Exist: item.exist ? 'Yes' : 'No',
               Response_MRP: item.mrp, // overriding this value after PDP API call
               Response_Qty: item.qty,
@@ -618,6 +696,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           setdeliveryError('');
         })
         .finally(() => {
+          setAvailabilityCalled('yes');
           setshowDeliverySpinner(false);
         });
     } catch (error) {
@@ -854,6 +933,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       pincode: pincode,
       serviceable: notServiceable ? 'No' : 'Yes',
     };
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_NOTIFY_ME] = {
+      'product name': medicineDetails?.name,
+      'product id': medicineDetails?.sku,
+      'category ID': medicineDetails?.category_id || undefined,
+      price: medicineDetails?.price,
+      pincode: pincode,
+      serviceable: notServiceable ? 'No' : 'Yes',
+    };
+    postCleverTapEvent(CleverTapEventName.PHARMACY_NOTIFY_ME, cleverTapEventAttributes);
     postWebEngageEvent(WebEngageEventName.NOTIFY_ME, eventAttributes);
     showAphAlert!({
       title: 'Okay! :)',
@@ -870,6 +958,17 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const showProceedButton = medicineDetails?.sku
     ? !!cartItems.find(({ id }) => id === medicineDetails?.sku)
     : false;
+
+  const renderDisclaimerMessage = () => {
+    if (pdpDisclaimerMessage && isPharma) {
+      return (
+        <View>
+          <Text style={styles.disclaimerHeading}>Disclaimer</Text>
+          <Text style={styles.disclaimerMessage}>{pdpDisclaimerMessage}</Text>
+        </View>
+      );
+    } else return null;
+  };
 
   let buttonRef = React.useRef<View>(null);
   return (
@@ -928,6 +1027,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                 finalPrice={finalPrice}
                 showDeliverySpinner={showDeliverySpinner}
                 isBanned={medicineDetails?.banned === 'Yes'}
+                multiVariantAttributes={multiVariantAttributes}
+                multiVariantProducts={multiVariantProducts}
+                skusInformation={multiVariantSkuInformation}
+                sku={medicineDetails?.sku}
+                onSelectVariant={onSelectVariant}
               />
               <View
                 ref={buttonRef}
@@ -1017,6 +1121,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
               {!!medicineDetails?.marketer_address && (
                 <ProductManufacturer address={medicineDetails?.marketer_address} />
               )}
+              {renderDisclaimerMessage()}
               <View style={{ height: 130 }} />
             </KeyboardAwareScrollView>
           ) : (
@@ -1173,4 +1278,9 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('B', 14, '#FFFFFF', 1, 25, 0.35),
     textAlign: 'center',
   },
+  disclaimerHeading: {
+    ...theme.viewStyles.text('M', 16, '#02475B', 1, 35, 0.35),
+    marginTop: 7,
+  },
+  disclaimerMessage: theme.viewStyles.text('R', 14, '#02475B', 1, 17, 0.35),
 });

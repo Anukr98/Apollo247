@@ -117,6 +117,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     }
   };
 
+ 
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
       query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
@@ -252,6 +253,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         </View>
       );
   };
+  
 
   const renderBreadCrumb = () => {
     return (
@@ -266,8 +268,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
 
   const renderList = () => {
     const actualItemsToShow = widgetsData?.diagnosticWidgetData?.filter(
-      (item: any) => item?.diagnosticPricing
-    );
+       (item: any) => item?.diagnosticPricing
+      );
     return (
       <>
         {!!actualItemsToShow && actualItemsToShow?.length > 0 ? (
