@@ -1167,11 +1167,12 @@ export interface CleverTapEvents {
     Shipment_2_Items?: number;
   };
   [CleverTapEventName.PHARMACY_PAYMENT_INITIATED]: {
-    payMode: 'Online' | 'COD';
+    payMode: string;
     amount: number;
-    serviceArea: 'Pharmacy' | 'Diagnostic';
+    serviceArea: 'pharmacy' | 'Diagnostic';
     'Cart Items'?: number;
     Coupon?: string;
+    paymentOrderId: string;
   };
   [CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED]: {
     Source: 'Home' | 'Cart';
@@ -1443,6 +1444,7 @@ export interface CleverTapEvents {
     Amount: number;
     LOB: string;
     Paymentmode?: string;
+    paymentOrderId: string;
   };
   [CleverTapEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED]: {
     position: number;

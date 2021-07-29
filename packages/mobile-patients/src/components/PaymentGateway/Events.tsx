@@ -4,6 +4,7 @@ import {
   postFirebaseEvent,
   postWebEngageEvent,
   formatAddress,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   ShoppingCartItem,
@@ -19,6 +20,10 @@ import {
   AppsFlyerEventName,
   AppsFlyerEvents,
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 export function PaymentInitiated(
   grandTotal: number,
@@ -32,6 +37,24 @@ export function PaymentInitiated(
     type: type,
     paymentOrderId: paymentOrderId,
   };
+  const consultEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PAYMENT_INITIATED] = {
+    Amount: grandTotal,
+    LOB: LOB,
+    Paymentmode: type,
+    paymentOrderId: paymentOrderId,
+  };
+  const pharmaEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_PAYMENT_INITIATED] = {
+    payMode: type,
+    amount: grandTotal,
+    serviceArea: 'pharmacy',
+    paymentOrderId: paymentOrderId,
+  };
+  LOB == 'pharma' &&
+    postCleverTapEvent(CleverTapEventName.PHARMACY_PAYMENT_INITIATED, pharmaEventAttributes);
+  LOB == 'diagnostics' &&
+    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PAYMENT_INITIATED, eventAttributes);
+  LOB == 'consult' &&
+    postCleverTapEvent(CleverTapEventName.CONSULT_PAYMENT_INITIATED, consultEventAttributes);
   postWebEngageEvent(WebEngageEventName.PAYMENT_INITIATED, eventAttributes);
 }
 
