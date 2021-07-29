@@ -218,9 +218,6 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         payload?.requestId == 'phonePe' && status && setphonePeReady(true);
         payload?.requestId == 'googlePay' && status && setGooglePayReady(true);
         break;
-      // case 'cardList':
-      //   setSavedCards(payload?.payload?.cards || []);
-      //   break;
       default:
         payload?.error && handleError(payload?.errorMessage);
     }
