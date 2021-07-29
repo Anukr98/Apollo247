@@ -53,7 +53,7 @@ import {
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Animated,
@@ -102,7 +102,6 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
-import { useRef } from 'react';
 
 const { height, width } = Dimensions.get('window');
 
