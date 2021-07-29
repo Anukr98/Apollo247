@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -91,6 +91,9 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const paymentId = props.navigation.getParam('paymentId');
   const customerId = props.navigation.getParam('customerId');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
+  const cleverTapCheckoutEventAttributes = props.navigation.getParam(
+    'cleverTapCheckoutEventAttributes'
+  );
   const [amount, setAmount] = useState<number>(props.navigation.getParam('amount'));
   const orderDetails = props.navigation.getParam('orderDetails');
   const eventAttributes = props.navigation.getParam('eventAttributes');
@@ -120,6 +123,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const [showPrepaid, setShowPrepaid] = useState<boolean>(isDiagnostic ? false : true);
   const [showCOD, setShowCOD] = useState<boolean>(isDiagnostic ? false : true);
   const [showDiagnosticHCMsg, setShowDiagnosticHCMsg] = useState<string>('');
+  const paymentType = useRef<string>('');
 
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(NativeModules.HyperSdkReact);
@@ -343,6 +347,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   };
 
   function triggerWebengege(type: string) {
+    paymentType.current = type;
     PaymentInitiated(amount, businessLine, type, paymentId);
   }
 
@@ -517,13 +522,22 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         break;
       case 'pharma':
         paymentStatus == 'success' &&
-          PharmaOrderPlaced(checkoutEventAttributes, shoppingCart, paymentId, burnHc, isCOD);
+          PharmaOrderPlaced(
+            checkoutEventAttributes,
+            cleverTapCheckoutEventAttributes,
+            paymentType.current,
+            shoppingCart,
+            paymentId,
+            burnHc,
+            isCOD
+          );
         props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
           status: paymentStatus,
           price: amount,
           transId: paymentId,
           orderDetails: orderDetails,
           checkoutEventAttributes: checkoutEventAttributes,
+          cleverTapCheckoutEventAttributes,
         });
         break;
       case 'subscription':

@@ -4,6 +4,7 @@ import {
   postFirebaseEvent,
   postWebEngageEvent,
   formatAddress,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   ShoppingCartItem,
@@ -19,6 +20,10 @@ import {
   AppsFlyerEventName,
   AppsFlyerEvents,
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 export function PaymentInitiated(
   grandTotal: number,
@@ -32,6 +37,24 @@ export function PaymentInitiated(
     type: type,
     paymentOrderId: paymentOrderId,
   };
+  const consultEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PAYMENT_INITIATED] = {
+    Amount: grandTotal,
+    LOB: LOB,
+    Paymentmode: type,
+    paymentOrderId: paymentOrderId,
+  };
+  const pharmaEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_PAYMENT_INITIATED] = {
+    payMode: type,
+    amount: grandTotal,
+    serviceArea: 'pharmacy',
+    paymentOrderId: paymentOrderId,
+  };
+  LOB == 'pharma' &&
+    postCleverTapEvent(CleverTapEventName.PHARMACY_PAYMENT_INITIATED, pharmaEventAttributes);
+  LOB == 'diagnostics' &&
+    postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_PAYMENT_INITIATED, eventAttributes);
+  LOB == 'consult' &&
+    postCleverTapEvent(CleverTapEventName.CONSULT_PAYMENT_INITIATED, consultEventAttributes);
   postWebEngageEvent(WebEngageEventName.PAYMENT_INITIATED, eventAttributes);
 }
 
@@ -48,6 +71,8 @@ export function PaymentStatus(status: string, LOB: string, paymentOrderId: strin
 
 export function PharmaOrderPlaced(
   checkoutEventAttributes: any,
+  cleverTapCheckoutEventAttributes: any,
+  paymentType: string,
   shoppingCart: ShoppingCartContextProps,
   paymentOrderId: string,
   burnHc: number,
@@ -57,6 +82,13 @@ export function PharmaOrderPlaced(
     const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED] = checkoutEventAttributes;
     eventAttributes && (eventAttributes['Payment Type'] = isCOD ? 'COD' : 'Prepaid');
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED] = {
+      ...cleverTapCheckoutEventAttributes,
+      'Payment Type': isCOD ? 'COD' : 'Prepaid',
+      'Transaction ID': paymentOrderId,
+      'Payment Instrument': isCOD ? 'COD' : paymentType || undefined,
+    };
+    postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, cleverTapEventAttributes);
 
     const {
       cartItems,
