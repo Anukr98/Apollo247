@@ -239,7 +239,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   useEffect(() => {
     setWebEngageScreenNames('Doctor Profile');
     fetchDoctorDetails();
-    fetchNextAvailabilitySlot(consultTabs[0].title, true);
+    fetchNextAvailabilitySlot(selectedTab, true);
   }, []);
 
   useEffect(() => {
