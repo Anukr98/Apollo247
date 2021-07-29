@@ -34,6 +34,7 @@ import {
   SCREEN_NAMES,
   TimelineWizard,
 } from '@aph/mobile-patients/src/components/Tests/components/TimelineWizard';
+import { DIAGNOSTIC_SLOT_TYPE } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 export interface AddressSlotSelectionProps extends NavigationScreenProps {
   reportGenDetails: any;
@@ -373,7 +374,9 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
   }
 
   function triggerWebengageEvent() {
-    const slotType = selectedTimeSlot?.slotInfo?.isPaidSlot ? 'Paid' : 'Free';
+    const slotType = selectedTimeSlot?.slotInfo?.isPaidSlot
+      ? DIAGNOSTIC_SLOT_TYPE.PAID
+      : DIAGNOSTIC_SLOT_TYPE.FREE;
     const slotTime = selectedTimeSlot?.slotInfo?.startTime;
     const slotDate = moment(diagnosticSlot?.selectedDate)?.format('DD-MM-YYYY');
     const numberOfSlots = selectedTimeSlot?.slotInfo?.internalSlots?.length;

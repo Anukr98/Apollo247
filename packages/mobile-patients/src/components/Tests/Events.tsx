@@ -7,6 +7,7 @@ import {
   setCircleMembershipType,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
+  DIAGNOSTIC_SLOT_TYPE,
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -290,7 +291,7 @@ function fireCircleBenifitAppliedEvent(
 export function DiagnosticProceedToPay(
   noOfPatient: number,
   noOfSlots: number,
-  slotType: 'Free' | 'Paid',
+  slotType: DIAGNOSTIC_SLOT_TYPE,
   totalItems: number,
   cartTotal: number, //subtotal
   grandTotal: number, //net after discount
@@ -348,18 +349,18 @@ export function DiagnosticAreaSelected(selectedAddr: any, area: string) {
 }
 
 export function DiagnosticAppointmentTimeSlot(
-  type: 'Free' | 'Paid',
-  slot: string,
-  noOfSlots: number,
+  slotType: DIAGNOSTIC_SLOT_TYPE,
+  time: string,
+  numOfSlots: number,
   slotDate: string
 ) {
-  const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED] = {
-    Type: type,
-    'Slot time': slot,
-    'No. of slots': noOfSlots,
+  const attributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_SLOT_TIME_SELECTED] = {
+    'Slot time': time,
     'Slot date': slotDate,
+    'No. of slots': numOfSlots,
+    Type: slotType,
   };
-  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED, eventAttributes);
+  postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_SLOT_TIME_SELECTED, attributes);
 }
 
 export function PaymentInitiated(grandTotal: number, LOB: string, type: string) {

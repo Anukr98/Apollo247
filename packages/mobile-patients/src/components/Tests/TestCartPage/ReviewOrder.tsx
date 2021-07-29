@@ -1399,8 +1399,14 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           cartHasAll: items != undefined ? true : false,
           amount: grandTotal, //actual amount to be payed by customer (topay)
         };
+        const createMultiOrderIds =
+          !isModifyFlow &&
+          getOrderDetails?.map(
+            (id: saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWithOrderIDs) =>
+              id?.orderID
+          );
         const eventAttributes = createCheckOutEventAttributes(
-          isModifyFlow ? getOrderDetails : getOrderDetails?.[0]?.orderID,
+          isModifyFlow ? getOrderDetails : createMultiOrderIds,
           slotStartTime
         );
         setauthToken?.('');
@@ -1450,6 +1456,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         ? moment(modifiedOrder?.slotDateTimeInUTC).format('hh:mm')
         : slotStartTime!,
       'Item ids': cartItemsWithId,
+      'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
     };
     return attributes;
   }

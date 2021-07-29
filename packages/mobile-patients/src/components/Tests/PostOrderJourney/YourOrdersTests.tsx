@@ -734,9 +734,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     ) as string;
     const formatTime =
       rescheduleSlotObject?.slotStartTime || (diagnosticSlot?.slotStartTime as string);
-    const dateTimeInUTC = moment(formattedDate + ',' + formatTime).toISOString();
+    const dateTimeInUTC = moment(
+      `${formattedDate} ${formatTime}`,
+      'YYYY-MM-DD HH:mm:ss'
+    ).toISOString();
     const dateTimeToShow = formattedDate + ', ' + formatTime;
-
     const comment = '';
     const orderId = !!selectedOrder?.parentOrderId
       ? selectedOrder?.parentOrderId
