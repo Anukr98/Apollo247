@@ -26,6 +26,8 @@ import {
   postWebEngageEvent,
   generateTimeSlots,
   timeTo12HrFormat,
+  postWEGPatientAPIError,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -87,6 +89,10 @@ import {
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 interface SlotSelectionProps extends NavigationScreenProps {
   doctorId: string;
@@ -796,6 +802,33 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
       whatsAppUpdate: whatsAppUpdate,
       isDoctorsOfTheHourStatus: doctorDetails?.doctorsOfTheHourStatus,
     };
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION] = {
+      docName: g(doctorDetails, 'fullName')!,
+      specialtyName: g(doctorDetails, 'specialty', 'name')!,
+      experience: Number(g(doctorDetails, 'experience')!),
+      languagesKnown: g(doctorDetails, 'languages')! || 'NA',
+      appointmentType: isOnlineSelected ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
+      docId: g(doctorDetails, 'id')!,
+      SpecialtyId: g(doctorDetails, 'specialty', 'id')!,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      appointmentDateTime: moment(selectedTimeSlot).toDate(),
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      onlineConsultFee: onlineConsultMRPPrice || undefined,
+      physicalConsultFee: physicalConsultMRPPrice || undefined,
+      Source: isOnlineSelected ? 'Consult Now' : 'Schedule for Later',
+      User_Type: getUserType(allCurrentPatients),
+      price: actualPrice,
+      docHospital: doctorDetails?.doctorHospital?.[0]?.facility?.name || undefined,
+      docCity: doctorDetails?.doctorHospital?.[0]?.facility?.city || undefined,
+    };
+    postCleverTapEvent(
+      CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION,
+      cleverTapEventAttributes
+    );
     isOnlineSelected
       ? props.navigation.navigate(AppRoutes.PaymentCheckout, passProps)
       : props.navigation.navigate(AppRoutes.PaymentCheckoutPhysical, passProps);

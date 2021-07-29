@@ -59,6 +59,7 @@ import {
   downloadDiagnosticReport,
   setAsyncPharmaLocation,
   downloadDocument,
+  removeWhiteSpaces,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -258,6 +259,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   type Address = savePatientAddress_savePatientAddress_patientAddress;
 
   const movedFrom = props.navigation.getParam('movedFrom');
+  const homeScreenAttributes = props.navigation.getParam('homeScreenAttributes');
   const { currentPatient } = useAllCurrentPatients();
 
   const hdfc_values = string.Hdfc_values;
@@ -377,7 +379,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
       currentPatient,
       isDiagnosticLocationServiceable,
       movedFrom == 'deeplink' ? 'Deeplink' : undefined,
-      isDiagnosticCircleSubscription
+      isDiagnosticCircleSubscription,
+      homeScreenAttributes
     );
   }, []);
 
@@ -654,6 +657,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           from={string.banner_context.DIAGNOSTIC_HOME}
           source={'Diagnostic'}
           circleActivated={false}
+          circleEventSource={'Diagnostic Home page Banner'}
         />
       );
     }
@@ -1025,6 +1029,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
           const planValidity = {
             startDate: data?.APOLLO?.[0]?.start_date,
             endDate: data?.APOLLO?.[0]?.end_date,
+            plan_id: data?.APOLLO?.[0]?.plan_id,
+            source_identifier: data?.APOLLO?.[0]?.source_meta_data?.source_identifier,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
         } else {
@@ -1415,6 +1421,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const handleOnPress = () => {
       if (item?.redirectUrl && item?.redirectUrl != '') {
         //for rtpcr - drive through - open webview
+        DiagnosticBannerClick(slideIndex + 1, Number(item?.itemId), item?.bannerTitle);
         if (item?.redirectUrlText === 'WebView') {
           try {
             const openUrl = item?.redirectUrl || AppConfig.Configuration.RTPCR_Google_Form;
@@ -1669,6 +1676,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       data?.diagnosticWidgetData?.find((item: any) => item?.diagnosticPricing);
     const showViewAll = !!isPricesAvailable && data?.diagnosticWidgetData?.length > 2;
     const lengthOfTitle = data?.diagnosticWidgetTitle?.length;
+    console.log('data?.diagnosticWidgetTitle TestWidgets :>> ', data?.diagnosticWidgetTitle, data);
 
     return (
       <View style={!!isPricesAvailable ? styles.widgetSpacing : {}}>
@@ -1713,6 +1721,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             ) : (
               <ItemCard
                 data={data}
+                diagnosticWidgetData={data?.diagnosticWidgetData}
                 isCircleSubscribed={isDiagnosticCircleSubscription}
                 isServiceable={isDiagnosticLocationServiceable}
                 isVertical={false}
@@ -2111,7 +2120,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setViewReportOrderId(clickedItem?.orderId);
       await downloadDiagnosticReport(
         setLoadingContext,
-        clickedItem?.labReportURL,
+        removeWhiteSpaces(clickedItem?.labReportURL),
         appointmentDate,
         !!patientName ? patientName : '_',
         true,

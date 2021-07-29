@@ -37,6 +37,7 @@ export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrd
   paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
   patientObj: getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_patientObj | null;
   diagnosticOrderLineItems: (getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_diagnosticOrderLineItems | null)[] | null;
+  attributesObj: getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_attributesObj | null;
 }
 
 export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList {

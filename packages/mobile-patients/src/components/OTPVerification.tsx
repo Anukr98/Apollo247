@@ -24,6 +24,9 @@ import {
   postFirebaseEvent,
   setFirebaseUserId,
   setCrashlyticsAttributes,
+  onCleverTapUserLogin,
+  setCleverTapAppsFlyerCustID,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -73,6 +76,10 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { FetchingDetails } from '@aph/mobile-patients/src/components/ui/FetchingDetails';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const { height, width } = Dimensions.get('window');
 
@@ -386,11 +393,25 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     };
     AsyncStorage.setItem('APP_OPENED', 'true');
     postWebEngageEvent(WebEngageEventName.OTP_VERIFICATION_SUCCESS, eventAttributes);
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.OTP_VERIFICATION_SUCCESS] = {
+      'Mobile Number': phoneNumberFromParams,
+      'Nav src': 'App login screen',
+      'Page Name': 'OTP Verification Screen',
+    };
+    postCleverTapEvent(CleverTapEventName.OTP_VERIFICATION_SUCCESS, cleverTapEventAttributes);
   };
 
   const onClickOk = (readOtp?: string) => {
     CommonLogEvent(AppRoutes.OTPVerification, 'OTPVerification clicked');
     const eventAttributes: WebEngageEvents[WebEngageEventName.OTP_ENTERED] = { value: 'Yes' };
+    const phoneNumberFromParams = `+91${props.navigation.getParam('phoneNumber')}`;
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.OTP_ENTERED] = {
+      'Mobile Number': phoneNumberFromParams,
+      'Nav src': 'App login screen',
+      'Page Name': 'OTP Verification Screen',
+      value: 'Yes',
+    };
+    postCleverTapEvent(CleverTapEventName.OTP_ENTERED, cleverTapEventAttributes);
     postWebEngageEvent(WebEngageEventName.OTP_ENTERED, eventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.OTP_ENTERED, eventAttributes);
     postFirebaseEvent(FirebaseEventName.OTP_ENTERED, eventAttributes);
@@ -568,7 +589,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const moveScreenForward = (mePatient: any) => {
     AsyncStorage.setItem('logginHappened', 'true');
     setOpenFillerView(false);
-    SetAppsFlyerCustID(mePatient.primaryPatientId);
+    // commenting this to avoid setting of AppFlyerCustId twice
+    // SetAppsFlyerCustID(mePatient.primaryPatientId);
+    setCleverTapAppsFlyerCustID();
     postOtpSuccessAppsflyerEvet(mePatient.primaryPatientId);
     if (mePatient && mePatient.uhid && mePatient.uhid !== '') {
       if (mePatient.relation == null) {
@@ -579,6 +602,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         navigateTo(AppRoutes.MultiSignup);
       } else {
         AsyncStorage.setItem('userLoggedIn', 'true');
+        onCleverTapUserLogin(mePatient);
         deviceTokenAPI(mePatient.id);
         callPhrNotificationApi(mePatient?.id);
         fireUserLoggedInEvent(mePatient, 'Login');
@@ -594,6 +618,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         fireUserLoggedInEvent(mePatient, 'Registration');
       } else {
         AsyncStorage.setItem('userLoggedIn', 'true');
+        onCleverTapUserLogin(mePatient);
         deviceTokenAPI(mePatient.id);
         callPhrNotificationApi(mePatient?.id);
         navigateTo(AppRoutes.ConsultRoom);

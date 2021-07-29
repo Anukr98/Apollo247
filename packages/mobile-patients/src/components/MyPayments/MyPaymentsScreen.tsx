@@ -30,7 +30,7 @@ const MyPaymentsScreen: FC<MyPaymentsScreenProps> = (props) => {
       <Header
         container={styles.headerContainerStyle}
         leftIcon={'backArrow'}
-        title={'MY PAYMENTS'}
+        title={'MY TRANSACTIONS'}
         onPressLeftIcon={() => {
           CommonLogEvent(AppRoutes.MyPaymentsScreen, 'Go back clicked');
           props.navigation.goBack();

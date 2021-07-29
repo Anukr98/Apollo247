@@ -33,6 +33,7 @@ import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   apiCallEnums,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEvents,
@@ -59,6 +60,7 @@ import { OrderPlacedPopUp } from '@aph/mobile-patients/src/components/ui/OrderPl
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -282,6 +284,10 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, {
       ...pharmaCheckoutEventAttributes,
       'Cart Items': JSON.stringify(cartItems),
+    });
+    postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, {
+      ...pharmaCheckoutEventAttributes,
+      'Cart Items': cartItems?.length,
     });
     postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, appsflyerEventAttributes);
     firePurchaseEvent();

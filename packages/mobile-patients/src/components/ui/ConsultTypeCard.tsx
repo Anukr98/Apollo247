@@ -16,7 +16,11 @@ import {
 } from './Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '../../theme/theme';
-import { nextAvailability, timeDiffFromNow } from '../../helpers/helperFunctions';
+import {
+  CircleEventSource,
+  nextAvailability,
+  timeDiffFromNow,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import moment from 'moment';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -154,6 +158,7 @@ export interface ConsultTypeCardProps extends NavigationScreenProps {
   circleDoctorDetails?: any;
   availNowText?: string;
   consultNowText?: string;
+  circleEventSource?: CircleEventSource;
 }
 
 type stepsObject = {
@@ -173,6 +178,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
     circleDoctorDetails,
     availNowText,
     consultNowText,
+    circleEventSource,
   } = props;
 
   const { showCircleSubscribed } = useShoppingCart();
@@ -332,6 +338,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
   const openCircleWebView = () => {
     props.navigation.navigate(AppRoutes.CommonWebView, {
       url: AppConfig.Configuration.CIRCLE_CONSULT_URL,
+      circleEventSource,
     });
   };
 

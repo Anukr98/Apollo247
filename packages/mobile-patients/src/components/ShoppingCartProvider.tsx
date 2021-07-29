@@ -17,7 +17,7 @@ import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { addToCartTagalysEvent } from '@aph/mobile-patients/src/helpers/Tagalys';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-
+import { Decimal } from 'decimal.js';
 export interface ShoppingCartItem {
   id: string;
   name: string;
@@ -111,6 +111,8 @@ export interface onHold {
 export interface circleValidity {
   startDate: Date;
   endDate: Date;
+  plan_id: string;
+  source_identifier: string;
 }
 
 export type EPrescriptionDisableOption = 'CAMERA_AND_GALLERY' | 'E-PRESCRIPTION' | 'NONE';
@@ -244,6 +246,8 @@ export interface ShoppingCartContextProps {
   setNonCodSKus: ((items: string[]) => void) | null;
   cartPriceNotUpdateRange: number;
   setCartPriceNotUpdateRange: ((value: number) => void) | null;
+  pdpDisclaimerMessage: string;
+  setPdpDisclaimerMessage: ((message: string) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -358,6 +362,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setNonCodSKus: null,
   cartPriceNotUpdateRange: 0,
   setCartPriceNotUpdateRange: null,
+  pdpDisclaimerMessage: '',
+  setPdpDisclaimerMessage: null,
 });
 
 const AsyncStorageKeys = {
@@ -498,6 +504,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const setEPrescriptions: ShoppingCartContextProps['setEPrescriptions'] = (items) => {
     _setEPrescriptions(items);
   };
+
+  const [pdpDisclaimerMessage, setPdpDisclaimerMessage] = useState<
+    ShoppingCartContextProps['pdpDisclaimerMessage']
+  >('');
 
   const setPhysicalPrescriptions: ShoppingCartContextProps['setPhysicalPrescriptions'] = (
     items
@@ -685,9 +695,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
   const getGrandTotalFromShipments = () => {
     let total = 0;
-    shipments.forEach((item: any) => (total = total + item.estimatedAmount));
+    shipments.forEach((item: any) => (total = Number(Decimal.add(total, item.estimatedAmount))));
     if (circleMembershipCharges) {
-      total += circleMembershipCharges;
+      total = Number(Decimal.add(total, circleMembershipCharges));
     }
     return total;
   };
@@ -1240,6 +1250,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setNonCodSKus,
         cartPriceNotUpdateRange,
         setCartPriceNotUpdateRange,
+        pdpDisclaimerMessage,
+        setPdpDisclaimerMessage,
       }}
     >
       {props.children}

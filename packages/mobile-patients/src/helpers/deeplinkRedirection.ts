@@ -385,6 +385,14 @@ export const handleOpenURL = (event: any) => {
         };
         break;
 
+      case 'testordersummary':
+      case 'test-order-summary':
+        return {
+          routeName: 'TestOrderSummary',
+          id: linkId ? linkId : undefined,
+        };
+        break;
+
       default:
         if (b === 0) {
           return {
@@ -541,7 +549,7 @@ export const pushTheView = (
       const isItemId = id.indexOf('-') !== -1;
       navigateToView(navigation, AppRoutes.TestDetails, {
         itemId: isItemId ? null : id,
-        itemName : isItemId ? id : null,
+        itemName: isItemId ? id : null,
         movedFrom: 'deeplink',
       });
       break;
@@ -624,6 +632,18 @@ export const pushTheView = (
       break;
     case 'mobilehelp':
       navigateToView(navigation, AppRoutes.MobileHelp);
+      break;
+    case 'TestOrderSummary':
+      navigateToView(navigation, AppRoutes.TestOrderDetails, {
+        orderId: id,
+        goToHomeOnBack: true,
+        setOrders: null,
+        selectedOrder: null,
+        refundStatusArr: [],
+        comingFrom: 'deeplink',
+        showOrderSummaryTab: true,
+        disableTrackOrder: true,
+      });
       break;
     case 'TestsCart':
       navigateToView(navigation, AppRoutes.TestsCart);

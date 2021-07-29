@@ -22,6 +22,7 @@ import {
   timeTo12HrFormat,
   divideSlots,
   getNetStatus,
+  postWEGPatientAPIError,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { getDoctorAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorAvailableSlots';

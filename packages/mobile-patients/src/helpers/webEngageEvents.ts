@@ -33,12 +33,15 @@ export enum ProductPageViewedSource {
   SUBSTITUTES = 'substitutes',
   CROSS_SELLING_PRODUCTS = 'cross selling products',
   SIMILAR_PRODUCTS = 'similar products',
+  MULTI_VARIANT = 'multivariant',
 }
 
 export enum WebEngageEventName {
-  //doh
-  DOH_Viewed = 'DOH Viewed',
+
+  Patient_API_Error='Patient_API_Error',
+  //DOH
   DOH_Clicked = 'DOH Clicked',
+  DOH_Viewed = 'DOH Viewed',
 
   MOBILE_ENTRY = 'Mobile Entry',
   MOBILE_NUMBER_ENTERED = 'Mobile Number Entered',
@@ -477,6 +480,12 @@ export enum WebEngageEventName {
   //Vaccination Booking
   VACCINATION_BOOKING_CONFIRMATION = 'Vaccine_Booking confirmation',
   VACCINATION_CANCELLATION = 'Vaccine_Cancellation',
+  BOOK_VACCINATION_SLOT = 'Book Vaccination slot',
+  VACCINATION_BOOKING_CLICKED = 'Vaccination Booking Clicked',
+  BOOK_A_SLOT_CLICKED = 'Book a Slot Clicked',
+  ADD_MEMBER_CLICKED = 'Add Member Clicked',
+  MEMBER_DETAILS_SAVED = 'Member Details Saved',
+  VACCINE_REGISTRATION_COMPLETED = 'Vaccine Registeration Completed',
 }
 
 export interface PatientInfo {
@@ -534,7 +543,7 @@ export interface DiagnosticUserInfo {
 export interface DiagnosticLandingPage extends DiagnosticUserInfo {
   Serviceability: 'Yes' | 'No';
   Source?: string;
-  "Circle user": 'Yes' | 'No';
+  'Circle user': 'Yes' | 'No';
 }
 
 export interface DiagnosticServiceble {
@@ -778,6 +787,16 @@ export interface WebEngageEvents {
   // DOH Events \\
   [WebEngageEventName.DOH_Viewed]: DOHInfo;
   [WebEngageEventName.DOH_Clicked]: DOHInfo;
+
+  [WebEngageEventName.Patient_API_Error]: {
+  'Patient Name':string;
+  'Patient ID':string;
+  'Patient Number':string;
+  'Doctor ID':string | null;
+  'Screen Name':string;
+  'API Name':string;
+  'Error Name':any;
+    };
 
   // ********** Home Screen Events ********** \\
 
@@ -1318,12 +1337,18 @@ export interface WebEngageEvents {
     'Item ids'?: any;
     'Total items in order': number;
     'Payment type'?: string; //for prepaid
-    "Circle user": 'Yes' | 'No';
+    'Circle user': 'Yes' | 'No';
   };
   [WebEngageEventName.PAYMENT_INITIATED]: {
     Amount: number;
     LOB: string;
     type?: string;
+    paymentOrderId: string;
+  };
+  [WebEngageEventName.PAYMENT_STATUS]: {
+    status: string;
+    LOB: string;
+    paymentOrderId: string;
   };
   [WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED]: {
     position: number;
@@ -2297,6 +2322,7 @@ export interface WebEngageEvents {
     MRP?: number;
     SpecialPrice?: number | null;
     CircleCashback?: number;
+    isMultiVariant: number;
   };
   [WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
     'Patient Name': string;

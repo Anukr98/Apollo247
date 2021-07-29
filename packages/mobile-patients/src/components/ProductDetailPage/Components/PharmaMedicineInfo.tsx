@@ -163,4 +163,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderBottomColor: theme.colors.LIGHT_GRAY,
   },
+  heading: {
+    ...theme.viewStyles.text('SB', 17, '#02475B', 1, 25, 0.35),
+    marginBottom: 2,
+  },
 });

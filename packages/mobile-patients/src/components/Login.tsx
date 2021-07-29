@@ -19,6 +19,9 @@ import {
   postFirebaseEvent,
   postWebEngageEvent,
   SetAppsFlyerCustID,
+  onCleverTapUserLogin,
+  setCleverTapAppsFlyerCustID,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { loginAPI } from '@aph/mobile-patients/src/helpers/loginCalls';
 import {
@@ -71,6 +74,10 @@ import {
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import { truecallerWEBEngage } from '@aph/mobile-patients/src/helpers/CommonEvents';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 let TRUECALLER: any;
 
@@ -433,7 +440,9 @@ export const Login: React.FC<LoginProps> = (props) => {
 
   const moveScreenForward = async (mePatient: any, allPatients: any) => {
     AsyncStorage.setItem('logginHappened', 'true');
-    SetAppsFlyerCustID(mePatient.primaryPatientId);
+    // commenting this to avoid setting of AppFlyerCustId twice
+    // SetAppsFlyerCustID(mePatient.primaryPatientId);
+    setCleverTapAppsFlyerCustID();
     mePatient && (await AsyncStorage.setItem(LOGIN_PROFILE, JSON.stringify(mePatient)));
     if (mePatient && mePatient.uhid && mePatient.uhid !== '') {
       if (mePatient.relation == null) {
@@ -446,6 +455,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         } else {
           // existing user
           AsyncStorage.setItem('userLoggedIn', 'true');
+          onCleverTapUserLogin(mePatient);
           deviceTokenAPI(mePatient?.id);
           callPhrNotificationApi(mePatient?.id);
           truecallerWEBEngage(mePatient, 'login', null, allPatients);
@@ -577,6 +587,12 @@ export const Login: React.FC<LoginProps> = (props) => {
           mobilenumber: phoneNumber,
         };
         postWebEngageEvent(WebEngageEventName.MOBILE_NUMBER_ENTERED, eventAttributes);
+        const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.MOBILE_NUMBER_ENTERED] = {
+          'Mobile Number': phoneNumber,
+          'Nav src': 'App login screen',
+          'Page Name': 'Login Screen',
+        };
+        postCleverTapEvent(CleverTapEventName.MOBILE_NUMBER_ENTERED, cleverTapEventAttributes);
       }, 3000);
 
       Keyboard.dismiss();
@@ -660,6 +676,7 @@ export const Login: React.FC<LoginProps> = (props) => {
      * If you are checking in local, then you need to change truecaller_appkey(debug key) from strings.xml file
      */
     postWebEngageEvent(WebEngageEventName.LOGIN_WITH_TRUECALLER_CLICKED, {});
+    postCleverTapEvent(CleverTapEventName.LOGIN_WITH_TRUECALLER_CLICKED, {});
     TRUECALLER.isUsable((result: boolean) => {
       if (result) {
         // Authenticate via truecaller flow can be used

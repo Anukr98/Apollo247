@@ -133,7 +133,8 @@
     "lowNetworkText": "We were unable to load the page properly because of low network. Please try again",
     "CorporateVaccineBenefit": "DEPENDENT_VACCINATION_REG",
     "noDiagnosticsAvailable": "Unfortunately, we do not have any diagnostic(s) available right now.",
-    "unableToSetDeliveryAddress": "We're sorry! Unable to set delivery address. Please try again after some time"
+    "unableToSetDeliveryAddress": "We're sorry! Unable to set delivery address. Please try again after some time",
+    "circleNoSubscriptionText": "No Subscription"
   },
   "components": {
     "medicineDetails": {
@@ -548,6 +549,7 @@
     "unableToFetchReport": "We could not fetch your report. Please view report in my order section",
     "reasonForReschedulingText": "Reason for Rescheduling",
     "reasonForCancellationText": "Reason for Cancellation",
+    "promoteCashbackHeading": "You are missing out on ₹100 Cashback if you cancel",
     "whatWudLikeText": "What would you like to do?",
     "rescheduleBookingText": "Reschedule Booking",
     "cancelBookingText": "Cancel Booking",
@@ -1054,7 +1056,11 @@
     "HOME": "HOME",
     "PHARMACY_HOME": "PHARMACY_HOME",
     "DIAGNOSTIC_HOME": "DIAGNOSTIC_HOME",
-    "MEMBERSHIP_DETAILS": "MEMBERSHIP_DETAILS"
+    "MEMBERSHIP_DETAILS": "MEMBERSHIP_DETAILS",
+    "PHARMACY_HOME_STICKY": "PHARMACY_HOME_STICKY",
+    "VC_DOCTOR_PROFILE": "VC_DOCTOR_PROFILE",
+    "PHARMA_CART": "PHARMA_CART",
+    "VC_CART": "VC_CART"
   },
   "circleMembershipBenefits": {
     "PHARMA_CASHBACK": "Pharma Cashback",
@@ -1252,13 +1258,13 @@
     "wrong_otp": "Seems you have entered wrong OTP.Please try with right one.",
     "unable_to_validate": "We are unable to validate OTP right now. Please try again after some time. If this issue persists, send an email to corporate-helpdesk@apollo247.com and attach the screenshot of this error.",
     "CORPORATE_VACCINATION": "CORPORATE_VACCINATION",
-    "booking_detail_pdf":"DOWNLOAD PDF",
-    "unable_to_generate_pdf":"Unable to generate booking pdf.",
-    "unable_to_generate_invoice_pdf":"Unable to generate invoice pdf.",
-    "success_generate_pdf":"Successfully generated vaccination booking PDF ",
-    "success_generate_invoice_pdf":"Successfully generated vaccination invoice.",
-    "dose_2_alert":"Please make sure that the difference between 1st and 2nd dose is as per Govt. guidelines. If difference in 2nd dose is less than Govt. guideline, you will not be given 2nd dose.",
-    "verify_title":"VERIFY",
-    "submit_title":"SUBMIT "
+    "booking_detail_pdf": "DOWNLOAD PDF",
+    "unable_to_generate_pdf": "Unable to generate booking pdf.",
+    "unable_to_generate_invoice_pdf": "Unable to generate invoice pdf.",
+    "success_generate_pdf": "Successfully generated vaccination booking PDF ",
+    "success_generate_invoice_pdf": "Successfully generated vaccination invoice.",
+    "dose_2_alert": "Please make sure that the difference between 1st and 2nd dose is as per Govt. guidelines. If difference in 2nd dose is less than Govt. guideline, you will not be given 2nd dose.",
+    "verify_title": "VERIFY",
+    "submit_title": "SUBMIT "
   }
 }

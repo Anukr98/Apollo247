@@ -65,5 +65,7 @@ include ':react-native-set-soft-input-mode'
 project(':react-native-set-soft-input-mode').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-set-soft-input-mode/android')
 include ':react-native-maps'
 project(':react-native-maps').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-maps/lib/android')
+include ':clevertap-react-native'
+project(':clevertap-react-native').projectDir = new File(settingsDir, '../node_modules/clevertap-react-native/android')
 apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesSettingsGradle(settings)
 include ':app'

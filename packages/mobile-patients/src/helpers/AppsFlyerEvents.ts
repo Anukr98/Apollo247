@@ -92,6 +92,10 @@ export enum AppsFlyerEventName {
   PAYMENT_STATUS = 'Payment Status',
 
   PURCHASE = 'purchase',
+
+  // Circle Events
+  CIRCLE_ADD_TO_CART = 'Circle Plan Add to Cart',
+  CIRCLE_REMOVE_FROM_CART = 'Circle Plan Remove from Cart',
 }
 
 export interface PatientInfo {
@@ -277,12 +281,12 @@ export interface AppsFlyerEvents {
     Pincode: string | number;
   };
   [AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED]: {
-    'customer id': string;
+    'customer id'?: string;
     'cart size': number;
     af_revenue: number;
     af_currency: string;
     'order id': string;
-    orderAutoId: string;
+    orderAutoId?: string;
     'coupon applied': boolean;
     'Circle Membership Added': 'Yes' | 'No' | 'Existing';
     'Circle Membership Value': number | null;
@@ -307,7 +311,7 @@ export interface AppsFlyerEvents {
     'Cart ID'?: string | number; // Optional
     'Service Area': 'Pharmacy' | 'Diagnostic';
     'Circle discount': number;
-    "Circle user": 'Yes' | 'No';
+    'Circle user': 'Yes' | 'No';
   };
   [AppsFlyerEventName.PRODUCT_PAGE_VIEWED]: {
     source: ProductPageViewedSource;
@@ -552,5 +556,29 @@ export interface AppsFlyerEvents {
     transaction_id: string;
     af_revenue: number;
     af_currency: string;
+  };
+
+  // circle events
+  [AppsFlyerEventName.CIRCLE_ADD_TO_CART]: {
+    navigation_source: string;
+    price: number;
+    duration_in_month: number;
+    circle_plan_id: string;
+    corporate_name?: string;
+    source_identifier?: string;
+  };
+  [AppsFlyerEventName.CIRCLE_REMOVE_FROM_CART]: {
+    navigation_source: string;
+    price: number;
+    duration_in_month: number;
+    circle_plan_id: string;
+    corporate_name?: string;
+    source_identifier?: string;
+  };
+
+  [AppsFlyerEventName.PAYMENT_STATUS]: {
+    status: string;
+    LOB: string;
+    paymentOrderId: number;
   };
 }

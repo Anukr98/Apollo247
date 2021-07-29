@@ -49,9 +49,10 @@ const PaymentHistoryCard: FC<PaymentHistoryCardProps> = (props) => {
         return <PaymentCardHeader status={status} />;
       }
     } else if (paymentFor === 'pharmacy') {
-      const { currentStatus, medicineOrderPayments } = item;
-      const { medicineOrderRefunds } = medicineOrderPayments[0];
-      if (currentStatus === 'CANCELLED' && medicineOrderRefunds.length) {
+      const { currentStatus, medicineOrderPayments, PaymentOrdersPharma } = item;
+      const { refund } = PaymentOrdersPharma;
+      const refundInfo = refund?.length ? refund : medicineOrderPayments[0]?.medicineOrderRefunds;
+      if (currentStatus === 'CANCELLED' && refundInfo?.length) {
         return <PaymentCardHeader status={currentStatus} />;
       }
     } else {
@@ -71,11 +72,14 @@ const PaymentHistoryCard: FC<PaymentHistoryCardProps> = (props) => {
         return amountPaid;
       }
     } else if (paymentFor === 'pharmacy') {
-      const { medicineOrderPayments } = item;
-      if (!medicineOrderPayments || !medicineOrderPayments.length) {
+      const { medicineOrderPayments, PaymentOrdersPharma } = item;
+      const paymentInfo = PaymentOrdersPharma?.paymentStatus
+        ? PaymentOrdersPharma
+        : medicineOrderPayments[0];
+      if (!paymentInfo) {
         return 0;
       } else {
-        const { amountPaid } = medicineOrderPayments[0];
+        const { amountPaid } = paymentInfo;
         return amountPaid;
       }
     }

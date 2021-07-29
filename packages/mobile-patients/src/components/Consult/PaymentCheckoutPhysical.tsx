@@ -33,6 +33,8 @@ import {
   apiCallEnums,
   navigateToHome,
   getUserType,
+  postWEGPatientAPIError,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
@@ -112,6 +114,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/createOrder';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { saveConsultationLocation } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 interface PaymentCheckoutPhysicalProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
@@ -278,7 +284,6 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     const orderInput: OrderCreate = {
       orders: orders,
       total_amount: amountToPay,
-      customer_id: currentPatient?.primaryPatientId || currentPatient?.id,
     };
     return client.mutate<createOrderInternal, createOrderInternalVariables>({
       mutation: CREATE_INTERNAL_ORDER,
@@ -287,18 +292,22 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
   };
 
   const createJusPayOrder = (paymentId: string) => {
-    const orderInput: OrderInput = {
+    const orderInput = {
       payment_order_id: paymentId,
-      payment_mode: PAYMENT_MODE.COD,
+      health_credits_used: 0,
+      cash_to_collect: amountToPay,
+      prepaid_amount: 0,
+      store_code: storeCode,
       is_mobile_sdk: true,
-      return_url: AppConfig.Configuration.returnUrl,
+      return_url: AppConfig.Configuration.baseUrl,
     };
-    return client.mutate<createOrder, createOrderVariables>({
+    return client.mutate({
       mutation: CREATE_ORDER,
       variables: { order_input: orderInput },
       fetchPolicy: 'no-cache',
     });
   };
+
   useEffect(() => {
     setPatientProfiles(moveSelectedToTop());
   }, []);
@@ -628,14 +637,43 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
       const data = await createOrderInternal(apptmt?.id!, subscriptionId);
       if (data?.data?.createOrderInternal?.success) {
         const res = await createJusPayOrder(data?.data?.createOrderInternal?.payment_order_id!);
-        makePayment(
-          apptmt?.id!,
-          Number(amountToPay),
-          g(apptmt, 'appointmentDateTime'),
-          g(apptmt, 'displayId')!
+        if (res?.data?.createOrderV2?.payment_status == 'TXN_SUCCESS') {
+          let eventAttributes = getConsultationBookedEventAttributes(
+            apptmt?.appointmentDateTime,
+            apptmt?.id!
+          );
+          eventAttributes['Display ID'] = apptmt?.displayId!;
+          eventAttributes['User_Type'] = getUserType(allCurrentPatients);
+          postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
+          postAppsFlyerEvent(
+            AppsFlyerEventName.CONSULTATION_BOOKED,
+            getConsultationBookedAppsFlyerEventAttributes(apptmt?.id!, apptmt?.displayId)
+          );
+          setLoading!(false);
+          if (!currentPatient?.isConsulted) getPatientApiCall();
+          handleOrderSuccess(`${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`, apptmt?.id!);
+        } else {
+          postWEGPatientAPIError(
+            currentPatient,
+            '',
+            'PaymentCheckoutPhysical',
+            'CREATE_ORDER(JUSPAY)',
+            data
+          );
+          renderErrorPopup(string.common.tryAgainLater);
+        }
+      } else {
+        postWEGPatientAPIError(
+          currentPatient,
+          '',
+          'PaymentCheckoutPhysical',
+          'CREATE_INTERNAL_ORDER',
+          data
         );
+        renderErrorPopup(string.common.tryAgainLater);
       }
     } catch (error) {
+      postWEGPatientAPIError(currentPatient, '', 'PaymentCheckoutPhysical', '', error);
       handleError(error);
     }
   };
@@ -692,7 +730,14 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         let eventAttributes = getConsultationBookedEventAttributes(paymentDateTime, id);
         eventAttributes['Display ID'] = displayID;
         eventAttributes['User_Type'] = getUserType(allCurrentPatients);
+        let cleverTapEventAttributes = getConsultationBookedCleverTapEventAttributes(
+          paymentDateTime,
+          id
+        );
+        cleverTapEventAttributes['displayId'] = displayID;
+        cleverTapEventAttributes['userType'] = getUserType(allCurrentPatients);
         postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
+        postCleverTapEvent(CleverTapEventName.CONSULTATION_BOOKED, cleverTapEventAttributes);
         postAppsFlyerEvent(
           AppsFlyerEventName.CONSULTATION_BOOKED,
           getConsultationBookedAppsFlyerEventAttributes(id, displayID)
@@ -702,6 +747,13 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
         handleOrderSuccess(`${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`, id);
       })
       .catch((e) => {
+        postWEGPatientAPIError(
+          currentPatient,
+          '',
+          'PaymentCheckoutPhysical',
+          'MAKE_APPOINTMENT_PAYMENT',
+          e
+        );
         setLoading!(false);
         handleGraphQlError(e);
       });
@@ -814,6 +866,52 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
     return eventAttributes;
   };
 
+  const getConsultationBookedCleverTapEventAttributes = (time: string, id: string) => {
+    const localTimeSlot = moment(new Date(time));
+    let date = new Date(time);
+    const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
+      if (item && item.facility && item.facility.facilityType)
+        return item.facility.facilityType === 'HOSPITAL';
+    });
+
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULTATION_BOOKED] = {
+      name: g(doctor, 'fullName')!,
+      specialisation: g(doctor, 'specialty', 'name')!,
+      category: g(doctor, 'doctorType')!, // send doctorType
+      patientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      relation: g(currentPatient, 'relation'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      patientGender: g(currentPatient, 'gender'),
+      'Customer ID': g(currentPatient, 'id'),
+      consultId: id,
+      'Speciality ID': g(doctor, 'specialty', 'id')!,
+      consultDateTime: date,
+      consultMode: tabs[0].title === selectedTab ? 'ONLINE' : 'PHYSICAL',
+      hospitalName:
+        doctorClinics?.length > 0 && doctor?.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics?.[0]?.facility?.name}`
+          : '',
+      'Hospital City':
+        doctorClinics?.length > 0 && doctor?.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics?.[0]?.facility?.city}`
+          : '',
+      'Doctor ID': g(doctor, 'id')!,
+      doctorName: g(doctor, 'fullName')!,
+      'Net Amount': amountToPay,
+      af_revenue: amountToPay,
+      af_currency: 'INR',
+      'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
+      circleSavings: circleDiscount,
+      userType: getUserType(allCurrentPatients),
+      patientNumber: g(currentPatient, 'mobileNumber'),
+      doctorNumber: g(doctor, 'mobileNumber')! || undefined,
+    };
+    return eventAttributes;
+  };
+
   const storeAppointmentId = async (appointmentId: string) => {
     if (!appointmentId) return;
     try {
@@ -889,7 +987,40 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           : '',
       User_Type: getUserType(allCurrentPatients),
     };
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PAY_BUTTON_CLICKED] = {
+      consultDateTime: localTimeSlot,
+      Amount: finalAppointmentInput?.actualAmount,
+      doctorName: g(doctor, 'fullName')!,
+      doctorCity: g(doctor, 'city')!,
+      'Type of Doctor': g(doctor, 'doctorType')!,
+      specialty: g(doctor, 'specialty', 'name')!,
+      actualPrice: finalAppointmentInput?.actualAmount,
+      'Discount used ?': !!coupon,
+      discountCoupon: coupon,
+      discountAmount: couponDiscountFees,
+      netAmount: amountToPay,
+      'Customer ID': g(currentPatient, 'id'),
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Patient UHID': g(currentPatient, 'uhid'),
+      consultType: tabs[0].title === selectedTab ? 'ONLINE' : 'CLINIC',
+      'Doctor ID': g(doctor, 'id')!,
+      'Speciality ID': g(doctor, 'specialty', 'id')!,
+      'Hospital Name':
+        doctorClinics?.length > 0 && doctor?.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics?.[0]?.facility?.name}`
+          : '',
+      'Hospital City':
+        doctorClinics?.length > 0 && doctor?.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics?.[0].facility?.city}`
+          : '',
+      User_Type: getUserType(allCurrentPatients),
+    };
     postWebEngageEvent(WebEngageEventName.PAY_BUTTON_CLICKED, eventAttributes);
+    postCleverTapEvent(CleverTapEventName.CONSULT_PAY_BUTTON_CLICKED, cleverTapEventAttributes);
     postFirebaseEvent(FirebaseEventName.PAY_BUTTON_CLICKED, eventAttributes);
   };
 
