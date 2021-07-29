@@ -333,7 +333,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [bannerLoading, setBannerLoading] = useState(true);
   const defaultAddress = addresses.find((item) => item.defaultAddress);
   const hasLocation = locationDetails || pharmacyLocation || defaultAddress;
-  const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
+  const pharmacyPincode =
+    asyncPincode?.pincode || pharmacyLocation?.pincode || locationDetails?.pincode;
   const [isFocused, setIsFocused] = useState<boolean>(false);
   type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
   const postwebEngageCategoryClickedEvent = (
@@ -677,6 +678,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     lastUpdated: new Date().getTime(),
   });
 
+  const setLocationValues = (values: any) => {
+    setPharmacyLocation?.(values);
+    setAsyncPincode?.(values);
+    setLocationDetails?.(values);
+    setAsyncPharmaLocation?.(values);
+  };
+
   async function fetchAddress() {
     try {
       if (addresses?.length) {
@@ -684,7 +692,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         if (deliveryAddress) {
           setDeliveryAddressId!(deliveryAddress?.id);
           updateServiceability(deliveryAddress?.zipcode!);
-          setPharmacyLocation!(formatAddressToLocation(deliveryAddress));
+          const formattedLocation = formatAddressToLocation(deliveryAddress);
+          if (!pharmacyLocation?.pincode) {
+            setLocationValues(formattedLocation);
+          }
           return;
         }
       }
@@ -700,7 +711,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       if (deliveryAddress) {
         setDeliveryAddressId!(deliveryAddress?.id);
         updateServiceability(deliveryAddress?.zipcode!);
-        setPharmacyLocation!(formatAddressToLocation(deliveryAddress));
+        const formattedLocation = formatAddressToLocation(deliveryAddress);
+        if (!pharmacyLocation?.pincode) {
+          setLocationValues(formattedLocation);
+        }
       } else {
         checkLocation(addressList);
       }
@@ -730,8 +744,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       setAddresses!(updatedAddresses);
       patientAddress?.defaultAddress && setDeliveryAddressId!(patientAddress?.id);
       const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
-      setPharmacyLocation!(formatAddressToLocation(deliveryAddress! || null));
-      updateServiceability(address?.zipcode!);
+      const formattedLocation = formatAddressToLocation(deliveryAddress! || null);
+      setLocationValues(formattedLocation);
       setPageLoading!(false);
     } catch (error) {
       setPageLoading!(false);
@@ -763,14 +777,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <AccessLocation
           addresses={addressList}
           onPressSelectAddress={(address) => {
-            setAsyncPharmaLocation(address);
             const saveAddress = {
               pincode: address?.zipcode,
               id: address?.id,
               city: address?.city,
               state: address?.state,
             };
-            setAsyncPincode?.(saveAddress);
+            setLocationValues(saveAddress);
             setDefaultAddress(address);
           }}
           onPressEditAddress={(address) => {
@@ -939,9 +952,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     doRequestAndAccessLocationModified()
       .then((response) => {
         setPageLoading!(false);
-        response && setAsyncPincode?.(response);
-        response && setPharmacyLocation!(response);
-        response && !locationDetails && setLocationDetails!(response);
+        if (response) {
+          setLocationValues(response);
+        }
         setDeliveryAddressId!('');
         updateServiceability(response.pincode, 'autoDetect');
       })
@@ -974,12 +987,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               city: response?.city,
               state: response?.state,
             };
-            setAsyncPharmaLocation(saveAddress);
-            setAsyncPincode?.(saveAddress);
-            setPharmacyLocation!(response);
+            setLocationValues(saveAddress);
             setDeliveryAddressId!('');
             updateServiceability(pincode, 'pincode');
-            !locationDetails && setLocationDetails!(response);
             globalLoading!(false);
           } else {
             globalLoading!(false);
@@ -1676,7 +1686,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const onSearchMedicine = (_searchText: string) => {
     setMedicineSearchLoading(true);
-    getMedicineSearchSuggestionsApi(_searchText, axdcCode, pinCode)
+    getMedicineSearchSuggestionsApi(_searchText, axdcCode, asyncPincode?.pincode || pinCode)
       .then(({ data }) => {
         const products = data.products || [];
         const queries = data.queries || [];
