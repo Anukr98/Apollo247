@@ -202,11 +202,11 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
 
   const initiateHyperSDK = async (cusId: any) => {
     try {
-      const isInitiated: boolean = await isSDKInitialised();
       const merchantId = AppConfig.Configuration.merchantId;
       terminateSDK();
-      setTimeout(() => createHyperServiceObject(), 1400);
-      setTimeout(() => (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true)), 1500);
+      createHyperServiceObject();
+      initiateSDK(cusId, cusId, merchantId);
+      setHyperSdkInitialized(true);
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
