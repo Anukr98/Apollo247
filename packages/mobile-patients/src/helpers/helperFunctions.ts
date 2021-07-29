@@ -1575,6 +1575,7 @@ export const onCleverTapUserLogin = async (_currentPatient: any) => {
       ...(_currentPatient?.createdDate && { CreatedDate: _currentPatient?.createdDate }),
     };
     CleverTap.onUserLogin(_userProfile);
+    AsyncStorage.setItem('createCleverTapProifle', 'true');
   } catch (error) {
     CommonBugFender('setCleverTapUserLogin', error);
   }

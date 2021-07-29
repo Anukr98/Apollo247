@@ -156,6 +156,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const voipDoctorName = useRef<string>('');
 
   const [userLoggedIn, setUserLoggedIn] = useState<any | null>(null);
+  const [createCleverTapProifle, setCreateCleverTapProifle] = useState<any | null>(null);
 
   const [spinValue, setSpinValue] = useState(new Animated.Value(0));
   const [animatedValue, setAnimatedValue] = useState(new Animated.Value(0));
@@ -573,11 +574,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                   vaccinationCmsIdentifier,
                   vaccinationSubscriptionId
                 );
-                CleverTap.profileGetCleverTapID((err, res) => {
-                  if (!res) {
-                    onCleverTapUserLogin(currentPatient);
-                  }
-                });
+                let _createCleverTapProifle = createCleverTapProifle;
+                if (_createCleverTapProifle == null) {
+                  _createCleverTapProifle = await AsyncStorage.getItem('createCleverTapProifle');
+                  if (_createCleverTapProifle == 'false') onCleverTapUserLogin(mePatient);
+                }
                 callPhrNotificationApi(currentPatient);
                 setCrashlyticsAttributes(mePatient);
               } else {
@@ -611,6 +612,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const prefetchUserMetadata = async () => {
     const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
     setUserLoggedIn(userLoggedIn);
+    const _createCleverTapProifle = await AsyncStorage.getItem('createCleverTapProifle');
+    setCreateCleverTapProifle(_createCleverTapProifle);
   };
 
   const getAppointmentDataAndNavigate = async (appointmentId: string, isCall: boolean) => {
