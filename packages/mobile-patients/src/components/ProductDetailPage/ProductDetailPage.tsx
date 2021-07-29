@@ -721,6 +721,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     );
   };
 
+  const setLocationValues = (values: any) => {
+    setPharmacyLocation?.(values);
+    setAsyncPincode?.(values);
+    setLocationDetails?.(values);
+    setAsyncPharmaLocation?.(values);
+  };
+
   const updatePlaceInfoByPincode = (pinCode: string) => {
     setLoading!(true);
     getPlaceInfoByPincode(pinCode)
@@ -730,11 +737,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             const addrComponents = data.results[0].address_components || [];
             const latLang = data.results[0].geometry.location || {};
             const response = getFormattedLocation(addrComponents, latLang, pinCode);
-            setAsyncPincode?.(response);
-            setPharmacyLocation!(response);
-            setAsyncPharmaLocation(response);
+            const saveAddress = {
+              pincode: pincode,
+              id: '',
+              city: response?.city,
+              state: response?.state,
+            };
+            setLocationValues(saveAddress);
             setDeliveryAddressId!('');
-            !locationDetails && setLocationDetails!(response);
             setpincode(pinCode);
             fetchDeliveryTime(pinCode, true);
             setLoading!(false);
@@ -849,8 +859,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         <AccessLocation
           addresses={addresses}
           onPressSelectAddress={(address) => {
-            setAsyncPharmaLocation(address);
             updatePlaceInfoByPincode(address?.zipcode);
+            setLocationValues(address);
             hideAphAlert!();
           }}
           onPressEditAddress={(address) => {
@@ -897,8 +907,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     doRequestAndAccessLocationModified()
       .then((response) => {
         setLoading!(false);
-        response && setPharmacyLocation!(response);
-        response && !locationDetails && setLocationDetails!(response);
+        if (response) setLocationValues(response);
         setDeliveryAddressId!('');
         updatePlaceInfoByPincode(response?.pincode);
       })
