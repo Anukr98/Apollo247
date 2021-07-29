@@ -19,6 +19,7 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { postAppsFlyerCircleAddRemoveCartEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 interface CirclePaymentProps extends NavigationScreenProps {
   action?: string;
   selectedPlan?: any;
@@ -56,6 +57,7 @@ export const CircleSubscription: React.FC<CirclePaymentProps> = (props) => {
       price: circleData?.currentSellingPrice,
     };
     postCleverTapEvent(CleverTapEventName.CIRCLE_PLAN_TO_CART, cleverTapEventAttributes);
+    postAppsFlyerCircleAddRemoveCartEvent(circleData, circleEventSource, 'add', currentPatient);
     setTimeout(
       () =>
         postCleverTapEvent(

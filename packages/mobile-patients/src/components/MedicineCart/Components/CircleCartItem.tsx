@@ -69,18 +69,19 @@ export const CircleCartItem: React.FC<CircleCartItemProps> = (props) => {
           <View>
             <TouchableOpacity
               onPress={() => {
-                postAppsFlyerCircleAddRemoveCartEvent(
-                  circlePlanSelected,
-                  'Pharma Cart',
-                  'remove',
-                  props?.currentPatient
-                );
                 fireCirclePlanRemovedEvent(props?.currentPatient);
+                const circleSource = 'Cart(Pharma)';
                 fireCleverTapCirclePlanRemovedEvent(
                   props?.currentPatient,
-                  'Cart(Pharma)',
+                  circleSource,
                   circlePlanSelected,
                   allCurrentPatients
+                );
+                postAppsFlyerCircleAddRemoveCartEvent(
+                  circlePlanSelected,
+                  circleSource,
+                  'remove',
+                  props?.currentPatient
                 );
                 setCirclePlanSelected && setCirclePlanSelected(null);
                 setIsCircleSubscription && setIsCircleSubscription(false);
