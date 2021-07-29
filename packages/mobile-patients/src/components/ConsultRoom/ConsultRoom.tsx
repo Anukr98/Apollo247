@@ -13,7 +13,7 @@ import { WebView } from 'react-native-webview';
 import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import { dateFormatterDDMM } from '@aph/mobile-patients/src/utils/dateUtil';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { AppRoutes, getCurrentRoute } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NotificationListener } from '@aph/mobile-patients/src/components/NotificationListener';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
@@ -1137,7 +1137,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const upcomingConsultsCount = appointmentCount?.upcomingConsultsCount || 0;
         const upcomingPhysicalConsultsCount = appointmentCount?.upcomingPhysicalConsultsCount || 0;
 
-        if (upcomingConsultsCount - upcomingPhysicalConsultsCount > 0) {
+        if (upcomingConsultsCount - upcomingPhysicalConsultsCount > 0
+          && getCurrentRoute() !== AppRoutes.ChatRoom) {
           overlyCallPermissions(
             currentPatient!.firstName!,
             'the doctor',
