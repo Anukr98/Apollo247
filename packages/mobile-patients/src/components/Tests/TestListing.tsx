@@ -14,7 +14,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { SafeAreaView, StyleSheet, Text, View, Image as ImageNative, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View, Image as ImageNative } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import {
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
@@ -59,10 +59,6 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const cityId = props.navigation.getParam('cityId');
   const title = dataFromHomePage?.diagnosticWidgetTitle;
   const widgetType = dataFromHomePage?.diagnosticWidgetType;
-  const [showLoadMore, setShowLoadMore] = useState<boolean>(false);
-  const limit = 10;
-  const [currentOffset, setCurrentOffset] = useState<number>(1);
-  const [testLength, setTestLength] = useState<number>(limit)
   const client = useApolloClient();
 
   const [widgetsData, setWidgetsData] = useState([] as any);
@@ -109,8 +105,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       const result: any = await getDiagnosticListingWidget('diagnostic-list', widgetName);
       if (result?.data?.success && result?.data?.data?.diagnosticWidgetData?.length > 0) {
         const getWidgetsData = result?.data?.data;
-        setWidgetsData(getWidgetsData);
-        setLoading?.(false);
+        fetchWidgetsPrices(getWidgetsData);
       } else {
         setWidgetsData([]);
         setLoading?.(false);
@@ -121,9 +116,6 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       setLoading?.(false);
     }
   };
-  useEffect(() => {
-    fetchWidgetsPrices(widgetsData);
-  }, [widgetsData?.diagnosticWidgetData?.[0]])
 
  
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
@@ -142,7 +134,6 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   //add try catch.
   const fetchWidgetsPrices = async (widgetsData: any) => {
     const itemIds = widgetsData?.diagnosticWidgetData?.map((item: any) => Number(item?.itemId));
-    setLoading?.(true);
 
     const res = Promise.all(
       itemIds?.map((item: any) =>
@@ -262,39 +253,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         </View>
       );
   };
-  const renderLoadMore = () => {
-    return (
-      <View
-        style={styles.loadMoreView}
-      >
-       <ActivityIndicator color="green" size="small" />
-          <Text style={styles.loadingMoreProducts}>Hold on, loading more products.</Text>
-      </View>
-    );
-  };
-  let countDown: any;
-  const loadMoreFuction = () => {
-    if (widgetsData?.diagnosticWidgetData?.length > limit * currentOffset) {
-      setTestLength(widgetsData?.diagnosticWidgetData?.length);
-    } else {
-      setTestLength(limit * currentOffset);
-    }
-    setShowLoadMore(false);
-  };
-
-  const onEndReached = () => {
-    if (testLength <= widgetsData?.diagnosticWidgetData?.length) {
-    setCurrentOffset(currentOffset + 1);
-    setShowLoadMore(true);
-    countDown = setTimeout(function() {
-    loadMoreFuction();
-    }, 2000);
-    } else {
-      setCurrentOffset(currentOffset);
-      setShowLoadMore(false);
-      clearTimeout(countDown)
-    }
-  };
+  
 
   const renderBreadCrumb = () => {
     return (
@@ -308,7 +267,9 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   };
 
   const renderList = () => {
-    const actualItemsToShow = widgetsData?.diagnosticWidgetData;
+    const actualItemsToShow = widgetsData?.diagnosticWidgetData?.filter(
+       (item: any) => item?.diagnosticPricing
+      );
     return (
       <>
         {!!actualItemsToShow && actualItemsToShow?.length > 0 ? (
@@ -333,17 +294,10 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             ) : (
               <ItemCard
                 data={widgetsData}
-                diagnosticWidgetData={widgetsData?.diagnosticWidgetData?.slice(
-                  0,
-                  widgetsData?.diagnosticWidgetData < limit
-                    ? widgetsData?.diagnosticWidgetData
-                    : testLength
-                )}
                 isCircleSubscribed={isDiagnosticCircleSubscription}
                 isServiceable={isDiagnosticLocationServiceable}
                 isVertical={true}
                 columns={2}
-                onEndReached={testLength == widgetsData?.diagnosticWidgetData?.length ? null : onEndReached}
                 navigation={props.navigation}
                 source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.LISTING}
                 sourceScreen={AppRoutes.TestListing}
@@ -361,7 +315,6 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         {renderHeader()}
         {!errorStates ? renderBreadCrumb() : null}
         <View style={{ flex: 1, marginBottom: '5%' }}>{renderList()}</View>
-        {showLoadMore ? renderLoadMore() : null}
       </SafeAreaView>
       {loading && <Spinner />}
     </View>
@@ -386,24 +339,5 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
     shadowColor: 'white',
     elevation: 0,
-  },
-  loadMoreView: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    width: '100%',
-    paddingBottom: 10,
-  },
-  textLoadMore: {
-    ...theme.viewStyles.text('SB', 15, '#FC9916'),
-    paddingHorizontal: 8,
-    alignSelf: 'flex-start',
-  },
-  downArrow: {
-    alignSelf: 'flex-end',
-  },
-  loadingMoreProducts: {
-    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE),
-    padding: 12,
-    textAlign: 'center',
   },
 });
