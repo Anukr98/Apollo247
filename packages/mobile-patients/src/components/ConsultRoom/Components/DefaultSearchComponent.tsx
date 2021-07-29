@@ -8,6 +8,8 @@ import { NavigationScreenProps } from 'react-navigation';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { SymptomTrackerCard } from '@aph/mobile-patients/src/components/ConsultRoom/Components/SymptomTrackerCard';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { postConsultPastSearchSpecialityClicked } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 interface defaultSearchProps extends NavigationScreenProps {
   consultedDoctors: any;
@@ -25,6 +27,7 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
     postSymptomTrackEvent,
     postSpecialityEvent,
   } = props;
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
 
   const renderTrackSymptoms = () => {
     return (
@@ -52,6 +55,7 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
                   props.navigation.navigate(AppRoutes.DoctorDetails, {
                     doctorId: item?.id,
                     callSaveSearch: 'false',
+                    fromPastSearch: true,
                   });
                 }}
               >
@@ -94,10 +98,16 @@ export const DefaultSearchComponent: React.FC<defaultSearchProps> = (props) => {
                     props.navigation.navigate(AppRoutes.DoctorDetails, {
                       doctorId: item?.typeId,
                       callSaveSearch: 'false',
+                      fromPastSearch: true,
                     });
                   }
                   if (isSearchTypeSpeciality) {
                     CommonLogEvent(AppRoutes.DoctorSearch, 'Doctor Search Move  SPECIALTY clicked');
+                    postConsultPastSearchSpecialityClicked(
+                      currentPatient,
+                      allCurrentPatients,
+                      item
+                    );
                     if (item?.typeId && item?.name) onClickSearch(item?.typeId, item?.name);
                   }
                 }}

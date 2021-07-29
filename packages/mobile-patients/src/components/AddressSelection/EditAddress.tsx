@@ -51,6 +51,7 @@ import {
   getFormattedLocation,
   isValidPhoneNumber,
   postWebEngageEvent,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -73,6 +74,10 @@ import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { getPatientAddressList_getPatientAddressList_addressList } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const { height, width } = Dimensions.get('window');
 const setCharLen = width < 380 ? 25 : 30; //smaller devices like se, nexus 5
@@ -342,11 +347,17 @@ export const EditAddress: React.FC<AddAddressProps> = (props) => {
         addDiagnosticAddress!(address);
 
         if (isComingFrom === 'Upload Prescription') {
-          const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED] = {
+          const eventAttributes:
+            | WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED]
+            | CleverTapEvents[CleverTapEventName.CONSULT_UPLOAD_PRESCRIPTION_ADDRESS_SELECTED] = {
             Serviceable: isAddressServiceable ? 'Yes' : 'No',
           };
           postWebEngageEvent(
             WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED,
+            eventAttributes
+          );
+          postCleverTapEvent(
+            CleverTapEventName.CONSULT_UPLOAD_PRESCRIPTION_ADDRESS_SELECTED,
             eventAttributes
           );
         }

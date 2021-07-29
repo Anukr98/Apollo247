@@ -301,6 +301,14 @@ export const CheckedIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_check.webp')} />
 );
 
+export const CheckIcon: React.FC<IconProps> = (props) => (
+  <IconBase style={{ height: 18, width: 18 }} {...props} source={require('./icons/check.webp')} />
+);
+
+export const UnCheckIcon: React.FC<IconProps> = (props) => (
+  <IconBase style={{ height: 18, width: 18 }} {...props} source={require('./icons/uncheck.webp')} />
+);
+
 export const WhiteTickIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_check_white.webp')} />
 );
@@ -1786,9 +1794,6 @@ export const InfoIconRed: React.FC<IconProps> = (props) => (
 export const InfoIconBlue: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_info_blue_2x.webp')} />
 );
-export const WhyBookUs: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/whyBookUsDetail_Icon.webp')} />
-);
 
 export const ExpiredBanner: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/Expired_banner.webp')} />
@@ -1943,6 +1948,50 @@ export const VaccineBookingFailed: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/vacc_booking_failed.webp')} />
 );
 
+export const Card: React.FC<IconProps> = (props) => (
+  <IconBase style={{ width: 28, height: 28 }} {...props} source={require('./icons/card.webp')} />
+);
+
+export const CircleCheckIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 18, width: 18 }}
+    {...props}
+    source={require('./icons/circleCheck.webp')}
+  />
+);
+
+export const CircleUncheckIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 18, width: 18 }}
+    {...props}
+    source={require('./icons/circleUncheck.webp')}
+  />
+);
+
+export const CardCVV: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 206, width: 268 }}
+    {...props}
+    source={require('./icons/CardCVV.webp')}
+  />
+);
+
+export const DeleteBlack: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 20, height: 20 }}
+    {...props}
+    source={require('./icons/deleteIcon.webp')}
+  />
+);
+
+export const Expired: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 14.67, height: 13.33 }}
+    {...props}
+    source={require('./icons/expired.webp')}
+  />
+);
+
 export const SyringSmall: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/syring_small.webp')} />
 );
@@ -1962,5 +2011,13 @@ export const GreenClock: React.FC<IconProps> = (props) => (
   <IconBase
     {...props}
     source={require('@aph/mobile-patients/src/components/ui/icons/green_clock.webp')}
+  />
+);
+
+export const SavingsIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/saving_icon.webp')}
   />
 );

@@ -104,6 +104,7 @@ import {
   productsThumbnailUrl,
   setWebEngageScreenNames,
   setAsyncPharmaLocation,
+  postCleverTapEvent,
   getIsMedicine,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
@@ -152,6 +153,11 @@ import {
   renderMedicinesShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import AsyncStorage from '@react-native-community/async-storage';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { MedicineSearchEvents } from '@aph/mobile-patients/src/components/MedicineSearch/MedicineSearchEvents';
 
 const styles = StyleSheet.create({
   buyAgain: {
@@ -343,6 +349,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       Source: source,
     };
     postWebEngageEvent(WebEngageEventName.CATEGORY_CLICKED, eventAttributes);
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CATEGORY_VIEWED] = {
+      'category name': categoryName || undefined,
+      'category ID': categoryId || undefined,
+      'Section Name': sectionName || undefined,
+      Source: source,
+    };
+    postCleverTapEvent(CleverTapEventName.PHARMACY_CATEGORY_VIEWED, cleverTapEventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.CATEGORY_CLICKED, eventAttributes);
 
     const firebaseEventAttributes: FirebaseEvents[FirebaseEventName.CATEGORY_CLICKED] = {
@@ -645,6 +658,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           }}
           from={string.banner_context.PHARMACY_HOME}
           source={'Pharma'}
+          circleEventSource={'Medicine Home page banners'}
         />
       );
     }
@@ -889,7 +903,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         setRecommendedProducts(formattedRecommendedProducts);
         showRecommendedSection &&
           props.navigation.navigate(AppRoutes.MedicineListing, {
-            category_id: -1,
+            category_id: undefined,
             products: formattedRecommendedProducts,
             title: string.medicine.recommendedForYou,
             movedFrom: 'home',
@@ -1139,10 +1153,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderSliderItem = ({ item, index }: { item: OfferBannerSection; index: number }) => {
     const handleOnPress = () => {
-      const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_BANNER_CLICK] = {
+      const eventAttributes:
+        | WebEngageEvents[WebEngageEventName.PHARMACY_BANNER_CLICK]
+        | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_BANNER] = {
         BannerPosition: slideIndex + 1,
       };
       postWebEngageEvent(WebEngageEventName.PHARMACY_BANNER_CLICK, eventAttributes);
+      postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_BANNER, eventAttributes);
       if (item.category_id) {
         props.navigation.navigate(AppRoutes.MedicineListing, {
           category_id: item.category_id,
@@ -1224,6 +1241,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 Source: 'Home',
                 User_Type: pharmacyUserType,
               };
+              const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED] = {
+                Source: 'Home',
+                'User Type': pharmacyUserType,
+              };
+              postCleverTapEvent(
+                CleverTapEventName.PHARMACY_UPLOAD_PRESCRIPTION_CLICKED,
+                cleverTapEventAttributes
+              );
               postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED, eventAttributes);
               setEPrescriptions && setEPrescriptions([]);
               setPhysicalPrescriptions && setPhysicalPrescriptions([]);
@@ -1452,6 +1477,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           const planValidity = {
             startDate: data?.APOLLO?.[0]?.start_date,
             endDate: data?.APOLLO?.[0]?.end_date,
+            plan_id: data?.APOLLO?.[0]?.plan_id,
+            source_identifier: data?.APOLLO?.[0]?.source_meta_data?.source_identifier,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
           if (data?.APOLLO?.[0]?.status === 'disabled') {
@@ -1682,6 +1709,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           User_Type: pharmacyUserType,
         };
         postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
+        MedicineSearchEvents.pharmacySearch({
+          keyword: _searchText,
+          source: 'Pharmacy Home',
+          results: products.length,
+          'User Type': pharmacyUserType,
+        });
       })
       .catch((e) => {
         CommonBugFender('Medicine_onSearchMedicine', e);
@@ -2224,6 +2257,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setCircleMembershipCharges && setCircleMembershipCharges(0);
           }
         }}
+        circleEventSource={'Medicine Homepage Sticky'}
       />
     );
   };

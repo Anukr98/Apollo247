@@ -27,7 +27,12 @@ import {
   PLAN,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  getUserType,
+  postCleverTapEvent,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
   WebEngageEvents,
@@ -57,6 +62,10 @@ import {
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import moment from 'moment';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -147,7 +156,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   ] = useState<getDoctorDetailsById_getDoctorDetailsById_doctorHospital | null>(
     props.clinics && props.clinics.length > 0 ? props.clinics[0] : null
   );
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
   const isOnlineConsult = selectedTab === consultOnlineTab;
   const isPhysicalConsult = isPhysicalConsultation(selectedTab);
@@ -207,6 +216,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   }, []);
 
   const onPressCheckout = async () => {
+    postProceedClickedCleverTapEvents();
     CommonLogEvent(AppRoutes.DoctorDetails, 'ConsultOverlay onSubmitBookAppointment clicked');
     const timeSlot =
       consultOnlineTab === selectedTab &&
@@ -384,6 +394,33 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       postWebEngageEvent(WebEngageEventName.CONSULT_SLOT_SELECTED, eventAttributes);
       setSlotsSelected([...slotsSelected, slot]);
     }
+  };
+
+  const postProceedClickedCleverTapEvents = () => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION] = {
+      docName: g(props.doctor, 'fullName')!,
+      specialtyName: g(props.doctor, 'specialty', 'name')!,
+      experience: Number(g(props.doctor, 'experience')!),
+      languagesKnown: g(props.doctor, 'languages')! || 'NA',
+      appointmentType: consultOnlineTab === selectedTab ? 'ONLINE' : 'PHYSICAL',
+      docId: g(props.doctor, 'id')!,
+      SpecialtyId: g(props.doctor, 'specialty', 'id')!,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      appointmentDateTime: moment(selectedTimeSlot).toDate(),
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      onlineConsultFee: onlineConsultMRPPrice || undefined,
+      physicalConsultFee: physicalConsultMRPPrice || undefined,
+      Source: isConsultOnline ? 'Consult Now' : 'Schedule for Later',
+      User_Type: getUserType(allCurrentPatients),
+    };
+    postCleverTapEvent(
+      CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION,
+      eventAttributes
+    );
   };
 
   return (

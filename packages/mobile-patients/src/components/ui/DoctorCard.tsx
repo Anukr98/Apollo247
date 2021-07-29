@@ -31,6 +31,8 @@ import {
   postWebEngageEvent,
   nextAvailability,
   getUserType,
+  postCleverTapEvent,
+  getTimeDiff,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -60,6 +62,10 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 const styles = StyleSheet.create({
   doctorView: {
     flex: 1,
@@ -392,6 +398,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       url: AppConfig.Configuration.CIRCLE_CONSULT_URL,
       isCallback: true,
       onPlanSelected: onPlanSelected,
+      circleEventSource: 'VC Doctor Card',
     });
     webEngageAttributes(WebEngageEventName.VC_NON_CIRCLE);
   };
@@ -404,16 +411,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const renderCareLogo = () => {
     return <CircleLogo style={styles.careLogo} />;
   };
-
-  function getTimeDiff(nextSlot: any) {
-    let timeDiff: number = 0;
-    const today: Date = new Date();
-    const date2: Date = new Date(nextSlot);
-    if (date2 && today) {
-      timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
-    }
-    return timeDiff;
-  }
 
   const renderSpecialities = () => {
     return (
@@ -718,21 +715,21 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   onPress={() => {
                     try {
                       const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK] = {
-                        'Patient Name': currentPatient.firstName,
-                        'Doctor ID': rowData.id,
-                        'Speciality ID': rowData?.specialty?.id,
-                        'Doctor Speciality': rowData?.specialty?.name,
+                        'Patient name': currentPatient.firstName,
+                        docId: rowData.id,
+                        specialityId: rowData?.specialty?.id,
+                        specialityName: rowData?.specialty?.name,
                         'Doctor Experience': Number(rowData?.experience),
-                        'Hospital Name': rowData?.doctorHospital?.[0]?.facility?.name,
-                        'Hospital City': rowData?.doctorHospital?.[0]?.facility?.city,
+                        docHospital: rowData?.doctorHospital?.[0]?.facility?.name,
+                        docCity: rowData?.doctorHospital?.[0]?.facility?.city,
                         'Availability Minutes': getTimeDiff(rowData?.slot),
                         Source: 'List',
                         'Patient UHID': currentPatient.uhid,
                         Relation: currentPatient?.relation,
-                        'Patient Age': Math.round(
+                        'Patient age': Math.round(
                           moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)
                         ),
-                        'Patient Gender': currentPatient.gender,
+                        'Patient gender': currentPatient.gender,
                         'Customer ID': currentPatient.id,
                         User_Type: getUserType(allCurrentPatients),
                       };
@@ -742,6 +739,38 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                       postWebEngageEvent(
                         WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK,
                         eventAttributes
+                      );
+                      const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED] = {
+                        'Patient name': currentPatient.firstName,
+                        docId: rowData.id,
+                        specialityId: rowData?.specialty?.id,
+                        specialityName: rowData?.specialty?.name,
+                        exp: Number(rowData?.experience),
+                        docHospital: rowData?.doctorHospital?.[0]?.facility?.name,
+                        docCity: rowData?.doctorHospital?.[0]?.facility?.city,
+                        availableInMins: getTimeDiff(rowData?.slot),
+                        Source: 'Doctor card doctor listing screen',
+                        'Patient UHID': currentPatient.uhid,
+                        Relation: currentPatient?.relation,
+                        'Patient age': Math.round(
+                          moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)
+                        ),
+                        'Patient gender': currentPatient.gender,
+                        'Customer ID': currentPatient.id,
+                        User_Type: getUserType(allCurrentPatients),
+                        rank: props.rowId || undefined,
+                        onlineConsultFee:
+                          Number(rowData?.onlineConsultationFees) ||
+                          Number(rowData?.fee) ||
+                          undefined,
+                        physicalConsultFee:
+                          Number(rowData?.physicalConsultationFees) ||
+                          Number(rowData?.fee) ||
+                          undefined,
+                      };
+                      postCleverTapEvent(
+                        CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED,
+                        cleverTapEventAttributes
                       );
                     } catch (error) {}
 

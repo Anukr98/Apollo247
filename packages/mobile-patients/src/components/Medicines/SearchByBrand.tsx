@@ -63,6 +63,7 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import { MedicineSearchSuggestionItem } from '@aph/mobile-patients/src/components/Medicines/MedicineSearchSuggestionItem';
 import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
 import _ from 'lodash';
+import { MedicineSearchEvents } from '@aph/mobile-patients/src/components/MedicineSearch/MedicineSearchEvents';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -888,6 +889,12 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           User_Type: pharmacyUserType,
         };
         postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
+        MedicineSearchEvents.pharmacySearch({
+          keyword: _searchText,
+          source: 'Pharmacy Home',
+          results: products.length,
+          'User Type': pharmacyUserType,
+        });
       })
       .catch((e) => {
         CommonBugFender('SearchByBrand_onSearchMedicine', e);

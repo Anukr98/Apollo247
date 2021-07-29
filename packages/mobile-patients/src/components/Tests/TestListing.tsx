@@ -16,7 +16,10 @@ import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SafeAreaView, StyleSheet, Text, View, Image as ImageNative, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+  sourceHeaders,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import { PackageCard } from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
 import { TestListingHeader } from '@aph/mobile-patients/src/components/Tests/components/TestListingHeader';
@@ -324,7 +327,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                 isVertical={true}
                 columns={1}
                 navigation={props.navigation}
-                source={'Listing page'}
+                source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.LISTING}
                 sourceScreen={AppRoutes.TestListing}
               />
             ) : (
@@ -342,7 +345,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                 columns={2}
                 onEndReached={testLength == widgetsData?.diagnosticWidgetData?.length ? null : onEndReached}
                 navigation={props.navigation}
-                source={'Listing page'}
+                source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.LISTING}
                 sourceScreen={AppRoutes.TestListing}
               />
             )}

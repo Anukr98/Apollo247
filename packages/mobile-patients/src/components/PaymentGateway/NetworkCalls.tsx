@@ -22,13 +22,13 @@ export const createHyperServiceObject = () => {
   HyperSdkReact.createHyperServices();
 };
 
-export const initiateSDK = (customerId: string, requestId: string) => {
+export const initiateSDK = (customerId: string, requestId: string, merchantId: string) => {
   const initiatePayload = {
     requestId: requestId,
     service: AppConfig.Configuration.jusPayService,
     payload: {
       action: 'initiate',
-      merchantId: AppConfig.Configuration.merchantId,
+      merchantId: merchantId,
       clientId: AppConfig.Configuration.clientId,
       customerId: customerId, //Any unique refrences to current customer
       environment: AppConfig.Configuration.jusPayenvironment,
@@ -36,6 +36,10 @@ export const initiateSDK = (customerId: string, requestId: string) => {
   };
   //It is highly recommended to initiate SDK from the order summary page
   HyperSdkReact.initiate(JSON.stringify(initiatePayload));
+};
+
+export const terminateSDK = () => {
+  HyperSdkReact.terminate();
 };
 
 export const isSDKInitialised = () => {
@@ -66,7 +70,7 @@ export const InitiateNetBankingTxn = (
       action: 'nbTxn',
       orderId: paymentOrderId,
       paymentMethod: bankCode,
-      endUrls: [AppConfig.Configuration.returnUrl],
+      endUrls: [AppConfig.Configuration.baseUrl],
       clientAuthToken: clientAuthToken,
     },
   };
@@ -77,7 +81,8 @@ export const InitiateCardTxn = (
   requestId: string,
   clientAuthToken: string,
   paymentOrderId: string,
-  cardInfo: any
+  cardInfo: any,
+  saveCard: boolean
 ) => {
   const cardPayload = {
     requestId: requestId,
@@ -85,13 +90,13 @@ export const InitiateCardTxn = (
     payload: {
       action: 'cardTxn',
       orderId: paymentOrderId,
-      endUrls: [AppConfig.Configuration.returnUrl],
+      endUrls: [AppConfig.Configuration.baseUrl],
       paymentMethod: cardInfo?.cardType,
       cardNumber: cardInfo?.cardNumber,
       cardExpMonth: cardInfo?.ExpMonth,
       cardExpYear: cardInfo?.ExpYear,
       cardSecurityCode: cardInfo?.CVV,
-      saveToLocker: false,
+      saveToLocker: saveCard ? true : false,
       clientAuthToken: clientAuthToken,
     },
   };
@@ -111,7 +116,7 @@ export const InitiateWalletTxn = (
       action: 'walletTxn',
       orderId: paymentOrderId,
       paymentMethod: wallet,
-      endUrls: [AppConfig.Configuration.returnUrl],
+      endUrls: [AppConfig.Configuration.baseUrl],
       clientAuthToken: clientAuthToken,
     },
   };
@@ -138,7 +143,7 @@ export const InitiateUPISDKTxn = (
       orderId: paymentOrderId,
       paymentMethod: paymentMethod,
       sdkPresent: sdkPresent,
-      endUrls: [AppConfig.Configuration.returnUrl],
+      endUrls: [AppConfig.Configuration.baseUrl],
       clientAuthToken: clientAuthToken,
     },
   };
@@ -162,7 +167,7 @@ export const InitiateVPATxn = (
       orderId: paymentOrderId,
       custVpa: VPA,
       upiSdkPresent: true,
-      endUrls: [AppConfig.Configuration.returnUrl],
+      endUrls: [AppConfig.Configuration.baseUrl],
       displayNote: 'UPI Collect',
       clientAuthToken: clientAuthToken,
     },
@@ -226,6 +231,54 @@ export const InitiateUPIIntentTxn = (
       showLoader: false,
       payWithApp: packageName,
       displayNote: 'Payment to Apollo247',
+      clientAuthToken: clientAuthToken,
+    },
+  };
+  HyperSdkReact.process(JSON.stringify(payload));
+};
+
+export const fetchSavedCards = (requestId: string, clientAuthToken: string) => {
+  const payload = {
+    requestId: requestId,
+    service: AppConfig.Configuration.jusPayService,
+    payload: {
+      action: 'cardList',
+      clientAuthToken: clientAuthToken,
+    },
+  };
+  HyperSdkReact.process(JSON.stringify(payload));
+};
+
+export const deleteCard = (requestId: string, clientAuthToken: string, cardToken: string) => {
+  const payload = {
+    requestId: requestId,
+    service: AppConfig.Configuration.jusPayService,
+    payload: {
+      action: 'deleteCard',
+      cardToken: cardToken,
+      clientAuthToken: clientAuthToken,
+    },
+  };
+  HyperSdkReact.process(JSON.stringify(payload));
+};
+
+export const InitiateSavedCardTxn = (
+  requestId: string,
+  clientAuthToken: string,
+  paymentOrderId: string,
+  cardInfo: any,
+  cvv: string
+) => {
+  const payload = {
+    requestId: requestId,
+    service: AppConfig.Configuration.jusPayService,
+    payload: {
+      action: 'cardTxn',
+      orderId: paymentOrderId,
+      paymentMethod: cardInfo?.card_brand,
+      endUrls: [AppConfig.Configuration.baseUrl],
+      cardToken: cardInfo?.card_token,
+      cardSecurityCode: cvv,
       clientAuthToken: clientAuthToken,
     },
   };
