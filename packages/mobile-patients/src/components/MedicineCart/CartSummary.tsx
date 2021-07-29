@@ -38,6 +38,7 @@ import {
   validateCoupon,
   getPackageIds,
   getCheckoutCompletedEventAttributes,
+  getCleverTapCheckoutCompletedEventAttributes,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   availabilityApi247,
@@ -505,6 +506,12 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
             shoppingCart,
             paymentId,
             pharmacyUserTypeAttribute
+          ),
+          cleverTapCheckoutEventAttributes: getCleverTapCheckoutCompletedEventAttributes(
+            shoppingCart,
+            paymentId,
+            pharmacyUserTypeAttribute,
+            orders
           ),
         });
       }

@@ -3265,6 +3265,80 @@ export const getCheckoutCompletedEventAttributes = (
   return eventAttributes;
 };
 
+export const getCleverTapCheckoutCompletedEventAttributes = (
+  shoppingCart: ShoppingCartContextProps,
+  paymentOrderId: string,
+  pharmacyUserTypeAttribute: any,
+  ordersIds: any
+) => {
+  const {
+    deliveryAddressId,
+    addresses,
+    storeId,
+    stores,
+    uploadPrescriptionRequired,
+    physicalPrescriptions,
+    cartItems,
+    cartTotal,
+    deliveryCharges,
+    coupon,
+    couponDiscount,
+    productDiscount,
+    ePrescriptions,
+    grandTotal,
+    circleSubscriptionId,
+    isCircleSubscription,
+    cartTotalCashback,
+    pharmacyCircleAttributes,
+    orders,
+    pinCode,
+  } = shoppingCart;
+  const addr = deliveryAddressId && addresses.find((item) => item.id == deliveryAddressId);
+  const store = storeId && stores.find((item) => item.storeid == storeId);
+  const shippingInformation = addr ? formatAddress(addr) : store ? store.address : '';
+  const getFormattedAmount = (num: number) => Number(num.toFixed(2));
+  const eventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED] = {
+    'Transaction ID': paymentOrderId,
+    'Order Type': 'Cart',
+    'Prescription Added': !!(physicalPrescriptions.length || ePrescriptions.length),
+    'Shipping information': shippingInformation, // (Home/Store address)
+    'Total items in cart': cartItems.length,
+    'Grand Total': cartTotal + deliveryCharges,
+    'Total Discount %': coupon
+      ? getFormattedAmount(((couponDiscount + productDiscount) / cartTotal) * 100)
+      : 0,
+    'Discount Amount': getFormattedAmount(couponDiscount + productDiscount),
+    'Shipping Charges': deliveryCharges,
+    'Net after discount': getFormattedAmount(grandTotal),
+    'Payment status': 1,
+    'Service Area': 'Pharmacy',
+    'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
+    af_revenue: getFormattedAmount(grandTotal),
+    'Circle Cashback amount':
+      circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
+    'Split Cart': orders?.length > 1 ? 'Yes' : 'No',
+    'Prescription Option selected': uploadPrescriptionRequired
+      ? 'Prescription Upload'
+      : 'Not Applicable',
+    'Circle Member':
+      getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+      undefined,
+    'Circle Membership Value': pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
+    'User Type': pharmacyUserTypeAttribute?.User_Type || undefined,
+    'Coupon Applied': coupon?.coupon || undefined,
+    Pincode: pinCode || undefined,
+    'Cart Items': JSON.stringify(cartItems),
+    'Order_ID(s)': ordersIds?.map((i) => i?.orderAutoId)?.join(','),
+  };
+  if (store) {
+    eventAttributes['Store Id'] = store.storeid;
+    eventAttributes['Store Name'] = store.storename;
+    eventAttributes['Store Number'] = store.phone;
+    eventAttributes['Store Address'] = store.address;
+  }
+  return eventAttributes;
+};
+
 export const getDiagnosticCityLevelPaymentOptions = (cityId: string) => {
   let remoteData = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_PAYMENT_OPTION;
   const getConfigPaymentValue = remoteData?.find((item) => Number(item?.cityId) === Number(cityId));
