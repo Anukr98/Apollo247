@@ -12,7 +12,7 @@ import {
   ImageBackground,
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   GET_DOCTOR_DETAILS_BY_ID,
@@ -1008,7 +1008,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           ? renderDoctorDetails()
           : renderDoctorDetailsShimmer({ height: isCircleDoctor ? 120 : 105 })}
         {renderConsultTypeTabs()}
-        {renderTotalSlots()}
+        <ScrollView>{renderTotalSlots()}</ScrollView>
         {totalSlots === 0 && !loadTotalSlots ? <View /> : renderProceedButton()}
       </View>
     </SafeAreaView>
