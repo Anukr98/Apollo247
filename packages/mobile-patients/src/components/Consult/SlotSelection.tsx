@@ -387,9 +387,8 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   const setTimeArrayData = async (availableSlots: string[], date: Date) => {
     setLoadTotalSlots(true);
     const array = await generateTimeSlots(availableSlots, date);
-    console.log('csk', JSON.stringify(array));
+
     const arrayRrequired = array.filter((i) => i.time.length > 0);
-    console.log('csk', JSON.stringify(arrayRrequired));
 
     setLoadTotalSlots(false);
     setTimeArray(arrayRrequired);
