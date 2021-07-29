@@ -30,7 +30,7 @@ export const DiagnosticsNewSearch: React.FC<DiagnosticsNewSearchProps> = (props)
         <View style={styles.nameAndPriceViewStyle}>
           <View style={{ width: '85%' }}>
             <Text numberOfLines={2} style={styles.testNameText}>
-              {nameFormater(name, 'default')}
+              {name}
             </Text>
           </View>
 
