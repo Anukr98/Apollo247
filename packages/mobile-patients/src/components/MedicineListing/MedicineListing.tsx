@@ -84,6 +84,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const [filterOptions, setFilterOptions] = useState<Filter[]>([]);
   const [filterVisible, setFilterVisible] = useState<boolean>(false);
   const [showAddedToCart, setShowAddedToCart] = useState<boolean>(false);
+  const [showFilterOption, setShowFilterOption] = useState<boolean>(false);
 
   // global contexts
   const { currentPatient } = useAllCurrentPatients();
@@ -106,6 +107,11 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       getCategoryIdByName(categoryName);
     }
   }, [sortBy, filterBy]);
+
+  useEffect(() => {
+    const filterContent = filterOptions.filter(({ values }) => values?.length);
+    setShowFilterOption(!!filterContent.length);
+  }, [filterOptions]);
 
   useEffect(() => {
     if (categoryId && !searchText && movedFrom) {
@@ -175,7 +181,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       if (pageId == 1) {
         MedicineListingEvents.searchEnterClick({
           keyword: searchText,
-          numberofresults: data.product_count || 0,
+          'No of results': data.product_count || 0,
           source: movedFrom || '',
         });
       }
@@ -299,6 +305,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       setShowListView,
       setFilterVisible,
       setSortByVisible,
+      showFilterOption,
     };
     return <MedicineListingSections {...props} />;
   };

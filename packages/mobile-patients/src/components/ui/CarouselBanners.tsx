@@ -25,6 +25,7 @@ import {
   setCircleMembershipType,
   getHealthCredits,
   persistHealthCredits,
+  CircleEventSource,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { NavigationScreenProps } from 'react-navigation';
@@ -56,9 +57,17 @@ interface CarouselProps extends NavigationScreenProps {
   from: string;
   source?: 'Pharma' | 'Product Detail' | 'Pharma Cart' | 'Diagnostic' | 'Consult';
   successCallback: () => void;
+  circleEventSource?: CircleEventSource;
 }
 export const CarouselBanners: React.FC<CarouselProps> = (props) => {
-  const { circleActivated, planActivationCallback, from, source, successCallback } = props;
+  const {
+    circleActivated,
+    planActivationCallback,
+    from,
+    source,
+    successCallback,
+    circleEventSource,
+  } = props;
   const [slideIndex, setSlideIndex] = useState(0);
   const { currentPatient } = useAllCurrentPatients();
   const hdfc_values = string.Hdfc_values;
@@ -427,6 +436,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
             props.navigation.navigate(AppRoutes.MembershipDetails, {
               membershipType: g(hdfcUserSubscriptions, 'name'),
               isActive: g(hdfcUserSubscriptions, 'isActive'),
+              circleEventSource,
             });
           } else {
             const openUrl = AppConfig.Configuration.HDFC_HEALTHY_LIFE_URL;
@@ -443,6 +453,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           props.navigation.navigate(AppRoutes.MembershipDetails, {
             membershipType: Circle.planName,
             comingFrom: `${from || 'HomePage'} banners`,
+            circleEventSource,
           });
         } else if (
           (action === hdfc_values.MEDICINE_LISTING ||
@@ -541,6 +552,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           planValidity.current = res?.data?.CreateUserSubscription?.response?.end_date;
           setShowCircleActivation(true);
         }}
+        circleEventSource={circleEventSource}
       />
     );
   };

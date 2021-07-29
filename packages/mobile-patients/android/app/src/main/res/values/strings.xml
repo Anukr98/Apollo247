@@ -16,4 +16,10 @@
 
     <!-- play store key -->
     <string name="truecaller_appkey">ZI9TSf24b50579dfd4a39bfd1156b07189ac2</string>
+    <!-- clevertap debug keys -->
+    <!-- <string name="clevertap_account_id">TEST-KK4-4K4-6R6Z</string> -->
+    <!-- <string name="clevertap_token">TEST-434-433</string> -->
+    <!-- clevertap production keys -->
+    <string name="clevertap_account_id">679-WZ9-4W6Z</string>
+    <string name="clevertap_token">c10-ca6</string>
 </resources>

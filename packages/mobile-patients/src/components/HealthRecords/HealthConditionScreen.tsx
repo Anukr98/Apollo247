@@ -40,14 +40,15 @@ import {
   getSourceName,
   handleGraphQlError,
   phrSortWithDate,
-  postWebEngagePHR,
+  postCleverTapPHR,
   postWebEngageEvent,
   HEALTH_CONDITIONS_TITLE,
   isValidSearch,
   getPhrHighlightText,
-  phrSearchWebEngageEvents,
-  postWebEngageIfNewSession,
+  phrSearchCleverTapEvents,
+  postCleverTapIfNewSession,
   removeObjectProperty,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -66,9 +67,9 @@ import {
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
-  WebEngageEventName,
-  WebEngageEvents,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import {
   getPrismAuthTokenVariables,
   getPrismAuthToken,
@@ -303,11 +304,11 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
           });
           setHealthRecordSearchResults(finalData);
           setSearchLoading(false);
-          phrSearchWebEngageEvents(
-            WebEngageEventName.PHR_NO_USERS_SEARCHED_LOCAL.replace(
+          phrSearchCleverTapEvents(
+            CleverTapEventName.PHR_NO_USERS_SEARCHED_LOCAL.replace(
               '{0}',
-              'Health Conditions'
-            ) as WebEngageEventName,
+              'HealthConditions'
+            ) as CleverTapEventName,
             currentPatient,
             _searchText
           );
@@ -468,8 +469,8 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
     switch (headerTitle) {
       case HEALTH_CONDITIONS_TITLE.ALLERGY:
         eventInputData = removeObjectProperty(selectedItem, 'attachmentList');
-        postWebEngageIfNewSession(
-          'Allergy',
+        postCleverTapIfNewSession(
+          'Allergies',
           currentPatient,
           eventInputData,
           phrSession,
@@ -477,8 +478,8 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         );
         break;
       case HEALTH_CONDITIONS_TITLE.MEDICATION:
-        postWebEngageIfNewSession(
-          'Medication',
+        postCleverTapIfNewSession(
+          'Medications',
           currentPatient,
           selectedItem,
           phrSession,
@@ -486,8 +487,8 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         );
         break;
       case HEALTH_CONDITIONS_TITLE.HEALTH_RESTRICTION:
-        postWebEngageIfNewSession(
-          'Restriction',
+        postCleverTapIfNewSession(
+          'Restrictions',
           currentPatient,
           selectedItem,
           phrSession,
@@ -496,7 +497,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         break;
       case HEALTH_CONDITIONS_TITLE.MEDICAL_CONDITION:
         eventInputData = removeObjectProperty(selectedItem, 'medicationFiles');
-        postWebEngageIfNewSession(
+        postCleverTapIfNewSession(
           'MedicalCondition',
           currentPatient,
           eventInputData,
@@ -506,7 +507,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         break;
       case HEALTH_CONDITIONS_TITLE.FAMILY_HISTORY:
         eventInputData = removeObjectProperty(selectedItem, 'familyHistoryFiles');
-        postWebEngageIfNewSession(
+        postCleverTapIfNewSession(
           'Family History',
           currentPatient,
           eventInputData,
@@ -543,39 +544,39 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
   ) => {
     if (recordType === MedicalRecordType.ALLERGY) {
       const eventInputData = removeObjectProperty(selectedItem, 'attachmentList');
-      postWebEngagePHR(
+      postCleverTapPHR(
         currentPatient,
-        WebEngageEventName.PHR_DELETE_ALLERGY,
+        CleverTapEventName.PHR_DELETE_ALLERGY,
         'Allergy',
         eventInputData
       );
     } else if (recordType === MedicalRecordType.MEDICATION) {
-      postWebEngagePHR(
+      postCleverTapPHR(
         currentPatient,
-        WebEngageEventName.PHR_DELETE_MEDICATION,
+        CleverTapEventName.PHR_DELETE_MEDICATION,
         'Medication',
         selectedItem
       );
     } else if (recordType === MedicalRecordType.HEALTHRESTRICTION) {
-      postWebEngagePHR(
+      postCleverTapPHR(
         currentPatient,
-        WebEngageEventName.PHR_DELETE_HEALTH_RESTRICTIONS,
+        CleverTapEventName.PHR_DELETE_HEALTH_RESTRICTIONS,
         'Health Restriction',
         selectedItem
       );
     } else if (recordType === MedicalRecordType.MEDICALCONDITION) {
       const eventInputData = removeObjectProperty(selectedItem, 'medicationFiles');
-      postWebEngagePHR(
+      postCleverTapPHR(
         currentPatient,
-        WebEngageEventName.PHR_DELETE_MEDICAL_CONDITION,
+        CleverTapEventName.PHR_DELETE_MEDICAL_CONDITION,
         'Medical Condition',
         eventInputData
       );
     } else if (recordType === MedicalRecordType.FAMILY_HISTORY) {
       const eventInputData = removeObjectProperty(selectedItem, 'familyHistoryFiles');
-      postWebEngagePHR(
+      postCleverTapPHR(
         currentPatient,
-        WebEngageEventName.PHR_DELETE_FAMILY_HISTORY,
+        CleverTapEventName.PHR_DELETE_FAMILY_HISTORY,
         'Family History',
         eventInputData
       );
@@ -724,10 +725,11 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
           title={string.common.addHealthConditionText}
           onPress={() => {
             setCallApi(false);
-            const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {
+            const eventAttributes: CleverTapEvents[CleverTapEventName.ADD_RECORD] = {
               Source: 'Health Condition',
             };
-            postWebEngageEvent(WebEngageEventName.ADD_RECORD, eventAttributes);
+            postWebEngageEvent(CleverTapEventName.ADD_RECORD, eventAttributes);
+            postCleverTapEvent(CleverTapEventName.ADD_RECORD, eventAttributes);
             props.navigation.navigate(AppRoutes.AddRecord, {
               navigatedFrom: 'HealthCondition',
               recordType: MedicalRecordType.MEDICALCONDITION,

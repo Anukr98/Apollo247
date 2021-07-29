@@ -47,6 +47,7 @@ import {
   dataSavedUserID,
   g,
   getNetStatus,
+  postAppointmentCleverTapEvents,
   postWebEngageEvent,
   statusBarHeight,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -78,6 +79,7 @@ import { CheckReschedulePopup } from '@aph/mobile-patients/src/components/Consul
 import { NavigationScreenProps } from 'react-navigation';
 import { getPatientAllAppointments_getPatientAllAppointments_activeAppointments } from '../../graphql/types/getPatientAllAppointments';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const { width, height } = Dimensions.get('window');
 
@@ -779,11 +781,17 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
         },
         fetchPolicy: 'no-cache',
       })
-      .then((data: any) => {
-        postAppointmentWEGEvents('Rescheduled by Customer');
+      .then((_data: any) => {
+        postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER);
+        postAppointmentCleverTapEvents(
+          CleverTapEventName.CONSULT_RESCHEDULED_BY_THE_PATIENT,
+          data,
+          currentPatient,
+          secretaryData
+        );
         setshowSpinner(false);
         const params = {
-          Data: data?.data?.bookRescheduleAppointment?.appointmentDetails,
+          Data: _data?.data?.bookRescheduleAppointment?.appointmentDetails,
           DoctorName: props.navigation.state.params?.data?.doctorInfo?.fullName,
         };
         navigateToScreenWithEmptyStack(props.navigation, AppRoutes.TabBar, params);
@@ -971,6 +979,12 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
             }}
             onPressRescheduleAppointment={() => {
               postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
+              postAppointmentCleverTapEvents(
+                CleverTapEventName.CONSULT_RESCHEDULE_CLICKED,
+                data,
+                currentPatient,
+                secretaryData
+              );
               setShowReschedulePopup(true);
               setShowRescheduleCancel(false);
             }}
@@ -989,12 +1003,24 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
             onPressBack={() => setShowCancelPopup(false)}
             onPressReschedule={() => {
               postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
+              postAppointmentCleverTapEvents(
+                CleverTapEventName.CONSULT_RESCHEDULE_CLICKED,
+                data,
+                currentPatient,
+                secretaryData
+              );
               CommonLogEvent(AppRoutes.AppointmentDetailsPhysical, 'RESCHEDULE_INSTEAD_Clicked');
               setShowCancelPopup(false);
               setShowReschedulePopup(true);
             }}
             onPressCancel={() => {
               postAppointmentWEGEvents(WebEngageEventName.CANCEL_CONSULTATION_CLICKED);
+              postAppointmentCleverTapEvents(
+                CleverTapEventName.CONSULT_CANCEL_CLICKED_BY_PATIENT,
+                data,
+                currentPatient,
+                secretaryData
+              );
               CommonLogEvent(AppRoutes.AppointmentDetailsPhysical, 'CANCEL CONSULT_CLICKED');
               setShowCancelPopup(false);
               setCancelVisible(true); //to show the reasons for cancelling the consultation
@@ -1008,11 +1034,23 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
             closeModal={() => setShowReschedulePopup(false)}
             cancelSuccessCallback={() => {
               postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER);
+              postAppointmentCleverTapEvents(
+                CleverTapEventName.CONSULT_CANCELLED_BY_PATIENT,
+                data,
+                currentPatient,
+                secretaryData
+              );
               setShowCancelPopup(false);
             }}
-            rescheduleSuccessCallback={() =>
-              postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER)
-            }
+            rescheduleSuccessCallback={() => {
+              postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER);
+              postAppointmentCleverTapEvents(
+                CleverTapEventName.CONSULT_RESCHEDULED_BY_THE_PATIENT,
+                data,
+                currentPatient,
+                secretaryData
+              );
+            }}
           />
         )}
         {isCancelVisible && (
@@ -1022,6 +1060,12 @@ export const AppointmentDetailsPhysical: React.FC<AppointmentDetailsProps> = (pr
             data={data}
             cancelSuccessCallback={() => {
               postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER);
+              postAppointmentCleverTapEvents(
+                CleverTapEventName.CONSULT_CANCELLED_BY_PATIENT,
+                data,
+                currentPatient,
+                secretaryData
+              );
             }}
             navigation={props.navigation}
           />

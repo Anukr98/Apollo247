@@ -38,6 +38,7 @@ import {
   SAVE_PHLEBO_FEEDBACK,
   PROCESS_DIAG_COD_ORDER,
   CREATE_ORDER,
+  GET_DIAGNOSTIC_PAYMENT_SETTINGS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -155,6 +156,7 @@ import {
 import { savePhleboFeedbackVariables, savePhleboFeedback_savePhleboFeedback } from '@aph/mobile-patients/src/graphql/types/savePhleboFeedback';
 import {  processDiagnosticHCOrder, processDiagnosticHCOrderVariables } from '@aph/mobile-patients/src/graphql/types/processDiagnosticHCOrder';
 import { createOrder, createOrderVariables } from '@aph/mobile-patients/src/graphql/types/createOrder';
+import { getDiagnosticPaymentSettings, getDiagnosticPaymentSettingsVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticPaymentSettings';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -1164,3 +1166,17 @@ export const createJusPayOrder = (client: ApolloClient<object>,paymentId: string
     fetchPolicy: 'no-cache',
   });
 };
+
+export const diagnosticPaymentSettings = (  client: ApolloClient<object>,
+  paymentId : string) =>
+  {
+    return client.query<getDiagnosticPaymentSettings, getDiagnosticPaymentSettingsVariables>({
+      query: GET_DIAGNOSTIC_PAYMENT_SETTINGS,
+      context: {
+        sourceHeaders,
+      },
+      variables: { paymentOrderId: paymentId },
+      fetchPolicy: 'no-cache',
+    }); 
+}
+

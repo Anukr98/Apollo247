@@ -3,6 +3,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { Platform, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Overlay } from 'react-native-elements';
+import { ScrollView } from 'react-navigation';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -45,7 +46,7 @@ const styles = StyleSheet.create({
   commentText: {
     ...theme.viewStyles.text('M', 16, '#01475B', 1, 19),
     paddingHorizontal: 16,
-    paddingTop: 10,
+    paddingTop: 15,
     textAlign: 'justify',
     alignSelf: 'flex-start',
   },
@@ -108,6 +109,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     borderRadius: 10,
     bottom: 15,
+    marginTop: 10,
   },
 });
 
@@ -159,7 +161,9 @@ export const ResultTestReportsPopUp: React.FC<ResultTestReportsPopUpProps> = (pr
           <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
             {renderCloseIcon()}
             {renderHeader()}
-            <View style={styles.contentContainerStyle}>{renderDescription()}</View>
+            <ScrollView bounces={false}>
+              <View style={styles.contentContainerStyle}>{renderDescription()}</View>
+            </ScrollView>
           </SafeAreaView>
         </View>
       </Overlay>

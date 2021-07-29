@@ -31,6 +31,8 @@ import {
   postFirebaseEvent,
   postWebEngageEvent,
   postWEGReferralCodeEvent,
+  onCleverTapUserLogin,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   ProductPageViewedSource,
@@ -75,6 +77,10 @@ import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/dee
 import { getPatientByMobileNumber_getPatientByMobileNumber_patients } from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
 import _ from 'lodash';
 import { LOGIN_PROFILE } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const styles = StyleSheet.create({
   container: {
@@ -495,9 +501,25 @@ const SignUp: React.FC<SignUpProps> = (props) => {
         Email: email.trim(),
         'Mobile Number': currentPatient?.mobileNumber,
       };
+      const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.REGISTRATION_DONE] = {
+        'Customer ID': currentPatient ? currentPatient.id : '',
+        'Full Name': firstName?.trim() + ' ' + lastName?.trim(),
+        DOB: currentPatient?.dateOfBirth || Moment(date, 'DD/MM/YYYY').toDate(),
+        Gender:
+          gender === 'Female'
+            ? Gender['FEMALE']
+            : gender === 'Male'
+            ? Gender['MALE']
+            : Gender['OTHER'],
+        'Email ID': email?.trim(),
+        'Mobile Number': currentPatient?.mobileNumber,
+        'Nav src': 'App login screen',
+        'Page Name': 'Signup Screen',
+      };
       if (referral) {
         // only send if referral has a value
         eventAttributes['Referral Code'] = referral;
+        cleverTapEventAttributes['Referral Code'] = referral;
       }
 
       const eventFirebaseAttributes: FirebaseEvents[FirebaseEventName.SIGN_UP] = {
@@ -520,7 +542,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
       }
 
       postWebEngageEvent(WebEngageEventName.REGISTRATION_DONE, eventAttributes);
-
+      postCleverTapEvent(CleverTapEventName.REGISTRATION_DONE, cleverTapEventAttributes);
       const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.REGISTRATION_DONE] = {
         'customer id': currentPatient ? currentPatient.id : '',
       };
@@ -645,6 +667,7 @@ const SignUp: React.FC<SignUpProps> = (props) => {
                       AsyncStorage.setItem('userLoggedIn', 'true'),
                       AsyncStorage.setItem('signUp', 'false'),
                       AsyncStorage.setItem('gotIt', patient ? 'true' : 'false'),
+                      onCleverTapUserLogin(data?.updatePatient?.patient),
                       createOneApolloUser(data?.updatePatient?.patient?.id!),
                       handleOpenURLs())
                     : null}
