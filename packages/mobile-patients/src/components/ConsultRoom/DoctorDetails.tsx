@@ -693,10 +693,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Media Source': mediaSource,
       User_Type: getUserType(allCurrentPatients),
       Fee: Number(doctorDetails?.onlineConsultationFees),
-      Source:
-        cleverTapAppointmentAttributes?.source || fromPastSearch
-          ? 'Past search clicked'
-          : 'Deeplink',
+      Source: cleverTapAppointmentAttributes?.source
+        ? cleverTapAppointmentAttributes?.source
+        : fromPastSearch
+        ? 'Past search clicked'
+        : 'Deeplink',
       'Doctor card clicked': 'No',
       Rank: 'NA',
       Is_TopDoc: doctorDetails?.doctorsOfTheHourStatus ? 'Yes' : 'No',

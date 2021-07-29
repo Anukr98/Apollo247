@@ -21,7 +21,11 @@ import {
   TRANSFER_INITIATED_TYPE,
   APPOINTMENT_STATE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { divideSlots, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  divideSlots,
+  handleGraphQlError,
+  postAppointmentCleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import { Mutation } from 'react-apollo';
@@ -43,6 +47,8 @@ import {
 import AsyncStorage from '@react-native-community/async-storage';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { CleverTapEventName } from '../../helpers/CleverTapEvents';
+import { useAllCurrentPatients } from '../../hooks/authHooks';
 
 const { width, height } = Dimensions.get('window');
 
@@ -65,9 +71,11 @@ export interface OverlayRescheduleViewProps extends NavigationScreenProps {
   KeyFollow: string;
   isfollowupcount: number;
   isInitiatedByDoctor: boolean;
+  secretaryData?: any;
 }
 export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (props) => {
   const tabs = [{ title: 'Reschedule' }];
+  const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const [timeArray, settimeArray] = useState<TimeArray>([
     { label: 'Morning', time: [] },
@@ -269,6 +277,12 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                 ? (props.setdisplayoverlay(false),
                   setshowSpinner(false),
                   setshowSuccessPopUp(true),
+                  postAppointmentCleverTapEvents(
+                    CleverTapEventName.CONSULT_RESCHEDULED_BY_THE_PATIENT,
+                    props?.data,
+                    currentPatient,
+                    props?.secretaryData
+                  ),
                   navigateToViewRescdule(data))
                 : null}
               {error ? <></> : null}
