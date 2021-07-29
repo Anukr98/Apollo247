@@ -293,10 +293,12 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     try {
       const todayDate = moment(new Date()).format('YYYY-MM-DD');
       const res: any = await getNextAvailableSlots(client, [doctorId] || [], todayDate);
+
       const slot =
-        consultType === consultTabs[0].title
+        consultType === consultOnlineTab
           ? res?.data?.[0]?.availableSlot
           : res?.data?.[0]?.physicalAvailableSlot;
+
       if (slot) {
         const nextAvailableDate: Date = new Date(slot);
         calculateNextNDates();
@@ -367,7 +369,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           DoctorPhysicalAvailabilityInput: {
             availableDate: moment(selectedDate).format('YYYY-MM-DD'),
             doctorId,
-            facilityId: doctorDetails?.doctorHospital?.[0]?.facility?.id,
+            facilityId: doctorDetails?.doctorHospital?.[0]?.facility?.id || '',
           },
         },
       });
@@ -380,6 +382,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
         setTimeArrayData(availableSlots, selectedDate);
       }
     } catch (error) {
+      console.log('SlotSelection_fetchTotalAvailableSlotsPhysical', error);
       CommonBugFender('SlotSelection_fetchTotalAvailableSlots', error);
     }
   };
