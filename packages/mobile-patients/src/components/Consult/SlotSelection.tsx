@@ -12,7 +12,7 @@ import {
   ImageBackground,
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   GET_DOCTOR_DETAILS_BY_ID,
@@ -239,7 +239,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   useEffect(() => {
     setWebEngageScreenNames('Doctor Profile');
     fetchDoctorDetails();
-    fetchNextAvailabilitySlot(consultTabs[0].title, true);
+    fetchNextAvailabilitySlot(selectedTab, true);
   }, []);
 
   useEffect(() => {
@@ -293,10 +293,12 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     try {
       const todayDate = moment(new Date()).format('YYYY-MM-DD');
       const res: any = await getNextAvailableSlots(client, [doctorId] || [], todayDate);
+
       const slot =
-        consultType === consultTabs[0].title
+        consultType === consultOnlineTab
           ? res?.data?.[0]?.availableSlot
           : res?.data?.[0]?.physicalAvailableSlot;
+
       if (slot) {
         const nextAvailableDate: Date = new Date(slot);
         calculateNextNDates();
@@ -367,7 +369,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           DoctorPhysicalAvailabilityInput: {
             availableDate: moment(selectedDate).format('YYYY-MM-DD'),
             doctorId,
-            facilityId: doctorDetails?.doctorHospital?.[0]?.facility?.id,
+            facilityId: doctorDetails?.doctorHospital?.[0]?.facility?.id || '',
           },
         },
       });
@@ -380,6 +382,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
         setTimeArrayData(availableSlots, selectedDate);
       }
     } catch (error) {
+      console.log('SlotSelection_fetchTotalAvailableSlotsPhysical', error);
       CommonBugFender('SlotSelection_fetchTotalAvailableSlots', error);
     }
   };
@@ -387,8 +390,11 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   const setTimeArrayData = async (availableSlots: string[], date: Date) => {
     setLoadTotalSlots(true);
     const array = await generateTimeSlots(availableSlots, date);
+
+    const arrayRrequired = array.filter((i) => i.time.length > 0);
+
     setLoadTotalSlots(false);
-    setTimeArray(array);
+    setTimeArray(arrayRrequired);
   };
 
   const calculateNextNDates = (slotDateAndCount?: any) => {
@@ -1002,7 +1008,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           ? renderDoctorDetails()
           : renderDoctorDetailsShimmer({ height: isCircleDoctor ? 120 : 105 })}
         {renderConsultTypeTabs()}
-        {renderTotalSlots()}
+        <ScrollView>{renderTotalSlots()}</ScrollView>
         {totalSlots === 0 && !loadTotalSlots ? <View /> : renderProceedButton()}
       </View>
     </SafeAreaView>

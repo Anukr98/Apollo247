@@ -413,6 +413,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
+    if (currentPatient) {
+      checkPatientAge(currentPatient);
+    }
+  }, [currentPatient]);
+
+  useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setIsFocused(true);
       BackHandler.addEventListener('hardwareBackPress', handleBack);
