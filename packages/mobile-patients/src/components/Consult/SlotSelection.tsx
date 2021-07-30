@@ -352,6 +352,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
         setTotalSlots(availableSlots?.length);
         setTimeArrayData(availableSlots, selectedDate);
       }
+      slotCounts && calculateNextNDates(slotCounts);
     } catch (error) {
       CommonBugFender('SlotSelection_fetchTotalAvailableSlots', error);
     }
@@ -381,6 +382,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
         setTotalSlots(availableSlots?.length);
         setTimeArrayData(availableSlots, selectedDate);
       }
+      slotCounts && calculateNextNDates(slotCounts);
     } catch (error) {
       console.log('SlotSelection_fetchTotalAvailableSlotsPhysical', error);
       CommonBugFender('SlotSelection_fetchTotalAvailableSlots', error);
