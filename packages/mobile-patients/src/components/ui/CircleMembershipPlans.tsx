@@ -277,7 +277,12 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     setCirclePlanSelected && setCirclePlanSelected(membershipPlan);
     AsyncStorage.setItem('circlePlanSelected', JSON.stringify(membershipPlan));
     if (source === 'Pharma Cart') {
-      postAppsFlyerCircleAddRemoveCartEvent(membershipPlan, source, 'add', currentPatient);
+      postAppsFlyerCircleAddRemoveCartEvent(
+        membershipPlan,
+        circleEventSource,
+        'add',
+        currentPatient
+      );
     }
     if (isConsultJourney) {
       !isModal &&
@@ -346,8 +351,10 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       user_type: getUserType(allCurrentPatients),
       price: circleData?.currentSellingPrice,
     };
-    if (isConsultJourney || getButtonTitle() === string.circleDoctors.addToCart)
+    if (isConsultJourney || getButtonTitle() === string.circleDoctors.addToCart) {
       postCleverTapEvent(CleverTapEventName.CIRCLE_PLAN_TO_CART, cleverTapEventAttributes);
+      postAppsFlyerCircleAddRemoveCartEvent(circleData, circleEventSource, 'add', currentPatient);
+    }
   };
 
   const fireCirclePlanRemovedEvent = () => {
@@ -436,6 +443,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       price: circleData?.currentSellingPrice,
     };
     postCleverTapEvent(CleverTapEventName.CIRCLE_PLAN_TO_CART, cleverTapEventAttributes);
+    postAppsFlyerCircleAddRemoveCartEvent(circleData, circleEventSource, 'add', currentPatient);
     setTimeout(
       () =>
         postCleverTapEvent(
@@ -875,7 +883,12 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         ]}
         onPress={() => {
           fireCircleBuyNowEvent();
-          postAppsFlyerCircleAddRemoveCartEvent(circlePlanSelected, source, 'add', currentPatient);
+          postAppsFlyerCircleAddRemoveCartEvent(
+            circlePlanSelected,
+            circleEventSource,
+            'add',
+            currentPatient
+          );
           isConsultJourney &&
             circleWebEngageEventForAddToCart(
               WebEngageEventName.VC_NON_CIRCLE_ADDS_CART,
@@ -966,18 +979,18 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         <TouchableOpacity
           style={{ marginTop: 7 }}
           onPress={() => {
-            postAppsFlyerCircleAddRemoveCartEvent(
-              circlePlanSelected,
-              source,
-              'remove',
-              currentPatient
-            );
             fireCirclePlanRemovedEvent();
             fireCleverTapCirclePlanRemovedEvent(
               currentPatient,
               circleEventSource,
               circlePlanSelected,
               allCurrentPatients
+            );
+            postAppsFlyerCircleAddRemoveCartEvent(
+              circlePlanSelected,
+              circleEventSource,
+              'remove',
+              currentPatient
             );
             setCirclePlanSelected && setCirclePlanSelected(null);
             setIsCircleSubscription && setIsCircleSubscription(false);

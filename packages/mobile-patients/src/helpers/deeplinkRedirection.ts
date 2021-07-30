@@ -54,7 +54,7 @@ export const handleOpenURL = (event: any) => {
           (item: any) => item?.length == 2 && (attributes?.[item?.[0]] = item?.[1])
         );
         if (linkId?.length > 0) {
-            linkId = linkId?.[0];
+          linkId = linkId?.[0];
           setBugFenderLog('DEEP_LINK_SPECIALITY_ID', linkId);
         }
       }

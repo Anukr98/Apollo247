@@ -2888,6 +2888,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           circleActivated={circleActivatedRef.current}
           circlePlanValidity={circlePlanValidity}
           from={string.banner_context.HOME}
+          source={string.banner_context.HOME}
           successCallback={() => {
             getUserSubscriptionsWithBenefits();
           }}
