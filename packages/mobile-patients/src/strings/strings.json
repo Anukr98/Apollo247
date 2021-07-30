@@ -210,7 +210,7 @@
     },
     "inperson": {
       "heading": "HOSPITAL VISIT",
-      "question": "How to consult in person?",
+      "question": "How to consult at Hospital?",
       "point1": "Choose the doctor",
       "point2": "Book a slot",
       "point3": "Visit the doctor at Hospital/Clinic",
