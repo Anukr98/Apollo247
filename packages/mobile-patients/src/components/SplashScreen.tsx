@@ -402,7 +402,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     ) {
       const params = id?.split('+');
       voipCallType.current = params?.[1]!;
-      callPermissions();
       getAppointmentDataAndNavigate(params?.[0]!, true);
     } else if (routeName == 'prohealth') {
       fetchProhealthHospitalDetails(id);

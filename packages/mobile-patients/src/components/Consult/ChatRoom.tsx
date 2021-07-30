@@ -1451,7 +1451,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, [currentPatientWithHistory, displayChatQuestions]);
 
   useEffect(() => {
-    if (!disableChat && status.current !== STATUS.COMPLETED && isInFuture) {
+    if (!disableChat && status.current !== STATUS.COMPLETED &&
+       isInFuture && !fromIncomingCall) {
       callPermissions();
     }
   }, []);
@@ -1687,7 +1688,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   useEffect(() => {
-    if (callType) {
+    if (callType && !fromIncomingCall) {
       AsyncStorage.setItem('callDisconnected', 'false');
 
       callPermissions(() => {
