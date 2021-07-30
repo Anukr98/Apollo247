@@ -45,6 +45,7 @@ export interface MedicineProduct {
   product_form?: string | null;
   pack_size?: string | null;
   banned?: 'Yes' | 'No';
+  subcategory?: string | null;
 }
 
 export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {

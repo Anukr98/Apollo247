@@ -382,6 +382,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       MaxOrderQty,
       category_id,
       url_key,
+      subcategory,
     } = item;
     savePastSeacrh(sku, name).catch((e) => {
       aphConsole.log({ e });
@@ -407,6 +408,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         maxOrderQty: MaxOrderQty,
         productType: type_id,
         url_key,
+        subcategory,
       },
       asyncPincode?.pincode || pharmacyPincode!,
       addCartItem,

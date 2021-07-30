@@ -41,7 +41,6 @@ import {
   postwebEngageAddToCartEvent,
   postFirebaseAddToCartEvent,
   postAppsFlyerAddToCartEvent,
-  getCareCashback,
   doRequestAndAccessLocationModified,
   navigateToHome,
   navigateToScreenWithEmptyStack,
@@ -49,6 +48,7 @@ import {
   postCleverTapEvent,
   getCleverTapCircleMemberValues,
   getIsMedicine,
+  calculateCashbackForItem,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   MedicineProductDetails,
@@ -187,9 +187,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const [userType, setUserType] = useState<string>('');
   const [circleID, setCircleID] = useState<string>('');
 
-  const { special_price, price, type_id } = medicineDetails;
+  const { special_price, price, type_id, subcategory } = medicineDetails;
   const finalPrice = price - special_price ? special_price : price;
-  const cashback = getCareCashback(Number(finalPrice), type_id);
+  const cashback = calculateCashbackForItem(Number(finalPrice), type_id, subcategory, sku);
   type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
 
   const getItemQuantity = (id: string) => {
@@ -489,7 +489,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         MaxOrderQuantity: MaxOrderQty,
         MRP: price,
         SpecialPrice: special_price || null,
-        CircleCashback: cashback?.toFixed(2),
+        CircleCashback: cashback,
         isMultiVariant: multiVariantAttributes.length ? 1 : 0,
       };
       let cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_PRODUCT_PAGE_VIEWED] = {
@@ -808,6 +808,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         maxOrderQty: MaxOrderQty,
         productType: type_id,
         url_key,
+        subcategory,
       });
     }
     postwebEngageAddToCartEvent(

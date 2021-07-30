@@ -24,7 +24,7 @@ export interface ProductPriceDeliveryProps {
   deliveryTime?: string;
   deliveryError?: string;
   isPharma: boolean;
-  cashback: number;
+  cashback: number | string;
   finalPrice: number;
   showDeliverySpinner: boolean;
   isBanned: boolean;
@@ -192,7 +192,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     return (
       <>
         <CareCashbackBanner
-          bannerText={`extra cashback ${string.common.Rs}${cashback.toFixed(2)}`}
+          bannerText={`extra cashback ${string.common.Rs}${cashback}`}
           textStyle={styles.circleText}
           logoStyle={styles.circleLogo}
         />
@@ -201,7 +201,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
           <Text style={{ fontWeight: 'bold' }}>
             {' '}
             {string.common.Rs}
-            {(finalPrice - cashback).toFixed(2)}
+            {(finalPrice - Number(cashback)).toFixed(2)}
           </Text>
         </Text>
       </>
