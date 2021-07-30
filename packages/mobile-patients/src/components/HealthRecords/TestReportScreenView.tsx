@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import {
   GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID,
+  GET_INDIVIDUAL_TEST_RESULT_PDF,
   GET_LAB_RESULT_PDF,
   PHR_COVERT_TO_ZIP,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -66,6 +67,10 @@ import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions
 import { ResultTestReportsPopUp } from '@aph/mobile-patients/src/components/HealthRecords/Components/ResultTestReportsPopUp';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { RenderPdf } from '@aph/mobile-patients/src/components/ui/RenderPdf';
+import {
+  getIndividualTestResultPdf,
+  getIndividualTestResultPdfVariables,
+} from '@aph/mobile-patients/src/graphql/types/getIndividualTestResultPdf';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -479,18 +484,19 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         downloadDocument();
       } else {
         client
-          .query<getLabResultpdf, getLabResultpdfVariables>({
-            query: GET_LAB_RESULT_PDF,
+          .query<getIndividualTestResultPdf, getIndividualTestResultPdfVariables>({
+            query: GET_INDIVIDUAL_TEST_RESULT_PDF,
             variables: {
               patientId: currentPatient?.id,
               recordId: data?.id,
+              sequence: data?.testSequence,
             },
           })
           .then(({ data }: any) => {
-            if (data?.getLabResultpdf?.url) {
+            if (data?.getIndividualTestResultPdf?.url) {
               imagesArray?.length === 0
-                ? downloadDocument(data?.getLabResultpdf?.url, fileShare)
-                : callConvertToZipApi(data?.getLabResultpdf?.url, fileShare);
+                ? downloadDocument(data?.getIndividualTestResultPdf?.url, fileShare)
+                : callConvertToZipApi(data?.getIndividualTestResultPdf?.url, fileShare);
             }
           })
           .catch((e: any) => {
@@ -504,7 +510,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
 
   const callConvertToZipApi = (pdfUrl?: string, fileShare?: boolean) => {
     setLoading?.(true);
-    const fileUrls = imagesArray?.map((item) => item?.file_Url);
+    const fileUrls = imagesArray?.map((item: any) => item?.file_Url);
     pdfUrl && fileUrls?.push(pdfUrl);
     client
       .mutate<convertToZip, convertToZipVariables>({
