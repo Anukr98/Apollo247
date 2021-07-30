@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { VERTICALS, PAYMENT_METHODS_JUSPAY } from "./globalTypes";
+import { PAYMENT_METHODS_JUSPAY } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getPaymentMethods
@@ -30,5 +30,5 @@ export interface getPaymentMethods {
 
 export interface getPaymentMethodsVariables {
   is_mobile?: boolean | null;
-  vertical?: VERTICALS | null;
+  payment_order_id?: string | null;
 }

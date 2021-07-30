@@ -4799,8 +4799,8 @@ export const ADD_DIABETIC_QUESTIONNAIRE = gql`
 `;
 
 export const GET_PAYMENT_METHODS = gql`
-  query getPaymentMethods($is_mobile: Boolean, $vertical: VERTICALS) {
-    getPaymentMethods(is_mobile: $is_mobile, vertical: $vertical) {
+  query getPaymentMethods($is_mobile: Boolean, $payment_order_id: String) {
+    getPaymentMethods(is_mobile: $is_mobile, payment_order_id: $payment_order_id) {
       name
       minimum_supported_version
       payment_methods {
