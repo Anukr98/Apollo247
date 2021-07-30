@@ -41,6 +41,7 @@ import {
 import { addPatientLabTestRecord } from '@aph/mobile-patients/src/graphql/types/addPatientLabTestRecord';
 import {
   ADD_PATIENT_LAB_TEST_RECORD,
+  GET_INDIVIDUAL_TEST_RESULT_PDF,
   GET_PRISM_AUTH_TOKEN,
   MERGE_PDF,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -80,6 +81,10 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import { BillRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/BillRecordCard';
 import { mergePDFS, mergePDFSVariables } from '@aph/mobile-patients/src/graphql/types/mergePDFS';
 import RNFetchBlob from 'rn-fetch-blob';
+import {
+  getIndividualTestResultPdf,
+  getIndividualTestResultPdfVariables,
+} from '@aph/mobile-patients/src/graphql/types/getIndividualTestResultPdf';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -664,9 +669,34 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
     setShowSpinner(true);
     var imageArray: [] = [];
     clubImages.map((items: any) => {
-      imageArray.push(items.data.fileUrl);
+      if (!!items?.data?.fileUrl) {
+        imageArray.push(items?.data?.fileUrl);
+      } else {
+        client
+          .query<getIndividualTestResultPdf, getIndividualTestResultPdfVariables>({
+            query: GET_INDIVIDUAL_TEST_RESULT_PDF,
+            variables: {
+              patientId: currentPatient?.id,
+              recordId: items?.id,
+              sequence: items?.testSequence,
+            },
+          })
+          .then(({ data }: any) => {
+            if (data?.getIndividualTestResultPdf?.url) {
+              imageArray.push(data?.getIndividualTestResultPdf?.url);
+            }
+            setShowSpinner(false);
+          })
+          .catch((e: any) => {
+            setShowSpinner(false);
+            currentPatient && handleGraphQlError(e, 'Report is yet not available');
+            CommonBugFender('HealthRecordDetails_downloadPDFTestReport', e);
+          });
+      }
     });
+
     if (imageArray?.length > 0) {
+      setShowSpinner(true);
       client
         .mutate<mergePDFS, mergePDFSVariables>({
           mutation: MERGE_PDF,

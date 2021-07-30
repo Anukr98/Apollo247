@@ -2988,6 +2988,7 @@ export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
           identifier
           additionalNotes
           billNo
+          testSequence
           observation
           labTestResults {
             parameterName
@@ -3368,6 +3369,14 @@ export const GET_PHR_USER_NOTIFY_EVENTS = gql`
 export const GET_LAB_RESULT_PDF = gql`
   query getLabResultpdf($patientId: ID!, $recordId: String!) {
     getLabResultpdf(patientId: $patientId, recordId: $recordId) {
+      url
+    }
+  }
+`;
+
+export const GET_INDIVIDUAL_TEST_RESULT_PDF = gql`
+  query getIndividualTestResultPdf($patientId: ID!, $recordId: String!, $sequence: String!) {
+    getIndividualTestResultPdf(patientId: $patientId, recordId: $recordId, sequence: $sequence) {
       url
     }
   }
