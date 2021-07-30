@@ -862,7 +862,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           apiCallEnums.getUserSubscriptionsV2,
         ];
     const params = {
-      isFreeConsult: navigateToChatRoom ? false : true,
+      isFreeConsult: !!appointmentData ? (navigateToChatRoom ? false : true) : false,
       doctorName: doctorName,
       appointmentData: appointmentData?.[0],
       skipAutoQuestions: doctor?.skipAutoQuestions,
