@@ -969,10 +969,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
                     doctorId: rowData.typeId,
                     callSaveSearch: 'true',
+                    fromPastSearch: true,
                   })
                 : props.navigation.navigate(AppRoutes.DoctorDetails, {
                     doctorId: rowData.typeId,
                     callSaveSearch: 'true',
+                    fromPastSearch: true,
                   });
             }
             if (rowData.searchType === 'SPECIALTY') {
