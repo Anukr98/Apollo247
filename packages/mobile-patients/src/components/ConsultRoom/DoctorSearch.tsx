@@ -953,6 +953,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const renderRow = (rowData: getPastSearches_getPastSearches | null, rowID: number) => {
     if (rowData) {
+      rowData?.allowBookingRequest ? console.log('csk', JSON.stringify(rowData)) : null;
       return (
         <Button
           title={(rowData && rowData.name && rowData.name.toUpperCase()) || ''}

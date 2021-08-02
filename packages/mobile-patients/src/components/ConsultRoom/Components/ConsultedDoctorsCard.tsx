@@ -59,6 +59,7 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
         },
       });
       if (res) {
+        console.log('csk mydoc', JSON.stringify(res));
         setDoctors(res?.data?.getPatientPastConsultedDoctors);
       }
       setLoading(false);
