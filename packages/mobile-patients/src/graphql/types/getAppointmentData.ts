@@ -116,6 +116,7 @@ export interface getAppointmentData_getAppointmentData_appointmentsHistory {
   rescheduleCount: number | null;
   appointmentState: APPOINTMENT_STATE | null;
   isJdQuestionsComplete: boolean | null;
+  isAutomatedQuestionsComplete: boolean | null;
   isSeniorConsultStarted: boolean | null;
   patientInfo: getAppointmentData_getAppointmentData_appointmentsHistory_patientInfo | null;
   doctorInfo: getAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo | null;
