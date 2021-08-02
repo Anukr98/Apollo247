@@ -1686,7 +1686,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const onSearchMedicine = (_searchText: string) => {
     setMedicineSearchLoading(true);
-    getMedicineSearchSuggestionsApi(_searchText, axdcCode, asyncPincode?.pincode || pinCode)
+    const pincode = asyncPincode?.pincode || pinCode || pharmacyPincode;
+    getMedicineSearchSuggestionsApi(_searchText, axdcCode, pincode)
       .then(({ data }) => {
         const products = data.products || [];
         const queries = data.queries || [];
