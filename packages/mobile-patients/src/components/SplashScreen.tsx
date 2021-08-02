@@ -37,6 +37,7 @@ import {
   UnInstallAppsFlyer,
   postFirebaseEvent,
   setCrashlyticsAttributes,
+  onCleverTapUserLogin,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -80,6 +81,7 @@ import {
   preFetchSDK,
   createHyperServiceObject,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import CleverTap from 'clevertap-react-native';
 
 (function() {
   /**
@@ -400,7 +402,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     ) {
       const params = id?.split('+');
       voipCallType.current = params?.[1]!;
-      callPermissions();
       getAppointmentDataAndNavigate(params?.[0]!, true);
     } else if (routeName == 'prohealth') {
       fetchProhealthHospitalDetails(id);
@@ -571,6 +572,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                   vaccinationCmsIdentifier,
                   vaccinationSubscriptionId
                 );
+                CleverTap.profileGetCleverTapID((err, res) => {
+                  if (!res) {
+                    onCleverTapUserLogin(currentPatient);
+                  }
+                });
                 callPhrNotificationApi(currentPatient);
                 setCrashlyticsAttributes(mePatient);
               } else {

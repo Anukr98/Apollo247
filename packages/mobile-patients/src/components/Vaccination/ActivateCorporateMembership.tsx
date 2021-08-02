@@ -171,6 +171,7 @@ export const ActivateCorporateMembership: React.FC<ActivateCorporateMembershipPr
                           isActive: true,
                           isCorporatePlan: true,
                           planId: '',
+                          circleEventSource: 'Corporate Membership Page',
                         },
                       }),
                     ],

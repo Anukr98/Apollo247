@@ -21,6 +21,7 @@ import {
   timeTo12HrFormat,
   g,
   postWebEngageEvent,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -32,6 +33,10 @@ import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCa
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { WebEngageEventName, WebEngageEvents } from '../../helpers/webEngageEvents';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const styles = StyleSheet.create({
   optionsView: {
@@ -244,7 +249,9 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
     const selectedTabSlots = (timeArray || []).find((item) => item.label == selectedtiming);
     if (selectedTabSlots && selectedTabSlots.time.length == 0) {
       const data: getDoctorDetailsById_getDoctorDetailsById = props.doctor!;
-      const eventAttributes: WebEngageEvents[WebEngageEventName.NO_SLOTS_FOUND] = {
+      const eventAttributes:
+        | WebEngageEvents[WebEngageEventName.NO_SLOTS_FOUND]
+        | CleverTapEvents[CleverTapEventName.CONSULT_NO_SLOTS_FOUND] = {
         'Doctor Name': g(data, 'fullName')!,
         'Speciality ID': g(data, 'specialty', 'id')!,
         'Speciality Name': g(data, 'specialty', 'name')!,
@@ -263,6 +270,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
         'Customer ID': g(currentPatient, 'id'),
       };
       postWebEngageEvent(WebEngageEventName.NO_SLOTS_FOUND, eventAttributes);
+      postCleverTapEvent(CleverTapEventName.CONSULT_NO_SLOTS_FOUND, eventAttributes);
     }
   }, [selectedtiming, timeArray]);
 

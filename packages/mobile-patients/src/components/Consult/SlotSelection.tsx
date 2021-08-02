@@ -12,7 +12,7 @@ import {
   ImageBackground,
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   GET_DOCTOR_DETAILS_BY_ID,
@@ -26,6 +26,8 @@ import {
   postWebEngageEvent,
   generateTimeSlots,
   timeTo12HrFormat,
+  postWEGPatientAPIError,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -56,6 +58,7 @@ import {
   renderSlotItemShimmer,
 } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 const { width } = Dimensions.get('window');
+const tabWidth = width / 4;
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
@@ -86,10 +89,15 @@ import {
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 interface SlotSelectionProps extends NavigationScreenProps {
   doctorId: string;
   isCircleDoctor?: boolean;
+  consultModeSelected: string;
 }
 
 type TimeArray = {
@@ -172,12 +180,19 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     { label: '12 PM - 6 PM', time: [] },
     { label: '6 PM - 12 AM', time: [] },
   ];
-  const [selectedTab, setSelectedTab] = useState<string>(consultTabs[0].title);
+
+  const [selectedTab, setSelectedTab] = useState<string>(
+    props.navigation.getParam('consultModeSelected') === consultPhysicalTab
+      ? consultPhysicalTab
+      : consultOnlineTab
+  );
   const [datesSlots, setDatesSlots] = useState<SlotsType[]>();
   const [totalSlots, setTotalSlots] = useState<number>(-1);
   const [timeArray, setTimeArray] = useState<TimeArray>(defaultTimeData);
   const [loadTotalSlots, setLoadTotalSlots] = useState<boolean>(true);
-  const [isOnlineSelected, setIsOnlineSelected] = useState<boolean>(true);
+  const [isOnlineSelected, setIsOnlineSelected] = useState<boolean>(
+    selectedTab === consultPhysicalTab ? false : true
+  );
   const [nextAvailableDate, setNextAvailableDate] = useState<string>('');
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
   const [firstSelectedSlot, setFirstSelectedSlot] = useState<string>('');
@@ -224,7 +239,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   useEffect(() => {
     setWebEngageScreenNames('Doctor Profile');
     fetchDoctorDetails();
-    fetchNextAvailabilitySlot(consultTabs[0].title, true);
+    fetchNextAvailabilitySlot(selectedTab, true);
   }, []);
 
   useEffect(() => {
@@ -278,10 +293,12 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     try {
       const todayDate = moment(new Date()).format('YYYY-MM-DD');
       const res: any = await getNextAvailableSlots(client, [doctorId] || [], todayDate);
+
       const slot =
-        consultType === consultTabs[0].title
+        consultType === consultOnlineTab
           ? res?.data?.[0]?.availableSlot
           : res?.data?.[0]?.physicalAvailableSlot;
+
       if (slot) {
         const nextAvailableDate: Date = new Date(slot);
         calculateNextNDates();
@@ -335,6 +352,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
         setTotalSlots(availableSlots?.length);
         setTimeArrayData(availableSlots, selectedDate);
       }
+      slotCounts && calculateNextNDates(slotCounts);
     } catch (error) {
       CommonBugFender('SlotSelection_fetchTotalAvailableSlots', error);
     }
@@ -352,7 +370,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           DoctorPhysicalAvailabilityInput: {
             availableDate: moment(selectedDate).format('YYYY-MM-DD'),
             doctorId,
-            facilityId: doctorDetails?.doctorHospital?.[0]?.facility?.id,
+            facilityId: doctorDetails?.doctorHospital?.[0]?.facility?.id || '',
           },
         },
       });
@@ -364,7 +382,9 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
         setTotalSlots(availableSlots?.length);
         setTimeArrayData(availableSlots, selectedDate);
       }
+      slotCounts && calculateNextNDates(slotCounts);
     } catch (error) {
+      console.log('SlotSelection_fetchTotalAvailableSlotsPhysical', error);
       CommonBugFender('SlotSelection_fetchTotalAvailableSlots', error);
     }
   };
@@ -372,8 +392,11 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   const setTimeArrayData = async (availableSlots: string[], date: Date) => {
     setLoadTotalSlots(true);
     const array = await generateTimeSlots(availableSlots, date);
+
+    const arrayRrequired = array.filter((i) => i.time.length > 0);
+
     setLoadTotalSlots(false);
-    setTimeArray(array);
+    setTimeArray(arrayRrequired);
   };
 
   const calculateNextNDates = (slotDateAndCount?: any) => {
@@ -746,6 +769,14 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
 
     const hospitalId = doctorClinics?.[0]?.facility?.id || '';
 
+    const eventAttributes = {
+      Source: 'Profile',
+      'Consult Mode': isOnlineSelected ? 'Online' : 'Physical',
+      'Consult Date Time': new Date(selectedTimeSlot),
+    };
+
+    callWEGEvent(WebEngageEventName.CONSULT_NOW_CLICKED, eventAttributes);
+
     const appointmentInput: BookAppointmentInput = {
       patientId: currentPatient?.id,
       doctorId,
@@ -779,6 +810,33 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
       whatsAppUpdate: whatsAppUpdate,
       isDoctorsOfTheHourStatus: doctorDetails?.doctorsOfTheHourStatus,
     };
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION] = {
+      docName: g(doctorDetails, 'fullName')!,
+      specialtyName: g(doctorDetails, 'specialty', 'name')!,
+      experience: Number(g(doctorDetails, 'experience')!),
+      languagesKnown: g(doctorDetails, 'languages')! || 'NA',
+      appointmentType: isOnlineSelected ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
+      docId: g(doctorDetails, 'id')!,
+      SpecialtyId: g(doctorDetails, 'specialty', 'id')!,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      appointmentDateTime: moment(selectedTimeSlot).toDate(),
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      onlineConsultFee: onlineConsultMRPPrice || undefined,
+      physicalConsultFee: physicalConsultMRPPrice || undefined,
+      Source: isOnlineSelected ? 'Consult Now' : 'Schedule for Later',
+      User_Type: getUserType(allCurrentPatients),
+      price: actualPrice,
+      docHospital: doctorDetails?.doctorHospital?.[0]?.facility?.name || undefined,
+      docCity: doctorDetails?.doctorHospital?.[0]?.facility?.city || undefined,
+    };
+    postCleverTapEvent(
+      CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION,
+      cleverTapEventAttributes
+    );
     isOnlineSelected
       ? props.navigation.navigate(AppRoutes.PaymentCheckout, passProps)
       : props.navigation.navigate(AppRoutes.PaymentCheckoutPhysical, passProps);
@@ -952,7 +1010,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           ? renderDoctorDetails()
           : renderDoctorDetailsShimmer({ height: isCircleDoctor ? 120 : 105 })}
         {renderConsultTypeTabs()}
-        {renderTotalSlots()}
+        <ScrollView>{renderTotalSlots()}</ScrollView>
         {totalSlots === 0 && !loadTotalSlots ? <View /> : renderProceedButton()}
       </View>
     </SafeAreaView>
@@ -1039,7 +1097,7 @@ const styles = StyleSheet.create({
   },
   buttonStyle: {
     ...theme.viewStyles.cardViewStyle,
-    width: 90,
+    width: tabWidth - 22,
     marginRight: 8,
     marginTop: 12,
     backgroundColor: theme.colors.WHITE,

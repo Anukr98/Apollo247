@@ -11,7 +11,7 @@ import { CareCashbackBanner } from './CareCashbackBanner';
 import {
   getDiscountPercentage,
   productsThumbnailUrl,
-  getCareCashback,
+  calculateCashbackForItem,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
@@ -121,6 +121,8 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
     price,
     special_price,
     thumbnail,
+    subcategory,
+    sku,
     sell_online,
     is_prescription_required,
     MaxOrderQty,
@@ -143,13 +145,9 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
 
   const renderCareCashback = () => {
     const finalPrice = Number(special_price) || price;
-    const cashback = getCareCashback(Number(finalPrice), type_id);
+    const cashback = calculateCashbackForItem(Number(finalPrice), type_id, subcategory, sku);
     if (!!cashback && type_id) {
-      return (
-        <CareCashbackBanner
-          bannerText={`extra ${string.common.Rs}${cashback.toFixed(2)} cashback`}
-        />
-      );
+      return <CareCashbackBanner bannerText={`extra ${string.common.Rs}${cashback} cashback`} />;
     } else {
       return <></>;
     }

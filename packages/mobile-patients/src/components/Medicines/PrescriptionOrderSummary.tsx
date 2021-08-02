@@ -46,6 +46,7 @@ import {
   postWebEngageEvent,
   g,
   setAsyncPharmaLocation,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { ProceedBar } from '@aph/mobile-patients/src/components/Medicines/Components/ProceedBar';
 import { PaymentMethod } from '@aph/mobile-patients/src/components/Medicines/Components/PaymentMethod';
@@ -75,6 +76,10 @@ import {
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import moment from 'moment';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 export interface PrescriptionOrderSummaryProps extends NavigationScreenProps {}
 
@@ -206,7 +211,9 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
         .map((item) => item.prismPrescriptionFileId)
         .filter((i) => i);
       const days = durationDays ? parseInt(durationDays) : null;
-      const appointmentIds = ePrescription?.length ? ePrescription?.map((item) => item?.id) : [];
+      const appointmentIds = ePrescription?.length
+        ? ePrescription?.filter((item) => item?.appointmentId)?.map((item) => item?.appointmentId)
+        : [];
 
       const prescriptionMedicineInput: savePrescriptionMedicineOrderOMSVariables = {
         prescriptionMedicineOMSInput: {
@@ -273,6 +280,18 @@ export const PrescriptionOrderSummary: React.FC<PrescriptionOrderSummaryProps> =
       Pincode: pinCode,
       User_Type: pharmacyUserType,
     };
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_NONCART_ORDER_SUBMIT_CLICKED] = {
+      'Order ID': `${orderAutoId}`,
+      'Delivery type': deliveryAddressId ? 'home' : 'store pickup',
+      'Store ID': storeId || undefined, // incase of store delivery
+      'Delivery address': deliveryAddressId ? deliveryAddressLine : storeAddressLine,
+      Pincode: pinCode,
+      'User Type': pharmacyUserType || undefined,
+    };
+    postCleverTapEvent(
+      CleverTapEventName.PHARMACY_NONCART_ORDER_SUBMIT_CLICKED,
+      cleverTapEventAttributes
+    );
     postWebEngageEvent(WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION, eventAttributes);
   };
 

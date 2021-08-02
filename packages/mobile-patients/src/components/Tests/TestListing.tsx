@@ -16,7 +16,10 @@ import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SafeAreaView, StyleSheet, Text, View, Image as ImageNative } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { sourceHeaders } from '@aph/mobile-patients/src/utils/commonUtils';
+import {
+  DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
+  sourceHeaders,
+} from '@aph/mobile-patients/src/utils/commonUtils';
 import { ItemCard } from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 import { PackageCard } from '@aph/mobile-patients/src/components/Tests/components/PackageCard';
 import { TestListingHeader } from '@aph/mobile-patients/src/components/Tests/components/TestListingHeader';
@@ -114,6 +117,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     }
   };
 
+ 
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
       query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
@@ -249,6 +253,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         </View>
       );
   };
+  
 
   const renderBreadCrumb = () => {
     return (
@@ -263,8 +268,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
 
   const renderList = () => {
     const actualItemsToShow = widgetsData?.diagnosticWidgetData?.filter(
-      (item: any) => item?.diagnosticPricing
-    );
+       (item: any) => item?.diagnosticPricing
+      );
     return (
       <>
         {!!actualItemsToShow && actualItemsToShow?.length > 0 ? (
@@ -283,7 +288,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                 isVertical={true}
                 columns={1}
                 navigation={props.navigation}
-                source={'Listing page'}
+                source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.LISTING}
                 sourceScreen={AppRoutes.TestListing}
               />
             ) : (
@@ -294,7 +299,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                 isVertical={true}
                 columns={2}
                 navigation={props.navigation}
-                source={'Listing page'}
+                source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.LISTING}
                 sourceScreen={AppRoutes.TestListing}
               />
             )}

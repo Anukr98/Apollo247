@@ -13,7 +13,7 @@ import { WebView } from 'react-native-webview';
 import { fireCirclePurchaseEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import { dateFormatterDDMM } from '@aph/mobile-patients/src/utils/dateUtil';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { AppRoutes, getCurrentRoute } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NotificationListener } from '@aph/mobile-patients/src/components/NotificationListener';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
@@ -129,6 +129,10 @@ import {
   getUserType,
   persistHealthCredits,
   getHealthCredits,
+  postCleverTapEvent,
+  getCleverTapCircleMemberValues,
+  getAge,
+  removeObjectNullUndefinedProperties,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -193,6 +197,12 @@ import { ConsultedDoctorsCard } from '@aph/mobile-patients/src/components/Consul
 import { handleOpenURL, pushTheView } from '@aph/mobile-patients/src/helpers/deeplinkRedirection';
 import { AuthContextProps } from '@aph/mobile-patients/src/components/AuthProvider';
 import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+  HomeScreenAttributes,
+  PatientInfo as PatientInfoObj,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const { Vitals } = NativeModules;
 
@@ -843,6 +853,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const isAppOpened = await AsyncStorage.getItem('APP_OPENED');
     if (isAppOpened) {
       postHomeWEGEvent(WebEngageEventName.HOME_VIEWED, undefined, attributes);
+      postHomeCleverTapEvent(CleverTapEventName.HOME_VIEWED, undefined, attributes);
     }
   };
 
@@ -1013,7 +1024,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               if (params?.doctorName) {
                 showFreeConsultOverlay(params);
               }
-            }
+            },
+            'Home Screen'
           );
         } else {
           if (params?.doctorName) showFreeConsultOverlay(params);
@@ -1068,7 +1080,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               if (params?.doctorName) {
                 showFreeConsultOverlay(params);
               }
-            }
+            },
+            'Home Screen'
           );
         } else {
           if (params?.doctorName) showFreeConsultOverlay(params);
@@ -1137,13 +1150,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const upcomingConsultsCount = appointmentCount?.upcomingConsultsCount || 0;
         const upcomingPhysicalConsultsCount = appointmentCount?.upcomingPhysicalConsultsCount || 0;
 
-        if (upcomingConsultsCount - upcomingPhysicalConsultsCount > 0) {
+        if (upcomingConsultsCount - upcomingPhysicalConsultsCount > 0
+          && getCurrentRoute() !== AppRoutes.ChatRoom) {
           overlyCallPermissions(
             currentPatient!.firstName!,
             'the doctor',
             showAphAlert,
             hideAphAlert,
-            true
+            true,
+            () => {},
+            'Home Screen'
           );
         }
       }
@@ -1297,6 +1313,115 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     postWebEngageEvent(eventName, eventAttributes);
   };
 
+  const postHomeCleverTapEvent = (
+    eventName: CleverTapEventName,
+    source?: HomeScreenAttributes['Source'],
+    attributes?: any
+  ) => {
+    let eventAttributes: HomeScreenAttributes = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
+      'Nav src': source === 'Home Screen' ? 'hero banner' : 'Bottom bar',
+      'Page Name': 'Home Screen',
+    };
+    if (
+      source &&
+      (eventName == CleverTapEventName.BUY_MEDICINES ||
+        eventName == CleverTapEventName.ORDER_TESTS ||
+        eventName == CleverTapEventName.VIEW_HELATH_RECORDS ||
+        eventName == CleverTapEventName.NEED_HELP)
+    ) {
+      (eventAttributes as HomeScreenAttributes)['Source'] = source;
+    }
+    if (
+      locationDetails &&
+      locationDetails.pincode &&
+      eventName == CleverTapEventName.BUY_MEDICINES
+    ) {
+      (eventAttributes as HomeScreenAttributes)['Pincode'] = locationDetails?.pincode || undefined;
+      (eventAttributes as HomeScreenAttributes)['Serviceability'] = serviceable || undefined;
+    }
+    if (eventName == CleverTapEventName.BUY_MEDICINES) {
+      eventAttributes = {
+        ...eventAttributes,
+        'Circle Member':
+          getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+          undefined,
+        'Circle Membership Value':
+          pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
+        User_Type: pharmacyUserTypeAttribute?.User_Type || undefined,
+      };
+    }
+    if (eventName == CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED) {
+      eventAttributes = {
+        ...eventAttributes,
+        isConsulted: getUserType(allCurrentPatients),
+      };
+    }
+    if (eventName == CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS) {
+      eventAttributes = {
+        ...eventAttributes,
+        'Nav src': source === 'Home Screen' ? 'homepage bar' : 'Bottom bar',
+      };
+    }
+    if (eventName == CleverTapEventName.HDFC_HEALTHY_LIFE) {
+      const subscription_name = hdfcUserSubscriptions?.name;
+      const newAttributes = {
+        HDFCMembershipState: !!g(hdfcUserSubscriptions, 'isActive') ? 'Active' : 'Inactive',
+        HDFCMembershipLevel: subscription_name?.substring(0, subscription_name?.indexOf('+')),
+        Circle_Member: !!circleSubscriptionId ? 'Yes' : 'No',
+      };
+      eventAttributes = { ...eventAttributes, ...newAttributes };
+    }
+    if (eventName == CleverTapEventName.HOME_VIEWED) {
+      eventAttributes = {
+        ...removeObjectNullUndefinedProperties(attributes),
+        ...eventAttributes,
+        'Nav src': 'app launch',
+      };
+    }
+    if (eventName == CleverTapEventName.COVID_VACCINATION_SECTION_CLICKED) {
+      eventAttributes = { ...eventAttributes, ...attributes };
+    }
+    postCleverTapEvent(eventName, eventAttributes);
+  };
+
+  const postVaccineWidgetEvents = (
+    eventName: CleverTapEventName,
+    navSrc?: HomeScreenAttributes['Nav src']
+  ) => {
+    let eventAttributes: HomeScreenAttributes = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
+      'Nav src': navSrc || 'Vaccine Widget',
+      'Page Name': 'Home Screen',
+    };
+    if (
+      eventName === CleverTapEventName.KAVACH_PROGRAM_CLICKED ||
+      eventName === CleverTapEventName.EXPLORE_CORPORATE_MEMBERSHIP_CLICKED ||
+      eventName === CleverTapEventName.CHECK_RISK_LEVEL_CLICKED
+    ) {
+      eventAttributes['Nav src'] = undefined;
+    }
+    postCleverTapEvent(eventName, eventAttributes);
+  };
+
   const fireFirstTimeLanded = () => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.NON_CIRCLE_HOMEPAGE_VIEWED] = {
       'Patient UHID': currentPatient?.uhid,
@@ -1362,6 +1487,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
+        postHomeCleverTapEvent(
+          CleverTapEventName.CONSULT_HOMESCREEN_BOOK_DOCTOR_APPOINTMENT_CLICKED,
+          'Home Screen'
+        );
         props.navigation.navigate(AppRoutes.DoctorSearch);
       },
     },
@@ -1372,10 +1501,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Home Screen');
+        postHomeCleverTapEvent(CleverTapEventName.BUY_MEDICINES, 'Home Screen');
         props.navigation.navigate('MEDICINES', { focusSearch: true });
-        const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
+        const eventAttributes:
+          | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
+          | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
           source: 'app home',
         };
+        setTimeout(
+          () => postCleverTapEvent(CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED, eventAttributes),
+          500
+        );
         postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
       },
     },
@@ -1384,9 +1520,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       title: 'Book Lab Tests',
       image: <TestsCartIcon style={styles.menuOptionIconStyle} />,
       onPress: () => {
+        const homeScreenAttributes = {
+          'Nav src': 'hero banner',
+          'Page Name': 'Home Screen',
+        };
         postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Home Screen');
-        props.navigation.navigate('TESTS', { focusSearch: true });
+        props.navigation.navigate('TESTS', { focusSearch: true, homeScreenAttributes });
       },
     },
     {
@@ -1401,6 +1541,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.VIEW_HELATH_RECORDS, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Home Screen');
+        postHomeCleverTapEvent(CleverTapEventName.VIEW_HELATH_RECORDS, 'Home Screen');
         props.navigation.navigate('HEALTH RECORDS');
       },
     },
@@ -1410,7 +1551,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       title: 'Book Doctor by Symptoms',
       image: <Symptomtracker style={styles.menuOptionIconStyle} />,
       onPress: () => {
-        const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_PAGE_CLICKED] = {
+        const eventAttributes:
+          | WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_PAGE_CLICKED]
+          | CleverTapEvents[CleverTapEventName.SYMPTOM_TRACKER_PAGE_CLICKED] = {
           'Patient UHID': g(currentPatient, 'uhid'),
           'Patient ID': g(currentPatient, 'id'),
           'Patient Name': g(currentPatient, 'firstName'),
@@ -1422,6 +1565,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         postWebEngageEvent(WebEngageEventName.SYMPTOM_TRACKER_PAGE_CLICKED, eventAttributes);
         postHomeFireBaseEvent(FirebaseEventName.TRACK_SYMPTOMS, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.TRACK_SYMPTOMS);
+        postHomeCleverTapEvent(CleverTapEventName.TRACK_SYMPTOMS, 'Home Screen');
         props.navigation.navigate(AppRoutes.SymptomTracker);
       },
     },
@@ -1436,6 +1580,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.MANAGE_DIABETES, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.MANAGE_DIABETES);
+        postHomeCleverTapEvent(CleverTapEventName.MANAGE_DIABETES, 'Home Screen');
         getTokenforCM();
       },
     },
@@ -1547,10 +1692,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             if (circlePlan) {
               const circleSubscription = setCircleSubscriptionData(circlePlan[0]);
               if (!!circlePlan[0]?._id) {
-                AsyncStorage.setItem('circleSubscriptionId', circlePlan[0]?.subscription_id);
-                setCircleSubscriptionId && setCircleSubscriptionId(circlePlan[0]?.subscription_id);
-                setIsCircleSubscription && setIsCircleSubscription(true);
-
+                if (circlePlan[0]?.status === 'active') {
+                  AsyncStorage.setItem('circleSubscriptionId', circlePlan[0]?.subscription_id);
+                  setCircleSubscriptionId &&
+                    setCircleSubscriptionId(circlePlan[0]?.subscription_id);
+                  setIsCircleSubscription && setIsCircleSubscription(true);
+                }
                 if (circlePlan[0]?.status === 'disabled') {
                   setIsCircleExpired && setIsCircleExpired(true);
                   setNonCircleValues();
@@ -1791,6 +1938,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             startDate: circleData?.start_date,
             endDate: circleData?.end_date,
             expiry: circleData?.expires_in,
+            plan_id: circleData?.plan_id,
+            source_identifier: circleData?.source_meta_data?.source_identifier,
           };
           setCirclePlanValidity && setCirclePlanValidity(planValidity);
           setRenewNow(circleData?.renewNow ? 'yes' : 'no');
@@ -1801,6 +1950,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             setCirclePaymentReference(paymentStoredVal);
         } else {
           setNonCircleValues();
+          setIsCircleMember('no');
           setCirclePlanValidity && setCirclePlanValidity(null);
           setCirclePaymentReference && setCirclePaymentReference(null);
           setCirclePlanId && setCirclePlanId('');
@@ -1848,7 +1998,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const setNonCircleValues = () => {
     AsyncStorage.setItem('isCircleMember', 'no');
     AsyncStorage.removeItem('circleSubscriptionId');
-    setIsCircleMember && setIsCircleMember('no');
     setCircleSubscriptionId && setCircleSubscriptionId('');
     setIsCircleSubscription && setIsCircleSubscription(false);
     setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
@@ -2489,28 +2638,46 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 if (i === 0) {
                   postHomeFireBaseEvent(FirebaseEventName.TABBAR_APPOINTMENTS_CLICKED, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED, 'Menu');
+                  postHomeCleverTapEvent(CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS, 'Menu');
                   CommonLogEvent(AppRoutes.ConsultRoom, 'APPOINTMENTS clicked');
                   props.navigation.navigate('APPOINTMENTS');
                 } else if (i == 1) {
                   postHomeFireBaseEvent(FirebaseEventName.VIEW_HELATH_RECORDS, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Menu');
+                  postHomeCleverTapEvent(CleverTapEventName.VIEW_HELATH_RECORDS, 'Menu');
                   CommonLogEvent(AppRoutes.ConsultRoom, 'HEALTH_RECORDS clicked');
                   props.navigation.navigate('HEALTH RECORDS');
                 } else if (i == 2) {
                   postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Menu');
+                  postHomeCleverTapEvent(CleverTapEventName.BUY_MEDICINES, 'Menu');
                   CommonLogEvent(AppRoutes.ConsultRoom, 'MEDICINES clicked');
-                  const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
+                  const eventAttributes:
+                    | WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED]
+                    | CleverTapEvents[CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED] = {
                     source: 'app home',
                   };
+                  setTimeout(
+                    () =>
+                      postCleverTapEvent(
+                        CleverTapEventName.PHARMACY_HOME_PAGE_VIEWED,
+                        eventAttributes
+                      ),
+                    500
+                  );
                   postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
                   props.navigation.navigate('MEDICINES');
                 } else if (i == 3) {
+                  const homeScreenAttributes = {
+                    'Nav src': 'Bottom bar',
+                    'Page Name': 'Home Screen',
+                  };
                   postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Menu');
                   CommonLogEvent(AppRoutes.ConsultRoom, 'TESTS clicked');
-                  props.navigation.navigate('TESTS');
+                  props.navigation.navigate('TESTS', { homeScreenAttributes });
                 } else if (i == 4) {
+                  postHomeCleverTapEvent(CleverTapEventName.MY_ACCOUNT, 'Menu');
                   postHomeFireBaseEvent(FirebaseEventName.MY_ACCOUNT, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.MY_ACCOUNT);
                   CommonLogEvent(AppRoutes.ConsultRoom, 'MY_ACCOUNT clicked');
@@ -2619,6 +2786,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               }
             } else {
               postHomeWEGEvent(WebEngageEventName.ACTIVE_APPOINTMENTS);
+              postHomeCleverTapEvent(CleverTapEventName.CONSULT_ACTIVE_APPOINTMENTS, 'Home Screen');
               props.navigation.navigate('APPOINTMENTS');
             }
           }}
@@ -2720,9 +2888,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           circleActivated={circleActivatedRef.current}
           circlePlanValidity={circlePlanValidity}
           from={string.banner_context.HOME}
+          source={string.banner_context.HOME}
           successCallback={() => {
             getUserSubscriptionsWithBenefits();
           }}
+          circleEventSource={'Landing Home Page banners'}
         />
       );
     }
@@ -2917,6 +3087,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
           setShowCircleActivationcr(true);
         }}
+        circleEventSource={'Landing Home Page banners'}
       />
     );
   };
@@ -2933,6 +3104,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       circlePlanValidity={{ endDate: planValiditycr?.current }}
       source={'Consult'}
       from={string.banner_context.MEMBERSHIP_DETAILS}
+      circleEventSource={'Landing Home Page'}
     />
   );
 
@@ -3007,6 +3179,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 membershipType: 'CIRCLE PLAN',
                 isActive: true,
                 comingFrom: 'Circle Benifits(Home Screen)',
+                circleEventSource: 'Landing Home Page',
               });
             }}
             credits={healthCredits}
@@ -3020,6 +3193,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 membershipType: 'CIRCLE PLAN',
                 isActive: true,
                 comingFrom: 'Circle Benifits(Home Screen)',
+                circleEventSource: 'Landing Home Page',
               });
             }}
             credits={healthCredits}
@@ -3252,6 +3426,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const attibutes = {
       'CTA Clicked': item?.title,
     };
+    postVaccineWidgetEvents(CleverTapEventName.VACCINATION_CALL_A_DOCTOR_CLICKED);
     postHomeWEGEvent(WebEngageEventName.COVID_VACCINATION_SECTION_CLICKED, undefined, attibutes);
     setShowHdfcConnectPopup(true);
   };
@@ -3298,6 +3473,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const onPressReadArticles = () => {
+    postVaccineWidgetEvents(CleverTapEventName.READ_BLOG_VIEWED, 'Blog Widget');
     postHomeWEGEvent(WebEngageEventName.READ_ARTICLES);
     try {
       const openUrl = AppConfig.Configuration.BLOG_URL;
@@ -3315,6 +3491,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
     try {
       if (item?.action === string.vaccineBooking.CORPORATE_VACCINATION) {
+        postVaccineWidgetEvents(CleverTapEventName.VACCINATION_BOOK_SLOT_CLICKED);
         AsyncStorage.setItem('verifyCorporateEmailOtpAndSubscribe', 'false');
         if (corporateSubscriptions?.length) {
           if (!!vaccinationCmsIdentifier) {
@@ -3326,6 +3503,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 isVaccineSubscription: !!vaccinationCmsIdentifier,
                 isCorporateSubscription: !!corporateSubscriptions?.length,
               });
+              sendBookVaccinationSlotCTAEvent();
             } else {
               props.navigation.navigate(AppRoutes.VaccineTermsAndConditions, {
                 isCorporateSubscription: !!corporateSubscriptions?.length,
@@ -3339,6 +3517,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               isVaccineSubscription: !!vaccinationCmsIdentifier,
               isCorporateSubscription: !!corporateSubscriptions?.length,
             });
+            sendBookVaccinationSlotCTAEvent();
           }
         } else {
           props.navigation.navigate(AppRoutes.BookedVaccineScreen, {
@@ -3348,8 +3527,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             isVaccineSubscription: !!vaccinationCmsIdentifier,
             isCorporateSubscription: !!corporateSubscriptions?.length,
           });
+          sendBookVaccinationSlotCTAEvent();
         }
       } else if (item?.url?.includes('apollopatients://')) {
+        postVaccineWidgetEvents(CleverTapEventName.VACCINATION_CONSULT_CLICKED);
         // handling speciality deeplink only on this phase
         const data = handleOpenURL(item?.url);
         const { routeName, id, isCall, mediaSource } = data;
@@ -3363,9 +3544,26 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           mediaSource
         );
       } else {
+        postVaccineWidgetEvents(CleverTapEventName.FAQs_ARTICLES_CLICKED);
         regenerateJWTToken('vaccine', item?.url);
       }
     } catch (e) {}
+  };
+
+  const sendBookVaccinationSlotCTAEvent = () => {
+    try {
+      const eventAttributes = {
+        'Patient ID': currentPatient?.id || '',
+        'Patient First Name': currentPatient?.firstName.trim(),
+        'Patient Last Name': currentPatient?.lastName.trim(),
+        'Patient UHID': currentPatient?.uhid,
+        'Patient Number': currentPatient?.mobileNumber,
+        'Patient Gender': currentPatient?.gender,
+        'Pateint Age ': getAge(currentPatient?.dateOfBirth),
+        'Source ': Platform.OS === 'ios' ? 'ios' : 'android',
+      };
+      postWebEngageEvent(WebEngageEventName.BOOK_VACCINATION_SLOT, eventAttributes);
+    } catch (error) {}
   };
 
   const onPressHealthPro = async () => {
@@ -3389,6 +3587,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const onPressRiskLevel = () => {
+    postVaccineWidgetEvents(CleverTapEventName.CHECK_RISK_LEVEL_CLICKED);
     postHomeWEGEvent(WebEngageEventName.CHECK_YOUR_RISK_LEVEL);
     const urlToOpen = AppConfig.Configuration.COVID_RISK_LEVEL_URL;
     try {
@@ -3412,10 +3611,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const onPressCorporateMembership = async () => {
+    postVaccineWidgetEvents(CleverTapEventName.EXPLORE_CORPORATE_MEMBERSHIP_CLICKED);
     props.navigation.navigate(AppRoutes.MyMembership);
   };
 
   const onPressKavach = () => {
+    postVaccineWidgetEvents(CleverTapEventName.KAVACH_PROGRAM_CLICKED);
     postHomeWEGEvent(WebEngageEventName.APOLLO_KAVACH_PROGRAM);
     try {
       const openUrl = AppConfig.Configuration.KAVACH_URL;
@@ -3452,6 +3653,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderTopIcons = () => {
     const onPressCart = () => {
+      postVaccineWidgetEvents(CleverTapEventName.MY_CART_CLICKED, 'Top bar');
       const route =
         (shopCartItems.length && cartItems.length) || (!shopCartItems.length && !cartItems.length)
           ? AppRoutes.MedAndTestCart
@@ -3483,6 +3685,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
+              postVaccineWidgetEvents(CleverTapEventName.NOTIFICATION_CENTER_CLICKED, 'Top bar');
               postHomeWEGEvent(WebEngageEventName.NOTIFICATION_ICON);
               props.navigation.navigate(AppRoutes.NotificationScreen);
             }}

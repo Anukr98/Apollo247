@@ -41,12 +41,14 @@ import {
   postwebEngageAddToCartEvent,
   postFirebaseAddToCartEvent,
   postAppsFlyerAddToCartEvent,
-  getCareCashback,
   doRequestAndAccessLocationModified,
   navigateToHome,
   navigateToScreenWithEmptyStack,
   setAsyncPharmaLocation,
+  postCleverTapEvent,
+  getCleverTapCircleMemberValues,
   getIsMedicine,
+  calculateCashbackForItem,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   MedicineProductDetails,
@@ -87,6 +89,10 @@ import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/Add
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { MedicineListingHeader } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingHeader';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import AsyncStorage from '@react-native-community/async-storage';
 
 export type ProductPageViewedEventProps = Pick<
@@ -104,7 +110,9 @@ export interface ProductDetailPageProps
     urlKey?: string;
   }> {}
 
-type PharmacyTatApiCalled = WebEngageEvents[WebEngageEventName.PHARMACY_TAT_API_CALLED];
+type PharmacyTatApiCalled =
+  | WebEngageEvents[WebEngageEventName.PHARMACY_TAT_API_CALLED]
+  | CleverTapEvents[CleverTapEventName.PHARMACY_TAT_API_CALLED];
 
 export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const [movedFrom, setMovedFrom] = useState(props.navigation.getParam('movedFrom'));
@@ -179,9 +187,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   const [userType, setUserType] = useState<string>('');
   const [circleID, setCircleID] = useState<string>('');
 
-  const { special_price, price, type_id } = medicineDetails;
+  const { special_price, price, type_id, subcategory } = medicineDetails;
   const finalPrice = price - special_price ? special_price : price;
-  const cashback = getCareCashback(Number(finalPrice), type_id);
+  const cashback = calculateCashbackForItem(Number(finalPrice), type_id, subcategory, sku);
   type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
 
   const getItemQuantity = (id: string) => {
@@ -264,6 +272,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           Response_MRP: tatEventData?.Response_MRP * Number(medicineDetails?.mou || 1),
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_TAT_API_CALLED, eventAttributes);
+        postCleverTapEvent(CleverTapEventName.PHARMACY_TAT_API_CALLED, eventAttributes);
       }
     } catch (error) {}
   }, [tatEventData]);
@@ -480,8 +489,33 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         MaxOrderQuantity: MaxOrderQty,
         MRP: price,
         SpecialPrice: special_price || null,
-        CircleCashback: cashback?.toFixed(2),
+        CircleCashback: cashback,
         isMultiVariant: multiVariantAttributes.length ? 1 : 0,
+      };
+      let cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_PRODUCT_PAGE_VIEWED] = {
+        Source: movedFrom,
+        'product id (SKUID)': sku?.toUpperCase(),
+        'product name': name,
+        Stockavailability: stock_availability,
+        CategoryID: category_id || undefined,
+        CategoryName: productPageViewedEventProps?.CategoryName || undefined,
+        'Section Name': productPageViewedEventProps?.SectionName || undefined,
+        'Circle Member':
+          getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+          undefined,
+        'Circle Membership Value':
+          pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
+        User_Type: userType || undefined,
+        Pincode: pincode,
+        serviceable: notServiceable ? 'No' : 'Yes',
+        TATDay: deliveryTime ? moment(deliveryTime).diff(moment(), 'days') : undefined,
+        TatHour: deliveryTime ? moment(deliveryTime).diff(moment(), 'hours') : undefined,
+        TatDateTime: deliveryTime || undefined,
+        ProductType: type_id || undefined,
+        MaxOrderQuantity: MaxOrderQty,
+        MRP: price,
+        SpecialPrice: special_price || undefined,
+        CircleCashback: cashback?.toFixed(2),
       };
       if (movedFrom === 'deeplink') {
         eventAttributes['Circle Membership Added'] = circleID
@@ -490,7 +524,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           ? 'Yes'
           : 'No';
         eventAttributes['CategoryID'] = category_id;
+        cleverTapEventAttributes['Circle Member'] = circleID
+          ? 'Existing'
+          : !!circleMembershipCharges
+          ? 'Added'
+          : 'Not Added';
       }
+      postCleverTapEvent(CleverTapEventName.PHARMACY_PRODUCT_PAGE_VIEWED, cleverTapEventAttributes);
       postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
       postFirebaseEvent(FirebaseEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
@@ -546,6 +586,20 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           'Cart Items': JSON.stringify(cartItems),
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
+        const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_AVAILABILITY_API_CALLED] = {
+          Source: 'PDP',
+          Input_SKU: sku || undefined,
+          Input_Pincode: currentPincode,
+          Input_MRP: medicineDetails?.price,
+          No_of_items_in_the_cart: cartItems?.length,
+          Response_Exist: exist ? 'Yes' : 'No',
+          Response_MRP: mrp,
+          Response_Qty: qty,
+        };
+        postCleverTapEvent(
+          CleverTapEventName.PHARMACY_AVAILABILITY_API_CALLED,
+          cleverTapEventAttributes
+        );
       } catch (error) {}
 
       if (outOfStock) {
@@ -614,13 +668,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             const item = response.items[0];
             const eventAttributes: PharmacyTatApiCalled = {
               Source: 'PDP',
-              Input_sku: sku,
+              Input_SKU: sku,
               Input_qty: getItemQuantity(sku) || 1,
               Input_lat: lattitude,
               Input_long: longitude,
               Input_pincode: currentPincode,
               Input_MRP: medicineDetails?.price, // overriding this value after PDP API call
-              No_of_items_in_the_cart: 1,
+              No_of_items_in_the_cart: cartItems?.length,
               Response_Exist: item.exist ? 'Yes' : 'No',
               Response_MRP: item.mrp, // overriding this value after PDP API call
               Response_Qty: item.qty,
@@ -667,6 +721,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     );
   };
 
+  const setLocationValues = (values: any) => {
+    setPharmacyLocation?.(values);
+    setAsyncPincode?.(values);
+    setLocationDetails?.(values);
+    setAsyncPharmaLocation?.(values);
+  };
+
   const updatePlaceInfoByPincode = (pinCode: string) => {
     setLoading!(true);
     getPlaceInfoByPincode(pinCode)
@@ -676,11 +737,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             const addrComponents = data.results[0].address_components || [];
             const latLang = data.results[0].geometry.location || {};
             const response = getFormattedLocation(addrComponents, latLang, pinCode);
-            setAsyncPincode?.(response);
-            setPharmacyLocation!(response);
-            setAsyncPharmaLocation(response);
+            const saveAddress = {
+              pincode: pincode,
+              id: '',
+              city: response?.city,
+              state: response?.state,
+            };
+            setLocationValues(saveAddress);
             setDeliveryAddressId!('');
-            !locationDetails && setLocationDetails!(response);
             setpincode(pinCode);
             fetchDeliveryTime(pinCode, true);
             setLoading!(false);
@@ -744,6 +808,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         maxOrderQty: MaxOrderQty,
         productType: type_id,
         url_key,
+        subcategory,
       });
     }
     postwebEngageAddToCartEvent(
@@ -795,8 +860,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         <AccessLocation
           addresses={addresses}
           onPressSelectAddress={(address) => {
-            setAsyncPharmaLocation(address);
             updatePlaceInfoByPincode(address?.zipcode);
+            setLocationValues(address);
             hideAphAlert!();
           }}
           onPressEditAddress={(address) => {
@@ -843,8 +908,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     doRequestAndAccessLocationModified()
       .then((response) => {
         setLoading!(false);
-        response && setPharmacyLocation!(response);
-        response && !locationDetails && setLocationDetails!(response);
+        if (response) setLocationValues(response);
         setDeliveryAddressId!('');
         updatePlaceInfoByPincode(response?.pincode);
       })
@@ -879,6 +943,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       pincode: pincode,
       serviceable: notServiceable ? 'No' : 'Yes',
     };
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_NOTIFY_ME] = {
+      'product name': medicineDetails?.name,
+      'product id': medicineDetails?.sku,
+      'category ID': medicineDetails?.category_id || undefined,
+      price: medicineDetails?.price,
+      pincode: pincode,
+      serviceable: notServiceable ? 'No' : 'Yes',
+    };
+    postCleverTapEvent(CleverTapEventName.PHARMACY_NOTIFY_ME, cleverTapEventAttributes);
     postWebEngageEvent(WebEngageEventName.NOTIFY_ME, eventAttributes);
     showAphAlert!({
       title: 'Okay! :)',

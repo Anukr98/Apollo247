@@ -4,7 +4,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Image } from 'react-native-elements';
-import { MedicineProduct } from '../../helpers/apiCalls';
+import { MedicineProduct, SearchSuggestion } from '../../helpers/apiCalls';
 import { QuantityButton } from '../ui/QuantityButton';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -46,6 +46,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     height: 25,
   },
+  searchSuggestionItem: {
+    flexDirection: 'row',
+    paddingVertical: 14,
+  },
 });
 
 export interface MedicineSearchSuggestionItemProps {
@@ -58,22 +62,30 @@ export interface MedicineSearchSuggestionItemProps {
   style?: ViewStyle;
   showSeparator?: boolean;
   loading?: boolean;
-  data: MedicineProduct;
+  data: MedicineProduct | SearchSuggestion;
 }
 
 export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItemProps> = (
   props
 ) => {
   const { data } = props;
-  const prescriptionRequired = data.is_prescription_required == '1';
-  const imageUri = productsThumbnailUrl(data.thumbnail);
+  const prescriptionRequired = data?.is_prescription_required == '1';
+  const imageUri = productsThumbnailUrl(data?.thumbnail);
   const isOutOfStock = !isProductInStock(data);
-  const isNotForOnlineSelling = !data.sell_online;
-  const specialPrice = Number(data.special_price) || undefined;
-  const { product_form, pack_form, pack_size, unit_of_measurement } = data;
+  const isNotForOnlineSelling = !data?.sell_online;
+  const specialPrice = Number(data?.special_price) || undefined;
+  const {
+    product_form,
+    pack_form,
+    pack_size,
+    unit_of_measurement,
+    name,
+    queryName,
+    superQuery,
+  } = data;
 
   function getDiscountPercent() {
-    return (((data.price - specialPrice) / data.price) * 100).toFixed(1);
+    return (((data?.price - specialPrice) / data?.price) * 100).toFixed(1);
   }
 
   const renderNamePriceAndInStockStatus = () => {
@@ -178,18 +190,31 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
     );
   };
 
+  const renderSeachSuggestions = () => (
+    <View style={styles.searchSuggestionItem}>
+      <Text style={theme.viewStyles.text('M', 15, '#fc9916', 1, 20, 0)}>{queryName}</Text>
+      {!!superQuery && (
+        <Text style={theme.viewStyles.text('M', 15, '#01475B', 1, 20, 0)}>{` ${superQuery}`}</Text>
+      )}
+    </View>
+  );
+
   return (
     <TouchableOpacity
       activeOpacity={1}
       style={[styles.containerStyle, props.style]}
       onPress={props.onPress}
     >
-      <View style={styles.containerStyle} key={data.name}>
-        <View style={styles.iconAndDetailsContainerStyle}>
-          {renderIconOrImage()}
-          <View style={{ width: 16 }} />
-          {renderNamePriceAndInStockStatus()}
-        </View>
+      <View style={styles.containerStyle} key={name}>
+        {!!queryName ? (
+          renderSeachSuggestions()
+        ) : (
+          <View style={styles.iconAndDetailsContainerStyle}>
+            {renderIconOrImage()}
+            <View style={{ width: 16 }} />
+            {renderNamePriceAndInStockStatus()}
+          </View>
+        )}
         {props.showSeparator ? <Spearator /> : null}
       </View>
     </TouchableOpacity>

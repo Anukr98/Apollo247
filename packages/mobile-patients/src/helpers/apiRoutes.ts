@@ -21,6 +21,8 @@ export const apiBaseUrl =
     ? 'https://aph-dev-api.apollo247.com/'
     : AppConfig.APP_ENV == AppEnv.DEVReplica
     ? 'https://devapi.apollo247.com/'
+    : AppConfig.APP_ENV == AppEnv.QA6
+    ? 'https://qa6api.apollo247.com/'
     : 'http://localhost:4000';
 
 export const apiRoutes = {

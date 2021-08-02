@@ -148,7 +148,11 @@ import {
   createAddressObject,
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
 } from '@aph/mobile-patients/src/utils/commonUtils';
-import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import {
+  initiateSDK,
+  terminateSDK,
+  createHyperServiceObject,
+} from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import {
   DiagnosticAddresssSelected,
@@ -196,6 +200,8 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
+
 const { width: screenWidth } = Dimensions.get('window');
 type Address = savePatientAddress_savePatientAddress_patientAddress;
 export interface areaObject {
@@ -334,12 +340,28 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [phleboMin, setPhleboMin] = useState(0);
   const itemsWithHC = cartItems?.filter((item) => item!.collectionMethod == 'HC');
   const itemWithId = itemsWithHC?.map((item) => Number(item.id!));
+  const { cusId, isfetchingId } = useGetJuspayId();
+  const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
 
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   var pricesForItemArray;
   var modifyPricesForItemArray;
   var slotBookedArray = ['slot', 'already', 'booked', 'select a slot'];
 
+  useEffect(() => {
+    !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
+  }, [isfetchingId]);
+
+  const initiateHyperSDK = async (cusId: any) => {
+    try {
+      const merchantId = AppConfig.Configuration.merchantId;
+      terminateSDK();
+      setTimeout(() => createHyperServiceObject(), 1400);
+      setTimeout(() => (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true)), 1500);
+    } catch (error) {
+      CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
+    }
+  };
   const isCovidItem = cartItemsWithId?.map((item) =>
     AppConfig.Configuration.Covid_Items.includes(item)
   );
@@ -379,7 +401,21 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     });
 
   useEffect(() => {
-    initiateHyperSDK();
+    if (currentPatient) {
+      checkPatientAge(currentPatient);
+    }
+  }, [currentPatient]);
+
+  useEffect(() => {
+    if (currentPatient) {
+      checkPatientAge(currentPatient);
+    }
+  }, [currentPatient]);
+
+  useEffect(() => {
+    if (currentPatient) {
+      checkPatientAge(currentPatient);
+    }
   }, [currentPatient]);
 
   useEffect(() => {
@@ -456,7 +492,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 }
               });
             });
-            setAlsoAddListData(_diagnosticWidgetData);
+            const filteredItems = !!_diagnosticWidgetData && _diagnosticWidgetData?.filter(
+              (diagItem: any) => !listOfIds?.includes(Number(diagItem?.itemId))
+            );
+            setAlsoAddListData(filteredItems);
           })
           .catch((error) => {
             setAlsoAddListData([]);
@@ -492,28 +531,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   };
 
-  const initiateHyperSDK = async () => {
-    try {
-      const isInitiated: boolean = await isSDKInitialised();
-      !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id);
-    } catch (error) {
-      CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
-    }
-  };
-
   const checkPatientAge = (_selectedPatient: any, fromNewProfile: boolean = false) => {
     let age = !!_selectedPatient?.dateOfBirth ? getAge(_selectedPatient?.dateOfBirth) : null;
     if (age && age <= 10) {
       setSelectedPatient(null);
       setShowSelectPatient?.(false);
-      Alert.alert(string.common.uhOh, string.diagnostics.minorAgeText, [
-        {
-          text: 'OK',
-          onPress: () => {
-            fromNewProfile && setShowPatientListOverlay(true);
-          },
+      setShowPatientListOverlay?.(false);
+      showAphAlert?.({
+        title: string.common.uhOh,
+        description: string.diagnostics.minorAgeText,
+        onPressOk: () => {
+          hideAphAlert?.();
+          setShowPatientListOverlay(true);
         },
-      ]);
+      });
       return true;
     }
     return false;
@@ -2396,7 +2427,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       const orderInput: OrderCreate = {
         orders: orders,
         total_amount: grandTotal,
-        customer_id: currentPatient?.primaryPatientId || getPatientId,
       };
       const response = await createOrderInternal(orderInput);
       if (response?.data?.createOrderInternal?.success) {
@@ -2427,6 +2457,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             orderDetails: orderInfo,
             eventAttributes,
             businessLine: 'diagnostics',
+            customerId: cusId,
           });
         }
       }
@@ -2913,6 +2944,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       }
       setShowSpinner(false);
       setLoading?.(false);
+      setHcApiCalled(true);
     } catch (error) {
       setShowSpinner(false);
       setLoading?.(false);
@@ -3403,7 +3435,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <View style={{ height: cartItems?.length > 0 ? 140 : 90 }} />
         </ScrollView>
         {renderTestProceedBar()}
-        {showSpinner && <Spinner />}
+        {(showSpinner || !hyperSdkInitialized) && <Spinner />}
       </SafeAreaView>
     </View>
   );

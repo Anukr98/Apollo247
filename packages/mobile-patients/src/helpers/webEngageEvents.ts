@@ -37,9 +37,11 @@ export enum ProductPageViewedSource {
 }
 
 export enum WebEngageEventName {
-  //doh
-  DOH_Viewed = 'DOH Viewed',
+
+  Patient_API_Error='Patient_API_Error',
+  //DOH
   DOH_Clicked = 'DOH Clicked',
+  DOH_Viewed = 'DOH Viewed',
 
   MOBILE_ENTRY = 'Mobile Entry',
   MOBILE_NUMBER_ENTERED = 'Mobile Number Entered',
@@ -478,6 +480,12 @@ export enum WebEngageEventName {
   //Vaccination Booking
   VACCINATION_BOOKING_CONFIRMATION = 'Vaccine_Booking confirmation',
   VACCINATION_CANCELLATION = 'Vaccine_Cancellation',
+  BOOK_VACCINATION_SLOT = 'Book Vaccination slot',
+  VACCINATION_BOOKING_CLICKED = 'Vaccination Booking Clicked',
+  BOOK_A_SLOT_CLICKED = 'Book a Slot Clicked',
+  ADD_MEMBER_CLICKED = 'Add Member Clicked',
+  MEMBER_DETAILS_SAVED = 'Member Details Saved',
+  VACCINE_REGISTRATION_COMPLETED = 'Vaccine Registeration Completed',
 }
 
 export interface PatientInfo {
@@ -779,6 +787,16 @@ export interface WebEngageEvents {
   // DOH Events \\
   [WebEngageEventName.DOH_Viewed]: DOHInfo;
   [WebEngageEventName.DOH_Clicked]: DOHInfo;
+
+  [WebEngageEventName.Patient_API_Error]: {
+  'Patient Name':string;
+  'Patient ID':string;
+  'Patient Number':string;
+  'Doctor ID':string | null;
+  'Screen Name':string;
+  'API Name':string;
+  'Error Name':any;
+    };
 
   // ********** Home Screen Events ********** \\
 
@@ -1325,6 +1343,12 @@ export interface WebEngageEvents {
     Amount: number;
     LOB: string;
     type?: string;
+    paymentOrderId: string;
+  };
+  [WebEngageEventName.PAYMENT_STATUS]: {
+    status: string;
+    LOB: string;
+    paymentOrderId: string;
   };
   [WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED]: {
     position: number;

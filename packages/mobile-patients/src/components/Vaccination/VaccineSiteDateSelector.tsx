@@ -92,7 +92,7 @@ export interface VaccineSiteDateSelectorProps {
   siteList: any[];
   onSiteResourceIdSelected: (siteResourceId: string) => void;
   onDateSelected: (date: string) => void;
-  onHospitalSiteSelected: (hospitalSiteSelected: string) => void;
+  onHospitalSiteSelected: (hospitalSiteSelected: string, hospitalSiteAddress: string) => void;
   isRetail: boolean;
   onRetailChanged: (isRetail: boolean) => void;
   showFilterStrip: boolean;
@@ -148,7 +148,10 @@ export const VaccineSiteDateSelector: React.FC<VaccineSiteDateSelectorProps> = (
 
                 props.onSiteResourceIdSelected(site.id);
                 props.onDateSelected(newDayString);
-                props.onHospitalSiteSelected(site.name);
+
+                let address =
+                  site.street_line1 + ' ' + site.street_line2 + ' ' + site.street_line3 + ' ';
+                props.onHospitalSiteSelected(site.name, address);
 
                 firstAvailableDate = availableDate;
               } else {
@@ -253,7 +256,16 @@ export const VaccineSiteDateSelector: React.FC<VaccineSiteDateSelectorProps> = (
 
                   props.onSiteResourceIdSelected(availabilityInfo.site.id);
                   props.onDateSelected(availabilityInfo.date);
-                  props.onHospitalSiteSelected(availabilityInfo.site.name);
+
+                  let address =
+                    availabilityInfo.site.street_line1 +
+                    ' ' +
+                    availabilityInfo.site.street_line2 +
+                    ' ' +
+                    availabilityInfo.site.street_line3 +
+                    ' ';
+
+                  props.onHospitalSiteSelected(availabilityInfo.site.name, address);
                 }}
               >
                 <RadioButtonUnselectedIcon style={{ width: 18, height: 18 }} />

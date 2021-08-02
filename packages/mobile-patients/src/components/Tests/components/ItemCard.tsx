@@ -75,13 +75,12 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     (item: any) => {
       const getItem = item?.item;
       const getDiagnosticPricingForItem = getItem?.diagnosticPricing;
-
       if (getDiagnosticPricingForItem == undefined || getDiagnosticPricingForItem == null) {
         return null;
       }
+
       const packageMrpForItem = getItem?.packageCalculatedMrp!;
       const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
-
       if (!pricesForItem?.itemActive) {
         return null;
       }
@@ -294,12 +293,12 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     return (
       <View style={{ flexDirection: 'row', marginVertical: '5%' }}>
         <Text style={styles.mainPriceText}>
-          {string.common.Rs} {convertNumberToDecimal(priceToShow)}
+        {`${string.common.Rs} ${convertNumberToDecimal(priceToShow)}` }
         </Text>
         {(!isCircleSubscribed && promoteCircle && priceToShow == slashedPrice) ||
         priceToShow == slashedPrice ? null : (
           <Text style={styles.slashedPriceText}>
-            {string.common.Rs} {convertNumberToDecimal(slashedPrice)}
+            {`${string.common.Rs} ${convertNumberToDecimal(slashedPrice)}`}
           </Text>
         )}
       </View>

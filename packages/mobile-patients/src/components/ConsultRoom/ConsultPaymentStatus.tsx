@@ -30,6 +30,7 @@ import {
   checkPermissions,
   apiCallEnums,
   getUserType,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   autoCompletePlaceSearch,
@@ -102,7 +103,10 @@ import {
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { userLocationConsultWEBEngage } from '@aph/mobile-patients/src/helpers/CommonEvents';
+import {
+  consultUserLocationCleverTapEvents,
+  userLocationConsultWEBEngage,
+} from '@aph/mobile-patients/src/helpers/CommonEvents';
 import {
   getAppointmentInfo,
   getAppointmentInfoVariables,
@@ -110,6 +114,7 @@ import {
 import { PAYMENT_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { saveConsultationLocation } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
@@ -129,6 +134,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     appointmentDateTime,
     appointmentType,
     webEngageEventAttributes,
+    cleverTapConsultBookedEventAttributes,
     appsflyerEventAttributes,
     fireBaseEventAttributes,
     isDoctorsOfTheHourStatus,
@@ -249,6 +255,14 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         doctorDetails,
         userChangedLocation.current
       );
+      consultUserLocationCleverTapEvents(
+        currentPatient,
+        location,
+        'Payment confirmation screen',
+        type,
+        doctorDetails,
+        userChangedLocation.current
+      );
     }
     userChangedLocation.current = false;
     fireLocationEvent.current = false;
@@ -309,7 +323,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           true,
           () => {
             !locationDetails && askLocationPermission();
-          }
+          },
+          'Payment Confirmation Screen'
         );
       }
     });
@@ -333,11 +348,18 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       let eventAttributes = webEngageEventAttributes;
       eventAttributes['Display ID'] = displayId;
       eventAttributes['User_Type'] = getUserType(allCurrentPatients);
+      let cleverTapEventAttributes = cleverTapConsultBookedEventAttributes;
+      cleverTapEventAttributes['displayId'] = displayId;
+      cleverTapEventAttributes['userType'] = getUserType(allCurrentPatients);
       postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, appsflyerEventAttributes);
       postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
       firePurchaseEvent(amountBreakup);
       eventAttributes['Dr of hour appointment'] = !!isDoctorsOfTheHourStatus ? 'Yes' : 'No';
+      cleverTapEventAttributes['Dr of hour appointment'] = !!isDoctorsOfTheHourStatus
+        ? 'Yes'
+        : 'No';
       postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
+      postCleverTapEvent(CleverTapEventName.CONSULTATION_BOOKED, cleverTapEventAttributes);
       if (!currentPatient?.isConsulted) getPatientApiCall();
     } catch (error) {
       console.log(error);

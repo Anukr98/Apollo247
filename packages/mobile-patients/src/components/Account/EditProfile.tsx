@@ -7,6 +7,8 @@ import {
   EditIcon,
   EditProfilePlaceHolder,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { postWebEngageEvent, getAge } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -308,6 +310,7 @@ export interface EditProfileProps extends NavigationScreenProps {
   isEdit: boolean;
   isPoptype?: boolean;
   screenName?: string;
+  isForVaccination: boolean;
 }
 {
 }
@@ -1219,6 +1222,10 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
                 } else {
                   isEditProfile ? updateUserProfile() : setNewProfileConfirmPopupVisible(true);
                 }
+
+                if (props.navigation.state.params?.isForVaccination) {
+                  sendVaccinationAddProfileEvent();
+                }
               }}
               title={'SAVE'}
               style={styles.bottomButtonStyle}
@@ -1227,6 +1234,26 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         </View>
       </StickyBottomComponent>
     );
+  };
+
+  const sendVaccinationAddProfileEvent = () => {
+    if (isEditProfile) {
+      return;
+    }
+
+    try {
+      const eventAttributes = {
+        'Patient ID': currentPatient?.id || '',
+        'Patient First Name': currentPatient?.firstName.trim(),
+        'Patient Last Name': currentPatient?.lastName.trim(),
+        'Patient UHID': currentPatient?.uhid,
+        'Patient Number': currentPatient?.mobileNumber,
+        'Patient Gender': currentPatient?.gender,
+        'Patient Age ': getAge(currentPatient?.dateOfBirth),
+        'Source ': Platform.OS === 'ios' ? 'ios' : 'android',
+      };
+      postWebEngageEvent(WebEngageEventName.MEMBER_DETAILS_SAVED, eventAttributes);
+    } catch (error) {}
   };
 
   const renderDeleteButton = () => {
