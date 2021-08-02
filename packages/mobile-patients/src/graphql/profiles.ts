@@ -3754,6 +3754,7 @@ export const GET_APPOINTMENT_DATA = gql`
         rescheduleCount
         appointmentState
         isJdQuestionsComplete
+        isAutomatedQuestionsComplete
         isSeniorConsultStarted
         patientInfo {
           firstName
