@@ -1167,7 +1167,7 @@ export interface CleverTapEvents {
     Shipment_2_Items?: number;
   };
   [CleverTapEventName.PHARMACY_PAYMENT_INITIATED]: {
-    payMode: string;
+    paymentMode: string;
     amount: number;
     serviceArea: 'pharmacy' | 'Diagnostic';
     'Cart Items'?: number;
