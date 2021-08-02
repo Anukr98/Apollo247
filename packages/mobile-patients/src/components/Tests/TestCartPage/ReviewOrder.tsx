@@ -90,6 +90,7 @@ import moment from 'moment';
 import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
+  DIAGNOSTIC_SLOT_TYPE,
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -519,20 +520,12 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         value.id = value?.id;
         value.name = value?.name;
         value.mou = value?.mou + 1;
-        value.price = addPrices(value?.price);
         value.thumbnail = value?.thumbnail;
-        value.specialPrice = !!value?.specialPrice
-          ? addPrices(value?.specialPrice)
-          : value?.specialPrice;
-        value.circlePrice = !!value?.circlePrice
-          ? addPrices(value?.circlePrice)
-          : value?.circlePrice;
-        (value.circleSpecialPrice = !!value?.circleSpecialPrice
-          ? addPrices(value?.circleSpecialPrice)
-          : value?.circleSpecialPrice),
-          (value.discountPrice = !!value?.discountPrice
-            ? addPrices(value?.discountPrice)
-            : value?.discountPrice);
+        value.price = value?.price;
+        value.specialPrice = value?.specialPrice;
+        value.circlePrice = value?.circlePrice;
+        (value.circleSpecialPrice = value?.circleSpecialPrice),
+          (value.discountPrice = value?.discountPrice);
         value.collectionMethod = value?.collectionMethod;
         value.groupPlan = value?.groupPlan;
         value.packageMrp = value?.packageMrp;
@@ -554,26 +547,31 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
   const renderItemView = (item: DiagnosticsCartItem) => {
     const priceToShow = diagnosticsDisplayPrice(item, isDiagnosticCircleSubscription)?.priceToShow;
-
+    const calTotal = priceToShow * item?.mou;
     return (
       <View>
         <View style={styles.itemView}>
           <View
             style={{
-              flexDirection: 'row',
-              width: screenWidth > 350 ? '80%' : '75%',
+              width: screenWidth > 350 ? '77%' : '72%',
             }}
           >
-            <View style={styles.quantityViewStyle}>
-              <Text style={[styles.addressTextStyle, styles.quantityTextStyle]}>X{item?.mou}</Text>
-            </View>
             <Text style={styles.addressTextStyle}>{nameFormater(item?.name, 'title')}</Text>
           </View>
-          <Text style={styles.addressTextStyle}>
-            {string.common.Rs}
-            {priceToShow}
-          </Text>
+          <View style={{ alignItems: 'center' }}>
+            <Text style={styles.priceTextStyle}>
+              {string.common.Rs}
+              {calTotal}
+            </Text>
+            <View style={styles.quantityViewStyle}>
+              <Text style={[styles.addressTextStyle, styles.quantityTextStyle]}>
+                {item?.mou} X {string.common.Rs}
+                {priceToShow}
+              </Text>
+            </View>
+          </View>
         </View>
+
         <Spearator />
       </View>
     );
@@ -953,7 +951,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       ? moment(modifiedOrder?.slotDateTimeInUTC).format('hh:mm')
       : selectedTimeSlot?.slotInfo?.startTime!;
     const numberOfSlots = selectedTimeSlot?.slotInfo?.internalSlots?.length; //this won't be there
-    const slotType = selectedTimeSlot?.slotInfo?.isPaidSlot ? 'Paid' : 'Free'; //this
+    const slotType = selectedTimeSlot?.slotInfo?.isPaidSlot
+      ? DIAGNOSTIC_SLOT_TYPE.PAID
+      : DIAGNOSTIC_SLOT_TYPE.FREE;
     const itemsInCart = isModifyFlow
       ? cartItems?.length
       : getFinalItems?.map((item) => item?.cartItems)?.flat()?.length;
@@ -1658,6 +1658,9 @@ const styles = StyleSheet.create({
   addressTextStyle: {
     ...theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 18),
   },
+  priceTextStyle: {
+    ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 16),
+  },
   addressTextView: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1681,16 +1684,19 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 12,
     alignSelf: 'center',
+    color: theme.colors.SKY_BLUE,
   },
   quantityViewStyle: {
-    backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,
-    width: 40,
+    backgroundColor: '#F3FFFF',
+    width: 80,
+    padding: 2,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 6,
     borderRadius: 5,
     borderWidth: 1,
-    borderColor: theme.colors.TEST_CARD_BUTTOM_BG,
+    marginTop: 2,
+    borderColor: '#F3FFFF',
   },
   totalChargesContainer: {
     backgroundColor: theme.colors.WHITE,

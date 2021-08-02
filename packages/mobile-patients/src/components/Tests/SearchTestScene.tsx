@@ -867,7 +867,7 @@ const styles = StyleSheet.create({
   cartDetailView: {
     position: 'absolute',
     backgroundColor: theme.colors.APP_YELLOW_COLOR,
-    bottom: 0,
+    bottom: 10,
     height: GO_TO_CART_HEIGHT,
     width: '100%',
     flexDirection: 'row',

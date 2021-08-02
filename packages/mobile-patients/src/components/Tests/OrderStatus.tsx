@@ -100,7 +100,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     navigateToHome(props.navigation);
   };
 
-  const [apiOrderDetails, setApiOrderDetails] = useState([]);
+  const [apiOrderDetails, setApiOrderDetails] = useState([] as any);
   const [timeDate, setTimeDate] = useState<string>('');
   const [isSingleUhid, setIsSingleUhid] = useState<boolean>(false);
   const [showMoreArray, setShowMoreArray] = useState([] as any);
@@ -137,13 +137,12 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     try {
       let response: any = await getDiagnosticRefundOrders(client, paymentId);
       if (response?.data?.data?.getOrderInternal) {
-        const getResponse = response?.data?.data?.getOrderInternal?.internal_orders;
-        const getSlotDateTime =
-          getResponse?.[0]?.orderDetailsPayment?.ordersList?.[0]?.slotDateTimeInUTC;
-        const primaryOrderID = getResponse?.[0]?.orderDetailsPayment?.ordersList[0]?.primaryOrderID;
-        setApiOrderDetails(getResponse);
+        const getResponse = response?.data?.data?.getOrderInternal?.DiagnosticsPaymentDetails;
+        const getSlotDateTime = getResponse?.ordersList?.[0]?.slotDateTimeInUTC;
+        const primaryOrderID = getResponse?.ordersList?.[0]?.primaryOrderID;
+        setApiOrderDetails([getResponse]);
         setTimeDate(getSlotDateTime);
-        setIsSingleUhid(getResponse?.length == 1);
+        setIsSingleUhid(getResponse?.ordersList?.[0]?.length == 1);
         if (primaryOrderID) {
           setPrimaryOrderId(primaryOrderID);
           getOrderDetails(primaryOrderID);
@@ -367,78 +366,84 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   };
 
   const renderTests = () => {
-    //define type
-    const arrayToUse =
-      !!primaryOrderId && primaryOrderId != '' ? apiPrimaryOrderDetails : apiOrderDetails;
+    const arrayToUse = apiOrderDetails;
     return (
       <View>
         {!!arrayToUse && arrayToUse?.length > 0
           ? arrayToUse?.map((item: any) => {
-              const orders =
-                !!primaryOrderId && primaryOrderId != ''
-                  ? item
-                  : item?.orderDetailsPayment?.ordersList?.[0];
-              const displayId = orders?.displayId;
-              const lineItemsLength = orders?.diagnosticOrderLineItems?.length;
-              const lineItems = orders?.diagnosticOrderLineItems;
-              const remainingItems = !!lineItemsLength && lineItemsLength - 1;
-              const { patientName, patientSalutation } = extractPatientDetails(orders?.patientObj);
-              return (
-                <>
-                  <View style={styles.outerView}>
-                    <View style={styles.patientsView}>
-                      <Text style={styles.patientName}>
-                        {nameFormater(`${patientSalutation} ${patientName}`, 'title')}
-                      </Text>
-
-                      {!!displayId && <Text style={styles.pickupDate}>#{displayId}</Text>}
-                    </View>
-                    {!!lineItemsLength &&
-                      lineItemsLength > 0 &&
-                      (showMoreArray?.includes(displayId) ? null : (
-                        <View style={[styles.itemsView, { flexDirection: 'row' }]}>
-                          <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
-                          <Text style={styles.testName}>
-                            {nameFormater(lineItems?.[0]?.itemName, 'title')}
-                          </Text>
-                          {remainingItems > 0 && (
-                            <TouchableOpacity
-                              onPress={() => _onPressMore(item, lineItems)}
-                              style={{}}
-                            >
-                              <Text style={styles.moreText}>+ {remainingItems} MORE</Text>
-                            </TouchableOpacity>
-                          )}
-                        </View>
-                      ))}
-                    {showMoreArray?.includes(displayId) && renderMore(item, lineItems)}
-                  </View>
-                  <Spearator style={styles.separator} />
-                </>
-              );
+              const orders = item?.ordersList;
+              return orders?.map((order: any) => {
+                return renderPatientTestView(order, item);
+              });
+            })
+          : null}
+      </View>
+    );
+  };
+  const renderTestsModify = () => {
+    //define type
+    const arrayToUse = apiPrimaryOrderDetails;
+    return (
+      <View>
+        {!!arrayToUse && arrayToUse?.length > 0
+          ? arrayToUse?.map((item: any) => {
+              const orders = item;
+              return renderPatientTestView(orders, item);
             })
           : null}
       </View>
     );
   };
 
+  const renderPatientTestView = (order: any, item: any) => {
+    const displayId = order?.displayId;
+    const lineItemsLength = order?.diagnosticOrderLineItems?.length;
+    const lineItems = order?.diagnosticOrderLineItems;
+    const remainingItems = !!lineItemsLength && lineItemsLength - 1;
+    const { patientName, patientSalutation } = extractPatientDetails(order?.patientObj);
+    return (
+      <>
+        <View style={styles.outerView}>
+          <View style={styles.patientsView}>
+            <Text style={styles.patientName}>
+              {nameFormater(`${patientSalutation} ${patientName}`, 'title')}
+            </Text>
+
+            {!!displayId && <Text style={styles.pickupDate}>#{displayId}</Text>}
+          </View>
+          {!!lineItemsLength &&
+            lineItemsLength > 0 &&
+            (showMoreArray?.includes(displayId) ? null : (
+              <View style={[styles.itemsView, { flexDirection: 'row' }]}>
+                <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
+                <Text style={styles.testName}>
+                  {nameFormater(lineItems?.[0]?.itemName, 'title')}
+                </Text>
+                {remainingItems > 0 && (
+                  <TouchableOpacity onPress={() => _onPressMore(order)} style={{}}>
+                    <Text style={styles.moreText}>+ {remainingItems} MORE</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            ))}
+          {showMoreArray?.includes(displayId) && renderMore(order, lineItems)}
+        </View>
+        <Spearator style={styles.separator} />
+      </>
+    );
+  };
+
   //add order summary
 
   //define type
-  function _onPressMore(item: any, lineItems: any) {
-    const displayId =
-      !!primaryOrderId && primaryOrderId != ''
-        ? item?.displayId
-        : item?.orderDetailsPayment?.ordersList?.[0]?.displayId;
+  function _onPressMore(item: any) {
+    const displayId = item?.displayId;
     const array = showMoreArray?.concat(displayId);
     setShowMoreArray(array);
   }
 
-  function _onPressLess(item: any, lineItems: any) {
-    const displayId =
-      !!primaryOrderId && primaryOrderId != ''
-        ? item?.displayId
-        : item?.orderDetailsPayment?.ordersList?.[0]?.displayId;
+  function _onPressLess(item: any) {
+    const displayId = item?.displayId;
     const removeItem = showMoreArray?.filter((id: number) => id !== displayId);
     setShowMoreArray(removeItem);
   }
@@ -452,7 +457,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
               <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
               <Text style={styles.testName}>{nameFormater(items?.itemName, 'title')}</Text>
               {lineItems?.length - 1 == index && (
-                <TouchableOpacity onPress={() => _onPressLess(item, lineItems)} style={{}}>
+                <TouchableOpacity onPress={() => _onPressLess(item)} style={{}}>
                   <Text style={styles.moreText}> LESS</Text>
                 </TouchableOpacity>
               )}
@@ -486,7 +491,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
             {renderPickUpTime()}
             {renderNoticeText()}
             {/* {enable_cancelellation_policy ? renderCancelationPolicy() : null} */}
-            {renderTests()}
+            {!!primaryOrderId && primaryOrderId != '' ? renderTestsModify() : renderTests()}
             {isSingleUhid && renderOrderSummary()}
             {renderInvoiceTimeline()}
           </View>

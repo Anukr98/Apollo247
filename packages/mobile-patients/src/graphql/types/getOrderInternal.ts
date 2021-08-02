@@ -9,7 +9,7 @@ import { REFUND_STATUSES } from "./globalTypes";
 // GraphQL query operation: getOrderInternal
 // ====================================================
 
-export interface getOrderInternal_getOrderInternal_internal_orders_orderDetailsPayment_ordersList_patientObj {
+export interface getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails_ordersList_patientObj {
   __typename: "PatientObj";
   id: string | null;
   firstName: string | null;
@@ -17,33 +17,27 @@ export interface getOrderInternal_getOrderInternal_internal_orders_orderDetailsP
   gender: string | null;
 }
 
-export interface getOrderInternal_getOrderInternal_internal_orders_orderDetailsPayment_ordersList_diagnosticOrderLineItems {
+export interface getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails_ordersList_diagnosticOrderLineItems {
   __typename: "DiagnosticOrderLineItems";
   itemId: number | null;
   itemName: string | null;
   price: number | null;
 }
 
-export interface getOrderInternal_getOrderInternal_internal_orders_orderDetailsPayment_ordersList {
+export interface getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails_ordersList {
   __typename: "DiagnosticOrders";
   id: string;
   patientId: string;
   primaryOrderID: string | null;
-  patientObj: getOrderInternal_getOrderInternal_internal_orders_orderDetailsPayment_ordersList_patientObj | null;
   displayId: number;
   slotDateTimeInUTC: any | null;
-  diagnosticOrderLineItems: (getOrderInternal_getOrderInternal_internal_orders_orderDetailsPayment_ordersList_diagnosticOrderLineItems | null)[] | null;
+  patientObj: getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails_ordersList_patientObj | null;
+  diagnosticOrderLineItems: (getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails_ordersList_diagnosticOrderLineItems | null)[] | null;
 }
 
-export interface getOrderInternal_getOrderInternal_internal_orders_orderDetailsPayment {
+export interface getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails {
   __typename: "DiagnosticOrdersResult";
-  ordersList: (getOrderInternal_getOrderInternal_internal_orders_orderDetailsPayment_ordersList | null)[] | null;
-}
-
-export interface getOrderInternal_getOrderInternal_internal_orders {
-  __typename: "InternalOrder";
-  id: string;
-  orderDetailsPayment: getOrderInternal_getOrderInternal_internal_orders_orderDetailsPayment | null;
+  ordersList: (getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails_ordersList | null)[] | null;
 }
 
 export interface getOrderInternal_getOrderInternal_refunds {
@@ -64,7 +58,7 @@ export interface getOrderInternal_getOrderInternal {
   txn_id: string | null;
   status_id: number | null;
   payment_order_id: string;
-  internal_orders: (getOrderInternal_getOrderInternal_internal_orders | null)[] | null;
+  DiagnosticsPaymentDetails: getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails | null;
   refunds: (getOrderInternal_getOrderInternal_refunds | null)[] | null;
 }
 

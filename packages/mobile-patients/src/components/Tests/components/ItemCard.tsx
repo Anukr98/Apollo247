@@ -49,6 +49,9 @@ export interface ItemCardProps {
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
   source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
   sourceScreen: string;
+  changeCTA?: boolean;
+  onPressAddToCartFromCart?: (item: any, addedItem: any) => void;
+  onPressRemoveItemFromCart?: (item: any) => void;
 }
 
 const ItemCard: React.FC<ItemCardProps> = (props) => {
@@ -62,7 +65,16 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     removeMultiPatientCartItems,
     patientCartItems,
   } = useDiagnosticsCart();
-  const { data, isCircleSubscribed, navigation, source, sourceScreen } = props;
+  const {
+    data,
+    isCircleSubscribed,
+    navigation,
+    source,
+    sourceScreen,
+    changeCTA,
+    onPressAddToCartFromCart,
+    onPressRemoveItemFromCart,
+  } = props;
 
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const actualItemsToShow =
@@ -346,19 +358,27 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       inclusions: [Number(item?.itemId)], // since it's a test
       isSelected: AppConfig.Configuration.DEFAULT_ITEM_SELECTION_FLAG,
     };
-    addCartItem?.(addedItems);
-    isModifyFlow &&
-      setModifiedPatientCart?.([
-        {
-          patientId: modifiedOrder?.patientId,
-          cartItems: cartItems?.concat(addedItems),
-        },
-      ]);
+    if (sourceScreen === AppRoutes.CartPage) {
+      onPressAddToCartFromCart?.(item, addedItems);
+    } else {
+      addCartItem?.(addedItems);
+      isModifyFlow &&
+        setModifiedPatientCart?.([
+          {
+            patientId: modifiedOrder?.patientId,
+            cartItems: cartItems?.concat(addedItems),
+          },
+        ]);
+    }
   }
 
   const onPressRemoveFromCart = (item: any) => {
-    removeCartItem?.(`${item?.itemId}`);
-    removeMultiPatientCartItems?.(`${item?.itemId}`);
+    if (sourceScreen === AppRoutes.CartPage) {
+      onPressRemoveItemFromCart?.(item);
+    } else {
+      removeCartItem?.(`${item?.itemId}`);
+      removeMultiPatientCartItems?.(`${item?.itemId}`);
+    }
   };
 
   function postHomePageWidgetClicked(name: string, id: string, section: string) {
@@ -407,6 +427,7 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
       navigation.navigate(AppRoutes.TestDetails, {
         itemId: item?.itemId,
         comingFrom: sourceScreen,
+        changeCTA: changeCTA,
         testDetails: {
           Rate: price,
           specialPrice: specialPrice! || price,

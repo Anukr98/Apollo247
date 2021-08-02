@@ -4780,26 +4780,23 @@ export const GET_INTERNAL_ORDER = gql`
       txn_id
       status_id
       payment_order_id
-      internal_orders{
-        id
-        orderDetailsPayment{
-          ordersList{
+      DiagnosticsPaymentDetails{
+        ordersList{
+          id
+          patientId
+          primaryOrderID
+          displayId
+          slotDateTimeInUTC
+          patientObj{
             id
-            patientId
-            primaryOrderID
-            patientObj{
-              id
-              firstName
-              lastName
-              gender
-            }
-            displayId
-            slotDateTimeInUTC
-            diagnosticOrderLineItems{
-              itemId
-              itemName
-              price
-            }
+            firstName
+            lastName
+            gender
+          }
+          diagnosticOrderLineItems{
+            itemId
+            itemName
+            price
           }
         }
       }
@@ -5655,5 +5652,17 @@ export const GET_DIAGNOSTIC_PAYMENT_SETTINGS  = gql`
       hc_credits_message
     }
   }
+`;
+
+export const GET_DIAGNOSTICS_RECOMMENDATIONS = gql `
+mutation getDiagnosticItemRecommendations($itemIds:[Int]!, $records: Int){
+  getDiagnosticItemRecommendations(itemIds: $itemIds, numberOfRecordsToFetch: $records){
+    itemsData{
+      itemId
+      itemName
+      combinedLift
+    }
+  }
+}
 `;
 

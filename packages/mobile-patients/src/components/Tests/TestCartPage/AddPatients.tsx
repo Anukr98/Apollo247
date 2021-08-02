@@ -135,6 +135,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   const [itemsSelected, setItemsSelected] = useState(patientCartItems);
   const [patientLimit, setPatientLimit] = useState<number>(0);
   const [limitMsg, setLimitMsg] = useState<string>('');
+  const [patientSelectionCount, setPatientSelectionCount] = useState<number>(0);
 
   const keyExtractor = useCallback((_, index: number) => `${index}`, []);
   const keyExtractor1 = useCallback((_, index: number) => `${index}`, []);
@@ -203,6 +204,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
    */
   useEffect(() => {
     const actualSelectedPatients = isDiagnosticSelectedCartEmpty(patientCartItems);
+    !!actualSelectedPatients && setPatientSelectionCount(actualSelectedPatients?.length);
     if (patientLimit > 0 && actualSelectedPatients?.length > patientLimit) {
       renderAlert();
       patientCartItems?.shift();
@@ -767,11 +769,9 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
           </Text>
           <View style={styles.arrowIconView}>
             {!showGreenBg ? (
-              <AddPatientCircleIcon style={[styles.arrowStyle]} />
+              <MinusPatientCircleIcon style={[styles.arrowStyle]} />
             ) : (
-              <MinusPatientCircleIcon
-                style={[styles.arrowStyle, { tintColor: WHITE, marginLeft: -6 }]}
-              />
+              <AddPatientCircleIcon style={[styles.arrowStyle, { marginLeft: -6 }]} />
             )}
           </View>
         </TouchableOpacity>
@@ -895,9 +895,26 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
 
   const renderStickyBottom = () => {
     return (
-      <StickyBottomComponent style={{ shadowColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}>
-        <Button title={'CONTINUE'} onPress={() => _checkAddresses()} disabled={CTAdisabled} />
+      <StickyBottomComponent style={styles.stickyBottomStyle}>
+        {renderSelectedPatientCount()}
+        <Button
+          title={'CONTINUE'}
+          onPress={() => _checkAddresses()}
+          disabled={CTAdisabled}
+          style={{ width: '70%' }}
+        />
       </StickyBottomComponent>
+    );
+  };
+
+  const renderSelectedPatientCount = () => {
+    return (
+      <View style={styles.patientSelectionCountView}>
+        <Text style={styles.selectedPatientCount}>
+          {patientSelectionCount < 10 ? `0${patientSelectionCount}` : `${patientSelectionCount}`}
+        </Text>
+        <Text style={styles.selectedPatientCountText}>Patients</Text>
+      </View>
     );
   };
 
@@ -981,7 +998,6 @@ const styles = StyleSheet.create({
     ...text('M', 12, SHERPA_BLUE, 1, 15.6, -0.36),
   },
   arrowStyle: {
-    tintColor: SHERPA_BLUE,
     height: 18,
     width: 20,
     resizeMode: 'contain',
@@ -1025,4 +1041,19 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   multiPatientCTAView: { marginTop: 16, width: '87%', alignSelf: 'center' },
+  patientSelectionCountView: {
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    padding: 8,
+  },
+  selectedPatientCount: { ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20) },
+  selectedPatientCountText: {
+    ...theme.viewStyles.text('R', 14, theme.colors.SHERPA_BLUE, 1, 24),
+    marginTop: -5,
+  },
+  stickyBottomStyle: {
+    shadowColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
 });
