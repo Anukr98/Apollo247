@@ -487,7 +487,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               '',
               'DoctorDetails',
               'GET_PLAN_DETAILS_BY_PLAN_ID',
-              res
+              JSON.stringify(res)
             );
       } catch (error) {
         postWEGPatientAPIError(
@@ -495,7 +495,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           '',
           'DoctorDetails',
           'GET_PLAN_DETAILS_BY_PLAN_ID',
-          error
+          JSON.stringify(error)
         );
         CommonBugFender('CircleMembershipPlans_GetPlanDetailsByPlanId', error);
       }
