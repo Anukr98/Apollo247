@@ -317,7 +317,11 @@ export const findAddrComponents = (
 };
 
 export const isPhysicalConsultation = (consultMode: string) => {
-  return consultMode === 'Visit Clinic' || consultMode === 'Meet In Person';
+  return (
+    consultMode === 'Visit Clinic' ||
+    consultMode === 'Meet In Person' ||
+    consultMode === 'Hospital Visit'
+  );
 };
 
 export const getReviewTag = (star: number) => {
@@ -343,11 +347,25 @@ export const createAddressObject = (addressObject: any) => {
     addressLine1: addressObject?.addressLine1,
     addressLine2: addressObject?.addressLine2,
     addressType: addressObject?.addressType,
-    zipcode: addressObject?.zipcode! || "0",
+    zipcode: addressObject?.zipcode! || '0',
     landmark: addressObject?.landmark,
     latitude: Number(addressObject?.latitude! || 0),
     longitude: Number(addressObject?.longitude! || 0),
     city: addressObject?.city,
     state: addressObject?.state,
   } as AddressObj;
+};
+
+export enum DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE {
+  HOME = 'Home page',
+  FULL_SEARCH = 'Full search',
+  DETAILS = 'Details page',
+  PARTIAL_SEARCH = 'Partial search',
+  LISTING = 'Listing page',
+  POPULAR_SEARCH = 'Popular search',
+  CATEGORY = 'Category page',
+  PRESCRIPTION = 'Prescription',
+  CART_PAGE = 'Cart page',
+  CONSULT_ROOM = 'Consult Room',
+  PHR = 'PHR Prescription',
 }

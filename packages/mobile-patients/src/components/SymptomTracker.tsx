@@ -26,7 +26,11 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  postCleverTapEvent,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
   WebEngageEvents,
@@ -50,6 +54,10 @@ import {
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AlertPopup } from '@aph/mobile-patients/src/components/ui/AlertPopup';
 import { Overlay } from 'react-native-elements';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const roundCountViewDimension = 30;
 const howItWorksArrData = [
@@ -150,9 +158,15 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
                 style={styles.infoIconView}
                 onPress={() => {
                   setShowInfo(true);
-                  const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_INFO_CLICKED] = patientInfoAttributes;
+                  const eventAttributes:
+                    | WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_INFO_CLICKED]
+                    | CleverTapEvents[CleverTapEventName.SYMPTOM_TRACKER_INFO_CLICKED] = patientInfoAttributes;
                   postWebEngageEvent(
                     WebEngageEventName.SYMPTOM_TRACKER_INFO_CLICKED,
+                    eventAttributes
+                  );
+                  postCleverTapEvent(
+                    CleverTapEventName.SYMPTOM_TRACKER_INFO_CLICKED,
                     eventAttributes
                   );
                 }}
@@ -454,6 +468,10 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
               WebEngageEventName.SYMPTOM_TRACKER_SELECT_ANOTHER_MEMBER_CLICKED,
               eventAttributes
             );
+            postCleverTapEvent(
+              CleverTapEventName.SYMPTOM_TRACKER_SELECT_OTHER_MEMBER_CLICKED,
+              eventAttributes
+            );
             setShowProfilePopUp(true);
           }}
         >
@@ -528,10 +546,16 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
                     eventAttributes
                   );
                 } else {
-                  const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_MOST_TROUBLING_SYMPTOM_CLICKED] = patientInfoAttributes;
+                  const eventAttributes:
+                    | WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_MOST_TROUBLING_SYMPTOM_CLICKED]
+                    | CleverTapEvents[CleverTapEventName.SYMPTOM_TRACKER_MOST_TROUBLING_SYMPTOM_CLICKED] = patientInfoAttributes;
 
                   postWebEngageEvent(
                     WebEngageEventName.SYMPTOM_TRACKER_MOST_TROUBLING_SYMPTOM_CLICKED,
+                    eventAttributes
+                  );
+                  postCleverTapEvent(
+                    CleverTapEventName.SYMPTOM_TRACKER_MOST_TROUBLING_SYMPTOM_CLICKED,
                     eventAttributes
                   );
                 }
@@ -554,9 +578,15 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
             <TouchableOpacity
               style={styles.plainBtn}
               onPress={() => {
-                const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_NO_OTHER_SYMPTOM_CLICKED] = patientInfoAttributes;
+                const eventAttributes:
+                  | WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_NO_OTHER_SYMPTOM_CLICKED]
+                  | CleverTapEvents[CleverTapEventName.SYMPTOM_TRACKER_NO_OTHER_SYMPTOM_CLICKED] = patientInfoAttributes;
                 postWebEngageEvent(
                   WebEngageEventName.SYMPTOM_TRACKER_NO_OTHER_SYMPTOM_CLICKED,
+                  eventAttributes
+                );
+                postCleverTapEvent(
+                  CleverTapEventName.SYMPTOM_TRACKER_NO_OTHER_SYMPTOM_CLICKED,
                   eventAttributes
                 );
                 insertMessage = insertMessage.concat({
@@ -683,12 +713,15 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
       <View style={styles.bottomView}>
         <TouchableOpacity
           onPress={() => {
-            const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_RESTART_CLICKED] = {
+            const eventAttributes:
+              | WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_RESTART_CLICKED]
+              | CleverTapEvents[CleverTapEventName.SYMPTOM_TRACKER_RESTART_CLICKED] = {
               ...patientInfoAttributes,
               symptoms: symptoms,
               specialities: specialities,
             };
             postWebEngageEvent(WebEngageEventName.SYMPTOM_TRACKER_RESTART_CLICKED, eventAttributes);
+            postCleverTapEvent(CleverTapEventName.SYMPTOM_TRACKER_RESTART_CLICKED, eventAttributes);
             setRestartVisible(true);
           }}
         >
@@ -698,13 +731,19 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
           title={string.symptomChecker.consultDoctor}
           style={[styles.proceedBtn, styles.consultDoctorMargin]}
           onPress={() => {
-            const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_CONSULT_DOCTOR_CLICKED] = {
+            const eventAttributes:
+              | WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_CONSULT_DOCTOR_CLICKED]
+              | CleverTapEvents[CleverTapEventName.SYMPTOM_TRACKER_CONSULT_DOCTOR_CLICKED] = {
               ...patientInfoAttributes,
               symptoms: symptoms,
               specialities: specialities,
             };
             postWebEngageEvent(
               WebEngageEventName.SYMPTOM_TRACKER_CONSULT_DOCTOR_CLICKED,
+              eventAttributes
+            );
+            postCleverTapEvent(
+              CleverTapEventName.SYMPTOM_TRACKER_CONSULT_DOCTOR_CLICKED,
               eventAttributes
             );
             const filteredSpecialities: string[] = specialities?.map((item: any) => {

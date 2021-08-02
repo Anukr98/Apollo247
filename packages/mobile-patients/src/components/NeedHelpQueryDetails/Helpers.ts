@@ -1,8 +1,10 @@
 import { Helpers as NeedHelpHelpers } from '@aph/mobile-patients/src/components/NeedHelp';
 import AsyncStorage from '@react-native-community/async-storage';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const helpTicketKey = 'com.apollo247.helpTicket';
 
+const helpSectionQueryId = AppConfig.Configuration.HELP_SECTION_CUSTOM_QUERIES;
 export const Helpers = {
   saveNeedHelpQuery: async (ticket: Query) => {
     await AsyncStorage.setItem(helpTicketKey, JSON.stringify(ticket));
@@ -32,8 +34,12 @@ export const Helpers = {
     const queriesByOrderStatus = queryData?.queriesByOrderStatus?.[orderStatus] as
       | string[]
       | undefined;
-    const nonOrderQueries = queryData?.nonOrderQueries as string[] | undefined;
-
+    const diagNonOrderQueries = {
+      nonOrderQueries :  JSON.parse(AppConfig.Configuration.Diagnostics_Help_NonOrder_Queries),
+    } 
+    // here this condition is implemented to handle backward compatiability of old version of apps. We can revert it later on.
+    const nonOrderQueries = queryData?.id == helpSectionQueryId.diagnostic ? diagNonOrderQueries?.nonOrderQueries : queryData?.nonOrderQueries as string[] | undefined;
+    
     if (queriesByOrderStatus && orderStatus) {
       queries = queriesByOrderStatus.map((qId) => queryData?.queries?.find((q) => q?.id === qId));
     } else if (nonOrderQueries && !isOrderRelatedIssue) {

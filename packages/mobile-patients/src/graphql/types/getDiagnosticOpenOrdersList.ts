@@ -17,19 +17,13 @@ export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrd
 
 export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_diagnosticOrderLineItems_itemObj {
   __typename: "ItemObj";
-  inclusions: (number | null)[] | null;
   testPreparationData: string | null;
+  preTestingRequirement: string | null;
 }
 
 export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_diagnosticOrderLineItems {
   __typename: "DiagnosticOrderLineItems";
   itemObj: getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_diagnosticOrderLineItems_itemObj | null;
-}
-
-export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders_attributesObj {
-  __typename: "AttributesObj";
-  reportGenerationTime: string | null;
-  preTestingRequirement: string | null;
 }
 
 export interface getDiagnosticOpenOrdersList_getDiagnosticOpenOrdersList_openOrders {

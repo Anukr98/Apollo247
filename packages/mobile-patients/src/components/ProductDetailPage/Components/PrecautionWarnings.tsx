@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Dimensions } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { NewPharmaOverview } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { filterHtmlContent } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -11,8 +11,8 @@ import {
   LiverIcon,
   KidneyIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { FaqComponent } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/FaqComponent';
 import { SafetyAdvice } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/SafetyAdvice';
+import HTML from 'react-native-render-html';
 
 export interface PrecautionWarningsProps {
   name: string;
@@ -28,14 +28,15 @@ export const PrecautionWarnings: React.FC<PrecautionWarningsProps> = (props) => 
   const drivingContent = pharmaOverview?.DrivingContent;
   const liverContent = pharmaOverview?.LiverContent;
   const kidneyContent = pharmaOverview?.KidneyContent;
-  const faqContent = pharmaOverview?.CompositionContentFAQs;
+  const drugInteractions = pharmaOverview?.DrugInteractions;
   const showSafetyAdvice =
     !!alcoholContent ||
     !!pregnancyContent ||
     !!breastfeedingContent ||
     !!drivingContent ||
     !!liverContent ||
-    !!kidneyContent;
+    !!kidneyContent ||
+    !!drugInteractions;
 
   const [numberOfLines, setNumberOfLines] = useState<number>(2);
   const [maxLines, setMaxLines] = useState<number>(2);
@@ -145,6 +146,33 @@ export const PrecautionWarnings: React.FC<PrecautionWarningsProps> = (props) => 
     />
   );
 
+  const renderHtmlContent = (title: string, content: string) => (
+    <View>
+      <Text style={styles.subHeading}>{title}</Text>
+      <HTML
+        html={content}
+        baseFontStyle={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}
+        imagesMaxWidth={Dimensions.get('window').width}
+        ignoredStyles={[
+          'line-height',
+          'margin-bottom',
+          'color',
+          'text-align',
+          'font-size',
+          'font-family',
+        ]}
+      />
+    </View>
+  );
+
+  const renderDrugInteractions = () => {
+    const drugInteractionsHtml = filterHtmlContent(drugInteractions);
+    const drugInteractionData = drugInteractionsHtml.replace(/\$name/gi, name);
+    return !!drugInteractionData
+      ? renderHtmlContent(`Drug Interactions`, drugInteractionData)
+      : null;
+  };
+
   return (
     <View style={styles.cardStyle}>
       {(!!drugWarning || showSafetyAdvice) && (
@@ -152,11 +180,11 @@ export const PrecautionWarnings: React.FC<PrecautionWarningsProps> = (props) => 
           <View style={styles.lineBreak} />
           <Text style={styles.heading}>In Depth Precautions & Warning</Text>
           {!!drugWarning && renderWarning()}
+          {!!drugInteractions && renderDrugInteractions()}
           {showSafetyAdvice && renderSafetyAdvice()}
           <View style={styles.lineBreak} />
         </>
       )}
-      {!!faqContent && faqContent.length && <FaqComponent faqs={faqContent} name={name} />}
     </View>
   );
 };

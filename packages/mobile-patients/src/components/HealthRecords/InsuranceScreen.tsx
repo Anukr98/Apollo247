@@ -29,13 +29,14 @@ import {
   editDeleteData,
   handleGraphQlError,
   phrSortWithDate,
-  postWebEngagePHR,
+  postCleverTapPHR,
   postWebEngageEvent,
   isValidSearch,
   getPhrHighlightText,
-  phrSearchWebEngageEvents,
-  postWebEngageIfNewSession,
+  phrSearchCleverTapEvents,
+  postCleverTapIfNewSession,
   removeObjectProperty,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientPrismMedicalRecords,
@@ -49,9 +50,9 @@ import moment from 'moment';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
-  WebEngageEventName,
-  WebEngageEvents,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import {
   getPrismAuthTokenVariables,
   getPrismAuthToken,
@@ -226,11 +227,11 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
           });
           setHealthRecordSearchResults(finalData);
           setSearchLoading(false);
-          phrSearchWebEngageEvents(
-            WebEngageEventName.PHR_NO_USERS_SEARCHED_LOCAL.replace(
+          phrSearchCleverTapEvents(
+            CleverTapEventName.PHR_NO_USERS_SEARCHED_LOCAL.replace(
               '{0}',
               'Insurances'
-            ) as WebEngageEventName,
+            ) as CleverTapEventName,
             currentPatient,
             _searchText
           );
@@ -361,7 +362,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
 
   const onHealthCardItemPress = (selectedItem: MedicalInsuranceType) => {
     const eventInputData = removeObjectProperty(selectedItem, 'insuranceFiles');
-    postWebEngageIfNewSession(
+    postCleverTapIfNewSession(
       'Insurance',
       currentPatient,
       eventInputData,
@@ -386,9 +387,9 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         if (status) {
           getLatestMedicalInsuranceRecords();
           const eventInputData = removeObjectProperty(selectedItem, 'insuranceFiles');
-          postWebEngagePHR(
+          postCleverTapPHR(
             currentPatient,
-            WebEngageEventName.PHR_DELETE_INSURANCE,
+            CleverTapEventName.PHR_DELETE_INSURANCE,
             'Insurance',
             eventInputData
           );
@@ -470,10 +471,11 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
           title={string.common.addInsuranceText}
           onPress={() => {
             setCallApi(false);
-            const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {
+            const eventAttributes: CleverTapEvents[CleverTapEventName.ADD_RECORD] = {
               Source: 'Insurance',
             };
-            postWebEngageEvent(WebEngageEventName.ADD_RECORD, eventAttributes);
+            postWebEngageEvent(CleverTapEventName.ADD_RECORD, eventAttributes);
+            postCleverTapEvent(CleverTapEventName.ADD_RECORD, eventAttributes);
             props.navigation.navigate(AppRoutes.AddRecord, {
               navigatedFrom: 'MedicalInsurance',
               recordType: MedicalRecordType.MEDICALINSURANCE,

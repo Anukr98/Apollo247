@@ -20,6 +20,7 @@ import {
   FlatList,
   Linking,
 } from 'react-native';
+import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { PAYMENT_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   GetAllUserSubscriptionsWithPlanBenefitsV2,
@@ -29,6 +30,7 @@ import {
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { renderVaccineBookingListShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { useApolloClient } from 'react-apollo-hooks';
+import { postWebEngageEvent, getAge } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   AgentIcon,
   CurrencyIcon,
@@ -53,6 +55,7 @@ import {
   GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetBenefitAvailabilityInfoByCMSIdentifier } from '@aph/mobile-patients/src/graphql/types/GetBenefitAvailabilityInfoByCMSIdentifier';
+import { colors } from '../../theme/colors';
 
 export interface BookedVaccineScreenProps
   extends NavigationScreenProps<{
@@ -102,6 +105,16 @@ const styles = StyleSheet.create({
     marginTop: 25,
     ...theme.viewStyles.text('M', 20, '#646464'),
   },
+
+  somethingWentWrong: {
+    ...theme.viewStyles.text('R', 14, colors.RED),
+    textAlign: 'center',
+  },
+  tryRefresh: {
+    marginTop: 10,
+    ...theme.viewStyles.text('M', 16, colors.APP_YELLOW),
+  },
+
   noBookingDesc: {
     marginTop: 10,
     ...theme.viewStyles.text('R', 14, '#A8A9A4'),
@@ -209,6 +222,8 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
   const [totalVaccineSlots, setTotalVaccineSlots] = useState<number>(-1);
   const [isSelfBookingDone, setSelfBookingDone] = useState<boolean>(false);
 
+  const [showSomethingWentWrong, setShowSomethingWentWrong] = useState<boolean>(false);
+
   const [showRetailUserPage, setShowRetailUserPage] = useState<boolean>(false);
 
   const { showAphAlert, hideAphAlert } = useUIElements();
@@ -238,7 +253,6 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
           setVaccineSubscription(true);
         }
         fetchAllAppointments();
-        // fetchVaccinationLimit();
         getUserSubscriptionsWithBenefits();
       });
     });
@@ -280,6 +294,7 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
 
   const fetchAllAppointments = () => {
     setLoading(true);
+    setShowSomethingWentWrong(false);
     apolloVaccineClient
       .query<GetAllAppointments>({
         query: GET_ALL_VACCINATION_APPOINTMENTS,
@@ -291,11 +306,11 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
         if (response?.data?.GetAllAppointments.success) {
           setBookingList(response?.data?.GetAllAppointments?.response);
         } else {
-          showLoadingAlert();
+          setShowSomethingWentWrong(true);
         }
       })
       .catch((error) => {
-        showLoadingAlert();
+        setShowSomethingWentWrong(true);
       })
       .finally(() => {
         setLoading(false);
@@ -346,18 +361,6 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
         .catch((error) => {});
   };
 
-  const showLoadingAlert = () => {
-    showAphAlert!({
-      title: 'Uh oh.. :(',
-      description: 'Something went wrong, please retry.',
-      unDismissable: true,
-      onPressOk: () => {
-        hideAphAlert!();
-        goToPreviousScreen();
-      },
-    });
-  };
-
   const goToPreviousScreen = () => {
     if (comingFrom === AppRoutes.VaccineTermsAndConditions) {
       props.navigation.pop(2);
@@ -398,6 +401,26 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
         <Text style={styles.noBookingTitle}>{string.vaccineBooking.title_no_booking}</Text>
         <Text style={styles.noBookingDesc}>{string.vaccineBooking.no_vaccination_booking}</Text>
         {renderNewBooking(false)}
+
+        {showSomethingWentWrong ? (
+          <View
+            style={{
+              flexDirection: 'column',
+              alignSelf: 'center',
+              marginTop: 60,
+              alignItems: 'center',
+            }}
+          >
+            <Text style={styles.somethingWentWrong}>Unable to see your booking? Try refresh!</Text>
+            <TouchableOpacity
+              onPress={() => {
+                fetchAllAppointments();
+              }}
+            >
+              <Text style={styles.tryRefresh}> REFRESH</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -409,9 +432,27 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
       onPress={() => {
         fetchAllAppointments();
         setShowRetailUserPage(true);
+
+        sendBookVaccinationBookingCTAEvent();
       }}
     />
   );
+
+  const sendBookVaccinationBookingCTAEvent = () => {
+    try {
+      const eventAttributes = {
+        'Patient ID': currentPatient?.id || '',
+        'Patient First Name': currentPatient?.firstName.trim(),
+        'Patient Last Name': currentPatient?.lastName.trim(),
+        'Patient UHID': currentPatient?.uhid,
+        'Patient Number': currentPatient?.mobileNumber,
+        'Patient Gender': currentPatient?.gender,
+        'Pateint Age ': getAge(currentPatient?.dateOfBirth),
+        'Source ': Platform.OS === 'ios' ? 'ios' : 'android',
+      };
+      postWebEngageEvent(WebEngageEventName.VACCINATION_BOOKING_CLICKED, eventAttributes);
+    } catch (error) {}
+  };
 
   const renderEnrollCorporateCta = () => (
     <TouchableOpacity
@@ -466,6 +507,7 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
                   remainingVaccineSlots: remainingVaccineSlots,
                   isCorporateSubscription: isCorporateSubscription,
                 });
+                sendBookASlotCTAEvent();
               } catch (e) {}
             }}
           />
@@ -494,11 +536,28 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
                 remainingVaccineSlots: remainingVaccineSlots,
                 isCorporateSubscription: isCorporateSubscription,
               });
+              sendBookASlotCTAEvent();
             } catch (e) {}
           }}
         />
       );
     }
+  };
+
+  const sendBookASlotCTAEvent = () => {
+    try {
+      const eventAttributes = {
+        'Patient ID': currentPatient?.id || '',
+        'Patient First Name': currentPatient?.firstName.trim(),
+        'Patient Last Name': currentPatient?.lastName.trim(),
+        'Patient UHID': currentPatient?.uhid,
+        'Patient Number': currentPatient?.mobileNumber,
+        'Patient Gender': currentPatient?.gender,
+        'Patient Age ': getAge(currentPatient?.dateOfBirth),
+        'Source ': Platform.OS === 'ios' ? 'ios' : 'android',
+      };
+      postWebEngageEvent(WebEngageEventName.BOOK_A_SLOT_CLICKED, eventAttributes);
+    } catch (error) {}
   };
 
   const checkBookSlotByFamilySlotAvaialbilty = () => {
@@ -562,9 +621,9 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
         <View style={styles.infoBlockDetailsContainer}>
           <Text style={styles.infoBlockTitle}>Site</Text>
           <Text style={styles.infoBlockSubTitleSmall}>
-            {bookingItem?.resource_session_details?.resource_detail?.name}
-            {bookingItem?.resource_session_details?.resource_detail?.street_line1}
-            {bookingItem?.resource_session_details?.resource_detail?.street_line2}
+            {bookingItem?.resource_session_details?.resource_detail?.name}{' '}
+            {bookingItem?.resource_session_details?.resource_detail?.street_line1}{' '}
+            {bookingItem?.resource_session_details?.resource_detail?.street_line2}{' '}
             {bookingItem?.resource_session_details?.resource_detail?.street_line3},{' '}
             {bookingItem?.resource_session_details?.resource_detail?.city},{' '}
             {bookingItem?.resource_session_details?.resource_detail?.state}
@@ -718,12 +777,6 @@ export const BookedVaccineScreen: React.FC<BookedVaccineScreenProps> = (props) =
   return (
     <SafeAreaView style={theme.viewStyles.container}>
       {renderHeader(props)}
-
-      {/* 
-      renderEnrollOnCowin happens for 
-           isCorporateSubscription- true
-           isVaccineSubscription--false
-       */}
 
       {showRetailUserPage ? (
         <>

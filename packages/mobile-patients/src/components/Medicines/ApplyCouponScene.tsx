@@ -17,6 +17,7 @@ import {
   g,
   postWebEngageEvent,
   getPackageIds,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -34,6 +35,10 @@ import {
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {
@@ -150,7 +155,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
 
   useEffect(() => {
     const data = {
-      packageId: activeUserSubscriptions ? getPackageIds(activeUserSubscriptions)?.join() : '',
+      packageId: getPackageIds(activeUserSubscriptions)?.join(),
       mobile: g(currentPatient, 'mobileNumber'),
       email: g(currentPatient, 'emailAddress'),
       type: isDiag ? 'Diag' : 'Pharmacy',
@@ -185,7 +190,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
         quantity: item.quantity,
         specialPrice: item.specialPrice || item.price,
       })),
-      packageIds: activeUserSubscriptions ? getPackageIds(activeUserSubscriptions) : [],
+      packageIds: getPackageIds(activeUserSubscriptions),
       email: g(currentPatient, 'emailAddress'),
     };
     validateConsultCoupon(data)
@@ -216,6 +221,15 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
             'Customer ID': g(currentPatient, 'id'),
             'Cart Items': JSON.stringify(cartItems),
           };
+          const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CART_COUPON_APPLIED] = {
+            'Coupon Code': coupon || undefined,
+            'Discounted amount': g(resp.data, 'response', 'valid')
+              ? g(resp.data, 'response', 'discount')
+              : 'Not Applicable',
+            'Customer ID': g(currentPatient, 'id'),
+            'Cart Items': cartItems?.length || undefined,
+          };
+          // postCleverTapEvent(CleverTapEventName.CART_COUPON_APPLIED, cleverTapEventAttributes);
           postWebEngageEvent(WebEngageEventName.CART_COUPON_APPLIED, eventAttributes);
         } else {
           CommonBugFender('validatingPharmaCoupon', g(resp.data, 'errorMsg'));

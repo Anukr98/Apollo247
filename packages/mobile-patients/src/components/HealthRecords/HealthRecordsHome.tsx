@@ -23,6 +23,7 @@ import {
   InsurancePhrSearchIcon,
   HospitalPhrSearchIcon,
   HealthConditionPhrSearchIcon,
+  Vaccination,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -46,16 +47,18 @@ import {
   g,
   handleGraphQlError,
   postWebEngageEvent,
+  postCleverTapEvent,
   phrSortByDate,
   isValidSearch,
   HEALTH_CONDITIONS_TITLE,
   getPhrHighlightText,
-  phrSearchWebEngageEvents,
+  phrSearchCleverTapEvents,
+  removeObjectNullUndefinedProperties,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
-  WebEngageEventName,
-  WebEngageEvents,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -471,6 +474,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     currentPatient?.patientMedicalHistory?.weight !== 'Not Recorded';
 
   useEffect(() => {
+    removeObjectNullUndefinedProperties(currentPatient);
     currentPatient && setProfile(currentPatient!);
     if (!currentPatient) {
       getPatientApiCall();
@@ -649,7 +653,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           'healthChecks',
           'response'
         );
-        tabsClickedWebEngageEvent(WebEngageEventName.PHR_LOAD_HEALTH_RECORDS);
+        tabsClickedCleverTapEvent(CleverTapEventName.PHR_LOAD_HEALTH_RECORDS);
         setLabResults(labResultsData);
         setPrescriptions(prescriptionsData);
         setHealthChecksNew(healthChecksData);
@@ -752,36 +756,26 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     setTestAndHealthCheck(phrSortByDate(mergeArray));
   }, [labResults, healthChecksNew]);
 
-  const tabsClickedWebEngageEvent = (webEngageEventName: WebEngageEventName) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.MEDICAL_RECORDS] = {
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient UHID': g(currentPatient, 'uhid'),
-      Relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Customer ID': g(currentPatient, 'id'),
+  const tabsClickedCleverTapEvent = (cleverTapEventName: CleverTapEventName) => {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.MEDICAL_RECORDS] = {
+      ...removeObjectNullUndefinedProperties(currentPatient),
     };
-    postWebEngageEvent(webEngageEventName, eventAttributes);
+    postWebEngageEvent(cleverTapEventName, eventAttributes);
+    postCleverTapEvent(cleverTapEventName, eventAttributes);
   };
 
-  const updateMedicalParametersWebEngageEvents = (
-    webEngageEventName: WebEngageEventName,
+  const updateMedicalParametersCleverTapEvents = (
+    cleverTapEventName: CleverTapEventName,
     type: string,
     value: string
   ) => {
     const eventAttributes = {
       type,
       value,
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient UHID': g(currentPatient, 'uhid'),
-      Relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Customer ID': g(currentPatient, 'id'),
+      ...removeObjectNullUndefinedProperties(currentPatient),
     };
-    postWebEngageEvent(webEngageEventName, eventAttributes);
+    postWebEngageEvent(cleverTapEventName, eventAttributes);
+    postCleverTapEvent(cleverTapEventName, eventAttributes);
   };
 
   const updateMedicalParameters = (height: string, weight: string, bloodGroup: string) => {
@@ -1019,10 +1013,12 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         case 4:
           return <HealthConditionPhrIcon style={{ height: 24.94, width: 20 }} />;
         case 5:
-          return <BillPhrIcon style={{ height: 18.63, width: 24 }} />;
+          return <Vaccination style={{ height: 20, width: 20 }} />;
         case 6:
-          return <InsurancePhrIcon style={{ height: 16.71, width: 20 }} />;
+          return <BillPhrIcon style={{ height: 18.63, width: 24 }} />;
         case 7:
+          return <InsurancePhrIcon style={{ height: 16.71, width: 20 }} />;
+        case 8:
           return <ClinicalDocumentPhrIcon style={{ height: 27.92, width: 20 }} />;
       }
     };
@@ -1030,7 +1026,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     const onPressListItem = () => {
       switch (id) {
         case 1:
-          tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_DOCTOR_CONSULTATIONS);
+          tabsClickedCleverTapEvent(CleverTapEventName.PHR_CLICK_DOCTOR_CONSULTATIONS);
           props.navigation.navigate(AppRoutes.ConsultRxScreen, {
             consultArray: arrayValues,
             prescriptionArray: prescriptions,
@@ -1040,7 +1036,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           });
           break;
         case 2:
-          tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_TEST_REPORTS);
+          tabsClickedCleverTapEvent(CleverTapEventName.PHR_CLICK_TEST_REPORTS);
           props.navigation.navigate(AppRoutes.TestReportScreen, {
             testReportsData: testAndHealthCheck,
             authToken: prismAuthToken,
@@ -1049,34 +1045,41 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           });
           break;
         case 3:
-          tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_HOSPITALIZATIONS);
+          tabsClickedCleverTapEvent(CleverTapEventName.PHR_CLICK_HOSPITALIZATIONS);
           props.navigation.navigate(AppRoutes.HospitalizationScreen, {
             authToken: prismAuthToken,
             onPressBack: onBackArrowPressed,
           });
           break;
         case 4:
-          tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_HEALTH_CONDITIONS);
+          tabsClickedCleverTapEvent(CleverTapEventName.PHR_CLICK_HEALTH_CONDITIONS);
           props.navigation.navigate(AppRoutes.HealthConditionScreen, {
             authToken: prismAuthToken,
             onPressBack: onBackArrowPressed,
           });
           break;
         case 5:
-          tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_BILLS);
-          props.navigation.navigate(AppRoutes.BillScreen, {
+          tabsClickedCleverTapEvent(CleverTapEventName.PHR_CLICK_VACCINATION);
+          props.navigation.navigate(AppRoutes.VaccinationScreen, {
             authToken: prismAuthToken,
             onPressBack: onBackArrowPressed,
           });
           break;
         case 6:
-          tabsClickedWebEngageEvent(WebEngageEventName.PHR_CLICK_INSURANCES);
-          props.navigation.navigate(AppRoutes.InsuranceScreen, {
+          tabsClickedCleverTapEvent(CleverTapEventName.PHR_CLICK_BILLS);
+          props.navigation.navigate(AppRoutes.BillScreen, {
             authToken: prismAuthToken,
             onPressBack: onBackArrowPressed,
           });
           break;
         case 7:
+          tabsClickedCleverTapEvent(CleverTapEventName.PHR_CLICK_INSURANCES);
+          props.navigation.navigate(AppRoutes.InsuranceScreen, {
+            authToken: prismAuthToken,
+            onPressBack: onBackArrowPressed,
+          });
+          break;
+        case 8:
           props.navigation.navigate(AppRoutes.ClinicalDocumentScreen);
           break;
       }
@@ -1129,7 +1132,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         pad={0}
         containerStyle={[
           styles.listItemViewStyle,
-          (id === 7 || id === 4 || id === 6) && { borderBottomWidth: 0 },
+          (id === 7 || id === 5) && { borderBottomWidth: 0 },
         ]}
         underlayColor={'#FFFFFF'}
         activeOpacity={1}
@@ -1153,6 +1156,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           {pageLoading ? renderHealthRecordShimmer() : renderListItemView('Test Reports', 2)}
           {renderListItemView('Hospitalization', 3)}
           {renderListItemView('Health Conditions', 4)}
+          {renderListItemView('Vaccination', 5)}
         </View>
       </View>
     );
@@ -1165,8 +1169,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           {'More From Health'}
         </Text>
         <View style={styles.listItemCardStyle}>
-          {renderListItemView('Bills', 5)}
-          {renderListItemView('Insurance', 6)}
+          {renderListItemView('Bills', 6)}
+          {renderListItemView('Insurance', 7)}
         </View>
       </View>
     );
@@ -1175,7 +1179,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const renderClinicalDocumentsView = () => {
     return (
       <View style={styles.clinicalDocumentViewStyle}>
-        {renderListItemView('Clinical Documents', 7)}
+        {renderListItemView('Clinical Documents', 8)}
       </View>
     );
   };
@@ -1337,13 +1341,13 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               currentPatient?.patientMedicalHistory?.bloodGroup
             );
             isHeightAvailable
-              ? updateMedicalParametersWebEngageEvents(
-                  WebEngageEventName.PHR_UPDATE_HEIGHT,
+              ? updateMedicalParametersCleverTapEvents(
+                  CleverTapEventName.PHR_UPDATE_HEIGHT,
                   'Height',
                   height
                 )
-              : updateMedicalParametersWebEngageEvents(
-                  WebEngageEventName.PHR_ADD_HEIGHT,
+              : updateMedicalParametersCleverTapEvents(
+                  CleverTapEventName.PHR_ADD_HEIGHT,
                   'Height',
                   height
                 );
@@ -1364,13 +1368,13 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               currentPatient?.patientMedicalHistory?.bloodGroup
             );
             isHeightAvailable
-              ? updateMedicalParametersWebEngageEvents(
-                  WebEngageEventName.PHR_UPDATE_HEIGHT,
+              ? updateMedicalParametersCleverTapEvents(
+                  CleverTapEventName.PHR_UPDATE_HEIGHT,
                   'Height',
                   height
                 )
-              : updateMedicalParametersWebEngageEvents(
-                  WebEngageEventName.PHR_ADD_HEIGHT,
+              : updateMedicalParametersCleverTapEvents(
+                  CleverTapEventName.PHR_ADD_HEIGHT,
                   'Height',
                   height
                 );
@@ -1386,13 +1390,13 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             currentPatient?.patientMedicalHistory?.bloodGroup
           );
           isWeightAvailable
-            ? updateMedicalParametersWebEngageEvents(
-                WebEngageEventName.PHR_UPDATE_WEIGHT,
+            ? updateMedicalParametersCleverTapEvents(
+                CleverTapEventName.PHR_UPDATE_WEIGHT,
                 'Weight',
                 weight
               )
-            : updateMedicalParametersWebEngageEvents(
-                WebEngageEventName.PHR_ADD_WEIGHT,
+            : updateMedicalParametersCleverTapEvents(
+                CleverTapEventName.PHR_ADD_WEIGHT,
                 'Weight',
                 weight
               );
@@ -1404,13 +1408,13 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           bloodGroup?.key?.toString() || ''
         );
         currentPatient?.patientMedicalHistory?.bloodGroup
-          ? updateMedicalParametersWebEngageEvents(
-              WebEngageEventName.PHR_UPDATE_BLOOD_GROUP,
+          ? updateMedicalParametersCleverTapEvents(
+              CleverTapEventName.PHR_UPDATE_BLOOD_GROUP,
               'BloodGroup',
               bloodGroup?.title || ''
             )
-          : updateMedicalParametersWebEngageEvents(
-              WebEngageEventName.PHR_ADD_BLOOD_GROUP,
+          : updateMedicalParametersCleverTapEvents(
+              CleverTapEventName.PHR_ADD_BLOOD_GROUP,
               'BloodGroup',
               bloodGroup?.title || ''
             );
@@ -1536,8 +1540,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           });
           setHealthRecordSearchResults(finalData);
           setSearchLoading(false);
-          phrSearchWebEngageEvents(
-            WebEngageEventName.PHR_NO_OF_USERS_SEARCHED_GLOBAL,
+          phrSearchCleverTapEvents(
+            CleverTapEventName.PHR_NO_OF_USERS_SEARCHED_GLOBAL,
             currentPatient,
             _searchText
           );

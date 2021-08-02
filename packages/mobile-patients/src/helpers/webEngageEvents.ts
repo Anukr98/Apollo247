@@ -7,6 +7,7 @@ import {
   PharmaUserStatus,
   UploadPrescSource,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
 
 type YesOrNo = 'Yes' | 'No';
 type HdfcPlan = 'SILVER' | 'GOLD' | 'PLATINUM';
@@ -32,12 +33,15 @@ export enum ProductPageViewedSource {
   SUBSTITUTES = 'substitutes',
   CROSS_SELLING_PRODUCTS = 'cross selling products',
   SIMILAR_PRODUCTS = 'similar products',
+  MULTI_VARIANT = 'multivariant',
 }
 
 export enum WebEngageEventName {
-  //doh
-  DOH_Viewed = 'DOH Viewed',
+
+  Patient_API_Error='Patient_API_Error',
+  //DOH
   DOH_Clicked = 'DOH Clicked',
+  DOH_Viewed = 'DOH Viewed',
 
   MOBILE_ENTRY = 'Mobile Entry',
   MOBILE_NUMBER_ENTERED = 'Mobile Number Entered',
@@ -115,7 +119,9 @@ export enum WebEngageEventName {
   TRUECALLER_APOLLO247_LOGIN_ERRORS = 'Apollo247 truecaller login errors',
   LOGIN_WITH_TRUECALLER_CLICKED = 'Login with truecaller clicked',
   MY_CONSULTED_DOCTORS_CLICKED = 'My doctor clicked',
-
+  VIEW_PROFILE_SLOT_SCREEN = 'View Profile Slot Screen',
+  VIEW_AVAILABLE_SLOTS = 'View Available Slots',
+  VIEW_SLOTS_CLICKED = 'View Slots Clicked',
   //Doctor Share Events
   SHARE_CLICK_DOC_LIST_SCREEN = 'Share clicked doc list screen',
   SHARE_PROFILE_CLICKED_DOC_LIST = 'Share profile clicked doc list',
@@ -136,6 +142,10 @@ export enum WebEngageEventName {
   PHARMACY_TAT_API_CALLED = 'Pharmacy TAT API Called',
   PHARMACY_CART_SELECT_DELIVERY_ADDRESS_CLICKED = 'Pharmacy Cart - Select Delivery Address Clicked',
   PHARMACY_CART_UPLOAD_PRESCRIPTION_CLICKED = 'Pharmacy Cart - Upload Prescription Clicked',
+
+  PHARMACY_POST_CART_PAGE_VIEWED = 'Pharmacy Post Cart Screen Viewed',
+  PHARMACY_ORDER_SUBSTITUTE_OPTION_CLICKED = 'Pharmacy Order Success Substitute Option Clicked',
+
   // HomePageElements Events
   BUY_MEDICINES = 'Buy Medicines',
   ORDER_TESTS = 'Order Tests',
@@ -209,6 +219,7 @@ export enum WebEngageEventName {
   CONSULT_RX = 'PHR Consult & RX',
   MEDICAL_RECORDS = 'PHR Medical Records',
   ADD_RECORD = 'Add Record',
+  ADD_VACCINATION_RECORD = 'Add Vaccination Record',
   UPLOAD_PRESCRIPTION = 'Upload Prescription',
   UPLOAD_PHOTO = 'Upload Photo',
   ITEMS_CLICKED = 'Items Clicked',
@@ -220,6 +231,7 @@ export enum WebEngageEventName {
   PHR_CLICK_HOSPITALIZATIONS = 'PHR Click Hospitalizations',
   PHR_CLICK_HEALTH_CONDITIONS = 'PHR Click Health Conditions',
   PHR_CLICK_BILLS = 'PHR Click Bills',
+  PHR_CLICK_VACCINATION = 'PHR Click Vaccination',
   PHR_CLICK_INSURANCES = 'PHR Click Insurances',
   PHR_ADD_DOCTOR_CONSULTATIONS = 'PHR Add Doctor Consultation',
   PHR_ADD_TEST_REPORT = 'PHR Add Test Report',
@@ -468,6 +480,12 @@ export enum WebEngageEventName {
   //Vaccination Booking
   VACCINATION_BOOKING_CONFIRMATION = 'Vaccine_Booking confirmation',
   VACCINATION_CANCELLATION = 'Vaccine_Cancellation',
+  BOOK_VACCINATION_SLOT = 'Book Vaccination slot',
+  VACCINATION_BOOKING_CLICKED = 'Vaccination Booking Clicked',
+  BOOK_A_SLOT_CLICKED = 'Book a Slot Clicked',
+  ADD_MEMBER_CLICKED = 'Add Member Clicked',
+  MEMBER_DETAILS_SAVED = 'Member Details Saved',
+  VACCINE_REGISTRATION_COMPLETED = 'Vaccine Registeration Completed',
 }
 
 export interface PatientInfo {
@@ -525,6 +543,7 @@ export interface DiagnosticUserInfo {
 export interface DiagnosticLandingPage extends DiagnosticUserInfo {
   Serviceability: 'Yes' | 'No';
   Source?: string;
+  'Circle user': 'Yes' | 'No';
 }
 
 export interface DiagnosticServiceble {
@@ -768,6 +787,16 @@ export interface WebEngageEvents {
   // DOH Events \\
   [WebEngageEventName.DOH_Viewed]: DOHInfo;
   [WebEngageEventName.DOH_Clicked]: DOHInfo;
+
+  [WebEngageEventName.Patient_API_Error]: {
+  'Patient Name':string;
+  'Patient ID':string;
+  'Patient Number':string;
+  'Doctor ID':string | null;
+  'Screen Name':string;
+  'API Name':string;
+  'Error Name':any;
+    };
 
   // ********** Home Screen Events ********** \\
 
@@ -1147,6 +1176,7 @@ export interface WebEngageEvents {
     User_Type?: PharmaUserStatus;
     'Split Cart'?: YesOrNo;
     'Prescription Option selected'?: PrescriptionOptions;
+    TransactionId?: string | number;
   };
   [WebEngageEventName.PHARMACY_DETAIL_IMAGE_CLICK]: {
     'Product ID': string;
@@ -1292,16 +1322,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.DIAGNOSTIC_ADD_TO_CART]: {
     'Item Name': string;
     'Item ID': string; // (SKUID)
-    Source:
-      | 'Home page'
-      | 'Full search'
-      | 'Details page'
-      | 'Partial search'
-      | 'Listing page'
-      | 'Popular search'
-      | 'Category page'
-      | 'Prescription'
-      | 'Cart page';
+    Source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
     Section?: string;
   };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
@@ -1316,15 +1337,23 @@ export interface WebEngageEvents {
     'Item ids'?: any;
     'Total items in order': number;
     'Payment type'?: string; //for prepaid
+    'Circle user': 'Yes' | 'No';
   };
   [WebEngageEventName.PAYMENT_INITIATED]: {
     Amount: number;
     LOB: string;
     type?: string;
+    paymentOrderId: string;
+  };
+  [WebEngageEventName.PAYMENT_STATUS]: {
+    status: string;
+    LOB: string;
+    paymentOrderId: string;
   };
   [WebEngageEventName.DIAGNOSITC_HOME_PAGE_BANNER_CLICKED]: {
     position: number;
     itemId: number;
+    'Banner title': string;
   };
   [WebEngageEventName.DIAGNOSTIC_ADDRESS_SELECTED_CARTPAGE]: {
     'Selection type': 'New' | 'Existing';
@@ -1826,6 +1855,26 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
 
+  [WebEngageEventName.PHARMACY_POST_CART_PAGE_VIEWED]: {
+    'Payment status': 'Success' | 'Payment Failed' | 'Payment Aborted' | 'Payment Status Not Known';
+    'Payment Type': 'COD' | 'Cashless' | 'No Payment';
+    'Transaction ID': number | string;
+    'Order ID(s)': number | string;
+    'MRP Total': number;
+    'Discount Amount': number;
+    'Payment Instrument': string;
+    'Order Type': string;
+    'Shipping Charges': number;
+    'Circle Member': boolean;
+    'Substitution Option Shown': YesOrNo;
+  };
+
+  [WebEngageEventName.PHARMACY_ORDER_SUBSTITUTE_OPTION_CLICKED]: {
+    'Transaction ID': number | string;
+    'Order ID(s)': number | string;
+    'Substitute Action Taken': 'Agree' | 'Disagree';
+  };
+
   // ********** Health Records ********** \\
 
   [WebEngageEventName.CONSULT_RX]: PatientInfo;
@@ -1839,7 +1888,8 @@ export interface WebEngageEvents {
       | 'Hospitalization'
       | 'Health Condition'
       | 'Bill'
-      | 'Insurance'; // List/Profile
+      | 'Insurance'
+      | 'Vaccination'; // List/Profile
   };
 
   [WebEngageEventName.UPLOAD_PRESCRIPTION]: PatientInfo;
@@ -2272,6 +2322,7 @@ export interface WebEngageEvents {
     MRP?: number;
     SpecialPrice?: number | null;
     CircleCashback?: number;
+    isMultiVariant: number;
   };
   [WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK]: {
     'Patient Name': string;
@@ -2637,5 +2688,49 @@ export interface WebEngageEvents {
       _247_Flag: boolean | undefined;
       'Consult Mode': string;
     };
+  };
+
+  [WebEngageEventName.VIEW_PROFILE_SLOT_SCREEN]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    User_Type: string;
+    'Doctor Name': string;
+    'Doctor Id': string;
+    'Doctor Speciality': string;
+  };
+
+  [WebEngageEventName.VIEW_AVAILABLE_SLOTS]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    User_Type: string;
+    'Doctor Name': string;
+    'Doctor Id': string;
+    'Doctor Speciality': string;
+    'Landing screen date': string;
+  };
+
+  [WebEngageEventName.VIEW_SLOTS_CLICKED]: {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+    User_Type: string;
+    'Doctor Name': string;
+    'Doctor Id': string;
+    'Doctor Speciality': string;
+    'Bucket viewed': string;
   };
 }

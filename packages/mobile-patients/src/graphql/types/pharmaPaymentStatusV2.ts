@@ -22,6 +22,9 @@ export interface pharmaPaymentStatusV2_pharmaPaymentStatusV2 {
   paymentStatus: string;
   paymentDateTime: any | null;
   paymentMode: string | null;
+  isSubstitution: boolean | null;
+  substitutionTime: number | null;
+  substitutionMessage: string | null;
   planPurchaseDetails: pharmaPaymentStatusV2_pharmaPaymentStatusV2_planPurchaseDetails | null;
 }
 

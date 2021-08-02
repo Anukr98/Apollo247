@@ -64,6 +64,8 @@ const Common = {
   WHITE: white,
   HEX_WHITE: hexWhite,
   SHERPA_BLUE: APP_Sherpa_Blue,
+  BLUMINE: '#14657A',
+  BLUE_BAYOUX: '#4B717C',
   APP_YELLOW_COLOR: '#fcb716',
   APP_YELLOW: tangerine_yellow,
   SHADOW_GRAY: shadowGray,
@@ -118,6 +120,7 @@ const Common = {
   COMPLETE_STATUS_BGK: '#E3FCEF',
   INTERMITTENT_STATUS_BGK: '#FFF0B3',
   ICE_BERG: '#DFF4F4',
+  GRAYED: '#CBCBCB',
 };
 
 const Header = {

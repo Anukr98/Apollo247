@@ -9,6 +9,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { OrderSummary } from '@aph/mobile-patients/src/components/OrderSummaryView';
 import { RefundDetails } from '@aph/mobile-patients/src/components/RefundDetails';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { OrderDelayNoticeView } from '@aph/mobile-patients/src/components/MedicineOrderDetails';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { ChatWithUs } from '@aph/mobile-patients/src/components/ui/ChatWithUs';
@@ -80,6 +81,8 @@ import {
   getOrderStatusText,
   handleGraphQlError,
   isEmptyObject,
+  postCleverTapEvent,
+  postCleverTapPHR,
   postWebEngageEvent,
   reOrderMedicines,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -110,6 +113,10 @@ import {
 import { Overlay } from 'react-native-elements';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 const screenWidth = Dimensions.get('window').width;
 
 export interface OrderDetailsSceneProps
@@ -213,7 +220,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const reasonForOnHold = order?.medicineOrdersStatus!.find(
     (item) =>
       item?.orderStatus == MEDICINE_ORDER_STATUS.VERIFICATION_DONE ||
-      item?.orderStatus == MEDICINE_ORDER_STATUS.READY_FOR_VERIFICATION
+      item?.orderStatus == MEDICINE_ORDER_STATUS.READY_FOR_VERIFICATION ||
+      item?.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
   )
     ? false
     : orderOnHold! &&
@@ -458,6 +466,23 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         'Mobile Number': g(currentPatient, 'mobileNumber'),
         'Customer ID': g(currentPatient, 'id'),
       };
+      const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_RE_ORDER_MEDICINE] = {
+        orderType: !!g(order, 'billNumber')
+          ? 'Offline'
+          : orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION
+          ? 'Non Cart'
+          : 'Cart',
+        noOfItemsNotAvailable: unavailableItems.length,
+        source: selectedTab,
+        'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+        'Patient UHID': g(currentPatient, 'uhid'),
+        Relation: g(currentPatient, 'relation'),
+        'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+        'Patient Gender': g(currentPatient, 'gender'),
+        'Mobile Number': g(currentPatient, 'mobileNumber'),
+        'Customer ID': g(currentPatient, 'id'),
+      };
+      postCleverTapPHR(CleverTapEventName.PHARMACY_RE_ORDER_MEDICINE, cleverTapEventAttributes);
       postWebEngageEvent(WebEngageEventName.RE_ORDER_MEDICINE, eventAttributes);
       items.length && addMultipleCartItems!(items);
       items.length && prescriptions.length && addMultipleEPrescriptions!(prescriptions);
@@ -1037,11 +1062,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
     ];
 
-    const isNotTatBreach = tatInfo == null ? true : moment(tatInfo!).isSameOrAfter(moment(), 'day');
-    const shouldScrollToSlot = (isNotTatBreach: boolean) => {
-      !isNotTatBreach && statusToConsiderTatBreach.includes(orderDetails.currentStatus!)
-        ? null
-        : scrollToSlots();
+    const shouldScrollToSlot = () => {
+      if (statusToConsiderTatBreach.includes(orderDetails.currentStatus!)) scrollToSlots();
     };
 
     let statusList = orderStatusList
@@ -1050,7 +1072,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       )
       .concat([]);
     order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-      ? shouldScrollToSlot(isNotTatBreach!)
+      ? shouldScrollToSlot()
       : scrollToSlots();
 
     if (
@@ -1064,7 +1086,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         )
         .concat([]);
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED) {
       statusList = orderStatusList
@@ -1124,7 +1146,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               ]
         );
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED) {
       statusList = orderStatusList
@@ -1175,7 +1197,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               ]
         );
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     }
     //added for on-hold
@@ -1227,7 +1249,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               ]
         );
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_VERIFIED) {
       statusList = orderStatusList
@@ -1267,7 +1289,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               ]
         );
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.READY_AT_STORE) {
       statusList = orderStatusList
@@ -1282,7 +1304,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
         ]);
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED) {
       statusList = orderStatusList
@@ -1302,7 +1324,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
         ]);
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY) {
       statusList = orderStatusList
@@ -1317,7 +1339,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
         ]);
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     } else if (
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
@@ -1329,7 +1351,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         )
         .concat([]);
       order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-        ? shouldScrollToSlot(isNotTatBreach!)
+        ? shouldScrollToSlot()
         : scrollToSlots();
     }
 
@@ -1933,6 +1955,22 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       orderStatus: orderDetails.currentStatus!,
     };
     postWebEngageEvent(WebEngageEventName.ORDER_SUMMARY_CLICKED, eventAttributes);
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_ORDER_SUMMARY_CLICKED] = {
+      'Order ID': orderDetails.id,
+      'Order date': getFormattedOrderPlacedDateTime(orderDetails) || undefined,
+      'Order type': !!g(order, 'billNumber')
+        ? 'Offline'
+        : orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION
+        ? 'Non Cart'
+        : 'Cart',
+      'Customer ID': currentPatient && currentPatient.id,
+      'Delivery date': orderDetails.orderTat
+        ? moment(orderDetails.orderTat).format('ddd, D MMMM, hh:mm A')
+        : undefined,
+      'Mobile number': currentPatient && currentPatient.mobileNumber,
+      'Order status': orderDetails.currentStatus!,
+    };
+    postCleverTapEvent(CleverTapEventName.PHARMACY_ORDER_SUMMARY_CLICKED, cleverTapEventAttributes);
     return (
       <View>
         <OrderSummary
@@ -2236,6 +2274,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               selectedTab={selectedTab}
             />
             {selectedTab == string.orders.trackOrder && renderOrderTrackTopView()}
+            {!!Number(orderAutoId) && (
+              <OrderDelayNoticeView
+                orderId={Number(orderAutoId)}
+                containerStyle={selectedTab === string.orders.viewBill && styles.hidden}
+              />
+            )}
             {renderInconvenienceView()}
             <ScrollView bounces={false} ref={scrollViewRef}>
               {selectedTab == string.orders.trackOrder
@@ -2411,6 +2455,11 @@ const styles = StyleSheet.create({
   queryText: {
     ...theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE),
     marginRight: 6,
+  },
+  hidden: {
+    height: 0,
+    width: 0,
+    overflow: 'hidden',
   },
   chatBtnTxt: {
     ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW),

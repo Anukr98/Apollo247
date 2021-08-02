@@ -38,9 +38,9 @@ import {
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
-  WebEngageEventName,
-  WebEngageEvents,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { checkIfFollowUpBooked } from '@aph/mobile-patients/src/graphql/types/checkIfFollowUpBooked';
 import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_medicinePrescription } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
@@ -54,12 +54,15 @@ import {
   editDeleteData,
   getSourceName,
   phrSortByDate,
-  postWebEngagePHR,
+  postCleverTapPHR,
   isValidSearch,
   getPhrHighlightText,
-  phrSearchWebEngageEvents,
-  postWebEngageIfNewSession,
+  phrSearchCleverTapEvents,
+  postCleverTapEvent,
+  postCleverTapIfNewSession,
   removeObjectProperty,
+  getIsMedicine,
+  removeObjectNullUndefinedProperties,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   EPrescription,
@@ -102,6 +105,8 @@ import moment from 'moment';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
+import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/Events';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const { width, height } = Dimensions.get('window');
 
@@ -481,11 +486,11 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
           });
           setHealthRecordSearchResults(finalData);
           setSearchLoading(false);
-          phrSearchWebEngageEvents(
-            WebEngageEventName.PHR_NO_USERS_SEARCHED_LOCAL.replace(
+          phrSearchCleverTapEvents(
+            CleverTapEventName.PHR_NO_USERS_SEARCHED_LOCAL.replace(
               '{0}',
-              'Doctor Consultations'
-            ) as WebEngageEventName,
+              'Prescription'
+            ) as CleverTapEventName,
             currentPatient,
             _searchText
           );
@@ -616,19 +621,18 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   };
 
   const postOrderMedsAndTestsEvent = (id: any, caseSheetDetails: any) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHR_ORDER_MEDS_TESTS] = {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.PHR_ORDER_MEDS_TESTS] = {
       ...caseSheetDetails,
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient UHID': g(currentPatient, 'uhid'),
-      Relation: g(currentPatient, 'relation'),
-      'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
-      'Patient Gender': g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Customer ID': g(currentPatient, 'id'),
+      ...removeObjectNullUndefinedProperties(currentPatient),
       'Consult ID': g(id, 'id'),
     };
-    postWebEngageEvent(WebEngageEventName.PHR_ORDER_MEDS_TESTS, eventAttributes);
+    postWebEngageEvent(CleverTapEventName.PHR_ORDER_MEDS_TESTS, eventAttributes);
+    postCleverTapEvent(CleverTapEventName.PHR_ORDER_MEDS_TESTS, eventAttributes);
   };
+
+  function postDiagnosticAddToCart(itemId: string, itemName: string) {
+    DiagnosticAddToCartEvent(itemName, itemId, 0, 0, DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PHR);
+  }
 
   const onOrderTestMedPress = async (selectedItem: any, caseSheetDetails: any) => {
     postOrderMedsAndTestsEvent(selectedItem?.id, caseSheetDetails);
@@ -703,7 +707,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
                   : undefined,
                 quantity: qty,
                 prescriptionRequired: medicineDetails?.is_prescription_required == '1',
-                isMedicine: (medicineDetails?.type_id || '').toLowerCase() == 'pharma',
+                isMedicine: getIsMedicine(medicineDetails?.type_id?.toLowerCase()) || '0',
                 thumbnail: medicineDetails?.thumbnail || medicineDetails?.image,
                 isInStock: !!medicineDetails?.is_in_stock,
                 productType: medicineDetails?.type_id,
@@ -753,6 +757,8 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
             }
           })
           .then((tests) => {
+            const getItemNames = tests?.map((item) => item?.name)?.join(', ');
+            const getItemIds = tests?.map((item) => Number(item?.id))?.join(', ');
             if (testPrescription.length) {
               addMultipleTestCartItems!(tests! || []);
               // Adding ePrescriptions to DiagnosticsCart
@@ -766,6 +772,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
                   },
                 ]);
             }
+            postDiagnosticAddToCart(getItemIds!, getItemNames!);
           })
           .catch((e) => {
             CommonBugFender('DoctorConsultation_getMedicineDetailsApi', e);
@@ -810,7 +817,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   };
 
   const postConsultCardClickEvent = (consultId: string) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHR_CONSULT_CARD_CLICK] = {
+    const eventAttributes: CleverTapEvents[CleverTapEventName.PHR_CONSULT_CARD_CLICK] = {
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
@@ -820,13 +827,14 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       'Customer ID': g(currentPatient, 'id'),
       'Consult ID': consultId,
     };
-    postWebEngageEvent(WebEngageEventName.PHR_CONSULT_CARD_CLICK, eventAttributes);
+    postWebEngageEvent(CleverTapEventName.PHR_CONSULT_CARD_CLICK, eventAttributes);
+    postCleverTapEvent(CleverTapEventName.PHR_CONSULT_CARD_CLICK, eventAttributes);
   };
 
   const onHealthCardItemPress = (selectedItem: any) => {
     const eventInputData = removeObjectProperty(selectedItem, 'prescriptionFiles');
-    postWebEngageIfNewSession(
-      'Doctor Consults',
+    postCleverTapIfNewSession(
+      'Doctor Consultations',
       currentPatient,
       eventInputData,
       phrSession,
@@ -862,9 +870,9 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         if (status) {
           getLatestPrescriptionRecords();
           const eventInputData = removeObjectProperty(selectedItem, 'prescriptionFiles');
-          postWebEngagePHR(
+          postCleverTapPHR(
             currentPatient,
-            WebEngageEventName.PHR_DELETE_DOCTOR_CONSULTATION,
+            CleverTapEventName.PHR_DELETE_DOCTOR_CONSULTATION,
             'Doctor Consultation',
             eventInputData
           );
@@ -902,6 +910,18 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       }
       return moment(new Date(date)).format('DD MMM');
     };
+    let prescriptionGeneratedDate = '';
+    const getPrescriptionGeneratedDate = () => {
+      item?.data?.caseSheet?.map((dateItem: any) => {
+        if (dateItem?.prescriptionGeneratedDate) {
+          if (!prescriptionGeneratedDate) {
+            prescriptionGeneratedDate = dateItem?.prescriptionGeneratedDate;
+            return;
+          }
+        }
+      });
+      return prescriptionGeneratedDate || item?.data?.appointmentDateTime;
+    };
     const prescriptionName = item?.data?.prescriptionName || 'Prescription';
     const doctorName = item?.data?.prescriptionName
       ? item?.data?.prescribedBy && item?.data?.prescribedBy !== item?.data?.prescriptionName
@@ -915,7 +935,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     const dateText =
       item?.data?.prescriptionName || item?.data?.date
         ? getPresctionDate(item?.data?.date)
-        : getPresctionDate(item?.data?.appointmentDateTime);
+        : getPresctionDate(getPrescriptionGeneratedDate());
     const soureName =
       item?.data?.prescriptionName || item?.data?.date
         ? getSourceName(item?.data?.source) || '-'
@@ -1066,10 +1086,11 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
           title={string.common.addPrescriptionText}
           onPress={() => {
             setCallApi(false);
-            const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {
+            const eventAttributes: CleverTapEvents[CleverTapEventName.ADD_RECORD] = {
               Source: 'Doctor Consultation',
             };
-            postWebEngageEvent(WebEngageEventName.ADD_RECORD, eventAttributes);
+            postWebEngageEvent(CleverTapEventName.ADD_RECORD, eventAttributes);
+            postCleverTapEvent(CleverTapEventName.ADD_RECORD, eventAttributes);
             props.navigation.navigate(AppRoutes.AddRecord, {
               navigatedFrom: 'Consult & RX',
               recordType: MedicalRecordType.PRESCRIPTION,

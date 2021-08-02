@@ -355,6 +355,8 @@ export const NeedHelp: React.FC<Props> = (props) => {
         ? AppRoutes.NeedHelpPharmacyOrder
         : helpCategoryId === helpSectionQueryId.consult
         ? AppRoutes.NeedHelpConsultOrder
+        : helpCategoryId === helpSectionQueryId.diagnostic
+        ? AppRoutes.NeedHelpDiagnosticsOrder
         : AppRoutes.NeedHelpQueryDetails;
     props.navigation.navigate(route, {
       queries: queries,

@@ -61,12 +61,13 @@ import {
   medUnitFormatArray,
   nameFormater,
   postWebEngageEvent,
-  postWebEngagePHR,
+  postCleverTapPHR,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
-  WebEngageEventName,
-  WebEngageEvents,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
@@ -94,6 +95,8 @@ import _ from 'lodash';
 import { AxiosResponse } from 'axios';
 import { getMedicineDetailsApi, MedicineProductDetailsResponse } from '../../helpers/apiCalls';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/Events';
+import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -246,6 +249,7 @@ const styles = StyleSheet.create({
     marginLeft: 2,
   },
   downloadIconStyle: { width: 20, height: 20 },
+  phrGeneralIconStyle: { width: 20, height: 24.84, marginRight: 12 },
 });
 
 export interface ConsultDetailsProps
@@ -343,14 +347,14 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
 
   const postWEGEvent = (
     type: 'medicine' | 'test' | 'download prescription',
-    medOrderType?: WebEngageEvents[WebEngageEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS]['Order Type']
+    medOrderType?: CleverTapEvents[CleverTapEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS]['Order Type']
   ) => {
     const requireCasesheetDetails =
       caseSheetDetails?.doctorType !== 'JUNIOR' ? caseSheetDetails : {};
     const eventAttributes:
-      | WebEngageEvents[WebEngageEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS]
-      | WebEngageEvents[WebEngageEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS]
-      | WebEngageEvents[WebEngageEventName.DOWNLOAD_PRESCRIPTION] = {
+      | CleverTapEvents[CleverTapEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS]
+      | CleverTapEvents[CleverTapEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS]
+      | CleverTapEvents[CleverTapEventName.DOWNLOAD_PRESCRIPTION] = {
       ...requireCasesheetDetails,
       'Doctor Name': g(data, 'fullName')!,
       'Speciality ID': g(data, 'specialty', 'id')!,
@@ -373,21 +377,29 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       'Customer ID': g(currentPatient, 'id'),
     };
     if (type == 'download prescription') {
-      (eventAttributes as WebEngageEvents[WebEngageEventName.DOWNLOAD_PRESCRIPTION])[
+      (eventAttributes as CleverTapEvents[CleverTapEventName.DOWNLOAD_PRESCRIPTION])[
         'Download Screen'
       ] = 'Prescription Details';
     }
     if (type == 'medicine' && medOrderType) {
-      (eventAttributes as WebEngageEvents[WebEngageEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS])[
+      (eventAttributes as CleverTapEvents[CleverTapEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS])[
         'Order Type'
       ] = medOrderType;
     }
     postWebEngageEvent(
       type == 'medicine'
-        ? WebEngageEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS
+        ? CleverTapEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS
         : type == 'test'
-        ? WebEngageEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS
-        : WebEngageEventName.DOWNLOAD_PRESCRIPTION,
+        ? CleverTapEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS
+        : CleverTapEventName.DOWNLOAD_PRESCRIPTION,
+      eventAttributes
+    );
+    postCleverTapEvent(
+      type == 'medicine'
+        ? CleverTapEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS
+        : type == 'test'
+        ? CleverTapEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS
+        : CleverTapEventName.DOWNLOAD_PRESCRIPTION,
       eventAttributes
     );
   };
@@ -502,6 +514,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     pharmacyLocation,
   } = useAppCommonData();
 
+  function postDiagnosticAddToCart(itemId: string, itemName: string) {
+    DiagnosticAddToCartEvent(itemName, itemId, 0, 0, DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.PHR);
+  }
+
   const onAddTestsToCart = async () => {
     let location: LocationData | null = null;
     setLoading && setLoading(true);
@@ -550,6 +566,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           (item) => !tests.find((val) => val?.name!.toLowerCase() == item?.itemname!.toLowerCase())
         );
         const unAvailableItems = unAvailableItemsArray.map((item) => item.itemname).join(', ');
+        const getItemNames = tests?.map((item) => item?.name)?.join(', ');
+        const getItemIds = tests?.map((item) => Number(item?.id))?.join(', ');
 
         if (tests.length) {
           addMultipleTestCartItems!(tests);
@@ -593,11 +611,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             },
           });
         }
-        setLoading!(false);
-        props.navigation.push(AppRoutes.TestsCart, { comingFrom: AppRoutes.ConsultDetails });
+        setLoading?.(false);
+        postDiagnosticAddToCart(getItemIds, getItemNames);
       })
       .catch((e) => {
-        setLoading!(false);
+        setLoading?.(false);
         handleGraphQlError(e);
       });
   };
@@ -623,6 +641,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!);
     const presToAdd = {
       id: caseSheetDetails!.id,
+      appointmentId: appointmentId,
       date: moment(caseSheetDetails!.appointment!.appointmentDateTime).format('DD MMM YYYY'),
       doctorName: g(data, 'displayName') || '',
       forPatient: (currentPatient && currentPatient.firstName) || '',
@@ -867,22 +886,37 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   };
 
   const renderGenerealAdvice = () => {
+    let listOfAdvices =
+      caseSheetDetails?.otherInstructions?.map((item, i) => {
+        if (item?.instruction !== '') {
+          return `${item?.instruction}`;
+        }
+      }) || [];
+    const listStrings = listOfAdvices.join('\n');
     return (
       <>
         {renderHeadingView(
           'General Advice',
-          <PhrGeneralAdviceIcon style={{ width: 20, height: 24.84, marginRight: 12 }} />
+          <PhrGeneralAdviceIcon style={styles.phrGeneralIconStyle} />
         )}
         {caseSheetDetails?.otherInstructions !== null ? (
+          <View style={{ marginTop: 28 }}>{renderListItem(listStrings || '', '')}</View>
+        ) : (
+          renderNoData('No advice')
+        )}
+      </>
+    );
+  };
+
+  const renderReferral = () => {
+    return (
+      <>
+        {renderHeadingView('Referral', <PhrGeneralAdviceIcon style={styles.phrGeneralIconStyle} />)}
+        {caseSheetDetails?.otherInstructions !== null ? (
           <View style={{ marginTop: 28 }}>
+            {renderListItem('Consult \n' + caseSheetDetails?.referralSpecialtyName, '')}
             {renderListItem(
-              caseSheetDetails?.otherInstructions
-                ?.map((item, i) => {
-                  if (item?.instruction !== '') {
-                    return `${item?.instruction}`;
-                  }
-                })
-                .join('\n') || '',
+              'Reason for Referral\n' + caseSheetDetails?.referralDescription || '',
               ''
             )}
           </View>
@@ -1028,7 +1062,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 {renderTestNotes()}
                 {renderDiagnosis()}
                 {renderGenerealAdvice()}
-                {/* We will use in next release */}
+                {caseSheetDetails && caseSheetDetails?.referralSpecialtyName !== null
+                  ? renderReferral()
+                  : null}
                 {/* {renderFollowUp()} */}
               </View>
             </View>
@@ -1043,9 +1079,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       CommonLogEvent('CONSULT_DETAILS', 'No image');
     } else {
       postWEGEvent('download prescription');
-      postWebEngagePHR(
+      postCleverTapPHR(
         currentPatient,
-        WebEngageEventName.PHR_DOWNLOAD_DOCTOR_CONSULTATION,
+        CleverTapEventName.PHR_DOWNLOAD_DOCTOR_CONSULTATION,
         'Doctor Consultation',
         caseSheetDetails
       );

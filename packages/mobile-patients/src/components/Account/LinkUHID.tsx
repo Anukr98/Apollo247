@@ -35,8 +35,8 @@ import { linkUHIDs, deLinkUHIDs } from '@aph/mobile-patients/src/helpers/clientC
 import { useApolloClient } from 'react-apollo-hooks/lib/ApolloContext';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { postWebEngagePHR } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { postCleverTapPHR } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 let primary;
 let secondary = [];
@@ -227,7 +227,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
     linkUHIDs(client, selectedPrimary, selectedSecondary)
       .then((data) => {
         setLoading && setLoading(false);
-        postWebEngagePHR(currentPatient, WebEngageEventName.PHR_USER_LINKING, 'LINK UHID');
+        postCleverTapPHR(currentPatient, CleverTapEventName.PHR_USER_LINKING, 'LINK UHID');
         getPatientApiCall();
         props.navigation.navigate(AppRoutes.ManageProfile);
       })
@@ -242,7 +242,7 @@ export const LinkUHID: React.FC<LinkUHIDProps> = (props) => {
     deLinkUHIDs(client, selectedPrimary, delinkSecondaryUHIDs)
       .then((data) => {
         setLoading && setLoading(false);
-        postWebEngagePHR(currentPatient, WebEngageEventName.PHR_USER_DELINKING, 'DELINK UHID');
+        postCleverTapPHR(currentPatient, CleverTapEventName.PHR_USER_DELINKING, 'DELINK UHID');
         getPatientApiCall();
         props.navigation.navigate(AppRoutes.ManageProfile);
       })

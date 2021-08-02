@@ -21,6 +21,7 @@ import {
   postWebEngageEvent,
   postAppsFlyerEvent,
   postFirebaseEvent,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { WebView } from 'react-native-webview';
 import {
@@ -36,6 +37,10 @@ import { ShoppingCartItem } from '@aph/mobile-patients/src/components/ShoppingCa
 import { saveMedicineOrderOMSVariables } from '@aph/mobile-patients/src/graphql/types/saveMedicineOrderOMS';
 import { ONE_APOLLO_STORE_CODE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const styles = StyleSheet.create({
   container: {
@@ -54,6 +59,7 @@ export interface PaymentSceneProps
     paymentTypeID: string;
     bankCode: any;
     checkoutEventAttributes?: WebEngageEvents[WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED];
+    cleverTapCheckoutEventAttributes?: CleverTapEvents[CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED];
     coupon: any;
     cartItems: ShoppingCartItem[];
     orderInfo: saveMedicineOrderOMSVariables;
@@ -80,6 +86,9 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const bankCode = props.navigation.getParam('bankCode');
   const isStorePickup = props.navigation.getParam('isStorePickup');
   const checkoutEventAttributes = props.navigation.getParam('checkoutEventAttributes');
+  const cleverTapCheckoutEventAttributes = props.navigation.getParam(
+    'cleverTapCheckoutEventAttributes'
+  );
   const coupon = props.navigation.getParam('coupon');
   const cartItems = props.navigation.getParam('cartItems');
   const orderInfo = props.navigation.getParam('orderInfo');
@@ -182,12 +191,13 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
         circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
       ...pharmacyCircleAttributes!,
       ...pharmacyUserTypeAttribute,
+      TransactionId: isStorePickup ? '' : transactionId,
     };
     return appsflyerEventAttributes;
   };
 
   const fireOrderEvent = (isSuccess: boolean, orderId: string, orderAutoId: number) => {
-    if (checkoutEventAttributes) {
+    if (checkoutEventAttributes && cleverTapCheckoutEventAttributes) {
       const paymentEventAttributes = {
         order_Id: orderId,
         order_AutoId: orderAutoId,
@@ -207,7 +217,20 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
           ...checkoutEventAttributes,
           'Cart Items': JSON.stringify(cartItems),
         });
+        postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, {
+          ...cleverTapCheckoutEventAttributes,
+          'Cart Items': JSON.stringify(cartItems) || undefined,
+        });
       }
+    }
+  };
+
+  const fireCleverTapOrderEvent = (isSuccess: boolean) => {
+    if (!!isSuccess) {
+      postCleverTapEvent(CleverTapEventName.PHARMACY_CHECKOUT_COMPLETED, {
+        ...cleverTapCheckoutEventAttributes,
+        'Cart Items': JSON.stringify(cartItems) || undefined,
+      });
     }
   };
 
@@ -220,6 +243,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       orderInfo: orderInfo,
       deliveryTime: deliveryTime,
       checkoutEventAttributes: checkoutEventAttributes,
+      cleverTapCheckoutEventAttributes,
       isStorePickup: isStorePickup,
     });
   };
@@ -233,6 +257,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       loading
     ) {
       navigationToPaymentStatus('PAYMENT_SUCCESS');
+      fireCleverTapOrderEvent(true);
       orders?.forEach((order: any) => {
         fireOrderEvent(true, order?.id!, order?.orderAutoId);
       });

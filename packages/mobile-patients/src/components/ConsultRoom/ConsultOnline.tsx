@@ -22,6 +22,7 @@ import {
   g,
   postWebEngageEvent,
   getUserType,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -41,6 +42,10 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import moment from 'moment';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const styles = StyleSheet.create({
   selectedButtonView: {
@@ -313,7 +318,9 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
     const selectedTabSlots = (timeArray || []).find((item) => item.label == selectedtiming);
     if (selectedTabSlots && selectedTabSlots.time.length == 0) {
       const data: getDoctorDetailsById_getDoctorDetailsById = props.doctor!;
-      const eventAttributes: WebEngageEvents[WebEngageEventName.NO_SLOTS_FOUND] = {
+      const eventAttributes:
+        | WebEngageEvents[WebEngageEventName.NO_SLOTS_FOUND]
+        | CleverTapEvents[CleverTapEventName.CONSULT_NO_SLOTS_FOUND] = {
         'Doctor Name': g(data, 'fullName')!,
         'Speciality ID': g(data, 'specialty', 'id')!,
         'Speciality Name': g(data, 'specialty', 'name')!,
@@ -333,6 +340,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
         'Customer ID': g(currentPatient, 'id'),
       };
       postWebEngageEvent(WebEngageEventName.NO_SLOTS_FOUND, eventAttributes);
+      postCleverTapEvent(CleverTapEventName.CONSULT_NO_SLOTS_FOUND, eventAttributes);
     }
   }, [selectedtiming, timeArray, selectedCTA]);
 

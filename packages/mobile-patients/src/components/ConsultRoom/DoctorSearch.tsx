@@ -42,6 +42,10 @@ import {
   postFirebaseEvent,
   postWebEngageEvent,
   getUserType,
+  postWEGPatientAPIError,
+  postCleverTapEvent,
+  postConsultSearchCleverTapEvent,
+  postConsultPastSearchSpecialityClicked,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -83,6 +87,10 @@ import {
   ProceduresAndSymptomsResult,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 var allSettled = require('promise.allsettled');
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const styles = StyleSheet.create({
   searchContainer: {
@@ -476,6 +484,13 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             const symptoms = result?.filter(
               (item: ProceduresAndSymptomsResult) => item?.tag?.toUpperCase() === 'SYMPTOM'
             );
+            const searchResults =
+              searchData?.doctors?.length === 0 &&
+              searchData?.specialties?.length === 0 &&
+              procedures?.length === 0 &&
+              symptoms?.length === 0
+                ? true
+                : false;
             setProcedures(procedures);
             setSymptoms(symptoms);
             postSearchedResultWebEngageEvent(
@@ -484,7 +499,15 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               searchData?.doctors,
               searchData?.specialties,
               procedures,
-              symptoms
+              symptoms,
+              searchResults
+            );
+            postConsultSearchCleverTapEvent(
+              searchTextString,
+              currentPatient,
+              allCurrentPatients,
+              searchResults,
+              'speciality screen'
             );
           } catch (e) {
             CommonBugFender('DoctorSearch_fetchSearchData_try', e);
@@ -494,6 +517,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           setProcedures([]);
           setSymptoms([]);
           setisSearching(false);
+          postWEGPatientAPIError(currentPatient, '', 'DoctorSearch', 'GET_DOCTOR_LIST', e);
           CommonBugFender('DoctorSearch_fetchSearchData', e);
         });
     }
@@ -505,7 +529,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     doctors?: any,
     specialities?: any,
     searchedProcedures?: any,
-    searchedSymptoms?: any
+    searchedSymptoms?: any,
+    noResults?: boolean
   ) => {
     const doctorsSearchedList = (doctors || doctorsList || [])?.map((item: any) => {
       return item?.displayName;
@@ -538,7 +563,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       ?.concat(procedureBucket)
       ?.concat(symptomBucket);
     setSearchedBucket(bucket);
-    let eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH_SUGGESTIONS] = {
+    let eventAttributes:
+      | WebEngageEvents[WebEngageEventName.SEARCH_SUGGESTIONS]
+      | CleverTapEvents[CleverTapEventName.CONSULT_SEARCH_SUGGESTIONS] = {
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
@@ -561,10 +588,14 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       // search suggestions clicked event
       eventAttributes['Bucket Clicked'] = clickedBucket.current;
       eventAttributes['Search Suggestion Clicked'] = clickedItem || '';
+      eventAttributes['Source'] = 'Speciality screen';
       postWebEngageEvent(WebEngageEventName.SEARCH_SUGGESTIONS_CLICKED, eventAttributes);
+      postCleverTapEvent(CleverTapEventName.CONSULT_SEARCH_SUGGESTIONS_CLICKED, eventAttributes);
     } else {
       // searched suggestions event
+      eventAttributes['search result success'] = noResults ? 'No' : 'Yes';
       postWebEngageEvent(WebEngageEventName.SEARCH_SUGGESTIONS, eventAttributes);
+      postCleverTapEvent(CleverTapEventName.CONSULT_SEARCH_SUGGESTIONS, eventAttributes);
     }
   };
 
@@ -688,6 +719,14 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           });
         }
       }
+    } else {
+      postWEGPatientAPIError(
+        currentPatient,
+        '',
+        'DoctorSearch',
+        'GET_PATIENT_ALL_CONSULTED_DOCTORS',
+        res
+      );
     }
     setConsultedDoctors(consultedDoctors);
   };
@@ -938,8 +977,10 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             }
             if (rowData.searchType === 'SPECIALTY') {
               CommonLogEvent(AppRoutes.DoctorSearch, 'Doctor Search Move  SPECIALTY clicked');
-              if (rowData.typeId && rowData.name)
-                onClickSearch(rowData.typeId, rowData.name, 'true');
+              if (rowData?.typeId && rowData?.name) {
+                postConsultPastSearchSpecialityClicked(currentPatient, allCurrentPatients, rowData);
+                onClickSearch(rowData?.typeId, rowData?.name, 'true');
+              }
             }
           }}
         />
@@ -1256,7 +1297,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const postSymptomTrackEvent = () => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_CLICKED_ON_SPECIALITY_SCREEN] = {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_CLICKED_ON_SPECIALITY_SCREEN]
+      | CleverTapEvents[CleverTapEventName.SYMPTOM_TRACKER_CLICKED_ON_SPECIALITY_SCREEN] = {
       'Patient UHID': g(currentPatient, 'uhid'),
       'Patient ID': g(currentPatient, 'id'),
       'Patient Name': g(currentPatient, 'firstName'),
@@ -1267,6 +1310,10 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     };
     postWebEngageEvent(
       WebEngageEventName.SYMPTOM_TRACKER_CLICKED_ON_SPECIALITY_SCREEN,
+      eventAttributes
+    );
+    postCleverTapEvent(
+      CleverTapEventName.SYMPTOM_TRACKER_CLICKED_ON_SPECIALITY_SCREEN,
       eventAttributes
     );
   };
@@ -1287,6 +1334,21 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       User_Type: getUserType(allCurrentPatients),
     };
     postWebEngageEvent(WebEngageEventName.SPECIALITY_CLICKED, eventAttributes);
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_SPECIALITY_CLICKED] = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      relation: g(currentPatient, 'relation') || undefined,
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      specialityName: speciality,
+      specialityId: specialityId,
+      User_Type: getUserType(allCurrentPatients),
+    };
+    postCleverTapEvent(CleverTapEventName.CONSULT_SPECIALITY_CLICKED, cleverTapEventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.SPECIALITY_CLICKED, eventAttributes);
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.SPECIALITY_CLICKED] = {
       PatientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
@@ -1319,6 +1381,32 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       User_Type: getUserType(allCurrentPatients),
     };
 
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED] = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Doctor ID': g(doctorDetails, 'id')!,
+      'Doctor Name': g(doctorDetails, 'displayName')!,
+      'Speciality Name': doctorDetails?.specialtydisplayName,
+      'Speciality ID': 'NA',
+      'Media Source': 'NA',
+      User_Type: getUserType(allCurrentPatients),
+      Fee: Number(doctorDetails?.onlineConsultationFees),
+      Source: 'Search',
+      'Doctor card clicked': 'Yes',
+      Rank: doctorDetails?.rowId,
+      Is_TopDoc: 'No',
+      DOTH: 'F',
+      'Doctor Tab': 'NA',
+      'Doctor Category': doctorDetails?.doctorType,
+      'Search screen': searchText?.length > 2 ? 'Speciality screen' : 'NA',
+      'Appointment CTA': 'NA',
+    };
+
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {
       DoctorName: doctorDetails.fullName!,
       Source: source,
@@ -1339,7 +1427,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       postAppsFlyerEvent(AppsFlyerEventName.CONSULT_NOW_CLICKED, appsflyereventAttributes);
       postFirebaseEvent(FirebaseEventName.CONSULT_NOW_CLICKED, eventAttributesFirebase);
     } else if (type == 'book-appointment') {
+      eventAttributes['Source'] = 'List';
       postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
+      postCleverTapEvent(
+        CleverTapEventName.CONSULT_BOOK_APPOINTMENT_CONSULT_CLICKED,
+        eventAttributes
+      );
       const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.BOOK_APPOINTMENT] = {
         'customer id': currentPatient ? currentPatient.id : '',
       };
@@ -1347,6 +1440,10 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       postFirebaseEvent(FirebaseEventName.BOOK_APPOINTMENT, eventAttributesFirebase);
     } else {
       postWebEngageEvent(WebEngageEventName.DOCTOR_CLICKED, eventAttributes);
+      postCleverTapEvent(
+        CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED,
+        cleverTapEventAttributes
+      );
       const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.DOCTOR_CLICKED] = {
         'customer id': currentPatient ? currentPatient.id : '',
         'doctor id': doctorDetails.id,

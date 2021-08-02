@@ -37,6 +37,7 @@ import {
   UnInstallAppsFlyer,
   postFirebaseEvent,
   setCrashlyticsAttributes,
+  onCleverTapUserLogin,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -80,6 +81,7 @@ import {
   preFetchSDK,
   createHyperServiceObject,
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import CleverTap from 'clevertap-react-native';
 
 (function() {
   /**
@@ -400,7 +402,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     ) {
       const params = id?.split('+');
       voipCallType.current = params?.[1]!;
-      callPermissions();
       getAppointmentDataAndNavigate(params?.[0]!, true);
     } else if (routeName == 'prohealth') {
       fetchProhealthHospitalDetails(id);
@@ -428,7 +429,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         }
       );
       const params = id?.split('+');
-      getAppointmentDataAndNavigate(params?.[0]!, false);
+      if (getCurrentRoute() !== AppRoutes.ChatRoom) {
+        getAppointmentDataAndNavigate(params?.[0]!, false);
+      }
     } else if (routeName == 'prohealth') {
       fetchProhealthHospitalDetails(id!);
     } else {
@@ -569,6 +572,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                   vaccinationCmsIdentifier,
                   vaccinationSubscriptionId
                 );
+                CleverTap.profileGetCleverTapID((err, res) => {
+                  if (!res) {
+                    onCleverTapUserLogin(currentPatient);
+                  }
+                });
                 callPhrNotificationApi(currentPatient);
                 setCrashlyticsAttributes(mePatient);
               } else {
@@ -737,6 +745,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setMinCartValueForCOD,
     setMaxCartValueForCOD,
     setNonCodSKus,
+    setCartPriceNotUpdateRange,
+    setPdpDisclaimerMessage,
   } = useShoppingCart();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -926,6 +936,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'Used_Up_Alotted_Slot_Msg_QA',
       PROD: 'Used_Up_Alotted_Slot_Msg_Prod',
     },
+    Vacc_City_Rule: {
+      QA: 'Vacc_City_Rule_QA',
+      PROD: 'Vacc_City_Rule_Prod',
+    },
     Enable_Diagnostics_COD: {
       QA: 'QA_Enable_Diagnostics_COD',
       PROD: 'Enable_Diagnostics_COD',
@@ -949,6 +963,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Diagnostics_CityLevel_Payment_Option: {
       QA: 'QA_Diagnostics_City_Level_Payment_Option',
       PROD: 'Diagnostics_City_Level_Payment_Option',
+    },
+    Covid_Risk_Level_Url: {
+      QA: 'QA_Covid_Risk_Level_Url',
+      PROD: 'Covid_Risk_Level_Url',
+    },
+    Diagnostics_Help_NonOrder_Queries: {
+      QA: 'QA_Diagnostics_Help_NonOrder_Queries',
+      PROD: 'Diagnostics_Help_NonOrder_Queries',
+    },
+    Pharma_Discailmer_Message: {
+      QA: 'QA_Pharma_PDP_Disclaimer',
+      PROD: 'Pharma_PDP_Disclaimer',
     },
   };
 
@@ -1059,12 +1085,19 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         setMinCartValueForCOD?.(minMaxCartValues?.minCartValueCOD);
       minMaxCartValues?.maxCartValueCOD &&
         setMaxCartValueForCOD?.(minMaxCartValues?.maxCartValueCOD);
+      minMaxCartValues?.priceNotUpdateRange &&
+        setCartPriceNotUpdateRange?.(minMaxCartValues?.priceNotUpdateRange);
 
       const nonCodSkuList = getRemoteConfigValue(
         'Sku_Non_COD',
         (key) => JSON.parse(config.getString(key)) || []
       );
       nonCodSkuList?.length && setNonCodSKus?.(nonCodSkuList);
+
+      const disclaimerMessagePdp = getRemoteConfigValue('Pharma_Discailmer_Message', (key) =>
+        config.getString(key)
+      );
+      setPdpDisclaimerMessage?.(disclaimerMessagePdp);
 
       setAppConfig(
         'Min_Value_For_Pharmacy_Free_Delivery',
@@ -1142,12 +1175,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         return JSON.parse(config.getString(key)) || AppConfig.Configuration.Vaccine_Type;
       });
 
-      setAppConfig(
-        'Cancel_Threshold_Pre_Vaccination',
-        'Cancel_Threshold_Pre_Vaccination',
-        (key) => {
-          config.getNumber(key);
-        }
+      setAppConfig('Vacc_City_Rule', 'Vacc_City_Rule', (key) => {
+        return JSON.parse(config.getString(key));
+      });
+
+      setAppConfig('Cancel_Threshold_Pre_Vaccination', 'Cancel_Threshold_Pre_Vaccination', (key) =>
+        config.getNumber(key)
       );
 
       setAppConfig('Helpdesk_Chat_Confim_Msg', 'Helpdesk_Chat_Confim_Msg', (key) =>
@@ -1188,6 +1221,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) =>
           JSON.parse(config.getString(key)) ||
           AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_PAYMENT_OPTION
+      );
+
+      setAppConfig('Covid_Risk_Level_Url', 'COVID_RISK_LEVEL_URL', (key) => config.getString(key));
+      setAppConfig(
+        'Diagnostics_Help_NonOrder_Queries',
+        'Diagnostics_Help_NonOrder_Queries',
+        (key) => config.getString(key)
       );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;

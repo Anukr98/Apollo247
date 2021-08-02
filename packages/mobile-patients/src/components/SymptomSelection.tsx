@@ -31,8 +31,16 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  postCleverTapEvent,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 interface SymptomSelectionProps extends NavigationScreenProps {
   chatId: string;
@@ -166,12 +174,18 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
         key={index}
         style={styles.symptomsContainer}
         onPress={() => {
-          const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_SUGGESTED_SYMPTOMS_CLICKED] = {
+          const eventAttributes:
+            | WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_SUGGESTED_SYMPTOMS_CLICKED]
+            | CleverTapEvents[CleverTapEventName.SYMPTOM_TRACKER_SUGGESTED_SYMPTOMS_CLICKED] = {
             ...patientInfoAttributes,
             'Symptom Clicked': item.name,
           };
           postWebEngageEvent(
             WebEngageEventName.SYMPTOM_TRACKER_SUGGESTED_SYMPTOMS_CLICKED,
+            eventAttributes
+          );
+          postCleverTapEvent(
+            CleverTapEventName.SYMPTOM_TRACKER_SUGGESTED_SYMPTOMS_CLICKED,
             eventAttributes
           );
           symptomSelectionHandler(item);
@@ -225,12 +239,18 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
             id: selectedSymptomsIds.toString(),
           };
           const { navigation } = props;
-          const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_ADD_SELECTED_SYMPTOMS_CLICKED] = {
+          const eventAttributes:
+            | WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_ADD_SELECTED_SYMPTOMS_CLICKED]
+            | CleverTapEvents[CleverTapEventName.SYMPTOM_TRACKER_ADD_SELECTED_SYMPTOMS_CLICKED] = {
             ...patientInfoAttributes,
             'Selected Symptoms': selectedSymptoms.join(', '),
           };
           postWebEngageEvent(
             WebEngageEventName.SYMPTOM_TRACKER_ADD_SELECTED_SYMPTOMS_CLICKED,
+            eventAttributes
+          );
+          postCleverTapEvent(
+            CleverTapEventName.SYMPTOM_TRACKER_ADD_SELECTED_SYMPTOMS_CLICKED,
             eventAttributes
           );
           navigation.goBack();

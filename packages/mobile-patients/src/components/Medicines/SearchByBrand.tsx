@@ -51,6 +51,7 @@ import {
   addPharmaItemToCart,
   g,
   getMaxQtyForMedicineItem,
+  getIsMedicine,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   ProductPageViewedSource,
@@ -62,6 +63,7 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import { MedicineSearchSuggestionItem } from '@aph/mobile-patients/src/components/Medicines/MedicineSearchSuggestionItem';
 import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
 import _ from 'lodash';
+import { MedicineSearchEvents } from '@aph/mobile-patients/src/components/MedicineSearch/MedicineSearchEvents';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -236,6 +238,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       type_id,
       MaxOrderQty,
       url_key,
+      subcategory,
     } = item;
     suggestionItem && setItemsLoading({ ...itemsLoading, [sku]: true });
     addPharmaItemToCart(
@@ -250,13 +253,14 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
             : special_price
           : undefined,
         prescriptionRequired: is_prescription_required == '1',
-        isMedicine: (type_id || '').toLowerCase() == 'pharma',
+        isMedicine: getIsMedicine(type_id?.toLowerCase()) || '0',
         quantity: 1,
         thumbnail,
         isInStock: true,
         maxOrderQty: MaxOrderQty,
         productType: type_id,
         url_key,
+        subcategory,
       },
       asyncPincode?.pincode || pharmacyPincode!,
       addCartItem,
@@ -887,6 +891,12 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           User_Type: pharmacyUserType,
         };
         postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
+        MedicineSearchEvents.pharmacySearch({
+          keyword: _searchText,
+          source: 'Pharmacy Home',
+          results: products.length,
+          'User Type': pharmacyUserType,
+        });
       })
       .catch((e) => {
         CommonBugFender('SearchByBrand_onSearchMedicine', e);

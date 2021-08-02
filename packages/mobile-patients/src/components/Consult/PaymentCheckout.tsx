@@ -35,6 +35,8 @@ import {
   navigateToHome,
   getUserType,
   getPackageIds,
+  postWEGPatientAPIError,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
@@ -112,7 +114,11 @@ import {
   createOrderInternal,
   createOrderInternalVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOrderInternal';
-import { initiateSDK } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
+import {
+  initiateSDK,
+  terminateSDK,
+  createHyperServiceObject,
+} from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { isSDKInitialised } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import {
   one_apollo_store_code,
@@ -124,6 +130,13 @@ import {
   createOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/createOrder';
 import { saveConsultationLocation } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { Decimal } from 'decimal.js';
 
 interface PaymentCheckoutProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
@@ -163,10 +176,11 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const selectedTimeSlot = props.navigation.getParam('selectedTimeSlot');
   const whatsAppUpdate = props.navigation.getParam('whatsAppUpdate');
   const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
-  const isOnlineConsult = selectedTab === 'Consult Online';
+  const isOnlineConsult =
+    selectedTab === string.consultModeTab.VIDEO_CONSULT ||
+    selectedTab === string.consultModeTab.CONSULT_ONLINE;
   const isPhysicalConsult = isPhysicalConsultation(selectedTab);
   const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
-  const [doctorDiscountedFees, setDoctorDiscountedFees] = useState<number>(0);
   const [couponDiscountFees, setCouponDiscountFees] = useState<number>(0);
   const { showAphAlert, setLoading } = useUIElements();
   const [notificationAlert, setNotificationAlert] = useState(false);
@@ -201,41 +215,46 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     : physicalConsultDiscountedPrice;
   const storeCode =
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
-  const amount = Number(price) - couponDiscountFees;
+  const amount = Number(Decimal.sub(Number(price), couponDiscountFees));
   const amountToPay =
     circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
-        ? onlineConsultSlashedPrice -
-          couponDiscountFees +
-          (circleSubscriptionId == '' ? Number(circlePlanSelected?.currentSellingPrice) : 0)
-        : physicalConsultSlashedPrice -
-          couponDiscountFees +
-          Number(circlePlanSelected?.currentSellingPrice)
+        ? Number(
+            Decimal.sub(onlineConsultSlashedPrice, couponDiscountFees).plus(
+              circleSubscriptionId == '' ? Number(circlePlanSelected?.currentSellingPrice) : 0
+            )
+          )
+        : Number(
+            Decimal.sub(physicalConsultSlashedPrice, couponDiscountFees).plus(
+              circleSubscriptionId == '' ? Number(circlePlanSelected?.currentSellingPrice) : 0
+            )
+          )
       : amount;
   const consultAmounttoPay =
     circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
-        ? onlineConsultSlashedPrice - couponDiscountFees
-        : physicalConsultSlashedPrice - couponDiscountFees
+        ? Number(Decimal.sub(onlineConsultSlashedPrice, couponDiscountFees))
+        : Number(Decimal.sub(physicalConsultSlashedPrice, couponDiscountFees))
       : amount;
   const notSubscriberUserForCareDoctor =
     isCircleDoctorOnSelectedConsultMode && !circleSubscriptionId && !circlePlanSelected;
   let finalAppointmentInput = appointmentInput;
   finalAppointmentInput['couponCode'] = coupon ? coupon : null;
-  finalAppointmentInput['discountedAmount'] = doctorDiscountedFees;
-  finalAppointmentInput['actualAmount'] =
-    circlePlanSelected && isCircleDoctorOnSelectedConsultMode
-      ? isOnlineConsult
-        ? onlineConsultSlashedPrice
-        : physicalConsultSlashedPrice
-      : Number(price);
+  finalAppointmentInput['actualAmount'] = Number(price);
   const planPurchaseDetails = {
     TYPE: PLAN.CARE_PLAN,
     PlanAmount: circlePlanSelected?.currentSellingPrice,
   };
   finalAppointmentInput['planPurchaseDetails'] =
     circlePlanSelected && isCircleDoctorOnSelectedConsultMode ? planPurchaseDetails : null;
-
+  const actualAmount =
+    circlePlanSelected && isCircleDoctorOnSelectedConsultMode
+      ? isOnlineConsult
+        ? onlineConsultSlashedPrice
+        : physicalConsultSlashedPrice
+      : Number(price);
+  const [doctorDiscountedFees, setDoctorDiscountedFees] = useState<number>(actualAmount);
+  finalAppointmentInput['discountedAmount'] = consultAmounttoPay;
   const totalSavings =
     isCircleDoctorOnSelectedConsultMode && (circleSubscriptionId || circlePlanSelected)
       ? isOnlineConsult
@@ -247,6 +266,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const circleDiscount =
     (circleSubscriptionId || circlePlanSelected) && discountedPrice ? discountedPrice : 0;
+  const { cusId, isfetchingId } = useGetJuspayId();
+  const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
 
   useEffect(() => {
     verifyCoupon();
@@ -255,13 +276,18 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   useEffect(() => {
     setPatientProfiles(moveSelectedToTop());
     fetchUserSpecificCoupon();
-    initiateHyperSDK();
   }, []);
 
-  const initiateHyperSDK = async () => {
+  useEffect(() => {
+    !isfetchingId ? (cusId ? initiateHyperSDK(cusId) : initiateHyperSDK(currentPatient?.id)) : null;
+  }, [isfetchingId]);
+
+  const initiateHyperSDK = async (cusId: any) => {
     try {
-      const isInitiated: boolean = await isSDKInitialised();
-      !isInitiated && initiateSDK(currentPatient?.id, currentPatient?.id);
+      const merchantId = AppConfig.Configuration.merchantId;
+      terminateSDK();
+      setTimeout(() => createHyperServiceObject(), 1400);
+      setTimeout(() => (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true)), 1500);
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
@@ -320,7 +346,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     const orderInput: OrderCreate = {
       orders: orders,
       total_amount: amountToPay,
-      customer_id: currentPatient?.primaryPatientId || currentPatient?.id,
     };
     return client.mutate<createOrderInternal, createOrderInternalVariables>({
       mutation: CREATE_INTERNAL_ORDER,
@@ -329,13 +354,16 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   };
 
   const createJusPayOrder = (paymentId: string) => {
-    const orderInput: OrderInput = {
+    const orderInput = {
       payment_order_id: paymentId,
-      payment_mode: PAYMENT_MODE.PREPAID,
+      health_credits_used: 0,
+      cash_to_collect: 0,
+      prepaid_amount: 0,
+      store_code: storeCode,
       is_mobile_sdk: true,
-      return_url: AppConfig.Configuration.returnUrl,
+      return_url: AppConfig.Configuration.baseUrl,
     };
-    return client.mutate<createOrder, createOrderVariables>({
+    return client.mutate({
       mutation: CREATE_ORDER,
       variables: { order_input: orderInput },
       fetchPolicy: 'no-cache',
@@ -363,7 +391,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       await validateCoupon(coupon, true);
     } catch (error) {
       setCoupon('');
-      setDoctorDiscountedFees(0);
+      setDoctorDiscountedFees(actualAmount);
       setLoading!(false);
       return;
     }
@@ -574,6 +602,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           }, 300);
         }}
         onEndApiCall={() => setDisabledCheckout(false)}
+        from={string.banner_context.VC_CART}
+        circleEventSource={'Cart(VC)'}
       />
     );
   };
@@ -612,7 +642,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const removeCoupon = () => {
     setCoupon('');
     setCouponDiscountFees(0);
-    setDoctorDiscountedFees(0);
+    setDoctorDiscountedFees(actualAmount);
     setSuccessMessage('');
   };
 
@@ -660,7 +690,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           doctorId: g(doctor, 'id'),
           specialityId: g(doctor, 'specialty', 'id'),
           consultationTime: ts, //Unix timestamp“
-          consultationType: selectedTab === 'Consult Online' ? 1 : 0, //Physical 0, Virtual 1,  All -1
+          consultationType: isOnlineConsult ? 1 : 0, //Physical 0, Virtual 1,  All -1
           cost: billAmount,
           rescheduling: false,
         },
@@ -787,7 +817,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         !fromPayment && setLoading!(false);
       } catch (error) {
         setCoupon('');
-        setDoctorDiscountedFees(0);
+        setDoctorDiscountedFees(actualAmount);
         setLoading!(false);
         Alert.alert(
           'Uh oh.. :(',
@@ -822,12 +852,24 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       const data = await createOrderInternal(apptmt?.id!, subscriptionId);
       if (amountToPay == 0) {
         const res = await createJusPayOrder(data?.data?.createOrderInternal?.payment_order_id!);
-        makePayment(
-          apptmt?.id!,
-          Number(amountToPay),
-          apptmt?.appointmentDateTime,
-          `${apptmt?.displayId!}`
-        );
+        if (res?.data?.createOrderV2?.payment_status == 'TXN_SUCCESS') {
+          let eventAttributes = getConsultationBookedEventAttributes(
+            apptmt?.appointmentDateTime,
+            apptmt?.id!
+          );
+          eventAttributes['Display ID'] = `${apptmt?.displayId!}`;
+          eventAttributes['User_Type'] = getUserType(allCurrentPatients);
+          postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
+          postAppsFlyerEvent(
+            AppsFlyerEventName.CONSULTATION_BOOKED,
+            getConsultationBookedAppsFlyerEventAttributes(apptmt?.id!, `${apptmt?.displayId!}`)
+          );
+          setLoading!(false);
+          if (!currentPatient?.isConsulted) getPatientApiCall();
+          handleOrderSuccess(`${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`, apptmt?.id!);
+        } else {
+          renderErrorPopup(string.common.tryAgainLater);
+        }
       } else {
         if (data?.data?.createOrderInternal?.success) {
           setauthToken?.('');
@@ -836,7 +878,16 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
             amount: amountToPay,
             orderDetails: getOrderDetails(apptmt),
             businessLine: 'consult',
+            customerId: cusId,
           });
+        } else {
+          postWEGPatientAPIError(
+            currentPatient,
+            '',
+            'PaymentCheckout',
+            'CREATE_INTERNAL_ORDER',
+            data
+          );
         }
       }
     } catch (error) {
@@ -860,6 +911,10 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       appointmentType: appointmentInput.appointmentType,
       coupon: appointmentInput.couponCode,
       webEngageEventAttributes: getConsultationBookedEventAttributes(
+        apptmt?.appointmentDateTime,
+        apptmt?.id!
+      ),
+      cleverTapConsultBookedEventAttributes: getConsultationBookedCleverTapEventAttributes(
         apptmt?.appointmentDateTime,
         apptmt?.id!
       ),
@@ -931,7 +986,14 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         let eventAttributes = getConsultationBookedEventAttributes(paymentDateTime, id);
         eventAttributes['Display ID'] = displayID;
         eventAttributes['User_Type'] = getUserType(allCurrentPatients);
+        let cleverTapEventAttributes = getConsultationBookedCleverTapEventAttributes(
+          paymentDateTime,
+          id
+        );
+        cleverTapEventAttributes['displayId'] = displayID;
+        cleverTapEventAttributes['userType'] = getUserType(allCurrentPatients);
         postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
+        postCleverTapEvent(CleverTapEventName.CONSULTATION_BOOKED, cleverTapEventAttributes);
         postAppsFlyerEvent(
           AppsFlyerEventName.CONSULTATION_BOOKED,
           getConsultationBookedAppsFlyerEventAttributes(id, displayID)
@@ -941,6 +1003,13 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         handleOrderSuccess(`${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`, id);
       })
       .catch((e) => {
+        postWEGPatientAPIError(
+          currentPatient,
+          '',
+          'PaymentCheckout',
+          'MAKE_APPOINTMENT_PAYMENT',
+          e
+        );
         setLoading!(false);
         handleGraphQlError(e);
       });
@@ -987,6 +1056,13 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       })
       .catch((e) => {
         setLoading && setLoading(false);
+        postWEGPatientAPIError(
+          currentPatient,
+          '',
+          'PaymentCheckout',
+          'MAKE_APPOINTMENT_PAYMENT',
+          e
+        );
         props.navigation.navigate('APPOINTMENTS');
       });
   };
@@ -996,7 +1072,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       'customer id': g(currentPatient, 'id'),
       'doctor id': g(doctor, 'id')!,
       'specialty id': g(doctor, 'specialty', 'id')!,
-      'consult type': 'Consult Online' === selectedTab ? 'online' : 'clinic',
+      'consult type': isOnlineConsult ? 'online' : 'clinic',
       af_revenue: amountToPay,
       af_currency: 'INR',
       'consult id': id,
@@ -1063,10 +1139,10 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       ),
       'Patient Gender': g(currentPatient, 'gender'),
       'Customer ID': g(currentPatient, 'id'),
-      'Consult ID': id,
+      consultId: id,
       'Speciality ID': g(doctor, 'specialty', 'id')!,
-      'Consult Date Time': date,
-      'Consult Mode': 'Online',
+      consultDateTime: date,
+      consultMode: 'Online',
       'Hospital Name':
         doctorClinics?.length > 0 && doctor?.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics?.[0]?.facility?.name}`
@@ -1083,6 +1159,52 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
       'Circle discount': circleDiscount,
       User_Type: getUserType(allCurrentPatients),
+    };
+    return eventAttributes;
+  };
+
+  const getConsultationBookedCleverTapEventAttributes = (time: string, id: string) => {
+    const localTimeSlot = moment(new Date(time));
+    let date = new Date(time);
+    const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
+      if (item && item.facility && item.facility.facilityType)
+        return item.facility.facilityType === 'HOSPITAL';
+    });
+
+    const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULTATION_BOOKED] = {
+      name: g(doctor, 'fullName')!,
+      specialisation: g(doctor, 'specialty', 'name')!,
+      category: g(doctor, 'doctorType')!, // send doctorType
+      patientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      relation: g(currentPatient, 'relation'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      patientGender: g(currentPatient, 'gender'),
+      'Customer ID': g(currentPatient, 'id'),
+      consultId: id,
+      'Speciality ID': g(doctor, 'specialty', 'id')!,
+      consultDateTime: date,
+      consultMode: 'ONLINE',
+      hospitalName:
+        doctorClinics?.length > 0 && doctor?.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics?.[0]?.facility?.name}`
+          : '',
+      'Hospital City':
+        doctorClinics?.length > 0 && doctor?.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics?.[0]?.facility?.city}`
+          : '',
+      'Doctor ID': g(doctor, 'id')!,
+      doctorName: g(doctor, 'fullName')!,
+      'Net Amount': amountToPay,
+      af_revenue: amountToPay,
+      af_currency: 'INR',
+      'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
+      circleSavings: circleDiscount,
+      userType: getUserType(allCurrentPatients),
+      patientNumber: g(currentPatient, 'mobileNumber'),
+      doctorNumber: g(doctor, 'mobileNumber')! || undefined,
     };
     return eventAttributes;
   };
@@ -1114,6 +1236,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         getPatientApiCall();
       })
       .catch((e: any) => {
+        postWEGPatientAPIError(currentPatient, '', 'PaymentCheckout', 'UPDATE_WHATSAPP_STATUS', e);
         CommonBugFender('ConsultOverlay_whatsAppUpdateAPICall_error', e);
       });
   };
@@ -1162,6 +1285,39 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           : '',
       User_Type: getUserType(allCurrentPatients),
     };
+    const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PAY_BUTTON_CLICKED] = {
+      consultDateTime: localTimeSlot,
+      Amount: finalAppointmentInput?.actualAmount,
+      doctorName: g(doctor, 'fullName')!,
+      doctorCity: g(doctor, 'city')!,
+      'Type of Doctor': g(doctor, 'doctorType')!,
+      specialty: g(doctor, 'specialty', 'name')!,
+      actualPrice: finalAppointmentInput?.actualAmount,
+      'Discount used ?': !!coupon,
+      discountCoupon: coupon,
+      discountAmount: couponDiscountFees,
+      netAmount: amountToPay,
+      'Customer ID': g(currentPatient, 'id'),
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Patient UHID': g(currentPatient, 'uhid'),
+      consultType: tabs[0].title === selectedTab ? 'ONLINE' : 'CLINIC',
+      'Doctor ID': g(doctor, 'id')!,
+      'Speciality ID': g(doctor, 'specialty', 'id')!,
+      'Hospital Name':
+        doctorClinics?.length > 0 && doctor?.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics?.[0]?.facility?.name}`
+          : '',
+      'Hospital City':
+        doctorClinics?.length > 0 && doctor?.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics?.[0].facility?.city}`
+          : '',
+      User_Type: getUserType(allCurrentPatients),
+    };
+    postCleverTapEvent(CleverTapEventName.CONSULT_PAY_BUTTON_CLICKED, cleverTapEventAttributes);
     postWebEngageEvent(WebEngageEventName.PAY_BUTTON_CLICKED, eventAttributes);
     postFirebaseEvent(FirebaseEventName.PAY_BUTTON_CLICKED, eventAttributes);
   };
@@ -1221,6 +1377,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         </ScrollView>
         {renderBottomButton()}
       </SafeAreaView>
+      {!hyperSdkInitialized && <Spinner />}
     </View>
   );
 };

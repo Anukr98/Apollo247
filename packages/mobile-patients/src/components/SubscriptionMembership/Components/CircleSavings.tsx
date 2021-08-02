@@ -142,6 +142,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
           setShowCircleActivation(true);
         }}
         screenName={'Membership Details'}
+        circleEventSource={'Membership Details'}
       />
     );
   };
@@ -171,6 +172,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
       circlePlanValidity={{ endDate: planValidity.current }}
       source={'Consult'}
       from={strings.banner_context.MEMBERSHIP_DETAILS}
+      circleEventSource={'Membership Details'}
     />
   );
 

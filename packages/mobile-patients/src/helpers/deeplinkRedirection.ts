@@ -46,7 +46,9 @@ export const handleOpenURL = (event: any) => {
     try {
       if (data?.length >= 2) {
         linkId = data?.[1]?.split('?');
+
         const params = data[1]?.split('&');
+
         const utmParams = params?.map((item: any) => item.split('='));
         utmParams?.forEach(
           (item: any) => item?.length == 2 && (attributes?.[item?.[0]] = item?.[1])
@@ -57,15 +59,19 @@ export const handleOpenURL = (event: any) => {
         }
       }
     } catch (error) {}
-    route = route ? route?.toLowerCase() : '';
+    const routeNameParam = route?.split('?');
+
+    route = routeNameParam ? routeNameParam?.[0]?.toLowerCase() : '';
     const paramData = getParamData(linkId)?.[0];
     linkId = paramData ? paramData : linkId;
+
     switch (route) {
+      case 'appointments':
       case 'consult':
       case 'consults':
         return {
           routeName: 'Consult',
-          id: data.length === 2 ? linkId : undefined,
+          id: linkId ? linkId : undefined,
         };
         break;
 
@@ -73,7 +79,7 @@ export const handleOpenURL = (event: any) => {
       case 'medicine':
         if (b === 0) {
           // apollopharmacy.in url
-          const redirectToMedicineDetail = data.length === 2;
+          const redirectToMedicineDetail = data.length >= 2;
           return {
             routeName: redirectToMedicineDetail ? 'MedicineDetail' : 'Medicine',
             id: redirectToMedicineDetail ? linkId : undefined,
@@ -89,7 +95,7 @@ export const handleOpenURL = (event: any) => {
       case 'uploadprescription':
         return {
           routeName: 'UploadPrescription',
-          id: data.length === 2 ? linkId : undefined,
+          id: linkId ? linkId : undefined,
         };
         break;
 
@@ -102,13 +108,25 @@ export const handleOpenURL = (event: any) => {
 
       case 'test':
       case 'tests':
-        return {
-          routeName: 'Test',
-        };
+      case 'lab-tests':
+        if (a === 0) {
+          // www.apollo247.com as url
+          const redirectTestDetails = data.length >= 2;
+          return {
+            routeName: redirectTestDetails ? 'TestDetails' : 'Test',
+            id: redirectTestDetails ? linkId : undefined,
+          };
+        } else {
+          // apollopatients:
+          return {
+            routeName: 'Test',
+          };
+        }
         break;
 
+      case 'specialties':
       case 'speciality':
-        if (data.length === 2) {
+        if (linkId) {
           return {
             routeName: 'Speciality',
             id: linkId,
@@ -120,8 +138,9 @@ export const handleOpenURL = (event: any) => {
         }
         break;
 
+      case 'doctors':
       case 'doctor':
-        if (data.length === 2) {
+        if (linkId) {
           return {
             routeName: 'Doctor',
             id: linkId,
@@ -145,7 +164,7 @@ export const handleOpenURL = (event: any) => {
       case 'search-medicines':
         return {
           routeName: 'MedicineSearchText',
-          id: data.length === 2 ? linkId : undefined,
+          id: linkId ? linkId : undefined,
         };
         break;
 
@@ -153,10 +172,10 @@ export const handleOpenURL = (event: any) => {
       case 'shop-by-category':
       case 'shop-by-brand':
       case 'explore-popular-products':
-        if (data[1]) {
+        if (linkId) {
           return {
             routeName: 'MedicineCategory',
-            id: data[1],
+            id: linkId,
           };
         } else {
           return {
@@ -168,14 +187,14 @@ export const handleOpenURL = (event: any) => {
       case 'medicinesearch':
         return {
           routeName: 'MedicineSearch',
-          id: data.length === 2 ? linkId : undefined,
+          id: linkId ? linkId : undefined,
         };
         break;
 
       case 'medicinedetail':
         return {
           routeName: 'MedicineDetail',
-          id: data.length === 2 ? linkId : undefined,
+          id: linkId ? linkId : undefined,
         };
         break;
 
@@ -183,7 +202,7 @@ export const handleOpenURL = (event: any) => {
       case 'medicinecart':
         return {
           routeName: 'MedicineCart',
-          id: data.length === 2 ? linkId : undefined,
+          id: linkId ? linkId : undefined,
         };
         break;
 
@@ -217,7 +236,7 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'order':
-        if (data.length === 2) {
+        if (linkId) {
           return {
             routeName: 'Order',
             id: linkId,
@@ -246,7 +265,7 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'finddoctors':
-        if (data.length === 2) {
+        if (linkId) {
           return {
             routeName: 'FindDoctors',
             id: linkId,
@@ -275,21 +294,28 @@ export const handleOpenURL = (event: any) => {
       case 'testdetails':
         return {
           routeName: 'TestDetails',
-          id: data.length === 2 ? linkId : undefined,
+          id: linkId ? linkId : undefined,
         };
         break;
 
       case 'consultdetails':
         return {
           routeName: 'ConsultDetails',
-          id: data.length === 2 ? linkId : undefined,
+          id: linkId ? linkId : undefined,
         };
         break;
 
       case 'circle-membership':
       case 'circlemembershipdetails':
+      case 'circle':
         return {
           routeName: 'CircleMembershipDetails',
+        };
+        break;
+
+      case 'my-membership':
+        return {
+          routeName: 'MyMembership',
         };
         break;
 
@@ -308,14 +334,14 @@ export const handleOpenURL = (event: any) => {
       case 'testlisting':
         return {
           routeName: 'TestListing',
-          id: data?.length === 2 ? linkId : undefined,
+          id: linkId ? linkId : undefined,
         };
         break;
 
       case 'testreport':
         return {
           routeName: 'TestReport',
-          id: data?.length === 2 ? linkId : undefined,
+          id: linkId ? linkId : undefined,
         };
         break;
 
@@ -332,7 +358,7 @@ export const handleOpenURL = (event: any) => {
         break;
 
       case 'prohealth':
-        if (data.length === 2) {
+        if (data.length >= 2) {
           return {
             routeName: 'prohealth',
             id: linkId,
@@ -349,6 +375,21 @@ export const handleOpenURL = (event: any) => {
       case 'mobilehelp':
         return {
           routeName: 'mobilehelp',
+        };
+        break;
+      case 'tests-cart':
+      case 'testscart':
+        return {
+          routeName: 'TestsCart',
+          id: linkId ? linkId : undefined,
+        };
+        break;
+
+      case 'testordersummary':
+      case 'test-order-summary':
+        return {
+          routeName: 'TestOrderSummary',
+          id: linkId ? linkId : undefined,
         };
         break;
 
@@ -448,6 +489,7 @@ export const pushTheView = (
     case 'DoctorSearch':
       navigateToView(navigation, AppRoutes.DoctorSearch);
       break;
+
     case 'MedicineSearchText':
       navigateToView(navigation, AppRoutes.MedicineListing, { searchText: id });
       break;
@@ -455,13 +497,15 @@ export const pushTheView = (
       navigateToView(navigation, AppRoutes.MedicineListing, { categoryName: id });
       break;
     case 'MedicineSearch':
-      if (id) {
+      if (id && !id.includes('=')) {
         const [itemId, name] = id.split(',');
         navigateToView(navigation, AppRoutes.MedicineListing, {
           category_id: itemId,
           title: `${name ? name : 'Products'}`.toUpperCase(),
           movedFrom: 'deeplink',
         });
+      } else {
+        navigateToView(navigation, AppRoutes.MedicineSearch);
       }
       break;
     case 'MedicineCart':
@@ -502,8 +546,10 @@ export const pushTheView = (
       navigateToView(navigation, AppRoutes.OneApolloMembership);
       break;
     case 'TestDetails':
+      const isItemId = id.indexOf('-') !== -1;
       navigateToView(navigation, AppRoutes.TestDetails, {
-        itemId: id,
+        itemId: isItemId ? null : id,
+        itemName: isItemId ? id : null,
         movedFrom: 'deeplink',
       });
       break;
@@ -537,6 +583,9 @@ export const pushTheView = (
       } else {
         navigation.replace(AppRoutes.ConsultRoom);
       }
+      break;
+    case 'MyMembership':
+      navigateToView(navigation, AppRoutes.MyMembership);
       break;
     case 'corporatemembership':
       if (isCorporateSubscribed) {
@@ -583,6 +632,21 @@ export const pushTheView = (
       break;
     case 'mobilehelp':
       navigateToView(navigation, AppRoutes.MobileHelp);
+      break;
+    case 'TestOrderSummary':
+      navigateToView(navigation, AppRoutes.TestOrderDetails, {
+        orderId: id,
+        goToHomeOnBack: true,
+        setOrders: null,
+        selectedOrder: null,
+        refundStatusArr: [],
+        comingFrom: 'deeplink',
+        showOrderSummaryTab: true,
+        disableTrackOrder: true,
+      });
+      break;
+    case 'TestsCart':
+      navigateToView(navigation, AppRoutes.TestsCart);
       break;
     default:
       const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {

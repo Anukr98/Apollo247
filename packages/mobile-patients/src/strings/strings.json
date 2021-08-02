@@ -40,7 +40,11 @@
     "patient_uploaded_text": "Patient Uploaded",
     "error_enter_number_text": "Please enter numeric values (eg. 0,1...)",
     "addPrescriptionText": "ADD PRESCRIPTION",
+    "addVaccinationText": "ADD VACCINATION",
     "addTestReportText": "ADD TEST REPORT",
+    "cowinDelayMessage": "There might be some delay in receiving the OTP due to heavy traffic.",
+    "cowinPhoneAlertMessage": "Note: In case you are already registered on CoWIN enter the phone number linked with your CoWIN registration.",
+    "cowinSelectProfile": "Select the profile for downloading the Vaccine Certificate. Please note that only provisional certificate is available if you have taken only 1 Dose",
     "doctorConsultPHRText": "For privacy reasons, reports uploaded here are for your view only. To share with doctors, please upload selected reports in your chat with the doctor.",
     "addDischargeSummaryText": "ADD DISCHARGE SUMMARY",
     "addHealthConditionText": "ADD HEALTH CONDITIONS",
@@ -52,6 +56,7 @@
     "uploadHealthConditionText": "UPLOAD HEALTH CONDITIONS",
     "uploadBillText": "UPLOAD BILL",
     "uploadInsuranceText": "UPLOAD INSURANCE",
+    "uploadVaccinationText": "UPLOAD VACCINATION",
     "best_doctor_text": "Here are our best ",
     "phr_api_error_text": "We are really sorry, something went wrong !!!",
     "all_consults": "All Consults",
@@ -129,7 +134,8 @@
     "lowNetworkText": "We were unable to load the page properly because of low network. Please try again",
     "CorporateVaccineBenefit": "DEPENDENT_VACCINATION_REG",
     "noDiagnosticsAvailable": "Unfortunately, we do not have any diagnostic(s) available right now.",
-    "unableToSetDeliveryAddress": "We're sorry! Unable to set delivery address. Please try again after some time"
+    "unableToSetDeliveryAddress": "We're sorry! Unable to set delivery address. Please try again after some time",
+    "circleNoSubscriptionText": "No Subscription"
   },
   "components": {
     "medicineDetails": {
@@ -209,8 +215,8 @@
       "point7": "Follow Up via text - valid for 7 days"
     },
     "inperson": {
-      "heading": "MEET IN PERSON",
-      "question": "How to consult in person?",
+      "heading": "HOSPITAL VISIT",
+      "question": "How to consult at Hospital?",
       "point1": "Choose the doctor",
       "point2": "Book a slot",
       "point3": "Visit the doctor at Hospital/Clinic",
@@ -256,8 +262,7 @@
     "need_help": "Need Help?",
     "book_appointment": "BOOK AN APPOINTMENT",
     "book_appointment_question": "Want to book an appointment?",
-    "arrayTest": [
-      {
+    "arrayTest": [{
         "id": 1,
         "title": "Are you looking for a particular doctor?",
         "descripiton": "FIND SPECIALIST",
@@ -276,8 +281,7 @@
         "image": "require('@aph/mobile-patients/src/images/home/test.png')"
       }
     ],
-    "startDoctor": [
-      {
+    "startDoctor": [{
         "name": "Dr. Narayana Rao’s",
         "status": "AVAILABLE",
         "Program": "Star Cardiology Program",
@@ -306,8 +310,7 @@
     }
   },
   "consult_room": {
-    "specialities": [
-      {
+    "specialities": [{
         "image": "",
         "name": "General Physician",
         "id": 1
@@ -341,8 +344,7 @@
     "description": "You have no consultations today :) Hope you are doing well?",
     "things_to_do": {
       "label": "Things To Do",
-      "data": [
-        {
+      "data": [{
           "title": "Your Health Profile is just 30% complete. Update it now!",
           "description": "UPDATE HEALTH PROFILE"
         },
@@ -354,8 +356,7 @@
     },
     "articles": {
       "label": "Read a few articles on how to stay healthy",
-      "data": [
-        {
+      "data": [{
           "image": "",
           "title": "5 Simple Daily Yoga Exercises For Good Health!",
           "link": ""
@@ -389,8 +390,7 @@
     "avaliablity": "Availability",
     "online": "Online\nConsults",
     "inperson": "In-Person\nConsults",
-    "filter_data": [
-      {
+    "filter_data": [{
         "label": "City",
         "options": ["Hyderabad", "Chennai"]
       },
@@ -470,21 +470,30 @@
     "specialDiscountText": "TESTS247 coupon pre-applied",
     "unableToOpenReport": "We are facing some issue in opening the report. Please try again later.",
     "responseUnavailableForReport": "Report is not yet available to download. Please try after some time.",
-    "disclaimerText": [
-      {
-        "text": "Rescheduling can be done upto 3 times only"
-      }
-    ],
+    "disclaimerText": [{
+      "text": "Rescheduling can be done upto 3 times only"
+    }],
     "reschduleCountExceed": "You have rescheduled thrice. You're out of reschedule attempts.",
     "rescheduleCountText": "You can reschedule to a maximum of 3 times. If you click ok, you will have {{setRescheduleCount}} reschedule attempt(s) left.",
     "reasonForCancel_TestOrder": {
-      "latePhelbo": "Phlebo did not arrive on time",
+      "notArrived": "Phlebo did not arrive",
+      "latePhelbo": "Phlebo arrived late",
+      "priceHigh": "Prices are high comparatively",
       "editOrder": "Need to Modify Order Details",
-      "userUnavailable": "I am not available",
+      "homeChargesHigh": "Home collection charges are high",
+      "changePlans": "Change in travel plans",
+      "symptomsSubdued": "My symptoms have subdued",
+      "missedFasting": "Missed the fasting requirement",
+      "waitingDocPrescription": "Waiting for doctor prescription",
+      "deniedSample": "Executive denied sample collection",
+      "userUnavailable": "I am not available at location",
       "bookedByMistake": "Booked by Mistake",
       "lesserPrice": "Got lesser price elsewhere",
       "urgentReport": "Need Report Urgently",
+      "needModifyPatient": "Need to modify patient details",
+      "needModifyOrder": "Need to modify test details",
       "anotherChannel": "Booked from other channel",
+      "needMorningSlot": "Need an early morning slot",
       "otherReasons": "Others (Please specify)"
     },
     "reasonForReschedule_TestOrder": {
@@ -538,6 +547,7 @@
     "unableToFetchReport": "We could not fetch your report. Please view report in my order section",
     "reasonForReschedulingText": "Reason for Rescheduling",
     "reasonForCancellationText": "Reason for Cancellation",
+    "promoteCashbackHeading": "You are missing out on ₹100 Cashback if you cancel",
     "whatWudLikeText": "What would you like to do?",
     "rescheduleBookingText": "Reschedule Booking",
     "cancelBookingText": "Cancel Booking",
@@ -588,8 +598,7 @@
     "test_prec_not_req": "This test doesn't requires doctor’s prescription",
     "go_to_help": "GO TO HELP"
   },
-  "defaultReasonList": [
-    {
+  "defaultReasonList": [{
       "title": "Arrived very Late"
     },
     {
@@ -605,11 +614,9 @@
       "title": "I have other Feedback"
     }
   ],
-  "positiveReasonList": [
-    {
-      "title": "I have Positive Feedback"
-    }
-  ],
+  "positiveReasonList": [{
+    "title": "I have Positive Feedback"
+  }],
   "OrderSummery": {
     "total": "Total",
     "order": "ORDER",
@@ -655,8 +662,7 @@
     "order_test": "ORDER TESTS",
     "book_follow_up": "BOOK FOLLOW-UP",
     "add_note_to_notify_users": "Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!",
-    "tabs": [
-      {
+    "tabs": [{
         "title": "Consults & Rx",
         "count": "0"
       },
@@ -707,8 +713,7 @@
   "alerts": {
     "Open_camera_in_video_call": "Image capturing is disabled during a video call. Please switch to the Audio call if you want to send an Image."
   },
-  "muiltdosages": [
-    {
+  "muiltdosages": [{
       "single": "tablet",
       "multiple": "tablet(s)"
     },
@@ -829,11 +834,9 @@
     "ADVANCE_DIABETES_QUESTIONAIRE": {
       "HEADING": "THANK YOU  !!",
       "SUBHEADING": "In order to assist you in the best possible way, please answer these questions",
-      "QUESTIONAIRE": [
-        {
+      "QUESTIONAIRE": [{
           "QUESTION": "Q1. Which type of diabetes are you living with?",
-          "OPTIONS": [
-            {
+          "OPTIONS": [{
               "key": "Pre-Diabetes",
               "value": "Pre-Diabetes"
             },
@@ -853,8 +856,7 @@
         },
         {
           "QUESTION": "Q2. For how many years have you lived with diabetes?",
-          "OPTIONS": [
-            {
+          "OPTIONS": [{
               "key": "lessThan2Years",
               "value": "Less than 2 years"
             },
@@ -978,8 +980,7 @@
       "Benefits and offers available through the program may change or be withdrawn without prior intimation. Apollo 24/7 will not be responsible for any liability arising from such situations or use of such offers.",
       "Any disputes arising out of the program shall be subject to arbitration by a sole arbitrator appointed by Apollo 24/7 for this purpose. The proceedings of the arbitration shall be conducted as per the provisions of Arbitration and Conciliation Act, 1996. The place of arbitration shall be at Chennai and language of arbitration shall be English. The existence of a dispute, if at all, shall not constitute a claim against Apollo 24/7."
     ],
-    "FAQ": [
-      {
+    "FAQ": [{
         "faqQuestion": "What is the Apollo 24|7 CIRCLE Membership program?",
         "faqAnswer": "Apollo 24|7 CIRCLE membership is a one-of-its-kind program designed to give the best care and value to its members. Once you sign up by choosing the plan that suits your needs, you will receive benefits like an emergency doctor-on-call, cashback on medicines, discounts on doctor consultations, and diagnostics. Did we also tell you that all your deliveries will be done free of cost and on a priority basis?"
       },
@@ -1001,7 +1002,7 @@
       },
       {
         "faqQuestion": "Where will I get the Circle cashback?",
-        "faqAnswer": "You will be eligible for Circle cashback every time you buy medicines or Apollo products. We also have discounts on doctor consultations and diagnostic tests. Cashback will be credited to your OneApollo Health Credits as soon as a transaction gets completed."
+        "faqAnswer": "You will be eligible for Circle cashback every time you buy medicines or Apollo products. We also have discounts on selected doctor consultations and diagnostic tests. Cashback will be credited to your OneApollo Health Credits as soon as a transaction gets completed."
       },
       {
         "faqQuestion": "How can I use Circle cashback?",
@@ -1044,7 +1045,11 @@
     "HOME": "HOME",
     "PHARMACY_HOME": "PHARMACY_HOME",
     "DIAGNOSTIC_HOME": "DIAGNOSTIC_HOME",
-    "MEMBERSHIP_DETAILS": "MEMBERSHIP_DETAILS"
+    "MEMBERSHIP_DETAILS": "MEMBERSHIP_DETAILS",
+    "PHARMACY_HOME_STICKY": "PHARMACY_HOME_STICKY",
+    "VC_DOCTOR_PROFILE": "VC_DOCTOR_PROFILE",
+    "PHARMA_CART": "PHARMA_CART",
+    "VC_CART": "VC_CART"
   },
   "circleMembershipBenefits": {
     "PHARMA_CASHBACK": "Pharma Cashback",
@@ -1079,8 +1084,7 @@
     "testPincodeText": "Enter pincode here",
     "addNewAddressText": "Add New Address"
   },
-  "aboutApolloList": [
-    {
+  "aboutApolloList": [{
       "title": "About Us",
       "url": "https://www.apollo247.com/aboutUs?isMobile=true"
     },
@@ -1242,11 +1246,13 @@
     "wrong_otp": "Seems you have entered wrong OTP.Please try with right one.",
     "unable_to_validate": "We are unable to validate OTP right now. Please try again after some time. If this issue persists, send an email to corporate-helpdesk@apollo247.com and attach the screenshot of this error.",
     "CORPORATE_VACCINATION": "CORPORATE_VACCINATION",
-    "booking_detail_pdf":"DOWNLOAD PDF",
-    "unable_to_generate_pdf":"Unable to generate booking pdf.",
-    "success_generate_pdf":"Successfully generated vaccination booking PDF ",
-    "dose_2_alert":"You will be given dose only after govt specified days. booking here does not confirm",
-    "verify_title":"VERIFY",
-    "submit_title":"SUBMIT "
+    "booking_detail_pdf": "DOWNLOAD PDF",
+    "unable_to_generate_pdf": "Unable to generate booking pdf.",
+    "unable_to_generate_invoice_pdf": "Unable to generate invoice pdf.",
+    "success_generate_pdf": "Successfully generated vaccination booking PDF ",
+    "success_generate_invoice_pdf": "Successfully generated vaccination invoice.",
+    "dose_2_alert": "Please make sure that the difference between 1st and 2nd dose is as per Govt. guidelines. If difference in 2nd dose is less than Govt. guideline, you will not be given 2nd dose.",
+    "verify_title": "VERIFY",
+    "submit_title": "SUBMIT "
   }
 }

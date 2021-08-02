@@ -106,7 +106,7 @@ export enum FirebaseEventName {
   PURCHASE = 'purchase',
 
   //for address crash debugging
-  ADDADDRESS_LAT_LNG = 'AddAddressLatLng'
+  ADDADDRESS_LAT_LNG = 'AddAddressLatLng',
 }
 
 export interface PatientInfo {
@@ -380,6 +380,7 @@ export interface FirebaseEvents {
     Cart_ID?: string | number; // Optional
     Service_Area: 'Pharmacy' | 'Diagnostic';
     'Circle discount': number;
+    "Circle user": 'Yes' | 'No';
   };
 
   [FirebaseEventName.PRODUCT_PAGE_VIEWED]: {
@@ -581,7 +582,7 @@ export interface FirebaseEvents {
   [FirebaseEventName.DIAGNOSTIC_ITEM_VIEWED]: {
     PatientUHID: string;
     PatientName: string;
-    Source: 'Search Page' | 'Landing Page' | 'Cart Page';
+    Source: 'Search Page' | 'Landing Page' | 'Cart page';
     ItemName: string;
     ItemType: string;
     ItemCode: string;
@@ -670,8 +671,14 @@ export interface FirebaseEvents {
     LOB: string;
   };
 
-  [FirebaseEventName.ADDADDRESS_LAT_LNG]:{
+  [FirebaseEventName.ADDADDRESS_LAT_LNG]: {
     latitude: number;
     longitude: number;
-  }
+  };
+
+  [FirebaseEventName.PAYMENT_STATUS]: {
+    status: string;
+    LOB: string;
+    paymentOrderId: number;
+  };
 }

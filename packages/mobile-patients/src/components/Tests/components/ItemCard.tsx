@@ -18,6 +18,7 @@ import { isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions'
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   convertNumberToDecimal,
+  DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
   getPricesForItem,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
@@ -46,15 +47,7 @@ export interface ItemCardProps {
   isVertical: boolean;
   columns?: number;
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
-  source:
-    | 'Home page'
-    | 'Full search'
-    | 'Details page'
-    | 'Partial search'
-    | 'Listing page'
-    | 'Category page'
-    | 'Prescription'
-    | 'Cart page';
+  source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
   sourceScreen: string;
   onPressAddToCartFromCart?: (item: any) => void;
   onPressRemoveItemFromCart?: (item: any) => void;
@@ -82,13 +75,12 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     (item: any) => {
       const getItem = item?.item;
       const getDiagnosticPricingForItem = getItem?.diagnosticPricing;
-
       if (getDiagnosticPricingForItem == undefined || getDiagnosticPricingForItem == null) {
         return null;
       }
+
       const packageMrpForItem = getItem?.packageCalculatedMrp!;
       const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
-
       if (!pricesForItem?.itemActive) {
         return null;
       }
@@ -301,12 +293,12 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     return (
       <View style={{ flexDirection: 'row', marginVertical: '5%' }}>
         <Text style={styles.mainPriceText}>
-          {string.common.Rs} {convertNumberToDecimal(priceToShow)}
+        {`${string.common.Rs} ${convertNumberToDecimal(priceToShow)}` }
         </Text>
         {(!isCircleSubscribed && promoteCircle && priceToShow == slashedPrice) ||
         priceToShow == slashedPrice ? null : (
           <Text style={styles.slashedPriceText}>
-            {string.common.Rs} {convertNumberToDecimal(slashedPrice)}
+            {`${string.common.Rs} ${convertNumberToDecimal(slashedPrice)}`}
           </Text>
         )}
       </View>
@@ -439,13 +431,17 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     const isAlreadyPartOfOrder =
       !!modifiedOrderItemIds &&
       modifiedOrderItemIds?.length &&
-      modifiedOrderItemIds?.find((id: number) => Number(id) == Number(item?.id));
+      modifiedOrderItemIds?.find(
+        (id: number) =>
+          Number(id) == Number(props.sourceScreen === AppRoutes.TestsCart ? item?.itemId : item?.id)
+      );
     return (
       <Text
         style={[
           styles.addToCartText,
           {
             ...theme.viewStyles.text('B', isSmallDevice ? 13 : 14, '#fc9916', 1, 24),
+            width: isAlreadyPartOfOrder ? '80%' : '70%',
           },
         ]}
         onPress={() =>
@@ -539,7 +535,6 @@ const styles = StyleSheet.create({
   itemNameText: {
     ...theme.viewStyles.text('M', isSmallDevice ? 15 : 16, theme.colors.SHERPA_BLUE, 1, 20),
     textAlign: 'left',
-    textTransform: 'capitalize',
   },
   parameterText: {
     ...theme.viewStyles.text('R', 11, theme.colors.SHERPA_BLUE, 1, 16),

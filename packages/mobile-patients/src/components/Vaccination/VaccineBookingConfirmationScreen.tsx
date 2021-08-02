@@ -235,6 +235,15 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('R', 10, '#01475B'),
     textAlign: 'center',
   },
+
+  qrCodePendingText: {
+    ...theme.viewStyles.text('M', 14, '#000'),
+    width: 200,
+    marginTop: 75,
+    textAlign: 'center',
+    position: 'absolute',
+    backgroundColor: '#DDC487',
+  },
   importantInfoContainer: {
     margin: 20,
     borderWidth: 1,
@@ -305,6 +314,11 @@ const BOOKING_STATUS = {
   CANCELLED: 'CANCELLED',
   REJECTED: 'REJECTED',
   COMPLETED: 'COMPLETED',
+  PAYMENT_PENDING: 'PAYMENT_PENDING',
+  PAYMENT_FAILED: 'PAYMENT_FAILED',
+  AUTO_REFUNDED: 'AUTO_REFUNDED',
+  ORDER_INITIATED: 'ORDER_INITIATED',
+  ABORTED: 'ABORTED',
 };
 export interface VaccineBookingConfirmationScreenProps extends NavigationScreenProps<{}> {
   appointmentId: string;
@@ -417,6 +431,17 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
       })
       .finally(() => {
         setLoading(false);
+      });
+  };
+
+  const showCommonAlertMessage = (message: string) => {
+    showAphAlert &&
+      showAphAlert({
+        title: 'Hi !',
+        description: message,
+        onPressOk: () => {
+          hideAphAlert!();
+        },
       });
   };
 
@@ -550,44 +575,98 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
   };
 
   const renderHeaderBanner = () => {
+    if (
+      bookingInfo?.status == BOOKING_STATUS.AUTO_REFUNDED ||
+      bookingInfo?.status == BOOKING_STATUS.PAYMENT_FAILED ||
+      bookingInfo?.status == BOOKING_STATUS.ORDER_INITIATED ||
+      bookingInfo?.status == BOOKING_STATUS.ABORTED
+    ) {
+      return null;
+    }
+
+    let statusBackgroundColor = getStatusColor();
+
     return (
       <View
         style={[
           styles.headerBannerContainer,
           {
-            backgroundColor:
-              bookingInfo?.status == BOOKING_STATUS.CANCELLED ||
-              bookingInfo?.status == BOOKING_STATUS.REJECTED
-                ? '#edc6c2'
-                : '#00B38E40',
+            backgroundColor: statusBackgroundColor,
           },
         ]}
       >
         <Apollo247Icon style={styles.apollo247Icon} />
 
         <View style={styles.qrCodeContainer}>
-          <QRCode
-            value={qrCodeLink}
-            size={200}
-            backgroundColor="transparent"
-            logoBackgroundColor="#fff"
-          />
+          {showBookingConfirmedStatus() ? (
+            <QRCode
+              value={qrCodeLink}
+              size={200}
+              backgroundColor="transparent"
+              logoBackgroundColor="#fff"
+            />
+          ) : (
+            <View style={{ height: 200 }}>
+              <QRCode
+                value={'Payment beign verified'}
+                size={200}
+                color="#DDC487"
+                backgroundColor="transparent"
+              />
+              <Text style={styles.qrCodePendingText}>
+                QR Code will only be available once your booking has been confirmed !{' '}
+              </Text>
+            </View>
+          )}
 
-          <TouchableOpacity
-            style={styles.qrCodeLinkContainer}
-            onPress={() => {
-              try {
-                Clipboard.setString(qrCodeLink);
-                showAlertMessage('Copied! ', 'Link ' + qrCodeLink + ' copied to clipboard.');
-              } catch (error) {}
-            }}
-          >
-            <Text style={styles.qrCodeLinkText}>{qrCodeLink}</Text>
-            <Copy style={styles.copyIcon} />
-          </TouchableOpacity>
+          {showBookingConfirmedStatus() ? (
+            <TouchableOpacity
+              style={styles.qrCodeLinkContainer}
+              onPress={() => {
+                try {
+                  Clipboard.setString(qrCodeLink);
+                  showAlertMessage('Copied! ', 'Link ' + qrCodeLink + ' copied to clipboard.');
+                } catch (error) {}
+              }}
+            >
+              <Text style={styles.qrCodeLinkText}>{qrCodeLink}</Text>
+              <Copy style={styles.copyIcon} />
+            </TouchableOpacity>
+          ) : null}
         </View>
       </View>
     );
+  };
+
+  const showBookingConfirmedStatus = () => {
+    if (
+      bookingInfo?.status == BOOKING_STATUS.BOOKED ||
+      bookingInfo?.status == BOOKING_STATUS.VERIFIED ||
+      bookingInfo?.status == BOOKING_STATUS.COMPLETED ||
+      bookingInfo?.status == BOOKING_STATUS.CANCELLED ||
+      bookingInfo?.status == BOOKING_STATUS.REJECTED
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const getStatusColor = () => {
+    let statusBackgroundColor = '#00B38E40';
+
+    if (
+      bookingInfo?.status == BOOKING_STATUS.CANCELLED ||
+      bookingInfo?.status == BOOKING_STATUS.REJECTED
+    ) {
+      statusBackgroundColor = '#edc6c2';
+    } else if (bookingInfo?.status == BOOKING_STATUS.PAYMENT_PENDING) {
+      statusBackgroundColor = '#FFD580';
+    } else {
+      statusBackgroundColor = '#00B38E40';
+    }
+
+    return statusBackgroundColor;
   };
 
   const renderBookingDetailsMatrixItem = (title: string, value: string) => {
@@ -600,16 +679,14 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
   };
 
   const renderStatusStrip = () => {
+    let statusBackgroundColor = getStatusColor();
+
     return (
       <View
         style={[
           styles.statusStripContainerSuccess,
           {
-            backgroundColor:
-              bookingInfo?.status == BOOKING_STATUS.CANCELLED ||
-              bookingInfo?.status == BOOKING_STATUS.REJECTED
-                ? '#edc6c2'
-                : '#00B38E40',
+            backgroundColor: statusBackgroundColor,
           },
         ]}
       >
@@ -664,29 +741,48 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
           <Text style={styles.cancelledTextStyle}>CANCELLED! </Text>
         ) : null}
 
-        <Text style={styles.bookingConfirmationStyle}>
-          Your booking has been {bookingInfo?.status.toLowerCase()}.
-        </Text>
+        {bookingInfo?.status == BOOKING_STATUS.BOOKED ? (
+          <Text style={styles.bookingConfirmationStyle}>
+            Your appointment has been successfully booked.
+          </Text>
+        ) : null}
+
+        {bookingInfo?.status == BOOKING_STATUS.CANCELLED ? (
+          <Text style={styles.bookingConfirmationStyle}>
+            Your appointment has been {bookingInfo?.status.toLowerCase()}.
+          </Text>
+        ) : null}
+
+        {bookingInfo?.status == BOOKING_STATUS.PAYMENT_PENDING ? (
+          <Text style={styles.bookingConfirmationStyle}>
+            Your appointment payment is being verified .
+          </Text>
+        ) : null}
 
         {renderUserDetailHeader()}
 
         <Text style={styles.orderDetailsStyle}>{string.vaccineBooking.appointment_details}</Text>
 
-        {bookingInfo?.display_id
-          ? renderBookingDetailsMatrixItem(
-              string.vaccineBooking.booking_number,
-              bookingInfo?.display_id
-            )
-          : null}
+        {showBookingConfirmedStatus()
+          ? bookingInfo?.display_id
+            ? renderBookingDetailsMatrixItem(
+                string.vaccineBooking.booking_number,
+                bookingInfo?.display_id
+              )
+            : null
+          : renderBookingDetailsMatrixItem(string.vaccineBooking.booking_number, '-----')}
+
         {renderBookingDetailsMatrixItem(
           string.vaccineBooking.site,
           (bookingInfo?.resource_session_details?.resource_detail?.name || '') +
             (bookingInfo?.resource_session_details?.resource_detail?.street_line1 || '') +
+            ' ' +
             (bookingInfo?.resource_session_details?.resource_detail?.street_line2 || '') +
+            ' ' +
             (bookingInfo?.resource_session_details?.resource_detail?.street_line3 || '') +
-            ' , ' +
+            ', ' +
             (bookingInfo?.resource_session_details?.resource_detail?.city || '') +
-            ' , ' +
+            ', ' +
             (bookingInfo?.resource_session_details?.resource_detail?.state || '')
         )}
 
@@ -829,20 +925,67 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
             CLICK HERE
           </Text>
         </Text>
-        <Text
-          onPress={() => {
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-              })
-            );
-          }}
-          style={styles.homepageCta}
-        >
-          GO TO HOMEPAGE
-        </Text>
+
+        <View style={{ flexDirection: 'row', marginTop: 15 }}>
+          {bookingInfo?.payment_type == PAYMENT_TYPE.IN_APP_PURCHASE ||
+          bookingInfo?.payment_type == PAYMENT_TYPE.COD ? (
+            <Button
+              title={'DOWNLOAD INVOICE'}
+              style={[
+                styles.actionFooterCTA,
+                {
+                  flex: 1,
+                  marginHorizontal: 5,
+                  opacity:
+                    bookingInfo?.status == BOOKING_STATUS.COMPLETED ||
+                    bookingInfo?.status == BOOKING_STATUS.VERIFIED
+                      ? 1
+                      : 0.5,
+                },
+              ]}
+              onPress={() => {
+                if (
+                  bookingInfo?.status == BOOKING_STATUS.COMPLETED ||
+                  bookingInfo?.status == BOOKING_STATUS.VERIFIED
+                ) {
+                  setTimeout(() => {
+                    if (Platform.OS === 'android') {
+                      storagePermissions(() => {
+                        fetchInvoiceHTMLText();
+                      });
+                    } else {
+                      fetchInvoiceHTMLText();
+                    }
+                  }, 100);
+                } else if (
+                  bookingInfo?.status == BOOKING_STATUS.CANCELLED ||
+                  bookingInfo?.status == BOOKING_STATUS.REJECTED
+                ) {
+                  showCommonAlertMessage('Invoice for the cancelled booking cannot be generated.');
+                } else {
+                  showCommonAlertMessage(
+                    "You'll be able to download the invoice only after your vaccination is complete."
+                  );
+                }
+              }}
+            />
+          ) : null}
+
+          <Button
+            title={'GO TO HOMEPAGE'}
+            style={[styles.actionFooterCTA, { flex: 1, marginHorizontal: 5 }]}
+            onPress={() => {
+              props.navigation.dispatch(
+                StackActions.reset({
+                  index: 0,
+                  key: null,
+                  actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+                })
+              );
+            }}
+            disabled={bookingInfo?.status == BOOKING_STATUS.CANCELLED ? true : false}
+          />
+        </View>
       </View>
     );
   };
@@ -851,6 +994,17 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
     let options = {
       html: htmlText,
       fileName: 'apollo_vaccine_booking_' + displayId,
+      directory: 'Download',
+    };
+
+    let file = await RNHTMLtoPDF.convert(options);
+    return file;
+  };
+
+  const generateInvoicePDF = async (htmlText: any) => {
+    let options = {
+      html: htmlText,
+      fileName: 'apollo_vaccine_booking_invoice_' + displayId,
       directory: 'Download',
     };
 
@@ -916,11 +1070,81 @@ export const VaccineBookingConfirmationScreen: React.FC<VaccineBookingConfirmati
       .finally(() => {});
   };
 
+  const fetchInvoiceHTMLText = () => {
+    setPdfLoading(true);
+
+    fetch(vaccineBookingPDFBaseUrl + 'invoice/' + bookingInfo?.id)
+      .then((resp) => {
+        return resp.text();
+      })
+      .then((text) => {
+        setPdfLoading(true);
+        generateInvoicePDF(text)
+          .then((file) => {
+            showAphAlert!({
+              title: 'Great !',
+              description: string.vaccineBooking.success_generate_invoice_pdf,
+              showCloseIcon: true,
+              onCloseIconPress: () => {
+                hideAphAlert!();
+              },
+              CTAs: [
+                {
+                  text: 'OPEN',
+                  onPress: () => {
+                    try {
+                      hideAphAlert!();
+                      Platform.OS === 'ios'
+                        ? RNFetchBlob.ios.previewDocument(file.filePath)
+                        : RNFetchBlob.android.actionViewIntent(file.filePath, 'application/pdf');
+                    } catch (error) {
+                      showAphAlert!({
+                        title: 'Oops !',
+                        description: "Can't open file .",
+                      });
+                    }
+                  },
+                },
+              ],
+            });
+          })
+          .catch((error) => {
+            console.log(' fetchInvoiceHTMLText --- error ', error);
+
+            showAphAlert!({
+              title: 'Oops !',
+              description: string.vaccineBooking.unable_to_generate_invoice_pdf,
+            });
+          })
+          .finally(() => {
+            setPdfLoading(false);
+          });
+      })
+      .catch((error) => {
+        console.log(' fetchInvoiceHTMLText --- error 2 ', error);
+
+        setPdfLoading(false);
+        showAphAlert!({
+          title: 'Oops !',
+          description: string.vaccineBooking.unable_to_generate_pdf,
+        });
+      })
+      .finally(() => {});
+  };
+
   const renderGeneratePDFCTA = () => {
     return (
       <TouchableOpacity
         style={styles.generatePDFContainer}
         onPress={() => {
+          if (showBookingConfirmedStatus() == false) {
+            showAlertMessage(
+              'Oops! ',
+              'Download booking PDF option will only be available once your booking has been confirmed.'
+            );
+            return;
+          }
+
           setTimeout(() => {
             if (Platform.OS === 'android') {
               storagePermissions(() => {

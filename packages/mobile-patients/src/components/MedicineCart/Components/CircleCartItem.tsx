@@ -6,7 +6,12 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import AsyncStorage from '@react-native-community/async-storage';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import moment from 'moment';
-import { fireCirclePlanRemovedEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
+import { postAppsFlyerCircleAddRemoveCartEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
+import {
+  fireCirclePlanRemovedEvent,
+  fireCleverTapCirclePlanRemovedEvent,
+} from '@aph/mobile-patients/src/components/MedicineCart/Events';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 export interface CircleCartItemProps {
   currentPatient: any;
@@ -20,6 +25,7 @@ export const CircleCartItem: React.FC<CircleCartItemProps> = (props) => {
     setCircleMembershipCharges,
   } = useShoppingCart();
   const { setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
+  const { allCurrentPatients } = useAllCurrentPatients();
 
   const renderImage = () => {
     return (
@@ -64,6 +70,19 @@ export const CircleCartItem: React.FC<CircleCartItemProps> = (props) => {
             <TouchableOpacity
               onPress={() => {
                 fireCirclePlanRemovedEvent(props?.currentPatient);
+                const circleSource = 'Cart(Pharma)';
+                fireCleverTapCirclePlanRemovedEvent(
+                  props?.currentPatient,
+                  circleSource,
+                  circlePlanSelected,
+                  allCurrentPatients
+                );
+                postAppsFlyerCircleAddRemoveCartEvent(
+                  circlePlanSelected,
+                  circleSource,
+                  'remove',
+                  props?.currentPatient
+                );
                 setCirclePlanSelected && setCirclePlanSelected(null);
                 setIsCircleSubscription && setIsCircleSubscription(false);
                 setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);

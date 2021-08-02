@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import {
   GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID,
+  GET_INDIVIDUAL_TEST_RESULT_PDF,
   GET_LAB_RESULT_PDF,
   PHR_COVERT_TO_ZIP,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -66,6 +67,10 @@ import { navigateToHome } from '@aph/mobile-patients/src/helpers/helperFunctions
 import { ResultTestReportsPopUp } from '@aph/mobile-patients/src/components/HealthRecords/Components/ResultTestReportsPopUp';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { RenderPdf } from '@aph/mobile-patients/src/components/ui/RenderPdf';
+import {
+  getIndividualTestResultPdf,
+  getIndividualTestResultPdfVariables,
+} from '@aph/mobile-patients/src/graphql/types/getIndividualTestResultPdf';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -475,32 +480,37 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   const downloadPDFTestReport = (fileShare?: boolean) => {
     if (currentPatient?.id) {
       setLoading && setLoading(true);
-      client
-        .query<getLabResultpdf, getLabResultpdfVariables>({
-          query: GET_LAB_RESULT_PDF,
-          variables: {
-            patientId: currentPatient?.id,
-            recordId: data?.id,
-          },
-        })
-        .then(({ data }: any) => {
-          if (data?.getLabResultpdf?.url) {
-            imagesArray?.length === 0
-              ? downloadDocument(data?.getLabResultpdf?.url, fileShare)
-              : callConvertToZipApi(data?.getLabResultpdf?.url, fileShare);
-          }
-        })
-        .catch((e: any) => {
-          setLoading?.(false);
-          currentPatient && handleGraphQlError(e, 'Report is yet not available');
-          CommonBugFender('HealthRecordDetails_downloadPDFTestReport', e);
-        });
+      if (!!data?.fileUrl) {
+        downloadDocument();
+      } else {
+        client
+          .query<getIndividualTestResultPdf, getIndividualTestResultPdfVariables>({
+            query: GET_INDIVIDUAL_TEST_RESULT_PDF,
+            variables: {
+              patientId: currentPatient?.id,
+              recordId: data?.id,
+              sequence: data?.testSequence,
+            },
+          })
+          .then(({ data }: any) => {
+            if (data?.getIndividualTestResultPdf?.url) {
+              imagesArray?.length === 0
+                ? downloadDocument(data?.getIndividualTestResultPdf?.url, fileShare)
+                : callConvertToZipApi(data?.getIndividualTestResultPdf?.url, fileShare);
+            }
+          })
+          .catch((e: any) => {
+            setLoading?.(false);
+            currentPatient && handleGraphQlError(e, 'Report is yet not available');
+            CommonBugFender('HealthRecordDetails_downloadPDFTestReport', e);
+          });
+      }
     }
   };
 
   const callConvertToZipApi = (pdfUrl?: string, fileShare?: boolean) => {
     setLoading?.(true);
-    const fileUrls = imagesArray?.map((item) => item?.file_Url);
+    const fileUrls = imagesArray?.map((item: any) => item?.file_Url);
     pdfUrl && fileUrls?.push(pdfUrl);
     client
       .mutate<convertToZip, convertToZipVariables>({
@@ -517,9 +527,12 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         }
       })
       .catch((e: any) => {
-        setLoading?.(false);
+        setLoading && setLoading(false);
         currentPatient && handleGraphQlError(e, 'Report is yet not available');
         CommonBugFender('HealthRecordDetails_callConvertToZipApi', e);
+      })
+      .finally(() => {
+        setLoading && setLoading(false);
       });
   };
 
@@ -595,6 +608,9 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   };
 
   const renderDetailsFinding = () => {
+    const hasNumber = (myString: string) => {
+      return /\d/.test(myString);
+    };
     const renderTestReportDetails = () => {
       return (
         <>
@@ -612,26 +628,27 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
             var stringColorChanger: boolean;
             var rangeColorChanger: boolean;
             var columnDecider: boolean;
+            var symbolSearch: boolean;
             var numberOfLineBreaks: any;
-            var letterCheck: any;
             if (!!item?.range) {
-              var symbolSearch =
-                item?.range?.includes('<') ||
-                item?.range?.includes('>') ||
-                item?.range?.includes(':');
-              var letterCheck = item?.range?.includes('-');
-              if (letterCheck && !symbolSearch) {
-                minNum = item?.range.split('-')[0].trim();
-                maxNum = item?.range.split('-')[1].trim();
+              var regExp = /[a-zA-Z!<:;>@#%^~=`{};&*]/g;
+              var rangeBool = regExp.test(item?.range);
+              var numCheck = hasNumber(item?.range);
+              if (!rangeBool && !!numCheck) {
+                minNum = item?.range?.split(/[-_–]/)[0].trim();
+                maxNum = item?.range?.split(/[-_–]/)[1].trim();
                 let parseResult = Number(item?.result);
-                parseResult >= minNum && parseResult <= maxNum
-                  ? (resultColorChanger = true)
-                  : (resultColorChanger = false);
+                if (!!minNum && !!maxNum) {
+                  parseResult >= minNum && parseResult <= maxNum
+                    ? (resultColorChanger = true)
+                    : (resultColorChanger = false);
+                }
               }
-
-              if (symbolSearch) {
+              if (rangeBool) {
+                symbolSearch = true;
                 rangeColorChanger = true;
               } else {
+                symbolSearch = false;
                 rangeColorChanger = false;
               }
               if (item?.range?.length > 40) {
@@ -640,7 +657,15 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                 columnDecider = false;
               }
             }
+
             if (!!item?.result) {
+              var regex = /[a-zA-Z-!$%^&*()_+|~=`{}[:;<>?,@#\]]/g;
+              var resultStr = regex.test(item?.result);
+              if (resultStr) {
+                rangeColorChanger = true;
+              } else {
+                rangeColorChanger = false;
+              }
               if (item?.result?.length > 14) {
                 stringColorChanger = true;
               }
@@ -656,8 +681,9 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                         stringColorChanger === true ||
                         rangeColorChanger === true ||
                         !item?.range ||
-                        item?.range === item?.result ||
-                        !letterCheck
+                        !numCheck ||
+                        symbolSearch === true ||
+                        item?.range === item?.result
                           ? '#9B9B9B'
                           : resultColorChanger
                           ? '#16DE9B'
@@ -665,11 +691,19 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                       height:
                         stringColorChanger === true && item?.result?.length > 100
                           ? 170
-                          : !!item.range && item?.range?.length > 40
-                          ? 220
-                          : !!item.result && numberOfLineBreaks > 3
-                          ? 180
-                          : 120,
+                          : !!item.range &&
+                            item?.range?.length > 70 &&
+                            item?.parameterName?.length > 70
+                          ? 330
+                          : !!item.range && item?.range?.length > 70
+                          ? 280
+                          : !!item.range && item?.range?.length < 70 && item?.range?.length > 30
+                          ? 210
+                          : !!item.result && numberOfLineBreaks >= 3
+                          ? 190
+                          : !!item?.parameterName && item?.parameterName?.length > 60
+                          ? 150
+                          : 150,
                     },
                   ]}
                 >
@@ -716,9 +750,10 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                             backgroundColor:
                               stringColorChanger === true ||
                               rangeColorChanger === true ||
+                              symbolSearch === true ||
+                              !numCheck ||
                               !item?.range ||
-                              item?.range === item?.result ||
-                              !letterCheck
+                              item?.range === item?.result
                                 ? '#F7F7F7'
                                 : resultColorChanger
                                 ? theme.colors.COMPLETE_STATUS_BGK
@@ -726,9 +761,10 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                             color:
                               stringColorChanger === true ||
                               rangeColorChanger === true ||
+                              symbolSearch === true ||
+                              !numCheck ||
                               !item?.range ||
-                              item?.range === item?.result ||
-                              !letterCheck
+                              item?.range === item?.result
                                 ? theme.colors.ASTRONAUT_BLUE
                                 : resultColorChanger
                                 ? theme.colors.COMPLETE_STATUS_TEXT
@@ -739,7 +775,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
                               Platform.OS === 'android' &&
                               item?.result?.length > 100
                                 ? 55
-                                : !!item.result && numberOfLineBreaks > 3
+                                : !!item.result && numberOfLineBreaks >= 3
                                 ? 80
                                 : undefined,
                             width:
@@ -913,7 +949,9 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         </View>
         <View style={styles.dateViewRender}>{renderDateView()}</View>
         <View style={styles.doctorNameRender}>
-          <Text style={styles.recordNameTextStyle}>{data?.labTestName}</Text>
+          <Text style={styles.recordNameTextStyle}>
+            {data?.labTestName || data?.healthCheckName}
+          </Text>
           <View style={{ flexDirection: 'row' }}>
             {!!data?.labTestRefferedBy ? (
               <Text style={styles.doctorTextStyle}>

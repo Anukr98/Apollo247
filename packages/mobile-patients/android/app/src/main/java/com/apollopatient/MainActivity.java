@@ -14,6 +14,7 @@ import android.os.Vibrator;
 import android.provider.Settings;
 import androidx.annotation.RequiresApi;
 
+import com.clevertap.android.sdk.CleverTapAPI;
 import com.facebook.react.ReactActivity;
 
 public class MainActivity extends ReactActivity {
@@ -43,7 +44,14 @@ public class MainActivity extends ReactActivity {
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        //added for vitals crash when goes in background, for lollipop devices
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            super.onCreate(savedInstanceState); 
+        }
+        else{
+            //lollipop devices
+            super.onCreate(null);
+        }
 
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
@@ -51,6 +59,10 @@ public class MainActivity extends ReactActivity {
         if (bundle != null) {
             String referrerString = bundle.get(Intent.EXTRA_REFERRER) != null ? bundle.get(Intent.EXTRA_REFERRER).toString() : "";
             setReferrer(referrerString);
+        }
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            CleverTapAPI.createNotificationChannel(getApplicationContext(),"Marketing","Marketing","",NotificationManager.IMPORTANCE_HIGH,true);
         }
 
         try {

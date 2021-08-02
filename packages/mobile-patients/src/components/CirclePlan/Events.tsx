@@ -3,6 +3,7 @@ import {
   g,
   postWebEngageEvent,
   setCircleMembershipType,
+  postAppsFlyerEvent,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import moment from 'moment';
 import {
@@ -10,6 +11,11 @@ import {
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import {
+  AppsFlyerEvents,
+  AppsFlyerEventName,
+  CircleNavigationSource,
+} from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 
 export const postCircleWEGEvent = (
   currentPatient: any,
@@ -65,5 +71,30 @@ export const postCircleWEGEvent = (
     postWebEngageEvent(WebEngageEventName.CIRCLE_VIEW_BENEFITS_CLICKED, eventAttributes);
   } else {
     postWebEngageEvent(WebEngageEventName.CIRCLE_BENIFIT_CLICKED, eventAttributes);
+  }
+};
+
+export const postAppsFlyerCircleAddRemoveCartEvent = (
+  membershipPlan: any,
+  source: CircleNavigationSource,
+  action: 'add' | 'remove',
+  currentPatient: any
+) => {
+  const eventAttributes: AppsFlyerEvents[AppsFlyerEventName.CIRCLE_ADD_TO_CART] = {
+    userId: currentPatient?.mobileNumber,
+    navigation_source: source,
+    price: membershipPlan?.currentSellingPrice,
+    duration_in_month: membershipPlan?.durationInMonth,
+    circle_plan_id: membershipPlan?.subPlanId,
+    corporate_name: currentPatient?.partnerId,
+    af_currency: 'INR',
+    af_revenue: membershipPlan?.currentSellingPrice,
+    special_price_enabled:
+      membershipPlan?.price - membershipPlan?.currentSellingPrice <= 0 ? 'No' : 'Yes',
+  };
+  if (action == 'add') {
+    postAppsFlyerEvent(AppsFlyerEventName.CIRCLE_ADD_TO_CART, eventAttributes);
+  } else {
+    postAppsFlyerEvent(AppsFlyerEventName.CIRCLE_REMOVE_FROM_CART, eventAttributes);
   }
 };

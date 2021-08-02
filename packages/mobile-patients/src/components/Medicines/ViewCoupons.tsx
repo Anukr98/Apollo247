@@ -11,6 +11,7 @@ import {
   g,
   postWebEngageEvent,
   getPackageIds,
+  postCleverTapEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -28,6 +29,10 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { couponViewShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { ListItem } from 'react-native-elements';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {
@@ -204,7 +209,7 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
 
   useEffect(() => {
     const data = {
-      packageId: activeUserSubscriptions ? getPackageIds(activeUserSubscriptions)?.join() : '',
+      packageId: getPackageIds(activeUserSubscriptions)?.join(),
       mobile: g(currentPatient, 'mobileNumber'),
       email: g(currentPatient, 'emailAddress'),
       type: isFromConsult ? 'Consult' : 'Pharmacy',
@@ -284,6 +289,15 @@ export const ViewCoupons: React.FC<ViewCouponsProps> = (props) => {
             'Customer ID': g(currentPatient, 'id'),
             'Cart Items': cartItems?.length ? JSON.stringify(cartItems) : '',
           };
+          const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CART_COUPON_APPLIED] = {
+            'Coupon Code': coupon || undefined,
+            'Discounted amount': g(resp?.data, 'response', 'valid')
+              ? g(resp.data, 'response', 'discount')
+              : 'Not Applicable',
+            'Customer ID': g(currentPatient, 'id'),
+            'Cart Items': cartItems?.length ? JSON.stringify(cartItems) : undefined,
+          };
+          // postCleverTapEvent(CleverTapEventName.CART_COUPON_APPLIED, cleverTapEventAttributes);
           postWebEngageEvent(WebEngageEventName.CART_COUPON_APPLIED, eventAttributes);
         } else {
           CommonBugFender('validatingPharmaCoupon', g(resp?.data, 'errorMsg'));

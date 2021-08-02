@@ -1,6 +1,4 @@
-import {
-  LocationData,
-} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { LocationData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   getPlaceInfoByLatLng,
@@ -26,6 +24,7 @@ import {
   MEDICINE_TIMINGS,
   MEDICINE_CONSUMPTION_DURATION,
   TEST_COLLECTION_TYPE,
+  APPOINTMENT_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from 'react-native-geolocation-service';
@@ -101,6 +100,14 @@ import RNFetchBlob from 'rn-fetch-blob';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { HEALTH_CREDITS } from '../utils/AsyncStorageKey';
 import { getPatientByMobileNumber_getPatientByMobileNumber_patients } from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
+import CleverTap from 'clevertap-react-native';
+import {
+  CleverTapEvents,
+  CleverTapEventName,
+  ReorderMedicines,
+  PharmacyCircleMemberValues,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import Share from 'react-native-share';
 
 const width = Dimensions.get('window').width;
 
@@ -117,6 +124,11 @@ interface AphConsole {
   debug(message?: any, ...optionalParams: any[]): void;
   table(...data: any[]): void;
 }
+
+type ConsultPermissionScreenName =
+  | 'Home Screen'
+  | 'Payment Confirmation Screen'
+  | 'Appointment Screen';
 
 export interface TestSlot {
   employeeCode: string;
@@ -496,6 +508,8 @@ const getConsiderDate = (type: string, dataObject: any) => {
       return dataObject?.billDateTime;
     case 'health-conditions':
       return dataObject?.startDateTime || dataObject?.recordDateTime;
+    case 'immunization':
+      return dataObject?.dateOfImmunization;
   }
 };
 
@@ -519,7 +533,10 @@ export const initialSortByDays = (
     const dateDifferenceInDays = moment(startDate).diff(dateToConsider, 'days');
     const dateDifferenceInMonths = moment(startDate).diff(dateToConsider, 'months');
     const dateDifferenceInYears = moment(startDate).diff(dateToConsider, 'years');
-    if (dateDifferenceInYears !== 0) {
+
+    if (dateDifferenceInDays <= 0 && dateDifferenceInMonths <= 0 && dateDifferenceInYears <= 0) {
+      finalData = getFinalSortData('Upcoming', finalData, dataObject);
+    } else if (dateDifferenceInYears !== 0) {
       if (dateDifferenceInYears >= 5) {
         finalData = getFinalSortData('More than 5 years', finalData, dataObject);
       } else if (dateDifferenceInYears >= 2) {
@@ -744,6 +761,77 @@ export const divideSlots = (availableSlots: string[], date: Date) => {
           array[3] = {
             ...array[3],
             time: [...array[3].time, slot],
+          };
+        }
+      }
+    }
+  });
+  return array;
+};
+
+export const generateTimeSlots = (availableSlots: string[], date: Date) => {
+  const todayDate = moment(new Date()).format('YYYY-MM-DD');
+
+  const array: TimeArray = [
+    { label: '12 AM - 6 AM', time: [] },
+    { label: '6 AM - 12 PM', time: [] },
+    { label: '12 PM - 6 PM', time: [] },
+    { label: '6 PM - 12 AM', time: [] },
+  ];
+
+  const morningStartTime = moment('00:00', 'HH:mm');
+  const morningEndTime = moment('05:59', 'HH:mm');
+  const afternoonStartTime = moment('06:00', 'HH:mm');
+  const afternoonEndTime = moment('11:59', 'HH:mm');
+  const eveningStartTime = moment('12:00', 'HH:mm');
+  const eveningEndTime = moment('17:59', 'HH:mm');
+  const nightStartTime = moment('18:00', 'HH:mm');
+  const nightEndTime = moment('23:59', 'HH:mm');
+
+  availableSlots.forEach((slot) => {
+    const IOSFormat = slot; //`${date.toISOString().split('T')[0]}T${slot}:00.000Z`;
+
+    const formatedSlot = moment(IOSFormat)
+      .local()
+      .format('HH:mm'); //.format('HH:mm');
+    const slotTime = moment(formatedSlot, 'HH:mm');
+    if (
+      todayDate === moment(date).format('YYYY-MM-DD') &&
+      todayDate !== moment(IOSFormat).format('YYYY-MM-DD')
+    ) {
+    } else {
+      if (new Date() < new Date(IOSFormat)) {
+        if (
+          slotTime.isBetween(morningStartTime, morningEndTime) ||
+          slotTime.isSame(morningStartTime)
+        ) {
+          array[0] = {
+            label: '12 AM - 6 AM',
+            time: [...array[0]?.time, slot],
+          };
+        } else if (
+          slotTime.isBetween(afternoonStartTime, afternoonEndTime) ||
+          slotTime.isSame(afternoonStartTime)
+        ) {
+          array[1] = {
+            ...array[1],
+            time: [...array[1]?.time, slot],
+          };
+        } else if (
+          slotTime.isBetween(eveningStartTime, eveningEndTime) ||
+          slotTime.isSame(eveningStartTime)
+        ) {
+          array[2] = {
+            ...array[2],
+            time: [...array[2]?.time, slot],
+          };
+        } else if (
+          slotTime.isBetween(nightStartTime, nightEndTime) ||
+          slotTime.isSame(nightStartTime)
+        ) {
+          array[3] = {
+            ...array[3],
+            time: [...array[3]?.time, slot],
           };
         }
       }
@@ -1252,14 +1340,19 @@ export const reOrderMedicines = async (
     .split(',')
     .map((item) => item.trim())
     .filter((v) => v);
+  const appointmentIds = (order?.appointmentId || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter((v) => v);
   const medicineNames = (billedLineItems
     ? billedLineItems.filter((item) => item.itemName).map((item) => item.itemName)
     : lineItems.filter((item) => item.medicineName).map((item) => item.medicineName!)
   ).join(',');
   const prescriptionsToAdd = prescriptionUrls.map(
-    (item) =>
+    (item, index) =>
       ({
-        id: item,
+        id: appointmentIds?.[index],
+        appointmentId: appointmentIds?.[index],
         date: moment(g(order, 'createdDate')).format('DD MMM YYYY'),
         doctorName: `Meds Rx ${(order.id && order.id.substring(0, order.id.indexOf('-'))) || ''}`,
         forPatient: g(currentPatient, 'firstName') || '',
@@ -1453,6 +1546,58 @@ export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Ob
   } catch (error) {}
 };
 
+export const postCleverTapEvent = (eventName: CleverTapEventName, attributes: Object) => {
+  try {
+    CleverTap.recordEvent(eventName, attributes);
+  } catch (error) {}
+};
+
+export const onCleverTapUserLogin = async (_currentPatient: any) => {
+  try {
+    const _userProfile = {
+      Name: _currentPatient?.firstName + ' ' + (_currentPatient?.lastName || ''),
+      UHID: _currentPatient?.uhid || '',
+      Identity: _currentPatient?.mobileNumber?.substr(3) || '',
+      Phone: _currentPatient?.mobileNumber || '',
+      MobileNumber: _currentPatient?.mobileNumber || '',
+      Firstname: _currentPatient?.firstName || '',
+      ...(_currentPatient?.lastName && { Lastname: _currentPatient?.lastName }),
+      Relation: _currentPatient?.relation || '',
+      Gender:
+        _currentPatient?.gender == Gender.MALE
+          ? 'M'
+          : _currentPatient?.gender == Gender.FEMALE
+          ? 'F'
+          : '',
+      DOB: new Date(_currentPatient?.dateOfBirth),
+      ...(_currentPatient?.emailAddress && { Email: _currentPatient?.emailAddress }),
+      ...(_currentPatient?.photoUrl && { Photo: _currentPatient?.photoUrl }),
+      ...(_currentPatient?.createdDate && { CreatedDate: _currentPatient?.createdDate }),
+    };
+    CleverTap.onUserLogin(_userProfile);
+  } catch (error) {
+    CommonBugFender('setCleverTapUserLogin', error);
+  }
+};
+
+export type CircleEventSource =
+  | 'Circle Popup Plan only'
+  | 'Landing Home Page banners'
+  | 'Medicine Home page banners'
+  | 'Medicine Homepage Sticky'
+  | 'Diagnostic Home page Banner'
+  | 'VC Doctor Profile'
+  | 'Cart(Pharma)'
+  | 'Cart(VC)'
+  | 'Membership Details'
+  | 'Landing Home Page'
+  | 'My Account-My membership section'
+  | 'Corporate Membership Page'
+  | 'Circle Membership page'
+  | 'VC Doctor Card';
+
+export const getCircleNoSubscriptionText = () => string.common.circleNoSubscriptionText;
+
 export const postwebEngageAddToCartEvent = (
   {
     sku,
@@ -1483,30 +1628,142 @@ export const postwebEngageAddToCartEvent = (
     ...pharmacyCircleAttributes,
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
+  const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.PHARMACY_ADD_TO_CART] = {
+    'product name': name,
+    'product id (SKUID)': sku,
+    'category name': categoryName || undefined,
+    'Section Name': sectionName || undefined,
+    'category ID': category_id || undefined,
+    Price: price,
+    'Discounted Price': Number(special_price) || undefined,
+    Quantity: 1,
+    Source: source,
+    'Circle Member':
+      getCleverTapCircleMemberValues(pharmacyCircleAttributes?.['Circle Membership Added']!) ||
+      undefined,
+    'Circle Membership Value': pharmacyCircleAttributes?.['Circle Membership Value'] || undefined,
+  };
+  postCleverTapEvent(CleverTapEventName.PHARMACY_ADD_TO_CART, cleverTapEventAttributes);
 };
 
-export const postWebEngagePHR = (
+export const getCleverTapCircleMemberValues = (
+  pharmacyCircleMemeber: PharmacyCircleEvent['Circle Membership Added']
+): PharmacyCircleMemberValues => {
+  return pharmacyCircleMemeber == 'Yes'
+    ? 'Added'
+    : pharmacyCircleMemeber == 'No'
+    ? 'Not Added'
+    : 'Existing';
+};
+
+export const postAppointmentCleverTapEvents = (
+  type:
+    | CleverTapEventName.CONSULT_RESCHEDULE_CLICKED
+    | CleverTapEventName.CONSULT_CANCEL_CLICKED_BY_PATIENT
+    | CleverTapEventName.CONSULT_CONTINUE_CONSULTATION_CLICKED
+    | CleverTapEventName.CONSULT_CANCELLED_BY_PATIENT
+    | CleverTapEventName.CONSULT_RESCHEDULED_BY_THE_PATIENT,
+  data: any,
   currentPatient: any,
-  webEngageEventName: WebEngageEventName,
+  secretaryData: any
+) => {
+  const eventAttributes:
+    | CleverTapEvents[CleverTapEventName.CONSULT_RESCHEDULE_CLICKED]
+    | CleverTapEvents[CleverTapEventName.CONSULT_CANCEL_CLICKED_BY_PATIENT]
+    | CleverTapEvents[CleverTapEventName.CONSULT_CONTINUE_CONSULTATION_CLICKED]
+    | CleverTapEvents[CleverTapEventName.CONSULT_CANCELLED_BY_PATIENT]
+    | CleverTapEvents[CleverTapEventName.CONSULT_RESCHEDULED_BY_THE_PATIENT] = {
+    doctorName: g(data, 'doctorInfo', 'fullName')!,
+    'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
+    'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
+    'Doctor Category': g(data, 'doctorInfo', 'doctorType')!,
+    'Consult Date Time': moment(g(data, 'appointmentDateTime')).toDate(),
+    'Consult Mode': g(data, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
+    'Hospital Name': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')!,
+    'Hospital City': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'city')!,
+    docId: g(data, 'doctorId') || undefined,
+    patientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    Relation: g(currentPatient, 'relation'),
+    'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Customer ID': g(currentPatient, 'id'),
+    secretaryName: g(secretaryData, 'name'),
+    secretaryNumber: g(secretaryData, 'mobileNumber'),
+    doctorNumber: g(data, 'doctorInfo', 'mobileNumber')!,
+    patientNumber: g(currentPatient, 'mobileNumber') || undefined,
+  };
+  postCleverTapEvent(type, eventAttributes);
+};
+
+export function getTimeDiff(nextSlot: any) {
+  let timeDiff: number = 0;
+  const today: Date = new Date();
+  const date2: Date = new Date(nextSlot);
+  if (date2 && today) {
+    timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
+  }
+  return timeDiff;
+}
+
+export const postConsultSearchCleverTapEvent = (
+  searchInput: string,
+  currentPatient: any,
+  allCurrentPatients: any,
+  noResults: boolean,
+  source: 'speciality screen' | 'Doctor listing screen'
+) => {
+  const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_SEARCH] = {
+    textSearched: searchInput,
+    'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    Relation: g(currentPatient, 'relation'),
+    'Patient age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+    'Patient gender': g(currentPatient, 'gender'),
+    'Mobile Number': g(currentPatient, 'mobileNumber'),
+    'Customer ID': g(currentPatient, 'id'),
+    User_Type: getUserType(allCurrentPatients),
+    Source: source,
+    'search result success': noResults ? 'No' : 'Yes',
+  };
+  postCleverTapEvent(CleverTapEventName.CONSULT_SEARCH, eventAttributes);
+};
+
+export const postConsultPastSearchSpecialityClicked = (
+  currentPatient: any,
+  allCurrentPatients: any,
+  rowData: any
+) => {
+  const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PAST_SEARCHES_CLICKED] = {
+    'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    'Patient age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+    'Patient gender': g(currentPatient, 'gender'),
+    User_Type: getUserType(allCurrentPatients) || undefined,
+    isConsulted: getUserType(allCurrentPatients) || undefined,
+    specialtyId: rowData?.typeId || undefined,
+    specialtyName: rowData?.name || undefined,
+  };
+  postCleverTapEvent(CleverTapEventName.CONSULT_PAST_SEARCHES_CLICKED, cleverTapEventAttributes);
+};
+
+export const postCleverTapPHR = (
+  currentPatient: any,
+  cleverTapEventName: CleverTapEventName,
   source: string = '',
   data: any = {}
 ) => {
-  const eventAttributes: WebEngageEvents[WebEngageEventName.MEDICAL_RECORDS] = {
-    ...data,
+  const eventAttributes: CleverTapEvents[CleverTapEventName.MEDICAL_RECORDS] = {
+    ...removeObjectNullUndefinedProperties(data),
     Source: source,
-    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-    'Patient UHID': g(currentPatient, 'uhid'),
-    Relation: g(currentPatient, 'relation'),
-    'Patient Age': Math.round(moment().diff(currentPatient?.dateOfBirth, 'years', true)),
-    'Patient Gender': g(currentPatient, 'gender'),
-    'Mobile Number': g(currentPatient, 'mobileNumber'),
-    'Customer ID': g(currentPatient, 'id'),
+    ...removeObjectNullUndefinedProperties(currentPatient),
   };
-  postWebEngageEvent(webEngageEventName, eventAttributes);
+  postWebEngageEvent(cleverTapEventName, eventAttributes);
+  postCleverTapEvent(cleverTapEventName, eventAttributes);
 };
 
-export const phrSearchWebEngageEvents = (
-  webEngageEventName: WebEngageEventName,
+export const phrSearchCleverTapEvents = (
+  cleverTapEventName: CleverTapEventName,
   currentPatient: any,
   searchKey: string
 ) => {
@@ -1520,7 +1777,8 @@ export const phrSearchWebEngageEvents = (
     'Mobile Number': g(currentPatient, 'mobileNumber'),
     'Customer ID': g(currentPatient, 'id'),
   };
-  postWebEngageEvent(webEngageEventName, eventAttributes);
+  postWebEngageEvent(cleverTapEventName, eventAttributes);
+  postCleverTapEvent(cleverTapEventName, eventAttributes);
 };
 
 export const getUsageKey = (type: string) => {
@@ -1544,7 +1802,7 @@ export const getUsageKey = (type: string) => {
   }
 };
 
-export const postWebEngageIfNewSession = (
+export const postCleverTapIfNewSession = (
   type: string,
   currentPatient: any,
   data: any,
@@ -1566,12 +1824,12 @@ export const postWebEngageIfNewSession = (
     const usageKey = getUsageKey(type);
     obj[usageKey] = sessionId;
     setPhrSession?.(JSON.stringify(obj));
-    postWebEngagePHR(
+    postCleverTapPHR(
       currentPatient,
-      WebEngageEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS.replace(
+      CleverTapEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS.replace(
         '{0}',
         type
-      ) as WebEngageEventName,
+      ) as CleverTapEventName,
       type,
       {
         sessionId,
@@ -1587,12 +1845,12 @@ export const postWebEngageIfNewSession = (
       const newSessionObj = { ...sessionObj };
       newSessionObj[usageKey] = sessionId;
       setPhrSession?.(JSON.stringify(newSessionObj));
-      postWebEngagePHR(
+      postCleverTapPHR(
         currentPatient,
-        WebEngageEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS.replace(
+        CleverTapEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS.replace(
           '{0}',
           type
-        ) as WebEngageEventName,
+        ) as CleverTapEventName,
         type,
         {
           sessionId,
@@ -1606,6 +1864,15 @@ export const postWebEngageIfNewSession = (
 export const removeObjectProperty = (object: any, property: string) => {
   return _.omit(object, property);
 };
+
+export function removeObjectNullUndefinedProperties(_object: any) {
+  for (let propName in _object) {
+    if (_object[propName] === null || _object[propName] === undefined || _object[propName] === '') {
+      delete _object[propName];
+    }
+  }
+  return _object;
+}
 
 export const postWEGNeedHelpEvent = (
   currentPatient: GetCurrentPatients_getCurrentPatients_patients,
@@ -1622,6 +1889,25 @@ export const postWEGNeedHelpEvent = (
     Source: source,
   };
   postWebEngageEvent(WebEngageEventName.NEED_HELP, eventAttributes);
+};
+
+export const postWEGPatientAPIError = (
+  currentPatient:GetCurrentPatients_getCurrentPatients_patients,
+  doc:string|null,
+  screen:string,
+  api:string,
+  error:any,
+) => {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.Patient_API_Error] = {
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient ID': g(currentPatient, 'id')!,
+    'Patient Number': g(currentPatient, 'mobileNumber')!,
+    'Doctor ID':doc,
+    'Screen Name':screen,
+    'API Name':api,
+    'Error Name':error
+    };
+  postWebEngageEvent(WebEngageEventName.Patient_API_Error, eventAttributes);
 };
 
 export const postWEGWhatsAppEvent = (whatsAppAllow: boolean) => {
@@ -1654,16 +1940,44 @@ export const postDoctorShareWEGEvents = (
   postWebEngageEvent(eventName, eventAttributes);
 };
 
+export const postDoctorShareCleverTapEvents = (
+  doctorData: any,
+  eventName: CleverTapEventName,
+  currentPatient: any,
+  specialityId: string,
+  rank: number = 1
+) => {
+  const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_SHARE_ICON_CLICKED] = {
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Mobile Number': g(currentPatient, 'mobileNumber'),
+    'Doctor ID': g(doctorData, 'id')!,
+    'Doctor Name': g(doctorData, 'displayName')!,
+    'Speciality Name': g(doctorData, 'specialtydisplayName')!,
+    'Doctor card rank': rank,
+    'Speciality ID': specialityId,
+    Source: 'Doctor listing',
+  };
+  postCleverTapEvent(eventName, eventAttributes);
+};
+
 export const permissionHandler = (
   permission: string,
   deniedMessage: string,
-  doRequest: () => void
+  doRequest: () => void,
+  screenName?: ConsultPermissionScreenName
 ) => {
   Permissions.request(permission)
     .then((message) => {
       if (message === 'authorized') {
         doRequest();
+        permission === 'camera' && consultPermissionCameraCleverTapEvents(screenName, true);
+        permission === 'microphone' && consultPermissionCleverTapEvents(screenName, true);
       } else if (message === 'denied' || message === 'restricted') {
+        permission === 'camera' && consultPermissionCameraCleverTapEvents(screenName, false);
+        permission === 'microphone' && consultPermissionCleverTapEvents(screenName, false);
         Alert.alert(permission.toUpperCase(), deniedMessage, [
           {
             text: 'Cancel',
@@ -1682,16 +1996,47 @@ export const permissionHandler = (
     .catch((e) => {});
 };
 
-export const callPermissions = (doRequest?: () => void) => {
-  permissionHandler('camera', 'Enable camera from settings for calls during consultation.', () => {
-    permissionHandler(
-      'microphone',
-      'Enable microphone from settings for calls during consultation.',
-      () => {
-        doRequest && doRequest();
-      }
-    );
-  });
+const consultPermissionCleverTapEvents = (
+  screenName?: ConsultPermissionScreenName,
+  microphoneAuth?: boolean
+) => {
+  const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PERMISSIONS] = {
+    'Screen Name': screenName!,
+    Microphone: microphoneAuth,
+  };
+  postCleverTapEvent(CleverTapEventName.CONSULT_PERMISSIONS, eventAttributes);
+};
+
+const consultPermissionCameraCleverTapEvents = (
+  screenName?: ConsultPermissionScreenName,
+  cameraAuth?: boolean
+) => {
+  const eventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PERMISSIONS] = {
+    'Screen Name': screenName!,
+    Camera: cameraAuth,
+  };
+  postCleverTapEvent(CleverTapEventName.CONSULT_PERMISSIONS, eventAttributes);
+};
+
+export const callPermissions = (
+  doRequest?: () => void,
+  screenName?: ConsultPermissionScreenName
+) => {
+  permissionHandler(
+    'camera',
+    'Enable camera from settings for calls during consultation.',
+    () => {
+      permissionHandler(
+        'microphone',
+        'Enable microphone from settings for calls during consultation.',
+        () => {
+          doRequest && doRequest();
+        },
+        screenName
+      );
+    },
+    screenName
+  );
 };
 
 export const storagePermissions = (doRequest?: () => void) => {
@@ -1789,6 +2134,15 @@ export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Ob
       (res) => {},
       (err) => {}
     );
+  } catch (error) {}
+};
+
+export const setCleverTapAppsFlyerCustID = () => {
+  try {
+    CleverTap.profileGetCleverTapAttributionIdentifier((err, res) => {
+      const userId = res;
+      SetAppsFlyerCustID(userId?.toString());
+    });
   } catch (error) {}
 };
 
@@ -2038,6 +2392,7 @@ export const formatToCartItem = ({
   image,
   sell_online,
   url_key,
+  subcategory,
 }: MedicineProduct): ShoppingCartItem => {
   return {
     id: sku,
@@ -2047,13 +2402,14 @@ export const formatToCartItem = ({
     mou: mou,
     quantity: 1,
     prescriptionRequired: is_prescription_required == '1',
-    isMedicine: (type_id || '').toLowerCase() == 'pharma',
+    isMedicine: getIsMedicine(type_id?.toLowerCase()) || 0,
     thumbnail: thumbnail || image,
     maxOrderQty: MaxOrderQty,
     productType: type_id,
     isInStock: is_in_stock == 1,
     unavailableOnline: sell_online == 0,
     url_key,
+    subcategory,
   };
 };
 
@@ -2214,7 +2570,8 @@ export const overlyCallPermissions = (
   showAphAlert: any,
   hideAphAlert: any,
   isDissmiss: boolean,
-  callback?: () => void | null
+  callback?: () => void | null,
+  screenName?: ConsultPermissionScreenName
 ) => {
   if (Platform.OS === 'android') {
     const showPermissionPopUp = (description: string, onPressCallback: () => void) => {
@@ -2267,17 +2624,17 @@ export const overlyCallPermissions = (
 
           showPermissionPopUp(
             string.callRelatedPermissions.camAndMPPermission.replace('{0}', doctorName),
-            () => callPermissions()
+            () => callPermissions(() => {}, screenName)
           );
         } else if (cameraYes && microphoneNo) {
           showPermissionPopUp(
             string.callRelatedPermissions.onlyMPPermission.replace('{0}', doctorName),
-            () => callPermissions()
+            () => callPermissions(() => {}, screenName)
           );
         } else if (cameraNo && microphoneYes) {
           showPermissionPopUp(
             string.callRelatedPermissions.onlyCameraPermission.replace('{0}', doctorName),
-            () => callPermissions()
+            () => callPermissions(() => {}, screenName)
           );
         }
       })
@@ -2322,7 +2679,7 @@ export const overlyCallPermissions = (
                   hideAphAlert!();
                   onPressAllow();
                   callback?.();
-                  callPermissions();
+                  callPermissions(() => {}, screenName);
                 },
               },
             ],
@@ -2349,14 +2706,32 @@ export const removeConsecutiveComma = (value: string) => {
   return value.replace(/^,|,$|,(?=,)/g, '');
 };
 
-export const getCareCashback = (price: number, type_id: string | null | undefined) => {
+export const calculateCashbackForItem = (
+  price: number,
+  type_id: any,
+  subcategory: any,
+  sku: any
+) => {
   const { circleCashback } = useShoppingCart();
-  let typeId = !!type_id ? type_id.toUpperCase() : '';
-  let cashback = 0;
-  if (!!circleCashback && !!circleCashback[typeId]) {
-    cashback = price * (circleCashback[typeId] / 100);
-  }
-  return cashback;
+  const getFirstLevelCashback = () => {
+    // categoty level cashback
+    const key = type_id?.toUpperCase();
+    return circleCashback?.[key] || 0;
+  };
+  const getSecondLevelCashback = () => {
+    // sub categoty level cashback
+    const key = `${type_id?.toUpperCase()}~${subcategory}`;
+    return circleCashback?.[key] || 0;
+  };
+  const getThirdLevelCashback = () => {
+    // sku level cashback
+    const key = `${type_id?.toUpperCase()}~${subcategory}~${sku}`;
+    return circleCashback?.[key] || 0;
+  };
+  const cashbackFactor =
+    getThirdLevelCashback() || getSecondLevelCashback() || getFirstLevelCashback();
+  const cashback = ((price * cashbackFactor) / 100).toFixed(2);
+  return cashback || 0;
 };
 
 export const readableParam = (param: string) => {
@@ -2445,7 +2820,7 @@ export const navigateToHome = (
   }
 };
 
-const goToConsultRoom = (
+export const goToConsultRoom = (
   navigation: NavigationScreenProp<NavigationRoute<object>, object>,
   params?: any
 ) => {
@@ -2860,6 +3235,75 @@ export const isSatisfyingEmailRegex = (value: string) =>
     value
   );
 
+export const getCheckoutCompletedEventAttributes = (
+  shoppingCart: ShoppingCartContextProps,
+  paymentOrderId: string,
+  pharmacyUserTypeAttribute: any
+) => {
+  const {
+    deliveryAddressId,
+    addresses,
+    storeId,
+    stores,
+    uploadPrescriptionRequired,
+    physicalPrescriptions,
+    cartItems,
+    cartTotal,
+    deliveryCharges,
+    coupon,
+    couponDiscount,
+    productDiscount,
+    ePrescriptions,
+    grandTotal,
+    circleSubscriptionId,
+    isCircleSubscription,
+    cartTotalCashback,
+    pharmacyCircleAttributes,
+    orders,
+  } = shoppingCart;
+  const addr = deliveryAddressId && addresses.find((item) => item.id == deliveryAddressId);
+  const store = storeId && stores.find((item) => item.storeid == storeId);
+  const shippingInformation = addr ? formatAddress(addr) : store ? store.address : '';
+  const getFormattedAmount = (num: number) => Number(num.toFixed(2));
+
+  const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED] = {
+    'Order ID': paymentOrderId,
+    'Order Type': 'Cart',
+    'Prescription Required': uploadPrescriptionRequired,
+    'Prescription Added': !!(physicalPrescriptions.length || ePrescriptions.length),
+    'Shipping information': shippingInformation, // (Home/Store address)
+    'Total items in cart': cartItems.length,
+    'Grand Total': cartTotal + deliveryCharges,
+    'Total Discount %': coupon
+      ? getFormattedAmount(((couponDiscount + productDiscount) / cartTotal) * 100)
+      : 0,
+    'Discount Amount': getFormattedAmount(couponDiscount + productDiscount),
+    'Delivery charge': deliveryCharges,
+    'Net after discount': getFormattedAmount(grandTotal),
+    'Payment status': 1,
+    'Service Area': 'Pharmacy',
+    'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
+    af_revenue: getFormattedAmount(grandTotal),
+    af_currency: 'INR',
+    'Circle Cashback amount':
+      circleSubscriptionId || isCircleSubscription ? Number(cartTotalCashback) : 0,
+    'Split Cart': orders?.length > 1 ? 'Yes' : 'No',
+    'Prescription Option selected': uploadPrescriptionRequired
+      ? 'Prescription Upload'
+      : 'Not Applicable',
+    ...pharmacyCircleAttributes!,
+    ...pharmacyUserTypeAttribute,
+    'Cart Items': JSON.stringify(cartItems),
+  };
+  if (store) {
+    eventAttributes['Store Id'] = store.storeid;
+    eventAttributes['Store Name'] = store.storename;
+    eventAttributes['Store Number'] = store.phone;
+    eventAttributes['Store Address'] = store.address;
+  }
+  return eventAttributes;
+};
+
 export const getDiagnosticCityLevelPaymentOptions = (cityId: string) => {
   let remoteData = AppConfig.Configuration.DIAGNOSTICS_CITY_LEVEL_PAYMENT_OPTION;
   const getConfigPaymentValue = remoteData?.find((item) => Number(item?.cityId) === Number(cityId));
@@ -2873,3 +3317,43 @@ export const getDiagnosticCityLevelPaymentOptions = (cityId: string) => {
   };
   return paymentValues;
 };
+
+export const downloadDocument = (
+  fileUrl: string = '',
+  type: string = 'application/pdf',
+  orderId: number
+) => {
+  let filePath: string | null = null;
+  let file_url_length = fileUrl.length;
+  let viewReportOrderId = orderId;
+  const configOptions = { fileCache: true };
+  RNFetchBlob.config(configOptions)
+    .fetch('GET', fileUrl.replace(/\s/g, ""))
+    .then((resp) => {
+      filePath = resp.path();
+      return resp.readFile('base64');
+    })
+    .then(async (base64Data) => {
+      base64Data = `data:${type};base64,` + base64Data;
+      await Share.open({ title: '', url: base64Data });
+      // remove the image or pdf from device's storage
+      // await RNFS.unlink(filePath);
+    })
+    .catch((err) => {
+      console.log('err', err);
+    });
+
+  return viewReportOrderId;
+};
+export const getIsMedicine = (typeId: string) => {
+  const medicineType = {
+    fmcg: '0',
+    pharma: '1',
+    pl: '2',
+  };
+  return medicineType[typeId] || '0';
+};
+export const removeWhiteSpaces = (item: any) => {
+  const newItem = item?.replace(/\s/g, "")
+  return newItem;
+}

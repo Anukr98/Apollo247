@@ -7,7 +7,7 @@
 // ====================================================
 
 export interface convertToZip_convertToZip {
-  __typename: 'ConvertToZipResponse';
+  __typename: "ConvertToZipResponse";
   zipUrl: string | null;
 }
 

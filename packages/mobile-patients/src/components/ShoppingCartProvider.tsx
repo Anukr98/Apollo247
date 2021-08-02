@@ -17,7 +17,7 @@ import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { addToCartTagalysEvent } from '@aph/mobile-patients/src/helpers/Tagalys';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-
+import { Decimal } from 'decimal.js';
 export interface ShoppingCartItem {
   id: string;
   name: string;
@@ -32,12 +32,13 @@ export interface ShoppingCartItem {
   isInStock: boolean;
   unserviceable?: boolean;
   unavailableOnline?: boolean; // sell_online
-  isMedicine: boolean;
+  isMedicine: string;
   productType?: 'FMCG' | 'Pharma' | 'PL';
   isFreeCouponProduct?: boolean;
   applicable?: boolean;
   circleCashbackAmt?: number;
   url_key?: string;
+  subcategory?: string | null;
 }
 
 export interface CouponProducts {
@@ -72,6 +73,7 @@ export interface EPrescription {
   prismPrescriptionFileId: string;
   message?: string;
   healthRecord?: boolean;
+  appointmentId?: string;
 }
 
 export interface PharmaCoupon extends validatePharmaCoupon_validatePharmaCoupon {
@@ -110,6 +112,8 @@ export interface onHold {
 export interface circleValidity {
   startDate: Date;
   endDate: Date;
+  plan_id: string;
+  source_identifier: string;
 }
 
 export type EPrescriptionDisableOption = 'CAMERA_AND_GALLERY' | 'E-PRESCRIPTION' | 'NONE';
@@ -241,8 +245,10 @@ export interface ShoppingCartContextProps {
   setMaxCartValueForCOD: ((value: number) => void) | null;
   nonCodSKus: string[];
   setNonCodSKus: ((items: string[]) => void) | null;
-  asyncPincode: any;
-  setAsyncPincode: ((pincode: any) => void) | null;
+  cartPriceNotUpdateRange: number;
+  setCartPriceNotUpdateRange: ((value: number) => void) | null;
+  pdpDisclaimerMessage: string;
+  setPdpDisclaimerMessage: ((message: string) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -355,8 +361,10 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setMaxCartValueForCOD: null,
   nonCodSKus: [],
   setNonCodSKus: null,
-  asyncPincode: null,
-  setAsyncPincode: null,
+  cartPriceNotUpdateRange: 0,
+  setCartPriceNotUpdateRange: null,
+  pdpDisclaimerMessage: '',
+  setPdpDisclaimerMessage: null,
 });
 
 const AsyncStorageKeys = {
@@ -485,6 +493,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [maxCartValueForCOD, setMaxCartValueForCOD] = useState<
     ShoppingCartContextProps['maxCartValueForCOD']
   >(0);
+  const [cartPriceNotUpdateRange, setCartPriceNotUpdateRange] = useState<
+    ShoppingCartContextProps['cartPriceNotUpdateRange']
+  >(0);
   const [nonCodSKus, setNonCodSKus] = useState<ShoppingCartContextProps['nonCodSKus']>([]);
   const [asyncPincode, setAsyncPincode] = useState<ShoppingCartContextProps['asyncPincode']>();
 
@@ -494,6 +505,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const setEPrescriptions: ShoppingCartContextProps['setEPrescriptions'] = (items) => {
     _setEPrescriptions(items);
   };
+
+  const [pdpDisclaimerMessage, setPdpDisclaimerMessage] = useState<
+    ShoppingCartContextProps['pdpDisclaimerMessage']
+  >('');
 
   const setPhysicalPrescriptions: ShoppingCartContextProps['setPhysicalPrescriptions'] = (
     items
@@ -530,8 +545,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
           : item.price;
         let cashback = 0;
         const type_id = item?.productType?.toUpperCase();
-        if (!!circleCashback && !!circleCashback[type_id]) {
-          cashback = finalPrice * item.quantity * (circleCashback[type_id] / 100);
+        if (!!circleCashback && !!circleCashback?.[type_id]) {
+          const circleCashBack =
+            circleCashback?.[`${type_id}~${item?.subcategory}`] || circleCashback?.[type_id];
+          cashback = finalPrice * item.quantity * (circleCashBack / 100);
         }
         item.circleCashbackAmt = cashback || 0;
       });
@@ -681,9 +698,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
   const getGrandTotalFromShipments = () => {
     let total = 0;
-    shipments.forEach((item: any) => (total = total + item.estimatedAmount));
+    shipments.forEach((item: any) => (total = Number(Decimal.add(total, item.estimatedAmount))));
     if (circleMembershipCharges) {
-      total += circleMembershipCharges;
+      total = Number(Decimal.add(total, circleMembershipCharges));
     }
     return total;
   };
@@ -822,7 +839,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
               ), // (diff of (MRP - discountedPrice) * quantity)
               isPrescriptionNeeded: item?.prescriptionRequired ? 1 : 0,
               mou: Number(item?.mou),
-              isMedicine: item?.isMedicine ? '1' : '0',
+              isMedicine: item?.isMedicine?.toString(),
               couponFree: item?.isFreeCouponProduct ? 1 : 0,
             } as MedicineCartOMSItem;
           }
@@ -891,7 +908,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
           ), // (diff of (MRP - discountedPrice) * quantity)
           isPrescriptionNeeded: item?.prescriptionRequired ? 1 : 0,
           mou: Number(item?.mou),
-          isMedicine: item?.isMedicine ? '1' : '0',
+          isMedicine: item?.isMedicine?.toString(),
           couponFree: item?.isFreeCouponProduct ? 1 : 0,
         } as MedicineCartOMSItem;
       })
@@ -1234,8 +1251,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setMaxCartValueForCOD,
         nonCodSKus,
         setNonCodSKus,
-        asyncPincode,
-        setAsyncPincode,
+        cartPriceNotUpdateRange,
+        setCartPriceNotUpdateRange,
+        pdpDisclaimerMessage,
+        setPdpDisclaimerMessage,
       }}
     >
       {props.children}

@@ -33,7 +33,9 @@ import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/help
 import {
   g,
   getNetStatus,
+  getUserType,
   postAppsFlyerEvent,
+  postCleverTapEvent,
   postFirebaseEvent,
   statusBarHeight,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -73,7 +75,11 @@ import {
   HEALTH_CREDITS,
 } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
 import { LOGIN_PROFILE } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
-
+import {
+  CleverTapEventName,
+  HomeScreenAttributes,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import moment from 'moment';
 const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -143,7 +149,7 @@ const Appointments: Appointments[] = [
 
 export interface MyAccountProps extends NavigationScreenProps {}
 export const MyAccount: React.FC<MyAccountProps> = (props) => {
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [codePushVersion, setCodePushVersion] = useState<string>('');
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [networkStatus, setNetworkStatus] = useState<boolean>(false);
@@ -277,8 +283,27 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     return null;
   };
 
+  const postMyAccountCleverTapEvents = (eventName: CleverTapEventName) => {
+    let eventAttributes: HomeScreenAttributes = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      User_Type: getUserType(allCurrentPatients),
+      'Nav src': 'my account',
+      'Page Name': 'My Account Screen',
+    };
+    postCleverTapEvent(eventName, eventAttributes);
+  };
+
   const onPressLogout = () => {
     try {
+      postMyAccountCleverTapEvents(CleverTapEventName.MY_ACCOUNT_USER_LOGOUT);
       const webengage = new WebEngage();
       webengage.user.logout();
       postAppsFlyerEvent(AppsFlyerEventName.USER_LOGGED_OUT, {});
@@ -310,6 +335,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       setCircleSubscriptionId && setCircleSubscriptionId('');
       setPhrSession?.('');
       AsyncStorage.removeItem('circlePlanSelected');
+      AsyncStorage.removeItem('circleSubscriptionId');
       AsyncStorage.removeItem('isCorporateSubscribed');
       AsyncStorage.removeItem('VaccinationCmsIdentifier');
       AsyncStorage.removeItem('VaccinationSubscriptionId');
@@ -493,6 +519,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           title={'Manage Family Members'}
           leftIcon={<ManageProfileIcon />}
           onPress={() => {
+            postMyAccountCleverTapEvents(CleverTapEventName.MY_ACCOUNT_FAMILY_MEMBER_CLICK);
             props.navigation.navigate(AppRoutes.ManageProfile, {
               mobileNumber: profileDetails && profileDetails.mobileNumber,
             });
@@ -504,6 +531,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           title={'Address Book'}
           leftIcon={<Location />}
           onPress={() => {
+            postMyAccountCleverTapEvents(CleverTapEventName.MY_ACCOUNT_ADDRESS_BOOK_CLICKED);
             props.navigation.navigate(AppRoutes.AddressBook);
             fireProfileAccessedEvent('Address Book');
           }}
@@ -512,6 +540,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           title={'My Orders'}
           leftIcon={<Invoice />}
           onPress={() => {
+            postMyAccountCleverTapEvents(CleverTapEventName.MY_ACCOUNT_ORDERS_CLICKED);
             postMyOrdersClicked('My Account', currentPatient);
             props.navigation.navigate(AppRoutes.MyOrdersScreen, {
               patientId: currentPatient.id,
@@ -521,20 +550,24 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           }}
         />
         <ListCard
-          title={'My Payments'}
+          title={'Transactions and Payments'}
           leftIcon={<CurrencyIcon />}
           onPress={() => {
-            props.navigation.navigate(AppRoutes.MyPaymentsScreen, {
+            postMyAccountCleverTapEvents(CleverTapEventName.MY_ACCOUNT_PAYMENT_CLICKED);
+            props.navigation.navigate(AppRoutes.TxnsandPayments, {
               patientId: currentPatient.id,
               fromNotification: false,
             });
-            fireProfileAccessedEvent('My Payments');
+            fireProfileAccessedEvent('Transactions and Payments');
           }}
         />
         <ListCard
           title={'OneApollo Memberships'}
           leftIcon={<OneApollo style={{ height: 20, width: 26 }} />}
           onPress={() => {
+            postMyAccountCleverTapEvents(
+              CleverTapEventName.MY_ACCOUNT_ONE_APOLLO_MEMBERSHIP_CLICKED
+            );
             props.navigation.navigate(AppRoutes.OneApolloMembership);
             fireProfileAccessedEvent('OneApollo Membership');
           }}
@@ -543,6 +576,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           title={'My Memberships'}
           leftIcon={<MyMembershipIcon style={{ height: 20, width: 26 }} />}
           onPress={() => {
+            postMyAccountCleverTapEvents(CleverTapEventName.MY_ACCOUNT_MEMBERSHIP_CLICKED);
             props.navigation.navigate(AppRoutes.MyMembership);
             fireProfileAccessedEvent('My Memberships');
           }}
@@ -551,6 +585,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           title={'Need Help'}
           leftIcon={<NeedHelpIcon />}
           onPress={() => {
+            postMyAccountCleverTapEvents(CleverTapEventName.MY_ACCOUNT_NEED_HELP_CLICKED);
             props.navigation.navigate(AppRoutes.MobileHelp);
             fireProfileAccessedEvent('Need Help');
           }}

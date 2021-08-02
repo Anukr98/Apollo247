@@ -30,6 +30,21 @@ export interface consultOrders_consultOrders_appointments_appointmentPayments {
   amountPaid: number | null;
 }
 
+export interface consultOrders_consultOrders_appointments_PaymentOrders_refund {
+  __typename: "Refunds";
+  refundAmount: number | null;
+  refundStatus: REFUND_STATUS | null;
+  refundId: string | null;
+}
+
+export interface consultOrders_consultOrders_appointments_PaymentOrders {
+  __typename: "PaymentOrdersResponse";
+  paymentRefId: string | null;
+  paymentStatus: string | null;
+  amountPaid: number | null;
+  refund: (consultOrders_consultOrders_appointments_PaymentOrders_refund | null)[] | null;
+}
+
 export interface consultOrders_consultOrders_appointments_doctor {
   __typename: "DoctorResponse";
   name: string | null;
@@ -47,6 +62,7 @@ export interface consultOrders_consultOrders_appointments {
   discountedAmount: number | null;
   appointmentRefunds: (consultOrders_consultOrders_appointments_appointmentRefunds | null)[] | null;
   appointmentPayments: (consultOrders_consultOrders_appointments_appointmentPayments | null)[] | null;
+  PaymentOrders: consultOrders_consultOrders_appointments_PaymentOrders | null;
   doctor: consultOrders_consultOrders_appointments_doctor | null;
 }
 

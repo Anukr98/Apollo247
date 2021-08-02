@@ -361,6 +361,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           setShowCircleActivation(true);
         }}
         screenName={'My Membership'}
+        circleEventSource={'Membership Details'}
       />
     );
   };
@@ -390,6 +391,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
       circlePlanValidity={{ endDate: planValidity.current }}
       source={'Consult'}
       from={strings.banner_context.MEMBERSHIP_DETAILS}
+      circleEventSource={'Membership Details'}
     />
   );
 
@@ -459,9 +461,13 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             }
 
             if (circlePlan) {
-              const circleSubscription = setCircleSubscriptionData(circlePlan[0]);
-              if (!!circlePlan[0]?._id) {
-                setIsCircleSubscription && setIsCircleSubscription(true);
+              const circleSubscription = setCircleSubscriptionData(circlePlan?.[0]);
+              if (!!circlePlan?.[0]?._id) {
+                if (circlePlan?.[0]?.status === 'disabled') {
+                  setIsCircleSubscription && setIsCircleSubscription(false);
+                } else {
+                  setIsCircleSubscription && setIsCircleSubscription(true);
+                }
               }
               setCircleSubscription && setCircleSubscription(circleSubscription);
             }
@@ -668,6 +674,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
               comingFrom: 'My Memberships',
               isCorporatePlan: !!isCorporate,
               planId: planId || '',
+              circleEventSource: 'My Account-My membership section',
             });
           }}
           style={styles.viewMoreText}
@@ -745,6 +752,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
               comingFrom: 'My Memberships',
               isCorporatePlan: !!isCorporate,
               planId: planId || '',
+              circleEventSource: 'My Account-My membership section',
             });
           }}
         >
