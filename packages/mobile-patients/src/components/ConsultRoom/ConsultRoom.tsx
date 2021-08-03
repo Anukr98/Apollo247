@@ -1700,6 +1700,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 if (circlePlan[0]?.status === 'disabled') {
                   setIsCircleExpired && setIsCircleExpired(true);
                   setNonCircleValues();
+                } else {
+                  setIsCircleExpired && setIsCircleExpired(false);
                 }
               }
               setCircleSubscription && setCircleSubscription(circleSubscription);
@@ -1786,6 +1788,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
     if (plan?.subscriptionStatus === 'disabled') {
       setIsCircleExpired && setIsCircleExpired(true);
+    } else {
+      setIsCircleExpired && setIsCircleExpired(false);
     }
 
     return circleSubscptionData;
@@ -1931,6 +1935,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           if (circleData?.status === 'disabled') {
             setIsCircleExpired && setIsCircleExpired(true);
             setNonCircleValues();
+          } else {
+            setIsCircleExpired && setIsCircleExpired(false);
           }
 
           const planValidity = {
