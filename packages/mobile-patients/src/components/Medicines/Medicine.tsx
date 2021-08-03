@@ -1494,6 +1494,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           if (data?.APOLLO?.[0]?.status === 'disabled') {
             setIsCircleExpired && setIsCircleExpired(true);
             setNonCircleValues();
+          } else {
+            setIsCircleExpired && setIsCircleExpired(false);
           }
         } else {
           setCircleSubscriptionId && setCircleSubscriptionId('');

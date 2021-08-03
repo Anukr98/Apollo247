@@ -912,6 +912,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
               setCircleMembershipCharges &&
                 setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
               setCircleSubPlanId && setCircleSubPlanId(circlePlanSelected?.subPlanId);
+              closeModal && closeModal();
             }
           } else {
             closeModal && closeModal();
