@@ -827,7 +827,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                     titleTextStyle={styles.BORButtonTextStyle}
                     title={'Request Appointment'}
                     onPress={() => {
-                      console.log('csk booking on request button pressed');
                       props.onPressRequest && props.onPressRequest(true);
                     }}
                   />

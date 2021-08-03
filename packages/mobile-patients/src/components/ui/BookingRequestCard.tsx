@@ -191,7 +191,6 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = (props) => 
   };
 
   const renderSubmittedCard = () => {
-    console.log('csk props bor card', 'here card');
     return renderCard(
       <BORHeader />,
       'How Request Appointment Works',
