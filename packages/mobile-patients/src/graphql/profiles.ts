@@ -5560,6 +5560,10 @@ export const SAVE_DIAGNOSTIC_ORDER_V2 = gql`
         displayID
         attributes{
           itemids
+          conflictedItems{
+            itemToKeep
+            itemsWithConflicts
+          }
         }
       }
     }

@@ -76,9 +76,10 @@ import {
   DiagnosticItemSearched,
 } from '@aph/mobile-patients/src/components/Tests/Events';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import DeviceInfo from 'react-native-device-info';
 
 const GO_TO_CART_HEIGHT = 50;
-
+const isIphoneX = DeviceInfo.hasNotch();
 export interface SearchTestSceneProps
   extends NavigationScreenProps<{
     searchText: string;
@@ -867,7 +868,7 @@ const styles = StyleSheet.create({
   cartDetailView: {
     position: 'absolute',
     backgroundColor: theme.colors.APP_YELLOW_COLOR,
-    bottom: 10,
+    bottom: isIphoneX ? 10 : 0,
     height: GO_TO_CART_HEIGHT,
     width: '100%',
     flexDirection: 'row',

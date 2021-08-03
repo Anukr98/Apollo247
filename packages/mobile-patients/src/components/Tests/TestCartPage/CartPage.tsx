@@ -100,9 +100,9 @@ import {
   TimelineWizard,
 } from '@aph/mobile-patients/src/components/Tests/components/TimelineWizard';
 import { InfoMessage } from '@aph/mobile-patients/src/components/Tests/components/InfoMessage';
-import ItemCard from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
-import { LongRightArrow, TestTubes } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MultiSelectPatientListOverlay } from '@aph/mobile-patients/src/components/Tests/components/MultiSelectPatientListOverlay';
+import { LongRightArrow, TestTubes } from '@aph/mobile-patients/src/components/ui/Icons';
+import ItemCard from '@aph/mobile-patients/src/components/Tests/components/ItemCard';
 
 type Address = savePatientAddress_savePatientAddress_patientAddress;
 type orderListLineItems = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrderLineItems;
@@ -184,11 +184,11 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   const [itemSelectedFromWidget, setItemSelectedFromWidget] = useState([] as any);
   const [widgetSelectedItem, setWidgetSelectedItem] = useState([] as any);
 
-  const isCartEmpty = isDiagnosticSelectedCartEmpty(
+  const isCartPresent = isDiagnosticSelectedCartEmpty(
     isModifyFlow ? modifiedPatientCart : patientCartItems
   );
 
-  const patientsOnCartPage = !!isCartEmpty && isCartEmpty?.map((item) => item?.patientId);
+  const patientsOnCartPage = !!isCartPresent && isCartPresent?.map((item) => item?.patientId);
   const patientListForOverlay =
     !!patientsOnCartPage &&
     allCurrentPatients?.filter((items: any) => patientsOnCartPage.includes(items?.id));
@@ -201,7 +201,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
   var pricesForItemArray;
   var modifyPricesForItemArray;
-  var patientCartItemsCopy = JSON.parse(JSON.stringify(isCartEmpty));
+  var patientCartItemsCopy = JSON.parse(JSON.stringify(isCartPresent));
   var fullHighPriceItems = '',
     fullDuplicateItems = '';
   var overallDuplicateArray = [] as any;
@@ -704,6 +704,8 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       DeliveryAddress: formatAddress(address),
       Pincode: address?.zipcode || '',
       LOB: 'Diagnostics',
+      'Circle Membership Added': 'No', //since we don't have provision to purchase circle with order
+      'Circle Membership Value': null,
     };
     postAppsFlyerEvent(
       AppsFlyerEventName.DIAGNOSTIC_CART_ADDRESS_SELECTED_SUCCESS,
@@ -1067,11 +1069,10 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                 getPatient
               );
               const patientItems = pCartItem?.cartItems?.filter((cItem) => cItem?.isSelected);
-              const patientHasItems = !!patientItems && patientItems?.length;
 
               return (
                 <>
-                  {!!patientName && patientHasItems
+                  {!!patientName && !!patientItems && patientItems?.length > 0
                     ? renderPatientName(
                         patientName,
                         genderAgeText,
@@ -1079,8 +1080,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                         patientItems?.length
                       )
                     : null}
-
-                  {patientHasItems && (
+                  {!!patientItems && patientItems?.length > 0 && (
                     <FlatList
                       showsVerticalScrollIndicator={false}
                       bounces={false}
@@ -1327,14 +1327,22 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   };
 
   const renderMainView = () => {
+    const shouldShowRecommendations = isModifyFlow
+      ? modifiedPatientCart?.length == 0 || modifiedPatientCart?.[0]?.cartItems?.length == 0
+      : patientCartItems?.length === 0 || isCartPresent?.length == 0;
+    const isCartEmpty = isModifyFlow
+      ? !(modifiedPatientCart?.length == 0 || modifiedPatientCart?.[0]?.cartItems?.length == 0)
+      : !!isCartPresent && !isCartPresent;
     return (
       <View style={{ margin: 16 }}>
         {renderAddTestOption()}
         {!!isCartEmpty && !isCartEmpty ? renderEmptyCart() : renderCartItems()}
-        {!!recommedationData && recommedationData?.length > 0
-          ? renderCartWidgets()
-          : !!alsoAddListData && alsoAddListData?.length > 0
-          ? renderCartWidgets()
+        {!shouldShowRecommendations
+          ? !!recommedationData && recommedationData?.length > 0
+            ? renderCartWidgets()
+            : !!alsoAddListData && alsoAddListData?.length > 0
+            ? renderCartWidgets()
+            : null
           : null}
         {showPatientOverlay ? renderPatientOverlay() : null}
       </View>
@@ -1467,7 +1475,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   }
   //applying the first level duplicate checks. (check for normal + modify ) - single/multi
   function _checkInclusionLevelDuplicates() {
-    const arrayToSelect = isModifyFlow ? modifiedPatientCart : isCartEmpty;
+    const arrayToSelect = isModifyFlow ? modifiedPatientCart : isCartPresent;
     const filteredPatientItems = !!arrayToSelect && arrayToSelect;
 
     filteredPatientItems?.map((pItem, index) => {
@@ -1495,7 +1503,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
           filteredPatientItems?.length
         );
       } else {
-        if (index === isCartEmpty?.length - 1) {
+        if (index === isCartPresent?.length - 1) {
           _navigateToNextScreen(); //move to next screen
         } else {
           index++;
@@ -1625,7 +1633,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
             fullDuplicateItems === '' ? duplicateTests : ', ' + duplicateTests
           );
 
-          if (index === isCartEmpty?.length - 1) {
+          if (index === isCartPresent?.length - 1) {
             renderDuplicateMessage(fullDuplicateItems, fullHighPriceItems);
             setOverallArray(overallDuplicateArray);
           }
@@ -1715,7 +1723,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       modifiedPatientCart?.[0]?.cartItems?.length == 0
     : !(!!addressText && isServiceable) ||
       patientCartItems?.length === 0 ||
-      isCartEmpty?.length == 0;
+      isCartPresent?.length == 0;
 
   const renderStickyBottom = () => {
     return (
