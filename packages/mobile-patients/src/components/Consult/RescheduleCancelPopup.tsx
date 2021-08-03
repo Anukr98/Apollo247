@@ -11,6 +11,7 @@ interface RescheduleCancelProps {
   closeModal: () => void;
   appointmentDiffMin: number;
   appointmentDateTime: string;
+  allowBookingRequest: boolean;
   isAppointmentExceedsTenMin: boolean;
   isAppointmentStartsInFifteenMin: boolean;
 }
