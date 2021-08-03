@@ -70,12 +70,17 @@ const PackageCard: React.FC<PackageCardProps> = (props) => {
     removeMultiPatientCartItems,
   } = useDiagnosticsCart();
 
-  const { data, isCircleSubscribed, source, navigation, sourceScreen, diagnosticWidgetData } = props;
+  const {
+    data,
+    isCircleSubscribed,
+    source,
+    navigation,
+    sourceScreen,
+    diagnosticWidgetData,
+  } = props;
 
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
-  let actualItemsToShow =
-    diagnosticWidgetData?.length > 0 &&
-    diagnosticWidgetData;
+  let actualItemsToShow = diagnosticWidgetData?.length > 0 && diagnosticWidgetData;
 
   const renderItemCard = useCallback(
     (item: any) => {
@@ -85,6 +90,9 @@ const PackageCard: React.FC<PackageCardProps> = (props) => {
       const packageMrpForItem = getItem?.packageCalculatedMrp!;
       const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
 
+      if (!pricesForItem?.itemActive) {
+        return null;
+      }
 
       const imageUrl = getItem?.itemImageUrl;
       const name = getItem?.itemTitle;
@@ -189,8 +197,7 @@ const PackageCard: React.FC<PackageCardProps> = (props) => {
     const promoteCircle = pricesForItem?.promoteCircle;
     const promoteDiscount = pricesForItem?.promoteDiscount;
 
-    return (
-      pricesForItem || packageMrpForItem ? 
+    return pricesForItem || packageMrpForItem ? (
       <View>
         {promoteCircle || promoteDiscount ? (
           renderAnyDiscountView(pricesForItem, packageMrpForItem)
@@ -198,7 +205,9 @@ const PackageCard: React.FC<PackageCardProps> = (props) => {
           <View style={{ height: 20 }} />
         )}
         {renderMainPriceView(pricesForItem, packageMrpForItem, getItem)}
-      </View> : renderPackageItemPriceShimmer()
+      </View>
+    ) : (
+      renderPackageItemPriceShimmer()
     );
   };
 
@@ -302,9 +311,13 @@ const PackageCard: React.FC<PackageCardProps> = (props) => {
     //2. non-circle + circle -> no slashing
     return (
       <View style={{ flexDirection: 'row', marginVertical: '2%' }}>
-        {priceToShow ? <Text style={styles.mainPriceText}>
-          {string.common.Rs} {convertNumberToDecimal(priceToShow)}
-        </Text> : renderPackageItemPriceShimmer()}
+        {priceToShow ? (
+          <Text style={styles.mainPriceText}>
+            {string.common.Rs} {convertNumberToDecimal(priceToShow)}
+          </Text>
+        ) : (
+          renderPackageItemPriceShimmer()
+        )}
         {/**slashed price */}
         {(!isCircleSubscribed && promoteCircle && priceToShow == slashedPrice) ||
         priceToShow == slashedPrice ? null : (
@@ -495,11 +508,11 @@ const PackageCard: React.FC<PackageCardProps> = (props) => {
 
   const keyExtractor = useCallback((item: any, index: number) => `${index}`, []);
   if (props.isPriceAvailable) {
-  actualItemsToShow =
-    source === 'Cart page'
-      ? data?.length > 0 && data?.filter((item: any) => item?.diagnosticPricing)
-      : diagnosticWidgetData?.length > 0 &&
-        diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
+    actualItemsToShow =
+      source === 'Cart page'
+        ? data?.length > 0 && data?.filter((item: any) => item?.diagnosticPricing)
+        : diagnosticWidgetData?.length > 0 &&
+          diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
   }
   return (
     <>
