@@ -302,8 +302,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           setLoading(false);
         })
         .catch((err) => {
-          CommonBugFender('MedicineDetailsScene_getMedicineDetailsV2Api', err);
-          aphConsole.log('MedicineDetailsScene err\n', err);
+          CommonBugFender('ProductDetailsScene_getMedicineDetailsV2Api', err);
+          aphConsole.log('ProductDetailsScene err\n', err);
           setApiError(!!err);
           setLoading(false);
         });
@@ -319,8 +319,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           setLoading(false);
         })
         .catch((err) => {
-          CommonBugFender('MedicineDetailsScene_getMedicineDetailsApi', err);
-          aphConsole.log('MedicineDetailsScene err\n', err);
+          CommonBugFender('ProductDetailsScene_getMedicineDetailsApi', err);
+          aphConsole.log('ProductDetailsScene err\n', err);
           setApiError(!!err);
           setLoading(false);
         });
@@ -433,11 +433,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
             }
           }
         } catch (error) {
-          CommonBugFender('MedicineDetailsScene_fetchSubstitutes_try', error);
+          CommonBugFender('ProductDetailsScene_fetchSubstitutes_try', error);
         }
       })
       .catch((err) => {
-        CommonBugFender('MedicineDetailsScene_fetchSubstitutes', err);
+        CommonBugFender('ProductDetailsScene_fetchSubstitutes', err);
       });
   };
 
@@ -515,7 +515,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         MaxOrderQuantity: MaxOrderQty,
         MRP: price,
         SpecialPrice: special_price || undefined,
-        CircleCashback: cashback?.toFixed(2),
+        CircleCashback: Number(cashback) || 0,
       };
       if (movedFrom === 'deeplink') {
         eventAttributes['Circle Membership Added'] = circleID
