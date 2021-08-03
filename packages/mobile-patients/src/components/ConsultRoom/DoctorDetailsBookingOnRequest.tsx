@@ -750,93 +750,95 @@ export const DoctorDetailsBookingOnRequest: React.FC<DoctorDetailsBookingOnReque
               data={doctorClinics}
               bounces={false}
               showsHorizontalScrollIndicator={false}
-              renderItem={({ item }) => {
-                if (item) {
-                  const clinicHours =
-                    doctorDetails && doctorDetails.consultHours
-                      ? doctorDetails.consultHours.filter(
-                          (hours) =>
-                            hours &&
-                            hours.consultMode !== ConsultMode.ONLINE &&
-                            hours.facility &&
-                            hours.facility.id === item.facility.id
-                        )
-                      : [];
-                  return (
-                    <View>
-                      <View style={styles.clinicImageContainer}>
-                        <View
-                          style={{
-                            overflow: 'hidden',
-                            borderRadius: 10,
-                          }}
-                        >
-                          <Image
-                            source={
-                              item && item.facility && item.facility.imageUrl
-                                ? {
-                                    uri: item.facility.imageUrl,
-                                  }
-                                : require('@aph/mobile-patients/src/images/apollo/Hospital_Image.webp')
-                            }
-                            style={{
-                              height: 136,
-                              width: '100%',
-                            }}
-                          />
-
-                          <View
-                            style={{
-                              margin: 16,
-                              marginTop: 10,
-                            }}
-                          >
-                            <Text style={styles.clinicImageBlueText}>
-                              {item && item.facility.streetLine1}
-                              {item && item.facility.streetLine2
-                                ? `${item && item.facility.streetLine1 ? ', ' : ''}${item &&
-                                    item.facility.streetLine2}`
-                                : ''}
-                            </Text>
-                            <Text style={styles.clinicImageBlueText}>
-                              {item && item.facility && item.facility.city}
-                            </Text>
-                            {clinicHours.length > 0 && (
-                              <>
-                                <View style={[styles.separatorStyle, { marginVertical: 8 }]} />
-
-                                {clinicHours.map((time) =>
-                                  time ? (
-                                    <View
-                                      style={{
-                                        flexDirection: 'row',
-                                        justifyContent: 'space-between',
-                                      }}
-                                    >
-                                      <Text style={styles.clinicImageSkyBlueText}>
-                                        {time.weekDay.toUpperCase()}
-                                      </Text>
-
-                                      <Text style={styles.clinicImageSkyBlueText}>
-                                        {formatTime(time.startTime)} - {formatTime(time.endTime)}
-                                      </Text>
-                                    </View>
-                                  ) : null
-                                )}
-                              </>
-                            )}
-                          </View>
-                        </View>
-                      </View>
-                    </View>
-                  );
-                }
-                return null;
-              }}
+              renderItem={({ item, index }) => renderClinicDetails(item)}
             />
           </View>
         );
       return null;
+    }
+    return null;
+  };
+
+  const renderClinicDetails = (item: any) => {
+    if (item) {
+      const clinicHours =
+        doctorDetails && doctorDetails.consultHours
+          ? doctorDetails.consultHours.filter(
+              (hours) =>
+                hours &&
+                hours.consultMode !== ConsultMode.ONLINE &&
+                hours.facility &&
+                hours.facility.id === item.facility.id
+            )
+          : [];
+      return (
+        <View>
+          <View style={styles.clinicImageContainer}>
+            <View
+              style={{
+                overflow: 'hidden',
+                borderRadius: 10,
+              }}
+            >
+              <Image
+                source={
+                  item && item.facility && item.facility.imageUrl
+                    ? {
+                        uri: item.facility.imageUrl,
+                      }
+                    : require('@aph/mobile-patients/src/images/apollo/Hospital_Image.webp')
+                }
+                style={{
+                  height: 136,
+                  width: '100%',
+                }}
+              />
+
+              <View
+                style={{
+                  margin: 16,
+                  marginTop: 10,
+                }}
+              >
+                <Text style={styles.clinicImageBlueText}>
+                  {item && item.facility.streetLine1}
+                  {item && item.facility.streetLine2
+                    ? `${item && item.facility.streetLine1 ? ', ' : ''}${item &&
+                        item.facility.streetLine2}`
+                    : ''}
+                </Text>
+                <Text style={styles.clinicImageBlueText}>
+                  {item && item.facility && item.facility.city}
+                </Text>
+                {clinicHours.length > 0 && (
+                  <>
+                    <View style={[styles.separatorStyle, { marginVertical: 8 }]} />
+
+                    {clinicHours.map((time) =>
+                      time ? (
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                          }}
+                        >
+                          <Text style={styles.clinicImageSkyBlueText}>
+                            {time.weekDay.toUpperCase()}
+                          </Text>
+
+                          <Text style={styles.clinicImageSkyBlueText}>
+                            {formatTime(time.startTime)} - {formatTime(time.endTime)}
+                          </Text>
+                        </View>
+                      ) : null
+                    )}
+                  </>
+                )}
+              </View>
+            </View>
+          </View>
+        </View>
+      );
     }
     return null;
   };

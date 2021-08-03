@@ -5382,11 +5382,12 @@ export const CANCEL_VACCINATION_APPOINTMENT = gql`
       response {
         id
         status
-      }`;
+      }
+    }
+  }`;
 
 
 export const GET_ALL_VACCINATION_APPOINTMENTS = gql`
-
   query GetAllAppointments {
     GetAllAppointments {
       code
@@ -5424,7 +5425,6 @@ export const GET_ALL_VACCINATION_APPOINTMENTS = gql`
       }
     }
   }
-
 `;
 
 export const GET_VACCINATION_SITES = gql`
