@@ -1892,21 +1892,21 @@ export const postWEGNeedHelpEvent = (
 };
 
 export const postWEGPatientAPIError = (
-  currentPatient:GetCurrentPatients_getCurrentPatients_patients,
-  doc:string|null,
-  screen:string,
-  api:string,
-  error:any,
+  currentPatient: GetCurrentPatients_getCurrentPatients_patients,
+  doc: string | null,
+  screen: string,
+  api: string,
+  error: any
 ) => {
   const eventAttributes: WebEngageEvents[WebEngageEventName.Patient_API_Error] = {
     'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
     'Patient ID': g(currentPatient, 'id')!,
     'Patient Number': g(currentPatient, 'mobileNumber')!,
-    'Doctor ID':doc,
-    'Screen Name':screen,
-    'API Name':api,
-    'Error Name':error
-    };
+    'Doctor ID': doc,
+    'Screen Name': screen,
+    'API Name': api,
+    'Error Name': error,
+  };
   postWebEngageEvent(WebEngageEventName.Patient_API_Error, eventAttributes);
 };
 
@@ -2730,7 +2730,7 @@ export const calculateCashbackForItem = (
   };
   const cashbackFactor =
     getThirdLevelCashback() || getSecondLevelCashback() || getFirstLevelCashback();
-  const cashback = ((price * cashbackFactor) / 100).toFixed(2);
+  const cashback = cashbackFactor ? ((price * cashbackFactor) / 100).toFixed(2) : '0';
   return cashback || 0;
 };
 
@@ -3328,7 +3328,7 @@ export const downloadDocument = (
   let viewReportOrderId = orderId;
   const configOptions = { fileCache: true };
   RNFetchBlob.config(configOptions)
-    .fetch('GET', fileUrl.replace(/\s/g, ""))
+    .fetch('GET', fileUrl.replace(/\s/g, ''))
     .then((resp) => {
       filePath = resp.path();
       return resp.readFile('base64');
@@ -3354,6 +3354,6 @@ export const getIsMedicine = (typeId: string) => {
   return medicineType[typeId] || '0';
 };
 export const removeWhiteSpaces = (item: any) => {
-  const newItem = item?.replace(/\s/g, "")
+  const newItem = item?.replace(/\s/g, '');
   return newItem;
-}
+};
