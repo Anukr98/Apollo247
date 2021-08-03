@@ -2109,3 +2109,19 @@ export const AlertTriangle: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/alert-triangle.webp')}
   />
 );
+
+export const TestTubes: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/testTubes.webp')}
+  />
+);
+
+export const LongRightArrow: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/LongRightArrow.webp')}
+  />
+);

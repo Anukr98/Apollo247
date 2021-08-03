@@ -9,9 +9,16 @@ import { SaveBookHomeCollectionOrderInputv2 } from "./globalTypes";
 // GraphQL mutation operation: saveDiagnosticBookHCOrderv2
 // ====================================================
 
+export interface saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWithOrderIDs_attributes_conflictedItems {
+  __typename: "conflictedItems";
+  itemToKeep: (number | null)[] | null;
+  itemsWithConflicts: (number | null)[] | null;
+}
+
 export interface saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWithOrderIDs_attributes {
   __typename: "CustomResponse";
   itemids: string | null;
+  conflictedItems: (saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWithOrderIDs_attributes_conflictedItems | null)[] | null;
 }
 
 export interface saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWithOrderIDs {

@@ -355,7 +355,7 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
   const renderMainView = () => {
     return (
       <View style={{ marginTop: 4, marginBottom: 0 }}>
-        <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
+        <ScrollView bounces={false} showsVerticalScrollIndicator={true}>
           <View style={{ marginLeft: 16 }}>{renderScheduleHeading()}</View>
           {renderSlotSelection()}
         </ScrollView>
@@ -392,9 +392,26 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
 
   const renderStickyBottom = () => {
     return (
-      <StickyBottomComponent style={{ shadowColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}>
-        <Button title={'CHECKOUT'} onPress={() => _navigateToReview()} disabled={disableCTA} />
+      <StickyBottomComponent style={styles.stickyBottomStyle}>
+        {!!selectedTimeSlot?.slotInfo?.startTime && renderDateTime()}
+        <Button
+          title={'CHECKOUT'}
+          onPress={() => _navigateToReview()}
+          disabled={disableCTA}
+          style={{ width: !!selectedTimeSlot?.slotInfo?.startTime ? '70%' : '100%' }}
+        />
       </StickyBottomComponent>
+    );
+  };
+
+  const renderDateTime = () => {
+    return (
+      <View style={styles.leftViewContainer}>
+        <Text style={styles.leftTopText}>
+          {moment(diagnosticSlot?.selectedDate)?.format('DD MMM')}
+        </Text>
+        <Text style={styles.leftBottomText}>{selectedTimeSlot?.slotInfo?.startTime}</Text>
+      </View>
     );
   };
 
@@ -424,5 +441,20 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
 const styles = StyleSheet.create({
   addressHeadingText: {
     ...theme.viewStyles.text('R', 12, theme.colors.SHERPA_BLUE, 1, 20),
+  },
+  leftViewContainer: {
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    padding: 8,
+  },
+  leftTopText: { ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20) },
+  leftBottomText: {
+    ...theme.viewStyles.text('R', 14, theme.colors.SHERPA_BLUE, 1, 24),
+    marginTop: -5,
+  },
+  stickyBottomStyle: {
+    shadowColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
 });

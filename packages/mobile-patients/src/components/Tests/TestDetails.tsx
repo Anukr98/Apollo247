@@ -132,6 +132,7 @@ export interface TestDetailsProps
     itemName?: string;
     movedFrom?: string;
     cityId?: string;
+    changeCTA?: boolean;
   }> {}
 
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
@@ -158,6 +159,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   const testDetails = props.navigation.getParam('testDetails', {} as TestPackageForDetails);
   const testName = props.navigation.getParam('itemName');
+  const changeCTA = props.navigation.getParam('changeCTA');
+
   const { setLoading: setLoadingContext, showAphAlert, hideAphAlert } = useUIElements();
 
   const addressCityId = props.navigation.getParam('cityId');
@@ -1080,6 +1083,14 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         },
       ]);
     addCartItem?.(addedItems);
+
+    if (movedFrom === AppRoutes.CartPage && changeCTA) {
+      isModify
+        ? props.navigation.navigate(AppRoutes.CartPage, {
+            orderDetails: modifiedOrder,
+          })
+        : props.navigation.navigate(AppRoutes.AddPatients);
+    }
   }
 
   function onPressRemoveFromCart() {
@@ -1120,8 +1131,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               title={
                 isAlreadyPartOfOrder
                   ? 'ALREADY ADDED'
+                  : movedFrom === AppRoutes.CartPage && changeCTA
+                  ? 'ADD & PROCEED TO CART'
                   : isAddedToCart
-                  ? 'PROCEED TO CART '
+                  ? 'PROCEED TO CART'
                   : 'ADD TO CART'
               }
               onPress={() =>
@@ -1129,6 +1142,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                   ? props.navigation.navigate(AppRoutes.CartPage, {
                       orderDetails: modifiedOrder,
                     })
+                  : movedFrom === AppRoutes.CartPage && changeCTA
+                  ? onPressAddToCart()
                   : isAddedToCart
                   ? isModify
                     ? props.navigation.navigate(AppRoutes.CartPage, {
