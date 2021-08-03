@@ -233,6 +233,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
   },
+  textHolder: {
+    ...theme.viewStyles.cardViewStyle,
+    borderRadius: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowOffset: { width: 5, height: 20 },
+  },
 });
 
 export interface BookingRequestOverlayProps extends NavigationScreenProps {
@@ -593,15 +600,7 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
           }}
         >
           <View style={[styles.mainViewStyle, props.mainContainerStyle]}>
-            <View
-              style={{
-                ...theme.viewStyles.cardViewStyle,
-                borderRadius: 1,
-                alignItems: 'center',
-                justifyContent: 'center',
-                shadowOffset: { width: 5, height: 20 },
-              }}
-            >
+            <View style={styles.textHolder}>
               <Text
                 style={[styles.headerTextStyle, theme.viewStyles.text('M', 16, '#02475B', 1, 21)]}
               >
