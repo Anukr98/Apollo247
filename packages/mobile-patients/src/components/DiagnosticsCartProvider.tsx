@@ -341,13 +341,13 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     ePrescriptions: `diagnosticsEPrescriptions${id}`,
     physicalPrescriptions: `diagnosticsPhysicalPrescriptions${id}`,
     showMultiPatientMsg: `diagnosticsMultiPatientMsg${id}`,
-    // patientCartItems: `diagnosticsPatientCartItems${id}`,
+    patientCartItems: `diagnosticsPatientCartItems${id}`,
   };
 
   const [forPatientId, setPatientId] = useState<string>('');
 
   const [cartItems, _setCartItems] = useState<DiagnosticsCartContextProps['cartItems']>([]);
-  const [patientCartItems, setPatientCartItems] = useState<
+  const [patientCartItems, _setPatientCartItems] = useState<
     DiagnosticsCartContextProps['patientCartItems']
   >([]);
   const [modifiedPatientCart, setModifiedPatientCart] = useState<
@@ -522,6 +522,17 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     });
   };
 
+  const setPatientCartItems: DiagnosticsCartContextProps['setPatientCartItems'] = (
+    patientCartItems
+  ) => {
+    _setPatientCartItems(patientCartItems);
+    AsyncStorage.setItem(AsyncStorageKeys.patientCartItems, JSON.stringify(patientCartItems)).catch(
+      () => {
+        showGenericAlert('Failed to save cart items in local storage.');
+      }
+    );
+  };
+
   const addCartItem: DiagnosticsCartContextProps['addCartItem'] = (itemToAdd) => {
     if (cartItems.find((item) => item?.id == itemToAdd?.id)) {
       return;
@@ -665,13 +676,17 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
       ? modifiedPatientCart
       : patientCartItems;
 
-  const filterPatientCartItem = selectedPatientCartItems?.map((item: DiagnosticPatientCartItem) => {
-    let obj = {
-      patientId: item?.patientId,
-      cartItems: item?.cartItems?.filter((items: DiagnosticsCartItem) => items?.isSelected == true),
-    };
-    return obj;
-  });
+  const filterPatientCartItem =
+    !!selectedPatientCartItems &&
+    selectedPatientCartItems?.map((item: DiagnosticPatientCartItem) => {
+      let obj = {
+        patientId: item?.patientId,
+        cartItems:
+          !!item?.cartItems &&
+          item?.cartItems?.filter((items: DiagnosticsCartItem) => items?.isSelected == true),
+      };
+      return obj;
+    });
 
   const [filterPatientCartItems, setFilterPatientCartItems] = useState<
     DiagnosticsCartContextProps['filterPatientCartItems']
@@ -831,18 +846,18 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
           AsyncStorageKeys.physicalPrescriptions,
           AsyncStorageKeys.ePrescriptions,
           AsyncStorageKeys.showMultiPatientMsg,
-          // AsyncStorageKeys.patientCartItems,
+          AsyncStorageKeys.patientCartItems,
         ]);
         const cartItems = cartItemsFromStorage[0][1];
         const physicalPrescriptions = cartItemsFromStorage[1][1];
         const ePrescriptions = cartItemsFromStorage[2][1];
         const showMultiPatientMsg = cartItemsFromStorage[3][1];
-        // const patientCartItems = cartItemsFromStorage[4][1];
+        const patientCartItems = cartItemsFromStorage[4][1];
         _setCartItems(JSON.parse(cartItems || 'null') || []);
         _setPhysicalPrescriptions(JSON.parse(physicalPrescriptions || 'null') || []);
         _setEPrescriptions(JSON.parse(ePrescriptions || 'null') || []);
         _setShowMultiPatientMsg(JSON.parse(showMultiPatientMsg || 'null'));
-        // _setPatientCartItems(JSON.parse(patientCartItems || 'null') || []);
+        _setPatientCartItems(JSON.parse(patientCartItems || 'null') || []);
       } catch (error) {
         CommonBugFender('DiagnosticsCartProvider_updateCartItemsFromStorage_try', error);
         showGenericAlert('Failed to get cart items from local storage.');

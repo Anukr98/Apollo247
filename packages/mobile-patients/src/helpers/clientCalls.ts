@@ -50,6 +50,7 @@ import {
   DIAGNOSTIC_WRAPPER_PROCESS_HC,
   GET_DIAGNOSTIC_ORDERSLIST_BY_PARENT_ORDER_ID,
   GET_DIAGNOSTIC_PAYMENT_SETTINGS,
+  GET_DIAGNOSTICS_RECOMMENDATIONS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -190,6 +191,7 @@ import { diagnosticExotelCalling, diagnosticExotelCallingVariables } from '@aph/
 import { wrapperProcessDiagnosticHCOrderCOD, wrapperProcessDiagnosticHCOrderCODVariables } from '@aph/mobile-patients/src/graphql/types/wrapperProcessDiagnosticHCOrderCOD';
 import { getDiagnosticOrdersListByParentOrderID, getDiagnosticOrdersListByParentOrderIDVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByParentOrderID';
 import { getDiagnosticPaymentSettings, getDiagnosticPaymentSettingsVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticPaymentSettings';
+import { getDiagnosticItemRecommendations, getDiagnosticItemRecommendationsVariables } from '../graphql/types/getDiagnosticItemRecommendations';
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
   doctorIds: (string | null)[] | (string | undefined)[] | string[],
@@ -1349,3 +1351,21 @@ export const diagnosticPaymentSettings = (  client: ApolloClient<object>,
     }); 
 }
 
+export const getDiagnosticCartRecommendations = (
+  client: ApolloClient<object>,
+  itemIds: any,
+  numOfRecords: number
+) =>
+{
+  return client.query<getDiagnosticItemRecommendations, getDiagnosticItemRecommendationsVariables>({
+    query: GET_DIAGNOSTICS_RECOMMENDATIONS,
+    context: {
+      sourceHeaders,
+    },
+    variables: {
+      itemIds: itemIds,
+      records: numOfRecords
+    },
+    fetchPolicy: 'no-cache',
+  }); 
+};

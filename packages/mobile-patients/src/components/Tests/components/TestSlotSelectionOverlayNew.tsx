@@ -503,9 +503,11 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
             {isPrepaidSlot ? renderPremiumTag() : null}
             {renderSlotSelectionView()}
           </ScrollView>
-          {showInOverlay && props.isReschdedule && dropDownOptions?.length
-            ? renderBottomButton
-            : null}
+          {showInOverlay && props.isReschdedule && dropDownOptions?.length ? (
+            renderBottomButton
+          ) : (
+            <View style={{ height: 10 }}></View>
+          )}
           {showSpinner && props.isReschdedule && <Spinner />}
         </View>
       </>
