@@ -517,7 +517,13 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           setProcedures([]);
           setSymptoms([]);
           setisSearching(false);
-          postWEGPatientAPIError(currentPatient, '', 'DoctorSearch', 'GET_DOCTOR_LIST', e);
+          postWEGPatientAPIError(
+            currentPatient,
+            '',
+            'DoctorSearch',
+            'GET_DOCTOR_LIST',
+            JSON.stringify(e)
+          );
           CommonBugFender('DoctorSearch_fetchSearchData', e);
         });
     }
@@ -725,7 +731,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         '',
         'DoctorSearch',
         'GET_PATIENT_ALL_CONSULTED_DOCTORS',
-        res
+        JSON.stringify(res)
       );
     }
     setConsultedDoctors(consultedDoctors);

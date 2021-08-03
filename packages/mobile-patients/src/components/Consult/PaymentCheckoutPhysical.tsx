@@ -658,7 +658,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
             '',
             'PaymentCheckoutPhysical',
             'CREATE_ORDER(JUSPAY)',
-            data
+            JSON.stringify(data)
           );
           renderErrorPopup(string.common.tryAgainLater);
         }
@@ -668,12 +668,18 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           '',
           'PaymentCheckoutPhysical',
           'CREATE_INTERNAL_ORDER',
-          data
+          JSON.stringify(data)
         );
         renderErrorPopup(string.common.tryAgainLater);
       }
     } catch (error) {
-      postWEGPatientAPIError(currentPatient, '', 'PaymentCheckoutPhysical', '', error);
+      postWEGPatientAPIError(
+        currentPatient,
+        '',
+        'PaymentCheckoutPhysical',
+        '',
+        JSON.stringify(error)
+      );
       handleError(error);
     }
   };
@@ -752,7 +758,7 @@ export const PaymentCheckoutPhysical: React.FC<PaymentCheckoutPhysicalProps> = (
           '',
           'PaymentCheckoutPhysical',
           'MAKE_APPOINTMENT_PAYMENT',
-          e
+          JSON.stringify(e)
         );
         setLoading!(false);
         handleGraphQlError(e);

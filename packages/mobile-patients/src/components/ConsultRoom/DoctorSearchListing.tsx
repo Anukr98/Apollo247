@@ -486,7 +486,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         }
       })
       .catch((e) => {
-        postWEGPatientAPIError(currentPatient, '', 'DoctorSearchListing', 'GET_PLATINUM_DOCTOR', e);
+        postWEGPatientAPIError(
+          currentPatient,
+          '',
+          'DoctorSearchListing',
+          'GET_PLATINUM_DOCTOR',
+          JSON.stringify(e)
+        );
         setPlatinumDoctor(null);
         CommonBugFender('GET_PLATINUM_DOCTOR', e);
       });
@@ -518,7 +524,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             '',
             'DoctorSearchListing',
             'GET_PATIENT_ADDRESS_LIST',
-            response
+            JSON.stringify(response)
           );
     } catch (error) {
       postWEGPatientAPIError(
@@ -526,7 +532,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         '',
         'DoctorSearchListing',
         'GET_PATIENT_ADDRESS_LIST',
-        error
+        JSON.stringify(error)
       );
       CommonBugFender('DoctorSearchListing_fetchAddress', error);
     }
