@@ -2235,7 +2235,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         mutation: CALL_CONNECTION_UPDATES,
         variables: { CheckCallConnectionInput: input },
       });
-      console.log(JSON.stringify(data));
     } catch (error) {
       CommonBugFender('ChatRoom_updateCallConnectionStatus', error);
       console.log(error, JSON.stringify(data));
