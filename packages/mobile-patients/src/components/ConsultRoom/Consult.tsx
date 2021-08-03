@@ -757,7 +757,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           patientId: userId !== currentPatient?.id ? currentPatient?.id || userId : userId,
         },
       });
+      console.log('csk p', currentPatient?.id);
       const appointments = data?.getPatientAllAppointments;
+
+      console.log('csk all app', JSON.stringify(appointments?.activeAppointments?.[6]));
 
       let isOnlineFutureOnly: any = [];
       isOnlineFutureOnly = appointments?.activeAppointments?.filter(

@@ -426,6 +426,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isAutomatedQuestionsComplete
         symptoms
         doctorInfo {
+          allowBookingRequest
           awards
           city
           country
@@ -594,6 +595,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isAutomatedQuestionsComplete
         symptoms
         doctorInfo {
+          allowBookingRequest
           awards
           city
           country
@@ -762,6 +764,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isAutomatedQuestionsComplete
         symptoms
         doctorInfo {
+          allowBookingRequest
           awards
           city
           country
@@ -930,6 +933,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isAutomatedQuestionsComplete
         symptoms
         doctorInfo {
+          allowBookingRequest
           awards
           city
           country
