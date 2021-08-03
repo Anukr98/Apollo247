@@ -5373,6 +5373,60 @@ export const VERIFY_CORPORATE_EMAIL_OTP_AND_SUBSCRIBE = gql`
 
 ///---BELOW is pointed to vaccine endpoint-------->>
 
+export const CANCEL_VACCINATION_APPOINTMENT = gql`
+  mutation CancelAppointment($appointment_id: String, $display_id: Float) {
+    CancelAppointment(appointment_id: $appointment_id, display_id: $display_id) {
+      code
+      success
+      message
+      response {
+        id
+        status
+      }`;
+
+
+export const GET_ALL_VACCINATION_APPOINTMENTS = gql`
+
+  query GetAllAppointments {
+    GetAllAppointments {
+      code
+      success
+      message
+      response {
+        id
+        dose_number
+        resource_id
+        patient_info {
+          firstName
+          lastName
+          age
+          gender
+          uhid
+          relation
+        }
+        status
+        payment_type
+        resource_session_details {
+          session_name
+          start_date_time
+          vaccine_type
+          resource_detail {
+            name
+            street_line1
+            street_line2
+            street_line3
+            city
+            state
+          }
+        }
+        display_id
+        payment_type
+      }
+    }
+  }
+
+`;
+
 export const GET_VACCINATION_SITES = gql`
   query getResourcesList($city: String!, $vaccine_type: VACCINE_TYPE, $is_retail: Boolean) {
     getResourcesList(city: $city, vaccine_type: $vaccine_type, is_retail: $is_retail) {
