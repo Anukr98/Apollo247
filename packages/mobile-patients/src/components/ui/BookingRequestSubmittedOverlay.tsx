@@ -39,6 +39,26 @@ const styles = StyleSheet.create({
   headerTextStyle: {
     margin: 18,
   },
+  crossPopupContainer: {
+    marginTop: Platform.OS === 'ios' ? 100 : 80,
+    backgroundColor: 'white',
+    height: 28,
+    width: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 14,
+    marginRight: -1,
+  },
+  mainContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, .8)',
+    zIndex: 5,
+  },
 });
 
 export interface BookingRequestSubmittedOverlayProps extends NavigationScreenProps {
@@ -53,18 +73,7 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
   const tabs = [{ title: 'Request Submitted' }, { title: 'Request Failed' }];
 
   return (
-    <View
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, .8)',
-        zIndex: 5,
-      }}
-    >
+    <View style={styles.mainConatiner}>
       <View style={{ paddingHorizontal: 20 }}>
         <View
           style={{
@@ -76,16 +85,7 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
             onPress={() => {
               props.setdisplayoverlay(false);
             }}
-            style={{
-              marginTop: Platform.OS === 'ios' ? 100 : 80,
-              backgroundColor: 'white',
-              height: 28,
-              width: 28,
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: 14,
-              marginRight: -1,
-            }}
+            style={styles.crossPopupContainer}
           >
             <CrossPopup />
           </TouchableOpacity>
