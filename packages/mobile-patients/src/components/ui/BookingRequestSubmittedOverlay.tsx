@@ -59,6 +59,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, .8)',
     zIndex: 5,
   },
+  mainViewSubView: {
+    ...theme.viewStyles.cardViewStyle,
+    borderRadius: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowOffset: { width: 5, height: 20 },
+  },
 });
 
 export interface BookingRequestSubmittedOverlayProps extends NavigationScreenProps {
@@ -73,7 +80,7 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
   const tabs = [{ title: 'Request Submitted' }, { title: 'Request Failed' }];
 
   return (
-    <View style={styles.mainConatiner}>
+    <View style={styles.mainContainer}>
       <View style={{ paddingHorizontal: 20 }}>
         <View
           style={{
@@ -96,15 +103,7 @@ export const BookingRequestSubmittedOverlay: React.FC<BookingRequestSubmittedOve
           }}
         >
           <View style={[styles.mainViewStyle]}>
-            <View
-              style={{
-                ...theme.viewStyles.cardViewStyle,
-                borderRadius: 1,
-                alignItems: 'center',
-                justifyContent: 'center',
-                shadowOffset: { width: 5, height: 20 },
-              }}
-            >
+            <View style={styles.mainViewSubView}>
               <Text style={[styles.headerTextStyle, theme.viewStyles.text('M', 16, '#02475B')]}>
                 {props?.error ? tabs[1].title : tabs[0].title}
               </Text>
