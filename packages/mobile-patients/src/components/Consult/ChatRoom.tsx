@@ -7602,7 +7602,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             );
             CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'RESCHEDULE_INSTEAD_Clicked');
             setShowCancelPopup(false);
-            setShowReschedulePopup(true);
+            appointmentData?.doctorInfo?.allowBookingRequest
+              ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
+                  doctorId: doctorId,
+                  cleverTapAppointmentAttributes: {
+                    source: 'Appointment CTA',
+                    appointmentCTA: 'Inside consult room',
+                  },
+                })
+              : setShowReschedulePopup(true);
           }}
           onPressCancel={() => {
             postAppointmentWEGEvents(WebEngageEventName.CANCEL_CONSULTATION_CLICKED);
