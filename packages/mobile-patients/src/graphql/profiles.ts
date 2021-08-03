@@ -5141,6 +5141,10 @@ export const MODIFY_DIAGNOSTIC_ORDERS = gql`
       errorMessageToDisplay
       attributes {
         itemids
+        conflictedItems{
+          itemToKeep
+          itemsWithConflicts
+        }
       }
     }
   }
