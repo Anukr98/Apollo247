@@ -1361,7 +1361,6 @@ export interface MedicineCartOMSInput {
   prescriptionType?: PrescriptionType | null;
   tatCity?: string | null;
   tatHours?: string | null;
-  appointmentId?: string | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -1768,7 +1767,6 @@ export interface SaveMedicineOrderV2Input {
   healthCreditUsed?: number | null;
   shipments?: (MedicineOrderShipmentInput | null)[] | null;
   prescriptionType?: PrescriptionType | null;
-  appointmentId?: string | null;
 }
 
 export interface SavePatientNotificationSettingsInput {
