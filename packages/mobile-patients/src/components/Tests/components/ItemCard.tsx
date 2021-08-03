@@ -56,6 +56,7 @@ export interface ItemCardProps {
   extraData?: any;
   onEndReached?: any;
   diagnosticWidgetData?: any;
+  isPriceAvailable?: boolean;
   onPressAddToCartFromCart?: (item: any) => void;
   onPressRemoveItemFromCart?: (item: any) => void;
 }
@@ -82,11 +83,6 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
     onPressRemoveItemFromCart, } = props;
 
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
-  // const actualItemsToShow =
-  //   source === 'Cart page'
-  //     ? data?.length > 0 && data?.filter((item: any) => item?.diagnosticPricing)
-  //     : data?.diagnosticWidgetData?.length > 0 &&
-  //       data?.diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
   let actualItemsToShow =
     source === 'Cart page'
       ? data?.length > 0 && data
@@ -522,6 +518,13 @@ const ItemCard: React.FC<ItemCardProps> = (props) => {
   );
 
   const keyExtractor = useCallback((item: any, index: number) => `${index}`, []);
+  if (props.isPriceAvailable) {
+  actualItemsToShow =
+    source === 'Cart page'
+      ? data?.length > 0 && data?.filter((item: any) => item?.diagnosticPricing)
+      : diagnosticWidgetData?.length > 0 &&
+        diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
+  }
 
   return (
     <>

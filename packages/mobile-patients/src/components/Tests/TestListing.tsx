@@ -69,6 +69,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
 
   const [widgetsData, setWidgetsData] = useState([] as any);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isPriceAvailable, setIsPriceAvailable] = useState<boolean>(false);
 
   const errorStates = !loading && widgetsData?.length == 0;
   let deepLinkWidgetName: string;
@@ -175,6 +176,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         }
       }
       setWidgetsData(newWidgetsData);
+      setIsPriceAvailable(true)
       setLoading?.(false);
     } catch (error) {
       CommonBugFender('errorInFetchPricing api__Tests', error);
@@ -337,6 +339,14 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             {widgetsData?.diagnosticWidgetType == 'Package' ? (
               <PackageCard
                 data={widgetsData}
+                diagnosticWidgetData={widgetsData?.diagnosticWidgetData?.slice(
+                  0,
+                  widgetsData?.diagnosticWidgetData < limit
+                    ? widgetsData?.diagnosticWidgetData
+                    : testLength
+                )}
+                isPriceAvailable={isPriceAvailable}
+                onEndReached={testLength == widgetsData?.diagnosticWidgetData?.length ? null : onEndReached}
                 isCircleSubscribed={isDiagnosticCircleSubscription}
                 isServiceable={isDiagnosticLocationServiceable}
                 isVertical={true}
@@ -358,6 +368,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                 isServiceable={isDiagnosticLocationServiceable}
                 isVertical={true}
                 columns={2}
+                isPriceAvailable={isPriceAvailable}
                 onEndReached={testLength == widgetsData?.diagnosticWidgetData?.length ? null : onEndReached}
                 navigation={props.navigation}
                 source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.LISTING}
@@ -379,7 +390,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         <View style={{ flex: 1, marginBottom: '5%' }}>{renderList()}</View>
         {showLoadMore ? renderLoadMore() : null}
       </SafeAreaView>
-      {loading && <Spinner />}
+      {loading && widgetsData?.length == 0 && <Spinner />}
     </View>
   );
 };

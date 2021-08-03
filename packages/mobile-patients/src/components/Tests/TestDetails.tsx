@@ -980,6 +980,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
             <PackageCard
               data={data}
+              diagnosticWidgetData={data?.diagnosticWidgetData}
               isCircleSubscribed={isDiagnosticCircleSubscription}
               isServiceable={isDiagnosticLocationServiceable}
               isVertical={false}

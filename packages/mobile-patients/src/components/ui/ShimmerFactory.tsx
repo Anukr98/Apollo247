@@ -314,6 +314,13 @@ const styles = StyleSheet.create({
     marginTop: 5,
     height: 40,
   },
+  itemPackagePrice: {
+    ...theme.viewStyles.cardViewStyle,
+    width: '100%',
+    marginRight: 5,
+    marginTop: 5,
+    height: 60,
+  },
   rowStyle: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -811,6 +818,16 @@ export const renderItemPriceShimmer = () => {
       shimmerColors={shimmerColors}
       LinearGradient={LinearGradient}
       shimmerStyle={styles.itemPrice}
+    />
+  );
+};
+
+export const renderPackageItemPriceShimmer = () => {
+  return (
+    <ShimmerPlaceHolder
+      shimmerColors={shimmerColors}
+      LinearGradient={LinearGradient}
+      shimmerStyle={styles.itemPackagePrice}
     />
   );
 };
