@@ -7571,6 +7571,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setShowReschedulePopup(true);
             setShowRescheduleCancel(false);
           }}
+          allowBookingRequest={appointmentData?.doctorInfo?.allowBookingRequest}
           closeModal={() => setShowRescheduleCancel(false)}
           appointmentDiffMin={appointmentDiffMin}
           appointmentDateTime={appointmentData?.appointmentDateTime}
