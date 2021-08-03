@@ -5173,6 +5173,7 @@ export const GET_PATIENT_PAST_CONSULTED_DOCTORS = gql`
       specialty {
         name
       }
+      allowBookingRequest
       consultDetails {
         consultDateTime
         displayId
