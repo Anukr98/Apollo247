@@ -7568,10 +7568,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               currentPatient,
               secretaryData
             );
-            setShowReschedulePopup(true);
+            appointmentData?.doctorInfo?.allowBookingRequest
+              ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
+                  doctorId: doctorId,
+                  cleverTapAppointmentAttributes: {
+                    source: 'Appointment CTA',
+                    appointmentCTA: 'Inside consult room',
+                  },
+                })
+              : setShowReschedulePopup(true);
             setShowRescheduleCancel(false);
           }}
-          allowBookingRequest={appointmentData?.doctorInfo?.allowBookingRequest}
           closeModal={() => setShowRescheduleCancel(false)}
           appointmentDiffMin={appointmentDiffMin}
           appointmentDateTime={appointmentData?.appointmentDateTime}
