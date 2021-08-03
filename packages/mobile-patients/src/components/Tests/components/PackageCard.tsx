@@ -36,6 +36,7 @@ import {
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { renderPackageItemPriceShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 const screenWidth = Dimensions.get('window').width;
 const CARD_WIDTH = screenWidth * 0.8; //0.86
 
@@ -52,6 +53,9 @@ export interface PackageCardProps {
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
   source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
   sourceScreen: string;
+  onEndReached?: any;
+  diagnosticWidgetData?: any;
+  isPriceAvailable?: boolean;
 }
 
 const PackageCard: React.FC<PackageCardProps> = (props) => {
@@ -66,21 +70,23 @@ const PackageCard: React.FC<PackageCardProps> = (props) => {
     removeMultiPatientCartItems,
   } = useDiagnosticsCart();
 
-  const { data, isCircleSubscribed, source, navigation, sourceScreen } = props;
+  const {
+    data,
+    isCircleSubscribed,
+    source,
+    navigation,
+    sourceScreen,
+    diagnosticWidgetData,
+  } = props;
 
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
-  const actualItemsToShow =
-    data?.diagnosticWidgetData?.length > 0 &&
-    data?.diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
+  let actualItemsToShow = diagnosticWidgetData?.length > 0 && diagnosticWidgetData;
 
   const renderItemCard = useCallback(
     (item: any) => {
       const getItem = item?.item;
       const getDiagnosticPricingForItem = getItem?.diagnosticPricing;
 
-      if (getDiagnosticPricingForItem == undefined || getDiagnosticPricingForItem == null) {
-        return null;
-      }
       const packageMrpForItem = getItem?.packageCalculatedMrp!;
       const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
 
@@ -191,7 +197,7 @@ const PackageCard: React.FC<PackageCardProps> = (props) => {
     const promoteCircle = pricesForItem?.promoteCircle;
     const promoteDiscount = pricesForItem?.promoteDiscount;
 
-    return (
+    return pricesForItem || packageMrpForItem ? (
       <View>
         {promoteCircle || promoteDiscount ? (
           renderAnyDiscountView(pricesForItem, packageMrpForItem)
@@ -200,6 +206,8 @@ const PackageCard: React.FC<PackageCardProps> = (props) => {
         )}
         {renderMainPriceView(pricesForItem, packageMrpForItem, getItem)}
       </View>
+    ) : (
+      renderPackageItemPriceShimmer()
     );
   };
 
@@ -303,9 +311,13 @@ const PackageCard: React.FC<PackageCardProps> = (props) => {
     //2. non-circle + circle -> no slashing
     return (
       <View style={{ flexDirection: 'row', marginVertical: '2%' }}>
-        <Text style={styles.mainPriceText}>
-          {string.common.Rs} {convertNumberToDecimal(priceToShow)}
-        </Text>
+        {priceToShow ? (
+          <Text style={styles.mainPriceText}>
+            {string.common.Rs} {convertNumberToDecimal(priceToShow)}
+          </Text>
+        ) : (
+          renderPackageItemPriceShimmer()
+        )}
         {/**slashed price */}
         {(!isCircleSubscribed && promoteCircle && priceToShow == slashedPrice) ||
         priceToShow == slashedPrice ? null : (
@@ -495,7 +507,13 @@ const PackageCard: React.FC<PackageCardProps> = (props) => {
   );
 
   const keyExtractor = useCallback((item: any, index: number) => `${index}`, []);
-
+  if (props.isPriceAvailable) {
+    actualItemsToShow =
+      source === 'Cart page'
+        ? data?.length > 0 && data?.filter((item: any) => item?.diagnosticPricing)
+        : diagnosticWidgetData?.length > 0 &&
+          diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
+  }
   return (
     <>
       <View style={props.isVertical ? { alignSelf: 'center', marginLeft: '1.5%' } : {}}>
@@ -509,6 +527,8 @@ const PackageCard: React.FC<PackageCardProps> = (props) => {
             horizontal={!props.isVertical}
             data={actualItemsToShow}
             renderItem={renderItemCard}
+            onEndReached={props.onEndReached}
+            onEndReachedThreshold={0.1}
             initialNumToRender={2}
             maxToRenderPerBatch={5}
             getItemLayout={getItemLayout}
