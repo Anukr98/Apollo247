@@ -1036,8 +1036,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             activeOpacity={1}
             onPress={() => {
               setAppoinmentItem(item);
-              console.log('onclick 1', JSON.stringify(item));
-
               item?.doctorInfo?.allowBookingRequest
                 ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
                     doctorId: item?.doctorId || item?.doctorInfo?.id,
@@ -1193,7 +1191,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             activeOpacity={1}
             onPress={() => {
               setAppoinmentItem(item);
-              console.log('onclick 2', JSON.stringify(item));
 
               item?.doctorInfo?.allowBookingRequest
                 ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
