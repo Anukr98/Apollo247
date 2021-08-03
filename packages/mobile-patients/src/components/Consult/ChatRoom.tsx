@@ -262,7 +262,7 @@ let joinTimerId: any;
 let diffInHours: number;
 let rescheduleInitiatedBy: string;
 let callhandelBack: boolean = true;
-// let jdCount: any = 1;          // For now jd is assigned from backend 
+// let jdCount: any = 1;          // For now jd is assigned from backend
 let isJdAllowed: boolean = true;
 let abondmentStarted = false;
 let jdAssigned: boolean = false;
@@ -1451,8 +1451,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, [currentPatientWithHistory, displayChatQuestions]);
 
   useEffect(() => {
-    if (!disableChat && status.current !== STATUS.COMPLETED &&
-       isInFuture && !fromIncomingCall) {
+    if (!disableChat && status.current !== STATUS.COMPLETED && isInFuture && !fromIncomingCall) {
       callPermissions();
     }
   }, []);
@@ -5309,7 +5308,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       callRelatedCodes.includes(rowData?.message) ||
       (!automatedCodesToRender.includes(rowData?.message) && rowData?.message?.startsWith('^^#')) ||
       (rowData?.automatedText === consultPatientStartedMsg && rowData?.message == 'welcome') ||
-      (rowData?.automatedText === jdAutoAssign)
+      rowData?.automatedText === jdAutoAssign
     ) {
       return null;
     }

@@ -1039,13 +1039,23 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             activeOpacity={1}
             onPress={() => {
               setAppoinmentItem(item);
-              props.navigation.navigate(AppRoutes.DoctorDetails, {
-                doctorId: item?.doctorId || item?.doctorInfo?.id,
-                cleverTapAppointmentAttributes: {
-                  source: 'Appointment CTA',
-                  appointmentCTA: cancelConsulations ? 'Cancelled' : 'Past',
-                },
-              });
+              console.log('onclick 1', JSON.stringify(item));
+
+              item?.doctorInfo?.allowBookingRequest
+                ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
+                    doctorId: item?.doctorId || item?.doctorInfo?.id,
+                    cleverTapAppointmentAttributes: {
+                      source: 'Appointment CTA',
+                      appointmentCTA: cancelConsulations ? 'Cancelled' : 'Past',
+                    },
+                  })
+                : props.navigation.navigate(AppRoutes.DoctorDetails, {
+                    doctorId: item?.doctorId || item?.doctorInfo?.id,
+                    cleverTapAppointmentAttributes: {
+                      source: 'Appointment CTA',
+                      appointmentCTA: cancelConsulations ? 'Cancelled' : 'Past',
+                    },
+                  });
               fireWebengageEvent(item, cancelConsulations ? 'cancel' : 'followup');
             }}
           >
@@ -1186,13 +1196,23 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             activeOpacity={1}
             onPress={() => {
               setAppoinmentItem(item);
-              props.navigation.navigate(AppRoutes.DoctorDetails, {
-                doctorId: item?.doctorId || item?.doctorInfo?.id,
-                cleverTapAppointmentAttributes: {
-                  source: 'Appointment CTA',
-                  appointmentCTA: 'Active',
-                },
-              });
+              console.log('onclick 2', JSON.stringify(item));
+
+              item?.doctorInfo?.allowBookingRequest
+                ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
+                    doctorId: item?.doctorId || item?.doctorInfo?.id,
+                    cleverTapAppointmentAttributes: {
+                      source: 'Appointment CTA',
+                      appointmentCTA: 'Active',
+                    },
+                  })
+                : props.navigation.navigate(AppRoutes.DoctorDetails, {
+                    doctorId: item?.doctorId || item?.doctorInfo?.id,
+                    cleverTapAppointmentAttributes: {
+                      source: 'Appointment CTA',
+                      appointmentCTA: 'Active',
+                    },
+                  });
             }}
           >
             <Text
