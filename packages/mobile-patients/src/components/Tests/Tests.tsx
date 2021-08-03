@@ -1312,6 +1312,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderPackageWidget = (data: any) => {
+  let listShowLength = 10
     const isPricesAvailable =
       !!data &&
       data?.diagnosticWidgetData?.length > 0 &&
@@ -1361,6 +1362,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
             ) : (
               <PackageCard
                 data={data}
+                diagnosticWidgetData={data?.diagnosticWidgetData?.slice(
+                  0,
+                  data?.diagnosticWidgetData?.length >= listShowLength
+                    ? listShowLength
+                    : data?.diagnosticWidgetData?.length
+                )}
                 isCircleSubscribed={isDiagnosticCircleSubscription}
                 isServiceable={isDiagnosticLocationServiceable}
                 isVertical={false}
@@ -1428,6 +1435,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             ) : (
               <ItemCard
                 data={data}
+                diagnosticWidgetData={data?.diagnosticWidgetData}
                 isCircleSubscribed={isDiagnosticCircleSubscription}
                 isServiceable={isDiagnosticLocationServiceable}
                 isVertical={false}
