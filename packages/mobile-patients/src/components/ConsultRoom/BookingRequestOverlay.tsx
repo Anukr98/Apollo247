@@ -308,7 +308,6 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
         requestDetail: requestDetail,
       },
     };
-    console.log('csk form data', '\n\n', formdata, '\n');
 
     client
       .mutate<appointmentBookingRequest, appointmentBookingRequestVariables>({
@@ -327,8 +326,6 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
-        console.log('csk appointment mutation result', JSON.stringify(data));
-
         if (
           data?.appointmentBookingRequest?.appointment?.id.length > 3 &&
           data?.appointmentBookingRequest?.appointment.status === 'REQUESTED'
@@ -337,17 +334,12 @@ export const BookingRequestOverlay: React.FC<BookingRequestOverlayProps> = (prop
           props.setdisplayoverlay && props.setdisplayoverlay(false, '', false);
           props.onRequestComplete && props.onRequestComplete(true);
         } else {
-          console.log(
-            'csk appointment mutation result',
-            data?.appointmentBookingRequest?.appointment.status
-          );
           setshowSpinner(false);
           props.setdisplayoverlay && props.setdisplayoverlay(true, '', false);
           props.onRequestComplete && props.onRequestComplete(true);
         }
       })
       .catch((e: any) => {
-        console.log('csk form error', JSON.stringify(e));
         setshowSpinner!(false);
         props.setdisplayoverlay &&
           props.setdisplayoverlay(true, 'GraphQL Query Failed. Please try after sometime', false);
