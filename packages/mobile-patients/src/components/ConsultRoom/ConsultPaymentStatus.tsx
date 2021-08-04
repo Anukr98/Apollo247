@@ -8,6 +8,8 @@ import {
   CircleLogo,
   LocationOn,
   Remove,
+  PdfGray,
+  EmailGray,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -556,7 +558,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     let textColor = theme.colors.PENDING_TEXT;
     if (status === success) {
       message = ' PAYMENT SUCCESSFUL';
-      textColor = theme.colors.SUCCESS_TEXT;
+      textColor = theme.colors.CONSULT_SUCCESS_TEXT;
     } else if (status === failure) {
       message = ' PAYMENT FAILED';
       textColor = theme.colors.FAILURE_TEXT;
@@ -564,14 +566,27 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     return textComponent(message, undefined, textColor, false);
   };
 
+  const priceText = () => {
+    const priceText = `${string.common.Rs} ` + String(price);
+    let textColor = theme.colors.PENDING_TEXT;
+    if (status === success) {
+      textColor = theme.colors.CONSULT_SUCCESS_TEXT;
+    } else if (status === failure) {
+      textColor = theme.colors.FAILURE_TEXT;
+    }
+    return textComponent(priceText, undefined, textColor, false);
+  };
+
   const renderViewInvoice = () => {
     if (status === success) {
       return (
         <View style={styles.viewInvoice}>
-          <TouchableOpacity onPress={() => requestStoragePermission()}>
+          <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}} onPress={() => requestStoragePermission()}>
+            <PdfGray style={{width: 16, height: 10, marginEnd: 4}} />
             {textComponent('VIEW INVOICE', undefined, theme.colors.APP_YELLOW, false)}
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setshowEmailInput(!showEmailInput)}>
+          <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center', marginStart: 20}} onPress={() => setshowEmailInput(!showEmailInput)}>
+            <EmailGray style={{width: 17, height: 13, marginEnd: 4}} />
             {textComponent(
               'EMAIL INVOICE',
               undefined,
@@ -721,29 +736,30 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const renderStatusCard = () => {
     const refNumberText = String(paymentId != '' && paymentId != null ? paymentId : '--');
     const orderIdText = 'Order ID: ' + String(displayId);
-    const priceText = `${string.common.Rs} ` + String(price);
     return (
-      <View style={[styles.statusCardStyle, { backgroundColor: statusCardColour() }]}>
-        <View style={styles.statusCardSubContainerStyle}>{statusIcon()}</View>
-        <View style={{ alignItems: 'center' }}>{statusText()}</View>
-        <View style={styles.priceCont}>
-          {textComponent(priceText, undefined, theme.colors.SHADE_GREY, false)}
-        </View>
-        <View style={styles.priceCont}>
-          {textComponent(orderIdText, undefined, theme.colors.SHADE_GREY, false)}
-        </View>
-        <View>
-          <View style={styles.paymentRef}>
-            {textComponent('Payment Ref. Number - ', undefined, theme.colors.SHADE_GREY, false)}
-            <TouchableOpacity
-              style={styles.refStyles}
-              onPress={() => copyToClipboard(refNumberText)}
-            >
-              {textComponent(refNumberText, undefined, theme.colors.SHADE_GREY, false)}
-              <Copy style={styles.iconStyle} />
-            </TouchableOpacity>
+      <View style={styles.statusCardStyle}>
+        <View style={styles.statusCardSubContainerStyle}>
+          {statusIcon()}
+          <View style={{paddingStart: 18}}>
+            {statusText()}
+            {priceText()}
           </View>
-          <View style={{}}>{renderViewInvoice()}</View>
+        </View>
+        <View style={styles.orderIdStyles}>
+          <Text style={theme.viewStyles.text('R', 10, theme.colors.SLATE_GRAY, 1, 20)}>
+            {orderIdText}
+          </Text>
+        </View>
+        <TouchableOpacity
+          style={styles.refStyles}
+          onPress={() => copyToClipboard(refNumberText)}>
+          <Text style={theme.viewStyles.text('R', 10, theme.colors.SLATE_GRAY, 1, 20)}>
+            {'Payment Ref. Number - ' + refNumberText}
+          </Text>
+          <Copy style={styles.iconStyle} />
+        </TouchableOpacity>
+        <View>
+          {renderViewInvoice()} 
           {renderEmailInputContainer()}
           <Snackbar
             style={{ position: 'absolute', zIndex: 1001, bottom: -10 }}
@@ -756,56 +772,17 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             Copied
           </Snackbar>
         </View>
-      </View>
-    );
-  };
-
-  const appointmentHeader = () => {
-    return (
-      <View style={styles.appointmentHeaderStyle}>
-        {textComponent('BOOKING DETAILS', undefined, theme.colors.ASTRONAUT_BLUE, false)}
-      </View>
-    );
-  };
-
-  const appointmentCard = () => {
-    return (
-      <View style={styles.appointmentCardStyle}>
-        <View style={{ marginVertical: 20 }}>
-          <View style={{ justifyContent: 'center' }}>
-            {textComponent(
-              'Date & Time of Appointment',
-              undefined,
-              theme.colors.ASTRONAUT_BLUE,
-              false
-            )}
-          </View>
-          <View style={{ justifyContent: 'flex-start', marginTop: 5 }}>
-            {textComponent(
-              getDate(appointmentDateTime),
-              undefined,
-              theme.colors.SHADE_CYAN_BLUE,
-              false
-            )}
-          </View>
-        </View>
-        <View style={{ flexDirection: 'row', marginBottom: 20 }}>
-          <View style={{ flex: 0.5 }}>
-            <View style={{ justifyContent: 'center' }}>
-              {textComponent('Doctor Name', undefined, theme.colors.ASTRONAUT_BLUE, false)}
-            </View>
-            <View style={{ justifyContent: 'flex-start', marginTop: 5 }}>
-              {textComponent(doctorName, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
-            </View>
-          </View>
-          <View style={{ flex: 0.5, marginLeft: 10 }}>
-            <View style={{ justifyContent: 'center' }}>
-              {textComponent('Mode of Consult', undefined, theme.colors.ASTRONAUT_BLUE, false)}
-            </View>
-            <View style={{ justifyContent: 'flex-start', marginTop: 5 }}>
-              {textComponent(appointmentType, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
-            </View>
-          </View>
+        <View style={{height: 1, flex: 1, backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR}} />
+        <View style={{marginTop: 8, marginStart: 12}}>
+          <Text style={theme.viewStyles.text('M', 12, theme.colors.BLACK_COLOR, 1, 20)}>
+            Appointment Details
+          </Text>
+          <Text style={theme.viewStyles.text('M', 12, theme.colors.CONSULT_SUCCESS_TEXT, 1, 20)}>
+            {appointmentType + ' Consultation,' + getDate(appointmentDateTime)}
+          </Text>
+          <Text style={theme.viewStyles.text('M', 12, theme.colors.BLACK_COLOR, 1, 20)}>
+            {doctorName}
+          </Text>
         </View>
       </View>
     );
@@ -1164,8 +1141,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       <View style={styles.savedLocationView}>
         <Text style={styles.currentLocationTitle}>Your current location</Text>
         <View style={styles.line} />
-
-        <View style={styles.spaceRow}>
+        <View style={[styles.spaceRow, {paddingHorizontal: 12}]}>
           <View style={styles.rowCenter}>
             <LocationOn />
             <Text style={styles.savedLocationText}>
@@ -1200,10 +1176,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
               {circleSavings > 0 && !circleSubscriptionId
                 ? renderAddedCirclePlanWithValidity()
                 : null}
-              {circleSavings > 0 && !!circleSubscriptionId ? renderCircleSavingsOnPurchase() : null}
               {locationDetails && renderSavedLocation()}
-              {appointmentHeader()}
-              {appointmentCard()}
+              {circleSavings > 0 && !!circleSubscriptionId ? renderCircleSavingsOnPurchase() : null}
               {renderNote()}
             </ScrollView>
             {renderButton()}
@@ -1253,10 +1227,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 8,
     elevation: 8,
+    backgroundColor: theme.colors.WHITE
   },
   statusCardSubContainerStyle: {
-    marginVertical: 18,
-    justifyContent: 'center',
+    margin: 12,
+    flexDirection: 'row',
     alignItems: 'center',
   },
   appointmentCardStyle: {
@@ -1296,6 +1271,7 @@ const styles = StyleSheet.create({
   },
   refStyles: {
     flexDirection: 'row',
+    marginStart: 12,
   },
   iconStyle: {
     marginLeft: 6,
@@ -1323,23 +1299,21 @@ const styles = StyleSheet.create({
   },
   viewInvoice: {
     marginTop: 10,
-    marginBottom: 10,
-    paddingHorizontal: 40,
+    marginBottom: 14,
+    paddingHorizontal: 12,
     flexDirection: 'row',
-    justifyContent: 'space-between',
   },
   rightIcon: {
     flex: 0.15,
     alignItems: 'flex-end',
   },
   sentMsg: {
-    color: 'rgba(74, 165, 74, 0.6)',
+    color: theme.colors.CONSULT_SUCCESS_TEXT,
     marginVertical: 4,
     ...theme.fonts.IBMPlexSansMedium(11),
   },
-  priceCont: {
-    alignItems: 'center',
-    marginTop: 4,
+  orderIdStyles: {
+    marginStart: 12,
   },
   paymentRef: {
     justifyContent: 'flex-start',
@@ -1369,21 +1343,24 @@ const styles = StyleSheet.create({
   savedLocationView: {
     marginHorizontal: 0.06 * windowWidth,
     marginBottom: 20,
-    paddingBottom: 4,
+    paddingBottom: 10,
+    backgroundColor: theme.colors.WHITE,
+    borderRadius: 10,
   },
   line: {
     width: '100%',
     height: 0.8,
     backgroundColor: '#ddd',
-    marginTop: 6,
   },
   currentLocationTitle: {
     ...theme.viewStyles.text('SB', 12, theme.colors.LIGHT_BLUE),
+    paddingVertical: 10,
+    paddingHorizontal: 14,
   },
   savedLocationText: {
     marginLeft: 6,
     ...theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE),
-    width: windowWidth - 210,
+    width: windowWidth - 230,
   },
   changeLocationBtnTxt: {
     ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW),

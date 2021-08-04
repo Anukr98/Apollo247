@@ -121,6 +121,8 @@ const Common = {
   INTERMITTENT_STATUS_BGK: '#FFF0B3',
   ICE_BERG: '#DFF4F4',
   GRAYED: '#CBCBCB',
+  CONSULT_SUCCESS_TEXT: '#00B38E',
+  SLATE_GRAY: '#68919D',
 };
 
 const Header = {

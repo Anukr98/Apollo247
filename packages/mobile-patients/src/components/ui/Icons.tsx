@@ -2028,3 +2028,17 @@ export const DoctorLanguage: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/language.webp')}
   />
 );
+
+export const PdfGray: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/pdf-gray.webp')}
+  />
+);
+
+export const EmailGray: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/email-gray.webp')}
+  />
+);
