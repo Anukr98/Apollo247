@@ -5931,17 +5931,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           onPress={() => {
             console.log('csk book app', JSON.stringify(appointmentData));
             fireWebengageEvent(appointmentData);
-            props.navigation.navigate(AppRoutes.DoctorDetails, {
-              doctorId: doctorId,
-              cleverTapAppointmentAttributes: {
-                source: 'Appointment CTA',
-                appointmentCTA: 'Inside consult room',
-              },
-            });
+            appointmentData?.doctorInfo?.allowBookingRequest
+              ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
+                  doctorId: doctorId,
+                  cleverTapAppointmentAttributes: {
+                    source: 'Appointment CTA',
+                    appointmentCTA: 'Inside consult room',
+                  },
+                })
+              : props.navigation.navigate(AppRoutes.DoctorDetails, {
+                  doctorId: doctorId,
+                  cleverTapAppointmentAttributes: {
+                    source: 'Appointment CTA',
+                    appointmentCTA: 'Inside consult room',
+                  },
+                });
           }}
         >
           <Text style={theme.viewStyles.text('B', 13, theme.colors.APP_YELLOW)}>
-            {strings.common.book_apointment}
+            {appointmentData?.doctorInfo?.allowBookingRequest
+              ? 'REQUEST APPOINTMENT'
+              : strings.common.book_apointment}
           </Text>
         </TouchableOpacity>
       </View>
