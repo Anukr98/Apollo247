@@ -82,7 +82,6 @@ import {
   handleGraphQlError,
   isEmptyObject,
   postCleverTapEvent,
-  postCleverTapPHR,
   postWebEngageEvent,
   reOrderMedicines,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -482,7 +481,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         'Mobile Number': g(currentPatient, 'mobileNumber'),
         'Customer ID': g(currentPatient, 'id'),
       };
-      postCleverTapPHR(CleverTapEventName.PHARMACY_RE_ORDER_MEDICINE, cleverTapEventAttributes);
+      postCleverTapEvent(CleverTapEventName.PHARMACY_RE_ORDER_MEDICINE, cleverTapEventAttributes);
       postWebEngageEvent(WebEngageEventName.RE_ORDER_MEDICINE, eventAttributes);
       items.length && addMultipleCartItems!(items);
       items.length && prescriptions.length && addMultipleEPrescriptions!(prescriptions);
