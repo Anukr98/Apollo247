@@ -38,6 +38,7 @@ import {
   validateCoupon,
   getPackageIds,
   getCheckoutCompletedEventAttributes,
+  getCleverTapCheckoutCompletedEventAttributes,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   availabilityApi247,
@@ -177,8 +178,9 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     try {
       const merchantId = AppConfig.Configuration.pharmaMerchantId;
       terminateSDK();
-      setTimeout(() => createHyperServiceObject(), 1400);
-      setTimeout(() => (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true)), 1500);
+      createHyperServiceObject();
+      initiateSDK(cusId, cusId, merchantId);
+      setHyperSdkInitialized(true);
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
@@ -505,6 +507,12 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
             shoppingCart,
             paymentId,
             pharmacyUserTypeAttribute
+          ),
+          cleverTapCheckoutEventAttributes: getCleverTapCheckoutCompletedEventAttributes(
+            shoppingCart,
+            paymentId,
+            pharmacyUserTypeAttribute,
+            orders
           ),
         });
       }

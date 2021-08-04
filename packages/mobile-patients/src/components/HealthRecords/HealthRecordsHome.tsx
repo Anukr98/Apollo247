@@ -454,6 +454,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const _searchInputRef = useRef(null);
   const [healthRecordSearchResults, setHealthRecordSearchResults] = useState<any>([]);
   const [prismAuthToken, setPrismAuthToken] = useState<string>('');
+  const loadRecordsEvent = useRef<boolean>(true);
   const [errorPopupText, setErrorPopupText] = useState<string>(
     string.common.error_enter_number_text
   );
@@ -653,7 +654,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           'healthChecks',
           'response'
         );
-        tabsClickedCleverTapEvent(CleverTapEventName.PHR_LOAD_HEALTH_RECORDS);
+        loadRecordsEvent.current &&
+          tabsClickedCleverTapEvent(CleverTapEventName.PHR_LOAD_HEALTH_RECORDS);
+        loadRecordsEvent.current = false;
         setLabResults(labResultsData);
         setPrescriptions(prescriptionsData);
         setHealthChecksNew(healthChecksData);
@@ -737,6 +740,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       setCallApi(true);
       setCallPrescriptionApi(false);
       setCallTestReportApi(false);
+      loadRecordsEvent.current = true;
       setPhrNotificationData && setPhrNotificationData(null);
     });
     return () => {

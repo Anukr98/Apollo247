@@ -30,5 +30,5 @@ export interface pharmaPaymentStatusV2 {
 }
 
 export interface pharmaPaymentStatusV2Variables {
-  transactionId: number;
+  paymentOrderId?: string | null;
 }

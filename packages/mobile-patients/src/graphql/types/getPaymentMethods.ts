@@ -30,4 +30,5 @@ export interface getPaymentMethods {
 
 export interface getPaymentMethodsVariables {
   is_mobile?: boolean | null;
+  payment_order_id?: string | null;
 }
