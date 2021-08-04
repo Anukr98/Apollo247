@@ -309,6 +309,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       postAppsFlyerEvent(AppsFlyerEventName.USER_LOGGED_OUT, {});
       postFirebaseEvent(FirebaseEventName.USER_LOGGED_OUT, {});
       AsyncStorage.setItem('userLoggedIn', 'false');
+      AsyncStorage.setItem('createCleverTapProifle', 'false');
       AsyncStorage.setItem('multiSignUp', 'false');
       AsyncStorage.setItem('signUp', 'false');
       AsyncStorage.setItem('selectUserId', '');

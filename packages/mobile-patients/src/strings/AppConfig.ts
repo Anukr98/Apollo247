@@ -234,7 +234,7 @@ const appStaticVariables = {
   Vaccination_Cities_List: ['Delhi', 'Mumbai'],
   Vaccine_Type: ['Covaxin', 'Covishield'],
   Cancel_Threshold_Pre_Vaccination: 12, //hrs
-  Enable_Diagnostics_COD: false,
+  Enable_Diagnostics_COD: true,
   Enable_Diagnostics_Cancellation_Policy: false,
   Diagnostics_Cancel_Policy_Text_Msg:
     'For a full refund, you must cancel at least 6 hours before the appointment time. Cancellations made within 6 hours of appointment time will incur a fee of up to ₹ 200.',

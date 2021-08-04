@@ -1,6 +1,10 @@
 import { Platform } from 'react-native';
 import {
+  CircleEventSource,
   g,
+  getCircleNoSubscriptionText,
+  getUserType,
+  postCleverTapEvent,
   postWebEngageEvent,
   setCircleMembershipType,
   postAppsFlyerEvent,
@@ -16,6 +20,10 @@ import {
   AppsFlyerEventName,
   CircleNavigationSource,
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import {
+  CleverTapEventName,
+  CleverTapEvents,
+} from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 
 export const postCircleWEGEvent = (
   currentPatient: any,
@@ -97,4 +105,32 @@ export const postAppsFlyerCircleAddRemoveCartEvent = (
   } else {
     postAppsFlyerEvent(AppsFlyerEventName.CIRCLE_REMOVE_FROM_CART, eventAttributes);
   }
+};
+
+export const fireCirclePaymentPageViewedEvent = (
+  circleData: any,
+  circleEventSource: CircleEventSource,
+  allCurrentPatients: any,
+  currentPatient: any
+) => {
+  const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE] = {
+    navigation_source: circleEventSource,
+    circle_end_date: getCircleNoSubscriptionText(),
+    circle_start_date: getCircleNoSubscriptionText(),
+    circle_planid: circleData?.subPlanId,
+    customer_id: currentPatient?.id,
+    duration_in_month: circleData?.durationInMonth,
+    user_type: getUserType(allCurrentPatients),
+    price: circleData?.currentSellingPrice,
+  };
+  postCleverTapEvent(CleverTapEventName.CIRCLE_PLAN_TO_CART, cleverTapEventAttributes);
+  postAppsFlyerCircleAddRemoveCartEvent(circleData, circleEventSource, 'add', currentPatient);
+  setTimeout(
+    () =>
+      postCleverTapEvent(
+        CleverTapEventName.CIRCLE_PAYMENT_PAGE_VIEWED_STANDALONE_CIRCLE_PURCHASE_PAGE,
+        cleverTapEventAttributes
+      ),
+    1000
+  );
 };

@@ -7632,6 +7632,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <CheckReschedulePopup
           data={appointmentData}
           navigation={props.navigation}
+          secretaryData={secretaryData}
           closeModal={() => setShowReschedulePopup(false)}
           cancelSuccessCallback={() => {
             postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER);
@@ -7878,6 +7879,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 : transferData.id
               : appointmentData.id
           }
+          secretaryData={secretaryData}
           data={transferData ? transferData : appointmentData}
           bookFollowUp={false}
           KeyFollow={'RESCHEDULE'}

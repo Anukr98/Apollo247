@@ -51,6 +51,7 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
   notes: string | null;
   blobName: string | null;
   consultType: string | null;
+  prescriptionGeneratedDate: any | null;
   diagnosis: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_diagnosis | null)[] | null;
   diagnosticPrescription: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_diagnosticPrescription | null)[] | null;
   doctorId: string | null;

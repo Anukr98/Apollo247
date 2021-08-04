@@ -13,6 +13,7 @@ export interface saveMedicineOrderV2_saveMedicineOrderV2_orders {
   __typename: "MedicineOrderIds";
   id: string;
   orderAutoId: number | null;
+  estimatedAmount: number | null;
 }
 
 export interface saveMedicineOrderV2_saveMedicineOrderV2 {

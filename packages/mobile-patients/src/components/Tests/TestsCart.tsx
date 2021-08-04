@@ -356,8 +356,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     try {
       const merchantId = AppConfig.Configuration.merchantId;
       terminateSDK();
-      setTimeout(() => createHyperServiceObject(), 1400);
-      setTimeout(() => (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true)), 1500);
+      createHyperServiceObject();
+      initiateSDK(cusId, cusId, merchantId);
+      setHyperSdkInitialized(true);
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }

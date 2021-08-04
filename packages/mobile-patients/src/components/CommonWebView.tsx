@@ -55,6 +55,7 @@ import {
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
 import { postAppsFlyerCircleAddRemoveCartEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
+import { fireCirclePaymentPageViewedEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 export interface CommonWebViewProps extends NavigationScreenProps {}
 
 export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
@@ -149,8 +150,9 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
     try {
       const merchantId = AppConfig.Configuration.merchantId;
       terminateSDK();
-      setTimeout(() => createHyperServiceObject(), 1400);
-      setTimeout(() => (initiateSDK(cusId, cusId, merchantId), setHyperSdkInitialized(true)), 1500);
+      createHyperServiceObject();
+      initiateSDK(cusId, cusId, merchantId);
+      setHyperSdkInitialized(true);
     } catch (error) {
       CommonBugFender('ErrorWhileInitiatingHyperSDK', error);
     }
@@ -218,6 +220,12 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
       };
       setLoading(false);
       if (data?.data?.createOrderInternal?.success) {
+        fireCirclePaymentPageViewedEvent(
+          selectedPlan,
+          circleEventSource,
+          allCurrentPatients,
+          currentPatient
+        );
         props.navigation.navigate(AppRoutes.PaymentMethods, {
           paymentId: data?.data?.createOrderInternal?.payment_order_id!,
           amount: Number(selectedPlan?.currentSellingPrice),
