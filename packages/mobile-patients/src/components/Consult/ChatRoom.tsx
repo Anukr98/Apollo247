@@ -5929,7 +5929,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         </Text>
         <TouchableOpacity
           onPress={() => {
-            console.log('csk book app', JSON.stringify(appointmentData));
             fireWebengageEvent(appointmentData);
             appointmentData?.doctorInfo?.allowBookingRequest
               ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
