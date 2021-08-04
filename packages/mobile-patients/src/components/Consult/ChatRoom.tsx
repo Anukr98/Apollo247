@@ -262,7 +262,7 @@ let joinTimerId: any;
 let diffInHours: number;
 let rescheduleInitiatedBy: string;
 let callhandelBack: boolean = true;
-// let jdCount: any = 1;          // For now jd is assigned from backend 
+// let jdCount: any = 1;          // For now jd is assigned from backend
 let isJdAllowed: boolean = true;
 let abondmentStarted = false;
 let jdAssigned: boolean = false;
@@ -1451,8 +1451,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, [currentPatientWithHistory, displayChatQuestions]);
 
   useEffect(() => {
-    if (!disableChat && status.current !== STATUS.COMPLETED &&
-       isInFuture && !fromIncomingCall) {
+    if (!disableChat && status.current !== STATUS.COMPLETED && isInFuture && !fromIncomingCall) {
       callPermissions();
     }
   }, []);
@@ -2236,7 +2235,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         mutation: CALL_CONNECTION_UPDATES,
         variables: { CheckCallConnectionInput: input },
       });
-      console.log(JSON.stringify(data));
     } catch (error) {
       CommonBugFender('ChatRoom_updateCallConnectionStatus', error);
       console.log(error, JSON.stringify(data));
@@ -5309,7 +5307,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       callRelatedCodes.includes(rowData?.message) ||
       (!automatedCodesToRender.includes(rowData?.message) && rowData?.message?.startsWith('^^#')) ||
       (rowData?.automatedText === consultPatientStartedMsg && rowData?.message == 'welcome') ||
-      (rowData?.automatedText === jdAutoAssign)
+      rowData?.automatedText === jdAutoAssign
     ) {
       return null;
     }
@@ -5931,6 +5929,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         </Text>
         <TouchableOpacity
           onPress={() => {
+            console.log('csk book app', JSON.stringify(appointmentData));
             fireWebengageEvent(appointmentData);
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: doctorId,
@@ -7569,7 +7568,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               currentPatient,
               secretaryData
             );
-            setShowReschedulePopup(true);
+            appointmentData?.doctorInfo?.allowBookingRequest
+              ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
+                  doctorId: doctorId,
+                  cleverTapAppointmentAttributes: {
+                    source: 'Appointment CTA',
+                    appointmentCTA: 'Inside consult room',
+                  },
+                })
+              : setShowReschedulePopup(true);
             setShowRescheduleCancel(false);
           }}
           closeModal={() => setShowRescheduleCancel(false)}
@@ -7595,7 +7602,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             );
             CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'RESCHEDULE_INSTEAD_Clicked');
             setShowCancelPopup(false);
-            setShowReschedulePopup(true);
+            appointmentData?.doctorInfo?.allowBookingRequest
+              ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
+                  doctorId: doctorId,
+                  cleverTapAppointmentAttributes: {
+                    source: 'Appointment CTA',
+                    appointmentCTA: 'Inside consult room',
+                  },
+                })
+              : setShowReschedulePopup(true);
           }}
           onPressCancel={() => {
             postAppointmentWEGEvents(WebEngageEventName.CANCEL_CONSULTATION_CLICKED);

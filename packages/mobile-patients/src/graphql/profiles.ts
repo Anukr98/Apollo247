@@ -227,6 +227,7 @@ export const GET_PATIENT_PAST_SEARCHES = gql`
       image
       specialty
       symptoms
+      allowBookingRequest
     }
   }
 `;
@@ -425,6 +426,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isAutomatedQuestionsComplete
         symptoms
         doctorInfo {
+          allowBookingRequest
           awards
           city
           country
@@ -593,6 +595,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isAutomatedQuestionsComplete
         symptoms
         doctorInfo {
+          allowBookingRequest
           awards
           city
           country
@@ -761,6 +764,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isAutomatedQuestionsComplete
         symptoms
         doctorInfo {
+          allowBookingRequest
           awards
           city
           country
@@ -929,6 +933,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isAutomatedQuestionsComplete
         symptoms
         doctorInfo {
+          allowBookingRequest
           awards
           city
           country
@@ -1112,6 +1117,7 @@ export const ADD_PRESCRIPTION_RECORD = gql`
     }
   }
 `;
+
 
 export const GET_DOCTOR_DETAILS_BY_ID = gql`
   query getDoctorDetailsById($id: String!) {
@@ -5172,6 +5178,7 @@ export const GET_PATIENT_PAST_CONSULTED_DOCTORS = gql`
       specialty {
         name
       }
+      allowBookingRequest
       consultDetails {
         consultDateTime
         displayId
@@ -5367,6 +5374,60 @@ export const VERIFY_CORPORATE_EMAIL_OTP_AND_SUBSCRIBE = gql`
 
 ///---BELOW is pointed to vaccine endpoint-------->>
 
+export const CANCEL_VACCINATION_APPOINTMENT = gql`
+  mutation CancelAppointment($appointment_id: String, $display_id: Float) {
+    CancelAppointment(appointment_id: $appointment_id, display_id: $display_id) {
+      code
+      success
+      message
+      response {
+        id
+        status
+      }
+    }
+  }`;
+
+
+export const GET_ALL_VACCINATION_APPOINTMENTS = gql`
+  query GetAllAppointments {
+    GetAllAppointments {
+      code
+      success
+      message
+      response {
+        id
+        dose_number
+        resource_id
+        patient_info {
+          firstName
+          lastName
+          age
+          gender
+          uhid
+          relation
+        }
+        status
+        payment_type
+        resource_session_details {
+          session_name
+          start_date_time
+          vaccine_type
+          resource_detail {
+            name
+            street_line1
+            street_line2
+            street_line3
+            city
+            state
+          }
+        }
+        display_id
+        payment_type
+      }
+    }
+  }
+`;
+
 export const GET_VACCINATION_SITES = gql`
   query getResourcesList($city: String!, $vaccine_type: VACCINE_TYPE, $is_retail: Boolean) {
     getResourcesList(city: $city, vaccine_type: $vaccine_type, is_retail: $is_retail) {
@@ -5521,59 +5582,25 @@ export const GET_VACCINATION_APPOINMENT_DETAILS = gql`
   }
 `;
 
-export const CANCEL_VACCINATION_APPOINTMENT = gql`
-  mutation CancelAppointment($appointment_id: String, $display_id: Float) {
-    CancelAppointment(appointment_id: $appointment_id, display_id: $display_id) {
-      code
-      success
-      message
-      response {
-        id
-        status
-      }
+export const MAKE_APPOINTMENT_BOOKING_REQUEST =gql`
+mutation appointmentBookingRequest(
+  $bookAppointment: AppointmentBookingRequestInput!
+) {
+  appointmentBookingRequest(appointmentInput: $bookAppointment) {
+    appointment {
+      id
+      doctorId
+      appointmentDateTime
+      status
+      appointmentType
+      patientId
+      __typename
     }
+    __typename
   }
+}
 `;
 
-export const GET_ALL_VACCINATION_APPOINTMENTS = gql`
-  query GetAllAppointments {
-    GetAllAppointments {
-      code
-      success
-      message
-      response {
-        id
-        dose_number
-        resource_id
-        patient_info {
-          firstName
-          lastName
-          age
-          gender
-          uhid
-          relation
-        }
-        status
-        payment_type
-        resource_session_details {
-          session_name
-          start_date_time
-          vaccine_type
-          resource_detail {
-            name
-            street_line1
-            street_line2
-            street_line3
-            city
-            state
-          }
-        }
-        display_id
-        payment_type
-      }
-    }
-  }
-`;
 
 export const FETCH_JUSPAY_CUSTOMERID = gql`
   mutation generateUniqueCustomerId {

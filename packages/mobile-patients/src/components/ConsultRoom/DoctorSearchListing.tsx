@@ -128,6 +128,8 @@ import {
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { DoctorShareComponent } from '@aph/mobile-patients/src/components/ConsultRoom/Components/DoctorShareComponent';
 import { SKIP_LOCATION_PROMPT } from '@aph/mobile-patients/src/utils/AsyncStorageKey';
+import { BookingRequestOverlay } from '@aph/mobile-patients/src/components/ConsultRoom/BookingRequestOverlay';
+import { BookingRequestSubmittedOverlay } from '../ui/BookingRequestSubmittedOverlay';
 import {
   consultUserLocationCleverTapEvents,
   userLocationConsultWEBEngage,
@@ -262,6 +264,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const scrollViewRef = React.useRef<ScrollView | null>(null);
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
+  const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
+  const [submittedDisplayOverlay, setSubmittedDisplayOverlay] = useState<boolean>(false);
   const [currentLocation, setcurrentLocation] = useState<string>('');
   const [locationSearchText, setLocationSearchText] = useState<string>('');
   const [showCarePlanNotification, setShowCarePlanNotification] = useState<boolean>(false);
@@ -309,6 +313,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [doctorShareData, setDoctorShareData] = useState<any>();
   const [showDoctorSharePopup, setShowDoctorSharePopup] = useState<boolean>(false);
   const [doctorShareRank, setDoctorShareRank] = useState<number>(1);
+  const [requestDoctorSelected, setRequestDoctorSelected] = useState<string>('');
+  const [requestDoctorSelectedDetails, setRequestDoctorSelectedDetails] = useState<any>({});
+  const [requestErrorMessage, setRequestErrorMessage] = useState<string>('');
+  const [requestError, setRequestError] = useState<boolean>(false);
   const [specialityId, setSpecialityId] = useState<string>(
     props.navigation.getParam('specialityId') || ''
   );
@@ -1413,13 +1421,24 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         numberOfLines={numberOfLines}
         availableModes={rowData.consultMode}
         callSaveSearch={callSaveSearch}
-        onPress={(id: string, onlineConsult: boolean) => {
+        onPressRequest={(arg: boolean) => {
+          setRequestDoctorSelected(rowData?.displayName);
+          setRequestDoctorSelectedDetails(rowData);
+          setdisplayoverlay(arg);
+        }}
+        onPress={() => {
           postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List');
-          props.navigation.navigate(AppRoutes.DoctorDetails, {
-            doctorId: rowData.id,
-            callSaveSearch: callSaveSearch,
-            consultModeSelected: onlineConsult ? ConsultMode.ONLINE : ConsultMode.PHYSICAL,
-          });
+          if (!rowData?.allowBookingRequest) {
+            props.navigation.navigate(AppRoutes.DoctorDetails, {
+              doctorId: rowData.id,
+              callSaveSearch: callSaveSearch,
+            });
+          } else {
+            props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
+              doctorId: rowData.id,
+              callSaveSearch: callSaveSearch,
+            });
+          }
         }}
         onPressShare={(doctorData) => onClickDoctorShare(doctorData, index + 1)}
         onPressConsultNowOrBookAppointment={(type) => {
@@ -2324,6 +2343,28 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         </ScrollView>
         {renderBottomOptions()}
       </SafeAreaView>
+      {displayoverlay && (
+        <BookingRequestOverlay
+          setdisplayoverlay={(arg0: boolean, arg1: string, arg2: boolean) => {
+            setRequestError(arg0);
+            setRequestErrorMessage(arg1);
+            setdisplayoverlay(arg2);
+          }}
+          onRequestComplete={(arg: boolean) => setSubmittedDisplayOverlay(arg)}
+          navigation={props.navigation}
+          doctor={requestDoctorSelectedDetails}
+          hospitalId={''}
+        />
+      )}
+      {submittedDisplayOverlay && (
+        <BookingRequestSubmittedOverlay
+          setdisplayoverlay={() => setSubmittedDisplayOverlay(false)}
+          navigation={props.navigation}
+          doctor={requestDoctorSelected}
+          error={requestError}
+          errorMessage={requestErrorMessage || 'Something went wrong! \nPlease try again'}
+        />
+      )}
       {displayFilter ? (
         <FilterScene
           onClickClose={() => {

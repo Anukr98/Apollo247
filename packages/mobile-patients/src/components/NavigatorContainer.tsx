@@ -12,6 +12,7 @@ import {
   tabBarOptions,
 } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultRoom';
 import { DoctorDetails } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorDetails';
+import { DoctorDetailsBookingOnRequest } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorDetailsBookingOnRequest';
 import { DoctorSearch } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearch';
 import { DoctorSearchListing } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearchListing';
 import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
@@ -175,6 +176,7 @@ export enum AppRoutes {
   Consult = 'Consult',
   FilterScene = 'FilterScene',
   DoctorDetails = 'DoctorDetails',
+  DoctorDetailsBookingOnRequest = 'DoctorDetailsBookingOnRequest',
   AssociateDoctorDetails = 'AssociateDoctorDetails',
   AppointmentDetails = 'AppointmentDetails',
   AppointmentDetailsPhysical = 'AppointmentDetailsPhysical',
@@ -385,6 +387,10 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.DoctorDetails]: {
     screen: DoctorDetails,
     path: 'DoctorDetailsPage',
+  },
+  [AppRoutes.DoctorDetailsBookingOnRequest]: {
+    screen: DoctorDetailsBookingOnRequest,
+    path: 'DoctorDetailsBookingOnRequestPage',
   },
   [AppRoutes.AssociateDoctorDetails]: {
     screen: DoctorDetails,

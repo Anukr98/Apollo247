@@ -120,13 +120,21 @@ export const ConsultedDoctorsCard: React.FC<ConsultedDoctorProps> = (props) => {
     item: getPatientPastConsultedDoctors_getPatientPastConsultedDoctors
   ) => {
     myConsultedDoctorsClickedWEBEngage(currentPatient, item, allCurrentPatients);
-    props.navigation.navigate(AppRoutes.DoctorDetails, {
-      doctorId: item?.id,
-      cleverTapAppointmentAttributes: {
-        source: 'My Doctors',
-        appointmentCTA: 'NA',
-      },
-    });
+    item?.allowBookingRequest
+      ? props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
+          doctorId: item?.id,
+          cleverTapAppointmentAttributes: {
+            source: 'My Doctors',
+            appointmentCTA: 'NA',
+          },
+        })
+      : props.navigation.navigate(AppRoutes.DoctorDetails, {
+          doctorId: item?.id,
+          cleverTapAppointmentAttributes: {
+            source: 'My Doctors',
+            appointmentCTA: 'NA',
+          },
+        });
   };
 
   return (

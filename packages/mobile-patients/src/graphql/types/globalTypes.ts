@@ -962,6 +962,18 @@ export interface AllergyFileProperties {
   content?: string | null;
 }
 
+export interface AppointmentBookingRequestInput {
+  patientId: string;
+  doctorId: string;
+  appointmentType: APPOINTMENT_TYPE;
+  hospitalId: string;
+  bookingSource?: BOOKINGSOURCE | null;
+  deviceType?: DEVICETYPE | null;
+  actualAmount?: number | null;
+  discountedAmount?: number | null;
+  requestDetail?: REQUEST_DETAIL | null;
+}
+
 export interface AppointmentHistoryInput {
   patientId: string;
   doctorId: string;
@@ -1135,6 +1147,36 @@ export interface DiagnosticLineItem {
   groupPlan?: string | null;
   preTestingRequirement?: string | null;
   reportGenerationTime?: string | null;
+}
+
+export interface DiagnosticOrderInput {
+  patientId: string;
+  patientAddressId: string;
+  city: string;
+  cityId: string;
+  state: string;
+  stateId: string;
+  slotTimings: string;
+  employeeSlotId?: any | null;
+  diagnosticEmployeeCode: string;
+  diagnosticBranchCode: string;
+  totalPrice: number;
+  prescriptionUrl: string;
+  diagnosticDate: any;
+  centerName: string;
+  centerCode: string;
+  centerCity: string;
+  centerState: string;
+  centerLocality: string;
+  bookingSource?: BOOKINGSOURCE | null;
+  deviceType?: DEVICETYPE | null;
+  paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
+  items?: (DiagnosticLineItem | null)[] | null;
+  slotId?: string | null;
+  areaId?: number | null;
+  totalPriceExcludingDiscounts?: number | null;
+  userSubscriptionId?: string | null;
+  subscriptionInclusionId?: string | null;
 }
 
 export interface DiagnosticTestsOrdered {
@@ -1658,6 +1700,10 @@ export interface ProcessDiagnosticHCOrderInput {
   statusDate?: any | null;
   paymentMode?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
   amount: number;
+}
+
+export interface REQUEST_DETAIL {
+  preferredDateText?: string | null;
 }
 
 export interface Range {
