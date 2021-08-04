@@ -201,12 +201,21 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       setError(true);
     }
   };
+  let h = [
+    { __typename: 'upcomingStatus', orderStatus: 'PICKUP_CONFIRMED' },
+    { __typename: 'upcomingStatus', orderStatus: 'PHLEBO_CHECK_IN' },
+    { __typename: 'upcomingStatus', orderStatus: 'PHLEBO_COMPLETED' },
+    { __typename: 'upcomingStatus', orderStatus: 'SAMPLE_SUBMITTED' },
+    { __typename: 'upcomingStatus', orderStatus: 'PARTIAL_ORDER_COMPLETED' },
+    { __typename: 'upcomingStatus', orderStatus: 'ORDER_COMPLETED' },
+  ];
 
   async function callOrderLevelStatusApi(orderId: string) {
     try {
       let response = await fetchOrderLevelStatus(orderId);
       if (!!response && response?.data && !response?.errors) {
         let getOrderLevelStatus = g(response, 'data', 'getHCOrderFormattedTrackingHistory');
+        console.log(`getOrderLevelStatus`, getOrderLevelStatus?.upcomingStatuses)
         setOrderLevelStatus(getOrderLevelStatus);
         getOrderLevelStatus?.statusHistory?.length == 0 && setError(true);
         setError(false);
@@ -215,6 +224,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         setError(true);
       }
     } catch (error) {
+      console.log('object :>> ', error);
       setOrderLevelStatus([]);
       setError(true);
       CommonBugFender('getHCOrderFormattedTrackingHistory_TestOrderDetails', error);
@@ -458,14 +468,28 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const renderOrderTracking = () => {
-    newList = newList =
-      refundStatusArr?.length > 0 ? orderStatusList : orderLevelStatus?.statusHistory;
+    const upcomingStatuses 
+    // newList = newList =
+    //   refundStatusArr?.length > 0
+    //     ? orderStatusList
+    //     : orderLevelStatus?.statusHistory;
+
+        newList = newList =
+      refundStatusArr?.length > 0
+        ? orderStatusList
+        : orderLevelStatus?.upcomingStatuses?.length > 0
+        ? orderLevelStatus?.statusHistory.concat(orderLevelStatus?.upcomingStatuses)
+        : orderLevelStatus?.statusHistory;
+      console.log('newList :>> ', newList);
     scrollToSlots();
     return (
       <View>
         <View style={{ margin: 20 }}>
           {newList?.map((order: any, index: number, array: any) => {
-            const isStatusDone = true;
+            let isStatusDone = true;
+            if (order?.__typename == "upcomingStatus") {
+              isStatusDone = false
+            }
             return (
               <View
                 style={styles.rowStyle}
@@ -506,7 +530,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                     index == array?.length - 1
                       ? renderInclusionLevelDropDown(order)
                       : null}
-                    {order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED &&
+                    {order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED && isStatusDone &&
                     !!showRateDiagnosticBtn
                       ? renderFeedbackOption()
                       : null}
