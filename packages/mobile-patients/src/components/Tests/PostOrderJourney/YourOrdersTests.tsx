@@ -63,7 +63,11 @@ import {
   downloadDocument,
   removeWhiteSpaces,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { DisabledTickIcon, TickIcon, PromoCashback } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  DisabledTickIcon,
+  TickIcon,
+  PromoCashback,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   AppConfig,
   BLACK_LIST_CANCEL_STATUS_ARRAY,
@@ -118,8 +122,6 @@ import {
   getRescheduleAndCancellationReasons,
   getRescheduleAndCancellationReasonsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getRescheduleAndCancellationReasons';
-
-const { width, height } = Dimensions.get('window');
 
 const { width, height } = Dimensions.get('window');
 
@@ -979,17 +981,20 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           <PromoCashback />
         </View>
         <View style={styles.promoButtonContainer}>
-          <TouchableOpacity onPress={()=>{
-            _onPressProceedToCancel()
-          }}>
-          <Text style={styles.yellowText}>PROCEED TO CANCEL</Text></TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              _onPressProceedToCancel();
+            }}
+          >
+            <Text style={styles.yellowText}>PROCEED TO CANCEL</Text>
+          </TouchableOpacity>
           <Button
-          onPress={() => {
-            setShowPromoteCashback(false)
-            _onPressTestReschedule(selectedOrder)
-          }}
-          style={{width:'40%'}}
-          title={'GO BACK'}
+            onPress={() => {
+              setShowPromoteCashback(false);
+              _onPressTestReschedule(selectedOrder);
+            }}
+            style={{ width: '40%' }}
+            title={'GO BACK'}
           />
         </View>
       </View>
@@ -1057,13 +1062,16 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             {selectCancelOption && (
               <View style={{ marginVertical: '2%' }}>
                 <Text style={styles.optionSubHeadingText}>{string.diagnostics.sureCancelText}</Text>
-                <Button onPress={() => {
-                  if (selectedOrder?.totalPrice && selectedOrder?.totalPrice >= 500) {
-                    _onPressProceedToCancelForPromo()
-                  } else {
-                    _onPressProceedToCancel()
-                  }
-                  }} title={'PROCEED TO CANCEL'} />
+                <Button
+                  onPress={() => {
+                    if (selectedOrder?.totalPrice && selectedOrder?.totalPrice >= 500) {
+                      _onPressProceedToCancelForPromo();
+                    } else {
+                      _onPressProceedToCancel();
+                    }
+                  }}
+                  title={'PROCEED TO CANCEL'}
+                />
               </View>
             )}
           </View>
