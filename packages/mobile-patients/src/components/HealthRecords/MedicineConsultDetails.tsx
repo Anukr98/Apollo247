@@ -36,7 +36,7 @@ import {
   postWebEngageEvent,
   g,
   formatToCartItem,
-  postCleverTapPHR,
+  postCleverTapEvent,
 } from '../../helpers/helperFunctions';
 import { CleverTapEventName, CleverTapEvents } from '../../helpers/CleverTapEvents';
 
@@ -149,7 +149,10 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           'Mobile Number': g(currentPatient, 'mobileNumber'),
           'Customer ID': g(currentPatient, 'id'),
         };
-        postCleverTapPHR(CleverTapEventName.PHARMACY_RE_ORDER_MEDICINE, cleverTapeEventAttributes);
+        postCleverTapEvent(
+          CleverTapEventName.PHARMACY_RE_ORDER_MEDICINE,
+          cleverTapeEventAttributes
+        );
         postWebEngageEvent(WebEngageEventName.RE_ORDER_MEDICINE, eventAttributes);
 
         props.navigation.navigate(AppRoutes.MedicineCart);
