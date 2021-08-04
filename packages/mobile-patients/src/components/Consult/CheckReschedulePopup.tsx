@@ -50,6 +50,7 @@ interface CheckRescheduleProps {
   closeModal: () => void;
   cancelSuccessCallback: () => void;
   rescheduleSuccessCallback: () => void;
+  secretaryData?: any;
 }
 
 type rescheduleType = {
@@ -61,7 +62,13 @@ type rescheduleType = {
 };
 
 export const CheckReschedulePopup: React.FC<CheckRescheduleProps> = (props) => {
-  const { data, closeModal, cancelSuccessCallback, rescheduleSuccessCallback } = props;
+  const {
+    data,
+    closeModal,
+    cancelSuccessCallback,
+    rescheduleSuccessCallback,
+    secretaryData,
+  } = props;
   const [resheduleoverlay, setResheduleoverlay] = useState<boolean>(false);
   const doctorDetails = data?.doctorInfo!;
   const { currentPatient } = useAllCurrentPatients();
@@ -359,6 +366,7 @@ export const CheckReschedulePopup: React.FC<CheckRescheduleProps> = (props) => {
           doctorId={doctorDetails?.id}
           renderTab={'Consult Online'}
           rescheduleCount={newRescheduleCount}
+          secretaryData={secretaryData}
           appointmentId={data?.id}
           data={data}
           bookFollowUp={false}

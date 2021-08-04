@@ -549,6 +549,7 @@
     "unableToFetchReport": "We could not fetch your report. Please view report in my order section",
     "reasonForReschedulingText": "Reason for Rescheduling",
     "reasonForCancellationText": "Reason for Cancellation",
+    "promoteCashbackHeading": "You are missing out on ₹100 Cashback if you cancel",
     "whatWudLikeText": "What would you like to do?",
     "rescheduleBookingText": "Reschedule Booking",
     "cancelBookingText": "Cancel Booking",

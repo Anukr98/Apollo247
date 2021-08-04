@@ -17,6 +17,7 @@ export interface CreateUserSubscription_CreateUserSubscription_response_group_pl
 
 export interface CreateUserSubscription_CreateUserSubscription_response {
   __typename: "UserSubscription";
+  _id: string | null;
   mobile_number: string;
   status: SubscriptionStatus;
   start_date: any;

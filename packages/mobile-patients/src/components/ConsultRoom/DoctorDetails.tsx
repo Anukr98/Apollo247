@@ -53,7 +53,7 @@ import {
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Animated,
@@ -385,6 +385,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const circleDoctorDetails = calculateCircleDoctorPricing(doctorDetails);
   const [showDoctorSharePopup, setShowDoctorSharePopup] = useState<boolean>(false);
+  const callCleverTapEvent = useRef<boolean>(true);
   const consultModeSelected = props.navigation.getParam('consultModeSelected');
   const {
     isCircleDoctor,
@@ -692,10 +693,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Media Source': mediaSource,
       User_Type: getUserType(allCurrentPatients),
       Fee: Number(doctorDetails?.onlineConsultationFees),
-      Source:
-        cleverTapAppointmentAttributes?.source || fromPastSearch
-          ? 'Past search clicked'
-          : 'Deeplink',
+      Source: cleverTapAppointmentAttributes?.source
+        ? cleverTapAppointmentAttributes?.source
+        : fromPastSearch
+        ? 'Past search clicked'
+        : 'Deeplink',
       'Doctor card clicked': 'No',
       Rank: 'NA',
       Is_TopDoc: doctorDetails?.doctorsOfTheHourStatus ? 'Yes' : 'No',
@@ -708,6 +710,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     fromDeeplink &&
       postWebEngageEvent(WebEngageEventName.DOCTOR_PROFILE_THROUGH_DEEPLINK, eventAttributes);
     !displayoverlay &&
+      callCleverTapEvent.current &&
       postCleverTapEvent(
         CleverTapEventName.CONSULT_DOCTOR_PROFILE_VIEWED,
         cleverTapEventAttributes
@@ -738,11 +741,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         ) || ''}`,
         languages: g(doctorDetails, 'languages') || undefined,
       };
-      postCleverTapEvent(
-        CleverTapEventName.CONSULT_PAST_SEARCHES_CLICKED,
-        cleverTapPastSearchEventAttributes
-      );
+      callCleverTapEvent.current &&
+        postCleverTapEvent(
+          CleverTapEventName.CONSULT_PAST_SEARCHES_CLICKED,
+          cleverTapPastSearchEventAttributes
+        );
     }
+    callCleverTapEvent.current = false;
   };
 
   const setAvailableModes = (availabilityMode: any) => {
