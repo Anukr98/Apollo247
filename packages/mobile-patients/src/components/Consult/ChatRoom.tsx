@@ -3411,6 +3411,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           setTimeout(() => {
             hideCallUI();
           }, 2000);
+
           if (isAudio.current) {
             handleEndAudioCall();
           } else {
@@ -6410,6 +6411,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setTimeout(() => {
               hideCallUI();
             }, 2000);
+
             if (isAudio.current) {
               handleEndAudioCall();
             } else {
@@ -6468,7 +6470,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
       callEndWebengageEvent('Patient');
 
-      if (publishPubnub) {
+      if (publishPubnub && patientId == currentPatient?.id) {
         pubnub.publish(
           {
             message: {
@@ -6524,7 +6526,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setCameraPosition('front');
       postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
       callEndWebengageEvent('Patient');
-      if (publishPubnub) {
+      if (publishPubnub && patientId == currentPatient?.id) {
         pubnub.publish(
           {
             message: {
