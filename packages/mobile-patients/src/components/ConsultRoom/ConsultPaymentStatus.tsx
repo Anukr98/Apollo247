@@ -1,8 +1,8 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
-  Failure,
-  Pending,
+  ConsultFailure,
+  ConsultPending,
   ConsultSuccess,
   Copy,
   CircleLogo,
@@ -522,9 +522,9 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     if (status === success) {
       return <ConsultSuccess style={styles.statusIconStyles} />;
     } else if (status === failure) {
-      return <Failure style={styles.statusIconStyles} />;
+      return <ConsultFailure style={styles.statusIconStyles} />;
     } else {
-      return <Pending style={styles.statusIconStyles} />;
+      return <ConsultPending style={styles.statusIconStyles} />;
     }
   };
 
@@ -585,16 +585,22 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     if (status === success) {
       return (
         <View style={styles.viewInvoice}>
-          <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}} onPress={() => requestStoragePermission()}>
-            <PdfGray style={{width: 16, height: 10, marginEnd: 4}} />
+          <TouchableOpacity
+           style={styles.viewInvoiceContainer}
+           onPress={() => requestStoragePermission()}
+          >
+            <PdfGray style={styles.viewIcon} />
             {textComponent('VIEW INVOICE', undefined, theme.colors.TANGERINE_YELLOW, false)}
           </TouchableOpacity>
-          <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center', marginStart: 20}} onPress={() => setshowEmailInput(!showEmailInput)}>
-            <EmailGray style={{width: 17, height: 13, marginEnd: 4}} />
+          <TouchableOpacity
+           style={styles.emailInvoiceView}
+           onPress={() => setshowEmailInput(!showEmailInput)}
+           >
+            <EmailGray style={styles.emailIcon} />
             {textComponent(
               'EMAIL INVOICE',
               undefined,
-              !showEmailInput ? theme.colors.TANGERINE_YELLOW : 'rgba(252, 153, 22, 0.5)',
+              !showEmailInput ? theme.colors.TANGERINE_YELLOW : theme.colors.TEXT_LIGHT_YELLOW,
               false
             )}
           </TouchableOpacity>
@@ -1019,7 +1025,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       return (
         <View style={styles.locationMainView}>
           <View style={styles.currentLocationView}>
-            <View style={[styles.spaceRow, { marginTop: 0 }]}>
+            <View style={styles.locationSubView}>
               <Text style={styles.currentLocationText}>Current Location</Text>
               <TouchableOpacity
                 onPress={() => {
@@ -1146,7 +1152,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       <View style={styles.savedLocationView}>
         <Text style={styles.currentLocationTitle}>Your current location</Text>
         <View style={styles.line} />
-        <View style={[styles.spaceRow, {paddingHorizontal: 12}]}>
+        <View style={styles.spaceRow}>
           <View style={styles.rowCenter}>
             <LocationOn />
             <Text style={styles.savedLocationText}>
@@ -1459,6 +1465,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 7,
+    paddingHorizontal: 12,
   },
   locationMainView: {
     position: 'absolute',
@@ -1588,5 +1595,29 @@ const styles = StyleSheet.create({
     position: 'absolute', 
     zIndex: 1001, 
     bottom: -10 
+  },
+  viewInvoiceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  viewIcon: {
+    width: 16, 
+    height: 10, 
+    marginEnd: 4
+  },
+  emailIcon: {
+    width: 17, 
+    height: 13, 
+    marginEnd: 4
+  },
+  emailInvoiceView: {
+    flexDirection: 'row', 
+    alignItems: 'center',
+    marginStart: 20
+  },
+  locationSubView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
 });

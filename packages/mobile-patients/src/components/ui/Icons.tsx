@@ -2063,3 +2063,17 @@ export const ConsultSuccess: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/consult-success.webp')}
   />
 );
+
+export const ConsultFailure: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/consult-failure.webp')}
+  />
+);
+
+export const ConsultPending: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/consult-pending.webp')}
+  />
+);

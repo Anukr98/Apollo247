@@ -35,6 +35,7 @@ const blue_color = '#337FC5';
 
 const platinumWhiteGrey = '#E6E6E6';
 const red = '#e50000';
+const text_light_yellow = 'rgba(252, 153, 22, 0.5)';
 
 const TabBar = {
   TAB_BAR_ACTIVE_TINT_COLOR: white,
@@ -125,6 +126,7 @@ const Common = {
   SLATE_GRAY: '#68919D',
   AQUA_BLUE: '#E3F2F8',
   TANGERINE_YELLOW: tangerine_yellow,
+  TEXT_LIGHT_YELLOW: text_light_yellow,
 };
 
 const Header = {
