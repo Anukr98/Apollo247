@@ -24,6 +24,7 @@ import {
   GetPatientFeedbackVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetPatientFeedback';
 import {
+  FIND_DIAGNOSTIC_SETTINGS,
   GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID,
   GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
   GET_ORDER_LEVEL_DIAGNOSTIC_STATUS,
@@ -88,6 +89,7 @@ import {
   getDiagnosticOrderDetailsByDisplayID,
   getDiagnosticOrderDetailsByDisplayIDVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetailsByDisplayID';
+import { findDiagnosticSettings } from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
 const DROP_DOWN_ARRAY_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
@@ -135,6 +137,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [showInclusionStatus, setShowInclusionStatus] = useState<boolean>(false);
   const [showError, setError] = useState<boolean>(false);
   const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
+  const [phleboMin, setPhleboMin] = useState(0);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
 
   const [orderDetails, setOrderDetails] = useState([] as any);
@@ -215,7 +218,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       let response = await fetchOrderLevelStatus(orderId);
       if (!!response && response?.data && !response?.errors) {
         let getOrderLevelStatus = g(response, 'data', 'getHCOrderFormattedTrackingHistory');
-        console.log(`getOrderLevelStatus`, getOrderLevelStatus?.upcomingStatuses)
         setOrderLevelStatus(getOrderLevelStatus);
         getOrderLevelStatus?.statusHistory?.length == 0 && setError(true);
         setError(false);
@@ -261,6 +263,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     if (currentPatient) {
       updateRateDeliveryBtnVisibility();
     }
+    fetchFindDiagnosticSettings()
   }, []);
 
   useEffect(() => {
@@ -466,21 +469,29 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       </View>
     );
   };
+  const fetchFindDiagnosticSettings = async () => {
+    try {
+      const response = await client.query<findDiagnosticSettings>({
+        query: FIND_DIAGNOSTIC_SETTINGS,
+        variables: {
+          phleboETAInMinutes: 0,
+        },
+        fetchPolicy: 'no-cache',
+      });
+      const phleboMin = g(response, 'data', 'findDiagnosticSettings', 'phleboETAInMinutes') || 45;
+      setPhleboMin(phleboMin);
+    } catch (error) {
+      CommonBugFender('ReviewOrder_fetchFindDiagnosticSettings', error);
+    }
+  };
 
   const renderOrderTracking = () => {
-    const upcomingStatuses 
-    // newList = newList =
-    //   refundStatusArr?.length > 0
-    //     ? orderStatusList
-    //     : orderLevelStatus?.statusHistory;
-
         newList = newList =
       refundStatusArr?.length > 0
         ? orderStatusList
         : orderLevelStatus?.upcomingStatuses?.length > 0
         ? orderLevelStatus?.statusHistory.concat(orderLevelStatus?.upcomingStatuses)
         : orderLevelStatus?.statusHistory;
-      console.log('newList :>> ', newList);
     scrollToSlots();
     return (
       <View>
@@ -490,6 +501,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             if (order?.__typename == "upcomingStatus") {
               isStatusDone = false
             }
+            const slotDate = moment(selectedOrder?.slotDateTimeInUTC).format('Do MMM');
+            const slotTime1 = moment(selectedOrder?.slotDateTimeInUTC).format('hh:mm A');
+            const slotTime2 = moment(selectedOrder?.slotDateTimeInUTC)
+              .add(phleboMin, 'minutes')
+              .format('hh:mm A');
             return (
               <View
                 style={styles.rowStyle}
@@ -520,8 +536,18 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                           {nameFormater(getTestOrderStatusText(order?.orderStatus), 'default')}
                         </Text>
                       </View>
-                      {isStatusDone ? renderCustomDescriptionOrDateAndTime(order) : null}
+                      {isStatusDone ? (
+                        renderCustomDescriptionOrDateAndTime(order)
+                      ) : (
+                        <View style={{ width: '25%' }} />
+                      )}
                     </View>
+                    {order?.orderStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN &&
+                    !isStatusDone ? (
+                      <Text style={styles.statusSubTextStyle}>
+                        {`Phlebotomist will arrive on ${slotDate}, ${slotTime1} - ${slotTime2}`}
+                      </Text>
+                    ) : null}
 
                     {REFUND_STATUSES.SUCCESS === order?.orderStatus
                       ? renderTransactionDetails()
@@ -530,7 +556,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                     index == array?.length - 1
                       ? renderInclusionLevelDropDown(order)
                       : null}
-                    {order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED && isStatusDone &&
+                    {order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED &&
+                    isStatusDone &&
                     !!showRateDiagnosticBtn
                       ? renderFeedbackOption()
                       : null}
@@ -957,6 +984,11 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(15),
     letterSpacing: 0.0,
     flex: 1,
+  },
+  statusSubTextStyle: {
+    ...theme.fonts.IBMPlexSansRegular(10),
+    letterSpacing: 0.0,
+    color: theme.colors.SHERPA_BLUE,
   },
   lineSeparator: {
     height: 1,

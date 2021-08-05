@@ -2590,8 +2590,10 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
       statusString = 'Order confirmed';
       break;
     case DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED:
-    case DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN:
       statusString = 'Phlebo is on the way';
+      break;
+    case DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN:
+        statusString = 'Phlebotomist Check-in';
       break;
     case DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED:
       statusString = 'Sample collected';
