@@ -826,7 +826,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const saveDeviceNotificationToken = async (id: string) => {
     try {
       const oneTimeApiCall = await AsyncStorage.getItem('saveTokenDeviceApiCall');
-      const token = await messaging().getToken();
+      let token = await messaging().getToken();
+
+      if (
+        !token ||
+        token === '' ||
+        token.length == 0 ||
+        typeof token != 'string' ||
+        typeof token == 'object'
+      ) {
+        token = await messaging().getToken(); //again retry
+      }
+
       if (!oneTimeApiCall) {
         saveTokenDevice(client, token, id);
         await AsyncStorage.setItem('saveTokenDeviceApiCall', 'called');

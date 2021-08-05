@@ -249,6 +249,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
     if (
       !currentDeviceToken ||
+      currentDeviceToken === '' ||
+      currentDeviceToken.length == 0 ||
       typeof currentDeviceToken != 'string' ||
       typeof currentDeviceToken == 'object'
     ) {
