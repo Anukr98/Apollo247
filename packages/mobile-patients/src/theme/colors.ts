@@ -123,6 +123,8 @@ const Common = {
   GRAYED: '#CBCBCB',
   CONSULT_SUCCESS_TEXT: '#00B38E',
   SLATE_GRAY: '#68919D',
+  AQUA_BLUE: '#E3F2F8',
+  TANGERINE_YELLOW: tangerine_yellow,
 };
 
 const Header = {

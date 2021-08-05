@@ -2042,3 +2042,24 @@ export const EmailGray: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/email-gray.webp')}
   />
 );
+
+export const Pdf: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/pdf.webp')}
+  />
+);
+
+export const RightArrowBlue: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/blue-arrow-right.webp')}
+  />
+);
+
+export const ConsultSuccess: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/consult-success.webp')}
+  />
+);
