@@ -1903,6 +1903,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           const paymentStoredVal =
             typeof paymentRef == 'string' ? JSON.parse(paymentRef) : paymentRef;
           AsyncStorage.setItem('isCircleMember', 'yes');
+
+          circleData?.status === 'disabled'
+            ? AsyncStorage.setItem('isCircleMembershipExpired', 'yes')
+            : AsyncStorage.setItem('isCircleMembershipExpired', 'no');
+
           setIsCircleMember && setIsCircleMember('yes');
           AsyncStorage.removeItem('circlePlanSelected');
           let WEGAttributes = {};
@@ -1929,6 +1934,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           onAppLoad && logHomePageViewed(WEGAttributes);
 
           if (circleData?.status === 'disabled') {
+            AsyncStorage.setItem('isCircleMembershipExpired', 'yes');
             setIsCircleExpired && setIsCircleExpired(true);
             setNonCircleValues();
           }
@@ -3533,12 +3539,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const data = handleOpenURL(item?.url);
         const { routeName, id, isCall, mediaSource } = data;
         const isCircleMember: any = await AsyncStorage.getItem('isCircleMember');
+        const isCircleMembershipExpired: any = await AsyncStorage.getItem(
+          'isCircleMembershipExpired'
+        );
         pushTheView(
           props.navigation,
           routeName,
           id ? id : undefined,
           isCall,
           isCircleMember === 'yes',
+          isCircleMembershipExpired === 'yes',
           mediaSource
         );
       } else {
