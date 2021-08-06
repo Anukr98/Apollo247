@@ -4,7 +4,12 @@ import {
 } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { CircleLogo, ClockIcon, InfoIconRed } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  CircleLogo,
+  ClockIcon,
+  ExpressSlotClock,
+  InfoIconRed,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
@@ -1100,6 +1105,17 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     removeCartItem!(`${itemId}`);
   }
 
+  const renderExpressSlots = () => {
+    return (
+      <View style={styles.outerExpressView}>
+        <View style={styles.innerExpressView}>
+          <ExpressSlotClock style={styles.expressSlotIcon} />
+          <Text style={styles.expressSlotText}>po</Text>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView
       style={{
@@ -1109,6 +1125,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       {!errorState ? (
         <>
           {renderHeader()}
+          {renderExpressSlots()}
           {renderBreadCrumb()}
           <ScrollView
             bounces={false}
@@ -1343,5 +1360,17 @@ const styles = StyleSheet.create({
     borderTopColor: '#02475B',
     opacity: 0.3,
     borderTopWidth: 1,
+  },
+  outerExpressView: { backgroundColor: theme.colors.APP_GREEN, marginBottom: 2 },
+  innerExpressView: {
+    flexDirection: 'row',
+    padding: 8,
+    alignItems: 'center',
+    width: '97%',
+  },
+  expressSlotIcon: { width: 37, height: 37, resizeMode: 'contain' },
+  expressSlotText: {
+    ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 18),
+    marginLeft: 16,
   },
 });

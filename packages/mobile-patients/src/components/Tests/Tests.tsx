@@ -27,6 +27,7 @@ import {
   DropdownGreen,
   WidgetLiverIcon,
   PolygonIcon,
+  ExpressSlotClock,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -570,6 +571,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   };
 
+  function getExpressSlots() {
+    try {
+      // const res : any  =
+    } catch (error) {
+      CommonBugFender('getExpressSlots_Tests', error);
+      aphConsole.log({ error });
+    }
+  }
+
   const fetchWidgetsPrices = async (widgetsData: any, cityId: string) => {
     //filter the items.
     const filterWidgets = widgetsData?.filter(
@@ -745,6 +755,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             obj = getNonServiceableObject();
             setNonServiceableValues(obj, pincode);
           }
+          getExpressSlots(obj);
           getDiagnosticBanner(Number(getServiceableResponse?.cityID));
           getHomePageWidgets(obj?.cityId);
         } //end of if
@@ -752,6 +763,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           obj = getNonServiceableObject();
           setNonServiceableValues(obj, pincode);
         }
+        getExpressSlots(obj);
         getDiagnosticBanner(AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID);
         getHomePageWidgets(obj?.cityId);
       } catch (error) {
@@ -1312,7 +1324,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderPackageWidget = (data: any) => {
-  let listShowLength = 10
+    let listShowLength = 10;
     const isPricesAvailable =
       !!data &&
       data?.diagnosticWidgetData?.length > 0 &&
@@ -1889,6 +1901,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   }
 
+  const renderExpressSlots = () => {
+    return (
+      <View style={styles.outerExpressView}>
+        <View style={styles.innerExpressView}>
+          <ExpressSlotClock style={styles.expressSlotIcon} />
+          <Text style={styles.expressSlotText}>po</Text>
+        </View>
+      </View>
+    );
+  };
+
   const renderSections = () => {
     return (
       <TouchableOpacity
@@ -1900,6 +1923,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }}
         style={{ flex: 1 }}
       >
+        {renderExpressSlots()}
         {widgetsData?.length == 0 && reloadWidget && renderLowNetwork()}
         {renderBanner()}
         {renderYourOrders()}
@@ -2437,4 +2461,13 @@ const styles = StyleSheet.create({
     width: 35,
     alignItems: 'flex-end',
   },
+  outerExpressView: { backgroundColor: colors.APP_GREEN, marginBottom: 2 },
+  innerExpressView: {
+    flexDirection: 'row',
+    padding: 8,
+    alignItems: 'center',
+    width: '97%',
+  },
+  expressSlotIcon: { width: 37, height: 37, resizeMode: 'contain' },
+  expressSlotText: { ...theme.viewStyles.text('SB', 14, colors.WHITE, 1, 18), marginLeft: 16 },
 });
