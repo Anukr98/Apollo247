@@ -83,7 +83,6 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
 
   const dt = moment(props.slotBooked!).format('YYYY-MM-DD') || null;
   const tm = moment(props.slotBooked!)?.format('hh:mm A') || null; //format changed from hh:mm
-  const isSameDate = moment().isSame(moment(date), 'date');
 
   const [selectedDate, setSelectedDate] = useState<string>(moment(date).format('DD') || '');
   const [isPrepaidSlot, setPrepaidSlot] = useState<boolean>(
@@ -119,6 +118,13 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     });
   }
   let monthHeading = `${moment().format('MMMM')} ${moment().format('YYYY')}`;
+
+  //use formatTestSlot when time is coming in 24hr.
+  let dropDownOptions = uniqueSlots?.map((val) => ({
+    key: `${val?.startTime}`,
+    value: `${val.startTime}`,
+    slotInfo: val,
+  }));
 
   useEffect(() => {
     if (props.isFocus) {
@@ -222,13 +228,6 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     },
   ];
 
-  //use formatTestSlot when time is coming in 24hr.
-  let dropDownOptions = uniqueSlots?.map((val) => ({
-    key: `${val?.startTime}`,
-    value: `${val.startTime}`,
-    slotInfo: val,
-  }));
-
   const time24 = (item: any) => {
     return moment(item?.value, 'hh:mm A')?.format('HH:mm');
   };
@@ -298,7 +297,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           ))}
         </View>
         <View>
-          {dropDownOptions?.length != 0 ? (
+          {!!dropDownOptions && dropDownOptions?.length != 0 ? (
             <FlatList
               keyExtractor={(_, index) => index.toString()}
               data={dropDownOptions}

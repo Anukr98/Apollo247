@@ -22,6 +22,7 @@ export interface getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails_ord
   itemId: number | null;
   itemName: string | null;
   price: number | null;
+  editOrderID: string | null;
 }
 
 export interface getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails_ordersList {

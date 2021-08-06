@@ -111,6 +111,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     setPhleboETA,
     showMultiPatientMsg,
     setShowMultiPatientMsg,
+    removePatientItem,
   } = useDiagnosticsCart();
 
   const { setAddresses } = useShoppingCart();
@@ -639,7 +640,14 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
         return { ...newItem };
       }
     );
-    addPatientCartItem?.(selectedPatientDetails?.patientId, arr!); //just change the flag here.
+    //this would be for one of the patient
+    const isAllUnSelected = !!arr && arr?.filter?.((test: any) => test?.isSelected);
+    if (!!isAllUnSelected && isAllUnSelected?.length == 0) {
+      //remove that patient...
+      removePatientItem?.(selectedPatientDetails?.patientId);
+    } else {
+      addPatientCartItem?.(selectedPatientDetails?.patientId, arr!); //just change the flag here.
+    }
     setItemsSelected(arr!);
   }
 

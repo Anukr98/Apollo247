@@ -4797,6 +4797,7 @@ export const GET_INTERNAL_ORDER = gql`
             itemId
             itemName
             price
+            editOrderID
           }
         }
       }
