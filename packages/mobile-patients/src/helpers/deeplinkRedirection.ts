@@ -567,7 +567,7 @@ export const pushTheView = (
       });
       break;
     case 'CircleMembershipDetails':
-      if (isCircleMember) {
+      if (isCircleMember || isCircleMembershipExpired) {
         navigateToView(navigation, AppRoutes.MembershipDetails, {
           membershipType: string.Circle.planName,
           isActive: true,
