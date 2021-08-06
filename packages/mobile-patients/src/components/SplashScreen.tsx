@@ -548,6 +548,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             if (mePatient) {
               if (mePatient.firstName !== '') {
                 const isCircleMember: any = await AsyncStorage.getItem('isCircleMember');
+                const isCircleMembershipExpired: any = await AsyncStorage.getItem(
+                  'isCircleMembershipExpired'
+                );
                 const isCorporateSubscribed: any = await AsyncStorage.getItem(
                   'isCorporateSubscribed'
                 );
@@ -572,7 +575,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                   voipAppointmentId,
                   isCorporateSubscribed === 'yes',
                   vaccinationCmsIdentifier,
-                  vaccinationSubscriptionId
+                  vaccinationSubscriptionId,
+                  isCircleMembershipExpired === 'yes'
                 );
                 let _createCleverTapProifle = createCleverTapProifle;
                 if (_createCleverTapProifle == null) {
