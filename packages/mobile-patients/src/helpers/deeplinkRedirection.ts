@@ -15,6 +15,7 @@ import { AppRoutes, getCurrentRoute } from '@aph/mobile-patients/src/components/
 import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
 import { MutableRefObject } from 'react';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export const handleOpenURL = (event: any) => {
   try {
@@ -574,7 +575,11 @@ export const pushTheView = (
           comingFrom: 'Deeplink',
         });
       } else {
-        navigation.replace(AppRoutes.ConsultRoom);
+        navigateToView(navigation,AppRoutes.CommonWebView, {
+          url:AppConfig.Configuration.CIRCLE_LANDING_URL,
+          source: 'Consult',
+          circleEventSource:'DeepLink Redirection'
+        });
       }
       break;
     case 'MyMembership':
