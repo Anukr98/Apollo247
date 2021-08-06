@@ -1,7 +1,6 @@
 import {
   checkPatientAge,
   extractPatientDetails,
-  getAge,
   nameFormater,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -9,7 +8,15 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  FlatList,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { Overlay } from 'react-native-elements';
 import {
   AddPatientCircleIcon,
@@ -17,6 +24,7 @@ import {
   MinusPatientCircleIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 
 const { SHERPA_BLUE, CARD_BG, WHITE, APP_GREEN, CLEAR, TEST_CARD_BUTTOM_BG } = theme.colors;
 
@@ -50,6 +58,7 @@ export const MultiSelectPatientListOverlay: React.FC<MultiSelectPatientListOverl
   } = props;
   const { allCurrentPatients } = useAllCurrentPatients();
   const [selectedPatientArray, setSelectedPatientArray] = useState([] as any);
+  const { showAphAlert, hideAphAlert } = useUIElements();
 
   function _onPressPatient(selectedPatient: any) {
     if (!checkPatientAge(selectedPatient)) {
@@ -62,8 +71,29 @@ export const MultiSelectPatientListOverlay: React.FC<MultiSelectPatientListOverl
         const array = [...selectedPatientArray, selectedPatient];
         setSelectedPatientArray(array);
       }
+    } else {
+      renderBelowAgePopUp(true);
     }
   }
+
+  const renderBelowAgePopUp = (fromPopUp: boolean) => {
+    if (fromPopUp) {
+      Alert.alert(string.common.uhOh, string.diagnostics.minorAgeText, [
+        {
+          text: 'OK',
+          onPress: () => {},
+        },
+      ]);
+    } else {
+      showAphAlert?.({
+        title: string.common.uhOh,
+        description: string.diagnostics.minorAgeText,
+        onPressOk: () => {
+          hideAphAlert?.();
+        },
+      });
+    }
+  };
 
   function _onPressUnselectPatient(selectedPatient: any) {
     const removeItem = selectedPatientArray?.filter(
@@ -239,10 +269,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 8,
-    width: '86%',
   },
   selectPatientNameTextStyle: {
     ...text('SB', 16, SHERPA_BLUE, 1, 20),
+    width: '82%',
   },
   addMemberText: {
     marginLeft: 20,

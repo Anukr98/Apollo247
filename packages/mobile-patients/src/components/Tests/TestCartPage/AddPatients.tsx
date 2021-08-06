@@ -209,6 +209,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     if (patientLimit > 0 && actualSelectedPatients?.length > patientLimit) {
       renderAlert();
       patientCartItems?.shift();
+      setPatientCartItems?.(patientCartItems?.slice(0)); //since it was not re-rendering
     }
   }, [patientCartItems]);
 
@@ -575,6 +576,8 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       if (!checkPatientAge(newPatient?.profileData, true)) {
         addPatientCartItem?.(newPatient?.id, cartItems);
         changeCurrentProfile(newPatient?.profileData, false);
+      } else {
+        renderBelowAgePopUp();
       }
     }
   };
@@ -593,6 +596,16 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       onPressBackButton: _onPressBackButton,
     });
   }
+
+  const renderBelowAgePopUp = () => {
+    showAphAlert?.({
+      title: string.common.uhOh,
+      description: string.diagnostics.minorAgeText,
+      onPressOk: () => {
+        hideAphAlert?.();
+      },
+    });
+  };
 
   const renderHeading = () => {
     return (
@@ -652,11 +665,9 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
   }
 
   function _onPressPatient(patient: any, index: number) {
-    // if (cartItems?.length == 0) {
-    //   return;
-    // }
     const isInvalidUser = checkPatientAge(patient);
     if (isInvalidUser) {
+      renderBelowAgePopUp();
       _setSelectedPatient?.(null, index);
     } else {
       _setSelectedPatient?.(patient, index);

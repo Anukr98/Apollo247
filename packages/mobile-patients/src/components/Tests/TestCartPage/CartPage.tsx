@@ -1368,7 +1368,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         }
         rightTitle={!!itemSelectedFromWidget ? itemSelectedFromWidget?.price : undefined}
         onCloseIconPress={() => setShowPatientOverlay(false)}
-        showCloseIcon={false}
+        showCloseIcon={true}
         onPressAddNewProfile={() => {}}
         patientSelected={selectedPatient}
         onPressAndroidBack={() => {
