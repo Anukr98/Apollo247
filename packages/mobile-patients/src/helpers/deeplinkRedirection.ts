@@ -416,13 +416,13 @@ export const pushTheView = (
   id?: any,
   isCall?: boolean,
   isCircleMember?: boolean,
+  isCircleMembershipExpired?:boolean,
   mediaSource?: string,
   voipCallType?: string,
   voipAppointmentId?: MutableRefObject<string>,
   isCorporateSubscribed?: boolean,
   vaccinationCmsIdentifier?: string,
   vaccinationSubscriptionId?: string,
-  isCircleMembershipExpired?:boolean,
 ) => {
   setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
   switch (routeName) {

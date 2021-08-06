@@ -570,13 +570,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                   id ? id : undefined,
                   isCall,
                   isCircleMember === 'yes',
+                  isCircleMembershipExpired === 'yes',
                   mediaSource,
                   voipCallType.current,
                   voipAppointmentId,
                   isCorporateSubscribed === 'yes',
                   vaccinationCmsIdentifier,
-                  vaccinationSubscriptionId,
-                  isCircleMembershipExpired === 'yes'
+                  vaccinationSubscriptionId
                 );
                 let _createCleverTapProifle = createCleverTapProifle;
                 if (_createCleverTapProifle == null) {

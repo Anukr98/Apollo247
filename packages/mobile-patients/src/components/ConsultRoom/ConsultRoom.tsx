@@ -3539,12 +3539,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const data = handleOpenURL(item?.url);
         const { routeName, id, isCall, mediaSource } = data;
         const isCircleMember: any = await AsyncStorage.getItem('isCircleMember');
+        const isCircleMembershipExpired: any = await AsyncStorage.getItem(
+          'isCircleMembershipExpired'
+        );
         pushTheView(
           props.navigation,
           routeName,
           id ? id : undefined,
           isCall,
           isCircleMember === 'yes',
+          isCircleMembershipExpired === 'yes',
           mediaSource
         );
       } else {
