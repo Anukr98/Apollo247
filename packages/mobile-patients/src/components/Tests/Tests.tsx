@@ -1809,7 +1809,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         item?.id
       );
       if (!!item?.labReportURL && item?.labReportURL != '') {
-        setDisplayViewReport(true);
+        onPressViewReport();
         setClickedItem(item);
       } else {
         showAphAlert?.({
@@ -2124,31 +2124,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
-      {displayViewReport && (
-        <TestViewReportOverlay
-          order={clickedItem}
-          heading=""
-          isVisible={displayViewReport}
-          onClose={() => {
-            setDisplayViewReport(false);
-            setClickedItem([]);
-          }}
-          downloadDocument={() => {
-            const res = downloadDocument(
-              clickedItem?.labReportURL,
-              'application/pdf',
-              clickedItem?.orderId
-            );
-            if (res == clickedItem?.orderId) {
-              setViewReportOrderId(clickedItem?.orderId);
-            }
-          }}
-          viewReportOrderId={viewReportOrderId}
-          onPressViewReport={() => {
-            onPressViewReport();
-          }}
-        />
-      )}
       <SafeAreaView style={{ ...viewStyles.container }}>
         {pageLoading ? (
           <View style={{ backgroundColor: colors.WHITE }}>

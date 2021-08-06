@@ -1620,7 +1620,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   function _onPressViewReportAction(order: orderList) {
     if (!!order?.labReportURL && order?.labReportURL != '') {
       setActiveOrder(order);
-      setDisplayViewReport(true);
+      _onPressViewReport(order);
     } else if (!!order?.visitNo && order?.visitNo != '') {
       //directly open the phr section
       fetchTestReportResult(order);
@@ -1779,33 +1779,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       {showDisplaySchedule && renderRescheduleOrderOverlay()}
-      {displayViewReport && (
-        <TestViewReportOverlay
-          order={activeOrder}
-          heading=""
-          isVisible={displayViewReport}
-          viewReportOrderId={viewReportOrderId}
-          downloadDocument={() => {
-            const res = downloadDocument(
-              activeOrder?.labReportURL ? activeOrder?.labReportURL : '',
-              'application/pdf',
-              activeOrder?.displayId
-            );
-            if (res == activeOrder?.displayId) {
-              setViewReportOrderId(activeOrder?.displayId);
-            }
-          }}
-          onClose={() => setDisplayViewReport(false)}
-          onPressViewReport={() => {
-            DiagnosticViewReportClicked(
-              'My Order',
-              !!activeOrder?.labReportURL ? 'Yes' : 'No',
-              'Download Report PDF'
-            );
-            _onPressViewReport(activeOrder!);
-          }}
-        />
-      )}
       <SafeAreaView style={theme.viewStyles.container}>
         {props?.showHeader == false ? null : (
           <Header
