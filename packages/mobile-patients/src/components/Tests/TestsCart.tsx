@@ -408,18 +408,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    if (currentPatient) {
-      checkPatientAge(currentPatient);
-    }
-  }, [currentPatient]);
-
-  useEffect(() => {
-    if (currentPatient) {
-      checkPatientAge(currentPatient);
-    }
-  }, [currentPatient]);
-
-  useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setIsFocused(true);
       BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -493,9 +481,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 }
               });
             });
-            const filteredItems = !!_diagnosticWidgetData && _diagnosticWidgetData?.filter(
-              (diagItem: any) => !listOfIds?.includes(Number(diagItem?.itemId))
-            );
+            const filteredItems =
+              !!_diagnosticWidgetData &&
+              _diagnosticWidgetData?.filter(
+                (diagItem: any) => !listOfIds?.includes(Number(diagItem?.itemId))
+              );
             setAlsoAddListData(filteredItems);
           })
           .catch((error) => {
