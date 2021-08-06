@@ -221,12 +221,12 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       ? isOnlineConsult
         ? Number(
             Decimal.sub(onlineConsultSlashedPrice, couponDiscountFees).plus(
-              circleSubscriptionId == '' ? Number(circlePlanSelected?.currentSellingPrice) : 0
+              !circleSubscriptionId ? Number(circlePlanSelected?.currentSellingPrice) : 0
             )
           )
         : Number(
             Decimal.sub(physicalConsultSlashedPrice, couponDiscountFees).plus(
-              circleSubscriptionId == '' ? Number(circlePlanSelected?.currentSellingPrice) : 0
+              !circleSubscriptionId ? Number(circlePlanSelected?.currentSellingPrice) : 0
             )
           )
       : amount;
