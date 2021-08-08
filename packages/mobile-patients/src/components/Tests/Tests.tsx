@@ -2065,7 +2065,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             <WidgetLiverIcon style={styles.image} resizeMode={'contain'} />
           )}
         </View>
-        <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>
+        <Text numberOfLines={2} ellipsizeMode="tail" style={styles.textStyle}>
           {item?.itemTitle}
         </Text>
       </TouchableOpacity>
@@ -2073,7 +2073,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const gridWidgetSection = (data: any) => {
-    const numColumns = 3;
+    const numColumns = 4;
     let newGridData: any[] = [];
     if (
       data?.diagnosticWidgetData?.length >= numColumns &&
@@ -2367,9 +2367,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   circleView: {
-    width: 80,
-    height: 80,
-    borderRadius: 80 / 2,
+    width: 50,
+    height: 50,
+    borderRadius: 50 / 2,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#f9f9f9',
@@ -2382,14 +2382,15 @@ const styles = StyleSheet.create({
   gridPart: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: '33%',
+    width: '25%',
     borderColor: '#E8E8E8',
     borderWidth: 0.5,
     padding: 15,
   },
   textStyle: {
     ...theme.viewStyles.text('SB', 14, colors.SHERPA_BLUE, 1, 20, 0),
-    padding: 5,
+    paddingVertical: 5,
+    textAlign:'center',
   },
   widgetSpacing: {
     marginVertical: 20,
