@@ -4,7 +4,10 @@ import { Dimensions, StyleSheet, Text, View, ScrollView, TouchableOpacity } from
 import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
 import moment from 'moment';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { g, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  formatAddressForApi,
+  nameFormater,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -170,7 +173,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       : newArr?.reduce((prevVal, currVal) => prevVal + currVal, 0);
 
   const HomeCollectionCharges =
-    orderDetails?.collectionCharges != null
+    orderDetails?.attributesObj?.homeCollectionCharges != null
+      ? orderDetails?.attributesObj?.homeCollectionCharges
+      : orderDetails?.collectionCharges != null
       ? orderDetails?.collectionCharges
       : totalIndividualDiagonsticsCharges! > orderDetails?.totalPrice
       ? totalIndividualDiagonsticsCharges! - orderDetails?.totalPrice!
@@ -265,6 +270,22 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     );
   };
 
+  const renderAddress = () => {
+    const addressText = formatAddressForApi(orderDetails?.patientAddressObj! || '');
+    return (
+      <>
+        {!!addressText && addressText != '' ? (
+          <View>
+            {renderHeading(nameFormater(string.diagnostics.homeVisitText, 'title'))}
+            <View style={styles.orderSummaryView}>
+              <Text style={styles.addressTextStyle}>{addressText}</Text>
+            </View>
+          </View>
+        ) : null}
+      </>
+    );
+  };
+
   const renderHeading = (title: string) => {
     return (
       <View style={{ marginVertical: 30, marginBottom: 6 }}>
@@ -332,6 +353,11 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
     const firstItem = data?.[0]?.itemName;
     const openPreviousView = title === string.diagnostics.previousCharges && showPreviousCard;
     const openCurrentView = title === string.diagnostics.currentCharges && showCurrCard;
+    const collectionChargesToUse = !!orderDetails?.attributesObj?.homeCollectionCharges
+      ? orderDetails?.attributesObj?.homeCollectionCharges
+      : !!orderDetails?.collectionCharges
+      ? orderDetails?.collectionCharges
+      : 0.0;
     return (
       <View>
         {renderHeading(title)}
@@ -358,7 +384,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
               <Text style={styles.closedViewTotal}>
                 {string.common.Rs}
                 {title === string.diagnostics.previousCharges
-                  ? Number(previousTotal! + orderDetails?.collectionCharges!).toFixed(2)
+                  ? Number(previousTotal! + collectionChargesToUse!).toFixed(2)
                   : Number(modifyTotal! + 0.0).toFixed(2)}
               </Text>
             ) : null}
@@ -420,9 +446,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
               )}
               {renderPrices(
                 string.diagnosticsCartPage.homeCollectionText,
-                title === string.diagnostics.previousCharges
-                  ? orderDetails?.collectionCharges!
-                  : 0.0,
+                title === string.diagnostics.previousCharges ? collectionChargesToUse : 0.0,
                 false
               )}
               {renderPrices(
@@ -437,7 +461,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
               {renderPrices(
                 'Total',
                 title === string.diagnostics.previousCharges
-                  ? Number(previousTotal! + orderDetails?.collectionCharges!)
+                  ? Number(previousTotal! + collectionChargesToUse)
                   : Number(modifyTotal! + 0.0),
                 false,
                 true
@@ -581,6 +605,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
           : null}
         {renderOrderId()}
         {renderSlotView()}
+        {renderAddress()}
         {renderHeading(
           `Tests for ${salutation != '' && salutation}${orderDetails?.patientObj?.firstName! ||
             currentPatient?.firstName}`
@@ -795,4 +820,5 @@ const styles = StyleSheet.create({
     color: colors.SHERPA_BLUE,
     lineHeight: 22,
   },
+  addressTextStyle: { ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1, 18) },
 });

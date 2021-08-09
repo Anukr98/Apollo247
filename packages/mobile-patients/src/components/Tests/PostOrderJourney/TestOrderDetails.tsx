@@ -138,7 +138,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
   const [showInclusionStatus, setShowInclusionStatus] = useState<boolean>(false);
   const [showError, setError] = useState<boolean>(false);
-  const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
+ 
   const [phleboMin, setPhleboMin] = useState(0);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
 
@@ -730,7 +730,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   function _onPressViewReportAction() {
     if (!!selectedOrder?.labReportURL && selectedOrder?.labReportURL != '') {
-      setDisplayViewReport(true);
+      onPressViewReport();
     } else if (!!selectedOrder?.visitNo && selectedOrder?.visitNo != '') {
       //directly open the phr section
       fetchTestReportResult();
@@ -880,24 +880,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
   return (
     <View style={{ flex: 1 }}>
-      {displayViewReport && (
-        <TestViewReportOverlay
-          order={orderDetails}
-          heading=""
-          isVisible={displayViewReport}
-          viewReportOrderId={viewReportOrderId}
-          downloadDocument={() => {
-            const res = downloadDocument(selectedOrder?.labReportURL, 'application/pdf', orderId);
-            if (res == orderId) {
-              setViewReportOrderId(orderId);
-            }
-          }}
-          onClose={() => setDisplayViewReport(false)}
-          onPressViewReport={() => {
-            onPressViewReport();
-          }}
-        />
-      )}
       <SafeAreaView style={theme.viewStyles.container}>
         <View style={styles.headerShadowContainer}>
           <Header

@@ -119,8 +119,8 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     try {
       let response = await fetchOrderDetails(primaryId);
       if (!!response && response?.data && !response?.errors) {
-        let getOrderDetails = response?.data?.getDiagnosticOrderDetails?.ordersList || [];
-        setApiPrimaryOrderDetails([getOrderDetails]!);
+        let getOrderDetailsResponse = response?.data?.getDiagnosticOrderDetails?.ordersList || [];
+        setApiPrimaryOrderDetails([getOrderDetailsResponse]!);
       } else {
         setApiPrimaryOrderDetails([]);
       }
@@ -419,8 +419,9 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
                 <Text style={styles.testName}>
                   {nameFormater(lineItems?.[0]?.itemName, 'title')}
                 </Text>
+                {!!lineItems?.[0]?.editOrderID ? renderNewTag() : null}
                 {remainingItems > 0 && (
-                  <TouchableOpacity onPress={() => _onPressMore(order)} style={{}}>
+                  <TouchableOpacity onPress={() => _onPressMore(order)} style={{ marginLeft: 2 }}>
                     <Text style={styles.moreText}>+ {remainingItems} MORE</Text>
                   </TouchableOpacity>
                 )}
@@ -433,9 +434,14 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     );
   };
 
-  //add order summary
+  const renderNewTag = () => {
+    return (
+      <View style={styles.newItemView}>
+        <Text style={styles.newText}>NEW</Text>
+      </View>
+    );
+  };
 
-  //define type
   function _onPressMore(item: any) {
     const displayId = item?.displayId;
     const array = showMoreArray?.concat(displayId);
@@ -455,9 +461,10 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
           return (
             <View style={{ flexDirection: 'row' }}>
               <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
-              <Text style={styles.testName}>{nameFormater(items?.itemName, 'title')}</Text>
+              <Text style={styles.testName}>{nameFormater(items?.itemName, 'default')}</Text>
+              {!!items.editOrderID ? renderNewTag() : null}
               {lineItems?.length - 1 == index && (
-                <TouchableOpacity onPress={() => _onPressLess(item)} style={{}}>
+                <TouchableOpacity onPress={() => _onPressLess(item)} style={{ marginLeft: 2 }}>
                   <Text style={styles.moreText}> LESS</Text>
                 </TouchableOpacity>
               )}
@@ -697,7 +704,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
     marginBottom: '1.5%',
     marginHorizontal: '3%',
-    maxWidth: '80%',
+    maxWidth: '75%',
   },
   patientName: {
     width: '60%',
@@ -746,5 +753,17 @@ const styles = StyleSheet.create({
   outerView: {
     backgroundColor: colors.WHITE,
     padding: 10,
+  },
+  newItemView: {
+    backgroundColor: '#4CAF50',
+    height: 18,
+    width: 40,
+    borderRadius: 2,
+    borderColor: '#4CAF50',
+    justifyContent: 'center',
+  },
+  newText: {
+    ...theme.viewStyles.text('SB', 10, 'white'),
+    textAlign: 'center',
   },
 });

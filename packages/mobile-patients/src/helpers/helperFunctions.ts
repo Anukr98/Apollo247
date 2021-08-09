@@ -103,6 +103,7 @@ import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { HEALTH_CREDITS } from '../utils/AsyncStorageKey';
 import { getPatientByMobileNumber_getPatientByMobileNumber_patients } from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
 import Share from 'react-native-share';
+import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientAddressObj } from '../graphql/types/getDiagnosticOrderDetails';
 
 const width = Dimensions.get('window').width;
 
@@ -231,7 +232,7 @@ export const getDoctorShareMessage = (doctorData: any) => {
 };
 
 export const formatAddressWithLandmark = (
-  address: savePatientAddress_savePatientAddress_patientAddress
+  address: savePatientAddress_savePatientAddress_patientAddress 
 ) => {
   const addrLine1 = removeConsecutiveComma(
     [address?.addressLine1, address?.addressLine2].filter((v) => v).join(', ')
@@ -288,7 +289,7 @@ export const formatAddressBookAddress = (
 };
 
 export const formatAddressForApi = (
-  address: savePatientAddress_savePatientAddress_patientAddress
+  address: savePatientAddress_savePatientAddress_patientAddress | getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientAddressObj
 ) => {
   const addrLine1 = [address?.addressLine1, address?.addressLine2, address?.landmark, address?.city]
     .filter((v) => v)
@@ -3024,12 +3025,6 @@ export const setAsyncDiagnosticLocation = (address: any) => {
 export  const checkPatientAge = (_selectedPatient: any, fromNewProfile: boolean = false) => {
     let age = !!_selectedPatient?.dateOfBirth ? getAge(_selectedPatient?.dateOfBirth) : null;
     if (age && age <= 10) {
-      Alert.alert(string.common.uhOh, string.diagnostics.minorAgeText, [
-        {
-          text: 'OK',
-          onPress: () => {},
-        },
-      ]);
       return true;
     }
     return false;
