@@ -4797,6 +4797,7 @@ export const GET_INTERNAL_ORDER = gql`
             itemId
             itemName
             price
+            editOrderID
           }
         }
       }
@@ -5141,6 +5142,10 @@ export const MODIFY_DIAGNOSTIC_ORDERS = gql`
       errorMessageToDisplay
       attributes {
         itemids
+        conflictedItems{
+          itemToKeep
+          itemsWithConflicts
+        }
       }
     }
   }

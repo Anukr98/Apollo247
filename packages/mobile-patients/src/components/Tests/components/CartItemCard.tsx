@@ -12,6 +12,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { diagnosticsDisplayPrice } from '@aph/mobile-patients/src/utils/commonUtils';
 import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 
 interface CartItemCardProps {
   index: number;
@@ -40,7 +41,9 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const inclusionItem =
     duplicateArray?.length > 0 &&
     duplicateArray?.map((item: any) =>
-      Number(item?.id) == Number(cartItem?.id) ? nameFormater(item?.removalName, 'default') : ''
+      Number(item?.toKeepItemIds) == Number(cartItem?.id)
+        ? nameFormater(item?.itemsToRemovalName, 'default')
+        : ''
     );
   const filterInclusions =
     duplicateArray?.length > 0 && inclusionItem?.filter((item: string) => item != '');
@@ -53,7 +56,10 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     !!reportGenItem && (reportGenItem?.itemPrepration || reportGenItem?.itemReportTat);
   const inclusionCount = !!reportGenItem && reportGenItem?.itemParameterCount;
 
-  const showSavingsView = isCircleSubscribed && !!cartItem?.circlePrice;
+  const showSavingsView =
+    isCircleSubscribed &&
+    !!cartItem?.circleSpecialPrice &&
+    cartItem?.groupPlan === DIAGNOSTIC_GROUP_PLAN.CIRCLE;
 
   function _onPressCard(item: DiagnosticsCartItem) {
     props.onPressCard(item);
@@ -188,7 +194,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
 
     const savingAmount =
       Number((!!cartItem?.packageMrp && cartItem?.packageMrp!) || mrpToDisplay) -
-      Number(cartItem?.circlePrice!);
+      Number(cartItem?.circleSpecialPrice!);
 
     return (
       <>

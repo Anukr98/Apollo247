@@ -86,6 +86,7 @@ export interface DiagnosticsCartContextProps {
   updatePatientCartItem: ((itemUpdates: any) => void) | null;
   removeMultiPatientCartItems: ((itemId?: DiagnosticsCartItem['id']) => void) | null;
   removePatientItem: ((patientId: string) => void) | null;
+  removeDuplicatePatientCartItems: ((patientId: string, cartItemIds: number[]) => void) | null;
 
   cartTotal: number;
   totalPriceExcludingAnyDiscounts: number;
@@ -228,6 +229,7 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   updatePatientCartItem: null,
   removeMultiPatientCartItems: null,
   removePatientItem: null,
+  removeDuplicatePatientCartItems: null,
 
   cartTotal: 0,
   totalPriceExcludingAnyDiscounts: 0,
@@ -586,18 +588,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         (patient: DiagnosticPatientCartItem) => patient?.patientId === patientId
       );
 
-    //if already exists
     if (!!findPatient) {
-      const getSelectedCartItemsForPatient = findPatient?.cartItems?.filter(
-        (item) => item?.isSelected
-      );
-      //unselect the patient.
-      // if (getSelectedCartItemsForPatient?.length == 0) {
-      //   removePatientCartItem?.(findPatient?.patientId);
-      // } else {
       patientCartItems[findPatientIndex].cartItems = listOfItems; //just update the list with selected item attribute
       setPatientCartItems?.(patientCartItems);
-      // }
     } else {
       const patientCartItemsObj: DiagnosticPatientCartItem = {
         patientId: patientId,
@@ -606,7 +599,6 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
       const newCartItems = [patientCartItemsObj, ...patientCartItems];
       setPatientCartItems?.(newCartItems);
     }
-    //empty the slots and areas everytime due to dependency of api.
     setDiagnosticSlot?.(null);
   };
 
@@ -621,18 +613,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         const newCartItems = findPatient?.cartItems?.filter(
           (item) => Number(item?.id) !== Number(id)
         );
-
-        //if newCart is zero, then simply remove the patient
-        // if (newCartItems?.length == 0) {
-        //   const newCartItems = patientCartItems?.filter((item) => item?.patientId !== patientId);
-        //   setPatientCartItems?.(newCartItems);
-        // } else {
-        //just update the list with selected item attribute
         patientCartItems[findPatientIndex].cartItems = newCartItems;
         setPatientCartItems?.(patientCartItems);
-        // }
       } else {
-        //direclty remove the entry
         removePatientItem?.(patientId);
       }
     }
@@ -669,6 +652,49 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
       }
     });
     setPatientCartItems?.([...newPatientCartItem!]);
+  };
+
+  const removeDuplicatePatientCartItems: DiagnosticsCartContextProps['removeDuplicatePatientCartItems'] = (
+    patientId: string,
+    cartItemIds: number[]
+  ) => {
+    cartItemIds?.forEach((id: number) => {
+      const findPatientIndex = patientCartItems?.findIndex(
+        (patient: DiagnosticPatientCartItem) => patient?.patientId === patientId
+      );
+      if (findPatientIndex !== -1) {
+        const lineItemsIndex = patientCartItems[findPatientIndex]?.cartItems?.findIndex(
+          (cartItems: DiagnosticsCartItem) => Number(cartItems?.id) === Number(id)
+        );
+        if (lineItemsIndex !== -1) {
+          patientCartItems[findPatientIndex]?.cartItems?.splice(lineItemsIndex, 1);
+          console.log('inside removeee');
+          console.log({ patientCartItems });
+        }
+      }
+      const newPatientLineItems: DiagnosticPatientCartItem[] = patientCartItems?.filter(
+        (patient: DiagnosticPatientCartItem) => patient?.cartItems?.length > 0
+      );
+
+      _setPatientCartItems(newPatientLineItems);
+      checkItemRemovedFromAllPatients(id);
+    });
+  };
+
+  const checkItemRemovedFromAllPatients = (cartItemId: number) => {
+    let isItemExistInPatientCart: boolean = true;
+
+    patientCartItems?.forEach((patient: DiagnosticPatientCartItem) => {
+      const findItem = patient?.cartItems?.some(
+        (itemObj: DiagnosticsCartItem) => Number(itemObj?.id) === Number(cartItemId)
+      );
+      if (findItem) {
+        isItemExistInPatientCart = false;
+      }
+    });
+    if (isItemExistInPatientCart) {
+      removeCartItem?.(cartItemId.toString());
+    }
   };
 
   const selectedPatientCartItems =
@@ -1000,6 +1026,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         setPhleboETA,
         showMultiPatientMsg,
         setShowMultiPatientMsg,
+        removeDuplicatePatientCartItems,
       }}
     >
       {props.children}
