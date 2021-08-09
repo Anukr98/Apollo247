@@ -49,7 +49,6 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
     deliveryAddressId,
     setDeliveryAddressId,
     setDiagnosticSlot,
-    setCartPagePopulated,
     selectedPatient,
     setPinCode,
     patientCartItems,
@@ -256,7 +255,6 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
             distanceCharges:
               !!slotDetails?.isPaidSlot && slotDetails?.isPaidSlot ? getDistanceCharges! : 0,
           });
-          setCartPagePopulated?.(true);
           setLoading?.(false);
         }
       }
@@ -283,7 +281,6 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
       } else {
         CommonBugFender('AddressSlotselection_getSlots_NotHubSlotError', error);
         // setDeliveryAddressId?.('');
-        // setCartPagePopulated?.(false);
         setselectedTimeSlot(undefined);
         showAphAlert?.({
           title: string.common.uhOh,
