@@ -444,7 +444,8 @@
     "storeItemsAvailabilityApiFailMsg": "Sorry! We’re unable to check availability of cart items for the selected store. Please try later or opt for Home Delivery.",
     "cartItemsNotAvailableInStore": "The item(s) you have selected are not available in the nearby stores. Kindly opt for Home Delivery and we will deliver them to you directly at your doorstep.",
     "PickupStoreUnavailable": "Sorry! We’re working hard to get to this area! In the meantime, you can try next nearest pincode.",
-    "orderDetailsExpectedDeliverySubTextNonCartOrder": "Delivery date will be updated after successful verification"
+    "orderDetailsExpectedDeliverySubTextNonCartOrder": "Delivery date will be updated after successful verification",
+    "noInternetMessage": "There is no internet. Please check your internet connection."
   },
   "diagnostics": {
     "locationPermissionText": "Allow us to serve you better by entering your area pincode below.",
