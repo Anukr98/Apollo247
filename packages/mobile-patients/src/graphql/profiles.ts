@@ -1854,7 +1854,17 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           lastName
           gender
         }
-        city
+        patientAddressObj {
+          addressLine1
+          addressLine2
+          addressType
+          landmark
+          state
+          city
+          zipcode
+          latitude
+          longitude
+        }
         slotTimings
         slotId
         totalPrice
@@ -1873,6 +1883,8 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         attributesObj{
           initialCollectionCharges
           distanceCharges
+          homeCollectionCharges
+          slotDurationInMinutes
         }
         diagnosticOrderLineItems {
           id
