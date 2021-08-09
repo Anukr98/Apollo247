@@ -2066,7 +2066,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           )}
         </View>
         <Text numberOfLines={2} ellipsizeMode="tail" style={styles.textStyle}>
-          {item?.itemTitle}
+          {nameFormater(item?.itemTitle,'default')}
         </Text>
       </TouchableOpacity>
     );
@@ -2366,6 +2366,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 14, colors.SHERPA_BLUE, 1, 20, 0),
     paddingVertical: 5,
     textAlign:'center',
+    width:'100%'
   },
   widgetSpacing: {
     marginVertical: 20,
