@@ -5257,19 +5257,19 @@ export const FIND_DIAGNOSTIC_SETTINGS = gql`
   }
 `;
 
-// export const GET_VACCINE_BOOKING_LIMIT = gql`
-//   query GetBenefitAvailabilityInfoByCMSIdentifier(
-//     $user_subscription_id: String!
-//     $cms_identifier: String!
-//   ) {
-//     GetBenefitAvailabilityInfoByCMSIdentifier(
-//       user_subscription_id: $user_subscription_id
-//       cms_identifier: $cms_identifier
-//     ) {
-//       response
-//     }
-//   }
-// `;
+export const GET_VACCINE_BOOKING_LIMIT = gql`
+  query GetBenefitAvailabilityInfoByCMSIdentifier(
+    $user_subscription_id: String!
+    $cms_identifier: String!
+  ) {
+    GetBenefitAvailabilityInfoByCMSIdentifier(
+      user_subscription_id: $user_subscription_id
+      cms_identifier: $cms_identifier
+    ) {
+      response
+    }
+  }
+`;
 
 export const VALIDATE_CORPORATE_DOMAIN = gql`
   query getCMSIdentifierByDomain($email: String!) {
@@ -5304,228 +5304,228 @@ export const VERIFY_CORPORATE_EMAIL_OTP_AND_SUBSCRIBE = gql`
 
 ///---BELOW is pointed to vaccine endpoint-------->>
 
-// export const GET_VACCINATION_SITES = gql`
-//   query getResourcesList($city: String!, $vaccine_type: VACCINE_TYPE, $is_retail: Boolean) {
-//     getResourcesList(city: $city, vaccine_type: $vaccine_type, is_retail: $is_retail) {
-//       code
-//       success
-//       message
-//       response {
-//         id
-//         name
-//         created_at
-//         city
-//         is_corporate_site
-//         street_line1
-//         street_line2
-//         street_line3
-//         session_dates {
-//           date
-//           available
-//         }
-//       }
-//     }
-//   }
-// `;
+export const GET_VACCINATION_SITES = gql`
+  query getResourcesList($city: String!, $vaccine_type: VACCINE_TYPE, $is_retail: Boolean) {
+    getResourcesList(city: $city, vaccine_type: $vaccine_type, is_retail: $is_retail) {
+      code
+      success
+      message
+      response {
+        id
+        name
+        created_at
+        city
+        is_corporate_site
+        street_line1
+        street_line2
+        street_line3
+        session_dates {
+          date
+          available
+        }
+      }
+    }
+  }
+`;
 
-// export const GET_OTP_COWIN = gql`
-//   mutation CowinLoginVerify($cowinLoginVerify: CowinLoginVerifyInput!) {
-//     cowinLoginVerify(cowinLoginVerify: $cowinLoginVerify) {
-//       code
-//       message
-//       response {
-//         txnId
-//         token
-//         errorCode
-//         error
-//       }
-//     }
-//   }
-// `;
+export const GET_OTP_COWIN = gql`
+  mutation CowinLoginVerify($cowinLoginVerify: CowinLoginVerifyInput!) {
+    cowinLoginVerify(cowinLoginVerify: $cowinLoginVerify) {
+      code
+      message
+      response {
+        txnId
+        token
+        errorCode
+        error
+      }
+    }
+  }
+`;
 
-// export const GET_BENEFICIARY_PROFILES = gql`
-//   query GetCowinBeneficiary($getCowinBeneficiary: GetCowinBeneficiaryInput!) {
-//     getCowinBeneficiary(getCowinBeneficiary: $getCowinBeneficiary) {
-//       code
-//       message
-//       response {
-//         beneficiary_reference_id
-//         name
-//         photo_id_type
-//         photo_id_number
-//         vaccination_status
-//         vaccine
-//         dose1_date
-//         dose2_date
-//       }
-//     }
-//   }
-// `;
+export const GET_BENEFICIARY_PROFILES = gql`
+  query GetCowinBeneficiary($getCowinBeneficiary: GetCowinBeneficiaryInput!) {
+    getCowinBeneficiary(getCowinBeneficiary: $getCowinBeneficiary) {
+      code
+      message
+      response {
+        beneficiary_reference_id
+        name
+        photo_id_type
+        photo_id_number
+        vaccination_status
+        vaccine
+        dose1_date
+        dose2_date
+      }
+    }
+  }
+`;
 
-// export const GET_VACCINATION_AVAILABLE_DATES = gql`
-//   query getResourcesSessionAvailableDate($resource_id: String!, $vaccine_type: VACCINE_TYPE) {
-//     getResourcesSessionAvailableDate(resource_id: $resource_id, vaccine_type: $vaccine_type) {
-//       code
-//       success
-//       message
-//       response
-//     }
-//   }
-// `;
+export const GET_VACCINATION_AVAILABLE_DATES = gql`
+  query getResourcesSessionAvailableDate($resource_id: String!, $vaccine_type: VACCINE_TYPE) {
+    getResourcesSessionAvailableDate(resource_id: $resource_id, vaccine_type: $vaccine_type) {
+      code
+      success
+      message
+      response
+    }
+  }
+`;
 
-// export const GET_VACCINATION_SLOTS = gql`
-//   query getResourcesSessionAvailableByDate(
-//     $resource_id: String!
-//     $session_date: Date
-//     $vaccine_type: VACCINE_TYPE
-//     $is_retail: Boolean
-//   ) {
-//     getResourcesSessionAvailableByDate(
-//       resource_id: $resource_id
-//       session_date: $session_date
-//       vaccine_type: $vaccine_type
-//       is_retail: $is_retail
-//     ) {
-//       code
-//       success
-//       message
-//       response {
-//         start_date_time
-//         end_date_time
-//         session_name
-//         id
-//         selling_price
-//         vaccine_type
-//         available_for_booking
-//         payment_type
-//       }
-//     }
-//   }
-// `;
+export const GET_VACCINATION_SLOTS = gql`
+  query getResourcesSessionAvailableByDate(
+    $resource_id: String!
+    $session_date: Date
+    $vaccine_type: VACCINE_TYPE
+    $is_retail: Boolean
+  ) {
+    getResourcesSessionAvailableByDate(
+      resource_id: $resource_id
+      session_date: $session_date
+      vaccine_type: $vaccine_type
+      is_retail: $is_retail
+    ) {
+      code
+      success
+      message
+      response {
+        start_date_time
+        end_date_time
+        session_name
+        id
+        selling_price
+        vaccine_type
+        available_for_booking
+        payment_type
+      }
+    }
+  }
+`;
 
-// export const SUBMIT_VACCINATION_BOOKING_REQUEST = gql`
-//   mutation CreateAppointment($appointmentInput: CreateAppointmentInput!) {
-//     CreateAppointment(appointmentInput: $appointmentInput) {
-//       response {
-//         display_id
-//         id
-//       }
-//       success
-//       code
-//       message
-//     }
-//   }
-// `;
+export const SUBMIT_VACCINATION_BOOKING_REQUEST = gql`
+  mutation CreateAppointment($appointmentInput: CreateAppointmentInput!) {
+    CreateAppointment(appointmentInput: $appointmentInput) {
+      response {
+        display_id
+        id
+      }
+      success
+      code
+      message
+    }
+  }
+`;
 
-// export const GET_VACCINATION_APPOINMENT_DETAILS = gql`
-//   query GetAppointmentDetails($appointment_id: String!) {
-//     GetAppointmentDetails(appointment_id: $appointment_id) {
-//       message
-//       code
-//       response {
-//         id
-//         display_id
-//         dose_number
-//         patient_info {
-//           firstName
-//           lastName
-//           age
-//           gender
-//           uhid
-//           id
-//           mobileNumber
-//         }
-//         status
-//         payment_type
-//         resource_session_details {
-//           session_name
-//           start_date_time
-//           vaccine_type
-//           station_name
-//           selling_price
-//           resource_detail {
-//             name
-//             street_line1
-//             street_line2
-//             street_line3
-//             city
-//             state
-//             is_corporate_site
-//           }
-//         }
-//       }
-//     }
-//   }
-// `;
+export const GET_VACCINATION_APPOINMENT_DETAILS = gql`
+  query GetAppointmentDetails($appointment_id: String!) {
+    GetAppointmentDetails(appointment_id: $appointment_id) {
+      message
+      code
+      response {
+        id
+        display_id
+        dose_number
+        patient_info {
+          firstName
+          lastName
+          age
+          gender
+          uhid
+          id
+          mobileNumber
+        }
+        status
+        payment_type
+        resource_session_details {
+          session_name
+          start_date_time
+          vaccine_type
+          station_name
+          selling_price
+          resource_detail {
+            name
+            street_line1
+            street_line2
+            street_line3
+            city
+            state
+            is_corporate_site
+          }
+        }
+      }
+    }
+  }
+`;
 
-// export const CANCEL_VACCINATION_APPOINTMENT = gql`
-//   mutation CancelAppointment($appointment_id: String, $display_id: Float) {
-//     CancelAppointment(appointment_id: $appointment_id, display_id: $display_id) {
-//       code
-//       success
-//       message
-//       response {
-//         id
-//         status
-//       }
-//     }
-//   }
-// `;
+export const CANCEL_VACCINATION_APPOINTMENT = gql`
+  mutation CancelAppointment($appointment_id: String, $display_id: Float) {
+    CancelAppointment(appointment_id: $appointment_id, display_id: $display_id) {
+      code
+      success
+      message
+      response {
+        id
+        status
+      }
+    }
+  }
+`;
 
-// export const GET_ALL_VACCINATION_APPOINTMENTS = gql`
-//   query GetAllAppointments {
-//     GetAllAppointments {
-//       code
-//       success
-//       message
-//       response {
-//         id
-//         dose_number
-//         resource_id
-//         patient_info {
-//           firstName
-//           lastName
-//           age
-//           gender
-//           uhid
-//           relation
-//         }
-//         status
-//         payment_type
-//         resource_session_details {
-//           session_name
-//           start_date_time
-//           vaccine_type
-//           resource_detail {
-//             name
-//             street_line1
-//             street_line2
-//             street_line3
-//             city
-//             state
-//           }
-//         }
-//         display_id
-//         payment_type
-//       }
-//     }
-//   }
-// `;
+export const GET_ALL_VACCINATION_APPOINTMENTS = gql`
+  query GetAllAppointments {
+    GetAllAppointments {
+      code
+      success
+      message
+      response {
+        id
+        dose_number
+        resource_id
+        patient_info {
+          firstName
+          lastName
+          age
+          gender
+          uhid
+          relation
+        }
+        status
+        payment_type
+        resource_session_details {
+          session_name
+          start_date_time
+          vaccine_type
+          resource_detail {
+            name
+            street_line1
+            street_line2
+            street_line3
+            city
+            state
+          }
+        }
+        display_id
+        payment_type
+      }
+    }
+  }
+`;
 
-// export const COWIN_REGISTRATION = gql`
-//    mutation cowinRegistration($cowinRegistration: CowinRegistrationInput!) {
-//      cowinRegistration(cowinRegistration: $cowinRegistration) {
-//        code
-//        response {
-//          txnId
-//          beneficiary_reference_id
-//          errorCode
-//          error
-//        }
-//        message
-//      }
-//    }
-//  `;
+export const COWIN_REGISTRATION = gql`
+   mutation cowinRegistration($cowinRegistration: CowinRegistrationInput!) {
+     cowinRegistration(cowinRegistration: $cowinRegistration) {
+       code
+       response {
+         txnId
+         beneficiary_reference_id
+         errorCode
+         error
+       }
+       message
+     }
+   }
+ `;
 
 export const DIAGNOSITC_EXOTEL_CALLING = gql`
   mutation diagnosticExotelCalling($orderId: ID!) {
@@ -5690,7 +5690,8 @@ mutation getDiagnosticItemRecommendations($itemIds:[Int]!, $records: Int){
 export const GET_DIAGNOSTIC_EXPRESS_SLOTS_INFO  = gql`
   query getUpcomingSlotInfo($latitude: Float!, $longitude: Float!, $zipcode: String!, $serviceability: DiagnosticsServiceability!) {
     getUpcomingSlotInfo(latitude: $latitude, longitude: $longitude, zipcode: $zipcode, serviceability: $serviceability) {
-      scalar
+      status
+      slotInfo
     }
   }
 `;

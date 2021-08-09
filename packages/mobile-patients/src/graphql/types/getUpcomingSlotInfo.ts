@@ -9,8 +9,14 @@ import { DiagnosticsServiceability } from "./globalTypes";
 // GraphQL query operation: getUpcomingSlotInfo
 // ====================================================
 
+export interface getUpcomingSlotInfo_getUpcomingSlotInfo {
+  __typename: "UpComingSlotInfo";
+  status: boolean;
+  slotInfo: string;
+}
+
 export interface getUpcomingSlotInfo {
-  getUpcomingSlotInfo: string;
+  getUpcomingSlotInfo: getUpcomingSlotInfo_getUpcomingSlotInfo;
 }
 
 export interface getUpcomingSlotInfoVariables {

@@ -46,7 +46,11 @@ import {
   GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  DiagnosticData,
+  LocationData,
+  useAppCommonData,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   findDiagnosticsByItemIDsAndCityIDVariables,
   findDiagnosticsByItemIDsAndCityID,
@@ -79,6 +83,7 @@ import _ from 'lodash';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { getDiagnosticExpressSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 
 const screenWidth = Dimensions.get('window').width;
 export interface TestPackageForDetails extends TestPackage {
@@ -160,7 +165,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   } = useDiagnosticsCart();
   const { pharmacyCircleAttributes } = useShoppingCart();
 
-  const { diagnosticServiceabilityData, isDiagnosticLocationServiceable } = useAppCommonData();
+  const {
+    diagnosticServiceabilityData,
+    isDiagnosticLocationServiceable,
+    diagnosticLocation,
+  } = useAppCommonData();
 
   const testDetails = props.navigation.getParam('testDetails', {} as TestPackageForDetails);
   const testName = props.navigation.getParam('itemName');
@@ -192,6 +201,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [readMore, setReadMore] = useState(true);
   const [errorState, setErrorState] = useState(false);
   const [widgetsData, setWidgetsData] = useState([] as any);
+  const [expressSlotMsg, setExpressSlotMsg] = useState<string>('');
 
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
 
@@ -220,6 +230,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       },
       fetchPolicy: 'no-cache',
     });
+
+  useEffect(() => {
+    getExpressSlots(diagnosticServiceabilityData!, diagnosticLocation!);
+  }, []);
 
   /**
    * fetching the details wrt itemId
@@ -383,6 +397,41 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       setLoadingContext?.(false);
     }
   };
+
+  async function getExpressSlots(
+    serviceabilityObject: DiagnosticData,
+    selectedAddress: LocationData
+  ) {
+    const getLat = selectedAddress?.latitude!;
+    const getLng = selectedAddress?.longitude!;
+    const getZipcode = selectedAddress?.pincode;
+    const getServiceablityObject = {
+      cityID: Number(serviceabilityObject?.cityId),
+      stateID: Number(serviceabilityObject?.stateId),
+    };
+    try {
+      const res = await getDiagnosticExpressSlots(
+        client,
+        getLat,
+        getLng,
+        String(getZipcode),
+        getServiceablityObject
+      );
+      if (res?.data?.getUpcomingSlotInfo) {
+        const getResponse = res?.data?.getUpcomingSlotInfo;
+        if (getResponse?.status) {
+          setExpressSlotMsg(getResponse?.slotInfo);
+        } else {
+          setExpressSlotMsg('');
+        }
+      } else {
+        setExpressSlotMsg('');
+      }
+    } catch (error) {
+      CommonBugFender('getExpressSlots_TestDetails', error);
+      setExpressSlotMsg('');
+    }
+  }
 
   const homeBreadCrumb: TestBreadcrumbLink = {
     title: 'Home',
@@ -1110,7 +1159,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       <View style={styles.outerExpressView}>
         <View style={styles.innerExpressView}>
           <ExpressSlotClock style={styles.expressSlotIcon} />
-          <Text style={styles.expressSlotText}>po</Text>
+          <Text style={styles.expressSlotText}>{expressSlotMsg}</Text>
         </View>
       </View>
     );
@@ -1125,7 +1174,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       {!errorState ? (
         <>
           {renderHeader()}
-          {renderExpressSlots()}
+          {expressSlotMsg != '' ? renderExpressSlots() : null}
           {renderBreadCrumb()}
           <ScrollView
             bounces={false}
