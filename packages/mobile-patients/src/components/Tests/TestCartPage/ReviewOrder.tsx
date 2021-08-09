@@ -1282,7 +1282,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const overallStatus =
       source === BOOKING_TYPE.SAVE
         ? data?.filter((patientsObj: any) => patientsObj?.status === false)
-        : typeof data == 'object'
+        : source === BOOKING_TYPE.MODIFY
         ? [data]
         : data; //since not coming in form of array
 
@@ -1296,7 +1296,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         description: message,
         onPressOk: () => {
           removeDuplicateCartItems(
-            typeof data == 'object' ? [data] : data,
+            source === BOOKING_TYPE.MODIFY ? [data] : data,
             input?.items,
             patientId
           );
