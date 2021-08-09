@@ -44,8 +44,6 @@ import {
   PLAN,
   OrderCreate,
   OrderVerticals,
-  PAYMENT_MODE,
-  OrderInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   calculateCircleDoctorPricing,
@@ -150,6 +148,8 @@ interface PaymentCheckoutProps extends NavigationScreenProps {
   nextAvailableSlot: string;
   selectedTimeSlot: string;
   whatsAppUpdate: boolean;
+  bookingFee: number;
+  isBookingFeeExempted: boolean;
 }
 export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const [coupon, setCoupon] = useState<string>('');
@@ -175,6 +175,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const selectedTimeSlot = props.navigation.getParam('selectedTimeSlot');
   const whatsAppUpdate = props.navigation.getParam('whatsAppUpdate');
   const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
+  const bookingFee = props.navigation.getParam('bookingFee');
+  const isBookingFeeExempted = props.navigation.getParam('isBookingFeeExempted');
   const isOnlineConsult =
     selectedTab === string.consultModeTab.VIDEO_CONSULT ||
     selectedTab === string.consultModeTab.CONSULT_ONLINE;
@@ -214,14 +216,15 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     : physicalConsultDiscountedPrice;
   const storeCode =
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
-  const amount = Number(Decimal.sub(Number(price), couponDiscountFees));
+  const consultBookingFee = isBookingFeeExempted ? 0 : bookingFee;
+  const amount = Number(Decimal.sub(Number(price), couponDiscountFees).plus(consultBookingFee));
   const amountToPay =
     circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
         ? Number(
             Decimal.sub(onlineConsultSlashedPrice, couponDiscountFees).plus(
               circleSubscriptionId == '' ? Number(circlePlanSelected?.currentSellingPrice) : 0
-            )
+            ).plus(consultBookingFee)
           )
         : Number(
             Decimal.sub(physicalConsultSlashedPrice, couponDiscountFees).plus(
@@ -232,7 +235,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const consultAmounttoPay =
     circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
-        ? Number(Decimal.sub(onlineConsultSlashedPrice, couponDiscountFees))
+        ? Number(Decimal.sub(onlineConsultSlashedPrice, couponDiscountFees).plus(
+          consultBookingFee))
         : Number(Decimal.sub(physicalConsultSlashedPrice, couponDiscountFees))
       : amount;
   const notSubscriberUserForCareDoctor =
@@ -440,6 +444,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           couponDiscountFees={couponDiscountFees}
           circleSubscriptionId={circleSubscriptionId}
           planSelected={circlePlanSelected}
+          bookingFee={bookingFee}
+          isBookingFeeExempted={isBookingFeeExempted}
         />
       </View>
     );

@@ -17,6 +17,8 @@ interface ConsultPriceProps {
   couponDiscountFees: number;
   circleSubscriptionId?: string;
   planSelected?: any;
+  bookingFee: number;
+  isBookingFeeExempted: boolean;
 }
 
 export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
@@ -28,6 +30,8 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
     couponDiscountFees,
     circleSubscriptionId,
     planSelected,
+    bookingFee,
+    isBookingFeeExempted,
   } = props;
   const isOnlineConsult =
     selectedTab === string.consultModeTab.VIDEO_CONSULT ||
@@ -55,31 +59,20 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
       ? physicalConsultSlashedPrice - couponDiscountFees
       : physicalConsultMRPPrice - couponDiscountFees
     : Number(doctorFees) - couponDiscountFees;
+  
+  const finalBookingFee = isBookingFeeExempted ? 0 : bookingFee;
+  const isCirclePricing = !!circleSubscriptionId || planSelected;
 
   const renderCareDoctorPricing = () => {
     return (
       <View style={styles.normalRowContainer}>
-        <Text
-          style={[
-            styles.carePrice,
-            {
-              textDecorationLine: circleSubscriptionId || planSelected ? 'line-through' : 'none',
-              ...theme.viewStyles.text(
-                'M',
-                16,
-                circleSubscriptionId || planSelected
-                  ? theme.colors.BORDER_BOTTOM_COLOR
-                  : theme.colors.LIGHT_BLUE
-              ),
-            },
-          ]}
-        >
+        <Text style={isCirclePricing ? styles.slicedText : styles.regularText}>
           {string.common.Rs}
           {convertNumberToDecimal(
             isOnlineConsult ? onlineConsultMRPPrice : physicalConsultMRPPrice
           )}
         </Text>
-        {!!circleSubscriptionId || planSelected ? (
+        {isCirclePricing ? (
           <Text style={styles.regularText}>
             {string.common.Rs}
             {convertNumberToDecimal(
@@ -97,6 +90,20 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
         {string.common.Rs}
         {convertNumberToDecimal(Number(doctorFees))}
       </Text>
+    );
+  };
+
+  const renderBookingFee = () => {
+    return (
+      <View style={styles.normalRowContainer}>
+        {
+          isBookingFeeExempted &&
+          <Text style={styles.slicedText}>{string.common.Rs + bookingFee}</Text>
+        }
+        <Text style={styles.regularText}>
+          {string.common.Rs + (isBookingFeeExempted ? '0' : bookingFee)}
+        </Text>
+      </View>
     );
   };
 
@@ -137,6 +144,12 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
           </Text>
         </View>
       ) : null}
+      <View style={[styles.rowContainer, { marginTop: 8 }]}>
+        <Text style={styles.regularText}>
+          {string.common.bookingFee}
+        </Text>
+        {renderBookingFee()}
+      </View>
       <View style={styles.seperatorLine} />
       <View style={styles.rowContainer}>
         <Text style={styles.regularText}>{string.common.toPay}</Text>
@@ -148,13 +161,15 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
                   onlineConsultSlashedPrice -
                     couponDiscountFees +
                     (circleSubscriptionId == '' ? Number(planSelected?.currentSellingPrice) : 0)
+                    + finalBookingFee
                 )
               : convertNumberToDecimal(
                   physicalConsultSlashedPrice -
                     couponDiscountFees +
                     Number(planSelected?.currentSellingPrice)
+                    + finalBookingFee
                 )
-            : convertNumberToDecimal(amountToPay)}
+            : convertNumberToDecimal(amountToPay + finalBookingFee)}
         </Text>
       </View>
     </View>
@@ -187,12 +202,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  carePrice: {
-    ...theme.viewStyles.text('M', 16, theme.colors.BORDER_BOTTOM_COLOR),
-    textDecorationLine: 'line-through',
-    textDecorationStyle: 'solid',
-  },
   couponText: {
     ...theme.viewStyles.text('M', 16, theme.colors.SKY_BLUE),
+  },
+  slicedText: {
+    ...theme.viewStyles.text('M', 14, theme.colors.BORDER_BOTTOM_COLOR),
+    textDecorationLine: 'line-through',
+    textDecorationStyle: 'solid',
+    marginEnd: 4,
   },
 });

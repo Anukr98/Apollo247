@@ -134,7 +134,8 @@
     "CorporateVaccineBenefit": "DEPENDENT_VACCINATION_REG",
     "noDiagnosticsAvailable": "Unfortunately, we do not have any diagnostic(s) available right now.",
     "unableToSetDeliveryAddress": "We're sorry! Unable to set delivery address. Please try again after some time",
-    "circleNoSubscriptionText": "No Subscription"
+    "circleNoSubscriptionText": "No Subscription",
+    "bookingFee": "Booking Fee",
   },
   "components": {
     "medicineDetails": {

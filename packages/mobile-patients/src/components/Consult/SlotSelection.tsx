@@ -800,6 +800,8 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
       selectedTimeSlot: selectedTimeSlot,
       whatsAppUpdate: whatsAppUpdate,
       isDoctorsOfTheHourStatus: doctorDetails?.doctorsOfTheHourStatus,
+      bookingFee: doctorDetails?.bookingFee,
+      isBookingFeeExempted: doctorDetails?.isBookingFeeExempted,
     };
     const cleverTapEventAttributes: CleverTapEvents[CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION] = {
       docName: g(doctorDetails, 'fullName')!,
