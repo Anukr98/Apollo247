@@ -671,7 +671,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         onPressPlaceOrder={onPressPayByCash}
         showDiagCOD={showCOD}
         diagMsg={showDiagnosticHCMsg}
-        disableCod={disableCod}
+        pharmaDisableCod={disableCod}
       />
     );
   };

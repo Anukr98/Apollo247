@@ -14,13 +14,20 @@ export interface PayByCashProps {
   businessLine: 'consult' | 'diagnostics' | 'pharma' | 'subscription';
   showDiagCOD: boolean;
   diagMsg: string;
-  disableCod?: boolean;
+  pharmaDisableCod?: boolean;
 }
 
 export const PayByCash: React.FC<PayByCashProps> = (props) => {
-  const { onPressPlaceOrder, HCselected, businessLine, showDiagCOD, diagMsg, disableCod } = props;
+  const {
+    onPressPlaceOrder,
+    HCselected,
+    businessLine,
+    showDiagCOD,
+    diagMsg,
+    pharmaDisableCod,
+  } = props;
   const disableDiagCOD = businessLine == 'diagnostics' && !showDiagCOD;
-  const disableCodOption = disableDiagCOD || HCselected || disableCod;
+  const disableCodOption = disableDiagCOD || HCselected || pharmaDisableCod;
 
   const renderPaybyCash = () => {
     return (
@@ -60,7 +67,7 @@ export const PayByCash: React.FC<PayByCashProps> = (props) => {
       <Text style={styles.codAlertMsg}>
         {'! COD option is not available along with OneApollo Health Credits.'}
       </Text>
-    ) : disableCod ? (
+    ) : pharmaDisableCod ? (
       <Text style={styles.codAlertMsg}>COD option is not available for this order.</Text>
     ) : null;
   };
