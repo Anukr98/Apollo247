@@ -123,7 +123,7 @@ import { SymptomTracker } from '@aph/mobile-patients/src/components/SymptomTrack
 import { SymptomSelection } from '@aph/mobile-patients/src/components/SymptomSelection';
 import { PaymentCheckout } from '@aph/mobile-patients/src/components/Consult/PaymentCheckout';
 import { PaymentCheckoutPhysical } from '@aph/mobile-patients/src/components/Consult/PaymentCheckoutPhysical';
-import { CircleSubscription } from '@aph/mobile-patients/src/components/CirclePlan/CircleSubscription';
+import { SubscriptionCart } from '@aph/mobile-patients/src/components/CirclePlan/SubscriptionCart';
 import { SubscriptionPaymentGateway } from '@aph/mobile-patients/src/components/CirclePlan/SubscriptionPaymentGateway';
 import { PrescriptionOrderSummary } from '@aph/mobile-patients/src/components/Medicines/PrescriptionOrderSummary';
 import { Maps } from '@aph/mobile-patients/src/components/ui/Maps';
@@ -264,7 +264,7 @@ export enum AppRoutes {
   AppointmentFilterScene = 'AppointmentFilterScene',
   PaymentCheckout = 'PaymentCheckout',
   PaymentCheckoutPhysical = 'PaymentCheckoutPhysical',
-  CircleSubscription = 'CircleSubscription',
+  SubscriptionCart = 'SubscriptionCart',
   SubscriptionPaymentGateway = 'SubscriptionPaymentGateway',
   PrescriptionOrderSummary = 'PrescriptionOrderSummary',
   PaymentMethods = 'PaymentMethods',
@@ -658,8 +658,8 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.PaymentCheckoutPhysical]: {
     screen: PaymentCheckoutPhysical,
   },
-  [AppRoutes.CircleSubscription]: {
-    screen: CircleSubscription,
+  [AppRoutes.SubscriptionCart]: {
+    screen: SubscriptionCart,
   },
   [AppRoutes.SubscriptionPaymentGateway]: {
     screen: SubscriptionPaymentGateway,
