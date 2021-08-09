@@ -82,7 +82,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
           </View>
         )}
         <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 25, 0)}>
-          (Inclusive of all Taxes)
+          Inclusive of all Taxes
         </Text>
       </View>
     );
