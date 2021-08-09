@@ -9,9 +9,16 @@ import { saveModifyDiagnosticOrderInput } from "./globalTypes";
 // GraphQL mutation operation: saveModifyDiagnosticOrder
 // ====================================================
 
+export interface saveModifyDiagnosticOrder_saveModifyDiagnosticOrder_attributes_conflictedItems {
+  __typename: "conflictedItems";
+  itemToKeep: (number | null)[] | null;
+  itemsWithConflicts: (number | null)[] | null;
+}
+
 export interface saveModifyDiagnosticOrder_saveModifyDiagnosticOrder_attributes {
   __typename: "CustomResponse";
   itemids: string | null;
+  conflictedItems: (saveModifyDiagnosticOrder_saveModifyDiagnosticOrder_attributes_conflictedItems | null)[] | null;
 }
 
 export interface saveModifyDiagnosticOrder_saveModifyDiagnosticOrder {

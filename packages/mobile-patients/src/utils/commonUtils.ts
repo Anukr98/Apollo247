@@ -407,8 +407,8 @@ export const diagnosticsDisplayPrice = (item: DiagnosticsCartItem , isCircleMemb
     discountSpecialPrice
   );
 
-  const promoteCircle = discount < circleDiscount && specialDiscount < circleDiscount;
-  const promoteDiscount = promoteCircle ? false : discount < specialDiscount;
+  const promoteCircle = item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.CIRCLE && discount < circleDiscount && specialDiscount < circleDiscount;
+  const promoteDiscount = promoteCircle ? false : item?.groupPlan === DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT && discount < specialDiscount;
 
   const mrpToDisplay = calculateMrpToDisplay(
     promoteCircle,

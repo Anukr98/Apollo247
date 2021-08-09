@@ -274,7 +274,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
   const defaultAddress = addresses?.find((item) => item?.defaultAddress);
   const [pageLoading, setPageLoading] = useState<boolean>(false);
-  const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
+ 
   const [clickedItem, setClickedItem] = useState<any>([]);
   const [showLocationPopup, setLocationPopup] = useState<boolean>(false);
   const [source, setSource] = useState<DIAGNOSTIC_PINCODE_SOURCE_TYPE>();
@@ -1821,7 +1821,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         item?.id
       );
       if (!!item?.labReportURL && item?.labReportURL != '') {
-        setDisplayViewReport(true);
+        onPressViewReport();
         setClickedItem(item);
       } else {
         showAphAlert?.({
@@ -2089,7 +2089,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             <WidgetLiverIcon style={styles.image} resizeMode={'contain'} />
           )}
         </View>
-        <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>
+        <Text numberOfLines={2} ellipsizeMode="tail" style={styles.textStyle}>
           {item?.itemTitle}
         </Text>
       </TouchableOpacity>
@@ -2097,7 +2097,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const gridWidgetSection = (data: any) => {
-    const numColumns = 3;
+    const numColumns = 4;
     let newGridData: any[] = [];
     if (
       data?.diagnosticWidgetData?.length >= numColumns &&
@@ -2148,31 +2148,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
-      {displayViewReport && (
-        <TestViewReportOverlay
-          order={clickedItem}
-          heading=""
-          isVisible={displayViewReport}
-          onClose={() => {
-            setDisplayViewReport(false);
-            setClickedItem([]);
-          }}
-          downloadDocument={() => {
-            const res = downloadDocument(
-              clickedItem?.labReportURL,
-              'application/pdf',
-              clickedItem?.orderId
-            );
-            if (res == clickedItem?.orderId) {
-              setViewReportOrderId(clickedItem?.orderId);
-            }
-          }}
-          viewReportOrderId={viewReportOrderId}
-          onPressViewReport={() => {
-            onPressViewReport();
-          }}
-        />
-      )}
       <SafeAreaView style={{ ...viewStyles.container }}>
         {pageLoading ? (
           <View style={{ backgroundColor: colors.WHITE }}>
@@ -2391,29 +2366,30 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   circleView: {
-    width: 80,
-    height: 80,
-    borderRadius: 80 / 2,
+    width: 50,
+    height: 50,
+    borderRadius: 50 / 2,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#f9f9f9',
   },
   image: {
-    width: 50,
-    height: 50,
+    width: 30,
+    height: 30,
     backgroundColor: '#f9f9f9',
   },
   gridPart: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: '33%',
+    width: '25%',
     borderColor: '#E8E8E8',
     borderWidth: 0.5,
     padding: 15,
   },
   textStyle: {
     ...theme.viewStyles.text('SB', 14, colors.SHERPA_BLUE, 1, 20, 0),
-    padding: 5,
+    paddingVertical: 5,
+    textAlign:'center',
   },
   widgetSpacing: {
     marginVertical: 20,
