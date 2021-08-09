@@ -21,6 +21,7 @@ export interface saveMedicineOrderV2_saveMedicineOrderV2 {
   errorCode: number | null;
   errorMessage: string | null;
   transactionId: number | null;
+  isCodEligible: boolean | null;
   orders: (saveMedicineOrderV2_saveMedicineOrderV2_orders | null)[] | null;
 }
 
