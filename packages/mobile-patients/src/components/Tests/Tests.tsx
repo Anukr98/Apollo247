@@ -2350,8 +2350,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
   },
   image: {
-    width: 50,
-    height: 50,
+    width: 30,
+    height: 30,
     backgroundColor: '#f9f9f9',
   },
   gridPart: {
