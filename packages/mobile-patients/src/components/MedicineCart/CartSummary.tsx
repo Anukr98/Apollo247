@@ -491,7 +491,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         !circleSubscriptionId && circlePlanSelected
           ? await saveOrderWithSubscription()
           : await saveOrder();
-      const { orders, transactionId, errorCode } = response?.data?.saveMedicineOrderV2 || {};
+      const { orders, transactionId, errorCode, isCodEligible } =
+        response?.data?.saveMedicineOrderV2 || {};
       const subscriptionId = response?.data?.CreateUserSubscription?.response?._id;
       const data = await createOrderInternal(orders, subscriptionId);
       if (data?.data?.createOrderInternal?.success) {
@@ -514,6 +515,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
             pharmacyUserTypeAttribute,
             orders
           ),
+          disableCOD: !isCodEligible,
         });
       }
       setloading(false);

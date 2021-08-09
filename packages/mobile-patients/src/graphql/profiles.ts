@@ -1118,7 +1118,6 @@ export const ADD_PRESCRIPTION_RECORD = gql`
   }
 `;
 
-
 export const GET_DOCTOR_DETAILS_BY_ID = gql`
   query getDoctorDetailsById($id: String!) {
     getDoctorDetailsById(id: $id) {
@@ -1725,6 +1724,7 @@ export const SAVE_MEDICINE_ORDER_OMS_V2 = gql`
       errorCode
       errorMessage
       transactionId
+      isCodEligible
       orders {
         id
         orderAutoId
@@ -1743,6 +1743,7 @@ export const SAVE_ORDER_WITH_SUBSCRIPTION = gql`
       errorCode
       errorMessage
       transactionId
+      isCodEligible
       orders {
         id
         orderAutoId
@@ -5385,8 +5386,8 @@ export const CANCEL_VACCINATION_APPOINTMENT = gql`
         status
       }
     }
-  }`;
-
+  }
+`;
 
 export const GET_ALL_VACCINATION_APPOINTMENTS = gql`
   query GetAllAppointments {
@@ -5582,25 +5583,22 @@ export const GET_VACCINATION_APPOINMENT_DETAILS = gql`
   }
 `;
 
-export const MAKE_APPOINTMENT_BOOKING_REQUEST =gql`
-mutation appointmentBookingRequest(
-  $bookAppointment: AppointmentBookingRequestInput!
-) {
-  appointmentBookingRequest(appointmentInput: $bookAppointment) {
-    appointment {
-      id
-      doctorId
-      appointmentDateTime
-      status
-      appointmentType
-      patientId
+export const MAKE_APPOINTMENT_BOOKING_REQUEST = gql`
+  mutation appointmentBookingRequest($bookAppointment: AppointmentBookingRequestInput!) {
+    appointmentBookingRequest(appointmentInput: $bookAppointment) {
+      appointment {
+        id
+        doctorId
+        appointmentDateTime
+        status
+        appointmentType
+        patientId
+        __typename
+      }
       __typename
     }
-    __typename
   }
-}
 `;
-
 
 export const FETCH_JUSPAY_CUSTOMERID = gql`
   mutation generateUniqueCustomerId {
