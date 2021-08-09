@@ -12,6 +12,7 @@ import {
   OrderPlacedIcon,
   OrderTrackerSmallIcon,
   ClockIcon,
+  OvalUpcoming,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import _ from 'lodash';
 import {
@@ -41,6 +42,7 @@ import {
   g,
   getPatientNameById,
   getTestOrderStatusText,
+  getTestOrderStatusTextDetails,
   handleGraphQlError,
   nameFormater,
   navigateToScreenWithEmptyStack,
@@ -204,13 +206,12 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       setError(true);
     }
   };
-  let h = [
-    { __typename: 'upcomingStatus', orderStatus: 'PICKUP_CONFIRMED' },
-    { __typename: 'upcomingStatus', orderStatus: 'PHLEBO_CHECK_IN' },
-    { __typename: 'upcomingStatus', orderStatus: 'PHLEBO_COMPLETED' },
-    { __typename: 'upcomingStatus', orderStatus: 'SAMPLE_SUBMITTED' },
-    { __typename: 'upcomingStatus', orderStatus: 'PARTIAL_ORDER_COMPLETED' },
-    { __typename: 'upcomingStatus', orderStatus: 'ORDER_COMPLETED' },
+  const sampleCollectedArray = [
+    DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
+    DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
+    DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
+    DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
+    DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
   ];
 
   async function callOrderLevelStatusApi(orderId: string) {
@@ -263,7 +264,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     if (currentPatient) {
       updateRateDeliveryBtnVisibility();
     }
-    fetchFindDiagnosticSettings()
+    fetchFindDiagnosticSettings();
   }, []);
 
   useEffect(() => {
@@ -404,6 +405,17 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     }
   };
 
+  const renderOrderReportTat = (reportTat: any) => {
+    return (
+      <View
+        style={styles.reportTatBottomview}
+      >
+        <ClockIcon />
+        <Text style={styles.reportOrderTextStyle}> {`Get reports by ${reportTat}`} </Text>
+      </View>
+    );
+  };
+
   const renderRefund = () => {
     const isOrderModified = orderDetails?.diagnosticOrderLineItems?.find(
       (item) => !!item?.editOrderID && item?.editOrderID
@@ -433,7 +445,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         {isStatusDone ? (
           <OrderPlacedIcon style={styles.statusIconStyle} />
         ) : (
-          <OrderTrackerSmallIcon style={[styles.statusIconSmallStyle]} />
+          <OvalUpcoming style={[styles.statusIconSmallStyle]} />
         )}
 
         <View
@@ -445,7 +457,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                   ? 'transparent'
                   : isStatusDone
                   ? theme.colors.SKY_BLUE
-                  : 'rgba(0,135,186,0.3)',
+                  : 'rgba(0,179,142,0.3)',
             },
           ]}
         />
@@ -486,7 +498,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const renderOrderTracking = () => {
-        newList = newList =
+    newList = newList =
       refundStatusArr?.length > 0
         ? orderStatusList
         : orderLevelStatus?.upcomingStatuses?.length > 0
@@ -498,8 +510,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         <View style={{ margin: 20 }}>
           {newList?.map((order: any, index: number, array: any) => {
             let isStatusDone = true;
-            if (order?.__typename == "upcomingStatus") {
-              isStatusDone = false
+            if (order?.__typename == 'upcomingStatus') {
+              isStatusDone = false;
             }
             const slotDate = moment(selectedOrder?.slotDateTimeInUTC).format('Do MMM');
             const slotTime1 = moment(selectedOrder?.slotDateTimeInUTC).format('hh:mm A');
@@ -533,7 +545,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                             },
                           ]}
                         >
-                          {nameFormater(getTestOrderStatusText(order?.orderStatus), 'default')}
+
+                          {nameFormater(getTestOrderStatusTextDetails(order?.orderStatus), 'default')}
                         </Text>
                       </View>
                       {isStatusDone ? (
@@ -547,6 +560,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                       <Text style={styles.statusSubTextStyle}>
                         {`Phlebotomist will arrive on ${slotDate}, ${slotTime1} - ${slotTime2}`}
                       </Text>
+                    ) : null}
+                    {sampleCollectedArray.includes(order?.orderStatus) && !isStatusDone ? (
+                      <Text style={styles.statusSubTextStyle}>{`Invoice to be Generated`}</Text>
                     ) : null}
 
                     {REFUND_STATUSES.SUCCESS === order?.orderStatus
@@ -688,14 +704,17 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const renderBottomSection = (order: any) => {
-    return <View>{isReportGenerated ? renderButtons() : null}</View>;
+    return <View>{!isReportGenerated ? renderButtons() : null}</View>;
   };
 
   const renderButtons = () => {
     let buttonTitle = 'VIEW REPORT';
 
     return (
-      <StickyBottomComponent>
+      <View style={{ flexDirection: 'column' }}>
+        {selectedOrder?.attributesObj?.reportGenerationTime
+          ? renderOrderReportTat(selectedOrder?.attributesObj?.reportGenerationTime)
+          : null}
         <Button
           style={styles.buttonStyle}
           onPress={() => _onPressViewReportAction()}
@@ -705,7 +724,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           title={buttonTitle}
           disabled={buttonTitle == 'VIEW REPORT' && !isReportGenerated}
         />
-      </StickyBottomComponent>
+      </View>
     );
   };
 
@@ -924,6 +943,15 @@ const styles = StyleSheet.create({
     elevation: 5,
     zIndex: 1,
   },
+  buttonView: { margin: 10 },
+  buttonStyleReport: { width: '85%', alignSelf: 'center', justifyContent: 'center' },
+  reportTatBottomview:{
+    backgroundColor: colors.TEST_CARD_BUTTOM_BG,
+    padding: 10,
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
   yellowText: {
     ...theme.viewStyles.text('SB', 14, colors.APP_YELLOW),
     textAlign: 'center',
@@ -956,8 +984,8 @@ const styles = StyleSheet.create({
     width: 28,
   },
   statusIconSmallStyle: {
-    height: 15,
-    width: 15,
+    height: 12,
+    width: 12,
   },
   viewRowStyle: {
     flex: 1,
@@ -985,6 +1013,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.0,
     flex: 1,
   },
+  reportOrderTextStyle: {
+    ...theme.fonts.IBMPlexSansMedium(15),
+    color: colors.SHERPA_BLUE,
+  },
   statusSubTextStyle: {
     ...theme.fonts.IBMPlexSansRegular(10),
     letterSpacing: 0.0,
@@ -999,8 +1031,8 @@ const styles = StyleSheet.create({
   },
   buttonStyle: {
     alignSelf: 'center',
-    marginTop: -10,
-    width: '95%',
+    marginVertical:10,
+    width: '85%',
     marginLeft: 10,
     marginRight: 10,
   },

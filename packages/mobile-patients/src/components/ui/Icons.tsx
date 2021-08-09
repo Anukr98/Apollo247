@@ -344,6 +344,9 @@ export const ArrowRight: React.FC<IconProps> = (props) => (
 export const EmptySlot: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/emptyslots3x.webp')} />
 );
+export const OvalUpcoming: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/ovalUpcoming3x.webp')} />
+);
 
 export const ArrowRightGreen: React.FC<IconProps> = (props) => (
   <IconBase
