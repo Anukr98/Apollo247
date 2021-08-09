@@ -6875,6 +6875,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     }
                   }
                 );
+                setLoading(false);
             });
           }
         }}
