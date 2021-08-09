@@ -55,27 +55,34 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
 
   const renderProductPrice = () => {
     const discountPercent = getDiscountPercentage(price, specialPrice);
-    return !!specialPrice ? (
-      <View style={styles.flexRow}>
-        <Text style={styles.label}>{`Price: `}</Text>
-        <Text style={styles.value}>
-          {string.common.Rs}
-          {convertNumberToDecimal(specialPrice)}
-          {'  '}
-        </Text>
-        <Text style={styles.smallLabel}>{`MRP `}</Text>
-        <Text style={styles.smallValue}>
-          {string.common.Rs}
-          {convertNumberToDecimal(price)}
-        </Text>
-        <Text style={styles.discountPercent}>{`  ${discountPercent}%off`}</Text>
-      </View>
-    ) : (
-      <View style={styles.flexRow}>
-        <Text style={styles.label}>{`MRP: `}</Text>
-        <Text style={styles.value}>
-          {string.common.Rs}
-          {convertNumberToDecimal(price)}
+    return (
+      <View>
+        {!!specialPrice ? (
+          <View style={styles.flexRow}>
+            <Text style={styles.label}>{`Price: `}</Text>
+            <Text style={styles.value}>
+              {string.common.Rs}
+              {convertNumberToDecimal(specialPrice)}
+              {'  '}
+            </Text>
+            <Text style={styles.smallLabel}>{`MRP `}</Text>
+            <Text style={styles.smallValue}>
+              {string.common.Rs}
+              {convertNumberToDecimal(price)}
+            </Text>
+            <Text style={styles.discountPercent}>{`  ${discountPercent}%off`}</Text>
+          </View>
+        ) : (
+          <View style={styles.flexRow}>
+            <Text style={styles.label}>{`MRP: `}</Text>
+            <Text style={styles.value}>
+              {string.common.Rs}
+              {convertNumberToDecimal(price)}
+            </Text>
+          </View>
+        )}
+        <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 25, 0)}>
+          (Inclusive of all Taxes)
         </Text>
       </View>
     );
@@ -239,6 +246,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     backgroundColor: '#00B38E',
     borderRadius: 5,
+    marginBottom: 25,
   },
   stockText: theme.viewStyles.text('M', 13, '#FFFFFF', 1, 18),
   manufacture: {
