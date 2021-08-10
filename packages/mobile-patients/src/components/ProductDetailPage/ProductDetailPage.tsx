@@ -94,6 +94,7 @@ import {
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import AsyncStorage from '@react-native-community/async-storage';
+import { NudgeMessage } from '@aph/mobile-patients/src/components/Medicines/Components/NudgeMessage';
 
 export type ProductPageViewedEventProps = Pick<
   WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED],
@@ -137,6 +138,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     asyncPincode,
     setAsyncPincode,
     circleMembershipCharges,
+    pharmaPDPNudgeMessage,
+    circleSubscriptionId,
+    isCircleExpired,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
@@ -797,14 +801,27 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     const total = cartItems
       .reduce((currTotal, currItem) => currTotal + currItem.quantity * currItem.price, 0)
       .toFixed(2);
+    const showNudgeMessage =
+      pharmaPDPNudgeMessage?.show === 'yes' && pharmaPDPNudgeMessage?.nudgeMessage;
+    const showByUserType =
+      pharmaPDPNudgeMessage?.userType == 'all' ||
+      (pharmaPDPNudgeMessage?.userType == 'circle' && circleSubscriptionId && !isCircleExpired) ||
+      (pharmaPDPNudgeMessage?.userType == 'non-circle' &&
+        (!circleSubscriptionId || isCircleExpired));
+    const showMessage = showNudgeMessage && showByUserType;
     return (
-      <StickyBottomComponent style={styles.stickyBottomComponent}>
+      <StickyBottomComponent
+        style={
+          showMessage ? styles.bottomComponent : { justifyContent: 'center', shadowOpacity: 0 }
+        }
+      >
+        {showMessage && <NudgeMessage nudgeMessage={pharmaPDPNudgeMessage} />}
         <TouchableOpacity
           onPress={() => {
             props.navigation.navigate(AppRoutes.MedicineCart);
           }}
           activeOpacity={0.7}
-          style={styles.bottomCta}
+          style={[styles.bottomCta, showMessage ? { alignSelf: 'center' } : {}]}
         >
           <Text style={styles.bottomCtaText}>
             {`Proceed to Checkout (${cartItems?.length} items) ${
@@ -1235,5 +1252,12 @@ const styles = StyleSheet.create({
   bottomCtaText: {
     ...theme.viewStyles.text('B', 14, '#FFFFFF', 1, 25, 0.35),
     textAlign: 'center',
+  },
+  bottomComponent: {
+    shadowOpacity: 0,
+    height: 100,
+    flexDirection: 'column',
+    paddingTop: 0,
+    paddingHorizontal: 0,
   },
 });
