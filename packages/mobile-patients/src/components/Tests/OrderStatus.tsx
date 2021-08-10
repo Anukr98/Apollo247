@@ -239,7 +239,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       ? moment(modifiedOrderDetails?.slotDateTimeInUTC)?.format('YYYY')
       : timeDate != '' && moment(timeDate)?.format('YYYY');
     const time = !!modifiedOrderDetails
-      ? moment(modifiedOrderDetails?.slotDateTimeInUTC)?.format('hh:mm')
+      ? moment(modifiedOrderDetails?.slotDateTimeInUTC)?.format('hh:mm A')
       : timeDate != '' && moment(timeDate)?.format('hh:mm A');
     return (
       <>
@@ -416,7 +416,14 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
             (showMoreArray?.includes(displayId) ? null : (
               <View style={[styles.itemsView, { flexDirection: 'row' }]}>
                 <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
-                <Text style={styles.testName}>
+                <Text
+                  style={[
+                    styles.testName,
+                    {
+                      maxWidth: !!lineItems?.[0]?.editOrderID ? '72%' : '78%',
+                    },
+                  ]}
+                >
                   {nameFormater(lineItems?.[0]?.itemName, 'title')}
                 </Text>
                 {!!lineItems?.[0]?.editOrderID ? renderNewTag() : null}
@@ -461,7 +468,16 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
           return (
             <View style={{ flexDirection: 'row' }}>
               <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
-              <Text style={styles.testName}>{nameFormater(items?.itemName, 'default')}</Text>
+              <Text
+                style={[
+                  styles.testName,
+                  {
+                    maxWidth: !!items.editOrderID ? '72%' : '78%',
+                  },
+                ]}
+              >
+                {nameFormater(items?.itemName, 'default')}
+              </Text>
               {!!items.editOrderID ? renderNewTag() : null}
               {lineItems?.length - 1 == index && (
                 <TouchableOpacity onPress={() => _onPressLess(item)} style={{ marginLeft: 2 }}>
@@ -704,7 +720,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
     marginBottom: '1.5%',
     marginHorizontal: '3%',
-    maxWidth: '75%',
   },
   patientName: {
     width: '60%',

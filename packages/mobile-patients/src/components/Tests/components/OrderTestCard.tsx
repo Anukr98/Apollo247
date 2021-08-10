@@ -363,7 +363,9 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                   ) : null}
                   {name ? (
                     <View style={styles.nameContainer}>
-                      <Text style={styles.nameTextHeadingStyles}>Phlebotomist Details</Text>
+                      <Text style={styles.nameTextHeadingStyles}>
+                        {string.diagnostics.agent} Details
+                      </Text>
                       <Text style={styles.nameTextStyles}>{name}</Text>
                     </View>
                   ) : null}
