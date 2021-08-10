@@ -3033,7 +3033,7 @@ export  const checkPatientAge = (_selectedPatient: any, fromNewProfile: boolean 
 export const extractPatientDetails = (patientDetails: any) =>{
   const patientName = `${patientDetails?.firstName! || ''} ${patientDetails?.lastName! || ''}`;
   const genderAgeText = `${nameFormater(patientDetails?.gender!, 'title') || ''}, ${
-    patientDetails?.dateOfBirth ? getAge(patientDetails?.dateOfBirth) || '' : ''
+    patientDetails?.dateOfBirth ? getAge(patientDetails?.dateOfBirth) || '0' : ''
   }`;
   const patientSalutation = !!patientDetails?.gender
     ? patientDetails?.gender === Gender.FEMALE
