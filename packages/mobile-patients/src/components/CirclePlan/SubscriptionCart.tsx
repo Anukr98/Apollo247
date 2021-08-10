@@ -249,8 +249,8 @@ export const SubscriptionCart: React.FC<SubscriptionCartProps> = (props) => {
       if (data?.data?.createOrderInternal?.success) {
         if (amountToPay == 0) {
           const res = await createJusPayOrder(data?.data?.createOrderInternal?.payment_order_id!);
+          setLoading!(false);
           if (res?.data?.createOrderV2?.payment_status == 'TXN_SUCCESS') {
-            setLoading!(false);
             goToConsultRoom(props.navigation, orderInfo?.circleParams);
           } else {
             renderErrorPopup();
@@ -264,6 +264,7 @@ export const SubscriptionCart: React.FC<SubscriptionCartProps> = (props) => {
             businessLine: 'subscription',
             customerId: cusId,
           });
+          setLoading!(false);
         }
       }
     } catch (error) {
