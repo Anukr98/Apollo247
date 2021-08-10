@@ -598,8 +598,8 @@
     "agent": "Apollo agent"
   },
   "diagnosticCategoryTitle": {
-    "category": "Category",
-    "categoryGrid": "Category_Scroll"
+    "category": "category",
+    "categoryGrid": "category_scroll"
   },
   "diagnosticsCartPage":{
     "patientHeading": "Select Patient Names",

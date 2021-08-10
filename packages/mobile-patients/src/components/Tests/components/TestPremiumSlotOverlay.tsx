@@ -58,7 +58,7 @@ export const TestPremiumSlotOverlay: React.FC<TestPremiumSlotOverlayProps> = (pr
                 <Text style={styles.appointmentText}>Appointment on</Text>
                 <Text style={styles.greenTextStyle}>
                   {moment(slotDetails?.selectedDate)?.format('DD MMM YYYY')} ,{' '}
-                  {moment(slotDetails?.slotStartTime, 'HH:mm')?.format('hh:mm a')}
+                  {moment(slotDetails?.slotStartTime, 'hh:mm A')?.format('hh:mm a')}
                 </Text>
               </View>
             ) : null}
