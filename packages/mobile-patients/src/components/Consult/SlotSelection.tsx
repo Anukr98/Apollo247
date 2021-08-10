@@ -375,12 +375,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           },
         },
       });
-      console.log(
-        'csk dat',
-        moment(selectedDate).format('YYYY-MM-DD'),
-        doctorId,
-        JSON.stringify(res)
-      );
+
       const availableSlots = res?.data?.getDoctorPhysicalAvailableSlots?.availableSlots;
       const slotCounts = res?.data?.getDoctorPhysicalAvailableSlots?.slotCounts;
       callOnLaunch && setPhysicalSlotsCount(slotCounts);
@@ -621,7 +616,6 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
       index === selectedDateIndexHiglight || item?.count === 0
         ? 'white'
         : theme.colors.SEARCH_UNDERLINE_COLOR;
-    console.log('csk in', index, selectedDateIndex);
     return (
       <TouchableOpacity
         key={index}
