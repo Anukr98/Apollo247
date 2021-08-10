@@ -1252,10 +1252,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
         const updatedCartItems = cartItems?.filter((item: DiagnosticsCartItem) => {
           return !allIdsToRemove?.some((itemId: number) => Number(itemId) === Number(item?.id));
-
-          itemToRemove = [...new Set([...itemToRemove, allIdsToRemove!])];
-          itemToKeep = [...new Set([...itemToKeep, ...allIdsToKeep?.flat(1)])];
         });
+
+        itemToRemove = [...new Set([...itemToRemove, allIdsToRemove?.flat(Infinity)])];
+        itemToKeep = [...new Set([...itemToKeep, ...allIdsToKeep?.flat(Infinity)])];
 
         cartConflictedItems?.forEach((cItem: PatientObjWithModifyOrderIDs) => {
           conflictWithPatients?.push({
@@ -1269,8 +1269,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         itemToKeepNames.push(getItemName(itemIdsToKeep));
         itemNamesToRemove_global = removedTestsNames;
         itemNamesToKeep_global = itemToKeepNames;
-        itemIdsToKeep_global = itemToKeep;
-        itemIdsToRemove_global = itemToRemove;
+        itemIdsToKeep_global = allIdsToKeep;
+        itemIdsToRemove_global = allIdsToRemove;
 
         setCartItems?.(updatedCartItems);
         const newModifiedPatientCartItems = {
@@ -1278,6 +1278,8 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           cartItems: updatedCartItems,
         };
         setModifiedPatientCart?.([newModifiedPatientCartItems]);
+        setLowItemName.push(getItemName(itemIdsToRemove_global));
+        setHighPriceName.push(getItemName(itemIdsToKeep_global));
       } else {
         data?.forEach((patientObj: PatientsObjWithOrderIDs) => {
           if (!patientObj?.status) {
