@@ -15,6 +15,11 @@ export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingH
   orderStatus: DIAGNOSTIC_ORDER_STATUS | null;
 }
 
+export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_upcomingStatuses {
+  __typename: "upcomingStatus";
+  orderStatus: DIAGNOSTIC_ORDER_STATUS | null;
+}
+
 export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusInclusions {
   __typename: "DiagnosticOrdersStatus";
   statusDate: any | null;
@@ -29,6 +34,7 @@ export interface getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingH
   __typename: "HCOrderFormattedTrackingHistoryResult";
   statusHistory: (getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusHistory | null)[] | null;
   statusInclusions: (getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusInclusions | null)[] | null;
+  upcomingStatuses: (getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_upcomingStatuses | null)[] | null;
 }
 
 export interface getHCOrderFormattedTrackingHistory {
