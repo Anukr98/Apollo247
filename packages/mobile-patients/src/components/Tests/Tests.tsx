@@ -790,7 +790,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           setNonServiceableValues(obj, pincode);
         }
         getExpressSlots(obj, selectedAddress);
-        getDiagnosticBanner(AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID);
+        getDiagnosticBanner(Number(obj?.cityId));
         getHomePageWidgets(obj?.cityId);
       } catch (error) {
         //end of try
@@ -820,11 +820,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setPageLoading?.(false);
     setDiagnosticLocationServiceable?.(false);
     setUnserviceablePopup(true);
-    //not serving pop-up needs to be seen.
-    // isCurrentScreen == AppRoutes.Tests
-    //   ? renderNonServiceablePopUp(selectedAddress?.displayName) //returned by api displayName
-    //   : null;
-
     setServiceabilityMsg(string.diagnostics.nonServiceableMsg1);
     !!source && DiagnosticPinCodeClicked(currentPatient, pincode, false, source);
   }
@@ -1305,48 +1300,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         />
       </TouchableOpacity>
     );
-  };
-
-  const renderBottomViews = () => {
-    const isWidget = widgetsData?.length > 0;
-    const isWidget1 =
-      isWidget && widgetsData?.find((item: any) => item?.diagnosticwidgetsRankOrder == '1');
-    const isWidget2 =
-      isWidget && widgetsData?.find((item: any) => item?.diagnosticwidgetsRankOrder == '2');
-    const isWidget3 =
-      isWidget && widgetsData?.find((item: any) => item?.diagnosticwidgetsRankOrder == '3');
-    const restWidgets =
-      isWidget && widgetsData?.length > 3 && widgetsData?.slice(3, widgetsData?.length);
-    return (
-      <>
-        {!!isWidget1 ? renderWidgets(isWidget1) : null}
-        {renderStepsToBook()}
-        {renderCarouselBanners()}
-        {!!isWidget2 ? renderWidgets(isWidget2) : null}
-        {renderWhyBookUs()}
-        {!!isWidget3 ? renderWidgets(isWidget3) : null}
-        {renderCertificateView()}
-        {!!restWidgets && restWidgets.map((item: any) => renderWidgets(item))}
-      </>
-    );
-  };
-
-  const renderWidgets = (data: any) => {
-    let widgetType = data?.diagnosticWidgetType;
-    switch (widgetType) {
-      case 'Package':
-        return renderPackageWidget(data);
-        break;
-      case string.diagnosticCategoryTitle.categoryGrid:
-        return scrollWidgetSection(data);
-        break;
-      case string.diagnosticCategoryTitle.category:
-        return gridWidgetSection(data);
-        break;
-      default:
-        return renderTestWidgets(data);
-        break;
-    }
   };
 
   const renderPackageWidget = (data: any) => {
@@ -1938,7 +1891,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  function getRanking(rank: string) {
+    const findRank =
+      !!widgetsData &&
+      widgetsData?.length > 0 &&
+      widgetsData?.find((item: any) => item?.diagnosticwidgetsRankOrder === rank);
+    return findRank;
+  }
+
   const renderSections = () => {
+    const widget1 = getRanking('1');
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -1950,13 +1912,65 @@ export const Tests: React.FC<TestsProps> = (props) => {
         style={{ flex: 1 }}
       >
         {widgetsData?.length == 0 && reloadWidget && renderLowNetwork()}
-        {renderBanner()}
+        {renderWidgetType(widget1)} {/**1 */}
         {renderYourOrders()}
         {latestPrescription?.length > 0 ? renderPrescriptionCard() : null}
         {renderOrderStatusCard()}
         {renderBottomViews()}
       </TouchableOpacity>
     );
+  };
+
+  const renderBottomViews = () => {
+    const isWidget = widgetsData?.length > 0;
+
+    const isWidget2 = getRanking('2');
+    const isWidget3 = getRanking('3');
+    const isWidget4 = getRanking('4');
+    const isWidget5 = getRanking('5');
+    const isWidget6 = getRanking('6');
+
+    const restWidgets =
+      isWidget && widgetsData?.length > 6 && widgetsData?.slice(6, widgetsData?.length);
+    return (
+      <>
+        {!!isWidget2 ? renderWidgetType(isWidget2) : null} {/**2 */}
+        {!!isWidget3 ? renderWidgetType(isWidget3) : null} {/** 3 */}
+        {renderStepsToBook()}
+        {!!isWidget4 ? renderWidgetType(isWidget4) : null} {/** 4 */}
+        {renderCarouselBanners()}
+        {!!isWidget5 ? renderWidgetType(isWidget5) : null} {/** 5 */}
+        {renderWhyBookUs()}
+        {!!isWidget6 ? renderWidgetType(isWidget6) : null} {/** 6 */}
+        {renderCertificateView()}
+        {!!restWidgets && restWidgets.map((item: any) => renderWidgetType(item))}
+      </>
+    );
+  };
+
+  const renderWidgetType = (widget: any) => {
+    if (!!widget) {
+      const widgetName = widget?.diagnosticWidgetType?.toLowerCase();
+      switch (widgetName) {
+        case 'banner':
+          return renderBanner();
+          break;
+        case 'package':
+          return renderPackageWidget(widget);
+          break;
+        case string.diagnosticCategoryTitle.categoryGrid:
+          return scrollWidgetSection(widget);
+          break;
+        case string.diagnosticCategoryTitle.category:
+          return gridWidgetSection(widget);
+          break;
+        default:
+          return renderTestWidgets(widget);
+          break;
+      }
+    } else {
+      return null;
+    }
   };
 
   const renderCartDetails = () => {

@@ -48,15 +48,17 @@ export const TestProceedBar: React.FC<TestProceedBarProps> = (props) => {
     onPressProceedtoPay?.();
   }
 
+  const localFormatSlot = (slotTime: string) => moment(slotTime, 'hh:mm a')?.format('hh:mm A');
+
   const renderTimeSlot = () => {
     const timeSlotText = modifyOrderDetails
       ? `${moment(modifyOrderDetails?.slotDateTimeInUTC)?.format('ddd, DD MMM, YYYY') ||
           ''}, ${`${moment(modifyOrderDetails?.slotDateTimeInUTC).format('hh:mm a') ||
-          formatTestSlot(modifyOrderDetails?.slotTimings)}`}`
+          localFormatSlot(modifyOrderDetails?.slotTimings)}`}`
       : //selectedTimeSlot?.slotInfo?.startTime  (if using selectedTimeSlot)
         `${moment(selectedTimeSlot?.date).format('ddd, DD MMM, YYYY') || ''}, ${
           selectedTimeSlot?.slotStartTime
-            ? `${formatTestSlot(selectedTimeSlot?.slotStartTime!)}`
+            ? `${localFormatSlot(selectedTimeSlot?.slotStartTime!)}`
             : string.diagnostics.noSlotSelectedText
         }`;
     const showPhelboETA = modifyOrderDetails

@@ -8,6 +8,8 @@ import {
   EmptySlot,
   CrossPopup,
   PremiumIcon,
+  NightSelected,
+  Night,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   g,
@@ -126,6 +128,21 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     slotInfo: val,
   }));
 
+  var dayPhaseArray = [
+    {
+      tab: 0,
+      activeImage: <MorningSelected />,
+      inactiveImage: <Morning />,
+      title: 'Morning',
+    },
+    {
+      tab: 1,
+      activeImage: <AfternoonSelected />,
+      inactiveImage: <Afternoon />,
+      title: 'Afternoon',
+    },
+  ];
+
   useEffect(() => {
     if (props.isFocus) {
       setNewSelectedSlot('');
@@ -213,29 +230,34 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     }
   };
 
-  const dayPhaseArray = [
-    {
-      tab: 0,
-      activeImage: <MorningSelected />,
-      inactiveImage: <Morning />,
-      title: 'Morning',
-    },
-    {
-      tab: 1,
-      activeImage: <AfternoonSelected />,
-      inactiveImage: <Afternoon />,
-      title: 'Afternoon',
-    },
-  ];
-
   const time24 = (item: any) => {
     return moment(item?.value, 'hh:mm A')?.format('HH:mm');
   };
+
+  const isEveningSlotsAvailable = dropDownOptions?.filter(
+    (item) => time24(item) >= '17' && time24(item) < '23'
+  );
+  if (!!isEveningSlotsAvailable && isEveningSlotsAvailable?.length > 0) {
+    dayPhaseArray?.push({
+      tab: 2,
+      activeImage: <NightSelected />,
+      inactiveImage: <Night />,
+      title: 'Evening',
+    });
+  }
 
   if (selectedDayTab == 1) {
     //for afternoon 12-17
     dropDownOptions = dropDownOptions?.filter((item) => {
       if (time24(item) >= '12' && time24(item) < '17') {
+        return item;
+      }
+    });
+  } else if (selectedDayTab == 2) {
+    //for evening 17 - 6
+    dropDownOptions = dropDownOptions?.filter((item) => {
+      //changed from < 6 to 23
+      if (time24(item) >= '17' && time24(item) < '23') {
         return item;
       }
     });
