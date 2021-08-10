@@ -2125,3 +2125,11 @@ export const LongRightArrow: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/LongRightArrow.webp')}
   />
 );
+
+export const ExpressSlotClock: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/expressSlotIcon.webp')}
+  />
+);

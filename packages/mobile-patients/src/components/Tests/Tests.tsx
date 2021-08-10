@@ -27,6 +27,7 @@ import {
   DropdownGreen,
   WidgetLiverIcon,
   PolygonIcon,
+  ExpressSlotClock,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -103,6 +104,7 @@ import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/Carousel
 import {
   diagnosticServiceability,
   getDiagnosticClosedOrders,
+  getDiagnosticExpressSlots,
   getDiagnosticOpenOrders,
   getDiagnosticPatientPrescription,
   getDiagnosticPhelboDetails,
@@ -273,14 +275,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
   const defaultAddress = addresses?.find((item) => item?.defaultAddress);
   const [pageLoading, setPageLoading] = useState<boolean>(false);
- 
+
   const [clickedItem, setClickedItem] = useState<any>([]);
   const [showLocationPopup, setLocationPopup] = useState<boolean>(false);
   const [source, setSource] = useState<DIAGNOSTIC_PINCODE_SOURCE_TYPE>();
   const [showUnserviceablePopup, setUnserviceablePopup] = useState<boolean>(false);
+  const [serviceableObject, setServiceableObject] = useState({} as any);
+  const [expressSlotMsg, setExpressSlotMsg] = useState<string>('');
 
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
-  const [serviceableObject, setServiceableObject] = useState({} as any);
+
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
       query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
@@ -570,6 +574,41 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   };
 
+  async function getExpressSlots(
+    serviceabilityObject: DiagnosticData,
+    selectedAddress: LocationData
+  ) {
+    const getLat = selectedAddress?.latitude!;
+    const getLng = selectedAddress?.longitude!;
+    const getZipcode = selectedAddress?.pincode;
+    const getServiceablityObject = {
+      cityID: Number(serviceabilityObject?.cityId),
+      stateID: Number(serviceabilityObject?.stateId),
+    };
+    try {
+      const res: any = await getDiagnosticExpressSlots(
+        client,
+        getLat,
+        getLng,
+        String(getZipcode),
+        getServiceablityObject
+      );
+      if (res?.data?.getUpcomingSlotInfo) {
+        const getResponse = res?.data?.getUpcomingSlotInfo;
+        if (getResponse?.status) {
+          setExpressSlotMsg(getResponse?.slotInfo);
+        } else {
+          setExpressSlotMsg('');
+        }
+      } else {
+        setExpressSlotMsg('');
+      }
+    } catch (error) {
+      CommonBugFender('getExpressSlots_Tests', error);
+      setExpressSlotMsg('');
+    }
+  }
+
   const fetchWidgetsPrices = async (widgetsData: any, cityId: string) => {
     //filter the items.
     const filterWidgets = widgetsData?.filter(
@@ -745,13 +784,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
             obj = getNonServiceableObject();
             setNonServiceableValues(obj, pincode);
           }
-          getDiagnosticBanner(Number(getServiceableResponse?.cityID));
-          getHomePageWidgets(obj?.cityId);
         } //end of if
         else {
           obj = getNonServiceableObject();
           setNonServiceableValues(obj, pincode);
         }
+        getExpressSlots(obj, selectedAddress);
         getDiagnosticBanner(AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID);
         getHomePageWidgets(obj?.cityId);
       } catch (error) {
@@ -1312,7 +1350,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderPackageWidget = (data: any) => {
-  let listShowLength = 10
+    let listShowLength = 10;
     const isPricesAvailable =
       !!data &&
       data?.diagnosticWidgetData?.length > 0 &&
@@ -1889,6 +1927,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   }
 
+  const renderExpressSlots = () => {
+    return (
+      <View style={styles.outerExpressView}>
+        <View style={styles.innerExpressView}>
+          <ExpressSlotClock style={styles.expressSlotIcon} />
+          <Text style={styles.expressSlotText}>{expressSlotMsg}</Text>
+        </View>
+      </View>
+    );
+  };
+
   const renderSections = () => {
     return (
       <TouchableOpacity
@@ -2066,7 +2115,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           )}
         </View>
         <Text numberOfLines={2} ellipsizeMode="tail" style={styles.textStyle}>
-          {nameFormater(item?.itemTitle,'default')}
+          {nameFormater(item?.itemTitle, 'default')}
         </Text>
       </TouchableOpacity>
     );
@@ -2136,6 +2185,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             <View style={{ backgroundColor: colors.WHITE }}>
               {renderDiagnosticHeader()}
               {renderSearchBar()}
+              {expressSlotMsg != '' ? renderExpressSlots() : null}
             </View>
             <View style={{ flex: 1 }}>
               <ScrollView
@@ -2365,8 +2415,8 @@ const styles = StyleSheet.create({
   textStyle: {
     ...theme.viewStyles.text('SB', 14, colors.SHERPA_BLUE, 1, 20, 0),
     paddingVertical: 5,
-    textAlign:'center',
-    width:'100%'
+    textAlign: 'center',
+    width: '100%',
   },
   widgetSpacing: {
     marginVertical: 20,
@@ -2414,4 +2464,13 @@ const styles = StyleSheet.create({
     width: 35,
     alignItems: 'flex-end',
   },
+  outerExpressView: { backgroundColor: colors.APP_GREEN, marginBottom: 2 },
+  innerExpressView: {
+    flexDirection: 'row',
+    padding: 8,
+    alignItems: 'center',
+    width: '97%',
+  },
+  expressSlotIcon: { width: 37, height: 37, resizeMode: 'contain' },
+  expressSlotText: { ...theme.viewStyles.text('SB', 14, colors.WHITE, 1, 18), marginLeft: 16 },
 });

@@ -51,6 +51,7 @@ import {
   GET_DIAGNOSTIC_ORDERSLIST_BY_PARENT_ORDER_ID,
   GET_DIAGNOSTIC_PAYMENT_SETTINGS,
   GET_DIAGNOSTICS_RECOMMENDATIONS,
+  GET_DIAGNOSTIC_EXPRESS_SLOTS_INFO,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -191,7 +192,8 @@ import { diagnosticExotelCalling, diagnosticExotelCallingVariables } from '@aph/
 import { wrapperProcessDiagnosticHCOrderCOD, wrapperProcessDiagnosticHCOrderCODVariables } from '@aph/mobile-patients/src/graphql/types/wrapperProcessDiagnosticHCOrderCOD';
 import { getDiagnosticOrdersListByParentOrderID, getDiagnosticOrdersListByParentOrderIDVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByParentOrderID';
 import { getDiagnosticPaymentSettings, getDiagnosticPaymentSettingsVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticPaymentSettings';
-import { getDiagnosticItemRecommendations, getDiagnosticItemRecommendationsVariables } from '../graphql/types/getDiagnosticItemRecommendations';
+import { getDiagnosticItemRecommendations, getDiagnosticItemRecommendationsVariables } from '@aph/mobile-patients/src/graphql/types/getDiagnosticItemRecommendations';
+import { getUpcomingSlotInfo, getUpcomingSlotInfoVariables } from '@aph/mobile-patients/src/graphql/types/getUpcomingSlotInfo';
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
   doctorIds: (string | null)[] | (string | undefined)[] | string[],
@@ -1365,6 +1367,29 @@ export const getDiagnosticCartRecommendations = (
     variables: {
       itemIds: itemIds,
       records: numOfRecords
+    },
+    fetchPolicy: 'no-cache',
+  }); 
+};
+
+export const getDiagnosticExpressSlots = (
+  client: ApolloClient<object>,
+  latitude: number,
+  longitude: number,
+  zipcode: string,
+  serviceabilityObj: DiagnosticsServiceability
+) =>
+{
+  return client.query<getUpcomingSlotInfo, getUpcomingSlotInfoVariables>({
+    query: GET_DIAGNOSTIC_EXPRESS_SLOTS_INFO,
+    context: {
+      sourceHeaders,
+    },
+    variables: {
+     latitude: latitude,
+     longitude: longitude,
+     zipcode: zipcode,
+     serviceability : serviceabilityObj
     },
     fetchPolicy: 'no-cache',
   }); 

@@ -5687,3 +5687,12 @@ mutation getDiagnosticItemRecommendations($itemIds:[Int]!, $records: Int){
 }
 `;
 
+export const GET_DIAGNOSTIC_EXPRESS_SLOTS_INFO  = gql`
+  query getUpcomingSlotInfo($latitude: Float!, $longitude: Float!, $zipcode: String!, $serviceability: DiagnosticsServiceability!) {
+    getUpcomingSlotInfo(latitude: $latitude, longitude: $longitude, zipcode: $zipcode, serviceability: $serviceability) {
+      status
+      slotInfo
+    }
+  }
+`;
+

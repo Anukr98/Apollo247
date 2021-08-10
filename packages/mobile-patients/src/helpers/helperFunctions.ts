@@ -2945,7 +2945,7 @@ export const setAsyncDiagnosticLocation = (address: any) => {
 
 export  const checkPatientAge = (_selectedPatient: any, fromNewProfile: boolean = false) => {
     let age = !!_selectedPatient?.dateOfBirth ? getAge(_selectedPatient?.dateOfBirth) : null;
-    if (age && age <= 10) {
+    if (age!=null && age!=undefined && age <= 10) {
       return true;
     }
     return false;
