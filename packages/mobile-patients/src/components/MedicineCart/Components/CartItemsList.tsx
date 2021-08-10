@@ -9,6 +9,7 @@ import { postwebEngageProductRemovedEvent } from '@aph/mobile-patients/src/compo
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { SpecialOffers } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { NudgeMessage } from '@aph/mobile-patients/src/components/Medicines/Components/NudgeMessage';
 
 export interface CartItemsListProps {
   screen: 'cart' | 'summary';
@@ -17,10 +18,14 @@ export interface CartItemsListProps {
 }
 
 export const CartItemsList: React.FC<CartItemsListProps> = (props) => {
-  const { cartItems, updateCartItem, removeCartItem } = useShoppingCart();
+  const { cartItems, updateCartItem, removeCartItem, pharmaCartNudgeMessage } = useShoppingCart();
   const { screen, onPressProduct, setloading } = props;
   const { currentPatient } = useAllCurrentPatients();
   const { cartBankOffer } = useAppCommonData();
+  const { isCircleExpired, circleSubscriptionId } = useShoppingCart();
+  const isFromCart = screen === 'cart';
+  const showNudgeMessage =
+    pharmaCartNudgeMessage?.show === 'yes' && pharmaCartNudgeMessage?.nudgeMessage && isFromCart;
 
   const renderCartItemsHeader = () => {
     const itemsCount =
@@ -73,10 +78,28 @@ export const CartItemsList: React.FC<CartItemsListProps> = (props) => {
     </View>
   );
 
+  const renderNudgeMessage = () => {
+    const showByUserType =
+      pharmaCartNudgeMessage?.userType == 'all' ||
+      (pharmaCartNudgeMessage?.userType == 'circle' && circleSubscriptionId && !isCircleExpired) ||
+      (pharmaCartNudgeMessage?.userType == 'non-circle' &&
+        (!circleSubscriptionId || isCircleExpired));
+    if (showByUserType) {
+      return (
+        <View style={{ marginTop: 10 }}>
+          <NudgeMessage nudgeMessage={pharmaCartNudgeMessage} />
+        </View>
+      );
+    } else {
+      return null;
+    }
+  };
+
   return (
     <View>
       {renderCartItemsHeader()}
       {!!cartBankOffer && renderCartBankOfferBanner()}
+      {showNudgeMessage && renderNudgeMessage()}
       {renderCartItems()}
     </View>
   );
