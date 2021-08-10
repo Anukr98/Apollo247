@@ -967,7 +967,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
                 return (
                   <Button
                     key={index}
-                    title={timeTo12HrFormat(slot) + 'gg'}
+                    title={timeTo12HrFormat(slot)}
                     style={[
                       styles.buttonStyle,
                       {
