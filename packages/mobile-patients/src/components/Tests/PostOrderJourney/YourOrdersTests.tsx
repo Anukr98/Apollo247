@@ -512,7 +512,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         .then((data: any) => {
           const labResultsData = g(
             data,
-            'getPatientPrismMedicalRecords_V2',
+            'getPatientPrismMedicalRecords_V3',
             'labResults',
             'response'
           );

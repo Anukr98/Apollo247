@@ -147,7 +147,7 @@ export const VaccinationScreen: React.FC<VaccinationScreenProps> = (props) => {
       .then((data: any) => {
         const immunizations = g(
           data,
-          'getPatientPrismMedicalRecords_V2',
+          'getPatientPrismMedicalRecords_V3',
           'immunizations',
           'response'
         );

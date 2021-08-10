@@ -24,7 +24,7 @@ import {
   GET_PARTICIPANTS_LIVE_STATUS,
   DELETE_PATIENT_PRISM_MEDICAL_RECORD,
   GET_PHR_USER_NOTIFY_EVENTS,
-  GET_MEDICAL_PRISM_RECORD_V2,
+  GET_MEDICAL_PRISM_RECORD_V3,
   GET_ALL_GROUP_BANNERS_OF_USER,
   GET_PACKAGE_INCLUSIONS,
   UPDATE_PATIENT_APP_VERSION,
@@ -124,9 +124,9 @@ import {
   setAndGetNumberOfParticipantsVariables,
 } from '@aph/mobile-patients/src/graphql/types/setAndGetNumberOfParticipants';
 import {
-  getPatientPrismMedicalRecords_V2,
-  getPatientPrismMedicalRecords_V2Variables,
-} from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
+  getPatientPrismMedicalRecords_V3,
+  getPatientPrismMedicalRecords_V3Variables,
+} from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V3';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   GetAllGroupBannersOfUser,
@@ -435,8 +435,8 @@ export const getPatientPrismMedicalRecordsApi = (
 ) => {
   return new Promise((res, rej) => {
     client
-      .query<getPatientPrismMedicalRecords_V2, getPatientPrismMedicalRecords_V2Variables>({
-        query: GET_MEDICAL_PRISM_RECORD_V2,
+      .query<getPatientPrismMedicalRecords_V3, getPatientPrismMedicalRecords_V3Variables>({
+        query: GET_MEDICAL_PRISM_RECORD_V3,
         context: {
           headers: {
             callingsource: comingFrom == 'Diagnostics' ? '' : 'healthRecords',
@@ -467,13 +467,11 @@ export const getPatientPrismSingleMedicalRecordApi = (
 ) => {
   return new Promise((res, rej) => {
     client
-      .query<getPatientPrismMedicalRecords_V2, getPatientPrismMedicalRecords_V2Variables>({
-        query: GET_MEDICAL_PRISM_RECORD_V2,
+      .query<getPatientPrismMedicalRecords_V3, getPatientPrismMedicalRecords_V3Variables>({
+        query: GET_MEDICAL_PRISM_RECORD_V3,
         variables: {
           patientId: patientId || '',
           records: records,
-          recordId: recordId,
-          source: source,
         },
         fetchPolicy: 'no-cache',
       })

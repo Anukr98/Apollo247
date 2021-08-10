@@ -12,6 +12,8 @@ import {
   TouchableOpacity,
   FlatList,
   Platform,
+  Alert,
+  PermissionsAndroid,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -42,6 +44,7 @@ import { addPatientLabTestRecord } from '@aph/mobile-patients/src/graphql/types/
 import {
   ADD_PATIENT_LAB_TEST_RECORD,
   GET_INDIVIDUAL_TEST_RESULT_PDF,
+  GET_LAB_RESULT_PDF,
   GET_PRISM_AUTH_TOKEN,
   MERGE_PDF,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -87,6 +90,11 @@ import {
   getIndividualTestResultPdf,
   getIndividualTestResultPdfVariables,
 } from '@aph/mobile-patients/src/graphql/types/getIndividualTestResultPdf';
+import {
+  getLabResultpdf,
+  getLabResultpdfVariables,
+} from '@aph/mobile-patients/src/graphql/types/getLabResultpdf';
+import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -257,13 +265,13 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       .then((data: any) => {
         const labResultsData = g(
           data,
-          'getPatientPrismMedicalRecords_V2',
+          'getPatientPrismMedicalRecords_V3',
           'labResults',
           'response'
         );
         const healthChecksData = g(
           data,
-          'getPatientPrismMedicalRecords_V2',
+          'getPatientPrismMedicalRecords_V3',
           'healthChecks',
           'response'
         );
@@ -290,6 +298,33 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       getLatestLabAndHealthCheckRecords();
     }
   }, [callApi]);
+
+  useEffect(() => {
+    Platform.OS === 'android' && requestReadSmsPermission();
+  });
+
+  const requestReadSmsPermission = async () => {
+    try {
+      const results = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+      ]);
+      if (
+        results[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] !==
+        PermissionsAndroid.RESULTS.GRANTED
+      ) {
+      }
+      if (
+        results[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] !==
+        PermissionsAndroid.RESULTS.GRANTED
+      ) {
+      }
+      if (results) {
+      }
+    } catch (error) {
+      CommonBugFender('RecordDetails_requestReadSmsPermission_try', error);
+    }
+  };
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -376,47 +411,54 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
             : 'labTestSource';
         testReportMainData?.forEach((dataObject: any) => {
           const dataObjectArray: any[] = [];
-          if (dataObject?.data?.labTestName && filterApplied === FILTER_TYPE.PARAMETER_NAME) {
-            dataObject?.data?.labTestResults?.forEach((parameterObject: any) => {
-              const keyValue = parameterObject?.parameterName;
-              const dataExistsAt = finalData?.findIndex((data: { key: string; data: any[] }) => {
-                return data?.key === keyValue;
+          if (
+            dataObject?.data?.labTestResults?.length > 0 ||
+            dataObject?.data?.labTestSource === 'self' ||
+            dataObject?.data?.labTestSource === '247self' ||
+            filterApplied === FILTER_TYPE.DATE
+          ) {
+            if (dataObject?.data?.labTestName && filterApplied === FILTER_TYPE.PARAMETER_NAME) {
+              dataObject?.data?.labTestResults?.forEach((parameterObject: any) => {
+                const keyValue = parameterObject?.parameterName;
+                const dataExistsAt = finalData?.findIndex((data: { key: string; data: any[] }) => {
+                  return data?.key === keyValue;
+                });
+                if (keyValue) {
+                  const modifiedData = { ...dataObject, paramObject: parameterObject };
+                  if (dataExistsAt === -1 || finalData?.length === 0) {
+                    const obj = {
+                      key: keyValue,
+                      data: [modifiedData],
+                    };
+                    finalData?.push(obj);
+                  } else if (dataExistsAt > -1) {
+                    const array = finalData[dataExistsAt]?.data;
+                    array?.push(modifiedData);
+                    finalData[dataExistsAt].data = array;
+                  }
+                }
               });
+            } else {
+              const dateExistsAt = finalData.findIndex((data: { key: string; data: any[] }) => {
+                return (
+                  (data.key === '247self' ? 'self' : data.key) ===
+                  getObjectParameter(dataObject?.data, filterAppliedString)
+                );
+              });
+              const keyValue = getObjectParameter(dataObject?.data, filterAppliedString);
               if (keyValue) {
-                const modifiedData = { ...dataObject, paramObject: parameterObject };
-                if (dataExistsAt === -1 || finalData?.length === 0) {
+                if (dateExistsAt === -1 || finalData.length === 0) {
+                  dataObjectArray.push(dataObject);
                   const obj = {
                     key: keyValue,
-                    data: [modifiedData],
+                    data: dataObjectArray,
                   };
-                  finalData?.push(obj);
-                } else if (dataExistsAt > -1) {
-                  const array = finalData[dataExistsAt]?.data;
-                  array?.push(modifiedData);
-                  finalData[dataExistsAt].data = array;
+                  finalData.push(obj);
+                } else if (dateExistsAt > -1) {
+                  const array = finalData[dateExistsAt].data;
+                  array.push(dataObject);
+                  finalData[dateExistsAt].data = array;
                 }
-              }
-            });
-          } else {
-            const dateExistsAt = finalData.findIndex((data: { key: string; data: any[] }) => {
-              return (
-                (data.key === '247self' ? 'self' : data.key) ===
-                getObjectParameter(dataObject?.data, filterAppliedString)
-              );
-            });
-            const keyValue = getObjectParameter(dataObject?.data, filterAppliedString);
-            if (keyValue) {
-              if (dateExistsAt === -1 || finalData.length === 0) {
-                dataObjectArray.push(dataObject);
-                const obj = {
-                  key: keyValue,
-                  data: dataObjectArray,
-                };
-                finalData.push(obj);
-              } else if (dateExistsAt > -1) {
-                const array = finalData[dateExistsAt].data;
-                array.push(dataObject);
-                finalData[dateExistsAt].data = array;
               }
             }
           }
@@ -431,51 +473,47 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         finalData = initialSortByDays('lab-results', testReportMainData, finalData);
         finalData.forEach(function(item) {
           item.data.map((items) => {
-            if (!!items?.data?.billNo || items?.data?.billNo === null) {
-              let path = 'data.billNo';
-              arrElements = _(item.data)
-                .filter((object) => _.has(object, path))
-                .groupBy(path)
-                .map((value, key) => ({
-                  key: key,
-                  data: value,
-                }))
-                .value();
-              remItem = _(arrElements)
-                .groupBy(path)
-                .map((value, key) => ({
-                  key: item.key,
-                  data: value,
-                }))
-                .value();
-            }
+            let path = 'data.billNo';
+            arrElements = _(item.data)
+              .filter((object) => _.has(object, path))
+              .groupBy(path)
+              .map((value, key) => ({
+                key: key,
+                data: value,
+              }))
+              .value();
+            remItem = _(arrElements)
+              .groupBy(path)
+              .map((value, key) => ({
+                key: item.key,
+                data: value,
+              }))
+              .value();
           });
-          arrData.push({ key: remItem[0].key, data: remItem[0].data });
+          arrData.push({ key: remItem[0]?.key, data: remItem[0]?.data });
         });
       }
       if (filterApplied === FILTER_TYPE.DATE) {
         finalData.forEach(function(item) {
-          item.data.map((items) => {
-            if (!!items?.data?.billNo || items?.data?.billNo === null) {
-              let path = 'data.billNo';
-              arrElements = _(item.data)
-                .filter((object) => _.has(object, path))
-                .groupBy(path)
-                .map((value, key) => ({
-                  key: key,
-                  data: value,
-                }))
-                .value();
-              remItem = _(arrElements)
-                .groupBy(path)
-                .map((value, key) => ({
-                  key: item.key,
-                  data: value,
-                }))
-                .value();
-            }
+          item?.data?.map((items) => {
+            let path = 'data.billNo';
+            arrElements = _(item?.data)
+              .filter((object) => _.has(object, path))
+              .groupBy(path)
+              .map((value, key) => ({
+                key: key,
+                data: value,
+              }))
+              .value();
+            remItem = _(arrElements)
+              .groupBy(path)
+              .map((value, key) => ({
+                key: item.key,
+                data: value,
+              }))
+              .value();
           });
-          arrData.push({ key: remItem[0].key, data: remItem[0].data });
+          arrData.push({ key: remItem[0]?.key, data: remItem[0]?.data });
         });
       }
       arrData?.length > 0 ? setLocalTestReportsData(arrData) : setLocalTestReportsData(finalData);
@@ -667,27 +705,36 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
     });
   };
 
-  const onDownloadLabTestReports = (clubImages: any) => {
+  const mergePDF = (clubFileURL: any) => {
+    Alert.alert(
+      'This option will download all reports in this bill.',
+      '**This report is a representation from the official Electronic Medical Record of Apollo Hospitals',
+      [
+        { text: 'OK', onPress: () => onDownloadLabTestReports(clubFileURL) },
+        { text: 'Cancel', style: 'cancel' },
+      ],
+      {
+        cancelable: true,
+      }
+    );
+  };
+
+  const onDownloadLabTestReports = async (clubFiles: any) => {
     setShowSpinner(true);
-    var imageArray: [] = [];
-    clubImages.map((items: any) => {
-      if (!!items?.data?.fileUrl) {
-        imageArray.push(items?.data?.fileUrl);
-      } else {
-        client
+    let imageArray: any[] = [];
+    const promises = clubFiles.map((item) => {
+      if (!item?.data?.fileUrl) {
+        return client
           .query<getIndividualTestResultPdf, getIndividualTestResultPdfVariables>({
             query: GET_INDIVIDUAL_TEST_RESULT_PDF,
             variables: {
               patientId: currentPatient?.id,
-              recordId: items?.id,
-              sequence: items?.testSequence,
+              recordId: item?.data?.id,
+              sequence: item?.data?.testSequence,
             },
           })
-          .then(({ data }: any) => {
-            if (data?.getIndividualTestResultPdf?.url) {
-              imageArray.push(data?.getIndividualTestResultPdf?.url);
-            }
-            setShowSpinner(false);
+          .then((data: any) => {
+            return data?.data?.getIndividualTestResultPdf?.url;
           })
           .catch((e: any) => {
             setShowSpinner(false);
@@ -696,13 +743,16 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
           });
       }
     });
-
-    if (imageArray?.length > 0) {
+    const results = await Promise.all(promises);
+    if (results?.length > 0 && results[0] != undefined) {
       setShowSpinner(true);
       client
         .mutate<mergePDFS, mergePDFSVariables>({
           mutation: MERGE_PDF,
-          variables: { uhid: currentPatient?.id, fileUrls: imageArray },
+          variables: {
+            uhid: currentPatient?.id,
+            fileUrls: results,
+          },
           fetchPolicy: 'no-cache',
         })
         .then((data: any) => {
@@ -714,6 +764,33 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
           setShowSpinner(false);
           handleGraphQlError(e);
         });
+    } else {
+      setShowSpinner(true);
+      clubFiles.map((items: any) => {
+        items?.data?.testResultFiles.map((item: any) => {
+          imageArray.push(item?.file_Url);
+        });
+      });
+      if (imageArray?.length > 0) {
+        client
+          .mutate<mergePDFS, mergePDFSVariables>({
+            mutation: MERGE_PDF,
+            variables: {
+              uhid: currentPatient?.id,
+              fileUrls: imageArray,
+            },
+            fetchPolicy: 'no-cache',
+          })
+          .then((data: any) => {
+            setShowSpinner(false);
+            downloadDocument(data?.data?.mergePDFS?.mergepdfUrl);
+          })
+          .catch((e) => {
+            CommonBugFender('MERGE_PDF', e);
+            setShowSpinner(false);
+            handleGraphQlError(e);
+          });
+      }
     }
   };
 
@@ -870,7 +947,6 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       }
       return moment(new Date(date)).format('DD MMM');
     };
-
     if (item?.key === 'null') {
       return item?.data?.map((dataItem: any, index: number) => {
         const prescriptionName =
@@ -923,7 +999,11 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
           />
         );
       });
-    } else if (item.data.billNo === null || !!item.data.billNo) {
+    } else if (
+      item?.data?.billNo === null ||
+      !!item?.data?.billNo === undefined ||
+      item?.key === undefined
+    ) {
       const prescriptionName =
         filterApplied &&
         filterApplied === FILTER_TYPE.PACKAGE &&
@@ -974,7 +1054,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       return (
         <BillRecordCard
           onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
-          onDownloadLabTestReports={(testReportsItem) => onDownloadLabTestReports(testReportsItem)}
+          onDownloadLabTestReports={(testReportsItem) => mergePDF(testReportsItem)}
           item={item?.data}
           testReportItems={item?.data}
         />
@@ -1091,7 +1171,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
             const eventAttributes: CleverTapEvents[CleverTapEventName.ADD_RECORD] = {
               Source: 'Test Report',
             };
-            postWebEngageEvent(CleverTapEventName.ADD_RECORD, eventAttributes);
+            postWebEngageEvent(WebEngageEventName.ADD_RECORD, eventAttributes);
             postCleverTapEvent(CleverTapEventName.ADD_RECORD, eventAttributes);
             props.navigation.navigate(AppRoutes.AddRecord, {
               navigatedFrom: 'Test Reports',
