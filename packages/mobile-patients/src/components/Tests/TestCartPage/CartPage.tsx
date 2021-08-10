@@ -14,6 +14,7 @@ import {
   aphConsole,
   extractPatientDetails,
   formatAddress,
+  formatAddressForApi,
   formatAddressWithLandmark,
   g,
   isAddressLatLngInValid,
@@ -193,9 +194,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     allCurrentPatients?.filter((items: any) => patientsOnCartPage.includes(items?.id));
 
   const addressText = isModifyFlow
-    ? formatAddressWithLandmark(modifiedOrder?.patientAddressObj) || ''
+    ? formatAddressForApi(modifiedOrder?.patientAddressObj) || ''
     : selectedAddr
-    ? formatAddressWithLandmark(selectedAddr) || ''
+    ? formatAddressForApi(selectedAddr) || ''
     : '';
 
   var pricesForItemArray;
@@ -1864,7 +1865,7 @@ const styles = StyleSheet.create({
   },
   addressOutermostView: {
     backgroundColor: '#F5FFFD',
-    maxHeight: 210,
+    maxHeight: 230,
     minHeight: screenHeight > 800 ? 150 : screenHeight < 600 ? 165 : 175,
     shadowColor: theme.colors.SHADE_GREY,
     shadowOffset: { width: 0, height: 5 },

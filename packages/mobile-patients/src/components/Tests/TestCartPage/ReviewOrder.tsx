@@ -88,7 +88,10 @@ import {
 
 import moment from 'moment';
 import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
-import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  DIAGNOSTIC_GROUP_PLAN,
+  getDiagnosticCartItemReportGenDetails,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   DIAGNOSTIC_SLOT_TYPE,
   WebEngageEventName,
@@ -175,6 +178,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setPatientCartItems,
     phleboETA,
     removeDuplicatePatientCartItems,
+    deliveryAddressCityId,
+    cartItemsMapping,
+    setCartItemsMapping,
   } = useDiagnosticsCart();
 
   const { circleSubscriptionId } = useShoppingCart();
@@ -206,6 +212,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   let itemNamesToRemove_global: string[] = [];
   let itemNamesToKeep_global: string[] = [];
   let itemIdsToRemove_global: Number[] = [];
+  let itemIdsToKeep_global: Number[] = [];
+  let obj: any = {};
+  let setLowItemName: string[] = [],
+    setHighPriceName: string[] = [];
 
   const [date, setDate] = useState<Date>(new Date());
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
@@ -232,6 +242,29 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     };
   }, []);
 
+  useEffect(() => {
+    populateCartMapping();
+  }, []);
+
+  async function populateCartMapping() {
+    const listOfIds = cartItems?.map((item) => Number(item?.id));
+    try {
+      const res: any = await getDiagnosticCartItemReportGenDetails(
+        listOfIds?.toString(),
+        Number(deliveryAddressCityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
+      );
+      if (res?.data?.success) {
+        const getItems = res?.data?.data;
+        getItems?.map((item: any) => {
+          (obj.id = Number(item?.itemId)), (obj.name = item?.itemName);
+        });
+        setCartItemsMapping?.(obj);
+      }
+    } catch (error) {
+      CommonBugFender('populateCartMapping_ReviewOrder', error);
+    }
+  }
+
   function handleBack() {
     props.navigation.goBack();
     return true;
@@ -254,10 +287,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       },
       variables: { order: orders },
     });
-
-  function addPrices(prevPrice: number) {
-    return prevPrice + prevPrice;
-  }
 
   function clearCollectionCharges() {
     setHcApiCalled(true);
@@ -1161,10 +1190,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     hideAphAlert?.();
     setLoading?.(false);
     setShowInclusions(true);
-    renderDuplicateMessage(
-      [...new Set(itemNamesToRemove_global)],
-      [...new Set(itemNamesToKeep_global)]
-    );
+    renderDuplicateMessage([...new Set(setLowItemName)], [...new Set(setHighPriceName)]);
   }
 
   const getItemName = (itemIds: any): string => {
@@ -1173,7 +1199,12 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     !!itemIds &&
       itemIds?.length &&
       itemIds?.map((id: number) => {
-        const findItem = cartItems?.find(
+        // const findItem = cartItems?.find(
+        //   (cItems: DiagnosticsCartItem) => Number(cItems?.id) === Number(id)
+        // );
+        const arrayToSelect =
+          !!cartItemsMapping && cartItemsMapping?.length > 0 ? cartItemsMapping : cartItems;
+        const findItem = arrayToSelect?.find(
           (cItems: DiagnosticsCartItem) => Number(cItems?.id) === Number(id)
         );
         if (!!findItem) {
@@ -1203,34 +1234,50 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       let itemToRemove: number[] = [];
       let removedTestsNames: string[] = [];
       let itemToKeepNames: string[] = [];
+      let itemToKeep: number[] = [];
 
       let conflictWithPatients: conflictWithPatientsObjInterface[] = [];
       if (isModifyFlow) {
         const cartConflictedItems = data?.[0]?.attributes?.conflictedItems;
         const modifiedPatientId = modifiedPatientCart?.[0]?.patientId;
+
+        const itemIdsToRemove: any = cartConflictedItems?.map(
+          (conflictedItems: any) => conflictedItems?.itemsWithConflicts
+        );
+        const itemIdsToKeep: any = cartConflictedItems?.map(
+          (conflictedItems: any) => conflictedItems?.itemToKeep
+        );
+        const allIdsToRemove = itemIdsToRemove?.flat(1);
+        const allIdsToKeep = itemIdsToKeep?.flat(1);
+
+        const updatedCartItems = cartItems?.filter((item: DiagnosticsCartItem) => {
+          return !allIdsToRemove?.some((itemId: number) => Number(itemId) === Number(item?.id));
+
+          itemToRemove = [...new Set([...itemToRemove, allIdsToRemove!])];
+          itemToKeep = [...new Set([...itemToKeep, ...allIdsToKeep?.flat(1)])];
+        });
+
         cartConflictedItems?.forEach((cItem: PatientObjWithModifyOrderIDs) => {
-          const updatedCartItems = cartItems?.filter((item: DiagnosticsCartItem) => {
-            return !cItem?.itemsWithConflicts?.some(
-              (itemId: number) => Number(itemId) === Number(item?.id)
-            );
-            itemToRemove = [...new Set([...itemToRemove, cItem?.itemsWithConflicts!])];
-          });
           conflictWithPatients?.push({
             itemsToRemovalName: getItemName(cItem?.itemsWithConflicts),
             toKeepItemIds: cItem?.itemToKeep?.join('')!,
             patientId: modifiedPatientId,
           });
-          removedTestsNames.push(getItemName(cItem?.itemsWithConflicts));
-          itemToKeepNames.push(getItemName(cItem?.itemToKeep));
-          itemNamesToRemove_global = removedTestsNames;
-          itemNamesToKeep_global = itemToKeepNames;
-          setCartItems?.(updatedCartItems);
-          const newModifiedPatientCartItems = {
-            patientId: modifiedPatientId,
-            cartItems: updatedCartItems,
-          };
-          setModifiedPatientCart?.([newModifiedPatientCartItems]);
         });
+
+        removedTestsNames.push(getItemName(itemIdsToRemove));
+        itemToKeepNames.push(getItemName(itemIdsToKeep));
+        itemNamesToRemove_global = removedTestsNames;
+        itemNamesToKeep_global = itemToKeepNames;
+        itemIdsToKeep_global = itemToKeep;
+        itemIdsToRemove_global = itemToRemove;
+
+        setCartItems?.(updatedCartItems);
+        const newModifiedPatientCartItems = {
+          patientId: modifiedPatientId,
+          cartItems: updatedCartItems,
+        };
+        setModifiedPatientCart?.([newModifiedPatientCartItems]);
       } else {
         data?.forEach((patientObj: PatientsObjWithOrderIDs) => {
           if (!patientObj?.status) {
@@ -1240,26 +1287,34 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             const itemIdsToKeep: any = patientObj?.attributes?.conflictedItems?.map(
               (conflictedItems: any) => conflictedItems?.itemToKeep
             );
-            conflictWithPatients?.push({
-              itemsToRemovalName: getItemName(
-                patientObj?.attributes?.conflictedItems?.[0]?.itemsWithConflicts!
-              ),
-              toKeepItemIds: !!patientObj?.attributes?.conflictedItems?.[0]?.itemToKeep
-                ? patientObj?.attributes?.conflictedItems?.[0]?.itemToKeep?.join('')
-                : '',
-              patientId: patientObj?.patientID,
+
+            const conflictedItemsArray = patientObj?.attributes?.conflictedItems;
+            conflictedItemsArray?.map((cItems) => {
+              conflictWithPatients?.push({
+                itemsToRemovalName: getItemName(cItems?.itemsWithConflicts!),
+                toKeepItemIds: !!cItems?.itemToKeep ? cItems?.itemToKeep?.join('') : '',
+                patientId: patientObj?.patientID,
+              });
             });
+
             itemToRemove = [...new Set([...itemToRemove, ...itemIdsToRemove?.flat(1)])];
+            itemToKeep = [...new Set([...itemToKeep, ...itemIdsToKeep?.flat(1)])];
+
             removedTestsNames.push(getItemName(itemIdsToRemove));
             itemToKeepNames.push(getItemName(itemIdsToKeep));
             itemNamesToRemove_global = removedTestsNames;
             itemNamesToKeep_global = itemToKeepNames;
+            itemIdsToKeep_global = itemToKeep;
             itemIdsToRemove_global = itemToRemove;
+
             if (patientCartItems?.length) {
               removeDuplicatePatientCartItems?.(patientObj?.patientID, itemIdsToRemove?.flat(1));
             }
           }
         });
+
+        setLowItemName.push(getItemName(itemIdsToRemove_global));
+        setHighPriceName.push(getItemName(itemIdsToKeep_global));
       }
       const selectedAddressIndex = addresses?.findIndex(
         (address) => address?.id == deliveryAddressId
