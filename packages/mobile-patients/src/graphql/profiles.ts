@@ -2247,6 +2247,8 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           reportGenerationTime
           initialCollectionCharges
           isMultiUhid
+          slotDurationInMinutes
+          homeCollectionCharges
           distanceCharges
         }
         patientAddressObj {
@@ -4933,6 +4935,10 @@ export const GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID = gql`
         isRescheduled
         preBookingId
         id
+        attributesObj {
+          homeCollectionCharges
+          slotDurationInMinutes
+        }
         diagnosticOrdersStatus {
           orderStatus
         }

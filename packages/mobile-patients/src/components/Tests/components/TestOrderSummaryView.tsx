@@ -45,10 +45,11 @@ export interface TestOrderSummaryViewProps {
   onPressDownloadInvoice?: any;
   refundDetails?: any;
   refundTransactionId?: string;
+  slotDuration?: any;
 }
 
 export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props) => {
-  const { orderDetails, refundDetails, refundTransactionId } = props;
+  const { orderDetails, refundDetails, refundTransactionId, slotDuration } = props;
   const filterOrderLineItem =
     !!orderDetails &&
     orderDetails?.diagnosticOrderLineItems?.filter((item: any) => !item?.isRemoved);
@@ -245,12 +246,15 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = (props)
       getUTCDateTime != null
         ? moment(getUTCDateTime).format('hh:mm a')
         : getSlotStartTime(orderDetails?.slotTimings);
+    const rangeAddedTime = getUTCDateTime != null
+    ? moment(getUTCDateTime).add(slotDuration,'minutes').format('hh:mm a')
+    : getSlotStartTime(orderDetails?.slotTimings);
     return (
       <View style={[styles.testSlotContainer]}>
         {(!!bookedForTime || !!bookedForDate) && (
           <View>
             <Text style={styles.headingText}>Appointment Time</Text>
-            {!!bookedForTime ? <Text style={styles.slotText}>{bookedForTime}</Text> : null}
+            {!!bookedForTime ? <Text style={styles.slotText}>{bookedForTime} - {rangeAddedTime}</Text> : null}
             {!!bookedForDate ? <Text style={styles.slotText}>{bookedForDate}</Text> : null}
           </View>
         )}
