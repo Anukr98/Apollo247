@@ -7,13 +7,13 @@
 // GraphQL query operation: getIndividualTestResultPdf
 // ====================================================
 
-export interface getIndividualTestResultPdf_getLabResultpdf {
+export interface getIndividualTestResultPdf_getIndividualTestResultPdf {
   __typename: "GetLabResultpdfResponse";
   url: string;
 }
 
 export interface getIndividualTestResultPdf {
-  getLabResultpdf: getIndividualTestResultPdf_getLabResultpdf | null;
+  getIndividualTestResultPdf: getIndividualTestResultPdf_getIndividualTestResultPdf | null;
 }
 
 export interface getIndividualTestResultPdfVariables {

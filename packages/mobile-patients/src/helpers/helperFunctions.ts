@@ -1707,6 +1707,21 @@ export function getTimeDiff(nextSlot: any) {
   return timeDiff;
 }
 
+export const postWebEngagePHR = (
+  currentPatient: any,
+  cleverTapEventName: CleverTapEventName,
+  source: string = '',
+  data: any = {}
+) => {
+  const eventAttributes: CleverTapEvents[CleverTapEventName.MEDICAL_RECORDS] = {
+    ...removeObjectNullUndefinedProperties(data),
+    Source: source,
+    ...removeObjectNullUndefinedProperties(currentPatient),
+  };
+  postWebEngageEvent(cleverTapEventName, eventAttributes);
+  postCleverTapEvent(cleverTapEventName, eventAttributes);
+};
+
 export const postConsultSearchCleverTapEvent = (
   searchInput: string,
   currentPatient: any,
@@ -1746,6 +1761,65 @@ export const postConsultPastSearchSpecialityClicked = (
     specialtyName: rowData?.name || undefined,
   };
   postCleverTapEvent(CleverTapEventName.CONSULT_PAST_SEARCHES_CLICKED, cleverTapEventAttributes);
+};
+
+export const postWebEngageIfNewSession = (
+  type: string,
+  currentPatient: any,
+  data: any,
+  phrSession: string,
+  setPhrSession: ((value: string) => void) | null
+) => {
+  let session = phrSession;
+  let sessionId;
+  if (!session) {
+    sessionId = `${+new Date()}`;
+    const obj: any = {
+      'consults-usage': null,
+      'testReports-usage': null,
+      'hospitalizations-usage': null,
+      'healthConditions-usage': null,
+      'bills-usage': null,
+      'insurance-usage': null,
+    };
+    const usageKey = getUsageKey(type);
+    obj[usageKey] = sessionId;
+    setPhrSession?.(JSON.stringify(obj));
+    postCleverTapPHR(
+      currentPatient,
+      CleverTapEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS.replace(
+        '{0}',
+        type
+      ) as CleverTapEventName,
+      type,
+      {
+        sessionId,
+        ...data,
+      }
+    );
+  } else {
+    const sessionObj = JSON.parse(session);
+    const usageKey = getUsageKey(type);
+    sessionId = sessionObj[usageKey];
+    if (!sessionId) {
+      sessionId = `${+new Date()}`;
+      const newSessionObj = { ...sessionObj };
+      newSessionObj[usageKey] = sessionId;
+      setPhrSession?.(JSON.stringify(newSessionObj));
+      postCleverTapPHR(
+        currentPatient,
+        CleverTapEventName.PHR_NO_OF_USERS_CLICKED_ON_RECORDS.replace(
+          '{0}',
+          type
+        ) as CleverTapEventName,
+        type,
+        {
+          sessionId,
+          ...data,
+        }
+      );
+    }
+  }
 };
 
 export const postCleverTapPHR = (

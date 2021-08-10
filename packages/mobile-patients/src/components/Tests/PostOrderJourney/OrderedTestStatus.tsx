@@ -40,7 +40,7 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { getPatientPrismMedicalRecordsApi } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
+import { getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_labResults_response } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V3';
 import { RefundCard } from '@aph/mobile-patients/src/components/Tests/components/RefundCard';
 import { DiagnosticViewReportClicked } from '@aph/mobile-patients/src/components/Tests/Events';
 import { TestViewReportOverlay } from '@aph/mobile-patients/src/components/Tests/components/TestViewReportOverlay';
@@ -79,7 +79,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
 
   const [individualTestData, setIndividualTestData] = useState<any>([]);
   const [labResults, setLabResults] = useState<
-    | (getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_labResults_response | null)[]
+    | (getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_labResults_response | null)[]
     | null
     | undefined
   >([]);
@@ -111,7 +111,7 @@ export const OrderedTestStatus: React.FC<OrderedTestStatusProps> = (props) => {
       .then((data: any) => {
         const labResultsData = g(
           data,
-          'getPatientPrismMedicalRecords_V2',
+          'getPatientPrismMedicalRecords_V3',
           'labResults',
           'response'
         );

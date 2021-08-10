@@ -1,6 +1,6 @@
 // Health Card
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import {
   HospitalUploadPhrIcon,
@@ -36,8 +36,9 @@ const styles = StyleSheet.create({
   marginLine: {
     borderBottomColor: '#C4C4C4',
     borderBottomWidth: 1,
-    width: '95%',
+    width: '100%',
     marginTop: 10,
+    right: 1,
   },
   arrowIcon: {
     position: 'absolute',
@@ -63,6 +64,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     bottom: 0,
     left: 5,
+    marginTop: 5,
   },
   hospitalIcon: {
     height: 14,
@@ -95,6 +97,19 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 5,
     bottom: 0,
+    marginTop: 5,
+  },
+  nullBillNo: {
+    ...theme.viewStyles.text('SB', 18, '#01475B', 1, 13),
+    paddingVertical: 14,
+    height: 20,
+    textAlignVertical: 'center',
+    paddingHorizontal: 5,
+  },
+  androidNullBillNo: {
+    height: 24,
+    textAlignVertical: 'center',
+    ...theme.viewStyles.text('SB', 15, '#01475B', 1, 11),
   },
 });
 
@@ -113,24 +128,28 @@ export const BillRecordCard: React.FC<BillRecordCardProps> = (props) => {
     return testReportItems?.map((items: any) => {
       return (
         <>
-          <View style={styles.elementSubContainer}>
-            <TouchableOpacity onPress={() => onHealthCardPress(items.data)}>
-              <Text numberOfLines={1} style={styles.elementText}>
-                {items?.data?.labTestName}
-              </Text>
-              <Text style={{ ...theme.viewStyles.text('R', 12, '#01475B', 1, 20.8) }}>
-                {items?.data?.labTestRefferedBy === 'null' ||
-                items?.data?.labTestRefferedBy === null ||
-                !items?.data?.labTestRefferedBy
-                  ? 'N/A'
-                  : `${'DR.' + items?.data?.labTestRefferedBy}`}
-              </Text>
-              <View style={styles.arrowIcon}>
-                <ArrowRight style={styles.arrowRightIcon} />
+          {items?.data?.labTestResults?.length > 0 ? (
+            <>
+              <View style={styles.elementSubContainer}>
+                <TouchableOpacity onPress={() => onHealthCardPress(items.data)}>
+                  <Text numberOfLines={1} style={styles.elementText}>
+                    {items?.data?.labTestName}
+                  </Text>
+                  <Text style={{ ...theme.viewStyles.text('R', 12, '#01475B', 1, 20.8) }}>
+                    {items?.data?.labTestRefferedBy === 'null' ||
+                    items?.data?.labTestRefferedBy === null ||
+                    !items?.data?.labTestRefferedBy
+                      ? ''
+                      : `${'DR.' + items?.data?.labTestRefferedBy}`}
+                  </Text>
+                  <View style={styles.arrowIcon}>
+                    <ArrowRight style={styles.arrowRightIcon} />
+                  </View>
+                </TouchableOpacity>
               </View>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.elementContainer}></View>
+              <View style={styles.elementContainer}></View>
+            </>
+          ) : null}
         </>
       );
     });
@@ -161,9 +180,16 @@ export const BillRecordCard: React.FC<BillRecordCardProps> = (props) => {
           </Text>
         </View>
         <View style={{ flexDirection: 'column' }}>
-          <Text
-            style={{ ...theme.viewStyles.text('R', 12, '#0087BA', 1, 13) }}
-          >{`Bill No:${item[0]?.data?.billNo}`}</Text>
+          {item[0]?.data?.billNo === undefined || item[0]?.data?.billNo === '' ? (
+            <Text
+              style={Platform.OS === 'ios' ? styles.nullBillNo : styles.androidNullBillNo}
+            >{`Hospital Record`}</Text>
+          ) : (
+            <Text style={{ ...theme.viewStyles.text('R', 12, '#0087BA', 1, 13) }}>
+              {`Bill No: ${item[0]?.data?.billNo}`}
+            </Text>
+          )}
+
           <View style={styles.marginLine} />
         </View>
         {renderElements()}

@@ -215,8 +215,9 @@ const styles = StyleSheet.create({
     paddingBottom: 29,
   },
   recordNameTextStyle: {
-    ...viewStyles.text('SB', 14, '#000000', 1, 30),
+    ...viewStyles.text('SB', 14, '#000000', 1, 21),
     marginRight: 10,
+    width: '95%',
   },
   imageViewStyle: {
     marginHorizontal: 30,
@@ -329,7 +330,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
         .then((_data: any) => {
           const labResultsData = g(
             _data,
-            'getPatientPrismMedicalRecords_V2',
+            'getPatientPrismMedicalRecords_V3',
             'labResults',
             'response',
             '0' as any
@@ -381,7 +382,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
       .then((data: any) => {
         const labResultsData = g(
           data,
-          'getPatientPrismMedicalRecords_V2',
+          'getPatientPrismMedicalRecords_V3',
           'labResults',
           'response'
         );
@@ -480,9 +481,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   const downloadPDFTestReport = (fileShare?: boolean) => {
     if (currentPatient?.id) {
       setLoading && setLoading(true);
-      if (!!data?.fileUrl) {
-        downloadDocument();
-      } else {
+      if (data?.labTestSource === 'Hospital') {
         client
           .query<getIndividualTestResultPdf, getIndividualTestResultPdfVariables>({
             query: GET_INDIVIDUAL_TEST_RESULT_PDF,
@@ -497,6 +496,27 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
               imagesArray?.length === 0
                 ? downloadDocument(data?.getIndividualTestResultPdf?.url, fileShare)
                 : callConvertToZipApi(data?.getIndividualTestResultPdf?.url, fileShare);
+            }
+          })
+          .catch((e: any) => {
+            setLoading?.(false);
+            currentPatient && handleGraphQlError(e, 'Report is yet not available');
+            CommonBugFender('HealthRecordDetails_downloadPDFTestReport', e);
+          });
+      } else {
+        client
+          .query<getLabResultpdf, getLabResultpdfVariables>({
+            query: GET_LAB_RESULT_PDF,
+            variables: {
+              patientId: currentPatient?.id,
+              recordId: data?.id,
+            },
+          })
+          .then(({ data }: any) => {
+            if (data?.getLabResultpdf?.url) {
+              imagesArray?.length === 0
+                ? downloadDocument(data?.getLabResultpdf?.url, fileShare)
+                : callConvertToZipApi(data?.getLabResultpdf?.url, fileShare);
             }
           })
           .catch((e: any) => {
@@ -591,8 +611,6 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
   };
 
   const renderDownloadButton = () => {
-    const buttonTitle = 'TEST REPORT';
-    const btnTitle = 'DOWNLOAD ';
     const _callDownloadDocumentApi = () => {
       if (imagesArray?.length === 1) {
         labResults ? downloadPDFTestReport() : downloadDocument();
@@ -602,7 +620,7 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
     };
     return (
       <View style={{ marginHorizontal: 40, marginBottom: 15, marginTop: 33 }}>
-        <Button title={btnTitle + buttonTitle} onPress={_callDownloadDocumentApi} />
+        <Button title={'SAVE AS PDF'} onPress={_callDownloadDocumentApi} />
       </View>
     );
   };
@@ -878,42 +896,49 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
     return (
       <View>
         <ScrollView>
-          {imagesArray?.map((item, index) => {
-            const file_name = item?.fileName || '';
-            const file_Url = item?.file_Url || '';
-            return file_name && file_name.toLowerCase().endsWith('.pdf') ? (
-              <TouchableOpacity
-                activeOpacity={1}
-                style={styles.imageViewStyle}
-                onPress={() => {
-                  setShowPDF(true);
-                  setPdfFileUrl(file_Url);
-                  setFileNamePDF(file_name);
-                }}
-              >
-                <Pdf key={file_Url} source={{ uri: file_Url }} style={styles.pdfStyle} singlePage />
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                activeOpacity={1}
-                onPress={() => {
-                  props.navigation.navigate(AppRoutes.ImageSliderScreen, {
-                    images: [file_Url],
-                    heading: file_name || 'Image',
-                  });
-                }}
-                style={styles.imageViewStyle}
-              >
-                <Image
-                  placeholderStyle={styles.imagePlaceHolderStyle}
-                  PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
-                  source={{ uri: file_Url }}
-                  style={styles.imageStyle}
-                  resizeMode="contain"
-                />
-              </TouchableOpacity>
-            );
-          })}
+          {data?.labTestSource === '247self'
+            ? imagesArray?.map((item, index) => {
+                const file_name = item?.fileName || '';
+                const file_Url = item?.file_Url || '';
+                return file_name && file_name.toLowerCase().endsWith('.pdf') ? (
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    style={styles.imageViewStyle}
+                    onPress={() => {
+                      setShowPDF(true);
+                      setPdfFileUrl(file_Url);
+                      setFileNamePDF(file_name);
+                    }}
+                  >
+                    <Pdf
+                      key={file_Url}
+                      source={{ uri: file_Url }}
+                      style={styles.pdfStyle}
+                      singlePage
+                    />
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {
+                      props.navigation.navigate(AppRoutes.ImageSliderScreen, {
+                        images: [file_Url],
+                        heading: file_name || 'Image',
+                      });
+                    }}
+                    style={styles.imageViewStyle}
+                  >
+                    <Image
+                      placeholderStyle={styles.imagePlaceHolderStyle}
+                      PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
+                      source={{ uri: file_Url }}
+                      style={styles.imageStyle}
+                      resizeMode="contain"
+                    />
+                  </TouchableOpacity>
+                );
+              })
+            : null}
         </ScrollView>
       </View>
     );
@@ -1007,9 +1032,15 @@ export const TestReportViewScreen: React.FC<TestReportViewScreenProps> = (props)
             }
           : undefined,
     })
-      .fetch('GET', labResults ? pdfUrl || data?.fileUrl : data.fileUrl, {
-        //some headers ..
-      })
+      .fetch(
+        'GET',
+        labResults
+          ? pdfUrl || data?.testResultFiles[0].file_Url
+          : data?.testResultFiles[0].file_Url,
+        {
+          //some headers ..
+        }
+      )
       .then((res) => {
         setLoading && setLoading(false);
         postWebEngagePHR(currentPatient, webEngageEventName, webEngageSource, eventInputData);
