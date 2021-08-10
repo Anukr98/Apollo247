@@ -29,7 +29,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { Coupon } from '@aph/mobile-patients/src/components/MedicineCart/Components/Coupon';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { CircleButtomButtonComponent } from '@aph/mobile-patients/src/components/CirclePlan/Components/CircleButtonButton';
+import { BottomButton } from '@aph/mobile-patients/src/components/CirclePlan/Components/BottomButton';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   one_apollo_store_code,
@@ -62,6 +62,7 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import { Decimal } from 'decimal.js';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { Spinner } from '../ui/Spinner';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 interface SubscriptionCartProps extends NavigationScreenProps {
   action?: string;
@@ -227,7 +228,7 @@ export const SubscriptionCart: React.FC<SubscriptionCartProps> = (props) => {
     setLoading?.(false);
     showAphAlert!({
       title: 'Uh oh! :(',
-      description: 'Oops! seems like we are having an issue. Please try again.',
+      description: string.genericError,
     });
   };
 
@@ -311,7 +312,7 @@ export const SubscriptionCart: React.FC<SubscriptionCartProps> = (props) => {
 
   const renderBottomButton = () => {
     return (
-      <CircleButtomButtonComponent
+      <BottomButton
         onButtonPress={() => {
           initiateCirclePurchase();
         }}

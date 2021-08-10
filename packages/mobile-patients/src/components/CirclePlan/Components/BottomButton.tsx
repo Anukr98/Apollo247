@@ -29,12 +29,12 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface CircleButtomButtonProps {
+export interface BottomButtonProps {
   onButtonPress: () => void;
   buttonText: string;
 }
 
-export const CircleButtomButtonComponent: React.FC<CircleButtomButtonProps> = (props) => {
+export const BottomButton: React.FC<BottomButtonProps> = (props) => {
   return (
     <StickyBottomComponent style={[styles.stickyBottomComponent]}>
       <View style={[styles.innerContainer]}>

@@ -24,8 +24,6 @@ export const Coupon: React.FC<CouponProps> = (props) => {
   } = useShoppingCart();
   const { onPressApplyCoupon, onPressRemove, movedFrom } = props;
   const isFromSubscription = movedFrom == 'subscription';
-  // console.log('isFromSubscription >>>> ', isFromSubscription);
-  // console.log('subscriptionCoupon >>>> ', subscriptionCoupon);
 
   const renderApplyCoupon = () => {
     return (

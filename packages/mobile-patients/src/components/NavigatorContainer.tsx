@@ -124,7 +124,6 @@ import { SymptomSelection } from '@aph/mobile-patients/src/components/SymptomSel
 import { PaymentCheckout } from '@aph/mobile-patients/src/components/Consult/PaymentCheckout';
 import { PaymentCheckoutPhysical } from '@aph/mobile-patients/src/components/Consult/PaymentCheckoutPhysical';
 import { SubscriptionCart } from '@aph/mobile-patients/src/components/CirclePlan/SubscriptionCart';
-import { SubscriptionPaymentGateway } from '@aph/mobile-patients/src/components/CirclePlan/SubscriptionPaymentGateway';
 import { PrescriptionOrderSummary } from '@aph/mobile-patients/src/components/Medicines/PrescriptionOrderSummary';
 import { Maps } from '@aph/mobile-patients/src/components/ui/Maps';
 import { PaymentMethods } from '@aph/mobile-patients/src/components/PaymentGateway/PaymentMethods';
@@ -263,7 +262,6 @@ export enum AppRoutes {
   PaymentCheckout = 'PaymentCheckout',
   PaymentCheckoutPhysical = 'PaymentCheckoutPhysical',
   SubscriptionCart = 'SubscriptionCart',
-  SubscriptionPaymentGateway = 'SubscriptionPaymentGateway',
   PrescriptionOrderSummary = 'PrescriptionOrderSummary',
   PaymentMethods = 'PaymentMethods',
   OtherBanks = 'OtherBanks',
@@ -657,9 +655,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.SubscriptionCart]: {
     screen: SubscriptionCart,
-  },
-  [AppRoutes.SubscriptionPaymentGateway]: {
-    screen: SubscriptionPaymentGateway,
   },
   [AppRoutes.PrescriptionOrderSummary]: {
     screen: PrescriptionOrderSummary,
