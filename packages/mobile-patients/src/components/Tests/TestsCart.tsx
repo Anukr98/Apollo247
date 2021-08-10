@@ -277,6 +277,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setModifiedOrder,
     setAsyncDiagnosticPincode,
     setModifiedOrderItemIds,
+    modifiedOrderItemIds,
   } = useDiagnosticsCart();
   const {
     setAddresses: setMedAddresses,
@@ -407,12 +408,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    if (currentPatient) {
-      checkPatientAge(currentPatient);
-    }
-  }, [currentPatient]);
-
-  useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setIsFocused(true);
       BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -486,7 +481,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 }
               });
             });
-            setAlsoAddListData(_diagnosticWidgetData);
+            const filteredItems =
+              !!_diagnosticWidgetData &&
+              _diagnosticWidgetData?.filter(
+                (diagItem: any) => !listOfIds?.includes(Number(diagItem?.itemId))
+              );
+            setAlsoAddListData(filteredItems);
           })
           .catch((error) => {
             setAlsoAddListData([]);
@@ -524,7 +524,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const checkPatientAge = (_selectedPatient: any, fromNewProfile: boolean = false) => {
     let age = !!_selectedPatient?.dateOfBirth ? getAge(_selectedPatient?.dateOfBirth) : null;
-    if (age && age <= 10) {
+    if (age != null && age != undefined && age <= 10) {
       setSelectedPatient(null);
       setShowSelectPatient?.(false);
       setShowPatientListOverlay?.(false);
@@ -737,7 +737,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   useEffect(() => {
     if (cartItems?.length > 0) {
       if (cartItemsWithId?.length > 0) {
-        fetchTestReportGenDetails(cartItemsWithId);
+        const itemIds = isModifyFlow
+          ? cartItemsWithId.concat(modifiedOrderItemIds)
+          : cartItemsWithId;
+        fetchTestReportGenDetails(itemIds);
       }
     }
   }, [cartItems?.length, addressCityId]);

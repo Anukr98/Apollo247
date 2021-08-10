@@ -1892,6 +1892,25 @@ export const postWEGNeedHelpEvent = (
   postWebEngageEvent(WebEngageEventName.NEED_HELP, eventAttributes);
 };
 
+export const postWEGPatientAPIError = (
+  currentPatient: GetCurrentPatients_getCurrentPatients_patients,
+  doc: string | null,
+  screen: string,
+  api: string,
+  error: any
+) => {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.Patient_API_Error] = {
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient ID': g(currentPatient, 'id')!,
+    'Patient Number': g(currentPatient, 'mobileNumber')!,
+    'Doctor ID': doc,
+    'Screen Name': screen,
+    'API Name': api,
+    'Error Name': error,
+  };
+  postWebEngageEvent(WebEngageEventName.Patient_API_Error, eventAttributes);
+};
+
 export const postWEGWhatsAppEvent = (whatsAppAllow: boolean) => {
   webengage.user.setAttribute('whatsapp_opt_in', whatsAppAllow); //WhatsApp
 };
@@ -2374,6 +2393,7 @@ export const formatToCartItem = ({
   image,
   sell_online,
   url_key,
+  subcategory,
 }: MedicineProduct): ShoppingCartItem => {
   return {
     id: sku,
@@ -2390,6 +2410,7 @@ export const formatToCartItem = ({
     isInStock: is_in_stock == 1,
     unavailableOnline: sell_online == 0,
     url_key,
+    subcategory,
   };
 };
 
@@ -2686,14 +2707,32 @@ export const removeConsecutiveComma = (value: string) => {
   return value.replace(/^,|,$|,(?=,)/g, '');
 };
 
-export const getCareCashback = (price: number, type_id: string | null | undefined) => {
+export const calculateCashbackForItem = (
+  price: number,
+  type_id: any,
+  subcategory: any,
+  sku: any
+) => {
   const { circleCashback } = useShoppingCart();
-  let typeId = !!type_id ? type_id.toUpperCase() : '';
-  let cashback = 0;
-  if (!!circleCashback && !!circleCashback[typeId]) {
-    cashback = price * (circleCashback[typeId] / 100);
-  }
-  return cashback;
+  const getFirstLevelCashback = () => {
+    // categoty level cashback
+    const key = type_id?.toUpperCase();
+    return circleCashback?.[key] || 0;
+  };
+  const getSecondLevelCashback = () => {
+    // sub categoty level cashback
+    const key = `${type_id?.toUpperCase()}~${subcategory}`;
+    return circleCashback?.[key] || 0;
+  };
+  const getThirdLevelCashback = () => {
+    // sku level cashback
+    const key = `${type_id?.toUpperCase()}~${subcategory}~${sku}`;
+    return circleCashback?.[key] || 0;
+  };
+  const cashbackFactor =
+    getThirdLevelCashback() || getSecondLevelCashback() || getFirstLevelCashback();
+  const cashback = cashbackFactor ? ((price * cashbackFactor) / 100).toFixed(2) : '0';
+  return cashback || 0;
 };
 
 export const readableParam = (param: string) => {
@@ -3364,7 +3403,7 @@ export const downloadDocument = (
   let viewReportOrderId = orderId;
   const configOptions = { fileCache: true };
   RNFetchBlob.config(configOptions)
-    .fetch('GET', fileUrl)
+    .fetch('GET', fileUrl.replace(/\s/g, ''))
     .then((resp) => {
       filePath = resp.path();
       return resp.readFile('base64');
@@ -3388,4 +3427,8 @@ export const getIsMedicine = (typeId: string) => {
     pl: '2',
   };
   return medicineType[typeId] || '0';
+};
+export const removeWhiteSpaces = (item: any) => {
+  const newItem = item?.replace(/\s/g, '');
+  return newItem;
 };

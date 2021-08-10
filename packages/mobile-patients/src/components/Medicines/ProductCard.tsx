@@ -10,7 +10,7 @@ import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   getDiscountPercentage,
   productsThumbnailUrl,
-  getCareCashback,
+  calculateCashbackForItem,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
@@ -39,6 +39,8 @@ export const ProductCard: React.FC<Props> = ({
   price,
   special_price,
   thumbnail,
+  subcategory,
+  sku,
   image,
   sell_online,
   is_prescription_required,
@@ -138,7 +140,7 @@ export const ProductCard: React.FC<Props> = ({
 
   const renderCareCashback = () => {
     const finalPrice = discount ? special_price : price;
-    const cashback = getCareCashback(Number(finalPrice), type_id);
+    const cashback = calculateCashbackForItem(Number(finalPrice), type_id, subcategory, sku);
     if (!!cashback) {
       return (
         <TouchableOpacity
@@ -150,7 +152,7 @@ export const ProductCard: React.FC<Props> = ({
             }
           }}
         >
-          <CareCashbackBanner bannerText={`extra ₹${cashback.toFixed(2)} cashback`} />
+          <CareCashbackBanner bannerText={`extra ₹${cashback} cashback`} />
         </TouchableOpacity>
       );
     } else {

@@ -14,18 +14,27 @@ export interface PayByCashProps {
   businessLine: 'consult' | 'diagnostics' | 'pharma' | 'subscription';
   showDiagCOD: boolean;
   diagMsg: string;
+  pharmaDisableCod?: boolean;
 }
 
 export const PayByCash: React.FC<PayByCashProps> = (props) => {
-  const { onPressPlaceOrder, HCselected, businessLine, showDiagCOD, diagMsg } = props;
+  const {
+    onPressPlaceOrder,
+    HCselected,
+    businessLine,
+    showDiagCOD,
+    diagMsg,
+    pharmaDisableCod,
+  } = props;
   const disableDiagCOD = businessLine == 'diagnostics' && !showDiagCOD;
+  const disableCodOption = disableDiagCOD || HCselected || pharmaDisableCod;
 
   const renderPaybyCash = () => {
     return (
       <View
         style={{
           ...styles.subContainer,
-          opacity: disableDiagCOD || HCselected ? 0.4 : 1,
+          opacity: disableCodOption ? 0.4 : 1,
         }}
       >
         <Cash />
@@ -36,11 +45,15 @@ export const PayByCash: React.FC<PayByCashProps> = (props) => {
 
   const renderPlaceOrder = () => {
     return (
-      <TouchableOpacity onPress={onPressPlaceOrder}>
+      <TouchableOpacity
+        onPress={() => {
+          !disableCodOption && onPressPlaceOrder();
+        }}
+      >
         <Text
           style={{
             ...styles.placeOrder,
-            opacity: disableDiagCOD || HCselected ? 0.4 : 1,
+            opacity: disableCodOption ? 0.4 : 1,
           }}
         >
           PLACE ORDER
@@ -54,6 +67,8 @@ export const PayByCash: React.FC<PayByCashProps> = (props) => {
       <Text style={styles.codAlertMsg}>
         {'! COD option is not available along with OneApollo Health Credits.'}
       </Text>
+    ) : pharmaDisableCod ? (
+      <Text style={styles.codAlertMsg}>COD option is not available for this order.</Text>
     ) : null;
   };
 

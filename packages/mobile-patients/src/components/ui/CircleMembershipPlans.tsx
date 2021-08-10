@@ -61,6 +61,7 @@ import moment from 'moment';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
+  postAppsFlyerCircleAddRemoveCartEvent,
   fireCirclePaymentPageViewedEvent,
   postCircleWEGEvent,
 } from '@aph/mobile-patients/src/components/CirclePlan/Events';
@@ -276,6 +277,14 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     const membershipPlan = membershipPlans?.[index];
     setCirclePlanSelected && setCirclePlanSelected(membershipPlan);
     AsyncStorage.setItem('circlePlanSelected', JSON.stringify(membershipPlan));
+    if (source === 'Pharma Cart') {
+      postAppsFlyerCircleAddRemoveCartEvent(
+        membershipPlan,
+        circleEventSource,
+        'add',
+        currentPatient
+      );
+    }
     if (isConsultJourney) {
       !isModal &&
         circleWebEngageEventForAddToCart(
@@ -343,8 +352,10 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       user_type: getUserType(allCurrentPatients),
       price: circleData?.currentSellingPrice,
     };
-    if (isConsultJourney || getButtonTitle() === string.circleDoctors.addToCart)
+    if (isConsultJourney || getButtonTitle() === string.circleDoctors.addToCart) {
       postCleverTapEvent(CleverTapEventName.CIRCLE_PLAN_TO_CART, cleverTapEventAttributes);
+      postAppsFlyerCircleAddRemoveCartEvent(circleData, circleEventSource, 'add', currentPatient);
+    }
   };
 
   const fireCirclePlanRemovedEvent = () => {
@@ -854,6 +865,12 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         ]}
         onPress={() => {
           fireCircleBuyNowEvent();
+          postAppsFlyerCircleAddRemoveCartEvent(
+            circlePlanSelected,
+            circleEventSource,
+            'add',
+            currentPatient
+          );
           isConsultJourney &&
             circleWebEngageEventForAddToCart(
               WebEngageEventName.VC_NON_CIRCLE_ADDS_CART,
@@ -877,6 +894,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
               setCircleMembershipCharges &&
                 setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
               setCircleSubPlanId && setCircleSubPlanId(circlePlanSelected?.subPlanId);
+              closeModal && closeModal();
             }
           } else {
             closeModal && closeModal();
@@ -950,6 +968,12 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
               circleEventSource,
               circlePlanSelected,
               allCurrentPatients
+            );
+            postAppsFlyerCircleAddRemoveCartEvent(
+              circlePlanSelected,
+              circleEventSource,
+              'remove',
+              currentPatient
             );
             setCirclePlanSelected && setCirclePlanSelected(null);
             setIsCircleSubscription && setIsCircleSubscription(false);

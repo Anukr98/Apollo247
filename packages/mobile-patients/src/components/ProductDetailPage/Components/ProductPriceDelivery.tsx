@@ -11,6 +11,7 @@ import moment from 'moment';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 import { convertNumberToDecimal } from '@aph/mobile-patients/src/utils/commonUtils';
+import { MultiVariant } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/MultiVariant';
 
 export interface ProductPriceDeliveryProps {
   price: number;
@@ -23,10 +24,15 @@ export interface ProductPriceDeliveryProps {
   deliveryTime?: string;
   deliveryError?: string;
   isPharma: boolean;
-  cashback: number;
+  cashback: number | string;
   finalPrice: number;
   showDeliverySpinner: boolean;
   isBanned: boolean;
+  sku: string;
+  multiVariantAttributes?: any[];
+  multiVariantProducts?: any[];
+  skusInformation?: any[];
+  onSelectVariant?: (sku: string) => void;
 }
 
 export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props) => {
@@ -44,6 +50,11 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     isSellOnline,
     showDeliverySpinner,
     isBanned,
+    multiVariantAttributes,
+    multiVariantProducts,
+    skusInformation,
+    sku,
+    onSelectVariant,
   } = props;
   const { currentPatient } = useAllCurrentPatients();
   const { addresses, deliveryAddressId, circleSubscriptionId, asyncPincode } = useShoppingCart();
@@ -52,30 +63,38 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
   const hoursMoment = moment.duration(momentDiff);
   const hours = hoursMoment.asHours().toFixed();
   const showExpress = Number(hours) <= AppConfig.Configuration.EXPRESS_MAXIMUM_HOURS;
+  const showMultiVariantOption = !!multiVariantAttributes?.length && !!skusInformation?.length;
 
   const renderProductPrice = () => {
     const discountPercent = getDiscountPercentage(price, specialPrice);
-    return !!specialPrice ? (
-      <View style={styles.flexRow}>
-        <Text style={styles.label}>{`Price: `}</Text>
-        <Text style={styles.value}>
-          {string.common.Rs}
-          {convertNumberToDecimal(specialPrice)}
-          {'  '}
-        </Text>
-        <Text style={styles.smallLabel}>{`MRP `}</Text>
-        <Text style={styles.smallValue}>
-          {string.common.Rs}
-          {convertNumberToDecimal(price)}
-        </Text>
-        <Text style={styles.discountPercent}>{`  ${discountPercent}%off`}</Text>
-      </View>
-    ) : (
-      <View style={styles.flexRow}>
-        <Text style={styles.label}>{`MRP: `}</Text>
-        <Text style={styles.value}>
-          {string.common.Rs}
-          {convertNumberToDecimal(price)}
+    return (
+      <View>
+        {!!specialPrice ? (
+          <View style={styles.flexRow}>
+            <Text style={styles.label}>{`Price: `}</Text>
+            <Text style={styles.value}>
+              {string.common.Rs}
+              {convertNumberToDecimal(specialPrice)}
+              {'  '}
+            </Text>
+            <Text style={styles.smallLabel}>{`MRP `}</Text>
+            <Text style={styles.smallValue}>
+              {string.common.Rs}
+              {convertNumberToDecimal(price)}
+            </Text>
+            <Text style={styles.discountPercent}>{`  ${discountPercent}%off`}</Text>
+          </View>
+        ) : (
+          <View style={styles.flexRow}>
+            <Text style={styles.label}>{`MRP: `}</Text>
+            <Text style={styles.value}>
+              {string.common.Rs}
+              {convertNumberToDecimal(price)}
+            </Text>
+          </View>
+        )}
+        <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 25, 0)}>
+          Inclusive of all Taxes
         </Text>
       </View>
     );
@@ -180,7 +199,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
     return (
       <>
         <CareCashbackBanner
-          bannerText={`extra cashback ${string.common.Rs}${cashback.toFixed(2)}`}
+          bannerText={`extra cashback ${string.common.Rs}${cashback}`}
           textStyle={styles.circleText}
           logoStyle={styles.circleLogo}
         />
@@ -189,10 +208,23 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
           <Text style={{ fontWeight: 'bold' }}>
             {' '}
             {string.common.Rs}
-            {(finalPrice - cashback).toFixed(2)}
+            {(finalPrice - Number(cashback)).toFixed(2)}
           </Text>
         </Text>
       </>
+    );
+  };
+
+  const renderMultiVariantOptions = () => {
+    return (
+      <MultiVariant
+        multiVariantAttributes={multiVariantAttributes}
+        multiVariantProducts={multiVariantProducts}
+        skusInformation={skusInformation}
+        currentSku={sku}
+        onSelectVariant={onSelectVariant}
+        pincode={asyncPincode?.pincode || pharmacyLocation?.pincode}
+      />
     );
   };
 
@@ -204,6 +236,7 @@ export const ProductPriceDelivery: React.FC<ProductPriceDeliveryProps> = (props)
       </View>
       {!!circleSubscriptionId && !!cashback && renderCareCashback()}
       {!!manufacturer && !isPharma && renderManufacturer()}
+      {showMultiVariantOption && renderMultiVariantOptions()}
       {isSellOnline && renderDeliverTo()}
       {!isBanned &&
         isSellOnline &&
@@ -239,6 +272,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     backgroundColor: '#00B38E',
     borderRadius: 5,
+    marginBottom: 25,
   },
   stockText: theme.viewStyles.text('M', 13, '#FFFFFF', 1, 18),
   manufacture: {

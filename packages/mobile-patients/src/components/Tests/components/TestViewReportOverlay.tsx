@@ -4,6 +4,7 @@ import {
   downloadDiagnosticReport,
   g,
   TestSlot,
+  removeWhiteSpaces,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -108,16 +109,21 @@ export const TestViewReportOverlay: React.FC<TestViewReportOverlayProps> = (prop
                     ) {
                       props.onPressViewReport();
                     } else if (item?.title == string.Report.share) {
-                      props.downloadDocument(props?.order?.labReportURL, 'application/pdf');
+                      props.downloadDocument(
+                        removeWhiteSpaces(props?.order?.labReportURL),
+                        'application/pdf'
+                      );
                     } else {
                       copyToClipboard(
-                        props.order && props.order?.labReportURL ? props.order?.labReportURL : ''
+                        props.order && props.order?.labReportURL
+                          ? removeWhiteSpaces(props.order?.labReportURL)
+                          : ''
                       );
                     }
+                    setTimeout(() => {
+                      props.onClose();
+                    }, 500);
                   }
-                  setTimeout(() => {
-                    props.onClose();
-                  }, 500);
                 }}
                 style={styles.itemView}
               >

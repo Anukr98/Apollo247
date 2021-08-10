@@ -189,9 +189,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const [scrollToend, setScrollToend] = useState<boolean>(false);
   const [showCareDetails, setShowCareDetails] = useState(true);
   const [areNonCODSkus, setAreNonCODSkus] = useState(false);
-  const [isSubstitutionValue, setisSubstitutionValue] = useState<boolean>(false);
-  const [substitutionMessageValue, setSubstitutionMessageValue] = useState<string>('');
-  const [substitutionTimeValue, setSubstitutionTimeValue] = useState<number>(0);
   const [orderTransactionId, setOrderTransactionId] = useState<string>('');
   const client = useApolloClient();
 
@@ -549,9 +546,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             transId: orderAutoId,
             orders: orders,
             isStorePickup: isStorePickup,
-            showSubstituteMessage: isSubstitutionValue,
-            substitutionMessage: substitutionMessageValue,
-            substitutionTime: substitutionTimeValue,
           });
         }
       })
@@ -632,9 +626,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             price: getFormattedAmount(grandTotal),
             transId: transactionId,
             orders: orders,
-            showSubstituteMessage: isSubstitutionValue,
-            substitutionMessage: substitutionMessageValue,
-            substitutionTime: substitutionTimeValue,
           });
         }
       })
@@ -673,10 +664,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     transactionId: number,
     paymentMode: string,
     bankCode: string,
-    orderInfo: saveMedicineOrderOMSVariables | saveMedicineOrderV2Variables,
-    showSubstituteMessage?: boolean,
-    substitutionMessage?: string,
-    substitutionTime?: number
+    orderInfo: saveMedicineOrderOMSVariables | saveMedicineOrderV2Variables
   ) => {
     orders?.forEach((order) => {
       firePaymentModeEvent(paymentMode, order?.id!, order?.orderAutoId!);
@@ -708,9 +696,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       planId: circlePlanId || '',
       subPlanId: circleSubPlanId || '',
       isStorePickup,
-      showSubstituteMessage,
-      substitutionMessage,
-      substitutionTime,
     });
   };
 
@@ -957,16 +942,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
                   id: orderId,
                   orderAutoId: orderAutoId,
                 };
-                redirectToPaymentGateway(
-                  orders,
-                  orderAutoId,
-                  paymentMode,
-                  bankCode,
-                  orderInfo,
-                  isSubstitutionValue,
-                  substitutionMessageValue,
-                  substitutionTimeValue
-                )
+                redirectToPaymentGateway(orders, orderAutoId, paymentMode, bankCode, orderInfo)
                   .catch((e) => {
                     CommonBugFender('CheckoutScene_redirectToPaymentGateway', e);
                   })
@@ -1001,18 +977,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           })
       : saveOrderV2(OrderInfoV2)
           .then(({ data }) => {
-            const {
-              orders,
-              transactionId,
-              errorCode,
-              errorMessage,
-              isSubstitution,
-              substitutionTime,
-              substitutionMessage,
-            } = data?.saveMedicineOrderV2 || {};
-            setisSubstitutionValue(isSubstitution);
-            setSubstitutionMessageValue(substitutionMessage);
-            setSubstitutionTimeValue(substitutionTime);
+            const { orders, transactionId, errorCode, errorMessage } =
+              data?.saveMedicineOrderV2 || {};
             setOrderTransactionId(transactionId);
             if (errorCode || errorMessage) {
               showAphAlert!({
@@ -1032,10 +998,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
                   transactionId!,
                   paymentMode,
                   bankCode,
-                  OrderInfoV2,
-                  isSubstitution,
-                  substitutionMessage,
-                  substitutionTime
+                  OrderInfoV2
                 )
                   .catch((e) => {
                     CommonBugFender('CheckoutScene_redirectToPaymentGateway', e);

@@ -12,6 +12,7 @@ import {
   tabBarOptions,
 } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultRoom';
 import { DoctorDetails } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorDetails';
+import { DoctorDetailsBookingOnRequest } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorDetailsBookingOnRequest';
 import { DoctorSearch } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearch';
 import { DoctorSearchListing } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearchListing';
 import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
@@ -35,7 +36,6 @@ import { Medicine } from '@aph/mobile-patients/src/components/Medicines/Medicine
 import { MedicineSearch } from '@aph/mobile-patients/src/components/MedicineSearch/MedicineSearch';
 import { MedicineListing } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListing';
 import { MedicineBuyAgain } from '@aph/mobile-patients/src/components/MedicineBuyAgain/MedicineBuyAgain';
-import { MedicineDetailsScene } from '@aph/mobile-patients/src/components/Medicines/MedicineDetailsScene';
 import { ProductDetailPage } from '@aph/mobile-patients/src/components/ProductDetailPage/ProductDetailPage';
 import { SelectDeliveryAddress } from '@aph/mobile-patients/src/components/Medicines/SelectDeliveryAddress';
 import { StorePickupScene } from '@aph/mobile-patients/src/components/Medicines/StorePickupScene';
@@ -176,6 +176,7 @@ export enum AppRoutes {
   Consult = 'Consult',
   FilterScene = 'FilterScene',
   DoctorDetails = 'DoctorDetails',
+  DoctorDetailsBookingOnRequest = 'DoctorDetailsBookingOnRequest',
   AssociateDoctorDetails = 'AssociateDoctorDetails',
   AppointmentDetails = 'AppointmentDetails',
   AppointmentDetailsPhysical = 'AppointmentDetailsPhysical',
@@ -184,7 +185,6 @@ export enum AppRoutes {
   MedicineSearch = 'MedicineSearch',
   MedicineListing = 'MedicineListing',
   MedicineBuyAgain = 'MedicineBuyAgain',
-  MedicineDetailsScene = 'MedicineDetailsScene',
   ProductDetailPage = 'ProductDetailPage',
   ApplyCouponScene = 'ApplyCouponScene',
   ViewCoupons = 'ViewCoupons',
@@ -388,6 +388,10 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
     screen: DoctorDetails,
     path: 'DoctorDetailsPage',
   },
+  [AppRoutes.DoctorDetailsBookingOnRequest]: {
+    screen: DoctorDetailsBookingOnRequest,
+    path: 'DoctorDetailsBookingOnRequestPage',
+  },
   [AppRoutes.AssociateDoctorDetails]: {
     screen: DoctorDetails,
   },
@@ -408,9 +412,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.MedicineBuyAgain]: {
     screen: MedicineBuyAgain,
-  },
-  [AppRoutes.MedicineDetailsScene]: {
-    screen: MedicineDetailsScene,
   },
   [AppRoutes.ProductDetailPage]: {
     screen: ProductDetailPage,

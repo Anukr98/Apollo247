@@ -55,6 +55,7 @@ import {
   setAsyncPharmaLocation,
   getPackageIds,
   getIsMedicine,
+  getNetStatus,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   pinCodeServiceabilityApi247,
@@ -995,8 +996,18 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
 
   async function redirectToUploadPrescription() {
     const redirect = () => {
-      uploadPrescriptionClickedEvent(currentPatient?.id);
-      props.navigation.navigate(AppRoutes.MedicineCartPrescription);
+      getNetStatus()
+        .then((status) => {
+          if (status) {
+            uploadPrescriptionClickedEvent(currentPatient?.id);
+            props.navigation.navigate(AppRoutes.MedicineCartPrescription);
+          } else {
+            renderAlert(string.medicine_cart.noInternetMessage);
+          }
+        })
+        .catch((e) => {
+          CommonBugFender('MedicineCart_redirectToUploadPrescription_getNetStatus', e);
+        });
     };
     if (coupon) {
       try {
@@ -1059,11 +1070,21 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   };
 
   async function onPressReviewOrder() {
-    availabilityTat(true);
-    if (coupon) {
-      await validatePharmaCoupon();
-    }
-    !hasUnserviceableproduct() && props.navigation.navigate(AppRoutes.CartSummary);
+    getNetStatus()
+      .then(async (status) => {
+        if (status) {
+          availabilityTat(true);
+          if (coupon) {
+            await validatePharmaCoupon();
+          }
+          !hasUnserviceableproduct() && props.navigation.navigate(AppRoutes.CartSummary);
+        } else {
+          renderAlert(string.medicine_cart.noInternetMessage);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('MedicineCart_onPressReviewOrder_getNetStatus', e);
+      });
   }
 
   const renderUnServiceable = () => {

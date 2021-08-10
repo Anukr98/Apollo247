@@ -703,7 +703,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         const { data } = res;
         const { getOrderInvoice } = data;
         let dirs = RNFetchBlob.fs.dirs;
-        let fileName: string = 'Apollo_Consult_Invoice' + String(new Date()) + '.pdf';
+        let fileName: string = 'Apollo_Consult_Invoice' + moment().format('MMM_D_YYYY_HH_mm') + '.pdf';
         const downloadPath =
           Platform.OS === 'ios'
             ? (dirs.DocumentDir || dirs.MainBundleDir) +

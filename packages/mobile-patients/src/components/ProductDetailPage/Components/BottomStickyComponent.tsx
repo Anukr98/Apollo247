@@ -17,7 +17,7 @@ export interface BottomStickyComponentProps {
   productQuantity: number;
   setShowAddedToCart: (show: boolean) => void;
   isBanned: boolean;
-  cashback: number;
+  cashback: number | string;
   onNotifyMeClick: () => void;
 }
 export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (props) => {
@@ -98,7 +98,7 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
     return (
       <>
         <CareCashbackBanner
-          bannerText={`extra cashback ${string.common.Rs}${cashback.toFixed(2)}`}
+          bannerText={`extra cashback ${string.common.Rs}${cashback}`}
           textStyle={styles.circleText}
           logoStyle={styles.circleLogo}
         />
@@ -107,7 +107,7 @@ export const BottomStickyComponent: React.FC<BottomStickyComponentProps> = (prop
           <Text style={{ fontWeight: 'bold' }}>
             {' '}
             {string.common.Rs}
-            {(finalPrice - cashback).toFixed(2)}
+            {(finalPrice - Number(cashback)).toFixed(2)}
           </Text>
         </Text>
       </>

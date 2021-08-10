@@ -99,6 +99,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const eventAttributes = props.navigation.getParam('eventAttributes');
   const businessLine = props.navigation.getParam('businessLine');
   const isDiagnostic = businessLine === 'diagnostics';
+  const disableCod = props.navigation.getParam('disableCOD');
   const { currentPatient } = useAllCurrentPatients();
   const [banks, setBanks] = useState<any>([]);
   const [isTxnProcessing, setisTxnProcessing] = useState<boolean>(false);
@@ -670,6 +671,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         onPressPlaceOrder={onPressPayByCash}
         showDiagCOD={showCOD}
         diagMsg={showDiagnosticHCMsg}
+        pharmaDisableCod={disableCod}
       />
     );
   };

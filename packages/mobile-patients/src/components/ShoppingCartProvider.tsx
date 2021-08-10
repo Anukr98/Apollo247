@@ -38,6 +38,7 @@ export interface ShoppingCartItem {
   applicable?: boolean;
   circleCashbackAmt?: number;
   url_key?: string;
+  subcategory?: string | null;
 }
 
 export interface CouponProducts {
@@ -246,6 +247,8 @@ export interface ShoppingCartContextProps {
   setNonCodSKus: ((items: string[]) => void) | null;
   cartPriceNotUpdateRange: number;
   setCartPriceNotUpdateRange: ((value: number) => void) | null;
+  pdpDisclaimerMessage: string;
+  setPdpDisclaimerMessage: ((message: string) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -360,6 +363,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setNonCodSKus: null,
   cartPriceNotUpdateRange: 0,
   setCartPriceNotUpdateRange: null,
+  pdpDisclaimerMessage: '',
+  setPdpDisclaimerMessage: null,
 });
 
 const AsyncStorageKeys = {
@@ -501,6 +506,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
     _setEPrescriptions(items);
   };
 
+  const [pdpDisclaimerMessage, setPdpDisclaimerMessage] = useState<
+    ShoppingCartContextProps['pdpDisclaimerMessage']
+  >('');
+
   const setPhysicalPrescriptions: ShoppingCartContextProps['setPhysicalPrescriptions'] = (
     items
   ) => {
@@ -536,8 +545,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
           : item.price;
         let cashback = 0;
         const type_id = item?.productType?.toUpperCase();
-        if (!!circleCashback && !!circleCashback[type_id]) {
-          cashback = finalPrice * item.quantity * (circleCashback[type_id] / 100);
+        if (!!circleCashback && !!circleCashback?.[type_id]) {
+          const circleCashBack =
+            circleCashback?.[`${type_id}~${item?.subcategory}`] || circleCashback?.[type_id];
+          cashback = finalPrice * item.quantity * (circleCashBack / 100);
         }
         item.circleCashbackAmt = cashback || 0;
       });
@@ -1242,6 +1253,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setNonCodSKus,
         cartPriceNotUpdateRange,
         setCartPriceNotUpdateRange,
+        pdpDisclaimerMessage,
+        setPdpDisclaimerMessage,
       }}
     >
       {props.children}

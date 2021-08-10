@@ -54,6 +54,7 @@ import {
 } from '@aph/mobile-patients/src/components/PaymentGateway/NetworkCalls';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { useGetJuspayId } from '@aph/mobile-patients/src/hooks/useGetJuspayId';
+import { postAppsFlyerCircleAddRemoveCartEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 import { fireCirclePaymentPageViewedEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 export interface CommonWebViewProps extends NavigationScreenProps {}
 
@@ -122,6 +123,7 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
       price: circleData?.currentSellingPrice,
     };
     postCleverTapEvent(CleverTapEventName.CIRCLE_PLAN_TO_CART, cleverTapEventAttributes);
+    postAppsFlyerCircleAddRemoveCartEvent(circleData, circleEventSource, 'add', currentPatient);
   };
 
   useEffect(() => {
