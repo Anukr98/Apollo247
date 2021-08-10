@@ -151,7 +151,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [date, setDate] = useState<Date>(new Date());
   const [showDisplaySchedule, setDisplaySchedule] = useState<boolean>(false);
- 
+
   const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
   const [selectedOrderId, setSelectedOrderId] = useState<string>('');
   const [slots, setSlots] = useState<TestSlot[]>([]);
@@ -734,10 +734,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     ) as string;
     const formatTime =
       rescheduleSlotObject?.slotStartTime || (diagnosticSlot?.slotStartTime as string);
-    const dateTimeInUTC = moment(
+    const dateTimeInUTC_1 = moment(
       `${formattedDate} ${formatTime}`,
       'YYYY-MM-DD HH:mm:ss'
     ).toISOString();
+
+    const dateTimeInUTC = new Date(`${formattedDate} ${formatTime}`).toISOString();
+
     const dateTimeToShow = formattedDate + ', ' + formatTime;
     const comment = '';
     const orderId = !!selectedOrder?.parentOrderId

@@ -2211,6 +2211,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 nestedScrollEnabled={true}
               >
                 {renderSections()}
+                {!!cartItems && cartItems?.length > 0 ? <View style={{ height: 20 }} /> : null}
               </ScrollView>
               {!!cartItems && cartItems?.length > 0 ? renderCartDetails() : null}
             </View>
