@@ -10,20 +10,49 @@ interface NudgeMessage {
   userType: 'circle' | 'non-circle' | 'all';
 }
 
+interface NudgeMessageCart {
+  nudgeMessageMore: string;
+  nudgeMessageLess: string;
+  show: 'yes' | 'no';
+  userType: 'circle' | 'non-circle' | 'all';
+  orderValue: number;
+  cashbackPer: number;
+}
+
 export interface NudgeMessageProps {
-  nudgeMessage: NudgeMessage | null;
+  nudgeMessage?: NudgeMessage | null;
+  nudgeMessageCart?: NudgeMessageCart | null;
+  source?: string;
 }
 
 export const NudgeMessage: React.FC<NudgeMessageProps> = (props) => {
-  const { nudgeMessage } = props;
-  const { circleSubscriptionId, isCircleExpired } = useShoppingCart();
+  const { nudgeMessage, nudgeMessageCart, source } = props;
+  const { circleSubscriptionId, isCircleExpired, grandTotal } = useShoppingCart();
   const showCircleLogo = circleSubscriptionId && !isCircleExpired;
+
+  const replaceTextAmount = (text: string) => {
+    return text
+      .replace('<orderValue>', nudgeMessageCart?.orderValue)
+      .replace('<cashbackPer>', nudgeMessageCart?.cashbackPer);
+  };
+
+  const getTextComponent = () => {
+    let text = nudgeMessage?.nudgeMessage;
+    if (source == 'cart' && nudgeMessageCart?.orderValue) {
+      if (nudgeMessageCart?.orderValue > grandTotal) {
+        text = replaceTextAmount(nudgeMessageCart?.nudgeMessageLess);
+      } else {
+        text = replaceTextAmount(nudgeMessageCart?.nudgeMessageMore);
+      }
+    }
+    return <Text style={styles.nudgeText}>{text}</Text>;
+  };
 
   return (
     <View style={styles.container}>
       {showCircleLogo && <CircleLogo style={styles.circleLogo} />}
       {showCircleLogo && <View style={styles.verticalLine} />}
-      <Text style={styles.nudgeText}>{nudgeMessage?.nudgeMessage}</Text>
+      {getTextComponent()}
     </View>
   );
 };
@@ -40,6 +69,7 @@ const styles = StyleSheet.create({
     height: 25,
     marginRight: 10,
     marginLeft: 6,
+    alignSelf: 'center',
   },
   verticalLine: {
     borderLeftWidth: 1,
@@ -47,7 +77,9 @@ const styles = StyleSheet.create({
     marginVertical: 4,
   },
   nudgeText: {
-    ...theme.viewStyles.text('M', 13, '#02475B', 1, 25, 0),
+    ...theme.viewStyles.text('M', 13, '#02475B', 1, 20, 0),
+    width: '85%',
     marginLeft: 10,
+    alignSelf: 'center',
   },
 });
