@@ -106,6 +106,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const [showMoreArray, setShowMoreArray] = useState([] as any);
   const [apiPrimaryOrderDetails, setApiPrimaryOrderDetails] = useState([] as any);
   const [primaryOrderId, setPrimaryOrderId] = useState<string>('');
+  const [slotDuration, setSlotDuration] = useState<string>('')
 
   const moveToMyOrders = () => {
     props.navigation.popToTop({ immediate: true }); //if not added, stack was getting cleared.
@@ -140,8 +141,10 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
         const getResponse = response?.data?.data?.getOrderInternal?.DiagnosticsPaymentDetails;
         const getSlotDateTime = getResponse?.ordersList?.[0]?.slotDateTimeInUTC;
         const primaryOrderID = getResponse?.ordersList?.[0]?.primaryOrderID;
+        const slotDuration = getResponse?.ordersList?.[0]?.attributesObj?.slotDurationInMinutes || 45;
         setApiOrderDetails([getResponse]);
         setTimeDate(getSlotDateTime);
+        setSlotDuration(slotDuration)
         setIsSingleUhid(getResponse?.ordersList?.[0]?.length == 1);
         if (primaryOrderID) {
           setPrimaryOrderId(primaryOrderID);
@@ -241,6 +244,9 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     const time = !!modifiedOrderDetails
       ? moment(modifiedOrderDetails?.slotDateTimeInUTC)?.format('hh:mm A')
       : timeDate != '' && moment(timeDate)?.format('hh:mm A');
+    const rangeAddedTime = !!modifiedOrderDetails
+    ? moment(modifiedOrderDetails?.slotDateTimeInUTC)?.add(slotDuration,'minutes')?.format('hh:mm A')
+    : timeDate != '' && moment(timeDate)?.add(slotDuration,'minutes')?.format('hh:mm A');
     return (
       <>
         {!!date && !!time && !!year ? (
@@ -253,7 +259,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
                   {date}, {year}
                 </Text>
               )}
-              {!!time && <Text style={styles.pickupDate}> | {time}</Text>}
+              {!!time && <Text style={styles.pickupDate}> | {time} - {rangeAddedTime}</Text>}
             </Text>
           </View>
         ) : null}

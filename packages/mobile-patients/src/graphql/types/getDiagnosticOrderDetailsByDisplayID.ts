@@ -14,6 +14,12 @@ export interface getDiagnosticOrderDetailsByDisplayID_getDiagnosticOrderDetailsB
   orderStatus: DIAGNOSTIC_ORDER_STATUS | null;
 }
 
+export interface getDiagnosticOrderDetailsByDisplayID_getDiagnosticOrderDetailsByDisplayID_ordersList_attributesObj {
+  __typename: "attributesObj";
+  homeCollectionCharges: any | null;
+  slotDurationInMinutes: any | null;
+}
+
 export interface getDiagnosticOrderDetailsByDisplayID_getDiagnosticOrderDetailsByDisplayID_ordersList {
   __typename: "DiagnosticOrders";
   patientId: string;
@@ -26,6 +32,7 @@ export interface getDiagnosticOrderDetailsByDisplayID_getDiagnosticOrderDetailsB
   isRescheduled: boolean | null;
   preBookingId: string | null;
   id: string;
+  attributesObj: getDiagnosticOrderDetailsByDisplayID_getDiagnosticOrderDetailsByDisplayID_ordersList_attributesObj;
   diagnosticOrdersStatus: (getDiagnosticOrderDetailsByDisplayID_getDiagnosticOrderDetailsByDisplayID_ordersList_diagnosticOrdersStatus | null)[] | null;
 }
 

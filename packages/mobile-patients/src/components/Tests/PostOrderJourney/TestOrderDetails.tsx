@@ -133,6 +133,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const [scrollYValue, setScrollYValue] = useState(0);
+  const [slotDuration, setSlotDuration] = useState(0);
   const [loading1, setLoading] = useState<boolean>(true);
   const [orderLevelStatus, setOrderLevelStatus] = useState([] as any);
   const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
@@ -239,6 +240,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       let response = await fetchOrderDetails(orderId);
       if (!!response && response?.data && !response?.errors) {
         let getOrderDetails = response?.data?.getDiagnosticOrderDetails?.ordersList;
+        setSlotDuration(getOrderDetails?.attributesObj?.slotDurationInMinutes || 45)
         setOrderDetails(getOrderDetails);
         setError(false);
       } else {
@@ -827,6 +829,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       !!g(orderDetails, 'totalPrice') && (
         <TestOrderSummaryView
           orderDetails={orderDetails}
+          slotDuration={slotDuration}
           onPressViewReport={_onPressViewReportAction}
           onPressDownloadInvoice={onPressInvoice}
           refundDetails={refundStatusArr}

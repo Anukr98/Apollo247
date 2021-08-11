@@ -70,6 +70,7 @@ interface OrderTestCardProps {
   phelboObject?: any;
   isHelp?: boolean;
   orderAttributesObj?: any;
+  slotDuration?: any;
   onPressRatingStar: (star: number) => void;
   onPressCallOption: (name: string, number: string) => void;
 }
@@ -270,13 +271,14 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       : null;
 
     const bookedForTime = moment(props.slotTime)?.format('hh:mm a');
+    const rangeAddedTime = moment(props.slotTime)?.add(props.slotDuration,'minutes')?.format('hh:mm a');
 
     return (
       <View style={styles.bottomContainer}>
         {(!!bookedForTime || !!bookedForDate) && (
           <View>
-            <Text style={styles.headingText}>Appointment Time</Text>
-            {!!bookedForTime ? <Text style={styles.slotText}>{bookedForTime}</Text> : null}
+            <Text style={styles.headingText}>Test Slot</Text>
+            {!!bookedForTime ? <Text style={styles.slotText}>{bookedForTime} - {rangeAddedTime}</Text> : null}
             {!!bookedForDate ? <Text style={styles.slotText}>{bookedForDate}</Text> : null}
           </View>
         )}

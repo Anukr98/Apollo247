@@ -26,6 +26,8 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   initialCollectionCharges: number | null;
   isMultiUhid: boolean | null;
   distanceCharges: number | null;
+  slotDurationInMinutes: number | null;
+  homeCollectionCharges: number | null
 }
 
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientAddressObj {
