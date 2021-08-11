@@ -25,7 +25,9 @@ export const CartItemsList: React.FC<CartItemsListProps> = (props) => {
   const { isCircleExpired, circleSubscriptionId } = useShoppingCart();
   const isFromCart = screen === 'cart';
   const showNudgeMessage =
-    pharmaCartNudgeMessage?.show === 'yes' && pharmaCartNudgeMessage?.nudgeMessage && isFromCart;
+    pharmaCartNudgeMessage?.show === 'yes' &&
+    (pharmaCartNudgeMessage?.nudgeMessageMore || pharmaCartNudgeMessage?.nudgeMessageLess) &&
+    isFromCart;
 
   const renderCartItemsHeader = () => {
     const itemsCount =
@@ -87,7 +89,7 @@ export const CartItemsList: React.FC<CartItemsListProps> = (props) => {
     if (showByUserType) {
       return (
         <View style={{ marginTop: 10 }}>
-          <NudgeMessage nudgeMessage={pharmaCartNudgeMessage} />
+          <NudgeMessage nudgeMessageCart={pharmaCartNudgeMessage} source={'cart'} />
         </View>
       );
     } else {
