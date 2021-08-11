@@ -449,7 +449,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const appReviewAndRating = async (data: any) => {
     if (g(data, 'appointment', 'doctorInfo')) {
       if (InAppReview.isAvailable()) {
-        console.log('Riviewing....')
         await InAppReview.RequestInAppReview()
       }
     }

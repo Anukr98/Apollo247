@@ -833,19 +833,18 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const handleButton = () => {
-    console.log(orderDetails, 'ORr')
-    // if (status == success || paymentMode === 'COD') {
-    //   clearCircleSubscriptionData();
-    //   props.navigation.navigate(AppRoutes.YourOrdersScene);
-    // } else if (status == failure || status == aborted) {
-    //   setCircleMembershipCharges && setCircleMembershipCharges(0);
-    //   setIsCircleSubscription && setIsCircleSubscription(false);
-    //   setCirclePlanSelected?.(null);
-    //   props.navigation.navigate(AppRoutes.MedicineCart);
-    // } else {
-    //   clearCircleSubscriptionData();
-    //   moveToHome();
-    // }
+    if (status == success || paymentMode === 'COD') {
+      clearCircleSubscriptionData();
+      props.navigation.navigate(AppRoutes.YourOrdersScene);
+    } else if (status == failure || status == aborted) {
+      setCircleMembershipCharges && setCircleMembershipCharges(0);
+      setIsCircleSubscription && setIsCircleSubscription(false);
+      setCirclePlanSelected?.(null);
+      props.navigation.navigate(AppRoutes.MedicineCart);
+    } else {
+      clearCircleSubscriptionData();
+      moveToHome();
+    }
   };
 
   const renderButton = () => {

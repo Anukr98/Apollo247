@@ -112,7 +112,6 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
 
     if (currentDateFormat === digonisticDateFormat || nextDateFormat === digonisticDateFormat) {
       if (InAppReview.isAvailable()) {
-        console.log('Riviewing....')
         await InAppReview.RequestInAppReview()
       }
     }
