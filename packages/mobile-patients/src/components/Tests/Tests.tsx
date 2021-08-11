@@ -1452,13 +1452,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
               itemId: itemId,
               comingFrom: AppRoutes.Tests,
             });
-          }
-          else if (route == 'testlisting') {
+          } else if (route == 'testlisting') {
             DiagnosticBannerClick(slideIndex + 1, Number(0), item?.bannerTitle);
-              props.navigation.navigate(AppRoutes.TestListing, {
-                movedFrom: 'deeplink',
-                widgetName: itemId, //name
-          });
+            props.navigation.navigate(AppRoutes.TestListing, {
+              movedFrom: 'deeplink',
+              widgetName: itemId, //name
+            });
+          }
         }
       }
     };
@@ -2305,7 +2305,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE, 1, 20),
             },
           ]}
-          rightText={showViewAll ?  'VIEW ALL' : ''}
+          rightText={showViewAll ? 'VIEW ALL' : ''}
           rightTextStyle={styles.widgetViewAllText} //showViewAll ? styles.widgetViewAllText : {}
           onPressRightText={() => {
             props.navigation.navigate(AppRoutes.TestWidgetListing, {
