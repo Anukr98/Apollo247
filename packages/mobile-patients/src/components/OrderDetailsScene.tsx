@@ -2199,7 +2199,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           <Button
             style={{ width: '74.16%', alignSelf: 'center', marginTop: 9, marginBottom: 17 }}
             onPress={reOrder}
-            title={'Cancel Order'}
+            title={'CANCEL ORDER'}
           />
         </View>
       )
