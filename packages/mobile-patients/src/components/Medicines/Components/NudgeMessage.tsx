@@ -40,6 +40,7 @@ const styles = StyleSheet.create({
     height: 25,
     marginRight: 10,
     marginLeft: 6,
+    alignSelf: 'center',
   },
   verticalLine: {
     borderLeftWidth: 1,
@@ -47,7 +48,9 @@ const styles = StyleSheet.create({
     marginVertical: 4,
   },
   nudgeText: {
-    ...theme.viewStyles.text('M', 13, '#02475B', 1, 25, 0),
+    ...theme.viewStyles.text('M', 13, '#02475B', 1, 20, 0),
+    width: '85%',
     marginLeft: 10,
+    alignSelf: 'center',
   },
 });

@@ -980,15 +980,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     },
     Nudge_Message_Pharmacy_Home: {
       QA: 'QA_Show_nudge_on_pharma_home',
-      PROD: 'QA_Show_nudge_on_pharma_home',
+      PROD: 'Show_nudge_on_pharma_home',
     },
     Nudge_Message_Pharmacy_PDP: {
       QA: 'QA_Show_nudge_on_pharma_pdp',
-      PROD: 'QA_Show_nudge_on_pharma_pdp',
+      PROD: 'Show_nudge_on_pharma_pdp',
     },
     Nudge_Message_Pharmacy_Cart: {
       QA: 'QA_Show_nudge_on_pharma_cart',
-      PROD: 'QA_Show_nudge_on_pharma_cart',
+      PROD: 'Show_nudge_on_pharma_cart',
     },
   };
 
