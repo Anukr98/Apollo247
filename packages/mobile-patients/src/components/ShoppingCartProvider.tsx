@@ -133,6 +133,15 @@ export interface NudgeMessage {
   userType: 'circle' | 'non-circle' | 'all';
 }
 
+export interface NudgeMessageCart {
+  nudgeMessageMore: string;
+  nudgeMessageLess: string;
+  show: 'yes' | 'no';
+  userType: 'circle' | 'non-circle' | 'all';
+  orderValue: number;
+  cashbackPer: number;
+}
+
 export interface ShoppingCartContextProps {
   cartItems: ShoppingCartItem[];
   setCartItems: ((items: ShoppingCartItem[]) => void) | null;
@@ -259,8 +268,8 @@ export interface ShoppingCartContextProps {
   setPharmaHomeNudgeMessage: ((value: NudgeMessage) => void) | null;
   pharmaPDPNudgeMessage: NudgeMessage | null;
   setPharmaPDPNudgeMessage: ((value: NudgeMessage) => void) | null;
-  pharmaCartNudgeMessage: NudgeMessage | null;
-  setPharmaCartNudgeMessage: ((value: NudgeMessage) => void) | null;
+  pharmaCartNudgeMessage: NudgeMessageCart | null;
+  setPharmaCartNudgeMessage: ((value: NudgeMessageCart) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
