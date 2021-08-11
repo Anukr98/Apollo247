@@ -126,6 +126,21 @@ export interface BreadcrumbLink {
   onPress?: () => void;
 }
 
+export interface NudgeMessage {
+  nudgeMessage: string;
+  show: 'yes' | 'no';
+  userType: 'circle' | 'non-circle' | 'all';
+}
+
+export interface NudgeMessageCart {
+  nudgeMessageMore: string;
+  nudgeMessageLess: string;
+  show: 'yes' | 'no';
+  userType: 'circle' | 'non-circle' | 'all';
+  orderValue: number;
+  cashbackPer: number;
+}
+
 export interface ShoppingCartContextProps {
   cartItems: ShoppingCartItem[];
   setCartItems: ((items: ShoppingCartItem[]) => void) | null;
@@ -246,6 +261,12 @@ export interface ShoppingCartContextProps {
   setNonCodSKus: ((items: string[]) => void) | null;
   cartPriceNotUpdateRange: number;
   setCartPriceNotUpdateRange: ((value: number) => void) | null;
+  pharmaHomeNudgeMessage: NudgeMessage | null;
+  setPharmaHomeNudgeMessage: ((value: NudgeMessage) => void) | null;
+  pharmaPDPNudgeMessage: NudgeMessage | null;
+  setPharmaPDPNudgeMessage: ((value: NudgeMessage) => void) | null;
+  pharmaCartNudgeMessage: NudgeMessageCart | null;
+  setPharmaCartNudgeMessage: ((value: NudgeMessageCart) => void) | null;
   subscriptionCoupon: PharmaCoupon | null;
   setSubscriptionCoupon: ((coupon: PharmaCoupon | null) => void) | null;
   subscriptionHCUsed: number;
@@ -366,6 +387,12 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setNonCodSKus: null,
   cartPriceNotUpdateRange: 0,
   setCartPriceNotUpdateRange: null,
+  pharmaHomeNudgeMessage: null,
+  setPharmaHomeNudgeMessage: null,
+  pharmaCartNudgeMessage: null,
+  setPharmaCartNudgeMessage: null,
+  pharmaPDPNudgeMessage: null,
+  setPharmaPDPNudgeMessage: null,
   subscriptionCoupon: null,
   setSubscriptionCoupon: null,
   subscriptionHCUsed: 0,
@@ -505,6 +532,15 @@ export const ShoppingCartProvider: React.FC = (props) => {
   >(0);
   const [nonCodSKus, setNonCodSKus] = useState<ShoppingCartContextProps['nonCodSKus']>([]);
   const [asyncPincode, setAsyncPincode] = useState<ShoppingCartContextProps['asyncPincode']>();
+  const [pharmaHomeNudgeMessage, setPharmaHomeNudgeMessage] = useState<
+    ShoppingCartContextProps['pharmaHomeNudgeMessage']
+  >(null);
+  const [pharmaPDPNudgeMessage, setPharmaPDPNudgeMessage] = useState<
+    ShoppingCartContextProps['pharmaPDPNudgeMessage']
+  >(null);
+  const [pharmaCartNudgeMessage, setPharmaCartNudgeMessage] = useState<
+    ShoppingCartContextProps['pharmaCartNudgeMessage']
+  >(null);
 
   const [isProuctFreeCouponApplied, setisProuctFreeCouponApplied] = useState<boolean>(false);
   const [orders, setOrders] = useState<ShoppingCartContextProps['orders']>([]);
@@ -1266,6 +1302,13 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setNonCodSKus,
         cartPriceNotUpdateRange,
         setCartPriceNotUpdateRange,
+
+        pharmaHomeNudgeMessage,
+        setPharmaHomeNudgeMessage,
+        pharmaCartNudgeMessage,
+        setPharmaCartNudgeMessage,
+        pharmaPDPNudgeMessage,
+        setPharmaPDPNudgeMessage,
         subscriptionCoupon,
         setSubscriptionCoupon,
         subscriptionHCUsed,
