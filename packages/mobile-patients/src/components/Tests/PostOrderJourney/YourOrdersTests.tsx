@@ -726,7 +726,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
     setLoading?.(false);
   }
-
   const onReschduleDoneSelected = () => {
     setLoading?.(true);
     const formattedDate = moment(rescheduleDate || diagnosticSlot?.date).format(
@@ -734,12 +733,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     ) as string;
     const formatTime =
       rescheduleSlotObject?.slotStartTime || (diagnosticSlot?.slotStartTime as string);
-    const dateTimeInUTC_1 = moment(
+    const dateTimeInUTC = moment(
       `${formattedDate} ${formatTime}`,
-      'YYYY-MM-DD HH:mm:ss'
+      'YYYY-MM-DD hh:mm:ss'
     ).toISOString();
-
-    const dateTimeInUTC = new Date(`${formattedDate} ${formatTime}`).toISOString();
+    // const formattedString = moment(`${formattedDate} ${formatTime}`,'YYYY-MM-DD HH:mm:ss');
+    // console.log({ formattedString });
+    // const dateTimeInUTC = new Date(formattedString)?.toISOString();
 
     const dateTimeToShow = formattedDate + ', ' + formatTime;
     const comment = '';
@@ -786,7 +786,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             currentPatient,
             selectedOrder?.patientObj!
           );
-          rescheduleSelectedOrder(obj);
+          // rescheduleSelectedOrder(obj);
+          setTimeout(() => refetchOrders(), 1500);
           showAphAlert?.({
             unDismissable: true,
             title: string.common.hiWithSmiley,
@@ -1600,12 +1601,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   }
 
   function _navigateToSearchPage(patientId: string) {
-    setModifiedPatientCart?.([
-      {
-        patientId: patientId,
-        cartItems: cartItems,
-      },
-    ]);
     props.navigation.navigate(AppRoutes.SearchTestScene, {
       searchText: '',
     });
