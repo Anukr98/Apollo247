@@ -97,6 +97,7 @@ import { getMedicineDetailsApi, MedicineProductDetailsResponse } from '../../hel
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/Events';
 import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
+import InAppReview from 'react-native-in-app-review';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -256,14 +257,14 @@ export interface ConsultDetailsProps
   extends NavigationScreenProps<{
     CaseSheet: string; // this is the appointmentId
     DoctorInfo:
-      | getDoctorDetailsById_getDoctorDetailsById
-      | getAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo;
+    | getDoctorDetailsById_getDoctorDetailsById
+    | getAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo;
     appointmentType: APPOINTMENT_TYPE | AppointmentType;
     DisplayId: any;
     Displayoverlay: any;
     isFollowcount: any;
     BlobName: string;
-  }> {}
+  }> { }
 
 type rescheduleType = {
   rescheduleCount: number;
@@ -333,6 +334,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         setLoading && setLoading(false);
         props.navigation.state.params!.DisplayId = _data.data.getSDLatestCompletedCaseSheet!.caseSheetDetails!.appointment!.displayId;
         setcaseSheetDetails(_data.data.getSDLatestCompletedCaseSheet!.caseSheetDetails!);
+        appReviewAndRating(_data.data.getSDLatestCompletedCaseSheet!.caseSheetDetails!)
         setAPICalled(true);
       })
       .catch((error) => {
@@ -390,16 +392,16 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       type == 'medicine'
         ? CleverTapEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS
         : type == 'test'
-        ? CleverTapEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS
-        : CleverTapEventName.DOWNLOAD_PRESCRIPTION,
+          ? CleverTapEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS
+          : CleverTapEventName.DOWNLOAD_PRESCRIPTION,
       eventAttributes
     );
     postCleverTapEvent(
       type == 'medicine'
         ? CleverTapEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS
         : type == 'test'
-        ? CleverTapEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS
-        : CleverTapEventName.DOWNLOAD_PRESCRIPTION,
+          ? CleverTapEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS
+          : CleverTapEventName.DOWNLOAD_PRESCRIPTION,
       eventAttributes
     );
   };
@@ -439,6 +441,19 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       </View>
     );
   };
+
+
+  /******
+   * App Review And Rating
+   * *****/
+  const appReviewAndRating = async (data: any) => {
+    if (g(data, 'appointment', 'doctorInfo')) {
+      if (InAppReview.isAvailable()) {
+        console.log('Riviewing....')
+        await InAppReview.RequestInAppReview()
+      }
+    }
+  }
 
   const renderSymptoms = () => {
     return (
@@ -596,9 +611,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           showAphAlert?.({
             title:
               !!lengthOfAvailableItems && lengthOfAvailableItems > 0
-                ? `${lengthOfAvailableItems} ${
-                    lengthOfAvailableItems > 1 ? 'items' : 'item'
-                  } added to your cart`
+                ? `${lengthOfAvailableItems} ${lengthOfAvailableItems > 1 ? 'items' : 'item'
+                } added to your cart`
                 : string.common.uhOh,
             description: unAvailableItems
               ? `Below items are added to your cart: \n${testAdded} \nSearch for the remaining diagnositc tests and add to the cart.`
@@ -630,8 +644,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       ? 30
       : type == MEDICINE_CONSUMPTION_DURATION.WEEKS ||
         type == MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
-      ? 7
-      : 1;
+        ? 7
+        : 1;
   };
 
   const onAddToCart = async () => {
@@ -726,90 +740,76 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     if (medicineCustomDetails !== null) {
       return `${medicineCustomDetails}`;
     } else {
-      return `${type + ' '}${
-        customDosage.length > 0
-          ? `${customDosage.join(' ' + unit + ' - ') + ' ' + unit + ' '}${
-              medicineTimings && medicineTimings.length
-                ? '(' +
-                  (medicineTimings.length > 1
-                    ? medicineTimings
-                        .slice(0, -1)
-                        .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
-                        .join(', ') +
-                      ' & ' +
-                      nameFormater(medicineTimings[medicineTimings.length - 1] || '', 'lower')
-                    : medicineTimings
-                        .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
-                        .join(', ')) +
-                  ') '
-                : ''
-            }${
-              item.medicineConsumptionDurationInDays
-                ? `for ${item.medicineConsumptionDurationInDays} ${
-                    item.medicineConsumptionDurationUnit
-                      ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
-                      : ``
-                  }`
-                : ''
-            }${
-              item.medicineConsumptionDurationUnit
-                ? `${nameFormater(item.medicineConsumptionDurationUnit || '', 'lower')} `
-                : ''
-            }${
-              item.medicineToBeTaken && item.medicineToBeTaken.length
-                ? item.medicineToBeTaken
-                    .map((i: MEDICINE_TO_BE_TAKEN | null) => nameFormater(i || '', 'lower'))
-                    .join(', ') + '.'
-                : ''
-            }`
-          : `${item.medicineDosage ? item.medicineDosage : ''} ${
-              item.medicineUnit ? unit + ' ' : ''
-            }${
-              item.medicineFrequency
-                ? item.medicineFrequency === MEDICINE_FREQUENCY.STAT
-                  ? 'STAT (Immediately) '
-                  : nameFormater(item.medicineFrequency, 'lower') + ' '
-                : ''
-            }${
-              item.medicineConsumptionDurationInDays
-                ? `for ${item.medicineConsumptionDurationInDays} ${
-                    item.medicineConsumptionDurationUnit
-                      ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
-                      : ``
-                  }`
-                : ''
-            }${
-              item.medicineConsumptionDurationUnit
-                ? `${nameFormater(item.medicineConsumptionDurationUnit || '', 'lower')} `
-                : ''
-            }${
-              item.medicineToBeTaken && item.medicineToBeTaken.length
-                ? item.medicineToBeTaken
-                    .map((i: MEDICINE_TO_BE_TAKEN | null) => nameFormater(i || '', 'lower'))
-                    .join(', ') + ' '
-                : ''
-            }${
-              medicineTimings && medicineTimings.length
-                ? `${
-                    medicineTimings.includes(MEDICINE_TIMINGS.AS_NEEDED) &&
-                    medicineTimings.length === 1
-                      ? ''
-                      : 'in the '
-                  }` +
-                  (medicineTimings.length > 1
-                    ? medicineTimings
-                        .slice(0, -1)
-                        .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
-                        .join(', ') +
-                      ' & ' +
-                      nameFormater(medicineTimings[medicineTimings.length - 1] || '', 'lower') +
-                      ' '
-                    : medicineTimings
-                        .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
-                        .join(', ') + ' ')
-                : ''
-            }`
-      }${item.medicineInstructions ? '\nInstructions: ' + item.medicineInstructions : ''}`;
+      return `${type + ' '}${customDosage.length > 0
+        ? `${customDosage.join(' ' + unit + ' - ') + ' ' + unit + ' '}${medicineTimings && medicineTimings.length
+          ? '(' +
+          (medicineTimings.length > 1
+            ? medicineTimings
+              .slice(0, -1)
+              .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
+              .join(', ') +
+            ' & ' +
+            nameFormater(medicineTimings[medicineTimings.length - 1] || '', 'lower')
+            : medicineTimings
+              .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
+              .join(', ')) +
+          ') '
+          : ''
+        }${item.medicineConsumptionDurationInDays
+          ? `for ${item.medicineConsumptionDurationInDays} ${item.medicineConsumptionDurationUnit
+            ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
+            : ``
+          }`
+          : ''
+        }${item.medicineConsumptionDurationUnit
+          ? `${nameFormater(item.medicineConsumptionDurationUnit || '', 'lower')} `
+          : ''
+        }${item.medicineToBeTaken && item.medicineToBeTaken.length
+          ? item.medicineToBeTaken
+            .map((i: MEDICINE_TO_BE_TAKEN | null) => nameFormater(i || '', 'lower'))
+            .join(', ') + '.'
+          : ''
+        }`
+        : `${item.medicineDosage ? item.medicineDosage : ''} ${item.medicineUnit ? unit + ' ' : ''
+        }${item.medicineFrequency
+          ? item.medicineFrequency === MEDICINE_FREQUENCY.STAT
+            ? 'STAT (Immediately) '
+            : nameFormater(item.medicineFrequency, 'lower') + ' '
+          : ''
+        }${item.medicineConsumptionDurationInDays
+          ? `for ${item.medicineConsumptionDurationInDays} ${item.medicineConsumptionDurationUnit
+            ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
+            : ``
+          }`
+          : ''
+        }${item.medicineConsumptionDurationUnit
+          ? `${nameFormater(item.medicineConsumptionDurationUnit || '', 'lower')} `
+          : ''
+        }${item.medicineToBeTaken && item.medicineToBeTaken.length
+          ? item.medicineToBeTaken
+            .map((i: MEDICINE_TO_BE_TAKEN | null) => nameFormater(i || '', 'lower'))
+            .join(', ') + ' '
+          : ''
+        }${medicineTimings && medicineTimings.length
+          ? `${medicineTimings.includes(MEDICINE_TIMINGS.AS_NEEDED) &&
+            medicineTimings.length === 1
+            ? ''
+            : 'in the '
+          }` +
+          (medicineTimings.length > 1
+            ? medicineTimings
+              .slice(0, -1)
+              .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
+              .join(', ') +
+            ' & ' +
+            nameFormater(medicineTimings[medicineTimings.length - 1] || '', 'lower') +
+            ' '
+            : medicineTimings
+              .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
+              .join(', ') + ' ')
+          : ''
+        }`
+        }${item.medicineInstructions ? '\nInstructions: ' + item.medicineInstructions : ''}`;
     }
   };
 
@@ -821,8 +821,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           <MedicineRxIcon style={{ width: 20, height: 20, marginRight: 12 }} />
         )}
         {caseSheetDetails?.medicinePrescription &&
-        caseSheetDetails?.medicinePrescription?.length !== 0 &&
-        caseSheetDetails?.doctorType !== 'JUNIOR' ? (
+          caseSheetDetails?.medicinePrescription?.length !== 0 &&
+          caseSheetDetails?.doctorType !== 'JUNIOR' ? (
           <View style={{ marginTop: 28 }}>
             <View>
               {caseSheetDetails?.medicinePrescription?.map((item) => {
@@ -938,10 +938,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           <View>
             {caseSheetDetails?.followUpAfterInDays
               ? renderListItem(
-                  `Recommended after ${caseSheetDetails?.followUpAfterInDays} days`,
-                  '',
-                  28
-                )
+                `Recommended after ${caseSheetDetails?.followUpAfterInDays} days`,
+                '',
+                28
+              )
               : renderNoData('No followup')}
           </View>
         ) : (
@@ -1206,7 +1206,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               patientId={currentPatient ? currentPatient.id : ''}
               clinics={
                 props.navigation.state.params!.DoctorInfo &&
-                props.navigation.state.params!.DoctorInfo.doctorHospital
+                  props.navigation.state.params!.DoctorInfo.doctorHospital
                   ? props.navigation.state.params!.DoctorInfo.doctorHospital
                   : []
               }
