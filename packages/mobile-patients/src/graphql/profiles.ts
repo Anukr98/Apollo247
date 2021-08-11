@@ -4801,6 +4801,9 @@ export const GET_INTERNAL_ORDER = gql`
           primaryOrderID
           displayId
           slotDateTimeInUTC
+          attributesObj{
+            slotDurationInMinutes
+          }
           patientObj{
             id
             firstName

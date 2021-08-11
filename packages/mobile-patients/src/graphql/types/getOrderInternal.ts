@@ -17,6 +17,10 @@ export interface getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails_ord
   gender: string | null;
 }
 
+export interface getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails_ordersList_attributes {
+  __typename: "AttributesObj";
+  slotDurationInMinutes: number | null;
+}
 export interface getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails_ordersList_diagnosticOrderLineItems {
   __typename: "DiagnosticOrderLineItems";
   itemId: number | null;
@@ -32,6 +36,7 @@ export interface getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails_ord
   primaryOrderID: string | null;
   displayId: number;
   slotDateTimeInUTC: any | null;
+  attributesObj: getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails_ordersList_attributes | null;
   patientObj: getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails_ordersList_patientObj | null;
   diagnosticOrderLineItems: (getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails_ordersList_diagnosticOrderLineItems | null)[] | null;
 }
