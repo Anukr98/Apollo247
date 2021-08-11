@@ -424,14 +424,14 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const rectangularIconHeight = isCircleDoctor
     ? Platform.OS == 'android'
       ? showCircleSubscribed
-        ? 170
-        : 180
+        ? 176
+        : 186
       : showCircleSubscribed
-      ? 165
-      : 175
+      ? 171
+      : 181
     : Platform.OS == 'android'
-    ? 150
-    : 145;
+    ? 156
+    : 151;
 
   const consultViewHeight = isCircleDoctor
     ? Platform.OS == 'android'

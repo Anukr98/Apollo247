@@ -136,7 +136,13 @@
     "unableToSetDeliveryAddress": "We're sorry! Unable to set delivery address. Please try again after some time",
     "circleNoSubscriptionText": "No Subscription",
     "circleCashback": " Membership Cashback ",
-    "cashbackInfo": "(Cashback can be used to buy medicines online as well as at physical Apollo Pharmacy stores. "
+    "cashbackInfo": "(Cashback can be used to buy medicines online as well as at physical Apollo Pharmacy stores. ",
+    "hcSavedOnConsultByCare": "You will get {amount} HC on this Consult",
+    "whatIsHc": "What are HCs?",
+    "hcShort": "HC is short for ",
+    "healthCredit": "Health credits",
+    "hcInfo": " which are rewarded to you on specific purchases and consults. HCs are calculated based on the total amount paid. In case a coupon is applied, HCs to be credited will be adjusted accordingly.",
+    "hcToRupee": "1 HC= ₹ 1"
   },
   "components": {
     "medicineDetails": {

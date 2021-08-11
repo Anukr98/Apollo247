@@ -17,7 +17,12 @@ interface CareMembershipProps {
 export const CareMembershipAdded: React.FC<CareMembershipProps> = (props) => {
   const { doctor, isOnlineConsult } = props;
   const circleDoctorDetails = calculateCircleDoctorPricing(doctor);
-  const { onlineConsultDiscountedPrice, physicalConsultDiscountedPrice } = circleDoctorDetails;
+  const {
+    onlineConsultDiscountedPrice,
+    physicalConsultDiscountedPrice,
+    cashbackAmount,
+    cashbackEnabled
+   } = circleDoctorDetails;
   const discountedPrice = isOnlineConsult
     ? onlineConsultDiscountedPrice
     : physicalConsultDiscountedPrice;
@@ -32,7 +37,10 @@ export const CareMembershipAdded: React.FC<CareMembershipProps> = (props) => {
       </View>
       <View style={styles.amountSavedView}>
         <Text style={styles.amountSavedText}>
-          {string.common.amountSavedOnConsultByCare.replace(
+          {cashbackEnabled ? string.common.hcSavedOnConsultByCare.replace(
+            '{amount}',
+            `${convertNumberToDecimal(cashbackAmount)}`
+          ) : string.common.amountSavedOnConsultByCare.replace(
             '{amount}',
             `${convertNumberToDecimal(discountedPrice)}`
           )}

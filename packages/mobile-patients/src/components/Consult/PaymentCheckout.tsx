@@ -606,6 +606,9 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         onEndApiCall={() => setDisabledCheckout(false)}
         from={string.banner_context.VC_CART}
         circleEventSource={'Cart(VC)'}
+        cashbackAmount={cashbackAmount}
+        cashbackEnabled={cashbackEnabled}
+        
       />
     );
   };
@@ -1312,8 +1315,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         ]}
       >
         <Text style={styles.smallText}>
-          You could {cashbackEnabled && 'get'}
-          {' '}
+          You could {cashbackEnabled ? 'get ' : ' '}
           <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.SEARCH_UNDERLINE_COLOR) }}>
             {cashbackEnabled ? `upto ${cashbackAmount} HC` :
             `save ${string.common.Rs + convertNumberToDecimal(discountedPrice)}`}

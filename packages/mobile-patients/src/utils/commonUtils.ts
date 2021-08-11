@@ -61,7 +61,7 @@ export const calculateCircleDoctorPricing = (
   let cashbackEnabled, cashbackAmount;
   if(onlineConsult?.[0]?.is_cashback_enabled){
     cashbackEnabled = onlineConsult?.[0]?.is_cashback_enabled;
-    cashbackAmount = onlineConsult?.[0]?.cashback_amount;
+    cashbackAmount = Math.round(onlineConsult?.[0]?.cashback_amount);
   }
   return {
     isCircleDoctor,
