@@ -2314,6 +2314,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 : !loading && renderOrderSummary()}
             </ScrollView>
             {renderReOrderButton()}
+            {renderCancelButton()}
           </>
         )}
       </SafeAreaView>
