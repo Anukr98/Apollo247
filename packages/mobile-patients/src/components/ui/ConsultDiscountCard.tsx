@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { Down, Up, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Down, Up, CircleLogo, ExclamationGreen } from '@aph/mobile-patients/src/components/ui/Icons';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
   calculateCircleDoctorPricing,
@@ -52,6 +52,8 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
     physicalConsultDiscountedPrice,
     onlineConsultDiscountedPrice,
     isCircleDoctorOnSelectedConsultMode,
+    cashbackAmount,
+    cashbackEnabled,
   } = circleDoctorDetails;
 
   const totalSavings =
@@ -74,10 +76,10 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
           }}
         >
           <Text style={styles.regularText}>
-            You will{' '}
+            You{' '}
             <Text style={{ ...styles.regularText, color: theme.colors.SEARCH_UNDERLINE_COLOR }}>
-              save {string.common.Rs}
-              {convertNumberToDecimal(totalSavings)}
+              saved {string.common.Rs}
+              {convertNumberToDecimal(cashbackEnabled ? cashbackAmount : totalSavings)}
             </Text>{' '}
             on your consult.
           </Text>
@@ -86,8 +88,20 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
         {showPriceBreakup ? (
           <View>
             <View style={styles.seperatorLine} />
-            {isCircleDoctorOnSelectedConsultMode && (!!circleSubscriptionId || planSelected) ? (
-              <View style={[styles.rowContainer, { marginTop: 10 }]}>
+            {coupon ? (
+              <View style={[styles.rowContainer, { marginTop: 5 }]}>
+                <Text style={styles.couponTextStyle}>
+                  {string.common.couponApplied} ({`${coupon}`})
+                </Text>
+                <Text style={[styles.membershipDiscountStyle, { color: theme.colors.LIGHT_BLUE }]}>
+                  {string.common.Rs}
+                  {convertNumberToDecimal(couponDiscountFees)}
+                </Text>
+              </View>
+            ) : null}
+            {isCircleDoctorOnSelectedConsultMode && 
+            (!!circleSubscriptionId || planSelected) ? !cashbackEnabled ? (
+              <View style={[styles.rowContainer, { marginTop: 5 }]}>
                 <View style={styles.row}>
                   <CircleLogo style={styles.careLogo} />
                   <Text style={styles.membershipDiscountStyle}>
@@ -101,22 +115,35 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
                   )}
                 </Text>
               </View>
-            ) : null}
-            {coupon ? (
+            ) : (
               <View style={[styles.rowContainer, { marginTop: 5 }]}>
-                <Text style={styles.couponTextStyle}>
-                  {string.common.couponApplied} ({`${coupon}`})
-                </Text>
-                <Text style={[styles.membershipDiscountStyle, { color: theme.colors.LIGHT_BLUE }]}>
-                  {string.common.Rs}
-                  {convertNumberToDecimal(couponDiscountFees)}
+                <View style={styles.row}>
+                  <Text style={styles.circleCashbackStyle}>
+                    Circle
+                    <Text style={styles.couponTextStyle}>
+                      {string.common.circleCashback}
+                      {coupon && '(HC)'}
+                    </Text>
+                  </Text>
+                  {!!coupon &&
+                    <TouchableOpacity>
+                      <ExclamationGreen style={styles.infoIcon} />
+                    </TouchableOpacity>}
+                </View>
+                <Text style={styles.circleCashbackStyle}>
+                  {`${cashbackAmount} HC`}
                 </Text>
               </View>
             ) : null}
+            {cashbackEnabled &&
+              <Text style={styles.cashbackInfo}>
+                {string.common.cashbackInfo}
+                <Text style={styles.cashbackInfoBold}>1 HC= ₹ 1)</Text>
+              </Text>}
             <View style={styles.seperatorLine} />
             <Text style={styles.totalPayStyle}>
               {string.common.Rs}
-              {convertNumberToDecimal(totalSavings)}
+              {convertNumberToDecimal(cashbackEnabled ? cashbackAmount : totalSavings)}
             </Text>
           </View>
         ) : null}
@@ -176,5 +203,23 @@ const styles = StyleSheet.create({
   couponTextStyle: {
     ...theme.viewStyles.text('R', 11, theme.colors.LIGHT_BLUE),
     fontWeight: '400',
+  },
+  circleCashbackStyle: {
+    ...theme.viewStyles.text('R', 11, theme.colors.APP_YELLOW),
+    fontWeight: '400',
+  },
+  cashbackInfo: {
+    ...theme.viewStyles.text('R', 10, theme.colors.BORDER_BOTTOM_COLOR),
+    fontWeight: '400',
+    paddingTop: 4,
+  },
+  cashbackInfoBold: {
+    ...theme.viewStyles.text('M', 10, theme.colors.BORDER_BOTTOM_COLOR),
+    fontWeight: '700',
+  },
+  infoIcon: {
+    height: 12, 
+    width: 12, 
+    marginStart: 8
   },
 });

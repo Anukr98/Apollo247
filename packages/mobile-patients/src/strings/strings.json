@@ -134,7 +134,9 @@
     "CorporateVaccineBenefit": "DEPENDENT_VACCINATION_REG",
     "noDiagnosticsAvailable": "Unfortunately, we do not have any diagnostic(s) available right now.",
     "unableToSetDeliveryAddress": "We're sorry! Unable to set delivery address. Please try again after some time",
-    "circleNoSubscriptionText": "No Subscription"
+    "circleNoSubscriptionText": "No Subscription",
+    "circleCashback": " Membership Cashback ",
+    "cashbackInfo": "(Cashback can be used to buy medicines online as well as at physical Apollo Pharmacy stores. "
   },
   "components": {
     "medicineDetails": {
@@ -933,7 +935,7 @@
     "circlePlanAddedToCart": "Circle plan successfully added to cart.",
     "discountInfoReflectsOnCheckout": "Discount and other information will be reflected at checkout.",
     "forCareMembers": "for CARE members",
-    "circleSavings": "CIRCLE savings of ₹{amount}",
+    "circleSavings": "CIRCLE discount of ₹{amount}",
     "upgradeNow": "Upgrade now",
     "circleMembershipPlans": "Circle Membership Plans",
     "addToCart": "ADD TO CART",
@@ -956,7 +958,8 @@
     "returnToHomepage": "RETURN TO HOMEPAGE",
     "availableHealthCredits": "*Available Health Credits",
     "upgradeWithHC": "UPGRADE WITH {hc} HC",
-    "upgradeWithPrice": "UPGRADE WITH ₹{price}"
+    "upgradeWithPrice": "UPGRADE WITH ₹{price}",
+    "circleCashback": "CIRCLE cashback of {amount} HC"
   },
   "circlePharmacy": {
     "modalDescription": "Enable Circle membership to get the best discounts, cashbacks, free delivery and more...",

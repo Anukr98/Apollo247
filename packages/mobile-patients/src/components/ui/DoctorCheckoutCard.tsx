@@ -55,6 +55,8 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
     onlineConsultDiscountedPrice,
     physicalConsultDiscountedPrice,
     isCircleDoctorOnSelectedConsultMode,
+    cashbackEnabled,
+    cashbackAmount,
   } = circleDoctorDetails;
   const discountedPrice = isOnlineConsult
     ? onlineConsultDiscountedPrice
@@ -63,16 +65,16 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
   const renderCareDoctorPricing = () => {
     return (
       <View>
-        <View style={styles.normalRowContainer}>
+        <View style={styles.carePricingView}>
           <Text
             style={[
               styles.carePrice,
               {
-                textDecorationLine: circleSubscriptionId || planSelected ? 'line-through' : 'none',
+                textDecorationLine: (circleSubscriptionId || planSelected) && !cashbackEnabled ? 'line-through' : 'none',
                 ...theme.viewStyles.text(
                   'M',
                   15,
-                  circleSubscriptionId || planSelected
+                  (circleSubscriptionId || planSelected) && !cashbackEnabled
                     ? theme.colors.BORDER_BOTTOM_COLOR
                     : theme.colors.SKY_BLUE
                 ),
@@ -84,7 +86,7 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
               isOnlineConsult ? onlineConsultMRPPrice : physicalConsultMRPPrice
             )}
           </Text>
-          {!!circleSubscriptionId || planSelected ? (
+          {(!!circleSubscriptionId || planSelected) && !cashbackEnabled ? (
             <Text style={styles.careDiscountedPrice}>
               {string.common.Rs}
               {convertNumberToDecimal(
@@ -95,7 +97,10 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
         </View>
         {!!circleSubscriptionId || planSelected ? (
           <Text style={styles.amountSavedTextStyle}>
-            {string.circleDoctors.circleSavings.replace(
+            {cashbackEnabled ? string.circleDoctors.circleCashback.replace(
+              '{amount}',
+              `${cashbackAmount}`
+            ) : string.circleDoctors.circleSavings.replace(
               '{amount}',
               `${convertNumberToDecimal(discountedPrice)}`
             )}
@@ -284,4 +289,9 @@ const styles = StyleSheet.create({
     height: '100%',
     marginRight: 8,
   },
+  carePricingView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  }
 });

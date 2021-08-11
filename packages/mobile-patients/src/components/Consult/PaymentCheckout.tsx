@@ -204,6 +204,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     onlineConsultMRPPrice,
     physicalConsultMRPPrice,
     isCircleDoctorOnSelectedConsultMode,
+    cashbackAmount,
+    cashbackEnabled,
   } = circleDoctorDetails;
   const { circleSubscriptionId, circlePlanSelected, hdfcSubscriptionId } = useShoppingCart();
   const [disabledCheckout, setDisabledCheckout] = useState<boolean>(
@@ -219,7 +221,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
         ? Number(
-            Decimal.sub(onlineConsultSlashedPrice, couponDiscountFees).plus(
+            Decimal.sub(onlineConsultSlashedPrice || onlineConsultMRPPrice, couponDiscountFees).plus(
               circleSubscriptionId == '' ? Number(circlePlanSelected?.currentSellingPrice) : 0
             )
           )
@@ -232,7 +234,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const consultAmounttoPay =
     circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
-        ? Number(Decimal.sub(onlineConsultSlashedPrice, couponDiscountFees))
+        ? Number(Decimal.sub(onlineConsultSlashedPrice || onlineConsultMRPPrice, couponDiscountFees))
         : Number(Decimal.sub(physicalConsultSlashedPrice, couponDiscountFees))
       : amount;
   const notSubscriberUserForCareDoctor =
@@ -249,7 +251,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const actualAmount =
     circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
-        ? onlineConsultSlashedPrice
+        ? onlineConsultSlashedPrice || onlineConsultMRPPrice
         : physicalConsultSlashedPrice
       : Number(price);
   const [doctorDiscountedFees, setDoctorDiscountedFees] = useState<number>(actualAmount);
@@ -667,7 +669,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     const billAmount =
       circlePlanSelected && isCircleDoctorOnSelectedConsultMode
         ? isOnlineConsult
-          ? onlineConsultSlashedPrice
+          ? onlineConsultSlashedPrice || onlineConsultMRPPrice
           : physicalConsultSlashedPrice
         : Number(price);
     const timeSlot =
@@ -1310,10 +1312,11 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         ]}
       >
         <Text style={styles.smallText}>
-          You could have{' '}
+          You could {cashbackEnabled && 'get'}
+          {' '}
           <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.SEARCH_UNDERLINE_COLOR) }}>
-            saved {string.common.Rs}
-            {convertNumberToDecimal(discountedPrice)}
+            {cashbackEnabled ? `upto ${cashbackAmount} HC` :
+            `save ${string.common.Rs + convertNumberToDecimal(discountedPrice)}`}
           </Text>{' '}
           on this purchase with
         </Text>
