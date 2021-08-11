@@ -2187,6 +2187,25 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     );
   };
 
+  const renderCancelButton = () => {
+    return (
+      true && (
+        <View>
+          {Array.from({ length: 10 })
+            .reverse()
+            .map((_, idx) => (
+              <View style={[styles.reOrderButtonTransparentTopView, { top: -(idx + 1) * 2 }]} />
+            ))}
+          <Button
+            style={{ width: '74.16%', alignSelf: 'center', marginTop: 9, marginBottom: 17 }}
+            onPress={reOrder}
+            title={'Cancel Order'}
+          />
+        </View>
+      )
+    );
+  };
+
   const renderMedicineReOrderOverlay = () => {
     const { total, unavailable } = reOrderDetails;
     return (
