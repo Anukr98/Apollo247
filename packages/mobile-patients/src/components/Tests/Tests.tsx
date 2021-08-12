@@ -1271,7 +1271,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           const data = item?.redirectUrl?.split('=')?.[1];
           const extractData = data?.replace('apollopatients://', '');
           const getNavigationDetails = extractData?.split('?');
-          const route = getNavigationDetails?.[0];
+          const route = getNavigationDetails?.[0]?.toLowerCase();
           let itemId = '';
           try {
             if (getNavigationDetails?.length >= 2) {
@@ -1281,11 +1281,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
               }
             }
           } catch (error) {}
-          if (route == 'TestDetails') {
+          if (route == 'testdetails') {
             DiagnosticBannerClick(slideIndex + 1, Number(itemId), item?.bannerTitle);
             props.navigation.navigate(AppRoutes.TestDetails, {
               itemId: itemId,
               comingFrom: AppRoutes.Tests,
+            });
+          } else if (route == 'testlisting') {
+            DiagnosticBannerClick(slideIndex + 1, Number(0), item?.bannerTitle);
+            props.navigation.navigate(AppRoutes.TestListing, {
+              movedFrom: 'deeplink',
+              widgetName: itemId, //name
             });
           }
         }
@@ -1900,6 +1906,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }
 
   const renderSections = () => {
+    const widget0 = getRanking('0');
     const widget1 = getRanking('1');
     return (
       <TouchableOpacity
@@ -1912,6 +1919,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         style={{ flex: 1 }}
       >
         {widgetsData?.length == 0 && reloadWidget && renderLowNetwork()}
+        {renderWidgetType(widget0)} {/**0 */}
         {renderWidgetType(widget1)} {/**1 */}
         {renderYourOrders()}
         {latestPrescription?.length > 0 ? renderPrescriptionCard() : null}

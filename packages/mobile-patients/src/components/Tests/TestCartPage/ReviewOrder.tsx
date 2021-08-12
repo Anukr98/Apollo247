@@ -213,7 +213,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   let itemNamesToKeep_global: string[] = [];
   let itemIdsToRemove_global: Number[] = [];
   let itemIdsToKeep_global: Number[] = [];
-  let obj: any = {};
+  let obj;
   let setLowItemName: string[] = [],
     setHighPriceName: string[] = [];
 
@@ -255,10 +255,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       );
       if (res?.data?.success) {
         const getItems = res?.data?.data;
-        getItems?.map((item: any) => {
-          (obj.id = Number(item?.itemId)), (obj.name = item?.itemName);
-        });
-        setCartItemsMapping?.(obj);
+        setCartItemsMapping?.(getItems);
       }
     } catch (error) {
       CommonBugFender('populateCartMapping_ReviewOrder', error);
@@ -759,7 +756,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
   const renderTotalCharges = () => {
     const anyCartSaving = isDiagnosticCircleSubscription ? cartSaving + circleSaving : cartSaving;
-
+    const hcChargesToShow = getHcCharges()?.toFixed(2);
     return (
       <>
         {/* {renderCouponView()} */}
@@ -774,7 +771,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           {renderPrices('Total MRP', totalPriceExcludingAnyDiscounts.toFixed(2))}
 
           {couponDiscount > 0 && renderPrices('Coupon Discount', couponDiscount?.toFixed(2))}
-          {
+          {isModifyFlow && Number(hcChargesToShow) == 0 ? null : (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={[styles.pricesNormalText, { width: '60%' }]}>
                 {string.diagnosticsCartPage.homeCollectionText}
@@ -794,11 +791,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
                     },
                   ]}
                 >
-                  {string.common.Rs} {getHcCharges()?.toFixed(2)}
+                  {string.common.Rs} {hcChargesToShow}
                 </Text>
               </View>
             </View>
-          }
+          )}
           {distanceCharges > 0 &&
             renderPrices(
               string.diagnosticsCartPage.paidSlotText,
@@ -1195,20 +1192,16 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
   const getItemName = (itemIds: any): string => {
     const itemNames: string[] = [];
-
     !!itemIds &&
       itemIds?.length &&
       itemIds?.map((id: number) => {
-        // const findItem = cartItems?.find(
-        //   (cItems: DiagnosticsCartItem) => Number(cItems?.id) === Number(id)
-        // );
-        const arrayToSelect =
-          !!cartItemsMapping && cartItemsMapping?.length > 0 ? cartItemsMapping : cartItems;
+        const isFromApi = !!cartItemsMapping && cartItemsMapping?.length > 0;
+        const arrayToSelect = isFromApi ? cartItemsMapping : cartItems;
         const findItem = arrayToSelect?.find(
-          (cItems: DiagnosticsCartItem) => Number(cItems?.id) === Number(id)
+          (cItems: any) => Number(isFromApi ? cItems?.itemId : cItems?.id) === Number(id)
         );
         if (!!findItem) {
-          itemNames?.push(findItem?.name);
+          itemNames?.push(isFromApi ? findItem?.itemName : findItem?.name);
         }
         //in case of modify. => only for single uhid
         else if (isModifyFlow) {
@@ -1225,7 +1218,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           });
         }
       });
-
     return itemNames?.join(', ');
   };
 

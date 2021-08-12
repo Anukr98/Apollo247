@@ -106,7 +106,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const [showMoreArray, setShowMoreArray] = useState([] as any);
   const [apiPrimaryOrderDetails, setApiPrimaryOrderDetails] = useState([] as any);
   const [primaryOrderId, setPrimaryOrderId] = useState<string>('');
-  const [slotDuration, setSlotDuration] = useState<string>('')
+  const [slotDuration, setSlotDuration] = useState<number>(0);
 
   const moveToMyOrders = () => {
     props.navigation.popToTop({ immediate: true }); //if not added, stack was getting cleared.
@@ -121,7 +121,11 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       let response = await fetchOrderDetails(primaryId);
       if (!!response && response?.data && !response?.errors) {
         let getOrderDetailsResponse = response?.data?.getDiagnosticOrderDetails?.ordersList || [];
+        const getSlotDuration =
+          response?.data?.getDiagnosticOrderDetails?.ordersList?.attributesObj
+            ?.slotDurationInMinutes || 45;
         setApiPrimaryOrderDetails([getOrderDetailsResponse]!);
+        setSlotDuration(getSlotDuration);
       } else {
         setApiPrimaryOrderDetails([]);
       }
@@ -141,10 +145,11 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
         const getResponse = response?.data?.data?.getOrderInternal?.DiagnosticsPaymentDetails;
         const getSlotDateTime = getResponse?.ordersList?.[0]?.slotDateTimeInUTC;
         const primaryOrderID = getResponse?.ordersList?.[0]?.primaryOrderID;
-        const slotDuration = getResponse?.ordersList?.[0]?.attributesObj?.slotDurationInMinutes || 45;
+        const slotDuration =
+          getResponse?.ordersList?.[0]?.attributesObj?.slotDurationInMinutes || 0;
         setApiOrderDetails([getResponse]);
         setTimeDate(getSlotDateTime);
-        setSlotDuration(slotDuration)
+        setSlotDuration(slotDuration);
         setIsSingleUhid(getResponse?.ordersList?.[0]?.length == 1);
         if (primaryOrderID) {
           setPrimaryOrderId(primaryOrderID);
@@ -245,8 +250,13 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       ? moment(modifiedOrderDetails?.slotDateTimeInUTC)?.format('hh:mm A')
       : timeDate != '' && moment(timeDate)?.format('hh:mm A');
     const rangeAddedTime = !!modifiedOrderDetails
-    ? moment(modifiedOrderDetails?.slotDateTimeInUTC)?.add(slotDuration,'minutes')?.format('hh:mm A')
-    : timeDate != '' && moment(timeDate)?.add(slotDuration,'minutes')?.format('hh:mm A');
+      ? moment(modifiedOrderDetails?.slotDateTimeInUTC)
+          ?.add(slotDuration, 'minutes')
+          ?.format('hh:mm A')
+      : timeDate != '' &&
+        moment(timeDate)
+          ?.add(slotDuration, 'minutes')
+          ?.format('hh:mm A');
     return (
       <>
         {!!date && !!time && !!year ? (
@@ -259,7 +269,11 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
                   {date}, {year}
                 </Text>
               )}
-              {!!time && <Text style={styles.pickupDate}> | {time} - {rangeAddedTime}</Text>}
+              {!!time && (
+                <Text style={styles.pickupDate}>
+                  | {time} - {rangeAddedTime}
+                </Text>
+              )}
             </Text>
           </View>
         ) : null}

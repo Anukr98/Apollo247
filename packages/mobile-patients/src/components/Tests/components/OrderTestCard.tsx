@@ -270,15 +270,21 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       ? moment(props.dateTime)?.format('ddd, DD MMM YYYY') || null
       : null;
 
-    const bookedForTime = moment(props.slotTime)?.format('hh:mm a');
-    const rangeAddedTime = moment(props.slotTime)?.add(props.slotDuration,'minutes')?.format('hh:mm a');
+    const bookedForTime = moment(props.slotTime)?.format('hh:mm A');
+    const rangeAddedTime = moment(props.slotTime)
+      ?.add(props.slotDuration, 'minutes')
+      ?.format('hh:mm A');
 
     return (
       <View style={styles.bottomContainer}>
         {(!!bookedForTime || !!bookedForDate) && (
           <View>
             <Text style={styles.headingText}>Test Slot</Text>
-            {!!bookedForTime ? <Text style={styles.slotText}>{bookedForTime} - {rangeAddedTime}</Text> : null}
+            {!!bookedForTime ? (
+              <Text style={styles.slotText}>
+                {bookedForTime} - {rangeAddedTime}
+              </Text>
+            ) : null}
             {!!bookedForDate ? <Text style={styles.slotText}>{bookedForDate}</Text> : null}
           </View>
         )}

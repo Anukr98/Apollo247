@@ -430,7 +430,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         console.log({ data });
         const cancelResponse = g(data, 'data', 'cancelDiagnosticOrdersv2', 'status');
         if (!!cancelResponse && cancelResponse === true) {
-          updateCancelCard(selectedOrderId);
+          // updateCancelCard(selectedOrderId);
+          setTimeout(() => refetchOrders(), 1000);
           showAphAlert?.({
             unDismissable: true,
             title: string.common.hiWithSmiley,
@@ -1331,20 +1332,29 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       const res = await diagnosticsOrderListByParentId(client, parentOrderId!);
       if (res?.data?.getDiagnosticOrdersListByParentOrderID) {
         const getOrders = res?.data?.getDiagnosticOrdersListByParentOrderID?.ordersList! || [];
-
-        setMultipleOrdersList(getOrders);
-        setShowMultiUhidOption(true);
+        if (getOrders?.length == 0) {
+          //in that case when res is [] => cancelled all muhid order except one, try to reschedule
+          setIsMultiUhid(false);
+          setShowMultiUhidOption(false);
+          setShowRescheduleReasons(true);
+          setSelectRescheduleOption(true);
+        } else {
+          setMultipleOrdersList(getOrders);
+          setShowMultiUhidOption(true);
+        }
       } else {
         setMultipleOrdersList([]);
+        setShowMultiUhidOption(false);
         setShowRescheduleReasons(true);
         setSelectRescheduleOption(true);
       }
       setLoading?.(false);
     } catch (error) {
-      console.log({ error });
       setMultipleOrdersList([]);
+      setIsMultiUhid(false);
       setShowRescheduleReasons(true);
       setSelectRescheduleOption(true);
+      setShowMultiUhidOption(false);
 
       setLoading?.(false);
       CommonBugFender('YourOrdersTest_callMultiUhidApi', error);
