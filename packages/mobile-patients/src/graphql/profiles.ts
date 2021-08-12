@@ -1140,6 +1140,9 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
         status
         mrp
         appointment_type
+        slashed_price
+        is_cashback_enabled
+        cashback_amount
       }
       availabilityTitle {
         AVAILABLE_NOW

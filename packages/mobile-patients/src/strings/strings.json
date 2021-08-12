@@ -134,7 +134,19 @@
     "CorporateVaccineBenefit": "DEPENDENT_VACCINATION_REG",
     "noDiagnosticsAvailable": "Unfortunately, we do not have any diagnostic(s) available right now.",
     "unableToSetDeliveryAddress": "We're sorry! Unable to set delivery address. Please try again after some time",
-    "circleNoSubscriptionText": "No Subscription"
+    "circleNoSubscriptionText": "No Subscription",
+    "memberCashback": " Membership Cashback ",
+    "cashbackInfo": "(Cashback can be used to buy medicines online as well as at physical Apollo Pharmacy stores. ",
+    "hcSavedOnConsultByCare": "You will get {amount} HC on this Consult",
+    "whatIsHc": "What are HCs?",
+    "hcShort": "HC is short for ",
+    "healthCredit": "Health credits",
+    "hcInfo": " which are rewarded to you on specific purchases and consults. HCs are calculated based on the total amount paid. In case a coupon is applied, HCs to be credited will be adjusted accordingly.",
+    "hcToRupee": "1 HC= ₹ 1",
+    "whyCashbackChanged": "Why did my Cashback (HCs) change?",
+    "hcCreditInfo": "HCs are calculated based on the total amount paid. In case a coupon is applied, HCs to be credited will be adjusted accordingly.",
+    "circleCashback": "CIRCLE CASHBACK",
+    "circleDiscount": "CIRCLE DISCOUNT"
   },
   "components": {
     "medicineDetails": {
@@ -933,7 +945,7 @@
     "circlePlanAddedToCart": "Circle plan successfully added to cart.",
     "discountInfoReflectsOnCheckout": "Discount and other information will be reflected at checkout.",
     "forCareMembers": "for CARE members",
-    "circleSavings": "CIRCLE savings of ₹{amount}",
+    "circleSavings": "CIRCLE discount of ₹{amount}",
     "upgradeNow": "Upgrade now",
     "circleMembershipPlans": "Circle Membership Plans",
     "addToCart": "ADD TO CART",
@@ -956,7 +968,8 @@
     "returnToHomepage": "RETURN TO HOMEPAGE",
     "availableHealthCredits": "*Available Health Credits",
     "upgradeWithHC": "UPGRADE WITH {hc} HC",
-    "upgradeWithPrice": "UPGRADE WITH ₹{price}"
+    "upgradeWithPrice": "UPGRADE WITH ₹{price}",
+    "circleCashback": "CIRCLE cashback of {amount} HC"
   },
   "circlePharmacy": {
     "modalDescription": "Enable Circle membership to get the best discounts, cashbacks, free delivery and more...",

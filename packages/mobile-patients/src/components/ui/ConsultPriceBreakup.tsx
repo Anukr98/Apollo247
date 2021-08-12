@@ -44,12 +44,15 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
     onlineConsultSlashedPrice,
     physicalConsultSlashedPrice,
     isCircleDoctorOnSelectedConsultMode,
+    cashbackAmount,
+    cashbackEnabled,
   } = circleDoctorDetails;
 
+  const onlineConsultPrice = cashbackEnabled ? onlineConsultMRPPrice : onlineConsultSlashedPrice;
   const amountToPay = isCircleDoctorOnSelectedConsultMode
     ? isOnlineConsult
       ? circleSubscriptionId
-        ? onlineConsultSlashedPrice - couponDiscountFees
+        ? onlineConsultPrice - couponDiscountFees
         : onlineConsultMRPPrice - couponDiscountFees
       : circleSubscriptionId
       ? physicalConsultSlashedPrice - couponDiscountFees
@@ -63,11 +66,11 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
           style={[
             styles.carePrice,
             {
-              textDecorationLine: circleSubscriptionId || planSelected ? 'line-through' : 'none',
+              textDecorationLine: (circleSubscriptionId || planSelected) && !cashbackEnabled ? 'line-through' : 'none',
               ...theme.viewStyles.text(
                 'M',
                 16,
-                circleSubscriptionId || planSelected
+                (circleSubscriptionId || planSelected) && !cashbackEnabled
                   ? theme.colors.BORDER_BOTTOM_COLOR
                   : theme.colors.LIGHT_BLUE
               ),
@@ -79,11 +82,11 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
             isOnlineConsult ? onlineConsultMRPPrice : physicalConsultMRPPrice
           )}
         </Text>
-        {!!circleSubscriptionId || planSelected ? (
+        {(!!circleSubscriptionId || planSelected) && !cashbackEnabled ? (
           <Text style={styles.regularText}>
             {string.common.Rs}
             {convertNumberToDecimal(
-              isOnlineConsult ? onlineConsultSlashedPrice : physicalConsultSlashedPrice
+              isOnlineConsult ? onlineConsultPrice : physicalConsultSlashedPrice
             )}
           </Text>
         ) : null}
@@ -99,7 +102,7 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
       </Text>
     );
   };
-
+  
   return (
     <View style={styles.container}>
       <View style={styles.rowContainer}>
@@ -124,7 +127,7 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
           </Text>
         </View>
       ) : null}
-
+  
       {coupon ? (
         <View style={[styles.rowContainer, { marginTop: 4 }]}>
           <View>
@@ -145,8 +148,7 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
           {planSelected && isCircleDoctorOnSelectedConsultMode
             ? isOnlineConsult
               ? convertNumberToDecimal(
-                  onlineConsultSlashedPrice -
-                    couponDiscountFees +
+                    onlineConsultPrice - couponDiscountFees +
                     (circleSubscriptionId == '' ? Number(planSelected?.currentSellingPrice) : 0)
                 )
               : convertNumberToDecimal(

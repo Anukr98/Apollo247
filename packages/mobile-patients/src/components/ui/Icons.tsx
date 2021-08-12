@@ -2017,3 +2017,10 @@ export const SavingsIcon: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/saving_icon.webp')}
   />
 );
+
+export const Tick: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/tick.webp')}
+  />
+);
