@@ -393,7 +393,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
               <View style={styles.otpContainer}>
                 <View style={styles.etaContainer}>
                   <LocationOutline style={styles.locationIcon} />
-                  <Text style={styles.otpTextStyle}>Phlebo will arrive by {phleboEta}</Text>
+                  <Text style={styles.otpTextStyle}>Apollo agent will arrive by {phleboEta}</Text>
                 </View>
                 {phleboTrackLink ? (
                   <TouchableOpacity
@@ -419,7 +419,9 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
                       }
                     }}
                   >
-                    <Text style={styles.trackStyle}>{nameFormater('track Phlebo', 'upper')}</Text>
+                    <Text style={styles.trackStyle}>
+                      {nameFormater('Track Apollo agent ', 'upper')}
+                    </Text>
                   </TouchableOpacity>
                 ) : null}
               </View>
@@ -748,7 +750,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   trackStyle: {
-    ...theme.viewStyles.text('SB', 13, colors.APP_YELLOW, 1, 18),
+    ...theme.viewStyles.text('SB', 12, colors.APP_YELLOW, 1, 18),
   },
   ratingContainer: {
     backgroundColor: theme.colors.TEST_CARD_BUTTOM_BG,

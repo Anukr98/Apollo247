@@ -1120,6 +1120,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           }
         })
         .catch((error) => {
+          console.log({ error });
           CommonBugFender('TestsCart_saveHomeCollectionOrder', error);
           setLoading?.(false);
           showAphAlert?.({

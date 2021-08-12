@@ -13,6 +13,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { diagnosticsDisplayPrice } from '@aph/mobile-patients/src/utils/commonUtils';
 import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
 
 interface CartItemCardProps {
   index: number;
@@ -60,6 +61,11 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     isCircleSubscribed &&
     !!cartItem?.circleSpecialPrice &&
     cartItem?.groupPlan === DIAGNOSTIC_GROUP_PLAN.CIRCLE;
+
+  const showDiscountSavingsView =
+    !showSavingsView &&
+    !!cartItem?.discountSpecialPrice &&
+    cartItem?.groupPlan === DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT;
 
   function _onPressCard(item: DiagnosticsCartItem) {
     props.onPressCard(item);
@@ -139,7 +145,8 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
             }`}</Text>
           </View>
         ) : null}
-        {showSavingsView && renderSavingView()}
+        {showSavingsView && renderSavingView(true)}
+        {!showSavingsView && showDiscountSavingsView && renderSavingView(false)}
       </View>
     );
   };
@@ -189,19 +196,30 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     );
   };
 
-  const renderSavingView = () => {
+  const renderSavingView = (isCircleDiscount: boolean) => {
     const mrpToDisplay = diagnosticsDisplayPrice(cartItem, isCircleSubscribed)?.mrpToDisplay;
 
     const savingAmount =
       Number((!!cartItem?.packageMrp && cartItem?.packageMrp!) || mrpToDisplay) -
-      Number(cartItem?.circleSpecialPrice!);
+      Number(isCircleDiscount ? cartItem?.circleSpecialPrice! : cartItem?.discountSpecialPrice!);
 
     return (
       <>
         {!!savingAmount && savingAmount > 0 ? (
           <View style={styles.flexRow}>
-            <CircleLogo style={styles.circleLogoIcon} />
-            <Text style={styles.savingTextStyle}>
+            {isCircleDiscount ? (
+              <CircleLogo style={styles.circleLogoIcon} />
+            ) : (
+              <SpecialDiscountText isImage={true} text={'TEST 247'} />
+            )}
+            <Text
+              style={[
+                styles.savingTextStyle,
+                {
+                  marginHorizontal: isCircleDiscount ? 0 : 3,
+                },
+              ]}
+            >
               {'Savings'} {string.common.Rs} {savingAmount}
             </Text>
           </View>
