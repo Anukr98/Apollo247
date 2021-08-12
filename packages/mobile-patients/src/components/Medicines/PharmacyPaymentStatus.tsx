@@ -227,9 +227,6 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     };
   }, []);
 
-  /******
-   * App Review And Rating
-   * *****/
   const appReviewAndRating = async () => {
     try {
       const { shipments } = orderInfo?.medicineOrderInput;

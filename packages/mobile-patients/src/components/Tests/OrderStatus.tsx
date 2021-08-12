@@ -97,9 +97,6 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     };
   }, []);
 
-  /*****
-   * Show App Review on lab booking
-   * ****/
   const submitReviewOnLabBook = async () => {
     try {
       const { diagnosticDate } = orderDetails;

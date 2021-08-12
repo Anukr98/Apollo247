@@ -442,9 +442,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     );
   };
 
-  /******
-   * App Review And Rating
-   * *****/
   const appReviewAndRating = async (data: any) => {
     try {
       if (g(data, 'appointment', 'doctorInfo')) {
