@@ -142,7 +142,9 @@
     "hcShort": "HC is short for ",
     "healthCredit": "Health credits",
     "hcInfo": " which are rewarded to you on specific purchases and consults. HCs are calculated based on the total amount paid. In case a coupon is applied, HCs to be credited will be adjusted accordingly.",
-    "hcToRupee": "1 HC= ₹ 1"
+    "hcToRupee": "1 HC= ₹ 1",
+    "whyCashbackChanged": "Why did my Cashback (HCs) change?",
+    "hcCreditInfo": "HCs are calculated based on the total amount paid. In case a coupon is applied, HCs to be credited will be adjusted accordingly."
   },
   "components": {
     "medicineDetails": {

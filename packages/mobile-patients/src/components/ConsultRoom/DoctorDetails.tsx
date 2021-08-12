@@ -103,6 +103,7 @@ import {
   CleverTapEventName,
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import {Tooltip} from 'react-native-elements';
 
 const { height, width } = Dimensions.get('window');
 
@@ -320,6 +321,27 @@ const styles = StyleSheet.create({
     height: 8, 
     width: 8, 
     marginStart: 4
+  },
+  tooltipTitle: {
+    ...theme.viewStyles.text('M', 13, theme.colors.APP_YELLOW)
+  },
+  tootipDesc: {
+    ...theme.viewStyles.text('R', 10, theme.colors.LIGHT_BLUE, undefined, 12),
+    paddingTop: 4,
+  },
+  tipHcInfoText: {
+    ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE, undefined, 14),
+    paddingTop: 4,
+  },
+  hcBoldText: {
+    fontWeight: '500',
+  },
+  tooltipView: {
+    backgroundColor: theme.colors.WHITE,
+    shadowColor: theme.colors.SHADOW_GRAY,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8
   },
 });
 type Appointments = {
@@ -632,8 +654,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     if (doctorId.length > 36) {
       return;
     }
-    console.log({doctorId});
-    
     const input = {
       id: doctorId,
     };
@@ -820,7 +840,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         CommonBugFender('DoctorDetails_getNetStatus', e);
       });
   };
-
+  
   const renderCareDoctorPricing = (consultType: ConsultMode) => {
     return (
       <View style={{ paddingBottom: showCircleSubscribed ? 16 : 3 }}>
@@ -845,12 +865,33 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             : convertNumberToDecimal(physicalConsultMRPPrice)}
         </Text>
         <View style={styles.rowContainer}>
-          <Text style={styles.careDiscountedPrice}>
-            {consultType === ConsultMode.PHYSICAL ? string.common.Rs +
-            convertNumberToDecimal(physicalConsultSlashedPrice) : cashbackEnabled ?
-            `Upto ${cashbackAmount} HC` : string.common.Rs +
-            convertNumberToDecimal(onlineConsultSlashedPrice)}
-          </Text>
+          <Tooltip
+              containerStyle={styles.tooltipView}
+              height={126}
+              width={264}
+              skipAndroidStatusBar={true}
+              toggleOnPress={!!cashbackEnabled}
+              pointerColor={theme.colors.WHITE}
+              overlayColor={theme.colors.CLEAR}
+              popover={
+                <View>
+                  <Text style={styles.tooltipTitle}>{string.common.whatIsHc}</Text>
+                  <Text style={styles.tootipDesc}>{string.common.hcShort}
+                  <Text style={styles.hcBoldText}>
+                    {string.common.healthCredit}
+                    </Text>
+                    {string.common.hcInfo}
+                    </Text>
+                  <Text style={styles.tipHcInfoText}>{string.common.hcToRupee}</Text>
+                </View>
+              }>
+            <Text style={styles.careDiscountedPrice}>
+              {consultType === ConsultMode.PHYSICAL ? string.common.Rs +
+              convertNumberToDecimal(physicalConsultSlashedPrice) : cashbackEnabled ?
+              `Upto ${cashbackAmount} HC` : string.common.Rs +
+              convertNumberToDecimal(onlineConsultSlashedPrice)}
+            </Text>
+          </Tooltip>
           {showCircleSubscribed ? consultType === ConsultMode.PHYSICAL ? (
             <CircleLogo style={[styles.smallCareLogo, { height: 17 }]} /> 
           ) : cashbackEnabled ? <Tick style={styles.tickIcon} /> : 

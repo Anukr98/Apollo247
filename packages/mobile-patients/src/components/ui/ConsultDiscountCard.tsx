@@ -17,6 +17,7 @@ import {
   convertNumberToDecimal,
   isPhysicalConsultation,
 } from '@aph/mobile-patients/src/utils/commonUtils';
+import {Tooltip} from 'react-native-elements';
 
 interface ConsultDiscountProps {
   onPressCard: TouchableOpacityProps['onPress'];
@@ -58,8 +59,10 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
 
   const totalSavings =
     isCircleDoctorOnSelectedConsultMode && (circleSubscriptionId || planSelected)
-      ? isOnlineConsult
-        ? onlineConsultDiscountedPrice + couponDiscountFees
+      ? isOnlineConsult 
+        ? cashbackEnabled
+        ? cashbackAmount + couponDiscountFees
+        : onlineConsultDiscountedPrice + couponDiscountFees
         : physicalConsultDiscountedPrice + couponDiscountFees
       : couponDiscountFees;
   const [showPriceBreakup, setShowPriceBreakup] = useState<boolean>(false);
@@ -79,7 +82,7 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
             You{' '}
             <Text style={{ ...styles.regularText, color: theme.colors.SEARCH_UNDERLINE_COLOR }}>
               saved {string.common.Rs}
-              {convertNumberToDecimal(cashbackEnabled ? cashbackAmount : totalSavings)}
+              {convertNumberToDecimal(totalSavings)}
             </Text>{' '}
             on your consult.
           </Text>
@@ -126,9 +129,21 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
                     </Text>
                   </Text>
                   {!!coupon &&
-                    <TouchableOpacity>
+                    <Tooltip
+                      containerStyle={styles.tooltipView}
+                      height={80}
+                      width={264}
+                      skipAndroidStatusBar={true}
+                      pointerColor={theme.colors.WHITE}
+                      overlayColor={theme.colors.CLEAR}
+                      popover={
+                        <View>
+                          <Text style={styles.tooltipTitle}>{string.common.whyCashbackChanged}</Text>
+                          <Text style={styles.tootipDesc}>{string.common.hcCreditInfo}</Text>
+                        </View>
+                    }>
                       <ExclamationGreen style={styles.infoIcon} />
-                    </TouchableOpacity>}
+                    </Tooltip>}
                 </View>
                 <Text style={styles.circleCashbackStyle}>
                   {`${cashbackAmount} HC`}
@@ -143,7 +158,7 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
             <View style={styles.seperatorLine} />
             <Text style={styles.totalPayStyle}>
               {string.common.Rs}
-              {convertNumberToDecimal(cashbackEnabled ? cashbackAmount : totalSavings)}
+              {convertNumberToDecimal(totalSavings)}
             </Text>
           </View>
         ) : null}
@@ -221,5 +236,26 @@ const styles = StyleSheet.create({
     height: 12, 
     width: 12, 
     marginStart: 8
+  },
+  tooltipTitle: {
+    ...theme.viewStyles.text('M', 13, theme.colors.APP_YELLOW)
+  },
+  tootipDesc: {
+    ...theme.viewStyles.text('R', 10, theme.colors.LIGHT_BLUE, undefined, 12),
+    paddingTop: 4,
+  },
+  tipHcInfoText: {
+    ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE, undefined, 14),
+    paddingTop: 4,
+  },
+  hcBoldText: {
+    fontWeight: '500',
+  },
+  tooltipView: {
+    backgroundColor: theme.colors.WHITE,
+    shadowColor: theme.colors.SHADOW_GRAY,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8
   },
 });

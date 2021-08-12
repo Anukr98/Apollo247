@@ -672,18 +672,15 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         {cashbackEnabled && 
           <View style={styles.hcInfoView}>
             <Text style={styles.hcInfoText}>
-              {'1HC = ₹1'}
+              {string.common.hcToRupee}
             </Text>
             <Tooltip
-              containerStyle={{backgroundColor: 'white', shadowColor: '#808080',
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.4,
-              shadowRadius: 8}}
+              containerStyle={styles.tooltipView}
               height={126}
               width={264}
               skipAndroidStatusBar={true}
-              pointerColor={'white'}
-              overlayColor={'transparent'}
+              pointerColor={theme.colors.WHITE}
+              overlayColor={theme.colors.CLEAR}
               popover={
                 <View>
                   <Text style={styles.tooltipTitle}>{string.common.whatIsHc}</Text>
@@ -1263,5 +1260,12 @@ const styles = StyleSheet.create({
   },
   hcBoldText: {
     fontWeight: '500',
-  }
+  },
+  tooltipView: {
+    backgroundColor: theme.colors.WHITE,
+    shadowColor: theme.colors.SHADOW_GRAY,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8
+  },
 });

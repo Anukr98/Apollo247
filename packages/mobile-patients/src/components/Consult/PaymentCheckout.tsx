@@ -207,6 +207,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     cashbackAmount,
     cashbackEnabled,
   } = circleDoctorDetails;
+  const onlineConsultPrice = cashbackEnabled ? onlineConsultMRPPrice : onlineConsultSlashedPrice;
   const { circleSubscriptionId, circlePlanSelected, hdfcSubscriptionId } = useShoppingCart();
   const [disabledCheckout, setDisabledCheckout] = useState<boolean>(
     isCircleDoctorOnSelectedConsultMode && !circleSubscriptionId
@@ -221,7 +222,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
         ? Number(
-            Decimal.sub(onlineConsultSlashedPrice || onlineConsultMRPPrice, couponDiscountFees).plus(
+            Decimal.sub(onlineConsultPrice, couponDiscountFees).plus(
               circleSubscriptionId == '' ? Number(circlePlanSelected?.currentSellingPrice) : 0
             )
           )
@@ -234,7 +235,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const consultAmounttoPay =
     circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
-        ? Number(Decimal.sub(onlineConsultSlashedPrice || onlineConsultMRPPrice, couponDiscountFees))
+        ? Number(Decimal.sub(onlineConsultPrice, couponDiscountFees))
         : Number(Decimal.sub(physicalConsultSlashedPrice, couponDiscountFees))
       : amount;
   const notSubscriberUserForCareDoctor =
@@ -251,7 +252,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const actualAmount =
     circlePlanSelected && isCircleDoctorOnSelectedConsultMode
       ? isOnlineConsult
-        ? onlineConsultSlashedPrice || onlineConsultMRPPrice
+        ? onlineConsultPrice
         : physicalConsultSlashedPrice
       : Number(price);
   const [doctorDiscountedFees, setDoctorDiscountedFees] = useState<number>(actualAmount);
@@ -672,7 +673,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     const billAmount =
       circlePlanSelected && isCircleDoctorOnSelectedConsultMode
         ? isOnlineConsult
-          ? onlineConsultSlashedPrice || onlineConsultMRPPrice
+          ? onlineConsultPrice
           : physicalConsultSlashedPrice
         : Number(price);
     const timeSlot =

@@ -48,10 +48,11 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
     cashbackEnabled,
   } = circleDoctorDetails;
 
+  const onlineConsultPrice = cashbackEnabled ? onlineConsultMRPPrice : onlineConsultSlashedPrice;
   const amountToPay = isCircleDoctorOnSelectedConsultMode
     ? isOnlineConsult
       ? circleSubscriptionId
-        ? onlineConsultSlashedPrice || onlineConsultMRPPrice - couponDiscountFees
+        ? onlineConsultPrice - couponDiscountFees
         : onlineConsultMRPPrice - couponDiscountFees
       : circleSubscriptionId
       ? physicalConsultSlashedPrice - couponDiscountFees
@@ -85,7 +86,7 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
           <Text style={styles.regularText}>
             {string.common.Rs}
             {convertNumberToDecimal(
-              isOnlineConsult ? onlineConsultSlashedPrice || onlineConsultMRPPrice : physicalConsultSlashedPrice
+              isOnlineConsult ? onlineConsultPrice : physicalConsultSlashedPrice
             )}
           </Text>
         ) : null}
@@ -101,7 +102,7 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
       </Text>
     );
   };
-
+  
   return (
     <View style={styles.container}>
       <View style={styles.rowContainer}>
@@ -126,7 +127,7 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
           </Text>
         </View>
       ) : null}
-
+  
       {coupon ? (
         <View style={[styles.rowContainer, { marginTop: 4 }]}>
           <View>
@@ -147,8 +148,7 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
           {planSelected && isCircleDoctorOnSelectedConsultMode
             ? isOnlineConsult
               ? convertNumberToDecimal(
-                  onlineConsultSlashedPrice || onlineConsultMRPPrice -
-                    couponDiscountFees +
+                    onlineConsultPrice - couponDiscountFees +
                     (circleSubscriptionId == '' ? Number(planSelected?.currentSellingPrice) : 0)
                 )
               : convertNumberToDecimal(
