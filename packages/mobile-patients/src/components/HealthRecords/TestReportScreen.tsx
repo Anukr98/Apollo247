@@ -76,6 +76,7 @@ import {
 import { searchPHRApiWithAuthToken } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { SearchHealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/SearchHealthRecordCard';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -868,7 +869,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
             const eventAttributes: CleverTapEvents[CleverTapEventName.ADD_RECORD] = {
               Source: 'Test Report',
             };
-            postWebEngageEvent(CleverTapEventName.ADD_RECORD, eventAttributes);
+            postWebEngageEvent(WebEngageEventName.ADD_RECORD, eventAttributes);
             postCleverTapEvent(CleverTapEventName.ADD_RECORD, eventAttributes);
             props.navigation.navigate(AppRoutes.AddRecord, {
               navigatedFrom: 'Test Reports',

@@ -157,6 +157,7 @@ import {
   CleverTapEvents,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { MedicineSearchEvents } from '@aph/mobile-patients/src/components/MedicineSearch/MedicineSearchEvents';
+import { NudgeMessage } from '@aph/mobile-patients/src/components/Medicines/Components/NudgeMessage';
 
 const styles = StyleSheet.create({
   buyAgain: {
@@ -306,6 +307,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     asyncPincode,
     setAsyncPincode,
     setIsCircleExpired,
+    isCircleExpired,
+    pharmaHomeNudgeMessage,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
@@ -2057,11 +2060,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         bottom: 0,
         ...theme.viewStyles.cardContainer,
         width: '100%',
-        padding: 10,
       },
       content: {
         flexDirection: 'row',
         justifyContent: 'space-between',
+        padding: 10,
       },
       upgrade: {
         borderWidth: 2,
@@ -2097,9 +2100,19 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       },
     });
     const effectivePrice = Math.round(cartDiscountTotal - cartTotalCashback);
+    const showNudgeMessage =
+      pharmaHomeNudgeMessage?.show === 'yes' && pharmaHomeNudgeMessage?.nudgeMessage;
+    const showByUserType =
+      pharmaHomeNudgeMessage?.userType == 'all' ||
+      (pharmaHomeNudgeMessage?.userType == 'circle' && circleSubscriptionId && !isCircleExpired) ||
+      (pharmaHomeNudgeMessage?.userType == 'non-circle' &&
+        (!circleSubscriptionId || isCircleExpired));
 
     return (
       <View style={[circleStyles.container, { backgroundColor: 'white' }]}>
+        {showNudgeMessage && showByUserType && (
+          <NudgeMessage nudgeMessage={pharmaHomeNudgeMessage} />
+        )}
         <View style={circleStyles.content}>
           <View
             style={{

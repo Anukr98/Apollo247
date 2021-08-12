@@ -752,6 +752,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setMaxCartValueForCOD,
     setNonCodSKus,
     setCartPriceNotUpdateRange,
+    setPharmaHomeNudgeMessage,
+    setPharmaCartNudgeMessage,
+    setPharmaPDPNudgeMessage,
   } = useShoppingCart();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -976,6 +979,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Diagnostics_Help_NonOrder_Queries: {
       QA: 'QA_Diagnostics_Help_NonOrder_Queries',
       PROD: 'Diagnostics_Help_NonOrder_Queries',
+    },
+    Nudge_Message_Pharmacy_Home: {
+      QA: 'QA_Show_nudge_on_pharma_home',
+      PROD: 'Show_nudge_on_pharma_home',
+    },
+    Nudge_Message_Pharmacy_PDP: {
+      QA: 'QA_Show_nudge_on_pharma_pdp',
+      PROD: 'Show_nudge_on_pharma_pdp',
+    },
+    Nudge_Message_Pharmacy_Cart: {
+      QA: 'QA_Show_nudge_on_pharma_cart',
+      PROD: 'Show_nudge_on_pharma_cart',
     },
   };
 
@@ -1225,6 +1240,27 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         'Diagnostics_Help_NonOrder_Queries',
         (key) => config.getString(key)
       );
+
+      const nudgeMessagePharmacyHome = getRemoteConfigValue(
+        'Nudge_Message_Pharmacy_Home',
+        (key) => JSON.parse(config.getString(key)) || null
+      );
+
+      nudgeMessagePharmacyHome && setPharmaHomeNudgeMessage?.(nudgeMessagePharmacyHome);
+
+      const nudgeMessagePharmacyCart = getRemoteConfigValue(
+        'Nudge_Message_Pharmacy_Cart',
+        (key) => JSON.parse(config.getString(key)) || null
+      );
+
+      nudgeMessagePharmacyCart && setPharmaCartNudgeMessage?.(nudgeMessagePharmacyCart);
+
+      const nudgeMessagePharmacyPDP = getRemoteConfigValue(
+        'Nudge_Message_Pharmacy_PDP',
+        (key) => JSON.parse(config.getString(key)) || null
+      );
+
+      nudgeMessagePharmacyPDP && setPharmaPDPNudgeMessage?.(nudgeMessagePharmacyPDP);
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';
