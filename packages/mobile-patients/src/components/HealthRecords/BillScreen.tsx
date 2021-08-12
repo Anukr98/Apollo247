@@ -47,7 +47,7 @@ import {
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useApolloClient } from 'react-apollo-hooks';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalBills_response as MedicalBillsType } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
+import { getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_medicalBills_response as MedicalBillsType } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V3';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
@@ -297,7 +297,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
       .then((data: any) => {
         const medicalBills = g(
           data,
-          'getPatientPrismMedicalRecords_V2',
+          'getPatientPrismMedicalRecords_V3',
           'medicalBills',
           'response'
         );

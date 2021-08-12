@@ -118,6 +118,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   const [doctorDetails, setDoctorDetails] = useState<getDoctorDetailsById_getDoctorDetailsById>();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [selectedDateIndex, setSelectedDateIndex] = useState<number>(0);
+  const [selectedDateIndexHiglight, setSelectedDateIndexHighlight] = useState<number>(0);
   const [isSlotDateSelected, setIsSlotDateSelected] = useState<boolean>(false);
   const consultOnlineTab = string.consultModeTab.VIDEO_CONSULT;
   const consultPhysicalTab = string.consultModeTab.HOSPITAL_VISIT;
@@ -374,7 +375,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           },
         },
       });
-      setTimeArray(defaultTimeData);
+
       const availableSlots = res?.data?.getDoctorPhysicalAvailableSlots?.availableSlots;
       const slotCounts = res?.data?.getDoctorPhysicalAvailableSlots?.slotCounts;
       callOnLaunch && setPhysicalSlotsCount(slotCounts);
@@ -612,7 +613,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
 
   const renderSlotsDatesItems = (item: SlotsType, index: number) => {
     const textColor =
-      index === selectedDateIndex || item?.count === 0
+      index === selectedDateIndexHiglight || item?.count === 0
         ? 'white'
         : theme.colors.SEARCH_UNDERLINE_COLOR;
     return (
@@ -624,7 +625,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
             marginLeft: index === 0 ? 18 : 8,
             marginRight: index === datesSlots?.length - 1 ? 18 : 0,
             backgroundColor:
-              index === selectedDateIndex && item?.count > 0
+              index === selectedDateIndexHiglight && item?.count > 0
                 ? theme.colors.SEARCH_UNDERLINE_COLOR
                 : item?.count === 0
                 ? theme.colors.GRAYED
@@ -650,9 +651,10 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   };
 
   const handleDateSelection = (item: SlotsType, index: number) => {
-    if (selectedDateIndex === index) return;
+    if (selectedDateIndexHiglight === index) return;
     setIsSlotDateSelected(true);
     setSelectedDateIndex(index);
+    setSelectedDateIndexHighlight(index);
     const todayDate = moment(new Date());
     const tomorrowDate = moment(new Date()).add('1', 'day');
     const date = index === 0 ? todayDate : index === 1 ? tomorrowDate : item?.date;

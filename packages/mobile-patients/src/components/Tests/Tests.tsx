@@ -1438,7 +1438,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           const data = item?.redirectUrl?.split('=')?.[1];
           const extractData = data?.replace('apollopatients://', '');
           const getNavigationDetails = extractData?.split('?');
-          const route = getNavigationDetails?.[0];
+          const route = getNavigationDetails?.[0]?.toLowerCase();
           let itemId = '';
           try {
             if (getNavigationDetails?.length >= 2) {
@@ -1448,11 +1448,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
               }
             }
           } catch (error) {}
-          if (route == 'TestDetails') {
+          if (route == 'testdetails') {
             DiagnosticBannerClick(slideIndex + 1, Number(itemId), item?.bannerTitle);
             props.navigation.navigate(AppRoutes.TestDetails, {
               itemId: itemId,
               comingFrom: AppRoutes.Tests,
+            });
+          } else if (route == 'testlisting') {
+            DiagnosticBannerClick(slideIndex + 1, Number(0), item?.bannerTitle);
+            props.navigation.navigate(AppRoutes.TestListing, {
+              movedFrom: 'deeplink',
+              widgetName: itemId, //name
             });
           }
         }
@@ -2301,7 +2307,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE, 1, 20),
             },
           ]}
-          rightText={showViewAll ?  'VIEW ALL' : ''}
+          rightText={showViewAll ? 'VIEW ALL' : ''}
           rightTextStyle={styles.widgetViewAllText} //showViewAll ? styles.widgetViewAllText : {}
           onPressRightText={() => {
             props.navigation.navigate(AppRoutes.TestWidgetListing, {
