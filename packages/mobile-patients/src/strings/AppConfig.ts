@@ -754,10 +754,10 @@ const ConfigurationQA3 = {
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com',
-  CIRCLE_CONSULT_URL: 'https://aph-staging-web-patients.apollo247.com/consult-landing?header=false',
-  CIRLCE_PHARMA_URL: 'https://aph-staging-web-patients.apollo247.com/pharma-landing?header=false',
-  CIRCLE_TEST_URL: 'https://aph-staging-web-patients.apollo247.com/test-landing?header=false',
-  CIRCLE_LANDING_URL: 'https://aph-staging-web-patients.apollo247.com/circle?header=false',
+  CIRCLE_CONSULT_URL: 'https://qathreepatients.apollo247.com/consult-landing?header=false',
+  CIRLCE_PHARMA_URL: 'https://qathreepatients.apollo247.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://qathreepatients.apollo247.com/test-landing?header=false',
+  CIRCLE_LANDING_URL: 'https://qathreepatients.apollo247.com/circle?header=false',
 };
 
 const ConfigurationQA5 = {
