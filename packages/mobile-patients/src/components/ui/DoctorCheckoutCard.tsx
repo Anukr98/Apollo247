@@ -70,7 +70,8 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
             style={[
               styles.carePrice,
               {
-                textDecorationLine: (circleSubscriptionId || planSelected) && !cashbackEnabled ? 'line-through' : 'none',
+                textDecorationLine: (circleSubscriptionId || planSelected) && !cashbackEnabled
+                 ? 'line-through' : 'none',
                 ...theme.viewStyles.text(
                   'M',
                   15,

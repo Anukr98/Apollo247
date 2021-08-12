@@ -379,7 +379,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   flexWrap: 'wrap',
                 }}
               >
-                {cashbackEnabled ? 'CIRCLE CASHBACK' : 'CIRCLE DISCOUNT'}
+                {cashbackEnabled ? string.common.circleCashback
+                 : string.common.circleDiscount}
               </Text>
               {showCircleSubscribed && <Tick style={styles.tickIcon} />}
             </View>

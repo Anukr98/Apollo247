@@ -124,7 +124,7 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
                   <Text style={styles.circleCashbackStyle}>
                     Circle
                     <Text style={styles.couponTextStyle}>
-                      {string.common.circleCashback}
+                      {string.common.memberCashback}
                       {coupon && '(HC)'}
                     </Text>
                   </Text>
