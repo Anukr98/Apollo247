@@ -53,15 +53,17 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
     physicalConsultDiscountedPrice,
     onlineConsultDiscountedPrice,
     isCircleDoctorOnSelectedConsultMode,
-    cashbackAmount,
     cashbackEnabled,
+    onlineConsultMRPPrice,
   } = circleDoctorDetails;
+
+  const hcCashbackAmount = Math.round(onlineConsultMRPPrice/10);
 
   const totalSavings =
     isCircleDoctorOnSelectedConsultMode && (circleSubscriptionId || planSelected)
       ? isOnlineConsult 
         ? cashbackEnabled
-        ? cashbackAmount + couponDiscountFees
+        ? hcCashbackAmount + couponDiscountFees
         : onlineConsultDiscountedPrice + couponDiscountFees
         : physicalConsultDiscountedPrice + couponDiscountFees
       : couponDiscountFees;
@@ -146,7 +148,7 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
                     </Tooltip>}
                 </View>
                 <Text style={styles.circleCashbackStyle}>
-                  {`${cashbackAmount} HC`}
+                  {`${hcCashbackAmount} HC`}
                 </Text>
               </View>
             ) : null}
