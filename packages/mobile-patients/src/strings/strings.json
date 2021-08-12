@@ -137,7 +137,7 @@
     "circleNoSubscriptionText": "No Subscription",
     "memberCashback": " Membership Cashback ",
     "cashbackInfo": "(Cashback can be used to buy medicines online as well as at physical Apollo Pharmacy stores. ",
-    "hcSavedOnConsultByCare": "You will get {amount} HC on this Consult",
+    "hcSavedOnConsultByCare": "You will get upto {amount} HC on this Consult",
     "whatIsHc": "What are HCs?",
     "hcShort": "HC is short for ",
     "healthCredit": "Health credits",
@@ -969,7 +969,7 @@
     "availableHealthCredits": "*Available Health Credits",
     "upgradeWithHC": "UPGRADE WITH {hc} HC",
     "upgradeWithPrice": "UPGRADE WITH ₹{price}",
-    "circleCashback": "CIRCLE cashback of {amount} HC"
+    "circleCashback": "CIRCLE cashback upto {amount} HC"
   },
   "circlePharmacy": {
     "modalDescription": "Enable Circle membership to get the best discounts, cashbacks, free delivery and more...",
