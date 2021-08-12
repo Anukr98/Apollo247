@@ -100,7 +100,7 @@ enum SUBSTITUTION_RESPONSE {
   NOT_OK = 'not-OK',
 }
 
-export interface PharmacyPaymentStatusProps extends NavigationScreenProps { }
+export interface PharmacyPaymentStatusProps extends NavigationScreenProps {}
 
 export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (props) => {
   const {
@@ -133,9 +133,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const { orders, deliveryTime, orderInfo, isStorePickup } = props.navigation.getParam(
     'orderDetails'
   );
-  const orderDetails = props.navigation.getParam(
-    'orderDetails'
-  );
+  const orderDetails = props.navigation.getParam('orderDetails');
   const orderIds = orders.map(
     (item: any, index: number) => item?.orderAutoId + (index != orders?.length - 1 && ', ')
   );
@@ -216,7 +214,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         );
         fireCirclePlanActivatedEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
         fireCirclePurchaseEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
-        appReviewAndRating()
+        appReviewAndRating();
       })
       .catch((error) => {
         setLoading(false);
@@ -229,20 +227,18 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     };
   }, []);
 
-
-
   /******
    * App Review And Rating
    * *****/
   const appReviewAndRating = async () => {
-    const { shipments } = orderInfo?.medicineOrderInput
+    const { shipments } = orderInfo?.medicineOrderInput;
     if (shipments?.[0].tatHours == '2hr | 0:00 | yes') {
       if (InAppReview.isAvailable()) {
-        console.log('Riviewing....')
-        await InAppReview.RequestInAppReview()
+        console.log('Riviewing....');
+        await InAppReview.RequestInAppReview();
       }
     }
-  }
+  };
 
   const getUserSubscriptionsByStatus = async () => {
     try {
@@ -302,10 +298,10 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       status == MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS
         ? 'Success'
         : status == MEDICINE_ORDER_STATUS.PAYMENT_FAILED
-          ? 'Payment Failed'
-          : status == 'PAYMENT_STATUS_NOT_KNOWN' // for COD
-            ? 'Payment Status Not Known'
-            : 'Payment Aborted';
+        ? 'Payment Failed'
+        : status == 'PAYMENT_STATUS_NOT_KNOWN' // for COD
+        ? 'Payment Status Not Known'
+        : 'Payment Aborted';
     const paymentType = paymentMode == MEDICINE_ORDER_PAYMENT_TYPE.COD ? 'COD' : 'Cashless';
     const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_POST_CART_PAGE_VIEWED] = {
       'Payment status': paymentStatus,
@@ -322,7 +318,6 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_POST_CART_PAGE_VIEWED, eventAttributes);
   };
-
 
   const fireSubstituteResponseEvent = (action: string) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ORDER_SUBSTITUTE_OPTION_CLICKED] = {
@@ -689,7 +684,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
           )}
         </View>
         <View>
-          <TouchableOpacity onPress={() => { }}></TouchableOpacity>
+          <TouchableOpacity onPress={() => {}}></TouchableOpacity>
         </View>
       </View>
     );
@@ -927,8 +922,8 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
                 ? renderAddedCirclePlanWithValidity()
                 : null}
               {(status === 'PAYMENT_SUCCESS' || paymentMode === 'COD') &&
-                totalCashBack &&
-                !isCircleBought
+              totalCashBack &&
+              !isCircleBought
                 ? renderCircleSavingsOnPurchase()
                 : null}
               {renderCODNote()}
