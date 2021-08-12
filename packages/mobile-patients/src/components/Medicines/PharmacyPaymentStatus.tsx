@@ -47,6 +47,8 @@ import { Snackbar } from 'react-native-paper';
 import AsyncStorage from '@react-native-community/async-storage';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AddedCirclePlanWithValidity } from '@aph/mobile-patients/src/components/ui/AddedCirclePlanWithValidity';
+import InAppReview from 'react-native-in-app-review';
+
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 import {
@@ -131,6 +133,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const { orders, deliveryTime, orderInfo, isStorePickup } = props.navigation.getParam(
     'orderDetails'
   );
+  const orderDetails = props.navigation.getParam('orderDetails');
   const orderIds = orders.map(
     (item: any, index: number) => item?.orderAutoId + (index != orders?.length - 1 && ', ')
   );
@@ -211,6 +214,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         );
         fireCirclePlanActivatedEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
         fireCirclePurchaseEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
+        appReviewAndRating();
       })
       .catch((error) => {
         setLoading(false);
@@ -222,6 +226,19 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
   }, []);
+
+  const appReviewAndRating = async () => {
+    try {
+      const { shipments } = orderInfo?.medicineOrderInput;
+      if (shipments?.[0].tatHours == '2hr | 0:00 | yes') {
+        if (InAppReview.isAvailable()) {
+          await InAppReview.RequestInAppReview();
+        }
+      }
+    } catch (error) {
+      CommonBugFender('inAppRevireAfterPaymentForPharmacy', error);
+    }
+  };
 
   const getUserSubscriptionsByStatus = async () => {
     try {
