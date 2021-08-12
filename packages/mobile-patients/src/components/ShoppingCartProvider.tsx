@@ -270,6 +270,12 @@ export interface ShoppingCartContextProps {
   setPharmaPDPNudgeMessage: ((value: NudgeMessage) => void) | null;
   pharmaCartNudgeMessage: NudgeMessageCart | null;
   setPharmaCartNudgeMessage: ((value: NudgeMessageCart) => void) | null;
+  subscriptionCoupon: PharmaCoupon | null;
+  setSubscriptionCoupon: ((coupon: PharmaCoupon | null) => void) | null;
+  subscriptionHCUsed: number;
+  setSubscriptionHCUsed: ((value: number) => void) | null;
+  subscriptionBillTotal: number;
+  setSubscriptionBillTotal: ((value: number) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -392,6 +398,12 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setPharmaCartNudgeMessage: null,
   pharmaPDPNudgeMessage: null,
   setPharmaPDPNudgeMessage: null,
+  subscriptionCoupon: null,
+  setSubscriptionCoupon: null,
+  subscriptionHCUsed: 0,
+  setSubscriptionHCUsed: null,
+  subscriptionBillTotal: 0,
+  setSubscriptionBillTotal: null,
 });
 
 const AsyncStorageKeys = {
@@ -538,6 +550,17 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [isProuctFreeCouponApplied, setisProuctFreeCouponApplied] = useState<boolean>(false);
   const [orders, setOrders] = useState<ShoppingCartContextProps['orders']>([]);
   const [shipments, setShipments] = useState<ShoppingCartContextProps['shipments']>([]);
+
+  const [subscriptionCoupon, setSubscriptionCoupon] = useState<
+    ShoppingCartContextProps['subscriptionCoupon']
+  >(null);
+  const [subscriptionHCUsed, setSubscriptionHCUsed] = useState<
+    ShoppingCartContextProps['subscriptionHCUsed']
+  >(0);
+  const [subscriptionBillTotal, setSubscriptionBillTotal] = useState<
+    ShoppingCartContextProps['subscriptionBillTotal']
+  >(0);
+
   const setEPrescriptions: ShoppingCartContextProps['setEPrescriptions'] = (items) => {
     _setEPrescriptions(items);
   };
@@ -834,6 +857,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setdeliveryTime('');
     setPrescriptionType(null);
     setConsultProfile(null);
+    setSubscriptionCoupon(null);
   };
 
   useEffect(() => {
@@ -1298,6 +1322,12 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setPharmaCartNudgeMessage,
         pharmaPDPNudgeMessage,
         setPharmaPDPNudgeMessage,
+        subscriptionCoupon,
+        setSubscriptionCoupon,
+        subscriptionHCUsed,
+        setSubscriptionHCUsed,
+        subscriptionBillTotal,
+        setSubscriptionBillTotal,
       }}
     >
       {props.children}

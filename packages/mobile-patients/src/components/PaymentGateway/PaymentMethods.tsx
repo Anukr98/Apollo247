@@ -504,6 +504,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const navigatetoOrderStatus = (isCOD: boolean, paymentStatus: string) => {
     PaymentStatus(paymentStatus, businessLine, paymentId);
+    setauthToken?.('');
     switch (businessLine) {
       case 'diagnostics':
         props.navigation.navigate(AppRoutes.OrderStatus, {
