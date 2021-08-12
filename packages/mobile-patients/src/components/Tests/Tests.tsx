@@ -1906,7 +1906,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }
 
   const renderSections = () => {
-    const widget0 = getRanking('0');
     const widget1 = getRanking('1');
     return (
       <TouchableOpacity
@@ -1919,7 +1918,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         style={{ flex: 1 }}
       >
         {widgetsData?.length == 0 && reloadWidget && renderLowNetwork()}
-        {renderWidgetType(widget0)} {/**0 */}
         {renderWidgetType(widget1)} {/**1 */}
         {renderYourOrders()}
         {latestPrescription?.length > 0 ? renderPrescriptionCard() : null}
