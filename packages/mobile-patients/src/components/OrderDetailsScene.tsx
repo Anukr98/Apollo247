@@ -2214,13 +2214,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const cancelNotAllowed =
       cancelNotAllowedIrrespectiveOfCurrentStatus || cancelNotAllowedWrtCurrentStatus;
 
-    console.log(
-      'csk cancel',
-      currentStatus,
-      cancelNotAllowedWrtCurrentStatus,
-      cancelNotAllowedIrrespectiveOfCurrentStatus
-    );
-
     return (
       !cancelNotAllowed && (
         <View>
