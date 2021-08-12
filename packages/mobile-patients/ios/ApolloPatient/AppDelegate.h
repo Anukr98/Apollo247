@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <TwilioChatClient/TwilioChatClient.h>
 @import UserNotifications;
-// @import ApolloVitalsFramework;
+@import ApolloVitalsFramework;
 #import <PushKit/PushKit.h>
 #import <AppTrackingTransparency/AppTrackingTransparency.h>
 

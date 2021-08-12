@@ -126,7 +126,7 @@
     
     [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type]; //sending payload to JS
     
-    // [RNCallKeep reportNewIncomingCall:appointmentId handle:name handleType:@"generic" hasVideo:isVideo localizedCallerName:name fromPushKit: YES payload:nil];
+    [RNCallKeep reportNewIncomingCall:appointmentId handle:name handleType:@"generic" hasVideo:isVideo localizedCallerName:name fromPushKit: YES payload:nil];
            
   } else if(payload && payload.dictionaryPayload[@"appointmentId"] != nil && payload.dictionaryPayload[@"disconnectCall"] != nil) {
     
@@ -136,8 +136,8 @@
     NSString *name = payload.dictionaryPayload[@"name"];
     
     // for now, showing callkit UI and then disconnecting until we find a fix for this
-    // [RNCallKeep reportNewIncomingCall:appointmentId handle:name handleType:@"generic" hasVideo:false localizedCallerName:@"Call Disconnecting..." fromPushKit: YES payload:nil];
-    // [RNCallKeep endCallWithUUID:appointmentId reason:2]; // CXCallEndedReasonRemoteEnded
+    [RNCallKeep reportNewIncomingCall:appointmentId handle:name handleType:@"generic" hasVideo:false localizedCallerName:@"Call Disconnecting..." fromPushKit: YES payload:nil];
+    [RNCallKeep endCallWithUUID:appointmentId reason:2]; // CXCallEndedReasonRemoteEnded
   }
 }
 

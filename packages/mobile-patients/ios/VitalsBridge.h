@@ -6,14 +6,14 @@
 // //  Copyright © 2019 Facebook. All rights reserved.
 // //
 
-// #import <Foundation/Foundation.h>
-// #import <React/RCTBridgeModule.h>
-// #import <React/RCTEventEmitter.h>
+#import <Foundation/Foundation.h>
+#import <React/RCTBridgeModule.h>
+#import <React/RCTEventEmitter.h>
 
-// NS_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
-// @interface VitalsBridge : RCTEventEmitter <RCTBridgeModule>
+@interface VitalsBridge : RCTEventEmitter <RCTBridgeModule>
 
-// @end
+@end
 
-// NS_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END
