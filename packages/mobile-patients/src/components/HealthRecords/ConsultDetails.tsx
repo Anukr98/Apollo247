@@ -446,10 +446,14 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
    * App Review And Rating
    * *****/
   const appReviewAndRating = async (data: any) => {
-    if (g(data, 'appointment', 'doctorInfo')) {
-      if (InAppReview.isAvailable()) {
-        await InAppReview.RequestInAppReview();
+    try {
+      if (g(data, 'appointment', 'doctorInfo')) {
+        if (InAppReview.isAvailable()) {
+          await InAppReview.RequestInAppReview();
+        }
       }
+    } catch (error) {
+      CommonBugFender('inAppRevireAfterGettingPrescription', error);
     }
   };
 

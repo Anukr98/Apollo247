@@ -231,12 +231,15 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
    * App Review And Rating
    * *****/
   const appReviewAndRating = async () => {
-    const { shipments } = orderInfo?.medicineOrderInput;
-    if (shipments?.[0].tatHours == '2hr | 0:00 | yes') {
-      if (InAppReview.isAvailable()) {
-        console.log('Riviewing....');
-        await InAppReview.RequestInAppReview();
+    try {
+      const { shipments } = orderInfo?.medicineOrderInput;
+      if (shipments?.[0].tatHours == '2hr | 0:00 | yes') {
+        if (InAppReview.isAvailable()) {
+          await InAppReview.RequestInAppReview();
+        }
       }
+    } catch (error) {
+      CommonBugFender('inAppRevireAfterPaymentForPharmacy', error);
     }
   };
 
