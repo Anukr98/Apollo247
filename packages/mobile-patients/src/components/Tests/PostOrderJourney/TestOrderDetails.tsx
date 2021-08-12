@@ -139,7 +139,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
   const [showInclusionStatus, setShowInclusionStatus] = useState<boolean>(false);
   const [showError, setError] = useState<boolean>(false);
- 
+
   const [phleboMin, setPhleboMin] = useState(0);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
 
@@ -240,7 +240,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       let response = await fetchOrderDetails(orderId);
       if (!!response && response?.data && !response?.errors) {
         let getOrderDetails = response?.data?.getDiagnosticOrderDetails?.ordersList;
-        setSlotDuration(getOrderDetails?.attributesObj?.slotDurationInMinutes || 45)
+        setSlotDuration(getOrderDetails?.attributesObj?.slotDurationInMinutes || 45);
         setOrderDetails(getOrderDetails);
         setError(false);
       } else {
@@ -409,9 +409,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   const renderOrderReportTat = (reportTat: any) => {
     return (
-      <View
-        style={styles.reportTatBottomview}
-      >
+      <View style={styles.reportTatBottomview}>
         <ClockIcon />
         <Text style={styles.reportOrderTextStyle}> {`Get reports by ${reportTat}`} </Text>
       </View>
@@ -547,8 +545,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                             },
                           ]}
                         >
-
-                          {nameFormater(getTestOrderStatusTextDetails(order?.orderStatus), 'default')}
+                          {nameFormater(
+                            getTestOrderStatusTextDetails(order?.orderStatus),
+                            'default'
+                          )}
                         </Text>
                       </View>
                       {isStatusDone ? (
@@ -560,7 +560,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                     {order?.orderStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN &&
                     !isStatusDone ? (
                       <Text style={styles.statusSubTextStyle}>
-                        {`Phlebotomist will arrive on ${slotDate}, ${slotTime1} - ${slotTime2}`}
+                        {`Apollo agent will arrive on ${slotDate}, ${slotTime1} - ${slotTime2}`}
                       </Text>
                     ) : null}
                     {sampleCollectedArray.includes(order?.orderStatus) && !isStatusDone ? (
@@ -930,7 +930,7 @@ const styles = StyleSheet.create({
   },
   buttonView: { margin: 10 },
   buttonStyleReport: { width: '85%', alignSelf: 'center', justifyContent: 'center' },
-  reportTatBottomview:{
+  reportTatBottomview: {
     backgroundColor: colors.TEST_CARD_BUTTOM_BG,
     padding: 10,
     width: '100%',
@@ -1016,7 +1016,7 @@ const styles = StyleSheet.create({
   },
   buttonStyle: {
     alignSelf: 'center',
-    marginVertical:10,
+    marginVertical: 10,
     width: '85%',
     marginLeft: 10,
     marginRight: 10,
