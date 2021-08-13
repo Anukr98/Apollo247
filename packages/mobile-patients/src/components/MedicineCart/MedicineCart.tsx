@@ -228,7 +228,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (!deliveryAddressId && cartItems.length > 0) {
       setCartItems!(cartItems.map((item) => ({ ...item, unserviceable: false })));
     } else if (deliveryAddressId && cartItems.length > 0) {
-      availabilityTat(false, true);
+      availabilityTat(true, true);
     }
   }, [deliveryAddressId]);
 
@@ -434,6 +434,19 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         };
         try {
           const res = await getDeliveryTAT247(tatInput);
+          const errorCode = res?.data?.errorCode;
+          if (errorCode == -1011) {
+            // error code for Unable to find PinCode in Master List
+            setloading(false);
+            setDeliveryAddressId?.('');
+            postPhamracyCartAddressSelectedFailure(
+              selectedAddress.zipcode!,
+              formatAddress(selectedAddress),
+              'No'
+            );
+            renderAlert(string.medicine_cart.pharmaAddressUnServiceableAlert);
+            return;
+          }
           const response = res?.data?.response;
           setOrders?.(response);
           let inventoryData: any = [];
