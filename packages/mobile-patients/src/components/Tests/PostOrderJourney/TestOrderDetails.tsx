@@ -10,7 +10,6 @@ import {
   ArrowRight,
   More,
   OrderPlacedIcon,
-  OrderTrackerSmallIcon,
   ClockIcon,
   OvalUpcoming,
 } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -34,14 +33,12 @@ import {
 import {
   getDiagnosticOrderDetails,
   getDiagnosticOrderDetailsVariables,
-  getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList,
+  getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
 import {
   downloadDiagnosticReport,
-  downloadDocument,
   g,
   getPatientNameById,
-  getTestOrderStatusText,
   getTestOrderStatusTextDetails,
   handleGraphQlError,
   nameFormater,
@@ -86,7 +83,6 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersListByMobile';
 import {
   getDiagnosticOrderDetailsByDisplayID,
   getDiagnosticOrderDetailsByDisplayIDVariables,
@@ -98,6 +94,7 @@ const DROP_DOWN_ARRAY_STATUS = [
 ];
 
 type orderStatus = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus;
+type orderLineItems = getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems;
 export interface TestOrderDetailsProps extends NavigationScreenProps {
   orderId: string;
   showOrderSummaryTab: boolean;
@@ -136,7 +133,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [slotDuration, setSlotDuration] = useState(0);
   const [loading1, setLoading] = useState<boolean>(true);
   const [orderLevelStatus, setOrderLevelStatus] = useState([] as any);
-  const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
   const [showInclusionStatus, setShowInclusionStatus] = useState<boolean>(false);
   const [showError, setError] = useState<boolean>(false);
 
@@ -352,7 +348,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       getObject?.map((item) => orderStatusList?.push(item));
     }
   }
-
+  console.log({ orderLevelStatus });
   const isReportGenerated = orderLevelStatus?.statusInclusions?.find(
     (item: any) => item?.orderStatus == DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED
   );
@@ -418,7 +414,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   const renderRefund = () => {
     const isOrderModified = orderDetails?.diagnosticOrderLineItems?.find(
-      (item) => !!item?.editOrderID && item?.editOrderID
+      (item: orderLineItems) => !!item?.editOrderID && item?.editOrderID
     );
     if (!!orderLevelStatus && !_.isEmpty(orderLevelStatus) && refundStatusArr?.length > 0) {
       return (
@@ -436,7 +432,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const getFormattedTime = (time: string) => {
-    return moment(time).format('hh:mm a');
+    return moment(time).format('hh:mm A');
   };
 
   const renderGraphicalStatus = (order: any, index: number, isStatusDone: boolean, array: any) => {
@@ -458,6 +454,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                   : isStatusDone
                   ? theme.colors.SKY_BLUE
                   : 'rgba(0,179,142,0.3)',
+              height: isStatusDone ? 0 : 60,
             },
           ]}
         />
@@ -470,13 +467,13 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       <View style={{ marginLeft: 5 }}>
         <Text style={styles.dateTimeStyle}>
           {!!data?.statusDate
-            ? getFormattedTime(data?.statusDate)
-            : getFormattedTime(orderDetails?.createdDate)}
+            ? getFormattedDate(data?.statusDate)
+            : getFormattedDate(orderDetails?.createdDate)}
         </Text>
         <Text style={styles.timeStyle}>
           {!!data?.statusDate
-            ? getFormattedDate(data?.statusDate)
-            : getFormattedDate(orderDetails?.createdDate)}
+            ? getFormattedTime(data?.statusDate)
+            : getFormattedTime(orderDetails?.createdDate)}
         </Text>
       </View>
     );
@@ -529,8 +526,14 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                 }}
               >
                 {renderGraphicalStatus(order, index, isStatusDone, array)}
-                <View style={{ marginBottom: 8, flex: 1 }}>
-                  <View style={[isStatusDone ? styles.statusDoneView : { padding: 10 }]}>
+                <View style={{ marginBottom: 8, flex: 1, backgroundColor: 'pink' }}>
+                  <View
+                    style={[
+                      isStatusDone
+                        ? styles.statusDoneView
+                        : { padding: 10, backgroundColor: 'yellow' },
+                    ]}
+                  >
                     <View style={styles.flexRow}>
                       <View style={{ width: '75%' }}>
                         <Text
@@ -958,12 +961,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: 28,
     marginRight: 18,
+    backgroundColor: 'green',
   },
   itemTextStyle: {
     marginHorizontal: 10,
     ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE),
   },
-  verticalProgressLine: { flex: 1, width: 6, alignSelf: 'center' },
+  verticalProgressLine: { flex: 1, width: 5, alignSelf: 'center' },
   statusIconStyle: {
     height: 28,
     width: 28,

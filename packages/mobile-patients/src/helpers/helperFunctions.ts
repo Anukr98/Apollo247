@@ -2722,6 +2722,9 @@ export const getTestOrderStatusTextDetails = (status: string, customText?: boole
     case DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED:
       statusString = 'Partial Order Completed';
       break;
+    case DIAGNOSTIC_ORDER_STATUS.ORDER_MODIFIED:
+      statusString = 'Order modification'
+      break;
     default:
       statusString = status || '';
       statusString?.replace(/[_]/g, ' ');

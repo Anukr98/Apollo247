@@ -1885,6 +1885,8 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           distanceCharges
           homeCollectionCharges
           slotDurationInMinutes
+          expectedReportGenerationTime
+          reportTATMessage
         }
         diagnosticOrderLineItems {
           id
@@ -2250,6 +2252,8 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           slotDurationInMinutes
           homeCollectionCharges
           distanceCharges
+          expectedReportGenerationTime
+          reportTATMessage
         }
         patientAddressObj {
           addressLine1
@@ -4978,6 +4982,28 @@ export const GET_ORDER_LEVEL_DIAGNOSTIC_STATUS = gql`
       statusHistory {
         statusDate
         orderStatus
+        subStatus
+        attributes{
+          itemsModified{
+            itemId
+            itemName
+            price
+            isRemoved
+          }
+          refund{
+            txnID
+            amount
+            status
+            reason
+            amount
+            items{
+              itemId
+              itemName
+              price
+              isRemoved
+            }
+          }
+        }
       }
       statusInclusions {
         statusDate
