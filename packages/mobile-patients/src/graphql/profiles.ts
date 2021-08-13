@@ -5708,3 +5708,15 @@ export const GET_DIAGNOSTIC_EXPRESS_SLOTS_INFO  = gql`
   }
 `;
 
+export const INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2 = gql`
+  mutation initiateDiagonsticHCOrderPaymentv2(
+    $diagnosticInitiateOrderPaymentInput: DiagnosticInitiateOrderPaymentv2!
+  ) {
+    initiateDiagonsticHCOrderPaymentv2(
+      diagnosticInitiateOrderPaymentInput: $diagnosticInitiateOrderPaymentInput
+    ) {
+      status
+    }
+  }
+`;
+
