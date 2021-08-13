@@ -36,7 +36,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import {
   GET_PAYMENT_METHODS,
   VERIFY_VPA,
-  INITIATE_DIAGNOSTIC_ORDER_PAYMENT,
+  INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -267,13 +267,13 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     //changed this api from INITIATE_DIAGNOSTIC_ORDER_PAYMENT to INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2
     try {
       const input: initiateDiagonsticHCOrderPaymentv2Variables = {
-        diagnosticInitiateOrderPaymentInput: { paymentOrderID: orderDetails?.orderId },
+        diagnosticInitiateOrderPaymentInput: { paymentOrderID: paymentId },
       };
       const res = await client.mutate<
         initiateDiagonsticHCOrderPaymentv2,
         initiateDiagonsticHCOrderPaymentv2Variables
       >({
-        mutation: INITIATE_DIAGNOSTIC_ORDER_PAYMENT,
+        mutation: INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2,
         variables: input,
         fetchPolicy: 'no-cache',
       });
