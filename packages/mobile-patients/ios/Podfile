@@ -118,6 +118,7 @@ target 'ApolloPatient' do
   pod 'react-native-html-to-pdf', :path => '../node_modules/react-native-html-to-pdf'
 
   pod 'clevertap-react-native', :path => '../node_modules/clevertap-react-native'
+  
   pod 'react-native-in-app-review', :path => '../node_modules/react-native-in-app-review'
 
   target 'NotificationService' do
