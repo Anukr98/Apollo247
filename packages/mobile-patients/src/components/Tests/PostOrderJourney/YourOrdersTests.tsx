@@ -1493,7 +1493,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             ? order?.slotDateTimeInUTC
             : getSlotStartTime(order?.slotTimings)
         }
-        slotDuration={order?.attributesObj?.slotDurationInMinutes || 45}
+        slotDuration={
+          order?.attributesObj?.slotDurationInMinutes || AppConfig.Configuration.DEFAULT_PHELBO_ETA
+        }
         isPrepaid={order?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT}
         isCancelled={currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
         cancelledReason={

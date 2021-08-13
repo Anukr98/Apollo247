@@ -1626,7 +1626,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setLoading?.(true);
     const modifyBookingInput: saveModifyDiagnosticOrderInput = {
       orderId: modifiedOrder?.id,
-      collectionCharges: modifiedOrder?.collectionCharges, //no need to pass newCharges as of now
+      collectionCharges: !!modifiedOrder?.collectionCharges ? modifiedOrder?.collectionCharges : 0, //no need to pass newCharges as of now
       bookingSource: DiagnosticsBookingSource.MOBILE,
       deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
       items: createItemPrice(cartItems)?.itemPricingObject, //total (prev+ curr)

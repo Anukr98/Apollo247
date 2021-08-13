@@ -15,9 +15,12 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import _ from 'lodash';
 import {
+  AppConfig,
   DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS,
   DIAGNOSTIC_ORDER_FAILED_STATUS,
   DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
+  DIAGNOSTIC_SAMPLE_COLLECTED_STATUS,
+  DIAGNOSTIC_SUB_STATUS_TO_SHOW,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   GetPatientFeedback,
@@ -97,7 +100,6 @@ export interface TestOrderDetailsProps extends NavigationScreenProps {
   orderId: string;
   showOrderSummaryTab: boolean;
   goToHomeOnBack: boolean;
-  selectedTest?: any;
   selectedOrder: object;
   refundStatusArr?: any;
   refundTransactionId?: string;
@@ -112,7 +114,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
   const disableTrackOrderTab = props.navigation.getParam('disableTrackOrder');
-  const selectedTest = props.navigation.getParam('selectedTest');
   const selectedOrder = props.navigation.getParam('selectedOrder');
   const refundStatusArr = props.navigation.getParam('refundStatusArr');
   const source = props.navigation.getParam('comingFrom');
@@ -133,8 +134,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [orderLevelStatus, setOrderLevelStatus] = useState([] as any);
   const [showInclusionStatus, setShowInclusionStatus] = useState<boolean>(false);
   const [showError, setError] = useState<boolean>(false);
+  const [showModifiedItems, setShowModifiedItems] = useState<boolean>(false);
 
-  const [phleboMin, setPhleboMin] = useState(0);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
 
   const [orderDetails, setOrderDetails] = useState([] as any);
@@ -201,13 +202,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       setError(true);
     }
   };
-  const sampleCollectedArray = [
-    DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
-    DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
-    DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB,
-    DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
-    DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED,
-  ];
 
   async function callOrderLevelStatusApi(orderId: string) {
     try {
@@ -234,7 +228,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       let response = await fetchOrderDetails(orderId);
       if (!!response && response?.data && !response?.errors) {
         let getOrderDetails = response?.data?.getDiagnosticOrderDetails?.ordersList;
-        setSlotDuration(getOrderDetails?.attributesObj?.slotDurationInMinutes || 45);
+        setSlotDuration(
+          getOrderDetails?.attributesObj?.slotDurationInMinutes ||
+            AppConfig.Configuration.DEFAULT_PHELBO_ETA
+        );
         setOrderDetails(getOrderDetails);
         setError(false);
       } else {
@@ -451,7 +448,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                   : isStatusDone
                   ? theme.colors.SKY_BLUE
                   : 'rgba(0,179,142,0.3)',
-              height: isStatusDone ? 0 : 60,
             },
           ]}
         />
@@ -508,14 +504,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                 }}
               >
                 {renderGraphicalStatus(order, index, isStatusDone, array)}
-                <View style={{ marginBottom: 8, flex: 1, backgroundColor: 'pink' }}>
-                  <View
-                    style={[
-                      isStatusDone
-                        ? styles.statusDoneView
-                        : { padding: 10, backgroundColor: 'yellow' },
-                    ]}
-                  >
+                <View style={{ marginBottom: 8, flex: 1 }}>
+                  <View style={[isStatusDone ? styles.statusDoneView : { padding: 10 }]}>
                     <View style={styles.flexRow}>
                       <View style={{ width: '75%' }}>
                         <Text
@@ -535,6 +525,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                             'default'
                           )}
                         </Text>
+                        {renderSubStatus(order)}
                       </View>
                       {isStatusDone ? (
                         renderCustomDescriptionOrDateAndTime(order)
@@ -548,7 +539,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                         {`Apollo agent will arrive on ${slotDate}, ${slotTime1} - ${slotTime2}`}
                       </Text>
                     ) : null}
-                    {sampleCollectedArray.includes(order?.orderStatus) && !isStatusDone ? (
+                    {DIAGNOSTIC_SAMPLE_COLLECTED_STATUS?.includes(order?.orderStatus) &&
+                    !isStatusDone ? (
                       <Text style={styles.statusSubTextStyle}>{`Invoice to be Generated`}</Text>
                     ) : null}
 
@@ -581,6 +573,86 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       <>
         <Spearator style={styles.horizontalSeparator} />
         <Text style={styles.refundTxnId}>Txn id: {refundTransactionId}</Text>
+      </>
+    );
+  };
+
+  /**
+   * show this only for modification + prepaid negative cases
+   */
+  const renderSubStatus = (order: any) => {
+    return (
+      <>
+        {order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_MODIFIED &&
+        DIAGNOSTIC_SUB_STATUS_TO_SHOW?.includes(order?.subStatus) ? (
+          <View style={{ width: '60%', marginVertical: 4 }}>
+            <StatusCard
+              titleText={order?.subStatus}
+              titleStyle={{
+                ...theme.fonts.IBMPlexSansMedium(11),
+              }}
+            />
+            {!!order?.attributes?.refund && order?.attributes?.refund?.length > 0
+              ? renderRefundDetails(order)
+              : null}
+          </View>
+        ) : (
+          renderItemsView(order)
+        )}
+      </>
+    );
+  };
+
+  //change the type
+  //this needs to be handled
+  const renderRefundDetails = (order: any) => {
+    return (
+      <View>
+        <Text></Text>
+      </View>
+    );
+  };
+
+  const renderItemsView = (order: any) => {
+    const itemsLength = order?.attributes?.itemsModified;
+    const addedItems =
+      !!itemsLength && itemsLength?.length > 0 && itemsLength?.filter((item) => !item?.isRemoved);
+    const removedItems =
+      !!itemsLength && itemsLength?.length > 0 && itemsLength?.filter((item) => item?.isRemoved);
+    const isAdded = !!addedItems && addedItems?.length > 0;
+    return (
+      <>
+        {!!itemsLength && itemsLength > 0 ? (
+          <View>
+            <Spearator style={styles.horizontalSeparator} />
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <TouchableOpacity
+                onPress={() => setShowModifiedItems(!showModifiedItems)}
+                activeOpacity={1}
+              >
+                <Text>
+                  {isAdded ? addedItems?.length : removedItems?.length}{' '}
+                  {isAdded ? 'added' : 'removed'} items in cart
+                </Text>
+                <ArrowRight
+                  style={{
+                    transform: [{ rotate: showModifiedItems ? '270deg' : '90deg' }],
+                    tintColor: 'black',
+                  }}
+                />
+              </TouchableOpacity>
+              {showModifiedItems &&
+                (isAdded ? addedItems : removedItems)?.map((items: any) => {
+                  return (
+                    <View style={{ justifyContent: 'space-between', flexDirection: 'row' }}>
+                      <Text>{items?.itemName}</Text>
+                      <Text>{items?.price}</Text>
+                    </View>
+                  );
+                })}
+            </View>
+          </View>
+        ) : null}
       </>
     );
   };
@@ -943,13 +1015,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: 28,
     marginRight: 18,
-    backgroundColor: 'green',
   },
   itemTextStyle: {
     marginHorizontal: 10,
     ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE),
   },
-  verticalProgressLine: { flex: 1, width: 5, alignSelf: 'center' },
+  verticalProgressLine: { flex: 1, width: 4, alignSelf: 'center' },
   statusIconStyle: {
     height: 28,
     width: 28,
