@@ -349,7 +349,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     boolean
   >(true);
   const [consultMode, setConsultMode] = useState<ConsultMode>(ConsultMode.ONLINE);
-  const [onlineSelected, setOnlineSelected] = useState<boolean>(true);
+
   const [doctorDetails, setDoctorDetails] = useState<getDoctorDetailsById_getDoctorDetailsById>();
   const [
     ctaBannerText,
@@ -414,6 +414,18 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     doctorDetails?.availableModes?.filter(
       (consultMode: ConsultMode) => consultMode === ConsultMode.BOTH
     );
+
+  const [onlineSelected, setOnlineSelected] = useState<boolean>(true);
+
+  console.log('onlineselected just below initialization', onlineSelected);
+  console.log('onlineselect props', JSON.stringify(props));
+  // onlineSelected,
+  // ConsultMode.BOTH === consultModeSelected
+  //   ? true
+  //   : ConsultMode.ONLINE === consultModeSelected
+  //   ? true
+  //   : false
+
   const rectangularIconHeight = isCircleDoctor
     ? Platform.OS == 'android'
       ? showCircleSubscribed
@@ -782,7 +794,21 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       } else {
         setConsultType(ConsultMode.BOTH);
       }
-      consultModeSelected && setOnlineSelected(consultModeSelected === ConsultMode.ONLINE);
+      consultModeSelected &&
+        setOnlineSelected(
+          ConsultMode.BOTH === consultModeSelected
+            ? true
+            : ConsultMode.ONLINE === consultModeSelected
+            ? true
+            : false
+        );
+
+      console.log(
+        'onlineselected consultmodeselected',
+        onlineSelected,
+        consultModeSelected,
+        consultModeSelected === ConsultMode.ONLINE
+      );
     } catch (error) {}
   };
 
@@ -1050,6 +1076,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     style={{ height: consultViewHeight }}
                     onPress={() => {
                       setOnlineSelected(true);
+
+                      console.log('onlineselected online click', onlineSelected);
                       set_follow_up_chat_message_visibility(true);
                       const eventAttributes:
                         | WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED]
@@ -1198,6 +1226,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.TYPE_OF_CONSULT_SELECTED, eventAttributes);
     postCleverTapEvent(CleverTapEventName.CONSULT_MODE_SELECTED, eventAttributes);
     !isPayrollDoctor && setOnlineSelected(false);
+
+    console.log('onlineselected on physical click', onlineSelected);
   };
 
   const circlePlanWebEngage = (eventName: any) => {
