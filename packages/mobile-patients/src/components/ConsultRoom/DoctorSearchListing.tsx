@@ -1432,6 +1432,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: rowData.id,
               callSaveSearch: callSaveSearch,
+              consultModeSelected: rowData?.consultMode,
             });
           } else {
             props.navigation.navigate(AppRoutes.DoctorDetailsBookingOnRequest, {
