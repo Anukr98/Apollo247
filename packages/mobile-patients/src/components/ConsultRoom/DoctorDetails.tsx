@@ -802,13 +802,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             ? true
             : false
         );
-
-      console.log(
-        'onlineselected consultmodeselected',
-        onlineSelected,
-        consultModeSelected,
-        consultModeSelected === ConsultMode.ONLINE
-      );
     } catch (error) {}
   };
 
@@ -1076,8 +1069,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     style={{ height: consultViewHeight }}
                     onPress={() => {
                       setOnlineSelected(true);
-
-                      console.log('onlineselected online click', onlineSelected);
                       set_follow_up_chat_message_visibility(true);
                       const eventAttributes:
                         | WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED]
