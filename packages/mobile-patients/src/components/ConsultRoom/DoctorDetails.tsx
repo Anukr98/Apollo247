@@ -417,15 +417,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const [onlineSelected, setOnlineSelected] = useState<boolean>(true);
 
-  console.log('onlineselected just below initialization', onlineSelected);
-  console.log('onlineselect props', JSON.stringify(props));
-  // onlineSelected,
-  // ConsultMode.BOTH === consultModeSelected
-  //   ? true
-  //   : ConsultMode.ONLINE === consultModeSelected
-  //   ? true
-  //   : false
-
   const rectangularIconHeight = isCircleDoctor
     ? Platform.OS == 'android'
       ? showCircleSubscribed
@@ -1217,8 +1208,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.TYPE_OF_CONSULT_SELECTED, eventAttributes);
     postCleverTapEvent(CleverTapEventName.CONSULT_MODE_SELECTED, eventAttributes);
     !isPayrollDoctor && setOnlineSelected(false);
-
-    console.log('onlineselected on physical click', onlineSelected);
   };
 
   const circlePlanWebEngage = (eventName: any) => {
