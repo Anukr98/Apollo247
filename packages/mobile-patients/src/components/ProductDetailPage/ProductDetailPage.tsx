@@ -708,6 +708,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       setdeliveryError(pincodeServiceableItemOutOfStockMsg);
       setdeliveryTime('');
       setshowDeliverySpinner(false);
+      setIsInStock(false);
     }
   };
 
