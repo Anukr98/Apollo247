@@ -267,7 +267,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
     //changed this api from INITIATE_DIAGNOSTIC_ORDER_PAYMENT to INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2
     try {
       const input: initiateDiagonsticHCOrderPaymentv2Variables = {
-        diagnosticInitiateOrderPaymentInput: { paymentOrderID: orderDetails?.orderId },
+        diagnosticInitiateOrderPaymentInput: { paymentOrderID: paymentId },
       };
       const res = await client.mutate<
         initiateDiagonsticHCOrderPaymentv2,
