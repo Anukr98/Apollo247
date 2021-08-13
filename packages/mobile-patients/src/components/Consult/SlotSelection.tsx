@@ -613,7 +613,8 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   };
 
   const renderSlotsDatesItems = (item: SlotsType, index: number) => {
-    if (item?.count === 0 && index === selectedDateIndexHiglight) handleDateSelection(item, index);
+    if (item?.count === 0 && index === selectedDateIndexHiglight)
+      handleDateSelection(item, index + 1);
     const textColor =
       index === selectedDateIndexHiglight || item?.count === 0
         ? 'white'
