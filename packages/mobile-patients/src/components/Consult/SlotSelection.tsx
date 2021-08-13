@@ -345,6 +345,8 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           },
         },
       });
+
+      console.log('csk online', JSON.stringify(res));
       setTimeArray(defaultTimeData);
       const availableSlots = res?.data?.getDoctorAvailableSlots?.availableSlots;
       const slotCounts = res?.data?.getDoctorAvailableSlots?.slotCounts;
@@ -375,6 +377,8 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           },
         },
       });
+
+      console.log('csk phy', JSON.stringify(res));
 
       const availableSlots = res?.data?.getDoctorPhysicalAvailableSlots?.availableSlots;
       const slotCounts = res?.data?.getDoctorPhysicalAvailableSlots?.slotCounts;
@@ -612,6 +616,9 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
   };
 
   const renderSlotsDatesItems = (item: SlotsType, index: number) => {
+    //console.log('csk i', index, JSON.stringify(item));
+    if (item?.count === 0 && index === selectedDateIndexHiglight)
+      setSelectedDateIndexHighlight(index + 1);
     const textColor =
       index === selectedDateIndexHiglight || item?.count === 0
         ? 'white'
