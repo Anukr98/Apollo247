@@ -13,6 +13,8 @@ export interface getDiagnosticOrderDetailsByDisplayID_getDiagnosticOrderDetailsB
   __typename: "AttributesObj";
   homeCollectionCharges: number | null;
   slotDurationInMinutes: number | null;
+  initialCollectionCharges: number | null;
+  distanceCharges: number | null;
 }
 
 export interface getDiagnosticOrderDetailsByDisplayID_getDiagnosticOrderDetailsByDisplayID_ordersList_diagnosticOrdersStatus {

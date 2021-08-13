@@ -4941,6 +4941,8 @@ export const GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID = gql`
         attributesObj {
           homeCollectionCharges
           slotDurationInMinutes
+          initialCollectionCharges
+          distanceCharges
         }
         diagnosticOrdersStatus {
           orderStatus

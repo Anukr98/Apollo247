@@ -25,7 +25,6 @@ import {
   GetPatientFeedbackVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetPatientFeedback';
 import {
-  FIND_DIAGNOSTIC_SETTINGS,
   GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID,
   GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
   GET_ORDER_LEVEL_DIAGNOSTIC_STATUS,
@@ -91,7 +90,6 @@ import {
   getDiagnosticOrderDetailsByDisplayID,
   getDiagnosticOrderDetailsByDisplayIDVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetailsByDisplayID';
-import { findDiagnosticSettings } from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
 const DROP_DOWN_ARRAY_STATUS = [
   DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED,
   DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED,
@@ -266,7 +264,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     if (currentPatient) {
       updateRateDeliveryBtnVisibility();
     }
-    fetchFindDiagnosticSettings();
   }, []);
 
   useEffect(() => {
@@ -436,7 +433,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const getFormattedTime = (time: string) => {
-    return moment(time).format('hh:mm a');
+    return moment(time).format('hh:mm A');
   };
 
   const renderGraphicalStatus = (order: any, index: number, isStatusDone: boolean, array: any) => {
@@ -481,21 +478,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       </View>
     );
   };
-  const fetchFindDiagnosticSettings = async () => {
-    try {
-      const response = await client.query<findDiagnosticSettings>({
-        query: FIND_DIAGNOSTIC_SETTINGS,
-        variables: {
-          phleboETAInMinutes: 0,
-        },
-        fetchPolicy: 'no-cache',
-      });
-      const phleboMin = g(response, 'data', 'findDiagnosticSettings', 'phleboETAInMinutes') || 45;
-      setPhleboMin(phleboMin);
-    } catch (error) {
-      CommonBugFender('ReviewOrder_fetchFindDiagnosticSettings', error);
-    }
-  };
 
   const renderOrderTracking = () => {
     newList = newList =
@@ -516,7 +498,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             const slotDate = moment(selectedOrder?.slotDateTimeInUTC).format('Do MMM');
             const slotTime1 = moment(selectedOrder?.slotDateTimeInUTC).format('hh:mm A');
             const slotTime2 = moment(selectedOrder?.slotDateTimeInUTC)
-              .add(phleboMin, 'minutes')
+              .add(slotDuration, 'minutes')
               .format('hh:mm A');
             return (
               <View
