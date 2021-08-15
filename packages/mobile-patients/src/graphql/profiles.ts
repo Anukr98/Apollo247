@@ -6036,3 +6036,13 @@ export const GET_DIAGNOSTIC_PAYMENT_SETTINGS = gql`
     }
   }
 `;
+
+export const POST_WEB_ENGAGE = gql`
+  mutation postConsultEventToDoctor($doctorConsultEventInput: PatientConsultEventToDoctorInput!) {
+    postConsultEventToDoctor(doctorConsultEventInput: $doctorConsultEventInput) {
+      response {
+        status
+      }
+    }
+  }
+`;

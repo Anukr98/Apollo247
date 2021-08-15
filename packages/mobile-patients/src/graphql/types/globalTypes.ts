@@ -2044,6 +2044,23 @@ export interface CowinRegistrationInput {
   txnId?: string | null;
 }
 
+export enum WebEngageEvent {
+  DOCTOR_IN_CHAT_WINDOW = "DOCTOR_IN_CHAT_WINDOW",
+  DOCTOR_LEFT_CHAT_WINDOW = "DOCTOR_LEFT_CHAT_WINDOW",
+  DOCTOR_SENT_MESSAGE = "DOCTOR_SENT_MESSAGE",
+}
+
+export interface PatientConsultEventToDoctorInput {
+  mobileNumber: string;
+  eventName: WebEngageEvent;
+  consultID: string;
+  displayId: string;
+  consultMode: ConsultMode;
+  doctorFullName: string;
+  message?: string | null;
+  chatFormat?: string | null;
+}
+
 //==============================================================
 // END Enums and Input Objects
 //==============================================================
