@@ -320,6 +320,13 @@ const styles = StyleSheet.create({
     left: -3,
     top: -2,
   },
+  onlineCardView: {
+    width: 200
+  },
+  availablityCapsuleText: {
+    marginTop: -5,
+    width: 140
+    }
 });
 type Appointments = {
   date: string;
@@ -1032,6 +1039,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               <View
                 style={[
                   styles.onlineConsultView,
+                  {justifyContent: isPhysical?.length ? 'center' : 'flex-start'},
                   isPayrollDoctor || (isBoth?.length === 0 && isPhysical?.length === 0)
                     ? styles.consultModeCard
                     : {},
@@ -1088,45 +1096,45 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                         );
                       }}
                     >
-                      <View>
-                        <Text style={styles.onlineConsultLabel}>Consult In-App</Text>
-                        {isCircleDoctor && onlineConsultMRPPrice > 0 ? (
-                          renderCareDoctorPricing(ConsultMode.ONLINE)
-                        ) : (
-                          <Text style={styles.onlineConsultAmount}>
-                            {Number(VirtualConsultationFee) <= 0 ||
-                            VirtualConsultationFee === doctorDetails.onlineConsultationFees ? (
-                              <Text>{`${string.common.Rs}${convertNumberToDecimal(
-                                doctorDetails?.onlineConsultationFees
-                              )}`}</Text>
-                            ) : (
-                              <>
-                                <Text
-                                  style={{
-                                    textDecorationLine: 'line-through',
-                                    textDecorationStyle: 'solid',
-                                  }}
-                                >
-                                  {`(${string.common.Rs}${convertNumberToDecimal(
-                                    doctorDetails?.onlineConsultationFees
-                                  )})`}
-                                </Text>
-                                <Text>
-                                  {' '}
-                                  {string.common.Rs}
-                                  {convertNumberToDecimal(VirtualConsultationFee)}
-                                </Text>
-                              </>
-                            )}
-                          </Text>
-                        )}
-                        <AvailabilityCapsule
-                          titleTextStyle={{ paddingHorizontal: 7 }}
-                          styles={{ marginTop: -5 }}
-                          availableTime={availableTime}
-                          availNowText={ctaBannerText?.AVAILABLE_NOW || ''}
-                        />
-                      </View>
+                    <View style={styles.onlineCardView}>
+                      <Text style={styles.onlineConsultLabel}>Consult In-App</Text>
+                      {isCircleDoctor && onlineConsultMRPPrice > 0 ? (
+                        renderCareDoctorPricing(ConsultMode.ONLINE)
+                      ) : (
+                        <Text style={styles.onlineConsultAmount}>
+                          {Number(VirtualConsultationFee) <= 0 ||
+                          VirtualConsultationFee === doctorDetails.onlineConsultationFees ? (
+                            <Text>{`${string.common.Rs}${convertNumberToDecimal(
+                              doctorDetails?.onlineConsultationFees
+                            )}`}</Text>
+                          ) : (
+                            <>
+                              <Text
+                                style={{
+                                  textDecorationLine: 'line-through',
+                                  textDecorationStyle: 'solid',
+                                }}
+                              >
+                                {`(${string.common.Rs}${convertNumberToDecimal(
+                                  doctorDetails?.onlineConsultationFees
+                                )})`}
+                              </Text>
+                              <Text>
+                                {' '}
+                                {string.common.Rs}
+                                {convertNumberToDecimal(VirtualConsultationFee)}
+                              </Text>
+                            </>
+                          )}
+                        </Text>
+                      )}
+                      <AvailabilityCapsule
+                        titleTextStyle={{ paddingHorizontal: 7 }}
+                        styles={styles.availablityCapsuleText}
+                        availableTime={availableTime}
+                        availNowText={ctaBannerText?.AVAILABLE_NOW || ''}
+                      />
+                    </View>
                     </TouchableOpacity>
                   </View>
                 ) : null}
@@ -1145,12 +1153,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     {!onlineSelected && (
                       <RectangularIcon
                         resizeMode={'stretch'}
-                        style={[styles.rectangularView, { height: rectangularIconHeight }]}
+                        style={[styles.rectangularView, {height: rectangularIconHeight}]}
                       />
                     )}
                     <TouchableOpacity
                       activeOpacity={1}
-                      style={{ height: consultViewHeight, marginRight: 6 }}
+                      style={{ height: consultViewHeight, marginRight: 6, alignItems: 'center' }}
                       onPress={() => onPressMeetInPersonCard()}
                     >
                       <View>
