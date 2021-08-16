@@ -34,6 +34,7 @@ import {
   getDiagnosticOrderDetails,
   getDiagnosticOrderDetailsVariables,
   getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList,
+  getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
 import {
   downloadDiagnosticReport,
@@ -41,7 +42,6 @@ import {
   g,
   getPatientNameById,
   getTestOrderStatusText,
-  getTestOrderStatusTextDetails,
   handleGraphQlError,
   nameFormater,
   navigateToScreenWithEmptyStack,
@@ -96,6 +96,7 @@ const DROP_DOWN_ARRAY_STATUS = [
 ];
 
 type orderStatus = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus;
+type orderLineItems = getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems;
 export interface TestOrderDetailsProps extends NavigationScreenProps {
   orderId: string;
   showOrderSummaryTab: boolean;
@@ -407,15 +408,15 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const renderOrderReportTat = (reportTat: any) => {
     return (
       <View style={styles.reportTatBottomview}>
-        <ClockIcon />
-        <Text style={styles.reportOrderTextStyle}> {`Get reports by ${reportTat}`} </Text>
+        <ClockIcon style={styles.clockIconStyle} />
+        <Text style={styles.reportOrderTextStyle}> {reportTat} </Text>
       </View>
     );
   };
 
   const renderRefund = () => {
     const isOrderModified = orderDetails?.diagnosticOrderLineItems?.find(
-      (item) => !!item?.editOrderID && item?.editOrderID
+      (item: orderLineItems) => !!item?.editOrderID && item?.editOrderID
     );
     if (!!orderLevelStatus && !_.isEmpty(orderLevelStatus) && refundStatusArr?.length > 0) {
       return (
@@ -527,10 +528,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                             },
                           ]}
                         >
-                          {nameFormater(
-                            getTestOrderStatusTextDetails(order?.orderStatus),
-                            'default'
-                          )}
+                          {nameFormater(getTestOrderStatusText(order?.orderStatus), 'title')}
                         </Text>
                       </View>
                       {isStatusDone ? (
@@ -548,6 +546,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                     {sampleCollectedArray.includes(order?.orderStatus) && !isStatusDone ? (
                       <Text style={styles.statusSubTextStyle}>{`Invoice to be Generated`}</Text>
                     ) : null}
+                    {sampleCollectedArray.includes(order?.orderStatus) &&
+                    isStatusDone &&
+                    orderDetails?.invoiceURL
+                      ? renderInvoiceGenerated()
+                      : null}
 
                     {REFUND_STATUSES.SUCCESS === order?.orderStatus
                       ? renderTransactionDetails()
@@ -569,6 +572,21 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         </View>
         {renderRefund()}
         <View style={{ height: 60 }} />
+      </View>
+    );
+  };
+
+  const renderInvoiceGenerated = () => {
+    return (
+      <View style={styles.viewInvoiceView}>
+        <Text style={styles.invoiceGeneratedText}>Invoice is generated</Text>
+        <TouchableOpacity
+          onPress={onPressInvoice}
+          activeOpacity={1}
+          style={{ justifyContent: 'center' }}
+        >
+          <Text style={styles.yellowText}>VIEW INVOICE</Text>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -688,7 +706,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const renderBottomSection = (order: any) => {
-    return <View>{!isReportGenerated ? renderButtons() : null}</View>;
+    return <View>{isReportGenerated ? renderButtons() : null}</View>;
   };
 
   const renderButtons = () => {
@@ -696,9 +714,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
     return (
       <View style={{ flexDirection: 'column' }}>
-        {selectedOrder?.attributesObj?.reportGenerationTime
-          ? renderOrderReportTat(selectedOrder?.attributesObj?.reportGenerationTime)
-          : null}
         <Button
           style={styles.buttonStyle}
           onPress={() => _onPressViewReportAction()}
@@ -863,6 +878,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       </MaterialMenu>
     );
   };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -891,6 +907,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
           {renderError()}
         </ScrollView>
+        {selectedTab == string.orders.trackOrder && orderDetails?.attributesObj?.reportTATMessage
+          ? renderOrderReportTat(orderDetails?.attributesObj?.reportTATMessage)
+          : null}
         {selectedTab == string.orders.trackOrder ? renderBottomSection(orderDetails) : null}
       </SafeAreaView>
 
@@ -945,7 +964,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE),
   },
-  verticalProgressLine: { flex: 1, width: 6, alignSelf: 'center' },
+  verticalProgressLine: { flex: 1, width: 5, alignSelf: 'center' },
   statusIconStyle: {
     height: 28,
     width: 28,
@@ -981,8 +1000,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   reportOrderTextStyle: {
-    ...theme.fonts.IBMPlexSansMedium(15),
+    ...theme.fonts.IBMPlexSansMedium(14),
     color: colors.SHERPA_BLUE,
+    marginHorizontal: 6,
+    lineHeight: 16,
+    letterSpacing: 0.04,
   },
   statusSubTextStyle: {
     ...theme.fonts.IBMPlexSansRegular(10),
@@ -1058,4 +1080,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   horizontalSeparator: { marginTop: 8, marginBottom: 8 },
+  clockIconStyle: { height: 20, width: 20, resizeMode: 'contain' },
+  invoiceGeneratedText: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: theme.colors.SHERPA_BLUE,
+    lineHeight: 16,
+    alignSelf: 'center',
+  },
+  viewInvoiceView: {
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    marginVertical: 12,
+    height: 30,
+  },
 });
