@@ -82,6 +82,7 @@ import { CartItemCard } from '@aph/mobile-patients/src/components/Tests/componen
 import {
   diagnosticServiceability,
   getDiagnosticCartRecommendations,
+  getReportTAT,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   findDiagnosticsByItemIDsAndCityID,
@@ -183,6 +184,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   //check for the modify flow...
   const [itemSelectedFromWidget, setItemSelectedFromWidget] = useState([] as any);
   const [widgetSelectedItem, setWidgetSelectedItem] = useState([] as any);
+  const [reportTat, setReportTat] = useState([] as any);
 
   const isCartPresent = isDiagnosticSelectedCartEmpty(
     isModifyFlow ? modifiedPatientCart : patientCartItems
@@ -285,6 +287,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   useEffect(() => {
     if (cartItems?.length > 0 && cartItemsWithId?.length > 0) {
       const itemIds = isModifyFlow ? cartItemsWithId.concat(modifiedOrderItemIds) : cartItemsWithId;
+      fetchReportTat(itemIds);
       fetchTestReportGenDetails(itemIds);
       fetchCartPageRecommendations(itemIds);
     }
@@ -354,6 +357,32 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       //show top booked tests
     }
   };
+
+  async function fetchReportTat(_cartItemId: string | number[]) {
+    const removeSpaces =
+      typeof _cartItemId == 'string' ? _cartItemId?.replace(/\s/g, '')?.split(',') : null;
+    const listOfIds =
+      typeof _cartItemId == 'string' ? removeSpaces?.map((item) => Number(item!)) : _cartItemId;
+    const pincode = selectedAddr?.zipcode;
+    try {
+      const result = await getReportTAT(
+        client,
+        null,
+        Number(addressCityId),
+        Number(pincode),
+        listOfIds!
+      );
+      if (result?.data?.getConfigurableReportTAT) {
+        const getMaxReportTat = result?.data?.getConfigurableReportTAT?.itemLevelReportTATs;
+        setReportTat(getMaxReportTat);
+      } else {
+        setReportTat([]);
+      }
+    } catch (error) {
+      CommonBugFender('fetchReportTat_TestDetails', error);
+      setReportTat([]);
+    }
+  }
 
   function createWidgetItemParameterObject(selectedItem: any, addedItem: any) {
     const inclusions = selectedItem?.inclusionData;
@@ -1234,7 +1263,14 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   };
 
   const _renderCartItem = (test: DiagnosticsCartItem, patientItems: any, index: number) => {
-    const reportGenItem = reportGenDetails?.find((_item: any) => _item?.itemId === test?.id);
+    const reportGenItem =
+      !!reportGenDetails &&
+      reportGenDetails?.length > 0 &&
+      reportGenDetails?.find((_item: any) => _item?.itemId === test?.id);
+    const reportTAT =
+      !!reportTat &&
+      reportTat?.length > 0 &&
+      reportTat?.find((_item: any) => Number(_item?.itemId) === Number(test?.id));
     const filterDuplicateItemsForPatients =
       !!duplicateNameArray &&
       duplicateNameArray?.filter((item: any) => item?.patientId == patientItems?.id);
@@ -1246,6 +1282,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         selectedPatient={selectedPatient}
         isCircleSubscribed={isDiagnosticCircleSubscription}
         reportGenItem={reportGenItem}
+        reportTat={reportTAT}
         showCartInclusions={showInclusions}
         duplicateArray={filterDuplicateItemsForPatients}
         onPressCard={(item) => {

@@ -2591,83 +2591,7 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
       statusString = 'Order confirmed';
       break;
     case DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED:
-    case DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN:
-      statusString = 'Apollo agent is on the way';
-      break;
-    case DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED:
-      statusString = 'Sample collected';
-      break;
-    case DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED:
-    case DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED_REQUEST:
-      statusString = 'Order rescheduled';
-      break;
-    //first status has been added
-    //last two status => report awaited (need not show in ui, so showing previous)
-    case DIAGNOSTIC_ORDER_STATUS.SAMPLE_SUBMITTED:
-    case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED:
-    case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB:
-    case DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB:
-    case DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED:
-      statusString = 'Sample submitted';
-      break;
-    case DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB:
-      statusString = !!customText ? '2nd Sample pending' : 'Sample submitted';
-      break;
-    case DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED:
-      statusString = 'Report generated';
-      break;
-    case DIAGNOSTIC_ORDER_STATUS.SAMPLE_REJECTED_IN_LAB:
-      statusString = 'Sample rejected';
-      break;
-    case DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED:
-      statusString = 'Order completed';
-      break;
-    case DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING:
-      statusString = 'Payment pending';
-      break;
-    case DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED:
-      statusString = 'Payment failed';
-      break;
-    case DIAGNOSTIC_ORDER_STATUS.PAYMENT_SUCCESSFUL:
-      statusString = 'Payment successful';
-      break;
-    case REFUND_STATUSES.SUCCESS:
-      statusString = 'Refund proccessed';
-      break;
-    case REFUND_STATUSES.PENDING:
-    case REFUND_STATUSES.FAILURE:
-    case REFUND_STATUSES.REFUND_REQUEST_NOT_SENT:
-    case REFUND_STATUSES.MANUAL_REVIEW:
-      statusString = 'Refund initiated';
-      break;
-    case DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED:
-      statusString = 'Partial Order Completed';
-      break;
-    default:
-      statusString = status || '';
-      statusString?.replace(/[_]/g, ' ');
-  }
-  return statusString;
-};
-
-export const getTestOrderStatusTextDetails = (status: string, customText?: boolean) => {
-  let statusString = '';
-  switch (status) {
-    case DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED:
-    case 'ORDER_CANCELLED_AFTER_REGISTRATION':
-    case DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED_REQUEST:
-      statusString = 'Order cancelled';
-      break;
-    case DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED:
-      statusString = 'Order failed';
-      break;
-    case DIAGNOSTIC_ORDER_STATUS.ORDER_INITIATED:
-      statusString = 'Order initiated';
-      break;
-    case DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED:
-      statusString = 'Order confirmed';
-      break;
-    case DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED:
+    // case DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN:
       statusString = 'Apollo agent is on the way';
       break;
     case DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN:
@@ -2690,7 +2614,7 @@ export const getTestOrderStatusTextDetails = (status: string, customText?: boole
       statusString = 'Samples Received for Testing';
       break;
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB:
-      statusString = !!customText ? '2nd Sample pending' : 'Sample submitted';
+      statusString = !!customText ? '2nd Sample pending' : 'Samples Received for Testing';
       break;
     case DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED:
       statusString = 'Report generated';
@@ -2723,8 +2647,8 @@ export const getTestOrderStatusTextDetails = (status: string, customText?: boole
       statusString = 'Partial Order Completed';
       break;
     case DIAGNOSTIC_ORDER_STATUS.ORDER_MODIFIED:
-      statusString = 'Order modification'
-      break;
+        statusString = 'Order modification'
+        break;
     default:
       statusString = status || '';
       statusString?.replace(/[_]/g, ' ');

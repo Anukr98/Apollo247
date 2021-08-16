@@ -1380,7 +1380,9 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     const highTestText = higherPricesName?.join(', ');
     showAphAlert?.({
       title: 'Your cart has been revised!',
-      description: `The "${dupTestText}" has been removed from your cart as it is already included in another test "${highTestText}" in your cart. Kindly proceed to pay the revised amount`,
+      description: isModifyFlow
+        ? `"${dupTestText}" and "${highTestText}" have common parameters, and cannot be booked together. Your cart would be updated.`
+        : `The "${dupTestText}" has been removed from your cart as it is already included in another test "${highTestText}" in your cart. Kindly proceed to pay the revised amount`,
       onPressOk: () => {
         //disable the cta
         hideAphAlert?.();

@@ -14,6 +14,7 @@ import { diagnosticsDisplayPrice } from '@aph/mobile-patients/src/utils/commonUt
 import { DiagnosticsCartItem } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { SpecialDiscountText } from '@aph/mobile-patients/src/components/Tests/components/SpecialDiscountText';
+import moment from 'moment';
 
 interface CartItemCardProps {
   index: number;
@@ -22,6 +23,7 @@ interface CartItemCardProps {
   isCircleSubscribed: boolean;
   onPressRemove: (test: any) => void; //add patient id
   reportGenItem?: any;
+  reportTat?: any;
   showCartInclusions?: boolean;
   duplicateArray?: any;
   comingFrom?: string;
@@ -33,6 +35,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     cartItem,
     isCircleSubscribed,
     reportGenItem,
+    reportTat,
     duplicateArray,
     comingFrom,
     showCartInclusions,
@@ -54,7 +57,8 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const inclusionItemToShow = !!finalFilterInclusions && finalFilterInclusions?.join(', ');
 
   const hasExtraData =
-    !!reportGenItem && (reportGenItem?.itemPrepration || reportGenItem?.itemReportTat);
+    !!reportGenItem &&
+    (reportGenItem?.itemPrepration || reportTat?.reportTATInUTC || reportGenItem?.itemReportTat);
   const inclusionCount = !!reportGenItem && reportGenItem?.itemParameterCount;
 
   const showSavingsView =
@@ -116,7 +120,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
           </View>
         </View>
         {renderInclusionsCount()}
-        {!!reportGenItem && renderReportTat_preTestingReqrmnt()}
+        {(!!reportGenItem || !!reportTat) && renderReportTat_preTestingReqrmnt()}
         {comingFrom == AppRoutes.CartPage && showCartInclusions && !!inclusionItemToShow ? (
           <View style={styles.inclusionView}>
             <TestInfoIcon style={styles.timeIconStyle} />
@@ -154,11 +158,13 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const renderReportTat_preTestingReqrmnt = () => {
     return !!hasExtraData ? (
       <View style={styles.reportView}>
-        {reportGenItem?.itemReportTat ? (
+        {reportTat?.reportTATInUTC || reportGenItem?.itemReportTat ? (
           <View style={[styles.reportGenViewStyle, styles.reportViewStyle]}>
             <TestTimeIcon style={[styles.timeIconStyle, { marginLeft: 4 }]} />
             <Text style={[styles.reportGenTextStyle, { textAlign: 'right' }]}>
-              {`Report in ${reportGenItem?.itemReportTat}`}
+              {!!reportTat?.reportTATInUTC && reportTat?.reportTATInUTC != ''
+                ? `Report by ${moment(reportTat?.reportTATInUTC)?.format('ddd, DD MMM')}`
+                : `Report in ${reportGenItem?.itemReportTat}`}
             </Text>
           </View>
         ) : null}
@@ -168,7 +174,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
               styles.reportGenViewStyle,
               {
                 justifyContent: 'flex-start',
-                marginLeft: !!reportGenItem?.itemReportTat ? -4 : -8,
+                marginLeft: !!reportTat?.reportTATInUTC || !!reportGenItem?.itemReportTat ? -4 : -8,
               },
             ]}
           >
