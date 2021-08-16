@@ -2252,6 +2252,8 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           slotDurationInMinutes
           homeCollectionCharges
           distanceCharges
+          expectedReportGenerationTime
+          reportTATMessage
         }
         patientAddressObj {
           addressLine1
@@ -5101,6 +5103,12 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql`
           firstName
           lastName
         }
+        attributesObj{
+          reportTATHours
+          reportTATMessage
+          reportGenerationTime
+          expectedReportGenerationTime
+        }
         diagnosticOrderLineItems {
           itemObj {
             testPreparationData
@@ -5156,7 +5164,10 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
           }
         }
         attributesObj {
+          reportTATHours
+          reportTATMessage
           reportGenerationTime
+          expectedReportGenerationTime
         }
       }
     }
@@ -5727,10 +5738,15 @@ export const INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2 = gql`
 `;
 
 export const GET_DIAGNOSTIC_REPORT_TAT = gql `
-  query getConfigurableReportTAT($cityId: Int!, $pincode: Int!, $itemIds: [Int]!){
-    getConfigurableReportTAT(cityId: $cityId, pincode: $pincode, itemIds: $itemIds){
+  query getConfigurableReportTAT($slotDateTimeInUTC: DateTime,$cityId: Int!, $pincode: Int!, $itemIds: [Int]!){
+    getConfigurableReportTAT(slotDateTimeInUTC: $slotDateTimeInUTC,cityId: $cityId, pincode: $pincode, itemIds: $itemIds){
       maxReportTAT
       reportTATMessage
+      itemLevelReportTATs{
+        itemId
+        reportTATMessage
+        reportTATInUTC
+      }
     }
   }
 `;
