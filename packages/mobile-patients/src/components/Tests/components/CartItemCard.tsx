@@ -155,8 +155,6 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     );
   };
 
-  console.log({ props });
-
   const renderReportTat_preTestingReqrmnt = () => {
     return !!hasExtraData ? (
       <View style={styles.reportView}>

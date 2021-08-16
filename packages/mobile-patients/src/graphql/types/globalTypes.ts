@@ -47,7 +47,6 @@ export enum AppointmentType {
 }
 
 export enum BOOKINGSOURCE {
-  ADMIN_DASHBOARD = "ADMIN_DASHBOARD",
   BOOKING_TOOL = "BOOKING_TOOL",
   MOBILE = "MOBILE",
   WEB = "WEB",
@@ -191,11 +190,6 @@ export enum DiagnosticsBookingSource {
   MOBILE = "MOBILE",
   OP_CALL_CENTER = "OP_CALL_CENTER",
   OP_OMT_TEAM = "OP_OMT_TEAM",
-  OP_PHARMACY_BUDUPPAL = "OP_PHARMACY_BUDUPPAL",
-  OP_PHARMACY_MANIKONDA = "OP_PHARMACY_MANIKONDA",
-  OP_PHARMACY_MOTINAGAR = "OP_PHARMACY_MOTINAGAR",
-  OP_PHARMACY_NALLAGANDA = "OP_PHARMACY_NALLAGANDA",
-  OP_PHARMACY_TELECOMNAGAR_GACHIBOWLI = "OP_PHARMACY_TELECOMNAGAR_GACHIBOWLI",
   OP_WHATSAPP = "OP_WHATSAPP",
   WEB = "WEB",
 }
@@ -515,7 +509,6 @@ export enum PAYMENT_METHODS {
 export enum PAYMENT_METHODS_JUSPAY {
   CARD = "CARD",
   COD = "COD",
-  HEALTH_CREDITS = "HEALTH_CREDITS",
   NB = "NB",
   UPI = "UPI",
   WALLET = "WALLET",
@@ -526,7 +519,6 @@ export enum PAYMENT_METHODS_REVERSE {
   CREDIT_CARD = "CREDIT_CARD",
   CREDIT_CARD_EMI = "CREDIT_CARD_EMI",
   DEBIT_CARD = "DEBIT_CARD",
-  HEALTH_CREDITS = "HEALTH_CREDITS",
   NET_BANKING = "NET_BANKING",
   PAYTM_POSTPAID = "PAYTM_POSTPAID",
   PAYTM_WALLET = "PAYTM_WALLET",
@@ -683,8 +675,6 @@ export enum STATUS {
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PAYMENT_PENDING_PG = "PAYMENT_PENDING_PG",
   PENDING = "PENDING",
-  REQUESTED = "REQUESTED",
-  REQUEST_DECLINED = "REQUEST_DECLINED",
   UNAVAILABLE_MEDMANTRA = "UNAVAILABLE_MEDMANTRA",
 }
 
@@ -999,7 +989,6 @@ export interface BookAppointmentInput {
   discountedAmount?: number | null;
   subscriptionDetails?: SUBSCRIPTION_DETAILS | null;
   planPurchaseDetails?: PLAN_PURCHASE_DETAILS | null;
-  adminId?: string | null;
 }
 
 export interface BookFollowUpAppointmentInput {
@@ -1096,12 +1085,6 @@ export interface CouponInput {
   cityId: number;
 }
 
-export interface CouponUsedDetails {
-  discount_amount: number;
-  bill_amount: number;
-  coupon_code: string;
-}
-
 export interface CreateUserSubscriptionInput {
   _id?: string | null;
   plan_id?: string | null;
@@ -1151,7 +1134,6 @@ export interface DeletePatientPrismMedicalRecordInput {
 export interface DiagnosticInitiateOrderPayment {
   orderId?: string | null;
 }
-
 export interface DiagnosticInitiateOrderPaymentv2 {
   paymentOrderID?: string | null;
 }
@@ -1498,7 +1480,7 @@ export interface OrderCreate {
 
 export interface OrderInput {
   payment_order_id: string;
-  payment_mode?: PAYMENT_MODE | null;
+  payment_mode: PAYMENT_MODE;
   is_mobile_sdk?: boolean | null;
   return_url?: string | null;
   gateway_id?: number | null;
@@ -1638,9 +1620,6 @@ export interface PaymentReference {
   backend_activation?: boolean | null;
   done_by?: string | null;
   sub_plan_id?: string | null;
-  coupon_used_details?: CouponUsedDetails | null;
-  cash_to_collect?: number | null;
-  oneapollo_request_number?: string | null;
 }
 
 export interface PharmaCouponInput {
@@ -1763,7 +1742,6 @@ export interface SaveBookHomeCollectionOrderInput {
   subscriptionInclusionId?: string | null;
   attachmentData?: (Attachments | null)[] | null;
   caseSheets?: (string | null)[] | null;
-  agentLoginID?: string | null;
 }
 
 export interface SaveBookHomeCollectionOrderInputv2 {
@@ -1785,7 +1763,6 @@ export interface SaveDeviceTokenInput {
   deviceToken: string;
   deviceOS: string;
   patientId: string;
-  appVersion?: string | null;
 }
 
 export interface SaveMedicineOrderV2Input {
@@ -2010,6 +1987,77 @@ export interface voipPushTokenInput {
   voipToken?: string | null;
 }
 
+/** * current status of appointment */
+export enum APPOINTMENT_STATUS {
+  BOOKED = 'BOOKED',
+  CANCELLED = 'CANCELLED',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
+  VERIFIED = 'VERIFIED',
+  REJECTED = "REJECTED"
+}
+/** * dose number first second */
+export enum DOSE_NUMBER {
+  FIRST = 'FIRST',
+  SECOND = 'SECOND',
+}
+/** * payment type for appointment */
+export enum PAYMENT_TYPE {
+  CASHLESS = 'CASHLESS',
+  COD = 'COD',
+  PREPAID = 'PREPAID',
+  IN_APP_PURCHASE = "IN_APP_PURCHASE"
+}
+/** * booking source */
+export enum VACCINE_BOOKING_SOURCE {
+  AP_IN = 'AP_IN',
+  MOBILE = 'MOBILE',
+  WEB = 'WEB',
+}
+/** * types of vaccine */
+export enum VACCINE_TYPE {
+  COVAXIN = 'COVAXIN',
+  COVISHIELD = 'COVISHIELD',
+  SPUTNIK = 'SPUTNIK',
+  MORDERNA = 'MORDERNA',
+}
+export interface CreateAppointmentInput {
+  appointment_id?: string | null;
+  patient_id: string;
+  resource_session_id: string;
+  dose_number: DOSE_NUMBER;
+  booking_source?: VACCINE_BOOKING_SOURCE | null;
+  corporate_name?: string | null;
+}
+
+/** * COWIN_GENDER */
+export enum COWIN_GENDER { 
+  FEMALE = "FEMALE",
+  MALE = "MALE",
+  OTHERS = "OTHERS",
+}
+
+export enum COWIN_GOVT_PHOTO_ID { 
+  AADHAAR_CARD = "AADHAAR_CARD",
+  DRIVING_LICENSE = "DRIVING_LICENSE", 
+  NPR_SMART_CARD = "NPR_SMART_CARD", 
+  PAN_CARD = "PAN_CARD", 
+  PASSPORT = "PASSPORT", 
+  PENSION_PASSBOOK = "PENSION_PASSBOOK", 
+  UNIQUE_DISABILITY_ID = "UNIQUE_DISABILITY_ID", 
+  VOTER_ID = "VOTER_ID",
+}
+
+export interface CowinRegistrationInput { 
+  operationType: OperationType; 
+  name: string; 
+  gender_id: COWIN_GENDER; 
+  birth_year: string;
+  photo_id_type: COWIN_GOVT_PHOTO_ID; 
+  photo_id_number: string;
+  otp?: string | null; 
+  txnId?: string | null;
+}
 //==============================================================
 // END Enums and Input Objects
 //==============================================================
