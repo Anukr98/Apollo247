@@ -404,16 +404,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
           //call only when they are different.
           if (asyncDiagnosticPincode?.pincode === getAsyncPincode?.pincode) {
             return;
-          } else {
-            checkIsPinCodeServiceable(
-              getAsyncPincode?.pincode!
-                ? getAsyncPincode?.pincode
-                : !!pharmacyLocation
-                ? pharmacyLocation?.pincode!
-                : locationDetails?.pincode!,
-              'manual',
-              'initalPincode'
-            );
           }
           setDiagnosticLocation?.(!!pharmacyLocation ? pharmacyLocation! : locationDetails!);
         }

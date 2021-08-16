@@ -1380,7 +1380,7 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED]: {
     UHID: string;
-    'Order amount': string | number;
+    'Order amount': number;
   };
   [WebEngageEventName.DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED]: {
     Rating: string | number;
