@@ -35,6 +35,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { DiagnosticProductListingPageViewed } from './Events';
 
 export interface TestListingProps
   extends NavigationScreenProps<{
@@ -130,6 +131,11 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       },
       fetchPolicy: 'no-cache',
     });
+
+
+    useEffect(() => {
+      DiagnosticProductListingPageViewed(widgetType, movedFrom, widgetName, title);
+    }, []);
 
   //add try catch.
   const fetchWidgetsPrices = async (widgetsData: any) => {
