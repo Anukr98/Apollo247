@@ -506,7 +506,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
               >
                 {renderGraphicalStatus(order, index, isStatusDone, array)}
                 <View style={{ marginBottom: 8, flex: 1 }}>
-                  <View style={[isStatusDone ? styles.statusDoneView : { padding: 10 }]}>
+                  <View style={[isStatusDone ? styles.statusDoneView : styles.statusUpcomingView]}>
                     <View style={styles.flexRow}>
                       <View style={{ width: '75%' }}>
                         <Text
@@ -523,7 +523,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                         >
                           {nameFormater(getTestOrderStatusText(order?.orderStatus), 'title')}
                         </Text>
-                        {renderSubStatus(order)}
                       </View>
                       {isStatusDone ? (
                         renderCustomDescriptionOrDateAndTime(order)
@@ -541,7 +540,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                     !isStatusDone ? (
                       <Text style={styles.statusSubTextStyle}>{`Invoice to be Generated`}</Text>
                     ) : null}
-                    {sampleCollectedArray.includes(order?.orderStatus) &&
+                    {DIAGNOSTIC_SAMPLE_COLLECTED_STATUS.includes(order?.orderStatus) &&
                     isStatusDone &&
                     orderDetails?.invoiceURL
                       ? renderInvoiceGenerated()
@@ -559,6 +558,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                     !!showRateDiagnosticBtn
                       ? renderFeedbackOption()
                       : null}
+                    {/**for showing the additional view for orderModification */}
+                    {renderSubStatus(order)}
+                    {/**for showing the reschedule view for iorder reschedule */}
+                    {order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED &&
+                      renderReschuleTime()}
                   </View>
                 </View>
               </View>
@@ -595,6 +599,21 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     );
   };
 
+  const renderReschuleTime = () => {
+    const rescheduleDate =
+      !!orderDetails && moment(orderDetails?.slotDateTimeInUTC)?.format('DD MMM, hh:mm A');
+    return (
+      <>
+        {!!rescheduleDate ? (
+          <View style={{ marginVertical: '2%' }}>
+            <Spearator style={[styles.horizontalSeparator]} />
+            <Text style={styles.itemsAddedText}>Rescheduled for {rescheduleDate}</Text>
+          </View>
+        ) : null}
+      </>
+    );
+  };
+
   /**
    * show this only for modification + prepaid negative cases
    */
@@ -603,7 +622,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       <>
         {order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_MODIFIED &&
         DIAGNOSTIC_SUB_STATUS_TO_SHOW?.includes(order?.subStatus) ? (
-          <View style={{ width: '60%', marginVertical: 4 }}>
+          <View style={{ width: '60%', marginVertical: 10 }}>
             <StatusCard
               titleText={order?.subStatus}
               titleStyle={{
@@ -631,26 +650,51 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     );
   };
 
+  //define the type
   const renderItemsView = (order: any) => {
     const itemsLength = order?.attributes?.itemsModified;
     const addedItems =
-      !!itemsLength && itemsLength?.length > 0 && itemsLength?.filter((item) => !item?.isRemoved);
+      !!itemsLength &&
+      itemsLength?.length > 0 &&
+      itemsLength?.filter((item: any) => !item?.isRemoved);
     const removedItems =
-      !!itemsLength && itemsLength?.length > 0 && itemsLength?.filter((item) => item?.isRemoved);
+      !!itemsLength &&
+      itemsLength?.length > 0 &&
+      itemsLength?.filter((item: any) => item?.isRemoved);
     const isAdded = !!addedItems && addedItems?.length > 0;
+    const addedItemPrices = !!addedItems && addedItems?.map((item: any) => item?.price);
+
+    const removedItemsPrices = !!removedItems && removedItems?.map((item: any) => item?.price);
+    const totalAddItemsPrice =
+      !!addedItemPrices && addedItemPrices?.reduce((curr: number, prev: number) => curr + prev, 0);
+    const totalRemovedItemsPrice =
+      !!removedItemsPrices &&
+      removedItemsPrices?.reduce((curr: number, prev: number) => curr + prev, 0);
+
+    const totalPrice =
+      totalAddItemsPrice > 0 && totalRemovedItemsPrice > 0
+        ? totalAddItemsPrice - totalRemovedItemsPrice
+        : totalAddItemsPrice > 0
+        ? totalAddItemsPrice
+        : totalRemovedItemsPrice;
     return (
       <>
-        {!!itemsLength && itemsLength > 0 ? (
-          <View>
-            <Spearator style={styles.horizontalSeparator} />
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <TouchableOpacity
-                onPress={() => setShowModifiedItems(!showModifiedItems)}
-                activeOpacity={1}
-              >
-                <Text>
-                  {isAdded ? addedItems?.length : removedItems?.length}{' '}
-                  {isAdded ? 'added' : 'removed'} items in cart
+        {!!itemsLength && itemsLength?.length > 0 ? (
+          <View style={{ marginVertical: '2%' }}>
+            <Spearator style={[styles.horizontalSeparator]} />
+            <TouchableOpacity
+              onPress={() => setShowModifiedItems(!showModifiedItems)}
+              activeOpacity={1}
+              style={styles.itemsTouch}
+            >
+              <Text style={styles.itemsAddedText}>
+                {isAdded ? addedItems?.length : removedItems?.length} items{' '}
+                {isAdded ? 'added' : 'removed'} in cart
+              </Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                <Text style={[styles.itemsAddedText, { marginRight: 6 }]}>
+                  {string.common.Rs}
+                  {totalPrice}
                 </Text>
                 <ArrowRight
                   style={{
@@ -658,17 +702,22 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                     tintColor: 'black',
                   }}
                 />
-              </TouchableOpacity>
-              {showModifiedItems &&
-                (isAdded ? addedItems : removedItems)?.map((items: any) => {
-                  return (
-                    <View style={{ justifyContent: 'space-between', flexDirection: 'row' }}>
-                      <Text>{items?.itemName}</Text>
-                      <Text>{items?.price}</Text>
+              </View>
+            </TouchableOpacity>
+            {showModifiedItems &&
+              (isAdded ? addedItems : removedItems)?.map((items: any) => {
+                return (
+                  <View style={[styles.flexRow, { justifyContent: 'space-between', marginTop: 4 }]}>
+                    <View style={{ width: '72%' }}>
+                      <Text style={styles.itemsNameAddedText}>{items?.itemName}</Text>
                     </View>
-                  );
-                })}
-            </View>
+                    <Text style={styles.itemsNameAddedText}>
+                      {string.common.Rs}
+                      {items?.price}
+                    </Text>
+                  </View>
+                );
+              })}
           </View>
         ) : null}
       </>
@@ -1167,5 +1216,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginVertical: 12,
     height: 30,
+  },
+  itemsAddedText: {
+    ...theme.viewStyles.text('M', 13, colors.SHERPA_BLUE, 1, 18),
+  },
+  itemsNameAddedText: {
+    ...theme.viewStyles.text('M', 12, colors.SKY_BLUE, 1, 18),
+  },
+  itemsTouch: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
+  statusUpcomingView: {
+    padding: 10,
+    flex: 1,
   },
 });
