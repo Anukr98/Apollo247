@@ -43,7 +43,7 @@ export const OrderCardCarousel: React.FC<OrderCardCarousel> = (props) => {
         <HomePageOrderStatusCard
           orderId={item?.displayId}
           status={item?.orderStatus}
-          reportTat={item?.attributesObj?.reportGenerationTime!}
+          reportTat={item?.attributesObj?.reportTATMessage!}
           patientName={`${item?.patientObj?.firstName} ${item?.patientObj?.lastName}`}
           appointmentTime={appointmentTime}
           key={item?.id}
