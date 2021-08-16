@@ -28,6 +28,8 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   slotDurationInMinutes: number | null;
   homeCollectionCharges: number | null;
   distanceCharges: number | null;
+  expectedReportGenerationTime: any | null;
+  reportTATMessage: string | null;
 }
 
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientAddressObj {

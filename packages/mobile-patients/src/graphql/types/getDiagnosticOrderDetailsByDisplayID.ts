@@ -15,6 +15,8 @@ export interface getDiagnosticOrderDetailsByDisplayID_getDiagnosticOrderDetailsB
   slotDurationInMinutes: number | null;
   initialCollectionCharges: number | null;
   distanceCharges: number | null;
+  expectedReportGenerationTime: any | null;
+  reportTATMessage: string | null;
 }
 
 export interface getDiagnosticOrderDetailsByDisplayID_getDiagnosticOrderDetailsByDisplayID_ordersList_diagnosticOrdersStatus {

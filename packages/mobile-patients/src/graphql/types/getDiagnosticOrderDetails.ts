@@ -35,6 +35,8 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_
   distanceCharges: number | null;
   homeCollectionCharges: number | null;
   slotDurationInMinutes: number | null;
+  expectedReportGenerationTime: any | null;
+  reportTATMessage: string | null;
 }
 
 export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_itemObj {

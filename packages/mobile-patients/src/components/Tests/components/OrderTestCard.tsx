@@ -485,9 +485,10 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
       </View>
     ) : null;
   };
-
   const showReportTat = () => {
-    const report = !!props?.orderAttributesObj?.reportGenerationTime
+    const report = !!props?.orderAttributesObj?.reportTATMessage
+      ? props?.orderAttributesObj?.reportTATMessage
+      : !!props?.orderAttributesObj?.reportGenerationTime
       ? props?.orderAttributesObj?.reportGenerationTime
       : '';
     const prepData = !!props?.orderAttributesObj?.preTestingRequirement
@@ -499,7 +500,7 @@ export const OrderTestCard: React.FC<OrderTestCardProps> = (props) => {
         {report ? (
           <View style={styles.reporttatContainer}>
             <ClockIcon />
-            <Text style={styles.reportTextStyle}>{`Report Generation time - ${report}`}</Text>
+            <Text style={styles.reportTextStyle}>{`${report}`}</Text>
           </View>
         ) : null}
         {prepData ? (
