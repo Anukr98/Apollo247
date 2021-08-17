@@ -15,7 +15,7 @@ export const Bank: React.FC<BankProps> = (props) => {
   const renderSelectedBank = () => {
     return (
       <TouchableOpacity style={styles.container}>
-        <Text style={{ ...styles.bankName, color: '#FCB716' }}>{bank?.description}</Text>
+        <Text style={{ ...styles.bankName, color: '#FCB716' }}>{bank?.payment_method_name}</Text>
         <YellowTickIcon style={{}} />
       </TouchableOpacity>
     );
@@ -23,13 +23,15 @@ export const Bank: React.FC<BankProps> = (props) => {
   const renderBank = () => {
     return (
       <TouchableOpacity style={styles.container} onPress={() => onPressBank(bank)}>
-        <Text style={styles.bankName}>{bank?.description}</Text>
+        <Text style={styles.bankName}>{bank?.payment_method_name}</Text>
         <ArrowRight style={{ opacity: 0.15 }} />
       </TouchableOpacity>
     );
   };
 
-  return bank?.description == selectedBank?.description ? renderSelectedBank() : renderBank();
+  return bank?.payment_method_name == selectedBank?.payment_method_name
+    ? renderSelectedBank()
+    : renderBank();
 };
 
 const styles = StyleSheet.create({

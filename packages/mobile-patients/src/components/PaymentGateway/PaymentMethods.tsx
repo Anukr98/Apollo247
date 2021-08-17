@@ -463,9 +463,12 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const OtherBanks = () => {
     const topBanks = paymentMethods?.find((item: any) => item?.name == 'FEATURED_BANKS');
+    let otherBanks = paymentMethods?.find((item: any) => item?.name == 'OTHER_BANKS');
     const methods =
       topBanks?.payment_methods?.map((item: any) => item?.payment_method_code).slice(0, 4) || [];
-    const otherBanks = banks?.filter((item: any) => !methods?.includes(item?.paymentMethod));
+    otherBanks = otherBanks?.payment_methods?.filter(
+      (item: any) => !methods?.includes(item?.payment_method_code)
+    );
     triggerWebengege('Net Banking');
     props.navigation.navigate(AppRoutes.OtherBanks, {
       paymentId: paymentId,
