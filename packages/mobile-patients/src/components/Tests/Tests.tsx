@@ -296,10 +296,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const defaultAddress = addresses?.find((item) => item?.defaultAddress);
   const [pageLoading, setPageLoading] = useState<boolean>(false);
   const [isFocused, setIsFocused] = useState<boolean>(false);
-  const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
   const [clickedItem, setClickedItem] = useState<any>([]);
   const [serviceableObject, setServiceableObject] = useState({} as any);
   const [expressSlotMsg, setExpressSlotMsg] = useState<string>('');
+  const [isPriceAvailable, setIsPriceAvailable] = useState<boolean>(false);
 
   const hasLocation = locationDetails || diagnosticLocation || pharmacyLocation || defaultAddress;
 
@@ -655,6 +655,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       }
       newWidgetsData?.length > 0 && reloadWidget ? setReloadWidget(false) : setReloadWidget(true);
       setWidgetsData(newWidgetsData);
+      setIsPriceAvailable(true);
       setSectionLoading(false);
       setLoading?.(false);
       setPageLoading?.(false);
@@ -1599,6 +1600,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderPackageWidget = (data: any) => {
+    let listShowLength = 10;
     const isPricesAvailable =
       !!data &&
       data?.diagnosticWidgetData?.length > 0 &&
@@ -1648,6 +1650,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
             ) : (
               <PackageCard
                 data={data}
+                diagnosticWidgetData={data?.diagnosticWidgetData?.slice(
+                  0,
+                  data?.diagnosticWidgetData?.length >= listShowLength
+                    ? listShowLength
+                    : data?.diagnosticWidgetData?.length
+                )}
+                isPriceAvailable={isPriceAvailable}
                 isCircleSubscribed={isDiagnosticCircleSubscription}
                 isServiceable={isDiagnosticLocationServiceable}
                 isVertical={false}
@@ -1715,6 +1724,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
             ) : (
               <ItemCard
                 data={data}
+                diagnosticWidgetData={data?.diagnosticWidgetData}
+                isPriceAvailable={isPriceAvailable}
                 isCircleSubscribed={isDiagnosticCircleSubscription}
                 isServiceable={isDiagnosticLocationServiceable}
                 isVertical={false}
@@ -2086,7 +2097,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         item?.id
       );
       if (!!item?.labReportURL && item?.labReportURL != '') {
-        setDisplayViewReport(true);
+        onPressViewReport();
         setClickedItem(item);
       } else {
         showAphAlert?.({
@@ -2496,31 +2507,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
-      {displayViewReport && (
-        <TestViewReportOverlay
-          order={clickedItem}
-          heading=""
-          isVisible={displayViewReport}
-          onClose={() => {
-            setDisplayViewReport(false);
-            setClickedItem([]);
-          }}
-          downloadDocument={() => {
-            const res = downloadDocument(
-              clickedItem?.labReportURL,
-              'application/pdf',
-              clickedItem?.orderId
-            );
-            if (res == clickedItem?.orderId) {
-              setViewReportOrderId(clickedItem?.orderId);
-            }
-          }}
-          viewReportOrderId={viewReportOrderId}
-          onPressViewReport={() => {
-            onPressViewReport();
-          }}
-        />
-      )}
       <SafeAreaView style={{ ...viewStyles.container }}>
         {pageLoading ? (
           <View style={{ backgroundColor: 'white' }}>

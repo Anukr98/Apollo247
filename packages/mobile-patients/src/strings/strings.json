@@ -585,8 +585,8 @@
     "agent": "Apollo agent"
   },
   "diagnosticCategoryTitle": {
-    "category": "Category",
-    "categoryGrid": "Category_Scroll"
+    "category": "category",
+    "categoryGrid": "category_Scroll"
   },
   "orders": {
     "urOrders": "MY ORDERS",

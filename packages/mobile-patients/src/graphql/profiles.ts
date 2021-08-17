@@ -5454,6 +5454,9 @@ export const GET_ORDER_LEVEL_DIAGNOSTIC_STATUS = gql`
         itemName
         packageName
       }
+      upcomingStatuses {
+        orderStatus
+      }
     }
   }
 `;
