@@ -16,6 +16,7 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import _ from 'lodash';
 import {
+  DIAGNOSTIC_FAILURE_STATUS_ARRAY,
   DIAGNOSTIC_JUSPAY_INVALID_REFUND_STATUS,
   DIAGNOSTIC_ORDER_FAILED_STATUS,
   DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
@@ -914,7 +915,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
           {renderError()}
         </ScrollView>
-        {selectedTab == string.orders.trackOrder && orderDetails?.attributesObj?.reportTATMessage
+        {selectedTab == string.orders.trackOrder &&
+        orderDetails?.attributesObj?.reportTATMessage &&
+        !DIAGNOSTIC_FAILURE_STATUS_ARRAY?.includes(selectedOrder?.orderStatus)
           ? renderOrderReportTat(orderDetails?.attributesObj?.reportTATMessage)
           : null}
         {selectedTab == string.orders.trackOrder ? renderBottomSection(orderDetails) : null}
