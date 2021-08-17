@@ -577,7 +577,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       ? props.navigation.state.params.showBookAppointment || false
       : false;
     setdisplayoverlay(display);
-    setConsultMode(props.navigation.getParam('consultModeSelected'));
     setShowVideo(props.navigation.getParam('onVideoPressed'));
   }, [props.navigation.state.params]);
 
@@ -676,6 +675,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             setshowSpinner(false);
             fetchNextAvailableSlots([data.getDoctorDetailsById.id]);
             setAvailableModes(data.getDoctorDetailsById);
+            setConsultMode(data.getDoctorDetailsById.availableModes[0])
           } else {
             setTimeout(() => {
               setshowSpinner(false);
@@ -783,10 +783,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const setAvailableModes = (availabilityMode: any) => {
     const modeOfConsult = availabilityMode.availableModes;
+    let availabileMode = modeOfConsult[0];
     try {
       if (modeOfConsult.includes(ConsultMode.BOTH)) {
         setConsultType(ConsultMode.BOTH);
-        if (consultModeSelected === ConsultMode.PHYSICAL)
+        if (availabileMode === ConsultMode.PHYSICAL)
           set_follow_up_chat_message_visibility(false);
       } else if (modeOfConsult.includes(ConsultMode.ONLINE)) {
         setConsultType(ConsultMode.ONLINE);
@@ -796,11 +797,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       } else {
         setConsultType(ConsultMode.BOTH);
       }
-      consultModeSelected &&
+      availabileMode &&
         setOnlineSelected(
-          ConsultMode.BOTH === consultModeSelected
+          ConsultMode.BOTH === availabileMode
             ? true
-            : ConsultMode.ONLINE === consultModeSelected
+            : ConsultMode.ONLINE === availabileMode
             ? true
             : false
         );
