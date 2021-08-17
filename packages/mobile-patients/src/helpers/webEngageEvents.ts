@@ -1604,7 +1604,7 @@ export interface WebEngageEvents {
     'Secretary Mobile Number': string;
     'Doctor Mobile Number': string;
     'Doctor ID': string;
-    'Display ID': string;
+    'Display ID': number;
     'Chat Format': 'PDF' | 'Image' | 'Text';
   };
   [WebEngageEventName.PATIENT_EXTERNAL_MEETING_LINK_CLICKED]: {
@@ -1638,7 +1638,7 @@ export interface WebEngageEvents {
     'Secretary Mobile Number': string;
     'Doctor Mobile Number': string;
     'Doctor ID': string;
-    'Display ID': string;
+    'Display ID': number;
     'Chat Format': 'PDF' | 'Image' | 'Text';
   };
   // confirm the type of data for the below
