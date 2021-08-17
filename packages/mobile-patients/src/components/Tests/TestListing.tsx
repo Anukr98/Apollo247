@@ -66,7 +66,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
 
   const errorStates = !loading && widgetsData?.length == 0;
-  let deepLinkWidgetName: String;
+  let deepLinkWidgetName: string;
 
   //handle deeplinks as well here.
   useEffect(() => {
@@ -118,7 +118,6 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     }
   };
 
- 
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
       query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
@@ -132,10 +131,9 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       fetchPolicy: 'no-cache',
     });
 
-
-    useEffect(() => {
-      DiagnosticProductListingPageViewed(widgetType, movedFrom, widgetName, title);
-    }, []);
+  useEffect(() => {
+    DiagnosticProductListingPageViewed(widgetType, movedFrom, widgetName, title);
+  }, []);
 
   //add try catch.
   const fetchWidgetsPrices = async (widgetsData: any) => {
@@ -220,7 +218,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       breadcrumb.push({
         title:
           movedFrom === 'deeplink' && !!widgetName
-            ? nameFormater(deepLinkWidgetName?.replace(/-/g, ' '), 'title')
+            ? nameFormater(decodeURIComponent(deepLinkWidgetName?.replace(/-/g, ' ')), 'title')
             : nameFormater(title, 'title'),
         onPress: () => {},
       });
@@ -259,7 +257,6 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         </View>
       );
   };
-  
 
   const renderBreadCrumb = () => {
     return (
@@ -274,8 +271,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
 
   const renderList = () => {
     const actualItemsToShow = widgetsData?.diagnosticWidgetData?.filter(
-       (item: any) => item?.diagnosticPricing
-      );
+      (item: any) => item?.diagnosticPricing
+    );
     return (
       <>
         {!!actualItemsToShow && actualItemsToShow?.length > 0 ? (
