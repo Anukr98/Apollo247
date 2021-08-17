@@ -100,7 +100,7 @@ export const PayByCash: React.FC<PayByCashProps> = (props) => {
     return (
       !!pharmaDisincentivizeCodMessage &&
       businessLine == 'pharma' && (
-        <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 15 }}>
+        <View style={styles.pharmaMessageContainer}>
           <SavingsIcon style={styles.savingIconStyle} />
           <Text style={styles.pharmaCodMessage}>{pharmaDisincentivizeCodMessage}</Text>
         </View>
@@ -203,5 +203,10 @@ const styles = StyleSheet.create({
   pharmaCodMessage: {
     ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1, 30),
     marginLeft: 7,
+  },
+  pharmaMessageContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 15,
   },
 });
