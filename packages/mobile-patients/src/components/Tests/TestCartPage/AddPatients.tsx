@@ -111,6 +111,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     setPhleboETA,
     showMultiPatientMsg,
     setShowMultiPatientMsg,
+    removePatientItem,
   } = useDiagnosticsCart();
 
   const { setAddresses } = useShoppingCart();
@@ -208,6 +209,7 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
     if (patientLimit > 0 && actualSelectedPatients?.length > patientLimit) {
       renderAlert();
       patientCartItems?.shift();
+      setPatientCartItems?.(patientCartItems?.slice(0)); //since it was not re-rendering
     }
   }, [patientCartItems]);
 
@@ -574,6 +576,8 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       if (!checkPatientAge(newPatient?.profileData, true)) {
         addPatientCartItem?.(newPatient?.id, cartItems);
         changeCurrentProfile(newPatient?.profileData, false);
+      } else {
+        renderBelowAgePopUp();
       }
     }
   };
@@ -592,6 +596,16 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
       onPressBackButton: _onPressBackButton,
     });
   }
+
+  const renderBelowAgePopUp = () => {
+    showAphAlert?.({
+      title: string.common.uhOh,
+      description: string.diagnostics.minorAgeText,
+      onPressOk: () => {
+        hideAphAlert?.();
+      },
+    });
+  };
 
   const renderHeading = () => {
     return (
@@ -639,16 +653,21 @@ export const AddPatients: React.FC<AddPatientsProps> = (props) => {
         return { ...newItem };
       }
     );
-    addPatientCartItem?.(selectedPatientDetails?.patientId, arr!); //just change the flag here.
+    //this would be for one of the patient
+    const isAllUnSelected = !!arr && arr?.filter?.((test: any) => test?.isSelected);
+    if (!!isAllUnSelected && isAllUnSelected?.length == 0) {
+      //remove that patient...
+      removePatientItem?.(selectedPatientDetails?.patientId);
+    } else {
+      addPatientCartItem?.(selectedPatientDetails?.patientId, arr!); //just change the flag here.
+    }
     setItemsSelected(arr!);
   }
 
   function _onPressPatient(patient: any, index: number) {
-    // if (cartItems?.length == 0) {
-    //   return;
-    // }
     const isInvalidUser = checkPatientAge(patient);
     if (isInvalidUser) {
+      renderBelowAgePopUp();
       _setSelectedPatient?.(null, index);
     } else {
       _setSelectedPatient?.(patient, index);

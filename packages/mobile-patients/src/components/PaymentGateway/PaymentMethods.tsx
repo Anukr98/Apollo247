@@ -36,7 +36,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import {
   GET_PAYMENT_METHODS,
   VERIFY_VPA,
-  INITIATE_DIAGNOSTIC_ORDER_PAYMENT,
+  INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -72,6 +72,10 @@ import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/Diagnost
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { SavingsIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
+import {
+  initiateDiagonsticHCOrderPaymentv2,
+  initiateDiagonsticHCOrderPaymentv2Variables,
+} from '@aph/mobile-patients/src/graphql/types/initiateDiagonsticHCOrderPaymentv2';
 
 const { HyperSdkReact } = NativeModules;
 
@@ -260,15 +264,16 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
 
   const initiateOrderPayment = async () => {
     // Api is called to update the order status from Quote to Payment Pending
+    //changed this api from INITIATE_DIAGNOSTIC_ORDER_PAYMENT to INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2
     try {
-      const input: initiateDiagonsticHCOrderPaymentVariables = {
-        diagnosticInitiateOrderPaymentInput: { orderId: orderDetails?.orderId },
+      const input: initiateDiagonsticHCOrderPaymentv2Variables = {
+        diagnosticInitiateOrderPaymentInput: { paymentOrderID: paymentId },
       };
       const res = await client.mutate<
-        initiateDiagonsticHCOrderPayment,
-        initiateDiagonsticHCOrderPaymentVariables
+        initiateDiagonsticHCOrderPaymentv2,
+        initiateDiagonsticHCOrderPaymentv2Variables
       >({
-        mutation: INITIATE_DIAGNOSTIC_ORDER_PAYMENT,
+        mutation: INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2,
         variables: input,
         fetchPolicy: 'no-cache',
       });

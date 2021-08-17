@@ -86,6 +86,7 @@ export interface DiagnosticsCartContextProps {
   updatePatientCartItem: ((itemUpdates: any) => void) | null;
   removeMultiPatientCartItems: ((itemId?: DiagnosticsCartItem['id']) => void) | null;
   removePatientItem: ((patientId: string) => void) | null;
+  removeDuplicatePatientCartItems: ((patientId: string, cartItemIds: number[]) => void) | null;
 
   cartTotal: number;
   totalPriceExcludingAnyDiscounts: number;
@@ -197,9 +198,6 @@ export interface DiagnosticsCartContextProps {
   duplicateItemsArray: [];
   setDuplicateItemsArray: ((items: any | []) => void) | null;
 
-  filterPatientCartItems: any[];
-  setFilterPatientCartItems: ((items: any[]) => void) | null;
-
   modifiedPatientCart: DiagnosticPatientCartItem[];
   setModifiedPatientCart: ((items: DiagnosticPatientCartItem[]) => void) | null;
 
@@ -208,6 +206,9 @@ export interface DiagnosticsCartContextProps {
 
   showMultiPatientMsg: boolean;
   setShowMultiPatientMsg: ((value: boolean) => void) | null;
+
+  cartItemsMapping: any[];
+  setCartItemsMapping: ((items: any[]) => void) | null;
 }
 
 export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>({
@@ -228,6 +229,7 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   updatePatientCartItem: null,
   removeMultiPatientCartItems: null,
   removePatientItem: null,
+  removeDuplicatePatientCartItems: null,
 
   cartTotal: 0,
   totalPriceExcludingAnyDiscounts: 0,
@@ -320,14 +322,14 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   showSelectedPatient: null,
   duplicateItemsArray: [],
   setDuplicateItemsArray: null,
-  filterPatientCartItems: [],
-  setFilterPatientCartItems: null,
   modifiedPatientCart: [],
   setModifiedPatientCart: null,
   phleboETA: 0,
   setPhleboETA: null,
   showMultiPatientMsg: true,
   setShowMultiPatientMsg: null,
+  cartItemsMapping: [],
+  setCartItemsMapping: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -508,6 +510,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     DiagnosticsCartContextProps['modifiedOrderItemIds']
   >([]);
 
+  const [cartItemsMapping, setCartItemsMapping] = useState<
+    DiagnosticsCartContextProps['cartItemsMapping']
+  >([]);
+
   const setShowMultiPatientMsg: DiagnosticsCartContextProps['setShowMultiPatientMsg'] = (value) => {
     _setShowMultiPatientMsg(value);
     AsyncStorage.setItem(AsyncStorageKeys.showMultiPatientMsg, JSON.stringify(value)).catch(() => {
@@ -586,18 +592,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         (patient: DiagnosticPatientCartItem) => patient?.patientId === patientId
       );
 
-    //if already exists
     if (!!findPatient) {
-      const getSelectedCartItemsForPatient = findPatient?.cartItems?.filter(
-        (item) => item?.isSelected
-      );
-      //unselect the patient.
-      // if (getSelectedCartItemsForPatient?.length == 0) {
-      //   removePatientCartItem?.(findPatient?.patientId);
-      // } else {
       patientCartItems[findPatientIndex].cartItems = listOfItems; //just update the list with selected item attribute
       setPatientCartItems?.(patientCartItems);
-      // }
     } else {
       const patientCartItemsObj: DiagnosticPatientCartItem = {
         patientId: patientId,
@@ -606,7 +603,6 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
       const newCartItems = [patientCartItemsObj, ...patientCartItems];
       setPatientCartItems?.(newCartItems);
     }
-    //empty the slots and areas everytime due to dependency of api.
     setDiagnosticSlot?.(null);
   };
 
@@ -621,18 +617,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         const newCartItems = findPatient?.cartItems?.filter(
           (item) => Number(item?.id) !== Number(id)
         );
-
-        //if newCart is zero, then simply remove the patient
-        // if (newCartItems?.length == 0) {
-        //   const newCartItems = patientCartItems?.filter((item) => item?.patientId !== patientId);
-        //   setPatientCartItems?.(newCartItems);
-        // } else {
-        //just update the list with selected item attribute
         patientCartItems[findPatientIndex].cartItems = newCartItems;
         setPatientCartItems?.(patientCartItems);
-        // }
       } else {
-        //direclty remove the entry
         removePatientItem?.(patientId);
       }
     }
@@ -671,6 +658,47 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setPatientCartItems?.([...newPatientCartItem!]);
   };
 
+  const removeDuplicatePatientCartItems: DiagnosticsCartContextProps['removeDuplicatePatientCartItems'] = (
+    patientId: string,
+    cartItemIds: number[]
+  ) => {
+    cartItemIds?.forEach((id: number) => {
+      const findPatientIndex = patientCartItems?.findIndex(
+        (patient: DiagnosticPatientCartItem) => patient?.patientId === patientId
+      );
+      if (findPatientIndex !== -1) {
+        const lineItemsIndex = patientCartItems[findPatientIndex]?.cartItems?.findIndex(
+          (cartItems: DiagnosticsCartItem) => Number(cartItems?.id) === Number(id)
+        );
+        if (lineItemsIndex !== -1) {
+          patientCartItems[findPatientIndex]?.cartItems?.splice(lineItemsIndex, 1);
+        }
+      }
+      const newPatientLineItems: DiagnosticPatientCartItem[] = patientCartItems?.filter(
+        (patient: DiagnosticPatientCartItem) => patient?.cartItems?.length > 0
+      );
+      _setPatientCartItems(newPatientLineItems);
+      checkItemRemovedFromAllPatients(id);
+    });
+  };
+
+  const checkItemRemovedFromAllPatients = (cartItemId: number) => {
+    let isItemExistInPatientCart: boolean = true;
+    patientCartItems?.forEach((patient: DiagnosticPatientCartItem) => {
+      const findAllItem = patient?.cartItems?.filter(
+        (itemObj: DiagnosticsCartItem) => Number(itemObj?.id) === Number(cartItemId)
+      );
+      const findItem =
+        !!findAllItem && findAllItem?.length > 0 && findAllItem?.filter((item) => item?.isSelected);
+      if (!!findItem && findItem?.length > 0) {
+        isItemExistInPatientCart = false;
+      }
+    });
+    if (isItemExistInPatientCart) {
+      removeCartItem?.(cartItemId?.toString());
+    }
+  };
+
   const selectedPatientCartItems =
     !!modifiedPatientCart && modifiedPatientCart?.length > 0
       ? modifiedPatientCart
@@ -688,12 +716,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
       return obj;
     });
 
-  const [filterPatientCartItems, setFilterPatientCartItems] = useState<
-    DiagnosticsCartContextProps['filterPatientCartItems']
-  >(filterPatientCartItem);
-
   const allCartItems =
-    !!filterPatientCartItems && filterPatientCartItem?.map((item) => item?.cartItems)?.flat();
+    !!filterPatientCartItem && filterPatientCartItem?.map((item) => item?.cartItems)?.flat();
 
   const withDiscount = allCartItems?.filter(
     (item: DiagnosticsCartItem) => item?.groupPlan! == DIAGNOSTIC_GROUP_PLAN.SPECIAL_DISCOUNT
@@ -835,6 +859,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setModifiedPatientCart([]);
     setPhleboETA(0);
     setShowMultiPatientMsg(false);
+    setCartItemsMapping([]);
   };
 
   useEffect(() => {
@@ -991,8 +1016,6 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         showSelectedPatient,
         duplicateItemsArray,
         setDuplicateItemsArray,
-        filterPatientCartItems,
-        setFilterPatientCartItems,
         modifiedPatientCart,
         setModifiedPatientCart,
         removeMultiPatientCartItems,
@@ -1000,6 +1023,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         setPhleboETA,
         showMultiPatientMsg,
         setShowMultiPatientMsg,
+        removeDuplicatePatientCartItems,
+        cartItemsMapping,
+        setCartItemsMapping,
       }}
     >
       {props.children}

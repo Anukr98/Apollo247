@@ -60,7 +60,7 @@ export const TestWidgetListing: React.FC<TestWidgetListingProps> = (props) => {
         <View style={styles.circleView}>
           <Image resizeMode={'contain'} style={styles.image} source={{ uri: item.itemIcon }} />
         </View>
-        <Text numberOfLines={1} ellipsizeMode="tail" style={styles.textStyle}>
+        <Text numberOfLines={2} ellipsizeMode="tail" style={styles.textStyle}>
           {nameFormater(item?.itemTitle, 'default')}
         </Text>
       </TouchableOpacity>
@@ -72,7 +72,7 @@ export const TestWidgetListing: React.FC<TestWidgetListingProps> = (props) => {
         <View style={styles.gridConatiner}>
           <FlatList
             data={dataFromHomePage?.diagnosticWidgetData}
-            numColumns={3}
+            numColumns={4}
             keyExtractor={(_, index) => `${index}`}
             renderItem={({ item, index }) => renderItems(item, index)}
           />
@@ -124,28 +124,29 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   circleView: {
-    width: 80,
-    height: 80,
-    borderRadius: 80 / 2,
+    width: 50,
+    height: 50,
+    borderRadius: 50 / 2,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#f9f9f9',
   },
   image: {
-    width: 50,
-    height: 50,
+    width: 30,
+    height: 30,
     backgroundColor: '#f9f9f9',
   },
   gridPart: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: '33%',
+    width: '25%',
     borderColor: '#E8E8E8',
     borderWidth: 0.5,
     padding: 15,
   },
   textStyle: {
     ...theme.viewStyles.text('SB', 14, colors.SHERPA_BLUE, 1, 20, 0),
-    padding: 5,
+    paddingVertical: 5,
+    textAlign:'center'
   },
 });

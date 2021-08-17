@@ -170,6 +170,7 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   PHLEBO_COMPLETED = "PHLEBO_COMPLETED",
   PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
+  REFUND_INITIATED = "REFUND_INITIATED",
   REPORT_GENERATED = "REPORT_GENERATED",
   SAMPLE_COLLECTED = "SAMPLE_COLLECTED",
   SAMPLE_COLLECTED_IN_LAB = "SAMPLE_COLLECTED_IN_LAB",
@@ -1132,6 +1133,9 @@ export interface DeletePatientPrismMedicalRecordInput {
 
 export interface DiagnosticInitiateOrderPayment {
   orderId?: string | null;
+}
+export interface DiagnosticInitiateOrderPaymentv2 {
+  paymentOrderID?: string | null;
 }
 
 export interface DiagnosticLineItem {

@@ -8,6 +8,8 @@ import {
   EmptySlot,
   CrossPopup,
   PremiumIcon,
+  NightSelected,
+  Night,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   g,
@@ -83,7 +85,6 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
 
   const dt = moment(props.slotBooked!).format('YYYY-MM-DD') || null;
   const tm = moment(props.slotBooked!)?.format('hh:mm A') || null; //format changed from hh:mm
-  const isSameDate = moment().isSame(moment(date), 'date');
 
   const [selectedDate, setSelectedDate] = useState<string>(moment(date).format('DD') || '');
   const [isPrepaidSlot, setPrepaidSlot] = useState<boolean>(
@@ -119,6 +120,28 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     });
   }
   let monthHeading = `${moment().format('MMMM')} ${moment().format('YYYY')}`;
+
+  //use formatTestSlot when time is coming in 24hr.
+  let dropDownOptions = uniqueSlots?.map((val) => ({
+    key: `${val?.startTime}`,
+    value: `${val.startTime}`,
+    slotInfo: val,
+  }));
+
+  var dayPhaseArray = [
+    {
+      tab: 0,
+      activeImage: <MorningSelected />,
+      inactiveImage: <Morning />,
+      title: 'Morning',
+    },
+    {
+      tab: 1,
+      activeImage: <AfternoonSelected />,
+      inactiveImage: <Afternoon />,
+      title: 'Afternoon',
+    },
+  ];
 
   useEffect(() => {
     if (props.isFocus) {
@@ -207,36 +230,34 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
     }
   };
 
-  const dayPhaseArray = [
-    {
-      tab: 0,
-      activeImage: <MorningSelected />,
-      inactiveImage: <Morning />,
-      title: 'Morning',
-    },
-    {
-      tab: 1,
-      activeImage: <AfternoonSelected />,
-      inactiveImage: <Afternoon />,
-      title: 'Afternoon',
-    },
-  ];
-
-  //use formatTestSlot when time is coming in 24hr.
-  let dropDownOptions = uniqueSlots?.map((val) => ({
-    key: `${val?.startTime}`,
-    value: `${val.startTime}`,
-    slotInfo: val,
-  }));
-
   const time24 = (item: any) => {
     return moment(item?.value, 'hh:mm A')?.format('HH:mm');
   };
+
+  const isEveningSlotsAvailable = dropDownOptions?.filter(
+    (item) => time24(item) >= '17' && time24(item) < '23'
+  );
+  if (!!isEveningSlotsAvailable && isEveningSlotsAvailable?.length > 0) {
+    dayPhaseArray?.push({
+      tab: 2,
+      activeImage: <NightSelected />,
+      inactiveImage: <Night />,
+      title: 'Evening',
+    });
+  }
 
   if (selectedDayTab == 1) {
     //for afternoon 12-17
     dropDownOptions = dropDownOptions?.filter((item) => {
       if (time24(item) >= '12' && time24(item) < '17') {
+        return item;
+      }
+    });
+  } else if (selectedDayTab == 2) {
+    //for evening 17 - 6
+    dropDownOptions = dropDownOptions?.filter((item) => {
+      //changed from < 6 to 23
+      if (time24(item) >= '17' && time24(item) < '23') {
         return item;
       }
     });
@@ -298,7 +319,7 @@ export const TestSlotSelectionOverlayNew: React.FC<TestSlotSelectionOverlayNewPr
           ))}
         </View>
         <View>
-          {dropDownOptions?.length != 0 ? (
+          {!!dropDownOptions && dropDownOptions?.length != 0 ? (
             <FlatList
               keyExtractor={(_, index) => index.toString()}
               data={dropDownOptions}

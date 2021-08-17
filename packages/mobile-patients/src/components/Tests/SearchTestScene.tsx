@@ -158,6 +158,12 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         } as DiagnosticPatientCartItem;
         setPatientCartItems?.([obj]);
       }
+      setModifiedPatientCart?.([
+        {
+          patientId: modifiedOrder?.patientId,
+          cartItems: cartItems,
+        },
+      ]);
     }
     searchTextFromProp && onSearchTest(searchTextFromProp);
   }, []);

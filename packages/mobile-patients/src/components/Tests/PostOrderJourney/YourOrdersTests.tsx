@@ -151,7 +151,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [date, setDate] = useState<Date>(new Date());
   const [showDisplaySchedule, setDisplaySchedule] = useState<boolean>(false);
-  const [displayViewReport, setDisplayViewReport] = useState<boolean>(false);
+
   const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
   const [selectedOrderId, setSelectedOrderId] = useState<string>('');
   const [slots, setSlots] = useState<TestSlot[]>([]);
@@ -430,7 +430,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         console.log({ data });
         const cancelResponse = g(data, 'data', 'cancelDiagnosticOrdersv2', 'status');
         if (!!cancelResponse && cancelResponse === true) {
-          updateCancelCard(selectedOrderId);
+          // updateCancelCard(selectedOrderId);
+          setTimeout(() => refetchOrders(), 1000);
           showAphAlert?.({
             unDismissable: true,
             title: string.common.hiWithSmiley,
@@ -726,7 +727,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
     setLoading?.(false);
   }
-
   const onReschduleDoneSelected = () => {
     setLoading?.(true);
     const formattedDate = moment(rescheduleDate || diagnosticSlot?.date).format(
@@ -734,10 +734,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     ) as string;
     const formatTime =
       rescheduleSlotObject?.slotStartTime || (diagnosticSlot?.slotStartTime as string);
-    const dateTimeInUTC = moment(
-      `${formattedDate} ${formatTime}`,
-      'YYYY-MM-DD HH:mm:ss'
-    ).toISOString();
+
+    const formattedString = moment(formattedDate).format('YYYY/MM/DD') + ' ' + formatTime;
+    const dateTimeInUTC = new Date(formattedString)?.toISOString();
+
     const dateTimeToShow = formattedDate + ', ' + formatTime;
     const comment = '';
     const orderId = !!selectedOrder?.parentOrderId
@@ -1332,20 +1332,29 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       const res = await diagnosticsOrderListByParentId(client, parentOrderId!);
       if (res?.data?.getDiagnosticOrdersListByParentOrderID) {
         const getOrders = res?.data?.getDiagnosticOrdersListByParentOrderID?.ordersList! || [];
-
-        setMultipleOrdersList(getOrders);
-        setShowMultiUhidOption(true);
+        if (getOrders?.length == 0) {
+          //in that case when res is [] => cancelled all muhid order except one, try to reschedule
+          setIsMultiUhid(false);
+          setShowMultiUhidOption(false);
+          setShowRescheduleReasons(true);
+          setSelectRescheduleOption(true);
+        } else {
+          setMultipleOrdersList(getOrders);
+          setShowMultiUhidOption(true);
+        }
       } else {
         setMultipleOrdersList([]);
+        setShowMultiUhidOption(false);
         setShowRescheduleReasons(true);
         setSelectRescheduleOption(true);
       }
       setLoading?.(false);
     } catch (error) {
-      console.log({ error });
       setMultipleOrdersList([]);
+      setIsMultiUhid(false);
       setShowRescheduleReasons(true);
       setSelectRescheduleOption(true);
+      setShowMultiUhidOption(false);
 
       setLoading?.(false);
       CommonBugFender('YourOrdersTest_callMultiUhidApi', error);
@@ -1484,6 +1493,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             ? order?.slotDateTimeInUTC
             : getSlotStartTime(order?.slotTimings)
         }
+        slotDuration={order?.attributesObj?.slotDurationInMinutes || 45}
         isPrepaid={order?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT}
         isCancelled={currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
         cancelledReason={
@@ -1597,12 +1607,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   }
 
   function _navigateToSearchPage(patientId: string) {
-    setModifiedPatientCart?.([
-      {
-        patientId: patientId,
-        cartItems: cartItems,
-      },
-    ]);
     props.navigation.navigate(AppRoutes.SearchTestScene, {
       searchText: '',
     });
@@ -1620,7 +1624,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   function _onPressViewReportAction(order: orderList) {
     if (!!order?.labReportURL && order?.labReportURL != '') {
       setActiveOrder(order);
-      setDisplayViewReport(true);
+      _onPressViewReport(order);
     } else if (!!order?.visitNo && order?.visitNo != '') {
       //directly open the phr section
       fetchTestReportResult(order);
@@ -1779,33 +1783,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       {showDisplaySchedule && renderRescheduleOrderOverlay()}
-      {displayViewReport && (
-        <TestViewReportOverlay
-          order={activeOrder}
-          heading=""
-          isVisible={displayViewReport}
-          viewReportOrderId={viewReportOrderId}
-          downloadDocument={() => {
-            const res = downloadDocument(
-              activeOrder?.labReportURL ? activeOrder?.labReportURL : '',
-              'application/pdf',
-              activeOrder?.displayId
-            );
-            if (res == activeOrder?.displayId) {
-              setViewReportOrderId(activeOrder?.displayId);
-            }
-          }}
-          onClose={() => setDisplayViewReport(false)}
-          onPressViewReport={() => {
-            DiagnosticViewReportClicked(
-              'My Order',
-              !!activeOrder?.labReportURL ? 'Yes' : 'No',
-              'Download Report PDF'
-            );
-            _onPressViewReport(activeOrder!);
-          }}
-        />
-      )}
       <SafeAreaView style={theme.viewStyles.container}>
         {props?.showHeader == false ? null : (
           <Header

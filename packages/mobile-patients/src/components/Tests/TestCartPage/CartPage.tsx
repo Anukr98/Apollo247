@@ -14,6 +14,7 @@ import {
   aphConsole,
   extractPatientDetails,
   formatAddress,
+  formatAddressForApi,
   formatAddressWithLandmark,
   g,
   isAddressLatLngInValid,
@@ -67,7 +68,6 @@ import {
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   DiagnosticLineItem,
-  Gender,
   TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -82,6 +82,7 @@ import { CartItemCard } from '@aph/mobile-patients/src/components/Tests/componen
 import {
   diagnosticServiceability,
   getDiagnosticCartRecommendations,
+  getReportTAT,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   findDiagnosticsByItemIDsAndCityID,
@@ -183,6 +184,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   //check for the modify flow...
   const [itemSelectedFromWidget, setItemSelectedFromWidget] = useState([] as any);
   const [widgetSelectedItem, setWidgetSelectedItem] = useState([] as any);
+  const [reportTat, setReportTat] = useState([] as any);
 
   const isCartPresent = isDiagnosticSelectedCartEmpty(
     isModifyFlow ? modifiedPatientCart : patientCartItems
@@ -194,9 +196,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
     allCurrentPatients?.filter((items: any) => patientsOnCartPage.includes(items?.id));
 
   const addressText = isModifyFlow
-    ? formatAddressWithLandmark(modifiedOrder?.patientAddressObj) || ''
+    ? formatAddressForApi(modifiedOrder?.patientAddressObj) || ''
     : selectedAddr
-    ? formatAddressWithLandmark(selectedAddr) || ''
+    ? formatAddressForApi(selectedAddr) || ''
     : '';
 
   var pricesForItemArray;
@@ -270,8 +272,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   }, [duplicateItemsArray]);
 
   useEffect(() => {
-    const getDeliveryAddressId = selectedAddr?.id;
-    // deliveryAddressId == '' &&  setDeliveryAddressId?.(getDeliveryAddressId!);
     isModifyFlow && setDeliveryAddressId?.(modifiedOrder?.patientAddressId);
     if (
       ((isModifyFlow && modifiedPatientCart?.length > 0) || deliveryAddressId != '') &&
@@ -287,6 +287,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   useEffect(() => {
     if (cartItems?.length > 0 && cartItemsWithId?.length > 0) {
       const itemIds = isModifyFlow ? cartItemsWithId.concat(modifiedOrderItemIds) : cartItemsWithId;
+      fetchReportTat(itemIds);
       fetchTestReportGenDetails(itemIds);
       fetchCartPageRecommendations(itemIds);
     }
@@ -356,6 +357,32 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       //show top booked tests
     }
   };
+
+  async function fetchReportTat(_cartItemId: string | number[]) {
+    const removeSpaces =
+      typeof _cartItemId == 'string' ? _cartItemId?.replace(/\s/g, '')?.split(',') : null;
+    const listOfIds =
+      typeof _cartItemId == 'string' ? removeSpaces?.map((item) => Number(item!)) : _cartItemId;
+    const pincode = selectedAddr?.zipcode;
+    try {
+      const result = await getReportTAT(
+        client,
+        null,
+        Number(addressCityId),
+        Number(pincode),
+        listOfIds!
+      );
+      if (result?.data?.getConfigurableReportTAT) {
+        const getMaxReportTat = result?.data?.getConfigurableReportTAT?.itemLevelReportTATs;
+        setReportTat(getMaxReportTat);
+      } else {
+        setReportTat([]);
+      }
+    } catch (error) {
+      CommonBugFender('fetchReportTat_TestDetails', error);
+      setReportTat([]);
+    }
+  }
 
   function createWidgetItemParameterObject(selectedItem: any, addedItem: any) {
     const inclusions = selectedItem?.inclusionData;
@@ -588,7 +615,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
             //mrp
             //show the prices changed pop-over
             isPriceChange = true;
-            setShowPriceMismatch(true);
+            isModifyFlow ? setShowPriceMismatch(false) : setShowPriceMismatch(true);
             let updatedObject = {
               id: results?.[isItemInCart]
                 ? String(results?.[isItemInCart]?.itemId)
@@ -957,7 +984,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
 
   function getSelectedPatientCartMapping() {
     const filterPatients =
-      isModifyFlow && !!modifiedPatientCart && modifiedPatientCart?.length > 0
+      isModifyFlow &&
+      !!modifiedPatientCart &&
+      isDiagnosticSelectedCartEmpty(modifiedPatientCart)?.length > 0
         ? modifiedPatientCart
         : !!patientCartItems && isDiagnosticSelectedCartEmpty(patientCartItems);
     return filterPatients?.reverse();
@@ -1069,7 +1098,6 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
                 getPatient
               );
               const patientItems = pCartItem?.cartItems?.filter((cItem) => cItem?.isSelected);
-
               return (
                 <>
                   {!!patientName && !!patientItems && patientItems?.length > 0
@@ -1235,9 +1263,17 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
   };
 
   const _renderCartItem = (test: DiagnosticsCartItem, patientItems: any, index: number) => {
-    const reportGenItem = reportGenDetails?.find((_item: any) => _item?.itemId === test?.id);
+    const reportGenItem =
+      !!reportGenDetails &&
+      reportGenDetails?.length > 0 &&
+      reportGenDetails?.find((_item: any) => _item?.itemId === test?.id);
+    const reportTAT =
+      !!reportTat &&
+      reportTat?.length > 0 &&
+      reportTat?.find((_item: any) => Number(_item?.itemId) === Number(test?.id));
     const filterDuplicateItemsForPatients =
-      !!overallArray && overallArray?.filter((item: any) => item?.patientId == patientItems?.id);
+      !!duplicateNameArray &&
+      duplicateNameArray?.filter((item: any) => item?.patientId == patientItems?.id);
     return (
       <CartItemCard
         index={index}
@@ -1246,8 +1282,9 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         selectedPatient={selectedPatient}
         isCircleSubscribed={isDiagnosticCircleSubscription}
         reportGenItem={reportGenItem}
+        reportTat={reportTAT}
         showCartInclusions={showInclusions}
-        duplicateArray={filterDuplicateItemsForPatients} //duplicateNameArray
+        duplicateArray={filterDuplicateItemsForPatients}
         onPressCard={(item) => {
           CommonLogEvent(AppRoutes.CartPage, 'Navigate to test details scene');
           fetchPackageDetails(
@@ -1369,7 +1406,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
         }
         rightTitle={!!itemSelectedFromWidget ? itemSelectedFromWidget?.price : undefined}
         onCloseIconPress={() => setShowPatientOverlay(false)}
-        showCloseIcon={false}
+        showCloseIcon={true}
         onPressAddNewProfile={() => {}}
         patientSelected={selectedPatient}
         onPressAndroidBack={() => {
@@ -1730,7 +1767,7 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       <StickyBottomComponent style={{ shadowColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}>
         <Button
           title={isModifyFlow ? 'PROCEED TO NEW CART' : 'SCHEDULE APPOINTMENT'}
-          onPress={() => _checkInclusionLevelDuplicates()}
+          onPress={() => _navigateToNextScreen()}
           disabled={disableCTA}
         />
       </StickyBottomComponent>
@@ -1865,7 +1902,7 @@ const styles = StyleSheet.create({
   },
   addressOutermostView: {
     backgroundColor: '#F5FFFD',
-    maxHeight: 210,
+    maxHeight: 230,
     minHeight: screenHeight > 800 ? 150 : screenHeight < 600 ? 165 : 175,
     shadowColor: theme.colors.SHADE_GREY,
     shadowOffset: { width: 0, height: 5 },

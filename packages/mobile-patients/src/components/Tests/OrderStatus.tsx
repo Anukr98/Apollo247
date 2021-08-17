@@ -106,6 +106,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
   const [showMoreArray, setShowMoreArray] = useState([] as any);
   const [apiPrimaryOrderDetails, setApiPrimaryOrderDetails] = useState([] as any);
   const [primaryOrderId, setPrimaryOrderId] = useState<string>('');
+  const [slotDuration, setSlotDuration] = useState<number>(0);
 
   const moveToMyOrders = () => {
     props.navigation.popToTop({ immediate: true }); //if not added, stack was getting cleared.
@@ -119,8 +120,12 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     try {
       let response = await fetchOrderDetails(primaryId);
       if (!!response && response?.data && !response?.errors) {
-        let getOrderDetails = response?.data?.getDiagnosticOrderDetails?.ordersList || [];
-        setApiPrimaryOrderDetails([getOrderDetails]!);
+        let getOrderDetailsResponse = response?.data?.getDiagnosticOrderDetails?.ordersList || [];
+        const getSlotDuration =
+          response?.data?.getDiagnosticOrderDetails?.ordersList?.attributesObj
+            ?.slotDurationInMinutes || 45;
+        setApiPrimaryOrderDetails([getOrderDetailsResponse]!);
+        setSlotDuration(getSlotDuration);
       } else {
         setApiPrimaryOrderDetails([]);
       }
@@ -140,8 +145,11 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
         const getResponse = response?.data?.data?.getOrderInternal?.DiagnosticsPaymentDetails;
         const getSlotDateTime = getResponse?.ordersList?.[0]?.slotDateTimeInUTC;
         const primaryOrderID = getResponse?.ordersList?.[0]?.primaryOrderID;
+        const slotDuration =
+          getResponse?.ordersList?.[0]?.attributesObj?.slotDurationInMinutes || 0;
         setApiOrderDetails([getResponse]);
         setTimeDate(getSlotDateTime);
+        setSlotDuration(slotDuration);
         setIsSingleUhid(getResponse?.ordersList?.[0]?.length == 1);
         if (primaryOrderID) {
           setPrimaryOrderId(primaryOrderID);
@@ -239,8 +247,16 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       ? moment(modifiedOrderDetails?.slotDateTimeInUTC)?.format('YYYY')
       : timeDate != '' && moment(timeDate)?.format('YYYY');
     const time = !!modifiedOrderDetails
-      ? moment(modifiedOrderDetails?.slotDateTimeInUTC)?.format('hh:mm')
+      ? moment(modifiedOrderDetails?.slotDateTimeInUTC)?.format('hh:mm A')
       : timeDate != '' && moment(timeDate)?.format('hh:mm A');
+    const rangeAddedTime = !!modifiedOrderDetails
+      ? moment(modifiedOrderDetails?.slotDateTimeInUTC)
+          ?.add(slotDuration, 'minutes')
+          ?.format('hh:mm A')
+      : timeDate != '' &&
+        moment(timeDate)
+          ?.add(slotDuration, 'minutes')
+          ?.format('hh:mm A');
     return (
       <>
         {!!date && !!time && !!year ? (
@@ -253,7 +269,11 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
                   {date}, {year}
                 </Text>
               )}
-              {!!time && <Text style={styles.pickupDate}> | {time}</Text>}
+              {!!time && (
+                <Text style={styles.pickupDate}>
+                  | {time} - {rangeAddedTime}
+                </Text>
+              )}
             </Text>
           </View>
         ) : null}
@@ -416,11 +436,19 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
             (showMoreArray?.includes(displayId) ? null : (
               <View style={[styles.itemsView, { flexDirection: 'row' }]}>
                 <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
-                <Text style={styles.testName}>
+                <Text
+                  style={[
+                    styles.testName,
+                    {
+                      maxWidth: !!lineItems?.[0]?.editOrderID ? '72%' : '78%',
+                    },
+                  ]}
+                >
                   {nameFormater(lineItems?.[0]?.itemName, 'title')}
                 </Text>
+                {!!lineItems?.[0]?.editOrderID ? renderNewTag() : null}
                 {remainingItems > 0 && (
-                  <TouchableOpacity onPress={() => _onPressMore(order)} style={{}}>
+                  <TouchableOpacity onPress={() => _onPressMore(order)} style={{ marginLeft: 2 }}>
                     <Text style={styles.moreText}>+ {remainingItems} MORE</Text>
                   </TouchableOpacity>
                 )}
@@ -433,9 +461,14 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     );
   };
 
-  //add order summary
+  const renderNewTag = () => {
+    return (
+      <View style={styles.newItemView}>
+        <Text style={styles.newText}>NEW</Text>
+      </View>
+    );
+  };
 
-  //define type
   function _onPressMore(item: any) {
     const displayId = item?.displayId;
     const array = showMoreArray?.concat(displayId);
@@ -455,9 +488,19 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
           return (
             <View style={{ flexDirection: 'row' }}>
               <Text style={styles.bulletStyle}>{'\u2B24'}</Text>
-              <Text style={styles.testName}>{nameFormater(items?.itemName, 'title')}</Text>
+              <Text
+                style={[
+                  styles.testName,
+                  {
+                    maxWidth: !!items.editOrderID ? '72%' : '78%',
+                  },
+                ]}
+              >
+                {nameFormater(items?.itemName, 'default')}
+              </Text>
+              {!!items.editOrderID ? renderNewTag() : null}
               {lineItems?.length - 1 == index && (
-                <TouchableOpacity onPress={() => _onPressLess(item)} style={{}}>
+                <TouchableOpacity onPress={() => _onPressLess(item)} style={{ marginLeft: 2 }}>
                   <Text style={styles.moreText}> LESS</Text>
                 </TouchableOpacity>
               )}
@@ -697,7 +740,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
     marginBottom: '1.5%',
     marginHorizontal: '3%',
-    maxWidth: '80%',
   },
   patientName: {
     width: '60%',
@@ -746,5 +788,17 @@ const styles = StyleSheet.create({
   outerView: {
     backgroundColor: colors.WHITE,
     padding: 10,
+  },
+  newItemView: {
+    backgroundColor: '#4CAF50',
+    height: 18,
+    width: 40,
+    borderRadius: 2,
+    borderColor: '#4CAF50',
+    justifyContent: 'center',
+  },
+  newText: {
+    ...theme.viewStyles.text('SB', 10, 'white'),
+    textAlign: 'center',
   },
 });

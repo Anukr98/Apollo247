@@ -1854,7 +1854,17 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           lastName
           gender
         }
-        city
+        patientAddressObj {
+          addressLine1
+          addressLine2
+          addressType
+          landmark
+          state
+          city
+          zipcode
+          latitude
+          longitude
+        }
         slotTimings
         slotId
         totalPrice
@@ -1873,6 +1883,10 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         attributesObj{
           initialCollectionCharges
           distanceCharges
+          homeCollectionCharges
+          slotDurationInMinutes
+          expectedReportGenerationTime
+          reportTATMessage
         }
         diagnosticOrderLineItems {
           id
@@ -2235,7 +2249,11 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           reportGenerationTime
           initialCollectionCharges
           isMultiUhid
+          slotDurationInMinutes
+          homeCollectionCharges
           distanceCharges
+          expectedReportGenerationTime
+          reportTATMessage
         }
         patientAddressObj {
           addressLine1
@@ -4787,6 +4805,9 @@ export const GET_INTERNAL_ORDER = gql`
           primaryOrderID
           displayId
           slotDateTimeInUTC
+          attributesObj{
+            slotDurationInMinutes
+          }
           patientObj{
             id
             firstName
@@ -4797,6 +4818,7 @@ export const GET_INTERNAL_ORDER = gql`
             itemId
             itemName
             price
+            editOrderID
           }
         }
       }
@@ -4920,6 +4942,14 @@ export const GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID = gql`
         isRescheduled
         preBookingId
         id
+        attributesObj {
+          homeCollectionCharges
+          slotDurationInMinutes
+          initialCollectionCharges
+          distanceCharges
+          expectedReportGenerationTime
+          reportTATMessage
+        }
         diagnosticOrdersStatus {
           orderStatus
         }
@@ -4964,6 +4994,9 @@ export const GET_ORDER_LEVEL_DIAGNOSTIC_STATUS = gql`
         packageId
         itemName
         packageName
+      }
+      upcomingStatuses {
+        orderStatus
       }
     }
   }
@@ -5070,6 +5103,12 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql`
           firstName
           lastName
         }
+        attributesObj{
+          reportTATHours
+          reportTATMessage
+          reportGenerationTime
+          expectedReportGenerationTime
+        }
         diagnosticOrderLineItems {
           itemObj {
             testPreparationData
@@ -5125,7 +5164,10 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
           }
         }
         attributesObj {
+          reportTATHours
+          reportTATMessage
           reportGenerationTime
+          expectedReportGenerationTime
         }
       }
     }
@@ -5141,6 +5183,10 @@ export const MODIFY_DIAGNOSTIC_ORDERS = gql`
       errorMessageToDisplay
       attributes {
         itemids
+        conflictedItems{
+          itemToKeep
+          itemsWithConflicts
+        }
       }
     }
   }
@@ -5670,3 +5716,37 @@ mutation getDiagnosticItemRecommendations($itemIds:[Int]!, $records: Int){
 }
 `;
 
+export const GET_DIAGNOSTIC_EXPRESS_SLOTS_INFO  = gql`
+  query getUpcomingSlotInfo($latitude: Float!, $longitude: Float!, $zipcode: String!, $serviceability: DiagnosticsServiceability!) {
+    getUpcomingSlotInfo(latitude: $latitude, longitude: $longitude, zipcode: $zipcode, serviceability: $serviceability) {
+      status
+      slotInfo
+    }
+  }
+`;
+
+export const INITIATE_DIAGNOSTIC_ORDER_PAYMENT_V2 = gql`
+  mutation initiateDiagonsticHCOrderPaymentv2(
+    $diagnosticInitiateOrderPaymentInput: DiagnosticInitiateOrderPaymentv2!
+  ) {
+    initiateDiagonsticHCOrderPaymentv2(
+      diagnosticInitiateOrderPaymentInput: $diagnosticInitiateOrderPaymentInput
+    ) {
+      status
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_REPORT_TAT = gql `
+  query getConfigurableReportTAT($slotDateTimeInUTC: DateTime,$cityId: Int!, $pincode: Int!, $itemIds: [Int]!){
+    getConfigurableReportTAT(slotDateTimeInUTC: $slotDateTimeInUTC,cityId: $cityId, pincode: $pincode, itemIds: $itemIds){
+      maxReportTAT
+      reportTATMessage
+      itemLevelReportTATs{
+        itemId
+        reportTATMessage
+        reportTATInUTC
+      }
+    }
+  }
+`;

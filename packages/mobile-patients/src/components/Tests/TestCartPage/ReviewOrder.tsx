@@ -88,7 +88,10 @@ import {
 
 import moment from 'moment';
 import { AddressSource } from '@aph/mobile-patients/src/components/AddressSelection/AddAddressNew';
-import { DIAGNOSTIC_GROUP_PLAN } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  DIAGNOSTIC_GROUP_PLAN,
+  getDiagnosticCartItemReportGenDetails,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   DIAGNOSTIC_SLOT_TYPE,
   WebEngageEventName,
@@ -97,6 +100,8 @@ import {
 import {
   saveModifyDiagnosticOrder,
   saveModifyDiagnosticOrderVariables,
+  saveModifyDiagnosticOrder_saveModifyDiagnosticOrder,
+  saveModifyDiagnosticOrder_saveModifyDiagnosticOrder_attributes_conflictedItems,
 } from '@aph/mobile-patients/src/graphql/types/saveModifyDiagnosticOrder';
 import {
   createOrderInternalVariables,
@@ -125,6 +130,12 @@ export interface orderDetails {
   circleSaving: string | number;
   cartHasAll?: boolean;
 }
+
+export type conflictWithPatientsObjInterface = {
+  itemsToRemovalName: string;
+  toKeepItemIds: string;
+  patientId: string;
+};
 
 export interface ReviewOrderProps extends NavigationScreenProps {
   slotsInput: any;
@@ -166,15 +177,19 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setModifiedPatientCart,
     setPatientCartItems,
     phleboETA,
+    removeDuplicatePatientCartItems,
+    deliveryAddressCityId,
+    cartItemsMapping,
+    setCartItemsMapping,
   } = useDiagnosticsCart();
 
-  const { setAddresses: setMedAddresses, circleSubscriptionId } = useShoppingCart();
-
+  const { circleSubscriptionId } = useShoppingCart();
   const { setauthToken } = useAppCommonData();
-
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
 
+  type PatientsObjWithOrderIDs = saveDiagnosticBookHCOrderv2_saveDiagnosticBookHCOrderv2_patientsObjWithOrderIDs;
+  type PatientObjWithModifyOrderIDs = saveModifyDiagnosticOrder_saveModifyDiagnosticOrder_attributes_conflictedItems;
   var modifyPricesForItemArray, pricesForItemArray, pricesForItemArrayForHC;
 
   const slotsInput = props.navigation.getParam('slotsInput');
@@ -193,6 +208,14 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
   const [showInclusions, setShowInclusions] = useState<boolean>(false);
   const [orderDetails, setOrderDetails] = useState<orderDetails>();
   const [isVisible, setIsVisible] = useState<boolean>(showPaidPopUp);
+
+  let itemNamesToRemove_global: string[] = [];
+  let itemNamesToKeep_global: string[] = [];
+  let itemIdsToRemove_global: Number[] = [];
+  let itemIdsToKeep_global: Number[] = [];
+  let obj;
+  let setLowItemName: string[] = [],
+    setHighPriceName: string[] = [];
 
   const [date, setDate] = useState<Date>(new Date());
   const isModifyFlow = !!modifiedOrder && !isEmptyObject(modifiedOrder);
@@ -219,6 +242,26 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     };
   }, []);
 
+  useEffect(() => {
+    populateCartMapping();
+  }, []);
+
+  async function populateCartMapping() {
+    const listOfIds = cartItems?.map((item) => Number(item?.id));
+    try {
+      const res: any = await getDiagnosticCartItemReportGenDetails(
+        listOfIds?.toString(),
+        Number(deliveryAddressCityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
+      );
+      if (res?.data?.success) {
+        const getItems = res?.data?.data;
+        setCartItemsMapping?.(getItems);
+      }
+    } catch (error) {
+      CommonBugFender('populateCartMapping_ReviewOrder', error);
+    }
+  }
+
   function handleBack() {
     props.navigation.goBack();
     return true;
@@ -242,10 +285,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
       variables: { order: orders },
     });
 
-  function addPrices(prevPrice: number) {
-    return prevPrice + prevPrice;
-  }
-
   function clearCollectionCharges() {
     setHcApiCalled(true);
     setHcCharges?.(0);
@@ -258,9 +297,10 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     //modify case
     if (isModifyFlow && cartItems?.length > 0 && modifiedPatientCart?.length > 0) {
       //if multi-uhid modify -> don't call phleboCharges api
-      !!modifiedOrder?.attributesObj?.isMultiUhid && modifiedOrder?.attributesObj?.isMultiUhid
-        ? clearCollectionCharges()
-        : fetchHC_ChargesForTest();
+      // !!modifiedOrder?.attributesObj?.isMultiUhid && modifiedOrder?.attributesObj?.isMultiUhid
+      //   ? clearCollectionCharges()
+      //   : fetchHC_ChargesForTest();
+      clearCollectionCharges();
     } else {
       fetchHC_ChargesForTest();
     }
@@ -556,7 +596,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
               width: screenWidth > 350 ? '77%' : '72%',
             }}
           >
-            <Text style={styles.addressTextStyle}>{nameFormater(item?.name, 'title')}</Text>
+            <Text style={styles.addressTextStyle}>{nameFormater(item?.name, 'default')}</Text>
           </View>
           <View style={{ alignItems: 'center' }}>
             <Text style={styles.priceTextStyle}>
@@ -716,7 +756,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
 
   const renderTotalCharges = () => {
     const anyCartSaving = isDiagnosticCircleSubscription ? cartSaving + circleSaving : cartSaving;
-
+    const hcChargesToShow = getHcCharges()?.toFixed(2);
     return (
       <>
         {/* {renderCouponView()} */}
@@ -731,7 +771,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           {renderPrices('Total MRP', totalPriceExcludingAnyDiscounts.toFixed(2))}
 
           {couponDiscount > 0 && renderPrices('Coupon Discount', couponDiscount?.toFixed(2))}
-          {
+          {isModifyFlow && Number(hcChargesToShow) == 0 ? null : (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={[styles.pricesNormalText, { width: '60%' }]}>
                 {string.diagnosticsCartPage.homeCollectionText}
@@ -751,11 +791,11 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
                     },
                   ]}
                 >
-                  {string.common.Rs} {getHcCharges()?.toFixed(2)}
+                  {string.common.Rs} {hcChargesToShow}
                 </Text>
               </View>
             </View>
-          }
+          )}
           {distanceCharges > 0 &&
             renderPrices(
               string.diagnosticsCartPage.paidSlotText,
@@ -919,10 +959,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     );
   };
 
-  function _navigateToPaymentScreen() {
-    props.navigation.navigate(AppRoutes.PaymentMethods);
-  }
-
   function postwebEngageProceedToPayEventForModify() {
     const previousTotalCharges = modifiedOrder?.totalPrice;
     const isHCUpdated = modifiedOrder?.collectionCharges === hcCharges ? 'No' : 'Yes';
@@ -1024,7 +1060,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         ? `${slotStartTime}-${slotEndTime}`
         : ''
       ).replace(' ', '');
-      const formattedDate = moment(date).format('YYYY-MM-DD');
 
       const allItems = cartItems?.find(
         (item) =>
@@ -1062,7 +1097,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
         .then(async ({ data }) => {
           const getSaveHomeCollectionResponse =
             data?.saveDiagnosticBookHCOrderv2?.patientsObjWithOrderIDs;
-          //check if at any level we have false (duplicate data.)
           const checkIsFalse = getSaveHomeCollectionResponse?.find(
             (item) => item?.status === false
           );
@@ -1086,6 +1120,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           }
         })
         .catch((error) => {
+          console.log({ error });
           CommonBugFender('TestsCart_saveHomeCollectionOrder', error);
           setLoading?.(false);
           showAphAlert?.({
@@ -1148,47 +1183,173 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     };
   }
 
-  function removeDuplicateCartItems(itemIds: string, pricesOfEach: any, patientId: string) {
-    //can be used only when itdose starts returning all id
-    const getItemIds = itemIds?.split(',');
-    const selectedArray = isModifyFlow
-      ? modifiedPatientCart
-      : isDiagnosticSelectedCartEmpty(patientCartItems);
-    const findPatient = selectedArray?.find((item) => item?.patientId === patientId);
-    const itemsInCart = !!findPatient ? findPatient?.cartItems : [];
-
-    const getPricesForItem = createItemPrice(itemsInCart)?.itemPricingObject;
-    const getCartItemPrices = createItemPrice(itemsInCart)?.pricesForItemArray;
-
+  function removeDuplicateCartItems(data: any, pricesOfEach: any, patientId: string) {
+    checkDuplicatesItems(data);
     hideAphAlert?.();
     setLoading?.(false);
-    checkDuplicateItems_Level2(
-      getPricesForItem,
-      getItemIds,
-      getCartItemPrices,
-      patientId,
-      itemsInCart
-    );
+    setShowInclusions(true);
+    renderDuplicateMessage([...new Set(setLowItemName)], [...new Set(setHighPriceName)]);
   }
 
+  const getItemName = (itemIds: any): string => {
+    const itemNames: string[] = [];
+    !!itemIds &&
+      itemIds?.length &&
+      itemIds?.map((id: number) => {
+        const isFromApi = !!cartItemsMapping && cartItemsMapping?.length > 0;
+        const arrayToSelect = isFromApi ? cartItemsMapping : cartItems;
+        const findItem = arrayToSelect?.find(
+          (cItems: any) => Number(isFromApi ? cItems?.itemId : cItems?.id) === Number(id)
+        );
+        if (!!findItem) {
+          itemNames?.push(isFromApi ? findItem?.itemName : findItem?.name);
+        }
+        //in case of modify. => only for single uhid
+        else if (isModifyFlow) {
+          const getModifiedOrderLineItems = modifiedOrder?.diagnosticOrderLineItems;
+          itemIds?.map((id: number) => {
+            const findItem =
+              !!getModifiedOrderLineItems &&
+              getModifiedOrderLineItems?.find(
+                (cItems: any) => Number(cItems?.itemId) === Number(id)
+              );
+            if (!!findItem) {
+              itemNames?.push(findItem?.itemName);
+            }
+          });
+        }
+      });
+    return itemNames?.join(', ');
+  };
+
+  const checkDuplicatesItems = (data: any) => {
+    if (data) {
+      let itemToRemove: number[] = [];
+      let removedTestsNames: string[] = [];
+      let itemToKeepNames: string[] = [];
+      let itemToKeep: number[] = [];
+
+      let conflictWithPatients: conflictWithPatientsObjInterface[] = [];
+      if (isModifyFlow) {
+        const cartConflictedItems = data?.[0]?.attributes?.conflictedItems;
+        const modifiedPatientId = modifiedPatientCart?.[0]?.patientId;
+
+        const itemIdsToRemove: any = cartConflictedItems?.map(
+          (conflictedItems: any) => conflictedItems?.itemsWithConflicts
+        );
+        const itemIdsToKeep: any = cartConflictedItems?.map(
+          (conflictedItems: any) => conflictedItems?.itemToKeep
+        );
+        const allIdsToRemove = itemIdsToRemove?.flat(1);
+        const allIdsToKeep = itemIdsToKeep?.flat(1);
+
+        const updatedCartItems = cartItems?.filter((item: DiagnosticsCartItem) => {
+          return !allIdsToRemove?.some((itemId: number) => Number(itemId) === Number(item?.id));
+        });
+
+        itemToRemove = [...new Set([...itemToRemove, allIdsToRemove?.flat(Infinity)])];
+        itemToKeep = [...new Set([...itemToKeep, ...allIdsToKeep?.flat(Infinity)])];
+
+        cartConflictedItems?.forEach((cItem: PatientObjWithModifyOrderIDs) => {
+          conflictWithPatients?.push({
+            itemsToRemovalName: getItemName(cItem?.itemsWithConflicts),
+            toKeepItemIds: cItem?.itemToKeep?.join('')!,
+            patientId: modifiedPatientId,
+          });
+        });
+
+        removedTestsNames.push(getItemName(itemIdsToRemove));
+        itemToKeepNames.push(getItemName(itemIdsToKeep));
+        itemNamesToRemove_global = removedTestsNames;
+        itemNamesToKeep_global = itemToKeepNames;
+        itemIdsToKeep_global = allIdsToKeep;
+        itemIdsToRemove_global = allIdsToRemove;
+
+        setCartItems?.(updatedCartItems);
+        const newModifiedPatientCartItems = {
+          patientId: modifiedPatientId,
+          cartItems: updatedCartItems,
+        };
+        setModifiedPatientCart?.([newModifiedPatientCartItems]);
+        setLowItemName.push(getItemName(itemIdsToRemove_global));
+        setHighPriceName.push(getItemName(itemIdsToKeep_global));
+      } else {
+        data?.forEach((patientObj: PatientsObjWithOrderIDs) => {
+          if (!patientObj?.status) {
+            const itemIdsToRemove: any = patientObj?.attributes?.conflictedItems?.map(
+              (conflictedItems: any) => conflictedItems?.itemsWithConflicts
+            );
+            const itemIdsToKeep: any = patientObj?.attributes?.conflictedItems?.map(
+              (conflictedItems: any) => conflictedItems?.itemToKeep
+            );
+
+            const conflictedItemsArray = patientObj?.attributes?.conflictedItems;
+            conflictedItemsArray?.map((cItems) => {
+              conflictWithPatients?.push({
+                itemsToRemovalName: getItemName(cItems?.itemsWithConflicts!),
+                toKeepItemIds: !!cItems?.itemToKeep ? cItems?.itemToKeep?.join('') : '',
+                patientId: patientObj?.patientID,
+              });
+            });
+
+            itemToRemove = [...new Set([...itemToRemove, ...itemIdsToRemove?.flat(1)])];
+            itemToKeep = [...new Set([...itemToKeep, ...itemIdsToKeep?.flat(1)])];
+
+            removedTestsNames.push(getItemName(itemIdsToRemove));
+            itemToKeepNames.push(getItemName(itemIdsToKeep));
+            itemNamesToRemove_global = removedTestsNames;
+            itemNamesToKeep_global = itemToKeepNames;
+            itemIdsToKeep_global = itemToKeep;
+            itemIdsToRemove_global = itemToRemove;
+
+            if (patientCartItems?.length) {
+              removeDuplicatePatientCartItems?.(patientObj?.patientID, itemIdsToRemove?.flat(1));
+            }
+          }
+        });
+
+        setLowItemName.push(getItemName(itemIdsToRemove_global));
+        setHighPriceName.push(getItemName(itemIdsToKeep_global));
+      }
+      const selectedAddressIndex = addresses?.findIndex(
+        (address) => address?.id == deliveryAddressId
+      );
+      DiagnosticRemoveFromCartClicked(
+        itemIdsToRemove_global?.join(', '),
+        itemNamesToRemove_global?.join(', '),
+        addresses?.[selectedAddressIndex]?.zipcode!,
+        'Automated'
+      );
+      setDuplicateNameArray(conflictWithPatients);
+      setDuplicateItemsArray?.(conflictWithPatients);
+    }
+  };
+
   function apiHandleErrorFunction(input: any, data: any, source: string) {
-    //take overall object
     let errorMsgToRead =
       source === BOOKING_TYPE.SAVE ? data?.[0]?.errorMessageToDisplay : data?.errorMessageToDisplay;
     let message = errorMsgToRead || string.diagnostics.bookingOrderFailedMessage;
-    //itemIds will only come in case of duplicate
-    //fix this for all itemIds ->
-    let itemIds =
-      source === BOOKING_TYPE.SAVE ? data?.[0]?.attributes?.itemids : data?.attributes?.itemids;
+    const overallStatus =
+      source === BOOKING_TYPE.SAVE
+        ? data?.filter((patientsObj: any) => patientsObj?.status === false)
+        : source === BOOKING_TYPE.MODIFY
+        ? [data]
+        : data; //since not coming in form of array
+
     let patientId =
       source === BOOKING_TYPE.SAVE ? data?.[0]?.patientID : modifiedPatientCart?.[0]?.patientId;
-    if (itemIds?.length! > 0) {
+    let itemIds = overallStatus?.[0]?.attributes?.conflictedItems;
+    if (overallStatus?.length > 0 && itemIds?.length! > 0) {
       showAphAlert?.({
         unDismissable: true,
         title: string.common.uhOh,
         description: message,
         onPressOk: () => {
-          removeDuplicateCartItems(itemIds!, input?.items, patientId);
+          removeDuplicateCartItems(
+            source === BOOKING_TYPE.MODIFY ? [data] : data,
+            input?.items,
+            patientId
+          );
         },
       });
     } else {
@@ -1214,88 +1375,16 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     }
   }
 
-  const checkDuplicateItems_Level2 = (
-    pricesForItem: any,
-    getItemIds: any,
-    cartItemPrices: any,
-    patientId: string,
-    itemsInCart: DiagnosticsCartItem[]
-  ) => {
-    //no inclusion level duplicates are found...
-    if (getItemIds?.length > 0) {
-      const getCartItemsId = cartItemPrices?.map((item: any) => item?.itemId);
-      const getItemInCart = pricesForItem?.filter((item: any) =>
-        getCartItemsId?.includes(item?.itemId)
-      );
-      const newItems = getItemIds?.map((item: string) => Number(item));
-      //get the prices for both the items,
-      const arrayToUse = isModifyFlow ? getItemInCart : pricesForItem;
-      const getDuplicateItems = arrayToUse
-        ?.filter((item: any) => newItems?.includes(item?.itemId))
-        .sort((a: any, b: any) => b?.price - a?.price);
-
-      const itemsToRemove = isModifyFlow
-        ? getDuplicateItems
-        : getDuplicateItems?.splice(1, getDuplicateItems?.length - 1);
-
-      const itemIdToRemove = itemsToRemove?.map((item: any) => item?.itemId);
-      const updatedCartItems = itemsInCart?.filter(function(items: any) {
-        return itemIdToRemove?.indexOf(Number(items?.id)) < 0;
-      });
-
-      //assuming get two values.
-      let array = [] as any;
-      itemsInCart?.forEach((cItem) => {
-        itemIdToRemove?.forEach((idToRemove: any) => {
-          if (Number(cItem?.id) == idToRemove) {
-            array.push({
-              id: getDuplicateItems?.[0]?.itemId,
-              removalId: idToRemove,
-              removalName: cItem?.name,
-            });
-          }
-        });
-      });
-
-      const duplicateItemNameForModify =
-        isModifyFlow &&
-        modifiedOrder?.diagnosticOrderLineItems?.find(
-          (item: any) => Number(item?.itemId) !== Number(array?.[0]?.removalId)
-        );
-
-      const highPricesItem = itemsInCart?.map((cItem) =>
-        Number(cItem?.id) == Number(getDuplicateItems?.[0]?.itemId)
-          ? !!cItem?.name && nameFormater(cItem?.name, 'default')
-          : isModifyFlow
-          ? duplicateItemNameForModify?.name
-          : ''
-      );
-      const higherPricesName = highPricesItem?.filter((item: any) => item != '')?.join(', ');
-      const duplicateTests = array?.[0]?.removalName;
-
-      let arrayToSet = [...duplicateNameArray, array]?.flat(1);
-      onChangeCartItems(updatedCartItems, duplicateTests, itemIdToRemove, patientId, itemsInCart);
-      setShowInclusions(true);
-      setDuplicateNameArray(arrayToSet);
-      setDuplicateItemsArray?.(arrayToSet);
-
-      renderDuplicateMessage(duplicateTests, higherPricesName);
-    } else {
-      setLoading?.(false);
-      hideAphAlert?.();
-      proceedForBooking();
-    }
-  };
-
-  const renderDuplicateMessage = (duplicateTests: string, higherPricesName: string) => {
+  const renderDuplicateMessage = (duplicateTests: string[], higherPricesName: string[]) => {
+    const dupTestText = duplicateTests?.join(', ');
+    const highTestText = higherPricesName?.join(', ');
     showAphAlert?.({
       title: 'Your cart has been revised!',
       description: isModifyFlow
-        ? `The "${duplicateTests}" has been removed from your cart as it is already included in your order. Kindly proceed to pay the revised amount`
-        : `The "${duplicateTests}" has been removed from your cart as it is already included in another test "${higherPricesName}" in your cart. Kindly proceed to pay the revised amount`,
+        ? `"${dupTestText}" and "${highTestText}" have common parameters, and cannot be booked together. Your cart would be updated.`
+        : `The "${dupTestText}" has been removed from your cart as it is already included in another test "${highTestText}" in your cart. Kindly proceed to pay the revised amount`,
       onPressOk: () => {
         //disable the cta
-        setLoading?.(false);
         hideAphAlert?.();
         setDuplicateNameArray?.(duplicateNameArray);
         props.navigation.navigate(AppRoutes.CartPage, {
@@ -1523,7 +1612,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     });
 
   function saveModifiedOrder() {
-    // const calHcChargers = modifiedOrder?.collectionCharges === 0 ? hcCharges :  0.0;
     //since we need to pass the overall collection charges applied.
     const calHcChargers =
       modifiedOrder?.collectionCharges === 0
@@ -1540,7 +1628,7 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
     setLoading?.(true);
     const modifyBookingInput: saveModifyDiagnosticOrderInput = {
       orderId: modifiedOrder?.id,
-      collectionCharges: calHcChargers,
+      collectionCharges: !!modifiedOrder?.collectionCharges ? modifiedOrder?.collectionCharges : 0, //no need to pass newCharges as of now
       bookingSource: DiagnosticsBookingSource.MOBILE,
       deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
       items: createItemPrice(cartItems)?.itemPricingObject, //total (prev+ curr)

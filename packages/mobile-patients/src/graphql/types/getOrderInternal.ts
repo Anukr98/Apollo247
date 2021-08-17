@@ -9,6 +9,11 @@ import { REFUND_STATUSES } from "./globalTypes";
 // GraphQL query operation: getOrderInternal
 // ====================================================
 
+export interface getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails_ordersList_attributesObj {
+  __typename: "AttributesObj";
+  slotDurationInMinutes: number | null;
+}
+
 export interface getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails_ordersList_patientObj {
   __typename: "PatientObj";
   id: string | null;
@@ -22,6 +27,7 @@ export interface getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails_ord
   itemId: number | null;
   itemName: string | null;
   price: number | null;
+  editOrderID: string | null;
 }
 
 export interface getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails_ordersList {
@@ -31,6 +37,7 @@ export interface getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails_ord
   primaryOrderID: string | null;
   displayId: number;
   slotDateTimeInUTC: any | null;
+  attributesObj: getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails_ordersList_attributesObj | null;
   patientObj: getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails_ordersList_patientObj | null;
   diagnosticOrderLineItems: (getOrderInternal_getOrderInternal_DiagnosticsPaymentDetails_ordersList_diagnosticOrderLineItems | null)[] | null;
 }
