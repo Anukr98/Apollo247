@@ -108,6 +108,7 @@ import {
   PharmacyCircleMemberValues,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import Share from 'react-native-share';
+import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientAddressObj } from '../graphql/types/getDiagnosticOrderDetails';
 
 const width = Dimensions.get('window').width;
 
@@ -300,7 +301,7 @@ export const formatAddressBookAddress = (
 };
 
 export const formatAddressForApi = (
-  address: savePatientAddress_savePatientAddress_patientAddress
+  address: savePatientAddress_savePatientAddress_patientAddress | getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientAddressObj
 ) => {
   const addrLine1 = [address?.addressLine1, address?.addressLine2, address?.landmark, address?.city]
     .filter((v) => v)
@@ -2973,8 +2974,11 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
       statusString = 'Order confirmed';
       break;
     case DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED:
+    // case DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN:
+      statusString = 'Apollo agent is on the way';
+      break;
     case DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN:
-      statusString = 'Phlebo is on the way';
+        statusString = 'Apollo agent Check-in';
       break;
     case DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED:
       statusString = 'Sample collected';
@@ -2990,10 +2994,10 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB:
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB:
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED:
-      statusString = 'Sample submitted';
+      statusString = 'Samples Received for Testing';
       break;
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB:
-      statusString = !!customText ? '2nd Sample pending' : 'Sample submitted';
+      statusString = !!customText ? '2nd Sample pending' : 'Samples Received for Testing';
       break;
     case DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED:
       statusString = 'Report generated';
@@ -3025,6 +3029,9 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
     case DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED:
       statusString = 'Partial Order Completed';
       break;
+    case DIAGNOSTIC_ORDER_STATUS.ORDER_MODIFIED:
+        statusString = 'Order modification'
+        break;
     default:
       statusString = status || '';
       statusString?.replace(/[_]/g, ' ');

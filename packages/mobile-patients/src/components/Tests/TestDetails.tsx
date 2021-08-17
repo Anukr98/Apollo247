@@ -7,6 +7,7 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
   CircleLogo,
   ClockIcon,
+  ExpressSlotClock,
   InfoIconRed,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -45,7 +46,11 @@ import {
   GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  DiagnosticData,
+  LocationData,
+  useAppCommonData,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   findDiagnosticsByItemIDsAndCityIDVariables,
   findDiagnosticsByItemIDsAndCityID,
@@ -78,6 +83,8 @@ import _ from 'lodash';
 import { navigateToScreenWithEmptyStack } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { getDiagnosticExpressSlots, getReportTAT } from '../../helpers/clientCalls';
+import moment from 'moment';
 
 const screenWidth = Dimensions.get('window').width;
 export interface TestPackageForDetails extends TestPackage {
@@ -135,6 +142,8 @@ export interface TestDetailsProps
     comingFrom?: string;
     itemName?: string;
     movedFrom?: string;
+    cityId?: string;
+    stateId?: string;
   }> {}
 
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
@@ -152,15 +161,24 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     setHcCharges,
     setAreaSelected,
     setModifiedOrder,
+    addresses,
+    deliveryAddressId,
+    deliveryAddressCityId,
+    deliveryAddressStateId,
   } = useDiagnosticsCart();
   const { pharmacyCircleAttributes } = useShoppingCart();
 
-  const { diagnosticServiceabilityData, isDiagnosticLocationServiceable } = useAppCommonData();
+  const {
+    diagnosticServiceabilityData,
+    isDiagnosticLocationServiceable,
+    diagnosticLocation,
+  } = useAppCommonData();
 
   const testDetails = props.navigation.getParam('testDetails', {} as TestPackageForDetails);
   const testName = props.navigation.getParam('itemName');
   const { setLoading: setLoadingContext, showAphAlert, hideAphAlert } = useUIElements();
 
+  const addressCityId = props.navigation.getParam('cityId');
   const movedFrom = props.navigation.getParam('comingFrom');
   const isDeep = props.navigation.getParam('movedFrom');
   const itemId =
@@ -171,12 +189,21 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     modifiedOrderItemIds?.length &&
     modifiedOrderItemIds?.find((id: number) => Number(id) == Number(itemId));
 
+  //if passed from cartPage
+  const cityIdToUse = !!addressCityId
+    ? Number(addressCityId)
+    : Number(
+        diagnosticServiceabilityData?.cityId! || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
+      );
+
   const [cmsTestDetails, setCmsTestDetails] = useState((([] as unknown) as CMSTestDetails) || []);
   const [testInfo, setTestInfo] = useState(movedFrom == 'TestsCart' ? testDetails : ({} as any));
   const [moreInclusions, setMoreInclusions] = useState(false);
   const [readMore, setReadMore] = useState(true);
   const [errorState, setErrorState] = useState(false);
   const [widgetsData, setWidgetsData] = useState([] as any);
+  const [expressSlotMsg, setExpressSlotMsg] = useState<string>('');
+  const [reportTat, setReportTat] = useState<string>('');
 
   const isModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
 
@@ -206,6 +233,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       fetchPolicy: 'no-cache',
     });
 
+  useEffect(() => {
+    getExpressSlots(diagnosticServiceabilityData!, diagnosticLocation!);
+  }, []);
+
   /**
    * fetching the details wrt itemId
    */
@@ -213,6 +244,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     if (itemId) {
       fetchTestDetails_CMS(itemId, null);
       loadTestDetails(itemId);
+      fetchReportTat(itemId);
     } else if (testName) {
       fetchTestDetails_CMS(99999, testName);
     } else {
@@ -371,6 +403,79 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       setLoadingContext?.(false);
     }
   };
+
+  async function getExpressSlots(
+    serviceabilityObject: DiagnosticData,
+    selectedAddress: LocationData
+  ) {
+    var getLat = selectedAddress?.latitude!;
+    var getLng = selectedAddress?.longitude!;
+    var getZipcode = selectedAddress?.pincode!;
+    var getServiceablityObject = {
+      cityID: Number(serviceabilityObject?.cityId),
+      stateID: Number(serviceabilityObject?.stateId),
+    };
+    if (movedFrom === AppRoutes.TestsCart) {
+      const selectedAddressIndex = addresses?.findIndex(
+        (address) => address?.id == deliveryAddressId
+      );
+      getLat = addresses?.[selectedAddressIndex]?.latitude!;
+      getLng = addresses?.[selectedAddressIndex]?.longitude!;
+      getZipcode = addresses?.[selectedAddressIndex]?.zipcode!;
+      getServiceablityObject = {
+        cityID: Number(deliveryAddressCityId),
+        stateID: Number(deliveryAddressStateId),
+      };
+    }
+
+    try {
+      const res = await getDiagnosticExpressSlots(
+        client,
+        getLat,
+        getLng,
+        String(getZipcode),
+        getServiceablityObject
+      );
+      console.log({ res });
+      if (res?.data?.getUpcomingSlotInfo) {
+        const getResponse = res?.data?.getUpcomingSlotInfo;
+        if (getResponse?.status) {
+          setExpressSlotMsg(getResponse?.slotInfo);
+        } else {
+          setExpressSlotMsg('');
+        }
+      } else {
+        setExpressSlotMsg('');
+      }
+    } catch (error) {
+      CommonBugFender('getExpressSlots_TestDetails', error);
+      setExpressSlotMsg('');
+    }
+  }
+
+  async function fetchReportTat(itemId: string | number) {
+    const selectedAddressIndex = addresses?.findIndex(
+      (address) => address?.id == deliveryAddressId
+    );
+    const itemIds = [Number(itemId)];
+    const id = cityIdToUse;
+    const pincode =
+      movedFrom === AppRoutes.TestsCart
+        ? addresses?.[selectedAddressIndex]?.zipcode!
+        : diagnosticLocation?.pincode! || '500030';
+    try {
+      const result = await getReportTAT(client, null, id, Number(pincode), itemIds);
+      if (result?.data?.getConfigurableReportTAT) {
+        const getMaxReportTat = result?.data?.getConfigurableReportTAT?.maxReportTAT;
+        setReportTat(getMaxReportTat);
+      } else {
+        setReportTat('');
+      }
+    } catch (error) {
+      CommonBugFender('fetchReportTat_TestDetails', error);
+      setReportTat('');
+    }
+  }
 
   const homeBreadCrumb: TestBreadcrumbLink = {
     title: 'Home',
@@ -571,8 +676,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     return (
       <View style={styles.descriptionCardOuterView}>
         {renderCardTopView()}
-        {renderCardMidView()}
-        {renderCardBottomView()}
         {renderPriceView()}
       </View>
     );
@@ -715,22 +818,26 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
 
   /**
-   * if not by drupal then show from local db.
+   * if not coming from the config report tat, then if not by drupal then show from local db.
    */
   const renderCardMidView = () => {
+    const showReportTat =
+      reportTat != ''
+        ? reportTat
+        : !!cmsTestDetails?.diagnosticReportGenerationTime ||
+          !cmsTestDetails?.diagnosticReportCustomerText;
     return (
       <>
-        {!!cmsTestDetails?.diagnosticReportGenerationTime ||
-        !!cmsTestDetails?.diagnosticReportCustomerText ? (
+        {!!showReportTat && showReportTat != '' ? (
           <>
-            {renderSeparator()}
             <View style={styles.midCardView}>
               <ClockIcon style={styles.clockIconStyle} />
-
               <View style={styles.midCardTextView}>
-                <Text style={styles.reportTimeText}>Report generation Time</Text>
+                <Text style={styles.reportTimeText}>Get Reports by</Text>
                 <Text style={styles.reportTime}>
-                  {cmsTestDetails?.diagnosticReportCustomerText
+                  {reportTat != ''
+                    ? moment(reportTat)?.format('dddd, DD MMMM')
+                    : cmsTestDetails?.diagnosticReportCustomerText
                     ? cmsTestDetails?.diagnosticReportCustomerText
                     : cmsTestDetails?.diagnosticReportGenerationTime}
                 </Text>
@@ -748,23 +855,20 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const renderCardBottomView = () => {
     return (
       <>
-        {!!cmsTestDetails?.diagnosticPretestingRequirement ? (
-          <>
-            {renderSeparator()}
-            <View style={styles.bottomCardView}>
-              <InfoIconRed style={styles.infoIconStyle} />
-              <Text style={styles.preTestingText}>
-                {cmsTestDetails?.diagnosticPretestingRequirement}
-              </Text>
-            </View>
-          </>
-        ) : null}
+        {renderSeparator()}
+        <View style={styles.bottomCardView}>
+          <InfoIconRed style={styles.infoIconStyle} />
+          <Text style={styles.preTestingText}>
+            {cmsTestDetails?.diagnosticPretestingRequirement}
+          </Text>
+        </View>
+        {renderSeparator()}
       </>
     );
   };
 
-  const renderSeparator = () => {
-    return <Spearator />;
+  const renderSeparator = (space?: boolean) => {
+    return <Spearator style={{ marginTop: space ? 10 : 0 }} />;
   };
 
   const renderCardTopView = () => {
@@ -800,6 +904,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               testInfo?.itemName}
           </Text>
         </View>
+        {renderSeparator(true)}
+        {renderCardMidView()}
+        {!!cmsTestDetails?.diagnosticPretestingRequirement
+          ? renderCardBottomView()
+          : renderSeparator()}
         <View style={styles.inclusionsView}>
           {isInclusionPrsent ? (
             <Text style={styles.testIncludedText}>
@@ -1074,6 +1183,17 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     removeCartItem!(`${itemId}`);
   }
 
+  const renderExpressSlots = () => {
+    return (
+      <View style={styles.outerExpressView}>
+        <View style={styles.innerExpressView}>
+          <ExpressSlotClock style={styles.expressSlotIcon} />
+          <Text style={styles.expressSlotText}>{expressSlotMsg}</Text>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView
       style={{
@@ -1083,6 +1203,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       {!errorState ? (
         <>
           {renderHeader()}
+          {expressSlotMsg != '' ? renderExpressSlots() : null}
           {renderBreadCrumb()}
           <ScrollView
             bounces={false}
@@ -1220,20 +1341,26 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   midCardView: { flexDirection: 'row', height: 60, width: '90%' },
-  clockIconStyle: { height: 32, width: 32, resizeMode: 'contain', alignSelf: 'center' },
+  clockIconStyle: {
+    height: 17,
+    width: 17,
+    resizeMode: 'contain',
+    alignSelf: 'flex-start',
+    marginVertical: '4%',
+  },
   midCardTextView: {
     flexDirection: 'column',
-    marginHorizontal: '2%',
+    marginHorizontal: '3%',
     justifyContent: 'center',
     alignSelf: 'center',
   },
   reportTimeText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 0.5, 15),
+    ...theme.viewStyles.text('M', 11, theme.colors.SHERPA_BLUE, 0.5, 13),
     textAlign: 'left',
     letterSpacing: 0.25,
   },
   reportTime: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 13 : 14, theme.colors.SHERPA_BLUE, 1, 16),
+    ...theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 1, 16),
     textAlign: 'left',
     letterSpacing: 0.25,
     marginVertical: 4,
@@ -1243,12 +1370,12 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: 'center',
   },
-  infoIconStyle: { height: 24, width: 24, resizeMode: 'contain' },
+  infoIconStyle: { height: 17, width: 17, resizeMode: 'contain' },
   preTestingText: {
-    ...theme.viewStyles.text('M', isSmallDevice ? 12 : 13, '#FF637B', 1, 15),
+    ...theme.viewStyles.text('M', 11, '#FF637B', 1, 15),
     textAlign: 'left',
     letterSpacing: 0.25,
-    marginHorizontal: '4%',
+    marginHorizontal: '3%',
   },
   itemNameText: {
     ...theme.viewStyles.text('SB', isSmallDevice ? 16.5 : 18, theme.colors.SHERPA_BLUE, 1, 25),
@@ -1309,5 +1436,17 @@ const styles = StyleSheet.create({
     borderTopColor: '#02475B',
     opacity: 0.3,
     borderTopWidth: 1,
+  },
+  outerExpressView: { backgroundColor: theme.colors.APP_GREEN, marginBottom: 2 },
+  innerExpressView: {
+    flexDirection: 'row',
+    padding: 8,
+    alignItems: 'center',
+    width: '97%',
+  },
+  expressSlotIcon: { width: 37, height: 37, resizeMode: 'contain' },
+  expressSlotText: {
+    ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 18),
+    marginLeft: 16,
   },
 });

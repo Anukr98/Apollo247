@@ -203,6 +203,11 @@ export enum DiagnosticsBookingSource {
   WEB = "WEB",
 }
 
+export interface DiagnosticsServiceability {
+  cityID?: number | null;
+  stateID?: number | null;
+}
+
 export enum DiagnosticsRescheduleSource {
   AD = "AD",
   MOBILE = "MOBILE",
