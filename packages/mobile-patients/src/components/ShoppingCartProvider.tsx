@@ -270,6 +270,8 @@ export interface ShoppingCartContextProps {
   setPharmaPDPNudgeMessage: ((value: NudgeMessage) => void) | null;
   pharmaCartNudgeMessage: NudgeMessageCart | null;
   setPharmaCartNudgeMessage: ((value: NudgeMessageCart) => void) | null;
+  paymentCodMessage: string;
+  setPaymentCodMessage: ((message: string) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -392,6 +394,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setPharmaCartNudgeMessage: null,
   pharmaPDPNudgeMessage: null,
   setPharmaPDPNudgeMessage: null,
+  paymentCodMessage: '',
+  setPaymentCodMessage: null,
 });
 
 const AsyncStorageKeys = {
@@ -534,6 +538,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [pharmaCartNudgeMessage, setPharmaCartNudgeMessage] = useState<
     ShoppingCartContextProps['pharmaCartNudgeMessage']
   >(null);
+  const [paymentCodMessage, setPaymentCodMessage] = useState<
+    ShoppingCartContextProps['paymentCodMessage']
+  >('');
 
   const [isProuctFreeCouponApplied, setisProuctFreeCouponApplied] = useState<boolean>(false);
   const [orders, setOrders] = useState<ShoppingCartContextProps['orders']>([]);
@@ -1298,6 +1305,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setPharmaCartNudgeMessage,
         pharmaPDPNudgeMessage,
         setPharmaPDPNudgeMessage,
+        paymentCodMessage,
+        setPaymentCodMessage,
       }}
     >
       {props.children}
