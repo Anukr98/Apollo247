@@ -1330,6 +1330,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         'Chat Format': chatFormat,
       };
       postWebEngageEvent(type, eventAttributes);
+      postCleverTapEvent(type, eventAttributes);
     } catch (error) {}
   };
 
