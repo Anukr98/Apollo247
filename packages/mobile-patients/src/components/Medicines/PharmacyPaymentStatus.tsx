@@ -92,6 +92,7 @@ import {
   updateMedicineOrderSubstitutionVariables,
 } from '@aph/mobile-patients/src/graphql/types/updateMedicineOrderSubstitution';
 import { SubstituteItemsCard } from '@aph/mobile-patients/src/components/Medicines/Components/SubstituteItemsCard';
+import InAppReview from 'react-native-in-app-review';
 
 enum SUBSTITUTION_RESPONSE {
   OK = 'OK',
@@ -211,6 +212,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         );
         fireCirclePlanActivatedEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
         fireCirclePurchaseEvent(pharmaPaymentStatus?.planPurchaseDetails?.planPurchased);
+        appReviewAndRating();
       })
       .catch((error) => {
         setLoading(false);
@@ -222,6 +224,22 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
   }, []);
+
+  const appReviewAndRating = async () => {
+    try {
+      const { shipments } = orderInfo?.medicineOrderInput;
+
+      let tatHours = shipments?.[0].tatHours?.split('')[0];
+
+      if (tatHours <= 5) {
+        if (InAppReview.isAvailable()) {
+          await InAppReview.RequestInAppReview();
+        }
+      }
+    } catch (error) {
+      CommonBugFender('inAppRevireAfterPaymentForPharmacy', error);
+    }
+  };
 
   const getUserSubscriptionsByStatus = async () => {
     try {
