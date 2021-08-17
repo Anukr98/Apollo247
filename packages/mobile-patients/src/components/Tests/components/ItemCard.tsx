@@ -14,6 +14,7 @@ import {
   View,
   ViewStyle,
   ActivityIndicator,
+  Platform
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import {
@@ -650,7 +651,7 @@ const styles = StyleSheet.create({
   },
   addToCartText: {
     textAlign: 'left',
-    position: 'absolute',
+    position: Platform.OS == 'ios' ? 'relative' :  'absolute',
     left: 16,
     bottom: 6,
     width: '70%',
