@@ -155,6 +155,7 @@ export enum EDIT_DELETE_TYPE {
   DELETE_HEALTH_CONDITION = 'Delete Health Condition',
   DELETE_BILL = 'Delete Bill',
   DELETE_INSURANCE = 'Delete Insurance',
+  DELETE_VACCINATION = 'Delete Vaccination',
 }
 
 type EditDeleteArray = {
@@ -408,6 +409,15 @@ export const editDeleteData = (recordType: MedicalRecordType) => {
         {
           key: EDIT_DELETE_TYPE.DELETE_HEALTH_CONDITION,
           title: EDIT_DELETE_TYPE.DELETE_HEALTH_CONDITION,
+        },
+      ];
+      break;
+    case MedicalRecordType.IMMUNIZATION:
+      editDeleteArray = [
+        { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
+        {
+          key: EDIT_DELETE_TYPE.DELETE_VACCINATION,
+          title: EDIT_DELETE_TYPE.DELETE_VACCINATION,
         },
       ];
       break;
