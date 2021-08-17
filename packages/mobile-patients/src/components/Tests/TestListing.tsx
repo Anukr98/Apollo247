@@ -14,7 +14,14 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { SafeAreaView, StyleSheet, Text, View, Image as ImageNative } from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+  Image as ImageNative,
+  ActivityIndicator,
+} from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import {
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
@@ -60,13 +67,19 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   const cityId = props.navigation.getParam('cityId');
   const title = dataFromHomePage?.diagnosticWidgetTitle;
   const widgetType = dataFromHomePage?.diagnosticWidgetType;
+  const [showLoadMore, setShowLoadMore] = useState<boolean>(false);
+  const limit = 10;
+  const [currentOffset, setCurrentOffset] = useState<number>(1);
+  const [testLength, setTestLength] = useState<number>(limit);
+  const [error, setError] = useState<boolean>(false);
   const client = useApolloClient();
 
   const [widgetsData, setWidgetsData] = useState([] as any);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isPriceAvailable, setIsPriceAvailable] = useState<boolean>(false);
 
   const errorStates = !loading && widgetsData?.length == 0;
-  let deepLinkWidgetName: String;
+  let deepLinkWidgetName: string;
 
   //handle deeplinks as well here.
   useEffect(() => {
@@ -106,19 +119,25 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       const result: any = await getDiagnosticListingWidget('diagnostic-list', widgetName);
       if (result?.data?.success && result?.data?.data?.diagnosticWidgetData?.length > 0) {
         const getWidgetsData = result?.data?.data;
-        fetchWidgetsPrices(getWidgetsData);
+        setWidgetsData(getWidgetsData);
+        setLoading?.(false);
       } else {
         setWidgetsData([]);
         setLoading?.(false);
+        setError(true);
       }
     } catch (error) {
       CommonBugFender('fetchWidgets_TestListing', error);
       setWidgetsData([]);
       setLoading?.(false);
+      setError(true);
     }
   };
 
- 
+  useEffect(() => {
+    fetchWidgetsPrices(widgetsData);
+  }, [widgetsData?.diagnosticWidgetData?.[0]]);
+
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
       query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
@@ -132,15 +151,13 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       fetchPolicy: 'no-cache',
     });
 
+  useEffect(() => {
+    DiagnosticProductListingPageViewed(widgetType, movedFrom, widgetName, title);
+  }, []);
 
-    useEffect(() => {
-      DiagnosticProductListingPageViewed(widgetType, movedFrom, widgetName, title);
-    }, []);
-
-  //add try catch.
   const fetchWidgetsPrices = async (widgetsData: any) => {
     const itemIds = widgetsData?.diagnosticWidgetData?.map((item: any) => Number(item?.itemId));
-
+    setLoading?.(true);
     const res = Promise.all(
       itemIds?.map((item: any) =>
         fetchPricesForCityId(
@@ -170,6 +187,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       }
 
       setWidgetsData(newWidgetsData);
+      setIsPriceAvailable(true);
       setLoading?.(false);
     } catch (error) {
       CommonBugFender('errorInFetchPricing api__Tests', error);
@@ -220,7 +238,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       breadcrumb.push({
         title:
           movedFrom === 'deeplink' && !!widgetName
-            ? nameFormater(deepLinkWidgetName?.replace(/-/g, ' '), 'title')
+            ? nameFormater(decodeURIComponent(deepLinkWidgetName?.replace(/-/g, ' ')), 'title')
             : nameFormater(title, 'title'),
         onPress: () => {},
       });
@@ -259,7 +277,53 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         </View>
       );
   };
-  
+
+  const renderEmptyMessage = () => {
+    return (
+      <View style={styles.emptyContainer}>
+        <Card
+          cardContainer={[styles.noDataCardEmpty]}
+          heading={string.common.uhOh}
+          description={string.common.noDiagnosticsAvailable}
+          descriptionTextStyle={{ fontSize: 14 }}
+          headingTextStyle={{ fontSize: 14 }}
+        />
+      </View>
+    );
+  };
+
+  const renderLoadMore = () => {
+    return (
+      <View style={styles.loadMoreView}>
+        <ActivityIndicator color="green" size="small" />
+        <Text style={styles.loadingMoreProducts}>Hold on, loading more products.</Text>
+      </View>
+    );
+  };
+
+  let countDown: any;
+  const loadMoreFuction = () => {
+    if (widgetsData?.diagnosticWidgetData?.length > limit * currentOffset) {
+      setTestLength(widgetsData?.diagnosticWidgetData?.length);
+    } else {
+      setTestLength(limit * currentOffset);
+    }
+    setShowLoadMore(false);
+  };
+
+  const onEndReached = () => {
+    if (testLength <= widgetsData?.diagnosticWidgetData?.length) {
+      setCurrentOffset(currentOffset + 1);
+      setShowLoadMore(true);
+      countDown = setTimeout(function() {
+        loadMoreFuction();
+      }, 2000);
+    } else {
+      setCurrentOffset(currentOffset);
+      setShowLoadMore(false);
+      clearTimeout(countDown);
+    }
+  };
 
   const renderBreadCrumb = () => {
     return (
@@ -273,9 +337,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
   };
 
   const renderList = () => {
-    const actualItemsToShow = widgetsData?.diagnosticWidgetData?.filter(
-       (item: any) => item?.diagnosticPricing
-      );
+    const actualItemsToShow = widgetsData?.diagnosticWidgetData;
     return (
       <>
         {!!actualItemsToShow && actualItemsToShow?.length > 0 ? (
@@ -289,6 +351,16 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             {widgetsData?.diagnosticWidgetType == 'Package' ? (
               <PackageCard
                 data={widgetsData}
+                diagnosticWidgetData={widgetsData?.diagnosticWidgetData?.slice(
+                  0,
+                  widgetsData?.diagnosticWidgetData < limit
+                    ? widgetsData?.diagnosticWidgetData
+                    : testLength
+                )}
+                isPriceAvailable={isPriceAvailable}
+                onEndReached={
+                  testLength == widgetsData?.diagnosticWidgetData?.length ? null : onEndReached
+                }
                 isCircleSubscribed={isDiagnosticCircleSubscription}
                 isServiceable={isDiagnosticLocationServiceable}
                 isVertical={true}
@@ -300,10 +372,20 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
             ) : (
               <ItemCard
                 data={widgetsData}
+                diagnosticWidgetData={widgetsData?.diagnosticWidgetData?.slice(
+                  0,
+                  widgetsData?.diagnosticWidgetData < limit
+                    ? widgetsData?.diagnosticWidgetData
+                    : testLength
+                )}
                 isCircleSubscribed={isDiagnosticCircleSubscription}
                 isServiceable={isDiagnosticLocationServiceable}
                 isVertical={true}
                 columns={2}
+                isPriceAvailable={isPriceAvailable}
+                onEndReached={
+                  testLength == widgetsData?.diagnosticWidgetData?.length ? null : onEndReached
+                }
                 navigation={props.navigation}
                 source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.LISTING}
                 sourceScreen={AppRoutes.TestListing}
@@ -320,9 +402,11 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       <SafeAreaView style={{ ...viewStyles.container }}>
         {renderHeader()}
         {!errorStates ? renderBreadCrumb() : null}
+        {error ? renderEmptyMessage() : null}
         <View style={{ flex: 1, marginBottom: '5%' }}>{renderList()}</View>
+        {showLoadMore ? renderLoadMore() : null}
       </SafeAreaView>
-      {loading && <Spinner />}
+      {loading && widgetsData?.length == 0 && <Spinner />}
     </View>
   );
 };
@@ -334,6 +418,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE, 1, 21, 0),
     marginBottom: '3%',
   },
+  emptyContainer: { flex: 1, justifyContent: 'center' },
   itemCountText: {
     marginTop: '3%',
     marginVertical: 5,
@@ -345,5 +430,31 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
     shadowColor: 'white',
     elevation: 0,
+  },
+  noDataCardEmpty: {
+    height: 'auto',
+    shadowRadius: 0,
+    shadowOffset: { width: 0, height: 0 },
+    shadowColor: 'white',
+    elevation: 0,
+  },
+  loadMoreView: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    width: '100%',
+    paddingBottom: 10,
+  },
+  textLoadMore: {
+    ...theme.viewStyles.text('SB', 15, '#FC9916'),
+    paddingHorizontal: 8,
+    alignSelf: 'flex-start',
+  },
+  downArrow: {
+    alignSelf: 'flex-end',
+  },
+  loadingMoreProducts: {
+    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE),
+    padding: 12,
+    textAlign: 'center',
   },
 });
