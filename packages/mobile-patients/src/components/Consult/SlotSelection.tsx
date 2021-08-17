@@ -307,7 +307,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
         const nextAvailableDate: Date = new Date(slot);
         calculateNextNDates();
         setNextAvailableDate(slot);
-        consultType === consultTabs[0].title
+        consultType === consultOnlineTab
           ? fetchOnlineTotalAvailableSlots(nextAvailableDate, callOnLaunch)
           : fetchPhysicalTotalAvailableSlots(nextAvailableDate, callOnLaunch);
         
@@ -594,6 +594,8 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
             setTotalSlots(-1);
             setLoadTotalSlots(true);
             slotSelected.current = false;
+            setSelectedDateIndexHighlight(0);
+            setSelectedDateIndex(0);
             fetchNextAvailabilitySlot(tab);
           }
         }}
@@ -625,7 +627,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
     const textColor =
       index === selectedDateIndexHiglight || item?.count === 0
         ? 'white'
-        : theme.colors.SEARCH_UNDERLINE_COLOR;
+        : theme.colors.SEARCH_UNDERLINE_COLOR;        
     return (
       <TouchableOpacity
         key={index}
@@ -643,8 +645,8 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
           },
         ]}
         onPress={() => {
-          handleDateSelection(item, index)
           slotSelected.current = true;
+          handleDateSelection(item, index)
         }}
       >
         {totalSlots === -1 ? (
@@ -707,6 +709,7 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
         bounces={false}
         showsVerticalScrollIndicator={false}
         ref={slotsScrollViewRef}
+        ListEmptyComponent={renderEmptyComponent()}
         ListHeaderComponent={renderListHeaderComponent()}
         ListFooterComponent={
           totalSlots === 0 && !loadTotalSlots ? <View /> : renderFooterComponent()
@@ -714,6 +717,16 @@ export const SlotSelection: React.FC<SlotSelectionProps> = (props) => {
       />
     );
   };
+  
+  const renderEmptyComponent = () => {
+    if(loadTotalSlots){
+      return (
+        <View style={styles.emptyComponentView}>
+          {Array(6).fill(1).map(renderSlotItemShimmer)}
+        </View>
+      )
+    }  
+  }
 
   const renderListHeaderComponent = () => {
     return (
@@ -1186,5 +1199,11 @@ const styles = StyleSheet.create({
     height: 65,
     width: 65,
     justifyContent: 'center',
+  },
+  emptyComponentView: {
+    flexDirection: 'row', 
+    flexWrap: 'wrap', 
+    marginStart: 40, 
+    marginTop: 20,
   },
 });
