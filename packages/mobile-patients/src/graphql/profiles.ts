@@ -6036,3 +6036,34 @@ export const GET_DIAGNOSTIC_PAYMENT_SETTINGS = gql`
     }
   }
 `;
+
+export const GET_PRODUCT_SUBSTITUTES = gql`
+  query pharmaSubstitution($substitutionInput: PharmaSubstitutionRequest) {
+    pharmaSubstitution(substitutionInput: $substitutionInput) {
+      substitutes {
+        sku
+        name
+        price
+        mou
+        image
+        thumbnail
+        small_image
+        is_express
+        is_in_contract
+        is_prescription_required
+        description
+        subcategory
+        type_id
+        url_key
+        is_in_stock
+        MaxOrderQty
+        sell_online
+        manufacturer
+        dc_availability
+        tat
+        tatDuration
+        tatPrice
+      }
+    }
+  }
+`;

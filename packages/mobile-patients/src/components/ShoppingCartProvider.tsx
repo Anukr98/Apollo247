@@ -18,6 +18,7 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { addToCartTagalysEvent } from '@aph/mobile-patients/src/helpers/Tagalys';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Decimal } from 'decimal.js';
+import { pharmaSubstitution_pharmaSubstitution_substitutes } from '@aph/mobile-patients/src/graphql/types/pharmaSubstitution';
 export interface ShoppingCartItem {
   id: string;
   name: string;
@@ -270,6 +271,10 @@ export interface ShoppingCartContextProps {
   setPharmaPDPNudgeMessage: ((value: NudgeMessage) => void) | null;
   pharmaCartNudgeMessage: NudgeMessageCart | null;
   setPharmaCartNudgeMessage: ((value: NudgeMessageCart) => void) | null;
+  productSubstitutes: pharmaSubstitution_pharmaSubstitution_substitutes | null;
+  setProductSubstitutes:
+    | ((value: pharmaSubstitution_pharmaSubstitution_substitutes) => void)
+    | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -392,6 +397,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setPharmaCartNudgeMessage: null,
   pharmaPDPNudgeMessage: null,
   setPharmaPDPNudgeMessage: null,
+  productSubstitutes: null,
+  setProductSubstitutes: null,
 });
 
 const AsyncStorageKeys = {
@@ -533,6 +540,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   >(null);
   const [pharmaCartNudgeMessage, setPharmaCartNudgeMessage] = useState<
     ShoppingCartContextProps['pharmaCartNudgeMessage']
+  >(null);
+  const [productSubstitutes, setProductSubstitutes] = useState<
+    ShoppingCartContextProps['productSubstitutes']
   >(null);
 
   const [isProuctFreeCouponApplied, setisProuctFreeCouponApplied] = useState<boolean>(false);
@@ -1298,6 +1308,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setPharmaCartNudgeMessage,
         pharmaPDPNudgeMessage,
         setPharmaPDPNudgeMessage,
+        productSubstitutes,
+        setProductSubstitutes,
       }}
     >
       {props.children}

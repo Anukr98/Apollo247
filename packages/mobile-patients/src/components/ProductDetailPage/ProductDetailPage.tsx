@@ -68,7 +68,10 @@ import { FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEven
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  SEARCH_TYPE,
+  PharmaSubstitutionRequest,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useApolloClient } from 'react-apollo-hooks';
 import { ProductNameImage } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/ProductNameImage';
 import { ProductPriceDelivery } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/ProductPriceDelivery';
@@ -95,6 +98,12 @@ import {
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import AsyncStorage from '@react-native-community/async-storage';
 import { NudgeMessage } from '@aph/mobile-patients/src/components/Medicines/Components/NudgeMessage';
+import { GET_PRODUCT_SUBSTITUTES } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  pharmaSubstitution,
+  pharmaSubstitutionVariables,
+  pharmaSubstitution_pharmaSubstitution_substitutes,
+} from '@aph/mobile-patients/src/graphql/types/pharmaSubstitution';
 
 export type ProductPageViewedEventProps = Pick<
   WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED],
@@ -142,6 +151,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     pharmaPDPNudgeMessage,
     circleSubscriptionId,
     isCircleExpired,
+    setProductSubstitutes,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
@@ -183,6 +193,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 
   const pharmacyPincode =
     g(asyncPincode, 'pincode') || g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
+  const latitude =
+    g(asyncPincode, 'latitude') ||
+    g(pharmacyLocation, 'latitude') ||
+    g(locationDetails, 'latitude');
+  const longitude =
+    g(asyncPincode, 'longitude') ||
+    g(pharmacyLocation, 'longitude') ||
+    g(locationDetails, 'longitude');
   const [pincode, setpincode] = useState<string>(pharmacyPincode || '');
   const [notServiceable, setNotServiceable] = useState<boolean>(false);
   const [deliveryTime, setdeliveryTime] = useState<string>('');
@@ -299,6 +317,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           const productDetails = g(data, 'productdp', '0' as any);
           if (productDetails) {
             setSku(productDetails?.sku);
+            getProductSubstitutes(productDetails?.sku);
             setMedicineData(productDetails);
           } else if (data && data.message) {
             setMedicineError(data.message);
@@ -317,6 +336,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           const productDetails = g(data, 'productdp', '0' as any);
           if (productDetails) {
             setMedicineData(productDetails);
+            getProductSubstitutes(productDetails?.sku);
           } else if (data && data.message) {
             setMedicineError(data.message);
           }
@@ -329,7 +349,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           setLoading(false);
         });
     }
-    fetchSubstitutes();
   };
 
   const setMedicineData = (productDetails: MedicineProductDetails) => {
@@ -358,6 +377,34 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       });
       setMultiVariantSkuInformation(skusInformation);
     }
+  };
+
+  const getProductSubstitutes = (sku: string) => {
+    let input: PharmaSubstitutionRequest = {
+      sku,
+      pincode,
+    };
+    if (latitude && longitude) {
+      input['lat'] = parseFloat(latitude.toFixed(2));
+      input['lng'] = parseFloat(longitude.toFixed(2));
+    }
+    client
+      .query<pharmaSubstitution, pharmaSubstitutionVariables>({
+        query: GET_PRODUCT_SUBSTITUTES,
+        variables: { substitutionInput: input },
+        fetchPolicy: 'no-cache',
+      })
+      .then((res) => {
+        const substitutes = res?.data?.pharmaSubstitution?.substitutes;
+        if (substitutes?.length) {
+          setProductSubstitutes?.(substitutes);
+        } else {
+          fetchSubstitutes();
+        }
+      })
+      .catch((error) => {
+        fetchSubstitutes();
+      });
   };
 
   const onSelectVariant = (sku: string) => {
@@ -778,7 +825,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       .finally(() => setLoading!(false));
   };
 
-  const onAddCartItem = () => {
+  const onAddCartItem = (item?: pharmaSubstitution_pharmaSubstitution_substitutes) => {
+    const medicine_details = item ? item : medicineDetails;
     const {
       sku,
       mou,
@@ -790,7 +838,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       thumbnail,
       MaxOrderQty,
       url_key,
-    } = medicineDetails;
+    } = medicine_details;
     if (cartItems.find(({ id }) => id?.toUpperCase() === sku?.toUpperCase())) {
       updateCartItem?.({ id: sku, quantity: productQuantity });
     } else {
@@ -1083,6 +1131,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   isSellOnline={medicineDetails?.sell_online === 1}
                   isBanned={medicineDetails?.banned === 'Yes'}
                   onNotifyMeClick={onNotifyMeClick}
+                  isPharma={isPharma}
+                  navigation={props.navigation}
                 />
               </View>
               {isPharma && (
