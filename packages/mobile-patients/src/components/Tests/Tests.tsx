@@ -273,7 +273,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [imgHeight, setImgHeight] = useState(200);
   const [slideIndex, setSlideIndex] = useState(0);
   const [banners, setBanners] = useState([]);
-  const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
 
   const [sectionLoading, setSectionLoading] = useState<boolean>(false);
   const [bookUsSlideIndex, setBookUsSlideIndex] = useState(0);
@@ -2121,7 +2120,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const appointmentDate = moment(clickedItem?.slotDateTimeInUTC)?.format('DD MMM YYYY');
     const patientName = `${clickedItem?.patientObj?.firstName} ${clickedItem?.patientObj?.lastName}`;
     try {
-      setViewReportOrderId(clickedItem?.orderId);
       await downloadDiagnosticReport(
         setLoadingContext,
         removeWhiteSpaces(clickedItem?.labReportURL),

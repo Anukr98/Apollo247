@@ -136,7 +136,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [slotDuration, setSlotDuration] = useState(0);
   const [loading1, setLoading] = useState<boolean>(true);
   const [orderLevelStatus, setOrderLevelStatus] = useState([] as any);
-  const [viewReportOrderId, setViewReportOrderId] = useState<number>(0);
   const [showInclusionStatus, setShowInclusionStatus] = useState<boolean>(false);
   const [showError, setError] = useState<boolean>(false);
 
