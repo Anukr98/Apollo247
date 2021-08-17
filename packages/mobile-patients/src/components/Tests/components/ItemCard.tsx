@@ -15,7 +15,8 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  ActivityIndicator
+  ActivityIndicator,
+  Platform
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { isEmptyObject, isSmallDevice, nameFormater } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -640,7 +641,7 @@ const styles = StyleSheet.create({
   },
   addToCartText: {
     textAlign: 'left',
-    position: 'absolute',
+    position: Platform.OS == 'ios' ? 'relative' :  'absolute',
     left: 16,
     bottom: 6,
     width: '70%',
