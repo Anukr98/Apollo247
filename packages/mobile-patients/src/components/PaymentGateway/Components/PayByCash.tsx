@@ -15,6 +15,7 @@ export interface PayByCashProps {
   showDiagCOD: boolean;
   diagMsg: string;
   pharmaDisableCod?: boolean;
+  pharmaDisincentivizeCodMessage?: string;
 }
 
 export const PayByCash: React.FC<PayByCashProps> = (props) => {
@@ -25,6 +26,7 @@ export const PayByCash: React.FC<PayByCashProps> = (props) => {
     showDiagCOD,
     diagMsg,
     pharmaDisableCod,
+    pharmaDisincentivizeCodMessage,
   } = props;
   const disableDiagCOD = businessLine == 'diagnostics' && !showDiagCOD;
   const disableCodOption = disableDiagCOD || HCselected || pharmaDisableCod;
@@ -94,6 +96,18 @@ export const PayByCash: React.FC<PayByCashProps> = (props) => {
     );
   };
 
+  const renderPharmaMessage = () => {
+    return (
+      !!pharmaDisincentivizeCodMessage &&
+      businessLine == 'pharma' && (
+        <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 15 }}>
+          <SavingsIcon style={styles.savingIconStyle} />
+          <Text style={styles.pharmaCodMessage}>{pharmaDisincentivizeCodMessage}</Text>
+        </View>
+      )
+    );
+  };
+
   const renderChildComponent = () => {
     return (
       <View>
@@ -106,6 +120,7 @@ export const PayByCash: React.FC<PayByCashProps> = (props) => {
           {renderPlaceOrder()}
         </View>
         {renderHCMsg()}
+        {renderPharmaMessage()}
         {businessLine == 'pharma' && renderMsg()}
       </View>
     );
@@ -184,5 +199,9 @@ const styles = StyleSheet.create({
     width: '89%',
     alignSelf: 'center',
     marginLeft: 10,
+  },
+  pharmaCodMessage: {
+    ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1, 30),
+    marginLeft: 7,
   },
 });
