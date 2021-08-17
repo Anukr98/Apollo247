@@ -104,12 +104,10 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
       const { diagnosticDate } = orderDetails;
       let currentDate = new Date();
       let givenDate = new Date(diagnosticDate);
-      let currentDateFormat = `${currentDate.getDate()}-${currentDate.getMonth()}-${currentDate.getFullYear()}`;
-      let digonisticDateFormat = `${givenDate.getDate()}-${givenDate.getMonth()}-${givenDate.getFullYear()}`;
-      currentDate.setDate(currentDate.getDate() + 1);
-      let nextDateFormat = `${currentDate.getDate()}-${currentDate.getMonth()}-${currentDate.getFullYear()}`;
+      var diff = (givenDate.getTime() - givenDate.getTime()) / 1000;
+      diff /= 60 * 60;
 
-      if (currentDateFormat === digonisticDateFormat || nextDateFormat === digonisticDateFormat) {
+      if (diff <= 48) {
         if (InAppReview.isAvailable()) {
           await InAppReview.RequestInAppReview();
         }
