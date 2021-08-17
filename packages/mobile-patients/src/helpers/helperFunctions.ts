@@ -1494,7 +1494,7 @@ export const formatTestSlot = (slotTime: string) => moment(slotTime, 'HH:mm').fo
 export const formatTestSlotWithBuffer = (slotTime: string) => {
   const startTime = slotTime.split('-')[0];
   const endTime = moment(startTime, 'HH:mm')
-    .add(30, 'minutes')
+    .add(40, 'minutes')
     .format('HH:mm');
 
   const newSlot = [startTime, endTime];
