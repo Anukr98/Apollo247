@@ -123,7 +123,7 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
         let getOrderDetailsResponse = response?.data?.getDiagnosticOrderDetails?.ordersList || [];
         const getSlotDuration =
           response?.data?.getDiagnosticOrderDetails?.ordersList?.attributesObj
-            ?.slotDurationInMinutes || 45;
+            ?.slotDurationInMinutes || AppConfig.Configuration.DEFAULT_PHELBO_ETA;
         setApiPrimaryOrderDetails([getOrderDetailsResponse]!);
         setSlotDuration(getSlotDuration);
       } else {

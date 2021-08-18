@@ -2647,7 +2647,10 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
       statusString = 'Partial Order Completed';
       break;
     case DIAGNOSTIC_ORDER_STATUS.ORDER_MODIFIED:
-        statusString = 'Order modification'
+        statusString = !!customText ? 'Order modification' : 'Order modified'
+        break;
+    case DIAGNOSTIC_ORDER_STATUS.REFUND_INITIATED:
+        statusString = 'Partial Refund Initiated'
         break;
     default:
       statusString = status || '';

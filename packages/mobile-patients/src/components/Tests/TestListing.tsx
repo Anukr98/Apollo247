@@ -14,7 +14,14 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { SafeAreaView, StyleSheet, Text, View, Image as ImageNative, TouchableOpacity, ActivityIndicator } from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+  Image as ImageNative,
+  ActivityIndicator,
+} from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import {
   DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE,
@@ -117,19 +124,19 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       } else {
         setWidgetsData([]);
         setLoading?.(false);
-        setError(true)
+        setError(true);
       }
     } catch (error) {
       CommonBugFender('fetchWidgets_TestListing', error);
       setWidgetsData([]);
       setLoading?.(false);
+      setError(true);
     }
   };
   useEffect(() => {
     fetchWidgetsPrices(widgetsData);
-  }, [widgetsData?.diagnosticWidgetData?.[0]])
+  }, [widgetsData?.diagnosticWidgetData?.[0]]);
 
- 
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
       query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
@@ -176,7 +183,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         }
       }
       setWidgetsData(newWidgetsData);
-      setIsPriceAvailable(true)
+      setIsPriceAvailable(true);
       setLoading?.(false);
     } catch (error) {
       CommonBugFender('errorInFetchPricing api__Tests', error);
@@ -267,25 +274,23 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
       );
   };
   const renderEmptyMessage = () => {
-      return (
-        <View style={styles.emptyContainer}>
-          <Card
-            cardContainer={[styles.noDataCardEmpty]}
-            heading={string.common.uhOh}
-            description={string.common.noDiagnosticsAvailable}
-            descriptionTextStyle={{ fontSize: 14 }}
-            headingTextStyle={{ fontSize: 14 }}
-          />
-        </View>
-      )
+    return (
+      <View style={styles.emptyContainer}>
+        <Card
+          cardContainer={[styles.noDataCardEmpty]}
+          heading={string.common.uhOh}
+          description={string.common.noDiagnosticsAvailable}
+          descriptionTextStyle={{ fontSize: 14 }}
+          headingTextStyle={{ fontSize: 14 }}
+        />
+      </View>
+    );
   };
   const renderLoadMore = () => {
     return (
-      <View
-        style={styles.loadMoreView}
-      >
-       <ActivityIndicator color="green" size="small" />
-          <Text style={styles.loadingMoreProducts}>Hold on, loading more products.</Text>
+      <View style={styles.loadMoreView}>
+        <ActivityIndicator color="green" size="small" />
+        <Text style={styles.loadingMoreProducts}>Hold on, loading more products.</Text>
       </View>
     );
   };
@@ -301,15 +306,15 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
 
   const onEndReached = () => {
     if (testLength <= widgetsData?.diagnosticWidgetData?.length) {
-    setCurrentOffset(currentOffset + 1);
-    setShowLoadMore(true);
-    countDown = setTimeout(function() {
-    loadMoreFuction();
-    }, 2000);
+      setCurrentOffset(currentOffset + 1);
+      setShowLoadMore(true);
+      countDown = setTimeout(function() {
+        loadMoreFuction();
+      }, 2000);
     } else {
       setCurrentOffset(currentOffset);
       setShowLoadMore(false);
-      clearTimeout(countDown)
+      clearTimeout(countDown);
     }
   };
 
@@ -346,7 +351,9 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                     : testLength
                 )}
                 isPriceAvailable={isPriceAvailable}
-                onEndReached={testLength == widgetsData?.diagnosticWidgetData?.length ? null : onEndReached}
+                onEndReached={
+                  testLength == widgetsData?.diagnosticWidgetData?.length ? null : onEndReached
+                }
                 isCircleSubscribed={isDiagnosticCircleSubscription}
                 isServiceable={isDiagnosticLocationServiceable}
                 isVertical={true}
@@ -369,7 +376,9 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
                 isVertical={true}
                 columns={2}
                 isPriceAvailable={isPriceAvailable}
-                onEndReached={testLength == widgetsData?.diagnosticWidgetData?.length ? null : onEndReached}
+                onEndReached={
+                  testLength == widgetsData?.diagnosticWidgetData?.length ? null : onEndReached
+                }
                 navigation={props.navigation}
                 source={DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE.LISTING}
                 sourceScreen={AppRoutes.TestListing}
@@ -402,7 +411,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE, 1, 21, 0),
     marginBottom: '3%',
   },
-  emptyContainer:{ flex:1,justifyContent: 'center' },
+  emptyContainer: { flex: 1, justifyContent: 'center' },
   itemCountText: {
     marginTop: '3%',
     marginVertical: 5,
