@@ -145,10 +145,6 @@ export const AddressSlotSelection: React.FC<AddressSlotSelectionProps> = (props)
             !!reportGenDetails && reportGenDetails?.[index]?.itemPrepration
               ? reportGenDetails?.[index]?.itemPrepration
               : null,
-          reportGenerationTime:
-            !!reportGenDetails && reportGenDetails?.[index]?.itemReportTat
-              ? reportGenDetails?.[index]?.itemReportTat
-              : null,
         } as DiagnosticLineItem)
     );
 

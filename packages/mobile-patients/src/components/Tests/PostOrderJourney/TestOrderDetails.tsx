@@ -21,6 +21,7 @@ import {
   DIAGNOSTIC_SAMPLE_SUBMITTED_STATUS_ARRAY,
   DIAGNOSTIC_SAMPLE_COLLECTED_STATUS,
   DIAGNOSTIC_SUB_STATUS_TO_SHOW,
+  DIAGNOSTIC_FAILURE_STATUS_ARRAY,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   GetPatientFeedback,
@@ -77,6 +78,8 @@ import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMen
 import {
   getHCOrderFormattedTrackingHistory,
   getHCOrderFormattedTrackingHistoryVariables,
+  getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusHistory,
+  getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusHistory_attributes_refund,
 } from '@aph/mobile-patients/src/graphql/types/getHCOrderFormattedTrackingHistory';
 import { StatusCard } from '@aph/mobile-patients/src/components/Tests/components/StatusCard';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -97,6 +100,7 @@ const DROP_DOWN_ARRAY_STATUS = [
 
 type orderStatus = getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_diagnosticOrdersStatus;
 type orderLineItems = getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems;
+type orderStatusTracking = getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusHistory;
 export interface TestOrderDetailsProps extends NavigationScreenProps {
   orderId: string;
   showOrderSummaryTab: boolean;
@@ -135,8 +139,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [orderLevelStatus, setOrderLevelStatus] = useState([] as any);
   const [showInclusionStatus, setShowInclusionStatus] = useState<boolean>(false);
   const [showError, setError] = useState<boolean>(false);
-  const [showModifiedItems, setShowModifiedItems] = useState<boolean>(false);
-
+  const [dropDownItemListIndex, setDropDownItemListIndex] = useState([] as any);
   const scrollViewRef = React.useRef<ScrollView | null>(null);
 
   const [orderDetails, setOrderDetails] = useState([] as any);
@@ -449,6 +452,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                   : isStatusDone
                   ? theme.colors.SKY_BLUE
                   : 'rgba(0,179,142,0.3)',
+              minHeight: isStatusDone ? 0 : 60,
             },
           ]}
         />
@@ -489,11 +493,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             if (order?.__typename == 'upcomingStatus') {
               isStatusDone = false;
             }
-            const slotDate = moment(selectedOrder?.slotDateTimeInUTC).format('Do MMM');
-            const slotTime1 = moment(selectedOrder?.slotDateTimeInUTC).format('hh:mm A');
-            const slotTime2 = moment(selectedOrder?.slotDateTimeInUTC)
-              .add(slotDuration, 'minutes')
-              .format('hh:mm A');
+            const changeModifiedText =
+              order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_MODIFIED &&
+              DIAGNOSTIC_SUB_STATUS_TO_SHOW?.includes(order?.subStatus!);
             return (
               <View
                 style={styles.rowStyle}
@@ -521,7 +523,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                             },
                           ]}
                         >
-                          {nameFormater(getTestOrderStatusText(order?.orderStatus), 'title')}
+                          {nameFormater(
+                            getTestOrderStatusText(order?.orderStatus, changeModifiedText),
+                            'title'
+                          )}
                         </Text>
                       </View>
                       {isStatusDone ? (
@@ -530,39 +535,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                         <View style={{ width: '25%' }} />
                       )}
                     </View>
-                    {order?.orderStatus == DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN &&
-                    !isStatusDone ? (
-                      <Text style={styles.statusSubTextStyle}>
-                        {`Apollo agent will arrive on ${slotDate}, ${slotTime1} - ${slotTime2}`}
-                      </Text>
-                    ) : null}
-                    {DIAGNOSTIC_SAMPLE_COLLECTED_STATUS?.includes(order?.orderStatus) &&
-                    !isStatusDone ? (
-                      <Text style={styles.statusSubTextStyle}>{`Invoice to be Generated`}</Text>
-                    ) : null}
-                    {DIAGNOSTIC_SAMPLE_COLLECTED_STATUS.includes(order?.orderStatus) &&
-                    isStatusDone &&
-                    orderDetails?.invoiceURL
-                      ? renderInvoiceGenerated()
-                      : null}
-
-                    {REFUND_STATUSES.SUCCESS === order?.orderStatus
-                      ? renderTransactionDetails()
-                      : null}
-                    {DROP_DOWN_ARRAY_STATUS.includes(order?.orderStatus) &&
-                    index == array?.length - 1
-                      ? renderInclusionLevelDropDown(order)
-                      : null}
-                    {order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED &&
-                    isStatusDone &&
-                    !!showRateDiagnosticBtn
-                      ? renderFeedbackOption()
-                      : null}
+                    {renderSubStatus(order, index)}
+                    {showContentBasedOnStatus(order, isStatusDone, index, array?.length)}
                     {/**for showing the additional view for orderModification */}
-                    {renderSubStatus(order)}
-                    {/**for showing the reschedule view for iorder reschedule */}
-                    {order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED &&
-                      renderReschuleTime()}
                   </View>
                 </View>
               </View>
@@ -571,6 +546,220 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         </View>
         {renderRefund()}
         <View style={{ height: 60 }} />
+      </View>
+    );
+  };
+
+  //define type
+  function showContentBasedOnStatus(
+    order: any,
+    isStatusDone: boolean,
+    index: number,
+    arrayLength: number
+  ) {
+    const orderStatus = order?.orderStatus;
+    const slotDate = moment(selectedOrder?.slotDateTimeInUTC).format('Do MMM');
+    const slotTime1 = moment(selectedOrder?.slotDateTimeInUTC).format('hh:mm A');
+    const slotTime2 = moment(selectedOrder?.slotDateTimeInUTC)
+      .add(slotDuration, 'minutes')
+      .format('hh:mm A');
+    if (orderStatus === DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN) {
+      if (!isStatusDone) {
+        return (
+          <Text style={styles.statusSubTextStyle}>
+            {`Apollo agent will arrive on ${slotDate}, ${slotTime1} - ${slotTime2}`}
+          </Text>
+        );
+      }
+    }
+    if (DIAGNOSTIC_SAMPLE_COLLECTED_STATUS?.includes(orderStatus)) {
+      if (!isStatusDone) {
+        return <Text style={styles.statusSubTextStyle}>{`Invoice to be Generated`}</Text>;
+      } else {
+        if (orderDetails?.invoiceURL) {
+          return renderInvoiceGenerated();
+        }
+      }
+    }
+    if (orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED) {
+      if (isStatusDone && !!showRateDiagnosticBtn) {
+        return renderFeedbackOption();
+      }
+    }
+    if (DROP_DOWN_ARRAY_STATUS.includes(orderStatus) && index == arrayLength - 1) {
+      return renderInclusionLevelDropDown(order);
+    }
+    if (orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_RESCHEDULED) {
+      return renderReschuleTime();
+    }
+    //check for cancelll
+    if (
+      orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED ||
+      orderStatus === DIAGNOSTIC_ORDER_STATUS.PAYMENT_FAILED
+    ) {
+      const refundData = order?.attributes?.refund;
+      return renderOrderRefund(refundData);
+    }
+    //for partial orders
+    if (orderStatus === DIAGNOSTIC_ORDER_STATUS.REFUND_INITIATED) {
+      return renderPartialOrder(order, index);
+    }
+    if (orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED) {
+      return renderOrderCancelledView(order, index);
+    }
+  }
+
+  const renderOrderCancelledView = (order: orderStatusTracking, index: number) => {
+    const refundDetails = order?.attributes?.refund;
+    return (
+      <>
+        {!!refundDetails && refundDetails?.length > 0 && (
+          <View>
+            <Spearator style={styles.horizontalSeparator} />
+
+            <TouchableOpacity
+              onPress={() => _onPressDropDown(index)}
+              activeOpacity={1}
+              style={styles.itemsTouch}
+            >
+              <Text style={styles.itemsAddedText}>{refundDetails?.length} refunds processed</Text>
+              <ArrowRight
+                style={{
+                  transform: [
+                    { rotate: dropDownItemListIndex?.includes(index) ? '270deg' : '90deg' },
+                  ],
+                  tintColor: 'black',
+                }}
+              />
+            </TouchableOpacity>
+            {dropDownItemListIndex?.includes(index) &&
+              refundDetails?.map((item) => {
+                const itemsCount = item?.items?.length;
+                return (
+                  <View>
+                    {!!itemsCount && itemsCount > 0 ? (
+                      <View style={styles.cancelItemClosedView}>
+                        <Text style={styles.itemsNameAddedText}>
+                          Refund for {itemsCount} {itemsCount == 1 ? 'item' : 'items'}
+                        </Text>
+                        <Text style={styles.itemsNameAddedText}>
+                          {string.common.Rs}
+                          {item?.amount}
+                        </Text>
+                      </View>
+                    ) : null}
+                    {!!item?.txnID && (
+                      <Text style={styles.cancelledRefundDetails}>Txn id : {item?.txnID}</Text>
+                    )}
+                  </View>
+                );
+              })}
+          </View>
+        )}
+      </>
+    );
+  };
+
+  const renderPartialOrder = (order: orderStatusTracking, index: number) => {
+    const refundDetails = order?.attributes?.refund;
+    return (
+      <>
+        {!!refundDetails && refundDetails?.length > 0
+          ? refundDetails?.map((item) => {
+              const itemsForRefund = item?.items;
+              return (
+                <View>
+                  {!!item?.amount && item?.amount > 0 && (
+                    <Text style={styles.refundAmountStyle}>
+                      Refund Amount: {string.common.Rs}
+                      {item?.amount}
+                    </Text>
+                  )}
+                  {!!item?.txnID && <Text style={styles.refundTxnId}>Txn id: {item?.txnID} </Text>}
+                  {!!item?.amount && item?.amount > 0 && (
+                    <Text style={styles.amountRefundDaysText}>
+                      *Amount will be refunded within 5 to 7 working days
+                    </Text>
+                  )}
+                  {!!item?.reason && item?.reason != '' && (
+                    <View style={styles.refundReasonView}>
+                      <Text style={styles.refundAmountStyle}>
+                        Refund Reason : <Text>{item?.reason}</Text>
+                      </Text>
+                    </View>
+                  )}
+                  {/**show items */}
+                  {!!itemsForRefund && itemsForRefund?.length > 0 ? (
+                    <View style={{ marginTop: '2%' }}>
+                      <Spearator style={styles.horizontalSeparator} />
+                      <TouchableOpacity
+                        onPress={() => _onPressDropDown(index)}
+                        activeOpacity={1}
+                        style={styles.itemsTouch}
+                      >
+                        <Text style={styles.itemsAddedText}>
+                          Refund for {itemsForRefund?.length}
+                          {itemsForRefund?.length == 1 ? ' item' : ' items'}
+                        </Text>
+                        <ArrowRight
+                          style={{
+                            transform: [
+                              {
+                                rotate: dropDownItemListIndex?.includes(index) ? '270deg' : '90deg',
+                              },
+                            ],
+                            tintColor: 'black',
+                          }}
+                        />
+                      </TouchableOpacity>
+                      {dropDownItemListIndex?.includes(index) &&
+                        itemsForRefund?.map((refundItems) => {
+                          return (
+                            <View style={styles.cancelItemClosedView}>
+                              <Text style={styles.itemsNameAddedText}>
+                                {nameFormater(refundItems?.itemName!, 'default')}
+                              </Text>
+                              <Text style={styles.itemsNameAddedText}>
+                                {string.common.Rs}
+                                {refundItems?.price}
+                              </Text>
+                            </View>
+                          );
+                        })}
+                    </View>
+                  ) : null}
+                </View>
+              );
+            })
+          : null}
+      </>
+    );
+  };
+
+  const renderOrderRefund = (
+    refundDetails:
+      | getHCOrderFormattedTrackingHistory_getHCOrderFormattedTrackingHistory_statusHistory_attributes_refund[]
+      | any
+  ) => {
+    return (
+      <View>
+        {!!refundDetails &&
+          refundDetails?.length > 0 &&
+          refundDetails?.map((refData: any) => {
+            const textToUse =
+              refData?.status === REFUND_STATUSES.SUCCESS
+                ? 'Amount Refunded: '
+                : 'Refund Initiated for Amount: ';
+            return (
+              <View>
+                <Text style={styles.refundAmountStyle}>
+                  {textToUse} {string.common.Rs}
+                  {refData?.amount}
+                </Text>
+                <Text style={styles.refundTxnId}>Txn id: {refData?.txnID}</Text>
+              </View>
+            );
+          })}
       </View>
     );
   };
@@ -587,15 +776,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           <Text style={styles.yellowText}>VIEW INVOICE</Text>
         </TouchableOpacity>
       </View>
-    );
-  };
-
-  const renderTransactionDetails = () => {
-    return (
-      <>
-        <Spearator style={styles.horizontalSeparator} />
-        <Text style={styles.refundTxnId}>Txn id: {refundTransactionId}</Text>
-      </>
     );
   };
 
@@ -617,50 +797,56 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   /**
    * show this only for modification + prepaid negative cases
    */
-  const renderSubStatus = (order: any) => {
+  const renderSubStatus = (order: orderStatusTracking, index: number) => {
     return (
       <>
-        {order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_MODIFIED &&
-        DIAGNOSTIC_SUB_STATUS_TO_SHOW?.includes(order?.subStatus) ? (
-          <View style={{ width: '60%', marginVertical: 10 }}>
-            <StatusCard
-              titleText={order?.subStatus}
-              titleStyle={{
-                ...theme.fonts.IBMPlexSansMedium(11),
-              }}
-            />
+        {!!order &&
+        order?.orderStatus === DIAGNOSTIC_ORDER_STATUS.ORDER_MODIFIED &&
+        DIAGNOSTIC_SUB_STATUS_TO_SHOW?.includes(order?.subStatus!) ? (
+          <View>
+            <View style={styles.subStatusView}>
+              <StatusCard
+                titleText={order?.subStatus!}
+                titleStyle={{
+                  ...theme.fonts.IBMPlexSansMedium(11),
+                }}
+                containerStyle={styles.statusCardContainer}
+              />
+            </View>
             {!!order?.attributes?.refund && order?.attributes?.refund?.length > 0
-              ? renderRefundDetails(order)
+              ? renderOrderRefund(order?.attributes?.refund!)
               : null}
           </View>
         ) : (
-          renderItemsView(order)
+          renderItemsView(order, index)
         )}
       </>
     );
   };
 
-  //change the type
-  //this needs to be handled
-  const renderRefundDetails = (order: any) => {
-    return (
-      <View>
-        <Text></Text>
-      </View>
-    );
-  };
+  function _onPressDropDown(index: number) {
+    const isPresent = dropDownItemListIndex?.find((id: number) => id === index);
+    if (!!isPresent) {
+      const newArray = dropDownItemListIndex?.filter((id: number) => id !== index);
+      setDropDownItemListIndex(newArray);
+    } else {
+      const array = dropDownItemListIndex?.concat(index);
+      setDropDownItemListIndex(array);
+    }
+  }
 
-  //define the type
-  const renderItemsView = (order: any) => {
+  const renderItemsView = (order: orderStatusTracking, index: number) => {
     const itemsLength = order?.attributes?.itemsModified;
     const addedItems =
-      !!itemsLength &&
-      itemsLength?.length > 0 &&
-      itemsLength?.filter((item: any) => !item?.isRemoved);
+      (!!itemsLength &&
+        itemsLength?.length > 0 &&
+        itemsLength?.filter((item: any) => !item?.isRemoved)) ||
+      [];
     const removedItems =
-      !!itemsLength &&
-      itemsLength?.length > 0 &&
-      itemsLength?.filter((item: any) => item?.isRemoved);
+      (!!itemsLength &&
+        itemsLength?.length > 0 &&
+        itemsLength?.filter((item: any) => item?.isRemoved)) ||
+      [];
     const isAdded = !!addedItems && addedItems?.length > 0;
     const addedItemPrices = !!addedItems && addedItems?.map((item: any) => item?.price);
 
@@ -681,9 +867,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       <>
         {!!itemsLength && itemsLength?.length > 0 ? (
           <View style={{ marginVertical: '2%' }}>
-            <Spearator style={[styles.horizontalSeparator]} />
+            <Spearator style={styles.horizontalSeparator} />
             <TouchableOpacity
-              onPress={() => setShowModifiedItems(!showModifiedItems)}
+              onPress={() => _onPressDropDown(index)}
               activeOpacity={1}
               style={styles.itemsTouch}
             >
@@ -691,25 +877,32 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
                 {isAdded ? addedItems?.length : removedItems?.length} items{' '}
                 {isAdded ? 'added' : 'removed'} in cart
               </Text>
-              <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+              <View style={styles.flexRow}>
                 <Text style={[styles.itemsAddedText, { marginRight: 6 }]}>
                   {string.common.Rs}
                   {totalPrice}
                 </Text>
                 <ArrowRight
                   style={{
-                    transform: [{ rotate: showModifiedItems ? '270deg' : '90deg' }],
+                    transform: [
+                      { rotate: dropDownItemListIndex?.includes(index) ? '270deg' : '90deg' },
+                    ],
                     tintColor: 'black',
                   }}
                 />
               </View>
             </TouchableOpacity>
-            {showModifiedItems &&
+            {dropDownItemListIndex?.includes(index) &&
               (isAdded ? addedItems : removedItems)?.map((items: any) => {
                 return (
-                  <View style={[styles.flexRow, { justifyContent: 'space-between', marginTop: 4 }]}>
-                    <View style={{ width: '72%' }}>
-                      <Text style={styles.itemsNameAddedText}>{items?.itemName}</Text>
+                  <View
+                    style={[styles.flexRow, { justifyContent: 'space-between', marginTop: '4%' }]}
+                  >
+                    <View style={styles.modificationItemView}>
+                      <Text style={[styles.itemsNameAddedText, { width: '87%' }]}>
+                        {nameFormater(items?.itemName, 'default')}
+                      </Text>
+                      {!!items?.isRemoved && !items.isRemoved ? renderRemoveTag() : null}
                     </View>
                     <Text style={styles.itemsNameAddedText}>
                       {string.common.Rs}
@@ -721,6 +914,14 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           </View>
         ) : null}
       </>
+    );
+  };
+
+  const renderRemoveTag = () => {
+    return (
+      <View style={styles.removedItemView}>
+        <Text style={styles.removedText}>REMOVED</Text>
+      </View>
     );
   };
 
@@ -1031,7 +1232,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
           {renderError()}
         </ScrollView>
-        {selectedTab == string.orders.trackOrder && orderDetails?.attributesObj?.reportTATMessage
+        {selectedTab == string.orders.trackOrder &&
+        orderDetails?.attributesObj?.reportTATMessage &&
+        !DIAGNOSTIC_FAILURE_STATUS_ARRAY?.includes(selectedOrder?.orderStatus) &&
+        selectedOrder?.orderStatus !== DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED
           ? renderOrderReportTat(orderDetails?.attributesObj?.reportTATMessage)
           : null}
         {selectedTab == string.orders.trackOrder ? renderBottomSection(orderDetails) : null}
@@ -1197,7 +1401,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   refundTxnId: {
-    ...theme.viewStyles.text('M', 11, colors.SHERPA_BLUE, 1, 14),
+    ...theme.viewStyles.text('R', 12, colors.SHERPA_BLUE, 1, 16),
+    marginTop: '1.5%',
   },
   flexRow: {
     justifyContent: 'center',
@@ -1221,7 +1426,10 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 13, colors.SHERPA_BLUE, 1, 18),
   },
   itemsNameAddedText: {
-    ...theme.viewStyles.text('M', 12, colors.SKY_BLUE, 1, 18),
+    ...theme.viewStyles.text('M', 12, colors.TURQUOISE_LIGHT_BLUE, 1, 18),
+  },
+  cancelledRefundDetails: {
+    ...theme.viewStyles.text('R', 12, colors.TURQUOISE_LIGHT_BLUE, 1, 16),
   },
   itemsTouch: {
     flexDirection: 'row',
@@ -1233,4 +1441,47 @@ const styles = StyleSheet.create({
     padding: 10,
     flex: 1,
   },
+  refundAmountStyle: {
+    ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 1, 16),
+  },
+  subStatusView: { width: '60%', marginVertical: -4, marginBottom: '2.5%' },
+  statusCardContainer: {
+    padding: 3,
+    width: '70%',
+  },
+  amountRefundDaysText: {
+    fontSize: 12,
+    fontWeight: '400',
+    color: colors.APP_GREEN,
+    lineHeight: 16,
+    fontStyle: 'italic',
+    marginTop: '2%',
+    marginBottom: '2%',
+  },
+  refundReasonView: {
+    backgroundColor: colors.DEFAULT_BACKGROUND_COLOR,
+    flex: 1,
+    padding: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  removedItemView: {
+    backgroundColor: colors.FAILURE_TEXT,
+    height: 20,
+    width: 55,
+    borderRadius: 2,
+    borderColor: colors.FAILURE_TEXT,
+    justifyContent: 'center',
+  },
+  removedText: {
+    ...theme.viewStyles.text('SB', 10, 'white'),
+    textAlign: 'center',
+  },
+  cancelItemClosedView: {
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    marginTop: '4%',
+  },
+  modificationItemView: { width: '72%', flexDirection: 'row' },
 });
