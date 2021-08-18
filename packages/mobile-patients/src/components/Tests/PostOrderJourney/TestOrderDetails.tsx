@@ -777,7 +777,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string) {
     setLoading?.(true);
     try {
-      await downloadDiagnosticReport(globalLoading, pdfUrl, appointmentDate, patientName, true);
+      await downloadDiagnosticReport(globalLoading, pdfUrl, appointmentDate, patientName, true, undefined, orderDetails?.orderStatus, (orderDetails?.displayId).toString(), false );
     } catch (error) {
       setLoading?.(false);
       CommonBugFender('YourOrderTests_downloadLabTest', error);
