@@ -3200,7 +3200,10 @@ export async function downloadDiagnosticReport(
   appointmentDate: string,
   patientName: string,
   showToast: boolean,
-  downloadFileName?: string
+  downloadFileName?: string,
+  orderStatus?: string,
+  displayId?: string,
+  isReport?: boolean
 ) {
   setLoading?.(true);
   let result = Platform.OS === 'android' && (await requestReadSmsPermission());
@@ -3215,9 +3218,12 @@ export async function downloadDiagnosticReport(
       Platform.OS == 'ios'
     ) {
       const dirs = RNFetchBlob.fs.dirs;
+      const isReportApollo = isReport ? 'labreport' : 'labinvoice';
+      const isOrderComplete = orderStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED ? 'complete' : (Math.floor(Math.random() * 300))
+      const dynamicFileName = `Apollo247_${displayId}_${isReportApollo}_${isOrderComplete}.pdf`
       const reportName = !!downloadFileName
         ? downloadFileName
-        : `Apollo247_${appointmentDate}_${patientName}.pdf`;
+        : dynamicFileName;
       const downloadPath =
         Platform.OS === 'ios'
           ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + reportName
@@ -3262,7 +3268,17 @@ export async function downloadDiagnosticReport(
           PermissionsAndroid.RESULTS.DENIED
       ) {
         storagePermissionsToDownload(() => {
-          downloadDiagnosticReport(setLoading, pdfUrl, appointmentDate, patientName, true);
+          downloadDiagnosticReport(
+            setLoading,
+            pdfUrl,
+            appointmentDate,
+            patientName,
+            true,
+            downloadFileName,
+            orderStatus,
+            displayId,
+            isReport
+          );
         });
       }
     }

@@ -6093,6 +6093,16 @@ export const GET_DIAGNOSTIC_PAYMENT_SETTINGS = gql`
   }
 `;
 
+export const POST_WEB_ENGAGE = gql`
+  mutation postConsultEventToDoctor($doctorConsultEventInput: PatientConsultEventToDoctorInput!) {
+    postConsultEventToDoctor(doctorConsultEventInput: $doctorConsultEventInput) {
+      response {
+        status
+      }
+    }
+  }
+`;
+
 export const GET_DIAGNOSTICS_RECOMMENDATIONS = gql `
 mutation getDiagnosticItemRecommendations($itemIds:[Int]!, $records: Int){
   getDiagnosticItemRecommendations(itemIds: $itemIds, numberOfRecordsToFetch: $records){

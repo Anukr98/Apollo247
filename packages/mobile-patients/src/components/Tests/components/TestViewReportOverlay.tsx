@@ -94,15 +94,6 @@ export const TestViewReportOverlay: React.FC<TestViewReportOverlayProps> = (prop
             {viewReportItemsArray.map((item) => (
               <TouchableOpacity
                 onPress={async () => {
-                  if (
-                    props.viewReportOrderId == props.order?.displayId &&
-                    item?.title != string.Report.copy
-                  ) {
-                    showAphAlert!({
-                      title: string.common.uhOh,
-                      description: 'Download error. Please try after some time.',
-                    });
-                  } else {
                     if (
                       item?.title == string.Report.view ||
                       item?.title == string.Report.download
@@ -124,7 +115,7 @@ export const TestViewReportOverlay: React.FC<TestViewReportOverlayProps> = (prop
                       props.onClose();
                     }, 500);
                   }
-                }}
+                }
                 style={styles.itemView}
               >
                 {item?.icon}

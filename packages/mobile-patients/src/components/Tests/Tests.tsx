@@ -2126,7 +2126,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
         appointmentDate,
         !!patientName ? patientName : '_',
         true,
-        undefined
+        undefined,
+        clickedItem?.orderStatus,
+        (clickedItem?.displayId).toString(),
+        true,
       );
     } catch (error) {
       setLoadingContext?.(false);
