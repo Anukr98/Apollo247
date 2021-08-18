@@ -1965,8 +1965,8 @@ export const GET_DIAGNOSTICS_HC_CHARGES = gql`
 `;
 
 export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
-  query findDiagnosticsByItemIDsAndCityID($cityID: Int!, $itemIDs: [Int]!) {
-    findDiagnosticsByItemIDsAndCityID(cityID: $cityID, itemIDs: $itemIDs) {
+  query findDiagnosticsByItemIDsAndCityID($cityID: Int!, $itemIDs: [Int]!, $pincode:Int) {
+    findDiagnosticsByItemIDsAndCityID(cityID: $cityID, itemIDs: $itemIDs, pincode: $pincode) {
       diagnostics {
         id
         itemId
@@ -4986,6 +4986,28 @@ export const GET_ORDER_LEVEL_DIAGNOSTIC_STATUS = gql`
       statusHistory {
         statusDate
         orderStatus
+        subStatus
+        attributes{
+          itemsModified{
+            itemId
+            itemName
+            price
+            isRemoved
+          }
+          refund{
+            txnID
+            amount
+            status
+            reason
+            amount
+            items{
+              itemId
+              itemName
+              price
+              isRemoved
+            }
+          }
+        }
       }
       statusInclusions {
         statusDate

@@ -352,10 +352,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
             !!reportGenDetails && reportGenDetails?.[index]?.itemPrepration
               ? reportGenDetails?.[index]?.itemPrepration
               : null,
-          reportGenerationTime:
-            !!reportGenDetails && reportGenDetails?.[index]?.itemReportTat
-              ? reportGenDetails?.[index]?.itemReportTat
-              : null,
         } as DiagnosticLineItem)
     );
 
@@ -1167,10 +1163,6 @@ export const ReviewOrder: React.FC<ReviewOrderProps> = (props) => {
           preTestingRequirement:
             !!reportGenDetails && reportGenDetails?.[index]?.itemPrepration
               ? reportGenDetails?.[index]?.itemPrepration
-              : null,
-          reportGenerationTime:
-            !!reportGenDetails && reportGenDetails?.[index]?.itemReportTat
-              ? reportGenDetails?.[index]?.itemReportTat
               : null,
         } as DiagnosticLineItem)
     );

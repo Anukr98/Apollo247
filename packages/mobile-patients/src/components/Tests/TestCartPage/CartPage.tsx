@@ -923,7 +923,14 @@ export const CartPage: React.FC<CartPageProps> = (props) => {
       <>
         {showNonServiceableText ? renderInfoMessage() : null}
         {showPriceMismatch ? renderMismatchPrice() : null}
-        <View style={styles.addressOutermostView}>
+        <View
+          style={[
+            styles.addressOutermostView,
+            {
+              minHeight: screenHeight > 800 ? 150 : screenHeight < 600 ? 165 : 175,
+            },
+          ]}
+        >
           <Text style={styles.addressHeadingText}>
             {nameFormater(string.diagnostics.homeVisitText, 'title')}
           </Text>
@@ -1903,7 +1910,6 @@ const styles = StyleSheet.create({
   addressOutermostView: {
     backgroundColor: '#F5FFFD',
     maxHeight: 230,
-    minHeight: screenHeight > 800 ? 150 : screenHeight < 600 ? 165 : 175,
     shadowColor: theme.colors.SHADE_GREY,
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.5,

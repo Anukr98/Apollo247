@@ -52,4 +52,5 @@ export interface findDiagnosticsByItemIDsAndCityID {
 export interface findDiagnosticsByItemIDsAndCityIDVariables {
   cityID: number;
   itemIDs: (number | null)[];
+  pincode?: number | null;
 }

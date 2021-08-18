@@ -93,7 +93,6 @@ import {
   diagnosticGetCustomizedSlotsV2,
   diagnosticRescheduleOrder,
   diagnosticsOrderListByParentId,
-  getDiagnosticRefundOrders,
   getPatientPrismMedicalRecordsApi,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { Overlay } from 'react-native-elements';
@@ -176,7 +175,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   >([]);
   const [selectedTestArray, setSelectedTestArray] = useState([] as any);
 
-  const [refundStatusArr, setRefundStatusArr] = useState<any>(null);
   const [selectedOrder, setSelectedOrder] = useState<orderList>();
   const [error, setError] = useState(false);
   const { getPatientApiCall } = useAuth();
@@ -385,27 +383,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     } catch (error) {
       setLoading?.(false);
       CommonBugFender(`${AppRoutes.YourOrdersTest}_fetchPhleboObject`, error);
-    }
-  };
-
-  const fetchRefundForOrder = async (orderSelected: any, tab: boolean) => {
-    setRefundStatusArr(null);
-    setLoading?.(true);
-    try {
-      let response: any = await getDiagnosticRefundOrders(client, orderSelected?.paymentOrderId);
-      if (response?.data?.data) {
-        const refundData = g(response, 'data', 'data', 'getOrderInternal', 'refunds');
-        const getTransId = g(response, 'data', 'data', 'getOrderInternal', 'txn_id');
-        if (refundData?.length! > 0) {
-          setRefundStatusArr(refundData);
-        }
-        performNavigation(orderSelected, tab, refundData, getTransId);
-      } else {
-        performNavigation(orderSelected, tab, []);
-      }
-    } catch (error) {
-      CommonBugFender('OrderedTestStatus_fetchRefundOrder', error);
-      setLoading?.(false);
     }
   };
 
@@ -1380,21 +1357,15 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   function _navigateToYourTestDetails(order: orderList, tab: boolean) {
     const isPrepaid = order?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT;
     setLoading?.(true);
-    if (isPrepaid && DIAGNOSTIC_ORDER_FAILED_STATUS.includes(order?.orderStatus)) {
-      fetchRefundForOrder(order, tab);
-    } else {
-      performNavigation(order, tab);
-    }
+    performNavigation(order, tab);
   }
 
-  function performNavigation(order: any, tab: boolean, refundArray?: any, refundTransId?: string) {
+  function performNavigation(order: any, tab: boolean) {
     setLoading?.(false);
     props.navigation.push(AppRoutes.TestOrderDetails, {
       orderId: order?.id,
       setOrders: (orders: orderList[]) => setOrders(orders),
       selectedOrder: order,
-      refundStatusArr: refundArray,
-      refundTransactionId: refundTransId,
       comingFrom: AppRoutes.YourOrdersTest,
       showOrderSummaryTab: tab,
     });
@@ -1493,7 +1464,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
             ? order?.slotDateTimeInUTC
             : getSlotStartTime(order?.slotTimings)
         }
-        slotDuration={order?.attributesObj?.slotDurationInMinutes || 45}
+        slotDuration={
+          order?.attributesObj?.slotDurationInMinutes || AppConfig.Configuration.DEFAULT_PHELBO_ETA
+        }
         isPrepaid={order?.paymentType == DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT}
         isCancelled={currentStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED}
         cancelledReason={
