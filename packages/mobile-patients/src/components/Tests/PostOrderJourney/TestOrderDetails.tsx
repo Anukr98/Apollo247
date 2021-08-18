@@ -916,7 +916,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         </ScrollView>
         {selectedTab == string.orders.trackOrder &&
         orderDetails?.attributesObj?.reportTATMessage &&
-        !DIAGNOSTIC_FAILURE_STATUS_ARRAY?.includes(selectedOrder?.orderStatus)
+        !DIAGNOSTIC_FAILURE_STATUS_ARRAY?.includes(selectedOrder?.orderStatus) &&
+        selectedOrder?.orderStatus !== DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED
           ? renderOrderReportTat(orderDetails?.attributesObj?.reportTATMessage)
           : null}
         {selectedTab == string.orders.trackOrder ? renderBottomSection(orderDetails) : null}
