@@ -2187,6 +2187,51 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     );
   };
 
+  const renderCancelButton = () => {
+    const currentStatus = order?.currentStatus;
+
+    if (currentStatus === undefined) return null;
+
+    const statusIrrespectiveOfCurrent = [
+      MEDICINE_ORDER_STATUS.DELIVERED,
+      MEDICINE_ORDER_STATUS.CANCELLED,
+      MEDICINE_ORDER_STATUS.ORDER_BILLED,
+      MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE,
+    ];
+    const statusWrtCurrent = [
+      MEDICINE_ORDER_STATUS.PAYMENT_FAILED,
+      MEDICINE_ORDER_STATUS.PAYMENT_PENDING,
+      MEDICINE_ORDER_STATUS.PAYMENT_ABORTED,
+      MEDICINE_ORDER_STATUS.ORDER_FAILED,
+    ];
+
+    const cancelNotAllowedIrrespectiveOfCurrentStatus = order?.medicineOrdersStatus?.find((item) =>
+      statusIrrespectiveOfCurrent.includes(item?.orderStatus!)
+    );
+
+    const cancelNotAllowedWrtCurrentStatus = statusWrtCurrent.includes(currentStatus!);
+
+    const cancelNotAllowed =
+      cancelNotAllowedIrrespectiveOfCurrentStatus || cancelNotAllowedWrtCurrentStatus;
+
+    return (
+      !cancelNotAllowed && (
+        <View>
+          {Array.from({ length: 10 })
+            .reverse()
+            .map((_, idx) => (
+              <View style={[styles.reOrderButtonTransparentTopView, { top: -(idx + 1) * 2 }]} />
+            ))}
+          <Button
+            style={{ width: '74.16%', alignSelf: 'center', marginTop: 9, marginBottom: 17 }}
+            onPress={showCancelOrder}
+            title={'CANCEL ORDER'}
+          />
+        </View>
+      )
+    );
+  };
+
   const renderMedicineReOrderOverlay = () => {
     const { total, unavailable } = reOrderDetails;
     return (
@@ -2295,6 +2340,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 : !loading && renderOrderSummary()}
             </ScrollView>
             {renderReOrderButton()}
+            {renderCancelButton()}
           </>
         )}
       </SafeAreaView>

@@ -97,6 +97,7 @@ import { getMedicineDetailsApi, MedicineProductDetailsResponse } from '../../hel
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/Events';
 import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
+import InAppReview from 'react-native-in-app-review';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -333,6 +334,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         setLoading && setLoading(false);
         props.navigation.state.params!.DisplayId = _data.data.getSDLatestCompletedCaseSheet!.caseSheetDetails!.appointment!.displayId;
         setcaseSheetDetails(_data.data.getSDLatestCompletedCaseSheet!.caseSheetDetails!);
+        appReviewAndRating(_data.data.getSDLatestCompletedCaseSheet!.caseSheetDetails!);
         setAPICalled(true);
       })
       .catch((error) => {
@@ -438,6 +440,18 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         </TouchableOpacity>
       </View>
     );
+  };
+
+  const appReviewAndRating = async (data: any) => {
+    try {
+      if (g(data, 'appointment', 'doctorInfo')) {
+        if (InAppReview.isAvailable()) {
+          await InAppReview.RequestInAppReview();
+        }
+      }
+    } catch (error) {
+      CommonBugFender('inAppRevireAfterGettingPrescription', error);
+    }
   };
 
   const renderSymptoms = () => {

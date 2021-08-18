@@ -192,7 +192,10 @@ import {
   saveModifyDiagnosticOrder,
   saveModifyDiagnosticOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/saveModifyDiagnosticOrder';
-import { processDiagnosticsCODOrder } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  getReportTAT,
+  processDiagnosticsCODOrder,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import { findDiagnosticSettings } from '@aph/mobile-patients/src/graphql/types/findDiagnosticSettings';
 import {
   makeAdressAsDefault,
@@ -236,6 +239,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     deliveryAddressId,
     setDeliveryAddressCityId,
     deliveryAddressCityId,
+    setDeliveryAddressStateId,
     cartTotal,
     totalPriceExcludingAnyDiscounts,
     couponDiscount,
@@ -278,6 +282,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setAsyncDiagnosticPincode,
     setModifiedOrderItemIds,
     modifiedOrderItemIds,
+    deliveryAddressStateId,
   } = useDiagnosticsCart();
   const {
     setAddresses: setMedAddresses,
@@ -319,6 +324,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>();
   const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
   const [addressCityId, setAddressCityId] = useState<string>(deliveryAddressCityId);
+  const [addressStateId, setAddressStateId] = useState<string>(deliveryAddressStateId);
   const [validateCouponUniqueId, setValidateCouponUniqueId] = useState<string>(getUniqueId);
   const [orderDetails, setOrderDetails] = useState<orderDetails>();
   const [showInclusions, setShowInclusions] = useState<boolean>(false);
@@ -342,6 +348,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const itemWithId = itemsWithHC?.map((item) => Number(item.id!));
   const { cusId, isfetchingId } = useGetJuspayId();
   const [hyperSdkInitialized, setHyperSdkInitialized] = useState<boolean>(false);
+  const [reportTat, setReportTat] = useState([] as any);
 
   const cartItemsWithId = cartItems?.map((item) => Number(item?.id!));
   var pricesForItemArray;
@@ -436,6 +443,32 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
     fetchFindDiagnosticSettings();
   }, []);
+
+  async function fetchReportTat(_cartItemId: string | number[]) {
+    const removeSpaces =
+      typeof _cartItemId == 'string' ? _cartItemId?.replace(/\s/g, '')?.split(',') : null;
+    const listOfIds =
+      typeof _cartItemId == 'string' ? removeSpaces?.map((item) => Number(item!)) : _cartItemId;
+    const pincode = selectedAddr?.zipcode;
+    try {
+      const result = await getReportTAT(
+        client,
+        null,
+        Number(addressCityId),
+        Number(pincode),
+        listOfIds!
+      );
+      if (result?.data?.getConfigurableReportTAT) {
+        const getMaxReportTat = result?.data?.getConfigurableReportTAT?.itemLevelReportTATs;
+        setReportTat(getMaxReportTat);
+      } else {
+        setReportTat([]);
+      }
+    } catch (error) {
+      CommonBugFender('fetchReportTat_TestsCart', error);
+      setReportTat([]);
+    }
+  }
 
   const fetchTestReportGenDetails = async (_cartItemId: string | number[]) => {
     try {
@@ -741,6 +774,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           ? cartItemsWithId.concat(modifiedOrderItemIds)
           : cartItemsWithId;
         fetchTestReportGenDetails(itemIds);
+        fetchReportTat(itemIds);
       }
     }
   }, [cartItems?.length, addressCityId]);
@@ -915,7 +949,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           const serviceableData = g(data, 'getPincodeServiceability');
           if (serviceableData && serviceableData?.cityName != '') {
             setAddressCityId?.(String(serviceableData?.cityID!) || '');
+            setAddressStateId?.(String(serviceableData?.stateID!) || '');
             setDeliveryAddressCityId?.(String(serviceableData?.cityID));
+            setDeliveryAddressStateId?.(String(serviceableData?.stateID));
             getDiagnosticsAvailability(serviceableData?.cityID!, cartItems)
               .then(({ data }) => {
                 const diagnosticItems =
@@ -963,6 +999,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 hideAphAlert!();
                 setDeliveryAddressCityId?.('');
                 setDeliveryAddressId?.('');
+                setDeliveryAddressStateId?.('');
               },
             });
             DiagnosticAddresssSelected(
@@ -979,6 +1016,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setLoading?.(false);
           setDeliveryAddressCityId?.('');
           setDeliveryAddressId?.('');
+          setDeliveryAddressStateId?.('');
         });
     }
   };
@@ -1445,6 +1483,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               : undefined
             : undefined;
           const reportGenItem = reportGenDetails?.find((_item: any) => _item?.itemId === test?.id);
+          const reportTATItem =
+            !!reportTat &&
+            reportTat?.length > 0 &&
+            reportTat?.find((_item: any) => Number(_item?.itemId) === Number(test?.id));
 
           return (
             <TestItemCard
@@ -1455,6 +1497,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               key={test?.id}
               testId={test?.id}
               reportGenItem={reportGenItem}
+              reportTat={reportTATItem}
               onPress={() => {
                 CommonLogEvent(AppRoutes.TestsCart, 'Navigate to medicine details scene');
                 fetchPackageDetails(
@@ -1462,6 +1505,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   (product) => {
                     props.navigation.navigate(AppRoutes.TestDetails, {
                       comingFrom: AppRoutes.TestsCart,
+                      cityId: addressCityId,
+                      stateId: addressStateId,
                       testDetails: {
                         ItemID: test?.id,
                         ItemName: test?.name,

@@ -118,6 +118,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
   const storeCode =
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
   const shoppingCart = useShoppingCart();
+  const { paymentCodMessage } = shoppingCart;
   const { savedCards } = useFetchSavedCards(customerId);
   const isDiagnosticModify = !!modifiedOrder && !isEmptyObject(modifiedOrder);
   const [showPrepaid, setShowPrepaid] = useState<boolean>(isDiagnostic ? false : true);
@@ -674,6 +675,7 @@ export const PaymentMethods: React.FC<PaymentMethodsProps> = (props) => {
         showDiagCOD={showCOD}
         diagMsg={showDiagnosticHCMsg}
         pharmaDisableCod={disableCod}
+        pharmaDisincentivizeCodMessage={paymentCodMessage}
       />
     );
   };

@@ -2111,3 +2111,19 @@ export const AlertRed: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/components/ui/icons/alertRed.webp')}
   />
 );
+
+export const ExpressSlotClock: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/expressSlotIcon.webp')}
+  />
+);
+
+export const OvalUpcoming: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="lg"
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/ovalUpcoming.webp')}
+  />
+);

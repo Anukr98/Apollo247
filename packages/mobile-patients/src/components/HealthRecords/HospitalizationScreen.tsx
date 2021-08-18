@@ -20,7 +20,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { HealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/HealthRecordCard';
-import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_hospitalizations_response as HospitalizationType } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
+import { getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_hospitalizations_response as HospitalizationType } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V3';
 import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
 import { ProfileImageComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/ProfileImageComponent';
 import {
@@ -359,7 +359,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
       .then((data: any) => {
         const hospitalizationsData = g(
           data,
-          'getPatientPrismMedicalRecords_V2',
+          'getPatientPrismMedicalRecords_V3',
           'hospitalizations',
           'response'
         );

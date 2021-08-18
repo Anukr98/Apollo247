@@ -1926,10 +1926,25 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           lastName
           gender
         }
-        city
+        patientAddressObj {
+          addressLine1
+          addressLine2
+          addressType
+          landmark
+          state
+          city
+          zipcode
+          latitude
+          longitude
+        }
         slotTimings
         slotId
         totalPrice
+        attributesObj{
+          slotDurationInMinutes
+          expectedReportGenerationTime
+          reportTATMessage
+        }
         prescriptionUrl
         diagnosticDate
         orderStatus
@@ -2300,6 +2315,9 @@ export const GET_DIAGNOSTIC_ORDERS_LIST_BY_MOBILE = gql`
           preTestingRequirement
           reportGenerationTime
           initialCollectionCharges
+          slotDurationInMinutes
+          expectedReportGenerationTime
+          reportTATMessage
         }
         patientAddressObj {
           addressLine1
@@ -3046,6 +3064,362 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS_BY_MOBILE = gql`
 export const GET_MEDICAL_PRISM_RECORD_V2 = gql`
   query getPatientPrismMedicalRecords_V2($patientId: ID!, $records: [MedicalRecordType]) {
     getPatientPrismMedicalRecords_V2(patientId: $patientId, records: $records) {
+      labResults {
+        response {
+          id
+          labTestName
+          labTestSource
+          packageId
+          packageName
+          # labTestDate
+          date
+          labTestRefferedBy
+          siteDisplayName
+          tag
+          consultId
+          identifier
+          additionalNotes
+          billNo
+          testSequence
+          observation
+          labTestResults {
+            parameterName
+            unit
+            result
+            range
+            outOfRange
+            # resultDate
+          }
+          fileUrl
+          testResultFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+          }
+        }
+        errorCode
+        errorMsg
+        errorType
+      }
+      prescriptions {
+        response {
+          id
+          prescriptionName
+          date
+          # dateOfPrescription
+          # startDate
+          # endDate
+          prescribedBy
+          notes
+          prescriptionSource
+          siteDisplayName
+          source
+          fileUrl
+          prescriptionFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+          }
+          hospital_name
+          hospitalId
+        }
+        errorCode
+        errorMsg
+        errorType
+      }
+      healthChecks {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          authToken
+          userId
+          id
+          fileUrl
+          date
+          healthCheckName
+          healthCheckDate
+          siteDisplayName
+          healthCheckSummary
+          healthCheckFiles {
+            id
+            fileName
+            mimeType
+            content
+            # byteContent
+            # dateCreated
+          }
+          source
+          healthCheckType
+          followupDate
+        }
+      }
+      hospitalizations {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          authToken
+          userId
+          id
+          fileUrl
+          date
+          hospitalizationDate
+          dateOfHospitalization
+          hospitalName
+          doctorName
+          reasonForAdmission
+          siteDisplayName
+          diagnosisNotes
+          dateOfDischarge
+          dischargeSummary
+          doctorInstruction
+          dateOfNextVisit
+          hospitalizationFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
+          }
+          source
+        }
+      }
+      medicalBills {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          bill_no
+          hospitalName
+          billDate
+          source
+          siteDisplayName
+          notes
+          fileUrl
+          billDateTime
+          billFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
+          }
+        }
+      }
+      medicalInsurances {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          insuranceCompany
+          policyNumber
+          startDate
+          endDate
+          startDateTime
+          endDateTime
+          source
+          siteDisplayName
+          fileUrl
+          notes
+          sumInsured
+          insuranceFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
+          }
+        }
+      }
+      medicalConditions {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          medicalConditionName
+          doctorTreated
+          startDate
+          source
+          endDate
+          notes
+          illnessType
+          fileUrl
+          siteDisplayName
+          startDateTime
+          endDateTime
+          medicationFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
+          }
+        }
+      }
+      medications {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          medicineName
+          medicalCondition
+          doctorName
+          startDate
+          endDate
+          startDateTime
+          endDateTime
+          morning
+          noon
+          siteDisplayName
+          evening
+          notes
+          source
+        }
+      }
+      healthRestrictions {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          startDate
+          endDate
+          startDateTime
+          endDateTime
+          restrictionName
+          suggestedByDoctor
+          nature
+          siteDisplayName
+          source
+          notes
+        }
+      }
+      allergies {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          startDate
+          endDate
+          fileUrl
+          startDateTime
+          endDateTime
+          allergyName
+          severity
+          reactionToAllergy
+          doctorTreated
+          notes
+          siteDisplayName
+          source
+          attachmentList {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
+          }
+        }
+      }
+      familyHistory {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          diseaseName
+          authToken
+          source
+          fileUrl
+          familyMember
+          notes
+          siteDisplayName
+          recordDateTime
+          age
+          familyHistoryFiles {
+            id
+            fileName
+            mimeType
+            index
+            file_Url
+            # content
+            # byteContent
+            # dateCreated
+          }
+        }
+      }
+      immunizations {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          immunizationName
+          dateAdministered
+          followUpDate
+          registrationId
+          dateOfImmunization
+          dueDate
+          fileUrl
+          doctorName
+          manufacturer
+          batchno
+          vaccineName
+          potency
+          hospitalName
+          vaccine_location
+          notes
+          source
+          reactions {
+            type
+            from
+            to
+          }
+          immunizationFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+            dateCreated
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_MEDICAL_PRISM_RECORD_V3 = gql`
+  query getPatientPrismMedicalRecords_V3($patientId: ID!, $records: [MedicalRecordType]) {
+    getPatientPrismMedicalRecords_V3(patientId: $patientId, records: $records) {
       labResults {
         response {
           id
@@ -4886,6 +5260,30 @@ export const GET_INTERNAL_ORDER = gql`
       txn_id
       status_id
       payment_order_id
+      DiagnosticsPaymentDetails{
+        ordersList{
+          id
+          patientId
+          primaryOrderID
+          displayId
+          slotDateTimeInUTC
+          attributesObj{
+            slotDurationInMinutes
+          }
+          patientObj{
+            id
+            firstName
+            lastName
+            gender
+          }
+          diagnosticOrderLineItems{
+            itemId
+            itemName
+            price
+            editOrderID
+          }
+        }
+      }
       refunds {
         status
         unique_request_id
@@ -5006,6 +5404,12 @@ export const GET_DIAGNOSTICS_ORDER_BY_DISPLAY_ID = gql`
         isRescheduled
         preBookingId
         id
+        attributesObj {
+          homeCollectionCharges
+          slotDurationInMinutes
+          expectedReportGenerationTime
+          reportTATMessage
+        }
         diagnosticOrdersStatus {
           orderStatus
         }
@@ -5050,6 +5454,9 @@ export const GET_ORDER_LEVEL_DIAGNOSTIC_STATUS = gql`
         packageId
         itemName
         packageName
+      }
+      upcomingStatuses {
+        orderStatus
       }
     }
   }
@@ -5156,15 +5563,17 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql`
           firstName
           lastName
         }
+        attributesObj{
+          reportTATHours
+          reportTATMessage
+          reportGenerationTime
+          expectedReportGenerationTime
+        }
         diagnosticOrderLineItems {
           itemObj {
             testPreparationData
             preTestingRequirement
           }
-        }
-        attributesObj {
-          reportGenerationTime
-          preTestingRequirement
         }
       }
     }
@@ -5216,7 +5625,10 @@ export const GET_DIAGNOSTIC_CLOSED_ORDERLIST = gql`
           }
         }
         attributesObj {
+          reportTATHours
+          reportTATMessage
           reportGenerationTime
+          expectedReportGenerationTime
         }
       }
     }
@@ -5678,6 +6090,41 @@ export const GET_DIAGNOSTIC_PAYMENT_SETTINGS = gql`
     getDiagnosticPaymentSettings(paymentOrderId: $paymentOrderId) {
       cod
       hc_credits_message
+    }
+  }
+`;
+
+export const GET_DIAGNOSTICS_RECOMMENDATIONS = gql `
+mutation getDiagnosticItemRecommendations($itemIds:[Int]!, $records: Int){
+  getDiagnosticItemRecommendations(itemIds: $itemIds, numberOfRecordsToFetch: $records){
+    itemsData{
+      itemId
+      itemName
+      combinedLift
+    }
+  }
+}
+`;
+
+export const GET_DIAGNOSTIC_EXPRESS_SLOTS_INFO  = gql`
+  query getUpcomingSlotInfo($latitude: Float!, $longitude: Float!, $zipcode: String!, $serviceability: DiagnosticsServiceability!) {
+    getUpcomingSlotInfo(latitude: $latitude, longitude: $longitude, zipcode: $zipcode, serviceability: $serviceability) {
+      status
+      slotInfo
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_REPORT_TAT = gql `
+  query getConfigurableReportTAT($slotDateTimeInUTC: DateTime,$cityId: Int!, $pincode: Int!, $itemIds: [Int]!){
+    getConfigurableReportTAT(slotDateTimeInUTC: $slotDateTimeInUTC,cityId: $cityId, pincode: $pincode, itemIds: $itemIds){
+      maxReportTAT
+      reportTATMessage
+      itemLevelReportTATs{
+        itemId
+        reportTATMessage
+        reportTATInUTC
+      }
     }
   }
 `;

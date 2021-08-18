@@ -403,7 +403,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       .then((data: any) => {
         const labResultsData = g(
           data,
-          'getPatientPrismMedicalRecords_V2',
+          'getPatientPrismMedicalRecords_V3',
           'labResults',
           'response'
         );
@@ -462,7 +462,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             case MedicalRecordType.PRESCRIPTION:
               const prescriptionsData = g(
                 _data,
-                'getPatientPrismMedicalRecords_V2',
+                'getPatientPrismMedicalRecords_V3',
                 'prescriptions',
                 'response',
                 '0' as any
@@ -472,7 +472,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             case MedicalRecordType.TEST_REPORT:
               const labResultsData = g(
                 _data,
-                'getPatientPrismMedicalRecords_V2',
+                'getPatientPrismMedicalRecords_V3',
                 'labResults',
                 'response',
                 '0' as any
@@ -482,7 +482,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             case MedicalRecordType.HOSPITALIZATION:
               const hospitalizationsData = g(
                 _data,
-                'getPatientPrismMedicalRecords_V2',
+                'getPatientPrismMedicalRecords_V3',
                 'hospitalizations',
                 'response',
                 '0' as any
@@ -492,7 +492,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             case MedicalRecordType.MEDICALBILL:
               const medicalBills = g(
                 _data,
-                'getPatientPrismMedicalRecords_V2',
+                'getPatientPrismMedicalRecords_V3',
                 'medicalBills',
                 'response',
                 '0' as any
@@ -502,7 +502,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             case MedicalRecordType.MEDICALINSURANCE:
               const medicalInsurances = g(
                 _data,
-                'getPatientPrismMedicalRecords_V2',
+                'getPatientPrismMedicalRecords_V3',
                 'medicalInsurances',
                 'response',
                 '0' as any
@@ -512,7 +512,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             case MedicalRecordType.ALLERGY:
               const medicalAllergie = g(
                 _data,
-                'getPatientPrismMedicalRecords_V2',
+                'getPatientPrismMedicalRecords_V3',
                 'allergies',
                 'response',
                 '0' as any
@@ -522,7 +522,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             case MedicalRecordType.MEDICATION:
               const medicalMedication = g(
                 _data,
-                'getPatientPrismMedicalRecords_V2',
+                'getPatientPrismMedicalRecords_V3',
                 'medications',
                 'response',
                 '0' as any
@@ -532,7 +532,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             case MedicalRecordType.HEALTHRESTRICTION:
               const medicalHealthRestriction = g(
                 _data,
-                'getPatientPrismMedicalRecords_V2',
+                'getPatientPrismMedicalRecords_V3',
                 'healthRestrictions',
                 'response',
                 '0' as any
@@ -542,7 +542,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             case MedicalRecordType.MEDICALCONDITION:
               const medicalCondition = g(
                 _data,
-                'getPatientPrismMedicalRecords_V2',
+                'getPatientPrismMedicalRecords_V3',
                 'medicalConditions',
                 'response',
                 '0' as any
@@ -552,7 +552,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             case MedicalRecordType.FAMILY_HISTORY:
               const medicalFamilyHistory = g(
                 _data,
-                'getPatientPrismMedicalRecords_V2',
+                'getPatientPrismMedicalRecords_V3',
                 'familyHistory',
                 'response',
                 '0' as any

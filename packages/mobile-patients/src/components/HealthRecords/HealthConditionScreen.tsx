@@ -58,12 +58,12 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useApolloClient } from 'react-apollo-hooks';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
-  getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalConditions_response as MedicalConditionType,
-  getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medications_response as MedicationType,
-  getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_healthRestrictions_response as HealthRestrictionType,
-  getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_allergies_response as AllergyType,
-  getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_familyHistory_response as FamilyHistoryType,
-} from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
+  getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_medicalConditions_response as MedicalConditionType,
+  getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_medications_response as MedicationType,
+  getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_healthRestrictions_response as HealthRestrictionType,
+  getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_allergies_response as AllergyType,
+  getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_familyHistory_response as FamilyHistoryType,
+} from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V3';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
@@ -378,31 +378,31 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
       .then((data: any) => {
         const medicalCondition = g(
           data,
-          'getPatientPrismMedicalRecords_V2',
+          'getPatientPrismMedicalRecords_V3',
           'medicalConditions',
           'response'
         );
         const medicalHealthRestriction = g(
           data,
-          'getPatientPrismMedicalRecords_V2',
+          'getPatientPrismMedicalRecords_V3',
           'healthRestrictions',
           'response'
         );
         const medicalMedication = g(
           data,
-          'getPatientPrismMedicalRecords_V2',
+          'getPatientPrismMedicalRecords_V3',
           'medications',
           'response'
         );
         const medicalAllergie = g(
           data,
-          'getPatientPrismMedicalRecords_V2',
+          'getPatientPrismMedicalRecords_V3',
           'allergies',
           'response'
         );
         const medicalFamilyHistory = g(
           data,
-          'getPatientPrismMedicalRecords_V2',
+          'getPatientPrismMedicalRecords_V3',
           'familyHistory',
           'response'
         );

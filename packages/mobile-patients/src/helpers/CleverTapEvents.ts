@@ -161,7 +161,7 @@ export enum CleverTapEventName {
   DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic make payment clicked',
   PAYMENT_INITIATED = 'Payment Initiated',
   DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic payment initiated',
-  DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnositc checkout completed',
+  DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic checkout completed',
   DIAGNOSTIC_TRACK_ORDER_VIEWED = 'Diagnostic track order viewed',
   DIAGNOSTIC_ORDER_RESCHEDULE = 'Diagnostic order rescheduled',
   DIAGNOSTIC_FEEDBACK_GIVEN = 'Diagnostic feedback submitted',
@@ -173,6 +173,7 @@ export enum CleverTapEventName {
   DIGNOSTIC_PAYMENT_ABORTED = 'Diagnostic payment aborted',
   DIAGNOSITC_MODIFY_CLICKED = 'Diagnositic modify order clicked',
   DIAGNOSTIC_MODIFY_ORDER = 'Diagnostic modify order',
+  DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED = 'Diagnostic product listing page viewed',
 
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
@@ -191,7 +192,7 @@ export enum CleverTapEventName {
   PHR_CLICK_INSURANCES = 'PHR Click Insurances',
   PHR_ADD_DOCTOR_CONSULTATIONS = 'PHR Add Doctor Consultation',
   PHR_ADD_TEST_REPORT = 'PHR Add Test Report',
-  PHR_ADD_HOSPITALIZATIONS = 'PHR Add Hospitalization', //acd
+  PHR_ADD_HOSPITALIZATIONS = 'PHR Add Hospitalization',
   PHR_ADD_ALLERGY = 'PHR Add Allergy',
   PHR_ADD_FAMILY_HISTORY = 'PHR Add Family History',
   PHR_ADD_MEDICATION = 'PHR Add Medication',
@@ -199,7 +200,7 @@ export enum CleverTapEventName {
   PHR_ADD_MEDICAL_CONDITION = 'PHR Add Medical Condition',
   PHR_ADD_BILLS = 'PHR Add Bills',
   PHR_ADD_INSURANCE = 'PHR Add Insurance',
-  PHR_ADD_HEIGHT = 'PHR Add Height', //acd
+  PHR_ADD_HEIGHT = 'PHR Add Height',
   PHR_ADD_WEIGHT = 'PHR Add Weight',
   PHR_ADD_BLOOD_GROUP = 'PHR Add BloodGroup',
   PHR_DOWNLOAD_DOCTOR_CONSULTATION = 'PHR Download Doctor Consultation',
@@ -212,7 +213,7 @@ export enum CleverTapEventName {
   PHR_DOWNLOAD_BILLS = 'PHR Download Bill',
   PHR_DOWNLOAD_INSURANCE = 'PHR Download Insurance',
   PHR_UPDATE_DOCTOR_CONSULTATION = 'PHR Update Doctor Consultation',
-  PHR_UPDATE_TEST_REPORT = 'PHR Update Test Report', //acd
+  PHR_UPDATE_TEST_REPORT = 'PHR Update Test Report',
   PHR_UPDATE_HOSPITALIZATIONS = 'PHR Update Hospitalization',
   PHR_UPDATE_ALLERGY = 'PHR Update Allergy',
   PHR_UPDATE_FAMILY_HISTORY = 'PHR Update Family History',
@@ -221,11 +222,11 @@ export enum CleverTapEventName {
   PHR_UPDATE_MEDICAL_CONDITION = 'PHR Update Medical Condition',
   PHR_UPDATE_BILLS = 'PHR Update Bill',
   PHR_UPDATE_INSURANCE = 'PHR Update Insurance',
-  PHR_UPDATE_HEIGHT = 'PHR Update Height', //acd
+  PHR_UPDATE_HEIGHT = 'PHR Update Height',
   PHR_UPDATE_WEIGHT = 'PHR Update Weight',
   PHR_UPDATE_BLOOD_GROUP = 'PHR Update BloodGroup',
   PHR_DELETE_DOCTOR_CONSULTATION = 'PHR Delete Doctor Consultation',
-  PHR_DELETE_TEST_REPORT = 'PHR Delete Test Report', //acd
+  PHR_DELETE_TEST_REPORT = 'PHR Delete Test Report',
   PHR_DELETE_HOSPITALIZATIONS = 'PHR Delete Hospitalization',
   PHR_DELETE_ALLERGY = 'PHR Delete Allergy',
   PHR_DELETE_FAMILY_HISTORY = 'PHR Delete Family History',
@@ -237,7 +238,7 @@ export enum CleverTapEventName {
   PHR_LOAD_HEALTH_RECORDS = 'PHR Load Health Record',
   PHR_USER_LINKING = 'PHR User Linking',
   PHR_USER_DELINKING = 'PHR User DeLinking',
-  PHR_NO_OF_USERS_SEARCHED_GLOBAL = 'PHR No Of Users searched Global', //acd
+  PHR_NO_OF_USERS_SEARCHED_GLOBAL = 'PHR No Of Users searched Global',
   PHR_NO_USERS_SEARCHED_LOCAL = 'PHR No Of Users searched Local {0}',
   PHR_NO_OF_USERS_CLICKED_ON_RECORDS = 'PHR users seen on records in {0}',
 
@@ -503,6 +504,7 @@ export enum CleverTapEventName {
   //Vaccination Booking
   VACCINATION_BOOKING_CONFIRMATION = 'Vaccine_Booking confirmation',
   VACCINATION_CANCELLATION = 'Vaccine_Cancellation',
+  PHR_CLICK_VACCINATION = 'PHR_CLICK_VACCINATION',
 }
 
 export interface PatientInfo {
@@ -1429,6 +1431,7 @@ export interface CleverTapEvents {
     'Item ids'?: any;
     'Total items in order': number;
     'Payment type'?: string; //for prepaid
+    'Circle user': 'Yes' | 'No';
   };
   [CleverTapEventName.PAYMENT_INITIATED]: {
     Amount: number;
@@ -1476,7 +1479,7 @@ export interface CleverTapEvents {
   };
   [CleverTapEventName.DIAGNOSTIC_PAYMENT_PAGE_VIEWED]: {
     UHID: string;
-    'Order amount': string | number;
+    'Order amount': number;
   };
   [CleverTapEventName.DIAGNOSTIC_PHLEBO_FEEDBACK_SUBMITTED]: {
     Rating: string | number;
@@ -1504,6 +1507,12 @@ export interface CleverTapEvents {
     UHID: string;
     'Order id': string;
     'Order status': string;
+  };
+  [CleverTapEventName.DIAGNOSTIC_PRODUCT_LISTING_PAGE_VIEWED]: {
+    Type: 'Category' | 'Widget';
+    Source: 'Home' | 'Deeplink' | 'Details page' | 'Cart page';
+    'Category name': '';
+    'Section name': '';
   };
 
   // ********** ConsultEvents ********** \\

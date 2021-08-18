@@ -45,7 +45,7 @@ import {
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useApolloClient } from 'react-apollo-hooks';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { getPatientPrismMedicalRecords_V2_getPatientPrismMedicalRecords_V2_medicalInsurances_response as MedicalInsuranceType } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V2';
+import { getPatientPrismMedicalRecords_V3_getPatientPrismMedicalRecords_V3_medicalInsurances_response as MedicalInsuranceType } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords_V3';
 import moment from 'moment';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -297,7 +297,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
       .then((data: any) => {
         const medicalInsurance = g(
           data,
-          'getPatientPrismMedicalRecords_V2',
+          'getPatientPrismMedicalRecords_V3',
           'medicalInsurances',
           'response'
         );
