@@ -30,7 +30,10 @@ import {
   CommonBugFender,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_CUSTOMIZED_DIAGNOSTIC_SLOTS, GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+  GET_DIAGNOSTIC_NEAREST_AREA, GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES, GET_PATIENT_ADDRESS_LIST,
+  GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS } from '@aph/mobile-patients/src/graphql/profiles';
 import { ProfileImageComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/ProfileImageComponent';
 import { getAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import {
@@ -49,7 +52,6 @@ import {
   MEDICINE_FREQUENCY,
   MEDICINE_TIMINGS,
   MEDICINE_TO_BE_TAKEN,
-  MEDICINE_UNIT,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   addTestsToCart,
@@ -93,14 +95,24 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import { ListItem } from 'react-native-elements';
 import _ from 'lodash';
 import { AxiosResponse } from 'axios';
-import { getMedicineDetailsApi, MedicineProductDetailsResponse } from '../../helpers/apiCalls';
+import {
+  availabilityApi247, getDeliveryTAT, getDiagnosticDoctorPrescriptionResults, 
+  getMedicineDetailsApi, MedicineProductDetailsResponse } from '../../helpers/apiCalls';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/Events';
 import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
 import InAppReview from 'react-native-in-app-review';
+import {
+  getPatientAddressList, getPatientAddressListVariables, 
+  getPatientAddressList_getPatientAddressList_addressList } from '../../graphql/types/getPatientAddressList';
+import { getPincodeServiceability, getPincodeServiceabilityVariables } from '../../graphql/types/getPincodeServiceability';
+import { findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables } from '../../graphql/types/findDiagnosticsByItemIDsAndCityID';
+import { getNearestArea, getNearestAreaVariables } from '../../graphql/types/getNearestArea';
+import { getDiagnosticSlotsCustomized, getDiagnosticSlotsCustomizedVariables } from '../../graphql/types/getDiagnosticSlotsCustomized';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
+const slotFetchCount = 3;
 
 const styles = StyleSheet.create({
   cardViewStyle: {
@@ -274,6 +286,8 @@ type rescheduleType = {
   isPaid: number;
 };
 
+type availability = 'available' | 'partial' | 'unavailable';
+
 export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const data = props.navigation.getParam('DoctorInfo');
   const appointmentType = props.navigation.getParam('appointmentType');
@@ -297,7 +311,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const [showNotExistAlert, setshowNotExistAlert] = useState<boolean>(false);
   const [APICalled, setAPICalled] = useState<boolean>(false);
   const [showReferral, setShowReferral] = useState<boolean>(true);
-
+  const [defaultAddress, setDefaultAddress] = useState<getPatientAddressList_getPatientAddressList_addressList>()
+  const [cityId, setCityId] = useState<number>(0);
+  const [testIds, setTestIds] = useState<number[]>([])
+  const [testAvailability, setTestAvailability] = useState<availability>('unavailable')
+  const [prescAvailability, setPrescAvailability] = useState<availability>('unavailable')
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
 
@@ -320,6 +338,17 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     };
   }, []);
 
+  useEffect(() => {
+    if(caseSheetDetails && !defaultAddress){
+      getAddressList();
+    } else if(defaultAddress && !testIds.length) {
+      getPincodeServicibility(Number(defaultAddress?.zipcode));
+      checkMedicineAvailability();
+    } else {
+      getNearestArea();
+    }
+  }, [caseSheetDetails, defaultAddress, testIds])
+  
   useEffect(() => {
     setLoading && setLoading(true);
     client
@@ -347,6 +376,156 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       });
   }, []);
 
+  const getAddressList = () => {
+    client
+      .query<getPatientAddressList, getPatientAddressListVariables>({
+        query: GET_PATIENT_ADDRESS_LIST,
+
+        variables: {
+          patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data) => {
+        if (data) {
+          const addressList = data?.data?.getPatientAddressList?.addressList || [];
+          if (addressList.length) {
+            const address = addressList.find(address => address?.defaultAddress);
+            address && address?.latitude && setDefaultAddress(address);
+          }
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('AddressBook__getAddressList', error);
+      });
+  };
+  
+  const checkMedicineAvailability = async () => {
+    const skus = caseSheetDetails?.medicinePrescription?.map((item: any) => item?.id);
+    const data = await availabilityApi247(defaultAddress?.zipcode || '', skus?.join(','));
+    const medicineResponse = data?.data?.response;
+    if(medicineResponse.length){
+      const availableMedicines = medicineResponse.filter(item => item?.exist);
+      setPrescAvailability(availableMedicines.length == skus?.length ? 'available' : 'partial');
+      const skuItems = skus?.map(item => {return {sku: item, qty: 1}})!;
+      const data = await getDeliveryTAT({
+        lat: defaultAddress?.latitude!,
+        lng: defaultAddress?.longitude!,
+        pincode: defaultAddress?.zipcode!,
+        items: skuItems,
+      });
+      if(data?.data?.response){
+        const {tat} = data?.data?.response;
+        
+      }
+    }
+  }
+
+  const getPincodeServicibility = (pinCodeFromAddress: number) => {
+    client
+      .query<getPincodeServiceability, getPincodeServiceabilityVariables>({
+        query: GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
+        variables: {
+          pincode: pinCodeFromAddress,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(async (data) => {
+        const {cityID} = data?.data?.getPincodeServiceability || {};
+        if(cityID){
+          setCityId(cityID);
+          const items = caseSheetDetails?.diagnosticPrescription?.filter(
+            (val) => val?.itemname)?.map((item) => item?.itemname);
+          const formattedItemNames = items?.map((item) => item)?.join('|');
+          
+          const diagnosticResults = await getDiagnosticDoctorPrescriptionResults(
+            formattedItemNames || ''
+          );
+          const itemIds = diagnosticResults?.data?.data?.map(
+            (item: any) => Number(item?.diagnostic_item_id));
+          getTestCityServicibility(itemIds, cityID)
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('Pincode_servicibility', error);
+      });
+  };
+
+  const getTestCityServicibility = (testIds: number[], cityId: number) => {
+    client
+      .query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
+        query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+
+        variables: {
+          cityID: cityId,
+          itemIDs: testIds,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data) => {
+        const {diagnostics} = data?.data?.findDiagnosticsByItemIDsAndCityID || {};
+        if(diagnostics?.length){
+          setTestAvailability(diagnostics?.length == testIds.length ? 'available' 
+          : 'partial')
+          const availableTestIds = diagnostics?.map((item: any) => item?.itemId);
+          setTestIds(availableTestIds);
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('FindDiagnostics_byItem', error);
+      });
+  };
+
+  const getNearestArea = () => {
+    client
+      .query<getNearestArea, getNearestAreaVariables>({
+        query: GET_DIAGNOSTIC_NEAREST_AREA,
+        variables: {
+          patientAddressId: defaultAddress?.id || ''
+        },
+        fetchPolicy: 'no-cache',
+      }).then(async (data) => {
+        const areaId = data?.data?.getNearestArea?.area?.id;
+        if(areaId) {
+          for(let i = 0; i < slotFetchCount; i++){
+            const response = await getDiagnosticSlots(areaId, moment(new Date()).
+            add(i,'days').format('YYYY-MM-DD'));
+            const {slots} =  response?.data.getDiagnosticSlotsCustomized || {};
+            // slots
+            if(slots?.length) break;
+          }
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('NearestArea', error);
+      });;
+  };
+
+  const getDiagnosticSlots = async (areaID: number, date: string) => {
+    const res = await client
+      .query<getDiagnosticSlotsCustomized, getDiagnosticSlotsCustomizedVariables>({
+        query: GET_CUSTOMIZED_DIAGNOSTIC_SLOTS,
+        fetchPolicy: 'no-cache',
+        variables: {
+          selectedDate: date,
+          areaID,
+          itemIds: testIds,
+          patientAddressObj: {
+            addressLine1: defaultAddress?.addressLine1,
+            addressLine2: defaultAddress?.addressLine2,
+            addressType: defaultAddress?.addressType,
+            city: defaultAddress?.city,
+            landmark: defaultAddress?.landmark,
+            latitude: defaultAddress?.latitude,
+            longitude: defaultAddress?.longitude,
+            state: defaultAddress?.state,
+            zipcode: defaultAddress?.zipcode,
+            },
+          },
+        })
+    return res;
+  }
+  
   const postWEGEvent = (
     type: 'medicine' | 'test' | 'download prescription',
     medOrderType?: CleverTapEvents[CleverTapEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS]['Order Type']

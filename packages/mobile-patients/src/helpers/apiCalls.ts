@@ -239,6 +239,16 @@ export interface TatApiInput247 {
   userType: 'regular' | 'circle';
 }
 
+export interface TatApiInput {
+  pincode: string;
+  lat: number;
+  lng: number;
+  items: {
+    sku: string;
+    qty: number;
+  }[];
+}
+
 export interface ServiceAbilityApiInput {
   pincode: string;
   sku: string;
@@ -904,6 +914,16 @@ export const getDeliveryTAT247 = (params: TatApiInput247): Promise<AxiosResponse
     cancelToken: new CancelToken((c) => {
       cancelGetDeliveryTAT247 = c;
     }),
+  });
+};
+
+export const getDeliveryTAT = (params: TatApiInput): Promise<AxiosResponse<any>> => {
+  const url = `${config.UATTAT_CONFIG[0]}/tat`;
+  return Axios.post(url, params, {
+    headers: {
+      Authorization: config.UATTAT_CONFIG[1],
+    },
+    timeout: config.TAT_API_TIMEOUT_IN_SEC * 1000,
   });
 };
 
