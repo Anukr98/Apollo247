@@ -14,7 +14,7 @@ import {
   CheckIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { paymentModeVersionCheck } from '@aph/mobile-patients/src/helpers/helperFunctions';
-
+import { OutagePrompt } from '@aph/mobile-patients/src/components/PaymentGateway/Components/OutagePrompt';
 export interface NewCardProps {
   onPressNewCardPayNow: (cardInfo: any, saveCard: any) => void;
   cardTypes: any;
@@ -48,6 +48,7 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
     CVV: CVV,
   };
   const [isCardSupported, setIsCardSupported] = useState<boolean>(true);
+  const [outageStatus, setOutageStatus] = useState<string>('UP');
 
   useEffect(() => {
     isCardValid && cardNumber?.replace(/\-/g, '')?.length >= 6
@@ -73,6 +74,7 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
     } else if (number.length < 6) {
       setCardbin({});
       setisCardValid(true);
+      setOutageStatus('UP');
     }
     if (text) {
       var card = cardValidator(text);
@@ -83,6 +85,7 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
   const checkIsCardSupported = () => {
     const cardInfo =
       cardbin?.brand && cardTypes?.find((item: any) => item?.payment_method_code == cardbin?.brand);
+    setOutageStatus(cardInfo?.outage_status);
     cardInfo && paymentModeVersionCheck(cardInfo?.minimum_supported_version)
       ? setIsCardSupported(true)
       : setIsCardSupported(false);
@@ -128,7 +131,8 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
       CVV.length < (cardDetails?.cvv_length || 3) ||
       name == '' ||
       !isCardValid ||
-      !isCardSupported
+      !isCardSupported ||
+      outageStatus == 'DOWN'
     );
   }
 
@@ -246,8 +250,12 @@ export const NewCard: React.FC<NewCardProps> = (props) => {
   const renderNewCard = () => {
     return (
       <View
-        style={{ backgroundColor: !newCardSelected ? '#fff' : '#F6FFFF', paddingHorizontal: 20 }}
+        style={{
+          backgroundColor: !newCardSelected || outageStatus == 'DOWN' ? '#fff' : '#F6FFFF',
+          paddingHorizontal: 20,
+        }}
       >
+        <OutagePrompt outageStatus={outageStatus} msg={'Your card is'} />
         <TouchableOpacity style={styles.newCardCont} onPress={() => onPressNewCard()}>
           <View style={styles.cardSubCont}>
             <Card />
