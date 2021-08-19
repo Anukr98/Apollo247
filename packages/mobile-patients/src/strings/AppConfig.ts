@@ -21,7 +21,7 @@ export enum AppEnv {
   QA6 = 'QA6',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA6 as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
 
 const paymentGatewayBaseUrl: string =
   APP_ENV == AppEnv.PROD
@@ -491,6 +491,7 @@ const PharmaApiConfig = {
     MIN_CART_VALUE_FOR_FREE_DELIVERY: 300,
     DELIVERY_CHARGES: 50,
     pharmaMerchantId: 'apollopharm' /*  pharma merchantId staging - apollopharm */,
+    assetsBaseurl: 'https://newassets-test.apollo247.com/files',
   },
   prod: {
     TRACK_EVENT: [`${tagalysBaseUrl}/analytics/events/track`],
@@ -534,6 +535,7 @@ const PharmaApiConfig = {
     MIN_CART_VALUE_FOR_FREE_DELIVERY: 300,
     DELIVERY_CHARGES: 50,
     pharmaMerchantId: 'apollo_hospitals' /*  pharma merchantId prod - apollo_hospitals */,
+    assetsBaseurl: 'https://newassets.apollo247.com/files',
   },
 };
 
