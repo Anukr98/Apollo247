@@ -382,9 +382,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       isPharma,
     };
     const data = await getPlaceInfoByPincode(pincode);
-    const locationData = data.data.results[0].geometry.location;
-    latitude = locationData.lat;
-    longitude = locationData.lng;
+    const locationData = data?.data?.results?.[0]?.geometry?.location;
+    latitude = locationData?.lat;
+    longitude = locationData?.lng;
     if (latitude && longitude) {
       input['lat'] = parseFloat(latitude.toFixed(2));
       input['lng'] = parseFloat(longitude.toFixed(2));
