@@ -403,14 +403,14 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
         />
       </View>
     );
-  }
+  };
 
   const renderHeader = () => {
     const onPressBack = () => navigation.goBack();
     const pageTitle = string.help.toUpperCase();
     return <Header title={pageTitle} leftIcon="backArrow" onPressLeftIcon={onPressBack} />;
   };
-  
+
   const renderBreadCrumb = () => {
     const breadCrumb = [
       {
@@ -615,7 +615,6 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
     );
   };
 
-
   const renderDivider = () => {
     return <Divider style={styles.divider} />;
   };
@@ -666,9 +665,10 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
         queries,
         email,
         sourcePage,
+        pathFollowed: string.otherIssueNotMyOrders + ' - ',
       });
     };
-    return <AphListItem title={string.otherIssueNotMyOrders} onPress={onPress} />
+    return <AphListItem title={string.otherIssueNotMyOrders} onPress={onPress} />;
   };
 
   const renderEmailPopup = () => {
@@ -695,13 +695,17 @@ export const NeedHelpDiagnosticsOrder: React.FC<Props> = ({ navigation }) => {
       {renderHeader()}
       {renderBreadCrumb()}
       {renderHeading()}
-      {orders?.length > 0 ? renderFirstOrder() : <>
-            {orders?.length > 0 ? <Spearator /> : null}
-            <Text style={styles.subHeading}>
-              If your order transaction failed report issue in this section:
-            </Text>
-            {renderNotOrderRelated()}
-          </>}
+      {orders?.length > 0 ? (
+        renderFirstOrder()
+      ) : (
+        <>
+          {orders?.length > 0 ? <Spearator /> : null}
+          <Text style={styles.subHeading}>
+            If your order transaction failed report issue in this section:
+          </Text>
+          {renderNotOrderRelated()}
+        </>
+      )}
       {renderEmailPopup()}
     </SafeAreaView>
   );

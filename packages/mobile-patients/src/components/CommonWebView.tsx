@@ -25,6 +25,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import { useApolloClient } from 'react-apollo-hooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { postAppsFlyerCircleAddRemoveCartEvent } from '@aph/mobile-patients/src/components/CirclePlan/Events';
 
 export interface CommonWebViewProps extends NavigationScreenProps {}
 
@@ -88,6 +89,7 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
       price: circleData?.currentSellingPrice,
     };
     postCleverTapEvent(CleverTapEventName.CIRCLE_PLAN_TO_CART, cleverTapEventAttributes);
+    postAppsFlyerCircleAddRemoveCartEvent(circleData, circleEventSource, 'add', currentPatient);
   };
 
   useEffect(() => {

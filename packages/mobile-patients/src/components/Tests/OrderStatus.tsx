@@ -29,6 +29,8 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CleverTapEventName } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
+import InAppReview from 'react-native-in-app-review';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 export interface OrderStatusProps extends NavigationScreenProps {}
 
@@ -88,18 +90,37 @@ export const OrderStatus: React.FC<OrderStatusProps> = (props) => {
     postwebEngageCheckoutCompletedEvent();
     firePurchaseEvent(orderDetails?.orderId, orderDetails?.amount, cartItems);
     clearDiagnoticCartInfo?.();
+    submitReviewOnLabBook();
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
   }, []);
 
+  const submitReviewOnLabBook = async () => {
+    try {
+      const { diagnosticDate } = orderDetails;
+      let currentDate = new Date();
+      let givenDate = new Date(diagnosticDate);
+      var diff = (givenDate.getTime() - givenDate.getTime()) / 1000;
+      diff /= 60 * 60;
+
+      if (diff <= 48) {
+        if (InAppReview.isAvailable()) {
+          await InAppReview.RequestInAppReview();
+        }
+      }
+    } catch (error) {
+      CommonBugFender('inAppRevireAfterPaymentForDignostic', error);
+    }
+  };
+
   const postwebEngageCheckoutCompletedEvent = () => {
     let attributes = {
       ...eventAttributes,
       'Payment mode': isCOD ? 'Cash' : 'Prepaid',
       'Circle discount': circleSubscriptionId && orderCircleSaving ? orderCircleSaving : 0,
-      "Circle user":  isDiagnosticCircleSubscription ? 'Yes' : 'No',
+      'Circle user': isDiagnosticCircleSubscription ? 'Yes' : 'No',
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED, attributes);
     postCleverTapEvent(CleverTapEventName.DIAGNOSTIC_CHECKOUT_COMPLETED, attributes);

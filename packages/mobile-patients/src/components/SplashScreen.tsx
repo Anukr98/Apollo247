@@ -405,7 +405,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     ) {
       const params = id?.split('+');
       voipCallType.current = params?.[1]!;
-      callPermissions();
       getAppointmentDataAndNavigate(params?.[0]!, true);
     } else if (routeName == 'prohealth') {
       fetchProhealthHospitalDetails(id);
@@ -752,6 +751,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setMaxCartValueForCOD,
     setNonCodSKus,
     setCartPriceNotUpdateRange,
+    setPdpDisclaimerMessage,
     setPharmaHomeNudgeMessage,
     setPharmaCartNudgeMessage,
     setPharmaPDPNudgeMessage,
@@ -980,6 +980,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Diagnostics_Help_NonOrder_Queries',
       PROD: 'Diagnostics_Help_NonOrder_Queries',
     },
+    Pharma_Discailmer_Message: {
+      QA: 'QA_Pharma_PDP_Disclaimer',
+      PROD: 'Pharma_PDP_Disclaimer',
+    },
     Nudge_Message_Pharmacy_Home: {
       QA: 'QA_Show_nudge_on_pharma_home',
       PROD: 'Show_nudge_on_pharma_home',
@@ -1109,6 +1113,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         (key) => JSON.parse(config.getString(key)) || []
       );
       nonCodSkuList?.length && setNonCodSKus?.(nonCodSkuList);
+
+      const disclaimerMessagePdp = getRemoteConfigValue('Pharma_Discailmer_Message', (key) =>
+        config.getString(key)
+      );
+      setPdpDisclaimerMessage?.(disclaimerMessagePdp);
 
       setAppConfig(
         'Min_Value_For_Pharmacy_Free_Delivery',

@@ -807,6 +807,10 @@ const ConfigurationQA5 = {
   APOLLO_PRO_HEALTH_URL:
     'https://qa5patients.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
   baseUrl: 'https://aph-staging-web-patients.apollo247.com/ordersuccess',
+  CIRCLE_CONSULT_URL: 'https://aph-staging-web-patients.apollo247.com/consult-landing?header=false',
+  CIRLCE_PHARMA_URL: 'https://aph-staging-web-patients.apollo247.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph-staging-web-patients.apollo247.com/test-landing?header=false',
+  CIRCLE_LANDING_URL: 'https://aph-staging-web-patients.apollo247.com/circle?header=false',
 };
 
 const ConfigurationQA6 = {
@@ -1441,51 +1445,6 @@ export const TestsFeedBackData = {
       'Friendly and polite delivery person',
     ],
   },
-};
-
-export const TestCancelReasons = {
-  reasons: [
-    string.diagnostics.reasonForCancel_TestOrder.urgentReport,
-    string.diagnostics.reasonForCancel_TestOrder.notArrived,
-    string.diagnostics.reasonForCancel_TestOrder.latePhelbo,
-    string.diagnostics.reasonForCancel_TestOrder.priceHigh,
-    string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
-    string.diagnostics.reasonForCancel_TestOrder.needModifyPatient,
-    string.diagnostics.reasonForCancel_TestOrder.needModifyOrder,
-    string.diagnostics.reasonForCancel_TestOrder.homeChargesHigh,
-    string.diagnostics.reasonForCancel_TestOrder.changePlans,
-    string.diagnostics.reasonForCancel_TestOrder.symptomsSubdued,
-    string.diagnostics.reasonForCancel_TestOrder.missedFasting,
-    string.diagnostics.reasonForCancel_TestOrder.needMorningSlot,
-    string.diagnostics.reasonForCancel_TestOrder.waitingDocPrescription,
-    string.diagnostics.reasonForCancel_TestOrder.deniedSample,
-  ],
-};
-export const TestCancelReasonsPre = {
-  reasons: [
-    string.diagnostics.reasonForCancel_TestOrder.urgentReport,
-    string.diagnostics.reasonForCancel_TestOrder.priceHigh,
-    string.diagnostics.reasonForCancel_TestOrder.userUnavailable,
-    string.diagnostics.reasonForCancel_TestOrder.needModifyPatient,
-    string.diagnostics.reasonForCancel_TestOrder.needModifyOrder,
-    string.diagnostics.reasonForCancel_TestOrder.homeChargesHigh,
-    string.diagnostics.reasonForCancel_TestOrder.changePlans,
-    string.diagnostics.reasonForCancel_TestOrder.symptomsSubdued,
-    string.diagnostics.reasonForCancel_TestOrder.missedFasting,
-    string.diagnostics.reasonForCancel_TestOrder.needMorningSlot,
-    string.diagnostics.reasonForCancel_TestOrder.waitingDocPrescription,
-    string.diagnostics.reasonForCancel_TestOrder.deniedSample,
-  ],
-};
-
-export const TestReschedulingReasons = {
-  reasons: [
-    string.diagnostics.reasonForReschedule_TestOrder.latePhelbo,
-    string.diagnostics.reasonForReschedule_TestOrder.unavailable,
-    string.diagnostics.reasonForReschedule_TestOrder.guidelinesNotFollowed,
-    string.diagnostics.reasonForReschedule_TestOrder.unableToProvideSample,
-    string.diagnostics.reasonForReschedule_TestOrder.slotMistake,
-  ],
 };
 
 export const CancelConsultation = {

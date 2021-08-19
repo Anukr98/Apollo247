@@ -52,6 +52,7 @@ export interface Props
     isConsult?: boolean;
     medicineOrderStatusDate?: any;
     sourcePage: WebEngageEvents[WebEngageEventName.HELP_TICKET_SUBMITTED]['Source_Page'];
+    pathFollowed: string;
   }> {}
 
 export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
@@ -59,6 +60,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
   const _queries = navigation.getParam('queries');
   const queryIdLevel1 = navigation.getParam('queryIdLevel1') || '';
   const queryIdLevel2 = navigation.getParam('queryIdLevel2') || '';
+  const pathFollowed = navigation.getParam('pathFollowed') || '';
   const medicineOrderStatusDate = navigation.getParam('medicineOrderStatusDate');
   const [email, setEmail] = useState(navigation.getParam('email') || '');
   const orderId = navigation.getParam('orderId') || '';
@@ -170,7 +172,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
       const variables: SendHelpEmailVariables = {
         helpEmailInput: {
           category: parentQuery?.title,
-          reason,
+          reason: pathFollowed + reason,
           comments: comments,
           patientId: currentPatient?.id,
           email: email,
@@ -304,6 +306,7 @@ export const NeedHelpQueryDetails: React.FC<Props> = ({ navigation }) => {
           queries,
           email,
           orderId,
+          pathFollowed: item?.title + ' - ',
         });
       } else if (isReturnQuery) {
         navigation.navigate(AppRoutes.ReturnMedicineOrder, {

@@ -216,7 +216,7 @@ export interface UploadPrescriptionViewProps extends NavigationScreenProps {
   ePresscriptionUploaded: EPrescription[];
 }
 
-const MAX_FILE_SIZE = 2000000; // 2MB
+const MAX_FILE_SIZE = 25000000; // ~25MB
 
 export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (props) => {
   const phyPrescriptionUploaded = props.navigation.getParam('phyPrescriptionUploaded') || [];
@@ -545,7 +545,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
           strings.common.uhOh,
           !isValidPdf
             ? `Invalid File Type. File type must be PDF.`
-            : `Invalid File Size. File size must be less than 2MB.`
+            : `Invalid File Size. File size must be less than 25MB.`
         );
         return;
       }
@@ -607,7 +607,7 @@ export const UploadPrescriptionView: React.FC<UploadPrescriptionViewProps> = (pr
         const isGreaterThanSpecifiedSize = images.find(({ size }) => size > MAX_FILE_SIZE);
         setShowSpinner(false);
         if (isGreaterThanSpecifiedSize) {
-          Alert.alert(strings.common.uhOh, `Invalid File Size. File size must be less than 2MB.`);
+          Alert.alert(strings.common.uhOh, `Invalid File Size. File size must be less than 25MB.`);
           return;
         }
         const uploadedImages = formatResponse(images);

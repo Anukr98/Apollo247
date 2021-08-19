@@ -1362,7 +1362,6 @@ export const VaccineBookingScreen: React.FC<VaccineBookingScreenProps> = (props)
 
   const setUpSelectedPatient = (_selectedPatient: any) => {
     setSelectedPatient(_selectedPatient);
-    console.log('check _selectedPatient -- ', _selectedPatient);
   };
 
   const onNewProfileAdded = (newPatient: any) => {

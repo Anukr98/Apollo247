@@ -59,6 +59,7 @@ import {
   downloadDiagnosticReport,
   setAsyncPharmaLocation,
   downloadDocument,
+  removeWhiteSpaces,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -1421,6 +1422,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       if (item?.redirectUrl && item?.redirectUrl != '') {
         //for rtpcr - drive through - open webview
         if (item?.redirectUrlText === 'WebView') {
+          DiagnosticBannerClick(slideIndex + 1, Number(item?.itemId), item?.bannerTitle);
           try {
             const openUrl = item?.redirectUrl || AppConfig.Configuration.RTPCR_Google_Form;
             props.navigation.navigate(AppRoutes.CovidScan, {
@@ -1456,7 +1458,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
             DiagnosticBannerClick(slideIndex + 1, Number(0), item?.bannerTitle);
             props.navigation.navigate(AppRoutes.TestListing, {
               movedFrom: 'deeplink',
-              widgetName: itemId, //name
+              widgetName: itemId, //name,
+              cityId: serviceableObject?.cityId || diagnosticServiceabilityData?.cityId,
             });
           }
         }
@@ -2122,7 +2125,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setViewReportOrderId(clickedItem?.orderId);
       await downloadDiagnosticReport(
         setLoadingContext,
-        clickedItem?.labReportURL,
+        removeWhiteSpaces(clickedItem?.labReportURL),
         appointmentDate,
         !!patientName ? patientName : '_',
         true,
