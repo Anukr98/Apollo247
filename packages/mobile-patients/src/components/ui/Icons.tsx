@@ -2096,6 +2096,13 @@ export const ConsultPending: React.FC<IconProps> = (props) => (
   />
 );
 
+export const FasterSubstitutes: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    source={require('@aph/mobile-patients/src/components/ui/icons/FasterSubstitute.webp')}
+  />
+);
+
 export const Alert: React.FC<IconProps> = (props) => (
   <IconBase
     {...props}
