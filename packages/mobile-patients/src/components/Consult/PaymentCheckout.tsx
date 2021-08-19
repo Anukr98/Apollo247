@@ -427,7 +427,12 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   };
 
   const renderCareMembershipAddedCard = () => {
-    return <CareMembershipAdded doctor={doctor} isOnlineConsult={isOnlineConsult} />;
+    return (
+      <CareMembershipAdded 
+        doctor={doctor}
+        isOnlineConsult={isOnlineConsult}
+        couponDiscountFees={couponDiscountFees} />
+        );
   };
 
   const renderPriceBreakup = () => {

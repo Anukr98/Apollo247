@@ -18,6 +18,7 @@ import {
   isPhysicalConsultation,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import {Tooltip} from 'react-native-elements';
+import { Decimal } from 'decimal.js';
 
 interface ConsultDiscountProps {
   onPressCard: TouchableOpacityProps['onPress'];
@@ -54,11 +55,16 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
     onlineConsultDiscountedPrice,
     isCircleDoctorOnSelectedConsultMode,
     cashbackEnabled,
+    cashbackAmount,
     onlineConsultMRPPrice,
   } = circleDoctorDetails;
 
-  const hcCashbackAmount = Math.round(onlineConsultMRPPrice/10);
-
+  const cashbackPercentage = +new Decimal(cashbackAmount || 0).dividedBy(
+    onlineConsultMRPPrice || onlineConsultDiscountedPrice).mul(100);
+  const hcCashbackAmount = Math.round(
+   +new Decimal(cashbackPercentage * (onlineConsultMRPPrice - couponDiscountFees)).dividedBy(100)
+   );
+  
   const totalSavings =
     isCircleDoctorOnSelectedConsultMode && (circleSubscriptionId || planSelected)
       ? isOnlineConsult 
