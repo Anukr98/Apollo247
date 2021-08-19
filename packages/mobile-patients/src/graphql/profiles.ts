@@ -1940,7 +1940,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         slotTimings
         slotId
         totalPrice
-        attributesObj{
+        attributesObj {
           slotDurationInMinutes
           expectedReportGenerationTime
           reportTATMessage
@@ -5260,23 +5260,23 @@ export const GET_INTERNAL_ORDER = gql`
       txn_id
       status_id
       payment_order_id
-      DiagnosticsPaymentDetails{
-        ordersList{
+      DiagnosticsPaymentDetails {
+        ordersList {
           id
           patientId
           primaryOrderID
           displayId
           slotDateTimeInUTC
-          attributesObj{
+          attributesObj {
             slotDurationInMinutes
           }
-          patientObj{
+          patientObj {
             id
             firstName
             lastName
             gender
           }
-          diagnosticOrderLineItems{
+          diagnosticOrderLineItems {
             itemId
             itemName
             price
@@ -5563,7 +5563,7 @@ export const GET_DIAGNOSTIC_OPEN_ORDERLIST = gql`
           firstName
           lastName
         }
-        attributesObj{
+        attributesObj {
           reportTATHours
           reportTATMessage
           reportGenerationTime
@@ -6094,6 +6094,37 @@ export const GET_DIAGNOSTIC_PAYMENT_SETTINGS = gql`
   }
 `;
 
+export const GET_PRODUCT_SUBSTITUTES = gql`
+  query pharmaSubstitution($substitutionInput: PharmaSubstitutionRequest) {
+    pharmaSubstitution(substitutionInput: $substitutionInput) {
+      substitutes {
+        sku
+        name
+        price
+        mou
+        image
+        thumbnail
+        small_image
+        is_express
+        is_in_contract
+        is_prescription_required
+        description
+        subcategory
+        type_id
+        url_key
+        is_in_stock
+        MaxOrderQty
+        sell_online
+        manufacturer
+        dc_availability
+        tat
+        tatDuration
+        tatPrice
+      }
+    }
+  }
+`;
+
 export const POST_WEB_ENGAGE = gql`
   mutation postConsultEventToDoctor($doctorConsultEventInput: PatientConsultEventToDoctorInput!) {
     postConsultEventToDoctor(doctorConsultEventInput: $doctorConsultEventInput) {
@@ -6104,33 +6135,53 @@ export const POST_WEB_ENGAGE = gql`
   }
 `;
 
-export const GET_DIAGNOSTICS_RECOMMENDATIONS = gql `
-mutation getDiagnosticItemRecommendations($itemIds:[Int]!, $records: Int){
-  getDiagnosticItemRecommendations(itemIds: $itemIds, numberOfRecordsToFetch: $records){
-    itemsData{
-      itemId
-      itemName
-      combinedLift
+export const GET_DIAGNOSTICS_RECOMMENDATIONS = gql`
+  mutation getDiagnosticItemRecommendations($itemIds: [Int]!, $records: Int) {
+    getDiagnosticItemRecommendations(itemIds: $itemIds, numberOfRecordsToFetch: $records) {
+      itemsData {
+        itemId
+        itemName
+        combinedLift
+      }
     }
   }
-}
 `;
 
-export const GET_DIAGNOSTIC_EXPRESS_SLOTS_INFO  = gql`
-  query getUpcomingSlotInfo($latitude: Float!, $longitude: Float!, $zipcode: String!, $serviceability: DiagnosticsServiceability!) {
-    getUpcomingSlotInfo(latitude: $latitude, longitude: $longitude, zipcode: $zipcode, serviceability: $serviceability) {
+export const GET_DIAGNOSTIC_EXPRESS_SLOTS_INFO = gql`
+  query getUpcomingSlotInfo(
+    $latitude: Float!
+    $longitude: Float!
+    $zipcode: String!
+    $serviceability: DiagnosticsServiceability!
+  ) {
+    getUpcomingSlotInfo(
+      latitude: $latitude
+      longitude: $longitude
+      zipcode: $zipcode
+      serviceability: $serviceability
+    ) {
       status
       slotInfo
     }
   }
 `;
 
-export const GET_DIAGNOSTIC_REPORT_TAT = gql `
-  query getConfigurableReportTAT($slotDateTimeInUTC: DateTime,$cityId: Int!, $pincode: Int!, $itemIds: [Int]!){
-    getConfigurableReportTAT(slotDateTimeInUTC: $slotDateTimeInUTC,cityId: $cityId, pincode: $pincode, itemIds: $itemIds){
+export const GET_DIAGNOSTIC_REPORT_TAT = gql`
+  query getConfigurableReportTAT(
+    $slotDateTimeInUTC: DateTime
+    $cityId: Int!
+    $pincode: Int!
+    $itemIds: [Int]!
+  ) {
+    getConfigurableReportTAT(
+      slotDateTimeInUTC: $slotDateTimeInUTC
+      cityId: $cityId
+      pincode: $pincode
+      itemIds: $itemIds
+    ) {
       maxReportTAT
       reportTATMessage
-      itemLevelReportTATs{
+      itemLevelReportTATs {
         itemId
         reportTATMessage
         reportTATInUTC
