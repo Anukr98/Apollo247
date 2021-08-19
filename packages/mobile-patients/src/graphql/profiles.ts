@@ -2034,8 +2034,8 @@ export const GET_DIAGNOSTICS_HC_CHARGES = gql`
 `;
 
 export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
-  query findDiagnosticsByItemIDsAndCityID($cityID: Int!, $itemIDs: [Int]!) {
-    findDiagnosticsByItemIDsAndCityID(cityID: $cityID, itemIDs: $itemIDs) {
+  query findDiagnosticsByItemIDsAndCityID($cityID: Int!, $itemIDs: [Int]!, $pincode: Int) {
+    findDiagnosticsByItemIDsAndCityID(cityID: $cityID, itemIDs: $itemIDs, pincode: $pincode) {
       diagnostics {
         id
         itemId
