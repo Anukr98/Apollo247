@@ -8,25 +8,33 @@ import {
   convertNumberToDecimal,
 } from '@aph/mobile-patients/src/utils/commonUtils';
 import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Decimal } from 'decimal.js';
 
 interface CareMembershipProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
   isOnlineConsult?: boolean;
+  couponDiscountFees: number;
 }
 
 export const CareMembershipAdded: React.FC<CareMembershipProps> = (props) => {
-  const { doctor, isOnlineConsult } = props;
+  const { doctor, isOnlineConsult, couponDiscountFees } = props;
   const circleDoctorDetails = calculateCircleDoctorPricing(doctor);
   const {
     onlineConsultDiscountedPrice,
     physicalConsultDiscountedPrice,
     cashbackAmount,
-    cashbackEnabled
+    cashbackEnabled,
+    onlineConsultMRPPrice,
    } = circleDoctorDetails;
   const discountedPrice = isOnlineConsult
     ? onlineConsultDiscountedPrice
     : physicalConsultDiscountedPrice;
 
+    const cashbackPercentage = +new Decimal(cashbackAmount || 0).dividedBy(
+      onlineConsultMRPPrice).mul(100);
+    const hcCashbackAmount = Math.round(
+     +new Decimal(cashbackPercentage * (
+       onlineConsultMRPPrice - couponDiscountFees)).dividedBy(100));
   return (
     <View style={styles.container}>
       <View style={styles.rowContainer}>
@@ -39,7 +47,7 @@ export const CareMembershipAdded: React.FC<CareMembershipProps> = (props) => {
         <Text style={styles.amountSavedText}>
           {cashbackEnabled ? string.common.hcSavedOnConsultByCare.replace(
             '{amount}',
-            `${convertNumberToDecimal(cashbackAmount)}`
+            `${convertNumberToDecimal(hcCashbackAmount)}`
           ) : string.common.amountSavedOnConsultByCare.replace(
             '{amount}',
             `${convertNumberToDecimal(discountedPrice)}`
