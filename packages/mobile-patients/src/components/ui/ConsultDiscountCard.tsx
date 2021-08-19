@@ -59,7 +59,8 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
     onlineConsultMRPPrice,
   } = circleDoctorDetails;
 
-  const cashbackPercentage = +new Decimal(cashbackAmount || 0).dividedBy(onlineConsultMRPPrice).mul(100);
+  const cashbackPercentage = +new Decimal(cashbackAmount || 0).dividedBy(
+    onlineConsultMRPPrice || onlineConsultDiscountedPrice).mul(100);
   const hcCashbackAmount = Math.round(
    +new Decimal(cashbackPercentage * (onlineConsultMRPPrice - couponDiscountFees)).dividedBy(100)
    );
