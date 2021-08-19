@@ -261,6 +261,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     coupon,
     areaSelected,
     setAreaSelected,
+    diagnosticAreas,
     setDiagnosticAreas,
     cartSaving,
     discountSaving,
@@ -3050,7 +3051,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             ) : null}
           </>
         ) : null}
-        {isModifyFlow ? null : showSelectedArea && !isEmptyObject(areaSelected) ? (
+        {isModifyFlow ? null : showSelectedArea &&
+          !isEmptyObject(areaSelected) &&
+          diagnosticAreas?.length > 0 ? (
           <View style={styles.patientNameMainViewStyle}>
             <View style={styles.patientNameViewStyle}>
               <Text style={styles.patientNameTextStyle}>{string.diagnostics.areaText}</Text>
