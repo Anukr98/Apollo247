@@ -371,6 +371,13 @@ dependencies {
     implementation "androidx.browser:browser:1.0.0"
     implementation "com.google.android:flexbox:2.0.1"
     implementation "in.juspay:google-pay-client-api:1.0.0"
+
+    // Import the BoM for the Firebase platform
+    implementation platform('com.google.firebase:firebase-bom:20.0.0')
+
+    // Declare the dependency for the Analytics library
+    // When using the BoM, you don't specify versions in Firebase library dependencies
+    implementation 'com.google.firebase:firebase-analytics'
 }
 
 // Run this once to be able to run the application with BUCK
