@@ -708,6 +708,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
       setdeliveryError(pincodeServiceableItemOutOfStockMsg);
       setdeliveryTime('');
       setshowDeliverySpinner(false);
+      setIsInStock(false);
     }
   };
 
@@ -1145,8 +1146,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
                   navigation={props.navigation}
                 />
               )}
-              {!!medicineDetails?.marketer_address && (
-                <ProductManufacturer address={medicineDetails?.marketer_address} />
+              {(!!medicineDetails?.marketer_address || !!medicineDetails?.country_of_origin) && (
+                <ProductManufacturer
+                  address={medicineDetails?.marketer_address}
+                  origin={medicineDetails?.country_of_origin}
+                />
               )}
               {renderDisclaimerMessage()}
               <View style={{ height: 130 }} />

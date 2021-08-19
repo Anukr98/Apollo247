@@ -52,7 +52,7 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     isDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
 
-  const { isDiagnosticLocationServiceable } = useAppCommonData();
+  const { isDiagnosticLocationServiceable, diagnosticServiceabilityData } = useAppCommonData();
 
   const movedFrom = props.navigation.getParam('movedFrom');
   const dataFromHomePage = props.navigation.getParam('data');
@@ -118,7 +118,6 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
     }
   };
 
- 
   const fetchPricesForCityId = (cityId: string | number, listOfId: []) =>
     client.query<findDiagnosticsWidgetsPricing, findDiagnosticsWidgetsPricingVariables>({
       query: GET_WIDGETS_PRICING_BY_ITEMID_CITYID,
@@ -126,7 +125,15 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         sourceHeaders,
       },
       variables: {
-        cityID: Number(cityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
+        cityID:
+          movedFrom == 'deeplink'
+            ? (!!diagnosticServiceabilityData &&
+                Number(
+                  diagnosticServiceabilityData?.cityId ||
+                    AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
+                )) ||
+              AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID
+            : Number(cityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
         itemIDs: listOfId,
       },
       fetchPolicy: 'no-cache',
@@ -259,7 +266,6 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
         </View>
       );
   };
-  
 
   const renderBreadCrumb = () => {
     return (
@@ -274,8 +280,8 @@ export const TestListing: React.FC<TestListingProps> = (props) => {
 
   const renderList = () => {
     const actualItemsToShow = widgetsData?.diagnosticWidgetData?.filter(
-       (item: any) => item?.diagnosticPricing
-      );
+      (item: any) => item?.diagnosticPricing
+    );
     return (
       <>
         {!!actualItemsToShow && actualItemsToShow?.length > 0 ? (
