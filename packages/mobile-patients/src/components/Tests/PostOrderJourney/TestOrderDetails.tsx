@@ -736,7 +736,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   function _onPressViewReportAction() {
     if (!!selectedOrder?.labReportURL && selectedOrder?.labReportURL != '') {
-      onPressViewReport();
+      onPressViewReport(true);
     } else if (!!selectedOrder?.visitNo && selectedOrder?.visitNo != '') {
       //directly open the phr section
       fetchTestReportResult();
@@ -753,10 +753,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       / /g,
       '_'
     );
-    downloadLabTest(orderDetails?.invoiceURL!, appointmentDate, patientName);
+    downloadLabTest(orderDetails?.invoiceURL!, appointmentDate, patientName, false);
   };
 
-  const onPressViewReport = () => {
+  const onPressViewReport = (isReport: boolean) => {
     const appointmentDetails = !!orderDetails?.slotDateTimeInUTC
       ? orderDetails?.slotDateTimeInUTC
       : orderDetails?.diagnosticDate;
@@ -772,10 +772,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       'Download Report PDF',
       orderDetails?.id
     );
-    downloadLabTest(removeWhiteSpaces(orderDetails?.labReportURL)!, appointmentDate, patientName);
+    downloadLabTest(removeWhiteSpaces(orderDetails?.labReportURL)!, appointmentDate, patientName, isReport);
   };
 
-  async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string) {
+  async function downloadLabTest(pdfUrl: string, appointmentDate: string, patientName: string, isReport?: boolean) {
     setLoading?.(true);
     try {
       await downloadDiagnosticReport(
@@ -787,7 +787,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         undefined,
         orderDetails?.orderStatus,
         (orderDetails?.displayId).toString(),
-        false
+        isReport
       );
     } catch (error) {
       setLoading?.(false);
