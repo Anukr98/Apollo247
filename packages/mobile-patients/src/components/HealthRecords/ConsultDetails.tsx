@@ -97,7 +97,7 @@ import _ from 'lodash';
 import { AxiosResponse } from 'axios';
 import {
   availabilityApi247, getDeliveryTAT, getDiagnosticDoctorPrescriptionResults, 
-  getMedicineDetailsApi, MedicineProductDetailsResponse } from '../../helpers/apiCalls';
+  getMedicineDetailsApi, getTatStaticContent, MedicineProductDetailsResponse} from '../../helpers/apiCalls';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { DiagnosticAddToCartEvent } from '@aph/mobile-patients/src/components/Tests/Events';
 import { DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE } from '@aph/mobile-patients/src/utils/commonUtils';
@@ -263,6 +263,19 @@ const styles = StyleSheet.create({
   },
   downloadIconStyle: { width: 20, height: 20 },
   phrGeneralIconStyle: { width: 20, height: 24.84, marginRight: 12 },
+  tatContainer: {
+    paddingHorizontal: 13,
+    borderColor: theme.colors.APP_GREEN,
+    borderWidth: 2,
+    borderRadius: 5,
+    paddingVertical: 10,
+    borderStyle: 'dashed',
+    marginHorizontal: 6,
+  },
+  tatText: {
+    ...theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE, 1, 16),
+    paddingBottom: 10,
+  }
 });
 
 export interface ConsultDetailsProps
@@ -316,6 +329,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const [testIds, setTestIds] = useState<number[]>([])
   const [testAvailability, setTestAvailability] = useState<availability>('unavailable')
   const [prescAvailability, setPrescAvailability] = useState<availability>('unavailable')
+  const [tatContent, setTatContent] = useState<any[]>([])
+  const [tat, setTat] = useState<string>('')
+  const [testSlot, setTestSlot] = useState<string>('');
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
 
@@ -343,7 +359,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       getAddressList();
     } else if(defaultAddress && !testIds.length) {
       getPincodeServicibility(Number(defaultAddress?.zipcode));
-      checkMedicineAvailability();
+      if(caseSheetDetails?.medicinePrescription?.length){
+        checkMedicineAvailability();
+      }
     } else {
       getNearestArea();
     }
@@ -377,6 +395,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   }, []);
 
   const getAddressList = () => {
+    setLoading && setLoading(true);
     client
       .query<getPatientAddressList, getPatientAddressListVariables>({
         query: GET_PATIENT_ADDRESS_LIST,
@@ -386,17 +405,24 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         },
         fetchPolicy: 'no-cache',
       })
-      .then((data) => {
+      .then(async (data) => {
+        const tatData = await getTatStaticContent();
+        if(tatData?.data){
+          setTatContent(tatData?.data?.data?.response)
+        }
         if (data) {
           const addressList = data?.data?.getPatientAddressList?.addressList || [];
           if (addressList.length) {
             const address = addressList.find(address => address?.defaultAddress);
             address && address?.latitude && setDefaultAddress(address);
+          } else {
+            setLoading && setLoading(false);
           }
         }
       })
       .catch((error) => {
         CommonBugFender('AddressBook__getAddressList', error);
+        setLoading && setLoading(false);
       });
   };
   
@@ -416,7 +442,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       });
       if(data?.data?.response){
         const {tat} = data?.data?.response;
-        
+        setTat(moment(tat, 'DD-MMM-YYYY HH:mm').format('h:mm A, DD MMM YYYY'));        
+      }else {
+        setLoading && setLoading(false);
       }
     }
   }
@@ -447,6 +475,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         }
       })
       .catch((error) => {
+        setLoading && setLoading(false);
         CommonBugFender('Pincode_servicibility', error);
       });
   };
@@ -469,9 +498,12 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           : 'partial')
           const availableTestIds = diagnostics?.map((item: any) => item?.itemId);
           setTestIds(availableTestIds);
+        }else{
+          setLoading && setLoading(false);
         }
       })
       .catch((error) => {
+        setLoading && setLoading(false);
         CommonBugFender('FindDiagnostics_byItem', error);
       });
   };
@@ -486,17 +518,23 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         fetchPolicy: 'no-cache',
       }).then(async (data) => {
         const areaId = data?.data?.getNearestArea?.area?.id;
-        if(areaId) {
+        if(areaId) {          
           for(let i = 0; i < slotFetchCount; i++){
             const response = await getDiagnosticSlots(areaId, moment(new Date()).
             add(i,'days').format('YYYY-MM-DD'));
             const {slots} =  response?.data.getDiagnosticSlotsCustomized || {};
-            // slots
-            if(slots?.length) break;
+            if(slots?.length){
+              const slotDateTime = moment(slots[0]?.Timeslot, ["HH:mm"]).format("h:mm A, ") 
+              + moment(new Date()).add(i,'days').format('DD MMM YYYY')
+              setTestSlot(slotDateTime);
+              setLoading && setLoading(false);
+              break;
+            }
           }
         }
       })
       .catch((error) => {
+        setLoading && setLoading(false);
         CommonBugFender('NearestArea', error);
       });;
   };
@@ -575,6 +613,32 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         : CleverTapEventName.DOWNLOAD_PRESCRIPTION,
       eventAttributes
     );
+    postCleverTapEvent(
+      type == 'medicine'
+        ? CleverTapEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS
+        : type == 'test'
+        ? CleverTapEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS
+        : CleverTapEventName.DOWNLOAD_PRESCRIPTION,
+      eventAttributes
+    );
+    if(type == 'medicine'){
+      postWebEngageEvent(
+        CleverTapEventName.Order_Medicine_From_View_Prescription,
+        {
+          'Booking Source': 'APP'
+        }
+      );
+    }
+    
+    if(type == 'test'){
+      postWebEngageEvent(
+        CleverTapEventName.Book_Tests_From_View_Prescription,
+        {
+          'Booking Source': 'APP'
+        }
+      );
+    }
+    
     postCleverTapEvent(
       type == 'medicine'
         ? CleverTapEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS
@@ -1006,6 +1070,30 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     }
   };
 
+  const priscTatText = () => {
+    const {
+      isAllMedicineAtPincode, 
+      isPartialMedicineAtPincode,
+      noPincode} = tatContent.find(item => item.isMedicine);
+    return prescAvailability !== 'unavailable' ? <Text style={styles.tatText}>{
+      prescAvailability == 'available' ? 
+      isAllMedicineAtPincode + ` at (${defaultAddress?.zipcode}) by ${tat}` : 
+      isPartialMedicineAtPincode + `at (${defaultAddress?.zipcode}) by ${tat}`
+      }</Text> : null
+  };
+
+  const testTatText = () => {
+    const {
+      isPartialTestAtPincode, 
+      isAllTestAtPincode,
+      noPincode} = tatContent.find(item => item.isTest);
+    return testAvailability !== 'unavailable' ? <Text style={styles.tatText}>{
+      testAvailability == 'available' ? 
+      isPartialTestAtPincode + ` at (${defaultAddress?.zipcode}) by ${testSlot}`: 
+      isAllTestAtPincode + `at (${defaultAddress?.zipcode}) by ${testSlot}`
+      }</Text> : null
+  };
+
   const renderPrescriptions = () => {
     return (
       <>
@@ -1042,13 +1130,20 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                     </>
                   );
               })}
-              <TouchableOpacity
-                onPress={() => {
-                  onAddToCart();
-                }}
-              >
-                <Text style={styles.quickActionButtons}>ORDER MEDICINES</Text>
-              </TouchableOpacity>
+              <View style={styles.tatContainer}>
+                {tatContent.length ?
+                  <View>
+                    {priscTatText()}
+                    <Text style={styles.tatText}>{tatContent.find(item => item.isMedicine)['discount']}</Text>
+                  </View> : null}
+                <TouchableOpacity
+                  onPress={() => {
+                    onAddToCart();
+                  }}
+                >
+                  <Text style={styles.quickActionButtons}>ORDER MEDICINES</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         ) : (
@@ -1145,6 +1240,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   };
 
   const renderTestNotes = () => {
+    const testTat = tatContent.length && 
+      tatContent.find(item => item.isTest);
     return (
       <>
         {renderHeadingView(
@@ -1173,16 +1270,24 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 </>
               );
             })}
-            <TouchableOpacity
-              onPress={() => {
-                postWEGEvent('test');
-                onAddTestsToCart();
-              }}
-            >
-              <Text style={styles.quickActionButtons}>
-                {strings.health_records_home.order_test}
-              </Text>
-            </TouchableOpacity>
+            <View style={styles.tatContainer}>
+              {tatContent.length ?
+                  <View>
+                    {testTatText()}
+                    <Text style={styles.tatText}>{testTat['discount']}</Text>
+                    <Text style={styles.tatText}>{testTat['reportTime']}</Text>
+                  </View> : null}
+              <TouchableOpacity
+                onPress={() => {
+                  postWEGEvent('test');
+                  onAddTestsToCart();
+                }}
+              >
+                <Text style={styles.quickActionButtons}>
+                  {strings.health_records_home.order_test}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         ) : (
           renderNoData('No Tests')

@@ -1277,3 +1277,10 @@ export const getDiagnosticDoctorPrescriptionResults = (
     }
   );
 };
+
+export const getTatStaticContent = (
+): Promise<AxiosResponse<any>> => {
+  const baseUrl = config.assetsBaseurl;
+  const url = `${baseUrl}/tatCtaStaticContent.json`;
+  return Axios.get(url);
+};
