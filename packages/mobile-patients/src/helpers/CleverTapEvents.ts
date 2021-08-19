@@ -361,6 +361,8 @@ export enum CleverTapEventName {
   ORDER_TESTS_FROM_PRESCRIPTION_DETAILS = 'PHR Order Tests Prescription Detail',
   CONTINUE_CONSULT_CLICKED = 'Continue Consult Clicked',
   CHAT_WITH_DOCTOR = 'Chat with Doctor',
+  Order_Medicine_From_View_Prescription = 'OrderMedicineFromViewPrescription',
+  Book_Tests_From_View_Prescription = 'BookTestsFromViewPrescription',
 
   DOCTOR_RESCHEDULE_CLAIM_REFUND = 'Doctor reschedule and Claim Refund button click',
   UPLOAD_RECORDS_CLICK_CHATROOM = 'Upload Records in chatroom clicked',
@@ -1672,6 +1674,9 @@ export interface CleverTapEvents {
     'Secretary Name': string;
     'Secretary Mobile Number': string;
     'Doctor Mobile Number': string;
+    'Doctor ID': string;
+    'Display ID': number;
+    'Chat Format': 'PDF' | 'Image' | 'Text';
   };
   [CleverTapEventName.PATIENT_EXTERNAL_MEETING_LINK_CLICKED]: {
     'Doctor name': string;
@@ -1703,6 +1708,9 @@ export interface CleverTapEvents {
     'Secretary Name': string;
     'Secretary Mobile Number': string;
     'Doctor Mobile Number': string;
+    'Doctor ID': string;
+    'Display ID': number;
+    'Chat Format': 'PDF' | 'Image' | 'Text';
   };
   // confirm the type of data for the below
   [CleverTapEventName.CONSULT_PROCEED_CLICKED_ON_SLOT_SELECTION]: {

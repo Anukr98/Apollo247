@@ -108,6 +108,7 @@ import {
   PharmacyCircleMemberValues,
 } from '@aph/mobile-patients/src/helpers/CleverTapEvents';
 import Share from 'react-native-share';
+import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientAddressObj } from '../graphql/types/getDiagnosticOrderDetails';
 
 const width = Dimensions.get('window').width;
 
@@ -301,7 +302,7 @@ export const formatAddressBookAddress = (
 };
 
 export const formatAddressForApi = (
-  address: savePatientAddress_savePatientAddress_patientAddress
+  address: savePatientAddress_savePatientAddress_patientAddress | getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_patientAddressObj
 ) => {
   const addrLine1 = [address?.addressLine1, address?.addressLine2, address?.landmark, address?.city]
     .filter((v) => v)
@@ -1493,7 +1494,7 @@ export const formatTestSlot = (slotTime: string) => moment(slotTime, 'HH:mm').fo
 export const formatTestSlotWithBuffer = (slotTime: string) => {
   const startTime = slotTime.split('-')[0];
   const endTime = moment(startTime, 'HH:mm')
-    .add(30, 'minutes')
+    .add(40, 'minutes')
     .format('HH:mm');
 
   const newSlot = [startTime, endTime];
@@ -2983,8 +2984,11 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
       statusString = 'Order confirmed';
       break;
     case DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED:
+    // case DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN:
+      statusString = 'Apollo agent is on the way';
+      break;
     case DIAGNOSTIC_ORDER_STATUS.PHLEBO_CHECK_IN:
-      statusString = 'Phlebo is on the way';
+        statusString = 'Apollo agent Check-in';
       break;
     case DIAGNOSTIC_ORDER_STATUS.PHLEBO_COMPLETED:
       statusString = 'Sample collected';
@@ -3000,10 +3004,10 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED_IN_LAB:
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB:
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_TESTED:
-      statusString = 'Sample submitted';
+      statusString = 'Samples Received for Testing';
       break;
     case DIAGNOSTIC_ORDER_STATUS.SAMPLE_NOT_COLLECTED_IN_LAB:
-      statusString = !!customText ? '2nd Sample pending' : 'Sample submitted';
+      statusString = !!customText ? '2nd Sample pending' : 'Samples Received for Testing';
       break;
     case DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED:
       statusString = 'Report generated';
@@ -3035,6 +3039,9 @@ export const getTestOrderStatusText = (status: string, customText?: boolean) => 
     case DIAGNOSTIC_ORDER_STATUS.PARTIAL_ORDER_COMPLETED:
       statusString = 'Partial Order Completed';
       break;
+    case DIAGNOSTIC_ORDER_STATUS.ORDER_MODIFIED:
+        statusString = 'Order modification'
+        break;
     default:
       statusString = status || '';
       statusString?.replace(/[_]/g, ' ');
@@ -3193,7 +3200,10 @@ export async function downloadDiagnosticReport(
   appointmentDate: string,
   patientName: string,
   showToast: boolean,
-  downloadFileName?: string
+  downloadFileName?: string,
+  orderStatus?: string,
+  displayId?: string,
+  isReport?: boolean
 ) {
   setLoading?.(true);
   let result = Platform.OS === 'android' && (await requestReadSmsPermission());
@@ -3208,9 +3218,12 @@ export async function downloadDiagnosticReport(
       Platform.OS == 'ios'
     ) {
       const dirs = RNFetchBlob.fs.dirs;
+      const isReportApollo = isReport ? 'labreport' : 'labinvoice';
+      const isOrderComplete = orderStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_COMPLETED ? 'complete' : (Math.floor(Math.random() * 300))
+      const dynamicFileName = `Apollo247_${displayId}_${isReportApollo}_${isOrderComplete}.pdf`
       const reportName = !!downloadFileName
         ? downloadFileName
-        : `Apollo247_${appointmentDate}_${patientName}.pdf`;
+        : dynamicFileName;
       const downloadPath =
         Platform.OS === 'ios'
           ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + reportName
@@ -3255,7 +3268,17 @@ export async function downloadDiagnosticReport(
           PermissionsAndroid.RESULTS.DENIED
       ) {
         storagePermissionsToDownload(() => {
-          downloadDiagnosticReport(setLoading, pdfUrl, appointmentDate, patientName, true);
+          downloadDiagnosticReport(
+            setLoading,
+            pdfUrl,
+            appointmentDate,
+            patientName,
+            true,
+            downloadFileName,
+            orderStatus,
+            displayId,
+            isReport
+          );
         });
       }
     }

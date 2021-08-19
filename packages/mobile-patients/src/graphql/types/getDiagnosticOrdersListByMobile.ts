@@ -24,6 +24,9 @@ export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile
   preTestingRequirement: string | null;
   reportGenerationTime: string | null;
   initialCollectionCharges: number | null;
+  slotDurationInMinutes: number | null;
+  expectedReportGenerationTime: any | null;
+  reportTATMessage: string | null;
 }
 
 export interface getDiagnosticOrdersListByMobile_getDiagnosticOrdersListByMobile_ordersList_patientAddressObj {
