@@ -451,10 +451,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const listOfIds =
       typeof _cartItemId == 'string' ? removeSpaces?.map((item) => Number(item!)) : _cartItemId;
     const pincode = selectedAddr?.zipcode;
+
+    const formattedDate = moment(diagnosticSlot?.date).format('YYYY/MM/DD');
+    const dateTimeInUTC = moment(formattedDate + ' ' + diagnosticSlot?.slotStartTime).toISOString();
+
     try {
       const result = await getReportTAT(
         client,
-        null,
+        !!diagnosticSlot && !isEmptyObject(diagnosticSlot) ? dateTimeInUTC : null,
         Number(addressCityId),
         Number(pincode),
         listOfIds!
@@ -776,10 +780,17 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           ? cartItemsWithId.concat(modifiedOrderItemIds)
           : cartItemsWithId;
         fetchTestReportGenDetails(itemIds);
-        fetchReportTat(itemIds);
       }
     }
   }, [cartItems?.length, addressCityId]);
+
+  useEffect(() => {
+    if (cartItemsWithId?.length > 0) {
+      const itemIds = isModifyFlow ? cartItemsWithId.concat(modifiedOrderItemIds) : cartItemsWithId;
+      fetchReportTat(itemIds);
+    }
+  }, [cartItems, addressCityId, diagnosticSlot]);
+
   useEffect(() => {
     if (isModifyFlow) {
       return;

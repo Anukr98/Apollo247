@@ -165,6 +165,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     deliveryAddressId,
     deliveryAddressCityId,
     deliveryAddressStateId,
+    diagnosticSlot,
   } = useDiagnosticsCart();
   const { pharmacyCircleAttributes } = useShoppingCart();
 
@@ -463,8 +464,16 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       movedFrom === AppRoutes.TestsCart
         ? addresses?.[selectedAddressIndex]?.zipcode!
         : diagnosticLocation?.pincode! || '500030';
+    const formattedDate = moment(diagnosticSlot?.date).format('YYYY/MM/DD');
+    const dateTimeInUTC = moment(formattedDate + ' ' + diagnosticSlot?.slotStartTime).toISOString();
     try {
-      const result = await getReportTAT(client, null, id, Number(pincode), itemIds);
+      const result = await getReportTAT(
+        client,
+        !!diagnosticSlot && !isEmptyObject(diagnosticSlot) ? dateTimeInUTC : null,
+        id,
+        Number(pincode),
+        itemIds
+      );
       if (result?.data?.getConfigurableReportTAT) {
         const getMaxReportTat = result?.data?.getConfigurableReportTAT?.maxReportTAT;
         setReportTat(getMaxReportTat);
