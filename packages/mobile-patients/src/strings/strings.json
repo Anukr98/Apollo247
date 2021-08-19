@@ -461,7 +461,7 @@
     "proceedToCartCTA": "PROCEED TO CART",
     "noPreparationRequiredText": "No special preparation required",
     "noTestDescription": "No test description available",
-    "priceNotificationForCovidText": "Extra charges for Phlebotomist Protection Kit and Home Collection may apply for COVID Test. You will be informed of the charges after booking of the order.",
+    "priceNotificationForCovidText": "Extra charges for Apollo agent Protection Kit and Home Collection may apply for COVID Test. You will be informed of the charges after booking of the order.",
     "cashOnDeliverySubText": "Currently we have Cash on delivery as a payment option.",
     "bookingOrderFailedMessage": "We're sorry :(  There's been a problem with your booking. Please book again.",
     "bookingOrderDuplicateFailedMessage": "Few of the tests are added twice. Please remove duplicates and proceed to place order",
@@ -477,8 +477,8 @@
     "reschduleCountExceed": "You have rescheduled thrice. You're out of reschedule attempts.",
     "rescheduleCountText": "You can reschedule to a maximum of 3 times. If you click ok, you will have {{setRescheduleCount}} reschedule attempt(s) left.",
     "reasonForCancel_TestOrder": {
-      "notArrived": "Phlebo did not arrive",
-      "latePhelbo": "Phlebo arrived late",
+      "notArrived": "Apollo agent did not arrive",
+      "latePhelbo": "Apollo agent arrived late",
       "priceHigh": "Prices are high comparatively",
       "editOrder": "Need to Modify Order Details",
       "homeChargesHigh": "Home collection charges are high",
@@ -498,7 +498,7 @@
       "otherReasons": "Others (Please specify)"
     },
     "reasonForReschedule_TestOrder": {
-      "latePhelbo": "Phlebo did not arrive on time",
+      "latePhelbo": "Apollo agent did not arrive on time",
       "unavailable": "I am not available right now",
       "guidelinesNotFollowed": "I did not follow fasting requirement",
       "unableToProvideSample": "Not feeling well to provide sample",
@@ -534,10 +534,10 @@
     "bookOnline": "Book Online",
     "bookOnlineSubText": "Select a test or package and book appointment on Apollo 247",
     "hcSample": "Home Sample Collection",
-    "hcSampleSubText": "Certified Phlebotomist visits your home for sample collection at selected slot time",
+    "hcSampleSubText": "Certified Apollo agent visits your home for sample collection at selected slot time",
     "fastReport": "Fast & Accurate Reports",
     "fastReportSubText": "Get reports in 12 to 24 hours. View or download on app anytime",
-    "orderSuccessPhaleboText": "*The phlebotomist will call you prior to starting his journey to confirm your availability",
+    "orderSuccessPhaleboText": "*The Apollo agent will call you prior to starting his journey to confirm your availability",
     "invoiceTimelineText": "Invoice will be available to download after the sample is submitted in the lab",
     "unableToFetchStatus": "Something went wrong. We are unable to fetch status",
     "noSlotAvailable": "Sorry! There are no slots available on {{date}}. Please choose another date.",
@@ -558,7 +558,7 @@
     "howWasExpTxt": "How was your overall experience -",
     "feedbackSubTxt": "Your feedback has been submitted. Thanks for your time.",
     "homeHomeCollectionDisclaimerTxt": "Home collection charges of upto ₹100 would be levied in case of order value less than ₹500",
-    "itDoseCancelledText": "Canceled by phlebotomist as per the request",
+    "itDoseCancelledText": "Canceled by Apollo agent as per the request",
     "orderCancelledReasonText": "Order was cancelled : ",
     "wantToReschedule": "• Do you want to Reschedule Appointment ?",
     "sampleSubmitted": "Sample Submitted",
@@ -573,24 +573,25 @@
     "viewReportText": "View Report",
     "sampleCollectedText": "Check Status",
     "collectionText": "Track Order",
-    "trackPhleboText": "Track Phlebo",
+    "trackPhleboText": "Track Apollo agent",
     "codDisableText": "We are currently not allowing Cash On Delivery for home sample collections.",
-    "phleboCallingError": "Error while connecting to Phlebo. Please try again later.",
+    "phleboCallingError": "Error while connecting to Apollo agent. Please try again later.",
     "modifyItemAlreadyExist": "Your cart has been updated, since it had duplicate items",
     "previousCharges": "Previous Charges",
     "currentCharges": "Current Charges",
     "modifyDiscardText": "You were trying to modify the order. Would you like to discard and go back to home page?",
     "sampleCollected": "Sample Collected",
-    "sampleCollectedContent": "Our phlebotomist has successfully collected the samples."
+    "sampleCollectedContent": "Our Apollo agent has successfully collected the samples.",
+    "agent": "Apollo agent"
   },
   "diagnosticCategoryTitle": {
-    "category": "Category",
-    "categoryGrid": "Category_Scroll"
+    "category": "category",
+    "categoryGrid": "category_Scroll"
   },
   "orders": {
     "urOrders": "MY ORDERS",
     "ratingHeader": "FEEDBACK",
-    "ratingDetailHeader": "Rate your Experience with our Phlebotomist",
+    "ratingDetailHeader": "Rate your Experience with our Apollo agent",
     "trackOrder": "Track Order",
     "viewBill": "Order Summary",
     "call_us": "CALL US",
@@ -606,7 +607,7 @@
       "title": "Did not seem Well-Trained"
     },
     {
-      "title": "Phlebo was not Polite"
+      "title": "Apollo agent was not Polite"
     },
     {
       "title": "Didn’t Wear the PPE Kit or Gloves"

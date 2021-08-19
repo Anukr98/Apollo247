@@ -1,7 +1,8 @@
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { WidgetLiverIcon, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
+import { WidgetLiverIcon, CircleLogo, DownO } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { renderItemPriceShimmer } from '@aph/mobile-patients/src/components/ui/ShimmerFactory';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import React, { useCallback } from 'react';
 import {
@@ -12,6 +13,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  Platform,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { isSmallDevice } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -49,6 +51,11 @@ export interface ItemCardProps {
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
   source: DIAGNOSTIC_ADD_TO_CART_SOURCE_TYPE;
   sourceScreen: string;
+  extraData?: any;
+  changeCTA?: boolean;
+  onEndReached?: any;
+  diagnosticWidgetData?: any;
+  isPriceAvailable?: boolean;
   onPressAddToCartFromCart?: (item: any) => void;
   onPressRemoveItemFromCart?: (item: any) => void;
 }
@@ -59,25 +66,25 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     data,
     isCircleSubscribed,
     navigation,
+    diagnosticWidgetData,
     source,
     sourceScreen,
     onPressAddToCartFromCart,
     onPressRemoveItemFromCart,
   } = props;
 
-  const actualItemsToShow =
+  let actualItemsToShow =
     source === 'Cart page'
-      ? data?.length > 0 && data?.filter((item: any) => item?.diagnosticPricing)
-      : data?.diagnosticWidgetData?.length > 0 &&
-        data?.diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
+      ? data?.length > 0 && data
+      : diagnosticWidgetData?.length > 0 && diagnosticWidgetData;
 
   const renderItemCard = useCallback(
     (item: any) => {
       const getItem = item?.item;
       const getDiagnosticPricingForItem = getItem?.diagnosticPricing;
-      if (getDiagnosticPricingForItem == undefined || getDiagnosticPricingForItem == null) {
-        return null;
-      }
+      // if (getDiagnosticPricingForItem == undefined || getDiagnosticPricingForItem == null) {
+      //   return null;
+      // }
 
       const packageMrpForItem = getItem?.packageCalculatedMrp!;
       const pricesForItem = getPricesForItem(getDiagnosticPricingForItem, packageMrpForItem);
@@ -185,7 +192,7 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     const promoteCircle = pricesForItem?.promoteCircle; //if circle discount is more
     const promoteDiscount = pricesForItem?.promoteDiscount; // if special discount is more than others.
 
-    return (
+    return pricesForItem || packageMrpForItem ? (
       <View>
         {promoteCircle || promoteDiscount ? (
           renderAnyDiscountView(pricesForItem, packageMrpForItem)
@@ -194,6 +201,8 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
         )}
         {renderMainPriceView(pricesForItem, packageMrpForItem)}
       </View>
+    ) : (
+      renderItemPriceShimmer()
     );
   };
 
@@ -292,15 +301,19 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
     //2. non-circle + circle -> no slashing
     return (
       <View style={{ flexDirection: 'row', marginVertical: '5%' }}>
-        <Text style={styles.mainPriceText}>
-        {`${string.common.Rs} ${convertNumberToDecimal(priceToShow)}` }
-        </Text>
+        {priceToShow ? (
+          <Text style={styles.mainPriceText}>
+            {`${string.common.Rs} ${convertNumberToDecimal(priceToShow)}`}
+          </Text>
+        ) : (
+          renderItemPriceShimmer()
+        )}
         {(!isCircleSubscribed && promoteCircle && priceToShow == slashedPrice) ||
-        priceToShow == slashedPrice ? null : (
+        priceToShow == slashedPrice ? null : slashedPrice ? (
           <Text style={styles.slashedPriceText}>
             {`${string.common.Rs} ${convertNumberToDecimal(slashedPrice)}`}
           </Text>
-        )}
+        ) : null}
       </View>
     );
   };
@@ -483,6 +496,13 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
   );
 
   const keyExtractor = useCallback((item: any, index: number) => `${index}`, []);
+  if (props.isPriceAvailable) {
+    actualItemsToShow =
+      source === 'Cart page'
+        ? data?.length > 0 && data?.filter((item: any) => item?.diagnosticPricing)
+        : diagnosticWidgetData?.length > 0 &&
+          diagnosticWidgetData?.filter((item: any) => item?.diagnosticPricing);
+  }
 
   return (
     <>
@@ -505,6 +525,8 @@ export const ItemCard: React.FC<ItemCardProps> = (props) => {
             showsVerticalScrollIndicator={false}
             horizontal={!props.isVertical}
             data={actualItemsToShow}
+            onEndReached={props.onEndReached}
+            onEndReachedThreshold={0.1}
             renderItem={renderItemCard}
             maxToRenderPerBatch={8}
             initialNumToRender={3}

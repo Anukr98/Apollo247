@@ -275,6 +275,8 @@ export interface ShoppingCartContextProps {
   setProductSubstitutes:
     | ((value: pharmaSubstitution_pharmaSubstitution_substitutes) => void)
     | null;
+  paymentCodMessage: string;
+  setPaymentCodMessage: ((message: string) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -399,6 +401,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setPharmaPDPNudgeMessage: null,
   productSubstitutes: null,
   setProductSubstitutes: null,
+  paymentCodMessage: '',
+  setPaymentCodMessage: null,
 });
 
 const AsyncStorageKeys = {
@@ -544,6 +548,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [productSubstitutes, setProductSubstitutes] = useState<
     ShoppingCartContextProps['productSubstitutes']
   >(null);
+  const [paymentCodMessage, setPaymentCodMessage] = useState<
+    ShoppingCartContextProps['paymentCodMessage']
+  >('');
 
   const [isProuctFreeCouponApplied, setisProuctFreeCouponApplied] = useState<boolean>(false);
   const [orders, setOrders] = useState<ShoppingCartContextProps['orders']>([]);
@@ -1310,6 +1317,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setPharmaPDPNudgeMessage,
         productSubstitutes,
         setProductSubstitutes,
+        paymentCodMessage,
+        setPaymentCodMessage,
       }}
     >
       {props.children}

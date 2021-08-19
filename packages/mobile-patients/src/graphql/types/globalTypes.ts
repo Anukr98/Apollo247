@@ -203,6 +203,11 @@ export enum DiagnosticsBookingSource {
   WEB = 'WEB',
 }
 
+export interface DiagnosticsServiceability {
+  cityID?: number | null;
+  stateID?: number | null;
+}
+
 export enum DiagnosticsRescheduleSource {
   AD = 'AD',
   MOBILE = 'MOBILE',
@@ -536,11 +541,23 @@ export enum PAYMENT_METHODS_JUSPAY {
   WALLET = 'WALLET',
 }
 
+export enum PAYMENT_METHODS_JUSPAY_V2 {
+  CARD = 'CARD',
+  COD = 'COD',
+  FEATURED_BANKS = 'FEATURED_BANKS',
+  HEALTH_CREDITS = 'HEALTH_CREDITS',
+  NB = 'NB',
+  OTHER_BANKS = 'OTHER_BANKS',
+  UPI = 'UPI',
+  WALLET = 'WALLET',
+}
+
 export enum PAYMENT_METHODS_REVERSE {
   COD = 'COD',
   CREDIT_CARD = 'CREDIT_CARD',
   CREDIT_CARD_EMI = 'CREDIT_CARD_EMI',
   DEBIT_CARD = 'DEBIT_CARD',
+  HEALTH_CREDITS = 'HEALTH_CREDITS',
   NET_BANKING = 'NET_BANKING',
   PAYTM_POSTPAID = 'PAYTM_POSTPAID',
   PAYTM_WALLET = 'PAYTM_WALLET',
@@ -2049,6 +2066,25 @@ export interface CowinRegistrationInput {
   photo_id_number: string;
   otp?: string | null;
   txnId?: string | null;
+}
+
+export enum WebEngageEvent {
+  DOCTOR_IN_CHAT_WINDOW = 'DOCTOR_IN_CHAT_WINDOW',
+  DOCTOR_LEFT_CHAT_WINDOW = 'DOCTOR_LEFT_CHAT_WINDOW',
+  DOCTOR_SENT_MESSAGE = 'DOCTOR_SENT_MESSAGE',
+  PATIENT_SENT_MESSAGE = 'PATIENT_SENT_MESSAGE',
+  CONSULT_PATIENT_SENT_MESSAGE = 'CONSULT_PATIENT_SENT_MESSAGE',
+}
+
+export interface PatientConsultEventToDoctorInput {
+  mobileNumber: string;
+  eventName: WebEngageEvent;
+  consultID: string;
+  displayId: string;
+  consultMode: ConsultMode;
+  doctorFullName: string;
+  message?: string | null;
+  chatFormat?: string | null;
 }
 
 //==============================================================
