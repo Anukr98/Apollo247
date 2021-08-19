@@ -68,10 +68,7 @@ import { FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEven
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import {
-  SEARCH_TYPE,
-  PharmaSubstitutionRequest,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useApolloClient } from 'react-apollo-hooks';
 import { ProductNameImage } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/ProductNameImage';
 import { ProductPriceDelivery } from '@aph/mobile-patients/src/components/ProductDetailPage/Components/ProductPriceDelivery';
@@ -193,14 +190,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
 
   const pharmacyPincode =
     g(asyncPincode, 'pincode') || g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
-  const latitude =
-    g(asyncPincode, 'latitude') ||
-    g(pharmacyLocation, 'latitude') ||
-    g(locationDetails, 'latitude');
-  const longitude =
-    g(asyncPincode, 'longitude') ||
-    g(pharmacyLocation, 'longitude') ||
-    g(locationDetails, 'longitude');
   const [pincode, setpincode] = useState<string>(pharmacyPincode || '');
   const [notServiceable, setNotServiceable] = useState<boolean>(false);
   const [deliveryTime, setdeliveryTime] = useState<string>('');
@@ -240,6 +229,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
   }, [medicineDetails]);
 
   useEffect(() => {
+    setProductSubstitutes?.([]);
     getMedicineDetails();
     if (sku) fetchDeliveryTime(pincode, false);
     BackHandler.addEventListener('hardwareBackPress', onPressHardwareBack);
@@ -309,6 +299,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     getUserType();
   }, []);
 
+  useEffect(() => {
+    if (sku && pincode) {
+      getProductSubstitutes(sku);
+    }
+  }, [sku, isPharma, pincode]);
+
   const getMedicineDetails = (zipcode?: string, pinAcdxCode?: string, selectedSku?: string) => {
     setLoading(true);
     if (urlKey || selectedSku) {
@@ -317,7 +313,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           const productDetails = g(data, 'productdp', '0' as any);
           if (productDetails) {
             setSku(productDetails?.sku);
-            getProductSubstitutes(productDetails?.sku);
             setMedicineData(productDetails);
           } else if (data && data.message) {
             setMedicineError(data.message);
@@ -336,7 +331,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
           const productDetails = g(data, 'productdp', '0' as any);
           if (productDetails) {
             setMedicineData(productDetails);
-            getProductSubstitutes(productDetails?.sku);
           } else if (data && data.message) {
             setMedicineError(data.message);
           }
@@ -379,11 +373,18 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
     }
   };
 
-  const getProductSubstitutes = (sku: string) => {
-    let input: PharmaSubstitutionRequest = {
+  const getProductSubstitutes = async (sku: string) => {
+    let latitude,
+      longitude = 0;
+    let input = {
       sku,
       pincode,
+      isPharma,
     };
+    const data = await getPlaceInfoByPincode(pincode);
+    const locationData = data.data.results[0].geometry.location;
+    latitude = locationData.lat;
+    longitude = locationData.lng;
     if (latitude && longitude) {
       input['lat'] = parseFloat(latitude.toFixed(2));
       input['lng'] = parseFloat(longitude.toFixed(2));
@@ -403,6 +404,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = (props) => {
         }
       })
       .catch((error) => {
+        setProductSubstitutes?.([]);
         fetchSubstitutes();
       });
   };

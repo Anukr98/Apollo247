@@ -1693,10 +1693,11 @@ export interface PharmaCouponInput {
 }
 
 export interface PharmaSubstitutionRequest {
-  sku?: string | null;
-  pincode?: string | null;
-  lat?: number | null;
-  lng?: number | null;
+  sku: string;
+  pincode: string;
+  lat: number;
+  lng: number;
+  isPharma: boolean;
 }
 
 export interface PrescriptionMedicineOrderOMSInput {
