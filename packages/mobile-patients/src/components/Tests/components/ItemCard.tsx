@@ -605,7 +605,7 @@ const styles = StyleSheet.create({
   },
   addToCartText: {
     textAlign: 'left',
-    position: Platform.OS == 'ios' ? 'relative' : 'absolute',
+    position: 'absolute',
     left: 16,
     bottom: 6,
     width: '70%',
