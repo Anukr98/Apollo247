@@ -2034,8 +2034,8 @@ export const GET_DIAGNOSTICS_HC_CHARGES = gql`
 `;
 
 export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
-  query findDiagnosticsByItemIDsAndCityID($cityID: Int!, $itemIDs: [Int]!) {
-    findDiagnosticsByItemIDsAndCityID(cityID: $cityID, itemIDs: $itemIDs) {
+  query findDiagnosticsByItemIDsAndCityID($cityID: Int!, $itemIDs: [Int]!, $pincode: Int) {
+    findDiagnosticsByItemIDsAndCityID(cityID: $cityID, itemIDs: $itemIDs, pincode: $pincode) {
       diagnostics {
         id
         itemId
@@ -5211,8 +5211,8 @@ export const ADD_DIABETIC_QUESTIONNAIRE = gql`
 `;
 
 export const GET_PAYMENT_METHODS = gql`
-  query getPaymentMethods($is_mobile: Boolean, $payment_order_id: String) {
-    getPaymentMethods(is_mobile: $is_mobile, payment_order_id: $payment_order_id) {
+  query getPaymentMethodsV2($is_mobile: Boolean, $payment_order_id: String!) {
+    getPaymentMethodsV2(is_mobile: $is_mobile, payment_order_id: $payment_order_id) {
       name
       minimum_supported_version
       payment_methods {
@@ -5220,6 +5220,7 @@ export const GET_PAYMENT_METHODS = gql`
         payment_method_name
         payment_method_code
         minimum_supported_version
+        outage_status
       }
     }
   }
@@ -6089,6 +6090,16 @@ export const GET_DIAGNOSTIC_PAYMENT_SETTINGS = gql`
     getDiagnosticPaymentSettings(paymentOrderId: $paymentOrderId) {
       cod
       hc_credits_message
+    }
+  }
+`;
+
+export const POST_WEB_ENGAGE = gql`
+  mutation postConsultEventToDoctor($doctorConsultEventInput: PatientConsultEventToDoctorInput!) {
+    postConsultEventToDoctor(doctorConsultEventInput: $doctorConsultEventInput) {
+      response {
+        status
+      }
     }
   }
 `;

@@ -855,7 +855,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                     Rs.{' '}
                     {isCartItemsUpdated
                       ? (cartItemsUpdatedTotal || 0).toFixed(2)
-                      : (amountPaid || 0).toFixed(2)}
+                      : (amountPaid - healthCreditsRedeemed || 0).toFixed(2)}
                   </Text>
                 </View>
               )}

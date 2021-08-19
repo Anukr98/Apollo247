@@ -261,6 +261,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     coupon,
     areaSelected,
     setAreaSelected,
+    diagnosticAreas,
     setDiagnosticAreas,
     cartSaving,
     discountSaving,
@@ -496,6 +497,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             variables: {
               cityID: Number(addressCityId) || AppConfig.Configuration.DIAGNOSTIC_DEFAULT_CITYID,
               itemIDs: _filterItemIds,
+              pincode: !!selectedAddr ? Number(selectedAddr?.zipcode!) : null,
             },
             fetchPolicy: 'no-cache',
           })
@@ -1047,11 +1049,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setWebEngageEventForAreaSelection(obj);
     } catch (e) {
       CommonBugFender('TestsCart_', e);
-
       setselectedTimeSlot(undefined);
       setLoading?.(false);
       setWebEngageEventForAddressNonServiceable(addresses?.[selectedAddressIndex]?.zipcode!);
-
       //if goes in the catch then show the area selection.
       setShowSelectedArea?.(true);
       fetchAreasForAddress(
@@ -1133,9 +1133,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               ? fetchAreasForAddress(
                   addresses?.[selectedAddressIndex]?.id,
                   addresses?.[selectedAddressIndex]?.zipcode!,
-                  shouldShowArea
+                  shouldShowArea,
+                  _itemIds
                 )
-              : getAreas();
+              : getAreas(_itemIds);
             updateCartItem?.({
               id: results?.[isItemInCart]
                 ? String(results?.[isItemInCart]?.itemId)
@@ -1178,9 +1179,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             ? fetchAreasForAddress(
                 addresses?.[selectedAddressIndex]?.id,
                 addresses?.[selectedAddressIndex]?.zipcode!,
-                shouldShowArea
+                shouldShowArea,
+                _itemIds
               )
-            : getAreas();
+            : getAreas(_itemIds);
         }
       });
       if (!isItemDisable && !isPriceChange) {
@@ -1195,9 +1197,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           ? fetchAreasForAddress(
               addresses?.[selectedAddressIndex]?.id,
               addresses?.[selectedAddressIndex]?.zipcode!,
-              shouldShowArea
+              shouldShowArea,
+              _itemIds
             )
-          : getAreas();
+          : getAreas(_itemIds);
       }
     }
   };
@@ -1296,6 +1299,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             //if address is not selected then from pincode bar otherwise from address
             cityID: cityIdToPass,
             itemIDs: listOfIds!,
+            pincode: !!selectedAddr ? Number(selectedAddr?.zipcode!) : null,
           },
           fetchPolicy: 'no-cache',
         })
@@ -2231,7 +2235,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       context: {
         sourceHeaders,
       },
-      variables: { cityID: cityIdForAddress, itemIDs: itemIds! },
+      variables: {
+        cityID: cityIdForAddress,
+        itemIDs: itemIds!,
+        pincode: !!selectedAddr ? Number(selectedAddr?.zipcode!) : null,
+      },
       fetchPolicy: 'no-cache',
     });
   };
@@ -3043,7 +3051,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             ) : null}
           </>
         ) : null}
-        {isModifyFlow ? null : showSelectedArea && !isEmptyObject(areaSelected) ? (
+        {isModifyFlow ? null : showSelectedArea &&
+          !isEmptyObject(areaSelected) &&
+          diagnosticAreas?.length > 0 ? (
           <View style={styles.patientNameMainViewStyle}>
             <View style={styles.patientNameViewStyle}>
               <Text style={styles.patientNameTextStyle}>{string.diagnostics.areaText}</Text>
